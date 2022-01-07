@@ -10,4 +10,10 @@ class Parameter extends Model
     use HasFactory;
 
     protected $table = 'tparameter';
+
+    protected $guarded = [
+        'id',
+        'created_at',
+        'updated_at',
+    ];
 }
