@@ -15,9 +15,9 @@ class CreateTabsensisupirapprovalTable extends Migration
     {
         Schema::create('tabsensisupirapproval', function (Blueprint $table) {
             $table->id();
-            $table->integer('trado_id')->length(11)->default(0);
-            $table->integer('supir_id')->length(11)->default(0);
-            $table->integer('supirserap_id')->length(11)->default(0);
+            $table->unsignedBigInteger('trado_id')->default(0);
+            $table->unsignedBigInteger('supir_id')->default(0);
+            $table->unsignedBigInteger('supirserap_id')->default(0);
             $table->string('modifiedby', 200)->default('');
             $table->integer('statusapproval')->length(11)->default(0);
             $table->dateTime('tglapp')->default('1900/1/1');
