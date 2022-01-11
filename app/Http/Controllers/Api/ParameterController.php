@@ -26,32 +26,49 @@ class ParameterController extends Controller
             'sortIndex' => $request->sortIndex ?? 'id',
             'sortOrder' => $request->sortOrder ?? 'asc',
         ];
-        
-        $totalRows = count(Parameter::select('id')->get());
+
+        $totalRows = Parameter::count();
         $totalPages = ceil($totalRows / $params['limit']);
-        
+
         /* Sorting */
         $query = Parameter::orderBy($params['sortIndex'], $params['sortOrder']);
-        
-        /* Paging */
-        $query = $query->skip($params['offset'])
-                        ->take($params['limit']);
 
-        /* Search */
+        /* Searching */
         if (count($params['search']) > 0) {
-            foreach ($params['search'] as $index => $search) {
-                $query = $query->where($search['field'], 'LIKE', "%$search[text]%");
+            switch ($params['search']['groupOp']) {
+                case "AND":
+                    foreach ($params['search']['rules'] as $index => $search) {
+                        $query = $query->where($search['field'], 'LIKE', "%$search[data]%");
+                    }
+
+                    break;
+                case "OR":
+                    foreach ($params['search']['rules'] as $index => $search) {
+                        $query = $query->orWhere($search['field'], 'LIKE', "%$search[data]%");
+                    }
+
+                    break;
+                default:
+                
+                    break;
             }
+
+            $totalRows = count($query->get());
+            $totalPages = ceil($totalRows / $params['limit']);
         }
 
+        /* Paging */
+        $query = $query->skip($params['offset'])
+            ->take($params['limit']);
+
         $parameters = $query->get();
-        
+
         /* Set attributes */
         $attributes = [
             'totalRows' => $totalRows,
             'totalPages' => $totalPages
         ];
-        
+
         return response([
             'status' => true,
             'data' => $parameters,
@@ -69,12 +86,24 @@ class ParameterController extends Controller
     public function store(StoreParameterRequest $request)
     {
         try {
-            $store = Parameter::create($request->validated());
+            // $store = Parameter::create($request->validated());
+            $parameter = new Parameter();
+            $parameter->grp = $request->grp;
+            $parameter->subgrp = $request->subgrp;
+            $parameter->text = $request->text;
+            $parameter->memo = $request->memo;
 
-            if ($store) {
+            if ($parameter->save()) {
+                $data = $parameter;
+                $data->position = Parameter::orderBy('grp', 'asc')
+                    ->where('grp', '<=', $parameter->grp)
+                    ->where('id', '<=', $parameter->id)
+                    ->count();
+                
                 return response([
                     'status' => true,
-                    'message' => 'Berhasil disimpan'
+                    'message' => 'Berhasil disimpan',
+                    'data' => $data
                 ]);
             } else {
                 return response([
