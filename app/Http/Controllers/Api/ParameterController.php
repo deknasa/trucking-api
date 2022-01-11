@@ -111,7 +111,7 @@ class ParameterController extends Controller
     public function update(UpdateParameterRequest $request, Parameter $parameter)
     {
         try {
-            $update = Parameter::update($request->validated());
+            $update = $parameter->update($request->validated());
             // $parameter = Parameter::findOrFail($parameter->id);
             // $parameter->modifiedby = $request->modifiedby;
             // $parameter->grp = $request->grp;
