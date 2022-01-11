@@ -14,7 +14,10 @@ class ParameterFactory extends Factory
     public function definition()
     {
         return [
-            //
+            'grp' => $this->faker->name(),
+            'subgrp' => $this->faker->name(),
+            'text' => $this->faker->name(),
+            'memo' => $this->faker->name(),
         ];
     }
 }

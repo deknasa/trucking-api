@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Parameter;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -14,14 +15,8 @@ class ParameterSeeder extends Seeder
      */
     public function run()
     {
-        for ($i=0; $i < 50; $i++) { 
-            DB::table('tparameter')->insert([
-                'modifiedby' => 'admin',
-                'grp' => "grp",
-                'subgrp' => "subgrp",
-                'text' => "text",
-                'memo' => "memo",
-            ]);
-        }
+        Parameter::factory()
+            ->count(100)
+            ->create();
     }
 }
