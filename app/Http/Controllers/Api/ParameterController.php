@@ -7,6 +7,7 @@ use App\Models\Parameter;
 use App\Http\Requests\StoreParameterRequest;
 use App\Http\Requests\UpdateParameterRequest;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use PhpParser\Builder\Param;
 
 class ParameterController extends Controller
@@ -18,16 +19,39 @@ class ParameterController extends Controller
      */
     public function index(Request $request)
     {
-        $attributes = [];
         $params = [
             'offset' => $request->offset ?? 0,
             'limit' => $request->limit ?? 100,
+            'search' => $request->search ?? [],
+            'sortIndex' => $request->sortIndex ?? 'id',
+            'sortOrder' => $request->sortOrder ?? 'asc',
         ];
+        
+        $totalRows = count(Parameter::select('id')->get());
+        $totalPages = ceil($totalRows / $params['limit']);
+        
+        /* Sorting */
+        $query = Parameter::orderBy($params['sortIndex'], $params['sortOrder']);
+        
+        /* Paging */
+        $query = $query->skip($params['offset'])
+                        ->take($params['limit']);
 
-        $parameters = Parameter::skip($params['offset'])
-                        ->take($params['limit'])
-                        ->get();
+        /* Search */
+        if (count($params['search']) > 0) {
+            foreach ($params['search'] as $index => $search) {
+                $query = $query->where($search['field'], 'LIKE', "%$search[text]%");
+            }
+        }
 
+        $parameters = $query->get();
+        
+        /* Set attributes */
+        $attributes = [
+            'totalRows' => $totalRows,
+            'totalPages' => $totalPages
+        ];
+        
         return response([
             'status' => true,
             'data' => $parameters,
@@ -45,14 +69,9 @@ class ParameterController extends Controller
     public function store(StoreParameterRequest $request)
     {
         try {
-            $parameter = new Parameter();
-            $parameter->modifiedby = $request->modifiedby;
-            $parameter->grp = $request->grp;
-            $parameter->subgrp = $request->subgrp;
-            $parameter->text = $request->text;
-            $parameter->memo = $request->memo;
+            $store = Parameter::create($request->validated());
 
-            if ($parameter->save()) {
+            if ($store) {
                 return response([
                     'status' => true,
                     'message' => 'Berhasil disimpan'
@@ -92,14 +111,15 @@ class ParameterController extends Controller
     public function update(UpdateParameterRequest $request, Parameter $parameter)
     {
         try {
-            $parameter = Parameter::findOrFail($parameter->id);
-            $parameter->modifiedby = $request->modifiedby;
-            $parameter->grp = $request->grp;
-            $parameter->subgrp = $request->subgrp;
-            $parameter->text = $request->text;
-            $parameter->memo = $request->memo;
+            $update = $parameter->update($request->validated());
+            // $parameter = Parameter::findOrFail($parameter->id);
+            // $parameter->modifiedby = $request->modifiedby;
+            // $parameter->grp = $request->grp;
+            // $parameter->subgrp = $request->subgrp;
+            // $parameter->text = $request->text;
+            // $parameter->memo = $request->memo;
 
-            if ($parameter->save()) {
+            if ($update) {
                 return response([
                     'status' => true,
                     'message' => 'Berhasil diubah'
@@ -123,6 +143,18 @@ class ParameterController extends Controller
      */
     public function destroy(Parameter $parameter)
     {
-        Parameter::destroy($parameter->id);
+        $delete = Parameter::destroy($parameter->id);
+
+        if ($delete) {
+            return response([
+                'status' => true,
+                'message' => 'Berhasil dihapus'
+            ]);
+        } else {
+            return response([
+                'status' => false,
+                'message' => 'Gagal dihapus'
+            ]);
+        }
     }
 }

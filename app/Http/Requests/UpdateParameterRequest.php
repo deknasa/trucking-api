@@ -36,6 +36,7 @@ class UpdateParameterRequest extends FormRequest
         return [
             'grp' => 'group',
             'subgrp' => 'subgroup',
+            'text' => 'name',
         ];
     }
 }

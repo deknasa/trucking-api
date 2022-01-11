@@ -36,6 +36,7 @@ class StoreParameterRequest extends FormRequest
         return [
             'grp' => 'group',
             'subgrp' => 'subgroup',
+            'text' => 'name',
         ];
     }
 }
