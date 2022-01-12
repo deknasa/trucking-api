@@ -94,8 +94,8 @@ class ParameterController extends Controller
 
             if ($parameter->save()) {
                 /* Set position and page */
-                $parameter->position = Parameter::orderBy('grp', 'asc')
-                    ->where('grp', '<=', $parameter->grp)
+                $parameter->position = Parameter::orderBy($request->sortname ?? 'id', $request->sortorder ?? 'asc')
+                    ->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $parameter->{$request->sortname})
                     ->where('id', '<=', $parameter->id)
                     ->count();
 
@@ -153,8 +153,8 @@ class ParameterController extends Controller
 
             if ($update) {
                 /* Set position and page */
-                $parameter->position = Parameter::orderBy('grp', 'asc')
-                    ->where('grp', '<=', $parameter->grp)
+                $parameter->position = Parameter::orderBy($request->sortname ?? 'id', $request->sortorder ?? 'asc')
+                    ->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $parameter->{$request->sortname})
                     ->where('id', '<=', $parameter->id)
                     ->count();
 
