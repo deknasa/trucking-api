@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateTakunpusatTable extends Migration
+class CreateakunpusatTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,7 +13,7 @@ class CreateTakunpusatTable extends Migration
      */
     public function up()
     {
-        Schema::create('takunpusat', function (Blueprint $table) {
+        Schema::create('akunpusat', function (Blueprint $table) {
             $table->id();
             $table->string('type', 50)->default('');
             $table->integer('level')->length(11)->default(0);
@@ -37,6 +37,6 @@ class CreateTakunpusatTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('takunpusat');
+        Schema::dropIfExists('akunpusat');
     }
 }

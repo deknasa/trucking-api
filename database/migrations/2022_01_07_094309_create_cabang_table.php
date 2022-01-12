@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateTbankpelangganTable extends Migration
+class CreatecabangTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,12 +13,11 @@ class CreateTbankpelangganTable extends Migration
      */
     public function up()
     {
-        Schema::create('tbankpelanggan', function (Blueprint $table) {
+        Schema::create('cabang', function (Blueprint $table) {
             $table->id();
-            $table->string('kbank', 50)->default('');
-            $table->string('nbank', 100)->default('');
-            $table->integer('statusaktif')->length(11)->default(0);            
-            $table->string('modifiedby', 50)->default('');
+            $table->string('cabang', 300)->default('');
+            $table->string('modifiedby', 30)->default('');
+            $table->integer('statusaktif')->length(11);
             $table->timestamps();
         });
     }
@@ -30,6 +29,6 @@ class CreateTbankpelangganTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('tbankpelanggan');
+        Schema::dropIfExists('cabang');
     }
 }

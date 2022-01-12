@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateTbelistokheaderTable extends Migration
+class CreatebelistokheaderTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,7 +13,7 @@ class CreateTbelistokheaderTable extends Migration
      */
     public function up()
     {
-        Schema::create('tbelistokheader', function (Blueprint $table) {
+        Schema::create('belistokheader', function (Blueprint $table) {
             $table->id();
             $table->string('nobukti', 50)->default('');
             $table->date('tgl')->default('1900/1/1');
@@ -40,6 +40,6 @@ class CreateTbelistokheaderTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('tbelistokheader');
+        Schema::dropIfExists('belistokheader');
     }
 }
