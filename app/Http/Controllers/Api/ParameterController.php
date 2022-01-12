@@ -86,7 +86,6 @@ class ParameterController extends Controller
     public function store(StoreParameterRequest $request)
     {
         try {
-            // $store = Parameter::create($request->validated());
             $parameter = new Parameter();
             $parameter->grp = $request->grp;
             $parameter->subgrp = $request->subgrp;
@@ -94,16 +93,20 @@ class ParameterController extends Controller
             $parameter->memo = $request->memo;
 
             if ($parameter->save()) {
-                $data = $parameter;
-                $data->position = Parameter::orderBy('grp', 'asc')
+                /* Set position and page */
+                $parameter->position = Parameter::orderBy('grp', 'asc')
                     ->where('grp', '<=', $parameter->grp)
                     ->where('id', '<=', $parameter->id)
                     ->count();
+
+                if (isset($request->limit)) {
+                    $parameter->page = ceil($parameter->position / $request->limit);
+                }
                 
                 return response([
                     'status' => true,
                     'message' => 'Berhasil disimpan',
-                    'data' => $data
+                    'data' => $parameter
                 ]);
             } else {
                 return response([
@@ -149,9 +152,20 @@ class ParameterController extends Controller
             // $parameter->memo = $request->memo;
 
             if ($update) {
+                /* Set position and page */
+                $parameter->position = Parameter::orderBy('grp', 'asc')
+                    ->where('grp', '<=', $parameter->grp)
+                    ->where('id', '<=', $parameter->id)
+                    ->count();
+
+                if (isset($request->limit)) {
+                    $parameter->page = ceil($parameter->position / $request->limit);
+                }
+
                 return response([
                     'status' => true,
-                    'message' => 'Berhasil diubah'
+                    'message' => 'Berhasil diubah',
+                    'data' => $parameter
                 ]);
             } else {
                 return response([
