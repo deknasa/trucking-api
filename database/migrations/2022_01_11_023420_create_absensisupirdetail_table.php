@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateTabsensisupirdetailTable extends Migration
+class CreateabsensisupirdetailTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,7 +13,7 @@ class CreateTabsensisupirdetailTable extends Migration
      */
     public function up()
     {
-        Schema::create('tabsensisupirdetail', function (Blueprint $table) {
+        Schema::create('absensisupirdetail', function (Blueprint $table) {
             $table->id();
             $table->string('nobukti', 50)->default('');
             $table->unsignedBigInteger('trado_id')->default(0);
@@ -26,7 +26,7 @@ class CreateTabsensisupirdetailTable extends Migration
             $table->unsignedBigInteger('absensi_id')->default(0);
             $table->timestamps();
 
-            $table->foreign('absensi_id')->references('id')->on('tabsensisupirheader')->onDelete('cascade');
+            $table->foreign('absensi_id')->references('id')->on('absensisupirheader')->onDelete('cascade');
         });
     }
 
@@ -37,6 +37,6 @@ class CreateTabsensisupirdetailTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('tabsensisupirdetail');
+        Schema::dropIfExists('absensisupirdetail');
     }
 }

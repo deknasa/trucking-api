@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateTabsensisupirapprovalTable extends Migration
+class CreateabsensisupirapprovalTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,7 +13,7 @@ class CreateTabsensisupirapprovalTable extends Migration
      */
     public function up()
     {
-        Schema::create('tabsensisupirapproval', function (Blueprint $table) {
+        Schema::create('absensisupirapproval', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('trado_id')->default(0);
             $table->unsignedBigInteger('supir_id')->default(0);
@@ -40,6 +40,6 @@ class CreateTabsensisupirapprovalTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('tabsensisupirapproval');
+        Schema::dropIfExists('absensisupirapproval');
     }
 }

@@ -13,7 +13,7 @@ class CreateParametersTable extends Migration
      */
     public function up()
     {
-        Schema::create('tparameter', function (Blueprint $table) {
+        Schema::create('parameter', function (Blueprint $table) {
             $table->id();
             $table->string('modifiedby', 30)->nullable();
             $table->string('grp', 255);
@@ -31,6 +31,6 @@ class CreateParametersTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('parameters');
+        Schema::dropIfExists('parameter');
     }
 }

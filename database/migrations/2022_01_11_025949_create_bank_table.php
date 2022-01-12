@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateTbankTable extends Migration
+class CreatebankTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,7 +13,7 @@ class CreateTbankTable extends Migration
      */
     public function up()
     {
-        Schema::create('tbank', function (Blueprint $table) {
+        Schema::create('bank', function (Blueprint $table) {
             $table->id();
             $table->string('kbank', 50)->default('');
             $table->string('nbank', 50)->default('');
@@ -34,6 +34,6 @@ class CreateTbankTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('tbank');
+        Schema::dropIfExists('bank');
     }
 }

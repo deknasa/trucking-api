@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateTabsensisupirheaderTable extends Migration
+class CreateabsensisupirheaderTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,7 +13,7 @@ class CreateTabsensisupirheaderTable extends Migration
      */
     public function up()
     {
-        Schema::create('tabsensisupirheader', function (Blueprint $table) {
+        Schema::create('absensisupirheader', function (Blueprint $table) {
             $table->id();
             $table->string('nobukti', 50)->default('');
             $table->date('tgl')->default('1900/1/1');
@@ -32,6 +32,6 @@ class CreateTabsensisupirheaderTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('tabsensisupirheader');
+        Schema::dropIfExists('absensisupirheader');
     }
 }
