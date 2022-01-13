@@ -16,6 +16,8 @@ class DatabaseSeeder extends Seeder
         $this->call([
             ParameterSeeder::class,
             AbsensiSupirHeaderSeeder::class,
+            TradoSeeder::class,
+            SupirSeeder::class,
         ]);
     }
 }
