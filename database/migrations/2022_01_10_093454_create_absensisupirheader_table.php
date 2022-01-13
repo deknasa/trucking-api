@@ -19,7 +19,7 @@ class CreateabsensisupirheaderTable extends Migration
             $table->date('tgl')->default('1900/1/1');
             $table->longText('keterangan', 8000)->default('');
             $table->string('kasgantung_nobukti', 50)->default('');
-            $table->double('fnominal',15,2)->default(0);
+            $table->double('nominal',15,2)->default(0);
             $table->string('modifiedby', 50)->default('');
             $table->timestamps();
         });
