@@ -9,7 +9,7 @@ class Parameter extends Model
 {
     use HasFactory;
 
-    protected $table = 'tparameter';
+    protected $table = 'parameter';
 
     protected $guarded = [
         'id',

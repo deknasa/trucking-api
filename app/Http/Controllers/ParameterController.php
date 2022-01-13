@@ -1,8 +1,7 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Models\Parameter;
 use App\Http\Requests\StoreParameterRequest;
 use App\Http\Requests\UpdateParameterRequest;
@@ -21,7 +20,7 @@ class ParameterController extends Controller
     {
         $params = [
             'offset' => $request->offset ?? 0,
-            'limit' => $request->limit ?? 100,
+            'limit' => $request->limit ?? 10,
             'search' => $request->search ?? [],
             'sortIndex' => $request->sortIndex ?? 'id',
             'sortOrder' => $request->sortOrder ?? 'asc',

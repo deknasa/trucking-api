@@ -1,6 +1,7 @@
 <?php
 
-use App\Http\Controllers\Api\ParameterController;
+use App\Http\Controllers\AbsensiSupirHeaderController;
+use App\Http\Controllers\ParameterController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -20,3 +21,4 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 Route::resource('parameter', ParameterController::class);
+Route::resource('absensi', AbsensiSupirHeaderController::class);
