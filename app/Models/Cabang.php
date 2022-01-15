@@ -5,15 +5,15 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Parameter extends Model
+class Cabang extends Model
 {
     use HasFactory;
 
-    protected $table = 'parameter';
+    protected $table = 'cabang';
 
     protected $guarded = [
         'id',
         'created_at',
         'updated_at',
-    ];
+    ];    
 }
