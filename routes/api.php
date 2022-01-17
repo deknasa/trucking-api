@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\AbsensiSupirDetailController;
 use App\Http\Controllers\Api\AbsensiSupirHeaderController;
 use App\Http\Controllers\Api\AbsenTradoController;
 use App\Http\Controllers\Api\ParameterController;
@@ -27,6 +28,7 @@ Route::get('parameter/field_length', [ParameterController::class, 'fieldLength']
 Route::resource('parameter', ParameterController::class);
 
 Route::resource('absensi', AbsensiSupirHeaderController::class);
+Route::resource('absensi_detail', AbsensiSupirDetailController::class);
 Route::resource('trado', TradoController::class);
 Route::resource('supir', SupirController::class);
 Route::resource('absentrado', AbsenTradoController::class);

@@ -10,4 +10,8 @@ class Trado extends Model
     use HasFactory;
 
     protected $table = 'trado';
+
+    public function absensiSupir() {
+        return $this->belongsToMany(AbsensiSupirDetail::class);
+    }
 }

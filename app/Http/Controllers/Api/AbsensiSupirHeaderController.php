@@ -92,7 +92,7 @@ class AbsensiSupirHeaderController extends Controller
             for ($i = 0; $i < count($request->trado_id); $i++) {
                 $absensiSupirHeader->absensiSupirDetail()->create([
                     "trado_id" => $request->trado_id[$i],
-                    "absensi_id" => $request->absensi_id[$i],
+                    "absen_id" => $request->absen_id[$i],
                     "supir_id" => $request->supir_id[$i],
                     "jam" => $request->jam[$i],
                     "uangjalan" => $request->uangjalan[$i],
