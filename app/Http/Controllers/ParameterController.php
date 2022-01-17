@@ -7,6 +7,7 @@ use App\Http\Requests\StoreParameterRequest;
 use App\Http\Requests\UpdateParameterRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use PhpParser\Builder\Param;
 
 class ParameterController extends Controller
@@ -198,5 +199,18 @@ class ParameterController extends Controller
                 'message' => 'Gagal dihapus'
             ]);
         }
+    }
+
+    public function fieldLength() {
+        $data = [];
+        $columns = DB::connection()->getDoctrineSchemaManager()->listTableDetails('parameter')->getColumns();
+
+        foreach ($columns as $index => $column) {
+            $data[$index] = $column->getLength();
+        }
+
+        return response([
+            'data' => $data
+        ]);
     }
 }

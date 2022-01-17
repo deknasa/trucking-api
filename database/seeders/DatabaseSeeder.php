@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
             AbsensiSupirHeaderSeeder::class,
             TradoSeeder::class,
             SupirSeeder::class,
+            AbsenTradoSeeder::class,
         ]);
     }
 }

@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class StoreAbsensiSupirHeaderRequest extends FormRequest
+class StoreSupirRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -13,7 +13,7 @@ class StoreAbsensiSupirHeaderRequest extends FormRequest
      */
     public function authorize()
     {
-        return true;
+        return false;
     }
 
     /**
@@ -24,9 +24,7 @@ class StoreAbsensiSupirHeaderRequest extends FormRequest
     public function rules()
     {
         return [
-            // 'nobukti' => 'required',
-            'tgl' => 'required|date',
-            'keterangan' => 'required',
+            //
         ];
     }
 }
