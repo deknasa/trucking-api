@@ -1,11 +1,12 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
-use App\Models\AbsenTrado;
+use App\Http\Controllers\Controller;
+use App\Models\Supir;
 use Illuminate\Http\Request;
 
-class AbsenTradoController extends Controller
+class SupirController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -22,11 +23,11 @@ class AbsenTradoController extends Controller
             'sortOrder' => $request->sortOrder ?? 'asc',
         ];
 
-        $totalRows = AbsenTrado::count();
+        $totalRows = Supir::count();
         $totalPages = ceil($totalRows / $params['limit']);
 
         /* Sorting */
-        $query = AbsenTrado::orderBy($params['sortIndex'], $params['sortOrder']);
+        $query = Supir::orderBy($params['sortIndex'], $params['sortOrder']);
 
         /* Searching */
         if (count($params['search']) > 0) {
@@ -56,7 +57,7 @@ class AbsenTradoController extends Controller
         $query = $query->skip($params['offset'])
             ->take($params['limit']);
 
-        $absentrados = $query->get();
+        $supirs = $query->get();
 
         /* Set attributes */
         $attributes = [
@@ -66,7 +67,7 @@ class AbsenTradoController extends Controller
 
         return response([
             'status' => true,
-            'data' => $absentrados,
+            'data' => $supirs,
             'attributes' => $attributes,
             'params' => $params
         ]);

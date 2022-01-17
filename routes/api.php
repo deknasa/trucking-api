@@ -1,10 +1,10 @@
 <?php
 
-use App\Http\Controllers\AbsensiSupirHeaderController;
-use App\Http\Controllers\AbsenTradoController;
-use App\Http\Controllers\ParameterController;
-use App\Http\Controllers\SupirController;
-use App\Http\Controllers\TradoController;
+use App\Http\Controllers\Api\AbsensiSupirHeaderController;
+use App\Http\Controllers\Api\AbsenTradoController;
+use App\Http\Controllers\Api\ParameterController;
+use App\Http\Controllers\Api\SupirController;
+use App\Http\Controllers\Api\TradoController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 

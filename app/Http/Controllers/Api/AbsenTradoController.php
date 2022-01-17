@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
-use App\Http\Requests\UpdateTradoRequest;
-use App\Models\Trado;
+use App\Http\Controllers\Controller;
+use App\Models\AbsenTrado;
 use Illuminate\Http\Request;
 
-class TradoController extends Controller
+class AbsenTradoController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -23,11 +23,11 @@ class TradoController extends Controller
             'sortOrder' => $request->sortOrder ?? 'asc',
         ];
 
-        $totalRows = Trado::count();
+        $totalRows = AbsenTrado::count();
         $totalPages = ceil($totalRows / $params['limit']);
 
         /* Sorting */
-        $query = Trado::orderBy($params['sortIndex'], $params['sortOrder']);
+        $query = AbsenTrado::orderBy($params['sortIndex'], $params['sortOrder']);
 
         /* Searching */
         if (count($params['search']) > 0) {
@@ -57,7 +57,7 @@ class TradoController extends Controller
         $query = $query->skip($params['offset'])
             ->take($params['limit']);
 
-        $trados = $query->get();
+        $absentrados = $query->get();
 
         /* Set attributes */
         $attributes = [
@@ -67,7 +67,7 @@ class TradoController extends Controller
 
         return response([
             'status' => true,
-            'data' => $trados,
+            'data' => $absentrados,
             'attributes' => $attributes,
             'params' => $params
         ]);

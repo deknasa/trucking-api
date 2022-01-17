@@ -1,11 +1,13 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
-use App\Models\Supir;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\UpdateTradoRequest;
+use App\Models\Trado;
 use Illuminate\Http\Request;
 
-class SupirController extends Controller
+class TradoController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -22,11 +24,11 @@ class SupirController extends Controller
             'sortOrder' => $request->sortOrder ?? 'asc',
         ];
 
-        $totalRows = Supir::count();
+        $totalRows = Trado::count();
         $totalPages = ceil($totalRows / $params['limit']);
 
         /* Sorting */
-        $query = Supir::orderBy($params['sortIndex'], $params['sortOrder']);
+        $query = Trado::orderBy($params['sortIndex'], $params['sortOrder']);
 
         /* Searching */
         if (count($params['search']) > 0) {
@@ -56,7 +58,7 @@ class SupirController extends Controller
         $query = $query->skip($params['offset'])
             ->take($params['limit']);
 
-        $supirs = $query->get();
+        $trados = $query->get();
 
         /* Set attributes */
         $attributes = [
@@ -66,7 +68,7 @@ class SupirController extends Controller
 
         return response([
             'status' => true,
-            'data' => $supirs,
+            'data' => $trados,
             'attributes' => $attributes,
             'params' => $params
         ]);

@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreAbsensiSupirHeaderRequest;
-use App\Models\AbsensiSupirDetail;
 use App\Models\AbsensiSupirHeader;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
