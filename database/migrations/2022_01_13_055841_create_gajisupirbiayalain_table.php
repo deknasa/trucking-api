@@ -1,0 +1,37 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+class CreateGajisupirbiayalainTable extends Migration
+{
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
+    public function up()
+    {
+        Schema::create('gajisupirbiayalain', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('gajisupir_id')->default(0);               
+            $table->string('keteranganbiaya', 200)->default('');            
+            $table->double('nominal', 15,2)->default(0);            
+            $table->string('modifiedby', 50)->default('');            
+            $table->timestamps();
+
+            $table->foreign('gajisupir_id')->references('id')->on('gajisupirheader')->onDelete('cascade');            
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
+    public function down()
+    {
+        Schema::dropIfExists('gajisupirbiayalain');
+    }
+}
