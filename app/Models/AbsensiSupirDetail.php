@@ -11,16 +11,22 @@ class AbsensiSupirDetail extends Model
 
     protected $table = 'absensisupirdetail';
 
-    protected $fillable = [
-        "absen_id",
-        "nobukti",
-        "trado_id",
-        "supir_id",
-        "jam",
-        "uangjalan",
-        "keterangan",
-        "modifiedby",
+    protected $guarded = [
+        'id',
+        'created_at',
+        'updated_at',
     ];
+    
+    // protected $fillable = [
+    //     "absen_id",
+    //     "nobukti",
+    //     "trado_id",
+    //     "supir_id",
+    //     "jam",
+    //     "uangjalan",
+    //     "keterangan",
+    //     "modifiedby",
+    // ];
 
     public function absensiSupirHeader()
     {

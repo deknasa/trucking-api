@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreAbsensiSupirHeaderRequest;
+use App\Http\Requests\UpdateAbsensiSupirHeaderRequest;
 use App\Models\AbsensiSupirHeader;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -82,15 +83,19 @@ class AbsensiSupirHeaderController extends Controller
 
         try {
             /* Store header */
-            $absensiSupirHeader = AbsensiSupirHeader::create([
-                'nobukti' => $request->nobukti,
-                'tgl' => $request->tgl,
-                'keterangan' => $request->keterangan,
-            ]);
+            $absensiSupirHeader = new AbsensiSupirHeader();
+            $absensiSupirHeader->nobukti = $request->nobukti;
+            $absensiSupirHeader->tgl = $request->tgl;
+            $absensiSupirHeader->keterangan = $request->keterangan ?? '1';
+            $absensiSupirHeader->kasgantung_nobukti = $request->kasgantung_nobukti ?? '1';
+            $absensiSupirHeader->nominal = $request->nominal ?? '1';
+            $absensiSupirHeader->modifiedby = $request->modifiedby ?? '1';
+            $absensiSupirHeader->save();
 
             /* Store detail */
             for ($i = 0; $i < count($request->trado_id); $i++) {
                 $absensiSupirHeader->absensiSupirDetail()->create([
+                    "absensi_id" => $absensiSupirHeader->id,
                     "trado_id" => $request->trado_id[$i],
                     "absen_id" => $request->absen_id[$i],
                     "supir_id" => $request->supir_id[$i],
@@ -103,8 +108,7 @@ class AbsensiSupirHeaderController extends Controller
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
 
-
-            if ($absensiSupirHeader && $absensiSupirHeader->absensiSupirDetail) {
+            if ($absensiSupirHeader->save() && $absensiSupirHeader->absensiSupirDetail) {
                 DB::commit();
 
                 /* Set position and page */
@@ -129,92 +133,116 @@ class AbsensiSupirHeaderController extends Controller
         }
 
         return response($absensiSupirHeader->absensiSupirDetail);
+    }
 
-        /* Last update */
-        // DB::beginTransaction();
+    /**
+     * Display the specified resource.
+     *
+     * @param  \App\Models\Absensi  $absensi
+     * @return \Illuminate\Http\Response
+     */
+    public function show(AbsensiSupirHeader $absensiSupirHeader, $id)
+    {
+        $data = AbsensiSupirHeader::with(
+            'absensiSupirDetail',
+            'absensiSupirDetail.trado',
+            'absensiSupirDetail.supir',
+            'absensiSupirDetail.absenTrado',
+        )->find($id);
+        
+        return response([
+            'status' => true,
+            'data' => $data
+        ]);
+    }
+    
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  \App\Http\Requests\UpdateAbsensiSupirHeaderRequest  $request
+     * @param  \App\Models\Absensi  $absensi
+     * @return \Illuminate\Http\Response
+     */
+    public function update(StoreAbsensiSupirHeaderRequest $request, AbsensiSupirHeader $absensiSupirHeader, $id)
+    {
+        DB::beginTransaction();
 
-        // try {
-        //     $absensi = new AbsensiSupirHeader();
-        //     $absensi->tgl = $request->tgl;
-        //     $absensi->keterangan = $request->keterangan;
+        try {
+            /* Store header */
+            $absensiSupirHeader = AbsensiSupirHeader::findOrFail($id);
+            $absensiSupirHeader->nobukti = $request->nobukti;
+            $absensiSupirHeader->tgl = $request->tgl;
+            $absensiSupirHeader->keterangan = $request->keterangan ?? '1';
+            $absensiSupirHeader->kasgantung_nobukti = $request->kasgantung_nobukti ?? '1';
+            $absensiSupirHeader->nominal = $request->nominal ?? '1';
+            $absensiSupirHeader->modifiedby = $request->modifiedby ?? '1';
+            $absensiSupirHeader->save();
 
-        //     $absensi_detail = new AbsensiSupirDetail();
+            /* Delete existing detail */
+            $absensiSupirHeader->absensiSupirDetail()->delete();
+            
+            /* Store detail */
+            for ($i = 0; $i < count($request->trado_id); $i++) {
+                $absensiSupirHeader->absensiSupirDetail()->create([
+                    "trado_id" => $request->trado_id[$i],
+                    "absen_id" => $request->absen_id[$i],
+                    "supir_id" => $request->supir_id[$i],
+                    "jam" => $request->jam[$i],
+                    "uangjalan" => $request->uangjalan[$i],
+                    "keterangan" => $request->keterangan_detail[$i]
+                ]);
+            }
 
-        //     $request->sortname = $request->sortname ?? 'id';
-        //     $request->sortorder = $request->sortorder ?? 'asc';
+            $request->sortname = $request->sortname ?? 'id';
+            $request->sortorder = $request->sortorder ?? 'asc';
 
-        //     if ($absensi->save() && $absensi_detail->insert($request->detail)) {
-        //         DB::commit();
+            if ($absensiSupirHeader && $absensiSupirHeader->absensiSupirDetail) {
+                DB::commit();
 
-        //         /* Set position and page */
-        //         $absensi->position = AbsensiSupirHeader::orderBy($request->sortname, $request->sortorder)
-        //             ->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $absensi->{$request->sortname})
-        //             ->where('id', '<=', $absensi->id)
-        //             ->count();
+                /* Set position and page */
+                $absensiSupirHeader->position = AbsensiSupirHeader::orderBy($request->sortname, $request->sortorder)
+                    ->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $absensiSupirHeader->{$request->sortname})
+                    ->where('id', '<=', $absensiSupirHeader->id)
+                    ->count();
 
-        //         if (isset($request->limit)) {
-        //             $absensi->page = ceil($absensi->position / $request->limit);
-        //         }
+                if (isset($request->limit)) {
+                    $absensiSupirHeader->page = ceil($absensiSupirHeader->position / $request->limit);
+                }
 
-        //         return response([
-        //             'status' => true,
-        //             'message' => 'Berhasil disimpan',
-        //             'data' => $absensi
-        //         ]);
-        //     } else {
-        //         DB::rollBack();
-        //         return response([
-        //             'status' => false,
-        //             'message' => 'Gagal disimpan'
-        //         ]);
-        //     }
-        // } catch (\Throwable $th) {
-        //     DB::rollBack();
-        //     return response($th->getMessage());
-        // }
+                return response([
+                    'status' => true,
+                    'message' => 'Berhasil diubah',
+                    'data' => $absensiSupirHeader
+                ]);
+            }
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return response($th->getMessage());
+        }
 
-        // ------------------------
-        // DB::beginTransaction();
+        return response($absensiSupirHeader->absensiSupirDetail);
+    }
 
-        // try {
-        //     $absensi = new AbsensiSupirHeader();
-        //     $absensi->nobukti = $request->nobukti;
-        //     $absensi->tgl = $request->tgl;
-        //     $absensi->keterangan = $request->keterangan;
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  \App\Models\AbsensiSupirHeader  $absensiSupirHeader
+     * @return \Illuminate\Http\Response
+     */
+    public function destroy(AbsensiSupirHeader $absensiSupirHeader, $id)
+    {
+        $delete = AbsensiSupirHeader::destroy($id);
 
-        //     // $absensi_detail = new AbsensiSupirDetail();
-        //     // $absensi_detail->jam = $request->jam[0];
-        //     // $absensi_detail->save();
-
-        //     // $request->sortname = $request->sortname ?? 'id';
-        //     // $request->sortorder = $request->sortorder ?? 'asc';
-
-        //     if ($absensi->save()) {
-        //         // DB::commit();
-        //         /* Set position and page */
-        //         $absensi->position = AbsensiSupirHeader::orderBy($request->sortname, $request->sortorder)
-        //             ->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $absensi->{$request->sortname})
-        //             ->where('id', '<=', $absensi->id)
-        //             ->count();
-
-        //         if (isset($request->limit)) {
-        //             $absensi->page = ceil($absensi->position / $request->limit);
-        //         }
-
-        //         return response([
-        //             'status' => true,
-        //             'message' => 'Berhasil disimpan',
-        //             'data' => $absensi
-        //         ]);
-        //     } else {
-        //         return response([
-        //             'status' => false,
-        //             'message' => 'Gagal disimpan'
-        //         ]);
-        //     }
-        // } catch (\Throwable $th) {
-        //     DB::commit();
-        //     return response($th->getMessage());
-        // }
+        if ($delete) {
+            return response([
+                'status' => true,
+                'message' => 'Berhasil dihapus'
+            ]);
+        } else {
+            return response([
+                'status' => false,
+                'message' => 'Gagal dihapus'
+            ]);
+        }
     }
 }
