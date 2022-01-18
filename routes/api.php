@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AbsensiSupirDetailController;
 use App\Http\Controllers\Api\AbsensiSupirHeaderController;
 use App\Http\Controllers\Api\AbsenTradoController;
+use App\Http\Controllers\Api\CabangController;
 use App\Http\Controllers\Api\ParameterController;
 use App\Http\Controllers\Api\SupirController;
 use App\Http\Controllers\Api\TradoController;
@@ -26,6 +27,10 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 Route::get('parameter/field_length', [ParameterController::class, 'fieldLength']);
 Route::resource('parameter', ParameterController::class);
+
+Route::get('cabang/field_length', [CabangController::class, 'fieldLength']);
+Route::get('cabang/combostatus', [CabangController::class, 'combostatus']);
+Route::resource('cabang', CabangController::class);
 
 Route::resource('absensi', AbsensiSupirHeaderController::class);
 Route::resource('absensi_detail', AbsensiSupirDetailController::class);
