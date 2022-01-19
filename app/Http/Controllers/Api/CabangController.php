@@ -33,23 +33,40 @@ class CabangController extends Controller
         $totalPages = ceil($totalRows / $params['limit']);
 
         /* Sorting */
-        $query = Cabang::select('cabang.id', 'cabang.cabang','parameter.text as statusaktif','cabang.modifiedby',
-                                 'cabang.created_at','cabang.updated_at')
-                 ->leftJoin('parameter','cabang.statusaktif','=','parameter.id')
-                 ->orderBy($params['sortIndex'], $params['sortOrder']);
+        $query = Cabang::select(
+            'cabang.id',
+            'cabang.cabang',
+            'parameter.text as statusaktif',
+            'cabang.modifiedby',
+            'cabang.created_at',
+            'cabang.updated_at'
+        )
+            ->leftJoin('parameter', 'cabang.statusaktif', '=', 'parameter.id')
+            ->orderBy($params['sortIndex'], $params['sortOrder']);
 
         /* Searching */
         if (count($params['search']) > 0) {
             switch ($params['search']['groupOp']) {
                 case "AND":
                     foreach ($params['search']['rules'] as $index => $search) {
-                        $query = $query->where($search['field'], 'LIKE', "%$search[data]%");
+                        if ($search['field'] == 'statusaktif') {
+                            $query = $query->where('parameter.text', 'LIKE', "%$search[data]%");
+                        } else {
+                            $query = $query->where($search['field'], 'LIKE', "%$search[data]%");
+                        }
                     }
 
                     break;
                 case "OR":
                     foreach ($params['search']['rules'] as $index => $search) {
-                        $query = $query->orWhere($search['field'], 'LIKE', "%$search[data]%");
+                        if ($search['field'] == 'statusaktif') {
+                            $query = $query->orWhere('parameter.text', 'LIKE', "%$search[data]%");
+                            
+                        } else {
+                            $query = $query->orWhere($search['field'], 'LIKE', "%$search[data]%");
+
+                        }
+
                     }
 
                     break;
