@@ -18,6 +18,7 @@ class ParameterFactory extends Factory
             'subgrp' => $this->faker->name(),
             'text' => $this->faker->name(),
             'memo' => $this->faker->name(),
+            'modifiedby' => rand(0, 1) == 0 ? 'ADMIN' : 'GUEST',
         ];
     }
 }

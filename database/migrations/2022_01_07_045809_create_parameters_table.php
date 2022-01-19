@@ -16,7 +16,7 @@ class CreateParametersTable extends Migration
         Schema::create('parameter', function (Blueprint $table) {
             $table->id();
             $table->string('modifiedby', 30)->nullable();
-            $table->string('grp', 255);
+            $table->string('grp', 30);
             $table->string('subgrp', 255);
             $table->string('text', 255);
             $table->mediumText('memo');

@@ -19,7 +19,7 @@ class AbsensiSupirHeaderFactory extends Factory
             'keterangan' => $this->faker->name(),
             'kasgantung_nobukti' => $this->faker->name(),
             'nominal' => $this->faker->randomNumber(),
-            'modifiedby' => $this->faker->name(),
+            'modifiedby' => 'admin',
         ];
     }
 }

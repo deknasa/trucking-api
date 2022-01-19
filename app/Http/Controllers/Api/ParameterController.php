@@ -4,9 +4,9 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Parameter;
-use App\Http\Requests\StoreParameterRequest;
-use App\Http\Requests\UpdateParameterRequest;
+use App\Http\Requests\ParameterRequest;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class ParameterController extends Controller
@@ -33,7 +33,7 @@ class ParameterController extends Controller
         $query = Parameter::orderBy($params['sortIndex'], $params['sortOrder']);
 
         /* Searching */
-        if (count($params['search']) > 0) {
+        if (count($params['search']) > 0 && @$params['search']['rules'][0]['data'] != '') {
             switch ($params['search']['groupOp']) {
                 case "AND":
                     foreach ($params['search']['rules'] as $index => $search) {
@@ -48,7 +48,7 @@ class ParameterController extends Controller
 
                     break;
                 default:
-                
+
                     break;
             }
 
@@ -64,8 +64,8 @@ class ParameterController extends Controller
 
         /* Set attributes */
         $attributes = [
-            'totalRows' => $totalRows,
-            'totalPages' => $totalPages
+            'totalRows' => $totalRows ?? 0,
+            'totalPages' => $totalPages ?? 0
         ];
 
         return response([
@@ -79,10 +79,10 @@ class ParameterController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \App\Http\Requests\StoreParameterRequest  $request
+     * @param  \App\Http\Requests\ParameterRequest  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(StoreParameterRequest $request)
+    public function store(ParameterRequest $request)
     {
         try {
             $parameter = new Parameter();
@@ -90,18 +90,16 @@ class ParameterController extends Controller
             $parameter->subgrp = $request->subgrp;
             $parameter->text = $request->text;
             $parameter->memo = $request->memo;
+            $parameter->modifiedby = Auth::user()->name ?? 'ADMIN';
 
             if ($parameter->save()) {
                 /* Set position and page */
-                $parameter->position = Parameter::orderBy($request->sortname ?? 'id', $request->sortorder ?? 'asc')
-                    ->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $parameter->{$request->sortname})
-                    ->where('id', '<=', $parameter->id)
-                    ->count();
+                $parameter->position = $this->getPosition($parameter, $request);
 
                 if (isset($request->limit)) {
                     $parameter->page = ceil($parameter->position / $request->limit);
                 }
-                
+
                 return response([
                     'status' => true,
                     'message' => 'Berhasil disimpan',
@@ -135,27 +133,24 @@ class ParameterController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \App\Http\Requests\UpdateParameterRequest  $request
+     * @param  \App\Http\Requests\ParameterRequest  $request
      * @param  \App\Models\Parameter  $parameter
      * @return \Illuminate\Http\Response
      */
-    public function update(UpdateParameterRequest $request, Parameter $parameter)
+    public function update(ParameterRequest $request, Parameter $parameter)
     {
         try {
-            $update = $parameter->update($request->validated());
-            // $parameter = Parameter::findOrFail($parameter->id);
-            // $parameter->modifiedby = $request->modifiedby;
-            // $parameter->grp = $request->grp;
-            // $parameter->subgrp = $request->subgrp;
-            // $parameter->text = $request->text;
-            // $parameter->memo = $request->memo;
+            $parameter = Parameter::findOrFail($parameter->id);
+            $parameter->modifiedby = $request->modifiedby;
+            $parameter->grp = $request->grp;
+            $parameter->subgrp = $request->subgrp;
+            $parameter->text = $request->text;
+            $parameter->memo = $request->memo;
+            $parameter->modifiedby = $request->modifiedby ?? 'ADMIN';
 
-            if ($update) {
+            if ($parameter->save()) {
                 /* Set position and page */
-                $parameter->position = Parameter::orderBy($request->sortname ?? 'id', $request->sortorder ?? 'asc')
-                    ->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $parameter->{$request->sortname})
-                    ->where('id', '<=', $parameter->id)
-                    ->count();
+                $parameter->position = $this->getPosition($parameter, $request);
 
                 if (isset($request->limit)) {
                     $parameter->page = ceil($parameter->position / $request->limit);
@@ -200,7 +195,8 @@ class ParameterController extends Controller
         }
     }
 
-    public function fieldLength() {
+    public function fieldLength()
+    {
         $data = [];
         $columns = DB::connection()->getDoctrineSchemaManager()->listTableDetails('parameter')->getColumns();
 
@@ -211,5 +207,13 @@ class ParameterController extends Controller
         return response([
             'data' => $data
         ]);
+    }
+
+    public function getPosition($parameter, $request)
+    {
+        return Parameter::where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $parameter->{$request->sortname})
+            /* Jika sortname modifiedby atau ada data duplikat */
+            // ->where('id', $request->sortorder == 'desc' ? '>=' : '<=', $parameter->id)
+            ->count();
     }
 }

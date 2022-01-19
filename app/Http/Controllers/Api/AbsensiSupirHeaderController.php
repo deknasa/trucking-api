@@ -96,12 +96,12 @@ class AbsensiSupirHeaderController extends Controller
             for ($i = 0; $i < count($request->trado_id); $i++) {
                 $absensiSupirHeader->absensiSupirDetail()->create([
                     "absensi_id" => $absensiSupirHeader->id,
-                    "trado_id" => $request->trado_id[$i],
-                    "absen_id" => $request->absen_id[$i],
-                    "supir_id" => $request->supir_id[$i],
-                    "jam" => $request->jam[$i],
-                    "uangjalan" => $request->uangjalan[$i],
-                    "keterangan" => $request->keterangan_detail[$i]
+                    "trado_id" => $request->trado_id[$i] ?? '',
+                    "absen_id" => $request->absen_id[$i] ?? '',
+                    "supir_id" => $request->supir_id[$i] ?? '',
+                    "jam" => $request->jam[$i] ?? '',
+                    "uangjalan" => $request->uangjalan[$i] ?? '',
+                    "keterangan" => $request->keterangan_detail[$i] ?? ''
                 ]);
             }
 
@@ -184,12 +184,12 @@ class AbsensiSupirHeaderController extends Controller
             /* Store detail */
             for ($i = 0; $i < count($request->trado_id); $i++) {
                 $absensiSupirHeader->absensiSupirDetail()->create([
-                    "trado_id" => $request->trado_id[$i],
-                    "absen_id" => $request->absen_id[$i],
-                    "supir_id" => $request->supir_id[$i],
-                    "jam" => $request->jam[$i],
-                    "uangjalan" => $request->uangjalan[$i],
-                    "keterangan" => $request->keterangan_detail[$i]
+                    "trado_id" => $request->trado_id[$i] ?? '',
+                    "absen_id" => $request->absen_id[$i] ?? '',
+                    "supir_id" => $request->supir_id[$i] ?? '',
+                    "jam" => $request->jam[$i] ?? '',
+                    "uangjalan" => $request->uangjalan[$i] ?? '',
+                    "keterangan" => $request->keterangan_detail[$i] ?? ''
                 ]);
             }
 
