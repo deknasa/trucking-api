@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\CabangController;
 use App\Http\Controllers\Api\ParameterController;
 use App\Http\Controllers\Api\SupirController;
 use App\Http\Controllers\Api\TradoController;
+use App\Http\Controllers\AuthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -23,6 +24,10 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
+});
+
+Route::prefix('auth')->group(function() {
+    Route::post('login', [AuthController::class, 'login']);
 });
 
 Route::get('parameter/field_length', [ParameterController::class, 'fieldLength']);
