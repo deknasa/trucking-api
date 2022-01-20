@@ -91,6 +91,8 @@ class ParameterController extends Controller
             $parameter->text = $request->text;
             $parameter->memo = $request->memo;
             $parameter->modifiedby = Auth::user()->name ?? 'ADMIN';
+            $request->sortname = $request->sortname ?? 'id';
+            $request->sortorder = $request->sortorder ?? 'asc';
 
             if ($parameter->save()) {
                 /* Set position and page */

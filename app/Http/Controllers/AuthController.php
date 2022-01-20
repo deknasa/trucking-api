@@ -8,16 +8,14 @@ use Illuminate\Support\Facades\Auth;
 class AuthController extends Controller
 {
     public function login(Request $request) {
-        $credentials = $this->validate($request, [
-            'userid' => 'required',
-            'password' => 'required'
+        $credentials = $request->validate([
+            'user' => ['required'],
+            'password' => ['required'],
         ]);
 
-        // return ;
-        return Auth::attempt($credentials);
-
-        if (Auth::attempt($credentials)) {
-            return redirect()->intended('dashboard.index');
-        }
+        return response([
+            'status' => Auth::attempt($credentials),
+            'data' => Auth::user(),
+        ]);
     }
 }
