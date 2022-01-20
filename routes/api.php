@@ -30,6 +30,7 @@ Route::resource('parameter', ParameterController::class);
 
 Route::get('cabang/field_length', [CabangController::class, 'fieldLength']);
 Route::get('cabang/combostatus', [CabangController::class, 'combostatus']);
+Route::get('cabang/getPosition2', [CabangController::class, 'getPosition2']);
 Route::resource('cabang', CabangController::class);
 
 Route::resource('absensi', AbsensiSupirHeaderController::class);
