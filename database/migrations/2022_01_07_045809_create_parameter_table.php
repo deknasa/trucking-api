@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateParametersTable extends Migration
+class CreateParameterTable extends Migration
 {
     /**
      * Run the migrations.
@@ -15,12 +15,13 @@ class CreateParametersTable extends Migration
     {
         Schema::create('parameter', function (Blueprint $table) {
             $table->id();
-            $table->string('modifiedby', 30)->nullable();
-            $table->string('grp', 30);
+            $table->string('grp', 255);
             $table->string('subgrp', 255);
             $table->string('text', 255);
             $table->mediumText('memo');
             $table->timestamps();
+            $table->string('modifiedby', 50)->nullable();
+
         });
     }
 

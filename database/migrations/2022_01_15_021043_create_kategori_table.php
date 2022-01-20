@@ -15,7 +15,7 @@ class CreateKategoriTable extends Migration
     {
         Schema::create('kategori', function (Blueprint $table) {
             $table->id();
-            $table->string('kategori',50)->default('');
+            $table->string('keterangan',50)->default('');
             $table->unsignedBigInteger('subkelompok_id')->default('0');
             $table->integer('statusaktif')->length(11)->default('0');
             $table->string('modifiedby',50)->default('');

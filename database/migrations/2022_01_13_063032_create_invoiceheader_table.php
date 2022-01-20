@@ -15,7 +15,7 @@ class CreateInvoiceheaderTable extends Migration
     {
         Schema::create('invoiceheader', function (Blueprint $table) {
             $table->id();
-            $table->string('nobukti', 50)->default('');
+            $table->string('nobukti', 50)->unique();
             $table->date('tgl')->default('1900/1/1');
             $table->double('nominal',15,2)->default('0');
             $table->string('keterangan', 250)->default('');
@@ -26,11 +26,11 @@ class CreateInvoiceheaderTable extends Migration
             $table->unsignedBigInteger('cabang_id')->default('0');
             $table->string('piutang_nobukti', 50)->default('');
             $table->integer('statusapproval')->length(11)->default('0');
-            $table->string('appuserid', 50)->default('');
-            $table->date('appdate')->default('1900/1/1');
-            $table->string('jnsinvoice', 50)->default('');
-            $table->string('modifiedby', 50)->default('');
+            $table->string('userapproval', 50)->default('');
+            $table->date('tglapproval')->default('1900/1/1');
+            $table->string('jenisinvoice', 50)->default('');
             $table->string('invoiceextra_nobukti', 50)->default('');
+            $table->string('modifiedby', 50)->default('');
             $table->timestamps();
         });
     }

@@ -15,6 +15,7 @@ class CreateHutangdetailTable extends Migration
     {
         Schema::create('hutangdetail', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('hutang_id')->default(0);            
             $table->string('nobukti', 50)->default('');            
             $table->unsignedBigInteger('supplier_id')->default(0);            
             $table->date('tgljt')->default('1900/1/1');            
@@ -23,7 +24,6 @@ class CreateHutangdetailTable extends Migration
             $table->string('keterangan', 250)->default('');            
             $table->double('totalbayar',15,2)->default('0');            
             $table->string('modifiedby', 50)->default('');            
-            $table->unsignedBigInteger('hutang_id')->default(0);            
             $table->timestamps();
 
             $table->foreign('hutang_id')->references('id')->on('hutangheader')->onDelete('cascade');            

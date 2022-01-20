@@ -37,7 +37,8 @@ class CabangController extends Controller
         if ($params['sortIndex'] == 'id') {
             $query = Cabang::select(
                 'cabang.id',
-                'cabang.cabang',
+                'cabang.kodecabang',
+                'cabang.namacabang',
                 'parameter.text as statusaktif',
                 'cabang.modifiedby',
                 'cabang.created_at',
@@ -49,7 +50,8 @@ class CabangController extends Controller
             if ($params['sortOrder'] == 'asc') {
                 $query = Cabang::select(
                     'cabang.id',
-                    'cabang.cabang',
+                    'cabang.kodecabang',
+                    'cabang.namacabang',
                     'parameter.text as statusaktif',
                     'cabang.modifiedby',
                     'cabang.created_at',
@@ -61,7 +63,8 @@ class CabangController extends Controller
             } else {
                 $query = Cabang::select(
                     'cabang.id',
-                    'cabang.cabang',
+                    'cabang.kodecabang',
+                    'cabang.namacabang',
                     'parameter.text as statusaktif',
                     'cabang.modifiedby',
                     'cabang.created_at',
@@ -73,6 +76,7 @@ class CabangController extends Controller
             }
         }
 
+        $time1 = microtime(true);
 
         /* Searching */
         if (count($params['search']) > 0 && @$params['search']['rules'][0]['data'] != '') {
@@ -102,7 +106,9 @@ class CabangController extends Controller
                     break;
             }
 
+
             $totalRows = count($query->get());
+
             $totalPages = ceil($totalRows / $params['limit']);
         }
 
@@ -118,6 +124,8 @@ class CabangController extends Controller
             'totalPages' => $totalPages
         ];
 
+        // echo $time2-$time1;
+        // echo '---';
         return response([
             'status' => true,
             'data' => $cabangs,
@@ -144,18 +152,19 @@ class CabangController extends Controller
      */
     public function store(StoreCabangRequest $request)
     {
-   
+
 
         DB::beginTransaction();
         try {
             $cabang = new Cabang();
-            $cabang->cabang = $request->cabang;
+            $cabang->kodecabang = $request->kodecabang;
+            $cabang->namacabang = $request->namacabang;
             $cabang->statusaktif = $request->statusaktif;
 
             $cabang->save();
             DB::commit();
             /* Set position and page */
-            $cabang->position = $this->getPosition($cabang->id,$request);
+            $cabang->position = $this->getPosition($cabang->id, $request);
             // dd($cabang->position );
             if (isset($request->limit)) {
                 $cabang->page = ceil($cabang->position / $request->limit);
@@ -317,27 +326,31 @@ class CabangController extends Controller
         ]);
     }
 
-    public function getPosition($id,$request)
+    public function getPosition2(Request $request)
     {
 
-        
+
 
         Schema::create('##temp_cabang_row', function ($table) {
             $table->id();
             $table->bigInteger('id_')->default('0');
-            $table->string('cabang', 300)->default('');
+            $table->string('kodecabang', 300)->default('');
+            $table->string('namacabang', 300)->default('');
             $table->string('statusaktif', 100)->default('');
             $table->string('modifiedby', 30)->default('');
             $table->dateTime('created_at')->default('1900/1/1');
             $table->dateTime('updated_at')->default('1900/1/1');
+
+            $table->index('id_');
         });
 
-      
+
 
         if ($request->sortname == 'id') {
             $query = Cabang::select(
                 'cabang.id as id_',
-                'cabang.cabang',
+                'cabang.kodecabang',
+                'cabang.namacabang',
                 'parameter.text as statusaktif',
                 'cabang.modifiedby',
                 'cabang.created_at',
@@ -349,7 +362,8 @@ class CabangController extends Controller
             if ($request->sortorder == 'asc') {
                 $query = Cabang::select(
                     'cabang.id as id_',
-                    'cabang.cabang',
+                    'cabang.kodecabang',
+                    'cabang.namacabang',
                     'parameter.text as statusaktif',
                     'cabang.modifiedby',
                     'cabang.created_at',
@@ -361,7 +375,8 @@ class CabangController extends Controller
             } else {
                 $query = Cabang::select(
                     'cabang.id as id_',
-                    'cabang.cabang',
+                    'cabang.kodecabang',
+                    'cabang.namacabang',
                     'parameter.text as statusaktif',
                     'cabang.modifiedby',
                     'cabang.created_at',
@@ -372,15 +387,17 @@ class CabangController extends Controller
                     ->orderBy('cabang.id', 'asc');
             }
         }
-     
 
-        $bindings = $query->getBindings();
-        $insertQuery = 'INSERT into ##temp_cabang_row (id_,cabang,statusaktif,modifiedby,created_at,updated_at) '
-            . $query->toSql();
+        $time0 = microtime(true);
+        // $bindings = $query->getBindings();
+        // $time01=microtime(true);
+        // $insertQuery = 'INSERT into ##temp_cabang_row (id_,cabang,statusaktif,modifiedby,created_at,updated_at) '
+        //     . $query->toSql();
+        // $time02=microtime(true);
+        //     DB::insert($insertQuery, $bindings);
+        DB::table('##temp_cabang_row')->insertUsing(['id_', 'kodecabang','namacabang', 'statusaktif', 'modifiedby', 'created_at', 'updated_at'], $query);
 
-        DB::insert($insertQuery, $bindings);
-
-       
+        $time1 = microtime(true);
 
         // $query = $query->get();
         // $row=0;
@@ -403,24 +420,112 @@ class CabangController extends Controller
 
 
         // ->where('id', '=',  $request->id)
-        
-            $querydata = DB::table('##temp_cabang_row ')
-                ->select('id as row')
-                ->where('id_', '=',  $id)
-                ->orderBy('id');
+
+        $querydata = DB::table('##temp_cabang_row ')
+            ->select('id as row')
+            ->where('id_', '=', $request->id)
+            // ->take(10)
+            ->orderBy('id');
 
         // ->getLineNumber('Jane Doe');;
-   
-        $data = $querydata->first();
-       
 
-        return $data->row;
+        $data = $querydata->get();
 
+        $time2 = microtime(true);
+        echo $time0;
+        echo '---';
+        echo $time1;
+        echo '---';
+        echo $time2;
+        echo '---';
+
+        echo $time2 - $time1;
+        echo '---';
+        echo $time1 - $time0;
+
+
+
+
+        return response([
+            'data' => $data
+        ]);
     }
 
 
+    public function getPosition($id, $request)
+    {
 
-    
-    
+        Schema::create('##temp_cabang_row', function ($table) {
+            $table->id();
+            $table->bigInteger('id_')->default('0');
+            $table->string('kodecabang', 300)->default('');
+            $table->string('namacabang', 300)->default('');
+            $table->string('statusaktif', 100)->default('');
+            $table->string('modifiedby', 30)->default('');
+            $table->dateTime('created_at')->default('1900/1/1');
+            $table->dateTime('updated_at')->default('1900/1/1');
 
+            $table->index('id_');
+        });
+
+
+
+        if ($request->sortname == 'id') {
+            $query = Cabang::select(
+                'cabang.id as id_',
+                'cabang.kodecabang',
+                'cabang.namacabang',
+                'parameter.text as statusaktif',
+                'cabang.modifiedby',
+                'cabang.created_at',
+                'cabang.updated_at'
+            )
+                ->leftJoin('parameter', 'cabang.statusaktif', '=', 'parameter.id')
+                ->orderBy('cabang.id', $request->sortorder);
+        } else {
+            if ($request->sortorder == 'asc') {
+                $query = Cabang::select(
+                    'cabang.id as id_',
+                    'cabang.kodecabang',
+                    'cabang.namacabang',
+                    'parameter.text as statusaktif',
+                    'cabang.modifiedby',
+                    'cabang.created_at',
+                    'cabang.updated_at'
+                )
+                    ->leftJoin('parameter', 'cabang.statusaktif', '=', 'parameter.id')
+                    ->orderBy($request->sortname, $request->sortorder)
+                    ->orderBy('cabang.id', $request->sortorder);
+            } else {
+                $query = Cabang::select(
+                    'cabang.id as id_',
+                    'cabang.kodecabang',
+                    'cabang.namacabang',
+                    'parameter.text as statusaktif',
+                    'cabang.modifiedby',
+                    'cabang.created_at',
+                    'cabang.updated_at'
+                )
+                    ->leftJoin('parameter', 'cabang.statusaktif', '=', 'parameter.id')
+                    ->orderBy($request->sortname, $request->sortorder)
+                    ->orderBy('cabang.id', 'asc');
+            }
+        }
+
+
+
+        DB::table('##temp_cabang_row')->insertUsing(['id_', 'kodecabang','namacabang', 'statusaktif', 'modifiedby', 'created_at', 'updated_at'], $query);
+
+
+        $querydata = DB::table('##temp_cabang_row ')
+            ->select('id as row')
+            ->where('id_', '=',  $id)
+            ->orderBy('id');
+
+
+        $data = $querydata->first();
+
+
+        return $data->row;
+    }
 }

@@ -15,14 +15,14 @@ class CreatebankTable extends Migration
     {
         Schema::create('bank', function (Blueprint $table) {
             $table->id();
-            $table->string('kbank', 50)->default('');
-            $table->string('nbank', 50)->default('');
+            $table->string('kodebank', 50)->default('');
+            $table->string('namabank', 50)->default('');
             $table->string('coa', 50)->default('');
             $table->string('tipe', 50)->default('');
             $table->integer('statusaktif')->length(11)->default(0);
-            $table->string('modifiedby', 50)->default('');
             $table->integer('kodepenerimaan')->length(11)->default(0);
             $table->integer('kodepengeluaran')->length(11)->default(0);
+            $table->string('modifiedby', 50)->default('');
             $table->timestamps();
         });
     }

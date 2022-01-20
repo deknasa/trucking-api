@@ -15,17 +15,17 @@ class CreatebelistokheaderTable extends Migration
     {
         Schema::create('belistokheader', function (Blueprint $table) {
             $table->id();
-            $table->string('nobukti', 50)->default('');
+            $table->string('nobukti', 50)->unique();
             $table->date('tgl')->default('1900/1/1');
             $table->string('postok_nobukti', 50)->default('');
             $table->unsignedBigInteger('supplier_id')->default(0);            
-            $table->string('pdisc', 50)->default('');
-            $table->double('ndisc', 15,2)->default(0);
-            $table->double('pppn', 15,2)->default(0);
-            $table->double('nppn', 15,2)->default(0);
+            $table->string('persentasedisc', 50)->default('');
+            $table->double('nominaldisc', 15,2)->default(0);
+            $table->double('persentaseppn', 15,2)->default(0);
+            $table->double('nominalppn', 15,2)->default(0);
             $table->double('total', 15,2)->default(0);
-            $table->string('keterangan', 250)->default('');
-            $table->date('tgljthhtg')->default('1900/1/1');
+            $table->longText('keterangan')->default('');
+            $table->date('tgljt')->default('1900/1/1');
             $table->string('nobon', 50)->default('');
             $table->string('hutang_nobukti', 50)->default('');
             $table->string('modifiedby', 50)->default('');

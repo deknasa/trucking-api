@@ -15,11 +15,11 @@ class CreateInvoiceextraheaderTable extends Migration
     {
         Schema::create('invoiceextraheader', function (Blueprint $table) {
             $table->id();
-            $table->string('nobukti', 50)->default('');
+            $table->string('nobukti', 50)->unique();
             $table->date('tgl')->default('1900/1/1');
             $table->unsignedBigInteger('pelanggan_id')->default('0');
             $table->double('nominal')->default('0');
-            $table->string('keterangan', 250)->default('');
+            $table->longText('keterangan')->default('');
             $table->string('modifiedby', 50)->default('');
             $table->timestamps();
         });

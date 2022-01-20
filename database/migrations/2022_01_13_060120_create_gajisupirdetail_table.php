@@ -15,16 +15,16 @@ class CreateGajisupirdetailTable extends Migration
     {
         Schema::create('gajisupirdetail', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('gajisupir_id')->default(0);   
             $table->string('nobukti', 50)->default('');            
             $table->double('nominaldeposito', 15,2)->default(0);            
             $table->double('nourut', 15,2)->default(0);            
             $table->string('trip_nobukti', 50)->default('');            
             $table->double('komisisupir', 15,2)->default(0);            
             $table->double('tolsupir', 15,2)->default(0);            
-            $table->double('uvoucher', 15,2)->default(0);            
+            $table->double('voucher', 15,2)->default(0);            
             $table->string('novoucher', 50)->default('');            
             $table->string('modifiedby', 50)->default('');            
-            $table->unsignedBigInteger('gajisupir_id')->default(0);   
             $table->timestamps();
 
             $table->foreign('gajisupir_id')->references('id')->on('gajisupirheader')->onDelete('cascade');            

@@ -16,8 +16,8 @@ class CreatealatbayarTable extends Migration
         Schema::create('alatbayar', function (Blueprint $table) {
             $table->id();
             $table->string('namaalatbayar', 50)->default('');
-            $table->integer('lnsgcair')->length(11)->default(0);
-            $table->integer('def')->length(11)->default(0);
+            $table->integer('langsunggcair')->length(11)->default(0);
+            $table->integer('default')->length(11)->default(0);
             $table->unsignedBigInteger('bank_id')->default(0);
             $table->string('modifiedby', 50)->default('');
             $table->timestamps();

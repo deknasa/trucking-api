@@ -15,17 +15,17 @@ class CreateKasgantungheaderTable extends Migration
     {
         Schema::create('kasgantungheader', function (Blueprint $table) {
             $table->id();
-            $table->string('nobukti',50)->default('');
+            $table->string('nobukti',50)->unique();
             $table->date('tgl')->default('1900/1/1');
             $table->unsignedBigInteger('penerima_id')->default('0');
-            $table->string('keterangan',250)->default('');
-            $table->string('modifiedby',50)->default('');
+            $table->longText('keterangan')->default('');
             $table->unsignedBigInteger('bank_id')->default('0');
-            $table->string('npostkaskeluar',50)->default('');
+            $table->string('nobuktikaskeluar',50)->default('');
             $table->string('coakaskeluar',50)->default('');
             $table->integer('status')->length(11)->default('0');
             $table->string('postfrom',50)->default('');
-            $table->date('tglPostkaskeluar')->default('1900/1/1');
+            $table->date('tglkaskeluar')->default('1900/1/1');
+            $table->string('modifiedby',50)->default('');
             $table->timestamps();
         });
     }

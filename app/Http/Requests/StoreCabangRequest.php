@@ -24,7 +24,8 @@ class StoreCabangRequest extends FormRequest
     public function rules()
     {
         return [
-            'cabang' => 'required',
+            'kodecabang' => 'required',
+            'namacabang' => 'required',
             'statusaktif' => 'required'
         ];
     }
@@ -32,7 +33,8 @@ class StoreCabangRequest extends FormRequest
     public function attributes()
     {
         return [
-            'cabang' => 'cabang',
+            'kodecabang' => 'kodecabang',
+            'namacabang' => 'namacabang',
             'statusaktif' => 'statusaktif',
         ];
     }

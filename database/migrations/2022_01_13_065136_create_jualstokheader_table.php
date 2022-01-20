@@ -15,14 +15,14 @@ class CreateJualstokheaderTable extends Migration
     {
         Schema::create('jualstokheader', function (Blueprint $table) {
             $table->id();
-            $table->string('nobukti',50)->default('');
+            $table->string('nobukti',50)->unique();
             $table->date('tgl')->default('1900/1/1');
             $table->unsignedBigInteger('pelanggan_id')->default('0');
             $table->double('total',15,2)->default('0');
-            $table->string('keterangan',250)->default('');
-            $table->string('modifiedby',50)->default('');
+            $table->longText('keterangan')->default('');
             $table->string('kasmasuk_nobukti',50)->default('');
             $table->unsignedBigInteger('coa_id')->default('0');
+            $table->string('modifiedby',50)->default('');
             $table->timestamps();
         });
     }

@@ -15,6 +15,7 @@ class CreateJurnalumumdetailTable extends Migration
     {
         Schema::create('jurnalumumdetail', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('jurnalumum_id')->default('0');
             $table->string('nobukti',50)->default('');
             $table->date('tgl')->default('1900/1/1');
             $table->string('coa',50)->default('');
@@ -22,7 +23,6 @@ class CreateJurnalumumdetailTable extends Migration
             $table->longText('keterangan')->default('');
             $table->string('modifiedby',50)->default('');
             $table->bigInteger('postid')->default('0');
-            $table->unsignedBigInteger('jurnalumum_id')->default('0');
             $table->timestamps();
 
             $table->foreign('jurnalumum_id')->references('id')->on('jurnalumumheader')->onDelete('cascade');            

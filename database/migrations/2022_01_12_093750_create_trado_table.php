@@ -23,7 +23,7 @@ class CreateTradoTable extends Migration
             $table->date('tglstnkmati')->default('1900/1/1');
             $table->date('tglasuransimati')->default('1900/1/1');
             $table->string('tahun', 40)->default('');
-            $table->string('lastproduksi', 40)->default('');
+            $table->string('akhirproduksi', 40)->default('');
             $table->string('merek', 40)->default('');
             $table->string('norangka', 40)->default('');
             $table->string('nomesin', 40)->default('');

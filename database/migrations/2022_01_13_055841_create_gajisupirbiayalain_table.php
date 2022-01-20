@@ -16,6 +16,7 @@ class CreateGajisupirbiayalainTable extends Migration
         Schema::create('gajisupirbiayalain', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('gajisupir_id')->default(0);               
+            $table->string('nobukti', 50)->default('');            
             $table->string('keteranganbiaya', 200)->default('');            
             $table->double('nominal', 15,2)->default(0);            
             $table->string('modifiedby', 50)->default('');            
