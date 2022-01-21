@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
             TradoSeeder::class,
             SupirSeeder::class,
             AbsenTradoSeeder::class,
+            CabangSeeder::class,
         ]);
     }
 }

@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Parameter;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class CabangFactory extends Factory
@@ -13,9 +14,11 @@ class CabangFactory extends Factory
      */
     public function definition()
     {
+        $parameters = Parameter::all()->pluck('id');
+
         return [
             'cabang' => $this->faker->name(),
-            'statusaktif' => $this->faker->name(),
+            'statusaktif' => $this->faker->randomElement($parameters),
         ];
     }
 }
