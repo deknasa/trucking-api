@@ -164,8 +164,8 @@ class CabangController extends Controller
             $cabang->save();
             DB::commit();
             /* Set position and page */
-            $del=0;
-            $cabang->position = $this->getPosition($cabang->id, $request,$del);
+            $del = 0;
+            $cabang->position = $this->getPosition($cabang->id, $request, $del);
             // dd($cabang->position );
             if (isset($request->limit)) {
                 $cabang->page = ceil($cabang->position / $request->limit);
@@ -253,18 +253,20 @@ class CabangController extends Controller
      * @param  \App\Models\Cabang  $cabang
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Cabang $cabang,StoreCabangRequest $request)
+    public function destroy(Cabang $cabang, StoreCabangRequest $request)
     {
         $delete = Cabang::destroy($cabang->id);
-        $del=1;
+        $del = 1;
         if ($delete) {
-            $cabang->position = $this->getPosition($cabang->id, $request,$del);
+            $cabang->position = $this->getPosition($cabang->id, $request, $del);
             if (isset($request->limit)) {
                 $cabang->page = ceil($cabang->position / $request->limit);
-            }            
+            }
+            // dd($cabang);
             return response([
                 'status' => true,
-                'message' => 'Berhasil dihapus'
+                'message' => 'Berhasil dihapus',
+                'data' => $cabang
             ]);
         } else {
             return response([
@@ -331,7 +333,7 @@ class CabangController extends Controller
         ]);
     }
 
-    public function getPosition2(Request $request,$del)
+    public function getPosition2(Request $request, $del)
     {
 
 
@@ -400,7 +402,7 @@ class CabangController extends Controller
         //     . $query->toSql();
         // $time02=microtime(true);
         //     DB::insert($insertQuery, $bindings);
-        DB::table('##temp_cabang_row')->insertUsing(['id_', 'kodecabang','namacabang', 'statusaktif', 'modifiedby', 'created_at', 'updated_at'], $query);
+        DB::table('##temp_cabang_row')->insertUsing(['id_', 'kodecabang', 'namacabang', 'statusaktif', 'modifiedby', 'created_at', 'updated_at'], $query);
 
         $time1 = microtime(true);
 
@@ -426,19 +428,17 @@ class CabangController extends Controller
 
         // ->where('id', '=',  $request->id)
 
-   
-        if ($del==1) {
-            $querydata = DB::table('##temp_cabang_row ')
-            ->select('id as row')
-            ->where('id', '=', $request->indexRow)
-            ->orderBy('id');
 
+        if ($del == 1) {
+            $querydata = DB::table('##temp_cabang_row ')
+                ->select('id as row')
+                ->where('id', '=', $request->indexRow)
+                ->orderBy('id');
         } else {
             $querydata = DB::table('##temp_cabang_row ')
-            ->select('id as row')
-            ->where('id_', '=',  $id)
-            ->orderBy('id');
-
+                ->select('id as row')
+                ->where('id_', '=',  $id)
+                ->orderBy('id');
         }
 
         // ->getLineNumber('Jane Doe');;
@@ -466,7 +466,7 @@ class CabangController extends Controller
     }
 
 
-    public function getPosition($id, $request,$del)
+    public function getPosition($id, $request, $del)
     {
 
         Schema::create('##temp_cabang_row', function ($table) {
@@ -528,26 +528,47 @@ class CabangController extends Controller
 
 
 
-        DB::table('##temp_cabang_row')->insertUsing(['id_', 'kodecabang','namacabang', 'statusaktif', 'modifiedby', 'created_at', 'updated_at'], $query);
+        DB::table('##temp_cabang_row')->insertUsing(['id_', 'kodecabang', 'namacabang', 'statusaktif', 'modifiedby', 'created_at', 'updated_at'], $query);
 
 
-        if ($del==1) {
-            $querydata = DB::table('##temp_cabang_row ')
-            ->select('id as row')
-            ->where('id', '=', $request->indexRow)
-            ->orderBy('id');
-
+        if ($del == 1) {
+            if ($request->page == 1) {
+                $baris = $request->indexRow + 1;
+            } else {
+                $hal = $request->page - 1;
+                $bar = $hal * $request->limit;
+                $baris = $request->indexRow + $bar + 1;
+            }
+            
+            // dump($request->page );
+            // dump($request->limit );
+            // dump($request->indexRow  );
+            
+            // dump($hal);
+            // dump($bar);
+            // dd($baris);
+            if (DB::table('##temp_cabang_row')
+                ->where('id', '=', $baris)->exists()
+            ) {
+                $querydata = DB::table('##temp_cabang_row')
+                    ->select('id as row')
+                    ->where('id', '=', $baris)
+                    ->orderBy('id');
+            } else {
+                $querydata = DB::table('##temp_cabang_row')
+                    ->select('id as row')
+                    ->where('id', '=', ($baris - 1))
+                    ->orderBy('id');
+            }
         } else {
             $querydata = DB::table('##temp_cabang_row ')
-            ->select('id as row')
-            ->where('id_', '=',  $id)
-            ->orderBy('id');
-
+                ->select('id as row')
+                ->where('id_', '=',  $id)
+                ->orderBy('id');
         }
 
 
         $data = $querydata->first();
-
         return $data->row;
     }
 }
