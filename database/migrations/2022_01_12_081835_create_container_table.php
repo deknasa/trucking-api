@@ -15,7 +15,7 @@ class CreateContainerTable extends Migration
     {
         Schema::create('container', function (Blueprint $table) {
             $table->id();
-            $table->string('ncontainer', 300)->default('');
+            $table->string('keterangan', 300)->default('');
             $table->integer('statusaktif')->length(11)->default(0);            
             $table->string('modifiedby', 300)->default('');
             $table->timestamps();

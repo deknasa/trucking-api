@@ -15,7 +15,7 @@ class CreateEmklTable extends Migration
     {
         Schema::create('emkl', function (Blueprint $table) {
             $table->id();
-            $table->string('emkl', 30)->default('');
+            $table->string('namaemkl', 30)->default('');
             $table->string('keterangan', 255)->default('');
             $table->integer('statusaktif')->length(11)->default(0);            
             $table->string('fnamaperusahaan', 100)->default('');
@@ -25,8 +25,8 @@ class CreateEmklTable extends Migration
             $table->string('contactperson', 100)->default('');
             $table->double('top', 15,2)->default(0);
             $table->integer('statusapp')->length(11)->default(0);            
-            $table->string('appuser', 30)->default('');
-            $table->date('appdate')->default('1900/1/1');
+            $table->string('approvaluser', 30)->default('');
+            $table->date('tglapproval')->default('1900/1/1');
             $table->integer('statustas')->length(11)->default(0);            
             $table->string('jenisemkl', 30)->default('');
             $table->string('modifiedby', 50)->default('');

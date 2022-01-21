@@ -15,7 +15,7 @@ class CreateHutangheaderTable extends Migration
     {
         Schema::create('hutangheader', function (Blueprint $table) {
             $table->id();
-            $table->string('nobukti', 50)->default('');            
+            $table->string('nobukti', 50)->unique();            
             $table->date('tgl')->default('1900/1/1');            
             $table->string('keterangan', 250)->default('');            
             $table->unsignedBigInteger('coa_id')->default(0);            

@@ -15,7 +15,7 @@ class CreateJenistradoTable extends Migration
     {
         Schema::create('jenistrado', function (Blueprint $table) {
             $table->id();
-            $table->string('njenis',100)->default('');
+            $table->string('keterangan',100)->default('');
             $table->integer('statusaktif')->length(11)->default('0');
             $table->string('modifiedby',50)->default('');
             $table->timestamps();

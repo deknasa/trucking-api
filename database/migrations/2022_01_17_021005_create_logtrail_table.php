@@ -15,8 +15,8 @@ class CreateLogtrailTable extends Migration
     {
         Schema::create('logtrail', function (Blueprint $table) {
             $table->id();
-            $table->string('ntabel',50)->default('');
-            $table->string('postfrom',200)->default('');
+            $table->string('namatabel',50)->default('');
+            $table->string('postingdari',200)->default('');
             $table->unsignedBigInteger('idtrans')->default('0');
             $table->string('nobuktitrans',150)->default('');
             $table->string('aksi',30)->default('');

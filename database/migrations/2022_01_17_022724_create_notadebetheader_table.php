@@ -15,19 +15,19 @@ class CreateNotadebetheaderTable extends Migration
     {
         Schema::create('notadebetheader', function (Blueprint $table) {
             $table->id();
-            $table->string('nobukti',50)->default('');
+            $table->string('nobukti',50)->unique();
             $table->string('pelunasan_nobukti',50)->default('');
             $table->date('tgl')->default('1900/1/1');
             $table->string('keterangan',250)->default('');
-            $table->string('postfrom',150)->default('');
-            $table->integer('app')->length(11)->default('0');
+            $table->string('postingdari',150)->default('');
+            $table->integer('statusapproval')->length(11)->default('0');
             $table->date('tgllunas')->default('1900/1/1');
-            $table->string('appuserid',50)->default('');
-            $table->date('appdate')->default('1900/1/1');
+            $table->string('userapproval',50)->default('');
+            $table->date('tglapproval')->default('1900/1/1');
             $table->string('noresi',50)->default('');
             $table->integer('berkas')->length(11)->default('0');
-            $table->string('berkasuser',50)->default('');
-            $table->date('berkastgl')->default('1900/1/1');
+            $table->string('userberkas',50)->default('');
+            $table->date('tglberkas')->default('1900/1/1');
             $table->string('modifiedby',50)->default('');
             $table->timestamps();
         });

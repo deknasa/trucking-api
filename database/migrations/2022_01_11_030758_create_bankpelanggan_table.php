@@ -15,8 +15,8 @@ class CreatebankpelangganTable extends Migration
     {
         Schema::create('bankpelanggan', function (Blueprint $table) {
             $table->id();
-            $table->string('kbank', 50)->default('');
-            $table->string('nbank', 100)->default('');
+            $table->string('kodebank', 50)->default('');
+            $table->string('namabank', 100)->default('');
             $table->integer('statusaktif')->length(11)->default(0);            
             $table->string('modifiedby', 50)->default('');
             $table->timestamps();

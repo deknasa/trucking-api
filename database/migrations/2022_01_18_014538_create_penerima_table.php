@@ -15,8 +15,7 @@ class CreatePenerimaTable extends Migration
     {
         Schema::create('penerima', function (Blueprint $table) {
             $table->id();
-            $table->string('kpenerima',100)->default('');
-            $table->string('npenerima',200)->default('');
+            $table->string('namapenerima',200)->default('');
             $table->string('npwp',50)->default('');
             $table->string('noktp',50)->default('');
             $table->integer('statusaktif')->length(11)->default('0');

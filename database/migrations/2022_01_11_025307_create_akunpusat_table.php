@@ -15,13 +15,13 @@ class CreateakunpusatTable extends Migration
     {
         Schema::create('akunpusat', function (Blueprint $table) {
             $table->id();
-            $table->string('type', 50)->default('');
-            $table->integer('level')->length(11)->default(0);
             $table->string('coa', 30)->default('');
             $table->string('keterangancoa', 255)->default('');
+            $table->string('type', 50)->default('');
+            $table->integer('level')->length(11)->default(0);
             $table->integer('aktif')->length(11)->default(0);
             $table->string('parent', 255)->default('');
-            $table->integer('ap')->length(11)->default(0);
+            $table->integer('acoountpayable')->length(11)->default(0);
             $table->integer('neraca')->length(11)->default(0);
             $table->integer('labarugi')->length(11)->default(0);
             $table->string('coamain', 30)->default('');

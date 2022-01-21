@@ -22,12 +22,12 @@ class CreateKomisisupirdetailTable extends Migration
             $table->unsignedBigInteger('supir_id')->default('0');
             $table->double('nominal',15,2)->default('0');
             $table->string('keterangan',250)->default('');
-            $table->date('tgldr')->default('1900/1/1');
-            $table->date('tglsd')->default('1900/1/1');
+            $table->date('tgldari')->default('1900/1/1');
+            $table->date('tglsampai')->default('1900/1/1');
             $table->double('total',15,2)->default('0');
-            $table->double('potpinjaman',15,2)->default('0');
-            $table->double('deposit',15,2)->default('0');
-            $table->double('potpinjamansemua',15,2)->default('0');
+            $table->double('potonganpinjaman',15,2)->default('0');
+            $table->double('deposito',15,2)->default('0');
+            $table->double('potonganpinjamansemua',15,2)->default('0');
             $table->double('komisisupir',15,2)->default('0');
             $table->string('modifiedby',50)->default('');
             $table->timestamps();

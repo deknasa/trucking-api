@@ -15,15 +15,17 @@ class CreateHutangbayarheaderTable extends Migration
     {
         Schema::create('hutangbayarheader', function (Blueprint $table) {
             $table->id();
-            $table->string('nobukti', 50)->default('');            
+            $table->string('nobukti', 50)->unique();            
             $table->date('tgl')->default('1900/1/1');            
             $table->string('keterangan', 250)->default('');            
             $table->unsignedBigInteger('bank_id')->default('0');            
             $table->unsignedBigInteger('supplier_id')->default('0');            
-            $table->string('modifiedby', 50)->default('');            
             $table->string('pengeluaran_nobukti', 50)->default('');            
             $table->unsignedBigInteger('coa_id')->default('0');            
-            $table->integer('statusapproved')->length(11)->default('0');            
+            $table->integer('statusapproval')->length(11)->default('0');            
+            $table->date('tglapproval')->default('1900/1/1');            
+            $table->string('userapproval', 50)->default('');            
+            $table->string('modifiedby', 50)->default('');            
             $table->timestamps();
         });
     }

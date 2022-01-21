@@ -15,9 +15,10 @@ class CreatecabangTable extends Migration
     {
         Schema::create('cabang', function (Blueprint $table) {
             $table->id();
-            $table->string('cabang', 300)->default('');
-            $table->string('modifiedby', 30)->default('');
+            $table->string('kodecabang', 300)->default('');
+            $table->string('namacabang', 300)->default('');
             $table->integer('statusaktif')->length(11);
+            $table->string('modifiedby', 30)->default('');
             $table->timestamps();
         });
     }

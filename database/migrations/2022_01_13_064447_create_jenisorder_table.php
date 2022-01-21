@@ -15,7 +15,7 @@ class CreateJenisorderTable extends Migration
     {
         Schema::create('jenisorder', function (Blueprint $table) {
             $table->id();
-            $table->string('njenisorder',300)->default('');
+            $table->string('keterangan',300)->default('');
             $table->integer('statusaktif')->length(11)->default('0');
             $table->string('modifiedby',50)->default('');
             $table->timestamps();

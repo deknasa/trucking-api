@@ -28,7 +28,7 @@ class CreatePelunasanpiutangdetailTable extends Migration
             $table->double('penyesuaian',15,2)->default('0');
             $table->string('coapenyesuaian',50)->default('');
             $table->string('invoice_bukti',50)->default('');
-            $table->string('keteranganpenyesuaian',250)->default('');
+            $table->longText('keteranganpenyesuaian')->default('');
             $table->string('modifiedby',50)->default('');
             $table->timestamps();
 
