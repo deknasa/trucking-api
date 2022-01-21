@@ -32,6 +32,63 @@ class ParameterController extends Controller
         /* Sorting */
         $query = Parameter::orderBy($params['sortIndex'], $params['sortOrder']);
 
+        if ($params['sortIndex'] == 'id') {
+            $query = Parameter::select(
+                'parameter.id',
+                'parameter.grp',
+                'parameter.subgrp',
+                'parameter.text',
+                'parameter.memo',
+                'parameter.modifiedby',
+                'parameter.created_at',
+                'parameter.updated_at'
+            )
+                ->orderBy('parameter.id', $params['sortOrder']);
+        } else if ($params['sortIndex'] == 'grp' OR $params['sortIndex'] == 'subgrp') {
+            $query = Parameter::select(
+                'parameter.id',
+                'parameter.grp',
+                'parameter.subgrp',
+                'parameter.text',
+                'parameter.memo',
+                'parameter.modifiedby',
+                'parameter.created_at',
+                'parameter.updated_at'
+            )
+                ->orderBy($params['sortIndex'], $params['sortOrder'])
+                ->orderBy('cabang.text', $params['sortOrder'])
+                ->orderBy('cabang.id', $params['sortOrder']);
+          
+                } else {
+            if ($params['sortOrder'] == 'asc') {
+                $query = Parameter::select(
+                    'parameter.id',
+                    'parameter.grp',
+                    'parameter.subgrp',
+                    'parameter.text',
+                    'parameter.memo',
+                    'parameter.modifiedby',
+                    'parameter.created_at',
+                    'parameter.updated_at'
+                )
+                    ->orderBy($params['sortIndex'], $params['sortOrder'])
+                    ->orderBy('parameter.id', $params['sortOrder']);
+            } else {
+                $query = Parameter::select(
+                    'parameter.id',
+                    'parameter.grp',
+                    'parameter.subgrp',
+                    'parameter.text',
+                    'parameter.memo',
+                    'parameter.modifiedby',
+                    'parameter.created_at',
+                    'parameter.updated_at'
+                )
+                    ->orderBy($params['sortIndex'], $params['sortOrder'])
+                    ->orderBy('parameter.id', 'asc');
+            }
+        }        
+
         /* Searching */
         if (count($params['search']) > 0 && @$params['search']['rules'][0]['data'] != '') {
             switch ($params['search']['groupOp']) {
@@ -84,6 +141,7 @@ class ParameterController extends Controller
      */
     public function store(ParameterRequest $request)
     {
+        DB::beginTransaction();
         try {
             $parameter = new Parameter();
             $parameter->grp = $request->grp;
@@ -94,9 +152,12 @@ class ParameterController extends Controller
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
 
-            if ($parameter->save()) {
+            $parameter->save();
+            DB::commit();
                 /* Set position and page */
-                $parameter->position = $this->getPosition($parameter, $request);
+                $del = 0;
+                $data = $this->getid($parameter->id, $request, $del);
+                $parameter->position = $data->row;
 
                 if (isset($request->limit)) {
                     $parameter->page = ceil($parameter->position / $request->limit);
@@ -107,13 +168,8 @@ class ParameterController extends Controller
                     'message' => 'Berhasil disimpan',
                     'data' => $parameter
                 ]);
-            } else {
-                return response([
-                    'status' => false,
-                    'message' => 'Gagal disimpan'
-                ]);
-            }
         } catch (\Throwable $th) {
+            DB::rollBack();
             return response($th->getMessage());
         }
     }
@@ -180,14 +236,21 @@ class ParameterController extends Controller
      * @param  \App\Models\Parameter  $parameter
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Parameter $parameter)
+    public function destroy(Parameter $parameter, ParameterRequest $request)
     {
         $delete = Parameter::destroy($parameter->id);
-
+        $del = 1;
         if ($delete) {
+            $data = $this->getid($parameter->id, $request, $del);
+            $parameter->position = $data->row;
+            $parameter->id = $data->id;
+            if (isset($request->limit)) {
+                $parameter->page = ceil($parameter->position / $request->limit);
+            }
             return response([
                 'status' => true,
-                'message' => 'Berhasil dihapus'
+                'message' => 'Berhasil dihapus',
+                'data' => $parameter
             ]);
         } else {
             return response([
@@ -218,4 +281,242 @@ class ParameterController extends Controller
             // ->where('id', $request->sortorder == 'desc' ? '>=' : '<=', $parameter->id)
             ->count();
     }
+
+    public function getid($id, $request, $del)
+    {
+
+        Schema::create('##temp_cabang_row', function ($table) {
+            $table->id();
+            $table->bigInteger('id_')->default('0');
+            $table->string('kodecabang', 300)->default('');
+            $table->string('namacabang', 300)->default('');
+            $table->string('statusaktif', 100)->default('');
+            $table->string('modifiedby', 30)->default('');
+            $table->dateTime('created_at')->default('1900/1/1');
+            $table->dateTime('updated_at')->default('1900/1/1');
+
+            $table->index('id_');
+        });
+
+
+
+        if ($request->sortname == 'id') {
+            $query = Cabang::select(
+                'cabang.id as id_',
+                'cabang.kodecabang',
+                'cabang.namacabang',
+                'parameter.text as statusaktif',
+                'cabang.modifiedby',
+                'cabang.created_at',
+                'cabang.updated_at'
+            )
+                ->leftJoin('parameter', 'cabang.statusaktif', '=', 'parameter.id')
+                ->orderBy('cabang.id', $request->sortorder);
+        } else if ($request->sortname == 'kodecabang') {
+            $query = Cabang::select(
+                'cabang.id as id_',
+                'cabang.kodecabang',
+                'cabang.namacabang',
+                'parameter.text as statusaktif',
+                'cabang.modifiedby',
+                'cabang.created_at',
+                'cabang.updated_at'
+            )
+                ->leftJoin('parameter', 'cabang.statusaktif', '=', 'parameter.id')
+                ->orderBy($request->sortname, $request->sortorder)
+                ->orderBy('cabang.namacabang', $request->sortorder)
+                ->orderBy('cabang.id', $request->sortorder);
+        } else {
+            if ($request->sortorder == 'asc') {
+                $query = Cabang::select(
+                    'cabang.id as id_',
+                    'cabang.kodecabang',
+                    'cabang.namacabang',
+                    'parameter.text as statusaktif',
+                    'cabang.modifiedby',
+                    'cabang.created_at',
+                    'cabang.updated_at'
+                )
+                    ->leftJoin('parameter', 'cabang.statusaktif', '=', 'parameter.id')
+                    ->orderBy($request->sortname, $request->sortorder)
+                    ->orderBy('cabang.id', $request->sortorder);
+            } else {
+                $query = Cabang::select(
+                    'cabang.id as id_',
+                    'cabang.kodecabang',
+                    'cabang.namacabang',
+                    'parameter.text as statusaktif',
+                    'cabang.modifiedby',
+                    'cabang.created_at',
+                    'cabang.updated_at'
+                )
+                    ->leftJoin('parameter', 'cabang.statusaktif', '=', 'parameter.id')
+                    ->orderBy($request->sortname, $request->sortorder)
+
+                    ->orderBy('cabang.id', 'asc');
+            }
+        }
+
+
+
+        DB::table('##temp_cabang_row')->insertUsing(['id_', 'kodecabang', 'namacabang', 'statusaktif', 'modifiedby', 'created_at', 'updated_at'], $query);
+
+
+        if ($del == 1) {
+            if ($request->page == 1) {
+                $baris = $request->indexRow + 1;
+            } else {
+                $hal = $request->page - 1;
+                $bar = $hal * $request->limit;
+                $baris = $request->indexRow + $bar + 1;
+            }
+
+            // dump($request->page );
+            // dump($request->limit );
+            // dump($request->indexRow  );
+
+            // dump($hal);
+            // dump($bar);
+            // dd($baris);
+            if (DB::table('##temp_cabang_row')
+                ->where('id', '=', $baris)->exists()
+            ) {
+                $querydata = DB::table('##temp_cabang_row')
+                    ->select('id as row', 'id_ as id')
+                    ->where('id', '=', $baris)
+                    ->orderBy('id');
+            } else {
+                $querydata = DB::table('##temp_cabang_row')
+                    ->select('id as row', 'id_ as id')
+                    ->where('id', '=', ($baris - 1))
+                    ->orderBy('id');
+            }
+        } else {
+            $querydata = DB::table('##temp_cabang_row ')
+                ->select('id as row')
+                ->where('id_', '=',  $id)
+                ->orderBy('id');
+        }
+
+
+        $data = $querydata->first();
+        return $data;
+    }
+
+    public function getid($id, $request, $del)
+    {
+
+        $temp='##temp'.rand(1,10000);
+        Schema::create($temp, function ($table) {
+            $table->id();
+            $table->bigInteger('id_')->default('0');
+            $table->string('grp', 300)->default('');
+            $table->string('subgrp', 300)->default('');
+            $table->string('text', 300)->default('');
+            $table->string('memo', 300)->default('');
+            $table->string('modifiedby', 30)->default('');
+            $table->dateTime('created_at')->default('1900/1/1');
+            $table->dateTime('updated_at')->default('1900/1/1');
+
+            $table->index('id_');
+        });
+
+
+
+        if ($request->sortname == 'id') {
+            $query = Parameter::select(
+                'parameter.id as id_',
+                'parameter.grp',
+                'parameter.subgrp',
+                'parameter.text',
+                'parameter.memo',
+                'parameter.modifiedby',
+                'parameter.created_at',
+                'parameter.updated_at'
+            )
+                ->orderBy('parameter.id', $request->sortorder);
+        } else if ($request->sortname == 'grp' or $request->sortname == 'subgrp') {
+            $query = Parameter::select(
+                'parameter.id as id_',
+                'parameter.grp',
+                'parameter.subgrp',
+                'parameter.text',
+                'parameter.memo',
+                'parameter.modifiedby',
+                'parameter.created_at',
+                'parameter.updated_at'
+            )
+                ->orderBy($request->sortname, $request->sortorder)
+                ->orderBy('parameter.text', $request->sortorder)
+                ->orderBy('parameter.id', $request->sortorder);
+        } else {
+            if ($request->sortorder == 'asc') {
+                $query = Parameter::select(
+                    'parameter.id as id_',
+                    'parameter.grp',
+                    'parameter.subgrp',
+                    'parameter.text',
+                    'parameter.memo',
+                    'parameter.modifiedby',
+                    'parameter.created_at',
+                    'parameter.updated_at'
+                )
+                    ->orderBy($request->sortname, $request->sortorder)
+                    ->orderBy('parameter.id', $request->sortorder);
+            } else {
+                $query = Parameter::select(
+                    'parameter.id as id_',
+                    'parameter.grp',
+                    'parameter.subgrp',
+                    'parameter.text',
+                    'parameter.memo',
+                    'parameter.modifiedby',
+                    'parameter.created_at',
+                    'parameter.updated_at'
+                )
+                    ->orderBy($request->sortname, $request->sortorder)
+                    ->orderBy('parameter.id', 'asc');
+            }
+        }
+
+
+
+        DB::table($temp)->insertUsing(['id_', 'grp', 'subgrp', 'text', 'memo', 'modifiedby', 'created_at', 'updated_at'], $query);
+
+
+        if ($del == 1) {
+            if ($request->page == 1) {
+                $baris = $request->indexRow + 1;
+            } else {
+                $hal = $request->page - 1;
+                $bar = $hal * $request->limit;
+                $baris = $request->indexRow + $bar + 1;
+            }
+
+            
+            if (DB::table($temp)
+                ->where('id', '=', $baris)->exists()
+            ) {
+                $querydata = DB::table($temp)
+                    ->select('id as row', 'id_ as id')
+                    ->where('id', '=', $baris)
+                    ->orderBy('id');
+            } else {
+                $querydata = DB::table($temp)
+                    ->select('id as row', 'id_ as id')
+                    ->where('id', '=', ($baris - 1))
+                    ->orderBy('id');
+            }
+        } else {
+            $querydata = DB::table($temp)
+                ->select('id as row')
+                ->where('id_', '=',  $id)
+                ->orderBy('id');
+        }
+
+
+        $data = $querydata->first();
+        return $data;
+    }
+
 }
