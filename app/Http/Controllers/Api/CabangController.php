@@ -165,7 +165,8 @@ class CabangController extends Controller
             DB::commit();
             /* Set position and page */
             $del = 0;
-            $cabang->position = $this->getPosition($cabang->id, $request, $del);
+            $data= $this->getid($cabang->id, $request, $del);
+            $cabang->position = $data->row;
             // dd($cabang->position );
             if (isset($request->limit)) {
                 $cabang->page = ceil($cabang->position / $request->limit);
@@ -258,7 +259,9 @@ class CabangController extends Controller
         $delete = Cabang::destroy($cabang->id);
         $del = 1;
         if ($delete) {
-            $cabang->position = $this->getPosition($cabang->id, $request, $del);
+            $data= $this->getid($cabang->id, $request, $del);
+            $cabang->position = $data->row;
+            $cabang->id = $data->id;
             if (isset($request->limit)) {
                 $cabang->page = ceil($cabang->position / $request->limit);
             }
@@ -571,4 +574,111 @@ class CabangController extends Controller
         $data = $querydata->first();
         return $data->row;
     }
+
+    public function getid($id, $request, $del)
+    {
+
+        Schema::create('##temp_cabang_row', function ($table) {
+            $table->id();
+            $table->bigInteger('id_')->default('0');
+            $table->string('kodecabang', 300)->default('');
+            $table->string('namacabang', 300)->default('');
+            $table->string('statusaktif', 100)->default('');
+            $table->string('modifiedby', 30)->default('');
+            $table->dateTime('created_at')->default('1900/1/1');
+            $table->dateTime('updated_at')->default('1900/1/1');
+
+            $table->index('id_');
+        });
+
+
+
+        if ($request->sortname == 'id') {
+            $query = Cabang::select(
+                'cabang.id as id_',
+                'cabang.kodecabang',
+                'cabang.namacabang',
+                'parameter.text as statusaktif',
+                'cabang.modifiedby',
+                'cabang.created_at',
+                'cabang.updated_at'
+            )
+                ->leftJoin('parameter', 'cabang.statusaktif', '=', 'parameter.id')
+                ->orderBy('cabang.id', $request->sortorder);
+        } else {
+            if ($request->sortorder == 'asc') {
+                $query = Cabang::select(
+                    'cabang.id as id_',
+                    'cabang.kodecabang',
+                    'cabang.namacabang',
+                    'parameter.text as statusaktif',
+                    'cabang.modifiedby',
+                    'cabang.created_at',
+                    'cabang.updated_at'
+                )
+                    ->leftJoin('parameter', 'cabang.statusaktif', '=', 'parameter.id')
+                    ->orderBy($request->sortname, $request->sortorder)
+                    ->orderBy('cabang.id', $request->sortorder);
+            } else {
+                $query = Cabang::select(
+                    'cabang.id as id_',
+                    'cabang.kodecabang',
+                    'cabang.namacabang',
+                    'parameter.text as statusaktif',
+                    'cabang.modifiedby',
+                    'cabang.created_at',
+                    'cabang.updated_at'
+                )
+                    ->leftJoin('parameter', 'cabang.statusaktif', '=', 'parameter.id')
+                    ->orderBy($request->sortname, $request->sortorder)
+                    ->orderBy('cabang.id', 'asc');
+            }
+        }
+
+
+
+        DB::table('##temp_cabang_row')->insertUsing(['id_', 'kodecabang', 'namacabang', 'statusaktif', 'modifiedby', 'created_at', 'updated_at'], $query);
+
+
+        if ($del == 1) {
+            if ($request->page == 1) {
+                $baris = $request->indexRow + 1;
+            } else {
+                $hal = $request->page - 1;
+                $bar = $hal * $request->limit;
+                $baris = $request->indexRow + $bar + 1;
+            }
+            
+            // dump($request->page );
+            // dump($request->limit );
+            // dump($request->indexRow  );
+            
+            // dump($hal);
+            // dump($bar);
+            // dd($baris);
+            if (DB::table('##temp_cabang_row')
+                ->where('id', '=', $baris)->exists()
+            ) {
+                $querydata = DB::table('##temp_cabang_row')
+                ->select('id as row','id_ as id')
+                ->where('id', '=', $baris)
+                    ->orderBy('id');
+            } else {
+                $querydata = DB::table('##temp_cabang_row')
+                    ->select('id as row','id_ as id')
+                    ->where('id', '=', ($baris - 1))
+                    ->orderBy('id');
+            }
+        } else {
+            $querydata = DB::table('##temp_cabang_row ')
+                ->select('id as row')
+                ->where('id_', '=',  $id)
+                ->orderBy('id');
+        }
+
+
+        $data = $querydata->first();
+        return $data;
+    }
+
 }
