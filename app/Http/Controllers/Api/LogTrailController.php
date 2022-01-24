@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\logtrail;
+use App\Models\LogTrail;
 use App\Http\Requests\StorelogtrailRequest;
 use App\Http\Requests\UpdatelogtrailRequest;
 
-class LogtrailController extends Controller
+class LogTrailController extends Controller
 {
     /**
      * Display a listing of the resource.

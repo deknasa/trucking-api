@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class StorelogtrailRequest extends FormRequest
+class LogTrailRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,13 +24,12 @@ class StorelogtrailRequest extends FormRequest
     public function rules()
     {
         return [
-            'ntabel' => 'required',
-            'postfrom' => 'required',
+            'namatabel' => 'required',
+            'postingdari' => 'required',
             'idtrans' => 'required',
             'nobuktitrans' => 'required',
             'aksi' => 'required',
             'datajson' => 'required',
-            'modifiedby' => 'required',
             
         ];
     }
@@ -38,13 +37,12 @@ class StorelogtrailRequest extends FormRequest
     public function attributes()
     {
         return [
-            'ntabel' => 'ntabel',
-            'postfrom' => 'postfrom',
+            'namatabel' => 'namatabel',
+            'postingdari' => 'postingdari',
             'idtrans' => 'idtrans',
             'nobuktitrans' => 'nobuktitrans',
             'aksi' => 'aksi',
             'datajson' => 'datajson',
-            'modifiedby' => 'modifiedby',
         ];
     }
 }
