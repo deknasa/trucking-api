@@ -17,10 +17,11 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             ParameterSeeder::class,
             AbsensiSupirHeaderSeeder::class,
-            TradoSeeder::class,
-            SupirSeeder::class,
-            AbsenTradoSeeder::class,
-            CabangSeeder::class,
+            // TradoSeeder::class,
+            // SupirSeeder::class,
+            // AbsenTradoSeeder::class,
+            // CabangSeeder::class,
+            MenuSeeder::class,
         ]);
     }
 }
