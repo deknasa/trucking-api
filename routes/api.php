@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\ParameterController;
 use App\Http\Controllers\Api\SupirController;
 use App\Http\Controllers\Api\TradoController;
 use App\Http\Controllers\Api\RoleController;
+use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\AuthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -41,6 +42,11 @@ Route::resource('cabang', CabangController::class);
 
 Route::get('role/field_length', [RoleController::class, 'fieldLength']);
 Route::resource('role', RoleController::class);
+
+Route::get('user/field_length', [UserController::class, 'fieldLength']);
+Route::get('user/combostatus', [UserController::class, 'combostatus']);
+Route::get('user/combocabang', [UserController::class, 'combocabang']);
+Route::resource('user', UserController::class);
 
 Route::resource('absensi', AbsensiSupirHeaderController::class);
 Route::resource('absensi_detail', AbsensiSupirDetailController::class);
