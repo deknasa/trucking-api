@@ -23,6 +23,7 @@ class MenuController extends Controller
      */
     public function index(Request $request)
     {
+    
         $params = [
             'offset' => $request->offset ?? 0,
             'limit' => $request->limit ?? 100,
