@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\SupirController;
 use App\Http\Controllers\Api\TradoController;
 use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\MenuController;
 use App\Http\Controllers\AuthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -47,6 +48,10 @@ Route::get('user/field_length', [UserController::class, 'fieldLength']);
 Route::get('user/combostatus', [UserController::class, 'combostatus']);
 Route::get('user/combocabang', [UserController::class, 'combocabang']);
 Route::resource('user', UserController::class);
+
+Route::get('menu/field_length', [MenuController::class, 'fieldLength']);
+Route::get('menu/combomenuparent', [MenuController::class, 'combomenuparent']);
+Route::resource('menu', MenuController::class);
 
 Route::resource('absensi', AbsensiSupirHeaderController::class);
 Route::resource('absensi_detail', AbsensiSupirDetailController::class);

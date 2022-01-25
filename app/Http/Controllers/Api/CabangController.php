@@ -299,7 +299,10 @@ class CabangController extends Controller
      */
     public function destroy(Cabang $cabang, CabangRequest $request)
     {
+        DB::beginTransaction();
         try {
+
+            Cabang::destroy($cabang->id);
 
             $logtrail = new LogTrail();
             $logtrail->namatabel = 'CABANG';
