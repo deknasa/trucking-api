@@ -338,12 +338,22 @@ class MenuController extends Controller
         // dd(strtolower($request->get('menuexe')));
         DB::beginTransaction();
         try {
-            Menu::where('id', $menu->id)
-                ->update(['menuexe' => strtolower($request->get('menuexe'))],
-                                ['menuname' => ucwords($request->get('menuname'))],
-                                ['menuseq' => $request->get('menuseq')],
-                                ['menuparent' => $request->get('menuparent')],
-                                ['menuicon' => strtolower($request->get('menuicon'))]);
+            $menu = new Menu();
+            $menu = Menu::find($request->id);
+            $menu->menuname = ucwords(strtolower($request->menuname));
+            $menu->menuseq = $request->menuseq;
+            $menu->menuparent = $request->menuparent ?? 0;
+            $menu->menuicon = strtolower($request->menuicon);
+            $menu->menuexe = strtolower($request->menuexe);
+            $menu->link = "";
+            
+            $menu->save();
+            // Menu::where('id', $menu->id)
+            //     ->update(['menuexe' => strtolower($request->get('menuexe'))],
+            //                     ['menuname' => ucwords($request->get('menuname'))],
+            //                     ['menuseq' => $request->get('menuseq')],
+            //                     ['menuparent' => $request->get('menuparent')],
+            //                     ['menuicon' => strtolower($request->get('menuicon'))]);
 
             $datajson = [
                 'id' => $menu->id,
