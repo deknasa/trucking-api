@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\TradoController;
 use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\MenuController;
+use App\Http\Controllers\Api\AcosController;
 use App\Http\Controllers\AuthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -44,6 +45,10 @@ Route::resource('cabang', CabangController::class);
 Route::get('role/field_length', [RoleController::class, 'fieldLength']);
 Route::resource('role', RoleController::class);
 
+Route::get('acos/field_length', [AcosController::class, 'fieldLength']);
+Route::resource('acos', AcosController::class);
+
+
 Route::get('user/field_length', [UserController::class, 'fieldLength']);
 Route::get('user/combostatus', [UserController::class, 'combostatus']);
 Route::get('user/combocabang', [UserController::class, 'combocabang']);
@@ -51,6 +56,7 @@ Route::resource('user', UserController::class);
 
 Route::get('menu/field_length', [MenuController::class, 'fieldLength']);
 Route::get('menu/combomenuparent', [MenuController::class, 'combomenuparent']);
+Route::get('menu/getdatanamaacos', [MenuController::class, 'getdatanamaacos']);
 Route::resource('menu', MenuController::class);
 
 Route::resource('absensi', AbsensiSupirHeaderController::class);

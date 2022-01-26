@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Menu;
 use App\Models\LogTrail;
 use App\Http\Requests\MenuRequest;
-use App\Models\Parameter;
+use App\Models\Acos;
 use Illuminate\Support\Facades\Schema;
 
 use Illuminate\Http\Request;
@@ -23,7 +23,7 @@ class MenuController extends Controller
      */
     public function index(Request $request)
     {
-    
+
         $params = [
             'offset' => $request->offset ?? 0,
             'limit' => $request->limit ?? 100,
@@ -38,17 +38,19 @@ class MenuController extends Controller
         /* Sorting */
         if ($params['sortIndex'] == 'id') {
             $query = Menu::select(
-                'menu.id',
-                'menu.menuname',
-                'menu2.menuname as menuparent',
-                'menu.menuicon',
-                'acos.nama as aco_id',
-                'menu.link',
-                'menu.menuexe',
-                'menu.menukode',
-                'menu.modifiedby',
-                'menu.created_at',
-                'menu.updated_at'
+                DB::raw(
+                    "menu.id,
+                    menu.menuname,
+                    isnull(menu2.menuname,'') as menuparent,
+                    menu.menuicon,
+                    isnull(acos.nama,'') as aco_id,
+                    menu.link,
+                    menu.menuexe,
+                    menu.menukode,
+                    menu.modifiedby,
+                    menu.created_at,
+                    menu.updated_at"
+                )
             )
                 ->leftJoin('menu as menu2', 'menu2.id', '=', 'menu.menuparent')
                 ->leftJoin('acos', 'acos.id', '=', 'menu.aco_id')
@@ -56,17 +58,19 @@ class MenuController extends Controller
         } else {
             if ($params['sortOrder'] == 'asc') {
                 $query = Menu::select(
-                    'menu.id',
-                    'menu.menuname',
-                    'menu2.menuname as menuparent',
-                    'menu.menuicon',
-                    'acos.nama as aco_id',
-                    'menu.link',
-                    'menu.menuexe',
-                    'menu.menukode',
-                    'menu.modifiedby',
-                    'menu.created_at',
-                    'menu.updated_at'
+                    DB::raw(
+                        "menu.id,
+                        menu.menuname,
+                        isnull(menu2.menuname,'') as menuparent,
+                        menu.menuicon,
+                        isnull(acos.nama,'') as aco_id,
+                        menu.link,
+                        menu.menuexe,
+                        menu.menukode,
+                        menu.modifiedby,
+                        menu.created_at,
+                        menu.updated_at"
+                    )
                 )
                     ->leftJoin('menu as menu2', 'menu2.id', '=', 'menu.menuparent')
                     ->leftJoin('acos', 'acos.id', '=', 'menu.aco_id')
@@ -74,17 +78,19 @@ class MenuController extends Controller
                     ->orderBy('menu.id', $params['sortOrder']);
             } else {
                 $query = Menu::select(
-                    'menu.id',
-                    'menu.menuname',
-                    'menu2.menuname as menuparent',
-                    'menu.menuicon',
-                    'acos.nama as aco_id',
-                    'menu.link',
-                    'menu.menuexe',
-                    'menu.menukode',
-                    'menu.modifiedby',
-                    'menu.created_at',
-                    'menu.updated_at'
+                    DB::raw(
+                        "menu.id,
+                        menu.menuname,
+                        isnull(menu2.menuname,'') as menuparent,
+                        menu.menuicon,
+                        isnull(acos.nama,'') as aco_id,
+                        menu.link,
+                        menu.menuexe,
+                        menu.menukode,
+                        menu.modifiedby,
+                        menu.created_at,
+                        menu.updated_at"
+                    )
                 )
                     ->leftJoin('menu as menu2', 'menu2.id', '=', 'menu.menuparent')
                     ->leftJoin('acos', 'acos.id', '=', 'menu.aco_id')
@@ -168,16 +174,90 @@ class MenuController extends Controller
      */
     public function store(MenuRequest $request)
     {
+
+
         DB::beginTransaction();
         try {
             $menu = new Menu();
-            $menu->menuname = strtoupper($request->menuname);
+            $menu->menuname = ucwords(strtolower($request->menuname));
             $menu->menuseq = $request->menuseq;
-            $menu->menuparent = $request->menuparent;
-            $menu->menuicon = strtoupper($request->menuicon);
-            $menu->link = $request->link;
-            $menu->menuexe = $request->menuexe;
-            $menu->menukode = $request->menukode;
+            $menu->menuparent = $request->menuparent ?? 0;
+            $menu->menuicon = strtolower($request->menuicon);
+            $menu->menuexe = strtolower($request->menuexe);
+            $menu->link = "";
+
+            if (strlen($request->aco_id) <> 0) {
+                $class = array("index", "add", "edit", "delete");
+
+                foreach ($class as $value) {
+                    $acos = new Acos();
+                    $acos->class = strtolower($request->aco_id);
+                    $acos->method = strtolower($value);
+                    $acos->nama = strtolower($value) . ' ' . strtolower($request->aco_id);
+                    $acos->save();
+                }
+                $list = Acos::select('id')
+                    ->where('class', '=', strtolower($request->aco_id))
+                    ->where('method', '=', 'index')
+                    ->orderBy('id', 'asc')
+                    ->first();
+                $menu->aco_id = $list->id;
+            } else {
+                $menu->aco_id = 0;
+            }
+
+
+
+            if (Menu::select('menukode')
+                ->where('menuparent', '=', $request->menuparent)
+                ->exists()
+            ) {
+                if ($request->menuparent == 0) {
+                    $list = Menu::select('menukode')
+                        ->where('menuparent', '=', '0')
+                        ->where('menukode', '<>', '9')
+                        ->orderBy('menukode', 'desc')
+                        ->first();
+                    $menukode = $list->menukode + 1;
+                } else {
+                    if (Menu::select('menukode')
+                        ->where('menuparent', '=', $request->menuparent)
+                        ->where('menukode', '<>', '9')
+                        ->exists()
+                    ) {
+                        $list = Menu::select('menukode')
+                            ->where('menuparent', '=', $request->menuparent)
+                            ->where('menukode', '<>', '9')
+                            ->orderBy('menukode', 'desc')
+                            ->first();
+
+                        $menukode = $list->menukode + 1;
+                    } else {
+                        $list = Menu::select('menukode')
+                            ->where('id', '=', $request->menuparent)
+                            ->where('menukode', '<>', '9')
+                            ->orderBy('menukode', 'desc')
+                            ->first();
+                        $menukode = $list->menukode . '1';
+                    }
+                }
+            } else {
+                if ($request->menuparent == 0) {
+                    $menukode = 0;
+                } else {
+                    $list = Menu::select('menukode')
+                        ->where('id', '=', $request->menuparent)
+                        ->where('menukode', '<>', '9')
+                        ->orderBy('menukode', 'desc')
+                        ->first();
+                    $menukode = $list->menukode . '1';
+                }
+            }
+
+            if (strtoupper($request->menuname) == 'LOGOUT') {
+                $menukode = 9;
+            }
+            $menu->menukode = $menukode;
 
             $menu->save();
 
@@ -186,10 +266,8 @@ class MenuController extends Controller
                 'menuname' => strtoupper($request->menuname),
                 'menuseq' => $request->menuseq,
                 'menuparent' => $request->menuparent,
-                'menuicon' => strtoupper($request->menuicon),
-                'link' => $request->link,
-                'menuexe' => $request->menuexe,
-                'menukode' => $request->menukode,
+                'menuicon' => strtolower($request->menuicon),
+                'menuexe' => strtolower($request->menuexe)
             ];
 
             $logtrail = new LogTrail();
@@ -257,19 +335,23 @@ class MenuController extends Controller
      */
     public function update(MenuRequest $request, Menu $menu)
     {
+        // dd(strtolower($request->get('menuexe')));
         DB::beginTransaction();
         try {
-            $menu->update(array_map('strtoupper', $request->validated()));
+            Menu::where('id', $menu->id)
+                ->update(['menuexe' => strtolower($request->get('menuexe'))],
+                                ['menuname' => ucwords($request->get('menuname'))],
+                                ['menuseq' => $request->get('menuseq')],
+                                ['menuparent' => $request->get('menuparent')],
+                                ['menuicon' => strtolower($request->get('menuicon'))]);
 
             $datajson = [
                 'id' => $menu->id,
-                'menuname' => strtoupper($request->menuname),
+                'menuname' => ucwords($request->menuname),
                 'menuseq' => $request->menuseq,
                 'menuparent' => $request->menuparent,
-                'menuicon' => strtoupper($request->menuicon),
-                'link' => $request->link,
-                'menuexe' => $request->menuexe,
-                'menukode' => $request->menukode,
+                'menuicon' => strtolower($request->menuicon),
+                'menuexe' => strtolower($request->menuexe),
             ];
 
             $logtrail = new LogTrail();
@@ -315,6 +397,15 @@ class MenuController extends Controller
         DB::beginTransaction();
         try {
 
+            if (Acos::select('id')
+                    ->where('id', '=', $request->aco_id)
+                    ->exists()
+                ) {
+                    $list=Acos::select('class')
+                        ->where('id', '=', $request->aco_id)
+                        ->first();
+                        Acos::destroy($list->class);
+                }
             Menu::destroy($menu->id);
 
             $logtrail = new LogTrail();
@@ -328,7 +419,6 @@ class MenuController extends Controller
             $logtrail->save();
 
             DB::commit();
-            mENU::destroy($menu->id);
             $del = 1;
             $data = $this->getid($menu->id, $request, $del);
             $menu->position = $data->row;
@@ -374,14 +464,11 @@ class MenuController extends Controller
             $table->bigInteger('id_')->default('0');
             $table->string('menuname', 50)->default('');
             $table->integer('menuseq')->length(11)->default('0');
-            $table->string('menuparent', 50)->nullable()->change();
+            $table->string('menuparent', 250)->default('');
             $table->string('menuicon', 50)->default('');
-            $table->string('aco_id', 100)->nullable()->change();
+            $table->string('aco_id', 100)->default('');
+            $table->string('menuexe', 100)->default('');
             $table->string('modifiedby', 50)->default('');
-            $table->string('link', 2000)->default('');
-            $table->string('menuexe', 200)->default('');
-            $table->integer('menukode')->length(11)->default('0');
-            $table->string('modifiedby', 30)->default('');
             $table->dateTime('created_at')->default('1900/1/1');
             $table->dateTime('updated_at')->default('1900/1/1');
 
@@ -392,17 +479,18 @@ class MenuController extends Controller
 
         if ($request->sortname == 'id') {
             $query = Menu::select(
-                'menu.id as id_',
-                'menu.menuname',
-                'menu2.menuname as menuparent',
-                'menu.menuicon',
-                'acos.nama as aco_id',
-                'menu.link',
-                'menu.menuexe',
-                'menu.menukode',
-                'menu.modifiedby',
-                'menu.created_at',
-                'menu.updated_at'
+                DB::raw("
+                menu.id as id_,
+                menu.menuname,
+                menu.menuseq,
+                isnull(menu2.menuname,'') as menuparent,
+                menu.menuicon,
+                isnull(menu2.menuname,'') as aco_id,
+                menu.modifiedby,
+                menu.created_at,
+                menu.updated_at
+                ")
+
             )
                 ->leftJoin('menu as menu2', 'menu2.id', '=', 'menu.menuparent')
                 ->leftJoin('acos', 'acos.id', '=', 'menu.aco_id')
@@ -410,17 +498,17 @@ class MenuController extends Controller
         } else {
             if ($request->sortorder == 'asc') {
                 $query = Menu::select(
-                    'menu.id as id_',
-                    'menu.menuname',
-                    'menu2.menuname as menuparent',
-                    'menu.menuicon',
-                    'acos.nama as aco_id',
-                    'menu.link',
-                    'menu.menuexe',
-                    'menu.menukode',
-                    'menu.modifiedby',
-                    'menu.created_at',
-                    'menu.updated_at'
+                    DB::raw("
+                    menu.id as id_,
+                    menu.menuname,
+                    menu.menuseq,
+                    isnull(menu2.menuname,'') as menuparent,
+                    menu.menuicon,
+                    isnull(menu2.menuname,'') as aco_id,
+                    menu.modifiedby,
+                    menu.created_at,
+                    menu.updated_at
+                    ")
                 )
                     ->leftJoin('menu as menu2', 'menu2.id', '=', 'menu.menuparent')
                     ->leftJoin('acos', 'acos.id', '=', 'menu.aco_id')
@@ -428,17 +516,17 @@ class MenuController extends Controller
                     ->orderBy('menu.id', $request->sortorder);
             } else {
                 $query = Menu::select(
-                    'menu.id as id_',
-                    'menu.menuname',
-                    'menu2.menuname as menuparent',
-                    'menu.menuicon',
-                    'acos.nama as aco_id',
-                    'menu.link',
-                    'menu.menuexe',
-                    'menu.menukode',
-                    'menu.modifiedby',
-                    'menu.created_at',
-                    'menu.updated_at'
+                    DB::raw("
+                    menu.id as id_,
+                    menu.menuname,
+                    menu.menuseq,
+                    isnull(menu2.menuname,'') as menuparent,
+                    menu.menuicon,
+                    isnull(menu2.menuname,'') as aco_id,
+                    menu.modifiedby,
+                    menu.created_at,
+                    menu.updated_at
+                    ")
                 )
                     ->leftJoin('menu as menu2', 'menu2.id', '=', 'menu.menuparent')
                     ->leftJoin('acos', 'acos.id', '=', 'menu.aco_id')
@@ -449,7 +537,7 @@ class MenuController extends Controller
 
 
 
-        DB::table($temp)->insertUsing(['id_', 'menuname', 'menuparent', 'menuicon', 'aco_id', 'link', 'menuexe', 'menukode', 'modifiedby', 'created_at', 'updated_at'], $query);
+        DB::table($temp)->insertUsing(['id_', 'menuname', 'menuseq', 'menuparent', 'menuicon', 'aco_id',  'modifiedby', 'created_at', 'updated_at'], $query);
 
 
         if ($del == 1) {
@@ -494,15 +582,30 @@ class MenuController extends Controller
             'status' => $request->status ?? '',
         ];
         $temp = '##temp' . rand(1, 10000);
+
+        Schema::create($temp, function ($table) {
+            $table->string('id', 10)->default('');
+            $table->string('menuparent', 150)->default(0);
+            $table->string('param', 50)->default(0);
+        });
+
         if ($params['status'] == 'entry') {
-            $query = Menu::select('menu.id as id', 'menu.menuname as menuparent')
-                ->where('menu.menuname', "=", '0');
+            DB::table($temp)->insert(
+                [
+                    'id' => '0',
+                    'menuparent' => 'UTAMA',
+                    'param' => '',
+                ]
+            );
+
+            $queryall = Menu::select(
+                DB::raw("menu.id as id, upper(menu.menuname) as menuparent, upper(menu.menuname) as param")
+            )
+                ->where('menu.aco_id', "=", '0');
+
+            $query = DB::table($temp)
+                ->unionAll($queryall);
         } else {
-            Schema::create($temp, function ($table) {
-                $table->string('id', 10)->default('');
-                $table->string('menuparent', 150)->default(0);
-                $table->string('param', 50)->default(0);
-            });
 
             DB::table($temp)->insert(
                 [
@@ -513,8 +616,10 @@ class MenuController extends Controller
             );
 
 
-            $queryall = Menu::select('menu.id as id', 'menu.menuname as menuparent', 'menu.menuname as param')
-                ->where('menu.menuname', "=", '0');
+            $queryall = Menu::select(
+                DB::raw("menu.id as id, upper(menu.menuname) as menuparent, upper(menu.menuname) as param")
+            )
+                ->where('menu.aco_id', "=", '0');
 
             $query = DB::table($temp)
                 ->unionAll($queryall);
@@ -523,7 +628,26 @@ class MenuController extends Controller
         $data = $query->get();
 
         return response([
-            'data' => $data->toArray(),
+            'data' => $data
         ]);
     }
+    public function getdatanamaacos(Request $request) {
+        // dd($request->aco_id);
+        if (Acos::select('nama')
+                ->where('id', '=', $request->aco_id)
+                ->exists()
+            ) {
+                $data=Acos::select('nama')
+                ->where('id', '=', $request->aco_id)
+                ->first();
+            } else {
+                $data="";   
+            }
+
+            return response([
+                'data' => $data
+            ]);
+    }
+    
+
 }

@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class MenuRequest extends FormRequest
+class AcosRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,25 +24,18 @@ class MenuRequest extends FormRequest
     public function rules()
     {
         return [
-            'menuname' => 'required',
-            'menuseq' => 'required',
-            'menuicon' => 'required',
-            
+            'class' => 'required',
+            'method' => 'required',
+            'nama' => 'required'
         ];
     }
 
     public function attributes()
     {
         return [
-            'menuname' => 'menuname',
-            'menuseq' => 'menuseq',
-            'menuparent' => 'menuparent',
-            'menuicon' => 'menuicon',
-            'aco_id' => 'aco_id',
-            'link' => 'link',
-            'menuexe' => 'menuexe',
-            'menukode' => 'menukode',
+            'class' => 'class',
+            'method' => 'method',
+            'nama' => 'nama',
         ];
     }
-
 }
