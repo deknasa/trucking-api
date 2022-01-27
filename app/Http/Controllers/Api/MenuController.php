@@ -406,15 +406,20 @@ class MenuController extends Controller
     {
         DB::beginTransaction();
         try {
+            $list=Menu::Select('aco_id')
+                       ->where('id','=',$menu->id) 
+                       ->first();
+
 
             if (Acos::select('id')
-                    ->where('id', '=', $request->aco_id)
+                    ->where('id', '=', $list->aco_id)
                     ->exists()
                 ) {
                     $list=Acos::select('class')
-                        ->where('id', '=', $request->aco_id)
+                        ->where('id', '=', $list->aco_id)
                         ->first();
-                        Acos::destroy($list->class);
+
+                        Acos::where('class',$list->class)->delete();
                 }
             Menu::destroy($menu->id);
 
@@ -643,11 +648,11 @@ class MenuController extends Controller
     }
     public function getdatanamaacos(Request $request) {
         // dd($request->aco_id);
-        if (Acos::select('nama')
+        if (Acos::select('class as nama')
                 ->where('id', '=', $request->aco_id)
                 ->exists()
             ) {
-                $data=Acos::select('nama')
+                $data=Acos::select('class as nama')
                 ->where('id', '=', $request->aco_id)
                 ->first();
             } else {

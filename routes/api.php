@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\MenuController;
 use App\Http\Controllers\Api\AcosController;
+use App\Http\Controllers\Api\UserRoleController;
 use App\Http\Controllers\AuthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -61,6 +62,12 @@ Route::resource('menu', MenuController::class);
 
 Route::resource('absensi', AbsensiSupirHeaderController::class);
 Route::resource('absensi_detail', AbsensiSupirDetailController::class);
+
+Route::get('userrole/field_length', [UserRoleController::class, 'fieldLength']);
+Route::get('userrole/detail', [UserRoleController::class, 'detail']);
+Route::get('userrole/detaillist', [UserRoleController::class, 'detaillist']);
+Route::resource('userrole', UserRoleController::class);
+
 Route::resource('trado', TradoController::class);
 Route::resource('supir', SupirController::class);
 Route::resource('absentrado', AbsenTradoController::class);
