@@ -19,13 +19,13 @@ class CreateInvoiceextradetailTable extends Migration
             $table->string('nobukti', 50)->default('');
             $table->date('tgl')->default('1900/1/1');
             $table->date('qty',15,2)->default('0');
-            $table->date('hrgsat',15,2)->default('0');
+            $table->date('hrgsatuan',15,2)->default('0');
             $table->date('total',15,2)->default('0');
-            $table->string('persentasedisc', 50)->default('');
-            $table->date('nominaldisc',15,2)->default('0');
+            $table->string('persentasedisccount', 50)->default('');
+            $table->date('nominaldiscount',15,2)->default('0');
             $table->date('biaya',15,2)->default('0');
             $table->date('nominal',15,2)->default('0');
-            $table->string('keterangan', 250)->default('');
+            $table->longText('keterangan')->default('');
             $table->string('modifiedby', 50)->default('');
             $table->timestamps();
 

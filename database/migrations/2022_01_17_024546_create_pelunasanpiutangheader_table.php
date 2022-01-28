@@ -19,7 +19,7 @@ class CreatePelunasanpiutangheaderTable extends Migration
             $table->date('tgl')->default('1900/1/1');
             $table->longText('keterangan')->default('');
             $table->unsignedBigInteger('bank_id')->default('0');
-            $table->unsignedBigInteger('emkl_id')->default('0');
+            $table->unsignedBigInteger('agen_id')->default('0');
             $table->unsignedBigInteger('cabang_id')->default('0');
             $table->string('modifiedby',50)->default('');
             $table->timestamps();

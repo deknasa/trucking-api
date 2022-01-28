@@ -18,10 +18,10 @@ class CreateHutangdetailTable extends Migration
             $table->unsignedBigInteger('hutang_id')->default(0);            
             $table->string('nobukti', 50)->default('');            
             $table->unsignedBigInteger('supplier_id')->default(0);            
-            $table->date('tgljt')->default('1900/1/1');            
+            $table->date('tgljatuhtempo')->default('1900/1/1');            
             $table->double('total',15,2)->default('0');            
             $table->double('cicilan',15,2)->default('0');            
-            $table->string('keterangan', 250)->default('');            
+            $table->longText('keterangan')->default('');            
             $table->double('totalbayar',15,2)->default('0');            
             $table->string('modifiedby', 50)->default('');            
             $table->timestamps();

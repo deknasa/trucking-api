@@ -16,7 +16,7 @@ class CreateakunpusatTable extends Migration
         Schema::create('akunpusat', function (Blueprint $table) {
             $table->id();
             $table->string('coa', 30)->default('');
-            $table->string('keterangancoa', 255)->default('');
+            $table->longText('keterangancoa')->default('');
             $table->string('type', 50)->default('');
             $table->integer('level')->length(11)->default(0);
             $table->integer('aktif')->length(11)->default(0);

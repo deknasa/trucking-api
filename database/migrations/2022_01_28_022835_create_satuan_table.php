@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateContainerTable extends Migration
+class CreateSatuanTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,11 +13,11 @@ class CreateContainerTable extends Migration
      */
     public function up()
     {
-        Schema::create('container', function (Blueprint $table) {
+        Schema::create('satuan', function (Blueprint $table) {
             $table->id();
-            $table->longText('keterangan')->default('');
-            $table->integer('statusaktif')->length(11)->default(0);            
-            $table->string('modifiedby', 300)->default('');
+            $table->string('satuan',50)->default('');
+            $table->integer('statusaktif')->length(11)->default('');
+            $table->string('modifiedby',50)->default('');
             $table->timestamps();
         });
     }
@@ -29,6 +29,6 @@ class CreateContainerTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('container');
+        Schema::dropIfExists('satuan');
     }
 }

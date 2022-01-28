@@ -18,9 +18,9 @@ class CreateInvoiceheaderTable extends Migration
             $table->string('nobukti', 50)->unique();
             $table->date('tgl')->default('1900/1/1');
             $table->double('nominal',15,2)->default('0');
-            $table->string('keterangan', 250)->default('');
+            $table->longText('keterangan')->default('');
             $table->date('tglterima')->default('1900/1/1');
-            $table->date('tgljt')->default('1900/1/1');
+            $table->date('tgljatuhtempo')->default('1900/1/1');
             $table->unsignedBigInteger('emkl_id')->default('0');
             $table->unsignedBigInteger('jenisorderan_id')->default('0');
             $table->unsignedBigInteger('cabang_id')->default('0');

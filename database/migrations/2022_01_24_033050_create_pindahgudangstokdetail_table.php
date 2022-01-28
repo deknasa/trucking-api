@@ -23,7 +23,7 @@ class CreatePindahgudangstokdetailTable extends Migration
             $table->integer('statusstok')->length(11)->default('');
             $table->string('satuan',50)->default('');
             $table->double('qty',15,2)->default('0');
-            $table->double('hrgsat',15,2)->default('0');
+            $table->double('hrgsatuan',15,2)->default('0');
             $table->double('total',15,2)->default('0');
             $table->longText('keterangan')->default('');
             $table->integer('vulkanisirke')->length(11)->default('');

@@ -24,7 +24,7 @@ class CreateHutangbayardetailTable extends Migration
             $table->date('tglcair')->default('1900/1/1');
             $table->string('userid', 50)->default('');
             $table->double('potongan', 15,2)->default(0);
-            $table->string('keterangan', 50)->default('');
+            $table->longText('keterangan')->default('');
             $table->unsignedBigInteger('coa_id')->default(0);
             $table->string('modifiedby', 50)->default('');
             $table->timestamps();
