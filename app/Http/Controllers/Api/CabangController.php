@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Cabang;
+use App\Models\LogTrail;
 use App\Http\Requests\CabangRequest;
 use App\Models\Parameter;
 use Illuminate\Support\Facades\Schema;
@@ -169,11 +170,29 @@ class CabangController extends Controller
         DB::beginTransaction();
         try {
             $cabang = new Cabang();
-            $cabang->kodecabang = $request->kodecabang;
-            $cabang->namacabang = $request->namacabang;
+            $cabang->kodecabang = strtoupper($request->kodecabang);
+            $cabang->namacabang = strtoupper($request->namacabang);
             $cabang->statusaktif = $request->statusaktif;
 
             $cabang->save();
+
+            $datajson = [
+                'id' => $cabang->id,
+                'kodecabang' => strtoupper($request->kodecabang),
+                'namacabang' => strtoupper($request->namacabang),
+                'statusaktif' => $request->statusaktif,
+            ];
+
+            $logtrail = new LogTrail();
+            $logtrail->namatabel = 'CABANG';
+            $logtrail->postingdari = 'ENTRY CABANG';
+            $logtrail->idtrans = $cabang->id;
+            $logtrail->nobuktitrans = $cabang->id;
+            $logtrail->aksi = 'ENTRY';
+            $logtrail->datajson = json_encode($datajson);
+
+            $logtrail->save();
+
             DB::commit();
             /* Set position and page */
             $del = 0;
@@ -229,33 +248,45 @@ class CabangController extends Controller
      */
     public function update(CabangRequest $request, Cabang $cabang)
     {
+        DB::beginTransaction();
         try {
-            $update = $cabang->update($request->validated());
+            $cabang->update(array_map('strtoupper', $request->validated()));
 
+            $datajson = [
+                'id' => $cabang->id,
+                'kodecabang' => strtoupper($request->kodecabang),
+                'namacabang' => strtoupper($request->namacabang),
+                'statusaktif' => $request->statusaktif,
+            ];
 
-            if ($update) {
-                /* Set position and page */
-                $cabang->position = cabang::orderBy($request->sortname ?? 'id', $request->sortorder ?? 'asc')
-                    ->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $cabang->{$request->sortname})
-                    ->where('id', '<=', $cabang->id)
-                    ->count();
+            $logtrail = new LogTrail();
+            $logtrail->namatabel = 'CABANG';
+            $logtrail->postingdari = 'EDIT CABANG';
+            $logtrail->idtrans = $cabang->id;
+            $logtrail->nobuktitrans = $cabang->id;
+            $logtrail->aksi = 'EDIT';
+            $logtrail->datajson = json_encode($datajson);
 
-                if (isset($request->limit)) {
-                    $cabang->page = ceil($cabang->position / $request->limit);
-                }
+            $logtrail->save();
+            DB::commit();
 
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil diubah',
-                    'data' => $cabang
-                ]);
-            } else {
-                return response([
-                    'status' => false,
-                    'message' => 'Gagal diubah'
-                ]);
+            /* Set position and page */
+            $cabang->position = cabang::orderBy($request->sortname ?? 'id', $request->sortorder ?? 'asc')
+                ->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $cabang->{$request->sortname})
+                ->where('id', '<=', $cabang->id)
+                ->count();
+
+            if (isset($request->limit)) {
+                $cabang->page = ceil($cabang->position / $request->limit);
             }
+
+            return response([
+                'status' => true,
+                'message' => 'Berhasil diubah',
+                'data' => $cabang
+            ]);
         } catch (\Throwable $th) {
+            DB::rollBack();
             return response($th->getMessage());
         }
     }
@@ -268,9 +299,24 @@ class CabangController extends Controller
      */
     public function destroy(Cabang $cabang, CabangRequest $request)
     {
-        $delete = Cabang::destroy($cabang->id);
-        $del = 1;
-        if ($delete) {
+        DB::beginTransaction();
+        try {
+
+            Cabang::destroy($cabang->id);
+
+            $logtrail = new LogTrail();
+            $logtrail->namatabel = 'CABANG';
+            $logtrail->postingdari = 'DELETE CABANG';
+            $logtrail->idtrans = $cabang->id;
+            $logtrail->nobuktitrans = $cabang->id;
+            $logtrail->aksi = 'DELETE';
+            $logtrail->datajson = '';
+
+            $logtrail->save();
+
+            DB::commit();
+            Cabang::destroy($cabang->id);
+            $del = 1;
             $data = $this->getid($cabang->id, $request, $del);
             $cabang->position = $data->row;
             $cabang->id = $data->id;
@@ -283,11 +329,9 @@ class CabangController extends Controller
                 'message' => 'Berhasil dihapus',
                 'data' => $cabang
             ]);
-        } else {
-            return response([
-                'status' => false,
-                'message' => 'Gagal dihapus'
-            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return response($th->getMessage());
         }
     }
 
@@ -313,7 +357,7 @@ class CabangController extends Controller
             'grp' => $request->grp ?? '',
             'subgrp' => $request->subgrp ?? '',
         ];
-        $temp='##temp'.rand(1,10000);
+        $temp = '##temp' . rand(1, 10000);
         if ($params['status'] == 'entry') {
             $query = Parameter::select('id', 'text as keterangan')
                 ->where('grp', "=", $params['grp'])
@@ -352,7 +396,7 @@ class CabangController extends Controller
     {
 
 
-        $temp='##temp'.rand(1,10000);
+        $temp = '##temp' . rand(1, 10000);
         Schema::create($temp, function ($table) {
             $table->id();
             $table->bigInteger('id_')->default('0');
@@ -498,7 +542,7 @@ class CabangController extends Controller
     public function getPosition($id, $request, $del)
     {
 
-        $temp='##temp'.rand(1,10000);
+        $temp = '##temp' . rand(1, 10000);
         Schema::create($temp, function ($table) {
             $table->id();
             $table->bigInteger('id_')->default('0');
@@ -619,7 +663,7 @@ class CabangController extends Controller
     public function getid($id, $request, $del)
     {
 
-        $temp='##temp'.rand(1,10000);
+        $temp = '##temp' . rand(1, 10000);
         Schema::create($temp, function ($table) {
             $table->id();
             $table->bigInteger('id_')->default('0');
@@ -706,7 +750,7 @@ class CabangController extends Controller
                 $baris = $request->indexRow + $bar + 1;
             }
 
-            
+
             if (DB::table($temp)
                 ->where('id', '=', $baris)->exists()
             ) {

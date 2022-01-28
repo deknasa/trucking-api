@@ -2,7 +2,10 @@
 
 namespace Database\Seeders;
 
+<<<<<<< HEAD
 use App\Models\Menu;
+=======
+>>>>>>> 2a180d1c8113d21ff9e5eb8d26b0e92eeedc32c0
 use Illuminate\Database\Seeder;
 
 class MenuSeeder extends Seeder
@@ -14,6 +17,7 @@ class MenuSeeder extends Seeder
      */
     public function run()
     {
+<<<<<<< HEAD
         $menus = [
             [
                 'menuname' => 'Home',
@@ -361,5 +365,8 @@ class MenuSeeder extends Seeder
         foreach ($menus as $menu ) {
             Menu::create($menu);
         }
+=======
+        //
+>>>>>>> 2a180d1c8113d21ff9e5eb8d26b0e92eeedc32c0
     }
 }

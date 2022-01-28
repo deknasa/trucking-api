@@ -7,6 +7,11 @@ use App\Http\Controllers\Api\CabangController;
 use App\Http\Controllers\Api\ParameterController;
 use App\Http\Controllers\Api\SupirController;
 use App\Http\Controllers\Api\TradoController;
+use App\Http\Controllers\Api\RoleController;
+use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\MenuController;
+use App\Http\Controllers\Api\AcosController;
+use App\Http\Controllers\Api\UserRoleController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\RunningNumberController;
@@ -42,8 +47,31 @@ Route::resource('cabang', CabangController::class);
 
 Route::get('absensi/no_bukti', [AbsensiSupirHeaderController::class, 'getNoBukti']);
 Route::get('absensi/running_number', [AbsensiSupirHeaderController::class, 'getRunningNumber']);
+Route::get('role/field_length', [RoleController::class, 'fieldLength']);
+Route::resource('role', RoleController::class);
+
+Route::get('acos/field_length', [AcosController::class, 'fieldLength']);
+Route::resource('acos', AcosController::class);
+
+
+Route::get('user/field_length', [UserController::class, 'fieldLength']);
+Route::get('user/combostatus', [UserController::class, 'combostatus']);
+Route::get('user/combocabang', [UserController::class, 'combocabang']);
+Route::resource('user', UserController::class);
+
+Route::get('menu/field_length', [MenuController::class, 'fieldLength']);
+Route::get('menu/combomenuparent', [MenuController::class, 'combomenuparent']);
+Route::get('menu/getdatanamaacos', [MenuController::class, 'getdatanamaacos']);
+Route::resource('menu', MenuController::class);
+
 Route::resource('absensi', AbsensiSupirHeaderController::class);
 Route::resource('absensi_detail', AbsensiSupirDetailController::class);
+
+Route::get('userrole/field_length', [UserRoleController::class, 'fieldLength']);
+Route::get('userrole/detail', [UserRoleController::class, 'detail']);
+Route::get('userrole/detaillist', [UserRoleController::class, 'detaillist']);
+Route::resource('userrole', UserRoleController::class);
+
 Route::resource('trado', TradoController::class);
 Route::resource('supir', SupirController::class);
 Route::resource('absentrado', AbsenTradoController::class);

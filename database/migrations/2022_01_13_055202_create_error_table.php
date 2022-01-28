@@ -15,7 +15,7 @@ class CreateErrorTable extends Migration
     {
         Schema::create('error', function (Blueprint $table) {
             $table->id();
-            $table->string('keterangan', 1000)->default('');            
+            $table->longText('keterangan')->default('');            
             $table->string('modifiedby', 50)->default('');            
             $table->timestamps();
         });

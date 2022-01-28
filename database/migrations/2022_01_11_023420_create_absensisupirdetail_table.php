@@ -22,7 +22,7 @@ class CreateabsensisupirdetailTable extends Migration
             $table->longText('keterangan')->default('');
             $table->double('uangjalan', 15,2)->default(0);
             $table->unsignedBigInteger('absen_id')->default(0);
-            $table->string('jam', 50)->default('');
+            $table->time('jam')->default('');
             $table->string('modifiedby', 50)->default('');
             $table->timestamps();
 

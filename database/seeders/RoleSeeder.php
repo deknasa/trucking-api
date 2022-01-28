@@ -2,7 +2,10 @@
 
 namespace Database\Seeders;
 
+<<<<<<< HEAD
 use App\Models\Role;
+=======
+>>>>>>> 2a180d1c8113d21ff9e5eb8d26b0e92eeedc32c0
 use Illuminate\Database\Seeder;
 
 class RoleSeeder extends Seeder
@@ -14,6 +17,7 @@ class RoleSeeder extends Seeder
      */
     public function run()
     {
+<<<<<<< HEAD
         $roles = [
             [
                 'rolename' => 'ADMIN',
@@ -25,5 +29,8 @@ class RoleSeeder extends Seeder
                 'rolename' => $role['rolename']
             ]);
         }
+=======
+        //
+>>>>>>> 2a180d1c8113d21ff9e5eb8d26b0e92eeedc32c0
     }
 }

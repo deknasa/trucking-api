@@ -16,7 +16,7 @@ class CreateEmklTable extends Migration
         Schema::create('emkl', function (Blueprint $table) {
             $table->id();
             $table->string('namaemkl', 30)->default('');
-            $table->string('keterangan', 255)->default('');
+            $table->longText('keterangan')->default('');
             $table->integer('statusaktif')->length(11)->default(0);            
             $table->string('fnamaperusahaan', 100)->default('');
             $table->string('alamat', 250)->default('');
