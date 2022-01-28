@@ -4,50 +4,126 @@ namespace App\Helpers;
 
 use App\Models\AbsensiSupirHeader;
 use App\Models\Parameter;
+use DateTime;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class App
 {
-    /**
-     * Get running number
-     * 
-     * @param string $text
-     * @param int $lastRow
-     * 
-     * @return string $runningNumber
-     */
-    public function runningNumber($text, $lastRow)
+    public function runningNumber(string $format, int $lastRow): string
     {
-        $text = str_replace('#', '', $text);
-        $text = str_replace('RMW', $this->numberToRoman(1), $text);
-        $text = str_replace('Y', date('Y'), $text);
+        $totalSeparator = 0;
+        $staticSeparator = '#';
+        $staticIterator = 0;
+        $dynamicSeparator = '*';
+        $dynamicIterator = 0;
+        $tempStaticText = '';
+        $tempDynamicText = '';
+        $staticTexts = [];
+        $dynamicTexts = [];
+        $tempResult = '';
+        $separatedResults = [];
 
-        $numberFormat = substr($text, 4, 3);
-        $lastNumber = '';
+        /**
+         * Separate static and dynamic text
+         * then change them to symbol
+         */
+        for ($i = 0; $i < strlen($format); $i++) {
+            if ($format[$i] == $staticSeparator) {
+                $totalSeparator++;
+            }
 
-        for ($i = 0; $i < strlen($lastRow); $i++) {
-            $lastNumber .= '0';
+            if ($totalSeparator == 1) {
+                if ($format[$i] != $staticSeparator) {
+                    $tempStaticText .= $format[$i];
+                } else {
+                    $separatedResults[] = $dynamicSeparator;
+                    $tempResult .= $dynamicSeparator;
+                }
+            } elseif ($totalSeparator == 0) {
+                if ($format[$i] != $staticSeparator) {
+                    $tempDynamicText .= $format[$i];
+                }
+
+                if ($i == strlen($format) - 1) {
+                    $dynamicTexts[] = $tempDynamicText;
+                    $tempDynamicText = '';
+
+                    $separatedResults[] = $dynamicSeparator;
+                }
+            } else {
+                $dynamicTexts[] = $tempDynamicText;
+                $tempDynamicText = '';
+                $separatedResults[] = $format[$i];
+                $tempResult .= $format[$i];
+            }
+
+            if ($totalSeparator == 2) {
+                $staticTexts[] = $tempStaticText;
+                $tempStaticText = '';
+                $totalSeparator = 0;
+            }
         }
 
-        $lastNumber .= $lastRow + 1;
-        $text = str_replace('9999', $lastNumber, $text);
+        /**
+         * Change dynamic text format
+         */
+        foreach ($dynamicTexts as $index => $dynamicText) {
+            switch ($dynamicText) {
+                case 'RMW':
+                    $dynamicTexts[$index] = $this->numberToRoman(date('n'));
+                    break;
+                case $this->isDateFormat($dynamicText):
+                    $dynamicTexts[$index] = date($dynamicText);
+                    break;
+                case is_numeric($dynamicText):
+                    $dynamicText = str_replace(' ', '', $dynamicText);
+                    $dynamicTexts[$index] = sprintf('%0'. strlen($dynamicText) .'d', $lastRow + 1);
+                    break;
+                default:
+                    # code...
+                    break;
+            }
+        }
 
-        $runningNumber = $text;
+        /**
+         * Change back the symbol
+         * into formated text
+         */
+        foreach ($separatedResults as $index => $separatedResult) {
+            if ($separatedResult == $staticSeparator) {
+                $separatedResults[$index] = $staticTexts[$staticIterator];
 
-        return $runningNumber;
+                $staticIterator++;
+            } elseif ($separatedResult == $dynamicSeparator) {
+                $separatedResults[$index] = $dynamicTexts[$dynamicIterator];
+                
+                $dynamicIterator++;
+            }
+        }
+        
+        $result = join($separatedResults);
+        
+        return $result;
     }
 
-    /**
-     * Get roman number of an integer
-     * 
-     * @param int $number
-     * 
-     * @return string
-     */
-    function numberToRoman($number)
+    function numberToRoman(int $number): string
     {
-        $map = array('M' => 1000, 'CM' => 900, 'D' => 500, 'CD' => 400, 'C' => 100, 'XC' => 90, 'L' => 50, 'XL' => 40, 'X' => 10, 'IX' => 9, 'V' => 5, 'IV' => 4, 'I' => 1);
+        $map = [
+            'M' => 1000,
+            'CM' => 900,
+            'D' => 500,
+            'CD' => 400,
+            'C' => 100,
+            'XC' => 90,
+            'L' => 50,
+            'XL' => 40,
+            'X' => 10,
+            'IX' => 9,
+            'V' => 5,
+            'IV' => 4,
+            'I' => 1
+        ];
         $returnValue = '';
         while ($number > 0) {
             foreach ($map as $roman => $int) {
@@ -60,5 +136,25 @@ class App
         }
 
         return $returnValue;
+    }
+
+    function isDateFormat(string $format): bool
+    {
+        $dateFormats = [
+            'y',
+            'm',
+            'd',
+            'n'
+        ];
+
+        foreach ($dateFormats as $index => $dateFormat) {
+            if (strpos(strtolower($format), $dateFormat) > -1) {
+                return true;
+            }
+
+            continue;
+        }
+
+        return false;
     }
 }

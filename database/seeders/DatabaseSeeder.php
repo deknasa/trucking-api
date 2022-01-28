@@ -22,6 +22,11 @@ class DatabaseSeeder extends Seeder
             // AbsenTradoSeeder::class,
             // CabangSeeder::class,
             MenuSeeder::class,
+            UserRoleSeeder::class,
+            RoleSeeder::class,
+            AcoSeeder::class,
+            AclSeeder::class,
+            UserAclSeeder::class,
         ]);
     }
 }

@@ -15,7 +15,7 @@ class AbsensiSupirHeaderSeeder extends Seeder
     public function run()
     {
         AbsensiSupirHeader::factory()
-            ->count(2)
+            ->count(10)
             ->create();
     }
 }

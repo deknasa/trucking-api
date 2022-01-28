@@ -28,7 +28,7 @@ class Controller extends BaseController
         $this->appHelper = new AppHelper();
     }
 
-    public function getRunningNumber(Request $request): Response
+    public function getRunningNumber(Request $request)
     {
         $request->validate([
             'group' => 'required',
