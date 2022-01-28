@@ -152,6 +152,7 @@ class ParameterController extends Controller
             $parameter->modifiedby = Auth::user()->name ?? 'ADMIN';
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
+            $parameter->modifiedby = $request->modifiedby;
 
             $parameter->save();
             DB::commit();
@@ -206,7 +207,8 @@ class ParameterController extends Controller
             $parameter->text = $request->text;
             $parameter->memo = $request->memo;
             $parameter->modifiedby = $request->modifiedby ?? 'ADMIN';
-
+            $parameter->modifiedby = $request->modifiedby;
+            
             if ($parameter->save()) {
                 /* Set position and page */
                 $parameter->position = $this->getPosition($parameter, $request);

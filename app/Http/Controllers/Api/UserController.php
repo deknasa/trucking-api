@@ -179,6 +179,7 @@ class UserController extends Controller
             $user->karyawan_id = $request->karyawan_id;
             $user->dashboard = strtoupper($request->dashboard);
             $user->statusaktif = $request->statusaktif;
+            $user->modifiedby = $request->modifiedby;
 
             $user->save();
 
@@ -191,6 +192,7 @@ class UserController extends Controller
                 'karyawan_id' => $request->karyawan_id,
                 'dashboard' => strtoupper($request->dashboard),
                 'statusaktif' => $request->statusaktif,
+                'modifiedby' => $request->modifiedby,
             ];
 
             $logtrail = new LogTrail();
@@ -271,6 +273,7 @@ class UserController extends Controller
                 'karyawan_id' => $request->karyawan_id,
                 'dashboard' => strtoupper($request->dashboard),
                 'statusaktif' => $request->statusaktif,
+                'modifiedby' => strtoupper($request->modifiedby),
             ];
 
             $logtrail = new LogTrail();
@@ -318,13 +321,18 @@ class UserController extends Controller
 
             User::destroy($user->id);
 
+            $datajson = [
+                'id' => $user->id,
+                'modifiedby' => strtoupper($request->modifiedby),
+            ];
+
             $logtrail = new LogTrail();
             $logtrail->namatabel = 'USER';
             $logtrail->postingdari = 'DELETE USER';
             $logtrail->idtrans = $user->id;
             $logtrail->nobuktitrans = $user->id;
             $logtrail->aksi = 'DELETE';
-            $logtrail->datajson = '';
+            $logtrail->datajson = json_encode($datajson);
 
             $logtrail->save();
 

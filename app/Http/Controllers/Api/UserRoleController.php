@@ -284,12 +284,15 @@ class UserRoleController extends Controller
             $userrole = new UserRole();
             $userrole->user_id = $request->user_id;
             $userrole->role_id = $request->role_id;
+            $userrole->modifiedby = $request->modifiedby;
             $userrole->save();
 
             $datajson = [
                 'id' => $userrole->id,
                 'user_id' => $request->user_id,
-                'role_id' => $request->role_id
+                'role_id' => $request->role_id,
+                'modifiedby' => strtoupper($request->modifiedby),
+
             ];
 
             $logtrail = new LogTrail();
@@ -366,6 +369,7 @@ class UserRoleController extends Controller
                 'user_id' => $request->user_id,
                 'role_id' => $request->role_id,
                 'statusaktif' => $request->statusaktif,
+                'modifiedby' => strtoupper($request->modifiedby),
             ];
 
             $logtrail = new LogTrail();
@@ -413,13 +417,18 @@ class UserRoleController extends Controller
 
             UserRole::destroy($userrole->id);
 
+            $datajson = [
+                'id' => $userrole->id,
+                'modifiedby' => strtoupper($request->modifiedby),
+            ];
+
             $logtrail = new LogTrail();
             $logtrail->namatabel = 'USERROLE';
             $logtrail->postingdari = 'DELETE USER ROLE';
             $logtrail->idtrans = $userrole->id;
             $logtrail->nobuktitrans = $userrole->id;
             $logtrail->aksi = 'DELETE';
-            $logtrail->datajson = '';
+            $logtrail->datajson = json_encode($datajson);
 
             $logtrail->save();
 
@@ -560,8 +569,8 @@ class UserRoleController extends Controller
 
     public function detaillist(Request $request) {
         $data = UserRole::select(
-            'userrole.id',
-            'role.rolename as role_id',
+            'userrole.id as role_id',
+            'role.rolename as rolename',
         )
             ->Join('role', 'userrole.role_id', '=', 'role.id')
             ->where('userrole.user_id','=',$request->user_id)

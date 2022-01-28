@@ -31,7 +31,8 @@ class UserRequest extends FormRequest
             'cabang_id' => 'required',
             'karyawan_id' => 'required',
             'dashboard' => 'required',
-            'statusaktif' => 'required'
+            'statusaktif' => 'required',
+            'modifiedby' => 'required'
         ];
     }
 
@@ -45,6 +46,7 @@ class UserRequest extends FormRequest
             'karyawan_id' => 'karyawan_id',
             'dashboard' => 'dashboard',
             'statusaktif' => 'statusaktif',
+            'modifiedby' => 'modifiedby'
         ];
     }
 }

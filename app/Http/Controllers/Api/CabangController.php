@@ -173,6 +173,7 @@ class CabangController extends Controller
             $cabang->kodecabang = strtoupper($request->kodecabang);
             $cabang->namacabang = strtoupper($request->namacabang);
             $cabang->statusaktif = $request->statusaktif;
+            $cabang->modifiedby = strtoupper($request->modifiedby);
 
             $cabang->save();
 
@@ -181,6 +182,7 @@ class CabangController extends Controller
                 'kodecabang' => strtoupper($request->kodecabang),
                 'namacabang' => strtoupper($request->namacabang),
                 'statusaktif' => $request->statusaktif,
+                'modifiedby' => strtoupper($request->modifiedby),
             ];
 
             $logtrail = new LogTrail();
@@ -257,6 +259,7 @@ class CabangController extends Controller
                 'kodecabang' => strtoupper($request->kodecabang),
                 'namacabang' => strtoupper($request->namacabang),
                 'statusaktif' => $request->statusaktif,
+                'modifiedby' => strtoupper($request->modifiedby),
             ];
 
             $logtrail = new LogTrail();
@@ -304,13 +307,18 @@ class CabangController extends Controller
 
             Cabang::destroy($cabang->id);
 
+            $datajson = [
+                'id' => $cabang->id,
+                'modifiedby' => strtoupper($request->modifiedby),
+            ];
+
             $logtrail = new LogTrail();
             $logtrail->namatabel = 'CABANG';
             $logtrail->postingdari = 'DELETE CABANG';
             $logtrail->idtrans = $cabang->id;
             $logtrail->nobuktitrans = $cabang->id;
             $logtrail->aksi = 'DELETE';
-            $logtrail->datajson = '';
+            $logtrail->datajson = json_encode($datajson);
 
             $logtrail->save();
 

@@ -267,7 +267,8 @@ class MenuController extends Controller
                 'menuseq' => $request->menuseq,
                 'menuparent' => $request->menuparent,
                 'menuicon' => strtolower($request->menuicon),
-                'menuexe' => strtolower($request->menuexe)
+                'menuexe' => strtolower($request->menuexe),
+                'modifiedby' => strtoupper($request->modifiedby),
             ];
 
             $logtrail = new LogTrail();
@@ -362,6 +363,7 @@ class MenuController extends Controller
                 'menuparent' => $request->menuparent,
                 'menuicon' => strtolower($request->menuicon),
                 'menuexe' => strtolower($request->menuexe),
+                'modifiedby' => strtoupper($request->modifiedby),
             ];
 
             $logtrail = new LogTrail();
@@ -423,13 +425,18 @@ class MenuController extends Controller
                 }
             Menu::destroy($menu->id);
 
+            $datajson = [
+                'id' => $menu->id,
+                'modifiedby' => strtoupper($request->modifiedby),
+            ];
+
             $logtrail = new LogTrail();
             $logtrail->namatabel = 'MENU';
             $logtrail->postingdari = 'DELETE MENU';
             $logtrail->idtrans = $menu->id;
             $logtrail->nobuktitrans = $menu->id;
             $logtrail->aksi = 'DELETE';
-            $logtrail->datajson = '';
+            $logtrail->datajson = json_encode($datajson);
 
             $logtrail->save();
 
