@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Helpers\App;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreAbsensiSupirHeaderRequest;
 use App\Http\Requests\UpdateAbsensiSupirHeaderRequest;
 use App\Models\AbsensiSupirHeader;
+use App\Models\Parameter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -90,6 +92,7 @@ class AbsensiSupirHeaderController extends Controller
             $absensiSupirHeader->kasgantung_nobukti = $request->kasgantung_nobukti ?? '1';
             $absensiSupirHeader->nominal = $request->nominal ?? '1';
             $absensiSupirHeader->modifiedby = $request->modifiedby ?? '1';
+            $absensiSupirHeader->kasgantung_nobukti = $request->kasgantung_nobukti ?? '';
             $absensiSupirHeader->save();
 
             /* Store detail */

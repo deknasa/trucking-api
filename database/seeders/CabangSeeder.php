@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Cabang;
 use Illuminate\Database\Seeder;
 
 class CabangSeeder extends Seeder
@@ -13,6 +14,8 @@ class CabangSeeder extends Seeder
      */
     public function run()
     {
-        //
+        Cabang::factory()
+            ->count(21)
+            ->create();
     }
 }

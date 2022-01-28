@@ -17,9 +17,16 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             ParameterSeeder::class,
             AbsensiSupirHeaderSeeder::class,
-            TradoSeeder::class,
-            SupirSeeder::class,
-            AbsenTradoSeeder::class,
+            // TradoSeeder::class,
+            // SupirSeeder::class,
+            // AbsenTradoSeeder::class,
+            // CabangSeeder::class,
+            MenuSeeder::class,
+            UserRoleSeeder::class,
+            RoleSeeder::class,
+            AcoSeeder::class,
+            AclSeeder::class,
+            UserAclSeeder::class,
         ]);
     }
 }

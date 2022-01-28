@@ -13,6 +13,8 @@ use App\Http\Controllers\Api\MenuController;
 use App\Http\Controllers\Api\AcosController;
 use App\Http\Controllers\Api\UserRoleController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\Controller;
+use App\Http\Controllers\RunningNumberController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -43,6 +45,8 @@ Route::get('cabang/combostatus', [CabangController::class, 'combostatus']);
 Route::get('cabang/getPosition2', [CabangController::class, 'getPosition2']);
 Route::resource('cabang', CabangController::class);
 
+Route::get('absensi/no_bukti', [AbsensiSupirHeaderController::class, 'getNoBukti']);
+Route::get('absensi/running_number', [AbsensiSupirHeaderController::class, 'getRunningNumber']);
 Route::get('role/field_length', [RoleController::class, 'fieldLength']);
 Route::resource('role', RoleController::class);
 
@@ -71,3 +75,5 @@ Route::resource('userrole', UserRoleController::class);
 Route::resource('trado', TradoController::class);
 Route::resource('supir', SupirController::class);
 Route::resource('absentrado', AbsenTradoController::class);
+
+Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');

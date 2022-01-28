@@ -8,6 +8,7 @@ use App\Http\Requests\ParameterRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class ParameterController extends Controller
 {
@@ -281,7 +282,6 @@ class ParameterController extends Controller
             // ->where('id', $request->sortorder == 'desc' ? '>=' : '<=', $parameter->id)
             ->count();
     }
-
 
     public function getid($id, $request, $del)
     {

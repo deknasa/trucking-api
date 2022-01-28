@@ -15,6 +15,22 @@ class ParameterSeeder extends Seeder
      */
     public function run()
     {
+        Parameter::create([
+            'grp' => 'ABSENSI',
+            'subgrp' => 'ABSENSI',
+            'text' => '#ABS# 9999#/#RMW#/#Y',
+            'memo' => '',
+            'modifiedby' => 'ADMIN',
+        ]);
+        
+        Parameter::create([
+            'grp' => 'KAS GANTUNG',
+            'subgrp' => 'NOMOR KAS GANTUNG	',
+            'text' => '#KGT# 9999#/#RMW#/#Y',
+            'memo' => '',
+            'modifiedby' => 'ADMIN',
+        ]);
+        
         Parameter::factory()
             ->count(100)
             ->create();
