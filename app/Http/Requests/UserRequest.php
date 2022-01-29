@@ -30,7 +30,6 @@ class UserRequest extends FormRequest
             'password' => 'required',
             'cabang_id' => 'required',
             'karyawan_id' => 'required',
-            'dashboard' => 'required',
             'statusaktif' => 'required',
             'modifiedby' => 'required'
         ];

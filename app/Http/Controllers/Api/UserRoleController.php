@@ -281,11 +281,17 @@ class UserRoleController extends Controller
     {
         DB::beginTransaction();
         try {
-            $userrole = new UserRole();
-            $userrole->user_id = $request->user_id;
-            $userrole->role_id = $request->role_id;
-            $userrole->modifiedby = $request->modifiedby;
-            $userrole->save();
+        
+
+            for ($i = 0; $i < count($request->role_id); $i++) {
+                $userrole = new UserRole();
+                $userrole->user_id = $request->user_id;
+                $userrole->modifiedby = $request->modifiedby;
+                $userrole->role_id = $request->role_id[$i]  ?? 0;
+                $userrole->save();
+            }
+
+            
 
             $datajson = [
                 'id' => $userrole->id,
@@ -362,40 +368,49 @@ class UserRoleController extends Controller
     {
         DB::beginTransaction();
         try {
-            $userrole->update(array_map('strtoupper', $request->validated()));
+            Userrole::where('user_id', $request->user_id)->delete();
+
+            for ($i = 0; $i < count($request->role_id); $i++) {
+                $userrole = new UserRole();
+                $userrole->user_id = $request->user_id;
+                $userrole->modifiedby = $request->modifiedby;
+                $userrole->role_id = $request->role_id[$i]  ?? 0;
+                $userrole->save();
+            }
+
+            
 
             $datajson = [
                 'id' => $userrole->id,
                 'user_id' => $request->user_id,
                 'role_id' => $request->role_id,
-                'statusaktif' => $request->statusaktif,
                 'modifiedby' => strtoupper($request->modifiedby),
+
             ];
 
             $logtrail = new LogTrail();
-            $logtrail->namatabel = 'CABANG';
-            $logtrail->postingdari = 'EDIT CABANG';
+            $logtrail->namatabel = 'USERROLE';
+            $logtrail->postingdari = 'ENTRY USER ROLE';
             $logtrail->idtrans = $userrole->id;
             $logtrail->nobuktitrans = $userrole->id;
-            $logtrail->aksi = 'EDIT';
+            $logtrail->aksi = 'ENTRY';
             $logtrail->datajson = json_encode($datajson);
 
             $logtrail->save();
+
             DB::commit();
-
             /* Set position and page */
-            $userrole->position = userrole::orderBy($request->sortname ?? 'id', $request->sortorder ?? 'asc')
-                ->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $userrole->{$request->sortname})
-                ->where('id', '<=', $userrole->id)
-                ->count();
-
+            $del = 0;
+            $data = $this->getid($userrole->id, $request, $del);
+            $userrole->position = $data->row;
+            // dd($userrole->position );
             if (isset($request->limit)) {
                 $userrole->page = ceil($userrole->position / $request->limit);
             }
 
             return response([
                 'status' => true,
-                'message' => 'Berhasil diubah',
+                'message' => 'Berhasil disimpan',
                 'data' => $userrole
             ]);
         } catch (\Throwable $th) {
@@ -415,7 +430,7 @@ class UserRoleController extends Controller
         DB::beginTransaction();
         try {
 
-            UserRole::destroy($userrole->id);
+            Userrole::where('user_id', $request->user_id)->delete();
 
             $datajson = [
                 'id' => $userrole->id,
