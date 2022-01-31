@@ -151,7 +151,7 @@ class UserRoleController extends Controller
             'sortOrder' => $request->sortOrder ?? 'asc',
         ];
 
-        
+
         $totalRows = UserRole::count();
         $totalPages = ceil($totalRows / $params['limit']);
 
@@ -167,7 +167,7 @@ class UserRoleController extends Controller
             )
                 ->Join('user', 'userrole.user_id', '=', 'user.id')
                 ->Join('role', 'userrole.role_id', '=', 'role.id')
-                ->where('userrole.user_id','=',$request->user_id)
+                ->where('userrole.user_id', '=', $request->user_id)
                 ->orderBy('userrole.id', $params['sortOrder']);
         } else {
             if ($params['sortOrder'] == 'asc') {
@@ -182,7 +182,7 @@ class UserRoleController extends Controller
                     ->Join('user', 'userrole.user_id', '=', 'user.id')
                     ->Join('role', 'userrole.role_id', '=', 'role.id')
                     ->orderBy($params['sortIndex'], $params['sortOrder'])
-                    ->where('userrole.user_id','=',$request->user_id)
+                    ->where('userrole.user_id', '=', $request->user_id)
                     ->orderBy('userrole.id', $params['sortOrder']);
             } else {
                 $query = UserRole::select(
@@ -195,7 +195,7 @@ class UserRoleController extends Controller
                 )
                     ->Join('user', 'userrole.user_id', '=', 'user.id')
                     ->Join('role', 'userrole.role_id', '=', 'role.id')
-                    ->where('userrole.user_id','=',$request->user_id)
+                    ->where('userrole.user_id', '=', $request->user_id)
                     ->orderBy($params['sortIndex'], $params['sortOrder'])
                     ->orderBy('userrole.id', 'asc');
             }
@@ -281,33 +281,41 @@ class UserRoleController extends Controller
      */
     public function store(UserRoleRequest $request)
     {
+
         DB::beginTransaction();
         try {
-        
-
+            $controller = new ParameterController;
+            $dataaktif = $controller->getparameterid('STATUS AKTIF', 'STATUS AKTIF', 'AKTIF');
+            $aktif = $dataaktif->id;
+// dd($aktif);
             for ($i = 0; $i < count($request->role_id); $i++) {
                 $userrole = new UserRole();
+                
                 $userrole->user_id = $request->user_id;
                 $userrole->modifiedby = $request->modifiedby;
                 $userrole->role_id = $request->role_id[$i]  ?? 0;
-                $userrole->save();
+                if ($request->status[$i] == $aktif) {
+                    // dd($request->role_id[$i]);
+                    $userrole->save();
+                    
+                }
             }
+       
+          
 
-            
 
             $datajson = [
-                'id' => $userrole->id,
                 'user_id' => $request->user_id,
                 'role_id' => $request->role_id,
                 'modifiedby' => strtoupper($request->modifiedby),
 
             ];
-
+            // dd('test');
             $logtrail = new LogTrail();
             $logtrail->namatabel = 'USERROLE';
             $logtrail->postingdari = 'ENTRY USER ROLE';
-            $logtrail->idtrans = $userrole->id;
-            $logtrail->nobuktitrans = $userrole->id;
+            $logtrail->idtrans = $request->user_id;
+            $logtrail->nobuktitrans = $request->user_id;
             $logtrail->aksi = 'ENTRY';
             $logtrail->datajson = json_encode($datajson);
 
@@ -316,8 +324,12 @@ class UserRoleController extends Controller
             DB::commit();
             /* Set position and page */
             $del = 0;
-            $data = $this->getid($userrole->id, $request, $del);
+            $data = $this->getid($userrole->user_id, $request, $del) ?? 0;
+
+//    dd($data);
+
             $userrole->position = $data->row;
+
             // dd($userrole->position );
             if (isset($request->limit)) {
                 $userrole->page = ceil($userrole->position / $request->limit);
@@ -380,7 +392,7 @@ class UserRoleController extends Controller
                 $userrole->save();
             }
 
-            
+
 
             $datajson = [
                 'id' => $userrole->id,
@@ -584,38 +596,38 @@ class UserRoleController extends Controller
         return $data;
     }
 
-    public function detaillist(Request $request) {
+    public function detaillist(Request $request)
+    {
 
-        $param1=$request->user_id;
-    
+        $param1 = $request->user_id;
+
         $controller = new ParameterController;
         $dataaktif = $controller->getparameterid('STATUS AKTIF', 'STATUS AKTIF', 'AKTIF');
         $datanonaktif = $controller->getparameterid('STATUS AKTIF', 'STATUS AKTIF', 'NON AKTIF');
         $aktif = $dataaktif->id;
         $nonaktif = $datanonaktif->id;
-        
-        
+
+
         $data = Role::select(
-           DB::raw("role.id as role_id,
+            DB::raw("role.id as role_id,
                     role.rolename as rolename,
                     (case when isnull(userrole.role_id,0)=0 then 
-                    ".DB::raw($nonaktif)." 
+                    " . DB::raw($nonaktif) . " 
                     else 
-                    ".DB::raw($aktif)." 
+                    " . DB::raw($aktif) . " 
                     end) as status
             ")
-            )
-            ->leftJoin('userrole', function($join)  use ($param1)
-                         {
-                             $join->on('role.id', '=', 'userrole.role_id');
-                             $join->on('userrole.user_id','=',DB::raw("'".$param1."'"));
-                         })
+        )
+            ->leftJoin('userrole', function ($join)  use ($param1) {
+                $join->on('role.id', '=', 'userrole.role_id');
+                $join->on('userrole.user_id', '=', DB::raw("'" . $param1 . "'"));
+            })
             ->orderBy('role.id')
             ->get();
 
-            return response([
-                'data' => $data
-            ]);
+        return response([
+            'data' => $data
+        ]);
     }
 
 
@@ -661,5 +673,4 @@ class UserRoleController extends Controller
             'data' => $data
         ]);
     }
-
 }

@@ -168,7 +168,6 @@ class UserController extends Controller
     public function store(UserRequest $request)
     {
 
-
         DB::beginTransaction();
         try {
             $user = new User();
