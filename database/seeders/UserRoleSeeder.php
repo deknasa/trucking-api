@@ -2,10 +2,7 @@
 
 namespace Database\Seeders;
 
-<<<<<<< HEAD
 use App\Models\UserRole;
-=======
->>>>>>> 2a180d1c8113d21ff9e5eb8d26b0e92eeedc32c0
 use Illuminate\Database\Seeder;
 
 class UserRoleSeeder extends Seeder
@@ -17,7 +14,6 @@ class UserRoleSeeder extends Seeder
      */
     public function run()
     {
-<<<<<<< HEAD
         $userroles  = [
             [
                 'user_id' => 1,
@@ -40,8 +36,5 @@ class UserRoleSeeder extends Seeder
                 'modifiedby' => 'admin',
             ]);
         }
-=======
-        //
->>>>>>> 2a180d1c8113d21ff9e5eb8d26b0e92eeedc32c0
     }
 }
