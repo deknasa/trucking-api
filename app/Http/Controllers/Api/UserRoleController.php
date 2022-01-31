@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\UserRole;
 use App\Models\LogTrail;
-use App\Models\User;
+use App\Models\Parameter;
 use App\Models\Role;
 use App\Http\Requests\UserRoleRequest;
 use Illuminate\Support\Facades\Schema;
@@ -13,6 +13,8 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Api\ParameterController;
+
 
 class UserRoleController extends Controller
 {
@@ -59,11 +61,11 @@ class UserRoleController extends Controller
         $totalPages = ceil($totalRows / $params['limit']);
 
         /* Sorting */
-        if ($params['sortIndex'] == 'name') {
+        if ($params['sortIndex'] == 'user') {
             $query = DB::table($temp)
                 ->select(
                     $temp . '.user_id as user_id',
-                    'user.name as name',
+                    'user.user as user',
                     $temp . '.modifiedby as modifiedby',
                     $temp . '.updated_at as updated_at'
                 )
@@ -73,7 +75,7 @@ class UserRoleController extends Controller
             $query = DB::table($temp)
                 ->select(
                     $temp . '.user_id as user_id',
-                    'user.name as name',
+                    'user.user as user',
                     $temp . '.modifiedby as modifiedby',
                     $temp . '.updated_at as updated_at'
                 )
@@ -88,8 +90,8 @@ class UserRoleController extends Controller
             switch ($params['search']['groupOp']) {
                 case "AND":
                     foreach ($params['search']['rules'] as $index => $search) {
-                        if ($search['field'] == 'name') {
-                            $query = $query->where('user.name', 'LIKE', "%$search[data]%");
+                        if ($search['field'] == 'user') {
+                            $query = $query->where('user.user', 'LIKE', "%$search[data]%");
                         } else {
                             $query = $query->where($search['field'], 'LIKE', "%$search[data]%");
                         }
@@ -98,8 +100,8 @@ class UserRoleController extends Controller
                     break;
                 case "OR":
                     foreach ($params['search']['rules'] as $index => $search) {
-                        if ($search['field'] == 'name') {
-                            $query = $query->orWhere('user.name', 'LIKE', "%$search[data]%");
+                        if ($search['field'] == 'user') {
+                            $query = $query->orWhere('user.user', 'LIKE', "%$search[data]%");
                         } else {
                             $query = $query->orWhere($search['field'], 'LIKE', "%$search[data]%");
                         }
@@ -157,7 +159,7 @@ class UserRoleController extends Controller
         if ($params['sortIndex'] == 'id') {
             $query = UserRole::select(
                 'userrole.id',
-                'user.name as user_id',
+                'user.user as user',
                 'role.rolename as role_id',
                 'userrole.modifiedby',
                 'userrole.created_at',
@@ -171,7 +173,7 @@ class UserRoleController extends Controller
             if ($params['sortOrder'] == 'asc') {
                 $query = UserRole::select(
                     'userrole.id',
-                    'user.name as user_id',
+                    'user.user as user',
                     'role.rolename as role_id',
                     'userrole.modifiedby',
                     'userrole.created_at',
@@ -185,7 +187,7 @@ class UserRoleController extends Controller
             } else {
                 $query = UserRole::select(
                     'userrole.id',
-                    'user.name as user_id',
+                    'user.user as user',
                     'role.rolename as role_id',
                     'userrole.modifiedby',
                     'userrole.created_at',
@@ -205,8 +207,8 @@ class UserRoleController extends Controller
             switch ($params['search']['groupOp']) {
                 case "AND":
                     foreach ($params['search']['rules'] as $index => $search) {
-                        if ($search['field'] == 'user_id') {
-                            $query = $query->where('user.name', 'LIKE', "%$search[data]%");
+                        if ($search['field'] == 'user') {
+                            $query = $query->where('user.user', 'LIKE', "%$search[data]%");
                         } else if ($search['field'] == 'role_id') {
                             $query = $query->where('role.rolename', 'LIKE', "%$search[data]%");
                         } else {
@@ -217,8 +219,8 @@ class UserRoleController extends Controller
                     break;
                 case "OR":
                     foreach ($params['search']['rules'] as $index => $search) {
-                        if ($search['field'] == 'user_id') {
-                            $query = $query->orWhere('user.name', 'LIKE', "%$search[data]%");
+                        if ($search['field'] == 'user') {
+                            $query = $query->orWhere('user.user', 'LIKE', "%$search[data]%");
                         } else if ($search['field'] == 'role_id') {
                             $query = $query->orWhere('role.rolename', 'LIKE', "%$search[data]%");
                         } else {
@@ -583,17 +585,81 @@ class UserRoleController extends Controller
     }
 
     public function detaillist(Request $request) {
-        $data = UserRole::select(
-            'userrole.id as role_id',
-            'role.rolename as rolename',
-        )
-            ->Join('role', 'userrole.role_id', '=', 'role.id')
-            ->where('userrole.user_id','=',$request->user_id)
-            ->orderBy('userrole.id')
+
+        $param1=$request->user_id;
+    
+        $controller = new ParameterController;
+        $dataaktif = $controller->getparameterid('STATUS AKTIF', 'STATUS AKTIF', 'AKTIF');
+        $datanonaktif = $controller->getparameterid('STATUS AKTIF', 'STATUS AKTIF', 'NON AKTIF');
+        $aktif = $dataaktif->id;
+        $nonaktif = $datanonaktif->id;
+        
+        
+        $data = Role::select(
+           DB::raw("role.id as role_id,
+                    role.rolename as rolename,
+                    (case when isnull(userrole.role_id,0)=0 then 
+                    ".DB::raw($nonaktif)." 
+                    else 
+                    ".DB::raw($aktif)." 
+                    end) as status
+            ")
+            )
+            ->leftJoin('userrole', function($join)  use ($param1)
+                         {
+                             $join->on('role.id', '=', 'userrole.role_id');
+                             $join->on('userrole.user_id','=',DB::raw("'".$param1."'"));
+                         })
+            ->orderBy('role.id')
             ->get();
 
             return response([
                 'data' => $data
             ]);
     }
+
+
+    public function combostatus(Request $request)
+    {
+
+        $params = [
+            'status' => $request->status ?? '',
+            'grp' => $request->grp ?? '',
+            'subgrp' => $request->subgrp ?? '',
+        ];
+        $temp = '##temp' . rand(1, 10000);
+        if ($params['status'] == 'entry') {
+            $query = Parameter::select('id', 'text as keterangan')
+                ->where('grp', "=", $params['grp'])
+                ->where('subgrp', "=", $params['subgrp']);
+        } else {
+            Schema::create($temp, function ($table) {
+                $table->integer('id')->length(11)->default(0);
+                $table->string('parameter', 50)->default(0);
+                $table->string('param', 50)->default(0);
+            });
+
+            DB::table($temp)->insert(
+                [
+                    'id' => '0',
+                    'parameter' => 'ALL',
+                    'param' => '',
+                ]
+            );
+
+            $queryall = Parameter::select('id', 'text as parameter', 'text as param')
+                ->where('grp', "=", $params['grp'])
+                ->where('subgrp', "=", $params['subgrp']);
+
+            $query = DB::table($temp)
+                ->unionAll($queryall);
+        }
+
+        $data = $query->get();
+
+        return response([
+            'data' => $data
+        ]);
+    }
+
 }
