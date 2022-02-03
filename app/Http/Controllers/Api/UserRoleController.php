@@ -7,6 +7,7 @@ use App\Models\UserRole;
 use App\Models\LogTrail;
 use App\Models\Parameter;
 use App\Models\Role;
+use App\Models\User;
 use App\Http\Requests\UserRoleRequest;
 use Illuminate\Support\Facades\Schema;
 
@@ -359,6 +360,12 @@ class UserRoleController extends Controller
      */
     public function show(UserRole $userrole)
     {
+        // dd('test');
+        $data=User::select('user')
+                ->where('id', '=',  $userrole['user_id'])
+                ->first();
+        $userrole['user']=$data['user'];
+        // dd($userrole);
         return response([
             'status' => true,
             'data' => $userrole

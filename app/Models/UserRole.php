@@ -12,8 +12,10 @@ class UserRole extends Model
     protected $table = 'userrole';
 
     protected $guarded = [
-        'id',
+        'user_id',
         'created_at',
         'updated_at',
     ];
+
+
 }
