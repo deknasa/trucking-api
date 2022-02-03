@@ -66,6 +66,7 @@ class UserRoleController extends Controller
                 ->select(
                     $temp . '.user_id as user_id',
                     'user.user as user',
+                    'user.name as name',
                     $temp . '.modifiedby as modifiedby',
                     $temp . '.updated_at as updated_at'
                 )
@@ -76,6 +77,7 @@ class UserRoleController extends Controller
                 ->select(
                     $temp . '.user_id as user_id',
                     'user.user as user',
+                    'user.name as name',
                     $temp . '.modifiedby as modifiedby',
                     $temp . '.updated_at as updated_at'
                 )
@@ -92,6 +94,8 @@ class UserRoleController extends Controller
                     foreach ($params['search']['rules'] as $index => $search) {
                         if ($search['field'] == 'user') {
                             $query = $query->where('user.user', 'LIKE', "%$search[data]%");
+                        } else if ($search['field'] == 'name') {
+                            $query = $query->where('user.name', 'LIKE', "%$search[data]%");
                         } else {
                             $query = $query->where($search['field'], 'LIKE', "%$search[data]%");
                         }
@@ -102,6 +106,8 @@ class UserRoleController extends Controller
                     foreach ($params['search']['rules'] as $index => $search) {
                         if ($search['field'] == 'user') {
                             $query = $query->orWhere('user.user', 'LIKE', "%$search[data]%");
+                        } else if ($search['field'] == 'name') {
+                            $query = $query->orWhere('user.name', 'LIKE', "%$search[data]%");
                         } else {
                             $query = $query->orWhere($search['field'], 'LIKE', "%$search[data]%");
                         }
@@ -160,7 +166,7 @@ class UserRoleController extends Controller
             $query = UserRole::select(
                 'userrole.id',
                 'user.user as user',
-                'role.rolename as role_id',
+                'role.rolename as rolename',
                 'userrole.modifiedby',
                 'userrole.created_at',
                 'userrole.updated_at'
@@ -174,7 +180,7 @@ class UserRoleController extends Controller
                 $query = UserRole::select(
                     'userrole.id',
                     'user.user as user',
-                    'role.rolename as role_id',
+                    'role.rolename as rolename',
                     'userrole.modifiedby',
                     'userrole.created_at',
                     'userrole.updated_at'
@@ -188,7 +194,7 @@ class UserRoleController extends Controller
                 $query = UserRole::select(
                     'userrole.id',
                     'user.user as user',
-                    'role.rolename as role_id',
+                    'role.rolename as rolename',
                     'userrole.modifiedby',
                     'userrole.created_at',
                     'userrole.updated_at'
@@ -209,7 +215,7 @@ class UserRoleController extends Controller
                     foreach ($params['search']['rules'] as $index => $search) {
                         if ($search['field'] == 'user') {
                             $query = $query->where('user.user', 'LIKE', "%$search[data]%");
-                        } else if ($search['field'] == 'role_id') {
+                        } else if ($search['field'] == 'rolename') {
                             $query = $query->where('role.rolename', 'LIKE', "%$search[data]%");
                         } else {
                             $query = $query->where($search['field'], 'LIKE', "%$search[data]%");
@@ -221,7 +227,7 @@ class UserRoleController extends Controller
                     foreach ($params['search']['rules'] as $index => $search) {
                         if ($search['field'] == 'user') {
                             $query = $query->orWhere('user.user', 'LIKE', "%$search[data]%");
-                        } else if ($search['field'] == 'role_id') {
+                        } else if ($search['field'] == 'rolename') {
                             $query = $query->orWhere('role.rolename', 'LIKE', "%$search[data]%");
                         } else {
                             $query = $query->orWhere($search['field'], 'LIKE', "%$search[data]%");
@@ -287,21 +293,20 @@ class UserRoleController extends Controller
             $controller = new ParameterController;
             $dataaktif = $controller->getparameterid('STATUS AKTIF', 'STATUS AKTIF', 'AKTIF');
             $aktif = $dataaktif->id;
-// dd($aktif);
+            // dd($aktif);
             for ($i = 0; $i < count($request->role_id); $i++) {
                 $userrole = new UserRole();
-                
+
                 $userrole->user_id = $request->user_id;
                 $userrole->modifiedby = $request->modifiedby;
                 $userrole->role_id = $request->role_id[$i]  ?? 0;
                 if ($request->status[$i] == $aktif) {
                     // dd($request->role_id[$i]);
                     $userrole->save();
-                    
                 }
             }
-       
-          
+
+
 
 
             $datajson = [
@@ -326,7 +331,7 @@ class UserRoleController extends Controller
             $del = 0;
             $data = $this->getid($userrole->user_id, $request, $del) ?? 0;
 
-//    dd($data);
+            //    dd($data);
 
             $userrole->position = $data->row;
 
