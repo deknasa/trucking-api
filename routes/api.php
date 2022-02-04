@@ -70,6 +70,7 @@ Route::resource('absensi_detail', AbsensiSupirDetailController::class);
 Route::get('userrole/field_length', [UserRoleController::class, 'fieldLength']);
 Route::get('userrole/detail', [UserRoleController::class, 'detail']);
 Route::get('userrole/detaillist', [UserRoleController::class, 'detaillist']);
+Route::get('userrole/combostatus', [UserRoleController::class, 'combostatus']);
 Route::resource('userrole', UserRoleController::class);
 
 Route::resource('trado', TradoController::class);

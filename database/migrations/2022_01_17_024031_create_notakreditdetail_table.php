@@ -22,7 +22,7 @@ class CreateNotakreditdetailTable extends Migration
             $table->double('nominal',15,2)->default('0');
             $table->double('nominalbayar',15,2)->default('0');
             $table->double('penyesuaian',15,2)->default('0');
-            $table->string('keterangan',250)->default('');
+            $table->longText('keterangan')->default('');
             $table->string('coaadjust',50)->default('');
             $table->string('modifiedby',50)->default('');
             $table->timestamps();

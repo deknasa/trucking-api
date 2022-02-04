@@ -24,14 +24,17 @@ class RoleRequest extends FormRequest
     public function rules()
     {
         return [
-            'rolename' => 'required'
+            'rolename' => 'required',
+            'modifiedby' => 'required'
         ];
     }
 
     public function attributes()
     {
         return [
-            'rolename' => 'rolename'
+            'rolename' => 'rolename',
+            'modifiedby' => 'modifiedby'
+
         ];
     }
 }

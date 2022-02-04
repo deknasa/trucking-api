@@ -17,10 +17,10 @@ class CreateHutangheaderTable extends Migration
             $table->id();
             $table->string('nobukti', 50)->unique();            
             $table->date('tgl')->default('1900/1/1');            
-            $table->string('keterangan', 250)->default('');            
+            $table->longText('keterangan')->default('');            
             $table->unsignedBigInteger('coa_id')->default(0);            
             $table->double('total',15,2)->default(0);            
-            $table->string('postform', 50)->default('');            
+            $table->string('postingdari', 50)->default('');            
             $table->string('modifiedby', 50)->default('');            
             $table->timestamps();
         });

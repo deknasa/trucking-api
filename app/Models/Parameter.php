@@ -23,4 +23,7 @@ class Parameter extends Model
         'created_at',
         'updated_at',
     ];
+
+
 }
+

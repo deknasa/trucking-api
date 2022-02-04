@@ -23,11 +23,11 @@ class CreateabsensisupirapprovalTable extends Migration
             $table->dateTime('tglapproval')->default('1900/1/1');
             $table->string('userapproval', 200)->default('');
             $table->integer('statussudahsimpan')->length(11)->default(0);
-            $table->string('keterangan', 500)->default('');
+            $table->longText('keterangan')->default('');
             $table->integer('statusapprovalpusat')->length(11)->default(0);
             $table->string('userapprovalpusat', 50)->default('');
             $table->dateTime('tglapprovalpusat')->default('1900/1/1');
-            $table->string('keteranganedit', 200)->default('');
+            $table->longText('keteranganedit')->default('');
             $table->string('modifiedby', 200)->default('');
             $table->timestamps();
         });

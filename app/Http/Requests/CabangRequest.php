@@ -26,7 +26,8 @@ class CabangRequest extends FormRequest
         return [
             'kodecabang' => 'required',
             'namacabang' => 'required',
-            'statusaktif' => 'required'
+            'statusaktif' => 'required',
+            'modifiedby' => 'required'
         ];
     }
 
@@ -36,6 +37,7 @@ class CabangRequest extends FormRequest
             'kodecabang' => 'kodecabang',
             'namacabang' => 'namacabang',
             'statusaktif' => 'statusaktif',
+            'modifiedby' => 'modifiedby',
         ];
     }
 }

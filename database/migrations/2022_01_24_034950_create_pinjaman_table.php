@@ -26,7 +26,7 @@ class CreatePinjamanTable extends Migration
             $table->string('coa',50)->default('');
             $table->string('nobuktikaskeluar',50)->default('');
             $table->date('tglkaskeluar',50)->default('1900/1/1');
-            $table->integer('notpost')->length(11)->default('0');
+            $table->integer('notposting')->length(11)->default('0');
             $table->string('modifiedby',50)->default('');
             $table->timestamps();
         });

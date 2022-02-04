@@ -25,7 +25,7 @@ class CreatebelistokheaderTable extends Migration
             $table->double('nominalppn', 15,2)->default(0);
             $table->double('total', 15,2)->default(0);
             $table->longText('keterangan')->default('');
-            $table->date('tgljt')->default('1900/1/1');
+            $table->date('tgljatuhtempo')->default('1900/1/1');
             $table->string('nobon', 50)->default('');
             $table->string('hutang_nobukti', 50)->default('');
             $table->string('modifiedby', 50)->default('');

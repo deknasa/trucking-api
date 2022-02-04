@@ -16,7 +16,7 @@ class CreateabsentradoTable extends Migration
         Schema::create('absentrado', function (Blueprint $table) {
             $table->id();
             $table->string('kodeabsen', 100)->default('');
-            $table->string('keterangan', 250)->default('');
+            $table->longText('keterangan')->default('');
             $table->integer('statusaktif')->length(11);
             $table->string('modifiedby', 30)->default('');
             $table->timestamps();

@@ -26,6 +26,7 @@ class UserRoleRequest extends FormRequest
         return [
             'user_id' => 'required',
             'role_id' => 'required',
+            'modifiedby' => 'required'
             
         ];
     }
@@ -35,6 +36,7 @@ class UserRoleRequest extends FormRequest
         return [
             'user_id' => 'user_id',
             'role_id' => 'role_id',
+            'modifiedby' => 'modifiedby'
         ];
     }
 }

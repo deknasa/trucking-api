@@ -22,7 +22,6 @@ class CreateJurnalumumdetailTable extends Migration
             $table->double('nominal',15,2)->default('0');
             $table->longText('keterangan')->default('');
             $table->string('modifiedby',50)->default('');
-            $table->bigInteger('postid')->default('0');
             $table->timestamps();
 
             $table->foreign('jurnalumum_id')->references('id')->on('jurnalumumheader')->onDelete('cascade');            

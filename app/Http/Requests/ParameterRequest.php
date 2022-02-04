@@ -27,7 +27,8 @@ class ParameterRequest extends FormRequest
             'grp' => 'required',
             'subgrp' => 'required',
             'text' => 'required',
-            'memo' => 'required'
+            'memo' => 'required',
+            'modifiedby' => 'required'
         ];
     }
 
@@ -37,6 +38,7 @@ class ParameterRequest extends FormRequest
             'grp' => 'group',
             'subgrp' => 'subgroup',
             'text' => 'name',
+            'modifiedby' => 'modifiedby'
         ];
     }
 }

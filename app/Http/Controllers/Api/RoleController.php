@@ -138,6 +138,7 @@ class RoleController extends Controller
         try {
             $role = new Role();
             $role->rolename = strtoupper($request->rolename);
+            $role->modifiedby = strtoupper($request->modifiedby);
 
 
             $role->save();
@@ -145,6 +146,8 @@ class RoleController extends Controller
             $datajson = [
                 'id' => $role->id,
                 'rolename' => strtoupper($request->rolename),
+                'modifiedby' => strtoupper($request->modifiedby),
+
             ];
 
             $logtrail = new LogTrail();
@@ -218,6 +221,7 @@ class RoleController extends Controller
              $datajson = [
                 'id' => $role->id,
                 'rolename' => strtoupper($request->rolename),
+                'modifiedby' => strtoupper($request->modifiedby),
             ];
 
             $logtrail = new LogTrail();
@@ -270,13 +274,18 @@ class RoleController extends Controller
         Role::destroy($role->id);
     
 
+        $datajson = [
+            'id' => $role->id,
+            'modifiedby' => strtoupper($request->modifiedby),
+        ];
+
         $logtrail = new LogTrail();
         $logtrail->namatabel = 'ROLE';
         $logtrail->postingdari = 'DELETE ROLE';
         $logtrail->idtrans = $role->id;
         $logtrail->nobuktitrans= $role->id;
         $logtrail->aksi= 'DELETE';
-        $logtrail->datajson= '';
+        $logtrail->datajson= json_encode($datajson);
 
         $logtrail->save();
 

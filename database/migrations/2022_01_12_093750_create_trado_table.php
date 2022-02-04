@@ -15,7 +15,7 @@ class CreateTradoTable extends Migration
     {
         Schema::create('trado', function (Blueprint $table) {
             $table->id();
-            $table->string('keterangan', 100)->default('');
+            $table->longText('keterangan')->default('');
             $table->integer('statusaktif')->length(11)->default(0);
             $table->double('kmawal', 15,2)->default(0);
             $table->double('kmakhirgantioli', 15,2)->default(0);
@@ -45,14 +45,14 @@ class CreateTradoTable extends Migration
             $table->string('jenis', 30)->default('');
             $table->integer('isisilinder')->length(11)->default(0);
             $table->string('warna', 30)->default('');
-            $table->string('bahanbakar', 30)->default('');
-            $table->integer('jlhsumbu')->length(11)->default(0);
-            $table->integer('jlhroda')->length(11)->default(0);
+            $table->string('jenisbahanbakar', 30)->default('');
+            $table->integer('jumlahsumbu')->length(11)->default(0);
+            $table->integer('jumlahroda')->length(11)->default(0);
             $table->string('model', 50)->default('');
             $table->string('nobpkb', 50)->default('');
             $table->integer('statusmobilstoring')->length(11)->default(0);
             $table->integer('mandor_id')->length(11)->default(0);
-            $table->integer('jlhbanserap')->length(11)->default(0);
+            $table->integer('jumlahbanserap')->length(11)->default(0);
             $table->integer('statusappeditban')->length(11)->default(0);
             $table->integer('statuslewatvalidasi')->length(11)->default(0);
             $table->string('photostnk', 1500)->default('');

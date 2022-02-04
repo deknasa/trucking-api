@@ -18,7 +18,7 @@ class CreatePenerimaandetailTable extends Migration
             $table->unsignedBigInteger('penerimaan_id')->default('0');
             $table->string('nobukti',50)->default('');
             $table->string('nowarkat',50)->default('');
-            $table->date('tgljt')->default('1900/1/1');
+            $table->date('tgljatuhtempo')->default('1900/1/1');
             $table->double('nominal',15,2)->default('0');
             $table->string('coadebet',50)->default('');
             $table->string('coakredit',50)->default('');

@@ -19,7 +19,7 @@ class CreateGajisupirheaderTable extends Migration
             $table->date('tgl')->default('1900/1/1');            
             $table->unsignedBigInteger('supir_id')->default(0);            
             $table->double('nominal',15,2)->default(0);            
-            $table->string('keterangan', 250)->default('');            
+            $table->longText('keterangan')->default('');            
             $table->date('tgldari')->default('1900/1/1');            
             $table->date('tglsampai')->default('1900/1/1');            
             $table->double('total',15,2)->default(0);            

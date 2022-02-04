@@ -19,7 +19,7 @@ class CreateKasgantungdetailTable extends Migration
             $table->string('nobukti',50)->default('');
             $table->double('nominal',15,2)->default('0');
             $table->string('coa',50)->default('');
-            $table->string('keterangan',250)->default('');
+            $table->longText('keterangan')->default('');
             $table->string('modifiedby',50)->default('');
             $table->timestamps();
 

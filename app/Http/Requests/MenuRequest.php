@@ -27,6 +27,7 @@ class MenuRequest extends FormRequest
             'menuname' => 'required',
             'menuseq' => 'required',
             'menuicon' => 'required',
+            'modifiedby' => 'required'
             
         ];
     }
@@ -42,6 +43,7 @@ class MenuRequest extends FormRequest
             'link' => 'link',
             'menuexe' => 'menuexe',
             'menukode' => 'menukode',
+            'modifiedby' => 'modifiedby'
         ];
     }
 

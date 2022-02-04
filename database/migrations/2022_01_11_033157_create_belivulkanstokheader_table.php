@@ -18,13 +18,13 @@ class CreatebelivulkanstokheaderTable extends Migration
             $table->string('nobukti', 50)->unique();
             $table->date('tgl')->default('1900/1/1');
             $table->unsignedBigInteger('supplier_id')->default(0);   
-            $table->string('persentasedisc', 50)->default('');
-            $table->double('nominaldisc', 15,2)->default(0);
+            $table->string('persentasediscount', 50)->default('');
+            $table->double('nominaldiscount', 15,2)->default(0);
             $table->double('persentaseppn', 15,2)->default(0);
             $table->double('nominalppn', 15,2)->default(0);
             $table->double('total', 15,2)->default(0);
             $table->longText('keterangan')->default('');
-            $table->date('tgljt')->default('1900/1/1');
+            $table->date('tgljatuhtempo')->default('1900/1/1');
             $table->string('nobon', 50)->default('');
             $table->integer('statusedit')->length(11)->default(0);            
             $table->string('hutang_nobukti', 50)->default('');

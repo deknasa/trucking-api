@@ -17,7 +17,7 @@ class CreateHutangbayarheaderTable extends Migration
             $table->id();
             $table->string('nobukti', 50)->unique();            
             $table->date('tgl')->default('1900/1/1');            
-            $table->string('keterangan', 250)->default('');            
+            $table->longText('keterangan')->default('');            
             $table->unsignedBigInteger('bank_id')->default('0');            
             $table->unsignedBigInteger('supplier_id')->default('0');            
             $table->string('pengeluaran_nobukti', 50)->default('');            
