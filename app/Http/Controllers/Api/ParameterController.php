@@ -303,8 +303,6 @@ class ParameterController extends Controller
             $table->index('id_');
         });
 
-
-
         if ($request->sortname == 'id') {
             $query = Parameter::select(
                 'parameter.id as id_',

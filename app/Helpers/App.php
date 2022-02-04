@@ -69,8 +69,8 @@ class App
          * Change dynamic text format
          */
         foreach ($dynamicTexts as $index => $dynamicText) {
-            switch ($dynamicText) {
-                case 'RMW':
+            switch (str_replace(' ', '', $dynamicText)) {
+                case 'R':
                     $dynamicTexts[$index] = $this->numberToRoman(date('n'));
                     break;
                 case $this->isDateFormat($dynamicText):

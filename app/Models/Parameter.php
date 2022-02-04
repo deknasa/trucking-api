@@ -11,8 +11,6 @@ class Parameter extends Model
 
     protected $table = 'parameter';
 
-    protected $dateFormat = 'Y-m-d';
-    
     protected $casts = [
         'created_at' => 'date:d-m-Y H:i:s',
         'updated_at' => 'date:d-m-Y H:i:s'
@@ -23,7 +21,5 @@ class Parameter extends Model
         'created_at',
         'updated_at',
     ];
-
-
 }
 

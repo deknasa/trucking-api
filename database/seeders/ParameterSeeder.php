@@ -18,7 +18,7 @@ class ParameterSeeder extends Seeder
         Parameter::create([
             'grp' => 'ABSENSI',
             'subgrp' => 'ABSENSI',
-            'text' => '#ABS# 9999#/#RMW#/#Y',
+            'text' => '#ABS# 9999#/#R#/#Y',
             'memo' => '',
             'modifiedby' => 'ADMIN',
         ]);
@@ -26,7 +26,7 @@ class ParameterSeeder extends Seeder
         Parameter::create([
             'grp' => 'KAS GANTUNG',
             'subgrp' => 'NOMOR KAS GANTUNG	',
-            'text' => '#KGT# 9999#/#RMW#/#Y',
+            'text' => '#KGT# 9999#/#R#/#Y',
             'memo' => '',
             'modifiedby' => 'ADMIN',
         ]);

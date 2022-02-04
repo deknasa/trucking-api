@@ -50,7 +50,6 @@ class Controller extends BaseController
             
         $text = $parameter->text;
         $lastRow = DB::table($request->table)->count();
-        
         $runningNumber = $this->appHelper->runningNumber($text, $lastRow);
 
         return response([
