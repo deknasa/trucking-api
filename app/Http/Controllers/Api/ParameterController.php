@@ -237,7 +237,7 @@ class ParameterController extends Controller
      * @param  \App\Models\Parameter  $parameter
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Parameter $parameter, ParameterRequest $request)
+    public function destroy(Parameter $parameter, Request $request)
     {
         $delete = Parameter::destroy($parameter->id);
         $del = 1;
