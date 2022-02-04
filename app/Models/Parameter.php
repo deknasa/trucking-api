@@ -11,12 +11,15 @@ class Parameter extends Model
 
     protected $table = 'parameter';
 
+    protected $casts = [
+        'created_at' => 'date:d-m-Y H:i:s',
+        'updated_at' => 'date:d-m-Y H:i:s'
+    ];
+
     protected $guarded = [
         'id',
         'created_at',
         'updated_at',
     ];
-
-
 }
 

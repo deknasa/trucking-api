@@ -239,7 +239,7 @@ class ParameterController extends Controller
      * @param  \App\Models\Parameter  $parameter
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Parameter $parameter, ParameterRequest $request)
+    public function destroy(Parameter $parameter, Request $request)
     {
         $delete = Parameter::destroy($parameter->id);
         $del = 1;
@@ -302,8 +302,6 @@ class ParameterController extends Controller
 
             $table->index('id_');
         });
-
-
 
         if ($request->sortname == 'id') {
             $query = Parameter::select(
