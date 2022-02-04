@@ -184,24 +184,34 @@ class MenuController extends Controller
             $menu->menuparent = $request->menuparent ?? 0;
             $menu->menuicon = strtolower($request->menuicon);
             $menu->menuexe = strtolower($request->menuexe);
+            $menu->modifiedby = $request->modifiedby;
             $menu->link = "";
 
-            if (strlen($request->aco_id) <> 0) {
-                $class = array("index", "add", "edit", "delete");
+
+             if ($request->class<>'')  {
+                // $class = array("index", "add", "edit", "delete");
+                $class =  $request->class;
 
                 foreach ($class as $value) {
                     $acos = new Acos();
-                    $acos->class = strtolower($request->aco_id);
-                    $acos->method = strtolower($value);
-                    $acos->nama = strtolower($value) . ' ' . strtolower($request->aco_id);
+                    // $acos->class = strtolower($request->aco_id);
+                    // $acos->method = strtolower($value);
+                    // $acos->nama = strtolower($value) . ' ' . strtolower($request->aco_id);
+                    $namaclass= $value['class'];
+                    $acos->class = $value['class'];
+                    $acos->method = $value['method'];
+                    $acos->nama = $value['name'];
+                    $acos->modifiedby = $request->modifiedby;
                     $acos->save();
                 }
+                // dd($request->class);
                 $list = Acos::select('id')
-                    ->where('class', '=', strtolower($request->aco_id))
+                    ->where('class', '=', $namaclass)
                     ->where('method', '=', 'index')
                     ->orderBy('id', 'asc')
                     ->first();
                 $menu->aco_id = $list->id;
+                // $menu->aco_id = 0;
             } else {
                 $menu->aco_id = 0;
             }
