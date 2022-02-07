@@ -28,7 +28,7 @@ class ParameterController extends Controller
         ];
 
         $totalRows = Parameter::count();
-        $totalPages = ceil($totalRows / $params['limit']);
+        $totalPages = $params['limit'] > 0 ? ceil($totalRows / $params['limit']) : 1;
 
         /* Sorting */
         $query = Parameter::orderBy($params['sortIndex'], $params['sortOrder']);
@@ -43,9 +43,8 @@ class ParameterController extends Controller
                 'parameter.modifiedby',
                 'parameter.created_at',
                 'parameter.updated_at'
-            )
-                ->orderBy('parameter.id', $params['sortOrder']);
-        } else if ($params['sortIndex'] == 'grp' OR $params['sortIndex'] == 'subgrp') {
+            )->orderBy('parameter.id', $params['sortOrder']);
+        } else if ($params['sortIndex'] == 'grp' or $params['sortIndex'] == 'subgrp') {
             $query = Parameter::select(
                 'parameter.id',
                 'parameter.grp',
@@ -59,8 +58,7 @@ class ParameterController extends Controller
                 ->orderBy($params['sortIndex'], $params['sortOrder'])
                 ->orderBy('parameter.text', $params['sortOrder'])
                 ->orderBy('parameter.id', $params['sortOrder']);
-          
-                } else {
+        } else {
             if ($params['sortOrder'] == 'asc') {
                 $query = Parameter::select(
                     'parameter.id',
@@ -88,7 +86,7 @@ class ParameterController extends Controller
                     ->orderBy($params['sortIndex'], $params['sortOrder'])
                     ->orderBy('parameter.id', 'asc');
             }
-        }        
+        }
 
         /* Searching */
         if (count($params['search']) > 0 && @$params['search']['rules'][0]['data'] != '') {
@@ -111,7 +109,7 @@ class ParameterController extends Controller
             }
 
             $totalRows = count($query->get());
-            $totalPages = ceil($totalRows / $params['limit']);
+            $totalPages = $params['limit'] > 0 ? ceil($totalRows / $params['limit']) : 1;
         }
 
         /* Paging */
@@ -156,20 +154,20 @@ class ParameterController extends Controller
 
             $parameter->save();
             DB::commit();
-                /* Set position and page */
-                $del = 0;
-                $data = $this->getid($parameter->id, $request, $del);
-                $parameter->position = $data->row;
+            /* Set position and page */
+            $del = 0;
+            $data = $this->getid($parameter->id, $request, $del);
+            $parameter->position = $data->row;
 
-                if (isset($request->limit)) {
-                    $parameter->page = ceil($parameter->position / $request->limit);
-                }
+            if (isset($request->limit)) {
+                $parameter->page = ceil($parameter->position / $request->limit);
+            }
 
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil disimpan',
-                    'data' => $parameter
-                ]);
+            return response([
+                'status' => true,
+                'message' => 'Berhasil disimpan',
+                'data' => $parameter
+            ]);
         } catch (\Throwable $th) {
             DB::rollBack();
             return response($th->getMessage());
@@ -208,7 +206,7 @@ class ParameterController extends Controller
             $parameter->memo = $request->memo;
             $parameter->modifiedby = $request->modifiedby ?? 'ADMIN';
             $parameter->modifiedby = $request->modifiedby;
-            
+
             if ($parameter->save()) {
                 /* Set position and page */
                 $parameter->position = $this->getPosition($parameter, $request);
@@ -288,7 +286,7 @@ class ParameterController extends Controller
     public function getid($id, $request, $del)
     {
 
-        $temp='##temp'.rand(1,10000);
+        $temp = '##temp' . rand(1, 10000);
         Schema::create($temp, function ($table) {
             $table->id();
             $table->bigInteger('id_')->default('0');
@@ -373,7 +371,7 @@ class ParameterController extends Controller
                 $baris = $request->indexRow + $bar + 1;
             }
 
-            
+
             if (DB::table($temp)
                 ->where('id', '=', $baris)->exists()
             ) {
@@ -399,18 +397,17 @@ class ParameterController extends Controller
         return $data;
     }
 
-    public function getparameterid($grp,$subgrp,$text) {
+    public function getparameterid($grp, $subgrp, $text)
+    {
 
         $querydata = Parameter::select('id as id')
-        ->where('grp', '=',  $grp)
-        ->where('subgrp', '=',  $subgrp)
-        ->where('text', '=',  $text)
-        ->orderBy('id');
+            ->where('grp', '=',  $grp)
+            ->where('subgrp', '=',  $subgrp)
+            ->where('text', '=',  $text)
+            ->orderBy('id');
 
 
-    $data = $querydata->first();
-    return $data;
-
-}
-
+        $data = $querydata->first();
+        return $data;
+    }
 }
