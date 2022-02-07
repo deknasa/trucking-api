@@ -57,6 +57,7 @@ Route::resource('acos', AcosController::class);
 Route::get('user/field_length', [UserController::class, 'fieldLength']);
 Route::get('user/combostatus', [UserController::class, 'combostatus']);
 Route::get('user/combocabang', [UserController::class, 'combocabang']);
+Route::get('user/getuserid', [UserController::class, 'getuserid']);
 Route::resource('user', UserController::class);
 
 Route::get('menu/field_length', [MenuController::class, 'fieldLength']);

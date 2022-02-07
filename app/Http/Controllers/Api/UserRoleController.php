@@ -38,6 +38,7 @@ class UserRoleController extends Controller
         Schema::create($temp, function ($table) {
             $table->id();
             $table->bigInteger('user_id')->default('0');
+            $table->bigInteger('id_')->default('0');
             $table->string('modifiedby', 30)->default('');
             $table->dateTime('created_at')->default('1900/1/1');
             $table->dateTime('updated_at')->default('1900/1/1');
@@ -47,15 +48,16 @@ class UserRoleController extends Controller
 
         $query = UserRole::select(
             DB::raw("userrole.user_id as user_id,
-                            max(userrole.modifiedby) as modifiedby,
-                            max(userrole.created_at) as created_at,
+                        min(userrole.id) as id_,
+                        max(userrole.modifiedby) as modifiedby,
+                        max(userrole.created_at) as created_at,
                             max(userrole.updated_at) as updated_at")
         )
             ->Join('user', 'userrole.user_id', '=', 'user.id')
             ->groupby('userrole.user_id');
 
 
-        DB::table($temp)->insertUsing(['user_id', 'modifiedby', 'created_at', 'updated_at'], $query);
+        DB::table($temp)->insertUsing(['user_id','id_','modifiedby', 'created_at', 'updated_at'], $query);
 
         $totalRows = DB::table($temp)
             ->count();
@@ -66,6 +68,7 @@ class UserRoleController extends Controller
             $query = DB::table($temp)
                 ->select(
                     $temp . '.user_id as user_id',
+                    $temp . '.id_ as id',
                     'user.user as user',
                     'user.name as name',
                     $temp . '.modifiedby as modifiedby',
@@ -77,6 +80,7 @@ class UserRoleController extends Controller
             $query = DB::table($temp)
                 ->select(
                     $temp . '.user_id as user_id',
+                    $temp . '.id_ as id',
                     'user.user as user',
                     'user.name as name',
                     $temp . '.modifiedby as modifiedby',
@@ -330,11 +334,12 @@ class UserRoleController extends Controller
             DB::commit();
             /* Set position and page */
             $del = 0;
-            $data = $this->getid($userrole->user_id, $request, $del) ?? 0;
+            $data = $this->getid($request->user_id, $request, $del) ?? 0;
 
-            //    dd($data);
+            $userrole->position = $data->id;
+            $userrole->id = $data->row;
 
-            $userrole->position = $data->row;
+            
 
             // dd($userrole->position );
             if (isset($request->limit)) {
@@ -360,11 +365,11 @@ class UserRoleController extends Controller
      */
     public function show(UserRole $userrole)
     {
-        // dd('test');
-        $data=User::select('user')
-                ->where('id', '=',  $userrole['user_id'])
-                ->first();
-        $userrole['user']=$data['user'];
+        $data = User::select('user')
+            ->where('id', '=',  $userrole['user_id'])
+            ->first();
+        $userrole['user'] = $data['user'];
+
         // dd($userrole);
         return response([
             'status' => true,
@@ -427,8 +432,9 @@ class UserRoleController extends Controller
             DB::commit();
             /* Set position and page */
             $del = 0;
-            $data = $this->getid($userrole->id, $request, $del);
-            $userrole->position = $data->row;
+            $data = $this->getid($request->user_id, $request, $del);
+            $userrole->position = $data->id;
+            $userrole->id = $data->row;
             // dd($userrole->position );
             if (isset($request->limit)) {
                 $userrole->page = ceil($userrole->position / $request->limit);
@@ -451,8 +457,9 @@ class UserRoleController extends Controller
      * @param  \App\Models\UserRole  $userRole
      * @return \Illuminate\Http\Response
      */
-    public function destroy(UserRole $userrole, UserRoleRequest $request)
+    public function destroy(UserRole $userrole, Request $request)
     {
+       
         DB::beginTransaction();
         try {
 
@@ -474,9 +481,11 @@ class UserRoleController extends Controller
             $logtrail->save();
 
             DB::commit();
-            UserRole::destroy($userrole->id);
             $del = 1;
-            $data = $this->getid($userrole->id, $request, $del);
+            // dd($request->user_id);
+
+            $data = $this->getid($request->user_id, $request, $del);
+            
             $userrole->position = $data->row;
             $userrole->id = $data->id;
             if (isset($request->limit)) {
@@ -514,69 +523,85 @@ class UserRoleController extends Controller
         $temp = '##temp' . rand(1, 10000);
         Schema::create($temp, function ($table) {
             $table->id();
+            $table->bigInteger('user_id')->default('0');
             $table->bigInteger('id_')->default('0');
-            $table->string('user_id', 300)->default('');
-            $table->string('role_id', 300)->default('');
             $table->string('modifiedby', 30)->default('');
             $table->dateTime('created_at')->default('1900/1/1');
             $table->dateTime('updated_at')->default('1900/1/1');
 
-            $table->index('id_');
+            $table->index('user_id');
+        });
+
+        $query = UserRole::select(
+            DB::raw("userrole.user_id as user_id,
+                        min(userrole.id) as id_,
+                        max(userrole.modifiedby) as modifiedby,
+                        max(userrole.created_at) as created_at,
+                            max(userrole.updated_at) as updated_at")
+        )
+            ->Join('user', 'userrole.user_id', '=', 'user.id')
+            ->groupby('userrole.user_id');
+
+
+        DB::table($temp)->insertUsing(['user_id','id_','modifiedby', 'created_at', 'updated_at'], $query);
+
+    
+
+        /* Sorting */
+        if ($request->sortname == 'user') {
+            $query = DB::table($temp)
+                ->select(
+                    $temp . '.user_id as user_id',
+                    $temp . '.id_ as id',
+                    'user.user as user',
+                    'user.name as name',
+                    $temp . '.modifiedby as modifiedby',
+                    $temp . '.updated_at as updated_at'
+                )
+                ->Join('user', 'user.id', '=', $temp . '.user_id')
+                ->orderBy('user.name',  $request->sortorder);
+        } else {
+            $query = DB::table($temp)
+                ->select(
+                    $temp . '.user_id as user_id',
+                    $temp . '.id_ as id',
+                    'user.user as user',
+                    'user.name as name',
+                    $temp . '.modifiedby as modifiedby',
+                    $temp . '.updated_at as updated_at'
+                )
+                ->Join('user', 'user.id', '=', $temp . '.user_id')
+                ->orderBy($temp . '.' . $request->sortname,  $request->sortorder);
+        }
+        // 
+        $temp = '##temp' . rand(1, 10000);
+        Schema::create($temp, function ($table) {
+            $table->id();
+            $table->bigInteger('user_id')->default('0');
+            $table->bigInteger('id_')->default('0');
+            $table->string('user', 300)->default('');
+            $table->string('name', 300)->default('');
+            $table->string('modifiedby', 30)->default('');
+            $table->dateTime('updated_at')->default('1900/1/1');
+
+            $table->index('user_id');
         });
 
 
 
-        if ($request->sortname == 'id') {
-            $query = UserRole::select(
-                'userrole.id as id_',
-                'user.name as user_id',
-                'role.rolename as role_id',
-                'userrole.modifiedby',
-                'userrole.created_at',
-                'userrole.updated_at'
-            )
-                ->leftJoin('user', 'userrole.user_id', '=', 'user.id')
-                ->leftJoin('role', 'userrole.role_id', '=', 'role.id')
-                ->orderBy('userrole.id', $request->sortorder);
-        } else {
-            if ($request->sortorder == 'asc') {
-                $query = UserRole::select(
-                    'userrole.id as id_',
-                    'user.name as user_id',
-                    'role.rolename as role_id',
-                    'userrole.modifiedby',
-                    'userrole.created_at',
-                    'userrole.updated_at'
-                )
-                    ->leftJoin('user', 'userrole.user_id', '=', 'user.id')
-                    ->leftJoin('role', 'userrole.role_id', '=', 'role.id')
-                    ->orderBy($request->sortname, $request->sortorder)
-                    ->orderBy('userrole.id', $request->sortorder);
-            } else {
-                $query = UserRole::select(
-                    'userrole.id as id_',
-                    'user.name as user_id',
-                    'role.rolename as role_id',
-                    'userrole.modifiedby',
-                    'userrole.created_at',
-                    'userrole.updated_at'
-                )
-                    ->leftJoin('user', 'userrole.user_id', '=', 'user.id')
-                    ->leftJoin('role', 'userrole.role_id', '=', 'role.id')
-                    ->orderBy($request->sortname, $request->sortorder)
-                    ->orderBy('userrole.id', 'asc');
-            }
-        }
+      
 
 
 
-        DB::table($temp)->insertUsing(['id_', 'user_id', 'role_id',  'modifiedby', 'created_at', 'updated_at'], $query);
+        DB::table($temp)->insertUsing(['user_id', 'id_',  'user','name',  'modifiedby', 'updated_at'], $query);
 
 
         if ($del == 1) {
+         
             if ($request->page == 1) {
                 $baris = $request->indexRow + 1;
             } else {
+                dd('test');
                 $hal = $request->page - 1;
                 $bar = $hal * $request->limit;
                 $baris = $request->indexRow + $bar + 1;
@@ -587,24 +612,28 @@ class UserRoleController extends Controller
                 ->where('id', '=', $baris)->exists()
             ) {
                 $querydata = DB::table($temp)
-                    ->select('id as row', 'id_ as id')
+                    ->select('id_ as row', 'user_id as id')
                     ->where('id', '=', $baris)
                     ->orderBy('id');
             } else {
                 $querydata = DB::table($temp)
-                    ->select('id as row', 'id_ as id')
+                    ->select('id_ as row', 'user_id as id')
                     ->where('id', '=', ($baris - 1))
                     ->orderBy('id');
             }
         } else {
             $querydata = DB::table($temp)
-                ->select('id as row')
-                ->where('id_', '=',  $id)
+                ->select(
+                    'id_ as row',
+                    'user_id as id',
+                )
+                ->where('user_id', '=',  $id)
                 ->orderBy('id');
         }
 
 
         $data = $querydata->first();
+        
         return $data;
     }
 

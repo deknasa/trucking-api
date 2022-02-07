@@ -577,4 +577,24 @@ class UserController extends Controller
             'data' => $data->toArray(),
         ]);
     }
+
+    
+    
+    public function getuserid(Request $request)
+    {
+
+        $params = [
+            'user' => $request->user ?? '',
+        ];
+
+        $query = User::select('id')
+        ->where('user', "=", $params['user']);
+
+        $data = $query->first();
+
+        return response([
+            'data' => $data
+        ]);
+    }
+
 }
