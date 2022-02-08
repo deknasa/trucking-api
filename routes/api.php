@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\MenuController;
 use App\Http\Controllers\Api\AcosController;
 use App\Http\Controllers\Api\UserRoleController;
+use App\Http\Controllers\Api\AclController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\RunningNumberController;
@@ -73,6 +74,12 @@ Route::get('userrole/detail', [UserRoleController::class, 'detail']);
 Route::get('userrole/detaillist', [UserRoleController::class, 'detaillist']);
 Route::get('userrole/combostatus', [UserRoleController::class, 'combostatus']);
 Route::resource('userrole', UserRoleController::class);
+
+Route::get('acl/field_length', [AclController::class, 'fieldLength']);
+Route::get('acl/detail', [AclController::class, 'detail']);
+Route::get('acl/detaillist', [AclController::class, 'detaillist']);
+Route::get('acl/combostatus', [AclController::class, 'combostatus']);
+Route::resource('acl', AclController::class);
 
 Route::resource('trado', TradoController::class);
 Route::resource('supir', SupirController::class);
