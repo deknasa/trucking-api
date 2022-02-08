@@ -48,6 +48,8 @@ Route::resource('cabang', CabangController::class);
 
 Route::get('absensi/no_bukti', [AbsensiSupirHeaderController::class, 'getNoBukti']);
 Route::get('absensi/running_number', [AbsensiSupirHeaderController::class, 'getRunningNumber']);
+
+Route::get('role/getroleid', [RoleController::class, 'getroleid']);
 Route::get('role/field_length', [RoleController::class, 'fieldLength']);
 Route::resource('role', RoleController::class);
 
