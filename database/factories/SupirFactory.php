@@ -14,16 +14,15 @@ class SupirFactory extends Factory
     public function definition()
     {
         return [
-            'nsupir' => $this->faker->words(2, true),
+            'namasupir' => $this->faker->words(2, true),
             'alamat' => $this->faker->words(2, true),
             'kota' => $this->faker->words(2, true),
-            'telp' => $this->faker->phoneNumber(),
+            'telp' => $this->faker->words(2, true),
             'statusaktif' => 1,
-            'nomdepositsa' => 1,
+            'nominaldepositsa' => 1,
             'depositke' => 1,
             'tgl' => $this->faker->date(),
-            'nompinjamansa' => 1,
-            'modifiedby' => $this->faker->words(2, true),
+            'nominalpinjamansaldoawal' => 1,
             'supirold_id' => 1,
             'tglexpsim' => $this->faker->date(),
             'nosim' => $this->faker->words(2, true),
@@ -34,7 +33,7 @@ class SupirFactory extends Factory
             'statuslluarkota' => 1,
             'statuszonatertentu' => 1,
             'zona' => 1,
-            'angsuranpjt' => 1,
+            'angsuranpinjaman' => 1,
             'plafondeposito' => 1,
             'photosupir' => $this->faker->words(2, true),
             'photoktp' => $this->faker->words(2, true),
@@ -42,12 +41,13 @@ class SupirFactory extends Factory
             'photokk' => $this->faker->words(2, true),
             'photoskck' => $this->faker->words(2, true),
             'photodomisili' => $this->faker->words(2, true),
-            'ketresign' => $this->faker->words(2, true),
+            'keteranganresign' => $this->faker->words(2, true),
             'statuspameran' => 1,
             'statusbacklist' => 1,
             'tglberhentisupir' => $this->faker->date(),
             'tgllahir' => $this->faker->date(),
             'tglterbitsim' => $this->faker->date(),
+            'modifiedby' => $this->faker->words(2, true),
         ];
     }
 }

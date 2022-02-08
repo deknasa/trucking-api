@@ -17,16 +17,10 @@ class AbsensiSupirDetail extends Model
         'updated_at',
     ];
     
-    // protected $fillable = [
-    //     "absen_id",
-    //     "nobukti",
-    //     "trado_id",
-    //     "supir_id",
-    //     "jam",
-    //     "uangjalan",
-    //     "keterangan",
-    //     "modifiedby",
-    // ];
+    protected $casts = [
+        'created_at' => 'date:d-m-Y H:i:s',
+        'updated_at' => 'date:d-m-Y H:i:s'
+    ];
 
     public function absensiSupirHeader()
     {

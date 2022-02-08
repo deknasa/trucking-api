@@ -17,9 +17,9 @@ class CabangFactory extends Factory
         $parameters = Parameter::all()->pluck('id');
 
         return [
-            'kodecabang' => $this->faker->name(),
-            'namacabang' => $this->faker->name(),
-            'statusaktif' => $this->faker->name(),
+            'kodecabang' => $this->faker->word(2, true),
+            'namacabang' => $this->faker->word(2, true),
+            'statusaktif' => 1,
         ];
     }
 }

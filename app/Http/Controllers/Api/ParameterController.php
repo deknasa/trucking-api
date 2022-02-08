@@ -143,15 +143,14 @@ class ParameterController extends Controller
         DB::beginTransaction();
         try {
             $parameter = new Parameter();
-            $parameter->grp = $request->grp;
-            $parameter->subgrp = $request->subgrp;
-            $parameter->text = $request->text;
-            $parameter->memo = $request->memo;
-            $parameter->modifiedby = Auth::user()->name ?? 'ADMIN';
+            $parameter->grp = strtoupper($request->grp);
+            $parameter->subgrp = strtoupper($request->subgrp);
+            $parameter->text = strtoupper($request->text);
+            $parameter->memo = strtoupper($request->memo);
+            $parameter->modifiedby = strtoupper($request->modifiedby);
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
-            $parameter->modifiedby = $request->modifiedby;
-
+            
             $parameter->save();
             DB::commit();
             /* Set position and page */
@@ -199,13 +198,12 @@ class ParameterController extends Controller
     {
         try {
             $parameter = Parameter::findOrFail($parameter->id);
-            $parameter->modifiedby = $request->modifiedby;
-            $parameter->grp = $request->grp;
-            $parameter->subgrp = $request->subgrp;
-            $parameter->text = $request->text;
-            $parameter->memo = $request->memo;
-            $parameter->modifiedby = $request->modifiedby ?? 'ADMIN';
-            $parameter->modifiedby = $request->modifiedby;
+            $parameter->modifiedby = strtoupper($request->modifiedby);
+            $parameter->grp = strtoupper($request->grp);
+            $parameter->subgrp = strtoupper($request->subgrp);
+            $parameter->text = strtoupper($request->text);
+            $parameter->memo = strtoupper($request->memo);
+            $parameter->modifiedby = strtoupper($request->modifiedby);
 
             if ($parameter->save()) {
                 /* Set position and page */

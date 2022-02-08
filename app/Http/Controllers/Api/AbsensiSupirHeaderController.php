@@ -21,10 +21,11 @@ class AbsensiSupirHeaderController extends Controller
             'search' => $request->search ?? [],
             'sortIndex' => $request->sortIndex ?? 'id',
             'sortOrder' => $request->sortOrder ?? 'asc',
+            'withRelations' => $request->withRelations ?? false,
         ];
 
         $totalRows = AbsensiSupirHeader::count();
-        $totalPages = ceil($totalRows / $params['limit']);
+        $totalPages = $params['limit'] > 0 ? ceil($totalRows / $params['limit']) : 1;
 
         /* Sorting */
         $query = AbsensiSupirHeader::orderBy($params['sortIndex'], $params['sortOrder']);
@@ -50,14 +51,20 @@ class AbsensiSupirHeaderController extends Controller
             }
 
             $totalRows = count($query->get());
-            $totalPages = ceil($totalRows / $params['limit']);
+            $totalPages = $params['limit'] > 0 ? ceil($totalRows / $params['limit']) : 1;
         }
 
         /* Paging */
         $query = $query->skip($params['offset'])
             ->take($params['limit']);
 
-        $parameters = $query->get();
+        $parameters = $params['withRelations'] == true
+            ? $query->with(
+                'absensiSupirDetail',
+                'absensiSupirDetail.trado',
+                'absensiSupirDetail.supir',
+                'absensiSupirDetail.absenTrado')->get()
+            : $query->get();
 
         /* Set attributes */
         $attributes = [
@@ -152,13 +159,13 @@ class AbsensiSupirHeaderController extends Controller
             'absensiSupirDetail.supir',
             'absensiSupirDetail.absenTrado',
         )->find($id);
-        
+
         return response([
             'status' => true,
             'data' => $data
         ]);
     }
-    
+
     /**
      * Update the specified resource in storage.
      *
@@ -183,7 +190,7 @@ class AbsensiSupirHeaderController extends Controller
 
             /* Delete existing detail */
             $absensiSupirHeader->absensiSupirDetail()->delete();
-            
+
             /* Store detail */
             for ($i = 0; $i < count($request->trado_id); $i++) {
                 $absensiSupirHeader->absensiSupirDetail()->create([
