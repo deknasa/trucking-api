@@ -2,10 +2,10 @@
 
 namespace Database\Seeders;
 
-use App\Models\AbsensiSupirHeader;
+use App\Models\AbsensiSupirDetail;
 use Illuminate\Database\Seeder;
 
-class AbsensiSupirHeaderSeeder extends Seeder
+class AbsensiSupirDetailSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -14,8 +14,8 @@ class AbsensiSupirHeaderSeeder extends Seeder
      */
     public function run()
     {
-        AbsensiSupirHeader::factory()
-            ->count(30)
+        AbsensiSupirDetail::factory()
+            ->count(100)
             ->create();
     }
 }

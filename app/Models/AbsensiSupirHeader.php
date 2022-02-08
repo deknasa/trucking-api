@@ -16,6 +16,11 @@ class AbsensiSupirHeader extends Model
         'created_at',
         'updated_at',
     ];
+    
+    protected $casts = [
+        'created_at' => 'date:d-m-Y H:i:s',
+        'updated_at' => 'date:d-m-Y H:i:s'
+    ];
 
     public function absensiSupirDetail() {
         return $this->hasMany(AbsensiSupirDetail::class, 'absensi_id');
