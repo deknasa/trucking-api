@@ -18,6 +18,7 @@ class AbsensiSupirDetail extends Model
     ];
     
     protected $casts = [
+        'jam' => 'date:H:i:s',
         'created_at' => 'date:d-m-Y H:i:s',
         'updated_at' => 'date:d-m-Y H:i:s'
     ];

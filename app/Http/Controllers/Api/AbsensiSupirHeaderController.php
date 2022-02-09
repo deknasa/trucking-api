@@ -97,7 +97,7 @@ class AbsensiSupirHeaderController extends Controller
             $absensiSupirHeader->tgl = $request->tgl;
             $absensiSupirHeader->keterangan = $request->keterangan ?? '1';
             $absensiSupirHeader->kasgantung_nobukti = $request->kasgantung_nobukti ?? '1';
-            $absensiSupirHeader->nominal = $request->nominal ?? '1';
+            $absensiSupirHeader->nominal = array_sum($request->uangjalan);
             $absensiSupirHeader->modifiedby = $request->modifiedby ?? '1';
             $absensiSupirHeader->kasgantung_nobukti = $request->kasgantung_nobukti ?? '';
             $absensiSupirHeader->save();
@@ -109,8 +109,8 @@ class AbsensiSupirHeaderController extends Controller
                     "trado_id" => $request->trado_id[$i] ?? '',
                     "absen_id" => $request->absen_id[$i] ?? '',
                     "supir_id" => $request->supir_id[$i] ?? '',
-                    "jam" => $request->jam[$i] ?? '',
-                    "uangjalan" => $request->uangjalan[$i] ?? '',
+                    "jam" => $request->jam[$i] ?? '00:00',
+                    "uangjalan" => (float) $request->uangjalan[$i] ?? 0,
                     "keterangan" => $request->keterangan_detail[$i] ?? ''
                 ]);
             }
@@ -197,8 +197,8 @@ class AbsensiSupirHeaderController extends Controller
                     "trado_id" => $request->trado_id[$i] ?? '',
                     "absen_id" => $request->absen_id[$i] ?? '',
                     "supir_id" => $request->supir_id[$i] ?? '',
-                    "jam" => $request->jam[$i] ?? '',
-                    "uangjalan" => $request->uangjalan[$i] ?? '',
+                    "jam" => $request->jam[$i] ?? '00:00',
+                    "uangjalan" => (float) $request->uangjalan[$i] ?? 0,
                     "keterangan" => $request->keterangan_detail[$i] ?? ''
                 ]);
             }
