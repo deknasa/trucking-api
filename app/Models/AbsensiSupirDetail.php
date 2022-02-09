@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use DateTimeInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -19,8 +20,6 @@ class AbsensiSupirDetail extends Model
     
     protected $casts = [
         'jam' => 'date:H:i:s',
-        'created_at' => 'date:d-m-Y H:i:s',
-        'updated_at' => 'date:d-m-Y H:i:s'
     ];
 
     public function absensiSupirHeader()
@@ -38,5 +37,10 @@ class AbsensiSupirDetail extends Model
 
     public function absenTrado() {
         return $this->belongsTo(AbsenTrado::class, 'absen_id');
+    }
+
+    protected function serializeDate(DateTimeInterface $date)
+    {
+        return $date->format('d-m-Y H:i:s');
     }
 }

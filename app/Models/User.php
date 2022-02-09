@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use DateTimeInterface;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -26,8 +27,7 @@ class User extends Authenticatable
     ];
 
     protected $casts = [
-        'created_at' => 'date:d-m-Y H:i:s',
-        'updated_at' => 'date:d-m-Y H:i:s'
+        'email_verified_at' => 'datetime',
     ];
 
     /**
@@ -52,9 +52,8 @@ class User extends Authenticatable
         'updated_at',
     ];
 
-    protected $casts = [
-        'email_verified_at' => 'datetime',
-    ];
-
-    
+    protected function serializeDate(DateTimeInterface $date)
+    {
+        return $date->format('d-m-Y H:i:s');
+    }
 }

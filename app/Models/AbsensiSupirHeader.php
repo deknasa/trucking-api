@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use DateTimeInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -19,11 +20,14 @@ class AbsensiSupirHeader extends Model
     
     protected $casts = [
         'tgl' => 'date:d-m-Y',
-        'created_at' => 'date:d-m-Y H:i:s',
-        'updated_at' => 'date:d-m-Y H:i:s'
     ];
 
     public function absensiSupirDetail() {
         return $this->hasMany(AbsensiSupirDetail::class, 'absensi_id');
+    }
+
+    protected function serializeDate(DateTimeInterface $date)
+    {
+        return $date->format('d-m-Y H:i:s');
     }
 }
