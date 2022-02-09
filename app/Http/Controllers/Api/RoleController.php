@@ -414,4 +414,22 @@ class RoleController extends Controller
         $data = $querydata->first();
         return $data;
     }
+
+    public function getroleid(Request $request)
+    {
+
+        $params = [
+            'rolename' => $request->rolename ?? '',
+        ];
+
+        $query = Role::select('id')
+        ->where('rolename', "=", $params['rolename']);
+
+        $data = $query->first();
+
+        return response([
+            'data' => $data
+        ]);
+    }
+
 }
