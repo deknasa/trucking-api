@@ -15,7 +15,7 @@ class AbsensiSupirDetailSeeder extends Seeder
     public function run()
     {
         AbsensiSupirDetail::factory()
-            ->count(100)
+            ->count(200)
             ->create();
     }
 }
