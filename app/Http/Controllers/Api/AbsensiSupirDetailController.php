@@ -17,12 +17,30 @@ class AbsensiSupirDetailController extends Controller
     public function index(Request $request)
     {
         $params = [
-            'id' => $request->id
+            'id' => $request->id,
+            'absensi_id' => $request->absensi_id,
+            'withHeader' => $request->withHeader ?? false,
         ];
 
-        $absensiSupirDetail = AbsensiSupirDetail::with('trado', 'supir', 'absenTrado')
-            ->where('absensi_id', $params['id'])
-            ->get();
+        $query = AbsensiSupirDetail::with('trado', 'supir', 'absenTrado');
+
+        if (isset($params['id'])) {
+            $query->where('absensisupirdetail.id', $params['id']);
+        }
+
+        if (isset($params['absensi_id'])) {
+            $query->where('absensisupirdetail.absensi_id', $params['absensi_id']);
+        }
+        
+        if (@count($request->whereIn) > 0) {
+            $query->whereIn('absensi_id', $request->whereIn);
+        }
+
+        if ($params['withHeader']) {
+            $query->join('absensisupirheader', 'absensisupirheader.id', 'absensisupirdetail.absensi_id');
+        }
+        
+        $absensiSupirDetail = $query->get();
 
         return response([
             'status' => true,
