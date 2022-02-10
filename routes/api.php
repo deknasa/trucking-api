@@ -13,11 +13,13 @@ use App\Http\Controllers\Api\MenuController;
 use App\Http\Controllers\Api\AcosController;
 use App\Http\Controllers\Api\UserRoleController;
 use App\Http\Controllers\Api\AclController;
+use App\Http\Controllers\Api\UserAclController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\RunningNumberController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\CustomValidationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -83,8 +85,16 @@ Route::get('acl/detaillist', [AclController::class, 'detaillist']);
 Route::get('acl/combostatus', [AclController::class, 'combostatus']);
 Route::resource('acl', AclController::class);
 
+Route::get('useracl/field_length', [UserAclController::class, 'fieldLength']);
+Route::get('useracl/detail', [UserAclController::class, 'detail']);
+Route::get('useracl/detaillist', [UserAclController::class, 'detaillist']);
+Route::get('useracl/combostatus', [UserAclController::class, 'combostatus']);
+Route::resource('useracl', UserAclController::class);
+
+
 Route::resource('trado', TradoController::class);
 Route::resource('supir', SupirController::class);
 Route::resource('absentrado', AbsenTradoController::class);
 
 Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
+
