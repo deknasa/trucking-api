@@ -19,9 +19,9 @@ class Parameter extends Model
         'updated_at',
     ];
 
-    protected function serializeDate(DateTimeInterface $date)
-    {
-        return $date->format('d-m-Y H:i:s');
-    }
+    // protected function serializeDate(DateTimeInterface $date)
+    // {
+    //     return $date->format('d-m-Y H:i:s');
+    // }
 }
 
