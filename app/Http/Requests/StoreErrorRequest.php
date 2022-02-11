@@ -40,7 +40,7 @@ class StoreErrorRequest extends FormRequest
     public function messages()
     {
         return [
-            'keterangan.required' => 'Keterangan id wajib diisi',
+            'keterangan.required' => 'Keterangan wajib diisi',
         ];
     }
 }

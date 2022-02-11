@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\UserRoleController;
 use App\Http\Controllers\Api\AclController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\UserAclController;
+use App\Http\Controllers\Api\ErrorController;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -49,6 +50,9 @@ Route::get('cabang/field_length', [CabangController::class, 'fieldLength']);
 Route::get('cabang/combostatus', [CabangController::class, 'combostatus']);
 Route::get('cabang/getPosition2', [CabangController::class, 'getPosition2']);
 Route::resource('cabang', CabangController::class);
+
+Route::get('error/field_length', [ErrorController::class, 'fieldLength']);
+Route::resource('error', ErrorController::class);
 
 Route::get('absensi/no_bukti', [AbsensiSupirHeaderController::class, 'getNoBukti']);
 Route::get('absensi/running_number', [AbsensiSupirHeaderController::class, 'getRunningNumber']);

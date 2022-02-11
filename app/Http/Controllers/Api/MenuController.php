@@ -201,7 +201,7 @@ class MenuController extends Controller
                     // $acos->method = strtolower($value);
                     // $acos->nama = strtolower($value) . ' ' . strtolower($request->aco_id);
                     $namaclass= $value['class'];
-                    $acos->class = $value['class'];
+                    $acos->class = str_replace('controller','',strtolower($value['class']));
                     $acos->method = $value['method'];
                     $acos->nama = $value['name'];
                     $acos->modifiedby = $request->modifiedby;
