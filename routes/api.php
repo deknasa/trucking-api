@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\MenuController;
 use App\Http\Controllers\Api\AcosController;
 use App\Http\Controllers\Api\UserRoleController;
 use App\Http\Controllers\Api\AclController;
+use App\Http\Controllers\Api\AuthController as ApiAuthController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\RunningNumberController;
@@ -34,12 +35,16 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
+Route::post('token', [ApiAuthController::class, 'token']);
+
 Route::prefix('auth')->group(function() {
     Route::post('login', [AuthController::class, 'login']);
 });
 
-Route::get('parameter/field_length', [ParameterController::class, 'fieldLength']);
-Route::resource('parameter', ParameterController::class);
+route::middleware('auth:api')->group(function() {
+    Route::get('parameter/field_length', [ParameterController::class, 'fieldLength']);
+    Route::resource('parameter', ParameterController::class);
+});
 
 Route::get('cabang/field_length', [CabangController::class, 'fieldLength']);
 Route::get('cabang/combostatus', [CabangController::class, 'combostatus']);
