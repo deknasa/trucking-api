@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\LogTrail;
 use App\Http\Requests\StorelogtrailRequest;
 use App\Http\Requests\UpdatelogtrailRequest;
+use App\Http\Requests\DestroylogtrailRequest;
 
 class LogTrailController extends Controller
 {

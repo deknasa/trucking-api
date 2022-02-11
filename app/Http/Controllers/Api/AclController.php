@@ -2,20 +2,23 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
+
+use App\Http\Requests\StoreAclRequest;
+use App\Http\Requests\UpdateAclRequest;
+use App\Http\Requests\DestroyAclRequest;
+
 use App\Models\Acl;
-use App\Http\Requests\AclRequest;
 use App\Models\LogTrail;
 use App\Models\Parameter;
 use App\Models\Role;
 use App\Models\Acos;
-use App\Http\Requests\UserRoleRequest;
-use Illuminate\Support\Facades\Schema;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Api\ParameterController;
+use App\Http\Controllers\Controller;
 
 class AclController extends Controller
 {
@@ -290,7 +293,7 @@ class AclController extends Controller
      * @param  \App\Http\Requests\StoreaclRequest  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(AclRequest $request)
+    public function store(StoreAclRequest $request)
     {
         DB::beginTransaction();
         try {
@@ -393,7 +396,7 @@ class AclController extends Controller
      * @param  \App\Models\acl  $acl
      * @return \Illuminate\Http\Response
      */
-    public function update(AclRequest $request, acl $acl)
+    public function update(UpdateAclRequest $request, acl $acl)
     {
         DB::beginTransaction();
         try {

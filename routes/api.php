@@ -42,6 +42,9 @@ route::middleware('auth:api')->group(function() {
     Route::resource('parameter', ParameterController::class);
 });
 
+Route::get('error/field_length', [ErrorController::class, 'fieldLength']);
+Route::resource('error', ErrorController::class);
+
 Route::get('cabang/field_length', [CabangController::class, 'fieldLength']);
 Route::get('cabang/combostatus', [CabangController::class, 'combostatus']);
 Route::get('cabang/getPosition2', [CabangController::class, 'getPosition2']);

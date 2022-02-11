@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class AclRequest extends FormRequest
+class UpdateErrorRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,8 +24,7 @@ class AclRequest extends FormRequest
     public function rules()
     {
         return [
-            'aco_id' => 'required',
-            'role_id' => 'required',
+            'keterangan' => 'required',
             'modifiedby' => 'required'
         ];
     }
@@ -33,8 +32,15 @@ class AclRequest extends FormRequest
     public function attributes()
     {
         return [
-            'aco_id' => 'aco_id',
-            'role_id' => 'role_id',
+            'keterangan' => 'keterangan',
+            'modifiedby' => 'modifiedby',
+        ];
+    }
+
+    public function messages()
+    {
+        return [
+            'keterangan.required' => 'Keterangan id wajib diisi',
         ];
     }
 }

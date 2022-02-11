@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class UserRequest extends FormRequest
+class UpdateCabangRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -23,13 +23,9 @@ class UserRequest extends FormRequest
      */
     public function rules()
     {
-
         return [
-            'user' => 'required',
-            'name' => 'required',
-            'password' => 'required',
-            'cabang_id' => 'required',
-            'karyawan_id' => 'required',
+            'kodecabang' => 'required',
+            'namacabang' => 'required',
             'statusaktif' => 'required',
             'modifiedby' => 'required'
         ];
@@ -38,14 +34,10 @@ class UserRequest extends FormRequest
     public function attributes()
     {
         return [
-            'user' => 'user',
-            'name' => 'name',
-            'password' => 'password',
-            'cabang_id' => 'cabang_id',
-            'karyawan_id' => 'karyawan_id',
-            'dashboard' => 'dashboard',
+            'kodecabang' => 'kodecabang',
+            'namacabang' => 'namacabang',
             'statusaktif' => 'statusaktif',
-            'modifiedby' => 'modifiedby'
+            'modifiedby' => 'modifiedby',
         ];
     }
 }

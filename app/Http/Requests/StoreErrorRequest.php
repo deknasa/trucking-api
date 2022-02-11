@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class AcosRequest extends FormRequest
+class StoreErrorRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,18 +24,23 @@ class AcosRequest extends FormRequest
     public function rules()
     {
         return [
-            'class' => 'required',
-            'method' => 'required',
-            'nama' => 'required'
+            'keterangan' => 'required',
+            'modifiedby' => 'required'
         ];
     }
 
     public function attributes()
     {
         return [
-            'class' => 'class',
-            'method' => 'method',
-            'nama' => 'nama',
+            'keterangan' => 'keterangan',
+            'modifiedby' => 'modifiedby',
+        ];
+    }
+
+    public function messages()
+    {
+        return [
+            'keterangan.required' => 'Keterangan id wajib diisi',
         ];
     }
 }

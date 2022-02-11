@@ -2,21 +2,26 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreUserAclRequest;
+use App\Http\Requests\UpdateUserAclRequest;
+use App\Http\Requests\DestroyUserAclRequest;
+
 use App\Models\UserAcl;
-use App\Http\Requests\UserAclRequest;
 use App\Models\LogTrail;
 use App\Models\Parameter;
 use App\Models\User;
 use App\Models\Acos;
-use Illuminate\Support\Facades\Schema;
 
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-use App\Http\Controllers\Api\ParameterController;
-use App\Rules\NotExistsRule;
 use Illuminate\Validation\ValidationException;
+
+use App\Rules\NotExistsRule;
+
+use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\ParameterController;
 
 class UserAclController extends Controller
 {
@@ -292,7 +297,7 @@ class UserAclController extends Controller
      * @param  \App\Http\Requests\StoreUserAclRequest  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(UserAclRequest $request)
+    public function store(StoreUserAclRequest $request)
     {
 
         // $request->validate([
@@ -406,7 +411,7 @@ class UserAclController extends Controller
      * @param  \App\Models\UserAcl  $userAcl
      * @return \Illuminate\Http\Response
      */
-    public function update(UserAclRequest $request, UserAcl $useracl)
+    public function update(UpdateUserAclRequest $request, UserAcl $useracl)
     {
         DB::beginTransaction();
         try {
@@ -468,7 +473,7 @@ class UserAclController extends Controller
      * @param  \App\Models\UserAcl  $userAcl
      * @return \Illuminate\Http\Response
      */
-    public function destroy(UserAcl $useracl, Request $request)
+    public function destroy(UserAcl $useracl, DestroyUserAclRequest $request)
     {
         DB::beginTransaction();
         try {

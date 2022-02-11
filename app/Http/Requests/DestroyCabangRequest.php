@@ -3,9 +3,8 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
-class UserAclRequest extends FormRequest
+class DestroyCabangRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,10 +23,10 @@ class UserAclRequest extends FormRequest
      */
     public function rules()
     {
-
         return [
-            'aco_id' => 'required',
-            'user_id' => 'required',
+            'kodecabang' => 'required',
+            'namacabang' => 'required',
+            'statusaktif' => 'required',
             'modifiedby' => 'required'
         ];
     }
@@ -35,14 +34,10 @@ class UserAclRequest extends FormRequest
     public function attributes()
     {
         return [
-            'aco_id' => 'aco_id',
-            'user_id' => 'user_id',
-        ];
-    }
-    public function messages()
-    {
-        return [
-            'user_id.required' => 'User id Wajib diisi',
+            'kodecabang' => 'kodecabang',
+            'namacabang' => 'namacabang',
+            'statusaktif' => 'statusaktif',
+            'modifiedby' => 'modifiedby',
         ];
     }
 }

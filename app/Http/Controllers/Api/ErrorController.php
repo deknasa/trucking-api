@@ -1,13 +1,20 @@
 <?php
 
+namespace App\Http\Controllers;
+
+
+
+
+
 namespace App\Http\Controllers\Api;
 
-use App\Http\Requests\StoreRoleRequest;
-use App\Http\Requests\UpdateRoleRequest;
-use App\Http\Requests\DestroyRoleRequest;
+use App\Http\Requests\StoreErrorRequest;
+use App\Http\Requests\UpdateErrorRequest;
+use App\Http\Requests\DestroyErrorRequest;
 
-use App\Models\Role;
+use App\Models\Error;
 use App\Models\LogTrail;
+use App\Models\Parameter;
 
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Http\Request;
@@ -16,7 +23,7 @@ use Illuminate\Support\Facades\DB;
 
 use App\Http\Controllers\Controller;
 
-class RoleController extends Controller
+class ErrorController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -33,40 +40,40 @@ class RoleController extends Controller
             'sortOrder' => $request->sortOrder ?? 'asc',
         ];
 
-        $totalRows = Role::count();
+        $totalRows = Error::count();
         $totalPages = ceil($totalRows / $params['limit']);
 
         /* Sorting */
         if ($params['sortIndex'] == 'id') {
-            $query = Role::select(
-                'role.id',
-                'role.rolename',
-                'role.modifiedby',
-                'role.created_at',
-                'role.updated_at'
+            $query = Error::select(
+                'error.id',
+                'error.keterangan',
+                'error.modifiedby',
+                'error.created_at',
+                'error.updated_at'
             )
-                ->orderBy('role.id', $params['sortOrder']);
+                ->orderBy('error.id', $params['sortOrder']);
         } else {
             if ($params['sortOrder'] == 'asc') {
-                $query = Role::select(
-                    'role.id',
-                    'role.rolename',
-                    'role.modifiedby',
-                    'role.created_at',
-                    'role.updated_at'
+                $query = Error::select(
+                    'error.id',
+                    'error.keterangan',
+                    'error.modifiedby',
+                    'error.created_at',
+                    'error.updated_at'
                 )
                     ->orderBy($params['sortIndex'], $params['sortOrder'])
-                    ->orderBy('role.id', $params['sortOrder']);
+                    ->orderBy('error.id', $params['sortOrder']);
             } else {
-                $query = Role::select(
-                    'role.id',
-                    'role.rolename',
-                    'role.modifiedby',
-                    'role.created_at',
-                    'role.updated_at'
+                $query = Error::select(
+                    'error.id',
+                    'error.keterangan',
+                    'error.modifiedby',
+                    'error.created_at',
+                    'error.updated_at'
                 )
                     ->orderBy($params['sortIndex'], $params['sortOrder'])
-                    ->orderBy('role.id', 'asc');
+                    ->orderBy('error.id', 'asc');
             }
         }
 
@@ -76,14 +83,13 @@ class RoleController extends Controller
             switch ($params['search']['groupOp']) {
                 case "AND":
                     foreach ($params['search']['rules'] as $index => $search) {
-
-                        $query = $query->where($search['field'], 'LIKE', "%$search[data]%");
+                            $query = $query->where($search['field'], 'LIKE', "%$search[data]%");
                     }
 
                     break;
                 case "OR":
                     foreach ($params['search']['rules'] as $index => $search) {
-                        $query = $query->orWhere($search['field'], 'LIKE', "%$search[data]%");
+                            $query = $query->orWhere($search['field'], 'LIKE', "%$search[data]%");
                     }
 
                     break;
@@ -102,7 +108,7 @@ class RoleController extends Controller
         $query = $query->skip($params['offset'])
             ->take($params['limit']);
 
-        $roles = $query->get();
+        $errors = $query->get();
 
         /* Set attributes */
         $attributes = [
@@ -114,7 +120,7 @@ class RoleController extends Controller
         // echo '---';
         return response([
             'status' => true,
-            'data' => $roles,
+            'data' => $errors,
             'attributes' => $attributes,
             'params' => $params
         ]);
@@ -133,50 +139,49 @@ class RoleController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \App\Http\Requests\StoreRoleRequest  $request
+     * @param  \App\Http\Requests\StoreErrorRequest  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(StoreRoleRequest $request)
+    public function store(StoreErrorRequest $request)
     {
         DB::beginTransaction();
         try {
-            $role = new Role();
-            $role->rolename = strtoupper($request->rolename);
-            $role->modifiedby = strtoupper($request->modifiedby);
+            $error = new Error();
+            $error->keterangan = strtoupper($request->keterangan);
+            $error->modifiedby = strtoupper($request->modifiedby);
 
-
-            $role->save();
+            $error->save();
 
             $datajson = [
-                'id' => $role->id,
-                'rolename' => strtoupper($request->rolename),
+                'id' => $error->id,
+                'keterangan' => strtoupper($request->keterangan),
                 'modifiedby' => strtoupper($request->modifiedby),
-
             ];
 
             $logtrail = new LogTrail();
-            $logtrail->namatabel = 'ROLE';
-            $logtrail->postingdari = 'ENTRY ROLE';
-            $logtrail->idtrans = $role->id;
-            $logtrail->nobuktitrans= $role->id;
-            $logtrail->aksi= 'ENTRY';
-            $logtrail->datajson= json_encode($datajson);
+            $logtrail->namatabel = 'ERROR';
+            $logtrail->postingdari = 'ENTRY ERROR';
+            $logtrail->idtrans = $error->id;
+            $logtrail->nobuktitrans = $error->id;
+            $logtrail->aksi = 'ENTRY';
+            $logtrail->datajson = json_encode($datajson);
 
             $logtrail->save();
+
             DB::commit();
             /* Set position and page */
             $del = 0;
-            $data = $this->getid($role->id, $request, $del);
-            $role->position = $data->row;
-            // dd($role->position );
+            $data = $this->getid($error->id, $request, $del);
+            $error->position = $data->row;
+            // dd($error->position );
             if (isset($request->limit)) {
-                $role->page = ceil($role->position / $request->limit);
+                $error->page = ceil($error->position / $request->limit);
             }
 
             return response([
                 'status' => true,
                 'message' => 'Berhasil disimpan',
-                'data' => $role
+                'data' => $error
             ]);
         } catch (\Throwable $th) {
             DB::rollBack();
@@ -187,24 +192,24 @@ class RoleController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\Role  $role
+     * @param  \App\Models\Error  $error
      * @return \Illuminate\Http\Response
      */
-    public function show(Role $role)
+    public function show(Error $error)
     {
         return response([
             'status' => true,
-            'data' => $role
+            'data' => $error
         ]);
     }
 
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Models\Role  $role
+     * @param  \App\Models\Error  $error
      * @return \Illuminate\Http\Response
      */
-    public function edit(Role $role)
+    public function edit(Error $error)
     {
         //
     }
@@ -212,50 +217,48 @@ class RoleController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \App\Http\Requests\UpdateRoleRequest  $request
-     * @param  \App\Models\Role  $role
+     * @param  \App\Http\Requests\UpdateErrorRequest  $request
+     * @param  \App\Models\Error  $error
      * @return \Illuminate\Http\Response
      */
-    public function update(UpdateRoleRequest $request, Role $role)
+    public function update(UpdateErrorRequest $request, Error $error)
     {
         DB::beginTransaction();
         try {
-             $role->update(array_map('strtoupper',$request->validated()));
+            $error->update(array_map('strtoupper', $request->validated()));
 
-             $datajson = [
-                'id' => $role->id,
-                'rolename' => strtoupper($request->rolename),
+            $datajson = [
+                'id' => $error->id,
+                'keterangan' => strtoupper($request->keterangan),
                 'modifiedby' => strtoupper($request->modifiedby),
             ];
 
             $logtrail = new LogTrail();
-            $logtrail->namatabel = 'ROLE';
-            $logtrail->postingdari = 'EDIT ROLE';
-            $logtrail->idtrans = $role->id;
-            $logtrail->nobuktitrans= $role->id;
-            $logtrail->aksi= 'EDIT';
-            $logtrail->datajson= json_encode($datajson);
+            $logtrail->namatabel = 'KETERANGAN';
+            $logtrail->postingdari = 'EDIT KETERANGAN';
+            $logtrail->idtrans = $error->id;
+            $logtrail->nobuktitrans = $error->id;
+            $logtrail->aksi = 'EDIT';
+            $logtrail->datajson = json_encode($datajson);
 
             $logtrail->save();
-
             DB::commit();
-          
 
-                /* Set position and page */
-                $role->position = role::orderBy($request->sortname ?? 'id', $request->sortorder ?? 'asc')
-                    ->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $role->{$request->sortname})
-                    ->where('id', '<=', $role->id)
-                    ->count();
+            /* Set position and page */
+            $error->position = error::orderBy($request->sortname ?? 'id', $request->sortorder ?? 'asc')
+                ->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $error->{$request->sortname})
+                ->where('id', '<=', $error->id)
+                ->count();
 
-                if (isset($request->limit)) {
-                    $role->page = ceil($role->position / $request->limit);
-                }
+            if (isset($request->limit)) {
+                $error->page = ceil($error->position / $request->limit);
+            }
 
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil diubah',
-                    'data' => $role
-                ]);
+            return response([
+                'status' => true,
+                'message' => 'Berhasil diubah',
+                'data' => $error
+            ]);
         } catch (\Throwable $th) {
             DB::rollBack();
             return response($th->getMessage());
@@ -265,48 +268,45 @@ class RoleController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\Role  $role
+     * @param  \App\Models\Error  $error
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Role $role, DestroyRoleRequest $request)
+    public function destroy(Error $error,DestroyErrorRequest $request)
     {
         DB::beginTransaction();
         try {
 
-       
+            Error::destroy($error->id);
 
-        Role::destroy($role->id);
-    
+            $datajson = [
+                'id' => $error->id,
+                'modifiedby' => strtoupper($request->modifiedby),
+            ];
 
-        $datajson = [
-            'id' => $role->id,
-            'modifiedby' => strtoupper($request->modifiedby),
-        ];
+            $logtrail = new LogTrail();
+            $logtrail->namatabel = 'KETERANGAN';
+            $logtrail->postingdari = 'DELETE KETERANGAN';
+            $logtrail->idtrans = $error->id;
+            $logtrail->nobuktitrans = $error->id;
+            $logtrail->aksi = 'DELETE';
+            $logtrail->datajson = json_encode($datajson);
 
-        $logtrail = new LogTrail();
-        $logtrail->namatabel = 'ROLE';
-        $logtrail->postingdari = 'DELETE ROLE';
-        $logtrail->idtrans = $role->id;
-        $logtrail->nobuktitrans= $role->id;
-        $logtrail->aksi= 'DELETE';
-        $logtrail->datajson= json_encode($datajson);
+            $logtrail->save();
 
-        $logtrail->save();
-
-        DB::commit();
-
-        $del = 1;
-            $data = $this->getid($role->id, $request, $del);
-            $role->position = $data->row;
-            $role->id = $data->id;
+            DB::commit();
+            Error::destroy($error->id);
+            $del = 1;
+            $data = $this->getid($error->id, $request, $del);
+            $error->position = $data->row;
+            $error->id = $data->id;
             if (isset($request->limit)) {
-                $role->page = ceil($role->position / $request->limit);
+                $error->page = ceil($error->position / $request->limit);
             }
-            // dd($role);
+            // dd($error);
             return response([
                 'status' => true,
                 'message' => 'Berhasil dihapus',
-                'data' => $role
+                'data' => $error
             ]);
         } catch (\Throwable $th) {
             DB::rollBack();
@@ -317,7 +317,7 @@ class RoleController extends Controller
     public function fieldLength()
     {
         $data = [];
-        $columns = DB::connection()->getDoctrineSchemaManager()->listTableDetails('role')->getColumns();
+        $columns = DB::connection()->getDoctrineSchemaManager()->listTableDetails('error')->getColumns();
 
         foreach ($columns as $index => $column) {
             $data[$index] = $column->getLength();
@@ -335,7 +335,7 @@ class RoleController extends Controller
         Schema::create($temp, function ($table) {
             $table->id();
             $table->bigInteger('id_')->default('0');
-            $table->string('rolename', 300)->default('');
+            $table->longText('keterangan')->default('');
             $table->string('modifiedby', 30)->default('');
             $table->dateTime('created_at')->default('1900/1/1');
             $table->dateTime('updated_at')->default('1900/1/1');
@@ -346,42 +346,42 @@ class RoleController extends Controller
 
 
         if ($request->sortname == 'id') {
-            $query = Role::select(
-                'role.id as id_',
-                'role.rolename',
-                'role.modifiedby',
-                'role.created_at',
-                'role.updated_at'
+            $query = Error::select(
+                'error.id as id_',
+                'error.keterangan',
+                'error.modifiedby',
+                'error.created_at',
+                'error.updated_at'
             )
-                ->orderBy('role.id', $request->sortorder);
+                ->orderBy('error.id', $request->sortorder);
         } else {
             if ($request->sortorder == 'asc') {
-                $query = Role::select(
-                    'role.id as id_',
-                    'role.rolename',
-                    'role.modifiedby',
-                    'role.created_at',
-                    'role.updated_at'
+                $query = Error::select(
+                    'error.id as id_',
+                    'error.keterangan',
+                    'error.modifiedby',
+                    'error.created_at',
+                    'error.updated_at'
                 )
                     ->orderBy($request->sortname, $request->sortorder)
-                    ->orderBy('role.id', $request->sortorder);
+                    ->orderBy('error.id', $request->sortorder);
             } else {
-                $query = Role::select(
-                    'role.id as id_',
-                    'role.rolename',
-                    'role.modifiedby',
-                    'role.created_at',
-                    'role.updated_at'
+                $query = Error::select(
+                    'error.id as id_',
+                    'error.keterangan',
+                    'error.modifiedby',
+                    'error.created_at',
+                    'error.updated_at'
                 )
                     ->orderBy($request->sortname, $request->sortorder)
 
-                    ->orderBy('role.id', 'asc');
+                    ->orderBy('error.id', 'asc');
             }
         }
 
 
 
-        DB::table($temp)->insertUsing(['id_', 'rolename',  'modifiedby', 'created_at', 'updated_at'], $query);
+        DB::table($temp)->insertUsing(['id_', 'keterangan', 'modifiedby', 'created_at', 'updated_at'], $query);
 
 
         if ($del == 1) {
@@ -418,22 +418,4 @@ class RoleController extends Controller
         $data = $querydata->first();
         return $data;
     }
-
-    public function getroleid(Request $request)
-    {
-
-        $params = [
-            'rolename' => $request->rolename ?? '',
-        ];
-
-        $query = Role::select('id')
-        ->where('rolename', "=", $params['rolename']);
-
-        $data = $query->first();
-
-        return response([
-            'data' => $data
-        ]);
-    }
-
 }

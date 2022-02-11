@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class RoleRequest extends FormRequest
+class UpdateMenuRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,17 +24,27 @@ class RoleRequest extends FormRequest
     public function rules()
     {
         return [
-            'rolename' => 'required',
+            'menuname' => 'required',
+            'menuseq' => 'required',
+            'menuicon' => 'required',
             'modifiedby' => 'required'
+            
         ];
     }
 
     public function attributes()
     {
         return [
-            'rolename' => 'rolename',
+            'menuname' => 'menuname',
+            'menuseq' => 'menuseq',
+            'menuparent' => 'menuparent',
+            'menuicon' => 'menuicon',
+            'aco_id' => 'aco_id',
+            'link' => 'link',
+            'menuexe' => 'menuexe',
+            'menukode' => 'menukode',
             'modifiedby' => 'modifiedby'
-
         ];
     }
+
 }

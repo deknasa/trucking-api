@@ -2,17 +2,20 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreMenuRequest;
+use App\Http\Requests\UpdateMenuRequest;
+use App\Http\Requests\DestroyMenuRequest;
+
 use App\Models\Menu;
 use App\Models\LogTrail;
-use App\Http\Requests\MenuRequest;
 use App\Models\Acos;
-use Illuminate\Support\Facades\Schema;
 
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
+use App\Http\Controllers\Controller;
 
 class MenuController extends Controller
 {
@@ -172,7 +175,7 @@ class MenuController extends Controller
      * @param  \App\Http\Requests\StoremenuRequest  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(MenuRequest $request)
+    public function store(StoreMenuRequest $request)
     {
 
 
@@ -344,7 +347,7 @@ class MenuController extends Controller
      * @param  \App\Models\Menu  $Menu
      * @return \Illuminate\Http\Response
      */
-    public function update(MenuRequest $request, Menu $menu)
+    public function update(UpdateMenuRequest $request, Menu $menu)
     {
         // dd(strtolower($request->get('menuexe')));
         DB::beginTransaction();
@@ -414,7 +417,7 @@ class MenuController extends Controller
      * @param  \App\Models\Menu  $Menu
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Menu $menu, MenuRequest $request)
+    public function destroy(Menu $menu, DestroyMenuRequest $request)
     {
         DB::beginTransaction();
         try {

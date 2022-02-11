@@ -2,16 +2,21 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreCabangRequest;
+use App\Http\Requests\UpdateCabangRequest;
+use App\Http\Requests\DestroyCabangRequest;
+
 use App\Models\Cabang;
 use App\Models\LogTrail;
-use App\Http\Requests\CabangRequest;
 use App\Models\Parameter;
-use Illuminate\Support\Facades\Schema;
 
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+
+use App\Http\Controllers\Controller;
+
 
 class CabangController extends Controller
 {
@@ -163,7 +168,7 @@ class CabangController extends Controller
      * @param  \App\Http\Requests\StoreCabangRequest  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(CabangRequest $request)
+    public function store(StoreCabangRequest $request)
     {
 
 
@@ -248,7 +253,7 @@ class CabangController extends Controller
      * @param  \App\Models\Cabang  $cabang
      * @return \Illuminate\Http\Response
      */
-    public function update(CabangRequest $request, Cabang $cabang)
+    public function update(UpdateCabangRequest $request, Cabang $cabang)
     {
         DB::beginTransaction();
         try {
@@ -300,7 +305,7 @@ class CabangController extends Controller
      * @param  \App\Models\Cabang  $cabang
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Cabang $cabang, CabangRequest $request)
+    public function destroy(Cabang $cabang, DestroyCabangRequest $request)
     {
         DB::beginTransaction();
         try {

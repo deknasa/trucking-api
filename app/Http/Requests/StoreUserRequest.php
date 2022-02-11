@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class MenuRequest extends FormRequest
+class StoreUserRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -23,28 +23,29 @@ class MenuRequest extends FormRequest
      */
     public function rules()
     {
+
         return [
-            'menuname' => 'required',
-            'menuseq' => 'required',
-            'menuicon' => 'required',
+            'user' => 'required',
+            'name' => 'required',
+            'password' => 'required',
+            'cabang_id' => 'required',
+            'karyawan_id' => 'required',
+            'statusaktif' => 'required',
             'modifiedby' => 'required'
-            
         ];
     }
 
     public function attributes()
     {
         return [
-            'menuname' => 'menuname',
-            'menuseq' => 'menuseq',
-            'menuparent' => 'menuparent',
-            'menuicon' => 'menuicon',
-            'aco_id' => 'aco_id',
-            'link' => 'link',
-            'menuexe' => 'menuexe',
-            'menukode' => 'menukode',
+            'user' => 'user',
+            'name' => 'name',
+            'password' => 'password',
+            'cabang_id' => 'cabang_id',
+            'karyawan_id' => 'karyawan_id',
+            'dashboard' => 'dashboard',
+            'statusaktif' => 'statusaktif',
             'modifiedby' => 'modifiedby'
         ];
     }
-
 }

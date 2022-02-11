@@ -2,6 +2,10 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Http\Requests\StoreAcosRequest;
+use App\Http\Requests\UpdateAcosRequest;
+use App\Http\Requests\DestroyAcosRequest;
+
 use App\Http\Controllers\Controller;
 
 class AcosController extends Controller
@@ -32,7 +36,7 @@ class AcosController extends Controller
      * @param  \App\Http\Requests\StoreAcosRequest  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(AcosRequest $request)
+    public function store(StoreAcosRequest $request)
     {
         //
     }
@@ -43,7 +47,7 @@ class AcosController extends Controller
      * @param  \App\Models\Acos  $acos
      * @return \Illuminate\Http\Response
      */
-    public function show(Acos $acos)
+    public function show()
     {
         //
     }
@@ -54,7 +58,7 @@ class AcosController extends Controller
      * @param  \App\Models\Acos  $acos
      * @return \Illuminate\Http\Response
      */
-    public function edit(Acos $acos)
+    public function edit()
     {
         //
     }
@@ -66,7 +70,7 @@ class AcosController extends Controller
      * @param  \App\Models\Acos  $acos
      * @return \Illuminate\Http\Response
      */
-    public function update(AcosRequest $request, Acos $acos)
+    public function update(UpdateAcosRequest $request, Acos $acos)
     {
         //
     }

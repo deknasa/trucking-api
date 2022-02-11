@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class LogTrailRequest extends FormRequest
+class DestroyUserRoleRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,12 +24,9 @@ class LogTrailRequest extends FormRequest
     public function rules()
     {
         return [
-            'namatabel' => 'required',
-            'postingdari' => 'required',
-            'idtrans' => 'required',
-            'nobuktitrans' => 'required',
-            'aksi' => 'required',
-            'datajson' => 'required',
+            'user_id' => 'required',
+            'role_id' => 'required',
+            'modifiedby' => 'required'
             
         ];
     }
@@ -37,12 +34,9 @@ class LogTrailRequest extends FormRequest
     public function attributes()
     {
         return [
-            'namatabel' => 'namatabel',
-            'postingdari' => 'postingdari',
-            'idtrans' => 'idtrans',
-            'nobuktitrans' => 'nobuktitrans',
-            'aksi' => 'aksi',
-            'datajson' => 'datajson',
+            'user_id' => 'user_id',
+            'role_id' => 'role_id',
+            'modifiedby' => 'modifiedby'
         ];
     }
 }

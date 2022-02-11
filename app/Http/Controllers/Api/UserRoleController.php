@@ -2,20 +2,23 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreUserRoleRequest;
+use App\Http\Requests\UpdateUserRoleRequest;
+use App\Http\Requests\DestroyUserRoleRequest;
+
 use App\Models\UserRole;
 use App\Models\LogTrail;
 use App\Models\Parameter;
 use App\Models\Role;
 use App\Models\User;
-use App\Http\Requests\UserRoleRequest;
-use Illuminate\Support\Facades\Schema;
 
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-use App\Http\Controllers\Api\ParameterController;
 
+use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\ParameterController;
 
 class UserRoleController extends Controller
 {
@@ -290,7 +293,7 @@ class UserRoleController extends Controller
      * @param  \App\Http\Requests\StoreUserRoleRequest  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(UserRoleRequest $request)
+    public function store(StoreUserRoleRequest $request)
     {
 
         DB::beginTransaction();
@@ -395,7 +398,7 @@ class UserRoleController extends Controller
      * @param  \App\Models\UserRole  $userRole
      * @return \Illuminate\Http\Response
      */
-    public function update(UserRoleRequest $request, UserRole $userrole)
+    public function update(UpdateUserRoleRequest $request, UserRole $userrole)
     {
         DB::beginTransaction();
         try {
@@ -457,7 +460,7 @@ class UserRoleController extends Controller
      * @param  \App\Models\UserRole  $userRole
      * @return \Illuminate\Http\Response
      */
-    public function destroy(UserRole $userrole, Request $request)
+    public function destroy(UserRole $userrole, DestroyUserRoleRequest $request)
     {
        
         DB::beginTransaction();

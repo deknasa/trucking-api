@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class CabangRequest extends FormRequest
+class DestroyErrorRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,9 +24,7 @@ class CabangRequest extends FormRequest
     public function rules()
     {
         return [
-            'kodecabang' => 'required',
-            'namacabang' => 'required',
-            'statusaktif' => 'required',
+            'keterangan' => 'required',
             'modifiedby' => 'required'
         ];
     }
@@ -34,10 +32,15 @@ class CabangRequest extends FormRequest
     public function attributes()
     {
         return [
-            'kodecabang' => 'kodecabang',
-            'namacabang' => 'namacabang',
-            'statusaktif' => 'statusaktif',
+            'keterangan' => 'keterangan',
             'modifiedby' => 'modifiedby',
+        ];
+    }
+
+    public function messages()
+    {
+        return [
+            'keterangan.required' => 'Keterangan id wajib diisi',
         ];
     }
 }
