@@ -30,6 +30,7 @@ class StoreLogTrailRequest extends FormRequest
             'nobuktitrans' => 'required',
             'aksi' => 'required',
             'datajson' => 'required',
+            'modifiedby' => 'required',
             
         ];
     }
@@ -43,6 +44,7 @@ class StoreLogTrailRequest extends FormRequest
             'nobuktitrans' => 'nobuktitrans',
             'aksi' => 'aksi',
             'datajson' => 'datajson',
+            'modifiedby' => 'modifiedby',
         ];
     }
 }

@@ -3,6 +3,8 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Http\Controllers\Api\ErrorController;
+
 
 class UpdateErrorRequest extends FormRequest
 {
@@ -39,8 +41,12 @@ class UpdateErrorRequest extends FormRequest
 
     public function messages()
     {
+        $controller = new ErrorController;
         return [
-            'keterangan.required' => 'Keterangan id wajib diisi',
+            'keterangan.required' => 'Keterangan '. $controller->geterror(1)->keterangan,
+            'modifiedby.required' => 'Modified by '. $controller->geterror(1)->keterangan,
+
         ];
     }
+
 }

@@ -16,6 +16,7 @@ use App\Http\Controllers\Api\AclController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\UserAclController;
 use App\Http\Controllers\Api\ErrorController;
+use App\Http\Controllers\Api\LogTrailController;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -52,6 +53,7 @@ Route::get('cabang/getPosition2', [CabangController::class, 'getPosition2']);
 Route::resource('cabang', CabangController::class);
 
 Route::get('error/field_length', [ErrorController::class, 'fieldLength']);
+Route::get('error/geterror', [ErrorController::class, 'geterror']);
 Route::resource('error', ErrorController::class);
 
 Route::get('absensi/no_bukti', [AbsensiSupirHeaderController::class, 'getNoBukti']);
@@ -96,6 +98,8 @@ Route::get('useracl/detail', [UserAclController::class, 'detail']);
 Route::get('useracl/detaillist', [UserAclController::class, 'detaillist']);
 Route::get('useracl/combostatus', [UserAclController::class, 'combostatus']);
 Route::resource('useracl', UserAclController::class);
+
+Route::resource('logtrail', LogTrailController::class);
 
 
 Route::resource('trado', TradoController::class);

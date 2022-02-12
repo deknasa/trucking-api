@@ -1,11 +1,23 @@
 <?php
 
+
 namespace App\Http\Controllers;
 
+namespace App\Http\Controllers\Api;
+
+
 use App\Models\LogTrail;
-use App\Http\Requests\StorelogtrailRequest;
-use App\Http\Requests\UpdatelogtrailRequest;
-use App\Http\Requests\DestroylogtrailRequest;
+use App\Http\Requests\StoreLogTrailRequest;
+use App\Http\Requests\UpdateLogTrailRequest;
+use App\Http\Requests\DestroyLogTrailRequest;
+
+
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
+
+use App\Http\Controllers\Controller;
 
 class LogTrailController extends Controller
 {
@@ -37,17 +49,22 @@ class LogTrailController extends Controller
      */
     public function store(StoreLogTrailRequest $request)
     {
+        DB::beginTransaction();
         try {
             $LogTrail = new LogTrail();
-            $LogTrail->ntabel = $request->ntabel;
-            $LogTrail->postfrom = $request->postfrom;
+
+            $LogTrail->namatabel = $request->namatabel;
+            $LogTrail->postingdari = $request->postingdari;
             $LogTrail->idtrans = $request->idtrans;
+            $LogTrail->nobuktitrans = $request->nobuktitrans;
             $LogTrail->aksi = $request->aksi;
             $LogTrail->datajson = $request->datajson;
             $LogTrail->modifiedby = $request->modifiedby;
 
             $LogTrail->save();
+            DB::commit();
         } catch (\Throwable $th) {
+            DB::rollBack();
             return response($th->getMessage());
         }
     }

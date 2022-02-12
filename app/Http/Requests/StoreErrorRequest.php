@@ -4,6 +4,8 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
+use App\Http\Controllers\Api\ErrorController;
+
 class StoreErrorRequest extends FormRequest
 {
     /**
@@ -24,7 +26,7 @@ class StoreErrorRequest extends FormRequest
     public function rules()
     {
         return [
-            'keterangan' => 'required',
+            'keterangan' => 'required|unique:error',
             'modifiedby' => 'required'
         ];
     }
@@ -39,8 +41,12 @@ class StoreErrorRequest extends FormRequest
 
     public function messages()
     {
+        $controller = new ErrorController;
         return [
-            'keterangan.required' => 'Keterangan wajib diisi',
+            'keterangan.required' => 'Keterangan '. $controller->geterror(1)->keterangan,
+            'modifiedby.required' => 'Modified by '. $controller->geterror(1)->keterangan,
+            'keterangan.unique' => 'Keterangan '. $controller->geterror(2)->keterangan,
+
         ];
     }
 }

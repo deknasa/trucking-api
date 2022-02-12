@@ -2,15 +2,12 @@
 
 namespace App\Http\Controllers;
 
-
-
-
-
 namespace App\Http\Controllers\Api;
 
 use App\Http\Requests\StoreErrorRequest;
 use App\Http\Requests\UpdateErrorRequest;
 use App\Http\Requests\DestroyErrorRequest;
+use App\Http\Requests\StoreLogTrailRequest;
 
 use App\Models\Error;
 use App\Models\LogTrail;
@@ -22,6 +19,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\LogTrailController;
 
 class ErrorController extends Controller
 {
@@ -144,6 +142,7 @@ class ErrorController extends Controller
      */
     public function store(StoreErrorRequest $request)
     {
+        // dd($request->all());
         DB::beginTransaction();
         try {
             $error = new Error();
@@ -158,15 +157,18 @@ class ErrorController extends Controller
                 'modifiedby' => strtoupper($request->modifiedby),
             ];
 
-            $logtrail = new LogTrail();
-            $logtrail->namatabel = 'ERROR';
-            $logtrail->postingdari = 'ENTRY ERROR';
-            $logtrail->idtrans = $error->id;
-            $logtrail->nobuktitrans = $error->id;
-            $logtrail->aksi = 'ENTRY';
-            $logtrail->datajson = json_encode($datajson);
+            $datalogtrail = [
+                'namatabel' => 'ERROR',
+                'postingdari' => 'ENTRY ERROR',
+                'idtrans' => $error->id,
+                'nobuktitrans' => $error->id,
+                'aksi' => 'ENTRY',
+                'datajson' => json_encode($datajson),
+                'modofiedby' => $error->modifiedby,
+            ];
 
-            $logtrail->save();
+            $data=new StoreLogTrailRequest($datalogtrail);
+            app(LogTrailController::class)->store($data);
 
             DB::commit();
             /* Set position and page */
@@ -417,5 +419,20 @@ class ErrorController extends Controller
 
         $data = $querydata->first();
         return $data;
+    }
+    public function geterror($id) {
+        // dd($request->aco_id);
+        if (Error::select('keterangan')
+                ->where('id', '=', $id)
+                ->exists()
+            ) {
+                $data=Error::select('keterangan')
+                ->where('id', '=', $id)
+                ->first();
+            } else {
+                $data="";   
+            }
+
+            return $data;
     }
 }
