@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
 use App\Http\Requests\DestroyUserRequest;
+use App\Http\Requests\StoreLogTrailRequest;
 
 use App\Models\User;
 use App\Models\Parameter;
@@ -196,16 +197,20 @@ class UserController extends Controller
                 'statusaktif' => $request->statusaktif,
                 'modifiedby' => $request->modifiedby,
             ];
+       
 
-            $logtrail = new LogTrail();
-            $logtrail->namatabel = 'USER';
-            $logtrail->postingdari = 'ENTRY USER';
-            $logtrail->idtrans = $user->id;
-            $logtrail->nobuktitrans = $user->id;
-            $logtrail->aksi = 'ENTRY';
-            $logtrail->datajson = json_encode($datajson);
+            $datalogtrail = [
+                'namatabel' => 'USER',
+                'postingdari' => 'ENTRY USER',
+                'idtrans' => $user->id,
+                'nobuktitrans' => $user->id,
+                'aksi' => 'ENTRY',
+                'datajson' => json_encode($datajson),
+                'modifiedby' => $user->modifiedby,
+            ];
 
-            $logtrail->save();
+            $data=new StoreLogTrailRequest($datalogtrail);
+            app(LogTrailController::class)->store($data);            
 
             DB::commit();
             /* Set position and page */
@@ -275,18 +280,23 @@ class UserController extends Controller
                 'karyawan_id' => $request->karyawan_id,
                 'dashboard' => strtoupper($request->dashboard),
                 'statusaktif' => $request->statusaktif,
-                'modifiedby' => strtoupper($request->modifiedby),
+                'modifiedby' => $request->modifiedby,
+            ];
+       
+
+            $datalogtrail = [
+                'namatabel' => 'USER',
+                'postingdari' => 'EDIT USER',
+                'idtrans' => $user->id,
+                'nobuktitrans' => $user->id,
+                'aksi' => 'EDIT',
+                'datajson' => json_encode($datajson),
+                'modifiedby' => $user->modifiedby,
             ];
 
-            $logtrail = new LogTrail();
-            $logtrail->namatabel = 'USER';
-            $logtrail->postingdari = 'EDIT USER';
-            $logtrail->idtrans = $user->id;
-            $logtrail->nobuktitrans = $user->id;
-            $logtrail->aksi = 'EDIT';
-            $logtrail->datajson = json_encode($datajson);
+            $data=new StoreLogTrailRequest($datalogtrail);
+            app(LogTrailController::class)->store($data);  
 
-            $logtrail->save();
             DB::commit();
 
             /* Set position and page */
@@ -322,21 +332,31 @@ class UserController extends Controller
         try {
 
             User::destroy($user->id);
-
             $datajson = [
                 'id' => $user->id,
-                'modifiedby' => strtoupper($request->modifiedby),
+                'user' => strtoupper($request->user),
+                'name' => strtoupper($request->name),
+                'password' => Hash::make($request->password),
+                'cabang_id' => $request->cabang_id,
+                'karyawan_id' => $request->karyawan_id,
+                'dashboard' => strtoupper($request->dashboard),
+                'statusaktif' => $request->statusaktif,
+                'modifiedby' => $request->modifiedby,
+            ];
+       
+
+            $datalogtrail = [
+                'namatabel' => 'USER',
+                'postingdari' => 'DELETE USER',
+                'idtrans' => $user->id,
+                'nobuktitrans' => $user->id,
+                'aksi' => 'DELETE',
+                'datajson' => json_encode($datajson),
+                'modifiedby' => $user->modifiedby,
             ];
 
-            $logtrail = new LogTrail();
-            $logtrail->namatabel = 'USER';
-            $logtrail->postingdari = 'DELETE USER';
-            $logtrail->idtrans = $user->id;
-            $logtrail->nobuktitrans = $user->id;
-            $logtrail->aksi = 'DELETE';
-            $logtrail->datajson = json_encode($datajson);
-
-            $logtrail->save();
+            $data=new StoreLogTrailRequest($datalogtrail);
+            app(LogTrailController::class)->store($data);  
 
             DB::commit();
 

@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\DB;
 use App\Http\Requests\StoreAclRequest;
 use App\Http\Requests\UpdateAclRequest;
 use App\Http\Requests\DestroyAclRequest;
+use App\Http\Requests\StoreLogTrailRequest;
 
 use App\Models\Acl;
 use App\Models\LogTrail;
@@ -322,15 +323,19 @@ class AclController extends Controller
 
             ];
 
-            $logtrail = new LogTrail();
-            $logtrail->namatabel = 'ACL';
-            $logtrail->postingdari = 'ENTRY ACL';
-            $logtrail->idtrans = $request->role_id;
-            $logtrail->nobuktitrans = $request->role_id;
-            $logtrail->aksi = 'ENTRY';
-            $logtrail->datajson = json_encode($datajson);
+              
+            $datalogtrail = [
+                'namatabel' => 'ACL',
+                'postingdari' => 'ENTRY ACL',
+                'idtrans' => $request->id,
+                'nobuktitrans' => $request->id,
+                'aksi' => 'ENTRY',
+                'datajson' => json_encode($datajson),
+                'modifiedby' => $request->modifiedby,
+            ];
 
-            $logtrail->save();
+            $data=new StoreLogTrailRequest($datalogtrail);
+            app(LogTrailController::class)->store($data);  
 
             DB::commit();
             /* Set position and page */
@@ -411,24 +416,26 @@ class AclController extends Controller
             }
 
 
-
             $datajson = [
-                'id' => $acl->id,
                 'aco_id' => $request->aco_id,
                 'role_id' => $request->role_id,
                 'modifiedby' => strtoupper($request->modifiedby),
 
             ];
 
-            $logtrail = new LogTrail();
-            $logtrail->namatabel = 'ACL';
-            $logtrail->postingdari = 'ENTRY ACL';
-            $logtrail->idtrans = $acl->id;
-            $logtrail->nobuktitrans = $acl->id;
-            $logtrail->aksi = 'ENTRY';
-            $logtrail->datajson = json_encode($datajson);
+              
+            $datalogtrail = [
+                'namatabel' => 'ACL',
+                'postingdari' => 'EDIT ACL',
+                'idtrans' => $request->id,
+                'nobuktitrans' => $request->id,
+                'aksi' => 'EDIT',
+                'datajson' => json_encode($datajson),
+                'modifiedby' => $request->modifiedby,
+            ];
 
-            $logtrail->save();
+            $data=new StoreLogTrailRequest($datalogtrail);
+            app(LogTrailController::class)->store($data);  
 
             DB::commit();
             /* Set position and page */
@@ -466,19 +473,25 @@ class AclController extends Controller
             Acl::where('role_id', $request->role_id)->delete();
 
             $datajson = [
-                'id' => $acl->id,
+                'aco_id' => $request->aco_id,
+                'role_id' => $request->role_id,
                 'modifiedby' => strtoupper($request->modifiedby),
+
             ];
 
-            $logtrail = new LogTrail();
-            $logtrail->namatabel = 'ACL';
-            $logtrail->postingdari = 'DELETE ACL';
-            $logtrail->idtrans = $acl->id;
-            $logtrail->nobuktitrans = $acl->id;
-            $logtrail->aksi = 'DELETE';
-            $logtrail->datajson = json_encode($datajson);
+              
+            $datalogtrail = [
+                'namatabel' => 'ACL',
+                'postingdari' => 'DELETE ACL',
+                'idtrans' => $request->id,
+                'nobuktitrans' => $request->id,
+                'aksi' => 'DELETE',
+                'datajson' => json_encode($datajson),
+                'modifiedby' => $request->modifiedby,
+            ];
 
-            $logtrail->save();
+            $data=new StoreLogTrailRequest($datalogtrail);
+            app(LogTrailController::class)->store($data);  
 
             DB::commit();
             $del = 1;

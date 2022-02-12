@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Http\Controllers\Api\ErrorController;
 
 class StoreCabangRequest extends FormRequest
 {
@@ -38,6 +39,18 @@ class StoreCabangRequest extends FormRequest
             'namacabang' => 'namacabang',
             'statusaktif' => 'statusaktif',
             'modifiedby' => 'modifiedby',
+        ];
+    }
+
+    public function messages()
+    {
+        $controller = new ErrorController;
+        return [
+            'kodecabang.required' => 'kodecabang '. $controller->geterror(1)->keterangan,
+            'namacabang.required' => 'namacabang '. $controller->geterror(1)->keterangan,
+            'statusaktif.required' => 'statusaktif '. $controller->geterror(1)->keterangan,
+            'modifiedby.required' => 'modifiedby '. $controller->geterror(1)->keterangan,
+
         ];
     }
 }

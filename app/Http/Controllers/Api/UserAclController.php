@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Requests\StoreUserAclRequest;
 use App\Http\Requests\UpdateUserAclRequest;
 use App\Http\Requests\DestroyUserAclRequest;
+use App\Http\Requests\StoreLogTrailRequest;
 
 use App\Models\UserAcl;
 use App\Models\LogTrail;
@@ -328,8 +329,6 @@ class UserAclController extends Controller
             }
 
 
-
-
             $datajson = [
                 'aco_id' => $request->aco_id,
                 'user_id' => $request->user_id,
@@ -337,15 +336,20 @@ class UserAclController extends Controller
 
             ];
 
-            $logtrail = new LogTrail();
-            $logtrail->namatabel = 'USER ACL';
-            $logtrail->postingdari = 'ENTRY USER ACL';
-            $logtrail->idtrans = $request->user_id;
-            $logtrail->nobuktitrans = $request->user_id;
-            $logtrail->aksi = 'ENTRY';
-            $logtrail->datajson = json_encode($datajson);
+             
 
-            $logtrail->save();
+            $datalogtrail = [
+                'namatabel' => 'USERACL',
+                'postingdari' => 'ENTRY USER ACL',
+                'idtrans' => $request->id,
+                'nobuktitrans' => $request->id,
+                'aksi' => 'ENTRY',
+                'datajson' => json_encode($datajson),
+                'modifiedby' => $request->modifiedby,
+            ];
+
+            $data=new StoreLogTrailRequest($datalogtrail);
+            app(LogTrailController::class)->store($data);             
 
             DB::commit();
             /* Set position and page */
@@ -428,22 +432,26 @@ class UserAclController extends Controller
 
 
             $datajson = [
-                'id' => $useracl->id,
                 'aco_id' => $request->aco_id,
                 'user_id' => $request->user_id,
                 'modifiedby' => strtoupper($request->modifiedby),
 
             ];
 
-            $logtrail = new LogTrail();
-            $logtrail->namatabel = 'USER ACL';
-            $logtrail->postingdari = 'ENTRY USER ACL';
-            $logtrail->idtrans = $useracl->id;
-            $logtrail->nobuktitrans = $useracl->id;
-            $logtrail->aksi = 'ENTRY';
-            $logtrail->datajson = json_encode($datajson);
+             
 
-            $logtrail->save();
+            $datalogtrail = [
+                'namatabel' => 'USERACL',
+                'postingdari' => 'EDIT USER ACL',
+                'idtrans' => $request->id,
+                'nobuktitrans' => $request->id,
+                'aksi' => 'EDIT',
+                'datajson' => json_encode($datajson),
+                'modifiedby' => $request->modifiedby,
+            ];
+
+            $data=new StoreLogTrailRequest($datalogtrail);
+            app(LogTrailController::class)->store($data);   
 
             DB::commit();
             /* Set position and page */
@@ -481,19 +489,26 @@ class UserAclController extends Controller
             UserAcl::where('user_id', $request->user_id)->delete();
 
             $datajson = [
-                'id' => $useracl->id,
+                'aco_id' => $request->aco_id,
+                'user_id' => $request->user_id,
                 'modifiedby' => strtoupper($request->modifiedby),
+
             ];
 
-            $logtrail = new LogTrail();
-            $logtrail->namatabel = 'USER ACL';
-            $logtrail->postingdari = 'DELETE USER ACL';
-            $logtrail->idtrans = $useracl->id;
-            $logtrail->nobuktitrans = $useracl->id;
-            $logtrail->aksi = 'DELETE';
-            $logtrail->datajson = json_encode($datajson);
+             
 
-            $logtrail->save();
+            $datalogtrail = [
+                'namatabel' => 'USERACL',
+                'postingdari' => 'DELETE USER ACL',
+                'idtrans' => $request->id,
+                'nobuktitrans' => $request->id,
+                'aksi' => 'DELETE',
+                'datajson' => json_encode($datajson),
+                'modifiedby' => $request->modifiedby,
+            ];
+
+            $data=new StoreLogTrailRequest($datalogtrail);
+            app(LogTrailController::class)->store($data);   
 
             DB::commit();
             $del = 1;

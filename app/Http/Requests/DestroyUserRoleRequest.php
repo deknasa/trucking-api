@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Http\Controllers\Api\ErrorController;
 
 class DestroyUserRoleRequest extends FormRequest
 {
@@ -27,7 +28,7 @@ class DestroyUserRoleRequest extends FormRequest
             'user_id' => 'required',
             'role_id' => 'required',
             'modifiedby' => 'required'
-            
+
         ];
     }
 
@@ -37,6 +38,18 @@ class DestroyUserRoleRequest extends FormRequest
             'user_id' => 'user_id',
             'role_id' => 'role_id',
             'modifiedby' => 'modifiedby'
+        ];
+    }
+
+    public function messages()
+    {
+        $controller = new ErrorController;
+        return [
+            'user_id.required' => 'user_id ' . $controller->geterror(1)->keterangan,
+            'role_id.required' => 'role_id ' . $controller->geterror(1)->keterangan,
+            'modifiedby.required' => 'modifiedby ' . $controller->geterror(1)->keterangan,
+
+
         ];
     }
 }

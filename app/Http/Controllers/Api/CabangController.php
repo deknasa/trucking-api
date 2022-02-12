@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Requests\StoreCabangRequest;
 use App\Http\Requests\UpdateCabangRequest;
 use App\Http\Requests\DestroyCabangRequest;
+use App\Http\Requests\StoreLogTrailRequest;
 
 use App\Models\Cabang;
 use App\Models\LogTrail;
@@ -190,15 +191,20 @@ class CabangController extends Controller
                 'modifiedby' => strtoupper($request->modifiedby),
             ];
 
-            $logtrail = new LogTrail();
-            $logtrail->namatabel = 'CABANG';
-            $logtrail->postingdari = 'ENTRY CABANG';
-            $logtrail->idtrans = $cabang->id;
-            $logtrail->nobuktitrans = $cabang->id;
-            $logtrail->aksi = 'ENTRY';
-            $logtrail->datajson = json_encode($datajson);
 
-            $logtrail->save();
+              
+            $datalogtrail = [
+                'namatabel' => 'CABANG',
+                'postingdari' => 'ENTRY CABANG',
+                'idtrans' => $cabang->id,
+                'nobuktitrans' => $cabang->id,
+                'aksi' => 'ENTRY',
+                'datajson' => json_encode($datajson),
+                'modifiedby' => $cabang->modifiedby,
+            ];
+
+            $data=new StoreLogTrailRequest($datalogtrail);
+            app(LogTrailController::class)->store($data);              
 
             DB::commit();
             /* Set position and page */
@@ -267,15 +273,31 @@ class CabangController extends Controller
                 'modifiedby' => strtoupper($request->modifiedby),
             ];
 
-            $logtrail = new LogTrail();
-            $logtrail->namatabel = 'CABANG';
-            $logtrail->postingdari = 'EDIT CABANG';
-            $logtrail->idtrans = $cabang->id;
-            $logtrail->nobuktitrans = $cabang->id;
-            $logtrail->aksi = 'EDIT';
-            $logtrail->datajson = json_encode($datajson);
+          
+            $datajson = [
+                'id' => $cabang->id,
+                'kodecabang' => strtoupper($request->kodecabang),
+                'namacabang' => strtoupper($request->namacabang),
+                'statusaktif' => $request->statusaktif,
+                'modifiedby' => strtoupper($request->modifiedby),
+            ];
 
-            $logtrail->save();
+
+              
+            $datalogtrail = [
+                'namatabel' => 'CABANG',
+                'postingdari' => 'EDIT CABANG',
+                'idtrans' => $cabang->id,
+                'nobuktitrans' => $cabang->id,
+                'aksi' => 'EDIT',
+                'datajson' => json_encode($datajson),
+                'modifiedby' => $cabang->modifiedby,
+            ];
+
+            $data=new StoreLogTrailRequest($datalogtrail);
+            app(LogTrailController::class)->store($data);   
+
+
             DB::commit();
 
             /* Set position and page */
@@ -312,20 +334,29 @@ class CabangController extends Controller
 
             Cabang::destroy($cabang->id);
 
+
             $datajson = [
                 'id' => $cabang->id,
+                'kodecabang' => strtoupper($request->kodecabang),
+                'namacabang' => strtoupper($request->namacabang),
+                'statusaktif' => $request->statusaktif,
                 'modifiedby' => strtoupper($request->modifiedby),
             ];
 
-            $logtrail = new LogTrail();
-            $logtrail->namatabel = 'CABANG';
-            $logtrail->postingdari = 'DELETE CABANG';
-            $logtrail->idtrans = $cabang->id;
-            $logtrail->nobuktitrans = $cabang->id;
-            $logtrail->aksi = 'DELETE';
-            $logtrail->datajson = json_encode($datajson);
 
-            $logtrail->save();
+              
+            $datalogtrail = [
+                'namatabel' => 'CABANG',
+                'postingdari' => 'DELETE CABANG',
+                'idtrans' => $cabang->id,
+                'nobuktitrans' => $cabang->id,
+                'aksi' => 'DELETE',
+                'datajson' => json_encode($datajson),
+                'modifiedby' => $cabang->modifiedby,
+            ];
+
+            $data=new StoreLogTrailRequest($datalogtrail);
+            app(LogTrailController::class)->store($data);   
 
             DB::commit();
             Cabang::destroy($cabang->id);

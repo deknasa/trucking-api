@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Http\Controllers\Api\ErrorController;
 
 class StoreAcosRequest extends FormRequest
 {
@@ -36,6 +37,18 @@ class StoreAcosRequest extends FormRequest
             'class' => 'class',
             'method' => 'method',
             'nama' => 'nama',
+        ];
+    }
+
+    public function messages()
+    {
+        $controller = new ErrorController;
+        return [
+            'class.required' => 'class '. $controller->geterror(1)->keterangan,
+            'method.required' => 'method '. $controller->geterror(1)->keterangan,
+            'nama.required' => 'nama '. $controller->geterror(1)->keterangan,
+            'modifiedby.required' => 'modifiedby '. $controller->geterror(1)->keterangan,
+
         ];
     }
 }

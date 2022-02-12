@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Requests\StoreRoleRequest;
 use App\Http\Requests\UpdateRoleRequest;
 use App\Http\Requests\DestroyRoleRequest;
+use App\Http\Requests\StoreLogTrailRequest;
 
 use App\Models\Role;
 use App\Models\LogTrail;
@@ -154,15 +155,21 @@ class RoleController extends Controller
 
             ];
 
-            $logtrail = new LogTrail();
-            $logtrail->namatabel = 'ROLE';
-            $logtrail->postingdari = 'ENTRY ROLE';
-            $logtrail->idtrans = $role->id;
-            $logtrail->nobuktitrans= $role->id;
-            $logtrail->aksi= 'ENTRY';
-            $logtrail->datajson= json_encode($datajson);
+             
 
-            $logtrail->save();
+            $datalogtrail = [
+                'namatabel' => 'ROLE',
+                'postingdari' => 'ENTRY ROLE',
+                'idtrans' => $role->id,
+                'nobuktitrans' => $role->id,
+                'aksi' => 'ENTRY',
+                'datajson' => json_encode($datajson),
+                'modifiedby' => $role->modifiedby,
+            ];
+
+            $data=new StoreLogTrailRequest($datalogtrail);
+            app(LogTrailController::class)->store($data);    
+
             DB::commit();
             /* Set position and page */
             $del = 0;
@@ -226,17 +233,23 @@ class RoleController extends Controller
                 'id' => $role->id,
                 'rolename' => strtoupper($request->rolename),
                 'modifiedby' => strtoupper($request->modifiedby),
+
             ];
 
-            $logtrail = new LogTrail();
-            $logtrail->namatabel = 'ROLE';
-            $logtrail->postingdari = 'EDIT ROLE';
-            $logtrail->idtrans = $role->id;
-            $logtrail->nobuktitrans= $role->id;
-            $logtrail->aksi= 'EDIT';
-            $logtrail->datajson= json_encode($datajson);
+             
 
-            $logtrail->save();
+            $datalogtrail = [
+                'namatabel' => 'ROLE',
+                'postingdari' => 'EDIT ROLE',
+                'idtrans' => $role->id,
+                'nobuktitrans' => $role->id,
+                'aksi' => 'EDIT',
+                'datajson' => json_encode($datajson),
+                'modifiedby' => $role->modifiedby,
+            ];
+
+            $data=new StoreLogTrailRequest($datalogtrail);
+            app(LogTrailController::class)->store($data);  
 
             DB::commit();
           
@@ -283,15 +296,27 @@ class RoleController extends Controller
             'modifiedby' => strtoupper($request->modifiedby),
         ];
 
-        $logtrail = new LogTrail();
-        $logtrail->namatabel = 'ROLE';
-        $logtrail->postingdari = 'DELETE ROLE';
-        $logtrail->idtrans = $role->id;
-        $logtrail->nobuktitrans= $role->id;
-        $logtrail->aksi= 'DELETE';
-        $logtrail->datajson= json_encode($datajson);
+        $datajson = [
+            'id' => $role->id,
+            'rolename' => strtoupper($request->rolename),
+            'modifiedby' => strtoupper($request->modifiedby),
 
-        $logtrail->save();
+        ];
+
+         
+
+        $datalogtrail = [
+            'namatabel' => 'ROLE',
+            'postingdari' => 'DELETE ROLE',
+            'idtrans' => $role->id,
+            'nobuktitrans' => $role->id,
+            'aksi' => 'DELETE',
+            'datajson' => json_encode($datajson),
+            'modifiedby' => $role->modifiedby,
+        ];
+
+        $data=new StoreLogTrailRequest($datalogtrail);
+        app(LogTrailController::class)->store($data);  
 
         DB::commit();
 

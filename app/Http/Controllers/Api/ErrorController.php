@@ -164,7 +164,7 @@ class ErrorController extends Controller
                 'nobuktitrans' => $error->id,
                 'aksi' => 'ENTRY',
                 'datajson' => json_encode($datajson),
-                'modofiedby' => $error->modifiedby,
+                'modifiedby' => $error->modifiedby,
             ];
 
             $data=new StoreLogTrailRequest($datalogtrail);
@@ -235,15 +235,18 @@ class ErrorController extends Controller
                 'modifiedby' => strtoupper($request->modifiedby),
             ];
 
-            $logtrail = new LogTrail();
-            $logtrail->namatabel = 'KETERANGAN';
-            $logtrail->postingdari = 'EDIT KETERANGAN';
-            $logtrail->idtrans = $error->id;
-            $logtrail->nobuktitrans = $error->id;
-            $logtrail->aksi = 'EDIT';
-            $logtrail->datajson = json_encode($datajson);
+            $datalogtrail = [
+                'namatabel' => 'ERROR',
+                'postingdari' => 'EDIT ERROR',
+                'idtrans' => $error->id,
+                'nobuktitrans' => $error->id,
+                'aksi' => 'EDIT',
+                'datajson' => json_encode($datajson),
+                'modifiedby' => $error->modifiedby,
+            ];
 
-            $logtrail->save();
+            $data=new StoreLogTrailRequest($datalogtrail);
+            app(LogTrailController::class)->store($data);
             DB::commit();
 
             /* Set position and page */
@@ -282,18 +285,22 @@ class ErrorController extends Controller
 
             $datajson = [
                 'id' => $error->id,
+                'keterangan' => strtoupper($request->keterangan),
                 'modifiedby' => strtoupper($request->modifiedby),
             ];
 
-            $logtrail = new LogTrail();
-            $logtrail->namatabel = 'KETERANGAN';
-            $logtrail->postingdari = 'DELETE KETERANGAN';
-            $logtrail->idtrans = $error->id;
-            $logtrail->nobuktitrans = $error->id;
-            $logtrail->aksi = 'DELETE';
-            $logtrail->datajson = json_encode($datajson);
+            $datalogtrail = [
+                'namatabel' => 'ERROR',
+                'postingdari' => 'HAPUS ERROR',
+                'idtrans' => $error->id,
+                'nobuktitrans' => $error->id,
+                'aksi' => 'HAPUS',
+                'datajson' => json_encode($datajson),
+                'modifiedby' => $error->modifiedby,
+            ];
 
-            $logtrail->save();
+            $data=new StoreLogTrailRequest($datalogtrail);
+            app(LogTrailController::class)->store($data);
 
             DB::commit();
             Error::destroy($error->id);

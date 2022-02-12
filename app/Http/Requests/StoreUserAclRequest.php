@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use App\Http\Controllers\Api\ErrorController;
 
 class StoreUserAclRequest extends FormRequest
 {
@@ -41,8 +42,12 @@ class StoreUserAclRequest extends FormRequest
     }
     public function messages()
     {
+        $controller = new ErrorController;
         return [
-            'user_id.required' => 'User id Wajib diisi',
+            'aco_id.required' => 'aco_id '. $controller->geterror(1)->keterangan,
+            'user_id.required' => 'user_id '. $controller->geterror(1)->keterangan,
+            'modifiedby.required' => 'modifiedby '. $controller->geterror(1)->keterangan,
+
         ];
-    }
+    }   
 }

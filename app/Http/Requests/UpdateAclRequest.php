@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Http\Controllers\Api\ErrorController;
 
 class UpdateAclRequest extends FormRequest
 {
@@ -35,6 +36,17 @@ class UpdateAclRequest extends FormRequest
         return [
             'aco_id' => 'aco_id',
             'role_id' => 'role_id',
+        ];
+    }
+
+    public function messages()
+    {
+        $controller = new ErrorController;
+        return [
+            'aco_id.required' => 'aco_id '. $controller->geterror(1)->keterangan,
+            'role_id.required' => 'role_id '. $controller->geterror(1)->keterangan,
+            'modifiedby.required' => 'modifiedby '. $controller->geterror(1)->keterangan,
+
         ];
     }
 }
