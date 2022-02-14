@@ -9,110 +9,68 @@ use Illuminate\Support\Facades\DB;
 
 class AbsensiSupirDetailController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function index(Request $request)
     {
         $params = [
             'id' => $request->id,
             'absensi_id' => $request->absensi_id,
             'withHeader' => $request->withHeader ?? false,
+            'whereIn' => $request->whereIn ?? [],
+            'forReport' => $request->forReport ?? false,
         ];
+        try {
+            $query = AbsensiSupirDetail::from('absensisupirdetail as detail');
 
-        $query = AbsensiSupirDetail::with('trado', 'supir', 'absenTrado');
+            if (isset($params['id'])) {
+                $query->where('detail.id', $params['id']);
+            }
 
-        if (isset($params['id'])) {
-            $query->where('absensisupirdetail.id', $params['id']);
+            if (isset($params['absensi_id'])) {
+                $query->where('detail.absensi_id', $params['absensi_id']);
+            }
+
+            if ($params['withHeader']) {
+                $query->join('absensisupirheader', 'absensisupirheader.id', 'detail.absensi_id');
+            }
+
+            if (count($params['whereIn']) > 0) {
+                $query->whereIn('absensi_id', $params['whereIn']);
+            }
+
+            if ($params['forReport']) {
+                $query->select(
+                    'header.id as id_header',
+                    'header.nobukti as nobukti_header',
+                    'header.tgl as tgl_header',
+                    'header.keterangan as keterangan_header',
+                    'header.kasgantung_nobukti as kasgantung_nobukti_header',
+                    'header.nominal as nominal_header',
+                    'trado.nama as trado',
+                    'supir.namasupir as supir',
+                    'absentrado.kodeabsen as status',
+                    'detail.keterangan as keterangan_detail',
+                    'detail.jam',
+                    'detail.uangjalan',
+                    'detail.absensi_id'
+                )
+                    ->join('absensisupirheader as header', 'header.id', 'detail.absensi_id')
+                    ->join('trado', 'trado.id', '=', 'detail.trado_id', 'full outer')
+                    ->join('supir', 'supir.id', '=', 'detail.supir_id', 'full outer')
+                    ->join('absentrado', 'absentrado.id', '=', 'detail.absen_id', 'full outer');
+
+                $absensiSupirDetail = $query->get();
+            } else {
+                $query->with('trado', 'supir', 'absenTrado');
+                $absensiSupirDetail = $query->get();
+            }
+
+            return response([
+                'data' => $absensiSupirDetail
+            ]);
+        } catch (\Throwable $th) {
+            return response([
+                'message' => $th->getMessage()
+            ]);
         }
-
-        if (isset($params['absensi_id'])) {
-            $query->where('absensisupirdetail.absensi_id', $params['absensi_id']);
-        }
-        
-        if (@count($request->whereIn) > 0) {
-            $query->whereIn('absensi_id', $request->whereIn);
-        }
-
-        if ($params['withHeader']) {
-            $query->join('absensisupirheader', 'absensisupirheader.id', 'absensisupirdetail.absensi_id');
-        }
-        
-        $absensiSupirDetail = $query->get();
-
-        return response([
-            'status' => true,
-            'data' => $absensiSupirDetail,
-            'attributes' => $attributes ?? [],
-            'params' => $params
-        ]);
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
-    {
-        //
     }
 }
