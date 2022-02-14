@@ -17,7 +17,10 @@ class AbsensiSupirDetailController extends Controller
             'withHeader' => $request->withHeader ?? false,
             'whereIn' => $request->whereIn ?? [],
             'forReport' => $request->forReport ?? false,
+            'sortIndex' => $request->sortOrder ?? 'id',
+            'sortOrder' => $request->sortOrder ?? 'asc',
         ];
+
         try {
             $query = AbsensiSupirDetail::from('absensisupirdetail as detail');
 
@@ -56,7 +59,8 @@ class AbsensiSupirDetailController extends Controller
                     ->join('absensisupirheader as header', 'header.id', 'detail.absensi_id')
                     ->join('trado', 'trado.id', '=', 'detail.trado_id', 'full outer')
                     ->join('supir', 'supir.id', '=', 'detail.supir_id', 'full outer')
-                    ->join('absentrado', 'absentrado.id', '=', 'detail.absen_id', 'full outer');
+                    ->join('absentrado', 'absentrado.id', '=', 'detail.absen_id', 'full outer')
+                    ->orderBy('header.nobukti', 'asc');
 
                 $absensiSupirDetail = $query->get();
             } else {
