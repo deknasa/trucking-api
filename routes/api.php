@@ -78,6 +78,7 @@ Route::get('menu/combomenuparent', [MenuController::class, 'combomenuparent']);
 Route::get('menu/getdatanamaacos', [MenuController::class, 'getdatanamaacos']);
 Route::resource('menu', MenuController::class);
 
+Route::get('absensi/grid', [AbsensiSupirHeaderController::class, 'grid']);
 Route::resource('absensi', AbsensiSupirHeaderController::class);
 Route::resource('absensi_detail', AbsensiSupirDetailController::class);
 

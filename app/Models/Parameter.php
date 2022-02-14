@@ -7,7 +7,7 @@ use DateTimeInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Parameter extends Model
+class Parameter extends MyModel
 {
     use HasFactory;
 
@@ -18,10 +18,5 @@ class Parameter extends Model
         'created_at',
         'updated_at',
     ];
-
-    // protected function serializeDate(DateTimeInterface $date)
-    // {
-    //     return $date->format('d-m-Y H:i:s');
-    // }
 }
 

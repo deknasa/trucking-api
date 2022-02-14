@@ -94,7 +94,7 @@ class AbsensiSupirHeaderController extends Controller
             /* Store header */
             $absensiSupirHeader = new AbsensiSupirHeader();
             $absensiSupirHeader->nobukti = $request->nobukti;
-            $absensiSupirHeader->tgl = $request->tgl;
+            $absensiSupirHeader->tgl = date('Y-m-d', strtotime($request->tgl));
             $absensiSupirHeader->keterangan = $request->keterangan ?? '1';
             $absensiSupirHeader->kasgantung_nobukti = $request->kasgantung_nobukti ?? '1';
             $absensiSupirHeader->nominal = array_sum($request->uangjalan);
@@ -181,7 +181,7 @@ class AbsensiSupirHeaderController extends Controller
             /* Store header */
             $absensiSupirHeader = AbsensiSupirHeader::findOrFail($id);
             $absensiSupirHeader->nobukti = $request->nobukti;
-            $absensiSupirHeader->tgl = $request->tgl;
+            $absensiSupirHeader->tgl = date('Y-m-d', strtotime($request->tgl));
             $absensiSupirHeader->keterangan = $request->keterangan ?? '1';
             $absensiSupirHeader->kasgantung_nobukti = $request->kasgantung_nobukti ?? '1';
             $absensiSupirHeader->nominal = $request->nominal ?? '1';
