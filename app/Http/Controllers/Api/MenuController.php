@@ -2,17 +2,21 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreMenuRequest;
+use App\Http\Requests\UpdateMenuRequest;
+use App\Http\Requests\DestroyMenuRequest;
+use App\Http\Requests\StoreLogTrailRequest;
+
 use App\Models\Menu;
 use App\Models\LogTrail;
-use App\Http\Requests\MenuRequest;
 use App\Models\Acos;
-use Illuminate\Support\Facades\Schema;
 
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
+use App\Http\Controllers\Controller;
 
 class MenuController extends Controller
 {
@@ -172,7 +176,7 @@ class MenuController extends Controller
      * @param  \App\Http\Requests\StoremenuRequest  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(MenuRequest $request)
+    public function store(StoreMenuRequest $request)
     {
 
 
@@ -198,7 +202,7 @@ class MenuController extends Controller
                     // $acos->method = strtolower($value);
                     // $acos->nama = strtolower($value) . ' ' . strtolower($request->aco_id);
                     $namaclass= $value['class'];
-                    $acos->class = $value['class'];
+                    $acos->class = str_replace('controller','',strtolower($value['class']));
                     $acos->method = $value['method'];
                     $acos->nama = $value['name'];
                     $acos->modifiedby = $request->modifiedby;
@@ -281,15 +285,20 @@ class MenuController extends Controller
                 'modifiedby' => strtoupper($request->modifiedby),
             ];
 
-            $logtrail = new LogTrail();
-            $logtrail->namatabel = 'MENU';
-            $logtrail->postingdari = 'ENTRY MENU';
-            $logtrail->idtrans = $menu->id;
-            $logtrail->nobuktitrans = $menu->id;
-            $logtrail->aksi = 'ENTRY';
-            $logtrail->datajson = json_encode($datajson);
+               
 
-            $logtrail->save();
+            $datalogtrail = [
+                'namatabel' => 'MENU',
+                'postingdari' => 'ENTRY MENU',
+                'idtrans' => $menu->id,
+                'nobuktitrans' => $menu->id,
+                'aksi' => 'ENTRY',
+                'datajson' => json_encode($datajson),
+                'modifiedby' => $menu->modifiedby,
+            ];
+
+            $data=new StoreLogTrailRequest($datalogtrail);
+            app(LogTrailController::class)->store($data);            
 
             DB::commit();
             /* Set position and page */
@@ -344,7 +353,7 @@ class MenuController extends Controller
      * @param  \App\Models\Menu  $Menu
      * @return \Illuminate\Http\Response
      */
-    public function update(MenuRequest $request, Menu $menu)
+    public function update(UpdateMenuRequest $request, Menu $menu)
     {
         // dd(strtolower($request->get('menuexe')));
         DB::beginTransaction();
@@ -368,7 +377,7 @@ class MenuController extends Controller
 
             $datajson = [
                 'id' => $menu->id,
-                'menuname' => ucwords($request->menuname),
+                'menuname' => strtoupper($request->menuname),
                 'menuseq' => $request->menuseq,
                 'menuparent' => $request->menuparent,
                 'menuicon' => strtolower($request->menuicon),
@@ -376,15 +385,21 @@ class MenuController extends Controller
                 'modifiedby' => strtoupper($request->modifiedby),
             ];
 
-            $logtrail = new LogTrail();
-            $logtrail->namatabel = 'MENU';
-            $logtrail->postingdari = 'EDIT MENU';
-            $logtrail->idtrans = $menu->id;
-            $logtrail->nobuktitrans = $menu->id;
-            $logtrail->aksi = 'EDIT';
-            $logtrail->datajson = json_encode($datajson);
+               
 
-            $logtrail->save();
+            $datalogtrail = [
+                'namatabel' => 'MENU',
+                'postingdari' => 'EDIT MENU',
+                'idtrans' => $menu->id,
+                'nobuktitrans' => $menu->id,
+                'aksi' => 'EDIT',
+                'datajson' => json_encode($datajson),
+                'modifiedby' => $menu->modifiedby,
+            ];
+
+            $data=new StoreLogTrailRequest($datalogtrail);
+            app(LogTrailController::class)->store($data);      
+            
             DB::commit();
 
             /* Set position and page */
@@ -414,7 +429,7 @@ class MenuController extends Controller
      * @param  \App\Models\Menu  $Menu
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Menu $menu, MenuRequest $request)
+    public function destroy(Menu $menu, DestroyMenuRequest $request)
     {
         DB::beginTransaction();
         try {
@@ -437,18 +452,28 @@ class MenuController extends Controller
 
             $datajson = [
                 'id' => $menu->id,
+                'menuname' => strtoupper($request->menuname),
+                'menuseq' => $request->menuseq,
+                'menuparent' => $request->menuparent,
+                'menuicon' => strtolower($request->menuicon),
+                'menuexe' => strtolower($request->menuexe),
                 'modifiedby' => strtoupper($request->modifiedby),
             ];
 
-            $logtrail = new LogTrail();
-            $logtrail->namatabel = 'MENU';
-            $logtrail->postingdari = 'DELETE MENU';
-            $logtrail->idtrans = $menu->id;
-            $logtrail->nobuktitrans = $menu->id;
-            $logtrail->aksi = 'DELETE';
-            $logtrail->datajson = json_encode($datajson);
+               
 
-            $logtrail->save();
+            $datalogtrail = [
+                'namatabel' => 'MENU',
+                'postingdari' => 'DELETE MENU',
+                'idtrans' => $menu->id,
+                'nobuktitrans' => $menu->id,
+                'aksi' => 'DELETE',
+                'datajson' => json_encode($datajson),
+                'modifiedby' => $menu->modifiedby,
+            ];
+
+            $data=new StoreLogTrailRequest($datalogtrail);
+            app(LogTrailController::class)->store($data);      
 
             DB::commit();
             $del = 1;

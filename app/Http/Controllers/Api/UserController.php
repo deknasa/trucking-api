@@ -2,19 +2,23 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreUserRequest;
+use App\Http\Requests\UpdateUserRequest;
+use App\Http\Requests\DestroyUserRequest;
+use App\Http\Requests\StoreLogTrailRequest;
+
 use App\Models\User;
-use App\Http\Requests\UserRequest;
 use App\Models\Parameter;
 use App\Models\Cabang;
 use App\Models\LogTrail;
+
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Hash;
-
-
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+
+use App\Http\Controllers\Controller;
 
 
 class UserController extends Controller
@@ -100,6 +104,8 @@ class UserController extends Controller
                     foreach ($params['search']['rules'] as $index => $search) {
                         if ($search['field'] == 'statusaktif') {
                             $query = $query->where('parameter.text', 'LIKE', "%$search[data]%");
+                        } else if ($search['field'] == 'cabang_id') {
+                            $query = $query->where('cabang.namacabang', 'LIKE', "%$search[data]%");
                         } else {
                             $query = $query->where($search['field'], 'LIKE', "%$search[data]%");
                         }
@@ -110,6 +116,8 @@ class UserController extends Controller
                     foreach ($params['search']['rules'] as $index => $search) {
                         if ($search['field'] == 'statusaktif') {
                             $query = $query->orWhere('parameter.text', 'LIKE', "%$search[data]%");
+                        } else if ($search['field'] == 'cabang_id') {
+                            $query = $query->orWhere('cabang.namacabang', 'LIKE', "%$search[data]%");                            
                         } else {
                             $query = $query->orWhere($search['field'], 'LIKE', "%$search[data]%");
                         }
@@ -165,7 +173,7 @@ class UserController extends Controller
      * @param  \App\Http\Requests\StoreCabangRequest  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(UserRequest $request)
+    public function store(StoreUserRequest $request)
     {
 
         DB::beginTransaction();
@@ -194,15 +202,19 @@ class UserController extends Controller
                 'modifiedby' => $request->modifiedby,
             ];
 
-            $logtrail = new LogTrail();
-            $logtrail->namatabel = 'USER';
-            $logtrail->postingdari = 'ENTRY USER';
-            $logtrail->idtrans = $user->id;
-            $logtrail->nobuktitrans = $user->id;
-            $logtrail->aksi = 'ENTRY';
-            $logtrail->datajson = json_encode($datajson);
 
-            $logtrail->save();
+            $datalogtrail = [
+                'namatabel' => 'USER',
+                'postingdari' => 'ENTRY USER',
+                'idtrans' => $user->id,
+                'nobuktitrans' => $user->id,
+                'aksi' => 'ENTRY',
+                'datajson' => json_encode($datajson),
+                'modifiedby' => $user->modifiedby,
+            ];
+
+            $data = new StoreLogTrailRequest($datalogtrail);
+            app(LogTrailController::class)->store($data);
 
             DB::commit();
             /* Set position and page */
@@ -257,33 +269,47 @@ class UserController extends Controller
      * @param  \App\Models\User  $user
      * @return \Illuminate\Http\Response
      */
-    public function update(UserRequest $request, User $user)
+    public function update(UpdateUserRequest $request, User $user)
     {
+        //   dd($request->all());
         DB::beginTransaction();
         try {
-            $user->update(array_map('strtoupper', $request->validated()));
+            $user = new User();
+            $user = User::find($request->id);
+            $user->user = strtoupper($request->user);
+            $user->name = strtoupper($request->name);
+            $user->cabang_id = $request->cabang_id;
+            $user->karyawan_id = $request->karyawan_id;
+            $user->dashboard = strtoupper($request->dashboard);
+            $user->statusaktif = $request->statusaktif;
+            $user->modifiedby = $request->modifiedby;
+            $user->save();
 
             $datajson = [
                 'id' => $user->id,
                 'user' => strtoupper($request->user),
                 'name' => strtoupper($request->name),
-                'password' => Hash::make($request->password),
                 'cabang_id' => $request->cabang_id,
                 'karyawan_id' => $request->karyawan_id,
                 'dashboard' => strtoupper($request->dashboard),
                 'statusaktif' => $request->statusaktif,
-                'modifiedby' => strtoupper($request->modifiedby),
+                'modifiedby' => $request->modifiedby,
             ];
 
-            $logtrail = new LogTrail();
-            $logtrail->namatabel = 'USER';
-            $logtrail->postingdari = 'EDIT USER';
-            $logtrail->idtrans = $user->id;
-            $logtrail->nobuktitrans = $user->id;
-            $logtrail->aksi = 'EDIT';
-            $logtrail->datajson = json_encode($datajson);
 
-            $logtrail->save();
+            $datalogtrail = [
+                'namatabel' => 'USER',
+                'postingdari' => 'EDIT USER',
+                'idtrans' => $user->id,
+                'nobuktitrans' => $user->id,
+                'aksi' => 'EDIT',
+                'datajson' => json_encode($datajson),
+                'modifiedby' => $user->modifiedby,
+            ];
+
+            $data = new StoreLogTrailRequest($datalogtrail);
+            app(LogTrailController::class)->store($data);
+
             DB::commit();
 
             /* Set position and page */
@@ -313,27 +339,37 @@ class UserController extends Controller
      * @param  \App\Models\User  $user
      * @return \Illuminate\Http\Response
      */
-    public function destroy(User $user, UserRequest $request)
+    public function destroy(User $user, DestroyUserRequest $request)
     {
         DB::beginTransaction();
         try {
 
             User::destroy($user->id);
-
             $datajson = [
                 'id' => $user->id,
-                'modifiedby' => strtoupper($request->modifiedby),
+                'user' => strtoupper($request->user),
+                'name' => strtoupper($request->name),
+                'password' => Hash::make($request->password),
+                'cabang_id' => $request->cabang_id,
+                'karyawan_id' => $request->karyawan_id,
+                'dashboard' => strtoupper($request->dashboard),
+                'statusaktif' => $request->statusaktif,
+                'modifiedby' => $request->modifiedby,
             ];
 
-            $logtrail = new LogTrail();
-            $logtrail->namatabel = 'USER';
-            $logtrail->postingdari = 'DELETE USER';
-            $logtrail->idtrans = $user->id;
-            $logtrail->nobuktitrans = $user->id;
-            $logtrail->aksi = 'DELETE';
-            $logtrail->datajson = json_encode($datajson);
 
-            $logtrail->save();
+            $datalogtrail = [
+                'namatabel' => 'USER',
+                'postingdari' => 'DELETE USER',
+                'idtrans' => $user->id,
+                'nobuktitrans' => $user->id,
+                'aksi' => 'DELETE',
+                'datajson' => json_encode($datajson),
+                'modifiedby' => $user->modifiedby,
+            ];
+
+            $data = new StoreLogTrailRequest($datalogtrail);
+            app(LogTrailController::class)->store($data);
 
             DB::commit();
 
@@ -549,7 +585,7 @@ class UserController extends Controller
                 ->where('parameter.text', "=", 'AKTIF');
         } else {
             Schema::create($temp, function ($table) {
-                $table->string('id',10)->default('');
+                $table->string('id', 10)->default('');
                 $table->string('namacabang', 150)->default(0);
                 $table->string('param', 50)->default(0);
             });
@@ -578,8 +614,8 @@ class UserController extends Controller
         ]);
     }
 
-    
-    
+
+
     public function getuserid(Request $request)
     {
 
@@ -588,7 +624,7 @@ class UserController extends Controller
         ];
 
         $query = User::select('id')
-        ->where('user', "=", $params['user']);
+            ->where('user', "=", $params['user']);
 
         $data = $query->first();
 
@@ -596,5 +632,4 @@ class UserController extends Controller
             'data' => $data
         ]);
     }
-
 }

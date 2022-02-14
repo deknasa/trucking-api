@@ -3,8 +3,9 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Http\Controllers\Api\ErrorController;
 
-class UserRequest extends FormRequest
+class UpdateRoleRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -23,14 +24,8 @@ class UserRequest extends FormRequest
      */
     public function rules()
     {
-
         return [
-            'user' => 'required',
-            'name' => 'required',
-            'password' => 'required',
-            'cabang_id' => 'required',
-            'karyawan_id' => 'required',
-            'statusaktif' => 'required',
+            'rolename' => 'required',
             'modifiedby' => 'required'
         ];
     }
@@ -38,14 +33,20 @@ class UserRequest extends FormRequest
     public function attributes()
     {
         return [
-            'user' => 'user',
-            'name' => 'name',
-            'password' => 'password',
-            'cabang_id' => 'cabang_id',
-            'karyawan_id' => 'karyawan_id',
-            'dashboard' => 'dashboard',
-            'statusaktif' => 'statusaktif',
+            'rolename' => 'rolename',
             'modifiedby' => 'modifiedby'
+
         ];
     }
+
+
+    public function messages()
+    {
+        $controller = new ErrorController;
+        return [
+            'rolename.required' => 'rolename '. $controller->geterror(1)->keterangan,
+            'modifiedby.required' => 'modifiedby '. $controller->geterror(1)->keterangan,
+
+        ];
+    }   
 }

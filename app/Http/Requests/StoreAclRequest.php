@@ -3,8 +3,9 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Http\Controllers\Api\ErrorController;
 
-class UserRoleRequest extends FormRequest
+class StoreAclRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,19 +25,28 @@ class UserRoleRequest extends FormRequest
     public function rules()
     {
         return [
-            'user_id' => 'required',
+            'aco_id' => 'required',
             'role_id' => 'required',
             'modifiedby' => 'required'
-            
         ];
     }
 
     public function attributes()
     {
         return [
-            'user_id' => 'user_id',
+            'aco_id' => 'aco_id',
             'role_id' => 'role_id',
-            'modifiedby' => 'modifiedby'
+        ];
+    }
+
+    public function messages()
+    {
+        $controller = new ErrorController;
+        return [
+            'aco_id.required' => 'aco_id '. $controller->geterror(1)->keterangan,
+            'role_id.required' => 'role_id '. $controller->geterror(1)->keterangan,
+            'modifiedby.required' => 'modifiedby '. $controller->geterror(1)->keterangan,
+
         ];
     }
 }

@@ -3,9 +3,9 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
+use App\Http\Controllers\Api\ErrorController;
 
-class UserAclRequest extends FormRequest
+class DestroyErrorRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,10 +24,8 @@ class UserAclRequest extends FormRequest
      */
     public function rules()
     {
-
         return [
-            'aco_id' => 'required',
-            'user_id' => 'required',
+            'keterangan' => 'required',
             'modifiedby' => 'required'
         ];
     }
@@ -35,14 +33,18 @@ class UserAclRequest extends FormRequest
     public function attributes()
     {
         return [
-            'aco_id' => 'aco_id',
-            'user_id' => 'user_id',
+            'keterangan' => 'keterangan',
+            'modifiedby' => 'modifiedby',
         ];
     }
+
     public function messages()
     {
+        $controller = new ErrorController;
         return [
-            'user_id.required' => 'User id Wajib diisi',
+            'keterangan.required' => 'Keterangan '. $controller->geterror(1)->keterangan,
+            'modifiedby.required' => 'Modified by '. $controller->geterror(1)->keterangan,
+
         ];
     }
 }

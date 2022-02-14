@@ -3,8 +3,9 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Http\Controllers\Api\ErrorController;
 
-class MenuRequest extends FormRequest
+class DestroyMenuRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -44,6 +45,19 @@ class MenuRequest extends FormRequest
             'menuexe' => 'menuexe',
             'menukode' => 'menukode',
             'modifiedby' => 'modifiedby'
+        ];
+    }
+
+    public function messages()
+    {
+        $controller = new ErrorController;
+        return [
+            'menuname.required' => 'menuname '. $controller->geterror(1)->keterangan,
+            'menuseq.required' => 'menuseq '. $controller->geterror(1)->keterangan,
+            'menuicon.required' => 'menuicon '. $controller->geterror(1)->keterangan,
+            'modifiedby.required' => 'modifiedby '. $controller->geterror(1)->keterangan,
+ 
+
         ];
     }
 

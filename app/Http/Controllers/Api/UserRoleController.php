@@ -2,20 +2,24 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreUserRoleRequest;
+use App\Http\Requests\UpdateUserRoleRequest;
+use App\Http\Requests\DestroyUserRoleRequest;
+use App\Http\Requests\StoreLogTrailRequest;
+
 use App\Models\UserRole;
 use App\Models\LogTrail;
 use App\Models\Parameter;
 use App\Models\Role;
 use App\Models\User;
-use App\Http\Requests\UserRoleRequest;
-use Illuminate\Support\Facades\Schema;
 
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-use App\Http\Controllers\Api\ParameterController;
 
+use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\ParameterController;
 
 class UserRoleController extends Controller
 {
@@ -290,7 +294,7 @@ class UserRoleController extends Controller
      * @param  \App\Http\Requests\StoreUserRoleRequest  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(UserRoleRequest $request)
+    public function store(StoreUserRoleRequest $request)
     {
 
         DB::beginTransaction();
@@ -312,24 +316,25 @@ class UserRoleController extends Controller
             }
 
 
-
-
             $datajson = [
                 'user_id' => $request->user_id,
                 'role_id' => $request->role_id,
                 'modifiedby' => strtoupper($request->modifiedby),
 
             ];
-            // dd('test');
-            $logtrail = new LogTrail();
-            $logtrail->namatabel = 'USERROLE';
-            $logtrail->postingdari = 'ENTRY USER ROLE';
-            $logtrail->idtrans = $request->user_id;
-            $logtrail->nobuktitrans = $request->user_id;
-            $logtrail->aksi = 'ENTRY';
-            $logtrail->datajson = json_encode($datajson);
 
-            $logtrail->save();
+            $datalogtrail = [
+                'namatabel' => 'USERROLE',
+                'postingdari' => 'ENTRY USER ROLE',
+                'idtrans' => $request->id,
+                'nobuktitrans' => $request->id,
+                'aksi' => 'ENTRY',
+                'datajson' => json_encode($datajson),
+                'modifiedby' => $request->modifiedby,
+            ];
+
+            $data=new StoreLogTrailRequest($datalogtrail);
+            app(LogTrailController::class)->store($data);
 
             DB::commit();
             /* Set position and page */
@@ -395,7 +400,7 @@ class UserRoleController extends Controller
      * @param  \App\Models\UserRole  $userRole
      * @return \Illuminate\Http\Response
      */
-    public function update(UserRoleRequest $request, UserRole $userrole)
+    public function update(UpdateUserRoleRequest $request, UserRole $userrole)
     {
         DB::beginTransaction();
         try {
@@ -412,22 +417,24 @@ class UserRoleController extends Controller
 
 
             $datajson = [
-                'id' => $userrole->id,
                 'user_id' => $request->user_id,
                 'role_id' => $request->role_id,
                 'modifiedby' => strtoupper($request->modifiedby),
 
             ];
 
-            $logtrail = new LogTrail();
-            $logtrail->namatabel = 'USERROLE';
-            $logtrail->postingdari = 'ENTRY USER ROLE';
-            $logtrail->idtrans = $userrole->id;
-            $logtrail->nobuktitrans = $userrole->id;
-            $logtrail->aksi = 'ENTRY';
-            $logtrail->datajson = json_encode($datajson);
+            $datalogtrail = [
+                'namatabel' => 'USERROLE',
+                'postingdari' => 'EDIT USER ROLE',
+                'idtrans' => $request->id,
+                'nobuktitrans' => $request->id,
+                'aksi' => 'EDIT',
+                'datajson' => json_encode($datajson),
+                'modifiedby' => $request->modifiedby,
+            ];
 
-            $logtrail->save();
+            $data=new StoreLogTrailRequest($datalogtrail);
+            app(LogTrailController::class)->store($data);
 
             DB::commit();
             /* Set position and page */
@@ -457,7 +464,7 @@ class UserRoleController extends Controller
      * @param  \App\Models\UserRole  $userRole
      * @return \Illuminate\Http\Response
      */
-    public function destroy(UserRole $userrole, Request $request)
+    public function destroy(UserRole $userrole, DestroyUserRoleRequest $request)
     {
        
         DB::beginTransaction();
@@ -466,19 +473,24 @@ class UserRoleController extends Controller
             Userrole::where('user_id', $request->user_id)->delete();
 
             $datajson = [
-                'id' => $userrole->id,
+                'user_id' => $request->user_id,
+                'role_id' => $request->role_id,
                 'modifiedby' => strtoupper($request->modifiedby),
+
             ];
 
-            $logtrail = new LogTrail();
-            $logtrail->namatabel = 'USERROLE';
-            $logtrail->postingdari = 'DELETE USER ROLE';
-            $logtrail->idtrans = $userrole->id;
-            $logtrail->nobuktitrans = $userrole->id;
-            $logtrail->aksi = 'DELETE';
-            $logtrail->datajson = json_encode($datajson);
+            $datalogtrail = [
+                'namatabel' => 'USERROLE',
+                'postingdari' => 'DELETE USER ROLE',
+                'idtrans' => $request->id,
+                'nobuktitrans' => $request->id,
+                'aksi' => 'DELETE',
+                'datajson' => json_encode($datajson),
+                'modifiedby' => $request->modifiedby,
+            ];
 
-            $logtrail->save();
+            $data=new StoreLogTrailRequest($datalogtrail);
+            app(LogTrailController::class)->store($data);
 
             DB::commit();
             $del = 1;
