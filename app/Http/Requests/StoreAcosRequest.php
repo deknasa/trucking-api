@@ -27,7 +27,9 @@ class StoreAcosRequest extends FormRequest
         return [
             'class' => 'required',
             'method' => 'required',
-            'nama' => 'required'
+            'nama' => 'required',
+            'modifiedby' => 'required',
+
         ];
     }
 

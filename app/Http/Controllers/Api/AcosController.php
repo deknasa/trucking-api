@@ -1,10 +1,20 @@
 <?php
 
+namespace App\Http\Controllers;
+
 namespace App\Http\Controllers\Api;
 
+
+use App\Models\Acos;
 use App\Http\Requests\StoreAcosRequest;
 use App\Http\Requests\UpdateAcosRequest;
 use App\Http\Requests\DestroyAcosRequest;
+
+
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 use App\Http\Controllers\Controller;
 
@@ -38,7 +48,21 @@ class AcosController extends Controller
      */
     public function store(StoreAcosRequest $request)
     {
-        //
+        DB::beginTransaction();
+        try {
+            $Acos = new Acos();
+
+            $Acos->class = $request->class;
+            $Acos->method = $request->method;
+            $Acos->nama = $request->nama;
+            $Acos->modifiedby = $request->modifiedby;
+
+            $Acos->save();
+            DB::commit();
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return response($th->getMessage());
+        }
     }
 
     /**
