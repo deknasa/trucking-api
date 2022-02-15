@@ -33,7 +33,7 @@ class CreateSupirTable extends Migration
             $table->integer('statusadaupdategambar')->length(11)->default(0);
             $table->integer('statuslluarkota')->length(11)->default(0);
             $table->integer('statuszonatertentu')->length(11)->default(0);
-            $table->integer('zona')->length(11)->default(0);
+            $table->unsignedBigInteger('zona_id')->default(0);
             $table->double('angsuranpinjaman', 15,2)->default(0);
             $table->double('plafondeposito', 15,2)->default(0);
             $table->string('photosupir', 100)->default('');
