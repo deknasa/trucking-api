@@ -38,15 +38,16 @@ class StoreUserAclRequest extends FormRequest
         return [
             'aco_id' => 'aco_id',
             'user_id' => 'user_id',
+            'modifiedby' => 'modified by',
         ];
     }
     public function messages()
     {
         $controller = new ErrorController;
         return [
-            'aco_id.required' => 'aco_id '. $controller->geterror(1)->keterangan,
-            'user_id.required' => 'user_id '. $controller->geterror(1)->keterangan,
-            'modifiedby.required' => 'modifiedby '. $controller->geterror(1)->keterangan,
+            'aco_id.required' => ':attributes'.' '. $controller->geterror(1)->keterangan,
+            'user_id.required' => ':attributes'.' '. $controller->geterror(1)->keterangan,
+            'modifiedby.required' => ':attributes'.' '. $controller->geterror(1)->keterangan,
 
         ];
     }   

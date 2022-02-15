@@ -34,8 +34,9 @@ class DestroyAclRequest extends FormRequest
     public function attributes()
     {
         return [
-            'aco_id' => 'aco_id',
-            'role_id' => 'role_id',
+            'aco_id' => 'aco id',
+            'role_id' => 'role id',
+            'modifiedby' => 'modified by',
         ];
     }
 
@@ -43,9 +44,9 @@ class DestroyAclRequest extends FormRequest
     {
         $controller = new ErrorController;
         return [
-            'aco_id.required' => 'aco_id '. $controller->geterror(1)->keterangan,
-            'role_id.required' => 'role_id '. $controller->geterror(1)->keterangan,
-            'modifiedby.required' => 'modifiedby '. $controller->geterror(1)->keterangan,
+            'aco_id.required' => ':attributes'.' '. $controller->geterror(1)->keterangan,
+            'role_id.required' => ':attributes'.' '. $controller->geterror(1)->keterangan,
+            'modifiedby.required' => ':attributes'.' '. $controller->geterror(1)->keterangan,
 
         ];
     }

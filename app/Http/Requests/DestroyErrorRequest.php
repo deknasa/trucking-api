@@ -34,7 +34,7 @@ class DestroyErrorRequest extends FormRequest
     {
         return [
             'keterangan' => 'keterangan',
-            'modifiedby' => 'modifiedby',
+            'modifiedby' => 'modified by',
         ];
     }
 
@@ -42,8 +42,8 @@ class DestroyErrorRequest extends FormRequest
     {
         $controller = new ErrorController;
         return [
-            'keterangan.required' => 'Keterangan '. $controller->geterror(1)->keterangan,
-            'modifiedby.required' => 'Modified by '. $controller->geterror(1)->keterangan,
+            'keterangan.required' => ':attributes'.' '. $controller->geterror(1)->keterangan,
+            'modifiedby.required' => ':attributes'.' '. $controller->geterror(1)->keterangan,
 
         ];
     }

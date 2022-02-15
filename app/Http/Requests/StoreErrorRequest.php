@@ -35,7 +35,7 @@ class StoreErrorRequest extends FormRequest
     {
         return [
             'keterangan' => 'keterangan',
-            'modifiedby' => 'modifiedby',
+            'modifiedby' => 'modified by',
         ];
     }
 
@@ -43,9 +43,9 @@ class StoreErrorRequest extends FormRequest
     {
         $controller = new ErrorController;
         return [
-            'keterangan.required' => 'Keterangan '. $controller->geterror(1)->keterangan,
-            'modifiedby.required' => 'Modified by '. $controller->geterror(1)->keterangan,
-            'keterangan.unique' => 'Keterangan '. $controller->geterror(2)->keterangan,
+            'keterangan.required' => ':attributes'.' '. $controller->geterror(1)->keterangan,
+            'modifiedby.required' => ':attributes'.' '. $controller->geterror(1)->keterangan,
+            'keterangan.unique' => ':attributes'.' '. $controller->geterror(2)->keterangan,
 
         ];
     }

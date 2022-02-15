@@ -35,7 +35,7 @@ class UpdateErrorRequest extends FormRequest
     {
         return [
             'keterangan' => 'keterangan',
-            'modifiedby' => 'modifiedby',
+            'modifiedby' => 'modified by',
         ];
     }
 
@@ -43,8 +43,8 @@ class UpdateErrorRequest extends FormRequest
     {
         $controller = new ErrorController;
         return [
-            'keterangan.required' => 'Keterangan '. $controller->geterror(1)->keterangan,
-            'modifiedby.required' => 'Modified by '. $controller->geterror(1)->keterangan,
+            'keterangan.required' => ':attributes'.' '. $controller->geterror(1)->keterangan,
+            'modifiedby.required' => ':attributes'.' '. $controller->geterror(1)->keterangan,
 
         ];
     }

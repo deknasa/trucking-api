@@ -35,10 +35,10 @@ class StoreCabangRequest extends FormRequest
     public function attributes()
     {
         return [
-            'kodecabang' => 'kodecabang',
-            'namacabang' => 'namacabang',
-            'statusaktif' => 'statusaktif',
-            'modifiedby' => 'modifiedby',
+            'kodecabang' => 'kode cabang',
+            'namacabang' => 'nama cabang',
+            'statusaktif' => 'status aktif',
+            'modifiedby' => 'modified by',
         ];
     }
 
@@ -46,10 +46,10 @@ class StoreCabangRequest extends FormRequest
     {
         $controller = new ErrorController;
         return [
-            'kodecabang.required' => 'kodecabang '. $controller->geterror(1)->keterangan,
-            'namacabang.required' => 'namacabang '. $controller->geterror(1)->keterangan,
-            'statusaktif.required' => 'statusaktif '. $controller->geterror(1)->keterangan,
-            'modifiedby.required' => 'modifiedby '. $controller->geterror(1)->keterangan,
+            'kodecabang.required' => ':attributes'.' '. $controller->geterror(1)->keterangan,
+            'namacabang.required' => ':attributes'.' '. $controller->geterror(1)->keterangan,
+            'statusaktif.required' => ':attributes'.' '. $controller->geterror(1)->keterangan,
+            'modifiedby.required' => ':attributes'.' '. $controller->geterror(1)->keterangan,
 
         ];
     }

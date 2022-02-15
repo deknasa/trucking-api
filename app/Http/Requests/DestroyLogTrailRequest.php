@@ -44,6 +44,7 @@ class DestroyLogTrailRequest extends FormRequest
             'nobuktitrans' => 'nobuktitrans',
             'aksi' => 'aksi',
             'datajson' => 'datajson',
+            'modifiedby' => 'modified by',
         ];
     }
 
@@ -51,13 +52,13 @@ class DestroyLogTrailRequest extends FormRequest
     {
         $controller = new ErrorController;
         return [
-            'namatabel.required' => 'namatabel '. $controller->geterror(1)->keterangan,
-            'postingdari.required' => 'postingdari '. $controller->geterror(1)->keterangan,
-            'idtrans.required' => 'idtrans '. $controller->geterror(1)->keterangan,
-            'nobuktitrans.required' => 'nobuktitrans '. $controller->geterror(1)->keterangan,
-            'aksi.required' => 'aksi '. $controller->geterror(1)->keterangan,
-            'datajson.required' => 'datajson '. $controller->geterror(1)->keterangan,
-            'modifiedby.required' => 'modifiedby '. $controller->geterror(1)->keterangan,
+            'namatabel.required' => ':attributes'.' '. $controller->geterror(1)->keterangan,
+            'postingdari.required' => ':attributes'.' '. $controller->geterror(1)->keterangan,
+            'idtrans.required' => ':attributes'.' '. $controller->geterror(1)->keterangan,
+            'nobuktitrans.required' => ':attributes'.' '. $controller->geterror(1)->keterangan,
+            'aksi.required' => ':attributes'.' '. $controller->geterror(1)->keterangan,
+            'datajson.required' => ':attributes'.' '. $controller->geterror(1)->keterangan,
+            'modifiedby.required' => ':attributes'.' '. $controller->geterror(1)->keterangan,
 
         ];
     }
