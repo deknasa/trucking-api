@@ -53,13 +53,13 @@ class StoreLogTrailRequest extends FormRequest
     {
         $controller = new ErrorController;
         return [
-            'namatabel.required' => ':attributes'.' '. $controller->geterror(1)->keterangan,
-            'postingdari.required' => ':attributes'.' '. $controller->geterror(1)->keterangan,
-            'idtrans.required' => ':attributes'.' '. $controller->geterror(1)->keterangan,
-            'nobuktitrans.required' => ':attributes'.' '. $controller->geterror(1)->keterangan,
-            'aksi.required' => ':attributes'.' '. $controller->geterror(1)->keterangan,
-            'datajson.required' => ':attributes'.' '. $controller->geterror(1)->keterangan,
-            'modifiedby.required' => ':attributes'.' '. $controller->geterror(1)->keterangan,
+            'namatabel.required' => ':attribute'.' '. $controller->geterror(1)->keterangan,
+            'postingdari.required' => ':attribute'.' '. $controller->geterror(1)->keterangan,
+            'idtrans.required' => ':attribute'.' '. $controller->geterror(1)->keterangan,
+            'nobuktitrans.required' => ':attribute'.' '. $controller->geterror(1)->keterangan,
+            'aksi.required' => ':attribute'.' '. $controller->geterror(1)->keterangan,
+            'datajson.required' => ':attribute'.' '. $controller->geterror(1)->keterangan,
+            'modifiedby.required' => ':attribute'.' '. $controller->geterror(1)->keterangan,
 
         ];
     }

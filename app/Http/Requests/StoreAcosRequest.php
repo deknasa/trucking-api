@@ -47,10 +47,10 @@ class StoreAcosRequest extends FormRequest
     {
         $controller = new ErrorController;
         return [
-            'class.required' => ':attributes'.' '. $controller->geterror(1)->keterangan,
-            'method.required' => ':attributes'.' '. $controller->geterror(1)->keterangan,
-            'nama.required' => ':attributes'.' '. $controller->geterror(1)->keterangan,
-            'modifiedby.required' => ':attributes'.' '. $controller->geterror(1)->keterangan,
+            'class.required' => ':attribute'.' '. $controller->geterror(1)->keterangan,
+            'method.required' => ':attribute'.' '. $controller->geterror(1)->keterangan,
+            'nama.required' => ':attribute'.' '. $controller->geterror(1)->keterangan,
+            'modifiedby.required' => ':attribute'.' '. $controller->geterror(1)->keterangan,
 
         ];
     }

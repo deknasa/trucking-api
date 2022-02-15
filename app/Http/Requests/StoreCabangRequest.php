@@ -46,10 +46,10 @@ class StoreCabangRequest extends FormRequest
     {
         $controller = new ErrorController;
         return [
-            'kodecabang.required' => ':attributes'.' '. $controller->geterror(1)->keterangan,
-            'namacabang.required' => ':attributes'.' '. $controller->geterror(1)->keterangan,
-            'statusaktif.required' => ':attributes'.' '. $controller->geterror(1)->keterangan,
-            'modifiedby.required' => ':attributes'.' '. $controller->geterror(1)->keterangan,
+            'kodecabang.required' => ':attribute'.' '. $controller->geterror(1)->keterangan,
+            'namacabang.required' => ':attribute'.' '. $controller->geterror(1)->keterangan,
+            'statusaktif.required' => ':attribute'.' '. $controller->geterror(1)->keterangan,
+            'modifiedby.required' => ':attribute'.' '. $controller->geterror(1)->keterangan,
 
         ];
     }

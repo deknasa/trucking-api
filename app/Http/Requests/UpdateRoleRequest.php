@@ -44,8 +44,8 @@ class UpdateRoleRequest extends FormRequest
     {
         $controller = new ErrorController;
         return [
-            'rolename.required' => ':attributes'.' '. $controller->geterror(1)->keterangan,
-            'modifiedby.required' => ':attributes'.' '. $controller->geterror(1)->keterangan,
+            'rolename.required' => ':attribute'.' '. $controller->geterror(1)->keterangan,
+            'modifiedby.required' => ':attribute'.' '. $controller->geterror(1)->keterangan,
 
         ];
     }   

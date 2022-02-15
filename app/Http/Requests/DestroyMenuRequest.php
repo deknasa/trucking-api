@@ -52,10 +52,10 @@ class DestroyMenuRequest extends FormRequest
     {
         $controller = new ErrorController;
         return [
-            'menuname.required' => ':attributes'.' '. $controller->geterror(1)->keterangan,
-            'menuseq.required' => ':attributes'.' '. $controller->geterror(1)->keterangan,
-            'menuicon.required' => ':attributes'.' '. $controller->geterror(1)->keterangan,
-            'modifiedby.required' => ':attributes'.' '. $controller->geterror(1)->keterangan,
+            'menuname.required' => ':attribute'.' '. $controller->geterror(1)->keterangan,
+            'menuseq.required' => ':attribute'.' '. $controller->geterror(1)->keterangan,
+            'menuicon.required' => ':attribute'.' '. $controller->geterror(1)->keterangan,
+            'modifiedby.required' => ':attribute'.' '. $controller->geterror(1)->keterangan,
  
 
         ];
