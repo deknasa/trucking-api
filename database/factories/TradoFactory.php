@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Trado;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class TradoFactory extends Factory
@@ -13,6 +14,8 @@ class TradoFactory extends Factory
      */
     public function definition()
     {
+        $trado = Trado::all();
+
         return [
             'keterangan' => $this->faker->words(2, true),
             'statusaktif' => 1,
@@ -50,7 +53,7 @@ class TradoFactory extends Factory
             'model' => $this->faker->words(2, true),
             'nobpkb' => $this->faker->words(2, true),
             'statusmobilstoring' => 1,
-            'mandor_id' => 1,
+            'mandor_id' => rand(1, 999999999),
             'jumlahbanserap' => 1,
             'statusappeditban' => 1,
             'statuslewatvalidasi' => 1,
