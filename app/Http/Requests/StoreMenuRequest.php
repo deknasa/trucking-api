@@ -52,10 +52,10 @@ class StoreMenuRequest extends FormRequest
     {
         $controller = new ErrorController;
         return [
-            'menuname.required' => ':attribute'.' '. $controller->geterror(1)->keterangan,
-            'menuseq.required' => ':attribute'.' '. $controller->geterror(1)->keterangan,
-            'menuicon.required' => ':attribute'.' '. $controller->geterror(1)->keterangan,
-            'modifiedby.required' => ':attribute'.' '. $controller->geterror(1)->keterangan,
+            'menuname.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
+            'menuseq.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
+            'menuicon.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
+            'modifiedby.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
  
 
         ];

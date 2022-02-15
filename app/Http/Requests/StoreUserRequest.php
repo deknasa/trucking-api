@@ -54,13 +54,13 @@ class StoreUserRequest extends FormRequest
     {
         $controller = new ErrorController;
         return [
-            'user.required' => ':attribute'.' '. $controller->geterror(1)->keterangan,
-            'name.required' => ':attribute'.' '. $controller->geterror(1)->keterangan,
-            'password.required' => ':attribute'.' '. $controller->geterror(1)->keterangan,
-            'cabang_id.required' => ':attribute'.' '. $controller->geterror(1)->keterangan,
-            'karyawan_id.required' => ':attribute'.' '. $controller->geterror(1)->keterangan,
-            'statusaktif.required' => ':attribute'.' '. $controller->geterror(1)->keterangan,
-            'modifiedby.required' => ':attribute'.' '. $controller->geterror(1)->keterangan,
+            'user.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
+            'name.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
+            'password.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
+            'cabang_id.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
+            'karyawan_id.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
+            'statusaktif.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
+            'modifiedby.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
 
 
         ];

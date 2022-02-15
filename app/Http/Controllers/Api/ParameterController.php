@@ -285,6 +285,13 @@ class ParameterController extends Controller
     public function getid($id, $request, $del)
     {
 
+        $params = [
+            'indexRow' => $request->indexRow ?? 1,
+            'limit' => $request->limit ?? 100,
+            'page' => $request->page ?? 1,
+            'sortname' => $request->sortname ?? 'id',
+            'sortorder' => $request->sortorder ?? 'asc',
+        ];
         $temp = '##temp' . rand(1, 10000);
         Schema::create($temp, function ($table) {
             $table->id();
@@ -300,7 +307,7 @@ class ParameterController extends Controller
             $table->index('id_');
         });
 
-        if ($request->sortname == 'id') {
+        if ($params['sortname'] == 'id') {
             $query = Parameter::select(
                 'parameter.id as id_',
                 'parameter.grp',
@@ -311,8 +318,8 @@ class ParameterController extends Controller
                 'parameter.created_at',
                 'parameter.updated_at'
             )
-                ->orderBy('parameter.id', $request->sortorder);
-        } else if ($request->sortname == 'grp' or $request->sortname == 'subgrp') {
+                ->orderBy('parameter.id',$params['sortorder']);
+        } else if ($params['sortname'] == 'grp' or $params['sortname'] == 'subgrp') {
             $query = Parameter::select(
                 'parameter.id as id_',
                 'parameter.grp',
@@ -323,11 +330,11 @@ class ParameterController extends Controller
                 'parameter.created_at',
                 'parameter.updated_at'
             )
-                ->orderBy($request->sortname, $request->sortorder)
-                ->orderBy('parameter.text', $request->sortorder)
-                ->orderBy('parameter.id', $request->sortorder);
+                ->orderBy($params['sortname'],$params['sortorder'])
+                ->orderBy('parameter.text',$params['sortorder'])
+                ->orderBy('parameter.id',$params['sortorder']);
         } else {
-            if ($request->sortorder == 'asc') {
+            if ($params['sortorder'] == 'asc') {
                 $query = Parameter::select(
                     'parameter.id as id_',
                     'parameter.grp',
@@ -338,8 +345,8 @@ class ParameterController extends Controller
                     'parameter.created_at',
                     'parameter.updated_at'
                 )
-                    ->orderBy($request->sortname, $request->sortorder)
-                    ->orderBy('parameter.id', $request->sortorder);
+                    ->orderBy($params['sortname'],$params['sortorder'])
+                    ->orderBy('parameter.id',$params['sortorder']);
             } else {
                 $query = Parameter::select(
                     'parameter.id as id_',
@@ -351,7 +358,7 @@ class ParameterController extends Controller
                     'parameter.created_at',
                     'parameter.updated_at'
                 )
-                    ->orderBy($request->sortname, $request->sortorder)
+                    ->orderBy($params['sortname'],$params['sortorder'])
                     ->orderBy('parameter.id', 'asc');
             }
         }
@@ -362,12 +369,12 @@ class ParameterController extends Controller
 
 
         if ($del == 1) {
-            if ($request->page == 1) {
-                $baris = $request->indexRow + 1;
+            if ($params['page'] == 1) {
+                $baris = $params['indexRow'] + 1;
             } else {
-                $hal = $request->page - 1;
-                $bar = $hal * $request->limit;
-                $baris = $request->indexRow + $bar + 1;
+                $hal = $params['page'] - 1;
+                $bar = $hal * $params['limit'];
+                $baris = $params['indexRow'] + $bar + 1;
             }
 
 

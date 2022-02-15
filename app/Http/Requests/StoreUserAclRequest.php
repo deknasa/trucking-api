@@ -45,9 +45,9 @@ class StoreUserAclRequest extends FormRequest
     {
         $controller = new ErrorController;
         return [
-            'aco_id.required' => ':attribute'.' '. $controller->geterror(1)->keterangan,
-            'user_id.required' => ':attribute'.' '. $controller->geterror(1)->keterangan,
-            'modifiedby.required' => ':attribute'.' '. $controller->geterror(1)->keterangan,
+            'aco_id.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
+            'user_id.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
+            'modifiedby.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
 
         ];
     }   

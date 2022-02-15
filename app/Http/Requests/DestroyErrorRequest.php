@@ -25,6 +25,7 @@ class DestroyErrorRequest extends FormRequest
     public function rules()
     {
         return [
+            'kodeerror' => 'required',
             'keterangan' => 'required',
             'modifiedby' => 'required'
         ];
@@ -33,6 +34,7 @@ class DestroyErrorRequest extends FormRequest
     public function attributes()
     {
         return [
+            'kodeerror' => 'kode error',
             'keterangan' => 'keterangan',
             'modifiedby' => 'modified by',
         ];
@@ -42,8 +44,9 @@ class DestroyErrorRequest extends FormRequest
     {
         $controller = new ErrorController;
         return [
-            'keterangan.required' => ':attribute'.' '. $controller->geterror(1)->keterangan,
-            'modifiedby.required' => ':attribute'.' '. $controller->geterror(1)->keterangan,
+            'kodeerror.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
+            'keterangan.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
+            'modifiedby.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
 
         ];
     }

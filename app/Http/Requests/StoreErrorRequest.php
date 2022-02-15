@@ -26,6 +26,7 @@ class StoreErrorRequest extends FormRequest
     public function rules()
     {
         return [
+            'kodeerror' => 'required|unique:error',            
             'keterangan' => 'required|unique:error',
             'modifiedby' => 'required'
         ];
@@ -34,6 +35,7 @@ class StoreErrorRequest extends FormRequest
     public function attributes()
     {
         return [
+            'kodeerror' => 'kode error',
             'keterangan' => 'keterangan',
             'modifiedby' => 'modified by',
         ];
@@ -42,10 +44,13 @@ class StoreErrorRequest extends FormRequest
     public function messages()
     {
         $controller = new ErrorController;
+        // dd($controller->geterror('WI')->keterangan);
         return [
-            'keterangan.required' => ':attribute'.' '. $controller->geterror(1)->keterangan,
-            'modifiedby.required' => ':attribute'.' '. $controller->geterror(1)->keterangan,
-            'keterangan.unique' => ':attribute'.' '. $controller->geterror(2)->keterangan,
+            'kodeerror.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
+            'keterangan.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
+            'modifiedby.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
+            'keterangan.unique' => ':attribute'.' '. $controller->geterror('SPI')->keterangan,
+            'kodeerror.unique' => ':attribute'.' '. $controller->geterror('SPI')->keterangan,
 
         ];
     }
