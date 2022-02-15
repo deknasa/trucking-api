@@ -8,14 +8,14 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 
-class ParameterTest extends TestCase
+class ApiParameterTest extends TestCase
 {
     public $httpHeaders = [
         'Accept' => 'application/json',
         'Content-Type' => 'application/json'
     ];
 
-    public function test_cannot_get_without_access_token() {
+    public function test_cannot_access_without_access_token() {
         $response = $this->withHeaders($this->httpHeaders)->get('api/parameter');
 
         $response->assertStatus(401);
@@ -45,6 +45,29 @@ class ParameterTest extends TestCase
         $parameter = Parameter::factory()->make();
 
         $response = $this->withHeaders($this->httpHeaders)->actingAs($user, 'api')->postJson('api/parameter', $parameter->toArray());
+
+        $response->assertStatus(200);
+    }
+
+    public function test_update()
+    {
+        $user = User::first();
+
+        $parameter = Parameter::orderBy('created_at', 'DESC')->first();
+
+        $response = $this->withHeaders($this->httpHeaders)->actingAs($user, 'api')->putJson("api/parameter/{$parameter->id}", $parameter->toArray());
+
+        $response->assertStatus(200);
+
+    }
+
+    public function test_delete()
+    {
+        $user = User::first();
+
+        $parameter = Parameter::orderBy('created_at', 'desc')->first();
+
+        $response = $this->withHeaders($this->httpHeaders)->actingAs($user, 'api')->deleteJson("api/parameter/{$parameter->id}");
 
         $response->assertStatus(200);
     }
