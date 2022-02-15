@@ -36,17 +36,18 @@ class UpdateUserAclRequest extends FormRequest
     public function attributes()
     {
         return [
-            'aco_id' => 'aco_id',
-            'user_id' => 'user_id',
+            'aco_id' => 'aco id',
+            'user_id' => 'user id',
+            'modifiedby' => 'modified by',
         ];
     }
     public function messages()
     {
         $controller = new ErrorController;
         return [
-            'aco_id.required' => 'aco_id '. $controller->geterror(1)->keterangan,
-            'user_id.required' => 'user_id '. $controller->geterror(1)->keterangan,
-            'modifiedby.required' => 'modifiedby '. $controller->geterror(1)->keterangan,
+            'aco_id.required' => ':attribute'.' '. $controller->geterror(1)->keterangan,
+            'user_id.required' => ':attribute'.' '. $controller->geterror(1)->keterangan,
+            'modifiedby.required' => ':attribute'.' '. $controller->geterror(1)->keterangan,
 
         ];
     }   

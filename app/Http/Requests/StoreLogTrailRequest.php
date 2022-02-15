@@ -39,13 +39,13 @@ class StoreLogTrailRequest extends FormRequest
     public function attributes()
     {
         return [
-            'namatabel' => 'namatabel',
-            'postingdari' => 'postingdari',
+            'namatabel' => 'nama tabel',
+            'postingdari' => 'posting dari',
             'idtrans' => 'idtrans',
             'nobuktitrans' => 'nobuktitrans',
             'aksi' => 'aksi',
             'datajson' => 'datajson',
-            'modifiedby' => 'modifiedby',
+            'modifiedby' => 'modified by',
         ];
     }
 
@@ -53,13 +53,13 @@ class StoreLogTrailRequest extends FormRequest
     {
         $controller = new ErrorController;
         return [
-            'namatabel.required' => 'namatabel '. $controller->geterror(1)->keterangan,
-            'postingdari.required' => 'postingdari '. $controller->geterror(1)->keterangan,
-            'idtrans.required' => 'idtrans '. $controller->geterror(1)->keterangan,
-            'nobuktitrans.required' => 'nobuktitrans '. $controller->geterror(1)->keterangan,
-            'aksi.required' => 'aksi '. $controller->geterror(1)->keterangan,
-            'datajson.required' => 'datajson '. $controller->geterror(1)->keterangan,
-            'modifiedby.required' => 'modifiedby '. $controller->geterror(1)->keterangan,
+            'namatabel.required' => ':attribute'.' '. $controller->geterror(1)->keterangan,
+            'postingdari.required' => ':attribute'.' '. $controller->geterror(1)->keterangan,
+            'idtrans.required' => ':attribute'.' '. $controller->geterror(1)->keterangan,
+            'nobuktitrans.required' => ':attribute'.' '. $controller->geterror(1)->keterangan,
+            'aksi.required' => ':attribute'.' '. $controller->geterror(1)->keterangan,
+            'datajson.required' => ':attribute'.' '. $controller->geterror(1)->keterangan,
+            'modifiedby.required' => ':attribute'.' '. $controller->geterror(1)->keterangan,
 
         ];
     }

@@ -39,12 +39,12 @@ class UpdateUserRequest extends FormRequest
     {
         return [
             'user' => 'user',
-            'name' => 'name',
+            'name' => 'nama user',
             'password' => 'password',
-            'cabang_id' => 'cabang_id',
-            'karyawan_id' => 'karyawan_id',
+            'cabang_id' => 'cabang',
+            'karyawan_id' => 'karyawan',
             'dashboard' => 'dashboard',
-            'statusaktif' => 'statusaktif',
+            'statusaktif' => 'status',
             'modifiedby' => 'modifiedby'
         ];
     }
@@ -53,12 +53,12 @@ class UpdateUserRequest extends FormRequest
     {
         $controller = new ErrorController;
         return [
-            'user.required' => 'user ' . $controller->geterror(1)->keterangan,
-            'name.required' => 'name ' . $controller->geterror(1)->keterangan,
-            'cabang_id.required' => 'cabang_id ' . $controller->geterror(1)->keterangan,
-            'karyawan_id.required' => 'karyawan_id ' . $controller->geterror(1)->keterangan,
-            'statusaktif.required' => 'statusaktif ' . $controller->geterror(1)->keterangan,
-            'modifiedby.required' => 'modifiedby ' . $controller->geterror(1)->keterangan,
+            'user.required' => ':attribute'.' '. $controller->geterror(1)->keterangan,
+            'name.required' => ':attribute'.' '. $controller->geterror(1)->keterangan,
+            'cabang_id.required' => ':attribute'.' '. $controller->geterror(1)->keterangan,
+            'karyawan_id.required' => ':attribute'.' '. $controller->geterror(1)->keterangan,
+            'statusaktif.required' => ':attribute'.' '. $controller->geterror(1)->keterangan,
+            'modifiedby.required' => ':attribute'.' '. $controller->geterror(1)->keterangan,
 
 
         ];
