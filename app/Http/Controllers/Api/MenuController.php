@@ -405,10 +405,10 @@ class MenuController extends Controller
             DB::commit();
 
             /* Set position and page */
-            $menu->position = menu::orderBy($request->sortname ?? 'id', $request->sortorder ?? 'asc')
-                ->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $menu->{$request->sortname})
-                ->where('id', '<=', $menu->id)
-                ->count();
+            $del = 0;
+            $data = $this->getid($request->role_id, $request, $del);
+            $menu->position = $data->id;
+            $menu->id = $data->row;
 
             if (isset($request->limit)) {
                 $menu->page = ceil($menu->position / $request->limit);
@@ -431,7 +431,7 @@ class MenuController extends Controller
      * @param  \App\Models\Menu  $Menu
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Menu $menu, DestroyMenuRequest $request)
+    public function destroy(Menu $menu, Request $request)
     {
         DB::beginTransaction();
         try {
