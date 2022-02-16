@@ -23,7 +23,7 @@ class AbsensiSupirDetailFactory extends Factory
         return [
             'absensi_id' => $this->faker->randomElement($absensi),
             'nobukti' => $this->faker->words(2, true),
-            'trado_id' => $this->faker->randomElement($supir),
+            'trado_id' => $this->faker->randomElement($trado),
             'supir_id' => $this->faker->randomElement($supir),
             'keterangan' => $this->faker->words(2, true),
             'uangjalan' => rand(10000, 100000),
