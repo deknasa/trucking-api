@@ -327,7 +327,7 @@ class CabangController extends Controller
      * @param  \App\Models\Cabang  $cabang
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Cabang $cabang, DestroyCabangRequest $request)
+    public function destroy(Cabang $cabang, Request $request)
     {
         DB::beginTransaction();
         try {
