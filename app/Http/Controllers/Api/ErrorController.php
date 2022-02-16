@@ -256,10 +256,8 @@ class ErrorController extends Controller
             DB::commit();
 
             /* Set position and page */
-            $del = 0;
-            $data = $this->getid($request->role_id, $request, $del);
-            $error->position = $data->id;
-            $error->id = $data->row;
+            $error->position = $this->getid($error->id, $request, 0)->row;
+
 
             if (isset($request->limit)) {
                 $error->page = ceil($error->position / $request->limit);

@@ -255,10 +255,8 @@ class RoleController extends Controller
           
 
                 /* Set position and page */
-                $role->position = role::orderBy($request->sortname ?? 'id', $request->sortorder ?? 'asc')
-                    ->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $role->{$request->sortname})
-                    ->where('id', '<=', $role->id)
-                    ->count();
+                $role->position = $this->getid($role->id, $request, 0)->row;
+
 
                 if (isset($request->limit)) {
                     $role->page = ceil($role->position / $request->limit);
@@ -281,7 +279,7 @@ class RoleController extends Controller
      * @param  \App\Models\Role  $role
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Role $role, DestroyRoleRequest $request)
+    public function destroy(Role $role, Request $request)
     {
         DB::beginTransaction();
         try {
@@ -356,6 +354,14 @@ class RoleController extends Controller
     public function getid($id, $request, $del)
     {
 
+        $params = [
+            'indexRow' => $request->indexRow ?? 1,
+            'limit' => $request->limit ?? 100,
+            'page' => $request->page ?? 1,
+            'sortname' => $request->sortname ?? 'id',
+            'sortorder' => $request->sortorder ?? 'asc',
+        ];
+
         $temp = '##temp' . rand(1, 10000);
         Schema::create($temp, function ($table) {
             $table->id();
@@ -370,7 +376,7 @@ class RoleController extends Controller
 
 
 
-        if ($request->sortname == 'id') {
+        if ($params['sortname'] == 'id') {
             $query = Role::select(
                 'role.id as id_',
                 'role.rolename',
@@ -378,9 +384,9 @@ class RoleController extends Controller
                 'role.created_at',
                 'role.updated_at'
             )
-                ->orderBy('role.id', $request->sortorder);
+                ->orderBy('role.id', $params['sortorder']);
         } else {
-            if ($request->sortorder == 'asc') {
+            if ($params['sortorder'] == 'asc') {
                 $query = Role::select(
                     'role.id as id_',
                     'role.rolename',
@@ -388,8 +394,8 @@ class RoleController extends Controller
                     'role.created_at',
                     'role.updated_at'
                 )
-                    ->orderBy($request->sortname, $request->sortorder)
-                    ->orderBy('role.id', $request->sortorder);
+                    ->orderBy($params['sortname'], $params['sortorder'])
+                    ->orderBy('role.id', $params['sortorder']);
             } else {
                 $query = Role::select(
                     'role.id as id_',
@@ -398,7 +404,7 @@ class RoleController extends Controller
                     'role.created_at',
                     'role.updated_at'
                 )
-                    ->orderBy($request->sortname, $request->sortorder)
+                    ->orderBy($params['sortname'], $params['sortorder'])
 
                     ->orderBy('role.id', 'asc');
             }
