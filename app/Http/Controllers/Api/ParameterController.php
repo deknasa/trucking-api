@@ -208,7 +208,7 @@ class ParameterController extends Controller
 
             if ($parameter->save()) {
                 /* Set position and page */
-                $parameter->position = $this->getPosition($parameter, $request);
+                $parameter->position = $this->getid($parameter->id, $request, 0)->row;
 
                 if (isset($request->limit)) {
                     $parameter->page = ceil($parameter->position / $request->limit);
