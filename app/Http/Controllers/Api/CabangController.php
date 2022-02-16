@@ -301,10 +301,11 @@ class CabangController extends Controller
             DB::commit();
 
             /* Set position and page */
-            $cabang->position = cabang::orderBy($request->sortname ?? 'id', $request->sortorder ?? 'asc')
-                ->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $cabang->{$request->sortname})
-                ->where('id', '<=', $cabang->id)
-                ->count();
+
+                $del = 0;
+                $data = $this->getid($request->role_id, $request, $del);
+                $cabang->position = $data->id;
+                $cabang->id = $data->row;
 
             if (isset($request->limit)) {
                 $cabang->page = ceil($cabang->position / $request->limit);

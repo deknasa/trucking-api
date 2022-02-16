@@ -256,10 +256,10 @@ class ErrorController extends Controller
             DB::commit();
 
             /* Set position and page */
-            $error->position = error::orderBy($request->sortname ?? 'id', $request->sortorder ?? 'asc')
-                ->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $error->{$request->sortname})
-                ->where('id', '<=', $error->id)
-                ->count();
+            $del = 0;
+            $data = $this->getid($request->role_id, $request, $del);
+            $error->position = $data->id;
+            $error->id = $data->row;
 
             if (isset($request->limit)) {
                 $error->page = ceil($error->position / $request->limit);
