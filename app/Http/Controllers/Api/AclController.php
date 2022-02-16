@@ -533,6 +533,14 @@ class AclController extends Controller
     public function getid($id, $request, $del)
     {
 
+        $params = [
+            'indexRow' => $request->indexRow ?? 1,
+            'limit' => $request->limit ?? 100,
+            'page' => $request->page ?? 1,
+            'sortname' => $request->sortname ?? 'id',
+            'sortorder' => $request->sortorder ?? 'asc',
+        ];
+
         $temp = '##temp' . rand(1, 10000);
         Schema::create($temp, function ($table) {
             $table->id();
@@ -561,7 +569,7 @@ class AclController extends Controller
 
 
         /* Sorting */
-        if ($request->sortname == 'rolename') {
+        if ($params['sortname'] == 'rolename') {
             $query = DB::table($temp)
                 ->select(
                     $temp . '.role_id as role_id',
@@ -571,7 +579,7 @@ class AclController extends Controller
                     $temp . '.updated_at as updated_at'
                 )
                 ->Join('role', 'role.id', '=', $temp . '.role_id')
-                ->orderBy('role.rolename',  $request->sortorder);
+                ->orderBy('role.rolename',  $params['sortorder']);
         } else {
             $query = DB::table($temp)
                 ->select(
@@ -582,7 +590,7 @@ class AclController extends Controller
                     $temp . '.updated_at as updated_at'
                 )
                 ->Join('role', 'role.id', '=', $temp . '.role_id')
-                ->orderBy($temp . '.' . $request->sortname,  $request->sortorder);
+                ->orderBy($temp . '.' . $params['sortname'],  $params['sortorder']);
         }
         // 
         $temp = '##temp' . rand(1, 10000);
@@ -608,12 +616,12 @@ class AclController extends Controller
 
         if ($del == 1) {
 
-            if ($request->page == 1) {
-                $baris = $request->indexRow + 1;
+            if ($params['page'] == 1) {
+                $baris = $params['indexRow'] + 1;
             } else {
-                $hal = $request->page - 1;
-                $bar = $hal * $request->limit;
-                $baris = $request->indexRow + $bar + 1;
+                $hal = $params['page'] - 1;
+                $bar = $hal * $params['limit'];
+                $baris = $params['indexRow'] + $bar + 1;
             }
 
 

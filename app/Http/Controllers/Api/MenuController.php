@@ -405,10 +405,8 @@ class MenuController extends Controller
             DB::commit();
 
             /* Set position and page */
-            $del = 0;
-            $data = $this->getid($request->role_id, $request, $del);
-            $menu->position = $data->id;
-            $menu->id = $data->row;
+            $menu->position = $this->getid($menu->id, $request, 0)->row;
+
 
             if (isset($request->limit)) {
                 $menu->page = ceil($menu->position / $request->limit);

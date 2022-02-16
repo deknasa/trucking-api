@@ -313,10 +313,8 @@ class UserController extends Controller
             DB::commit();
 
             /* Set position and page */
-            $user->position = user::orderBy($request->sortname ?? 'id', $request->sortorder ?? 'asc')
-                ->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $user->{$request->sortname})
-                ->where('id', '<=', $user->id)
-                ->count();
+            $user->position = $this->getid($user->id, $request, 0)->row;
+
 
             if (isset($request->limit)) {
                 $user->page = ceil($user->position / $request->limit);
@@ -339,7 +337,7 @@ class UserController extends Controller
      * @param  \App\Models\User  $user
      * @return \Illuminate\Http\Response
      */
-    public function destroy(User $user, DestroyUserRequest $request)
+    public function destroy(User $user, Request $request)
     {
         DB::beginTransaction();
         try {
@@ -455,6 +453,13 @@ class UserController extends Controller
     public function getid($id, $request, $del)
     {
 
+        $params = [
+            'indexRow' => $request->indexRow ?? 1,
+            'limit' => $request->limit ?? 100,
+            'page' => $request->page ?? 1,
+            'sortname' => $request->sortname ?? 'id',
+            'sortorder' => $request->sortorder ?? 'asc',
+        ];
         $temp = '##temp' . rand(1, 10000);
         Schema::create($temp, function ($table) {
             $table->id();
@@ -475,7 +480,7 @@ class UserController extends Controller
 
 
 
-        if ($request->sortname == 'id') {
+        if ($params['sortname'] == 'id') {
             $query = User::select(
                 'user.id as id_',
                 'user.user',
@@ -491,9 +496,9 @@ class UserController extends Controller
             )
                 ->leftJoin('parameter', 'user.statusaktif', '=', 'parameter.id')
                 ->leftJoin('cabang', 'user.cabang_id', '=', 'cabang.id')
-                ->orderBy('user.id', $request->sortorder);
+                ->orderBy('user.id', $params['sortorder']);
         } else {
-            if ($request->sortorder == 'asc') {
+            if ($params['sortorder'] == 'asc') {
                 $query = User::select(
                     'user.id as id_',
                     'user.user',
@@ -508,8 +513,8 @@ class UserController extends Controller
                 )
                     ->leftJoin('parameter', 'user.statusaktif', '=', 'parameter.id')
                     ->leftJoin('cabang', 'user.cabang_id', '=', 'cabang.id')
-                    ->orderBy($request->sortname, $request->sortorder)
-                    ->orderBy('user.id', $request->sortorder);
+                    ->orderBy($params['sortname'], $params['sortorder'])
+                    ->orderBy('user.id', $params['sortorder']);
             } else {
                 $query = User::select(
                     'user.id as id_',
@@ -526,7 +531,7 @@ class UserController extends Controller
                     ->leftJoin('parameter', 'user.statusaktif', '=', 'parameter.id')
                     ->leftJoin('cabang', 'user.cabang_id', '=', 'cabang.id')
 
-                    ->orderBy($request->sortname, $request->sortorder)
+                    ->orderBy($params['sortname'], $params['sortorder'])
 
                     ->orderBy('user.id', 'asc');
             }
@@ -538,12 +543,12 @@ class UserController extends Controller
 
 
         if ($del == 1) {
-            if ($request->page == 1) {
-                $baris = $request->indexRow + 1;
+            if ($params['page'] == 1) {
+                $baris = $params['indexRow'] + 1;
             } else {
-                $hal = $request->page - 1;
-                $bar = $hal * $request->limit;
-                $baris = $request->indexRow + $bar + 1;
+                $hal = $params['page'] - 1;
+                $bar = $hal * $params['limit'];
+                $baris = $params['indexRow'] + $bar + 1;
             }
 
 
