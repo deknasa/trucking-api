@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Mandor;
 use App\Models\Trado;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -14,7 +15,7 @@ class TradoFactory extends Factory
      */
     public function definition()
     {
-        $trado = Trado::all();
+        $mandors = Mandor::all();
 
         return [
             'keterangan' => $this->faker->words(2, true),
@@ -53,7 +54,7 @@ class TradoFactory extends Factory
             'model' => $this->faker->words(2, true),
             'nobpkb' => $this->faker->words(2, true),
             'statusmobilstoring' => 1,
-            'mandor_id' => rand(1, 999999999),
+            'mandor_id' => $this->faker->randomElement($mandors),
             'jumlahbanserap' => 1,
             'statusappeditban' => 1,
             'statuslewatvalidasi' => 1,
