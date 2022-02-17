@@ -180,17 +180,10 @@ class MenuController extends Controller
     public function store(StoreMenuRequest $request)
     {
 
-
+        // dd($request->all());
         DB::beginTransaction();
         try {
-            $menu = new Menu();
-            $menu->menuname = ucwords(strtolower($request->menuname));
-            $menu->menuseq = $request->menuseq;
-            $menu->menuparent = $request->menuparent ?? 0;
-            $menu->menuicon = strtolower($request->menuicon);
-            $menu->menuexe = strtolower($request->menuexe);
-            $menu->modifiedby = $request->modifiedby;
-            $menu->link = "";
+
 
 
             if ($request->class <> '') {
@@ -198,12 +191,7 @@ class MenuController extends Controller
                 $class =  $request->class;
 
                 foreach ($class as $value) {
-                    // $acos = new Acos();
-                    // $acos->class = str_replace('controller','',strtolower($value['class']));
-                    // $acos->method = $value['method'];
-                    // $acos->nama = $value['name'];
-                    // $acos->modifiedby = $request->modifiedby;
-                    // $acos->save();
+
 
                     $namaclass = str_replace('controller', '', strtolower($value['class']));
                     $dataacos = [
@@ -214,7 +202,12 @@ class MenuController extends Controller
                     ];
 
                     $data = new StoreAcosRequest($dataacos);
-                    app(AcosController::class)->store($data);
+                    $dataaco = app(AcosController::class)->store($data);
+
+
+                    if ($dataaco['error']) {
+                        return response($dataaco, 422);
+                    }
                 }
                 // dd($namaclass);
                 $list = Acos::select('id')
@@ -222,11 +215,22 @@ class MenuController extends Controller
                     ->where('method', '=', 'index')
                     ->orderBy('id', 'asc')
                     ->first();
-                $menu->aco_id = $list->id;
+                $menuacoid = $list->id;
                 // $menu->aco_id = 0;
             } else {
-                $menu->aco_id = 0;
+                $menuacoid = 0;
             }
+
+            $menu = new Menu();
+            $menu->menuname = ucwords(strtolower($request->menuname));
+            $menu->menuseq = $request->menuseq;
+            $menu->menuparent = $request->menuparent ?? 0;
+            $menu->menuicon = strtolower($request->menuicon);
+            $menu->menuexe = strtolower($request->menuexe);
+            $menu->modifiedby = $request->modifiedby;
+            $menu->link = "";
+            $menu->aco_id = $menuacoid;
+
 
 
 
@@ -280,7 +284,6 @@ class MenuController extends Controller
                 $menukode = 9;
             }
             $menu->menukode = $menukode;
-
             $menu->save();
 
             $datajson = [
@@ -317,6 +320,8 @@ class MenuController extends Controller
             if (isset($request->limit)) {
                 $menu->page = ceil($menu->position / $request->limit);
             }
+
+
 
             return response([
                 'status' => true,
@@ -397,7 +402,7 @@ class MenuController extends Controller
                 'datajson' => json_encode($datajson),
                 'modifiedby' => $request->modifiedby,
             ];
-    
+
 
             $data = new StoreLogTrailRequest($datalogtrail);
             app(LogTrailController::class)->store($data);
