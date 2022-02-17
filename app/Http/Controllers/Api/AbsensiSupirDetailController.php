@@ -79,9 +79,9 @@ class AbsensiSupirDetailController extends Controller
         }
     }
 
-    public function store(StoreAbsensiSupirDetailRequest $request)
+    public function store(Request $request)
     {
-        AbsensiSupirDetail::insert($request->all());
+        // AbsensiSupirDetail::insert($request->only('trado_id', 'supir_id', 'absen_id', 'uangjalan', 'jam', 'keterangan_detail'));
     }
 
     public function update(Request $request, AbsensiSupirDetail $absensiSupirDetail)
