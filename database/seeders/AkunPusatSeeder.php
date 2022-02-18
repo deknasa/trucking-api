@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\AkunPusat;
 use Illuminate\Database\Seeder;
 
 class AkunPusatSeeder extends Seeder
@@ -13,6 +14,6 @@ class AkunPusatSeeder extends Seeder
      */
     public function run()
     {
-        //
+            AkunPusat::factory()->create();
     }
 }

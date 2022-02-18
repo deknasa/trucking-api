@@ -21,12 +21,13 @@ class CreateakunpusatTable extends Migration
             $table->integer('level')->length(11)->default(0);
             $table->integer('aktif')->length(11)->default(0);
             $table->string('parent', 255)->default('');
-            $table->integer('acoountpayable')->length(11)->default(0);
-            $table->integer('neraca')->length(11)->default(0);
-            $table->integer('labarugi')->length(11)->default(0);
+            $table->integer('statusaccountpayable')->length(11)->default(0);
+            $table->integer('statusneraca')->length(11)->default(0);
+            $table->integer('statuslabarugi')->length(11)->default(0);
             $table->string('coamain', 30)->default('');
             $table->string('modifiedby', 30)->default('');
             $table->timestamps();
+            
         });
     }
 
