@@ -16,6 +16,14 @@ class ParameterSeeder extends Seeder
     public function run()
     {
         Parameter::create([
+            'grp' => 'STATUS AKTIF',
+            'subgrp' => 'STATUS AKTIF',
+            'text' => 'AKTIF',
+            'memo' => '',
+            'modifiedby' => 'ADMIN',
+        ]);
+
+        Parameter::create([
             'grp' => 'ABSENSI',
             'subgrp' => 'ABSENSI',
             'text' => '#ABS# 9999#/#R#/#Y',
@@ -25,7 +33,7 @@ class ParameterSeeder extends Seeder
         
         Parameter::create([
             'grp' => 'KAS GANTUNG',
-            'subgrp' => 'NOMOR KAS GANTUNG	',
+            'subgrp' => 'NOMOR KAS GANTUNG',
             'text' => '#KGT# 9999#/#R#/#Y',
             'memo' => '',
             'modifiedby' => 'ADMIN',
