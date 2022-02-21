@@ -8,6 +8,8 @@ use DateTime;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
+use Intervention\Image\ImageManagerStatic as Image;
+
 class App
 {
     public function runningNumber(string $format, int $lastRow): string
@@ -156,5 +158,29 @@ class App
         }
 
         return false;
+    }
+
+    function imageResize(string $path,string $from,string $uniqueName): array
+    {
+        $destinationMedium = $path."medium-".$uniqueName;
+        $destinationSmall = $path."small-".$uniqueName;
+
+        $image_resize = Image::make($from); 
+        $image_resize->backup();
+        $image_resize->resize(500, 350, function ($constraint) {
+            $constraint->aspectRatio();
+        });
+        $image_resize->save($destinationMedium);
+        $image_resize->reset();
+        $image_resize->resize(40, 30, function ($constraint) {
+            $constraint->aspectRatio();
+        });
+        $image_resize->save($destinationSmall);
+
+        $result=[];
+        $result[] = "medium-".$uniqueName;
+        $result[] = "small-".$uniqueName;
+
+        return $result;
     }
 }
