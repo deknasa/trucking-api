@@ -192,7 +192,7 @@ class CabangController extends Controller
             ];
 
 
-              
+
             $datalogtrail = [
                 'namatabel' => 'CABANG',
                 'postingdari' => 'ENTRY CABANG',
@@ -203,8 +203,8 @@ class CabangController extends Controller
                 'modifiedby' => $cabang->modifiedby,
             ];
 
-            $data=new StoreLogTrailRequest($datalogtrail);
-            app(LogTrailController::class)->store($data);              
+            $data = new StoreLogTrailRequest($datalogtrail);
+            app(LogTrailController::class)->store($data);
 
             DB::commit();
             /* Set position and page */
@@ -273,7 +273,7 @@ class CabangController extends Controller
                 'modifiedby' => strtoupper($request->modifiedby),
             ];
 
-          
+
             $datajson = [
                 'id' => $cabang->id,
                 'kodecabang' => strtoupper($request->kodecabang),
@@ -283,7 +283,7 @@ class CabangController extends Controller
             ];
 
 
-              
+
             $datalogtrail = [
                 'namatabel' => 'CABANG',
                 'postingdari' => 'EDIT CABANG',
@@ -294,17 +294,16 @@ class CabangController extends Controller
                 'modifiedby' => $cabang->modifiedby,
             ];
 
-            $data=new StoreLogTrailRequest($datalogtrail);
-            app(LogTrailController::class)->store($data);   
+            $data = new StoreLogTrailRequest($datalogtrail);
+            app(LogTrailController::class)->store($data);
 
 
             DB::commit();
 
             /* Set position and page */
-            $cabang->position = cabang::orderBy($request->sortname ?? 'id', $request->sortorder ?? 'asc')
-                ->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $cabang->{$request->sortname})
-                ->where('id', '<=', $cabang->id)
-                ->count();
+
+
+            $cabang->position = $this->getid($cabang->id, $request, 0)->row;
 
             if (isset($request->limit)) {
                 $cabang->page = ceil($cabang->position / $request->limit);
@@ -327,7 +326,7 @@ class CabangController extends Controller
      * @param  \App\Models\Cabang  $cabang
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Cabang $cabang, DestroyCabangRequest $request)
+    public function destroy(Cabang $cabang, Request $request)
     {
         DB::beginTransaction();
         try {
@@ -344,7 +343,7 @@ class CabangController extends Controller
             ];
 
 
-              
+
             $datalogtrail = [
                 'namatabel' => 'CABANG',
                 'postingdari' => 'DELETE CABANG',
@@ -355,8 +354,8 @@ class CabangController extends Controller
                 'modifiedby' => $cabang->modifiedby,
             ];
 
-            $data=new StoreLogTrailRequest($datalogtrail);
-            app(LogTrailController::class)->store($data);   
+            $data = new StoreLogTrailRequest($datalogtrail);
+            app(LogTrailController::class)->store($data);
 
             DB::commit();
             Cabang::destroy($cabang->id);
@@ -707,6 +706,14 @@ class CabangController extends Controller
     public function getid($id, $request, $del)
     {
 
+        $params = [
+            'indexRow' => $request->indexRow ?? 1,
+            'limit' => $request->limit ?? 100,
+            'page' => $request->page ?? 1,
+            'sortname' => $request->sortname ?? 'id',
+            'sortorder' => $request->sortorder ?? 'asc',
+        ];
+
         $temp = '##temp' . rand(1, 10000);
         Schema::create($temp, function ($table) {
             $table->id();
@@ -723,7 +730,7 @@ class CabangController extends Controller
 
 
 
-        if ($request->sortname == 'id') {
+        if ($params['sortname'] == 'id') {
             $query = Cabang::select(
                 'cabang.id as id_',
                 'cabang.kodecabang',
@@ -734,8 +741,8 @@ class CabangController extends Controller
                 'cabang.updated_at'
             )
                 ->leftJoin('parameter', 'cabang.statusaktif', '=', 'parameter.id')
-                ->orderBy('cabang.id', $request->sortorder);
-        } else if ($request->sortname == 'kodecabang') {
+                ->orderBy('cabang.id', $params['sortorder']);
+        } else if ($params['sortname'] == 'kodecabang') {
             $query = Cabang::select(
                 'cabang.id as id_',
                 'cabang.kodecabang',
@@ -746,11 +753,11 @@ class CabangController extends Controller
                 'cabang.updated_at'
             )
                 ->leftJoin('parameter', 'cabang.statusaktif', '=', 'parameter.id')
-                ->orderBy($request->sortname, $request->sortorder)
-                ->orderBy('cabang.namacabang', $request->sortorder)
-                ->orderBy('cabang.id', $request->sortorder);
+                ->orderBy($params['sortname'], $params['sortorder'])
+                ->orderBy('cabang.namacabang', $params['sortorder'])
+                ->orderBy('cabang.id', $params['sortorder']);
         } else {
-            if ($request->sortorder == 'asc') {
+            if ($params['sortorder'] == 'asc') {
                 $query = Cabang::select(
                     'cabang.id as id_',
                     'cabang.kodecabang',
@@ -761,8 +768,8 @@ class CabangController extends Controller
                     'cabang.updated_at'
                 )
                     ->leftJoin('parameter', 'cabang.statusaktif', '=', 'parameter.id')
-                    ->orderBy($request->sortname, $request->sortorder)
-                    ->orderBy('cabang.id', $request->sortorder);
+                    ->orderBy($params['sortname'], $params['sortorder'])
+                    ->orderBy('cabang.id', $params['sortorder']);
             } else {
                 $query = Cabang::select(
                     'cabang.id as id_',
@@ -774,7 +781,7 @@ class CabangController extends Controller
                     'cabang.updated_at'
                 )
                     ->leftJoin('parameter', 'cabang.statusaktif', '=', 'parameter.id')
-                    ->orderBy($request->sortname, $request->sortorder)
+                    ->orderBy($params['sortname'], $params['sortorder'])
 
                     ->orderBy('cabang.id', 'asc');
             }
@@ -786,12 +793,12 @@ class CabangController extends Controller
 
 
         if ($del == 1) {
-            if ($request->page == 1) {
-                $baris = $request->indexRow + 1;
+            if ($params['page'] == 1) {
+                $baris = $params['indexRow'] + 1;
             } else {
-                $hal = $request->page - 1;
-                $bar = $hal * $request->limit;
-                $baris = $request->indexRow + $bar + 1;
+                $hal = $params['page'] - 1;
+                $bar = $hal * $params['limit'];
+                $baris = $params['indexRow'] + $bar + 1;
             }
 
 

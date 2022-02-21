@@ -51,7 +51,7 @@ class CreateTradoTable extends Migration
             $table->string('model', 50)->default('');
             $table->string('nobpkb', 50)->default('');
             $table->integer('statusmobilstoring')->length(11)->default(0);
-            $table->integer('mandor_id')->length(11)->default(0);
+            $table->unsignedBigInteger('mandor_id')->default(0);
             $table->integer('jumlahbanserap')->length(11)->default(0);
             $table->integer('statusappeditban')->length(11)->default(0);
             $table->integer('statuslewatvalidasi')->length(11)->default(0);

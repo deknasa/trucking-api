@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Zona;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class SupirFactory extends Factory
@@ -13,6 +14,8 @@ class SupirFactory extends Factory
      */
     public function definition()
     {
+        $zonas = Zona::all();
+        
         return [
             'namasupir' => $this->faker->words(2, true),
             'alamat' => $this->faker->words(2, true),
@@ -32,7 +35,7 @@ class SupirFactory extends Factory
             'statusadaupdategambar' => 1,
             'statuslluarkota' => 1,
             'statuszonatertentu' => 1,
-            'zona' => 1,
+            'zona_id' => $this->faker->randomElement($zonas),
             'angsuranpinjaman' => 1,
             'plafondeposito' => 1,
             'photosupir' => $this->faker->words(2, true),

@@ -35,9 +35,9 @@ class DestroyUserRoleRequest extends FormRequest
     public function attributes()
     {
         return [
-            'user_id' => 'user_id',
-            'role_id' => 'role_id',
-            'modifiedby' => 'modifiedby'
+            'user_id' => 'user id',
+            'role_id' => 'role id',
+            'modifiedby' => 'modified by'
         ];
     }
 
@@ -45,9 +45,9 @@ class DestroyUserRoleRequest extends FormRequest
     {
         $controller = new ErrorController;
         return [
-            'user_id.required' => 'user_id ' . $controller->geterror(1)->keterangan,
-            'role_id.required' => 'role_id ' . $controller->geterror(1)->keterangan,
-            'modifiedby.required' => 'modifiedby ' . $controller->geterror(1)->keterangan,
+            'user_id.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
+            'role_id.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
+            'modifiedby.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
 
 
         ];

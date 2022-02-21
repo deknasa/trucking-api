@@ -1,12 +1,24 @@
 <?php
 
+namespace App\Http\Controllers;
+
 namespace App\Http\Controllers\Api;
 
+
+use App\Models\Acos;
 use App\Http\Requests\StoreAcosRequest;
 use App\Http\Requests\UpdateAcosRequest;
 use App\Http\Requests\DestroyAcosRequest;
 
+
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Foundation\Validation\ValidatesRequests;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Validator;
 
 class AcosController extends Controller
 {
@@ -38,7 +50,50 @@ class AcosController extends Controller
      */
     public function store(StoreAcosRequest $request)
     {
-        //
+
+        DB::beginTransaction();
+        $validator = Validator::make($request->all(), [
+            'class' => 'required',
+            'method' => 'required',
+            'nama' => 'required',
+            'modifiedby' => 'required',
+        ], [
+            'class.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
+            'method.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
+            'nama.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
+            'modifiedby.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
+        ], [
+            'class' => 'Class',
+            'method' => 'Method',
+            'nama' => 'Nama',
+            'modifiedby' => 'Modified By',
+        ]);
+        if (!$validator->passes()) {
+            return [
+                'error' => true,
+                'messages' => $validator->messages()
+            ];
+        }
+
+        try {
+            $Acos = new Acos();
+
+            $Acos->class = $request->class;
+            $Acos->method = $request->method;
+            $Acos->nama = $request->nama;
+            $Acos->modifiedby = $request->modifiedby;
+
+            $Acos->save();
+            DB::commit();
+            if ($validator->passes()) {
+                return [
+                    'error' => false,
+                ];
+            }
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return response($th->getMessage());
+        }
     }
 
     /**

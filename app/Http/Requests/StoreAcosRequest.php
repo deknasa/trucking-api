@@ -27,7 +27,9 @@ class StoreAcosRequest extends FormRequest
         return [
             'class' => 'required',
             'method' => 'required',
-            'nama' => 'required'
+            'nama' => 'required',
+            'modifiedby' => 'required',
+
         ];
     }
 
@@ -37,6 +39,7 @@ class StoreAcosRequest extends FormRequest
             'class' => 'class',
             'method' => 'method',
             'nama' => 'nama',
+            'modifiedby' => 'modified by',
         ];
     }
 
@@ -44,11 +47,10 @@ class StoreAcosRequest extends FormRequest
     {
         $controller = new ErrorController;
         return [
-            'class.required' => 'class '. $controller->geterror(1)->keterangan,
-            'method.required' => 'method '. $controller->geterror(1)->keterangan,
-            'nama.required' => 'nama '. $controller->geterror(1)->keterangan,
-            'modifiedby.required' => 'modifiedby '. $controller->geterror(1)->keterangan,
-
+            'class.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
+            'method.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
+            'nama.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
+            'modifiedby.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
         ];
     }
 }

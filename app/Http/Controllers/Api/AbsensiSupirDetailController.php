@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreAbsensiSupirDetailRequest;
 use App\Models\AbsensiSupirDetail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -76,5 +77,20 @@ class AbsensiSupirDetailController extends Controller
                 'message' => $th->getMessage()
             ]);
         }
+    }
+
+    public function store(StoreAbsensiSupirDetailRequest $request)
+    {
+        AbsensiSupirDetail::insert($request->all());
+    }
+
+    public function update(Request $request, AbsensiSupirDetail $absensiSupirDetail)
+    {
+        // 
+    }
+
+    public function destroy(AbsensiSupirDetail $absensiSupirDetail)
+    {
+        // 
     }
 }

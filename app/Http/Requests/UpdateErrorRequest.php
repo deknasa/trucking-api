@@ -26,6 +26,7 @@ class UpdateErrorRequest extends FormRequest
     public function rules()
     {
         return [
+            'kodeerror' => 'required',
             'keterangan' => 'required',
             'modifiedby' => 'required'
         ];
@@ -34,8 +35,9 @@ class UpdateErrorRequest extends FormRequest
     public function attributes()
     {
         return [
+            'kodeerror' => 'kode error',
             'keterangan' => 'keterangan',
-            'modifiedby' => 'modifiedby',
+            'modifiedby' => 'modified by',
         ];
     }
 
@@ -43,8 +45,9 @@ class UpdateErrorRequest extends FormRequest
     {
         $controller = new ErrorController;
         return [
-            'keterangan.required' => 'Keterangan '. $controller->geterror(1)->keterangan,
-            'modifiedby.required' => 'Modified by '. $controller->geterror(1)->keterangan,
+            'kodeerror.required' => ':attribute'.' '. $controller->geterror(1)->keterangan,
+            'keterangan.required' => ':attribute'.' '. $controller->geterror(1)->keterangan,
+            'modifiedby.required' => ':attribute'.' '. $controller->geterror(1)->keterangan,
 
         ];
     }

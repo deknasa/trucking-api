@@ -45,6 +45,7 @@ class ErrorController extends Controller
         if ($params['sortIndex'] == 'id') {
             $query = Error::select(
                 'error.id',
+                'error.kodeerror',
                 'error.keterangan',
                 'error.modifiedby',
                 'error.created_at',
@@ -55,6 +56,7 @@ class ErrorController extends Controller
             if ($params['sortOrder'] == 'asc') {
                 $query = Error::select(
                     'error.id',
+                    'error.kodeerror',
                     'error.keterangan',
                     'error.modifiedby',
                     'error.created_at',
@@ -65,6 +67,7 @@ class ErrorController extends Controller
             } else {
                 $query = Error::select(
                     'error.id',
+                    'error.kodeerror',
                     'error.keterangan',
                     'error.modifiedby',
                     'error.created_at',
@@ -81,13 +84,13 @@ class ErrorController extends Controller
             switch ($params['search']['groupOp']) {
                 case "AND":
                     foreach ($params['search']['rules'] as $index => $search) {
-                            $query = $query->where($search['field'], 'LIKE', "%$search[data]%");
+                        $query = $query->where($search['field'], 'LIKE', "%$search[data]%");
                     }
 
                     break;
                 case "OR":
                     foreach ($params['search']['rules'] as $index => $search) {
-                            $query = $query->orWhere($search['field'], 'LIKE', "%$search[data]%");
+                        $query = $query->orWhere($search['field'], 'LIKE', "%$search[data]%");
                     }
 
                     break;
@@ -146,6 +149,7 @@ class ErrorController extends Controller
         DB::beginTransaction();
         try {
             $error = new Error();
+            $error->kodeerror = strtoupper($request->kodeerror);
             $error->keterangan = strtoupper($request->keterangan);
             $error->modifiedby = strtoupper($request->modifiedby);
 
@@ -153,6 +157,7 @@ class ErrorController extends Controller
 
             $datajson = [
                 'id' => $error->id,
+                'kodeerror' => strtoupper($request->kodeerror),
                 'keterangan' => strtoupper($request->keterangan),
                 'modifiedby' => strtoupper($request->modifiedby),
             ];
@@ -167,7 +172,7 @@ class ErrorController extends Controller
                 'modifiedby' => $error->modifiedby,
             ];
 
-            $data=new StoreLogTrailRequest($datalogtrail);
+            $data = new StoreLogTrailRequest($datalogtrail);
             app(LogTrailController::class)->store($data);
 
             DB::commit();
@@ -231,6 +236,7 @@ class ErrorController extends Controller
 
             $datajson = [
                 'id' => $error->id,
+                'kodeerror' => strtoupper($request->kodeerror),
                 'keterangan' => strtoupper($request->keterangan),
                 'modifiedby' => strtoupper($request->modifiedby),
             ];
@@ -245,15 +251,13 @@ class ErrorController extends Controller
                 'modifiedby' => $error->modifiedby,
             ];
 
-            $data=new StoreLogTrailRequest($datalogtrail);
+            $data = new StoreLogTrailRequest($datalogtrail);
             app(LogTrailController::class)->store($data);
             DB::commit();
 
             /* Set position and page */
-            $error->position = error::orderBy($request->sortname ?? 'id', $request->sortorder ?? 'asc')
-                ->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $error->{$request->sortname})
-                ->where('id', '<=', $error->id)
-                ->count();
+            $error->position = $this->getid($error->id, $request, 0)->row;
+
 
             if (isset($request->limit)) {
                 $error->page = ceil($error->position / $request->limit);
@@ -276,7 +280,7 @@ class ErrorController extends Controller
      * @param  \App\Models\Error  $error
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Error $error,DestroyErrorRequest $request)
+    public function destroy(Error $error, Request $request)
     {
         DB::beginTransaction();
         try {
@@ -285,6 +289,7 @@ class ErrorController extends Controller
 
             $datajson = [
                 'id' => $error->id,
+                'kodeerror' => strtoupper($request->kodeerror),
                 'keterangan' => strtoupper($request->keterangan),
                 'modifiedby' => strtoupper($request->modifiedby),
             ];
@@ -299,7 +304,7 @@ class ErrorController extends Controller
                 'modifiedby' => $error->modifiedby,
             ];
 
-            $data=new StoreLogTrailRequest($datalogtrail);
+            $data = new StoreLogTrailRequest($datalogtrail);
             app(LogTrailController::class)->store($data);
 
             DB::commit();
@@ -340,10 +345,19 @@ class ErrorController extends Controller
     public function getid($id, $request, $del)
     {
 
+        $params = [
+            'indexRow' => $request->indexRow ?? 1,
+            'limit' => $request->limit ?? 100,
+            'page' => $request->page ?? 1,
+            'sortname' => $request->sortname ?? 'id',
+            'sortorder' => $request->sortorder ?? 'asc',
+        ];
+
         $temp = '##temp' . rand(1, 10000);
         Schema::create($temp, function ($table) {
             $table->id();
             $table->bigInteger('id_')->default('0');
+            $table->string('kodeerror', 50)->default('');
             $table->longText('keterangan')->default('');
             $table->string('modifiedby', 30)->default('');
             $table->dateTime('created_at')->default('1900/1/1');
@@ -354,35 +368,38 @@ class ErrorController extends Controller
 
 
 
-        if ($request->sortname == 'id') {
+        if ($params['sortname'] == 'id') {
             $query = Error::select(
                 'error.id as id_',
+                'error.kodeerror',
                 'error.keterangan',
                 'error.modifiedby',
                 'error.created_at',
                 'error.updated_at'
             )
-                ->orderBy('error.id', $request->sortorder);
+                ->orderBy('error.id', $params['sortorder']);
         } else {
             if ($request->sortorder == 'asc') {
                 $query = Error::select(
                     'error.id as id_',
+                    'error.kodeerror',
                     'error.keterangan',
                     'error.modifiedby',
                     'error.created_at',
                     'error.updated_at'
                 )
-                    ->orderBy($request->sortname, $request->sortorder)
-                    ->orderBy('error.id', $request->sortorder);
+                    ->orderBy($params['sortname'], $params['sortorder'])
+                    ->orderBy('error.id', $params['sortorder']);
             } else {
                 $query = Error::select(
                     'error.id as id_',
+                    'error.kodeerror',
                     'error.keterangan',
                     'error.modifiedby',
                     'error.created_at',
                     'error.updated_at'
                 )
-                    ->orderBy($request->sortname, $request->sortorder)
+                    ->orderBy($params['sortname'], $params['sortorder'])
 
                     ->orderBy('error.id', 'asc');
             }
@@ -390,16 +407,16 @@ class ErrorController extends Controller
 
 
 
-        DB::table($temp)->insertUsing(['id_', 'keterangan', 'modifiedby', 'created_at', 'updated_at'], $query);
+        DB::table($temp)->insertUsing(['id_', 'kodeerror', 'keterangan', 'modifiedby', 'created_at', 'updated_at'], $query);
 
 
         if ($del == 1) {
-            if ($request->page == 1) {
-                $baris = $request->indexRow + 1;
+            if ($params['page'] == 1) {
+                $baris = $params['indexRow'] + 1;
             } else {
-                $hal = $request->page - 1;
-                $bar = $hal * $request->limit;
-                $baris = $request->indexRow + $bar + 1;
+                $hal = $params['page'] - 1;
+                $bar = $hal * $params['limit'];
+                $baris = $params['indexRow'] + $bar + 1;
             }
 
 
@@ -427,19 +444,35 @@ class ErrorController extends Controller
         $data = $querydata->first();
         return $data;
     }
-    public function geterror($id) {
+    public function geterror($kodeerror)
+    {
         // dd($request->aco_id);
-        if (Error::select('keterangan')
-                ->where('id', '=', $id)
-                ->exists()
-            ) {
-                $data=Error::select('keterangan')
-                ->where('id', '=', $id)
-                ->first();
-            } else {
-                $data="";   
-            }
 
-            return $data;
+        $temp = '##temp' . rand(1, 10000);
+        Schema::create($temp, function ($table) {
+            $table->id();
+            $table->string('keterangan', 50)->default('');
+        });
+
+        DB::table($temp)->insert(
+            [
+                'keterangan' => 'kode error belum terdaftar',
+            ]
+        );
+
+        if (Error::select('keterangan')
+            ->where('kodeerror', '=', $kodeerror)
+            ->exists()
+        ) {
+            $data = Error::select('keterangan')
+                ->where('kodeerror', '=', $kodeerror)
+                ->first();
+        } else {
+            $data = DB::table($temp)
+                ->select('keterangan')
+                ->first();
+        }
+
+        return $data;
     }
 }

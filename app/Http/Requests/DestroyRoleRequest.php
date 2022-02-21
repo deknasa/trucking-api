@@ -33,8 +33,8 @@ class DestroyRoleRequest extends FormRequest
     public function attributes()
     {
         return [
-            'rolename' => 'rolename',
-            'modifiedby' => 'modifiedby'
+            'rolename' => 'nama role',
+            'modifiedby' => 'modified by'
 
         ];
     }
@@ -43,8 +43,8 @@ class DestroyRoleRequest extends FormRequest
     {
         $controller = new ErrorController;
         return [
-            'rolename.required' => 'rolename '. $controller->geterror(1)->keterangan,
-            'modifiedby.required' => 'modifiedby '. $controller->geterror(1)->keterangan,
+            'rolename.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
+            'modifiedby.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
 
         ];
     }    
