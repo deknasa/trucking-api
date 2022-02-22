@@ -51,7 +51,6 @@ class StoreAcosRequest extends FormRequest
             'method.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
             'nama.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
             'modifiedby.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
-
         ];
     }
 }

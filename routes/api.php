@@ -102,8 +102,14 @@ Route::resource('useracl', UserAclController::class);
 
 Route::resource('logtrail', LogTrailController::class);
 
-
+Route::get('trado/combo', [TradoController::class, 'combo']);
+Route::get('trado/field_length', [TradoController::class, 'fieldLength']);
+Route::post('trado/upload_image/{id}', [TradoController::class, 'uploadImage']);
 Route::resource('trado', TradoController::class);
+
+Route::resource('absensi', AbsensiSupirHeaderController::class);
+Route::resource('absensi_detail', AbsensiSupirDetailController::class);
+
 Route::resource('supir', SupirController::class);
 Route::resource('absentrado', AbsenTradoController::class);
 
