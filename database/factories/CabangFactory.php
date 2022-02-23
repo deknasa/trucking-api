@@ -14,11 +14,9 @@ class CabangFactory extends Factory
      */
     public function definition()
     {
-        $parameters = Parameter::all()->pluck('id');
-
         return [
             'kodecabang' => $this->faker->word(2, true),
-            'namacabang' => $this->faker->word(2, true),
+            'namacabang' => $this->faker->city(),
             'statusaktif' => 1,
         ];
     }

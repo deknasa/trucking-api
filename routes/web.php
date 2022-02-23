@@ -14,7 +14,5 @@ use Illuminate\Support\Facades\DB;
 */
 
 Route::get('/', function () {
-    $users = DB::table('#temp_data')->get();
-    dd($users);
     return view('welcome');
 });

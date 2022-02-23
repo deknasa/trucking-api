@@ -42,6 +42,11 @@ Route::post('token', [AuthController::class, 'token']);
 route::middleware('auth:api')->group(function() {
     Route::get('parameter/field_length', [ParameterController::class, 'fieldLength']);
     Route::resource('parameter', ParameterController::class);
+
+    Route::get('absensi/no_bukti', [AbsensiSupirHeaderController::class, 'getNoBukti']);
+    Route::get('absensi/running_number', [AbsensiSupirHeaderController::class, 'getRunningNumber']);
+    Route::get('absensi/grid', [AbsensiSupirHeaderController::class, 'grid']);
+    Route::resource('absensi', AbsensiSupirHeaderController::class);
 });
 
 Route::get('error/field_length', [ErrorController::class, 'fieldLength']);
@@ -56,9 +61,6 @@ Route::get('error/field_length', [ErrorController::class, 'fieldLength']);
 Route::get('error/geterror', [ErrorController::class, 'geterror']);
 Route::resource('error', ErrorController::class);
 
-Route::get('absensi/no_bukti', [AbsensiSupirHeaderController::class, 'getNoBukti']);
-Route::get('absensi/running_number', [AbsensiSupirHeaderController::class, 'getRunningNumber']);
-
 Route::get('role/getroleid', [RoleController::class, 'getroleid']);
 Route::get('role/field_length', [RoleController::class, 'fieldLength']);
 Route::resource('role', RoleController::class);
@@ -66,6 +68,7 @@ Route::resource('role', RoleController::class);
 Route::get('acos/field_length', [AcosController::class, 'fieldLength']);
 Route::resource('acos', AcosController::class);
 
+Route::resource('absensi_detail', AbsensiSupirDetailController::class);
 
 Route::get('user/field_length', [UserController::class, 'fieldLength']);
 Route::get('user/combostatus', [UserController::class, 'combostatus']);
@@ -78,9 +81,6 @@ Route::get('menu/combomenuparent', [MenuController::class, 'combomenuparent']);
 Route::get('menu/getdatanamaacos', [MenuController::class, 'getdatanamaacos']);
 Route::resource('menu', MenuController::class);
 
-Route::get('absensi/grid', [AbsensiSupirHeaderController::class, 'grid']);
-Route::resource('absensi', AbsensiSupirHeaderController::class);
-Route::resource('absensi_detail', AbsensiSupirDetailController::class);
 
 Route::get('userrole/field_length', [UserRoleController::class, 'fieldLength']);
 Route::get('userrole/detail', [UserRoleController::class, 'detail']);
@@ -102,8 +102,14 @@ Route::resource('useracl', UserAclController::class);
 
 Route::resource('logtrail', LogTrailController::class);
 
-
+Route::get('trado/combo', [TradoController::class, 'combo']);
+Route::get('trado/field_length', [TradoController::class, 'fieldLength']);
+Route::post('trado/upload_image/{id}', [TradoController::class, 'uploadImage']);
 Route::resource('trado', TradoController::class);
+
+Route::resource('absensi', AbsensiSupirHeaderController::class);
+Route::resource('absensi_detail', AbsensiSupirDetailController::class);
+
 Route::resource('supir', SupirController::class);
 Route::resource('absentrado', AbsenTradoController::class);
 

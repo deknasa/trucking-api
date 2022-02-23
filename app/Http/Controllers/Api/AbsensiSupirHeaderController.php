@@ -6,6 +6,7 @@ use App\Helpers\App;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreAbsensiSupirHeaderRequest;
 use App\Http\Requests\UpdateAbsensiSupirHeaderRequest;
+use App\Models\AbsensiSupirDetail;
 use App\Models\AbsensiSupirHeader;
 use App\Models\Parameter;
 use Illuminate\Http\Request;

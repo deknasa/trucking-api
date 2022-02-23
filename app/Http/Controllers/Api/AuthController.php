@@ -19,7 +19,7 @@ class AuthController extends Controller
             'user' => $request->user,
             'password' => $request->password,
         ];
-
+        
         if (Auth::attempt($credentials)) {
             $user = Auth::user();
 
