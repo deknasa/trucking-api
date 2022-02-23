@@ -14,8 +14,12 @@ class ZonaSeeder extends Seeder
      */
     public function run()
     {
-        Zona::factory()
-            ->count(5)
-            ->create();
+
+        Zona::create([
+            'zona' => 'ZONA 2',
+            'keterangan' => 'ZONA 2',
+            'statusaktif' => 1,
+            'modifiedby' => 'ADMIN',
+        ]);
     }
 }

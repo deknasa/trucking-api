@@ -15,6 +15,7 @@ class CreateAgenTable extends Migration
     {
         Schema::create('agen', function (Blueprint $table) {
             $table->id();
+            $table->string('kodeagen', 30)->default('');
             $table->string('namaagen', 30)->default('');
             $table->longText('keterangan')->default('');
             $table->integer('statusaktif')->length(11)->default(0);            

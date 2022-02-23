@@ -4,7 +4,7 @@ namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-class BankFactory extends Factory
+class JenisEmklFactory extends Factory
 {
     /**
      * Define the model's default state.
@@ -13,7 +13,8 @@ class BankFactory extends Factory
      */
     public function definition()
     {
-  
-       
+        return [
+            //
+        ];
     }
 }

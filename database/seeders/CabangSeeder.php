@@ -14,8 +14,6 @@ class CabangSeeder extends Seeder
      */
     public function run()
     {
-        Cabang::factory()
-            ->count(21)
-            ->create();
+
     }
 }

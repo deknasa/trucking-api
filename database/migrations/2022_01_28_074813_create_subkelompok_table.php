@@ -15,6 +15,7 @@ class CreateSubkelompokTable extends Migration
     {
         Schema::create('subkelompok', function (Blueprint $table) {
             $table->id();
+            $table->string('kodesubkelompok',50)->default('');
             $table->longText('keterangan')->default('');
             $table->unsignedBigInteger('kelompok_id')->default('');
             $table->integer('statusaktif')->length(11)->default('');

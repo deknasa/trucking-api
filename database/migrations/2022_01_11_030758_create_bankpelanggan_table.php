@@ -17,6 +17,7 @@ class CreatebankpelangganTable extends Migration
             $table->id();
             $table->string('kodebank', 50)->default('');
             $table->string('namabank', 100)->default('');
+            $table->longText('keterangan')->default('');
             $table->integer('statusaktif')->length(11)->default(0);            
             $table->string('modifiedby', 50)->default('');
             $table->timestamps();

@@ -1,7 +1,7 @@
 <?php
 
 namespace Database\Seeders;
-
+use App\Models\JenisTrado;
 use Illuminate\Database\Seeder;
 
 class JenisTradoSeeder extends Seeder
@@ -13,6 +13,19 @@ class JenisTradoSeeder extends Seeder
      */
     public function run()
     {
-        //
+        JenisTrado::create([
+            'kodejenistrado' => 'ALL',
+            'keterangan' => 'UNTUK ALL TRUCK',
+            'statusaktif' => 1,
+            'modifiedby' => 'ADMIN',
+        ]);
+
+        JenisTrado::create([
+            'kodejenistrado' => 'HINO',
+            'keterangan' => 'UNTUK TRAILER HINO',
+            'statusaktif' => 1,
+            'modifiedby' => 'ADMIN',
+        ]);
+
     }
 }

@@ -15,7 +15,9 @@ class CreateKotaritasiTable extends Migration
     {
         Schema::create('kotaritasi', function (Blueprint $table) {
             $table->id();
+            $table->string('kodekota',50)->Default('');
             $table->longText('keterangan')->Default('');
+            $table->integer('statusaktif')->length(11)->Default('');
             $table->string('modifiedby',50)->Default('');
             $table->timestamps();
         });

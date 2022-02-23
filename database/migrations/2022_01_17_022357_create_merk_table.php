@@ -15,6 +15,7 @@ class CreateMerkTable extends Migration
     {
         Schema::create('merk', function (Blueprint $table) {
             $table->id();
+            $table->string('kodemerk',50)->default('');
             $table->longText('keterangan')->default('');
             $table->integer('statusaktif')->length(11)->default('0');
             $table->string('modifiedby',50)->default('');
