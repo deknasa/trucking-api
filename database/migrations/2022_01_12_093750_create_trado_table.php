@@ -35,7 +35,7 @@ class CreateTradoTable extends Migration
             $table->date('tglserviceopname')->default('1900/1/1');
             $table->integer('statusstandarisasi')->length(11)->default(0);
             $table->string('keteranganprogressstandarisasi', 100)->default('');
-            $table->integer('jenisplat')->length(11)->default(0);
+            $table->integer('statusjenisplat')->length(11)->default(0);
             $table->date('tglspeksimati')->default('1900/1/1');
             $table->date('tglpajakstnk')->default('1900/1/1');
             $table->date('tglgantiakiterakhir')->default('1900/1/1');

@@ -13,13 +13,6 @@ class AbsensiSupirHeaderFactory extends Factory
      */
     public function definition()
     {
-        return [
-            'nobukti' => $this->faker->name(),
-            'tgl' => $this->faker->date(),
-            'keterangan' => $this->faker->name(),
-            'kasgantung_nobukti' => $this->faker->name(),
-            'nominal' => $this->faker->randomNumber(),
-            'modifiedby' => 'admin',
-        ];
+      
     }
 }

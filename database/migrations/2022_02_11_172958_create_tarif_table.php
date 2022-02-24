@@ -23,11 +23,9 @@ class CreateTarifTable extends Migration
             $table->integer('sistemton')->length(11)->default('0');
             $table->unsignedBigInteger('kota_id')->default('0');
             $table->unsignedBigInteger('zona_id')->default('0');
-            $table->double('ton',15,2)->default('0');
-            $table->integer('batasberlaku')->length(11)->default('0');
-            $table->date('tglmulaiberlaku')->default('1900/1/1');
-            $table->date('tglakhirberlaku')->default('1900/1/1');
-            $table->integer('penyesuaianharga')->length(11)->default('0');
+            $table->double('nominalton',15,2)->default('0');
+            $table->date('tglberlaku')->default('1900/1/1');
+            $table->integer('statuspenyesuaianharga')->length(11)->default('0');
             $table->string('modifiedby',50)->default('');
             $table->timestamps();
         });

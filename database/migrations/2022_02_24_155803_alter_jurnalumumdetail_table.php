@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AlterSupirTable extends Migration
+class AlterJurnalumumdetailTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,8 +13,8 @@ class AlterSupirTable extends Migration
      */
     public function up()
     {
-        Schema::table('supir', function ($table) {
-            $table->foreign('zona_id')->references('id')->on('zona');
+        Schema::table('jurnalumumdetail', function ($table) {
+            $table->foreign('coa')->references('coa')->on('akunpusat');
      
         });
     }

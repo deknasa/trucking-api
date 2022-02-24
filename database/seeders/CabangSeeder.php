@@ -14,6 +14,11 @@ class CabangSeeder extends Seeder
      */
     public function run()
     {
-
+        Cabang::create([
+            'kodecabang' => '',
+            'namacabang' => '',
+            'statusaktif' => '',
+            'modifiedby' => 'ADMIN',
+        ]);
     }
 }

@@ -19,10 +19,10 @@ class CreateJurnalumumheaderTable extends Migration
             $table->date('tgl')->default('1900/1/1');
             $table->longText('keterangan')->default('');
             $table->string('postingdari',50)->default('');
-            $table->string('modifiedby',50)->default('');
             $table->integer('statusapproval')->length(11)->default('0');
             $table->string('userapproval',50)->default('');
             $table->dateTime('tglapproval')->default('1900/1/1');
+            $table->string('modifiedby',50)->default('');
             $table->timestamps();
         });
     }

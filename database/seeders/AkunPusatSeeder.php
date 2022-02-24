@@ -27,5 +27,33 @@ class AkunPusatSeeder extends Seeder
             'coamain' => '01.01.01.02',
             'modifiedby' => 'ADMIN',
         ]);
+
+        AkunPusat::create([
+            'coa' => '09.01.01.01',
+            'keterangancoa' => 'ESTIMASI KAS GANTUNG',
+            'type' => 'KAS',
+            'level' => '3',
+            'aktif' => '1',
+            'parent' => '01.01.01.00',
+            'statusaccountpayable' => '34',
+            'statusneraca' => '36',
+            'statuslabarugi' => '38',
+            'coamain' => '  09.01.01.01',
+            'modifiedby' => 'ADMIN',
+        ]);        
+
+        AkunPusat::create([
+            'coa' => '09.01.01.03',
+            'keterangancoa' => 'KAS GANTUNG SEMENTARA',
+            'type' => 'KAS',
+            'level' => '3',
+            'aktif' => '1',
+            'parent' => '01.01.01.00',
+            'statusaccountpayable' => '34',
+            'statusneraca' => '36',
+            'statuslabarugi' => '38',
+            'coamain' => '  09.01.01.03',
+            'modifiedby' => 'ADMIN',
+        ]);        
     }
 }

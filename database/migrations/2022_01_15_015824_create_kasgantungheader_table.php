@@ -22,7 +22,6 @@ class CreateKasgantungheaderTable extends Migration
             $table->unsignedBigInteger('bank_id')->default('0');
             $table->string('nobuktikaskeluar',50)->default('');
             $table->string('coakaskeluar',50)->default('');
-            $table->integer('status')->length(11)->default('0');
             $table->string('postingdari',50)->default('');
             $table->date('tglkaskeluar')->default('1900/1/1');
             $table->string('modifiedby',50)->default('');

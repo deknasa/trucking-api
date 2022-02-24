@@ -43,8 +43,7 @@ class CreateSupirTable extends Migration
             $table->string('photoskck', 100)->default('');
             $table->string('photodomisili', 100)->default('');
             $table->longText('keteranganresign')->default('');
-            $table->integer('statuspameran')->length(11)->default(0);
-            $table->integer('statusbacklist')->length(11)->default(0);
+            $table->integer('statusblacklist')->length(11)->default(0);
             $table->date('tglberhentisupir')->default('1900/1/1');
             $table->date('tgllahir')->default('1900/1/1');
             $table->date('tglterbitsim')->default('1900/1/1');

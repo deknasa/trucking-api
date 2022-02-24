@@ -16,19 +16,6 @@ class AbsensiSupirDetailFactory extends Factory
      */
     public function definition()
     {
-        $absensi = AbsensiSupirHeader::all();
-        $trado = Trado::all();
-        $supir = Supir::all();
-        
-        return [
-            'absensi_id' => $this->faker->randomElement($absensi),
-            'nobukti' => $this->faker->words(2, true),
-            'trado_id' => $this->faker->randomElement($trado),
-            'supir_id' => $this->faker->randomElement($supir),
-            'keterangan' => $this->faker->words(2, true),
-            'uangjalan' => rand(10000, 100000),
-            'absen_id' => 1,
-            'jam' => date('H:i:s', rand(1,54000)),
-        ];
+
     }
 }

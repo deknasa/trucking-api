@@ -22,7 +22,7 @@ class CreateabsensisupirapprovalTable extends Migration
             $table->integer('statusapproval')->length(11)->default(0);
             $table->dateTime('tglapproval')->default('1900/1/1');
             $table->string('userapproval', 200)->default('');
-            $table->integer('statussudahsimpan')->length(11)->default(0);
+            $table->string('nobukti_absensi',50)->default('');
             $table->longText('keterangan')->default('');
             $table->integer('statusapprovalpusat')->length(11)->default(0);
             $table->string('userapprovalpusat', 50)->default('');

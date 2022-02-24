@@ -13,6 +13,12 @@ class AlatBayarSeeder extends Seeder
      */
     public function run()
     {
-        //
+        AlatBayar::create([
+            'namaalatbayar' => '',
+            'langsunggcair' => '',
+            'default' => '',
+            'bank_id' => '',
+            'modifiedby' => 'ADMIN',
+        ]);
     }
 }

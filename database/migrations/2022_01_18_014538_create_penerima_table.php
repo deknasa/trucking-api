@@ -19,7 +19,7 @@ class CreatePenerimaTable extends Migration
             $table->string('npwp',50)->default('');
             $table->string('noktp',50)->default('');
             $table->integer('statusaktif')->length(11)->default('0');
-            $table->integer('karyawan')->length(11)->default('0');
+            $table->integer('statuskaryawan')->length(11)->default('0');
             $table->string('modifiedby',50)->default('');
             $table->timestamps();
         });

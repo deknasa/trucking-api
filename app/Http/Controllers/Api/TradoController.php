@@ -109,7 +109,7 @@ class TradoController extends Controller
             $trado->tglserviceopname = date('Y-m-d',strtotime($request->tglserviceopname));
             $trado->statusstandarisasi = $request->statusstandarisasi;
             $trado->keteranganprogressstandarisasi = strtoupper($request->keteranganprogressstandarisasi);
-            $trado->jenisplat = strtoupper($request->jenisplat);
+            $trado->statusjenisplat = $request->statusjenisplat;
             $trado->tglspeksimati = date('Y-m-d',strtotime($request->tglspeksimati));
             $trado->tglgantiakiterakhir = date('Y-m-d',strtotime($request->tglgantiakiterakhir));
             $trado->statusmutasi = $request->statusmutasi;
@@ -177,7 +177,7 @@ class TradoController extends Controller
             $trado->tglserviceopname = date('Y-m-d',strtotime($request->tglserviceopname));
             $trado->statusstandarisasi = $request->statusstandarisasi;
             $trado->keteranganprogressstandarisasi = strtoupper($request->keteranganprogressstandarisasi);
-            $trado->jenisplat = strtoupper($request->jenisplat);
+            $trado->statusjenisplat = strtoupper($request->statusjenisplat);
             $trado->tglspeksimati = date('Y-m-d',strtotime($request->tglspeksimati));
             $trado->tglgantiakiterakhir = date('Y-m-d',strtotime($request->tglgantiakiterakhir));
             $trado->statusmutasi = $request->statusmutasi;
@@ -571,7 +571,7 @@ class TradoController extends Controller
             $table->date('tglserviceopname')->default('1900/1/1');
             $table->integer('statusstandarisasi')->length(11)->default(0);
             $table->string('keteranganprogressstandarisasi', 100)->default('');
-            $table->integer('jenisplat')->length(11)->default(0);
+            $table->integer('statusjenisplat')->length(11)->default(0);
             $table->date('tglspeksimati')->default('1900/1/1');
             $table->date('tglpajakstnk')->default('1900/1/1');
             $table->date('tglgantiakiterakhir')->default('1900/1/1');
@@ -625,7 +625,7 @@ class TradoController extends Controller
                 'trado.tglserviceopname',
                 'trado.statusstandarisasi',
                 'trado.keteranganprogressstandarisasi',
-                'trado.jenisplat',
+                'trado.statusjenisplat',
                 'trado.tglspeksimati',
                 'trado.tglpajakstnk',
                 'trado.tglgantiakiterakhir',
@@ -676,7 +676,7 @@ class TradoController extends Controller
                 'trado.tglserviceopname',
                 'trado.statusstandarisasi',
                 'trado.keteranganprogressstandarisasi',
-                'trado.jenisplat',
+                'trado.statusjenisplat',
                 'trado.tglspeksimati',
                 'trado.tglpajakstnk',
                 'trado.tglgantiakiterakhir',
@@ -730,7 +730,7 @@ class TradoController extends Controller
                 'trado.tglserviceopname',
                 'trado.statusstandarisasi',
                 'trado.keteranganprogressstandarisasi',
-                'trado.jenisplat',
+                'trado.statusjenisplat',
                 'trado.tglspeksimati',
                 'trado.tglpajakstnk',
                 'trado.tglgantiakiterakhir',
@@ -782,7 +782,7 @@ class TradoController extends Controller
                     'trado.tglserviceopname',
                     'trado.statusstandarisasi',
                     'trado.keteranganprogressstandarisasi',
-                    'trado.jenisplat',
+                    'trado.statusjenisplat',
                     'trado.tglspeksimati',
                     'trado.tglpajakstnk',
                     'trado.tglgantiakiterakhir',
@@ -816,7 +816,7 @@ class TradoController extends Controller
         }
 
 
-        DB::table($temp)->insertUsing(['id_','keterangan','statusaktif','kmawal','kmakhirgantioli','tglakhirgantioli','tglstnkmati','tglasuransimati','tahun','akhirproduksi','merek','norangka','nomesin','nama','nostnk','alamatstnk','modifiedby','tglstandarisasi','tglserviceopname','statusstandarisasi','keteranganprogressstandarisasi','jenisplat','tglspeksimati','tglpajakstnk','tglgantiakiterakhir','statusmutasi','statusvalidasikendaraan','tipe','jenis','isisilinder','warna',
+        DB::table($temp)->insertUsing(['id_','keterangan','statusaktif','kmawal','kmakhirgantioli','tglakhirgantioli','tglstnkmati','tglasuransimati','tahun','akhirproduksi','merek','norangka','nomesin','nama','nostnk','alamatstnk','modifiedby','tglstandarisasi','tglserviceopname','statusstandarisasi','keteranganprogressstandarisasi','statusjenisplat','tglspeksimati','tglpajakstnk','tglgantiakiterakhir','statusmutasi','statusvalidasikendaraan','tipe','jenis','isisilinder','warna',
             // 'jenisbahanbakar',
             'jlhsumbu','jlhroda','model','nobpkb','statusmobilstoring','mandor_id','jlhbanserap','statusappeditban','statuslewatvalidasi','photostnk','photobpkb','phototrado','created_at','updated_at'], $query);
 

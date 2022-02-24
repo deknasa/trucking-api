@@ -14,8 +14,14 @@ class AbsensiSupirHeaderSeeder extends Seeder
      */
     public function run()
     {
-        AbsensiSupirHeader::factory()
-            ->count(30)
-            ->create();
+
+        AbsensiSupirHeader::create([
+            'nobukti' => 'ABS 0001/II/2022',
+            'tgl' => '2022/2/23',
+            'keterangan' => 'ABSENSI SUPIR TGL 23-02-2022',
+            'kasgantung_nobukti' => 'KGT 0001/II/2022',
+            'nominal' => '250000',
+            'modifiedby' => 'ADMIN',
+            ]);
     }
 }

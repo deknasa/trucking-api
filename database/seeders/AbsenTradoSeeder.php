@@ -14,8 +14,25 @@ class AbsenTradoSeeder extends Seeder
      */
     public function run()
     {
-        AbsenTrado::factory()
-            ->count(3)
-            ->create();
+        AbsenTrado::create([
+            'kodeabsen' => 'I',
+            'keterangan' => 'INAP',
+            'statusaktif' => '1',
+            'modifiedby' => 'ADMIN',
+        ]);
+
+        AbsenTrado::create([
+            'kodeabsen' => 'G',
+            'keterangan' => 'GANTUNG',
+            'statusaktif' => '1',
+            'modifiedby' => 'ADMIN',
+        ]);        
+
+        AbsenTrado::create([
+            'kodeabsen' => 'TS',
+            'keterangan' => 'TIDAK ADA SUPIR',
+            'statusaktif' => '1',
+            'modifiedby' => 'ADMIN',
+        ]);                
     }
 }

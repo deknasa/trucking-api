@@ -23,12 +23,24 @@ class TarifSeeder extends Seeder
             'sistemton' => 41,
             'kota_id' => 1,
             'zona_id' => 1,
-            'ton' => '',
-            'batasberlaku' => '',
-            'tglmulaiberlaku' => '',
-            'tglakhirberlaku' => '',
-            'penyesuaianharga' => '',
-            'modifiedby' => '',
+            'nominalton' => 0,
+            'tglberlaku' => '2021/1/1',
+            'statuspenyesuaianharga' => 43,
+            'modifiedby' => 'ADMIN',
         ]);
+
+        Tarif::create([
+            'tujuan' => 'AMPLAS',
+            'container_id' => 2,
+            'nominal' => 1463000,
+            'statusaktif' => 1,
+            'sistemton' => 41,
+            'kota_id' => 1,
+            'zona_id' => 1,
+            'nominalton' => 0,
+            'tglberlaku' => '2021/1/1',
+            'statuspenyesuaianharga' => 43,
+            'modifiedby' => 'ADMIN',
+        ]);        
     }
 }
