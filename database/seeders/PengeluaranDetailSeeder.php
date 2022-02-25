@@ -15,19 +15,17 @@ class PengeluaranDetailSeeder extends Seeder
     public function run()
     {
         PengeluaranDetail::create([
-            'pengeluaran_id' => '',
-            'nobukti' => '',
-            'alatbayar_id' => '',
+            'pengeluaran_id' => 1,
+            'nobukti' => 'KBT 0001/II/2022',
+            'alatbayar_id' => 1,
             'nowarkat' => '',
-            'tgljatuhtempo' => '',
-            'nominal' => '',
-            'coadebet' => '',
-            'coakredit' => '',
-            'keterangan' => '',
-            'bank_id' => '',
+            'tgljatuhtempo' => '2022-02-24',
+            'nominal' => 250000,
+            'coadebet' => '01.01.01.02',
+            'coakredit' => '01.01.02.02',
+            'keterangan' => 'PROSES ABSENSI SUPIR',
             'noinvoice' => '',
-            'statusedit' => '',
-            'bulanbeban' => '',
+            'bulanbeban' => '2022-02-23',
             'modifiedby' => 'ADMIN',
         ]);
     }

@@ -30,6 +30,12 @@ class CreateabsensisupirapprovalTable extends Migration
             $table->longText('keteranganedit')->default('');
             $table->string('modifiedby', 200)->default('');
             $table->timestamps();
+
+            $table->foreign('trado_id')->references('id')->on('trado');
+            $table->foreign('supir_id')->references('id')->on('supir');
+            $table->foreign('supirserap_id')->references('id')->on('supir');
+            $table->foreign('nobukti_absensi')->references('nobukti')->on('absensisupirheader');
+
         });
     }
 

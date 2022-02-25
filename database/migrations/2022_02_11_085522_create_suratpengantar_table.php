@@ -23,10 +23,10 @@ class CreateSuratpengantarTable extends Migration
             $table->unsignedBigInteger('upah_id')->default('0');
             $table->unsignedBigInteger('dari_id')->default('0');
             $table->unsignedBigInteger('sampai_id')->default('0');
-            $table->unsignedBigInteger('cont_id')->default('0');
+            $table->unsignedBigInteger('container_id')->default('0');
             $table->string('nocont',50)->default('');
             $table->string('nocont2',50)->default('');
-            $table->unsignedBigInteger('statuscont_id')->default('0');
+            $table->unsignedBigInteger('statuscontainer_id')->default('0');
             $table->unsignedBigInteger('trado_id')->default('0');
             $table->string('nojob',50)->default('');
             $table->string('nojob2',50)->default('');
@@ -75,6 +75,26 @@ class CreateSuratpengantarTable extends Migration
             $table->integer('statusdisc')->length(11)->default('0');
             $table->string('modifiedby',50)->default('');
             $table->timestamps();
+
+            $table->foreign('pelanggan_id')->references('id')->on('pelanggan');
+            $table->foreign('upah_id')->references('id')->on('upah');
+            $table->foreign('dari_id')->references('id')->on('kota');
+            $table->foreign('sampai_id')->references('id')->on('kota');
+            $table->foreign('container_id')->references('id')->on('container');
+            $table->foreign('statuscontainer_id')->references('id')->on('statuscontainer');
+            $table->foreign('container_id')->references('id')->on('container');
+            $table->foreign('trado_id')->references('id')->on('trado');
+            $table->foreign('ritasidari_id')->references('id')->on('kotaritasi');
+            $table->foreign('ritasisampai_id')->references('id')->on('kotaritasi');
+            $table->foreign('agen_id')->references('id')->on('agen');
+            $table->foreign('jenisorder_id')->references('id')->on('jenisorder');
+            $table->foreign('tarif_id')->references('id')->on('tarif');
+            $table->foreign('tujuan_id')->references('id')->on('tujuan');
+            $table->foreign('biayatambahan_id')->references('id')->on('biayatambahan');
+            $table->foreign('cabang_id')->references('id')->on('cabang');
+            $table->foreign('mandorsupir_id')->references('id')->on('mandorsupir');
+            $table->foreign('mandortrado_id')->references('id')->on('mandortrado');
+
         });
     }
 

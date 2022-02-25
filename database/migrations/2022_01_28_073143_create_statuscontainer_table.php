@@ -15,8 +15,9 @@ class CreateStatuscontainerTable extends Migration
     {
         Schema::create('statuscontainer', function (Blueprint $table) {
             $table->id();
+            $table->string('kodestatuscontainer',50)->default('');
             $table->longText('keterangan')->default('');
-            $table->integer('statusaktif]')->length(11)->default('');
+            $table->integer('statusaktif')->length(11)->default('');
             $table->string('modifiedby',50)->default('');
             $table->timestamps();
         });

@@ -15,7 +15,9 @@ class CreatePelangganTable extends Migration
     {
         Schema::create('pelanggan', function (Blueprint $table) {
             $table->id();
+            $table->string('kodepelanggan',50)->default('');
             $table->string('namapelanggan',100)->default('');
+            $table->longText('keterangan')->default('');
             $table->string('telp',100)->default('');
             $table->string('alamat',200)->default('');
             $table->string('alamat2',200)->default('');

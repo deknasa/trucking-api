@@ -24,14 +24,16 @@ class CreatePengeluarandetailTable extends Migration
             $table->string('coadebet',50)->default('');
             $table->string('coakredit',50)->default('');
             $table->longText('keterangan')->default('');
-            $table->unsignedBigInteger('bank_id')->default('0');
             $table->string('noinvoice',50)->default('');
-            $table->integer('statusedit')->longText(11)->default('0');
             $table->date('bulanbeban')->default('1900/1/1');
             $table->string('modifiedby',50)->default('');
             $table->timestamps();
 
             $table->foreign('pengeluaran_id')->references('id')->on('pengeluaranheader')->onDelete('cascade');                                                            
+            $table->foreign('alatbayar_id')->references('id')->on('alatbayar');
+            $table->foreign('coadebet')->references('coa')->on('akunpusat');
+            $table->foreign('coakredit')->references('coa')->on('akunpusat');
+
         });
     }
 

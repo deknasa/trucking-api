@@ -59,6 +59,8 @@ class CreateTradoTable extends Migration
             $table->string('photobpkb', 1500)->default('');
             $table->string('phototrado', 1500)->default('');
             $table->timestamps();
+
+            $table->foreign('mandor_id')->references('id')->on('mandor');
         });
     }
 

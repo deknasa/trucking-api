@@ -15,6 +15,7 @@ class CreateUpahsupirrincianTable extends Migration
     {
         Schema::create('upahsupirrincian', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('upahsupir_id')->default('0');
             $table->unsignedBigInteger('container_id')->default('0');
             $table->unsignedBigInteger('statuscontainer_id')->default('0');
             $table->double('nominalsupir',15,2)->default('0');
@@ -24,6 +25,11 @@ class CreateUpahsupirrincianTable extends Migration
             $table->double('liter',15,2)->default('0');
             $table->string('modifiedby',50)->Default('');            
             $table->timestamps();
+
+            $table->foreign('upahsupir_id')->references('id')->on('upahsupir')->onDelete('cascade');             
+            $table->foreign('container_id')->references('id')->on('container');
+            $table->foreign('statuscontainer_id')->references('id')->on('statuscontainer');
+
         });
     }
 

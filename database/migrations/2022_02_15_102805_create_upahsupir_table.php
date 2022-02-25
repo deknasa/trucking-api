@@ -20,11 +20,14 @@ class CreateUpahsupirTable extends Migration
             $table->double('jarak',15,2)->default('0');
             $table->unsignedBigInteger('zona_id')->default('0');
             $table->integer('statusaktif')->length(11)->default('0');
-            $table->date('tglmulaiberlaku')->default('0');
+            $table->date('tglmulaiberlaku')->default('1900/1/1');
             $table->integer('statusluarkota')->length(11)->default('0');
-            $table->integer('statuspecahtrip')->length(11)->default('0');
             $table->string('modifiedby',50)->Default('');            
             $table->timestamps();
+
+            $table->foreign('kotadari_id')->references('id')->on('kota');
+            $table->foreign('kotasampai_id')->references('id')->on('kota');
+            $table->foreign('zona_id')->references('id')->on('zona');
         });
     }
 

@@ -49,6 +49,8 @@ class CreateSupirTable extends Migration
             $table->date('tglterbitsim')->default('1900/1/1');
             $table->string('modifiedby', 30)->default('');
             $table->timestamps();
+
+            $table->foreign('zona_id')->references('id')->on('zona');
         });
     }
 

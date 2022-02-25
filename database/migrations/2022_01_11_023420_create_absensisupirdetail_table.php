@@ -27,6 +27,9 @@ class CreateabsensisupirdetailTable extends Migration
             $table->timestamps();
 
             $table->foreign('absensi_id')->references('id')->on('absensisupirheader')->onDelete('cascade');
+            $table->foreign('trado_id')->references('id')->on('trado');
+            $table->foreign('supir_id')->references('id')->on('supir');
+            $table->foreign('absen_id')->references('id')->on('absentrado');
         });
     }
 

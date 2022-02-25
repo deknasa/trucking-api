@@ -21,6 +21,7 @@ class AkunPusatSeeder extends Seeder
             'level' => '3',
             'aktif' => '1',
             'parent' => '01.01.01.00',
+            'statuscoa' => 0,
             'statusaccountpayable' => '34',
             'statusneraca' => '36',
             'statuslabarugi' => '38',
@@ -34,11 +35,12 @@ class AkunPusatSeeder extends Seeder
             'type' => 'KAS',
             'level' => '3',
             'aktif' => '1',
-            'parent' => '01.01.01.00',
+            'parent' => '09.01.01.00',
+            'statuscoa' => 0,
             'statusaccountpayable' => '34',
             'statusneraca' => '36',
             'statuslabarugi' => '38',
-            'coamain' => '  09.01.01.01',
+            'coamain' => '09.01.01.01',
             'modifiedby' => 'ADMIN',
         ]);        
 
@@ -48,12 +50,29 @@ class AkunPusatSeeder extends Seeder
             'type' => 'KAS',
             'level' => '3',
             'aktif' => '1',
-            'parent' => '01.01.01.00',
+            'parent' => '09.01.01.00',
+            'statuscoa' => 0,
             'statusaccountpayable' => '34',
             'statusneraca' => '36',
             'statuslabarugi' => '38',
-            'coamain' => '  09.01.01.03',
+            'coamain' => '09.01.01.03',
             'modifiedby' => 'ADMIN',
-        ]);        
+        ]);   
+        
+        
+        AkunPusat::create([
+            'coa' => '01.01.02.02',
+            'keterangancoa' => 'KAS - GANTUNG MEDAN',
+            'type' => 'KAS',
+            'level' => '3',
+            'aktif' => '1',
+            'parent' => '01.01.02.00',
+            'statuscoa' => 0,
+            'statusaccountpayable' => '34',
+            'statusneraca' => '36',
+            'statuslabarugi' => '38',
+            'coamain' => '01.01.02.02',
+            'modifiedby' => 'ADMIN',
+        ]);
     }
 }

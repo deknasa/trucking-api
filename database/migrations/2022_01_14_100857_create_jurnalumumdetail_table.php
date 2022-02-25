@@ -25,6 +25,7 @@ class CreateJurnalumumdetailTable extends Migration
             $table->timestamps();
 
             $table->foreign('jurnalumum_id')->references('id')->on('jurnalumumheader')->onDelete('cascade');            
+            $table->foreign('coa')->references('coa')->on('akunpusat');
 
         });
     }

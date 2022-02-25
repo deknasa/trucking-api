@@ -26,6 +26,12 @@ class CreateKasgantungheaderTable extends Migration
             $table->date('tglkaskeluar')->default('1900/1/1');
             $table->string('modifiedby',50)->default('');
             $table->timestamps();
+
+            $table->foreign('penerima_id')->references('id')->on('penerima');
+            $table->foreign('bank_id')->references('id')->on('bank');
+            $table->foreign('nobuktikaskeluar')->references('nobukti')->on('pengeluaranheader');
+            $table->foreign('coakaskeluar')->references('coa')->on('akunpusat');
+            $table->foreign('nobukti')->references('nobukti')->on('jurnalumumheader');            
         });
     }
 

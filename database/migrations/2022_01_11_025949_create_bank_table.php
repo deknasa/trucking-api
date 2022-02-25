@@ -24,6 +24,8 @@ class CreatebankTable extends Migration
             $table->integer('kodepengeluaran')->length(11)->default(0);
             $table->string('modifiedby', 50)->default('');
             $table->timestamps();
+
+            $table->foreign('coa')->references('coa')->on('akunpusat');
         });
     }
 

@@ -23,6 +23,17 @@ class JurnalUmumHeaderSeeder extends Seeder
             'userapproval' => '',
             'tglapproval' => '1900-01-01',
             'modifiedby' => 'ADMIN',
-            ]);
+        ]);
+
+        JurnalUmumHeader::create([
+            'nobukti' => 'KBT 0001/II/2022',
+            'tgl' => '2022/2/24',
+            'keterangan' => 'PROSES ABSENSI SUPIR',
+            'postingdari' => 'PENGELUARAN',
+            'statusapproval' => 4,
+            'userapproval' => '',
+            'tglapproval' => '1900-01-01',
+            'modifiedby' => 'ADMIN',
+        ]);
     }
 }

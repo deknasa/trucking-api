@@ -14,6 +14,14 @@ class KotaSeeder extends Seeder
     public function run()
     {
         Kota::create([
+            'kodekota' => 'BLW',
+            'keterangan' => 'BELAWAN',
+            'zona_id' => 1,
+            'statusaktif' => 1,
+            'modifiedby' => 'ADMIN',
+        ]);
+
+        Kota::create([
             'kodekota' => 'AMPLAS',
             'keterangan' => 'AMPLAS',
             'zona_id' => 1,

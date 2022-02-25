@@ -21,6 +21,8 @@ class CreateKotaTable extends Migration
             $table->integer('statusaktif')->length(11)->default('0');
             $table->string('modifiedby',50)->default('');
             $table->timestamps();
+
+            $table->foreign('zona_id')->references('id')->on('zona');
         });
     }
 

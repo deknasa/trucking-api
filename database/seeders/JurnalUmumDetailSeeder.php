@@ -1,6 +1,7 @@
 <?php
 
 namespace Database\Seeders;
+
 use App\Models\JurnalUmumDetail;
 
 use Illuminate\Database\Seeder;
@@ -33,6 +34,25 @@ class JurnalUmumDetailSeeder extends Seeder
                 'keterangan' => 'ABSENSI SUPIR', 
                 'modifiedby' => 'ADMIN',
                 ]);
-    
+
+        JurnalUmumDetail::create([
+            'jurnalumum_id' => 2,
+            'nobukti' => 'KBT 0001/II/2022',
+            'tgl' => '2022/2/24',
+            'coa' => '01.01.01.02',
+            'nominal' => 250000,
+            'keterangan' => 'PENGELUARAN',
+            'modifiedby' => 'ADMIN',
+        ]);
+
+        JurnalUmumDetail::create([
+            'jurnalumum_id' => 2,
+            'nobukti' => 'KBT 0001/II/2022',
+            'tgl' => '2022/2/24',
+            'coa' => '01.01.02.02',
+            'nominal' => -250000,
+            'keterangan' => 'PENGELUARAN',
+            'modifiedby' => 'ADMIN',
+        ]);
     }
 }
