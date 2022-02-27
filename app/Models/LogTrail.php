@@ -14,7 +14,9 @@ class LogTrail extends MyModel
 
     protected $casts = [
         'created_at' => 'date:d-m-Y H:i:s',
-        'updated_at' => 'date:d-m-Y H:i:s'
+        'updated_at' => 'date:d-m-Y H:i:s',
+        'datajson' => 'array'
+
     ];    
 
     protected $guarded = [

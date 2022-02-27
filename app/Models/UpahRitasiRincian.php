@@ -5,11 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class KotaRitasi extends MyModel
+class UpahRitasiRincian extends MyModel
 {
     use HasFactory;
 
-    protected $table = 'kotaritasi';
+    protected $table = 'upahritasirincian';
 
     protected $casts = [
         'created_at' => 'date:d-m-Y H:i:s',

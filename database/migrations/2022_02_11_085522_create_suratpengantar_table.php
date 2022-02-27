@@ -41,7 +41,6 @@ class CreateSuratpengantarTable extends Migration
             $table->unsignedBigInteger('jenisorder_id')->default('0');
             $table->integer('statusperalihan')->length(11)->default('0');
             $table->unsignedBigInteger('tarif_id')->default('0');
-            $table->unsignedBigInteger('tujuan_id')->default('0');
             $table->decimal('nominalperalihan',15,2)->default('0');
             $table->decimal('persentaseperalihan',15,2)->default('0');
             $table->unsignedBigInteger('biayatambahan_id')->default('0');
@@ -63,7 +62,6 @@ class CreateSuratpengantarTable extends Migration
             $table->decimal('upahbongkardepo',15,2)->default('0');
             $table->decimal('upahmuatdepo',15,2)->default('0');
             $table->decimal('hargatol',15,2)->default('0');
-            $table->unsignedBigInteger('lokasibongkarmuat_id')->default('0');
             $table->decimal('qtyton',15,2)->default('0');
             $table->decimal('totalton',15,2)->default('0');
             $table->unsignedBigInteger('mandorsupir_id')->default('0');
@@ -77,23 +75,20 @@ class CreateSuratpengantarTable extends Migration
             $table->timestamps();
 
             $table->foreign('pelanggan_id')->references('id')->on('pelanggan');
-            $table->foreign('upah_id')->references('id')->on('upah');
+            $table->foreign('upah_id')->references('id')->on('upahsupir');
             $table->foreign('dari_id')->references('id')->on('kota');
             $table->foreign('sampai_id')->references('id')->on('kota');
             $table->foreign('container_id')->references('id')->on('container');
             $table->foreign('statuscontainer_id')->references('id')->on('statuscontainer');
-            $table->foreign('container_id')->references('id')->on('container');
             $table->foreign('trado_id')->references('id')->on('trado');
-            $table->foreign('ritasidari_id')->references('id')->on('kotaritasi');
-            $table->foreign('ritasisampai_id')->references('id')->on('kotaritasi');
+            $table->foreign('ritasidari_id')->references('id')->on('kota');
+            $table->foreign('ritasisampai_id')->references('id')->on('kota');
             $table->foreign('agen_id')->references('id')->on('agen');
             $table->foreign('jenisorder_id')->references('id')->on('jenisorder');
             $table->foreign('tarif_id')->references('id')->on('tarif');
-            $table->foreign('tujuan_id')->references('id')->on('tujuan');
-            $table->foreign('biayatambahan_id')->references('id')->on('biayatambahan');
             $table->foreign('cabang_id')->references('id')->on('cabang');
-            $table->foreign('mandorsupir_id')->references('id')->on('mandorsupir');
-            $table->foreign('mandortrado_id')->references('id')->on('mandortrado');
+            $table->foreign('mandorsupir_id')->references('id')->on('mandor');
+            $table->foreign('mandortrado_id')->references('id')->on('mandor');
 
         });
     }

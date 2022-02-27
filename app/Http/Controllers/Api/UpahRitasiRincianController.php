@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\KotaRitasi;
-use App\Http\Requests\StoreKotaRitasiRequest;
-use App\Http\Requests\UpdateKotaRitasiRequest;
+use App\Models\UpahRitasiRincian;
+use App\Http\Requests\StoreUpahRitasiRincianRequest;
+use App\Http\Requests\UpdateUpahRitasiRincianRequest;
 
-class KotaRitasiController extends Controller
+class UpahRitasiRincianController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -31,10 +31,10 @@ class KotaRitasiController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \App\Http\Requests\StoreKotaRitasiRequest  $request
+     * @param  \App\Http\Requests\StoreUpahRitasiRincianRequest  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(StoreKotaRitasiRequest $request)
+    public function store(StoreUpahRitasiRincianRequest $request)
     {
         //
     }
@@ -42,10 +42,10 @@ class KotaRitasiController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\KotaRitasi  $kotaRitasi
+     * @param  \App\Models\UpahRitasiRincian  $upahRitasiRincian
      * @return \Illuminate\Http\Response
      */
-    public function show(KotaRitasi $kotaRitasi)
+    public function show(UpahRitasiRincian $upahRitasiRincian)
     {
         //
     }
@@ -53,10 +53,10 @@ class KotaRitasiController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Models\KotaRitasi  $kotaRitasi
+     * @param  \App\Models\UpahRitasiRincian  $upahRitasiRincian
      * @return \Illuminate\Http\Response
      */
-    public function edit(KotaRitasi $kotaRitasi)
+    public function edit(UpahRitasiRincian $upahRitasiRincian)
     {
         //
     }
@@ -64,11 +64,11 @@ class KotaRitasiController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \App\Http\Requests\UpdateKotaRitasiRequest  $request
-     * @param  \App\Models\KotaRitasi  $kotaRitasi
+     * @param  \App\Http\Requests\UpdateUpahRitasiRincianRequest  $request
+     * @param  \App\Models\UpahRitasiRincian  $upahRitasiRincian
      * @return \Illuminate\Http\Response
      */
-    public function update(UpdateKotaRitasiRequest $request, KotaRitasi $kotaRitasi)
+    public function update(UpdateUpahRitasiRincianRequest $request, UpahRitasiRincian $upahRitasiRincian)
     {
         //
     }
@@ -76,10 +76,10 @@ class KotaRitasiController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\KotaRitasi  $kotaRitasi
+     * @param  \App\Models\UpahRitasiRincian  $upahRitasiRincian
      * @return \Illuminate\Http\Response
      */
-    public function destroy(KotaRitasi $kotaRitasi)
+    public function destroy(UpahRitasiRincian $upahRitasiRincian)
     {
         //
     }
