@@ -168,7 +168,7 @@ class ErrorController extends Controller
                 'idtrans' => $error->id,
                 'nobuktitrans' => $error->id,
                 'aksi' => 'ENTRY',
-                'datajson' => json_encode($datajson),
+                'datajson' => $datajson,
                 'modifiedby' => $error->modifiedby,
             ];
 
@@ -232,8 +232,15 @@ class ErrorController extends Controller
     {
         DB::beginTransaction();
         try {
-            $error->update(array_map('strtoupper', $request->validated()));
+          
+        
 
+            $error = new Error();
+            $error = Error::find($request->id);
+            $error->kodeerror = strtoupper($request->kodeerror);
+            $error->keterangan = strtoupper($request->keterangan);
+            $error->modifiedby = strtoupper($request->modifiedby);         
+            $error->save();
             $datajson = [
                 'id' => $error->id,
                 'kodeerror' => strtoupper($request->kodeerror),
@@ -247,7 +254,7 @@ class ErrorController extends Controller
                 'idtrans' => $error->id,
                 'nobuktitrans' => $error->id,
                 'aksi' => 'EDIT',
-                'datajson' => json_encode($datajson),
+                'datajson' => $datajson,
                 'modifiedby' => $error->modifiedby,
             ];
 
@@ -300,7 +307,7 @@ class ErrorController extends Controller
                 'idtrans' => $error->id,
                 'nobuktitrans' => $error->id,
                 'aksi' => 'HAPUS',
-                'datajson' => json_encode($datajson),
+                'datajson' => $datajson,
                 'modifiedby' => $error->modifiedby,
             ];
 

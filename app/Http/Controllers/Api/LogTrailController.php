@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\DB;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Route;
+
 class LogTrailController extends Controller
 {
     /**
@@ -117,7 +118,7 @@ class LogTrailController extends Controller
         $query = $query->skip($params['offset'])
             ->take($params['limit']);
 
-        $roles = $query->get();
+        $logtrails = $query->get();
 
         /* Set attributes */
         $attributes = [
@@ -129,7 +130,7 @@ class LogTrailController extends Controller
         // echo '---';
         return response([
             'status' => true,
-            'data' => $roles,
+            'data' => $logtrails,
             'attributes' => $attributes,
             'params' => $params
         ]);
@@ -219,149 +220,143 @@ class LogTrailController extends Controller
     }
 
     public function detail(Request $request)
-    
+
     {
-
-            $query = LogTrail::select(
-                'datajson as data' ,
-            )
+        $params = [
+            'offset' => $request->offset ?? 0,
+            'limit' => $request->limit ?? 100,
+            'search' => $request->search ?? [],
+            'sortIndex' => $request->sortIndex ?? 'id',
+            'sortOrder' => $request->sortOrder ?? 'asc',
+        ];
+        $query = LogTrail::select(
+            'datajson',
+        )
             ->where('id', '=',  $request->id);
-    
-            $data = $query->get();
 
-            return response(
-                $data->toArray(),
-            );
-        // $params = [
-        //     'offset' => $request->offset ?? 0,
-        //     'limit' => $request->limit ?? 100,
-        //     'search' => $request->search ?? [],
-        //     'sortIndex' => $request->sortIndex ?? 'id',
-        //     'sortOrder' => $request->sortOrder ?? 'asc',
-        // ];
+        $data = $query->first();
 
-        // $temp = '##temp' . rand(1, 10000);
+        $datajson = $data->datajson;
+        // dd($totalRows);
+
+        // $data = $this->getTableColumns('error');
+        $columns = DB::connection()->getDoctrineColumn('error', 'keterangan')->getType()->getName();
+        dd($columns);
+        $data = [];
+        $columns = DB::connection()->getDoctrineSchemaManager()->listTableDetails('error')->getColumns();
+
+        foreach ($columns as $index => $column) {
+            // $data[$index] = $column->getName();
+            // $data[$index] = $column->getLength();
+            $data[$index] = $column->getType();
+            // $data[$index] = $column->getLength();
+        }
+
+        dd($data);
+        $temp = '##temp' . rand(1, 10000);
         // Schema::create($temp, function ($table) {
-        //     $table->id();
-        //     $table->bigInteger('user_id')->default('0');
-        //     $table->bigInteger('id_')->default('0');
-        //     $table->string('modifiedby', 30)->default('');
-        //     $table->dateTime('created_at')->default('1900/1/1');
-        //     $table->dateTime('updated_at')->default('1900/1/1');
-
-        //     $table->index('user_id');
+        //     $table->bigInteger('id')->default('0');
+        //     $table->string('kodeerror', 50)->default('');
+        //     $table->longText('keterangan')->default('');
+        //     $table->string('modifiedby', 250)->default('');
         // });
-        
-        // $totalRows = UserRole::count();
-        // $totalPages = ceil($totalRows / $params['limit']);
-
-        // /* Sorting */
-        // if ($params['sortIndex'] == 'id') {
-        //     $query = UserRole::select(
-        //         'userrole.id',
-        //         'user.user as user',
-        //         'role.rolename as rolename',
-        //         'userrole.modifiedby',
-        //         'userrole.created_at',
-        //         'userrole.updated_at'
-        //     )
-        //         ->Join('user', 'userrole.user_id', '=', 'user.id')
-        //         ->Join('role', 'userrole.role_id', '=', 'role.id')
-        //         ->where('userrole.user_id', '=', $request->user_id)
-        //         ->orderBy('userrole.id', $params['sortOrder']);
-        // } else {
-        //     if ($params['sortOrder'] == 'asc') {
-        //         $query = UserRole::select(
-        //             'userrole.id',
-        //             'user.user as user',
-        //             'role.rolename as rolename',
-        //             'userrole.modifiedby',
-        //             'userrole.created_at',
-        //             'userrole.updated_at'
-        //         )
-        //             ->Join('user', 'userrole.user_id', '=', 'user.id')
-        //             ->Join('role', 'userrole.role_id', '=', 'role.id')
-        //             ->orderBy($params['sortIndex'], $params['sortOrder'])
-        //             ->where('userrole.user_id', '=', $request->user_id)
-        //             ->orderBy('userrole.id', $params['sortOrder']);
-        //     } else {
-        //         $query = UserRole::select(
-        //             'userrole.id',
-        //             'user.user as user',
-        //             'role.rolename as rolename',
-        //             'userrole.modifiedby',
-        //             'userrole.created_at',
-        //             'userrole.updated_at'
-        //         )
-        //             ->Join('user', 'userrole.user_id', '=', 'user.id')
-        //             ->Join('role', 'userrole.role_id', '=', 'role.id')
-        //             ->where('userrole.user_id', '=', $request->user_id)
-        //             ->orderBy($params['sortIndex'], $params['sortOrder'])
-        //             ->orderBy('userrole.id', 'asc');
-        //     }
-        // }
 
 
-        // /* Searching */
-        // if (count($params['search']) > 0 && @$params['search']['rules'][0]['data'] != '') {
-        //     switch ($params['search']['groupOp']) {
-        //         case "AND":
-        //             foreach ($params['search']['rules'] as $index => $search) {
-        //                 if ($search['field'] == 'user') {
-        //                     $query = $query->where('user.user', 'LIKE', "%$search[data]%");
-        //                 } else if ($search['field'] == 'rolename') {
-        //                     $query = $query->where('role.rolename', 'LIKE', "%$search[data]%");
-        //                 } else {
-        //                     $query = $query->where($search['field'], 'LIKE', "%$search[data]%");
-        //                 }
-        //             }
-
-        //             break;
-        //         case "OR":
-        //             foreach ($params['search']['rules'] as $index => $search) {
-        //                 if ($search['field'] == 'user') {
-        //                     $query = $query->orWhere('user.user', 'LIKE', "%$search[data]%");
-        //                 } else if ($search['field'] == 'rolename') {
-        //                     $query = $query->orWhere('role.rolename', 'LIKE', "%$search[data]%");
-        //                 } else {
-        //                     $query = $query->orWhere($search['field'], 'LIKE', "%$search[data]%");
-        //                 }
-        //             }
-
-        //             break;
-        //         default:
-
-        //             break;
-        //     }
 
 
-        //     $totalRows = count($query->get());
+        // DB::table($temp)->insertUsing(['id', 'kodeerror', 'keterangan', 'modifiedby'], $query);
+        // DB::table($temp)->create($totalRows);
 
-        //     $totalPages = ceil($totalRows / $params['limit']);
-        // }
+        // dd($totalRows['kodeerror']);
+        // $temp1 =DB::table($temp);
+        //  $temp1->id = $totalRows['id'];
+        //  $temp1->kodeerror = $totalRows['kodeerror'];
+        //  $temp1->keterangan = $totalRows['keterangan'];
+        //  $temp1->modifiedby = $totalRows['modifiedby'];
 
-        // /* Paging */
-        // $query = $query->skip($params['offset'])
-        //     ->take($params['limit']);
+        DB::table($temp)->insert($datajson);
 
-        // $userroles = $query->get();
 
-        // /* Set attributes */
-        // $attributes = [
-        //     'totalRows' => $totalRows,
-        //     'totalPages' => $totalPages
-        // ];
+        // $querydata = DB::table($temp)
+        // ->orderBy('id');
 
-        // // echo $time2-$time1;
-        // // echo '---';
-        // return response([
-        //     'status' => true,
-        //     'data' => $userroles,
-        //     'attributes' => $attributes,
-        //     'params' => $params
-        // ]);
+        // $recorddata = $querydata->get();
 
-           
+        $totalRows = DB::table($temp)->count();
+        $totalPages = ceil($totalRows / $params['limit']);
+
+        /* Sorting */
+        if ($params['sortIndex'] == 'id') {
+            $query = DB::table($temp)
+                ->orderBy('id', $params['sortOrder']);
+        } else {
+            if ($params['sortOrder'] == 'asc') {
+                $query = DB::table($temp)
+                    ->orderBy($params['sortIndex'], $params['sortOrder'])
+                    ->orderBy('id', $params['sortOrder']);
+            } else {
+                $query = DB::table($temp)
+                    ->orderBy($params['sortIndex'], $params['sortOrder'])
+                    ->orderBy('logtrail.id', 'asc');
+            }
+        }
+
+
+        /* Searching */
+        if (count($params['search']) > 0 && @$params['search']['rules'][0]['data'] != '') {
+            switch ($params['search']['groupOp']) {
+                case "AND":
+                    foreach ($params['search']['rules'] as $index => $search) {
+
+                        $query = $query->where($search['field'], 'LIKE', "%$search[data]%");
+                    }
+
+                    break;
+                case "OR":
+                    foreach ($params['search']['rules'] as $index => $search) {
+                        $query = $query->orWhere($search['field'], 'LIKE', "%$search[data]%");
+                    }
+
+                    break;
+                default:
+
+                    break;
+            }
+
+
+            $totalRows = count($query->get());
+
+            $totalPages = ceil($totalRows / $params['limit']);
+        }
+
+        /* Paging */
+        $query = $query->skip($params['offset'])
+            ->take($params['limit']);
+
+        $logtrails = $query->get();
+
+        /* Set attributes */
+        $attributes = [
+            'totalRows' => $totalRows,
+            'totalPages' => $totalPages
+        ];
+
+        return response([
+            'status' => true,
+            'data' => $logtrails,
+            'attributes' => $attributes,
+            'params' => $params
+        ]);
     }
 
+    public function getTableColumns($table)
+    {
+        // return DB::getSchemaBuilder()->getColumnListing($table)
+        return DB::getSchemaBuilder()->getTableColumns($table);
+
+        // OR
+
+        // return Schema::getColumnListing($table);
+
+    }
 }

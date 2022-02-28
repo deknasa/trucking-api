@@ -45,9 +45,9 @@ class UpdateErrorRequest extends FormRequest
     {
         $controller = new ErrorController;
         return [
-            'kodeerror.required' => ':attribute'.' '. $controller->geterror(1)->keterangan,
-            'keterangan.required' => ':attribute'.' '. $controller->geterror(1)->keterangan,
-            'modifiedby.required' => ':attribute'.' '. $controller->geterror(1)->keterangan,
+            'kodeerror.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
+            'keterangan.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
+            'modifiedby.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
 
         ];
     }
