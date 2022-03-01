@@ -154,12 +154,13 @@ class ErrorController extends Controller
             $error->modifiedby = strtoupper($request->modifiedby);
 
             $error->save();
-
             $datajson = [
                 'id' => $error->id,
                 'kodeerror' => strtoupper($request->kodeerror),
                 'keterangan' => strtoupper($request->keterangan),
                 'modifiedby' => strtoupper($request->modifiedby),
+                'created_at' => date('d-m-Y H:i:s',strtotime($error->created_at)),
+                'updated_at' => date('d-m-Y H:i:s',strtotime($error->updated_at)),
             ];
 
             $datalogtrail = [
@@ -246,6 +247,8 @@ class ErrorController extends Controller
                 'kodeerror' => strtoupper($request->kodeerror),
                 'keterangan' => strtoupper($request->keterangan),
                 'modifiedby' => strtoupper($request->modifiedby),
+                'created_at' => date('d-m-Y H:i:s',strtotime($error->created_at)),
+                'updated_at' => date('d-m-Y H:i:s',strtotime($error->updated_at)),
             ];
 
             $datalogtrail = [
@@ -299,6 +302,8 @@ class ErrorController extends Controller
                 'kodeerror' => strtoupper($request->kodeerror),
                 'keterangan' => strtoupper($request->keterangan),
                 'modifiedby' => strtoupper($request->modifiedby),
+                'created_at' => date('d-m-Y H:i:s',strtotime($error->created_at)),
+                'updated_at' => date('d-m-Y H:i:s',strtotime($error->updated_at)),
             ];
 
             $datalogtrail = [

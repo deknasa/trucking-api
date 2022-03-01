@@ -317,10 +317,12 @@ class UserRoleController extends Controller
 
 
             $datajson = [
+                'id' => $userrole->id,
                 'user_id' => $request->user_id,
                 'role_id' => $request->role_id,
                 'modifiedby' => strtoupper($request->modifiedby),
-
+                'created_at' => date('d-m-Y H:i:s',strtotime($userrole->created_at)),
+                'updated_at' => date('d-m-Y H:i:s',strtotime($userrole->updated_at)),
             ];
 
             $datalogtrail = [
@@ -417,10 +419,12 @@ class UserRoleController extends Controller
 
 
             $datajson = [
+                'id' => $userrole->id,
                 'user_id' => $request->user_id,
                 'role_id' => $request->role_id,
                 'modifiedby' => strtoupper($request->modifiedby),
-
+                'created_at' => date('d-m-Y H:i:s',strtotime($userrole->created_at)),
+                'updated_at' => date('d-m-Y H:i:s',strtotime($userrole->updated_at)),
             ];
 
             $datalogtrail = [
@@ -473,10 +477,12 @@ class UserRoleController extends Controller
             Userrole::where('user_id', $request->user_id)->delete();
 
             $datajson = [
+                'id' => $userrole->id,
                 'user_id' => $request->user_id,
                 'role_id' => $request->role_id,
                 'modifiedby' => strtoupper($request->modifiedby),
-
+                'created_at' => date('d-m-Y H:i:s',strtotime($userrole->created_at)),
+                'updated_at' => date('d-m-Y H:i:s',strtotime($userrole->updated_at)),
             ];
 
             $datalogtrail = [

@@ -101,6 +101,7 @@ Route::get('useracl/combostatus', [UserAclController::class, 'combostatus']);
 Route::resource('useracl', UserAclController::class);
 
 Route::get('logtrail/detail', [LogTrailController::class, 'detail']);
+Route::get('logtrail/header', [LogTrailController::class, 'header']);
 Route::resource('logtrail', LogTrailController::class);
 
 Route::get('trado/combo', [TradoController::class, 'combo']);

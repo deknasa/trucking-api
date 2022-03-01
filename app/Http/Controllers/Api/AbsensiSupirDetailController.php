@@ -4,9 +4,12 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreAbsensiSupirDetailRequest;
+use App\Http\Requests\StoreLogTrailRequest;
 use App\Models\AbsensiSupirDetail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
+
 
 class AbsensiSupirDetailController extends Controller
 {
@@ -82,6 +85,71 @@ class AbsensiSupirDetailController extends Controller
     public function store(Request $request)
     {
         // AbsensiSupirDetail::insert($request->only('trado_id', 'supir_id', 'absen_id', 'uangjalan', 'jam', 'keterangan_detail'));
+
+        DB::beginTransaction();
+        $validator = Validator::make($request->all(), [
+            'trado_id' => 'required',
+        ], [
+            'trado_id.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
+        ], [
+            'trado_id' => 'Trado',
+        ]);
+        if (!$validator->passes()) {
+            return [
+                'error' => true,
+                'messages' => $validator->messages()
+            ];
+        }
+
+        try {
+            $AbsensiSupirDetail = new AbsensiSupirDetail();
+
+            $AbsensiSupirDetail->absensi_id = $request->absensi_id;
+            $AbsensiSupirDetail->trado_id = $request->trado_id;
+            $AbsensiSupirDetail->absen_id = $request->absen_id;
+            $AbsensiSupirDetail->supir_id = $request->supir_id;
+            $AbsensiSupirDetail->jam = $request->jam;
+            $AbsensiSupirDetail->uangjalan = $request->uangjalan;
+            $AbsensiSupirDetail->keterangan = $request->keterangan;
+            $AbsensiSupirDetail->modifiedby = $request->modifiedby;
+
+            $AbsensiSupirDetail->save();
+            $datajson = [
+                'id' => $AbsensiSupirDetail->id,
+                'absensi_id' => $request->absensi_id,
+                'trado_id' => $request->trado_id,
+                'absen_id' => $request->absen_id,
+                'supir_id' => $request->supir_id,
+                'jam' => $request->jam,
+                'uangjalan' => $request->uangjalan,
+                'keterangan' => $request->keterangan,
+                'modifiedby' => strtoupper($request->modifiedby),
+                'created_at' => date('d-m-Y H:i:s',strtotime($AbsensiSupirDetail->created_at)),
+                'updated_at' => date('d-m-Y H:i:s',strtotime($AbsensiSupirDetail->updated_at)),
+            ];
+
+            $datalogtrail = [
+                'namatabel' => 'ABSENSISUPIRDETAIL',
+                'postingdari' => 'ENTRY ABSENSI SUPIR DETAIL',
+                'idtrans' => $AbsensiSupirDetail->absensi_id,
+                'nobuktitrans' => $AbsensiSupirDetail->id,
+                'aksi' => 'ENTRY',
+                'datajson' => $datajson,
+                'modifiedby' => $AbsensiSupirDetail->modifiedby,
+            ];
+
+            $data = new StoreLogTrailRequest($datalogtrail);
+            app(LogTrailController::class)->store($data);            
+            DB::commit();
+            if ($validator->passes()) {
+                return [
+                    'error' => false,
+                ];
+            }
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return response($th->getMessage());
+        }        
     }
 
     public function update(Request $request, AbsensiSupirDetail $absensiSupirDetail)
