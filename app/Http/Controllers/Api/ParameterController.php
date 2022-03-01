@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Parameter;
 use App\Http\Requests\ParameterRequest;
+use App\Http\Requests\StoreLogTrailRequest;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -152,8 +153,23 @@ class ParameterController extends Controller
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
 
-            $parameter->save();
-            DB::commit();
+            if ($parameter->save()) {
+                $logTrail = [
+                    'namatabel' => strtoupper($parameter->getTable()),
+                    'postingdari' => 'ENTRY PARAMETER',
+                    'idtrans' => $parameter->id,
+                    'nobuktitrans' => $parameter->id,
+                    'aksi' => 'ENTRY',
+                    'datajson' => $parameter->toArray(),
+                    'modifiedby' => $parameter->modifiedby
+                ];
+
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                app(LogTrailController::class)->store($validatedLogTrail);
+
+                DB::commit();
+            }
+
             /* Set position and page */
             $del = 0;
             $data = $this->getid($parameter->id, $request, $del);
@@ -207,6 +223,19 @@ class ParameterController extends Controller
             $parameter->modifiedby = strtoupper($request->modifiedby);
 
             if ($parameter->save()) {
+                $logTrail = [
+                    'namatabel' => strtoupper($parameter->getTable()),
+                    'postingdari' => 'EDIT PARAMETER',
+                    'idtrans' => $parameter->id,
+                    'nobuktitrans' => $parameter->id,
+                    'aksi' => 'EDIT',
+                    'datajson' => $parameter->toArray(),
+                    'modifiedby' => $parameter->modifiedby
+                ];
+
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                app(LogTrailController::class)->store($validatedLogTrail);
+
                 /* Set position and page */
                 $parameter->position = $this->getid($parameter->id, $request, 0)->row;
 
@@ -318,7 +347,7 @@ class ParameterController extends Controller
                 'parameter.created_at',
                 'parameter.updated_at'
             )
-                ->orderBy('parameter.id',$params['sortorder']);
+                ->orderBy('parameter.id', $params['sortorder']);
         } else if ($params['sortname'] == 'grp' or $params['sortname'] == 'subgrp') {
             $query = Parameter::select(
                 'parameter.id as id_',
@@ -330,9 +359,9 @@ class ParameterController extends Controller
                 'parameter.created_at',
                 'parameter.updated_at'
             )
-                ->orderBy($params['sortname'],$params['sortorder'])
-                ->orderBy('parameter.text',$params['sortorder'])
-                ->orderBy('parameter.id',$params['sortorder']);
+                ->orderBy($params['sortname'], $params['sortorder'])
+                ->orderBy('parameter.text', $params['sortorder'])
+                ->orderBy('parameter.id', $params['sortorder']);
         } else {
             if ($params['sortorder'] == 'asc') {
                 $query = Parameter::select(
@@ -345,8 +374,8 @@ class ParameterController extends Controller
                     'parameter.created_at',
                     'parameter.updated_at'
                 )
-                    ->orderBy($params['sortname'],$params['sortorder'])
-                    ->orderBy('parameter.id',$params['sortorder']);
+                    ->orderBy($params['sortname'], $params['sortorder'])
+                    ->orderBy('parameter.id', $params['sortorder']);
             } else {
                 $query = Parameter::select(
                     'parameter.id as id_',
@@ -358,7 +387,7 @@ class ParameterController extends Controller
                     'parameter.created_at',
                     'parameter.updated_at'
                 )
-                    ->orderBy($params['sortname'],$params['sortorder'])
+                    ->orderBy($params['sortname'], $params['sortorder'])
                     ->orderBy('parameter.id', 'asc');
             }
         }
