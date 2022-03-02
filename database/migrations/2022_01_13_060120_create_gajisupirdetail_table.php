@@ -28,6 +28,8 @@ class CreateGajisupirdetailTable extends Migration
             $table->timestamps();
 
             $table->foreign('gajisupir_id')->references('id')->on('gajisupirheader')->onDelete('cascade');            
+            $table->foreign('trip_nobukti')->references('nobukti')->on('suratpengantar');
+
 
         });
     }

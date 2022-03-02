@@ -26,6 +26,8 @@ class CreateGajisupirpelunasanpinjamanTable extends Migration
             $table->timestamps();
 
             $table->foreign('gajisupir_id')->references('id')->on('gajisupirheader')->onDelete('cascade');            
+            $table->foreign('pinjaman_nobukti')->references('nobukti')->on('pinjaman');
+
 
         });
     }

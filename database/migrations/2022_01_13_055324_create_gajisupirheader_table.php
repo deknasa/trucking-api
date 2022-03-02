@@ -37,6 +37,9 @@ class CreateGajisupirheaderTable extends Migration
             $table->double('uangJalantidakterhitung',15,2)->default(0);            
             $table->string('modifiedby', 50)->default('');            
             $table->timestamps();
+
+            $table->foreign('supir_id')->references('id')->on('supir');
+
         });
     }
 
