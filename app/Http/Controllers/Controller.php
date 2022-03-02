@@ -47,9 +47,14 @@ class Controller extends BaseController
                 'message' => 'Parameter tidak ditemukan'
             ]);
         }
-            
+        $bulan= date('n',strtotime($request->tgl));
+        $tahun=date('Y',strtotime($request->tgl));
+        
         $text = $parameter->text;
-        $lastRow = DB::table($request->table)->count();
+        $lastRow = DB::table($request->table)
+        // ->where('month(tgl)','=',$bulan)
+        // ->where('year(tgl)','=',$tahun)
+        ->count();
         $runningNumber = $this->appHelper->runningNumber($text, $lastRow);
 
         return response([

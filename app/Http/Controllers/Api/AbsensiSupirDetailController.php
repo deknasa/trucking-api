@@ -103,6 +103,7 @@ class AbsensiSupirDetailController extends Controller
             $AbsensiSupirDetail = new AbsensiSupirDetail();
 
             $AbsensiSupirDetail->absensi_id = $request->absensi_id;
+            $AbsensiSupirDetail->nobukti = $request->nobukti;
             $AbsensiSupirDetail->trado_id = $request->trado_id;
             $AbsensiSupirDetail->absen_id = $request->absen_id;
             $AbsensiSupirDetail->supir_id = $request->supir_id;
@@ -113,21 +114,13 @@ class AbsensiSupirDetailController extends Controller
             
             $AbsensiSupirDetail->save();
             
-            $datalogtrail = [
-                'namatabel' => $AbsensiSupirDetail->getTable(),
-                'postingdari' => 'ENTRY ABSENSI SUPIR DETAIL',
-                'idtrans' => $AbsensiSupirDetail->absensi_id,
-                'nobuktitrans' => $AbsensiSupirDetail->id,
-                'aksi' => 'ENTRY',
-                'datajson' => $AbsensiSupirDetail->toArray(),
-                'modifiedby' => $AbsensiSupirDetail->modifiedby,
-            ];
-            $data = new StoreLogTrailRequest($datalogtrail);
-            app(LogTrailController::class)->store($data);
+           
             DB::commit();
             if ($validator->passes()) {
                 return [
                     'error' => false,
+                    'id' => $AbsensiSupirDetail->id,
+                    'tabel' => $AbsensiSupirDetail->getTable(),
                 ];
             }
         } catch (\Throwable $th) {

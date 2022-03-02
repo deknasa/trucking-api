@@ -236,6 +236,9 @@ class LogTrailController extends Controller
             ->where('id', '=',  $request->id);
 
         $data = $query->first();
+        if (isset($data)) {
+
+        
 
         $datajson = $data->datajson;
         $table_name = strtolower($data->namatabel);
@@ -260,7 +263,8 @@ class LogTrailController extends Controller
             ];
         };
 
-
+//  dump($fields);
+//         dd($datajson);
         Schema::create($temp, function ($table)  use ($fields, $table_name) {
             if (count($fields) > 0) {
                 foreach ($fields as $field) {
@@ -331,11 +335,12 @@ class LogTrailController extends Controller
             'totalRows' => $totalRows,
             'totalPages' => $totalPages
         ];
+    }
 
         return response([
             'status' => true,
-            'data' => $logtrails,
-            'attributes' => $attributes,
+            'data' => $logtrails ?? [],
+            'attributes' => $attributes ?? [],
             'params' => $params
         ]);
     }
@@ -351,26 +356,20 @@ class LogTrailController extends Controller
             'sortOrder' => $request->sortOrder ?? 'asc',
         ];
 
-        $queryidtrans = LogTrail::select(
-            'idtrans',
-        )
-            ->where('id', '=',  $request->id);
-
-        $dataidtrans = $queryidtrans->first();
-
+        
         $query = LogTrail::select(
             'datajson',
             'namatabel',
         )
-            ->where('id', '=',  $dataidtrans->idtrans);
+            ->where('idtrans', '=',  $request->id);
 
         $data = $query->first();
-
+        if (isset($data)) {
         $datajson = $data->datajson;
         $table_name = strtolower($data->namatabel);
 
         $temp = '##temp' . rand(1, 10000);
-
+        
         $fields = [];
         $columns = DB::connection()->getDoctrineSchemaManager()->listTableDetails($table_name)->getColumns();
 
@@ -389,7 +388,7 @@ class LogTrailController extends Controller
             ];
         };
 
-
+        // dd('test');
         Schema::create($temp, function ($table)  use ($fields, $table_name) {
             if (count($fields) > 0) {
                 foreach ($fields as $field) {
@@ -398,8 +397,9 @@ class LogTrailController extends Controller
             }
         });
 
-
-
+        // dump($fields);
+        // dd($datajson);
+ 
         DB::table($temp)->insert($datajson);
 
         $totalRows = DB::table($temp)->count();
@@ -460,11 +460,11 @@ class LogTrailController extends Controller
             'totalRows' => $totalRows,
             'totalPages' => $totalPages
         ];
-
+    }
         return response([
             'status' => true,
-            'data' => $logtrails,
-            'attributes' => $attributes,
+            'data' => $logtrails ?? [],
+            'attributes' => $attributes ?? [],
             'params' => $params
         ]);
     }
