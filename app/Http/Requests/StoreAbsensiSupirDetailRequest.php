@@ -13,7 +13,7 @@ class StoreAbsensiSupirDetailRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,12 +24,12 @@ class StoreAbsensiSupirDetailRequest extends FormRequest
     public function rules()
     {
         return [
-            'trado_id' => 'array',
-            'supir_id' => 'array',
-            'absen_id' => 'array',
-            'uangjalan' => 'array',
+            'trado_id' => 'required|array',
+            'supir_id' => 'required|array',
+            'absen_id' => 'required|array',
+            'uangjalan' => 'required|array',
             'jam' => 'array',
-            'keterangan_detail' => 'array',
+            'keterangan_detail' => 'required|array',
         ];
     }
 }
