@@ -105,7 +105,7 @@ class AbsensiSupirHeaderController extends Controller
             $absensiSupirHeader->nominal = array_sum($request->uangjalan);
             $absensiSupirHeader->modifiedby = $request->modifiedby ?? '1';
             $absensiSupirHeader->save();
-
+            
             $datajson = [
                 'id' => $absensiSupirHeader->id,
                 'nobukti' => $request->nobukti,
@@ -132,33 +132,23 @@ class AbsensiSupirHeaderController extends Controller
 
             /* Store detail */
             for ($i = 0; $i < count($request->trado_id); $i++) {
-                // $absensiSupirHeader->absensiSupirDetail()->create([
-                //     "absensi_id" => $absensiSupirHeader->id,
-                //     "trado_id" => $request->trado_id[$i] ?? '',
-                //     "absen_id" => $request->absen_id[$i] ?? '',
-                //     "supir_id" => $request->supir_id[$i] ?? '',
-                //     "jam" => $request->jam[$i] ?? '00:00',
-                //     "uangjalan" => (float) $request->uangjalan[$i] ?? 0,
-                //     "keterangan" => $request->keterangan_detail[$i] ?? ''
-                // ]);
                 $datadetail = [
                     'absensi_id' => $absensiSupirHeader->id,
-                    'trado_id' => $request->trado_id[$i] ?? '',
-                    'absen_id' => $request->absen_id,
-                    'supir_id' => $request->supir_id,
-                    'jam' => $request->jam,
-                    'uangjalan' => $request->uangjalan,
-                    'keterangan' => $request->keterangan,
+                    'trado_id' => $request->trado_id[$i],
+                    'absen_id' => $request->absen_id[$i],
+                    'supir_id' => $request->supir_id[$i],
+                    'jam' => $request->jam[$i],
+                    'uangjalan' => $request->uangjalan[$i],
+                    'keterangan' => $request->keterangan_detail[$i],
                     'modifiedby' => $request->modifiedby,
                 ];
 
                 $data = new StoreAbsensiSupirDetailRequest($datadetail);
                 $datadetails = app(AbsensiSupirDetailController::class)->store($data);
 
-
-                if ($datadetails['error']) {
-                    return response($datadetails, 422);
-                }
+                // if ($datadetails['error']) {
+                //     return response($datadetails, 422);
+                // }
             }
 
             $request->sortname = $request->sortname ?? 'id';
