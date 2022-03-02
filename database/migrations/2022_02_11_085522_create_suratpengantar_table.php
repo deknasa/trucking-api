@@ -28,6 +28,7 @@ class CreateSuratpengantarTable extends Migration
             $table->string('nocont2',50)->default('');
             $table->unsignedBigInteger('statuscontainer_id')->default('0');
             $table->unsignedBigInteger('trado_id')->default('0');
+            $table->unsignedBigInteger('supir_id')->default('0');
             $table->string('nojob',50)->default('');
             $table->string('nojob2',50)->default('');
             $table->longText('keteranganritasi')->default('');
@@ -81,6 +82,7 @@ class CreateSuratpengantarTable extends Migration
             $table->foreign('container_id')->references('id')->on('container');
             $table->foreign('statuscontainer_id')->references('id')->on('statuscontainer');
             $table->foreign('trado_id')->references('id')->on('trado');
+            $table->foreign('supir_id')->references('id')->on('supir');
             $table->foreign('ritasidari_id')->references('id')->on('kota');
             $table->foreign('ritasisampai_id')->references('id')->on('kota');
             $table->foreign('agen_id')->references('id')->on('agen');
