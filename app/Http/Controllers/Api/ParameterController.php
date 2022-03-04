@@ -270,6 +270,21 @@ class ParameterController extends Controller
         $delete = Parameter::destroy($parameter->id);
         $del = 1;
         if ($delete) {
+            $logTrail = [
+                'namatabel' => strtoupper($parameter->getTable()),
+                'postingdari' => 'DELETE PARAMETER',
+                'idtrans' => $parameter->id,
+                'nobuktitrans' => $parameter->id,
+                'aksi' => 'DELETE',
+                'datajson' => $parameter->toArray(),
+                'modifiedby' => $parameter->modifiedby
+            ];
+
+            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+            app(LogTrailController::class)->store($validatedLogTrail);
+
+            DB::commit();
+
             $data = $this->getid($parameter->id, $request, $del);
             $parameter->position = $data->row;
             $parameter->id = $data->id;
