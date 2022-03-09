@@ -171,8 +171,6 @@ class CabangController extends Controller
      */
     public function store(StoreCabangRequest $request)
     {
-
-
         DB::beginTransaction();
         try {
             $cabang = new Cabang();
