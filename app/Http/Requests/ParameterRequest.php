@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Controllers\Api\ErrorController;
 use Illuminate\Foundation\Http\FormRequest;
 
 class ParameterRequest extends FormRequest
@@ -39,6 +40,18 @@ class ParameterRequest extends FormRequest
             'subgrp' => 'subgroup',
             'text' => 'name',
             'modifiedby' => 'modifiedby'
+        ];
+    }
+
+    public function messages()
+    {
+        $controller = new ErrorController;
+        return [
+            'grp.required' => ':attribute '. $controller->geterror('WI')->keterangan,
+            'subgrp.required' => ':attribute '. $controller->geterror('WI')->keterangan,
+            'text.required' => ':attribute '. $controller->geterror('WI')->keterangan,
+            'memo.required' => ':attribute '. $controller->geterror('WI')->keterangan,
+            'modifiedby.required' => ':attribute '. $controller->geterror('WI')->keterangan,
         ];
     }
 }

@@ -36,7 +36,7 @@ class AbsensiSupirHeaderController extends Controller
         $query = AbsensiSupirHeader::orderBy($params['sortIndex'], $params['sortOrder']);
 
         /* Searching */
-        if (count($params['search']) > 0) {
+        if (count($params['search']) > 0 && @$params['search']['rules'][0]['data'] != '') {
             switch ($params['search']['groupOp']) {
                 case "AND":
                     foreach ($params['search']['rules'] as $index => $search) {
@@ -148,6 +148,7 @@ class AbsensiSupirHeaderController extends Controller
                     ];
                 $data = new StoreAbsensiSupirDetailRequest($datadetail);
                 $datadetails = app(AbsensiSupirDetailController::class)->store($data);
+                
                 if ($datadetails['error']) {
                     return response($datadetails, 422);
                 } else {

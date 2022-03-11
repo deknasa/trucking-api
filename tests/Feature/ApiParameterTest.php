@@ -33,7 +33,7 @@ class ApiParameterTest extends TestCase
     public function test_validated_store() {
         $user = User::first();
 
-        $response = $this->withHeaders($this->httpHeaders)->actingAs($user, 'api')->post('api/parameter');
+        $response = $this->withHeaders($this->httpHeaders)->actingAs($user, 'api')->postJson('api/parameter');
 
         $response->assertStatus(422);
     }
@@ -47,6 +47,17 @@ class ApiParameterTest extends TestCase
         $response = $this->withHeaders($this->httpHeaders)->actingAs($user, 'api')->postJson('api/parameter', $parameter->toArray());
 
         $response->assertStatus(200);
+        $this->assertDatabaseHas('parameter', collect($parameter)->except(['created_at', 'updated_at', 'modifiedby'])->toArray());
+    }
+
+    public function test_validated_update() {
+        $user = User::first();
+
+        $parameter = Parameter::first();
+
+        $response = $this->withHeaders($this->httpHeaders)->actingAs($user, 'api')->putJson("api/parameter/{$parameter->id}");
+
+        $response->assertStatus(422);
     }
 
     public function test_update()
@@ -58,7 +69,7 @@ class ApiParameterTest extends TestCase
         $response = $this->withHeaders($this->httpHeaders)->actingAs($user, 'api')->putJson("api/parameter/{$parameter->id}", $parameter->toArray());
 
         $response->assertStatus(200);
-
+        $this->assertDatabaseHas('parameter', collect($parameter)->except(['created_at', 'updated_at', 'modifiedby'])->toArray());
     }
 
     public function test_delete()

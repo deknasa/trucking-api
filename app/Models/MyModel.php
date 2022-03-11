@@ -13,8 +13,10 @@ class MyModel extends Model
         return $date->format('d-m-Y H:i:s');
     }
 
-    // public function setAttribute($key, $value)
-    // {
-    //     return strtoupper($value);
-    // }
+    public function setAttribute($key, $value)
+    {
+        parent::setAttribute($key, $value);
+        
+        return $this->attributes[$key] = strtoupper($value);
+    }
 }
