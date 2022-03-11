@@ -32,5 +32,24 @@ class AgenSeeder extends Seeder
             'jenisemkl' => '2',
             'modifiedby' => 'ADMIN',
         ]);
+
+        Agen::create([
+            'kodeagen' => 'TAS',
+            'namaagen' => 'TRANSPORINDO',
+            'keterangan' => '',
+            'statusaktif' => 1,
+            'fnamaperusahaan' => 'PT. TRANSPORINDO AGUNG SEJAHTERA',
+            'alamat' => 'JL. PULAU MENJANGAN NO 2',
+            'notelp' => '061-6618850',
+            'nohp' => '0',
+            'contactperson' => 'ASAN',
+            'top' => '30.00',
+            'statusapproval' => '3',
+            'userapproval' => 'DHENI',
+            'tglapproval' => '2017-10-23 15:53:18.000',
+            'jenisemkl' => 1,
+            'modifiedby' => 'ADMIN',
+        ]);
+
     }
 }

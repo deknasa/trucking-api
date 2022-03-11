@@ -21,6 +21,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CustomValidationController;
+use App\Http\Controllers\Api\ContainerController;
 
 /*
 |--------------------------------------------------------------------------
@@ -117,3 +118,7 @@ Route::resource('absentrado', AbsenTradoController::class);
 
 Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
 
+Route::get('container/field_length', [ContainerController::class, 'fieldLength']);
+Route::get('container/combostatus', [ContainerController::class, 'combostatus']);
+Route::get('container/getPosition2', [ContainerController::class, 'getPosition2']);
+Route::resource('container', ContainerController::class);

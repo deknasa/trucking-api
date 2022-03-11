@@ -243,6 +243,7 @@ class LogTrailController extends Controller
         $datajson = $data->datajson;
         $table_name = strtolower($data->namatabel);
 
+        // dd($datajson);
         $temp = '##temp' . rand(1, 10000);
 
         $fields = [];

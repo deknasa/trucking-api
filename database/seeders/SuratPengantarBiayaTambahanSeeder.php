@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
+use App\Models\SuratPengantarBiayaTambahan;
 
 class SuratPengantarBiayaTambahanSeeder extends Seeder
 {
@@ -13,6 +14,13 @@ class SuratPengantarBiayaTambahanSeeder extends Seeder
      */
     public function run()
     {
-        //
+
+        SuratPengantarBiayaTambahan::create([
+            'suratpengantar_id' =>1,
+            'keteranganbiaya' => 'TAMBAHAN SOLAR',
+            'nominal' => 100000,
+            'modifiedby' => 'ADMIN' ,
+    
+        ]);
     }
 }
