@@ -13,6 +13,11 @@ class AbsenTradoFactory extends Factory
      */
     public function definition()
     {
- 
+        return [
+            'kodeabsen' => '111',
+            'keterangan' => $this->faker->words(5, true),
+            'statusaktif' => 1,
+            'modifiedby' => 'admin',
+        ];
     }
 }

@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class MyModel extends Model
 {
-    public function serializeDate(DateTimeInterface $date)
+    protected function serializeDate(DateTimeInterface $date)
     {
         return $date->format('d-m-Y H:i:s');
     }
@@ -17,6 +17,8 @@ class MyModel extends Model
     {
         parent::setAttribute($key, $value);
         
-        return $this->attributes[$key] = strtoupper($value);
+        if (is_string($value)) {
+            return $this->attributes[$key] = strtoupper($value);
+        }
     }
 }

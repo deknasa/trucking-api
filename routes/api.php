@@ -43,11 +43,14 @@ Route::post('token', [AuthController::class, 'token']);
 route::middleware('auth:api')->group(function() {
     Route::get('parameter/field_length', [ParameterController::class, 'fieldLength']);
     Route::resource('parameter', ParameterController::class);
-
+    
     Route::get('absensi/no_bukti', [AbsensiSupirHeaderController::class, 'getNoBukti']);
     Route::get('absensi/running_number', [AbsensiSupirHeaderController::class, 'getRunningNumber']);
     Route::get('absensi/grid', [AbsensiSupirHeaderController::class, 'grid']);
     Route::resource('absensi', AbsensiSupirHeaderController::class);
+    
+    Route::get('absen_trado/field_length', [AbsenTradoController::class, 'fieldLength']);
+    Route::resource('absen_trado', AbsenTradoController::class);
 });
 
 Route::get('error/field_length', [ErrorController::class, 'fieldLength']);
@@ -114,7 +117,6 @@ Route::resource('absensi', AbsensiSupirHeaderController::class);
 Route::resource('absensi_detail', AbsensiSupirDetailController::class);
 
 Route::resource('supir', SupirController::class);
-Route::resource('absentrado', AbsenTradoController::class);
 
 Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
 

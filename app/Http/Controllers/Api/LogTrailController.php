@@ -155,6 +155,7 @@ class LogTrailController extends Controller
     public function store(StoreLogTrailRequest $request)
     {
         DB::beginTransaction();
+
         try {
             $LogTrail = new LogTrail();
 
@@ -166,11 +167,12 @@ class LogTrailController extends Controller
             $LogTrail->datajson = $request->datajson;
             $LogTrail->modifiedby = $request->modifiedby;
 
-            $LogTrail->save();
-            DB::commit();
+            if ($LogTrail->save()) {
+                DB::commit();
+            }
         } catch (\Throwable $th) {
             DB::rollBack();
-            return response($th->getMessage());
+            throw $th;
         }
     }
 
@@ -220,7 +222,6 @@ class LogTrailController extends Controller
     }
 
     public function header(Request $request)
-
     {
         $params = [
             'offset' => $request->offset ?? 0,
@@ -229,114 +230,117 @@ class LogTrailController extends Controller
             'sortIndex' => $request->sortIndex ?? 'id',
             'sortOrder' => $request->sortOrder ?? 'asc',
         ];
+
         $query = LogTrail::select(
             'datajson',
             'namatabel',
-        )
-            ->where('id', '=',  $request->id);
+        )->where('id', '=',  $request->id);
 
         $data = $query->first();
+
         if (isset($data)) {
+            $datajson = $data->datajson ?? [];
+            $table_name = strtolower($data->namatabel);
 
-        
+            $temp = '##temp' . rand(1, 10000);
 
-        $datajson = $data->datajson;
-        $table_name = strtolower($data->namatabel);
+            $fields = [];
+            $columns = DB::connection()->getDoctrineSchemaManager()->listTableDetails($table_name)->getColumns();
 
-        // dd($datajson);
-        $temp = '##temp' . rand(1, 10000);
+            foreach ($columns as $index => $column) {
+                $type = DB::connection()->getDoctrineColumn($table_name, $column->getName())->getType()->getName();
 
-        $fields = [];
-        $columns = DB::connection()->getDoctrineSchemaManager()->listTableDetails($table_name)->getColumns();
-
-        foreach ($columns as $index => $column) {
-            $type = DB::connection()->getDoctrineColumn($table_name, $column->getName())->getType()->getName();
-            if ($type == 'bigint') {
-                $type = 'biginteger';
-            } elseif ($type == 'string') {
-                $type = 'longText';
-            }
-
-
-            $fields[] = [
-                'name' => $column->getName(),
-                'type' => $type,
-            ];
-        };
-
-//  dump($fields);
-//         dd($datajson);
-        Schema::create($temp, function ($table)  use ($fields, $table_name) {
-            if (count($fields) > 0) {
-                foreach ($fields as $field) {
-                    $table->{$field['type']}($field['name']);
+                if ($type == 'bigint') {
+                    $type = 'biginteger';
+                } elseif ($type == 'string') {
+                    $type = 'longText';
                 }
+
+                $fields[] = [
+                    'name' => $column->getName(),
+                    'type' => $type,
+                ];
+            };
+
+            Schema::create($temp, function ($table)  use ($fields, $table_name) {
+                if (count($fields) > 0) {
+                    foreach ($fields as $field) {
+                        $table->{$field['type']}($field['name']);
+                    }
+                }
+            });
+
+            if (isset($datajson[0]) && is_array($datajson[0])) {
+                foreach ($datajson as $index => &$json) {
+                    $datajson[$index]['created_at'] = date('m/d/Y H:i:s', strtotime($datajson[$index]['created_at']));
+                    $datajson[$index]['updated_at'] = date('m/d/Y H:i:s', strtotime($datajson[$index]['updated_at']));
+                }
+            } else {
+                $datajson['created_at'] = date('m/d/Y H:i:s', strtotime($datajson['created_at']));
+                $datajson['updated_at'] = date('m/d/Y H:i:s', strtotime($datajson['updated_at']));
             }
-        });
 
+            DB::table($temp)->insert($datajson);
 
+            $totalRows = DB::table($temp)->count();
+            $totalPages = ceil($totalRows / $params['limit']);
 
-        DB::table($temp)->insert($datajson);
-
-        $totalRows = DB::table($temp)->count();
-        $totalPages = ceil($totalRows / $params['limit']);
-
-        /* Sorting */
-        if ($params['sortIndex'] == 'id') {
-            $query = DB::table($temp)
-                ->orderBy('id', $params['sortOrder']);
-        } else {
-            if ($params['sortOrder'] == 'asc') {
+            /* Sorting */
+            if ($params['sortIndex'] == 'id') {
                 $query = DB::table($temp)
-                    ->orderBy($params['sortIndex'], $params['sortOrder'])
                     ->orderBy('id', $params['sortOrder']);
             } else {
-                $query = DB::table($temp)
-                    ->orderBy($params['sortIndex'], $params['sortOrder'])
-                    ->orderBy('logtrail.id', 'asc');
-            }
-        }
-
-
-        /* Searching */
-        if (count($params['search']) > 0 && @$params['search']['rules'][0]['data'] != '') {
-            switch ($params['search']['groupOp']) {
-                case "AND":
-                    foreach ($params['search']['rules'] as $index => $search) {
-
-                        $query = $query->where($search['field'], 'LIKE', "%$search[data]%");
-                    }
-
-                    break;
-                case "OR":
-                    foreach ($params['search']['rules'] as $index => $search) {
-                        $query = $query->orWhere($search['field'], 'LIKE', "%$search[data]%");
-                    }
-
-                    break;
-                default:
-
-                    break;
+                if ($params['sortOrder'] == 'asc') {
+                    $query = DB::table($temp)
+                        ->orderBy($params['sortIndex'], $params['sortOrder'])
+                        ->orderBy('id', $params['sortOrder']);
+                } else {
+                    $query = DB::table($temp)
+                        ->orderBy($params['sortIndex'], $params['sortOrder'])
+                        ->orderBy('logtrail.id', 'asc');
+                }
             }
 
 
-            $totalRows = count($query->get());
+            /* Searching */
+            if (count($params['search']) > 0 && @$params['search']['rules'][0]['data'] != '') {
+                switch ($params['search']['groupOp']) {
+                    case "AND":
+                        foreach ($params['search']['rules'] as $index => $search) {
 
-            $totalPages = ceil($totalRows / $params['limit']);
+                            $query = $query->where($search['field'], 'LIKE', "%$search[data]%");
+                        }
+
+                        break;
+                    case "OR":
+                        foreach ($params['search']['rules'] as $index => $search) {
+                            $query = $query->orWhere($search['field'], 'LIKE', "%$search[data]%");
+                        }
+
+                        break;
+                    default:
+
+                        break;
+                }
+
+
+                $totalRows = count($query->get());
+
+                $totalPages = ceil($totalRows / $params['limit']);
+            }
+
+            /* Paging */
+            $query = $query->skip($params['offset'])
+                ->take($params['limit']);
+
+            $logtrails = $query->get();
+
+            /* Set attributes */
+            $attributes = [
+                'totalRows' => $totalRows,
+                'totalPages' => $totalPages
+            ];
         }
-
-        /* Paging */
-        $query = $query->skip($params['offset'])
-            ->take($params['limit']);
-
-        $logtrails = $query->get();
-
-        /* Set attributes */
-        $attributes = [
-            'totalRows' => $totalRows,
-            'totalPages' => $totalPages
-        ];
-    }
 
         return response([
             'status' => true,
@@ -357,7 +361,7 @@ class LogTrailController extends Controller
             'sortOrder' => $request->sortOrder ?? 'asc',
         ];
 
-        
+
         $query = LogTrail::select(
             'datajson',
             'namatabel',
@@ -366,102 +370,109 @@ class LogTrailController extends Controller
 
         $data = $query->first();
         if (isset($data)) {
-        $datajson = $data->datajson;
-        $table_name = strtolower($data->namatabel);
+            $datajson = $data->datajson;
+            $table_name = strtolower($data->namatabel);
 
-        $temp = '##temp' . rand(1, 10000);
-        
-        $fields = [];
-        $columns = DB::connection()->getDoctrineSchemaManager()->listTableDetails($table_name)->getColumns();
+            $temp = '##temp' . rand(1, 10000);
 
-        foreach ($columns as $index => $column) {
-            $type = DB::connection()->getDoctrineColumn($table_name, $column->getName())->getType()->getName();
-            if ($type == 'bigint') {
-                $type = 'biginteger';
-            } elseif ($type == 'string') {
-                $type = 'longText';
-            }
+            $fields = [];
+            $columns = DB::connection()->getDoctrineSchemaManager()->listTableDetails($table_name)->getColumns();
 
-
-            $fields[] = [
-                'name' => $column->getName(),
-                'type' => $type,
-            ];
-        };
-
-        // dd('test');
-        Schema::create($temp, function ($table)  use ($fields, $table_name) {
-            if (count($fields) > 0) {
-                foreach ($fields as $field) {
-                    $table->{$field['type']}($field['name']);
+            foreach ($columns as $index => $column) {
+                $type = DB::connection()->getDoctrineColumn($table_name, $column->getName())->getType()->getName();
+                if ($type == 'bigint') {
+                    $type = 'biginteger';
+                } elseif ($type == 'string') {
+                    $type = 'longText';
                 }
+
+
+                $fields[] = [
+                    'name' => $column->getName(),
+                    'type' => $type,
+                ];
+            };
+
+            // dd('test');
+            Schema::create($temp, function ($table)  use ($fields, $table_name) {
+                if (count($fields) > 0) {
+                    foreach ($fields as $field) {
+                        $table->{$field['type']}($field['name']);
+                    }
+                }
+            });
+
+            if (isset($datajson[0]) && is_array($datajson[0])) {
+                foreach ($datajson as $index => &$json) {
+                    $datajson[$index]['created_at'] = date('m/d/Y H:i:s', strtotime($datajson[$index]['created_at']));
+                    $datajson[$index]['updated_at'] = date('m/d/Y H:i:s', strtotime($datajson[$index]['updated_at']));
+                }
+            } else {
+                $datajson['created_at'] = date('m/d/Y H:i:s', strtotime($datajson['created_at']));
+                $datajson['updated_at'] = date('m/d/Y H:i:s', strtotime($datajson['updated_at']));
             }
-        });
 
-        // dump($fields);
-        // dd($datajson);
- 
-        DB::table($temp)->insert($datajson);
+            DB::table($temp)->insert($datajson);
 
-        $totalRows = DB::table($temp)->count();
-        $totalPages = ceil($totalRows / $params['limit']);
+            $totalRows = DB::table($temp)->count();
+            $totalPages = ceil($totalRows / $params['limit']);
 
-        /* Sorting */
-        if ($params['sortIndex'] == 'id') {
-            $query = DB::table($temp)
-                ->orderBy('id', $params['sortOrder']);
-        } else {
-            if ($params['sortOrder'] == 'asc') {
+            /* Sorting */
+            if ($params['sortIndex'] == 'id') {
                 $query = DB::table($temp)
-                    ->orderBy($params['sortIndex'], $params['sortOrder'])
                     ->orderBy('id', $params['sortOrder']);
             } else {
-                $query = DB::table($temp)
-                    ->orderBy($params['sortIndex'], $params['sortOrder'])
-                    ->orderBy('logtrail.id', 'asc');
-            }
-        }
-
-
-        /* Searching */
-        if (count($params['search']) > 0 && @$params['search']['rules'][0]['data'] != '') {
-            switch ($params['search']['groupOp']) {
-                case "AND":
-                    foreach ($params['search']['rules'] as $index => $search) {
-
-                        $query = $query->where($search['field'], 'LIKE', "%$search[data]%");
-                    }
-
-                    break;
-                case "OR":
-                    foreach ($params['search']['rules'] as $index => $search) {
-                        $query = $query->orWhere($search['field'], 'LIKE', "%$search[data]%");
-                    }
-
-                    break;
-                default:
-
-                    break;
+                if ($params['sortOrder'] == 'asc') {
+                    $query = DB::table($temp)
+                        ->orderBy($params['sortIndex'], $params['sortOrder'])
+                        ->orderBy('id', $params['sortOrder']);
+                } else {
+                    $query = DB::table($temp)
+                        ->orderBy($params['sortIndex'], $params['sortOrder'])
+                        ->orderBy('logtrail.id', 'asc');
+                }
             }
 
 
-            $totalRows = count($query->get());
+            /* Searching */
+            if (count($params['search']) > 0 && @$params['search']['rules'][0]['data'] != '') {
+                switch ($params['search']['groupOp']) {
+                    case "AND":
+                        foreach ($params['search']['rules'] as $index => $search) {
 
-            $totalPages = ceil($totalRows / $params['limit']);
+                            $query = $query->where($search['field'], 'LIKE', "%$search[data]%");
+                        }
+
+                        break;
+                    case "OR":
+                        foreach ($params['search']['rules'] as $index => $search) {
+                            $query = $query->orWhere($search['field'], 'LIKE', "%$search[data]%");
+                        }
+
+                        break;
+                    default:
+
+                        break;
+                }
+
+
+                $totalRows = count($query->get());
+
+                $totalPages = ceil($totalRows / $params['limit']);
+            }
+
+            /* Paging */
+            $query = $query->skip($params['offset'])
+                ->take($params['limit']);
+
+            $logtrails = $query->get();
+
+            /* Set attributes */
+            $attributes = [
+                'totalRows' => $totalRows,
+                'totalPages' => $totalPages
+            ];
         }
-
-        /* Paging */
-        $query = $query->skip($params['offset'])
-            ->take($params['limit']);
-
-        $logtrails = $query->get();
-
-        /* Set attributes */
-        $attributes = [
-            'totalRows' => $totalRows,
-            'totalPages' => $totalPages
-        ];
-    }
         return response([
             'status' => true,
             'data' => $logtrails ?? [],

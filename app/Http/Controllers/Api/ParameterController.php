@@ -143,6 +143,7 @@ class ParameterController extends Controller
     public function store(ParameterRequest $request)
     {
         DB::beginTransaction();
+
         try {
             $parameter = new Parameter();
             $parameter->grp = $request->grp;
@@ -165,7 +166,7 @@ class ParameterController extends Controller
                 ];
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                app(LogTrailController::class)->store($validatedLogTrail);
+                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
                 DB::commit();
             }
@@ -186,7 +187,7 @@ class ParameterController extends Controller
             ]);
         } catch (\Throwable $th) {
             DB::rollBack();
-            return response($th->getMessage());
+            throw $th;
         }
     }
 
@@ -255,7 +256,7 @@ class ParameterController extends Controller
                 ]);
             }
         } catch (\Throwable $th) {
-            return response($th->getMessage());
+            throw $th;
         }
     }
 

@@ -6,7 +6,7 @@ use DateTimeInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class AbsensiSupirHeader extends Model
+class AbsensiSupirHeader extends MyModel
 {
     use HasFactory;
 
@@ -24,10 +24,5 @@ class AbsensiSupirHeader extends Model
 
     public function absensiSupirDetail() {
         return $this->hasMany(AbsensiSupirDetail::class, 'absensi_id');
-    }
-
-    protected function serializeDate(DateTimeInterface $date)
-    {
-        return $date->format('d-m-Y H:i:s');
     }
 }
