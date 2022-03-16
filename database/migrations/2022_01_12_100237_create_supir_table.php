@@ -36,12 +36,12 @@ class CreateSupirTable extends Migration
             $table->unsignedBigInteger('zona_id')->default(0);
             $table->double('angsuranpinjaman', 15,2)->default(0);
             $table->double('plafondeposito', 15,2)->default(0);
-            $table->string('photosupir', 100)->default('');
-            $table->string('photoktp', 100)->default('');
-            $table->string('photosim', 100)->default('');
-            $table->string('photokk', 100)->default('');
-            $table->string('photoskck', 100)->default('');
-            $table->string('photodomisili', 100)->default('');
+            $table->string('photosupir', 4000)->default('');
+            $table->string('photoktp', 4000)->default('');
+            $table->string('photosim', 4000)->default('');
+            $table->string('photokk', 4000)->default('');
+            $table->string('photoskck', 4000)->default('');
+            $table->string('photodomisili', 4000)->default('');
             $table->longText('keteranganresign')->default('');
             $table->integer('statusblacklist')->length(11)->default(0);
             $table->date('tglberhentisupir')->default('1900/1/1');

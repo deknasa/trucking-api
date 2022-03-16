@@ -23,6 +23,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CustomValidationController;
 use App\Http\Controllers\Api\ContainerController;
+use App\Http\Controllers\Api\BankController;
 
 /*
 |--------------------------------------------------------------------------
@@ -119,8 +120,7 @@ Route::resource('trado', TradoController::class);
 
 Route::resource('absensi', AbsensiSupirHeaderController::class);
 Route::resource('absensi_detail', AbsensiSupirDetailController::class);
-
-Route::resource('supir', SupirController::class);
+Route::resource('absentrado', AbsenTradoController::class);
 
 Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
 
@@ -128,3 +128,12 @@ Route::get('container/field_length', [ContainerController::class, 'fieldLength']
 Route::get('container/combostatus', [ContainerController::class, 'combostatus']);
 Route::get('container/getPosition2', [ContainerController::class, 'getPosition2']);
 Route::resource('container', ContainerController::class);
+
+Route::get('supir/combo', [SupirController::class, 'combo']);
+Route::get('supir/field_length', [SupirController::class, 'fieldLength']);
+Route::post('supir/upload_image/{id}', [SupirController::class, 'uploadImage']);
+Route::resource('supir', SupirController::class);
+
+Route::get('bank/combo', [BankController::class, 'combo']);
+Route::get('bank/field_length', [BankController::class, 'fieldLength']);
+Route::resource('bank', BankController::class);

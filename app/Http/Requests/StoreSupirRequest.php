@@ -13,7 +13,7 @@ class StoreSupirRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +24,19 @@ class StoreSupirRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'alamat' => 'required',
+            'statusaktif' => 'required',
+            // 'tglstnkmati' => 'required',
+            // 'tglasuransimati' => 'required',
+            // 'tahun' => 'required',
+            // 'akhirproduksi' => 'required',
+            // 'tglstandarisasi' => 'required',
+            // 'tglserviceopname' => 'required',
+            // 'statusstandarisasi' => 'required',
+            // 'tglspeksimati' => 'required',
+            // 'statusmutasi' => 'required',
+            // 'statusvalidasikendaraan' => 'required',
+            // 'mandor_id' => 'required',
         ];
     }
 }
