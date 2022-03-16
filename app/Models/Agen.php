@@ -16,9 +16,4 @@ class Agen extends MyModel
         'created_at',
         'updated_at',
     ];
-
-    protected $casts = [
-        'created_at' => 'date:d-m-Y H:i:s',
-        'updated_at' => 'date:d-m-Y H:i:s'
-    ];
 }

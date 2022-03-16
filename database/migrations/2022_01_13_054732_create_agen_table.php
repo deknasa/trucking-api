@@ -19,7 +19,7 @@ class CreateAgenTable extends Migration
             $table->string('namaagen', 100)->default('');
             $table->longText('keterangan')->default('');
             $table->integer('statusaktif')->length(11)->default(0);            
-            $table->string('fnamaperusahaan', 100)->default('');
+            $table->string('namaperusahaan', 100)->default('');
             $table->string('alamat', 250)->default('');
             $table->string('notelp', 100)->default('');
             $table->string('nohp', 100)->default('');

@@ -443,11 +443,11 @@ class UserAclController extends Controller
             $datalogtrail = [
                 'namatabel' => 'USERACL',
                 'postingdari' => 'EDIT USER ACL',
-                'idtrans' => $request->id,
-                'nobuktitrans' => $request->id,
+                'idtrans' => $useracl->id,
+                'nobuktitrans' => $useracl->id,
                 'aksi' => 'EDIT',
                 'datajson' => json_encode($datajson),
-                'modifiedby' => $request->modifiedby,
+                'modifiedby' => $useracl->modifiedby,
             ];
 
             $data=new StoreLogTrailRequest($datalogtrail);

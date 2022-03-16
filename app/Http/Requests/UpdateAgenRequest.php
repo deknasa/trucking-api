@@ -13,7 +13,7 @@ class UpdateAgenRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +24,40 @@ class UpdateAgenRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            "kodeagen" => "required",
+            "namaagen" => "required",
+            "keterangan" => "required",
+            "statusaktif" => "required",
+            "namaperusahaan" => "required",
+            "alamat" => "required",
+            "notelp" => "required",
+            "nohp" => "required",
+            "contactperson" => "required",
+            "top" => "required",
+            "statusapproval" => "required",
+            "userapproval" => "required",
+            "tglapproval" => "required",
+            "statustas" => "required",
+            "jenisemkl" => "required",
+            "modifiedby" => "required",
+        ];
+    }
+
+    public function attributes()
+    {
+        return [
+            "kodeagen" => "kode agen",
+            "namaagen" => "nama agen",
+            "statusaktif" => "status",
+            "namaperusahaan" => "nama perusahaan",
+            "notelp" => "no telp",
+            "nohp" => "no hp",
+            "contactperson" => "contact person",
+            "statusapproval" => "status approval",
+            "userapproval" => "user approval",
+            "tglapproval" => "tanggal approval",
+            "statustas" => "status tas",
+            "jenisemkl" => "jenis emkl",
         ];
     }
 }

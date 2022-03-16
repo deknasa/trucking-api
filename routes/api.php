@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\MenuController;
 use App\Http\Controllers\Api\AcosController;
 use App\Http\Controllers\Api\UserRoleController;
 use App\Http\Controllers\Api\AclController;
+use App\Http\Controllers\Api\AgenController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\UserAclController;
 use App\Http\Controllers\Api\ErrorController;
@@ -51,6 +52,9 @@ route::middleware('auth:api')->group(function() {
     
     Route::get('absen_trado/field_length', [AbsenTradoController::class, 'fieldLength']);
     Route::resource('absen_trado', AbsenTradoController::class);
+
+    Route::get('agen/field_length', [AgenController::class, 'fieldLength']);
+    Route::resource('agen', AgenController::class);
 });
 
 Route::get('error/field_length', [ErrorController::class, 'fieldLength']);

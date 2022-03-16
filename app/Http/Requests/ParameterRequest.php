@@ -39,19 +39,6 @@ class ParameterRequest extends FormRequest
             'grp' => 'group',
             'subgrp' => 'subgroup',
             'text' => 'name',
-            'modifiedby' => 'modifiedby'
-        ];
-    }
-
-    public function messages()
-    {
-        $controller = new ErrorController;
-        return [
-            'grp.required' => ':attribute '. $controller->geterror('WI')->keterangan,
-            'subgrp.required' => ':attribute '. $controller->geterror('WI')->keterangan,
-            'text.required' => ':attribute '. $controller->geterror('WI')->keterangan,
-            'memo.required' => ':attribute '. $controller->geterror('WI')->keterangan,
-            'modifiedby.required' => ':attribute '. $controller->geterror('WI')->keterangan,
         ];
     }
 }
