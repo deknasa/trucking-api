@@ -24,6 +24,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CustomValidationController;
 use App\Http\Controllers\Api\ContainerController;
 use App\Http\Controllers\Api\BankController;
+use App\Http\Controllers\Api\AlatBayarController;
 
 /*
 |--------------------------------------------------------------------------
@@ -137,3 +138,7 @@ Route::resource('supir', SupirController::class);
 Route::get('bank/combo', [BankController::class, 'combo']);
 Route::get('bank/field_length', [BankController::class, 'fieldLength']);
 Route::resource('bank', BankController::class);
+
+Route::get('alatbayar/combo', [AlatBayarController::class, 'combo']);
+Route::get('alatbayar/field_length', [AlatBayarController::class, 'fieldLength']);
+Route::resource('alatbayar', AlatBayarController::class);
