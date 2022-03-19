@@ -117,7 +117,7 @@ class UserController extends Controller
                         if ($search['field'] == 'statusaktif') {
                             $query = $query->orWhere('parameter.text', 'LIKE', "%$search[data]%");
                         } else if ($search['field'] == 'cabang_id') {
-                            $query = $query->orWhere('cabang.namacabang', 'LIKE', "%$search[data]%");                            
+                            $query = $query->orWhere('cabang.namacabang', 'LIKE', "%$search[data]%");
                         } else {
                             $query = $query->orWhere($search['field'], 'LIKE', "%$search[data]%");
                         }
@@ -188,35 +188,24 @@ class UserController extends Controller
             $user->statusaktif = $request->statusaktif;
             $user->modifiedby = $request->modifiedby;
 
-            $user->save();
 
-            $datajson = [
-                'id' => $user->id,
-                'user' => strtoupper($request->user),
-                'name' => strtoupper($request->name),
-                'password' => Hash::make($request->password),
-                'cabang_id' => $request->cabang_id,
-                'karyawan_id' => $request->karyawan_id,
-                'dashboard' => strtoupper($request->dashboard),
-                'statusaktif' => $request->statusaktif,
-                'modifiedby' => $request->modifiedby,
-            ];
+            if ($user->save()) {
+                $logTrail = [
+                    'namatabel' => strtoupper($user->getTable()),
+                    'postingdari' => 'ENTRY USER',
+                    'idtrans' => $user->id,
+                    'nobuktitrans' => $user->id,
+                    'aksi' => 'ENTRY',
+                    'datajson' => $user->makeVisible(['password', 'remember_token'])->toArray(),
+                    'modifiedby' => $user->modifiedby
+                ];
 
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-            $datalogtrail = [
-                'namatabel' => 'USER',
-                'postingdari' => 'ENTRY USER',
-                'idtrans' => $user->id,
-                'nobuktitrans' => $user->id,
-                'aksi' => 'ENTRY',
-                'datajson' => json_encode($datajson),
-                'modifiedby' => $user->modifiedby,
-            ];
+                DB::commit();
+            }
 
-            $data = new StoreLogTrailRequest($datalogtrail);
-            app(LogTrailController::class)->store($data);
-
-            DB::commit();
             /* Set position and page */
             $del = 0;
             $data = $this->getid($user->id, $request, $del);
@@ -283,34 +272,23 @@ class UserController extends Controller
             $user->dashboard = strtoupper($request->dashboard);
             $user->statusaktif = $request->statusaktif;
             $user->modifiedby = $request->modifiedby;
-            $user->save();
 
-            $datajson = [
-                'id' => $user->id,
-                'user' => strtoupper($request->user),
-                'name' => strtoupper($request->name),
-                'cabang_id' => $request->cabang_id,
-                'karyawan_id' => $request->karyawan_id,
-                'dashboard' => strtoupper($request->dashboard),
-                'statusaktif' => $request->statusaktif,
-                'modifiedby' => $request->modifiedby,
-            ];
+            if ($user->save()) {
+                $logTrail = [
+                    'namatabel' => strtoupper($user->getTable()),
+                    'postingdari' => 'EDIT USER',
+                    'idtrans' => $user->id,
+                    'nobuktitrans' => $user->id,
+                    'aksi' => 'EDIT',
+                    'datajson' => $user->makeVisible(['password', 'remember_token'])->toArray(),
+                    'modifiedby' => $user->modifiedby
+                ];
 
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-            $datalogtrail = [
-                'namatabel' => 'USER',
-                'postingdari' => 'EDIT USER',
-                'idtrans' => $user->id,
-                'nobuktitrans' => $user->id,
-                'aksi' => 'EDIT',
-                'datajson' => json_encode($datajson),
-                'modifiedby' => $user->modifiedby,
-            ];
-
-            $data = new StoreLogTrailRequest($datalogtrail);
-            app(LogTrailController::class)->store($data);
-
-            DB::commit();
+                DB::commit();
+            }
 
             /* Set position and page */
             $user->position = $this->getid($user->id, $request, 0)->row;
@@ -341,44 +319,32 @@ class UserController extends Controller
     {
         DB::beginTransaction();
         try {
+            if ($user->delete()) {
+                $logTrail = [
+                    'namatabel' => strtoupper($user->getTable()),
+                    'postingdari' => 'DELETE USER',
+                    'idtrans' => $user->id,
+                    'nobuktitrans' => $user->id,
+                    'aksi' => 'DELETE',
+                    'datajson' => $user->makeVisible(['password', 'remember_token'])->toArray(),
+                    'modifiedby' => $user->modifiedby
+                ];
 
-            User::destroy($user->id);
-            $datajson = [
-                'id' => $user->id,
-                'user' => strtoupper($request->user),
-                'name' => strtoupper($request->name),
-                'password' => Hash::make($request->password),
-                'cabang_id' => $request->cabang_id,
-                'karyawan_id' => $request->karyawan_id,
-                'dashboard' => strtoupper($request->dashboard),
-                'statusaktif' => $request->statusaktif,
-                'modifiedby' => $request->modifiedby,
-            ];
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-
-            $datalogtrail = [
-                'namatabel' => 'USER',
-                'postingdari' => 'DELETE USER',
-                'idtrans' => $user->id,
-                'nobuktitrans' => $user->id,
-                'aksi' => 'DELETE',
-                'datajson' => json_encode($datajson),
-                'modifiedby' => $user->modifiedby,
-            ];
-
-            $data = new StoreLogTrailRequest($datalogtrail);
-            app(LogTrailController::class)->store($data);
-
-            DB::commit();
+                DB::commit();
+            }
 
             $del = 1;
             $data = $this->getid($user->id, $request, $del);
             $user->position = $data->row;
             $user->id = $data->id;
+
             if (isset($request->limit)) {
                 $user->page = ceil($user->position / $request->limit);
             }
-            // dd($user);
+
             return response([
                 'status' => true,
                 'message' => 'Berhasil dihapus',

@@ -296,21 +296,21 @@ class UserRoleController extends Controller
      */
     public function store(StoreUserRoleRequest $request)
     {
-
         DB::beginTransaction();
+        dd('here');
+
         try {
+            dd($request->role_id);
             $controller = new ParameterController;
             $dataaktif = $controller->getparameterid('STATUS AKTIF', 'STATUS AKTIF', 'AKTIF');
             $aktif = $dataaktif->id;
-            // dd($aktif);
+
             for ($i = 0; $i < count($request->role_id); $i++) {
                 $userrole = new UserRole();
-
                 $userrole->user_id = $request->user_id;
-                $userrole->modifiedby = $request->modifiedby;
                 $userrole->role_id = $request->role_id[$i]  ?? 0;
+                $userrole->modifiedby = $request->modifiedby;
                 if ($request->status[$i] == $aktif) {
-                    // dd($request->role_id[$i]);
                     $userrole->save();
                 }
             }
@@ -359,8 +359,7 @@ class UserRoleController extends Controller
                 'data' => $userrole
             ]);
         } catch (\Throwable $th) {
-            DB::rollBack();
-            return response($th->getMessage());
+            throw $th;
         }
     }
 

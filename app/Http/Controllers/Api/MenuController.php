@@ -151,8 +151,6 @@ class MenuController extends Controller
             'totalPages' => $totalPages
         ];
 
-        // echo $time2-$time1;
-        // echo '---';
         return response([
             'status' => true,
             'data' => $cabangs,
@@ -183,16 +181,10 @@ class MenuController extends Controller
         // dd($request->all());
         DB::beginTransaction();
         try {
-
-
-
             if ($request->class <> '') {
-                // $class = array("index", "add", "edit", "delete");
                 $class =  $request->class;
 
                 foreach ($class as $value) {
-
-
                     $namaclass = str_replace('controller', '', strtolower($value['class']));
                     $dataacos = [
                         'class' => $namaclass,
@@ -204,19 +196,18 @@ class MenuController extends Controller
                     $data = new StoreAcosRequest($dataacos);
                     $dataaco = app(AcosController::class)->store($data);
 
-
                     if ($dataaco['error']) {
                         return response($dataaco, 422);
                     }
                 }
-                // dd($namaclass);
+
                 $list = Acos::select('id')
                     ->where('class', '=', $namaclass)
                     ->where('method', '=', 'index')
                     ->orderBy('id', 'asc')
                     ->first();
+
                 $menuacoid = $list->id;
-                // $menu->aco_id = 0;
             } else {
                 $menuacoid = 0;
             }
@@ -230,9 +221,6 @@ class MenuController extends Controller
             $menu->modifiedby = $request->modifiedby;
             $menu->link = "";
             $menu->aco_id = $menuacoid;
-
-
-
 
             if (Menu::select('menukode')
                 ->where('menuparent', '=', $request->menuparent)
@@ -284,44 +272,32 @@ class MenuController extends Controller
                 $menukode = 9;
             }
             $menu->menukode = $menukode;
-            $menu->save();
 
-            $datajson = [
-                'id' => $menu->id,
-                'menuname' => strtoupper($request->menuname),
-                'menuseq' => $request->menuseq,
-                'menuparent' => $request->menuparent,
-                'menuicon' => strtolower($request->menuicon),
-                'menuexe' => strtolower($request->menuexe),
-                'modifiedby' => strtoupper($request->modifiedby),
-            ];
+            if ($menu->save()) {
+                $logTrail = [
+                    'namatabel' => strtoupper($menu->getTable()),
+                    'postingdari' => 'ENTRY MENU',
+                    'idtrans' => $menu->id,
+                    'nobuktitrans' => $menu->id,
+                    'aksi' => 'ENTRY',
+                    'datajson' => $menu->toArray(),
+                    'modifiedby' => $menu->modifiedby
+                ];
 
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
+                DB::commit();
+            }
 
-            $datalogtrail = [
-                'namatabel' => 'MENU',
-                'postingdari' => 'ENTRY MENU',
-                'idtrans' => $menu->id,
-                'nobuktitrans' => $menu->id,
-                'aksi' => 'ENTRY',
-                'datajson' => json_encode($datajson),
-                'modifiedby' => $menu->modifiedby,
-            ];
-
-            $data = new StoreLogTrailRequest($datalogtrail);
-            app(LogTrailController::class)->store($data);
-
-            DB::commit();
             /* Set position and page */
             $del = 0;
             $data = $this->getid($menu->id, $request, $del);
             $menu->position = $data->row;
-            // dd($menu->position );
+
             if (isset($request->limit)) {
                 $menu->page = ceil($menu->position / $request->limit);
             }
-
-
 
             return response([
                 'status' => true,
@@ -376,38 +352,23 @@ class MenuController extends Controller
             $menu->menuname = ucwords(strtolower($request->menuname));
             $menu->menuseq = $request->menuseq;
             $menu->menuicon = strtolower($request->menuicon);
-            $menu->save();
-            // Menu::where('id', $menu->id)
-            //     ->update(['menuexe' => strtolower($request->get('menuexe'))],
-            //                     ['menuname' => ucwords($request->get('menuname'))],
-            //                     ['menuseq' => $request->get('menuseq')],
-            //                     ['menuparent' => $request->get('menuparent')],
-            //                     ['menuicon' => strtolower($request->get('menuicon'))]);
 
-            $datajson = [
-                'id' => $request->id,
-                'menuname' => strtoupper($request->menuname),
-                'menuseq' => $request->menuseq,
-                'menuicon' => strtolower($request->menuicon),
-                'modifiedby' => $request->modifiedby,
-            ];
+            if ($menu->save()) {
+                $logTrail = [
+                    'namatabel' => strtoupper($menu->getTable()),
+                    'postingdari' => 'EDIT MENU',
+                    'idtrans' => $menu->id,
+                    'nobuktitrans' => $menu->id,
+                    'aksi' => 'EDIT',
+                    'datajson' => $menu->toArray(),
+                    'modifiedby' => $menu->modifiedby
+                ];
 
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-            $datalogtrail = [
-                'namatabel' => 'MENU',
-                'postingdari' => 'EDIT MENU',
-                'idtrans' => $request->id,
-                'nobuktitrans' => $request->id,
-                'aksi' => 'EDIT',
-                'datajson' => json_encode($datajson),
-                'modifiedby' => $request->modifiedby,
-            ];
-
-
-            $data = new StoreLogTrailRequest($datalogtrail);
-            app(LogTrailController::class)->store($data);
-
-            DB::commit();
+                DB::commit();
+            }
 
             /* Set position and page */
             $menu->position = $this->getid($menu->id, $request, 0)->row;
@@ -437,6 +398,7 @@ class MenuController extends Controller
     public function destroy(Menu $menu, Request $request)
     {
         DB::beginTransaction();
+
         try {
             $list = Menu::Select('aco_id')
                 ->where('id', '=', $menu->id)
@@ -453,34 +415,24 @@ class MenuController extends Controller
 
                 Acos::where('class', $list->class)->delete();
             }
-            Menu::destroy($menu->id);
 
-            $datajson = [
-                'id' => $menu->id,
-                'menuname' => strtoupper($request->menuname),
-                'menuseq' => $request->menuseq,
-                'menuparent' => $request->menuparent,
-                'menuicon' => strtolower($request->menuicon),
-                'menuexe' => strtolower($request->menuexe),
-                'modifiedby' => strtoupper($request->modifiedby),
-            ];
+            if ($menu->delete()) {
+                $logTrail = [
+                    'namatabel' => strtoupper($menu->getTable()),
+                    'postingdari' => 'DELETE MENU',
+                    'idtrans' => $menu->id,
+                    'nobuktitrans' => $menu->id,
+                    'aksi' => 'DELETE',
+                    'datajson' => $menu->toArray(),
+                    'modifiedby' => $menu->modifiedby
+                ];
 
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
+                DB::commit();
+            }
 
-            $datalogtrail = [
-                'namatabel' => 'MENU',
-                'postingdari' => 'DELETE MENU',
-                'idtrans' => $menu->id,
-                'nobuktitrans' => $menu->id,
-                'aksi' => 'DELETE',
-                'datajson' => json_encode($datajson),
-                'modifiedby' => $menu->modifiedby,
-            ];
-
-            $data = new StoreLogTrailRequest($datalogtrail);
-            app(LogTrailController::class)->store($data);
-
-            DB::commit();
             $del = 1;
             $data = $this->getid($menu->id, $request, $del);
             $menu->position = $data->row;

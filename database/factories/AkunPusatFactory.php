@@ -13,6 +13,19 @@ class AkunPusatFactory extends Factory
      */
     public function definition()
     {
-     
+        return [
+            'coa' => $this->faker->word(),
+            'keterangancoa' => $this->faker->word(),
+            'type' => $this->faker->word(),
+            'level' => 1,
+            'aktif' => 1,
+            'parent' => $this->faker->word(),
+            'statuscoa' => 1,
+            'statusaccountpayable' => 1,
+            'statusneraca' => 1,
+            'statuslabarugi' => 1,
+            'coamain' => $this->faker->word(),
+            'modifiedby' => 'ADMIN',
+        ];
     }
 }

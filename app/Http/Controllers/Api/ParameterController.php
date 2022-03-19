@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Parameter;
 use App\Http\Requests\ParameterRequest;
 use App\Http\Requests\StoreLogTrailRequest;
+use App\Http\Resources\Parameter as ResourcesParameter;
+use App\Http\Resources\ParameterResource;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
