@@ -23,7 +23,7 @@ class CreateDepositoTable extends Migration
             $table->double('nominal',15,2)->default('0');
             $table->string('coa',50)->default('');
             $table->string('nobuktikasmasuk',50)->default('');
-            $table->date('tglkasmasuk',50)->default('1900/1/1');
+            $table->date('tglkasmasuk')->default('1900/1/1');
             $table->string('modifiedby',50)->default('');
             $table->timestamps();
 

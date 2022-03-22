@@ -16,7 +16,7 @@ class CreatePengembalianpinjamandetailTable extends Migration
         Schema::create('pengembalianpinjamandetail', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('pengembalianpinjaman_id');
-            $table->string('nobukti',50)->unique();
+            $table->string('nobukti',50)->default('');
             $table->date('tgl')->default('1900/1/1');
             $table->longText('keterangan')->default('');
             $table->string('nobukti_pinjaman',50)->default('');

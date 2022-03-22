@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\GajiSupirBiayaDetail;
-use App\Http\Requests\StoreGajiSupirBiayaDetailRequest;
-use App\Http\Requests\UpdateGajiSupirBiayaDetailRequest;
+use App\Models\GajiSupirDetail;
+use App\Http\Requests\StoreGajiSupirDetailRequest;
+use App\Http\Requests\UpdateGajiSupirDetailRequest;
 
-class GajiSupirBiayaDetailController extends Controller
+class GajiSupirDetailController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -31,10 +31,10 @@ class GajiSupirBiayaDetailController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \App\Http\Requests\StoreGajiSupirBiayaDetailRequest  $request
+     * @param  \App\Http\Requests\StoreGajiSupirDetailRequest  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(StoreGajiSupirBiayaDetailRequest $request)
+    public function store(StoreGajiSupirDetailRequest $request)
     {
         //
     }
@@ -42,10 +42,10 @@ class GajiSupirBiayaDetailController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\GajiSupirBiayaDetail  $gajiSupirBiayaDetail
+     * @param  \App\Models\GajiSupirDetail  $GajiSupirDetail
      * @return \Illuminate\Http\Response
      */
-    public function show(GajiSupirBiayaDetail $gajiSupirBiayaDetail)
+    public function show(GajiSupirDetail $GajiSupirDetail)
     {
         //
     }
@@ -53,10 +53,10 @@ class GajiSupirBiayaDetailController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Models\GajiSupirBiayaDetail  $gajiSupirBiayaDetail
+     * @param  \App\Models\GajiSupirDetail  $GajiSupirDetail
      * @return \Illuminate\Http\Response
      */
-    public function edit(GajiSupirBiayaDetail $gajiSupirBiayaDetail)
+    public function edit(GajiSupirDetail $GajiSupirDetail)
     {
         //
     }
@@ -64,11 +64,11 @@ class GajiSupirBiayaDetailController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \App\Http\Requests\UpdateGajiSupirBiayaDetailRequest  $request
-     * @param  \App\Models\GajiSupirBiayaDetail  $gajiSupirBiayaDetail
+     * @param  \App\Http\Requests\UpdateGajiSupirDetailRequest  $request
+     * @param  \App\Models\GajiSupirDetail  $GajiSupirDetail
      * @return \Illuminate\Http\Response
      */
-    public function update(UpdateGajiSupirBiayaDetailRequest $request, GajiSupirBiayaDetail $gajiSupirBiayaDetail)
+    public function update(UpdateGajiSupirDetailRequest $request, GajiSupirDetail $GajiSupirDetail)
     {
         //
     }
@@ -76,10 +76,10 @@ class GajiSupirBiayaDetailController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\GajiSupirBiayaDetail  $gajiSupirBiayaDetail
+     * @param  \App\Models\GajiSupirDetail  $GajiSupirDetail
      * @return \Illuminate\Http\Response
      */
-    public function destroy(GajiSupirBiayaDetail $gajiSupirBiayaDetail)
+    public function destroy(GajiSupirDetail $GajiSupirDetail)
     {
         //
     }

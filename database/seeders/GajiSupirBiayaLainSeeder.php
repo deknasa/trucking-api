@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
+use App\Models\GajiSupirBiayaLain;
 
 class GajiSupirBiayaLainSeeder extends Seeder
 {
@@ -13,6 +14,12 @@ class GajiSupirBiayaLainSeeder extends Seeder
      */
     public function run()
     {
-        //
+        GajiSupirBiayaLain::create([
+            'gajisupir_id' => 1,
+            'nobukti' => 'RIC 0001/III/2022',
+            'keteranganbiaya' => 'TAMBAHAN BIAYA SOLAR',
+            'nominal' => 100000,
+            'modifiedby' => 'ADMIN',    
+        ]);
     }
 }
