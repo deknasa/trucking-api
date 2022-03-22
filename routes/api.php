@@ -25,6 +25,7 @@ use App\Http\Controllers\CustomValidationController;
 use App\Http\Controllers\Api\ContainerController;
 use App\Http\Controllers\Api\BankController;
 use App\Http\Controllers\Api\AlatBayarController;
+use App\Http\Controllers\Api\BankPelangganController;
 
 /*
 |--------------------------------------------------------------------------
@@ -142,3 +143,7 @@ Route::resource('bank', BankController::class);
 Route::get('alatbayar/combo', [AlatBayarController::class, 'combo']);
 Route::get('alatbayar/field_length', [AlatBayarController::class, 'fieldLength']);
 Route::resource('alatbayar', AlatBayarController::class);
+
+Route::get('bankpelanggan/combo', [BankPelangganController::class, 'combo']);
+Route::get('bankpelanggan/field_length', [BankPelangganController::class, 'fieldLength']);
+Route::resource('bankpelanggan', BankPelangganController::class);
