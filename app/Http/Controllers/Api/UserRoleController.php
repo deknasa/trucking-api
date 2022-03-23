@@ -390,30 +390,31 @@ class UserRoleController extends Controller
     {
         DB::beginTransaction();
         try {
-            Userrole::where('user_id', $request->user_id)->delete();
+            UserRole::where('user_id', $request->user_id)->delete();
 
             for ($i = 0; $i < count($request->role_id); $i++) {
-                dd($request);
-                $userrole = new UserRole();
-                $userrole->user_id = $request->user_id;
-                $userrole->modifiedby = $request->modifiedby;
-                $userrole->role_id = $request->role_id[$i]  ?? 0;
+                if ($request->status[$i] == 1) {
+                    $userrole = new UserRole();
+                    $userrole->user_id = $request->user_id;
+                    $userrole->modifiedby = $request->modifiedby;
+                    $userrole->role_id = $request->role_id[$i]  ?? 0;
 
-                if ($userrole->save()) {
-                    $logTrail = [
-                        'namatabel' => strtoupper($userrole->getTable()),
-                        'postingdari' => 'EDIT USER ROLE',
-                        'idtrans' => $userrole->id,
-                        'nobuktitrans' => $userrole->id,
-                        'aksi' => 'EDIT',
-                        'datajson' => $userrole->toArray(),
-                        'modifiedby' => $userrole->modifiedby
-                    ];
+                    if ($userrole->save()) {
+                        $logTrail = [
+                            'namatabel' => strtoupper($userrole->getTable()),
+                            'postingdari' => 'EDIT USER ROLE',
+                            'idtrans' => $userrole->id,
+                            'nobuktitrans' => $userrole->id,
+                            'aksi' => 'EDIT',
+                            'datajson' => $userrole->toArray(),
+                            'modifiedby' => $userrole->modifiedby
+                        ];
 
-                    $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                    $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+                        $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                        $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-                    DB::commit();
+                        DB::commit();
+                    }
                 }
             }
 
@@ -445,10 +446,12 @@ class UserRoleController extends Controller
      */
     public function destroy(UserRole $userrole, DestroyUserRoleRequest $request)
     {
-
         DB::beginTransaction();
+        
         try {
-            if ($userrole->save()) {
+            $delete = UserRole::where('user_id', $request->user_id)->delete();
+
+            if ($delete > 0) {
                 $logTrail = [
                     'namatabel' => strtoupper($userrole->getTable()),
                     'postingdari' => 'DELETE USER ROLE',
@@ -480,8 +483,7 @@ class UserRoleController extends Controller
                 'data' => $userrole
             ]);
         } catch (\Throwable $th) {
-            DB::rollBack();
-            return response($th->getMessage());
+            throw $th;
         }
     }
 
@@ -591,7 +593,6 @@ class UserRoleController extends Controller
             if ($params['page'] == 1) {
                 $baris = $params['indexRow'] + 1;
             } else {
-                dd('test');
                 $hal = $params['page'] - 1;
                 $bar = $hal * $params['limit'];
                 $baris = $params['indexRow'] + $bar + 1;

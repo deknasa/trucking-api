@@ -96,7 +96,6 @@ class UserController extends Controller
             }
         }
 
-
         /* Searching */
         if (count($params['search']) > 0 && @$params['search']['rules'][0]['data'] != '') {
             switch ($params['search']['groupOp']) {
@@ -107,7 +106,7 @@ class UserController extends Controller
                         } else if ($search['field'] == 'cabang_id') {
                             $query = $query->where('cabang.namacabang', 'LIKE', "%$search[data]%");
                         } else {
-                            $query = $query->where($search['field'], 'LIKE', "%$search[data]%");
+                            $query = $query->where('user.' . $search['field'], 'LIKE', "%$search[data]%");
                         }
                     }
 
@@ -119,7 +118,7 @@ class UserController extends Controller
                         } else if ($search['field'] == 'cabang_id') {
                             $query = $query->orWhere('cabang.namacabang', 'LIKE', "%$search[data]%");
                         } else {
-                            $query = $query->orWhere($search['field'], 'LIKE', "%$search[data]%");
+                            $query = $query->orWhere('user.' . $search['field'], 'LIKE', "%$search[data]%");
                         }
                     }
 

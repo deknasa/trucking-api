@@ -39,15 +39,4 @@ class StoreAclRequest extends FormRequest
             'modifiedby' => 'modified by',
         ];
     }
-
-    public function messages()
-    {
-        $controller = new ErrorController;
-        return [
-            'aco_id.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
-            'role_id.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
-            'modifiedby.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
-
-        ];
-    }
 }

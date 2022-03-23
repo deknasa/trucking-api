@@ -105,7 +105,7 @@ class CabangController extends Controller
                         if ($search['field'] == 'statusaktif') {
                             $query = $query->where('parameter.text', 'LIKE', "%$search[data]%");
                         } else {
-                            $query = $query->where($search['field'], 'LIKE', "%$search[data]%");
+                            $query = $query->where('cabang.' . $search['field'], 'LIKE', "%$search[data]%");
                         }
                     }
 
@@ -115,7 +115,7 @@ class CabangController extends Controller
                         if ($search['field'] == 'statusaktif') {
                             $query = $query->orWhere('parameter.text', 'LIKE', "%$search[data]%");
                         } else {
-                            $query = $query->orWhere($search['field'], 'LIKE', "%$search[data]%");
+                            $query = $query->orWhere('cabang.' . $search['field'], 'LIKE', "%$search[data]%");
                         }
                     }
 
@@ -317,7 +317,7 @@ class CabangController extends Controller
 
                 DB::commit();
             }
-            
+
             $del = 1;
             $data = $this->getid($cabang->id, $request, $del);
             $cabang->position = $data->row;
@@ -470,12 +470,6 @@ class CabangController extends Controller
         }
 
         $time0 = microtime(true);
-        // $bindings = $query->getBindings();
-        // $time01=microtime(true);
-        // $insertQuery = 'INSERT into ##temp_cabang_row (id_,cabang,statusaktif,modifiedby,created_at,updated_at) '
-        //     . $query->toSql();
-        // $time02=microtime(true);
-        //     DB::insert($insertQuery, $bindings);
         DB::table($temp)->insertUsing(['id_', 'kodecabang', 'namacabang', 'statusaktif', 'modifiedby', 'created_at', 'updated_at'], $query);
 
         $time1 = microtime(true);
