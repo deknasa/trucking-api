@@ -24,6 +24,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CustomValidationController;
 use App\Http\Controllers\Api\ContainerController;
+use App\Http\Controllers\Api\BankController;
+use App\Http\Controllers\Api\AlatBayarController;
+use App\Http\Controllers\Api\BankPelangganController;
 
 /*
 |--------------------------------------------------------------------------
@@ -132,3 +135,91 @@ route::middleware('auth:api')->group(function () {
     Route::get('container/getPosition2', [ContainerController::class, 'getPosition2']);
     Route::resource('container', ContainerController::class);
 });
+
+Route::get('error/field_length', [ErrorController::class, 'fieldLength']);
+Route::resource('error', ErrorController::class);
+
+Route::get('cabang/field_length', [CabangController::class, 'fieldLength']);
+Route::get('cabang/combostatus', [CabangController::class, 'combostatus']);
+Route::get('cabang/getPosition2', [CabangController::class, 'getPosition2']);
+Route::resource('cabang', CabangController::class);
+
+Route::get('error/field_length', [ErrorController::class, 'fieldLength']);
+Route::get('error/geterror', [ErrorController::class, 'geterror']);
+Route::resource('error', ErrorController::class);
+
+Route::get('role/getroleid', [RoleController::class, 'getroleid']);
+Route::get('role/field_length', [RoleController::class, 'fieldLength']);
+Route::resource('role', RoleController::class);
+
+Route::get('acos/field_length', [AcosController::class, 'fieldLength']);
+Route::resource('acos', AcosController::class);
+
+Route::resource('absensi_detail', AbsensiSupirDetailController::class);
+
+Route::get('user/field_length', [UserController::class, 'fieldLength']);
+Route::get('user/combostatus', [UserController::class, 'combostatus']);
+Route::get('user/combocabang', [UserController::class, 'combocabang']);
+Route::get('user/getuserid', [UserController::class, 'getuserid']);
+Route::resource('user', UserController::class);
+
+Route::get('menu/field_length', [MenuController::class, 'fieldLength']);
+Route::get('menu/combomenuparent', [MenuController::class, 'combomenuparent']);
+Route::get('menu/getdatanamaacos', [MenuController::class, 'getdatanamaacos']);
+Route::resource('menu', MenuController::class);
+
+
+Route::get('userrole/field_length', [UserRoleController::class, 'fieldLength']);
+Route::get('userrole/detail', [UserRoleController::class, 'detail']);
+Route::get('userrole/detaillist', [UserRoleController::class, 'detaillist']);
+Route::get('userrole/combostatus', [UserRoleController::class, 'combostatus']);
+Route::resource('userrole', UserRoleController::class);
+
+Route::get('acl/field_length', [AclController::class, 'fieldLength']);
+Route::get('acl/detail', [AclController::class, 'detail']);
+Route::get('acl/detaillist', [AclController::class, 'detaillist']);
+Route::get('acl/combostatus', [AclController::class, 'combostatus']);
+Route::resource('acl', AclController::class);
+
+Route::get('useracl/field_length', [UserAclController::class, 'fieldLength']);
+Route::get('useracl/detail', [UserAclController::class, 'detail']);
+Route::get('useracl/detaillist', [UserAclController::class, 'detaillist']);
+Route::get('useracl/combostatus', [UserAclController::class, 'combostatus']);
+Route::resource('useracl', UserAclController::class);
+
+Route::get('logtrail/detail', [LogTrailController::class, 'detail']);
+Route::get('logtrail/header', [LogTrailController::class, 'header']);
+Route::resource('logtrail', LogTrailController::class);
+
+Route::get('trado/combo', [TradoController::class, 'combo']);
+Route::get('trado/field_length', [TradoController::class, 'fieldLength']);
+Route::post('trado/upload_image/{id}', [TradoController::class, 'uploadImage']);
+Route::resource('trado', TradoController::class);
+
+Route::resource('absensi', AbsensiSupirHeaderController::class);
+Route::resource('absensi_detail', AbsensiSupirDetailController::class);
+Route::resource('absentrado', AbsenTradoController::class);
+
+Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
+
+Route::get('container/field_length', [ContainerController::class, 'fieldLength']);
+Route::get('container/combostatus', [ContainerController::class, 'combostatus']);
+Route::get('container/getPosition2', [ContainerController::class, 'getPosition2']);
+Route::resource('container', ContainerController::class);
+
+Route::get('supir/combo', [SupirController::class, 'combo']);
+Route::get('supir/field_length', [SupirController::class, 'fieldLength']);
+Route::post('supir/upload_image/{id}', [SupirController::class, 'uploadImage']);
+Route::resource('supir', SupirController::class);
+
+Route::get('bank/combo', [BankController::class, 'combo']);
+Route::get('bank/field_length', [BankController::class, 'fieldLength']);
+Route::resource('bank', BankController::class);
+
+Route::get('alatbayar/combo', [AlatBayarController::class, 'combo']);
+Route::get('alatbayar/field_length', [AlatBayarController::class, 'fieldLength']);
+Route::resource('alatbayar', AlatBayarController::class);
+
+Route::get('bankpelanggan/combo', [BankPelangganController::class, 'combo']);
+Route::get('bankpelanggan/field_length', [BankPelangganController::class, 'fieldLength']);
+Route::resource('bankpelanggan', BankPelangganController::class);

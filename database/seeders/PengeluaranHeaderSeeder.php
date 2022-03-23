@@ -31,5 +31,25 @@ class PengeluaranHeaderSeeder extends Seeder
             'transferkebank' => '',
             'modifiedby' => 'ADMIN',
         ]);
+
+        //pinjaman
+        PengeluaranHeader::create([
+            'nobukti' => 'KBT 0001/III/2022',
+            'tgl' => '2022-03-01',
+            'pelanggan_id' => 0,
+            'keterangan' => 'PINJAMAN SUPIR',
+            'statusjenistransaksi' => 54,
+            'postingdari' => 'PINJAMAN SUPIR',
+            'statusapproval' => 4,
+            'dibayarke' => '',
+            'cabang_id' => 0,
+            'bank_id' => 1,
+            'userapproval' => '',
+            'tglapproval' => '1900-01-01',
+            'transferkeac' => '',
+            'transferkean' => '',
+            'transferkebank' => '',
+            'modifiedby' => 'ADMIN',
+        ]);
     }
 }

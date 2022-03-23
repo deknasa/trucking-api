@@ -25,7 +25,6 @@ class SuratPengantarSeeder extends Seeder
             'sampai_id' => 2,
             'container_id' => 1,
             'nocont' => 'SPNU 123456',
-
             'nocont2' => '',
             'statuscontainer_id' => 1,
             'trado_id' => 1,
@@ -35,7 +34,7 @@ class SuratPengantarSeeder extends Seeder
             'keteranganritasi' => '',
             'ritasidari_id' => 0,
             'ritasisampai_id' => 0,
-
+            'jobtrucking' => '0001/III/22',
             'statuslongtrip' => 66,
             'gajisupir' => 134760,
             'gajikenek' => 15000.00,
@@ -77,6 +76,11 @@ class SuratPengantarSeeder extends Seeder
             'tgldoor' => '1900-01-01',
             'upahritasi_id' => 0,
             'statusdisc' => 0,
+            'gajiritasikenek' => 0,
+            'omset' => 1021000,
+            'discount' => 0,
+            'totalomset' => 1021000,
+
             'modifiedby' => 'ADMIN',
 
         ]);

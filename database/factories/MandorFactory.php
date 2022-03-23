@@ -14,10 +14,7 @@ class MandorFactory extends Factory
     public function definition()
     {
         return [
-            'namamandor' => $this->faker->words(2, true),
-            'keterangan' => $this->faker->name(),
-            'statusaktif' => 1,
-            'modifiedby' => 'admin',
+            //
         ];
     }
 }

@@ -14,8 +14,11 @@ class MandorSeeder extends Seeder
      */
     public function run()
     {
-        Mandor::factory()
-            ->count(5)
-            ->create();
+        Mandor::create([
+            'namamandor' => 'ASAN',
+            'keterangan' => 'PENGURUS TRUCKING',
+            'statusaktif' => 1,
+            'modifiedby' => 'ADMIN',
+        ]);
     }
 }

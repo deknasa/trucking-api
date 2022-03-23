@@ -15,9 +15,33 @@ class CabangSeeder extends Seeder
     public function run()
     {
         Cabang::create([
-            'kodecabang' => '',
-            'namacabang' => '',
-            'statusaktif' => '',
+            'kodecabang' => 'PST',
+            'namacabang' => 'PUSAT',
+            'statusaktif' => 1,
+            'modifiedby' => 'ADMIN',
+        ]);
+        Cabang::create([
+            'kodecabang' => 'JKT',
+            'namacabang' => 'JAKARTA',
+            'statusaktif' => 1,
+            'modifiedby' => 'ADMIN',
+        ]);
+        Cabang::create([
+            'kodecabang' => 'MDN',
+            'namacabang' => 'MEDAN',
+            'statusaktif' => 1,
+            'modifiedby' => 'ADMIN',
+        ]);
+        Cabang::create([
+            'kodecabang' => 'SBY',
+            'namacabang' => 'SURABAYA',
+            'statusaktif' => 1,
+            'modifiedby' => 'ADMIN',
+        ]);
+        Cabang::create([
+            'kodecabang' => 'MKS',
+            'namacabang' => 'MAKASSAR',
+            'statusaktif' => 1,
             'modifiedby' => 'ADMIN',
         ]);
     }
