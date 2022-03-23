@@ -24,18 +24,18 @@ class ParameterController extends Controller
     public function index(Request $request)
     {
         $params = [
-            'offset' => $request->offset ?? 0,
+            'offset' => $request->offset ?? (($request->page - 1) * $request->limit),
             'limit' => $request->limit ?? 10,
             'search' => $request->search ?? [],
             'sortIndex' => $request->sortIndex ?? 'id',
             'sortOrder' => $request->sortOrder ?? 'asc',
         ];
 
-        $totalRows = Parameter::count();
-        $totalPages = $params['limit'] > 0 ? ceil($totalRows / $params['limit']) : 1;
-
         /* Sorting */
-        $query = Parameter::orderBy($params['sortIndex'], $params['sortOrder']);
+        $query = DB::table('parameter')->orderBy($params['sortIndex'], $params['sortOrder']);
+
+        $totalRows = $query->count();
+        $totalPages = $params['limit'] > 0 ? ceil($totalRows / $params['limit']) : 1;
 
         if ($params['sortIndex'] == 'id') {
             $query = Parameter::select(
