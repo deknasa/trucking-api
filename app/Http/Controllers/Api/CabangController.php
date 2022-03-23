@@ -174,42 +174,32 @@ class CabangController extends Controller
         DB::beginTransaction();
         try {
             $cabang = new Cabang();
-            $cabang->kodecabang = strtoupper($request->kodecabang);
-            $cabang->namacabang = strtoupper($request->namacabang);
+            $cabang->kodecabang = $request->kodecabang;
+            $cabang->namacabang = $request->namacabang;
             $cabang->statusaktif = $request->statusaktif;
-            $cabang->modifiedby = strtoupper($request->modifiedby);
+            $cabang->modifiedby = $request->modifiedby;
 
-            $cabang->save();
+            if ($cabang->save()) {
+                $logTrail = [
+                    'namatabel' => strtoupper($cabang->getTable()),
+                    'postingdari' => 'ENTRY CABANG',
+                    'idtrans' => $cabang->id,
+                    'nobuktitrans' => $cabang->id,
+                    'aksi' => 'ENTRY',
+                    'datajson' => $cabang->toArray(),
+                    'modifiedby' => $cabang->modifiedby
+                ];
 
-            $datajson = [
-                'id' => $cabang->id,
-                'kodecabang' => strtoupper($request->kodecabang),
-                'namacabang' => strtoupper($request->namacabang),
-                'statusaktif' => $request->statusaktif,
-                'modifiedby' => strtoupper($request->modifiedby),
-            ];
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
+                DB::commit();
+            }
 
-
-            $datalogtrail = [
-                'namatabel' => 'CABANG',
-                'postingdari' => 'ENTRY CABANG',
-                'idtrans' => $cabang->id,
-                'nobuktitrans' => $cabang->id,
-                'aksi' => 'ENTRY',
-                'datajson' => json_encode($datajson),
-                'modifiedby' => $cabang->modifiedby,
-            ];
-
-            $data = new StoreLogTrailRequest($datalogtrail);
-            app(LogTrailController::class)->store($data);
-
-            DB::commit();
             /* Set position and page */
             $del = 0;
             $data = $this->getid($cabang->id, $request, $del);
             $cabang->position = $data->row;
-            // dd($cabang->position );
             if (isset($request->limit)) {
                 $cabang->page = ceil($cabang->position / $request->limit);
             }
@@ -261,46 +251,29 @@ class CabangController extends Controller
     {
         DB::beginTransaction();
         try {
-            $cabang->update(array_map('strtoupper', $request->validated()));
+            $cabang->kodecabang = $request->kodecabang;
+            $cabang->namacabang = $request->namacabang;
+            $cabang->statusaktif = $request->statusaktif;
+            $cabang->modifiedby = $request->modifiedby;
 
-            $datajson = [
-                'id' => $cabang->id,
-                'kodecabang' => strtoupper($request->kodecabang),
-                'namacabang' => strtoupper($request->namacabang),
-                'statusaktif' => $request->statusaktif,
-                'modifiedby' => strtoupper($request->modifiedby),
-            ];
+            if ($cabang->save()) {
+                $logTrail = [
+                    'namatabel' => strtoupper($cabang->getTable()),
+                    'postingdari' => 'EDIT CABANG',
+                    'idtrans' => $cabang->id,
+                    'nobuktitrans' => $cabang->id,
+                    'aksi' => 'EDIT',
+                    'datajson' => $cabang->toArray(),
+                    'modifiedby' => $cabang->modifiedby
+                ];
 
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-            $datajson = [
-                'id' => $cabang->id,
-                'kodecabang' => strtoupper($request->kodecabang),
-                'namacabang' => strtoupper($request->namacabang),
-                'statusaktif' => $request->statusaktif,
-                'modifiedby' => strtoupper($request->modifiedby),
-            ];
-
-
-
-            $datalogtrail = [
-                'namatabel' => 'CABANG',
-                'postingdari' => 'EDIT CABANG',
-                'idtrans' => $cabang->id,
-                'nobuktitrans' => $cabang->id,
-                'aksi' => 'EDIT',
-                'datajson' => json_encode($datajson),
-                'modifiedby' => $cabang->modifiedby,
-            ];
-
-            $data = new StoreLogTrailRequest($datalogtrail);
-            app(LogTrailController::class)->store($data);
-
-
-            DB::commit();
+                DB::commit();
+            }
 
             /* Set position and page */
-
-
             $cabang->position = $this->getid($cabang->id, $request, 0)->row;
 
             if (isset($request->limit)) {
@@ -328,35 +301,23 @@ class CabangController extends Controller
     {
         DB::beginTransaction();
         try {
+            if ($cabang->save()) {
+                $logTrail = [
+                    'namatabel' => strtoupper($cabang->getTable()),
+                    'postingdari' => 'DELETE CABANG',
+                    'idtrans' => $cabang->id,
+                    'nobuktitrans' => $cabang->id,
+                    'aksi' => 'DELETE',
+                    'datajson' => $cabang->toArray(),
+                    'modifiedby' => $cabang->modifiedby
+                ];
 
-            Cabang::destroy($cabang->id);
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-
-            $datajson = [
-                'id' => $cabang->id,
-                'kodecabang' => strtoupper($request->kodecabang),
-                'namacabang' => strtoupper($request->namacabang),
-                'statusaktif' => $request->statusaktif,
-                'modifiedby' => strtoupper($request->modifiedby),
-            ];
-
-
-
-            $datalogtrail = [
-                'namatabel' => 'CABANG',
-                'postingdari' => 'DELETE CABANG',
-                'idtrans' => $cabang->id,
-                'nobuktitrans' => $cabang->id,
-                'aksi' => 'DELETE',
-                'datajson' => json_encode($datajson),
-                'modifiedby' => $cabang->modifiedby,
-            ];
-
-            $data = new StoreLogTrailRequest($datalogtrail);
-            app(LogTrailController::class)->store($data);
-
-            DB::commit();
-            Cabang::destroy($cabang->id);
+                DB::commit();
+            }
+            
             $del = 1;
             $data = $this->getid($cabang->id, $request, $del);
             $cabang->position = $data->row;
@@ -364,7 +325,6 @@ class CabangController extends Controller
             if (isset($request->limit)) {
                 $cabang->page = ceil($cabang->position / $request->limit);
             }
-            // dd($cabang);
             return response([
                 'status' => true,
                 'message' => 'Berhasil dihapus',
@@ -675,7 +635,6 @@ class CabangController extends Controller
 
             // dump($hal);
             // dump($bar);
-            // dd($baris);
             if (DB::table($temp)
                 ->where('id', '=', $baris)->exists()
             ) {

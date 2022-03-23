@@ -136,10 +136,10 @@ class RoleController extends Controller
             if ($role->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($role->getTable()),
-                    'postingdari' => 'EDIT PARAMETER',
+                    'postingdari' => 'ENTRY ROLE',
                     'idtrans' => $role->id,
                     'nobuktitrans' => $role->id,
-                    'aksi' => 'EDIT',
+                    'aksi' => 'ENTRY',
                     'datajson' => $role->toArray(),
                     'modifiedby' => $role->modifiedby
                 ];
@@ -201,10 +201,10 @@ class RoleController extends Controller
             if ($role->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($role->getTable()),
-                    'postingdari' => 'ENTRY PARAMETER',
+                    'postingdari' => 'EDIT ROLE',
                     'idtrans' => $role->id,
                     'nobuktitrans' => $role->id,
-                    'aksi' => 'ENTRY',
+                    'aksi' => 'EDIT',
                     'datajson' => $role->toArray(),
                     'modifiedby' => $role->modifiedby
                 ];
@@ -247,7 +247,7 @@ class RoleController extends Controller
             if ($role->delete()) {
                 $logTrail = [
                     'namatabel' => strtoupper($role->getTable()),
-                    'postingdari' => 'DELETE PARAMETER',
+                    'postingdari' => 'DELETE ROLE',
                     'idtrans' => $role->id,
                     'nobuktitrans' => $role->id,
                     'aksi' => 'DELETE',

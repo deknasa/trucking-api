@@ -149,39 +149,32 @@ class ErrorController extends Controller
         DB::beginTransaction();
         try {
             $error = new Error();
-            $error->kodeerror = strtoupper($request->kodeerror);
-            $error->keterangan = strtoupper($request->keterangan);
-            $error->modifiedby = strtoupper($request->modifiedby);
+            $error->kodeerror = $request->kodeerror;
+            $error->keterangan = $request->keterangan;
+            $error->modifiedby = $request->modifiedby;
 
-            $error->save();
-            $datajson = [
-                'id' => $error->id,
-                'kodeerror' => strtoupper($request->kodeerror),
-                'keterangan' => strtoupper($request->keterangan),
-                'modifiedby' => strtoupper($request->modifiedby),
-                'created_at' => date('d-m-Y H:i:s',strtotime($error->created_at)),
-                'updated_at' => date('d-m-Y H:i:s',strtotime($error->updated_at)),
-            ];
+            if ($error->save()) {
+                $logTrail = [
+                    'namatabel' => strtoupper($error->getTable()),
+                    'postingdari' => 'ENTRY ERROR',
+                    'idtrans' => $error->id,
+                    'nobuktitrans' => $error->id,
+                    'aksi' => 'ENTRY',
+                    'datajson' => $error->toArray(),
+                    'modifiedby' => $error->modifiedby
+                ];
 
-            $datalogtrail = [
-                'namatabel' => 'ERROR',
-                'postingdari' => 'ENTRY ERROR',
-                'idtrans' => $error->id,
-                'nobuktitrans' => $error->id,
-                'aksi' => 'ENTRY',
-                'datajson' => $datajson,
-                'modifiedby' => $error->modifiedby,
-            ];
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-            $data = new StoreLogTrailRequest($datalogtrail);
-            app(LogTrailController::class)->store($data);
+                DB::commit();
+            }
 
-            DB::commit();
             /* Set position and page */
             $del = 0;
             $data = $this->getid($error->id, $request, $del);
             $error->position = $data->row;
-            // dd($error->position );
+            
             if (isset($request->limit)) {
                 $error->page = ceil($error->position / $request->limit);
             }
@@ -233,37 +226,26 @@ class ErrorController extends Controller
     {
         DB::beginTransaction();
         try {
-          
-        
+            $error->kodeerror = $request->kodeerror;
+            $error->keterangan = $request->keterangan;
+            $error->modifiedby = $request->modifiedby;
+            
+            if ($error->save()) {
+                $logTrail = [
+                    'namatabel' => strtoupper($error->getTable()),
+                    'postingdari' => 'EDIT ERROR',
+                    'idtrans' => $error->id,
+                    'nobuktitrans' => $error->id,
+                    'aksi' => 'EDIT',
+                    'datajson' => $error->toArray(),
+                    'modifiedby' => $error->modifiedby
+                ];
 
-            $error = new Error();
-            $error = Error::find($request->id);
-            $error->kodeerror = strtoupper($request->kodeerror);
-            $error->keterangan = strtoupper($request->keterangan);
-            $error->modifiedby = strtoupper($request->modifiedby);         
-            $error->save();
-            $datajson = [
-                'id' => $error->id,
-                'kodeerror' => strtoupper($request->kodeerror),
-                'keterangan' => strtoupper($request->keterangan),
-                'modifiedby' => strtoupper($request->modifiedby),
-                'created_at' => date('d-m-Y H:i:s',strtotime($error->created_at)),
-                'updated_at' => date('d-m-Y H:i:s',strtotime($error->updated_at)),
-            ];
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-            $datalogtrail = [
-                'namatabel' => 'ERROR',
-                'postingdari' => 'EDIT ERROR',
-                'idtrans' => $error->id,
-                'nobuktitrans' => $error->id,
-                'aksi' => 'EDIT',
-                'datajson' => $datajson,
-                'modifiedby' => $error->modifiedby,
-            ];
-
-            $data = new StoreLogTrailRequest($datalogtrail);
-            app(LogTrailController::class)->store($data);
-            DB::commit();
+                DB::commit();
+            }
 
             /* Set position and page */
             $error->position = $this->getid($error->id, $request, 0)->row;
@@ -294,33 +276,23 @@ class ErrorController extends Controller
     {
         DB::beginTransaction();
         try {
+            if ($error->delete()) {
+                $logTrail = [
+                    'namatabel' => strtoupper($error->getTable()),
+                    'postingdari' => 'DELETE ERROR',
+                    'idtrans' => $error->id,
+                    'nobuktitrans' => $error->id,
+                    'aksi' => 'DELETE',
+                    'datajson' => $error->toArray(),
+                    'modifiedby' => $error->modifiedby
+                ];
 
-            Error::destroy($error->id);
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-            $datajson = [
-                'id' => $error->id,
-                'kodeerror' => strtoupper($request->kodeerror),
-                'keterangan' => strtoupper($request->keterangan),
-                'modifiedby' => strtoupper($request->modifiedby),
-                'created_at' => date('d-m-Y H:i:s',strtotime($error->created_at)),
-                'updated_at' => date('d-m-Y H:i:s',strtotime($error->updated_at)),
-            ];
+                DB::commit();
+            }
 
-            $datalogtrail = [
-                'namatabel' => 'ERROR',
-                'postingdari' => 'HAPUS ERROR',
-                'idtrans' => $error->id,
-                'nobuktitrans' => $error->id,
-                'aksi' => 'HAPUS',
-                'datajson' => $datajson,
-                'modifiedby' => $error->modifiedby,
-            ];
-
-            $data = new StoreLogTrailRequest($datalogtrail);
-            app(LogTrailController::class)->store($data);
-
-            DB::commit();
-            Error::destroy($error->id);
             $del = 1;
             $data = $this->getid($error->id, $request, $del);
             $error->position = $data->row;
