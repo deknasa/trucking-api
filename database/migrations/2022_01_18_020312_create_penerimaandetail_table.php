@@ -25,10 +25,10 @@ class CreatePenerimaandetailTable extends Migration
             $table->longText('keterangan')->default('');
             $table->unsignedBigInteger('bank_id')->default('0');
             $table->unsignedBigInteger('pelanggan_id')->default('0');
-            $table->string('noinvoice',50)->default('');
+            $table->string('invoice_nobukti',50)->default('');
             $table->unsignedBigInteger('bankpelanggan_id')->default('0');
             $table->string('jenisbiaya',50)->default('');
-            $table->string('pelunasan_nobukti',50)->default('');
+            $table->string('penerimaanpiutang_nobukti',50)->default('');
             $table->date('bulanbeban')->default('1900/1/1');
             $table->string('modifiedby',50)->default('');
             $table->timestamps();
@@ -39,7 +39,7 @@ class CreatePenerimaandetailTable extends Migration
             $table->foreign('bank_id')->references('id')->on('bank');
             $table->foreign('coadebet')->references('coa')->on('akunpusat');
             $table->foreign('coakredit')->references('coa')->on('akunpusat');
-            $table->foreign('pelunasan_nobukti')->references('nobukti')->on('pelunasanpiutangheader');
+            $table->foreign('penerimaanpiutang_nobukti')->references('nobukti')->on('pelunasanpiutangheader');
 
 
         });

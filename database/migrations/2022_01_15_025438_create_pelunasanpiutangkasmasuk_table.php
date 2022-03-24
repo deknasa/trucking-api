@@ -17,7 +17,6 @@ class CreatePelunasanpiutangkasmasukTable extends Migration
             $table->id();
             $table->unsignedBigInteger('pelunasanpiutang_id')->default('0');
             $table->string('nobukti',50)->default('');
-            $table->date('tgl')->default('1900/1/1');
             $table->double('nominal',15,2)->default('');
             $table->integer('statuscair')->length(11)->default('0');
             $table->date('tglcair')->default('1900/1/1');

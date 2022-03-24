@@ -17,8 +17,6 @@ class CreateProsesgajisupirpotongandetailTable extends Migration
             $table->id();
             $table->unsignedBigInteger('prosesgajisupir_id')->default('0');
             $table->string('nobukti',50)->default('');
-            $table->date('tgl')->default('1900/1/1'); 
-            $table->string('perinciangajisupir_nobukti',50)->default('');
             $table->unsignedBigInteger('potongan_id')->default('0');
             $table->double('nominalpotongan',15,2)->default('0');
             $table->integer('statuspostingpotongan')->length(11)->default('0');

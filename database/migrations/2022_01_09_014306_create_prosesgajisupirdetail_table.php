@@ -18,7 +18,6 @@ class CreateProsesgajisupirdetailTable extends Migration
             $table->unsignedBigInteger('prosesgajisupir_id')->default('0');
             $table->string('nobukti',50)->default('');
             $table->string('gajisupir_nobukti',50)->default('');
-            $table->date('tgl')->default('1900/1/1');
             $table->unsignedBigInteger('supir_id')->default('0');
             $table->unsignedBigInteger('trado_id')->default('0');
             $table->double('nominal',15,2)->default('0');

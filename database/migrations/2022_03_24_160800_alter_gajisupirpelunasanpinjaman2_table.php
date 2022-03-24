@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AlterGajisupirpelunasanpinjamanTable extends Migration
+class AlterGajisupirpelunasanpinjaman2Table extends Migration
 {
     /**
      * Run the migrations.
@@ -14,8 +14,9 @@ class AlterGajisupirpelunasanpinjamanTable extends Migration
     public function up()
     {
         Schema::table('gajisupirpelunasanpinjaman', function (Blueprint $table) {
-            $table->string('pengembalianpinjaman_nobukti',50)->default('');
+            $table->foreign('pengembalianpinjaman_nobukti')->references('nobukti')->on('pengembalianpinjamanheader');
        });
+
     }
 
     /**

@@ -16,7 +16,7 @@ class SuratPengantarSeeder extends Seeder
     {
         SuratPengantar::create([
             'nobukti' => 'TRP 0001/III/2022',
-            'tgl' => '2022-03-02',
+            'tglbukti' => '2022-03-02',
             'pelanggan_id' => 1,
             'keterangan' => '-',
             'nourutorder' => 1,

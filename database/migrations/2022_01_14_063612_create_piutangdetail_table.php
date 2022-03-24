@@ -18,7 +18,6 @@ class CreatePiutangdetailTable extends Migration
             $table->unsignedBigInteger('piutang_id')->default('0');
             $table->string('nobukti',50)->default('');
             $table->double('nominal',15,2)->default('0');
-            $table->string('noinvoice',50)->default('');
             $table->longText('keterangan')->default('');
             $table->string('invoice_nobukti',50)->default('');
             $table->string('modifiedby',50)->default('');

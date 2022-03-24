@@ -16,7 +16,7 @@ class GajiSupirHeaderSeeder extends Seeder
     {
         GajiSupirHeader::create([
             'nobukti' => 'RIC 0001/III/2022',            
-            'tgl' => '2022/3/21',            
+            'tglbukti' => '2022/3/21',            
             'supir_id' => 1,            
             'nominal' => 164760,            
             'keterangan' => 'upah supir',            

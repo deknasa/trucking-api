@@ -18,7 +18,6 @@ class CreateGajisupirdepositoTable extends Migration
             $table->unsignedBigInteger('gajisupir_id')->default('0');
             $table->string('nobukti',50)->default('');
             $table->string('nobukti_deposito',50)->default('');
-            $table->date('tgl')->default('1900/1/1');
             $table->longText('keterangan')->default('');
             $table->unsignedBigInteger('supir_id')->default('0');
             $table->double('nominal',15,2)->default('0');

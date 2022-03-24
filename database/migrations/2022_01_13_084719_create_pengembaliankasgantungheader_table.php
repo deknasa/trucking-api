@@ -16,7 +16,7 @@ class CreatePengembaliankasgantungheaderTable extends Migration
         Schema::create('pengembaliankasgantungheader', function (Blueprint $table) {
             $table->id();
             $table->string('nobukti',50)->unique();
-            $table->date('tgl')->default('1900/1/1');
+            $table->date('tglbukti')->default('1900/1/1');
             $table->unsignedBigInteger('pelanggan_id')->default('0');
             $table->longText('keterangan')->default('');
             $table->unsignedBigInteger('bank_id')->default('0');

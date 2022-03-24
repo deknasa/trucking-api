@@ -2,11 +2,11 @@
 
 namespace App\Policies;
 
-use App\Models\AbsensiSupirApproval;
+use App\Models\PinjamanDetail;
 use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
-class AbsensiSupirApprovalPolicy
+class PinjamanDetailPolicy
 {
     use HandlesAuthorization;
 
@@ -25,10 +25,10 @@ class AbsensiSupirApprovalPolicy
      * Determine whether the user can view the model.
      *
      * @param  \App\Models\User  $user
-     * @param  \App\Models\AbsensiSupirApproval  $absensiSupirApproval
+     * @param  \App\Models\PinjamanDetail  $pinjamanDetail
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function view(User $user, AbsensiSupirApproval $absensiSupirApproval)
+    public function view(User $user, PinjamanDetail $pinjamanDetail)
     {
         //
     }
@@ -48,10 +48,10 @@ class AbsensiSupirApprovalPolicy
      * Determine whether the user can update the model.
      *
      * @param  \App\Models\User  $user
-     * @param  \App\Models\AbsensiSupirApproval  $absensiSupirApproval
+     * @param  \App\Models\PinjamanDetail  $pinjamanDetail
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function update(User $user, AbsensiSupirApproval $absensiSupirApproval)
+    public function update(User $user, PinjamanDetail $pinjamanDetail)
     {
         //
     }
@@ -60,10 +60,10 @@ class AbsensiSupirApprovalPolicy
      * Determine whether the user can delete the model.
      *
      * @param  \App\Models\User  $user
-     * @param  \App\Models\AbsensiSupirApproval  $absensiSupirApproval
+     * @param  \App\Models\PinjamanDetail  $pinjamanDetail
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function delete(User $user, AbsensiSupirApproval $absensiSupirApproval)
+    public function delete(User $user, PinjamanDetail $pinjamanDetail)
     {
         //
     }
@@ -72,10 +72,10 @@ class AbsensiSupirApprovalPolicy
      * Determine whether the user can restore the model.
      *
      * @param  \App\Models\User  $user
-     * @param  \App\Models\AbsensiSupirApproval  $absensiSupirApproval
+     * @param  \App\Models\PinjamanDetail  $pinjamanDetail
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function restore(User $user, AbsensiSupirApproval $absensiSupirApproval)
+    public function restore(User $user, PinjamanDetail $pinjamanDetail)
     {
         //
     }
@@ -84,10 +84,10 @@ class AbsensiSupirApprovalPolicy
      * Determine whether the user can permanently delete the model.
      *
      * @param  \App\Models\User  $user
-     * @param  \App\Models\AbsensiSupirApproval  $absensiSupirApproval
+     * @param  \App\Models\PinjamanDetail  $pinjamanDetail
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function forceDelete(User $user, AbsensiSupirApproval $absensiSupirApproval)
+    public function forceDelete(User $user, PinjamanDetail $pinjamanDetail)
     {
         //
     }
