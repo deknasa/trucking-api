@@ -6,11 +6,8 @@ use App\Helpers\App;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreAbsensiSupirHeaderRequest;
 use App\Http\Requests\StoreAbsensiSupirDetailRequest;
-use App\Http\Requests\UpdateAbsensiSupirHeaderRequest;
-use App\Models\AbsensiSupirDetail;
 use App\Models\AbsensiSupirHeader;
 use App\Models\LogTrail;
-use App\Models\Parameter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Requests\StoreLogTrailRequest;
@@ -63,7 +60,7 @@ class AbsensiSupirHeaderController extends Controller
         $query = $query->skip($params['offset'])
             ->take($params['limit']);
 
-        $parameters = $params['withRelations'] == true
+        $absensiSupirs = $params['withRelations'] == true
             ? $query->with(
                 'absensiSupirDetail',
                 'absensiSupirDetail.trado',
@@ -80,7 +77,7 @@ class AbsensiSupirHeaderController extends Controller
 
         return response([
             'status' => true,
-            'data' => $parameters,
+            'data' => $absensiSupirs,
             'attributes' => $attributes,
             'params' => $params
         ]);
@@ -105,35 +102,24 @@ class AbsensiSupirHeaderController extends Controller
             $absensiSupirHeader->kasgantung_nobukti = $request->kasgantung_nobukti ?? '1';
             $absensiSupirHeader->nominal = array_sum($request->uangjalan);
             $absensiSupirHeader->modifiedby = $request->modifiedby ?? '1';
-            $absensiSupirHeader->save();
-            
-            $datajson = [
-                'id' => $absensiSupirHeader->id,
-                'nobukti' => $request->nobukti,
-                'tgl' => date('Y-m-d', strtotime($request->tgl)),
-                'keterangan' => $request->keterangan ?? '',
-                'kasgantung_nobukti' => $request->kasgantung_nobukti ?? '1',
-                'nominal' => array_sum($request->uangjalan),
-                'modifiedby' => strtoupper($request->modifiedby),
-                'created_at' => date('d-m-Y H:i:s', strtotime($absensiSupirHeader->created_at)),
-                'updated_at' => date('d-m-Y H:i:s', strtotime($absensiSupirHeader->updated_at)),
-            ];
 
-            $datalogtrail = [
-                'namatabel' => $absensiSupirHeader->getTable(),
-                'postingdari' => 'ENTRY ABSENSI SUPIR',
-                'idtrans' => $absensiSupirHeader->id,
-                'nobuktitrans' => $request->nobukti,
-                'aksi' => 'ENTRY',
-                'datajson' => $datajson,
-                'modifiedby' => $absensiSupirHeader->modifiedby,
-            ];
+            if ($absensiSupirHeader->save()) {
+                $logTrail = [
+                    'namatabel' => strtoupper($absensiSupirHeader->getTable()),
+                    'postingdari' => 'ENTRY ABSENSI SUPIR HEADER',
+                    'idtrans' => $absensiSupirHeader->id,
+                    'nobuktitrans' => $absensiSupirHeader->id,
+                    'aksi' => 'ENTRY',
+                    'datajson' => $absensiSupirHeader->toArray(),
+                    'modifiedby' => $absensiSupirHeader->modifiedby
+                ];
 
-            $data = new StoreLogTrailRequest($datalogtrail);
-            app(LogTrailController::class)->store($data);
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+            }
 
             /* Store detail */
-            $detaillog=[];
+            $detaillog = [];
             for ($i = 0; $i < count($request->trado_id); $i++) {
                 $datadetail = [
                     'absensi_id' => $absensiSupirHeader->id,
@@ -145,15 +131,19 @@ class AbsensiSupirHeaderController extends Controller
                     'uangjalan' => $request->uangjalan[$i],
                     'keterangan' => $request->keterangan_detail[$i],
                     'modifiedby' => $request->modifiedby,
-                    ];
+                ];
+
                 $data = new StoreAbsensiSupirDetailRequest($datadetail);
-                $datadetails = app(AbsensiSupirDetailController::class)->store($data);
                 
-                if ($datadetails['error']) {
-                    return response($datadetails, 422);
+                $datadetails = app(AbsensiSupirDetailController::class)->store($data);
+
+                if (isset($datadetails) && $datadetails->status() == 422) {
+                    return response($datadetails->content(), $datadetails->status());
                 } else {
-                    $iddetail=$datadetails['id'];
-                    $tabeldetail=$datadetails['tabel'];
+                    $decodedDataDetails = json_decode($datadetails->content(), true);
+
+                    $iddetail = $decodedDataDetails['id'];
+                    $tabeldetail = $decodedDataDetails['tabel'];
                 }
 
                 $datadetaillog = [
@@ -167,30 +157,31 @@ class AbsensiSupirHeaderController extends Controller
                     'uangjalan' => $request->uangjalan[$i],
                     'keterangan' => $request->keterangan_detail[$i],
                     'modifiedby' => $request->modifiedby,
-                    'created_at' => date('d-m-Y H:i:s',strtotime($absensiSupirHeader->created_at)),
-                    'updated_at' => date('d-m-Y H:i:s',strtotime($absensiSupirHeader->updated_at)),
-                    ];
-                $detaillog[]=$datadetaillog;
+                    'created_at' => date('d-m-Y H:i:s', strtotime($absensiSupirHeader->created_at)),
+                    'updated_at' => date('d-m-Y H:i:s', strtotime($absensiSupirHeader->updated_at)),
+                ];
 
-               
+                $detaillog[] = $datadetaillog;
             }
 
-            $dataid = LogTrail::select('id')
-            ->where('nobuktitrans', '=', $request->nobukti)
-            ->where('namatabel', '=', $absensiSupirHeader->getTable())
-            ->orderBy('id', 'DESC')
-            ->first();      
-            $datalogtrail = [
-                'namatabel' => $tabeldetail,
-                'postingdari' => 'ENTRY ABSENSI SUPIR',
-                'idtrans' =>  $dataid->id,
-                'nobuktitrans' => $request->nobukti,
-                'aksi' => 'ENTRY',
-                'datajson' => $detaillog,
-                'modifiedby' => $request->modifiedby,
-            ];
-            $data = new StoreLogTrailRequest($datalogtrail);
-            app(LogTrailController::class)->store($data);
+            // $dataid = LogTrail::select('id')
+            //     ->where('nobuktitrans', '=', $request->nobukti)
+            //     ->where('namatabel', '=', $absensiSupirHeader->getTable())
+            //     ->orderBy('id', 'DESC')
+            //     ->first();
+                
+            //     dd($dataid);
+            //     $datalogtrail = [
+            //         'namatabel' => $tabeldetail,
+            //     'postingdari' => 'ENTRY ABSENSI SUPIR',
+            //     'idtrans' =>  $dataid->id,
+            //     'nobuktitrans' => $request->nobukti,
+            //     'aksi' => 'ENTRY',
+            //     'datajson' => $detaillog,
+            //     'modifiedby' => $request->modifiedby,
+            // ];
+            // $data = new StoreLogTrailRequest($datalogtrail);
+            // app(LogTrailController::class)->store($data);
 
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
@@ -261,7 +252,7 @@ class AbsensiSupirHeaderController extends Controller
             $absensiSupirHeader->tgl = date('Y-m-d', strtotime($request->tgl));
             $absensiSupirHeader->keterangan = $request->keterangan ?? '1';
             $absensiSupirHeader->kasgantung_nobukti = $request->kasgantung_nobukti ?? '1';
-            $absensiSupirHeader->nominal =array_sum($request->uangjalan) ?? '0';
+            $absensiSupirHeader->nominal = array_sum($request->uangjalan) ?? '0';
             $absensiSupirHeader->modifiedby = $request->modifiedby ?? '1';
             $absensiSupirHeader->save();
 
@@ -277,7 +268,7 @@ class AbsensiSupirHeaderController extends Controller
                 'updated_at' => date('d-m-Y H:i:s', strtotime($absensiSupirHeader->updated_at)),
             ];
 
-        
+
 
             $datalogtrail = [
                 'namatabel' => $absensiSupirHeader->getTable(),
@@ -291,15 +282,15 @@ class AbsensiSupirHeaderController extends Controller
 
             $data = new StoreLogTrailRequest($datalogtrail);
             app(LogTrailController::class)->store($data);
-            
-            
+
+
             /* Delete existing detail */
             $absensiSupirHeader->absensiSupirDetail()->delete();
-        
+
             /* Store detail */
-            $detaillog=[];
+            $detaillog = [];
             for ($i = 0; $i < count($request->trado_id); $i++) {
-                
+
                 $datadetail = [
                     'absensi_id' => $absensiSupirHeader->id,
                     'nobukti' => $request->nobukti,
@@ -310,19 +301,19 @@ class AbsensiSupirHeaderController extends Controller
                     'uangjalan' => $request->uangjalan[$i],
                     'keterangan' => $request->keterangan_detail[$i],
                     'modifiedby' => $request->modifiedby,
-                    ];
-                 
+                ];
+
                 $data = new StoreAbsensiSupirDetailRequest($datadetail);
                 $datadetails = app(AbsensiSupirDetailController::class)->store($data);
-                
+
                 if ($datadetails['error']) {
                     return response($datadetails, 422);
                 } else {
-                    
-                    $iddetail=$datadetails['id'];
-                    $tabeldetail=$datadetails['tabel'];
+
+                    $iddetail = $datadetails['id'];
+                    $tabeldetail = $datadetails['tabel'];
                 }
-           
+
 
                 $datadetaillog = [
                     'id' => $iddetail,
@@ -335,16 +326,16 @@ class AbsensiSupirHeaderController extends Controller
                     'uangjalan' => $request->uangjalan[$i],
                     'keterangan' => $request->keterangan_detail[$i],
                     'modifiedby' => $request->modifiedby,
-                    'created_at' => date('d-m-Y H:i:s',strtotime($absensiSupirHeader->created_at)),
-                    'updated_at' => date('d-m-Y H:i:s',strtotime($absensiSupirHeader->updated_at)),
-                    ];
-                $detaillog[]=$datadetaillog;
+                    'created_at' => date('d-m-Y H:i:s', strtotime($absensiSupirHeader->created_at)),
+                    'updated_at' => date('d-m-Y H:i:s', strtotime($absensiSupirHeader->updated_at)),
+                ];
+                $detaillog[] = $datadetaillog;
             }
             $dataid = LogTrail::select('id')
-            ->where('nobuktitrans', '=', $request->nobukti)
-            ->where('namatabel', '=', $absensiSupirHeader->getTable())
-            ->orderBy('id', 'DESC')
-            ->first();      
+                ->where('nobuktitrans', '=', $request->nobukti)
+                ->where('namatabel', '=', $absensiSupirHeader->getTable())
+                ->orderBy('id', 'DESC')
+                ->first();
             $datalogtrail = [
                 'namatabel' => $tabeldetail,
                 'postingdari' => 'EDIT ABSENSI SUPIR',

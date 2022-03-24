@@ -85,48 +85,52 @@ class AbsensiSupirDetailController extends Controller
     public function store(Request $request)
     {
         DB::beginTransaction();
-        $validator = Validator::make($request->all(), [
-            'trado_id' => 'required',
-        ], [
-            'trado_id.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
-        ], [
-            'trado_id' => 'Trado',
-        ]);
+
+        $validator = Validator::make(
+            $request->all(),
+            [
+                'trado_id' => 'required',
+            ],
+            [
+                'trado_id' => 'Trado',
+            ]
+        );
+
         if (!$validator->passes()) {
-            return [
-                'error' => true,
-                'messages' => $validator->messages()
-            ];
+            return response([
+                'message' => 'Validation error',
+                'errors' => $validator->messages()
+            ], 422);
         }
 
         try {
             $AbsensiSupirDetail = new AbsensiSupirDetail();
 
-            $AbsensiSupirDetail->absensi_id = $request->absensi_id;
-            $AbsensiSupirDetail->nobukti = $request->nobukti;
-            $AbsensiSupirDetail->trado_id = $request->trado_id;
-            $AbsensiSupirDetail->absen_id = $request->absen_id;
-            $AbsensiSupirDetail->supir_id = $request->supir_id;
-            $AbsensiSupirDetail->jam = $request->jam;
-            $AbsensiSupirDetail->uangjalan = $request->uangjalan;
-            $AbsensiSupirDetail->keterangan = $request->keterangan;
-            $AbsensiSupirDetail->modifiedby = $request->modifiedby;
-            
+            $AbsensiSupirDetail->absensi_id = $request->absensi_id ?? '';
+            $AbsensiSupirDetail->nobukti = $request->nobukti ?? '';
+            $AbsensiSupirDetail->trado_id = $request->trado_id ?? '';
+            $AbsensiSupirDetail->absen_id = $request->absen_id ?? '';
+            $AbsensiSupirDetail->supir_id = $request->supir_id ?? '';
+            $AbsensiSupirDetail->jam = $request->jam ?? '';
+            $AbsensiSupirDetail->uangjalan = $request->uangjalan ?? '';
+            $AbsensiSupirDetail->keterangan = $request->keterangan ?? '';
+            $AbsensiSupirDetail->modifiedby = $request->modifiedby ?? '';
+
             $AbsensiSupirDetail->save();
-            
-           
+
+
             DB::commit();
             if ($validator->passes()) {
-                return [
+                return response([
                     'error' => false,
                     'id' => $AbsensiSupirDetail->id,
                     'tabel' => $AbsensiSupirDetail->getTable(),
-                ];
+                ]);
             }
         } catch (\Throwable $th) {
             DB::rollBack();
             return response($th->getMessage());
-        }        
+        }
     }
 
     public function update(Request $request, AbsensiSupirDetail $absensiSupirDetail)
