@@ -24,7 +24,7 @@ class ParameterController extends Controller
     public function index(Request $request)
     {
         $params = [
-            'offset' => $request->offset ?? 0,
+            'offset' => $request->offset ?? ($request->limit * ($request->page - 1)),
             'limit' => $request->limit ?? 10,
             'search' => $request->search ?? [],
             'sortIndex' => $request->sortIndex ?? 'id',
