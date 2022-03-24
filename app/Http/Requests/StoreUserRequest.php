@@ -49,20 +49,4 @@ class StoreUserRequest extends FormRequest
             'modifiedby' => 'modified by'
         ];
     }
-
-    public function messages()
-    {
-        $controller = new ErrorController;
-        return [
-            'user.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
-            'name.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
-            'password.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
-            'cabang_id.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
-            'karyawan_id.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
-            'statusaktif.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
-            'modifiedby.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
-
-
-        ];
-    } 
 }

@@ -11,11 +11,6 @@ class Menu extends MyModel
 
     protected $table = 'menu';
 
-    protected $casts = [
-        'created_at' => 'date:d-m-Y H:i:s',
-        'updated_at' => 'date:d-m-Y H:i:s'
-    ];
-    
     protected $guarded = [
         'id',
         'created_at',

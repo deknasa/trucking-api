@@ -300,76 +300,50 @@ class UserAclController extends Controller
      */
     public function store(StoreUserAclRequest $request)
     {
-
-        // $request->validate([
-        //         'user_id' => 'required|unique:useracl,user_id'
-        // ]);
         $request->validate([
             'user_id' => [
                 'required',
-                 New NotExistsRule()
+                new NotExistsRule()
             ]
         ]);
 
         DB::beginTransaction();
+        
         try {
             $controller = new ParameterController;
             $dataaktif = $controller->getparameterid('STATUS AKTIF', 'STATUS AKTIF', 'AKTIF');
             $aktif = $dataaktif->id;
+
             for ($i = 0; $i < count($request->aco_id); $i++) {
-                $useracl = new UserAcl();
-
-                $useracl->user_id = $request->user_id;
-                $useracl->modifiedby = $request->modifiedby;
-                $useracl->aco_id = $request->aco_id[$i]  ?? 0;
                 if ($request->status[$i] == $aktif) {
-                    // dd($request->user_id[$i]);
-                    $useracl->save();
+                    $useracl = new UserAcl();
+                    $useracl->user_id = $request->user_id;
+                    $useracl->modifiedby = $request->modifiedby;
+                    $useracl->aco_id = $request->aco_id[$i]  ?? 0;
+
+                    if ($useracl->save()) {
+                        $logTrail = [
+                            'namatabel' => strtoupper($useracl->getTable()),
+                            'postingdari' => 'ENTRY USER ACL',
+                            'idtrans' => $useracl->id,
+                            'nobuktitrans' => $useracl->id,
+                            'aksi' => 'ENTRY',
+                            'datajson' => $useracl->toArray(),
+                            'modifiedby' => $useracl->modifiedby
+                        ];
+
+                        $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                        $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+
+                        DB::commit();
+                    }
                 }
-            }
-
-
-            $datajson = [
-                'aco_id' => $request->aco_id,
-                'user_id' => $request->user_id,
-                'modifiedby' => strtoupper($request->modifiedby),
-
-            ];
-
-             
-
-            $datalogtrail = [
-                'namatabel' => 'USERACL',
-                'postingdari' => 'ENTRY USER ACL',
-                'idtrans' => $request->id,
-                'nobuktitrans' => $request->id,
-                'aksi' => 'ENTRY',
-                'datajson' => json_encode($datajson),
-                'modifiedby' => $request->modifiedby,
-            ];
-
-            $data=new StoreLogTrailRequest($datalogtrail);
-            app(LogTrailController::class)->store($data);             
-
-            DB::commit();
-            /* Set position and page */
-            $del = 0;
-            $data = $this->getid($request->user_id, $request, $del) ?? 0;
-
-            $useracl->position = $data->id;
-            $useracl->id = $data->row;
-
-
-
-            // dd($useracl->position );
-            if (isset($request->limit)) {
-                $useracl->page = ceil($useracl->position / $request->limit);
             }
 
             return response([
                 'status' => true,
                 'message' => 'Berhasil disimpan',
-                'data' => $useracl
+                'data' => []
             ]);
         } catch (\Throwable $th) {
             DB::rollBack();
@@ -422,38 +396,31 @@ class UserAclController extends Controller
             UserAcl::where('user_id', $request->user_id)->delete();
 
             for ($i = 0; $i < count($request->aco_id); $i++) {
-                $useracl = new UserAcl();
-                $useracl->user_id = $request->user_id;
-                $useracl->modifiedby = $request->modifiedby;
-                $useracl->aco_id = $request->aco_id[$i]  ?? 0;
-                $useracl->save();
+                if ($request->status[$i] == 1) {
+                    $useracl = new UserAcl();
+                    $useracl->user_id = $request->user_id;
+                    $useracl->modifiedby = $request->modifiedby;
+                    $useracl->aco_id = $request->aco_id[$i]  ?? 0;
+
+                    if ($useracl->save()) {
+                        $logTrail = [
+                            'namatabel' => strtoupper($useracl->getTable()),
+                            'postingdari' => 'ENTRY USER ACL',
+                            'idtrans' => $useracl->id,
+                            'nobuktitrans' => $useracl->id,
+                            'aksi' => 'ENTRY',
+                            'datajson' => $useracl->toArray(),
+                            'modifiedby' => $useracl->modifiedby
+                        ];
+
+                        $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                        $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+
+                        DB::commit();
+                    }
+                }
             }
 
-
-
-            $datajson = [
-                'aco_id' => $request->aco_id,
-                'user_id' => $request->user_id,
-                'modifiedby' => strtoupper($request->modifiedby),
-
-            ];
-
-             
-
-            $datalogtrail = [
-                'namatabel' => 'USERACL',
-                'postingdari' => 'EDIT USER ACL',
-                'idtrans' => $useracl->id,
-                'nobuktitrans' => $useracl->id,
-                'aksi' => 'EDIT',
-                'datajson' => json_encode($datajson),
-                'modifiedby' => $useracl->modifiedby,
-            ];
-
-            $data=new StoreLogTrailRequest($datalogtrail);
-            app(LogTrailController::class)->store($data);   
-
-            DB::commit();
             /* Set position and page */
             $del = 0;
             $data = $this->getid($request->user_id, $request, $del);
@@ -485,32 +452,26 @@ class UserAclController extends Controller
     {
         DB::beginTransaction();
         try {
+            $delete = UserAcl::where('user_id', $request->user_id)->delete();
 
-            UserAcl::where('user_id', $request->user_id)->delete();
 
-            $datajson = [
-                'aco_id' => $request->aco_id,
-                'user_id' => $request->user_id,
-                'modifiedby' => strtoupper($request->modifiedby),
+            if ($delete > 0) {
+                $logTrail = [
+                    'namatabel' => strtoupper($useracl->getTable()),
+                    'postingdari' => 'ENTRY USER ACL',
+                    'idtrans' => $useracl->id,
+                    'nobuktitrans' => $useracl->id,
+                    'aksi' => 'ENTRY',
+                    'datajson' => $useracl->toArray(),
+                    'modifiedby' => $useracl->modifiedby
+                ];
 
-            ];
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-             
+                DB::commit();
+            }
 
-            $datalogtrail = [
-                'namatabel' => 'USERACL',
-                'postingdari' => 'DELETE USER ACL',
-                'idtrans' => $request->id,
-                'nobuktitrans' => $request->id,
-                'aksi' => 'DELETE',
-                'datajson' => json_encode($datajson),
-                'modifiedby' => $request->modifiedby,
-            ];
-
-            $data=new StoreLogTrailRequest($datalogtrail);
-            app(LogTrailController::class)->store($data);   
-
-            DB::commit();
             $del = 1;
             // dd($request->user_id);
 
@@ -621,12 +582,6 @@ class UserAclController extends Controller
 
             $table->index('user_id');
         });
-
-
-
-
-
-
 
         DB::table($temp)->insertUsing(['user_id', 'id_',  'user',  'modifiedby', 'updated_at'], $query);
 

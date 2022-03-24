@@ -19,7 +19,7 @@ class CreateakunpusatTable extends Migration
             $table->longText('keterangancoa')->default('');
             $table->string('type', 50)->default('');
             $table->integer('level')->length(11)->default(0);
-            $table->integer('aktif')->length(11)->default(0);
+            $table->integer('statusaktif')->length(11)->default(0);
             $table->string('parent', 255)->default('');
             $table->integer('statuscoa')->length(11)->default(0);
             $table->integer('statusaccountpayable')->length(11)->default(0);

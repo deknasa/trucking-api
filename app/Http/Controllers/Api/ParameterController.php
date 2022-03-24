@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Parameter;
 use App\Http\Requests\ParameterRequest;
 use App\Http\Requests\StoreLogTrailRequest;
+use App\Http\Resources\Parameter as ResourcesParameter;
+use App\Http\Resources\ParameterResource;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -22,7 +24,7 @@ class ParameterController extends Controller
     public function index(Request $request)
     {
         $params = [
-            'offset' => $request->offset ?? 0,
+            'offset' => $request->offset ?? ($request->limit * ($request->page - 1)),
             'limit' => $request->limit ?? 10,
             'search' => $request->search ?? [],
             'sortIndex' => $request->sortIndex ?? 'id',

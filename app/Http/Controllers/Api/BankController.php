@@ -43,13 +43,15 @@ class BankController extends Controller
                 'bank.namabank',
                 'bank.coa',
                 'bank.tipe',
-                'bank.statusaktif',
+                'parameter.text as statusaktif',
                 'bank.kodepenerimaan',
                 'bank.kodepengeluaran',
                 'bank.modifiedby',
                 'bank.created_at',
                 'bank.updated_at'
-            )->orderBy('bank.id', $params['sortOrder']);
+            )
+            ->leftJoin('parameter', 'bank.statusaktif', '=', 'parameter.id')
+            ->orderBy('bank.id', $params['sortOrder']);
         } else if ($params['sortIndex'] == 'kodebank' or $params['sortIndex'] == 'namabank') {
             $query = Bank::select(
                 'bank.id',
@@ -57,13 +59,14 @@ class BankController extends Controller
                 'bank.namabank',
                 'bank.coa',
                 'bank.tipe',
-                'bank.statusaktif',
+                'parameter.text as statusaktif',
                 'bank.kodepenerimaan',
                 'bank.kodepengeluaran',
                 'bank.modifiedby',
                 'bank.created_at',
                 'bank.updated_at'
             )
+                ->leftJoin('parameter', 'bank.statusaktif', '=', 'parameter.id')
                 ->orderBy($params['sortIndex'], $params['sortOrder'])
                 ->orderBy('bank.id', $params['sortOrder']);
         } else {
@@ -74,13 +77,14 @@ class BankController extends Controller
                     'bank.namabank',
                     'bank.coa',
                     'bank.tipe',
-                    'bank.statusaktif',
+                    'parameter.text as statusaktif',
                     'bank.kodepenerimaan',
                     'bank.kodepengeluaran',
                     'bank.modifiedby',
                     'bank.created_at',
                     'bank.updated_at'
                 )
+                    ->leftJoin('parameter', 'bank.statusaktif', '=', 'parameter.id')
                     ->orderBy($params['sortIndex'], $params['sortOrder'])
                     ->orderBy('bank.id', $params['sortOrder']);
             } else {
@@ -90,13 +94,14 @@ class BankController extends Controller
                     'bank.namabank',
                     'bank.coa',
                     'bank.tipe',
-                    'bank.statusaktif',
+                    'parameter.text as statusaktif',
                     'bank.kodepenerimaan',
                     'bank.kodepengeluaran',
                     'bank.modifiedby',
                     'bank.created_at',
                     'bank.updated_at'
                 )
+                    ->leftJoin('parameter', 'bank.statusaktif', '=', 'parameter.id')
                     ->orderBy($params['sortIndex'], $params['sortOrder'])
                     ->orderBy('bank.id', 'asc');
             }

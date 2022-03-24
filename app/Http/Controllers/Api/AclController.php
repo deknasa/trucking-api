@@ -301,61 +301,37 @@ class AclController extends Controller
             $controller = new ParameterController;
             $dataaktif = $controller->getparameterid('STATUS AKTIF', 'STATUS AKTIF', 'AKTIF');
             $aktif = $dataaktif->id;
+
             for ($i = 0; $i < count($request->aco_id); $i++) {
-                $acl = new Acl();
-
-                $acl->role_id = $request->role_id;
-                $acl->modifiedby = $request->modifiedby;
-                $acl->aco_id = $request->aco_id[$i]  ?? 0;
                 if ($request->status[$i] == $aktif) {
-                    // dd($request->role_id[$i]);
-                    $acl->save();
+                    $acl = new Acl();
+                    $acl->role_id = $request->role_id;
+                    $acl->modifiedby = $request->modifiedby;
+                    $acl->aco_id = $request->aco_id[$i]  ?? 0;
+                    if ($request->status[$i] == $aktif) {
+                        if ($acl->save()) {
+                            $logTrail = [
+                                'namatabel' => strtoupper($acl->getTable()),
+                                'postingdari' => 'ENTRY ACL',
+                                'idtrans' => $acl->id,
+                                'nobuktitrans' => $acl->id,
+                                'aksi' => 'ENTRY',
+                                'datajson' => $acl->toArray(),
+                                'modifiedby' => $acl->modifiedby
+                            ];
+
+                            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                            $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+
+                            DB::commit();
+                        }
+                    }
                 }
-            }
-
-
-
-
-            $datajson = [
-                'aco_id' => $request->aco_id,
-                'role_id' => $request->role_id,
-                'modifiedby' => strtoupper($request->modifiedby),
-
-            ];
-
-              
-            $datalogtrail = [
-                'namatabel' => 'ACL',
-                'postingdari' => 'ENTRY ACL',
-                'idtrans' => $request->id,
-                'nobuktitrans' => $request->id,
-                'aksi' => 'ENTRY',
-                'datajson' => json_encode($datajson),
-                'modifiedby' => $request->modifiedby,
-            ];
-
-            $data=new StoreLogTrailRequest($datalogtrail);
-            app(LogTrailController::class)->store($data);  
-
-            DB::commit();
-            /* Set position and page */
-            $del = 0;
-            $data = $this->getid($request->role_id, $request, $del) ?? 0;
-
-            $acl->position = $data->id;
-            $acl->id = $data->row;
-
-
-
-            // dd($acl->position );
-            if (isset($request->limit)) {
-                $acl->page = ceil($acl->position / $request->limit);
             }
 
             return response([
                 'status' => true,
                 'message' => 'Berhasil disimpan',
-                'data' => $acl
             ]);
         } catch (\Throwable $th) {
             DB::rollBack();
@@ -408,36 +384,33 @@ class AclController extends Controller
             Acl::where('role_id', $request->role_id)->delete();
 
             for ($i = 0; $i < count($request->aco_id); $i++) {
-                $acl = new Acl();
-                $acl->role_id = $request->role_id;
-                $acl->modifiedby = $request->modifiedby;
-                $acl->aco_id = $request->aco_id[$i]  ?? 0;
-                $acl->save();
+                if ($request->status[$i] == 1) {
+                    $acl = new Acl();
+                    $acl->role_id = $request->role_id;
+                    $acl->modifiedby = $request->modifiedby;
+                    $acl->aco_id = $request->aco_id[$i]  ?? 0;
+
+                    if ($request->status[$i] == 1) {
+                        if ($acl->save()) {
+                            $logTrail = [
+                                'namatabel' => strtoupper($acl->getTable()),
+                                'postingdari' => 'EDIT ACL',
+                                'idtrans' => $acl->id,
+                                'nobuktitrans' => $acl->id,
+                                'aksi' => 'EDIT',
+                                'datajson' => $acl->toArray(),
+                                'modifiedby' => $acl->modifiedby
+                            ];
+
+                            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                            $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+
+                            DB::commit();
+                        }
+                    }
+                }
             }
 
-
-            $datajson = [
-                'aco_id' => $request->aco_id,
-                'role_id' => $request->role_id,
-                'modifiedby' => strtoupper($request->modifiedby),
-
-            ];
-
-              
-            $datalogtrail = [
-                'namatabel' => 'ACL',
-                'postingdari' => 'EDIT ACL',
-                'idtrans' => $request->id,
-                'nobuktitrans' => $request->id,
-                'aksi' => 'EDIT',
-                'datajson' => json_encode($datajson),
-                'modifiedby' => $request->modifiedby,
-            ];
-
-            $data=new StoreLogTrailRequest($datalogtrail);
-            app(LogTrailController::class)->store($data);  
-
-            DB::commit();
             /* Set position and page */
             $del = 0;
             $data = $this->getid($request->role_id, $request, $del);
@@ -468,43 +441,40 @@ class AclController extends Controller
     public function destroy(Acl $acl, Request $request)
     {
         DB::beginTransaction();
+
         try {
+            $delete = Acl::where('role_id', $request->role_id)->delete();
 
-            Acl::where('role_id', $request->role_id)->delete();
+            if ($delete > 0) {
+                if ($acl->save()) {
+                    $logTrail = [
+                        'namatabel' => strtoupper($acl->getTable()),
+                        'postingdari' => 'DELETE ACL',
+                        'idtrans' => $acl->id,
+                        'nobuktitrans' => $acl->id,
+                        'aksi' => 'DELETE',
+                        'datajson' => $acl->toArray(),
+                        'modifiedby' => $acl->modifiedby
+                    ];
 
-            $datajson = [
-                'aco_id' => $request->aco_id,
-                'role_id' => $request->role_id,
-                'modifiedby' => strtoupper($request->modifiedby),
+                    $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                    $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-            ];
+                    DB::commit();
+                }
+            }
 
-              
-            $datalogtrail = [
-                'namatabel' => 'ACL',
-                'postingdari' => 'DELETE ACL',
-                'idtrans' => $request->id,
-                'nobuktitrans' => $request->id,
-                'aksi' => 'DELETE',
-                'datajson' => json_encode($datajson),
-                'modifiedby' => $request->modifiedby,
-            ];
-
-            $data=new StoreLogTrailRequest($datalogtrail);
-            app(LogTrailController::class)->store($data);  
-
-            DB::commit();
             $del = 1;
-            // dd($request->user_id);
 
             $data = $this->getid($request->role_id, $request, $del);
 
             $acl->position = $data->row;
             $acl->id = $data->id;
+
             if (isset($request->limit)) {
                 $acl->page = ceil($acl->position / $request->limit);
             }
-            // dd($acl);
+
             return response([
                 'status' => true,
                 'message' => 'Berhasil dihapus',
