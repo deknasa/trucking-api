@@ -42,9 +42,11 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 Route::post('token', [AuthController::class, 'token']);
 
+Route::get('parameter/export', [ParameterController::class, 'export']);
+Route::get('parameter/field_length', [ParameterController::class, 'fieldLength']);
+Route::resource('parameter', ParameterController::class);
+
 route::middleware('auth:api')->group(function () {
-    Route::get('parameter/field_length', [ParameterController::class, 'fieldLength']);
-    Route::resource('parameter', ParameterController::class);
 
     Route::get('absensi/no_bukti', [AbsensiSupirHeaderController::class, 'getNoBukti']);
     Route::get('absensi/running_number', [AbsensiSupirHeaderController::class, 'getRunningNumber']);

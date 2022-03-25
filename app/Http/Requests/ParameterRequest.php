@@ -29,7 +29,6 @@ class ParameterRequest extends FormRequest
             'subgrp' => 'required',
             'text' => 'required',
             'memo' => 'required',
-            'modifiedby' => 'required'
         ];
     }
 
