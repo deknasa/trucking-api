@@ -84,6 +84,7 @@ route::middleware('auth:api')->group(function () {
     Route::resource('acos', AcosController::class);
 
     Route::get('user/field_length', [UserController::class, 'fieldLength']);
+    Route::get('user/export', [UserController::class, 'export'])->name('user.export');
     Route::get('user/combostatus', [UserController::class, 'combostatus']);
     Route::get('user/combocabang', [UserController::class, 'combocabang']);
     Route::get('user/getuserid', [UserController::class, 'getuserid']);

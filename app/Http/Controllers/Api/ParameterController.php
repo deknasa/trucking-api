@@ -125,12 +125,12 @@ class ParameterController extends Controller
             'totalPages' => $totalPages ?? 0
         ];
 
-            return response([
-                'status' => true,
-                'data' => $parameters,
-                'attributes' => $attributes,
-                'params' => $params
-            ]);
+        return response([
+            'status' => true,
+            'data' => $parameters,
+            'attributes' => $attributes,
+            'params' => $params
+        ]);
     }
 
     /**
