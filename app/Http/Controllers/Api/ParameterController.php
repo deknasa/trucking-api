@@ -18,8 +18,6 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class ParameterController extends Controller
 {
-    protected $table = 'Parameter';
-
     public function index()
     {
         $params = [
@@ -31,13 +29,13 @@ class ParameterController extends Controller
         ];
 
         /* Sorting */
-        $query = DB::table($this->table)->orderBy($params['sortIndex'], $params['sortOrder']);
+        $query = DB::table((new Parameter)->getTable())->orderBy($params['sortIndex'], $params['sortOrder']);
 
         $totalRows = $query->count();
         $totalPages = $params['limit'] > 0 ? ceil($totalRows / $params['limit']) : 1;
 
         if ($params['sortIndex'] == 'id') {
-            $query = DB::table($this->table)->select(
+            $query = DB::table((new Parameter)->getTable())->select(
                 'parameter.id',
                 'parameter.grp',
                 'parameter.subgrp',
@@ -48,7 +46,7 @@ class ParameterController extends Controller
                 'parameter.updated_at'
             )->orderBy('parameter.id', $params['sortOrder']);
         } else if ($params['sortIndex'] == 'grp' or $params['sortIndex'] == 'subgrp') {
-            $query = DB::table($this->table)->select(
+            $query = DB::table((new Parameter)->getTable())->select(
                 'parameter.id',
                 'parameter.grp',
                 'parameter.subgrp',
@@ -63,7 +61,7 @@ class ParameterController extends Controller
                 ->orderBy('parameter.id', $params['sortOrder']);
         } else {
             if ($params['sortOrder'] == 'asc') {
-                $query = DB::table($this->table)->select(
+                $query = DB::table((new Parameter)->getTable())->select(
                     'parameter.id',
                     'parameter.grp',
                     'parameter.subgrp',
@@ -76,7 +74,7 @@ class ParameterController extends Controller
                     ->orderBy($params['sortIndex'], $params['sortOrder'])
                     ->orderBy('parameter.id', $params['sortOrder']);
             } else {
-                $query = DB::table($this->table)->select(
+                $query = DB::table((new Parameter)->getTable())->select(
                     'parameter.id',
                     'parameter.grp',
                     'parameter.subgrp',
