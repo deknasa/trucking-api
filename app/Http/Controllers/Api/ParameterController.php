@@ -13,32 +13,29 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class ParameterController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index(Request $request)
+    public function index()
     {
         $params = [
-            'offset' => $request->offset ?? ($request->limit * ($request->page - 1)),
-            'limit' => $request->limit ?? 10,
-            'search' => $request->search ?? [],
-            'sortIndex' => $request->sortIndex ?? 'id',
-            'sortOrder' => $request->sortOrder ?? 'asc',
+            'offset' => request()->offset ?? ((request()->page - 1) * request()->limit),
+            'limit' => request()->limit ?? 10,
+            'filters' => json_decode(request()->filters, true) ?? [],
+            'sortIndex' => request()->sortIndex ?? 'id',
+            'sortOrder' => request()->sortOrder ?? 'asc',
         ];
 
-        $totalRows = Parameter::count();
+        /* Sorting */
+        $query = DB::table((new Parameter)->getTable())->orderBy($params['sortIndex'], $params['sortOrder']);
+
+        $totalRows = $query->count();
         $totalPages = $params['limit'] > 0 ? ceil($totalRows / $params['limit']) : 1;
 
-        /* Sorting */
-        $query = Parameter::orderBy($params['sortIndex'], $params['sortOrder']);
-
         if ($params['sortIndex'] == 'id') {
-            $query = Parameter::select(
+            $query = DB::table((new Parameter)->getTable())->select(
                 'parameter.id',
                 'parameter.grp',
                 'parameter.subgrp',
@@ -49,7 +46,7 @@ class ParameterController extends Controller
                 'parameter.updated_at'
             )->orderBy('parameter.id', $params['sortOrder']);
         } else if ($params['sortIndex'] == 'grp' or $params['sortIndex'] == 'subgrp') {
-            $query = Parameter::select(
+            $query = DB::table((new Parameter)->getTable())->select(
                 'parameter.id',
                 'parameter.grp',
                 'parameter.subgrp',
@@ -64,7 +61,7 @@ class ParameterController extends Controller
                 ->orderBy('parameter.id', $params['sortOrder']);
         } else {
             if ($params['sortOrder'] == 'asc') {
-                $query = Parameter::select(
+                $query = DB::table((new Parameter)->getTable())->select(
                     'parameter.id',
                     'parameter.grp',
                     'parameter.subgrp',
@@ -77,7 +74,7 @@ class ParameterController extends Controller
                     ->orderBy($params['sortIndex'], $params['sortOrder'])
                     ->orderBy('parameter.id', $params['sortOrder']);
             } else {
-                $query = Parameter::select(
+                $query = DB::table((new Parameter)->getTable())->select(
                     'parameter.id',
                     'parameter.grp',
                     'parameter.subgrp',
@@ -93,17 +90,17 @@ class ParameterController extends Controller
         }
 
         /* Searching */
-        if (count($params['search']) > 0 && @$params['search']['rules'][0]['data'] != '') {
-            switch ($params['search']['groupOp']) {
+        if (count($params['filters']) > 0 && @$params['filters']['rules'][0]['data'] != '') {
+            switch ($params['filters']['groupOp']) {
                 case "AND":
-                    foreach ($params['search']['rules'] as $index => $search) {
-                        $query = $query->where($search['field'], 'LIKE', "%$search[data]%");
+                    foreach ($params['filters']['rules'] as $index => $filters) {
+                        $query = $query->where($filters['field'], 'LIKE', "%$filters[data]%");
                     }
 
                     break;
                 case "OR":
-                    foreach ($params['search']['rules'] as $index => $search) {
-                        $query = $query->orWhere($search['field'], 'LIKE', "%$search[data]%");
+                    foreach ($params['filters']['rules'] as $index => $filters) {
+                        $query = $query->orWhere($filters['field'], 'LIKE', "%$filters[data]%");
                     }
 
                     break;
@@ -112,7 +109,7 @@ class ParameterController extends Controller
                     break;
             }
 
-            $totalRows = count($query->get());
+            $totalRows = $query->count();
             $totalPages = $params['limit'] > 0 ? ceil($totalRows / $params['limit']) : 1;
         }
 
@@ -128,12 +125,12 @@ class ParameterController extends Controller
             'totalPages' => $totalPages ?? 0
         ];
 
-        return response([
-            'status' => true,
-            'data' => $parameters,
-            'attributes' => $attributes,
-            'params' => $params
-        ]);
+            return response([
+                'status' => true,
+                'data' => $parameters,
+                'attributes' => $attributes,
+                'params' => $params
+            ]);
     }
 
     /**
@@ -152,7 +149,7 @@ class ParameterController extends Controller
             $parameter->subgrp = $request->subgrp;
             $parameter->text = $request->text;
             $parameter->memo = $request->memo;
-            $parameter->modifiedby = $request->modifiedby;
+            $parameter->modifiedby = auth('api')->user()->name;
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
 
@@ -217,13 +214,11 @@ class ParameterController extends Controller
     public function update(ParameterRequest $request, Parameter $parameter)
     {
         try {
-            $parameter = Parameter::findOrFail($parameter->id);
-            $parameter->modifiedby = $request->modifiedby;
             $parameter->grp = $request->grp;
             $parameter->subgrp = $request->subgrp;
             $parameter->text = $request->text;
             $parameter->memo = $request->memo;
-            $parameter->modifiedby = $request->modifiedby;
+            $parameter->modifiedby = auth('api')->user()->name;
 
             if ($parameter->save()) {
                 $logTrail = [
@@ -462,5 +457,40 @@ class ParameterController extends Controller
 
         $data = $querydata->first();
         return $data;
+    }
+
+    public function export()
+    {
+        $response = $this->index();
+        $decodedResponse = json_decode($response->content(), true);
+        $parameters = $decodedResponse['data'];
+
+        $columns = [
+            [
+                'label' => 'No',
+            ],
+            [
+                'label' => 'ID',
+                'index' => 'id',
+            ],
+            [
+                'label' => 'Group',
+                'index' => 'grp',
+            ],
+            [
+                'label' => 'Subgroup',
+                'index' => 'subgrp',
+            ],
+            [
+                'label' => 'Text',
+                'index' => 'text',
+            ],
+            [
+                'label' => 'Memo',
+                'index' => 'memo',
+            ],
+        ];
+
+        $this->toExcel('Parameter', $parameters, $columns);
     }
 }
