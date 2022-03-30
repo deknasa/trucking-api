@@ -28,14 +28,14 @@ class AclController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index(Request $request)
+    public function index()
     {
         $params = [
-            'offset' => $request->offset ?? 0,
-            'limit' => $request->limit ?? 100,
-            'search' => $request->search ?? [],
-            'sortIndex' => $request->sortIndex ?? 'id',
-            'sortOrder' => $request->sortOrder ?? 'asc',
+            'offset' => request()->offset ?? ((request()->page - 1) * request()->limit),
+            'limit' => request()->limit ?? 10,
+            'filters' => json_decode(request()->filters, true) ?? [],
+            'sortIndex' => request()->sortIndex ?? 'id',
+            'sortOrder' => request()->sortOrder ?? 'asc',
         ];
 
         $temp = '##temp' . rand(1, 10000);
@@ -95,24 +95,24 @@ class AclController extends Controller
 
 
         /* Searching */
-        if (count($params['search']) > 0 && @$params['search']['rules'][0]['data'] != '') {
-            switch ($params['search']['groupOp']) {
+        if (count($params['filters']) > 0 && @$params['filters']['rules'][0]['data'] != '') {
+            switch ($params['filters']['groupOp']) {
                 case "AND":
-                    foreach ($params['search']['rules'] as $index => $search) {
-                        if ($search['field'] == 'rolename') {
-                            $query = $query->where('role.rolename', 'LIKE', "%$search[data]%");
+                    foreach ($params['filters']['rules'] as $index => $filters) {
+                        if ($filters['field'] == 'rolename') {
+                            $query = $query->where('role.rolename', 'LIKE', "%$filters[data]%");
                         } else {
-                            $query = $query->where($search['field'], 'LIKE', "%$search[data]%");
+                            $query = $query->where($filters['field'], 'LIKE', "%$filters[data]%");
                         }
                     }
 
                     break;
                 case "OR":
-                    foreach ($params['search']['rules'] as $index => $search) {
-                        if ($search['field'] == 'rolename') {
-                            $query = $query->orWhere('role.rolename', 'LIKE', "%$search[data]%");
+                    foreach ($params['filters']['rules'] as $index => $filters) {
+                        if ($filters['field'] == 'rolename') {
+                            $query = $query->orWhere('role.rolename', 'LIKE', "%$filters[data]%");
                         } else {
-                            $query = $query->orWhere($search['field'], 'LIKE', "%$search[data]%");
+                            $query = $query->orWhere($filters['field'], 'LIKE', "%$filters[data]%");
                         }
                     }
 
@@ -140,8 +140,6 @@ class AclController extends Controller
             'totalPages' => $totalPages
         ];
 
-        // echo $time2-$time1;
-        // echo '---';
         return response([
             'status' => true,
             'data' => $acl,
@@ -150,18 +148,16 @@ class AclController extends Controller
         ]);
     }
 
-    public function detail(Request $request)
+    public function detail()
     {
-
         $params = [
-            'offset' => $request->offset ?? 0,
-            'limit' => $request->limit ?? 100,
-            'search' => $request->search ?? [],
-            'sortIndex' => $request->sortIndex ?? 'id',
-            'sortOrder' => $request->sortOrder ?? 'asc',
+            'offset' => request()->offset ?? ((request()->page - 1) * request()->limit),
+            'limit' => request()->limit ?? 10,
+            'filters' => json_decode(request()->filters, true) ?? [],
+            'sortIndex' => request()->sortIndex ?? 'id',
+            'sortOrder' => request()->sortOrder ?? 'asc',
         ];
 
-        // dd($params);
         $totalRows = Acl::count();
         $totalPages = ceil($totalRows / $params['limit']);
 
@@ -178,7 +174,7 @@ class AclController extends Controller
             )
                 ->Join('acos', 'acl.aco_id', '=', 'acos.id')
                 ->Join('role', 'acl.role_id', '=', 'role.id')
-                ->where('acl.role_id', '=', $request->role_id)
+                ->where('acl.role_id', '=', request()->role_id)
                 ->orderBy('acl.id', $params['sortOrder']);
         } else {
             if ($params['sortOrder'] == 'asc') {
@@ -194,7 +190,7 @@ class AclController extends Controller
                     ->Join('acos', 'acl.aco_id', '=', 'acos.id')
                     ->Join('role', 'acl.role_id', '=', 'role.id')
                     ->orderBy($params['sortIndex'], $params['sortOrder'])
-                    ->where('acl.role_id', '=', $request->role_id)
+                    ->where('acl.role_id', '=', request()->role_id)
                     ->orderBy('acl.id', $params['sortOrder']);
             } else {
                 $query = Acl::select(
@@ -208,7 +204,7 @@ class AclController extends Controller
                 )
                     ->Join('acos', 'acl.aco_id', '=', 'acos.id')
                     ->Join('role', 'acl.role_id', '=', 'role.id')
-                    ->where('acl.role_id', '=', $request->role_id)
+                    ->where('acl.role_id', '=', request()->role_id)
                     ->orderBy($params['sortIndex'], $params['sortOrder'])
                     ->orderBy('acl.id', 'asc');
             }
@@ -216,32 +212,32 @@ class AclController extends Controller
 
 
         /* Searching */
-        if (count($params['search']) > 0 && @$params['search']['rules'][0]['data'] != '') {
-            switch ($params['search']['groupOp']) {
+        if (count($params['filters']) > 0 && @$params['filters']['rules'][0]['data'] != '') {
+            switch ($params['filters']['groupOp']) {
                 case "AND":
-                    foreach ($params['search']['rules'] as $index => $search) {
-                        if ($search['field'] == 'nama') {
-                            $query = $query->where('acos.nama', 'LIKE', "%$search[data]%");
-                        } else if ($search['field'] == 'class') {
-                            $query = $query->where('acos.class', 'LIKE', "%$search[data]%");
-                        } else if ($search['field'] == 'rolename') {
-                            $query = $query->where('role.rolename', 'LIKE', "%$search[data]%");
+                    foreach ($params['filters']['rules'] as $index => $filters) {
+                        if ($filters['field'] == 'nama') {
+                            $query = $query->where('acos.nama', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'class') {
+                            $query = $query->where('acos.class', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'rolename') {
+                            $query = $query->where('role.rolename', 'LIKE', "%$filters[data]%");
                         } else {
-                            $query = $query->where($search['field'], 'LIKE', "%$search[data]%");
+                            $query = $query->where($filters['field'], 'LIKE', "%$filters[data]%");
                         }
                     }
 
                     break;
                 case "OR":
-                    foreach ($params['search']['rules'] as $index => $search) {
-                        if ($search['field'] == 'nama') {
-                            $query = $query->orWhere('acos.nama', 'LIKE', "%$search[data]%");
-                        } else if ($search['field'] == 'class') {
-                            $query = $query->orWhere('acos.class', 'LIKE', "%$search[data]%");
-                        } else if ($search['field'] == 'rolename') {
-                            $query = $query->orWhere('role.rolename', 'LIKE', "%$search[data]%");
+                    foreach ($params['filters']['rules'] as $index => $filters) {
+                        if ($filters['field'] == 'nama') {
+                            $query = $query->orWhere('acos.nama', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'class') {
+                            $query = $query->orWhere('acos.class', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'rolename') {
+                            $query = $query->orWhere('role.rolename', 'LIKE', "%$filters[data]%");
                         } else {
-                            $query = $query->orWhere($search['field'], 'LIKE', "%$search[data]%");
+                            $query = $query->orWhere($filters['field'], 'LIKE', "%$filters[data]%");
                         }
                     }
 
@@ -269,8 +265,6 @@ class AclController extends Controller
             'totalPages' => $totalPages
         ];
 
-        // echo $time2-$time1;
-        // echo '---';
         return response([
             'status' => true,
             'data' => $acl,
@@ -306,7 +300,7 @@ class AclController extends Controller
                 if ($request->status[$i] == $aktif) {
                     $acl = new Acl();
                     $acl->role_id = $request->role_id;
-                    $acl->modifiedby = $request->modifiedby;
+                    $acl->modifiedby = auth('api')->user()->name;
                     $acl->aco_id = $request->aco_id[$i]  ?? 0;
                     if ($request->status[$i] == $aktif) {
                         if ($acl->save()) {
@@ -387,7 +381,7 @@ class AclController extends Controller
                 if ($request->status[$i] == 1) {
                     $acl = new Acl();
                     $acl->role_id = $request->role_id;
-                    $acl->modifiedby = $request->modifiedby;
+                    $acl->modifiedby = auth('api')->user()->name;
                     $acl->aco_id = $request->aco_id[$i]  ?? 0;
 
                     if ($request->status[$i] == 1) {
@@ -574,12 +568,6 @@ class AclController extends Controller
 
             $table->index('role_id');
         });
-
-
-
-
-
-
 
         DB::table($temp)->insertUsing(['role_id', 'id_',  'rolename',  'modifiedby', 'updated_at'], $query);
 

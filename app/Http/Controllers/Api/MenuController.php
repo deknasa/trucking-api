@@ -26,23 +26,22 @@ class MenuController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index(Request $request)
+    public function index()
     {
-
         $params = [
-            'offset' => $request->offset ?? 0,
-            'limit' => $request->limit ?? 100,
-            'search' => $request->search ?? [],
-            'sortIndex' => $request->sortIndex ?? 'id',
-            'sortOrder' => $request->sortOrder ?? 'asc',
+            'offset' => request()->offset ?? ((request()->page - 1) * request()->limit),
+            'limit' => request()->limit ?? 10,
+            'filters' => json_decode(request()->filters, true) ?? [],
+            'sortIndex' => request()->sortIndex ?? 'id',
+            'sortOrder' => request()->sortOrder ?? 'asc',
         ];
 
-        $totalRows = Menu::count();
+        $totalRows = DB::table((new Menu)->getTable())->count();
         $totalPages = ceil($totalRows / $params['limit']);
 
         /* Sorting */
         if ($params['sortIndex'] == 'id') {
-            $query = Menu::select(
+            $query = DB::table((new Menu)->getTable())->select(
                 DB::raw(
                     "menu.id,
                     menu.menuname,
@@ -62,7 +61,7 @@ class MenuController extends Controller
                 ->orderBy('menu.id', $params['sortOrder']);
         } else {
             if ($params['sortOrder'] == 'asc') {
-                $query = Menu::select(
+                $query = DB::table((new Menu)->getTable())->select(
                     DB::raw(
                         "menu.id,
                         menu.menuname,
@@ -79,10 +78,10 @@ class MenuController extends Controller
                 )
                     ->leftJoin('menu as menu2', 'menu2.id', '=', 'menu.menuparent')
                     ->leftJoin('acos', 'acos.id', '=', 'menu.aco_id')
-                    ->orderBy($params['sortIndex'], $params['sortOrder'])
+                    ->orderBy('menu.' . $params['sortIndex'], $params['sortOrder'])
                     ->orderBy('menu.id', $params['sortOrder']);
             } else {
-                $query = Menu::select(
+                $query = DB::table((new Menu)->getTable())->select(
                     DB::raw(
                         "menu.id,
                         menu.menuname,
@@ -99,31 +98,31 @@ class MenuController extends Controller
                 )
                     ->leftJoin('menu as menu2', 'menu2.id', '=', 'menu.menuparent')
                     ->leftJoin('acos', 'acos.id', '=', 'menu.aco_id')
-                    ->orderBy($params['sortIndex'], $params['sortOrder'])
+                    ->orderBy('menu.' . $params['sortIndex'], $params['sortOrder'])
                     ->orderBy('menu.id', 'asc');
             }
         }
 
 
         /* Searching */
-        if (count($params['search']) > 0 && @$params['search']['rules'][0]['data'] != '') {
-            switch ($params['search']['groupOp']) {
+        if (count($params['filters']) > 0 && @$params['filters']['rules'][0]['data'] != '') {
+            switch ($params['filters']['groupOp']) {
                 case "AND":
-                    foreach ($params['search']['rules'] as $index => $search) {
-                        if ($search['field'] == 'statusaktif') {
-                            $query = $query->where('parameter.text', 'LIKE', "%$search[data]%");
+                    foreach ($params['filters']['rules'] as $index => $filters) {
+                        if ($filters['field'] == 'statusaktif') {
+                            $query = $query->where('parameter.text', 'LIKE', "%$filters[data]%");
                         } else {
-                            $query = $query->where($search['field'], 'LIKE', "%$search[data]%");
+                            $query = $query->where('menu.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
                     }
 
                     break;
                 case "OR":
-                    foreach ($params['search']['rules'] as $index => $search) {
-                        if ($search['field'] == 'statusaktif') {
-                            $query = $query->orWhere('parameter.text', 'LIKE', "%$search[data]%");
+                    foreach ($params['filters']['rules'] as $index => $filters) {
+                        if ($filters['field'] == 'statusaktif') {
+                            $query = $query->orWhere('parameter.text', 'LIKE', "%$filters[data]%");
                         } else {
-                            $query = $query->orWhere($search['field'], 'LIKE', "%$search[data]%");
+                            $query = $query->orWhere('menu.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
                     }
 
@@ -190,7 +189,7 @@ class MenuController extends Controller
                         'class' => $namaclass,
                         'method' => $value['method'],
                         'nama' => $value['name'],
-                        'modifiedby' => $request->modifiedby,
+                        'modifiedby' => auth('api')->user()->name,
                     ];
 
                     $data = new StoreAcosRequest($dataacos);
@@ -218,7 +217,7 @@ class MenuController extends Controller
             $menu->menuparent = $request->menuparent ?? 0;
             $menu->menuicon = strtolower($request->menuicon);
             $menu->menuexe = strtolower($request->menuexe);
-            $menu->modifiedby = $request->modifiedby;
+            $menu->modifiedby = auth('api')->user()->name;
             $menu->link = "";
             $menu->aco_id = $menuacoid;
 
@@ -450,6 +449,53 @@ class MenuController extends Controller
             DB::rollBack();
             return response($th->getMessage());
         }
+    }
+
+    public function export()
+    {
+        $response = $this->index();
+        $decodedResponse = json_decode($response->content(), true);
+        $menus = $decodedResponse['data'];
+
+        $columns = [
+            [
+                'label' => 'No',
+            ],
+            [
+                'label' => 'ID',
+                'index' => 'id',
+            ],
+            [
+                'label' => 'Menu Name',
+                'index' => 'menuname',
+            ],
+            [
+                'label' => 'Menu Parent',
+                'index' => 'menuparent',
+            ],
+            [
+                'label' => 'Menu Icon',
+                'index' => 'menuicon',
+            ],
+            [
+                'label' => 'Aco ID',
+                'index' => 'aco_id',
+            ],
+            [
+                'label' => 'Link',
+                'index' => 'link',
+            ],
+            [
+                'label' => 'Menu Exe',
+                'index' => 'menuexe',
+            ],
+            [
+                'label' => 'Menu Kode',
+                'index' => 'menukode',
+            ],
+        ];
+
+        $this->toExcel('Menu', $menus, $columns);
     }
 
 

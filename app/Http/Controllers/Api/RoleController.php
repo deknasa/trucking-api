@@ -24,22 +24,22 @@ class RoleController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index(Request $request)
+    public function index()
     {
         $params = [
-            'offset' => $request->offset ?? 0,
-            'limit' => $request->limit ?? 100,
-            'search' => $request->search ?? [],
-            'sortIndex' => $request->sortIndex ?? 'id',
-            'sortOrder' => $request->sortOrder ?? 'asc',
+            'offset' => request()->offset ?? ((request()->page - 1) * request()->limit),
+            'limit' => request()->limit ?? 10,
+            'filters' => json_decode(request()->filters, true) ?? [],
+            'sortIndex' => request()->sortIndex ?? 'id',
+            'sortOrder' => request()->sortOrder ?? 'asc',
         ];
 
-        $totalRows = Role::count();
+        $totalRows = DB::table((new Role)->getTable())->count();
         $totalPages = ceil($totalRows / $params['limit']);
 
         /* Sorting */
         if ($params['sortIndex'] == 'id') {
-            $query = Role::select(
+            $query = DB::table((new Role)->getTable())->select(
                 'role.id',
                 'role.rolename',
                 'role.modifiedby',
@@ -49,7 +49,7 @@ class RoleController extends Controller
                 ->orderBy('role.id', $params['sortOrder']);
         } else {
             if ($params['sortOrder'] == 'asc') {
-                $query = Role::select(
+                $query = DB::table((new Role)->getTable())->select(
                     'role.id',
                     'role.rolename',
                     'role.modifiedby',
@@ -59,7 +59,7 @@ class RoleController extends Controller
                     ->orderBy($params['sortIndex'], $params['sortOrder'])
                     ->orderBy('role.id', $params['sortOrder']);
             } else {
-                $query = Role::select(
+                $query = DB::table((new Role)->getTable())->select(
                     'role.id',
                     'role.rolename',
                     'role.modifiedby',
@@ -73,18 +73,18 @@ class RoleController extends Controller
 
 
         /* Searching */
-        if (count($params['search']) > 0 && @$params['search']['rules'][0]['data'] != '') {
-            switch ($params['search']['groupOp']) {
+        if (count($params['filters']) > 0 && @$params['filters']['rules'][0]['data'] != '') {
+            switch ($params['filters']['groupOp']) {
                 case "AND":
-                    foreach ($params['search']['rules'] as $index => $search) {
+                    foreach ($params['filters']['rules'] as $index => $filters) {
 
-                        $query = $query->where($search['field'], 'LIKE', "%$search[data]%");
+                        $query = $query->where($filters['field'], 'LIKE', "%$filters[data]%");
                     }
 
                     break;
                 case "OR":
-                    foreach ($params['search']['rules'] as $index => $search) {
-                        $query = $query->orWhere($search['field'], 'LIKE', "%$search[data]%");
+                    foreach ($params['filters']['rules'] as $index => $filters) {
+                        $query = $query->orWhere($filters['field'], 'LIKE', "%$filters[data]%");
                     }
 
                     break;
@@ -131,7 +131,7 @@ class RoleController extends Controller
         try {
             $role = new Role();
             $role->rolename = $request->rolename;
-            $role->modifiedby = $request->modifiedby;
+            $role->modifiedby = auth('api')->user()->name;
 
             if ($role->save()) {
                 $logTrail = [
@@ -196,7 +196,7 @@ class RoleController extends Controller
         DB::beginTransaction();
         try {
             $role->rolename = $request->rolename;
-            $role->modifiedby = $request->modifiedby;
+            $role->modifiedby = auth('api')->user()->name;
 
             if ($role->save()) {
                 $logTrail = [
@@ -279,6 +279,29 @@ class RoleController extends Controller
             DB::rollBack();
             return response($th->getMessage());
         }
+    }
+
+    public function export()
+    {
+        $response = $this->index();
+        $decodedResponse = json_decode($response->content(), true);
+        $roles = $decodedResponse['data'];
+
+        $columns = [
+            [
+                'label' => 'No',
+            ],
+            [
+                'label' => 'ID',
+                'index' => 'id',
+            ],
+            [
+                'label' => 'Role Name',
+                'index' => 'rolename',
+            ],
+        ];
+
+        $this->toExcel('Role', $roles, $columns);
     }
 
     public function fieldLength()

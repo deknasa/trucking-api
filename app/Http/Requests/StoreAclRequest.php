@@ -27,7 +27,6 @@ class StoreAclRequest extends FormRequest
         return [
             'aco_id' => 'required',
             'role_id' => 'required',
-            'modifiedby' => 'required'
         ];
     }
 
@@ -36,7 +35,6 @@ class StoreAclRequest extends FormRequest
         return [
             'aco_id' => 'aco id',
             'role_id' => 'role id',
-            'modifiedby' => 'modified by',
         ];
     }
 }
