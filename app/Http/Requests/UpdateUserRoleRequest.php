@@ -27,8 +27,6 @@ class UpdateUserRoleRequest extends FormRequest
         return [
             'user_id' => 'required',
             'role_id' => 'required',
-            'modifiedby' => 'required'
-            
         ];
     }
 
@@ -37,19 +35,6 @@ class UpdateUserRoleRequest extends FormRequest
         return [
             'user_id' => 'user id',
             'role_id' => 'role id',
-            'modifiedby' => 'modified by'
-        ];
-    }
-
-    public function messages()
-    {
-        $controller = new ErrorController;
-        return [
-            'user_id.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
-            'role_id.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
-            'modifiedby.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
-
-
         ];
     }
 }

@@ -114,6 +114,7 @@ route::middleware('auth:api')->group(function () {
     Route::get('useracl/detail', [UserAclController::class, 'detail']);
     Route::get('useracl/detaillist', [UserAclController::class, 'detaillist']);
     Route::get('useracl/combostatus', [UserAclController::class, 'combostatus']);
+    Route::get('useracl/export', [UserAclController::class, 'export'])->name('useracl.export');
     Route::resource('useracl', UserAclController::class);
 
     Route::get('logtrail/detail', [LogTrailController::class, 'detail']);

@@ -27,7 +27,7 @@ class StoreUserAclRequest extends FormRequest
     {
 
         return [
-            'aco_id' => 'required',
+            'aco_id' => 'required|array',
             'user_id' => 'required',
         ];
     }

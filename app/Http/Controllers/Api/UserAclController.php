@@ -314,6 +314,7 @@ class UserAclController extends Controller
                     $useracl = new UserAcl();
                     $useracl->user_id = $request->user_id;
                     $useracl->modifiedby = auth('api')->user()->name;
+                    
                     $useracl->aco_id = $request->aco_id[$i]  ?? 0;
 
                     if ($useracl->save()) {
@@ -342,7 +343,7 @@ class UserAclController extends Controller
             ]);
         } catch (\Throwable $th) {
             DB::rollBack();
-            return response($th->getMessage());
+            throw $th;
         }
     }
 
@@ -488,7 +489,33 @@ class UserAclController extends Controller
         }
     }
 
+    public function export()
+    {
+        $response = $this->index();
+        $decodedResponse = json_decode($response->content(), true);
+        $useracls = $decodedResponse['data'];
 
+        $columns = [
+            [
+                'label' => 'No',
+            ],
+            [
+                'label' => 'ID',
+                'index' => 'id',
+            ],
+            [
+                'label' => 'User ID',
+                'index' => 'user_id',
+            ],
+            [
+                'label' => 'User',
+                'index' => 'user',
+            ],
+        ];
+
+        $this->toExcel('User Acl', $useracls, $columns);
+    }
+    
     public function fieldLength()
     {
         $data = [];
