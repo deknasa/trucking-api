@@ -108,6 +108,7 @@ route::middleware('auth:api')->group(function () {
     Route::get('acl/detail', [AclController::class, 'detail']);
     Route::get('acl/detaillist', [AclController::class, 'detaillist']);
     Route::get('acl/combostatus', [AclController::class, 'combostatus']);
+    Route::get('acl/export', [AclController::class, 'export'])->name('acl.export');
     Route::resource('acl', AclController::class);
 
     Route::get('useracl/field_length', [UserAclController::class, 'fieldLength']);

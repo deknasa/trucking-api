@@ -410,7 +410,7 @@ class AclController extends Controller
             $data = $this->getid($request->role_id, $request, $del);
             $acl->position = $data->id;
             $acl->id = $data->row;
-            // dd($acl->position );
+            
             if (isset($request->limit)) {
                 $acl->page = ceil($acl->position / $request->limit);
             }
@@ -478,6 +478,33 @@ class AclController extends Controller
             DB::rollBack();
             return response($th->getMessage());
         }
+    }
+
+    public function export()
+    {
+        $response = $this->index();
+        $decodedResponse = json_decode($response->content(), true);
+        $acls = $decodedResponse['data'];
+
+        $columns = [
+            [
+                'label' => 'No',
+            ],
+            [
+                'label' => 'ID',
+                'index' => 'id',
+            ],
+            [
+                'label' => 'Role ID',
+                'index' => 'role_id',
+            ],
+            [
+                'label' => 'Role Name',
+                'index' => 'rolename',
+            ],
+        ];
+
+        $this->toExcel('Acl', $acls, $columns);
     }
 
     public function fieldLength()
