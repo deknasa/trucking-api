@@ -29,7 +29,6 @@ class UpdateUserAclRequest extends FormRequest
         return [
             'aco_id' => 'required',
             'user_id' => 'required',
-            'modifiedby' => 'required'
         ];
     }
 
@@ -38,19 +37,6 @@ class UpdateUserAclRequest extends FormRequest
         return [
             'aco_id' => 'aco id',
             'user_id' => 'user id',
-            'modifiedby' => 'modified by',
         ];
     }
-    public function messages()
-    {
-        $controller = new ErrorController;
-        return [
-            'aco_id.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
-            'user_id.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
-            'modifiedby.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
-
-        ];
-    }   
-
-    
 }
