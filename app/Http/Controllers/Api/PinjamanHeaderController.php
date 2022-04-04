@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\AbsensiSupirApproval;
-use App\Http\Requests\StoreAbsensiSupirApprovalRequest;
-use App\Http\Requests\UpdateAbsensiSupirApprovalRequest;
+use App\Models\PinjamanHeader;
+use App\Http\Requests\StorePinjamanHeaderRequest;
+use App\Http\Requests\UpdatePinjamanHeaderRequest;
 
-class AbsensiSupirApprovalController extends Controller
+class PinjamanHeaderController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -31,10 +31,10 @@ class AbsensiSupirApprovalController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \App\Http\Requests\StoreAbsensiSupirApprovalRequest  $request
+     * @param  \App\Http\Requests\StorePinjamanHeaderRequest  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(StoreAbsensiSupirApprovalRequest $request)
+    public function store(StorePinjamanHeaderRequest $request)
     {
         //
     }
@@ -42,10 +42,10 @@ class AbsensiSupirApprovalController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\AbsensiSupirApproval  $absensiSupirApproval
+     * @param  \App\Models\PinjamanHeader  $pinjamanHeader
      * @return \Illuminate\Http\Response
      */
-    public function show(AbsensiSupirApproval $absensiSupirApproval)
+    public function show(PinjamanHeader $pinjamanHeader)
     {
         //
     }
@@ -53,10 +53,10 @@ class AbsensiSupirApprovalController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Models\AbsensiSupirApproval  $absensiSupirApproval
+     * @param  \App\Models\PinjamanHeader  $pinjamanHeader
      * @return \Illuminate\Http\Response
      */
-    public function edit(AbsensiSupirApproval $absensiSupirApproval)
+    public function edit(PinjamanHeader $pinjamanHeader)
     {
         //
     }
@@ -64,11 +64,11 @@ class AbsensiSupirApprovalController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \App\Http\Requests\UpdateAbsensiSupirApprovalRequest  $request
-     * @param  \App\Models\AbsensiSupirApproval  $absensiSupirApproval
+     * @param  \App\Http\Requests\UpdatePinjamanHeaderRequest  $request
+     * @param  \App\Models\PinjamanHeader  $pinjamanHeader
      * @return \Illuminate\Http\Response
      */
-    public function update(UpdateAbsensiSupirApprovalRequest $request, AbsensiSupirApproval $absensiSupirApproval)
+    public function update(UpdatePinjamanHeaderRequest $request, PinjamanHeader $pinjamanHeader)
     {
         //
     }
@@ -76,10 +76,10 @@ class AbsensiSupirApprovalController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\AbsensiSupirApproval  $absensiSupirApproval
+     * @param  \App\Models\PinjamanHeader  $pinjamanHeader
      * @return \Illuminate\Http\Response
      */
-    public function destroy(AbsensiSupirApproval $absensiSupirApproval)
+    public function destroy(PinjamanHeader $pinjamanHeader)
     {
         //
     }

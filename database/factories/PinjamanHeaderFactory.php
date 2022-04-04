@@ -4,7 +4,7 @@ namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-class AbsensiSupirApprovalFactory extends Factory
+class PinjamanHeaderFactory extends Factory
 {
     /**
      * Define the model's default state.

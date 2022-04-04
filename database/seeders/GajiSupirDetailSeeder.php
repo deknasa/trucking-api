@@ -20,7 +20,7 @@ class GajiSupirDetailSeeder extends Seeder
             'nominaldeposito' => 10000,            
             'nominalpengembalianpinjaman' => 10000,            
             'nourut' => 1,            
-            'trip_nobukti' => 'TRP 0001/III/2022',            
+            'suratpengantar_nobukti' => 'TRP 0001/III/2022',            
             'gajisupir' => 149760,
             'gajikenek' => 15000,
             'gajiritasi' => 0,

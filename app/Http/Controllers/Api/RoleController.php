@@ -24,22 +24,22 @@ class RoleController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index(Request $request)
+    public function index()
     {
         $params = [
-            'offset' => $request->offset ?? 0,
-            'limit' => $request->limit ?? 100,
-            'search' => $request->search ?? [],
-            'sortIndex' => $request->sortIndex ?? 'id',
-            'sortOrder' => $request->sortOrder ?? 'asc',
+            'offset' => request()->offset ?? ((request()->page - 1) * request()->limit),
+            'limit' => request()->limit ?? 10,
+            'filters' => json_decode(request()->filters, true) ?? [],
+            'sortIndex' => request()->sortIndex ?? 'id',
+            'sortOrder' => request()->sortOrder ?? 'asc',
         ];
 
-        $totalRows = Role::count();
+        $totalRows = DB::table((new Role)->getTable())->count();
         $totalPages = ceil($totalRows / $params['limit']);
 
         /* Sorting */
         if ($params['sortIndex'] == 'id') {
-            $query = Role::select(
+            $query = DB::table((new Role)->getTable())->select(
                 'role.id',
                 'role.rolename',
                 'role.modifiedby',
@@ -49,7 +49,7 @@ class RoleController extends Controller
                 ->orderBy('role.id', $params['sortOrder']);
         } else {
             if ($params['sortOrder'] == 'asc') {
-                $query = Role::select(
+                $query = DB::table((new Role)->getTable())->select(
                     'role.id',
                     'role.rolename',
                     'role.modifiedby',
@@ -59,7 +59,7 @@ class RoleController extends Controller
                     ->orderBy($params['sortIndex'], $params['sortOrder'])
                     ->orderBy('role.id', $params['sortOrder']);
             } else {
-                $query = Role::select(
+                $query = DB::table((new Role)->getTable())->select(
                     'role.id',
                     'role.rolename',
                     'role.modifiedby',
@@ -73,18 +73,18 @@ class RoleController extends Controller
 
 
         /* Searching */
-        if (count($params['search']) > 0 && @$params['search']['rules'][0]['data'] != '') {
-            switch ($params['search']['groupOp']) {
+        if (count($params['filters']) > 0 && @$params['filters']['rules'][0]['data'] != '') {
+            switch ($params['filters']['groupOp']) {
                 case "AND":
-                    foreach ($params['search']['rules'] as $index => $search) {
+                    foreach ($params['filters']['rules'] as $index => $filters) {
 
-                        $query = $query->where($search['field'], 'LIKE', "%$search[data]%");
+                        $query = $query->where($filters['field'], 'LIKE', "%$filters[data]%");
                     }
 
                     break;
                 case "OR":
-                    foreach ($params['search']['rules'] as $index => $search) {
-                        $query = $query->orWhere($search['field'], 'LIKE', "%$search[data]%");
+                    foreach ($params['filters']['rules'] as $index => $filters) {
+                        $query = $query->orWhere($filters['field'], 'LIKE', "%$filters[data]%");
                     }
 
                     break;
@@ -111,24 +111,12 @@ class RoleController extends Controller
             'totalPages' => $totalPages
         ];
 
-        // echo $time2-$time1;
-        // echo '---';
         return response([
             'status' => true,
             'data' => $roles,
             'attributes' => $attributes,
             'params' => $params
         ]);
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
     }
 
     /**
@@ -142,35 +130,26 @@ class RoleController extends Controller
         DB::beginTransaction();
         try {
             $role = new Role();
-            $role->rolename = strtoupper($request->rolename);
-            $role->modifiedby = strtoupper($request->modifiedby);
+            $role->rolename = $request->rolename;
+            $role->modifiedby = auth('api')->user()->name;
 
+            if ($role->save()) {
+                $logTrail = [
+                    'namatabel' => strtoupper($role->getTable()),
+                    'postingdari' => 'ENTRY ROLE',
+                    'idtrans' => $role->id,
+                    'nobuktitrans' => $role->id,
+                    'aksi' => 'ENTRY',
+                    'datajson' => $role->toArray(),
+                    'modifiedby' => $role->modifiedby
+                ];
 
-            $role->save();
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-            $datajson = [
-                'id' => $role->id,
-                'rolename' => strtoupper($request->rolename),
-                'modifiedby' => strtoupper($request->modifiedby),
+                DB::commit();
+            }
 
-            ];
-
-             
-
-            $datalogtrail = [
-                'namatabel' => 'ROLE',
-                'postingdari' => 'ENTRY ROLE',
-                'idtrans' => $role->id,
-                'nobuktitrans' => $role->id,
-                'aksi' => 'ENTRY',
-                'datajson' => json_encode($datajson),
-                'modifiedby' => $role->modifiedby,
-            ];
-
-            $data=new StoreLogTrailRequest($datalogtrail);
-            app(LogTrailController::class)->store($data);    
-
-            DB::commit();
             /* Set position and page */
             $del = 0;
             $data = $this->getid($role->id, $request, $del);
@@ -206,17 +185,6 @@ class RoleController extends Controller
     }
 
     /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\Role  $role
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Role $role)
-    {
-        //
-    }
-
-    /**
      * Update the specified resource in storage.
      *
      * @param  \App\Http\Requests\UpdateRoleRequest  $request
@@ -227,46 +195,39 @@ class RoleController extends Controller
     {
         DB::beginTransaction();
         try {
-             $role->update(array_map('strtoupper',$request->validated()));
+            $role->rolename = $request->rolename;
+            $role->modifiedby = auth('api')->user()->name;
 
-             $datajson = [
-                'id' => $role->id,
-                'rolename' => strtoupper($request->rolename),
-                'modifiedby' => strtoupper($request->modifiedby),
+            if ($role->save()) {
+                $logTrail = [
+                    'namatabel' => strtoupper($role->getTable()),
+                    'postingdari' => 'EDIT ROLE',
+                    'idtrans' => $role->id,
+                    'nobuktitrans' => $role->id,
+                    'aksi' => 'EDIT',
+                    'datajson' => $role->toArray(),
+                    'modifiedby' => $role->modifiedby
+                ];
 
-            ];
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-             
+                DB::commit();
+            }
 
-            $datalogtrail = [
-                'namatabel' => 'ROLE',
-                'postingdari' => 'EDIT ROLE',
-                'idtrans' => $role->id,
-                'nobuktitrans' => $role->id,
-                'aksi' => 'EDIT',
-                'datajson' => json_encode($datajson),
-                'modifiedby' => $role->modifiedby,
-            ];
-
-            $data=new StoreLogTrailRequest($datalogtrail);
-            app(LogTrailController::class)->store($data);  
-
-            DB::commit();
-          
-
-                /* Set position and page */
-                $role->position = $this->getid($role->id, $request, 0)->row;
+            /* Set position and page */
+            $role->position = $this->getid($role->id, $request, 0)->row;
 
 
-                if (isset($request->limit)) {
-                    $role->page = ceil($role->position / $request->limit);
-                }
+            if (isset($request->limit)) {
+                $role->page = ceil($role->position / $request->limit);
+            }
 
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil diubah',
-                    'data' => $role
-                ]);
+            return response([
+                'status' => true,
+                'message' => 'Berhasil diubah',
+                'data' => $role
+            ]);
         } catch (\Throwable $th) {
             DB::rollBack();
             return response($th->getMessage());
@@ -283,49 +244,32 @@ class RoleController extends Controller
     {
         DB::beginTransaction();
         try {
+            if ($role->delete()) {
+                $logTrail = [
+                    'namatabel' => strtoupper($role->getTable()),
+                    'postingdari' => 'DELETE ROLE',
+                    'idtrans' => $role->id,
+                    'nobuktitrans' => $role->id,
+                    'aksi' => 'DELETE',
+                    'datajson' => $role->toArray(),
+                    'modifiedby' => $role->modifiedby
+                ];
 
-       
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-        Role::destroy($role->id);
-    
+                DB::commit();
+            }
 
-        $datajson = [
-            'id' => $role->id,
-            'modifiedby' => strtoupper($request->modifiedby),
-        ];
-
-        $datajson = [
-            'id' => $role->id,
-            'rolename' => strtoupper($request->rolename),
-            'modifiedby' => strtoupper($request->modifiedby),
-
-        ];
-
-         
-
-        $datalogtrail = [
-            'namatabel' => 'ROLE',
-            'postingdari' => 'DELETE ROLE',
-            'idtrans' => $role->id,
-            'nobuktitrans' => $role->id,
-            'aksi' => 'DELETE',
-            'datajson' => json_encode($datajson),
-            'modifiedby' => $role->modifiedby,
-        ];
-
-        $data=new StoreLogTrailRequest($datalogtrail);
-        app(LogTrailController::class)->store($data);  
-
-        DB::commit();
-
-        $del = 1;
+            $del = 1;
             $data = $this->getid($role->id, $request, $del);
             $role->position = $data->row;
             $role->id = $data->id;
+
             if (isset($request->limit)) {
                 $role->page = ceil($role->position / $request->limit);
             }
-            // dd($role);
+
             return response([
                 'status' => true,
                 'message' => 'Berhasil dihapus',
@@ -335,6 +279,29 @@ class RoleController extends Controller
             DB::rollBack();
             return response($th->getMessage());
         }
+    }
+
+    public function export()
+    {
+        $response = $this->index();
+        $decodedResponse = json_decode($response->content(), true);
+        $roles = $decodedResponse['data'];
+
+        $columns = [
+            [
+                'label' => 'No',
+            ],
+            [
+                'label' => 'ID',
+                'index' => 'id',
+            ],
+            [
+                'label' => 'Role Name',
+                'index' => 'rolename',
+            ],
+        ];
+
+        $this->toExcel('Role', $roles, $columns);
     }
 
     public function fieldLength()
@@ -458,7 +425,7 @@ class RoleController extends Controller
         ];
 
         $query = Role::select('id')
-        ->where('rolename', "=", $params['rolename']);
+            ->where('rolename', "=", $params['rolename']);
 
         $data = $query->first();
 
@@ -466,5 +433,4 @@ class RoleController extends Controller
             'data' => $data
         ]);
     }
-
 }

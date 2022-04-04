@@ -28,8 +28,6 @@ class UpdateMenuRequest extends FormRequest
             'menuname' => 'required',
             'menuseq' => 'required',
             'menuicon' => 'required',
-            'modifiedby' => 'required'
-            
         ];
     }
 
@@ -44,21 +42,6 @@ class UpdateMenuRequest extends FormRequest
             'link' => 'link',
             'menuexe' => 'menuexe',
             'menukode' => 'menukode',
-            'modifiedby' => 'modified by'
         ];
     }
-
-    public function messages()
-    {
-        $controller = new ErrorController;
-        return [
-            'menuname.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
-            'menuseq.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
-            'menuicon.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
-            'modifiedby.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
- 
-
-        ];
-    }
-
 }

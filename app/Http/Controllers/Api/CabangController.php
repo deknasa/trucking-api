@@ -26,22 +26,22 @@ class CabangController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index(Request $request)
+    public function index()
     {
         $params = [
-            'offset' => $request->offset ?? 0,
-            'limit' => $request->limit ?? 100,
-            'search' => $request->search ?? [],
-            'sortIndex' => $request->sortIndex ?? 'id',
-            'sortOrder' => $request->sortOrder ?? 'asc',
+            'offset' => request()->offset ?? ((request()->page - 1) * request()->limit),
+            'limit' => request()->limit ?? 10,
+            'filters' => json_decode(request()->filters, true) ?? [],
+            'sortIndex' => request()->sortIndex ?? 'id',
+            'sortOrder' => request()->sortOrder ?? 'asc',
         ];
 
-        $totalRows = Cabang::count();
+        $totalRows = DB::table((new Cabang)->getTable())->count();
         $totalPages = ceil($totalRows / $params['limit']);
 
         /* Sorting */
         if ($params['sortIndex'] == 'id') {
-            $query = Cabang::select(
+            $query = DB::table((new Cabang)->getTable())->select(
                 'cabang.id',
                 'cabang.kodecabang',
                 'cabang.namacabang',
@@ -53,7 +53,7 @@ class CabangController extends Controller
                 ->leftJoin('parameter', 'cabang.statusaktif', '=', 'parameter.id')
                 ->orderBy('cabang.id', $params['sortOrder']);
         } else if ($params['sortIndex'] == 'kodecabang') {
-            $query = Cabang::select(
+            $query = DB::table((new Cabang)->getTable())->select(
                 'cabang.id',
                 'cabang.kodecabang',
                 'cabang.namacabang',
@@ -63,12 +63,12 @@ class CabangController extends Controller
                 'cabang.updated_at'
             )
                 ->leftJoin('parameter', 'cabang.statusaktif', '=', 'parameter.id')
-                ->orderBy($params['sortIndex'], $params['sortOrder'])
+                ->orderBy('cabang.' . $params['sortIndex'], $params['sortOrder'])
                 ->orderBy('cabang.namacabang', $params['sortOrder'])
                 ->orderBy('cabang.id', $params['sortOrder']);
         } else {
             if ($params['sortOrder'] == 'asc') {
-                $query = Cabang::select(
+                $query = DB::table((new Cabang)->getTable())->select(
                     'cabang.id',
                     'cabang.kodecabang',
                     'cabang.namacabang',
@@ -78,10 +78,10 @@ class CabangController extends Controller
                     'cabang.updated_at'
                 )
                     ->leftJoin('parameter', 'cabang.statusaktif', '=', 'parameter.id')
-                    ->orderBy($params['sortIndex'], $params['sortOrder'])
+                    ->orderBy('cabang.' . $params['sortIndex'], $params['sortOrder'])
                     ->orderBy('cabang.id', $params['sortOrder']);
             } else {
-                $query = Cabang::select(
+                $query = DB::table((new Cabang)->getTable())->select(
                     'cabang.id',
                     'cabang.kodecabang',
                     'cabang.namacabang',
@@ -91,31 +91,31 @@ class CabangController extends Controller
                     'cabang.updated_at'
                 )
                     ->leftJoin('parameter', 'cabang.statusaktif', '=', 'parameter.id')
-                    ->orderBy($params['sortIndex'], $params['sortOrder'])
+                    ->orderBy('cabang.' . $params['sortIndex'], $params['sortOrder'])
                     ->orderBy('cabang.id', 'asc');
             }
         }
 
 
         /* Searching */
-        if (count($params['search']) > 0 && @$params['search']['rules'][0]['data'] != '') {
-            switch ($params['search']['groupOp']) {
+        if (count($params['filters']) > 0 && @$params['filters']['rules'][0]['data'] != '') {
+            switch ($params['filters']['groupOp']) {
                 case "AND":
-                    foreach ($params['search']['rules'] as $index => $search) {
-                        if ($search['field'] == 'statusaktif') {
-                            $query = $query->where('parameter.text', 'LIKE', "%$search[data]%");
+                    foreach ($params['filters']['rules'] as $index => $filters) {
+                        if ($filters['field'] == 'statusaktif') {
+                            $query = $query->where('parameter.text', 'LIKE', "%$filters[data]%");
                         } else {
-                            $query = $query->where($search['field'], 'LIKE', "%$search[data]%");
+                            $query = $query->where('cabang.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
                     }
 
                     break;
                 case "OR":
-                    foreach ($params['search']['rules'] as $index => $search) {
-                        if ($search['field'] == 'statusaktif') {
-                            $query = $query->orWhere('parameter.text', 'LIKE', "%$search[data]%");
+                    foreach ($params['filters']['rules'] as $index => $filters) {
+                        if ($filters['field'] == 'statusaktif') {
+                            $query = $query->orWhere('parameter.text', 'LIKE', "%$filters[data]%");
                         } else {
-                            $query = $query->orWhere($search['field'], 'LIKE', "%$search[data]%");
+                            $query = $query->orWhere('cabang.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
                     }
 
@@ -143,8 +143,6 @@ class CabangController extends Controller
             'totalPages' => $totalPages
         ];
 
-        // echo $time2-$time1;
-        // echo '---';
         return response([
             'status' => true,
             'data' => $cabangs,
@@ -174,42 +172,32 @@ class CabangController extends Controller
         DB::beginTransaction();
         try {
             $cabang = new Cabang();
-            $cabang->kodecabang = strtoupper($request->kodecabang);
-            $cabang->namacabang = strtoupper($request->namacabang);
+            $cabang->kodecabang = $request->kodecabang;
+            $cabang->namacabang = $request->namacabang;
             $cabang->statusaktif = $request->statusaktif;
-            $cabang->modifiedby = strtoupper($request->modifiedby);
+            $cabang->modifiedby = $request->modifiedby;
 
-            $cabang->save();
+            if ($cabang->save()) {
+                $logTrail = [
+                    'namatabel' => strtoupper($cabang->getTable()),
+                    'postingdari' => 'ENTRY CABANG',
+                    'idtrans' => $cabang->id,
+                    'nobuktitrans' => $cabang->id,
+                    'aksi' => 'ENTRY',
+                    'datajson' => $cabang->toArray(),
+                    'modifiedby' => $cabang->modifiedby
+                ];
 
-            $datajson = [
-                'id' => $cabang->id,
-                'kodecabang' => strtoupper($request->kodecabang),
-                'namacabang' => strtoupper($request->namacabang),
-                'statusaktif' => $request->statusaktif,
-                'modifiedby' => strtoupper($request->modifiedby),
-            ];
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
+                DB::commit();
+            }
 
-
-            $datalogtrail = [
-                'namatabel' => 'CABANG',
-                'postingdari' => 'ENTRY CABANG',
-                'idtrans' => $cabang->id,
-                'nobuktitrans' => $cabang->id,
-                'aksi' => 'ENTRY',
-                'datajson' => json_encode($datajson),
-                'modifiedby' => $cabang->modifiedby,
-            ];
-
-            $data = new StoreLogTrailRequest($datalogtrail);
-            app(LogTrailController::class)->store($data);
-
-            DB::commit();
             /* Set position and page */
             $del = 0;
             $data = $this->getid($cabang->id, $request, $del);
             $cabang->position = $data->row;
-            // dd($cabang->position );
             if (isset($request->limit)) {
                 $cabang->page = ceil($cabang->position / $request->limit);
             }
@@ -261,46 +249,29 @@ class CabangController extends Controller
     {
         DB::beginTransaction();
         try {
-            $cabang->update(array_map('strtoupper', $request->validated()));
+            $cabang->kodecabang = $request->kodecabang;
+            $cabang->namacabang = $request->namacabang;
+            $cabang->statusaktif = $request->statusaktif;
+            $cabang->modifiedby = $request->modifiedby;
 
-            $datajson = [
-                'id' => $cabang->id,
-                'kodecabang' => strtoupper($request->kodecabang),
-                'namacabang' => strtoupper($request->namacabang),
-                'statusaktif' => $request->statusaktif,
-                'modifiedby' => strtoupper($request->modifiedby),
-            ];
+            if ($cabang->save()) {
+                $logTrail = [
+                    'namatabel' => strtoupper($cabang->getTable()),
+                    'postingdari' => 'EDIT CABANG',
+                    'idtrans' => $cabang->id,
+                    'nobuktitrans' => $cabang->id,
+                    'aksi' => 'EDIT',
+                    'datajson' => $cabang->toArray(),
+                    'modifiedby' => $cabang->modifiedby
+                ];
 
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-            $datajson = [
-                'id' => $cabang->id,
-                'kodecabang' => strtoupper($request->kodecabang),
-                'namacabang' => strtoupper($request->namacabang),
-                'statusaktif' => $request->statusaktif,
-                'modifiedby' => strtoupper($request->modifiedby),
-            ];
-
-
-
-            $datalogtrail = [
-                'namatabel' => 'CABANG',
-                'postingdari' => 'EDIT CABANG',
-                'idtrans' => $cabang->id,
-                'nobuktitrans' => $cabang->id,
-                'aksi' => 'EDIT',
-                'datajson' => json_encode($datajson),
-                'modifiedby' => $cabang->modifiedby,
-            ];
-
-            $data = new StoreLogTrailRequest($datalogtrail);
-            app(LogTrailController::class)->store($data);
-
-
-            DB::commit();
+                DB::commit();
+            }
 
             /* Set position and page */
-
-
             $cabang->position = $this->getid($cabang->id, $request, 0)->row;
 
             if (isset($request->limit)) {
@@ -328,35 +299,23 @@ class CabangController extends Controller
     {
         DB::beginTransaction();
         try {
+            if ($cabang->save()) {
+                $logTrail = [
+                    'namatabel' => strtoupper($cabang->getTable()),
+                    'postingdari' => 'DELETE CABANG',
+                    'idtrans' => $cabang->id,
+                    'nobuktitrans' => $cabang->id,
+                    'aksi' => 'DELETE',
+                    'datajson' => $cabang->toArray(),
+                    'modifiedby' => $cabang->modifiedby
+                ];
 
-            Cabang::destroy($cabang->id);
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
+                DB::commit();
+            }
 
-            $datajson = [
-                'id' => $cabang->id,
-                'kodecabang' => strtoupper($request->kodecabang),
-                'namacabang' => strtoupper($request->namacabang),
-                'statusaktif' => $request->statusaktif,
-                'modifiedby' => strtoupper($request->modifiedby),
-            ];
-
-
-
-            $datalogtrail = [
-                'namatabel' => 'CABANG',
-                'postingdari' => 'DELETE CABANG',
-                'idtrans' => $cabang->id,
-                'nobuktitrans' => $cabang->id,
-                'aksi' => 'DELETE',
-                'datajson' => json_encode($datajson),
-                'modifiedby' => $cabang->modifiedby,
-            ];
-
-            $data = new StoreLogTrailRequest($datalogtrail);
-            app(LogTrailController::class)->store($data);
-
-            DB::commit();
-            Cabang::destroy($cabang->id);
             $del = 1;
             $data = $this->getid($cabang->id, $request, $del);
             $cabang->position = $data->row;
@@ -364,7 +323,6 @@ class CabangController extends Controller
             if (isset($request->limit)) {
                 $cabang->page = ceil($cabang->position / $request->limit);
             }
-            // dd($cabang);
             return response([
                 'status' => true,
                 'message' => 'Berhasil dihapus',
@@ -374,6 +332,37 @@ class CabangController extends Controller
             DB::rollBack();
             return response($th->getMessage());
         }
+    }
+
+    public function export()
+    {
+        $response = $this->index();
+        $decodedResponse = json_decode($response->content(), true);
+        $cabangs = $decodedResponse['data'];
+
+        $columns = [
+            [
+                'label' => 'No',
+            ],
+            [
+                'label' => 'ID',
+                'index' => 'id',
+            ],
+            [
+                'label' => 'Kode Cabang',
+                'index' => 'kodecabang',
+            ],
+            [
+                'label' => 'Nama Cabang',
+                'index' => 'namacabang',
+            ],
+            [
+                'label' => 'Status Aktif',
+                'index' => 'statusaktif',
+            ],
+        ];
+
+        $this->toExcel('Cabang', $cabangs, $columns);
     }
 
     public function fieldLength()
@@ -510,12 +499,6 @@ class CabangController extends Controller
         }
 
         $time0 = microtime(true);
-        // $bindings = $query->getBindings();
-        // $time01=microtime(true);
-        // $insertQuery = 'INSERT into ##temp_cabang_row (id_,cabang,statusaktif,modifiedby,created_at,updated_at) '
-        //     . $query->toSql();
-        // $time02=microtime(true);
-        //     DB::insert($insertQuery, $bindings);
         DB::table($temp)->insertUsing(['id_', 'kodecabang', 'namacabang', 'statusaktif', 'modifiedby', 'created_at', 'updated_at'], $query);
 
         $time1 = microtime(true);
@@ -669,13 +652,6 @@ class CabangController extends Controller
                 $baris = $request->indexRow + $bar + 1;
             }
 
-            // dump($request->page );
-            // dump($request->limit );
-            // dump($request->indexRow  );
-
-            // dump($hal);
-            // dump($bar);
-            // dd($baris);
             if (DB::table($temp)
                 ->where('id', '=', $baris)->exists()
             ) {

@@ -28,14 +28,14 @@ class AclController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index(Request $request)
+    public function index()
     {
         $params = [
-            'offset' => $request->offset ?? 0,
-            'limit' => $request->limit ?? 100,
-            'search' => $request->search ?? [],
-            'sortIndex' => $request->sortIndex ?? 'id',
-            'sortOrder' => $request->sortOrder ?? 'asc',
+            'offset' => request()->offset ?? ((request()->page - 1) * request()->limit),
+            'limit' => request()->limit ?? 10,
+            'filters' => json_decode(request()->filters, true) ?? [],
+            'sortIndex' => request()->sortIndex ?? 'id',
+            'sortOrder' => request()->sortOrder ?? 'asc',
         ];
 
         $temp = '##temp' . rand(1, 10000);
@@ -95,24 +95,24 @@ class AclController extends Controller
 
 
         /* Searching */
-        if (count($params['search']) > 0 && @$params['search']['rules'][0]['data'] != '') {
-            switch ($params['search']['groupOp']) {
+        if (count($params['filters']) > 0 && @$params['filters']['rules'][0]['data'] != '') {
+            switch ($params['filters']['groupOp']) {
                 case "AND":
-                    foreach ($params['search']['rules'] as $index => $search) {
-                        if ($search['field'] == 'rolename') {
-                            $query = $query->where('role.rolename', 'LIKE', "%$search[data]%");
+                    foreach ($params['filters']['rules'] as $index => $filters) {
+                        if ($filters['field'] == 'rolename') {
+                            $query = $query->where('role.rolename', 'LIKE', "%$filters[data]%");
                         } else {
-                            $query = $query->where($search['field'], 'LIKE', "%$search[data]%");
+                            $query = $query->where($filters['field'], 'LIKE', "%$filters[data]%");
                         }
                     }
 
                     break;
                 case "OR":
-                    foreach ($params['search']['rules'] as $index => $search) {
-                        if ($search['field'] == 'rolename') {
-                            $query = $query->orWhere('role.rolename', 'LIKE', "%$search[data]%");
+                    foreach ($params['filters']['rules'] as $index => $filters) {
+                        if ($filters['field'] == 'rolename') {
+                            $query = $query->orWhere('role.rolename', 'LIKE', "%$filters[data]%");
                         } else {
-                            $query = $query->orWhere($search['field'], 'LIKE', "%$search[data]%");
+                            $query = $query->orWhere($filters['field'], 'LIKE', "%$filters[data]%");
                         }
                     }
 
@@ -140,8 +140,6 @@ class AclController extends Controller
             'totalPages' => $totalPages
         ];
 
-        // echo $time2-$time1;
-        // echo '---';
         return response([
             'status' => true,
             'data' => $acl,
@@ -150,18 +148,16 @@ class AclController extends Controller
         ]);
     }
 
-    public function detail(Request $request)
+    public function detail()
     {
-
         $params = [
-            'offset' => $request->offset ?? 0,
-            'limit' => $request->limit ?? 100,
-            'search' => $request->search ?? [],
-            'sortIndex' => $request->sortIndex ?? 'id',
-            'sortOrder' => $request->sortOrder ?? 'asc',
+            'offset' => request()->offset ?? ((request()->page - 1) * request()->limit),
+            'limit' => request()->limit ?? 10,
+            'filters' => json_decode(request()->filters, true) ?? [],
+            'sortIndex' => request()->sortIndex ?? 'id',
+            'sortOrder' => request()->sortOrder ?? 'asc',
         ];
 
-        // dd($params);
         $totalRows = Acl::count();
         $totalPages = ceil($totalRows / $params['limit']);
 
@@ -178,7 +174,7 @@ class AclController extends Controller
             )
                 ->Join('acos', 'acl.aco_id', '=', 'acos.id')
                 ->Join('role', 'acl.role_id', '=', 'role.id')
-                ->where('acl.role_id', '=', $request->role_id)
+                ->where('acl.role_id', '=', request()->role_id)
                 ->orderBy('acl.id', $params['sortOrder']);
         } else {
             if ($params['sortOrder'] == 'asc') {
@@ -194,7 +190,7 @@ class AclController extends Controller
                     ->Join('acos', 'acl.aco_id', '=', 'acos.id')
                     ->Join('role', 'acl.role_id', '=', 'role.id')
                     ->orderBy($params['sortIndex'], $params['sortOrder'])
-                    ->where('acl.role_id', '=', $request->role_id)
+                    ->where('acl.role_id', '=', request()->role_id)
                     ->orderBy('acl.id', $params['sortOrder']);
             } else {
                 $query = Acl::select(
@@ -208,7 +204,7 @@ class AclController extends Controller
                 )
                     ->Join('acos', 'acl.aco_id', '=', 'acos.id')
                     ->Join('role', 'acl.role_id', '=', 'role.id')
-                    ->where('acl.role_id', '=', $request->role_id)
+                    ->where('acl.role_id', '=', request()->role_id)
                     ->orderBy($params['sortIndex'], $params['sortOrder'])
                     ->orderBy('acl.id', 'asc');
             }
@@ -216,32 +212,32 @@ class AclController extends Controller
 
 
         /* Searching */
-        if (count($params['search']) > 0 && @$params['search']['rules'][0]['data'] != '') {
-            switch ($params['search']['groupOp']) {
+        if (count($params['filters']) > 0 && @$params['filters']['rules'][0]['data'] != '') {
+            switch ($params['filters']['groupOp']) {
                 case "AND":
-                    foreach ($params['search']['rules'] as $index => $search) {
-                        if ($search['field'] == 'nama') {
-                            $query = $query->where('acos.nama', 'LIKE', "%$search[data]%");
-                        } else if ($search['field'] == 'class') {
-                            $query = $query->where('acos.class', 'LIKE', "%$search[data]%");
-                        } else if ($search['field'] == 'rolename') {
-                            $query = $query->where('role.rolename', 'LIKE', "%$search[data]%");
+                    foreach ($params['filters']['rules'] as $index => $filters) {
+                        if ($filters['field'] == 'nama') {
+                            $query = $query->where('acos.nama', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'class') {
+                            $query = $query->where('acos.class', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'rolename') {
+                            $query = $query->where('role.rolename', 'LIKE', "%$filters[data]%");
                         } else {
-                            $query = $query->where($search['field'], 'LIKE', "%$search[data]%");
+                            $query = $query->where($filters['field'], 'LIKE', "%$filters[data]%");
                         }
                     }
 
                     break;
                 case "OR":
-                    foreach ($params['search']['rules'] as $index => $search) {
-                        if ($search['field'] == 'nama') {
-                            $query = $query->orWhere('acos.nama', 'LIKE', "%$search[data]%");
-                        } else if ($search['field'] == 'class') {
-                            $query = $query->orWhere('acos.class', 'LIKE', "%$search[data]%");
-                        } else if ($search['field'] == 'rolename') {
-                            $query = $query->orWhere('role.rolename', 'LIKE', "%$search[data]%");
+                    foreach ($params['filters']['rules'] as $index => $filters) {
+                        if ($filters['field'] == 'nama') {
+                            $query = $query->orWhere('acos.nama', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'class') {
+                            $query = $query->orWhere('acos.class', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'rolename') {
+                            $query = $query->orWhere('role.rolename', 'LIKE', "%$filters[data]%");
                         } else {
-                            $query = $query->orWhere($search['field'], 'LIKE', "%$search[data]%");
+                            $query = $query->orWhere($filters['field'], 'LIKE', "%$filters[data]%");
                         }
                     }
 
@@ -269,8 +265,6 @@ class AclController extends Controller
             'totalPages' => $totalPages
         ];
 
-        // echo $time2-$time1;
-        // echo '---';
         return response([
             'status' => true,
             'data' => $acl,
@@ -301,61 +295,37 @@ class AclController extends Controller
             $controller = new ParameterController;
             $dataaktif = $controller->getparameterid('STATUS AKTIF', 'STATUS AKTIF', 'AKTIF');
             $aktif = $dataaktif->id;
+
             for ($i = 0; $i < count($request->aco_id); $i++) {
-                $acl = new Acl();
-
-                $acl->role_id = $request->role_id;
-                $acl->modifiedby = $request->modifiedby;
-                $acl->aco_id = $request->aco_id[$i]  ?? 0;
                 if ($request->status[$i] == $aktif) {
-                    // dd($request->role_id[$i]);
-                    $acl->save();
+                    $acl = new Acl();
+                    $acl->role_id = $request->role_id;
+                    $acl->modifiedby = auth('api')->user()->name;
+                    $acl->aco_id = $request->aco_id[$i]  ?? 0;
+                    if ($request->status[$i] == $aktif) {
+                        if ($acl->save()) {
+                            $logTrail = [
+                                'namatabel' => strtoupper($acl->getTable()),
+                                'postingdari' => 'ENTRY ACL',
+                                'idtrans' => $acl->id,
+                                'nobuktitrans' => $acl->id,
+                                'aksi' => 'ENTRY',
+                                'datajson' => $acl->toArray(),
+                                'modifiedby' => $acl->modifiedby
+                            ];
+
+                            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                            $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+
+                            DB::commit();
+                        }
+                    }
                 }
-            }
-
-
-
-
-            $datajson = [
-                'aco_id' => $request->aco_id,
-                'role_id' => $request->role_id,
-                'modifiedby' => strtoupper($request->modifiedby),
-
-            ];
-
-              
-            $datalogtrail = [
-                'namatabel' => 'ACL',
-                'postingdari' => 'ENTRY ACL',
-                'idtrans' => $request->id,
-                'nobuktitrans' => $request->id,
-                'aksi' => 'ENTRY',
-                'datajson' => json_encode($datajson),
-                'modifiedby' => $request->modifiedby,
-            ];
-
-            $data=new StoreLogTrailRequest($datalogtrail);
-            app(LogTrailController::class)->store($data);  
-
-            DB::commit();
-            /* Set position and page */
-            $del = 0;
-            $data = $this->getid($request->role_id, $request, $del) ?? 0;
-
-            $acl->position = $data->id;
-            $acl->id = $data->row;
-
-
-
-            // dd($acl->position );
-            if (isset($request->limit)) {
-                $acl->page = ceil($acl->position / $request->limit);
             }
 
             return response([
                 'status' => true,
                 'message' => 'Berhasil disimpan',
-                'data' => $acl
             ]);
         } catch (\Throwable $th) {
             DB::rollBack();
@@ -408,42 +378,39 @@ class AclController extends Controller
             Acl::where('role_id', $request->role_id)->delete();
 
             for ($i = 0; $i < count($request->aco_id); $i++) {
-                $acl = new Acl();
-                $acl->role_id = $request->role_id;
-                $acl->modifiedby = $request->modifiedby;
-                $acl->aco_id = $request->aco_id[$i]  ?? 0;
-                $acl->save();
+                if ($request->status[$i] == 1) {
+                    $acl = new Acl();
+                    $acl->role_id = $request->role_id;
+                    $acl->modifiedby = auth('api')->user()->name;
+                    $acl->aco_id = $request->aco_id[$i]  ?? 0;
+
+                    if ($request->status[$i] == 1) {
+                        if ($acl->save()) {
+                            $logTrail = [
+                                'namatabel' => strtoupper($acl->getTable()),
+                                'postingdari' => 'EDIT ACL',
+                                'idtrans' => $acl->id,
+                                'nobuktitrans' => $acl->id,
+                                'aksi' => 'EDIT',
+                                'datajson' => $acl->toArray(),
+                                'modifiedby' => $acl->modifiedby
+                            ];
+
+                            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                            $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+
+                            DB::commit();
+                        }
+                    }
+                }
             }
 
-
-            $datajson = [
-                'aco_id' => $request->aco_id,
-                'role_id' => $request->role_id,
-                'modifiedby' => strtoupper($request->modifiedby),
-
-            ];
-
-              
-            $datalogtrail = [
-                'namatabel' => 'ACL',
-                'postingdari' => 'EDIT ACL',
-                'idtrans' => $request->id,
-                'nobuktitrans' => $request->id,
-                'aksi' => 'EDIT',
-                'datajson' => json_encode($datajson),
-                'modifiedby' => $request->modifiedby,
-            ];
-
-            $data=new StoreLogTrailRequest($datalogtrail);
-            app(LogTrailController::class)->store($data);  
-
-            DB::commit();
             /* Set position and page */
             $del = 0;
             $data = $this->getid($request->role_id, $request, $del);
             $acl->position = $data->id;
             $acl->id = $data->row;
-            // dd($acl->position );
+            
             if (isset($request->limit)) {
                 $acl->page = ceil($acl->position / $request->limit);
             }
@@ -468,43 +435,40 @@ class AclController extends Controller
     public function destroy(Acl $acl, Request $request)
     {
         DB::beginTransaction();
+
         try {
+            $delete = Acl::where('role_id', $request->role_id)->delete();
 
-            Acl::where('role_id', $request->role_id)->delete();
+            if ($delete > 0) {
+                if ($acl->save()) {
+                    $logTrail = [
+                        'namatabel' => strtoupper($acl->getTable()),
+                        'postingdari' => 'DELETE ACL',
+                        'idtrans' => $acl->id,
+                        'nobuktitrans' => $acl->id,
+                        'aksi' => 'DELETE',
+                        'datajson' => $acl->toArray(),
+                        'modifiedby' => $acl->modifiedby
+                    ];
 
-            $datajson = [
-                'aco_id' => $request->aco_id,
-                'role_id' => $request->role_id,
-                'modifiedby' => strtoupper($request->modifiedby),
+                    $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                    $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-            ];
+                    DB::commit();
+                }
+            }
 
-              
-            $datalogtrail = [
-                'namatabel' => 'ACL',
-                'postingdari' => 'DELETE ACL',
-                'idtrans' => $request->id,
-                'nobuktitrans' => $request->id,
-                'aksi' => 'DELETE',
-                'datajson' => json_encode($datajson),
-                'modifiedby' => $request->modifiedby,
-            ];
-
-            $data=new StoreLogTrailRequest($datalogtrail);
-            app(LogTrailController::class)->store($data);  
-
-            DB::commit();
             $del = 1;
-            // dd($request->user_id);
 
             $data = $this->getid($request->role_id, $request, $del);
 
             $acl->position = $data->row;
             $acl->id = $data->id;
+
             if (isset($request->limit)) {
                 $acl->page = ceil($acl->position / $request->limit);
             }
-            // dd($acl);
+
             return response([
                 'status' => true,
                 'message' => 'Berhasil dihapus',
@@ -514,6 +478,33 @@ class AclController extends Controller
             DB::rollBack();
             return response($th->getMessage());
         }
+    }
+
+    public function export()
+    {
+        $response = $this->index();
+        $decodedResponse = json_decode($response->content(), true);
+        $acls = $decodedResponse['data'];
+
+        $columns = [
+            [
+                'label' => 'No',
+            ],
+            [
+                'label' => 'ID',
+                'index' => 'id',
+            ],
+            [
+                'label' => 'Role ID',
+                'index' => 'role_id',
+            ],
+            [
+                'label' => 'Role Name',
+                'index' => 'rolename',
+            ],
+        ];
+
+        $this->toExcel('Acl', $acls, $columns);
     }
 
     public function fieldLength()
@@ -604,12 +595,6 @@ class AclController extends Controller
 
             $table->index('role_id');
         });
-
-
-
-
-
-
 
         DB::table($temp)->insertUsing(['role_id', 'id_',  'rolename',  'modifiedby', 'updated_at'], $query);
 

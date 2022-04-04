@@ -18,46 +18,134 @@ class AgenController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index(Request $request)
+    public function index()
     {
         $params = [
-            'offset' => $request->offset ?? 0,
-            'limit' => $request->limit ?? 10,
-            'search' => $request->search ?? [],
-            'sortIndex' => $request->sortIndex ?? 'id',
-            'sortOrder' => $request->sortOrder ?? 'asc',
+            'offset' => request()->offset ?? ((request()->page - 1) * request()->limit),
+            'limit' => request()->limit ?? 10,
+            'filters' => json_decode(request()->filters, true) ?? [],
+            'sortIndex' => request()->sortIndex ?? 'id',
+            'sortOrder' => request()->sortOrder ?? 'asc',
         ];
 
-        $totalRows = Agen::count();
+        $totalRows = DB::table((new Agen)->getTable())->count();
         $totalPages = $params['limit'] > 0 ? ceil($totalRows / $params['limit']) : 1;
 
         /* Sorting */
-        $query = Agen::orderBy($params['sortIndex'], $params['sortOrder']);
+        $query = DB::table((new Agen)->getTable())->orderBy($params['sortIndex'], $params['sortOrder']);
 
         if ($params['sortIndex'] == 'id') {
-            $query = Agen::orderBy('agen.id', $params['sortOrder']);
+            $query = DB::table((new Agen)->getTable())->select(
+                "agen.id",
+                "agen.kodeagen",
+                "agen.namaagen",
+                "agen.keterangan",
+                "parameter_statusaktif.text as statusaktif",
+                "agen.namaperusahaan",
+                "agen.alamat",
+                "agen.notelp",
+                "agen.nohp",
+                "agen.contactperson",
+                "agen.top",
+                "parameter_statusapproval.text as statusapproval",
+                "agen.userapproval",
+                "agen.tglapproval",
+                "parameter_statustas.text as statustas",
+                "agen.jenisemkl",
+                "agen.modifiedby",
+                "agen.created_at",
+                "agen.updated_at"
+            )
+                ->leftJoin('parameter as parameter_statusapproval', 'agen.statusapproval', '=', 'parameter_statusapproval.id')
+                ->leftJoin('parameter as parameter_statusaktif', 'agen.statusaktif', '=', 'parameter_statusaktif.id')
+                ->leftJoin('parameter as parameter_statustas', 'agen.statustas', '=', 'parameter_statustas.id')
+                ->orderBy('agen.id', $params['sortOrder']);
         } else {
             if ($params['sortOrder'] == 'asc') {
-                $query = Agen::orderBy($params['sortIndex'], $params['sortOrder'])
+                $query = DB::table((new Agen)->getTable())->select(
+                    "agen.id",
+                    "agen.kodeagen",
+                    "agen.namaagen",
+                    "agen.keterangan",
+                    "parameter_statusaktif.text as statusaktif",
+                    "agen.namaperusahaan",
+                    "agen.alamat",
+                    "agen.notelp",
+                    "agen.nohp",
+                    "agen.contactperson",
+                    "agen.top",
+                    "parameter_statusapproval.text as statusapproval",
+                    "agen.userapproval",
+                    "agen.tglapproval",
+                    "parameter_statustas.text as statustas",
+                    "agen.jenisemkl",
+                    "agen.modifiedby",
+                    "agen.created_at",
+                    "agen.updated_at"
+                )
+                    ->leftJoin('parameter as parameter_statusapproval', 'agen.statusapproval', '=', 'parameter_statusapproval.id')
+                    ->leftJoin('parameter as parameter_statusaktif', 'agen.statusaktif', '=', 'parameter_statusaktif.id')
+                    ->leftJoin('parameter as parameter_statustas', 'agen.statustas', '=', 'parameter_statustas.id')
+                    ->orderBy($params['sortIndex'], $params['sortOrder'])
                     ->orderBy('agen.id', $params['sortOrder']);
             } else {
-                $query = Agen::orderBy($params['sortIndex'], $params['sortOrder'])
+                $query = DB::table((new Agen)->getTable())->select(
+                    "agen.id",
+                    "agen.kodeagen",
+                    "agen.namaagen",
+                    "agen.keterangan",
+                    "parameter_statusaktif.text as statusaktif",
+                    "agen.namaperusahaan",
+                    "agen.alamat",
+                    "agen.notelp",
+                    "agen.nohp",
+                    "agen.contactperson",
+                    "agen.top",
+                    "parameter_statusapproval.text as statusapproval",
+                    "agen.userapproval",
+                    "agen.tglapproval",
+                    "parameter_statustas.text as statustas",
+                    "agen.jenisemkl",
+                    "agen.modifiedby",
+                    "agen.created_at",
+                    "agen.updated_at"
+                )
+                    ->leftJoin('parameter as parameter_statusapproval', 'agen.statusapproval', '=', 'parameter_statusapproval.id')
+                    ->leftJoin('parameter as parameter_statusaktif', 'agen.statusaktif', '=', 'parameter_statusaktif.id')
+                    ->leftJoin('parameter as parameter_statustas', 'agen.statustas', '=', 'parameter_statustas.id')
+                    ->orderBy($params['sortIndex'], $params['sortOrder'])
                     ->orderBy('agen.id', 'asc');
             }
         }
 
         /* Searching */
-        if (count($params['search']) > 0 && @$params['search']['rules'][0]['data'] != '') {
-            switch ($params['search']['groupOp']) {
+        if (count($params['filters']) > 0 && @$params['filters']['rules'][0]['data'] != '') {
+            switch ($params['filters']['groupOp']) {
                 case "AND":
-                    foreach ($params['search']['rules'] as $index => $search) {
-                        $query = $query->where($search['field'], 'LIKE', "%$search[data]%");
+                    foreach ($params['filters']['rules'] as $index => $filters) {
+                        if ($filters['field'] == 'statusaktif') {
+                            $query = $query->where('parameter_statusaktif.text', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'statusapproval') {
+                            $query = $query->where('parameter_statusapproval.text', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'statustas') {
+                            $query = $query->where('parameter_statustas.text', 'LIKE', "%$filters[data]%");
+                        } else {
+                            $query = $query->where('agen.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                        }
                     }
 
                     break;
                 case "OR":
-                    foreach ($params['search']['rules'] as $index => $search) {
-                        $query = $query->orWhere($search['field'], 'LIKE', "%$search[data]%");
+                    foreach ($params['filters']['rules'] as $index => $filters) {
+                        if ($filters['field'] == 'statusaktif') {
+                            $query = $query->orWhere('parameter_statusaktif.text', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'statusapproval') {
+                            $query = $query->orWhere('parameter_statusapproval.text', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'statustas') {
+                            $query = $query->orWhere('parameter_statustas.text', 'LIKE', "%$filters[data]%");
+                        } else {
+                            $query = $query->orWhere('agen.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                        }
                     }
 
                     break;
@@ -108,10 +196,10 @@ class AgenController extends Controller
             $agen->top = $request->top;
             $agen->statusapproval = $request->statusapproval;
             $agen->userapproval = $request->userapproval;
-            $agen->tglapproval = $request->tglapproval;
+            $agen->tglapproval = date('Y-m-d', strtotime($request->tglapproval));
             $agen->statustas = $request->statustas;
             $agen->jenisemkl = $request->jenisemkl;
-            $agen->modifiedby = $request->modifiedby;
+            $agen->modifiedby = auth('api')->user()->name;
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
 
@@ -179,7 +267,7 @@ class AgenController extends Controller
             $agen->tglapproval = $request->tglapproval;
             $agen->statustas = $request->statustas;
             $agen->jenisemkl = $request->jenisemkl;
-            $agen->modifiedby = $request->modifiedby;
+            $agen->modifiedby = auth('api')->user()->name;
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
 
@@ -259,6 +347,81 @@ class AgenController extends Controller
         }
     }
 
+    public function export()
+    {
+        $response = $this->index();
+        $decodedResponse = json_decode($response->content(), true);
+        $agens = $decodedResponse['data'];
+
+        $columns = [
+            [
+                'label' => 'No',
+            ],
+            [
+                'label' => 'Kode Agen',
+                'index' => 'kodeagen',
+            ],
+            [
+                'label' => 'Nama Agen',
+                'index' => 'namaagen',
+            ],
+            [
+                'label' => 'Keterangan',
+                'index' => 'keterangan',
+            ],
+            [
+                'label' => 'Status Aktif',
+                'index' => 'statusaktif',
+            ],
+            [
+                'label' => 'Nama Perusahaan',
+                'index' => 'namaperusahaan',
+            ],
+            [
+                'label' => 'Alamat',
+                'index' => 'alamat',
+            ],
+            [
+                'label' => 'No Telp',
+                'index' => 'notelp',
+            ],
+            [
+                'label' => 'No Hp',
+                'index' => 'nohp',
+            ],
+            [
+                'label' => 'Contact Person',
+                'index' => 'contactperson',
+            ],
+            [
+                'label' => 'TOP',
+                'index' => 'top',
+            ],
+            [
+                'label' => 'Status Approval',
+                'index' => 'statusapproval',
+            ],
+            [
+                'label' => 'User approval',
+                'index' => 'userapproval',
+            ],
+            [
+                'label' => 'Tgl Approval',
+                'index' => 'tglapproval',
+            ],
+            [
+                'label' => 'Status Tas',
+                'index' => 'statustas',
+            ],
+            [
+                'label' => 'Jenis Emkl',
+                'index' => 'jenisemkl',
+            ],
+        ];
+
+        $this->toExcel('Agen', $agens, $columns);
+    }
+
     public function fieldLength()
     {
         $data = [];
@@ -271,14 +434,6 @@ class AgenController extends Controller
         return response([
             'data' => $data
         ]);
-    }
-
-    public function getPosition($agen, $request)
-    {
-        return Agen::where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $agen->{$request->sortname})
-            /* Jika sortname modifiedby atau ada data duplikat */
-            // ->where('id', $request->sortorder == 'desc' ? '>=' : '<=', $agen->id)
-            ->count();
     }
 
     public function getid($id, $request, $del)

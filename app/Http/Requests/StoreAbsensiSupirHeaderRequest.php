@@ -24,7 +24,7 @@ class StoreAbsensiSupirHeaderRequest extends FormRequest
     public function rules()
     {
         $rules = [
-            'nobukti' => 'required',
+            'nobukti' => 'required|unique:absensisupirheader,nobukti',
             'tgl' => 'required|date',
             'keterangan' => 'required',
         ];

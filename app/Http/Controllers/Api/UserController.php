@@ -28,22 +28,22 @@ class UserController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index(Request $request)
+    public function index()
     {
         $params = [
-            'offset' => $request->offset ?? 0,
-            'limit' => $request->limit ?? 100,
-            'search' => $request->search ?? [],
-            'sortIndex' => $request->sortIndex ?? 'id',
-            'sortOrder' => $request->sortOrder ?? 'asc',
+            'offset' => request()->offset ?? ((request()->page - 1) * request()->limit),
+            'limit' => request()->limit ?? 10,
+            'filters' => json_decode(request()->filters, true) ?? [],
+            'sortIndex' => request()->sortIndex ?? 'id',
+            'sortOrder' => request()->sortOrder ?? 'asc',
         ];
 
-        $totalRows = User::count();
+        $totalRows = DB::table((new User)->getTable())->count();
         $totalPages = ceil($totalRows / $params['limit']);
 
         /* Sorting */
         if ($params['sortIndex'] == 'id') {
-            $query = User::select(
+            $query = DB::table((new User)->getTable())->select(
                 'user.id',
                 'user.user',
                 'user.name',
@@ -60,7 +60,7 @@ class UserController extends Controller
                 ->orderBy('user.id', $params['sortOrder']);
         } else {
             if ($params['sortOrder'] == 'asc') {
-                $query = User::select(
+                $query = DB::table((new User)->getTable())->select(
                     'user.id',
                     'user.user',
                     'user.name',
@@ -77,7 +77,7 @@ class UserController extends Controller
                     ->orderBy($params['sortIndex'], $params['sortOrder'])
                     ->orderBy('user.id', $params['sortOrder']);
             } else {
-                $query = User::select(
+                $query = DB::table((new User)->getTable())->select(
                     'user.id',
                     'user.user',
                     'user.name',
@@ -96,30 +96,29 @@ class UserController extends Controller
             }
         }
 
-
         /* Searching */
-        if (count($params['search']) > 0 && @$params['search']['rules'][0]['data'] != '') {
-            switch ($params['search']['groupOp']) {
+        if (count($params['filters']) > 0 && @$params['filters']['rules'][0]['data'] != '') {
+            switch ($params['filters']['groupOp']) {
                 case "AND":
-                    foreach ($params['search']['rules'] as $index => $search) {
-                        if ($search['field'] == 'statusaktif') {
-                            $query = $query->where('parameter.text', 'LIKE', "%$search[data]%");
-                        } else if ($search['field'] == 'cabang_id') {
-                            $query = $query->where('cabang.namacabang', 'LIKE', "%$search[data]%");
+                    foreach ($params['filters']['rules'] as $index => $filters) {
+                        if ($filters['field'] == 'statusaktif') {
+                            $query = $query->where('parameter.text', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'cabang_id') {
+                            $query = $query->where('cabang.namacabang', 'LIKE', "%$filters[data]%");
                         } else {
-                            $query = $query->where($search['field'], 'LIKE', "%$search[data]%");
+                            $query = $query->where('user.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
                     }
 
                     break;
                 case "OR":
-                    foreach ($params['search']['rules'] as $index => $search) {
-                        if ($search['field'] == 'statusaktif') {
-                            $query = $query->orWhere('parameter.text', 'LIKE', "%$search[data]%");
-                        } else if ($search['field'] == 'cabang_id') {
-                            $query = $query->orWhere('cabang.namacabang', 'LIKE', "%$search[data]%");                            
+                    foreach ($params['filters']['rules'] as $index => $filters) {
+                        if ($filters['field'] == 'statusaktif') {
+                            $query = $query->orWhere('parameter.text', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'cabang_id') {
+                            $query = $query->orWhere('cabang.namacabang', 'LIKE', "%$filters[data]%");
                         } else {
-                            $query = $query->orWhere($search['field'], 'LIKE', "%$search[data]%");
+                            $query = $query->orWhere('user.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
                     }
 
@@ -147,8 +146,6 @@ class UserController extends Controller
             'totalPages' => $totalPages
         ];
 
-        // echo $time2-$time1;
-        // echo '---';
         return response([
             'status' => true,
             'data' => $cabangs,
@@ -186,37 +183,25 @@ class UserController extends Controller
             $user->karyawan_id = $request->karyawan_id;
             $user->dashboard = strtoupper($request->dashboard);
             $user->statusaktif = $request->statusaktif;
-            $user->modifiedby = $request->modifiedby;
+            $user->modifiedby = auth('api')->user()->name;
 
-            $user->save();
+            if ($user->save()) {
+                $logTrail = [
+                    'namatabel' => strtoupper($user->getTable()),
+                    'postingdari' => 'ENTRY USER',
+                    'idtrans' => $user->id,
+                    'nobuktitrans' => $user->id,
+                    'aksi' => 'ENTRY',
+                    'datajson' => $user->makeVisible(['password', 'remember_token'])->toArray(),
+                    'modifiedby' => $user->modifiedby
+                ];
 
-            $datajson = [
-                'id' => $user->id,
-                'user' => strtoupper($request->user),
-                'name' => strtoupper($request->name),
-                'password' => Hash::make($request->password),
-                'cabang_id' => $request->cabang_id,
-                'karyawan_id' => $request->karyawan_id,
-                'dashboard' => strtoupper($request->dashboard),
-                'statusaktif' => $request->statusaktif,
-                'modifiedby' => $request->modifiedby,
-            ];
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
+                DB::commit();
+            }
 
-            $datalogtrail = [
-                'namatabel' => 'USER',
-                'postingdari' => 'ENTRY USER',
-                'idtrans' => $user->id,
-                'nobuktitrans' => $user->id,
-                'aksi' => 'ENTRY',
-                'datajson' => json_encode($datajson),
-                'modifiedby' => $user->modifiedby,
-            ];
-
-            $data = new StoreLogTrailRequest($datalogtrail);
-            app(LogTrailController::class)->store($data);
-
-            DB::commit();
             /* Set position and page */
             $del = 0;
             $data = $this->getid($user->id, $request, $del);
@@ -282,35 +267,24 @@ class UserController extends Controller
             $user->karyawan_id = $request->karyawan_id;
             $user->dashboard = strtoupper($request->dashboard);
             $user->statusaktif = $request->statusaktif;
-            $user->modifiedby = $request->modifiedby;
-            $user->save();
+            $user->modifiedby = auth('api')->user()->name;
 
-            $datajson = [
-                'id' => $user->id,
-                'user' => strtoupper($request->user),
-                'name' => strtoupper($request->name),
-                'cabang_id' => $request->cabang_id,
-                'karyawan_id' => $request->karyawan_id,
-                'dashboard' => strtoupper($request->dashboard),
-                'statusaktif' => $request->statusaktif,
-                'modifiedby' => $request->modifiedby,
-            ];
+            if ($user->save()) {
+                $logTrail = [
+                    'namatabel' => strtoupper($user->getTable()),
+                    'postingdari' => 'EDIT USER',
+                    'idtrans' => $user->id,
+                    'nobuktitrans' => $user->id,
+                    'aksi' => 'EDIT',
+                    'datajson' => $user->makeVisible(['password', 'remember_token'])->toArray(),
+                    'modifiedby' => $user->modifiedby
+                ];
 
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-            $datalogtrail = [
-                'namatabel' => 'USER',
-                'postingdari' => 'EDIT USER',
-                'idtrans' => $user->id,
-                'nobuktitrans' => $user->id,
-                'aksi' => 'EDIT',
-                'datajson' => json_encode($datajson),
-                'modifiedby' => $user->modifiedby,
-            ];
-
-            $data = new StoreLogTrailRequest($datalogtrail);
-            app(LogTrailController::class)->store($data);
-
-            DB::commit();
+                DB::commit();
+            }
 
             /* Set position and page */
             $user->position = $this->getid($user->id, $request, 0)->row;
@@ -341,44 +315,32 @@ class UserController extends Controller
     {
         DB::beginTransaction();
         try {
+            if ($user->delete()) {
+                $logTrail = [
+                    'namatabel' => strtoupper($user->getTable()),
+                    'postingdari' => 'DELETE USER',
+                    'idtrans' => $user->id,
+                    'nobuktitrans' => $user->id,
+                    'aksi' => 'DELETE',
+                    'datajson' => $user->makeVisible(['password', 'remember_token'])->toArray(),
+                    'modifiedby' => $user->modifiedby
+                ];
 
-            User::destroy($user->id);
-            $datajson = [
-                'id' => $user->id,
-                'user' => strtoupper($request->user),
-                'name' => strtoupper($request->name),
-                'password' => Hash::make($request->password),
-                'cabang_id' => $request->cabang_id,
-                'karyawan_id' => $request->karyawan_id,
-                'dashboard' => strtoupper($request->dashboard),
-                'statusaktif' => $request->statusaktif,
-                'modifiedby' => $request->modifiedby,
-            ];
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-
-            $datalogtrail = [
-                'namatabel' => 'USER',
-                'postingdari' => 'DELETE USER',
-                'idtrans' => $user->id,
-                'nobuktitrans' => $user->id,
-                'aksi' => 'DELETE',
-                'datajson' => json_encode($datajson),
-                'modifiedby' => $user->modifiedby,
-            ];
-
-            $data = new StoreLogTrailRequest($datalogtrail);
-            app(LogTrailController::class)->store($data);
-
-            DB::commit();
+                DB::commit();
+            }
 
             $del = 1;
             $data = $this->getid($user->id, $request, $del);
             $user->position = $data->row;
             $user->id = $data->id;
+
             if (isset($request->limit)) {
                 $user->page = ceil($user->position / $request->limit);
             }
-            // dd($user);
+
             return response([
                 'status' => true,
                 'message' => 'Berhasil dihapus',
@@ -389,7 +351,50 @@ class UserController extends Controller
             return response($th->getMessage());
         }
     }
+    
+    public function export()
+    {
+        $response = $this->index();
+        $decodedResponse = json_decode($response->content(), true);
+        $users = $decodedResponse['data'];
 
+        $columns = [
+            [
+                'label' => 'No',
+            ],
+            [
+                'label' => 'ID',
+                'index' => 'id',
+            ],
+            [
+                'label' => 'User',
+                'index' => 'user',
+            ],
+            [
+                'label' => 'Name',
+                'index' => 'name',
+            ],
+            [
+                'label' => 'Cabang id',
+                'index' => 'cabang_id',
+            ],
+            [
+                'label' => 'Karyawan id',
+                'index' => 'karyawan_id',
+            ],
+            [
+                'label' => 'Dashboard',
+                'index' => 'dashboard',
+            ],
+            [
+                'label' => 'Statusaktif',
+                'index' => 'statusaktif',
+            ],
+        ];
+
+        $this->toExcel('User', $users, $columns);
+    }
+    
     public function fieldLength()
     {
         $data = [];

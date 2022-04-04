@@ -31,14 +31,14 @@ class UserAclController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index(Request $request)
+    public function index()
     {
         $params = [
-            'offset' => $request->offset ?? 0,
-            'limit' => $request->limit ?? 100,
-            'search' => $request->search ?? [],
-            'sortIndex' => $request->sortIndex ?? 'id',
-            'sortOrder' => $request->sortOrder ?? 'asc',
+            'offset' => request()->offset ?? ((request()->page - 1) * request()->limit),
+            'limit' => request()->limit ?? 10,
+            'filters' => json_decode(request()->filters, true) ?? [],
+            'sortIndex' => request()->sortIndex ?? 'id',
+            'sortOrder' => request()->sortOrder ?? 'asc',
         ];
 
         $temp = '##temp' . rand(1, 10000);
@@ -53,7 +53,7 @@ class UserAclController extends Controller
             $table->index('user_id');
         });
 
-        $query = UserAcl::select(
+        $query = DB::table((new UserAcl)->getTable())->select(
             DB::raw("useracl.user_id as user_id,
                         min(useracl.id) as id_,
                         max(useracl.modifiedby) as modifiedby,
@@ -98,24 +98,24 @@ class UserAclController extends Controller
 
 
         /* Searching */
-        if (count($params['search']) > 0 && @$params['search']['rules'][0]['data'] != '') {
-            switch ($params['search']['groupOp']) {
+        if (count($params['filters']) > 0 && @$params['filters']['rules'][0]['data'] != '') {
+            switch ($params['filters']['groupOp']) {
                 case "AND":
-                    foreach ($params['search']['rules'] as $index => $search) {
-                        if ($search['field'] == 'user') {
-                            $query = $query->where('user.user', 'LIKE', "%$search[data]%");
+                    foreach ($params['filters']['rules'] as $index => $filters) {
+                        if ($filters['field'] == 'user') {
+                            $query = $query->where('user.user', 'LIKE', "%$filters[data]%");
                         } else {
-                            $query = $query->where($search['field'], 'LIKE', "%$search[data]%");
+                            $query = $query->where($filters['field'], 'LIKE', "%$filters[data]%");
                         }
                     }
 
                     break;
                 case "OR":
-                    foreach ($params['search']['rules'] as $index => $search) {
-                        if ($search['field'] == 'user') {
-                            $query = $query->orWhere('user.user', 'LIKE', "%$search[data]%");
+                    foreach ($params['filters']['rules'] as $index => $filters) {
+                        if ($filters['field'] == 'user') {
+                            $query = $query->orWhere('user.user', 'LIKE', "%$filters[data]%");
                         } else {
-                            $query = $query->orWhere($search['field'], 'LIKE', "%$search[data]%");
+                            $query = $query->orWhere($filters['field'], 'LIKE', "%$filters[data]%");
                         }
                     }
 
@@ -143,8 +143,6 @@ class UserAclController extends Controller
             'totalPages' => $totalPages
         ];
 
-        // echo $time2-$time1;
-        // echo '---';
         return response([
             'status' => true,
             'data' => $useracl,
@@ -153,24 +151,23 @@ class UserAclController extends Controller
         ]);
     }
 
-    public function detail(Request $request)
+    public function detail()
     {
-
         $params = [
-            'offset' => $request->offset ?? 0,
-            'limit' => $request->limit ?? 100,
-            'search' => $request->search ?? [],
-            'sortIndex' => $request->sortIndex ?? 'id',
-            'sortOrder' => $request->sortOrder ?? 'asc',
+            'offset' => request()->offset ?? ((request()->page - 1) * request()->limit),
+            'limit' => request()->limit ?? 10,
+            'filters' => json_decode(request()->filters, true) ?? [],
+            'sortIndex' => request()->sortIndex ?? 'id',
+            'sortOrder' => request()->sortOrder ?? 'asc',
         ];
 
         // dd($params);
-        $totalRows = UserAcl::count();
+        $totalRows = DB::table((new UserAcl)->getTable())->count();
         $totalPages = ceil($totalRows / $params['limit']);
 
         /* Sorting */
         if ($params['sortIndex'] == 'id') {
-            $query = UserAcl::select(
+            $query = DB::table((new UserAcl)->getTable())->select(
                 'useracl.id',
                 'acos.nama as nama',
                 'acos.class as class',
@@ -181,11 +178,11 @@ class UserAclController extends Controller
             )
                 ->Join('acos', 'useracl.aco_id', '=', 'acos.id')
                 ->Join('user', 'useracl.user_id', '=', 'user.id')
-                ->where('useracl.user_id', '=', $request->user_id)
+                ->where('useracl.user_id', '=', request()->user_id)
                 ->orderBy('useracl.id', $params['sortOrder']);
         } else {
             if ($params['sortOrder'] == 'asc') {
-                $query = UserAcl::select(
+                $query = DB::table((new UserAcl)->getTable())->select(
                     'useracl.id',
                     'acos.nama as nama',
                     'acos.class as class',
@@ -197,10 +194,10 @@ class UserAclController extends Controller
                     ->Join('acos', 'useracl.aco_id', '=', 'acos.id')
                     ->Join('user', 'useracl.user_id', '=', 'user.id')
                     ->orderBy($params['sortIndex'], $params['sortOrder'])
-                    ->where('useracl.user_id', '=', $request->user_id)
+                    ->where('useracl.user_id', '=', request()->user_id)
                     ->orderBy('useracl.id', $params['sortOrder']);
             } else {
-                $query = UserAcl::select(
+                $query = DB::table((new UserAcl)->getTable())->select(
                     'useracl.id',
                     'acos.nama as nama',
                     'acos.class as class',
@@ -211,7 +208,7 @@ class UserAclController extends Controller
                 )
                     ->Join('acos', 'useracl.aco_id', '=', 'acos.id')
                     ->Join('user', 'useracl.user_id', '=', 'user.id')
-                    ->where('useracl.user_id', '=', $request->user_id)
+                    ->where('useracl.user_id', '=', request()->user_id)
                     ->orderBy($params['sortIndex'], $params['sortOrder'])
                     ->orderBy('useracl.id', 'asc');
             }
@@ -219,32 +216,32 @@ class UserAclController extends Controller
 
 
         /* Searching */
-        if (count($params['search']) > 0 && @$params['search']['rules'][0]['data'] != '') {
-            switch ($params['search']['groupOp']) {
+        if (count($params['filters']) > 0 && @$params['filters']['rules'][0]['data'] != '') {
+            switch ($params['filters']['groupOp']) {
                 case "AND":
-                    foreach ($params['search']['rules'] as $index => $search) {
-                        if ($search['field'] == 'nama') {
-                            $query = $query->where('acos.nama', 'LIKE', "%$search[data]%");
-                        } else if ($search['field'] == 'class') {
-                            $query = $query->where('acos.class', 'LIKE', "%$search[data]%");
-                        } else if ($search['field'] == 'user') {
-                            $query = $query->where('user.user', 'LIKE', "%$search[data]%");
+                    foreach ($params['filters']['rules'] as $index => $filters) {
+                        if ($filters['field'] == 'nama') {
+                            $query = $query->where('acos.nama', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'class') {
+                            $query = $query->where('acos.class', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'user') {
+                            $query = $query->where('user.user', 'LIKE', "%$filters[data]%");
                         } else {
-                            $query = $query->where($search['field'], 'LIKE', "%$search[data]%");
+                            $query = $query->where($filters['field'], 'LIKE', "%$filters[data]%");
                         }
                     }
 
                     break;
                 case "OR":
-                    foreach ($params['search']['rules'] as $index => $search) {
-                        if ($search['field'] == 'nama') {
-                            $query = $query->orWhere('acos.nama', 'LIKE', "%$search[data]%");
-                        } else if ($search['field'] == 'class') {
-                            $query = $query->orWhere('acos.class', 'LIKE', "%$search[data]%");
-                        } else if ($search['field'] == 'user') {
-                            $query = $query->orWhere('user.user', 'LIKE', "%$search[data]%");
+                    foreach ($params['filters']['rules'] as $index => $filters) {
+                        if ($filters['field'] == 'nama') {
+                            $query = $query->orWhere('acos.nama', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'class') {
+                            $query = $query->orWhere('acos.class', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'user') {
+                            $query = $query->orWhere('user.user', 'LIKE', "%$filters[data]%");
                         } else {
-                            $query = $query->orWhere($search['field'], 'LIKE', "%$search[data]%");
+                            $query = $query->orWhere($filters['field'], 'LIKE', "%$filters[data]%");
                         }
                     }
 
@@ -272,8 +269,6 @@ class UserAclController extends Controller
             'totalPages' => $totalPages
         ];
 
-        // echo $time2-$time1;
-        // echo '---';
         return response([
             'status' => true,
             'data' => $useracl,
@@ -300,80 +295,55 @@ class UserAclController extends Controller
      */
     public function store(StoreUserAclRequest $request)
     {
-
-        // $request->validate([
-        //         'user_id' => 'required|unique:useracl,user_id'
-        // ]);
         $request->validate([
             'user_id' => [
                 'required',
-                 New NotExistsRule()
+                new NotExistsRule()
             ]
         ]);
 
         DB::beginTransaction();
+
         try {
             $controller = new ParameterController;
             $dataaktif = $controller->getparameterid('STATUS AKTIF', 'STATUS AKTIF', 'AKTIF');
             $aktif = $dataaktif->id;
+
             for ($i = 0; $i < count($request->aco_id); $i++) {
-                $useracl = new UserAcl();
-
-                $useracl->user_id = $request->user_id;
-                $useracl->modifiedby = $request->modifiedby;
-                $useracl->aco_id = $request->aco_id[$i]  ?? 0;
                 if ($request->status[$i] == $aktif) {
-                    // dd($request->user_id[$i]);
-                    $useracl->save();
+                    $useracl = new UserAcl();
+                    $useracl->user_id = $request->user_id;
+                    $useracl->modifiedby = auth('api')->user()->name;
+                    
+                    $useracl->aco_id = $request->aco_id[$i]  ?? 0;
+
+                    if ($useracl->save()) {
+                        $logTrail = [
+                            'namatabel' => strtoupper($useracl->getTable()),
+                            'postingdari' => 'ENTRY USER ACL',
+                            'idtrans' => $useracl->id,
+                            'nobuktitrans' => $useracl->id,
+                            'aksi' => 'ENTRY',
+                            'datajson' => $useracl->toArray(),
+                            'modifiedby' => $useracl->modifiedby
+                        ];
+
+                        $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                        $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+
+                        DB::commit();
+                    }
                 }
-            }
-
-
-            $datajson = [
-                'aco_id' => $request->aco_id,
-                'user_id' => $request->user_id,
-                'modifiedby' => strtoupper($request->modifiedby),
-
-            ];
-
-             
-
-            $datalogtrail = [
-                'namatabel' => 'USERACL',
-                'postingdari' => 'ENTRY USER ACL',
-                'idtrans' => $request->id,
-                'nobuktitrans' => $request->id,
-                'aksi' => 'ENTRY',
-                'datajson' => json_encode($datajson),
-                'modifiedby' => $request->modifiedby,
-            ];
-
-            $data=new StoreLogTrailRequest($datalogtrail);
-            app(LogTrailController::class)->store($data);             
-
-            DB::commit();
-            /* Set position and page */
-            $del = 0;
-            $data = $this->getid($request->user_id, $request, $del) ?? 0;
-
-            $useracl->position = $data->id;
-            $useracl->id = $data->row;
-
-
-
-            // dd($useracl->position );
-            if (isset($request->limit)) {
-                $useracl->page = ceil($useracl->position / $request->limit);
             }
 
             return response([
                 'status' => true,
                 'message' => 'Berhasil disimpan',
-                'data' => $useracl
+                'data' => []
             ]);
         } catch (\Throwable $th) {
             DB::rollBack();
-            return response($th->getMessage());
+            throw $th;
         }
     }
 
@@ -390,7 +360,6 @@ class UserAclController extends Controller
             ->first();
         $useracl['user'] = $data['user'];
 
-        // dd($useracl);
         return response([
             'status' => true,
             'data' => $useracl
@@ -422,38 +391,31 @@ class UserAclController extends Controller
             UserAcl::where('user_id', $request->user_id)->delete();
 
             for ($i = 0; $i < count($request->aco_id); $i++) {
-                $useracl = new UserAcl();
-                $useracl->user_id = $request->user_id;
-                $useracl->modifiedby = $request->modifiedby;
-                $useracl->aco_id = $request->aco_id[$i]  ?? 0;
-                $useracl->save();
+                if ($request->status[$i] == 1) {
+                    $useracl = new UserAcl();
+                    $useracl->user_id = $request->user_id;
+                    $useracl->modifiedby = auth('api')->user()->name;
+                    $useracl->aco_id = $request->aco_id[$i]  ?? 0;
+
+                    if ($useracl->save()) {
+                        $logTrail = [
+                            'namatabel' => strtoupper($useracl->getTable()),
+                            'postingdari' => 'ENTRY USER ACL',
+                            'idtrans' => $useracl->id,
+                            'nobuktitrans' => $useracl->id,
+                            'aksi' => 'ENTRY',
+                            'datajson' => $useracl->toArray(),
+                            'modifiedby' => $useracl->modifiedby
+                        ];
+
+                        $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                        $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+
+                        DB::commit();
+                    }
+                }
             }
 
-
-
-            $datajson = [
-                'aco_id' => $request->aco_id,
-                'user_id' => $request->user_id,
-                'modifiedby' => strtoupper($request->modifiedby),
-
-            ];
-
-             
-
-            $datalogtrail = [
-                'namatabel' => 'USERACL',
-                'postingdari' => 'EDIT USER ACL',
-                'idtrans' => $useracl->id,
-                'nobuktitrans' => $useracl->id,
-                'aksi' => 'EDIT',
-                'datajson' => json_encode($datajson),
-                'modifiedby' => $useracl->modifiedby,
-            ];
-
-            $data=new StoreLogTrailRequest($datalogtrail);
-            app(LogTrailController::class)->store($data);   
-
-            DB::commit();
             /* Set position and page */
             $del = 0;
             $data = $this->getid($request->user_id, $request, $del);
@@ -485,32 +447,26 @@ class UserAclController extends Controller
     {
         DB::beginTransaction();
         try {
+            $delete = UserAcl::where('user_id', $request->user_id)->delete();
 
-            UserAcl::where('user_id', $request->user_id)->delete();
 
-            $datajson = [
-                'aco_id' => $request->aco_id,
-                'user_id' => $request->user_id,
-                'modifiedby' => strtoupper($request->modifiedby),
+            if ($delete > 0) {
+                $logTrail = [
+                    'namatabel' => strtoupper($useracl->getTable()),
+                    'postingdari' => 'ENTRY USER ACL',
+                    'idtrans' => $useracl->id,
+                    'nobuktitrans' => $useracl->id,
+                    'aksi' => 'ENTRY',
+                    'datajson' => $useracl->toArray(),
+                    'modifiedby' => $useracl->modifiedby
+                ];
 
-            ];
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-             
+                DB::commit();
+            }
 
-            $datalogtrail = [
-                'namatabel' => 'USERACL',
-                'postingdari' => 'DELETE USER ACL',
-                'idtrans' => $request->id,
-                'nobuktitrans' => $request->id,
-                'aksi' => 'DELETE',
-                'datajson' => json_encode($datajson),
-                'modifiedby' => $request->modifiedby,
-            ];
-
-            $data=new StoreLogTrailRequest($datalogtrail);
-            app(LogTrailController::class)->store($data);   
-
-            DB::commit();
             $del = 1;
             // dd($request->user_id);
 
@@ -533,7 +489,33 @@ class UserAclController extends Controller
         }
     }
 
+    public function export()
+    {
+        $response = $this->index();
+        $decodedResponse = json_decode($response->content(), true);
+        $useracls = $decodedResponse['data'];
 
+        $columns = [
+            [
+                'label' => 'No',
+            ],
+            [
+                'label' => 'ID',
+                'index' => 'id',
+            ],
+            [
+                'label' => 'User ID',
+                'index' => 'user_id',
+            ],
+            [
+                'label' => 'User',
+                'index' => 'user',
+            ],
+        ];
+
+        $this->toExcel('User Acl', $useracls, $columns);
+    }
+    
     public function fieldLength()
     {
         $data = [];
@@ -621,12 +603,6 @@ class UserAclController extends Controller
 
             $table->index('user_id');
         });
-
-
-
-
-
-
 
         DB::table($temp)->insertUsing(['user_id', 'id_',  'user',  'modifiedby', 'updated_at'], $query);
 

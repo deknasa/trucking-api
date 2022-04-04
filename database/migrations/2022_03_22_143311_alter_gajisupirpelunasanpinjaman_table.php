@@ -14,7 +14,7 @@ class AlterGajisupirpelunasanpinjamanTable extends Migration
     public function up()
     {
         Schema::table('gajisupirpelunasanpinjaman', function (Blueprint $table) {
-            $table->string('pinjamanpengembalian_nobukti',50)->default('');
+            $table->string('pengembalianpinjaman_nobukti',50)->default('');
        });
     }
 

@@ -5,11 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class AbsensiSupirApproval extends MyModel
+class AbsensiSupirApprovalDetail extends MyModel
 {
     use HasFactory;
 
-    protected $table = 'absensisupirapproval';
+    protected $table = 'absensisupirapprovaldetail';
 
     protected $guarded = [
         'id',
@@ -20,5 +20,5 @@ class AbsensiSupirApproval extends MyModel
     protected $casts = [
         'created_at' => 'date:d-m-Y H:i:s',
         'updated_at' => 'date:d-m-Y H:i:s'
-    ];   
+    ];
 }

@@ -17,7 +17,6 @@ class CreateProsesgajisupirpelunasanpinjamanTable extends Migration
             $table->id();
             $table->unsignedBigInteger('prosesgajisupir_id')->default('0');
             $table->string('nobukti',50)->default('');
-            $table->date('tgl')->default('1900/1/1');
             $table->unsignedBigInteger('supir_id')->default('0');
             $table->string('pinjaman_nobukti',50)->default('');
             $table->double('nominal',15,2)->default('0');

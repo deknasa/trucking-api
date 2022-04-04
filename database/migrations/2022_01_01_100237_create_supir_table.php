@@ -22,7 +22,7 @@ class CreateSupirTable extends Migration
             $table->integer('statusaktif')->length(11)->default(0);
             $table->double('nominaldepositsa', 15,2)->default(0);
             $table->BigInteger('depositke')->default(0);
-            $table->date('tgl')->default('1900/1/1');
+            $table->date('tglmasuk')->default('1900/1/1');
             $table->double('nominalpinjamansaldoawal', 15,2)->default(0);
             $table->unsignedBigInteger('supirold_id')->default(0);
             $table->date('tglexpsim')->default('1900/1/1');

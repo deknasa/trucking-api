@@ -5,20 +5,20 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Pinjaman extends MyModel
+class AbsensiSupirApprovalHeader extends MyModel
 {
     use HasFactory;
 
-    protected $table = 'pinjaman';
-
-    protected $casts = [
-        'created_at' => 'date:d-m-Y H:i:s',
-        'updated_at' => 'date:d-m-Y H:i:s'
-    ];
+    protected $table = 'absensisupirapprovalheader';
 
     protected $guarded = [
         'id',
         'created_at',
         'updated_at',
     ];
+
+    protected $casts = [
+        'created_at' => 'date:d-m-Y H:i:s',
+        'updated_at' => 'date:d-m-Y H:i:s'
+    ]; 
 }

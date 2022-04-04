@@ -24,7 +24,6 @@ class CreatePengeluarandetailTable extends Migration
             $table->string('coadebet',50)->default('');
             $table->string('coakredit',50)->default('');
             $table->longText('keterangan')->default('');
-            $table->string('noinvoice',50)->default('');
             $table->date('bulanbeban')->default('1900/1/1');
             $table->string('modifiedby',50)->default('');
             $table->timestamps();

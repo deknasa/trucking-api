@@ -18,7 +18,7 @@ class CreateNotadebetdetailTable extends Migration
             $table->unsignedBigInteger('notadebet_id')->default('0');
             $table->string('nobukti',50)->default('');
             $table->date('tglterima')->default('1900/1/1');
-            $table->string('invoice_bukti',50)->default('');
+            $table->string('invoice_nobukti',50)->default('');
             $table->double('nominal',15,2)->default('0');
             $table->double('nominalbayar',15,2)->default('0');
             $table->double('lebihbayar',15,2)->default('0');
@@ -28,7 +28,7 @@ class CreateNotadebetdetailTable extends Migration
             $table->timestamps();
 
             $table->foreign('notadebet_id')->references('id')->on('notadebetheader')->onDelete('cascade');            
-            $table->foreign('invoice_bukti')->references('nobukti')->on('invoiceheader');
+            $table->foreign('invoice_nobukti')->references('nobukti')->on('invoiceheader');
 
 
         });

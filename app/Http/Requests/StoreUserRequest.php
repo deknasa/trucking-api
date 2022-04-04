@@ -32,7 +32,6 @@ class StoreUserRequest extends FormRequest
             'cabang_id' => 'required',
             'karyawan_id' => 'required',
             'statusaktif' => 'required',
-            'modifiedby' => 'required'
         ];
     }
 
@@ -46,23 +45,6 @@ class StoreUserRequest extends FormRequest
             'karyawan_id' => 'karyawan',
             'dashboard' => 'dashboard',
             'statusaktif' => 'status',
-            'modifiedby' => 'modified by'
         ];
     }
-
-    public function messages()
-    {
-        $controller = new ErrorController;
-        return [
-            'user.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
-            'name.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
-            'password.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
-            'cabang_id.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
-            'karyawan_id.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
-            'statusaktif.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
-            'modifiedby.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
-
-
-        ];
-    } 
 }
