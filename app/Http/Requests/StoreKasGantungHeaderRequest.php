@@ -13,7 +13,7 @@ class StoreKasGantungHeaderRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +24,17 @@ class StoreKasGantungHeaderRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'nobukti' => 'required',
+            'tgl' => 'required',
+            'penerima_id' => 'required',
+        ];
+    }
+
+    public function attributes() {
+        return [
+            'nobukti' => 'No Bukti',
+            'tgl' => 'Tanggal',
+            'penerima_id' => 'Penerima',
         ];
     }
 }

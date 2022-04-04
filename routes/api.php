@@ -26,6 +26,11 @@ use App\Http\Controllers\Api\ContainerController;
 use App\Http\Controllers\Api\BankController;
 use App\Http\Controllers\Api\AlatBayarController;
 use App\Http\Controllers\Api\BankPelangganController;
+use App\Http\Controllers\Api\JenisEmklController;
+use App\Http\Controllers\Api\JenisOrderController;
+use App\Http\Controllers\Api\JenisTradoController;
+use App\Http\Controllers\Api\KasGantungDetailController;
+use App\Http\Controllers\Api\KasGantungHeaderController;
 
 /*
 |--------------------------------------------------------------------------
@@ -147,3 +152,22 @@ Route::resource('alatbayar', AlatBayarController::class);
 Route::get('bankpelanggan/combo', [BankPelangganController::class, 'combo']);
 Route::get('bankpelanggan/field_length', [BankPelangganController::class, 'fieldLength']);
 Route::resource('bankpelanggan', BankPelangganController::class);
+
+Route::get('jenisemkl/combo', [JenisEmklController::class, 'combo']);
+Route::get('jenisemkl/field_length', [JenisEmklController::class, 'fieldLength']);
+Route::resource('jenisemkl', JenisEmklController::class);
+
+Route::get('jenisorder/combo', [JenisOrderController::class, 'combo']);
+Route::get('jenisorder/field_length', [JenisOrderController::class, 'fieldLength']);
+Route::resource('jenisorder', JenisOrderController::class);
+
+Route::get('jenistrado/combo', [JenisTradoController::class, 'combo']);
+Route::get('jenistrado/field_length', [JenisTradoController::class, 'fieldLength']);
+Route::resource('jenistrado', JenisTradoController::class);
+
+Route::get('kasgantung/no_bukti', [KasGantungHeaderController::class, 'getNoBukti']);
+Route::get('kasgantung/combo', [KasGantungHeaderController::class, 'combo']);
+Route::get('kasgantung/grid', [KasGantungHeaderController::class, 'grid']);
+Route::resource('kasgantung', KasGantungHeaderController::class);
+
+Route::resource('kasgantung_detail', KasGantungDetailController::class);

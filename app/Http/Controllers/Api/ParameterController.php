@@ -451,7 +451,7 @@ class ParameterController extends Controller
     public function getparameterid($grp, $subgrp, $text)
     {
 
-        $querydata = Parameter::select('id as id')
+        $querydata = Parameter::select('id as id','text')
             ->where('grp', '=',  $grp)
             ->where('subgrp', '=',  $subgrp)
             ->where('text', '=',  $text)

@@ -1,10 +1,15 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
 use App\Models\JurnalUmumDetail;
 use App\Http\Requests\StoreJurnalUmumDetailRequest;
 use App\Http\Requests\UpdateJurnalUmumDetailRequest;
+
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
 class JurnalUmumDetailController extends Controller
 {
@@ -36,7 +41,47 @@ class JurnalUmumDetailController extends Controller
      */
     public function store(StoreJurnalUmumDetailRequest $request)
     {
-        //
+        DB::beginTransaction();
+        $validator = Validator::make($request->all(), [
+            'nobukti' => 'required',
+        ], [
+            'nobukti.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
+        ], [
+            'nobukti' => 'NoBukti',
+        ]);
+        if (!$validator->passes()) {
+            return [
+                'error' => true,
+                'messages' => $validator->messages()
+            ];
+        }
+
+        try {
+            $jurnalumumDetail = new JurnalUmumDetail();
+
+            $jurnalumumDetail->jurnalumum_id = $request->jurnalumum_id;
+            $jurnalumumDetail->nobukti = $request->nobukti;
+            $jurnalumumDetail->tgl = $request->tgl;
+            $jurnalumumDetail->coa = $request->coa;
+            $jurnalumumDetail->nominal = $request->nominal;
+            $jurnalumumDetail->keterangan = $request->keterangan ?? '';
+            $jurnalumumDetail->modifiedby = $request->modifiedby;
+            
+            $jurnalumumDetail->save();
+            
+           
+            DB::commit();
+            if ($validator->passes()) {
+                return [
+                    'error' => false,
+                    'id' => $jurnalumumDetail->id,
+                    'tabel' => $jurnalumumDetail->getTable(),
+                ];
+            }
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return response($th->getMessage());
+        }        
     }
 
     /**

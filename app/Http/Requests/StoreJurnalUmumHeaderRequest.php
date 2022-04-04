@@ -13,7 +13,7 @@ class StoreJurnalUmumHeaderRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
