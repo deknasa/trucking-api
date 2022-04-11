@@ -131,8 +131,6 @@ Route::resource('absensi', AbsensiSupirHeaderController::class);
 Route::resource('absensi_detail', AbsensiSupirDetailController::class);
 Route::resource('absentrado', AbsenTradoController::class);
 
-Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
-
 Route::get('container/field_length', [ContainerController::class, 'fieldLength']);
 Route::get('container/combostatus', [ContainerController::class, 'combostatus']);
 Route::get('container/getPosition2', [ContainerController::class, 'getPosition2']);
@@ -166,13 +164,6 @@ Route::resource('jenisorder', JenisOrderController::class);
 Route::get('jenistrado/combo', [JenisTradoController::class, 'combo']);
 Route::get('jenistrado/field_length', [JenisTradoController::class, 'fieldLength']);
 Route::resource('jenistrado', JenisTradoController::class);
-
-Route::get('kasgantung/no_bukti', [KasGantungHeaderController::class, 'getNoBukti']);
-Route::get('kasgantung/combo', [KasGantungHeaderController::class, 'combo']);
-Route::get('kasgantung/grid', [KasGantungHeaderController::class, 'grid']);
-Route::resource('kasgantung', KasGantungHeaderController::class);
-
-Route::resource('kasgantung_detail', KasGantungDetailController::class);
 
     Route::get('akun_pusat/field_length', [AkunPusatController::class, 'fieldLength']);
     Route::resource('akun_pusat', AkunPusatController::class);
@@ -268,3 +259,10 @@ Route::resource('kasgantung_detail', KasGantungDetailController::class);
     Route::resource('bankpelanggan', BankPelangganController::class);
 });
 
+Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
+Route::get('kasgantung/no_bukti', [KasGantungHeaderController::class, 'getNoBukti']);
+Route::get('kasgantung/combo', [KasGantungHeaderController::class, 'combo']);
+Route::get('kasgantung/grid', [KasGantungHeaderController::class, 'grid']);
+Route::resource('kasgantung', KasGantungHeaderController::class);
+
+Route::resource('kasgantung_detail', KasGantungDetailController::class);
