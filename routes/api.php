@@ -32,6 +32,7 @@ use App\Http\Controllers\Api\JenisOrderController;
 use App\Http\Controllers\Api\JenisTradoController;
 use App\Http\Controllers\Api\KasGantungDetailController;
 use App\Http\Controllers\Api\KasGantungHeaderController;
+use App\Http\Controllers\Api\GudangController;
 
 /*
 |--------------------------------------------------------------------------
@@ -266,3 +267,7 @@ Route::get('kasgantung/grid', [KasGantungHeaderController::class, 'grid']);
 Route::resource('kasgantung', KasGantungHeaderController::class);
 
 Route::resource('kasgantung_detail', KasGantungDetailController::class);
+
+Route::get('gudang/combo', [GudangController::class, 'combo']);
+Route::get('gudang/field_length', [GudangController::class, 'fieldLength']);
+Route::resource('gudang', GudangController::class);

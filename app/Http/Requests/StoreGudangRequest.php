@@ -13,7 +13,7 @@ class StoreGudangRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +24,9 @@ class StoreGudangRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'gudang' => 'required',
+            'statusaktif' => 'required',
+            'statusgudang' => 'required'
         ];
     }
 }
