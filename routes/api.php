@@ -33,6 +33,9 @@ use App\Http\Controllers\Api\JenisTradoController;
 use App\Http\Controllers\Api\KasGantungDetailController;
 use App\Http\Controllers\Api\KasGantungHeaderController;
 use App\Http\Controllers\Api\GudangController;
+use App\Http\Controllers\Api\KategoriController;
+use App\Http\Controllers\Api\KelompokController;
+use App\Http\Controllers\Api\KerusakanController;
 
 /*
 |--------------------------------------------------------------------------
@@ -271,3 +274,15 @@ Route::resource('kasgantung_detail', KasGantungDetailController::class);
 Route::get('gudang/combo', [GudangController::class, 'combo']);
 Route::get('gudang/field_length', [GudangController::class, 'fieldLength']);
 Route::resource('gudang', GudangController::class);
+
+Route::get('kategori/combo', [KategoriController::class, 'combo']);
+Route::get('kategori/field_length', [KategoriController::class, 'fieldLength']);
+Route::resource('kategori', KategoriController::class);
+
+Route::get('kelompok/combo', [KelompokController::class, 'combo']);
+Route::get('kelompok/field_length', [KelompokController::class, 'fieldLength']);
+Route::resource('kelompok', KelompokController::class);
+
+Route::get('kerusakan/combo', [KerusakanController::class, 'combo']);
+Route::get('kerusakan/field_length', [KerusakanController::class, 'fieldLength']);
+Route::resource('kerusakan', KerusakanController::class);

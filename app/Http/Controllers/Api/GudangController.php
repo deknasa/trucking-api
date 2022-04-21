@@ -265,7 +265,7 @@ class GudangController extends Controller
         if ($delete) {
             $logTrail = [
                 'namatabel' => strtoupper($gudang->getTable()),
-                'postingdari' => 'DELETE JENIS ORDER',
+                'postingdari' => 'DELETE GUDANG',
                 'idtrans' => $gudang->id,
                 'nobuktitrans' => $gudang->id,
                 'aksi' => 'DELETE',
