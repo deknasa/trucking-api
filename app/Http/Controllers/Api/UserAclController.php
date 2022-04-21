@@ -66,8 +66,7 @@ class UserAclController extends Controller
 
         DB::table($temp)->insertUsing(['user_id', 'id_', 'modifiedby', 'created_at', 'updated_at'], $query);
 
-        $totalRows = DB::table($temp)
-            ->count();
+        $totalRows = DB::table($temp)->count();
         $totalPages = ceil($totalRows / $params['limit']);
 
         /* Sorting */
@@ -96,7 +95,6 @@ class UserAclController extends Controller
         }
 
 
-
         /* Searching */
         if (count($params['filters']) > 0 && @$params['filters']['rules'][0]['data'] != '') {
             switch ($params['filters']['groupOp']) {
@@ -105,7 +103,7 @@ class UserAclController extends Controller
                         if ($filters['field'] == 'user') {
                             $query = $query->where('user.user', 'LIKE', "%$filters[data]%");
                         } else {
-                            $query = $query->where($filters['field'], 'LIKE', "%$filters[data]%");
+                            $query = $query->where('user.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
                     }
 
@@ -115,7 +113,7 @@ class UserAclController extends Controller
                         if ($filters['field'] == 'user') {
                             $query = $query->orWhere('user.user', 'LIKE', "%$filters[data]%");
                         } else {
-                            $query = $query->orWhere($filters['field'], 'LIKE', "%$filters[data]%");
+                            $query = $query->orWhere('user.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
                     }
 
@@ -124,6 +122,7 @@ class UserAclController extends Controller
 
                     break;
             }
+
 
 
             $totalRows = count($query->get());
@@ -161,7 +160,6 @@ class UserAclController extends Controller
             'sortOrder' => request()->sortOrder ?? 'asc',
         ];
 
-        // dd($params);
         $totalRows = DB::table((new UserAcl)->getTable())->count();
         $totalPages = ceil($totalRows / $params['limit']);
 
@@ -314,7 +312,7 @@ class UserAclController extends Controller
                     $useracl = new UserAcl();
                     $useracl->user_id = $request->user_id;
                     $useracl->modifiedby = auth('api')->user()->name;
-                    
+
                     $useracl->aco_id = $request->aco_id[$i]  ?? 0;
 
                     if ($useracl->save()) {
@@ -421,7 +419,7 @@ class UserAclController extends Controller
             $data = $this->getid($request->user_id, $request, $del);
             $useracl->position = $data->id;
             $useracl->id = $data->row;
-            // dd($useracl->position );
+
             if (isset($request->limit)) {
                 $useracl->page = ceil($useracl->position / $request->limit);
             }
@@ -468,7 +466,6 @@ class UserAclController extends Controller
             }
 
             $del = 1;
-            // dd($request->user_id);
 
             $data = $this->getid($request->user_id, $request, $del);
 
@@ -477,7 +474,6 @@ class UserAclController extends Controller
             if (isset($request->limit)) {
                 $useracl->page = ceil($useracl->position / $request->limit);
             }
-            // dd($useracl);
             return response([
                 'status' => true,
                 'message' => 'Berhasil dihapus',
@@ -515,7 +511,7 @@ class UserAclController extends Controller
 
         $this->toExcel('User Acl', $useracls, $columns);
     }
-    
+
     public function fieldLength()
     {
         $data = [];
