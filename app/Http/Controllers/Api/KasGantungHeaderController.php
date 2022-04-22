@@ -117,10 +117,8 @@ class KasGantungHeaderController extends Controller
             $content['subgroup'] = 'KASGANTUNG';
             $content['table'] = 'kasgantungheader';
 
-            $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
-
+            
             $kasgantungHeader = new KasGantungHeader();
-            $kasgantungHeader->nobukti = $nobukti;
             $kasgantungHeader->tgl = date('Y-m-d', strtotime($request->tgl));
             $kasgantungHeader->penerima_id = $request->penerima_id;
             $kasgantungHeader->keterangan = $request->keterangan ?? '';
@@ -131,21 +129,31 @@ class KasGantungHeaderController extends Controller
             $kasgantungHeader->tglkaskeluar = date('Y-m-d', strtotime($request->tglkaskeluar));
             $kasgantungHeader->modifiedby = $request->modifiedby;
             
-            if ($kasgantungHeader->save()) {
-                
-                $logTrail = [
-                    'namatabel' => strtoupper($kasgantungHeader->getTable()),
-                    'postingdari' => 'ENTRY KAS GANTUNG',
-                    'idtrans' => $kasgantungHeader->id,
-                    'nobuktitrans' => $kasgantungHeader->nobukti,
-                    'aksi' => 'ENTRY',
-                    'datajson' => $kasgantungHeader->toArray(),
-                    'modifiedby' => $kasgantungHeader->modifiedby
-                ];
+            TOP:
+            $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
+            $kasgantungHeader->nobukti = $nobukti;
 
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+            try {
+                $kasgantungHeader->save();
+            } catch (\Exception $e) {
+                $errorCode = @$e->errorInfo[1];
+                if ($errorCode == 2601) {
+                    goto TOP;
+                }
             }
+
+            $logTrail = [
+                'namatabel' => strtoupper($kasgantungHeader->getTable()),
+                'postingdari' => 'ENTRY KAS GANTUNG',
+                'idtrans' => $kasgantungHeader->id,
+                'nobuktitrans' => $kasgantungHeader->nobukti,
+                'aksi' => 'ENTRY',
+                'datajson' => $kasgantungHeader->toArray(),
+                'modifiedby' => $kasgantungHeader->modifiedby
+            ];
+
+            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+            $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
             
             /* Store detail */
             $detaillog=[];
@@ -207,16 +215,17 @@ class KasGantungHeaderController extends Controller
             if ($kasgantungHeader->save() && $kasgantungHeader->kasgantungDetail) {
                 if ($request->bank_id != '') {
                     $parameterController = new ParameterController;
-                    $statusApp = $parameterController->getparameterid('STATUS APPROVAL','STATUS APPROVAL','BELUM APPROVED');
-                    $coaKasKeluar = $parameterController->getparameterid('COA','COAKASKELUAR','1.2.3.4');
+                    $statusApp = $parameterController->getparameterid('STATUS APPROVAL','STATUS APPROVAL','NON APPROVAL');
+                    $coaKasKeluar = $parameterController->getparameterid('COA','COAKASKELUAR','09.01.01.03');
 
                     $content = new Request();
                     $content['group'] = 'NOBUKTI';
                     $content['subgroup'] = 'KASKELUAR';
                     $content['table'] = 'pengeluaranheader';
 
+                    ATAS:
                     $nobuktikaskeluar = app(Controller::class)->getRunningNumber($content)->original['data'];
-
+                    
                     $kasgantungHeader->nobuktikaskeluar = $nobuktikaskeluar;
                     $kasgantungHeader->save();
 
@@ -284,9 +293,14 @@ class KasGantungHeaderController extends Controller
 
                     $jurnal = $this->storeJurnal($pengeluaranHeader,$pengeluaranDetail,$jurnalHeader , $jurnalDetail);
                     
+                    if (!$jurnal['status'] AND @$jurnal['errorCode'] == 2601) {
+                        goto ATAS;
+                    }
+
                     if (!$jurnal['status']) {
                         throw new \Throwable($jurnal['message']);
                     }
+
                 }
 
                 DB::commit();
@@ -442,14 +456,14 @@ class KasGantungHeaderController extends Controller
 
                 if ($request->bank_id != '') {
                     $parameterController = new ParameterController;
-                    $statusApp = $parameterController->getparameterid('STATUS APPROVAL','STATUS APPROVAL','BELUM APPROVED');
-                    $coaKasKeluar = $parameterController->getparameterid('COA','COAKASKELUAR','1.2.3.4');
+                    $statusApp = $parameterController->getparameterid('STATUS APPROVAL','STATUS APPROVAL','NON APPROVAL');
+                    $coaKasKeluar = $parameterController->getparameterid('COA','COAKASKELUAR','09.01.01.03');
 
                     $content = new Request();
                     $content['group'] = 'NOBUKTI';
                     $content['subgroup'] = 'KASKELUAR';
                     $content['table'] = 'pengeluaranheader';
-
+                    ATAS:
                     $nobuktikaskeluar = app(Controller::class)->getRunningNumber($content)->original['data'];
 
                     $kasgantungHeader->nobuktikaskeluar = $nobuktikaskeluar;
@@ -519,6 +533,10 @@ class KasGantungHeaderController extends Controller
 
                     $jurnal = $this->storeJurnal($pengeluaranHeader,$pengeluaranDetail,$jurnalHeader , $jurnalDetail);
                     
+                    if (!$jurnal['status'] AND @$jurnal['errorCode'] == 2601) {
+                        goto ATAS;
+                    }
+
                     if (!$jurnal['status']) {
                         throw new \Throwable($jurnal['message']);
                     }
@@ -612,6 +630,14 @@ class KasGantungHeaderController extends Controller
             $pengeluaran = new StorePengeluaranHeaderRequest($pengeluaranHeader);
             $pengeluarans = app(PengeluaranHeaderController::class)->store($pengeluaran);
             
+            if (@$pengeluarans->original['error'] AND @$pengeluarans->original['errorCode'] == 2601) {
+                return [
+                    'status' => false,
+                    'errorCode' => 2601,
+                    'message' => 'Duplicate Nobukti',
+                ];
+            }
+            
             $pengeluaranDetail['pengeluaran_id'] = $pengeluarans['id'];
 
             $pengeluaran = new StorePengeluaranDetailRequest($pengeluaranDetail);
@@ -631,10 +657,10 @@ class KasGantungHeaderController extends Controller
                 'status' => true,
             ];
 
-        } catch (\Throwable $th) {
+        } catch (\Exception $e) {
             return [
-                'status' => true,
-                'message' => $th->getMessage(),
+                'status' => false,
+                'message' => $e->getMessage(),
             ];
         }
     }

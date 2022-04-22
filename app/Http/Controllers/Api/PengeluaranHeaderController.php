@@ -84,9 +84,15 @@ class PengeluaranHeaderController extends Controller
                     'tabel' => $pengeluaranHeader->getTable(),
                 ];
             }
-        } catch (\Throwable $th) {
+        } catch (\Exception $e) {
             DB::rollBack();
-            return response($th->getMessage());
+            $errorCode = @$e->errorInfo[1];
+
+            return response([
+                'error' => true,
+                'errorCode' => $errorCode,
+                'message' => $e->getMessage()
+            ]);
         }
     }
 
