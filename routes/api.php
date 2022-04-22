@@ -34,6 +34,7 @@ use App\Http\Controllers\Api\KasGantungDetailController;
 use App\Http\Controllers\Api\KasGantungHeaderController;
 use App\Http\Controllers\Api\GudangController;
 use App\Http\Controllers\Api\SubKelompokController;
+use App\Http\Controllers\Api\SupplierController;
 
 /*
 |--------------------------------------------------------------------------
@@ -263,6 +264,10 @@ route::middleware('auth:api')->group(function () {
     Route::get('sub_kelompok/export', [SubKelompokController::class, 'export']);
     Route::get('sub_kelompok/field_length', [SubKelompokController::class, 'fieldLength']);
     Route::resource('sub_kelompok', SubKelompokController::class);
+
+    Route::get('supplier/export', [SupplierController::class, 'export']);
+    Route::get('supplier/field_length', [SupplierController::class, 'fieldLength']);
+    Route::resource('supplier', SupplierController::class);
 });
 
 Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
