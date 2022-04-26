@@ -13,7 +13,7 @@ class StoreMerkRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +24,9 @@ class StoreMerkRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'kodemerk' => 'required',
+            'keterangan' => 'required',
+            'statusaktif' => 'required'
         ];
     }
 }

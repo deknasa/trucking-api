@@ -1,24 +1,16 @@
 <?php
 
-
-namespace App\Http\Controllers;
-
 namespace App\Http\Controllers\Api;
-
 
 use App\Models\LogTrail;
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Http\Requests\UpdateLogTrailRequest;
-use App\Http\Requests\DestroyLogTrailRequest;
-
 
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Route;
 
 class LogTrailController extends Controller
 {
@@ -30,19 +22,19 @@ class LogTrailController extends Controller
     public function index(Request $request)
     {
         $params = [
-            'offset' => $request->offset ?? 0,
-            'limit' => $request->limit ?? 100,
-            'search' => $request->search ?? [],
-            'sortIndex' => $request->sortIndex ?? 'id',
-            'sortOrder' => $request->sortOrder ?? 'asc',
+            'offset' => request()->offset ?? ((request()->page - 1) * request()->limit),
+            'limit' => request()->limit ?? 10,
+            'filters' => json_decode(request()->filters, true) ?? [],
+            'sortIndex' => request()->sortIndex ?? 'id',
+            'sortOrder' => request()->sortOrder ?? 'asc',
         ];
 
-        $totalRows = LogTrail::count();
+        $totalRows = DB::table((new LogTrail)->getTable())->count();
         $totalPages = ceil($totalRows / $params['limit']);
 
         /* Sorting */
         if ($params['sortIndex'] == 'id') {
-            $query = LogTrail::select(
+            $query = DB::table((new LogTrail)->getTable())->select(
                 'logtrail.id',
                 'logtrail.namatabel',
                 'logtrail.postingdari',
@@ -56,7 +48,7 @@ class LogTrailController extends Controller
                 ->orderBy('logtrail.id', $params['sortOrder']);
         } else {
             if ($params['sortOrder'] == 'asc') {
-                $query = LogTrail::select(
+                $query = DB::table((new LogTrail)->getTable())->select(
                     'logtrail.id',
                     'logtrail.namatabel',
                     'logtrail.postingdari',
@@ -70,7 +62,7 @@ class LogTrailController extends Controller
                     ->orderBy($params['sortIndex'], $params['sortOrder'])
                     ->orderBy('logtrail.id', $params['sortOrder']);
             } else {
-                $query = LogTrail::select(
+                $query = DB::table((new LogTrail)->getTable())->select(
                     'logtrail.id',
                     'logtrail.namatabel',
                     'logtrail.postingdari',
@@ -88,18 +80,18 @@ class LogTrailController extends Controller
 
 
         /* Searching */
-        if (count($params['search']) > 0 && @$params['search']['rules'][0]['data'] != '') {
-            switch ($params['search']['groupOp']) {
+        if (count($params['filters']) > 0 && @$params['filters']['rules'][0]['data'] != '') {
+            switch ($params['filters']['groupOp']) {
                 case "AND":
-                    foreach ($params['search']['rules'] as $index => $search) {
+                    foreach ($params['filters']['rules'] as $index => $filters) {
 
-                        $query = $query->where($search['field'], 'LIKE', "%$search[data]%");
+                        $query = $query->where($filters['field'], 'LIKE', "%$filters[data]%");
                     }
 
                     break;
                 case "OR":
-                    foreach ($params['search']['rules'] as $index => $search) {
-                        $query = $query->orWhere($search['field'], 'LIKE', "%$search[data]%");
+                    foreach ($params['filters']['rules'] as $index => $filters) {
+                        $query = $query->orWhere($filters['field'], 'LIKE', "%$filters[data]%");
                     }
 
                     break;
@@ -126,8 +118,6 @@ class LogTrailController extends Controller
             'totalPages' => $totalPages
         ];
 
-        // echo $time2-$time1;
-        // echo '---';
         return response([
             'status' => true,
             'data' => $logtrails,
@@ -165,7 +155,7 @@ class LogTrailController extends Controller
             $LogTrail->nobuktitrans = $request->nobuktitrans;
             $LogTrail->aksi = $request->aksi;
             $LogTrail->datajson = $request->datajson;
-            $LogTrail->modifiedby = $request->modifiedby;
+            $LogTrail->modifiedby = auth('api')->user()->name;
 
             if ($LogTrail->save()) {
                 DB::commit();
@@ -176,59 +166,14 @@ class LogTrailController extends Controller
         }
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\logtrail  $logtrail
-     * @return \Illuminate\Http\Response
-     */
-    public function show(LogTrail $logtrail)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\logtrail  $logtrail
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(LogTrail $logtrail)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \App\Http\Requests\UpdatelogtrailRequest  $request
-     * @param  \App\Models\logtrail  $logtrail
-     * @return \Illuminate\Http\Response
-     */
-    public function update(UpdateLogTrailRequest $request, logtrail $logtrail)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\logtrail  $logtrail
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(LogTrail $logtrail)
-    {
-        //
-    }
-
     public function header(Request $request)
     {
         $params = [
-            'offset' => $request->offset ?? 0,
-            'limit' => $request->limit ?? 100,
-            'search' => $request->search ?? [],
-            'sortIndex' => $request->sortIndex ?? 'id',
-            'sortOrder' => $request->sortOrder ?? 'asc',
+            'offset' => request()->offset ?? ((request()->page - 1) * request()->limit),
+            'limit' => request()->limit ?? 10,
+            'filters' => json_decode(request()->filters, true) ?? [],
+            'sortIndex' => request()->sortIndex ?? 'id',
+            'sortOrder' => request()->sortOrder ?? 'asc',
         ];
 
         $query = LogTrail::select(
@@ -303,18 +248,18 @@ class LogTrailController extends Controller
 
 
             /* Searching */
-            if (count($params['search']) > 0 && @$params['search']['rules'][0]['data'] != '') {
-                switch ($params['search']['groupOp']) {
+            if (count($params['filters']) > 0 && @$params['filters']['rules'][0]['data'] != '') {
+                switch ($params['filters']['groupOp']) {
                     case "AND":
-                        foreach ($params['search']['rules'] as $index => $search) {
+                        foreach ($params['filters']['rules'] as $index => $filters) {
 
-                            $query = $query->where($search['field'], 'LIKE', "%$search[data]%");
+                            $query = $query->where($filters['field'], 'LIKE', "%$filters[data]%");
                         }
 
                         break;
                     case "OR":
-                        foreach ($params['search']['rules'] as $index => $search) {
-                            $query = $query->orWhere($search['field'], 'LIKE', "%$search[data]%");
+                        foreach ($params['filters']['rules'] as $index => $filters) {
+                            $query = $query->orWhere($filters['field'], 'LIKE', "%$filters[data]%");
                         }
 
                         break;
@@ -350,42 +295,38 @@ class LogTrailController extends Controller
         ]);
     }
 
-    public function detail(Request $request)
-
+    public function detail()
     {
         $params = [
-            'offset' => $request->offset ?? 0,
-            'limit' => $request->limit ?? 100,
-            'search' => $request->search ?? [],
-            'sortIndex' => $request->sortIndex ?? 'id',
-            'sortOrder' => $request->sortOrder ?? 'asc',
+            'offset' => request()->offset ?? ((request()->page - 1) * request()->limit),
+            'limit' => request()->limit ?? 10,
+            'filters' => json_decode(request()->filters, true) ?? [],
+            'sortIndex' => request()->sortIndex ?? 'id',
+            'sortOrder' => request()->sortOrder ?? 'asc',
         ];
-
 
         $query = LogTrail::select(
             'datajson',
             'namatabel',
-        )
-            ->where('idtrans', '=',  $request->id);
+        )->where('idtrans', '=',  request()->id);
 
         $data = $query->first();
+
         if (isset($data)) {
             $datajson = $data->datajson;
             $table_name = strtolower($data->namatabel);
-
             $temp = '##temp' . rand(1, 10000);
-
             $fields = [];
             $columns = DB::connection()->getDoctrineSchemaManager()->listTableDetails($table_name)->getColumns();
 
             foreach ($columns as $index => $column) {
                 $type = DB::connection()->getDoctrineColumn($table_name, $column->getName())->getType()->getName();
+
                 if ($type == 'bigint') {
                     $type = 'biginteger';
                 } elseif ($type == 'string') {
                     $type = 'longText';
                 }
-
 
                 $fields[] = [
                     'name' => $column->getName(),
@@ -393,7 +334,6 @@ class LogTrailController extends Controller
                 ];
             };
 
-            // dd('test');
             Schema::create($temp, function ($table)  use ($fields, $table_name) {
                 if (count($fields) > 0) {
                     foreach ($fields as $field) {
@@ -433,20 +373,19 @@ class LogTrailController extends Controller
                 }
             }
 
-
             /* Searching */
-            if (count($params['search']) > 0 && @$params['search']['rules'][0]['data'] != '') {
-                switch ($params['search']['groupOp']) {
+            if (count($params['filters']) > 0 && @$params['filters']['rules'][0]['data'] != '') {
+                switch ($params['filters']['groupOp']) {
                     case "AND":
-                        foreach ($params['search']['rules'] as $index => $search) {
+                        foreach ($params['filters']['rules'] as $index => $filters) {
 
-                            $query = $query->where($search['field'], 'LIKE', "%$search[data]%");
+                            $query = $query->where($filters['field'], 'LIKE', "%$filters[data]%");
                         }
 
                         break;
                     case "OR":
-                        foreach ($params['search']['rules'] as $index => $search) {
-                            $query = $query->orWhere($search['field'], 'LIKE', "%$search[data]%");
+                        foreach ($params['filters']['rules'] as $index => $filters) {
+                            $query = $query->orWhere($filters['field'], 'LIKE', "%$filters[data]%");
                         }
 
                         break;

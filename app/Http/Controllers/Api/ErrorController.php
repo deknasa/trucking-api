@@ -28,22 +28,22 @@ class ErrorController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index(Request $request)
+    public function index()
     {
         $params = [
-            'offset' => $request->offset ?? 0,
-            'limit' => $request->limit ?? 100,
-            'search' => $request->search ?? [],
-            'sortIndex' => $request->sortIndex ?? 'id',
-            'sortOrder' => $request->sortOrder ?? 'asc',
+            'offset' => request()->offset ?? ((request()->page - 1) * request()->limit),
+            'limit' => request()->limit ?? 10,
+            'filters' => json_decode(request()->filters, true) ?? [],
+            'sortIndex' => request()->sortIndex ?? 'id',
+            'sortOrder' => request()->sortOrder ?? 'asc',
         ];
 
-        $totalRows = Error::count();
+        $totalRows = DB::table((new Error)->getTable())->count();
         $totalPages = ceil($totalRows / $params['limit']);
 
         /* Sorting */
         if ($params['sortIndex'] == 'id') {
-            $query = Error::select(
+            $query = DB::table((new Error)->getTable())->select(
                 'error.id',
                 'error.kodeerror',
                 'error.keterangan',
@@ -54,7 +54,7 @@ class ErrorController extends Controller
                 ->orderBy('error.id', $params['sortOrder']);
         } else {
             if ($params['sortOrder'] == 'asc') {
-                $query = Error::select(
+                $query = DB::table((new Error)->getTable())->select(
                     'error.id',
                     'error.kodeerror',
                     'error.keterangan',
@@ -62,10 +62,10 @@ class ErrorController extends Controller
                     'error.created_at',
                     'error.updated_at'
                 )
-                    ->orderBy($params['sortIndex'], $params['sortOrder'])
+                    ->orderBy('error.' . $params['sortIndex'], $params['sortOrder'])
                     ->orderBy('error.id', $params['sortOrder']);
             } else {
-                $query = Error::select(
+                $query = DB::table((new Error)->getTable())->select(
                     'error.id',
                     'error.kodeerror',
                     'error.keterangan',
@@ -73,24 +73,24 @@ class ErrorController extends Controller
                     'error.created_at',
                     'error.updated_at'
                 )
-                    ->orderBy($params['sortIndex'], $params['sortOrder'])
+                    ->orderBy('error.' . $params['sortIndex'], $params['sortOrder'])
                     ->orderBy('error.id', 'asc');
             }
         }
 
 
         /* Searching */
-        if (count($params['search']) > 0 && @$params['search']['rules'][0]['data'] != '') {
-            switch ($params['search']['groupOp']) {
+        if (count($params['filters']) > 0 && @$params['filters']['rules'][0]['data'] != '') {
+            switch ($params['filters']['groupOp']) {
                 case "AND":
-                    foreach ($params['search']['rules'] as $index => $search) {
-                        $query = $query->where($search['field'], 'LIKE', "%$search[data]%");
+                    foreach ($params['filters']['rules'] as $index => $filters) {
+                        $query = $query->where($filters['field'], 'LIKE', "%$filters[data]%");
                     }
 
                     break;
                 case "OR":
-                    foreach ($params['search']['rules'] as $index => $search) {
-                        $query = $query->orWhere($search['field'], 'LIKE', "%$search[data]%");
+                    foreach ($params['filters']['rules'] as $index => $filters) {
+                        $query = $query->orWhere($filters['field'], 'LIKE', "%$filters[data]%");
                     }
 
                     break;
@@ -117,8 +117,6 @@ class ErrorController extends Controller
             'totalPages' => $totalPages
         ];
 
-        // echo $time2-$time1;
-        // echo '---';
         return response([
             'status' => true,
             'data' => $errors,
@@ -145,13 +143,12 @@ class ErrorController extends Controller
      */
     public function store(StoreErrorRequest $request)
     {
-        // dd($request->all());
         DB::beginTransaction();
         try {
             $error = new Error();
             $error->kodeerror = $request->kodeerror;
             $error->keterangan = $request->keterangan;
-            $error->modifiedby = $request->modifiedby;
+            $error->modifiedby = auth('api')->user()->name;
 
             if ($error->save()) {
                 $logTrail = [
@@ -174,7 +171,7 @@ class ErrorController extends Controller
             $del = 0;
             $data = $this->getid($error->id, $request, $del);
             $error->position = $data->row;
-            
+
             if (isset($request->limit)) {
                 $error->page = ceil($error->position / $request->limit);
             }
@@ -228,8 +225,8 @@ class ErrorController extends Controller
         try {
             $error->kodeerror = $request->kodeerror;
             $error->keterangan = $request->keterangan;
-            $error->modifiedby = $request->modifiedby;
-            
+            $error->modifiedby = auth('api')->user()->name;
+
             if ($error->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($error->getTable()),
@@ -310,6 +307,33 @@ class ErrorController extends Controller
             DB::rollBack();
             return response($th->getMessage());
         }
+    }
+
+    public function export()
+    {
+        $response = $this->index();
+        $decodedResponse = json_decode($response->content(), true);
+        $errors = $decodedResponse['data'];
+
+        $columns = [
+            [
+                'label' => 'No',
+            ],
+            [
+                'label' => 'ID',
+                'index' => 'id',
+            ],
+            [
+                'label' => 'Kode Error',
+                'index' => 'kodeerror',
+            ],
+            [
+                'label' => 'Keterangan',
+                'index' => 'keterangan',
+            ],
+        ];
+
+        $this->toExcel('Error', $errors, $columns);
     }
 
     public function fieldLength()

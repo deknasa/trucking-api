@@ -31,8 +31,6 @@ class StoreLogTrailRequest extends FormRequest
             'nobuktitrans' => 'required',
             'aksi' => 'required',
             'datajson' => 'required',
-            'modifiedby' => 'required',
-            
         ];
     }
 
@@ -45,22 +43,6 @@ class StoreLogTrailRequest extends FormRequest
             'nobuktitrans' => 'nobuktitrans',
             'aksi' => 'aksi',
             'datajson' => 'datajson',
-            'modifiedby' => 'modified by',
-        ];
-    }
-
-    public function messages()
-    {
-        $controller = new ErrorController;
-        return [
-            'namatabel.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
-            'postingdari.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
-            'idtrans.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
-            'nobuktitrans.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
-            'aksi.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
-            'datajson.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
-            'modifiedby.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
-
         ];
     }
 }

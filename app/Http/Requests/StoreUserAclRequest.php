@@ -27,9 +27,8 @@ class StoreUserAclRequest extends FormRequest
     {
 
         return [
-            'aco_id' => 'required',
+            'aco_id' => 'required|array',
             'user_id' => 'required',
-            'modifiedby' => 'required'
         ];
     }
 
@@ -38,17 +37,6 @@ class StoreUserAclRequest extends FormRequest
         return [
             'aco_id' => 'aco_id',
             'user_id' => 'user_id',
-            'modifiedby' => 'modified by',
         ];
     }
-    public function messages()
-    {
-        $controller = new ErrorController;
-        return [
-            'aco_id.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
-            'user_id.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
-            'modifiedby.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
-
-        ];
-    }   
 }

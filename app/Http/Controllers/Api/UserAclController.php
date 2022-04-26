@@ -31,14 +31,14 @@ class UserAclController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index(Request $request)
+    public function index()
     {
         $params = [
-            'offset' => $request->offset ?? 0,
-            'limit' => $request->limit ?? 100,
-            'search' => $request->search ?? [],
-            'sortIndex' => $request->sortIndex ?? 'id',
-            'sortOrder' => $request->sortOrder ?? 'asc',
+            'offset' => request()->offset ?? ((request()->page - 1) * request()->limit),
+            'limit' => request()->limit ?? 10,
+            'filters' => json_decode(request()->filters, true) ?? [],
+            'sortIndex' => request()->sortIndex ?? 'id',
+            'sortOrder' => request()->sortOrder ?? 'asc',
         ];
 
         $temp = '##temp' . rand(1, 10000);
@@ -53,7 +53,7 @@ class UserAclController extends Controller
             $table->index('user_id');
         });
 
-        $query = UserAcl::select(
+        $query = DB::table((new UserAcl)->getTable())->select(
             DB::raw("useracl.user_id as user_id,
                         min(useracl.id) as id_,
                         max(useracl.modifiedby) as modifiedby,
@@ -66,8 +66,7 @@ class UserAclController extends Controller
 
         DB::table($temp)->insertUsing(['user_id', 'id_', 'modifiedby', 'created_at', 'updated_at'], $query);
 
-        $totalRows = DB::table($temp)
-            ->count();
+        $totalRows = DB::table($temp)->count();
         $totalPages = ceil($totalRows / $params['limit']);
 
         /* Sorting */
@@ -96,26 +95,25 @@ class UserAclController extends Controller
         }
 
 
-
         /* Searching */
-        if (count($params['search']) > 0 && @$params['search']['rules'][0]['data'] != '') {
-            switch ($params['search']['groupOp']) {
+        if (count($params['filters']) > 0 && @$params['filters']['rules'][0]['data'] != '') {
+            switch ($params['filters']['groupOp']) {
                 case "AND":
-                    foreach ($params['search']['rules'] as $index => $search) {
-                        if ($search['field'] == 'user') {
-                            $query = $query->where('user.user', 'LIKE', "%$search[data]%");
+                    foreach ($params['filters']['rules'] as $index => $filters) {
+                        if ($filters['field'] == 'user') {
+                            $query = $query->where('user.user', 'LIKE', "%$filters[data]%");
                         } else {
-                            $query = $query->where($search['field'], 'LIKE', "%$search[data]%");
+                            $query = $query->where('user.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
                     }
 
                     break;
                 case "OR":
-                    foreach ($params['search']['rules'] as $index => $search) {
-                        if ($search['field'] == 'user') {
-                            $query = $query->orWhere('user.user', 'LIKE', "%$search[data]%");
+                    foreach ($params['filters']['rules'] as $index => $filters) {
+                        if ($filters['field'] == 'user') {
+                            $query = $query->orWhere('user.user', 'LIKE', "%$filters[data]%");
                         } else {
-                            $query = $query->orWhere($search['field'], 'LIKE', "%$search[data]%");
+                            $query = $query->orWhere('user.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
                     }
 
@@ -124,6 +122,7 @@ class UserAclController extends Controller
 
                     break;
             }
+
 
 
             $totalRows = count($query->get());
@@ -143,8 +142,6 @@ class UserAclController extends Controller
             'totalPages' => $totalPages
         ];
 
-        // echo $time2-$time1;
-        // echo '---';
         return response([
             'status' => true,
             'data' => $useracl,
@@ -153,24 +150,22 @@ class UserAclController extends Controller
         ]);
     }
 
-    public function detail(Request $request)
+    public function detail()
     {
-
         $params = [
-            'offset' => $request->offset ?? 0,
-            'limit' => $request->limit ?? 100,
-            'search' => $request->search ?? [],
-            'sortIndex' => $request->sortIndex ?? 'id',
-            'sortOrder' => $request->sortOrder ?? 'asc',
+            'offset' => request()->offset ?? ((request()->page - 1) * request()->limit),
+            'limit' => request()->limit ?? 10,
+            'filters' => json_decode(request()->filters, true) ?? [],
+            'sortIndex' => request()->sortIndex ?? 'id',
+            'sortOrder' => request()->sortOrder ?? 'asc',
         ];
 
-        // dd($params);
-        $totalRows = UserAcl::count();
+        $totalRows = DB::table((new UserAcl)->getTable())->count();
         $totalPages = ceil($totalRows / $params['limit']);
 
         /* Sorting */
         if ($params['sortIndex'] == 'id') {
-            $query = UserAcl::select(
+            $query = DB::table((new UserAcl)->getTable())->select(
                 'useracl.id',
                 'acos.nama as nama',
                 'acos.class as class',
@@ -181,11 +176,11 @@ class UserAclController extends Controller
             )
                 ->Join('acos', 'useracl.aco_id', '=', 'acos.id')
                 ->Join('user', 'useracl.user_id', '=', 'user.id')
-                ->where('useracl.user_id', '=', $request->user_id)
+                ->where('useracl.user_id', '=', request()->user_id)
                 ->orderBy('useracl.id', $params['sortOrder']);
         } else {
             if ($params['sortOrder'] == 'asc') {
-                $query = UserAcl::select(
+                $query = DB::table((new UserAcl)->getTable())->select(
                     'useracl.id',
                     'acos.nama as nama',
                     'acos.class as class',
@@ -197,10 +192,10 @@ class UserAclController extends Controller
                     ->Join('acos', 'useracl.aco_id', '=', 'acos.id')
                     ->Join('user', 'useracl.user_id', '=', 'user.id')
                     ->orderBy($params['sortIndex'], $params['sortOrder'])
-                    ->where('useracl.user_id', '=', $request->user_id)
+                    ->where('useracl.user_id', '=', request()->user_id)
                     ->orderBy('useracl.id', $params['sortOrder']);
             } else {
-                $query = UserAcl::select(
+                $query = DB::table((new UserAcl)->getTable())->select(
                     'useracl.id',
                     'acos.nama as nama',
                     'acos.class as class',
@@ -211,7 +206,7 @@ class UserAclController extends Controller
                 )
                     ->Join('acos', 'useracl.aco_id', '=', 'acos.id')
                     ->Join('user', 'useracl.user_id', '=', 'user.id')
-                    ->where('useracl.user_id', '=', $request->user_id)
+                    ->where('useracl.user_id', '=', request()->user_id)
                     ->orderBy($params['sortIndex'], $params['sortOrder'])
                     ->orderBy('useracl.id', 'asc');
             }
@@ -219,32 +214,32 @@ class UserAclController extends Controller
 
 
         /* Searching */
-        if (count($params['search']) > 0 && @$params['search']['rules'][0]['data'] != '') {
-            switch ($params['search']['groupOp']) {
+        if (count($params['filters']) > 0 && @$params['filters']['rules'][0]['data'] != '') {
+            switch ($params['filters']['groupOp']) {
                 case "AND":
-                    foreach ($params['search']['rules'] as $index => $search) {
-                        if ($search['field'] == 'nama') {
-                            $query = $query->where('acos.nama', 'LIKE', "%$search[data]%");
-                        } else if ($search['field'] == 'class') {
-                            $query = $query->where('acos.class', 'LIKE', "%$search[data]%");
-                        } else if ($search['field'] == 'user') {
-                            $query = $query->where('user.user', 'LIKE', "%$search[data]%");
+                    foreach ($params['filters']['rules'] as $index => $filters) {
+                        if ($filters['field'] == 'nama') {
+                            $query = $query->where('acos.nama', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'class') {
+                            $query = $query->where('acos.class', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'user') {
+                            $query = $query->where('user.user', 'LIKE', "%$filters[data]%");
                         } else {
-                            $query = $query->where($search['field'], 'LIKE', "%$search[data]%");
+                            $query = $query->where($filters['field'], 'LIKE', "%$filters[data]%");
                         }
                     }
 
                     break;
                 case "OR":
-                    foreach ($params['search']['rules'] as $index => $search) {
-                        if ($search['field'] == 'nama') {
-                            $query = $query->orWhere('acos.nama', 'LIKE', "%$search[data]%");
-                        } else if ($search['field'] == 'class') {
-                            $query = $query->orWhere('acos.class', 'LIKE', "%$search[data]%");
-                        } else if ($search['field'] == 'user') {
-                            $query = $query->orWhere('user.user', 'LIKE', "%$search[data]%");
+                    foreach ($params['filters']['rules'] as $index => $filters) {
+                        if ($filters['field'] == 'nama') {
+                            $query = $query->orWhere('acos.nama', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'class') {
+                            $query = $query->orWhere('acos.class', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'user') {
+                            $query = $query->orWhere('user.user', 'LIKE', "%$filters[data]%");
                         } else {
-                            $query = $query->orWhere($search['field'], 'LIKE', "%$search[data]%");
+                            $query = $query->orWhere($filters['field'], 'LIKE', "%$filters[data]%");
                         }
                     }
 
@@ -272,8 +267,6 @@ class UserAclController extends Controller
             'totalPages' => $totalPages
         ];
 
-        // echo $time2-$time1;
-        // echo '---';
         return response([
             'status' => true,
             'data' => $useracl,
@@ -308,7 +301,7 @@ class UserAclController extends Controller
         ]);
 
         DB::beginTransaction();
-        
+
         try {
             $controller = new ParameterController;
             $dataaktif = $controller->getparameterid('STATUS AKTIF', 'STATUS AKTIF', 'AKTIF');
@@ -318,7 +311,8 @@ class UserAclController extends Controller
                 if ($request->status[$i] == $aktif) {
                     $useracl = new UserAcl();
                     $useracl->user_id = $request->user_id;
-                    $useracl->modifiedby = $request->modifiedby;
+                    $useracl->modifiedby = auth('api')->user()->name;
+
                     $useracl->aco_id = $request->aco_id[$i]  ?? 0;
 
                     if ($useracl->save()) {
@@ -347,7 +341,7 @@ class UserAclController extends Controller
             ]);
         } catch (\Throwable $th) {
             DB::rollBack();
-            return response($th->getMessage());
+            throw $th;
         }
     }
 
@@ -364,7 +358,6 @@ class UserAclController extends Controller
             ->first();
         $useracl['user'] = $data['user'];
 
-        // dd($useracl);
         return response([
             'status' => true,
             'data' => $useracl
@@ -399,7 +392,7 @@ class UserAclController extends Controller
                 if ($request->status[$i] == 1) {
                     $useracl = new UserAcl();
                     $useracl->user_id = $request->user_id;
-                    $useracl->modifiedby = $request->modifiedby;
+                    $useracl->modifiedby = auth('api')->user()->name;
                     $useracl->aco_id = $request->aco_id[$i]  ?? 0;
 
                     if ($useracl->save()) {
@@ -426,7 +419,7 @@ class UserAclController extends Controller
             $data = $this->getid($request->user_id, $request, $del);
             $useracl->position = $data->id;
             $useracl->id = $data->row;
-            // dd($useracl->position );
+
             if (isset($request->limit)) {
                 $useracl->page = ceil($useracl->position / $request->limit);
             }
@@ -473,7 +466,6 @@ class UserAclController extends Controller
             }
 
             $del = 1;
-            // dd($request->user_id);
 
             $data = $this->getid($request->user_id, $request, $del);
 
@@ -482,7 +474,6 @@ class UserAclController extends Controller
             if (isset($request->limit)) {
                 $useracl->page = ceil($useracl->position / $request->limit);
             }
-            // dd($useracl);
             return response([
                 'status' => true,
                 'message' => 'Berhasil dihapus',
@@ -494,6 +485,32 @@ class UserAclController extends Controller
         }
     }
 
+    public function export()
+    {
+        $response = $this->index();
+        $decodedResponse = json_decode($response->content(), true);
+        $useracls = $decodedResponse['data'];
+
+        $columns = [
+            [
+                'label' => 'No',
+            ],
+            [
+                'label' => 'ID',
+                'index' => 'id',
+            ],
+            [
+                'label' => 'User ID',
+                'index' => 'user_id',
+            ],
+            [
+                'label' => 'User',
+                'index' => 'user',
+            ],
+        ];
+
+        $this->toExcel('User Acl', $useracls, $columns);
+    }
 
     public function fieldLength()
     {

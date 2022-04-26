@@ -26,22 +26,22 @@ class CabangController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index(Request $request)
+    public function index()
     {
         $params = [
-            'offset' => $request->offset ?? 0,
-            'limit' => $request->limit ?? 100,
-            'search' => $request->search ?? [],
-            'sortIndex' => $request->sortIndex ?? 'id',
-            'sortOrder' => $request->sortOrder ?? 'asc',
+            'offset' => request()->offset ?? ((request()->page - 1) * request()->limit),
+            'limit' => request()->limit ?? 10,
+            'filters' => json_decode(request()->filters, true) ?? [],
+            'sortIndex' => request()->sortIndex ?? 'id',
+            'sortOrder' => request()->sortOrder ?? 'asc',
         ];
 
-        $totalRows = Cabang::count();
+        $totalRows = DB::table((new Cabang)->getTable())->count();
         $totalPages = ceil($totalRows / $params['limit']);
 
         /* Sorting */
         if ($params['sortIndex'] == 'id') {
-            $query = Cabang::select(
+            $query = DB::table((new Cabang)->getTable())->select(
                 'cabang.id',
                 'cabang.kodecabang',
                 'cabang.namacabang',
@@ -53,7 +53,7 @@ class CabangController extends Controller
                 ->leftJoin('parameter', 'cabang.statusaktif', '=', 'parameter.id')
                 ->orderBy('cabang.id', $params['sortOrder']);
         } else if ($params['sortIndex'] == 'kodecabang') {
-            $query = Cabang::select(
+            $query = DB::table((new Cabang)->getTable())->select(
                 'cabang.id',
                 'cabang.kodecabang',
                 'cabang.namacabang',
@@ -63,12 +63,12 @@ class CabangController extends Controller
                 'cabang.updated_at'
             )
                 ->leftJoin('parameter', 'cabang.statusaktif', '=', 'parameter.id')
-                ->orderBy($params['sortIndex'], $params['sortOrder'])
+                ->orderBy('cabang.' . $params['sortIndex'], $params['sortOrder'])
                 ->orderBy('cabang.namacabang', $params['sortOrder'])
                 ->orderBy('cabang.id', $params['sortOrder']);
         } else {
             if ($params['sortOrder'] == 'asc') {
-                $query = Cabang::select(
+                $query = DB::table((new Cabang)->getTable())->select(
                     'cabang.id',
                     'cabang.kodecabang',
                     'cabang.namacabang',
@@ -78,10 +78,10 @@ class CabangController extends Controller
                     'cabang.updated_at'
                 )
                     ->leftJoin('parameter', 'cabang.statusaktif', '=', 'parameter.id')
-                    ->orderBy($params['sortIndex'], $params['sortOrder'])
+                    ->orderBy('cabang.' . $params['sortIndex'], $params['sortOrder'])
                     ->orderBy('cabang.id', $params['sortOrder']);
             } else {
-                $query = Cabang::select(
+                $query = DB::table((new Cabang)->getTable())->select(
                     'cabang.id',
                     'cabang.kodecabang',
                     'cabang.namacabang',
@@ -91,31 +91,31 @@ class CabangController extends Controller
                     'cabang.updated_at'
                 )
                     ->leftJoin('parameter', 'cabang.statusaktif', '=', 'parameter.id')
-                    ->orderBy($params['sortIndex'], $params['sortOrder'])
+                    ->orderBy('cabang.' . $params['sortIndex'], $params['sortOrder'])
                     ->orderBy('cabang.id', 'asc');
             }
         }
 
 
         /* Searching */
-        if (count($params['search']) > 0 && @$params['search']['rules'][0]['data'] != '') {
-            switch ($params['search']['groupOp']) {
+        if (count($params['filters']) > 0 && @$params['filters']['rules'][0]['data'] != '') {
+            switch ($params['filters']['groupOp']) {
                 case "AND":
-                    foreach ($params['search']['rules'] as $index => $search) {
-                        if ($search['field'] == 'statusaktif') {
-                            $query = $query->where('parameter.text', 'LIKE', "%$search[data]%");
+                    foreach ($params['filters']['rules'] as $index => $filters) {
+                        if ($filters['field'] == 'statusaktif') {
+                            $query = $query->where('parameter.text', 'LIKE', "%$filters[data]%");
                         } else {
-                            $query = $query->where('cabang.' . $search['field'], 'LIKE', "%$search[data]%");
+                            $query = $query->where('cabang.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
                     }
 
                     break;
                 case "OR":
-                    foreach ($params['search']['rules'] as $index => $search) {
-                        if ($search['field'] == 'statusaktif') {
-                            $query = $query->orWhere('parameter.text', 'LIKE', "%$search[data]%");
+                    foreach ($params['filters']['rules'] as $index => $filters) {
+                        if ($filters['field'] == 'statusaktif') {
+                            $query = $query->orWhere('parameter.text', 'LIKE', "%$filters[data]%");
                         } else {
-                            $query = $query->orWhere('cabang.' . $search['field'], 'LIKE', "%$search[data]%");
+                            $query = $query->orWhere('cabang.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
                     }
 
@@ -143,8 +143,6 @@ class CabangController extends Controller
             'totalPages' => $totalPages
         ];
 
-        // echo $time2-$time1;
-        // echo '---';
         return response([
             'status' => true,
             'data' => $cabangs,
@@ -334,6 +332,37 @@ class CabangController extends Controller
             DB::rollBack();
             return response($th->getMessage());
         }
+    }
+
+    public function export()
+    {
+        $response = $this->index();
+        $decodedResponse = json_decode($response->content(), true);
+        $cabangs = $decodedResponse['data'];
+
+        $columns = [
+            [
+                'label' => 'No',
+            ],
+            [
+                'label' => 'ID',
+                'index' => 'id',
+            ],
+            [
+                'label' => 'Kode Cabang',
+                'index' => 'kodecabang',
+            ],
+            [
+                'label' => 'Nama Cabang',
+                'index' => 'namacabang',
+            ],
+            [
+                'label' => 'Status Aktif',
+                'index' => 'statusaktif',
+            ],
+        ];
+
+        $this->toExcel('Cabang', $cabangs, $columns);
     }
 
     public function fieldLength()
@@ -623,12 +652,6 @@ class CabangController extends Controller
                 $baris = $request->indexRow + $bar + 1;
             }
 
-            // dump($request->page );
-            // dump($request->limit );
-            // dump($request->indexRow  );
-
-            // dump($hal);
-            // dump($bar);
             if (DB::table($temp)
                 ->where('id', '=', $baris)->exists()
             ) {

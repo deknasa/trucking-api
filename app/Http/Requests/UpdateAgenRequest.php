@@ -39,7 +39,6 @@ class UpdateAgenRequest extends FormRequest
             "tglapproval" => "required",
             "statustas" => "required",
             "jenisemkl" => "required",
-            "modifiedby" => "required",
         ];
     }
 

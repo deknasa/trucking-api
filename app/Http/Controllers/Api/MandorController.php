@@ -2,9 +2,8 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Models\Kerusakan;
-use App\Http\Requests\StoreKerusakanRequest;
-use App\Http\Requests\UpdateKerusakanRequest;
+use App\Models\Mandor;
+use App\Http\Requests\StoreMandorRequest;
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Models\Parameter;
 
@@ -15,7 +14,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-class KerusakanController extends Controller
+class MandorController extends Controller
 {
 
     public function index(Request $request)
@@ -28,60 +27,64 @@ class KerusakanController extends Controller
             'sortOrder' => $request->sortOrder ?? 'asc',
         ];
 
-        $totalRows = Kerusakan::count();
+        $totalRows = Mandor::count();
         $totalPages = $params['limit'] > 0 ? ceil($totalRows / $params['limit']) : 1;
 
         /* Sorting */
-        $query = Kerusakan::orderBy($params['sortIndex'], $params['sortOrder']);
+        $query = Mandor::orderBy($params['sortIndex'], $params['sortOrder']);
 
         if ($params['sortIndex'] == 'id') {
-            $query = Kerusakan::select(
-                'kerusakan.id',
-                'kerusakan.keterangan',
+            $query = Mandor::select(
+                'mandor.id',
+                'mandor.namamandor',
+                'mandor.keterangan',
                 'parameter.text as statusaktif',
-                'kerusakan.modifiedby',
-                'kerusakan.created_at',
-                'kerusakan.updated_at'
+                'mandor.modifiedby',
+                'mandor.created_at',
+                'mandor.updated_at'
             )
-            ->leftJoin('parameter', 'kerusakan.statusaktif', '=', 'parameter.id')
-            ->orderBy('kerusakan.id', $params['sortOrder']);
+            ->leftJoin('parameter', 'mandor.statusaktif', '=', 'parameter.id')
+            ->orderBy('mandor.id', $params['sortOrder']);
         } else if ($params['sortIndex'] == 'keterangan') {
-            $query = Kerusakan::select(
-                'kerusakan.id',
-                'kerusakan.keterangan',
+            $query = Mandor::select(
+                'mandor.id',
+                'mandor.namamandor',
+                'mandor.keterangan',
                 'parameter.text as statusaktif',
-                'kerusakan.modifiedby',
-                'kerusakan.created_at',
-                'kerusakan.updated_at'
+                'mandor.modifiedby',
+                'mandor.created_at',
+                'mandor.updated_at'
             )
-                ->leftJoin('parameter', 'kerusakan.statusaktif', '=', 'parameter.id')
+                ->leftJoin('parameter', 'mandor.statusaktif', '=', 'parameter.id')
                 ->orderBy($params['sortIndex'], $params['sortOrder'])
-                ->orderBy('kerusakan.id', $params['sortOrder']);
+                ->orderBy('mandor.id', $params['sortOrder']);
         } else {
             if ($params['sortOrder'] == 'asc') {
-                $query = Kerusakan::select(
-                    'kerusakan.id',
-                    'kerusakan.keterangan',
+                $query = Mandor::select(
+                    'mandor.id',
+                    'mandor.namamandor',
+                    'mandor.keterangan',
                     'parameter.text as statusaktif',
-                    'kerusakan.modifiedby',
-                    'kerusakan.created_at',
-                    'kerusakan.updated_at'
+                    'mandor.modifiedby',
+                    'mandor.created_at',
+                    'mandor.updated_at'
                 )
-                    ->leftJoin('parameter', 'kerusakan.statusaktif', '=', 'parameter.id')
+                    ->leftJoin('parameter', 'mandor.statusaktif', '=', 'parameter.id')
                     ->orderBy($params['sortIndex'], $params['sortOrder'])
-                    ->orderBy('kerusakan.id', $params['sortOrder']);
+                    ->orderBy('mandor.id', $params['sortOrder']);
             } else {
-                $query = Kerusakan::select(
-                    'kerusakan.id',
-                    'kerusakan.keterangan',
+                $query = Mandor::select(
+                    'mandor.id',
+                    'mandor.namamandor',
+                    'mandor.keterangan',
                     'parameter.text as statusaktif',
-                    'kerusakan.modifiedby',
-                    'kerusakan.created_at',
-                    'kerusakan.updated_at'
+                    'mandor.modifiedby',
+                    'mandor.created_at',
+                    'mandor.updated_at'
                 )
-                    ->leftJoin('parameter', 'kerusakan.statusaktif', '=', 'parameter.id')
+                    ->leftJoin('parameter', 'mandor.statusaktif', '=', 'parameter.id')
                     ->orderBy($params['sortIndex'], $params['sortOrder'])
-                    ->orderBy('kerusakan.id', 'asc');
+                    ->orderBy('mandor.id', 'asc');
             }
         }
 
@@ -93,7 +96,7 @@ class KerusakanController extends Controller
                         if ($search['field'] == 'statusaktif') {
                             $query = $query->where('parameter.text', 'LIKE', "%$search[data]%");
                         } else {
-                            $query = $query->where('gudang.'.$search['field'], 'LIKE', "%$search[data]%");
+                            $query = $query->where('mandor.'.$search['field'], 'LIKE', "%$search[data]%");
                         }
                     }
 
@@ -103,7 +106,7 @@ class KerusakanController extends Controller
                         if ($search['field'] == 'statusaktif') {
                             $query = $query->orWhere('parameter.text', 'LIKE', "%$search[data]%");
                         } else {
-                            $query = $query->orWhere('gudang.'.$search['field'], 'LIKE', "%$search[data]%");
+                            $query = $query->orWhere('mandor.'.$search['field'], 'LIKE', "%$search[data]%");
                         }
                     }
                     break;
@@ -120,7 +123,7 @@ class KerusakanController extends Controller
         $query = $query->skip($params['offset'])
             ->take($params['limit']);
 
-        $kerusakan = $query->get();
+        $mandor = $query->get();
 
         /* Set attributes */
         $attributes = [
@@ -130,39 +133,39 @@ class KerusakanController extends Controller
 
         return response([
             'status' => true,
-            'data' => $kerusakan,
+            'data' => $mandor,
             'attributes' => $attributes,
             'params' => $params
         ]);
     }
-
 
     public function create()
     {
         //
     }
 
-    public function store(StoreKerusakanRequest $request)
+    public function store(StoreMandorRequest $request)
     {
         DB::beginTransaction();
 
         try {
-            $kerusakan = new Kerusakan();
-            $kerusakan->keterangan = $request->keterangan;
-            $kerusakan->statusaktif = $request->statusaktif;
-            $kerusakan->modifiedby = $request->modifiedby;
+            $mandor = new Mandor();
+            $mandor->namamandor = $request->namamandor;
+            $mandor->keterangan = $request->keterangan;
+            $mandor->statusaktif = $request->statusaktif;
+            $mandor->modifiedby = $request->modifiedby;
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
 
-            if ($kerusakan->save()) {
+            if ($mandor->save()) {
                 $logTrail = [
-                    'namatabel' => strtoupper($kerusakan->getTable()),
-                    'postingdari' => 'ENTRY KERUSAKAN',
-                    'idtrans' => $kerusakan->id,
-                    'nobuktitrans' => $kerusakan->id,
+                    'namatabel' => strtoupper($mandor->getTable()),
+                    'postingdari' => 'ENTRY MANDOR',
+                    'idtrans' => $mandor->id,
+                    'nobuktitrans' => $mandor->id,
                     'aksi' => 'ENTRY',
-                    'datajson' => $kerusakan->toArray(),
-                    'modifiedby' => $kerusakan->modifiedby
+                    'datajson' => $mandor->toArray(),
+                    'modifiedby' => $mandor->modifiedby
                 ];
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
@@ -173,17 +176,17 @@ class KerusakanController extends Controller
 
             /* Set position and page */
             $del = 0;
-            $data = $this->getid($kerusakan->id, $request, $del);
-            $kerusakan->position = @$data->row;
+            $data = $this->getid($mandor->id, $request, $del);
+            $mandor->position = @$data->row;
 
             if (isset($request->limit)) {
-                $kerusakan->page = ceil($kerusakan->position / $request->limit);
+                $mandor->page = ceil($mandor->position / $request->limit);
             }
 
             return response([
                 'status' => true,
                 'message' => 'Berhasil disimpan',
-                'data' => $kerusakan
+                'data' => $mandor
             ]);
         } catch (\Throwable $th) {
             DB::rollBack();
@@ -191,52 +194,53 @@ class KerusakanController extends Controller
         }
     }
 
-    public function show(Kerusakan $kerusakan)
+    public function show(Mandor $mandor)
     {
         return response([
             'status' => true,
-            'data' => $kerusakan
+            'data' => $mandor
         ]);
     }
 
-    public function edit(Kerusakan $kerusakan)
+    public function edit($id)
     {
         //
     }
 
-    public function update(StoreKerusakanRequest $request, Kerusakan $kerusakan)
+    public function update(Request $request, Mandor $mandor)
     {
         try {
-            $kerusakan = Kerusakan::findOrFail($kerusakan->id);
-            $kerusakan->keterangan = $request->keterangan;
-            $kerusakan->statusaktif = $request->statusaktif;
-            $kerusakan->modifiedby = $request->modifiedby;
+            $mandor = Mandor::findOrFail($mandor->id);
+            $mandor->namamandor = $request->namamandor;
+            $mandor->keterangan = $request->keterangan;
+            $mandor->statusaktif = $request->statusaktif;
+            $mandor->modifiedby = $request->modifiedby;
 
-            if ($kerusakan->save()) {
+            if ($mandor->save()) {
                 $logTrail = [
-                    'namatabel' => strtoupper($kerusakan->getTable()),
-                    'postingdari' => 'EDIT KERUSAKAN',
-                    'idtrans' => $kerusakan->id,
-                    'nobuktitrans' => $kerusakan->id,
+                    'namatabel' => strtoupper($mandor->getTable()),
+                    'postingdari' => 'EDIT MANDOR',
+                    'idtrans' => $mandor->id,
+                    'nobuktitrans' => $mandor->id,
                     'aksi' => 'EDIT',
-                    'datajson' => $kerusakan->toArray(),
-                    'modifiedby' => $kerusakan->modifiedby
+                    'datajson' => $mandor->toArray(),
+                    'modifiedby' => $mandor->modifiedby
                 ];
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
 
                 /* Set position and page */
-                $kerusakan->position = $this->getid($kerusakan->id, $request, 0)->row;
+                $mandor->position = $this->getid($mandor->id, $request, 0)->row;
 
                 if (isset($request->limit)) {
-                    $kerusakan->page = ceil($kerusakan->position / $request->limit);
+                    $mandor->page = ceil($mandor->position / $request->limit);
                 }
 
                 return response([
                     'status' => true,
                     'message' => 'Berhasil diubah',
-                    'data' => $kerusakan
+                    'data' => $mandor
                 ]);
             } else {
                 return response([
@@ -249,19 +253,19 @@ class KerusakanController extends Controller
         }
     }
 
-    public function destroy(Kerusakan $kerusakan, Request $request)
+    public function destroy(Mandor $mandor, Request $request)
     {
-        $delete = Kerusakan::destroy($kerusakan->id);
+        $delete = Mandor::destroy($mandor->id);
         $del = 1;
         if ($delete) {
             $logTrail = [
-                'namatabel' => strtoupper($kerusakan->getTable()),
-                'postingdari' => 'DELETE KERUSAKAN',
-                'idtrans' => $kerusakan->id,
-                'nobuktitrans' => $kerusakan->id,
+                'namatabel' => strtoupper($mandor->getTable()),
+                'postingdari' => 'DELETE MANDOR',
+                'idtrans' => $mandor->id,
+                'nobuktitrans' => $mandor->id,
                 'aksi' => 'DELETE',
-                'datajson' => $kerusakan->toArray(),
-                'modifiedby' => $kerusakan->modifiedby
+                'datajson' => $mandor->toArray(),
+                'modifiedby' => $mandor->modifiedby
             ];
 
             $validatedLogTrail = new StoreLogTrailRequest($logTrail);
@@ -269,16 +273,16 @@ class KerusakanController extends Controller
 
             DB::commit();
 
-            $data = $this->getid($kerusakan->id, $request, $del);
-            $kerusakan->position = @$data->row;
-            $kerusakan->id = @$data->id;
+            $data = $this->getid($mandor->id, $request, $del);
+            $mandor->position = @$data->row;
+            $mandor->id = @$data->id;
             if (isset($request->limit)) {
-                $kerusakan->page = ceil($kerusakan->position / $request->limit);
+                $mandor->page = ceil($mandor->position / $request->limit);
             }
             return response([
                 'status' => true,
                 'message' => 'Berhasil dihapus',
-                'data' => $kerusakan
+                'data' => $mandor
             ]);
         } else {
             return response([
@@ -291,7 +295,7 @@ class KerusakanController extends Controller
     public function fieldLength()
     {
         $data = [];
-        $columns = DB::connection()->getDoctrineSchemaManager()->listTableDetails('kerusakan')->getColumns();
+        $columns = DB::connection()->getDoctrineSchemaManager()->listTableDetails('mandor')->getColumns();
 
         foreach ($columns as $index => $column) {
             $data[$index] = $column->getLength();
@@ -302,9 +306,9 @@ class KerusakanController extends Controller
         ]);
     }
 
-    public function getPosition($kerusakan, $request)
+    public function getPosition($mandor, $request)
     {
-        return Kerusakan::where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $kerusakan->{$request->sortname})
+        return Mandor::where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $mandor->{$request->sortname})
             /* Jika sortname modifiedby atau ada data duplikat */
             // ->where('id', $request->sortorder == 'desc' ? '>=' : '<=', $parameter->id)
             ->count();
@@ -334,6 +338,7 @@ class KerusakanController extends Controller
         Schema::create($temp, function ($table) {
             $table->id();
             $table->bigInteger('id_')->default('0');
+            $table->string('namamandor', 50)->default('');
             $table->string('keterangan', 50)->default('');
             $table->string('statusaktif', 50)->default('');
             $table->string('modifiedby', 30)->default('');
@@ -344,55 +349,59 @@ class KerusakanController extends Controller
         });
 
         if ($params['sortname'] == 'id') {
-            $query = Kerusakan::select(
-                'kerusakan.id as id_',
-                'kerusakan.keterangan',
-                'kerusakan.statusaktif',
-                'kerusakan.modifiedby',
-                'kerusakan.created_at',
-                'kerusakan.updated_at'
+            $query = Mandor::select(
+                'mandor.id as id_',
+                'mandor.namamandor',
+                'mandor.keterangan',
+                'mandor.statusaktif',
+                'mandor.modifiedby',
+                'mandor.created_at',
+                'mandor.updated_at'
             )
-                ->orderBy('kerusakan.id', $params['sortorder']);
+                ->orderBy('mandor.id', $params['sortorder']);
         } else if ($params['sortname'] == 'keterangan') {
-            $query = Kerusakan::select(
-                'kerusakan.id as id_',
-                'kerusakan.keterangan',
-                'kerusakan.statusaktif',
-                'kerusakan.modifiedby',
-                'kerusakan.created_at',
-                'kerusakan.updated_at'
+            $query = Mandor::select(
+                'mandor.id as id_',
+                'mandor.namamandor',
+                'mandor.keterangan',
+                'mandor.statusaktif',
+                'mandor.modifiedby',
+                'mandor.created_at',
+                'mandor.updated_at'
             )
                 ->orderBy($params['sortname'], $params['sortorder'])
-                ->orderBy('kerusakan.id', $params['sortorder']);
+                ->orderBy('mandor.id', $params['sortorder']);
         } else {
             if ($params['sortorder'] == 'asc') {
-                $query = Kerusakan::select(
-                    'kerusakan.id as id_',
-                    'kerusakan.keterangan',
-                    'kerusakan.statusaktif',
-                    'kerusakan.modifiedby',
-                    'kerusakan.created_at',
-                    'kerusakan.updated_at'
+                $query = Mandor::select(
+                    'mandor.id as id_',
+                    'mandor.namamandor',
+                    'mandor.keterangan',
+                    'mandor.statusaktif',
+                    'mandor.modifiedby',
+                    'mandor.created_at',
+                    'mandor.updated_at'
                 )
                     ->orderBy($params['sortname'], $params['sortorder'])
-                    ->orderBy('kerusakan.id', $params['sortorder']);
+                    ->orderBy('mandor.id', $params['sortorder']);
             } else {
-                $query = Kerusakan::select(
-                    'kerusakan.id as id_',
-                    'kerusakan.keterangan',
-                    'kerusakan.statusaktif',
-                    'kerusakan.modifiedby',
-                    'kerusakan.created_at',
-                    'kerusakan.updated_at'
+                $query = Mandor::select(
+                    'mandor.id as id_',
+                    'mandor.namamandor',
+                    'mandor.keterangan',
+                    'mandor.statusaktif',
+                    'mandor.modifiedby',
+                    'mandor.created_at',
+                    'mandor.updated_at'
                 )
                     ->orderBy($params['sortname'], $params['sortorder'])
-                    ->orderBy('kerusakan.id', 'asc');
+                    ->orderBy('mandor.id', 'asc');
             }
         }
 
 
 
-        DB::table($temp)->insertUsing(['id_', 'keterangan', 'statusaktif', 'modifiedby', 'created_at', 'updated_at'], $query);
+        DB::table($temp)->insertUsing(['id_', 'namamandor', 'keterangan', 'statusaktif', 'modifiedby', 'created_at', 'updated_at'], $query);
 
 
         if ($del == 1) {

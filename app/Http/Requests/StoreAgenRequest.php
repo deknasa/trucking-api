@@ -40,7 +40,6 @@ class StoreAgenRequest extends FormRequest
             "tglapproval" => "required",
             "statustas" => "required",
             "jenisemkl" => "required",
-            "modifiedby" => "required",
         ];
     }
 
