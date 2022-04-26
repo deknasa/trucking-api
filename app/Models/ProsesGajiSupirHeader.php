@@ -5,11 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class ProsesGajiSupirHeader extends Model
+class ProsesGajiSupirHeader extends MyModel
 {
     use HasFactory;
 
-    protected $table = 'prosesgajisupirpotongan';
+    protected $table = 'prosesgajisupirheader';
 
     protected $casts = [
         'created_at' => 'date:d-m-Y H:i:s',

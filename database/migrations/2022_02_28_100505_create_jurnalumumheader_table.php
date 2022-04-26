@@ -16,7 +16,7 @@ class CreateJurnalumumheaderTable extends Migration
         Schema::create('jurnalumumheader', function (Blueprint $table) {
             $table->id();
             $table->string('nobukti',50)->unique();
-            $table->date('tgl')->default('1900/1/1');
+            $table->date('tglbukti')->default('1900/1/1');
             $table->longText('keterangan')->default('');
             $table->string('postingdari',50)->default('');
             $table->integer('statusapproval')->length(11)->default('0');

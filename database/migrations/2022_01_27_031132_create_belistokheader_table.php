@@ -16,7 +16,7 @@ class CreatebelistokheaderTable extends Migration
         Schema::create('belistokheader', function (Blueprint $table) {
             $table->id();
             $table->string('nobukti', 50)->unique();
-            $table->date('tgl')->default('1900/1/1');
+            $table->date('tglbukti')->default('1900/1/1');
             $table->string('postok_nobukti', 50)->default('');
             $table->unsignedBigInteger('supplier_id')->default(0);            
             $table->string('persentasedisc', 50)->default('');

@@ -16,7 +16,7 @@ class CreateSpkstokheaderTable extends Migration
         Schema::create('spkstokheader', function (Blueprint $table) {
             $table->id();
             $table->string('nobukti',50)->unique();
-            $table->date('tgl',50)->default('1900/1/1');
+            $table->date('tglbukti',50)->default('1900/1/1');
             $table->longText('keterangan')->default('');
             $table->unsignedBigInteger('trado_id')->default('0');
             $table->unsignedBigInteger('gudang_id')->default('0');
