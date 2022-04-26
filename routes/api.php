@@ -33,6 +33,7 @@ use App\Http\Controllers\Api\JenisTradoController;
 use App\Http\Controllers\Api\KasGantungDetailController;
 use App\Http\Controllers\Api\KasGantungHeaderController;
 use App\Http\Controllers\Api\GudangController;
+use App\Http\Controllers\Api\PenerimaController;
 use App\Http\Controllers\Api\SubKelompokController;
 use App\Http\Controllers\Api\SupplierController;
 
@@ -268,6 +269,10 @@ route::middleware('auth:api')->group(function () {
     Route::get('supplier/export', [SupplierController::class, 'export']);
     Route::get('supplier/field_length', [SupplierController::class, 'fieldLength']);
     Route::resource('supplier', SupplierController::class);
+    
+    Route::get('penerima/export', [PenerimaController::class, 'export']);
+    Route::get('penerima/field_length', [PenerimaController::class, 'fieldLength']);
+    Route::resource('penerima', PenerimaController::class);
 });
 
 Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');

@@ -13,7 +13,7 @@ class StorePenerimaRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +24,22 @@ class StorePenerimaRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'namapenerima' => 'required',
+            'npwp' => 'required',
+            'noktp' => 'required',
+            'statusaktif' => 'required|int',
+            'statuskaryawan' => 'required|int',
+        ];
+    }
+
+    public function attributes()
+    {
+        return [
+            'namapenerima' => 'nama penerima',
+            'npwp' => 'npwp',
+            'noktp' => 'noktp',
+            'statusaktif' => 'status aktif',
+            'statuskaryawan' => 'status karyawan',
         ];
     }
 }
