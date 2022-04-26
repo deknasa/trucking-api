@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class UpdateSubKelompokRequest extends FormRequest
+class StoreMandorRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,19 +24,9 @@ class UpdateSubKelompokRequest extends FormRequest
     public function rules()
     {
         return [
-            'kodesubkelompok' => 'required',
+            'namamandor' => 'required',
             'keterangan' => 'required',
-            'kelompok_id' => 'required|numeric',
-            'statusaktif' => 'required|numeric',
-        ];
-    }
-
-    public function attributes()
-    {
-        return [
-            'kodesubkelompok' => 'kode subkelompok',
-            'kelompok_id' => 'kelompok',
-            'statusaktif' => 'status aktif',
+            'statusaktif' => 'required',
         ];
     }
 }

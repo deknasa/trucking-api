@@ -2,9 +2,8 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Models\Merk;
-use App\Http\Requests\StoreMerkRequest;
-use App\Http\Requests\UpdateMerkRequest;
+use App\Models\Mandor;
+use App\Http\Requests\StoreMandorRequest;
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Models\Parameter;
 
@@ -15,7 +14,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-class MerkController extends Controller
+class MandorController extends Controller
 {
 
     public function index(Request $request)
@@ -28,64 +27,64 @@ class MerkController extends Controller
             'sortOrder' => $request->sortOrder ?? 'asc',
         ];
 
-        $totalRows = Merk::count();
+        $totalRows = Mandor::count();
         $totalPages = $params['limit'] > 0 ? ceil($totalRows / $params['limit']) : 1;
 
         /* Sorting */
-        $query = Merk::orderBy($params['sortIndex'], $params['sortOrder']);
+        $query = Mandor::orderBy($params['sortIndex'], $params['sortOrder']);
 
         if ($params['sortIndex'] == 'id') {
-            $query = Merk::select(
-                'merk.id',
-                'merk.kodemerk',
-                'merk.keterangan',
+            $query = Mandor::select(
+                'mandor.id',
+                'mandor.namamandor',
+                'mandor.keterangan',
                 'parameter.text as statusaktif',
-                'merk.modifiedby',
-                'merk.created_at',
-                'merk.updated_at'
+                'mandor.modifiedby',
+                'mandor.created_at',
+                'mandor.updated_at'
             )
-            ->leftJoin('parameter', 'merk.statusaktif', '=', 'parameter.id')
-            ->orderBy('merk.id', $params['sortOrder']);
+            ->leftJoin('parameter', 'mandor.statusaktif', '=', 'parameter.id')
+            ->orderBy('mandor.id', $params['sortOrder']);
         } else if ($params['sortIndex'] == 'keterangan') {
-            $query = Merk::select(
-                'merk.id',
-                'merk.kodemerk',
-                'merk.keterangan',
+            $query = Mandor::select(
+                'mandor.id',
+                'mandor.namamandor',
+                'mandor.keterangan',
                 'parameter.text as statusaktif',
-                'merk.modifiedby',
-                'merk.created_at',
-                'merk.updated_at'
+                'mandor.modifiedby',
+                'mandor.created_at',
+                'mandor.updated_at'
             )
-                ->leftJoin('parameter', 'merk.statusaktif', '=', 'parameter.id')
+                ->leftJoin('parameter', 'mandor.statusaktif', '=', 'parameter.id')
                 ->orderBy($params['sortIndex'], $params['sortOrder'])
-                ->orderBy('merk.id', $params['sortOrder']);
+                ->orderBy('mandor.id', $params['sortOrder']);
         } else {
             if ($params['sortOrder'] == 'asc') {
-                $query = Merk::select(
-                    'merk.id',
-                    'merk.kodemerk',
-                    'merk.keterangan',
+                $query = Mandor::select(
+                    'mandor.id',
+                    'mandor.namamandor',
+                    'mandor.keterangan',
                     'parameter.text as statusaktif',
-                    'merk.modifiedby',
-                    'merk.created_at',
-                    'merk.updated_at'
+                    'mandor.modifiedby',
+                    'mandor.created_at',
+                    'mandor.updated_at'
                 )
-                    ->leftJoin('parameter', 'merk.statusaktif', '=', 'parameter.id')
+                    ->leftJoin('parameter', 'mandor.statusaktif', '=', 'parameter.id')
                     ->orderBy($params['sortIndex'], $params['sortOrder'])
-                    ->orderBy('merk.id', $params['sortOrder']);
+                    ->orderBy('mandor.id', $params['sortOrder']);
             } else {
-                $query = Merk::select(
-                    'merk.id',
-                    'merk.kodemerk',
-                    'merk.keterangan',
+                $query = Mandor::select(
+                    'mandor.id',
+                    'mandor.namamandor',
+                    'mandor.keterangan',
                     'parameter.text as statusaktif',
-                    'merk.modifiedby',
-                    'merk.created_at',
-                    'merk.updated_at'
+                    'mandor.modifiedby',
+                    'mandor.created_at',
+                    'mandor.updated_at'
                 )
-                    ->leftJoin('parameter', 'merk.statusaktif', '=', 'parameter.id')
+                    ->leftJoin('parameter', 'mandor.statusaktif', '=', 'parameter.id')
                     ->orderBy($params['sortIndex'], $params['sortOrder'])
-                    ->orderBy('merk.id', 'asc');
+                    ->orderBy('mandor.id', 'asc');
             }
         }
 
@@ -97,7 +96,7 @@ class MerkController extends Controller
                         if ($search['field'] == 'statusaktif') {
                             $query = $query->where('parameter.text', 'LIKE', "%$search[data]%");
                         } else {
-                            $query = $query->where('merk.'.$search['field'], 'LIKE', "%$search[data]%");
+                            $query = $query->where('mandor.'.$search['field'], 'LIKE', "%$search[data]%");
                         }
                     }
 
@@ -107,7 +106,7 @@ class MerkController extends Controller
                         if ($search['field'] == 'statusaktif') {
                             $query = $query->orWhere('parameter.text', 'LIKE', "%$search[data]%");
                         } else {
-                            $query = $query->orWhere('merk.'.$search['field'], 'LIKE', "%$search[data]%");
+                            $query = $query->orWhere('mandor.'.$search['field'], 'LIKE', "%$search[data]%");
                         }
                     }
                     break;
@@ -124,7 +123,7 @@ class MerkController extends Controller
         $query = $query->skip($params['offset'])
             ->take($params['limit']);
 
-        $merk = $query->get();
+        $mandor = $query->get();
 
         /* Set attributes */
         $attributes = [
@@ -134,7 +133,7 @@ class MerkController extends Controller
 
         return response([
             'status' => true,
-            'data' => $merk,
+            'data' => $mandor,
             'attributes' => $attributes,
             'params' => $params
         ]);
@@ -145,28 +144,28 @@ class MerkController extends Controller
         //
     }
 
-    public function store(StoreMerkRequest $request)
+    public function store(StoreMandorRequest $request)
     {
         DB::beginTransaction();
 
         try {
-            $merk = new Merk();
-            $merk->kodemerk = $request->kodemerk;
-            $merk->keterangan = $request->keterangan;
-            $merk->statusaktif = $request->statusaktif;
-            $merk->modifiedby = $request->modifiedby;
+            $mandor = new Mandor();
+            $mandor->namamandor = $request->namamandor;
+            $mandor->keterangan = $request->keterangan;
+            $mandor->statusaktif = $request->statusaktif;
+            $mandor->modifiedby = $request->modifiedby;
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
 
-            if ($merk->save()) {
+            if ($mandor->save()) {
                 $logTrail = [
-                    'namatabel' => strtoupper($merk->getTable()),
-                    'postingdari' => 'ENTRY MERK',
-                    'idtrans' => $merk->id,
-                    'nobuktitrans' => $merk->id,
+                    'namatabel' => strtoupper($mandor->getTable()),
+                    'postingdari' => 'ENTRY MANDOR',
+                    'idtrans' => $mandor->id,
+                    'nobuktitrans' => $mandor->id,
                     'aksi' => 'ENTRY',
-                    'datajson' => $merk->toArray(),
-                    'modifiedby' => $merk->modifiedby
+                    'datajson' => $mandor->toArray(),
+                    'modifiedby' => $mandor->modifiedby
                 ];
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
@@ -177,17 +176,17 @@ class MerkController extends Controller
 
             /* Set position and page */
             $del = 0;
-            $data = $this->getid($merk->id, $request, $del);
-            $merk->position = @$data->row;
+            $data = $this->getid($mandor->id, $request, $del);
+            $mandor->position = @$data->row;
 
             if (isset($request->limit)) {
-                $merk->page = ceil($merk->position / $request->limit);
+                $mandor->page = ceil($mandor->position / $request->limit);
             }
 
             return response([
                 'status' => true,
                 'message' => 'Berhasil disimpan',
-                'data' => $merk
+                'data' => $mandor
             ]);
         } catch (\Throwable $th) {
             DB::rollBack();
@@ -195,53 +194,53 @@ class MerkController extends Controller
         }
     }
 
-    public function show(Merk $merk)
+    public function show(Mandor $mandor)
     {
         return response([
             'status' => true,
-            'data' => $merk
+            'data' => $mandor
         ]);
     }
 
-    public function edit(Merk $merk)
+    public function edit($id)
     {
         //
     }
 
-    public function update(StoreMerkRequest $request, Merk $merk)
+    public function update(Request $request, Mandor $mandor)
     {
         try {
-            $merk = Merk::findOrFail($merk->id);
-            $merk->kodemerk = $request->kodemerk;
-            $merk->keterangan = $request->keterangan;
-            $merk->statusaktif = $request->statusaktif;
-            $merk->modifiedby = $request->modifiedby;
+            $mandor = Mandor::findOrFail($mandor->id);
+            $mandor->namamandor = $request->namamandor;
+            $mandor->keterangan = $request->keterangan;
+            $mandor->statusaktif = $request->statusaktif;
+            $mandor->modifiedby = $request->modifiedby;
 
-            if ($merk->save()) {
+            if ($mandor->save()) {
                 $logTrail = [
-                    'namatabel' => strtoupper($merk->getTable()),
-                    'postingdari' => 'EDIT MERK',
-                    'idtrans' => $merk->id,
-                    'nobuktitrans' => $merk->id,
+                    'namatabel' => strtoupper($mandor->getTable()),
+                    'postingdari' => 'EDIT MANDOR',
+                    'idtrans' => $mandor->id,
+                    'nobuktitrans' => $mandor->id,
                     'aksi' => 'EDIT',
-                    'datajson' => $merk->toArray(),
-                    'modifiedby' => $merk->modifiedby
+                    'datajson' => $mandor->toArray(),
+                    'modifiedby' => $mandor->modifiedby
                 ];
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
 
                 /* Set position and page */
-                $merk->position = $this->getid($merk->id, $request, 0)->row;
+                $mandor->position = $this->getid($mandor->id, $request, 0)->row;
 
                 if (isset($request->limit)) {
-                    $merk->page = ceil($merk->position / $request->limit);
+                    $mandor->page = ceil($mandor->position / $request->limit);
                 }
 
                 return response([
                     'status' => true,
                     'message' => 'Berhasil diubah',
-                    'data' => $merk
+                    'data' => $mandor
                 ]);
             } else {
                 return response([
@@ -254,19 +253,19 @@ class MerkController extends Controller
         }
     }
 
-    public function destroy(Merk $merk, Request $request)
+    public function destroy(Mandor $mandor, Request $request)
     {
-        $delete = Merk::destroy($merk->id);
+        $delete = Mandor::destroy($mandor->id);
         $del = 1;
         if ($delete) {
             $logTrail = [
-                'namatabel' => strtoupper($merk->getTable()),
-                'postingdari' => 'DELETE MERK',
-                'idtrans' => $merk->id,
-                'nobuktitrans' => $merk->id,
+                'namatabel' => strtoupper($mandor->getTable()),
+                'postingdari' => 'DELETE MANDOR',
+                'idtrans' => $mandor->id,
+                'nobuktitrans' => $mandor->id,
                 'aksi' => 'DELETE',
-                'datajson' => $merk->toArray(),
-                'modifiedby' => $merk->modifiedby
+                'datajson' => $mandor->toArray(),
+                'modifiedby' => $mandor->modifiedby
             ];
 
             $validatedLogTrail = new StoreLogTrailRequest($logTrail);
@@ -274,16 +273,16 @@ class MerkController extends Controller
 
             DB::commit();
 
-            $data = $this->getid($merk->id, $request, $del);
-            $merk->position = @$data->row;
-            $merk->id = @$data->id;
+            $data = $this->getid($mandor->id, $request, $del);
+            $mandor->position = @$data->row;
+            $mandor->id = @$data->id;
             if (isset($request->limit)) {
-                $merk->page = ceil($merk->position / $request->limit);
+                $mandor->page = ceil($mandor->position / $request->limit);
             }
             return response([
                 'status' => true,
                 'message' => 'Berhasil dihapus',
-                'data' => $merk
+                'data' => $mandor
             ]);
         } else {
             return response([
@@ -296,7 +295,7 @@ class MerkController extends Controller
     public function fieldLength()
     {
         $data = [];
-        $columns = DB::connection()->getDoctrineSchemaManager()->listTableDetails('merk')->getColumns();
+        $columns = DB::connection()->getDoctrineSchemaManager()->listTableDetails('mandor')->getColumns();
 
         foreach ($columns as $index => $column) {
             $data[$index] = $column->getLength();
@@ -307,9 +306,9 @@ class MerkController extends Controller
         ]);
     }
 
-    public function getPosition($merk, $request)
+    public function getPosition($mandor, $request)
     {
-        return Merk::where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $merk->{$request->sortname})
+        return Mandor::where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $mandor->{$request->sortname})
             /* Jika sortname modifiedby atau ada data duplikat */
             // ->where('id', $request->sortorder == 'desc' ? '>=' : '<=', $parameter->id)
             ->count();
@@ -339,7 +338,7 @@ class MerkController extends Controller
         Schema::create($temp, function ($table) {
             $table->id();
             $table->bigInteger('id_')->default('0');
-            $table->string('kodemerk', 50)->default('');
+            $table->string('namamandor', 50)->default('');
             $table->string('keterangan', 50)->default('');
             $table->string('statusaktif', 50)->default('');
             $table->string('modifiedby', 30)->default('');
@@ -350,59 +349,59 @@ class MerkController extends Controller
         });
 
         if ($params['sortname'] == 'id') {
-            $query = Merk::select(
-                'merk.id as id_',
-                'merk.kodemerk',
-                'merk.keterangan',
-                'merk.statusaktif',
-                'merk.modifiedby',
-                'merk.created_at',
-                'merk.updated_at'
+            $query = Mandor::select(
+                'mandor.id as id_',
+                'mandor.namamandor',
+                'mandor.keterangan',
+                'mandor.statusaktif',
+                'mandor.modifiedby',
+                'mandor.created_at',
+                'mandor.updated_at'
             )
-                ->orderBy('merk.id', $params['sortorder']);
+                ->orderBy('mandor.id', $params['sortorder']);
         } else if ($params['sortname'] == 'keterangan') {
-            $query = Merk::select(
-                'merk.id as id_',
-                'merk.kodemerk',
-                'merk.keterangan',
-                'merk.statusaktif',
-                'merk.modifiedby',
-                'merk.created_at',
-                'merk.updated_at'
+            $query = Mandor::select(
+                'mandor.id as id_',
+                'mandor.namamandor',
+                'mandor.keterangan',
+                'mandor.statusaktif',
+                'mandor.modifiedby',
+                'mandor.created_at',
+                'mandor.updated_at'
             )
                 ->orderBy($params['sortname'], $params['sortorder'])
-                ->orderBy('merk.id', $params['sortorder']);
+                ->orderBy('mandor.id', $params['sortorder']);
         } else {
             if ($params['sortorder'] == 'asc') {
-                $query = Merk::select(
-                    'merk.id as id_',
-                    'merk.kodemerk',
-                    'merk.keterangan',
-                    'merk.statusaktif',
-                    'merk.modifiedby',
-                    'merk.created_at',
-                    'merk.updated_at'
+                $query = Mandor::select(
+                    'mandor.id as id_',
+                    'mandor.namamandor',
+                    'mandor.keterangan',
+                    'mandor.statusaktif',
+                    'mandor.modifiedby',
+                    'mandor.created_at',
+                    'mandor.updated_at'
                 )
                     ->orderBy($params['sortname'], $params['sortorder'])
-                    ->orderBy('merk.id', $params['sortorder']);
+                    ->orderBy('mandor.id', $params['sortorder']);
             } else {
-                $query = Merk::select(
-                    'merk.id as id_',
-                    'merk.kodemerk',
-                    'merk.keterangan',
-                    'merk.statusaktif',
-                    'merk.modifiedby',
-                    'merk.created_at',
-                    'merk.updated_at'
+                $query = Mandor::select(
+                    'mandor.id as id_',
+                    'mandor.namamandor',
+                    'mandor.keterangan',
+                    'mandor.statusaktif',
+                    'mandor.modifiedby',
+                    'mandor.created_at',
+                    'mandor.updated_at'
                 )
                     ->orderBy($params['sortname'], $params['sortorder'])
-                    ->orderBy('merk.id', 'asc');
+                    ->orderBy('mandor.id', 'asc');
             }
         }
 
 
 
-        DB::table($temp)->insertUsing(['id_', 'kodemerk','keterangan', 'statusaktif', 'modifiedby', 'created_at', 'updated_at'], $query);
+        DB::table($temp)->insertUsing(['id_', 'namamandor', 'keterangan', 'statusaktif', 'modifiedby', 'created_at', 'updated_at'], $query);
 
 
         if ($del == 1) {

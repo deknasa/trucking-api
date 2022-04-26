@@ -13,7 +13,7 @@ class StoreSupplierRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +24,27 @@ class StoreSupplierRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'namasupplier' => 'required',
+            'namakontak' => 'required',
+            'alamat' => 'required',
+            'coa_id' => 'required|int',
+            'kota' => 'required',
+            'kodepos' => 'required',
+            'notelp1' => 'required',
+            'notelp2' => 'required',
+            'email' => 'required',
+            'statussupllier' => 'required|int',
+            'web' => 'required',
+            'namapemilik' => 'required',
+            'jenisusaha' => 'required',
+            'top' => 'required|int',
+            'bank' => 'required',
+            'rekeningbank' => 'required',
+            'namabank' => 'required',
+            'jabatan' => 'required',
+            'statusdaftarharga' => 'required|int',
+            'kategoriusaha' => 'required',
+            'bataskredit' => 'required|numeric',
         ];
     }
 }
