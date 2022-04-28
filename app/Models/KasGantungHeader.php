@@ -18,6 +18,8 @@ class KasGantungHeader extends MyModel
     ];
 
     protected $casts = [
+        'tgl' => 'date:d-m-Y',
+        'tglkaskeluar' => 'date:d-m-Y',
         'created_at' => 'date:d-m-Y H:i:s',
         'updated_at' => 'date:d-m-Y H:i:s'
     ];     
