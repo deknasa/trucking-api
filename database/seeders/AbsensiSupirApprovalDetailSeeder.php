@@ -18,7 +18,7 @@ class AbsensiSupirApprovalDetailSeeder extends Seeder
 
         AbsensiSupirApprovalDetail::create([
             'nobukti' => 'ASA 0001/II/2022',
-            'absensisupirapproval_id' => '',
+            'absensisupirapproval_id' => 1,
             'trado_id' => 1,
             'supir_id' => 1,
             'supirserap_id' => 0,         

@@ -19,9 +19,7 @@ class CreatePiutangheaderTable extends Migration
             $table->date('tglbukti')->default('1900/1/1');
             $table->longText('keterangan')->default('');
             $table->string('postingdari',150)->default('');
-            $table->double('saldoawal',15,2)->default('0');
             $table->double('nominal',15,2)->default('0');
-            $table->string('coasaldoawal',50)->default('');
             $table->string('invoice_nobukti',50)->default('');
             $table->string('modifiedby',50)->default('');
             $table->timestamps();

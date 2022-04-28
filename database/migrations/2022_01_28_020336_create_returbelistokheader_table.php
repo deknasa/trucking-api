@@ -16,7 +16,7 @@ class CreateReturbelistokheaderTable extends Migration
         Schema::create('returbelistokheader', function (Blueprint $table) {
             $table->id();
             $table->string('nobukti',50)->unique();
-            $table->date('tgl')->default('1900/1/1');
+            $table->date('tglbukti')->default('1900/1/1');
             $table->string('belistok_nobukti',50)->default('');
             $table->unsignedBigInteger('supplier_id')->default('0');
             $table->double('persentasediscount',15,2)->default('0');

@@ -17,13 +17,6 @@ class CreateInvoiceextradetailTable extends Migration
             $table->id();
             $table->unsignedBigInteger('invoiceextra_id')->default(0);
             $table->string('nobukti', 50)->default('');
-            $table->date('qty',15,2)->default('0');
-            $table->date('hrgsatuan',15,2)->default('0');
-            $table->date('total',15,2)->default('0');
-            $table->string('persentasedisccount', 50)->default('');
-            $table->date('nominaldiscount',15,2)->default('0');
-            $table->date('biaya',15,2)->default('0');
-            $table->date('nominal',15,2)->default('0');
             $table->longText('keterangan')->default('');
             $table->string('modifiedby', 50)->default('');
             $table->timestamps();

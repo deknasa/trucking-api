@@ -22,3 +22,4 @@ class ProsesGajiSupirDetail extends MyModel
         'updated_at',
     ];
 }
+

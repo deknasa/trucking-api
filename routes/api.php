@@ -36,9 +36,14 @@ use App\Http\Controllers\Api\GudangController;
 use App\Http\Controllers\Api\PelangganController;
 use App\Http\Controllers\Api\PenerimaController;
 use App\Http\Controllers\Api\StatusContainerController;
+use App\Http\Controllers\Api\KategoriController;
+use App\Http\Controllers\Api\KelompokController;
+use App\Http\Controllers\Api\KerusakanController;
 use App\Http\Controllers\Api\SubKelompokController;
 use App\Http\Controllers\Api\SupplierController;
-
+use App\Http\Controllers\Api\KotaController;
+use App\Http\Controllers\Api\MandorController;
+use App\Http\Controllers\Api\MerkController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -296,3 +301,27 @@ Route::resource('kasgantung_detail', KasGantungDetailController::class);
 Route::get('gudang/combo', [GudangController::class, 'combo']);
 Route::get('gudang/field_length', [GudangController::class, 'fieldLength']);
 Route::resource('gudang', GudangController::class);
+
+Route::get('kategori/combo', [KategoriController::class, 'combo']);
+Route::get('kategori/field_length', [KategoriController::class, 'fieldLength']);
+Route::resource('kategori', KategoriController::class);
+
+Route::get('kelompok/combo', [KelompokController::class, 'combo']);
+Route::get('kelompok/field_length', [KelompokController::class, 'fieldLength']);
+Route::resource('kelompok', KelompokController::class);
+
+Route::get('kerusakan/combo', [KerusakanController::class, 'combo']);
+Route::get('kerusakan/field_length', [KerusakanController::class, 'fieldLength']);
+Route::resource('kerusakan', KerusakanController::class);
+
+Route::get('kota/combo', [KotaController::class, 'combo']);
+Route::get('kota/field_length', [KotaController::class, 'fieldLength']);
+Route::resource('kota', KotaController::class);
+
+Route::get('mandor/combo', [MandorController::class, 'combo']);
+Route::get('mandor/field_length', [MandorController::class, 'fieldLength']);
+Route::resource('mandor', MandorController::class);
+
+Route::get('merk/combo', [MerkController::class, 'combo']);
+Route::get('merk/field_length', [MerkController::class, 'fieldLength']);
+Route::resource('merk', MerkController::class);

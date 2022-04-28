@@ -15,7 +15,7 @@ class PengeluaranHeaderSeeder extends Seeder
     {
         PengeluaranHeader::create([
             'nobukti' => 'KBT 0001/II/2022',
-            'tgl' => '2022-02-24',
+            'tglbukti' => '2022-02-24',
             'pelanggan_id' => 0,
             'keterangan' => 'PROSES ABSENSI SUPIR',
             'statusjenistransaksi' => 54,
@@ -35,7 +35,26 @@ class PengeluaranHeaderSeeder extends Seeder
         //pinjaman
         PengeluaranHeader::create([
             'nobukti' => 'KBT 0001/III/2022',
-            'tgl' => '2022-03-01',
+            'tglbukti' => '2022-03-01',
+            'pelanggan_id' => 0,
+            'keterangan' => 'PINJAMAN SUPIR',
+            'statusjenistransaksi' => 54,
+            'postingdari' => 'PINJAMAN SUPIR',
+            'statusapproval' => 4,
+            'dibayarke' => '',
+            'cabang_id' => 0,
+            'bank_id' => 1,
+            'userapproval' => '',
+            'tglapproval' => '1900-01-01',
+            'transferkeac' => '',
+            'transferkean' => '',
+            'transferkebank' => '',
+            'modifiedby' => 'ADMIN',
+        ]);
+
+        PengeluaranHeader::create([
+            'nobukti' => 'KBT 0001/IV/2022',
+            'tglbukti' => '2022-04-08',
             'pelanggan_id' => 0,
             'keterangan' => 'PINJAMAN SUPIR',
             'statusjenistransaksi' => 54,

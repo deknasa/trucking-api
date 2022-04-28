@@ -13,7 +13,7 @@ class StoreKotaRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +24,10 @@ class StoreKotaRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'kodekota' => 'required',
+            'keterangan' => 'required',
+            'zona_id' => 'required',
+            'statusaktif' => 'required'
         ];
     }
 }

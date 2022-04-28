@@ -28,14 +28,11 @@ class CreateInvoiceheaderTable extends Migration
             $table->integer('statusapproval')->length(11)->default('0');
             $table->string('userapproval', 50)->default('');
             $table->date('tglapproval')->default('1900/1/1');
-            $table->string('jenisinvoice', 50)->default('');
-            $table->string('invoiceextra_nobukti', 50)->default('');
             $table->string('modifiedby', 50)->default('');
             $table->timestamps();
 
             $table->foreign('agen_id')->references('id')->on('agen');
             $table->foreign('jenisorder_id')->references('id')->on('jenisorder');
-            $table->foreign('invoiceextra_nobukti')->references('nobukti')->on('invoiceextraheader');
             $table->foreign('cabang_id')->references('id')->on('cabang');
     
         });

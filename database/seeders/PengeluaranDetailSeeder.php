@@ -24,7 +24,6 @@ class PengeluaranDetailSeeder extends Seeder
             'coadebet' => '01.01.01.02',
             'coakredit' => '01.01.02.02',
             'keterangan' => 'PROSES ABSENSI SUPIR',
-            'noinvoice' => '',
             'bulanbeban' => '2022-02-23',
             'modifiedby' => 'ADMIN',
         ]);
@@ -40,8 +39,21 @@ class PengeluaranDetailSeeder extends Seeder
             'coadebet' => '01.05.02.02',
             'coakredit' => '01.01.02.02',
             'keterangan' => 'PINJAMAN SUPIR',
-            'noinvoice' => '',
             'bulanbeban' => '2022-03-21',
+            'modifiedby' => 'ADMIN',
+        ]);
+
+        PengeluaranDetail::create([
+            'pengeluaran_id' => 3,
+            'nobukti' => 'KBT 0001/IV/2022',
+            'alatbayar_id' => 1,
+            'nowarkat' => '',
+            'tgljatuhtempo' => '2022-04-8',
+            'nominal' => 15000,
+            'coadebet' => '01.05.02.02',
+            'coakredit' => '01.01.02.02',
+            'keterangan' => 'PINJAMAN SUPIR',
+            'bulanbeban' => '2022-04-08',
             'modifiedby' => 'ADMIN',
         ]);
     }

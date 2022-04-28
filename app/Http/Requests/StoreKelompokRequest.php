@@ -13,7 +13,7 @@ class StoreKelompokRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +24,9 @@ class StoreKelompokRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'kodekelompok' => 'required',
+            'keterangan' => 'required',
+            'statusaktif' => 'required'
         ];
     }
 }

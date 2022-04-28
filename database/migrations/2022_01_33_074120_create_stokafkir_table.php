@@ -16,7 +16,7 @@ class CreateStokafkirTable extends Migration
         Schema::create('stokafkir', function (Blueprint $table) {
             $table->id();
             $table->string('nobukti',50)->default('');
-            $table->date('tgl')->default('1900/1/1');
+            $table->date('tglbukti')->default('1900/1/1');
             $table->unsignedBigInteger('stok_id')->default('0');
             $table->integer('statusban')->length(11)->default('0');
             $table->integer('vulkanisirke')->length(11)->default('0');
