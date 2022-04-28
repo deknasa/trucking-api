@@ -43,7 +43,7 @@ class CreateSpkstokdetailTable extends Migration
             $table->foreign('stok_id')->references('id')->on('stok');
             $table->foreign('coa')->references('coa')->on('akunpusat');
             $table->foreign('pindahgudang_nobukti')->references('nobukti')->on('pindahgudangstokheader');
-            $table->foreign('pinjaman_nobukti')->references('nobukti')->on('pinjaman');
+            // $table->foreign('pinjaman_nobukti')->references('nobukti')->on('pinjaman');
 
         });
     }

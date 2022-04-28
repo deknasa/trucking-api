@@ -14,7 +14,7 @@ class AlterKasgantungheaderTable extends Migration
     public function up()
     {
         Schema::table('kasgantungheader', function (Blueprint $table) {
-            $table->foreign('nobuktikaskeluar')->references('nobukti')->on('pengeluaranheader');
+            // $table->foreign('nobuktikaskeluar')->references('nobukti')->on('pengeluaranheader');
             // $table->foreign('nobukti')->references('nobukti')->on('jurnalumumheader');
         });
     }

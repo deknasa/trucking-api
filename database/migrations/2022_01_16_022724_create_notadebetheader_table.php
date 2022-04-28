@@ -31,7 +31,7 @@ class CreateNotadebetheaderTable extends Migration
             $table->string('modifiedby',50)->default('');
             $table->timestamps();
 
-            $table->foreign('pelunasan_nobukti')->references('nobukti')->on('pelunasanpiutangheader');
+            // $table->foreign('pelunasan_nobukti')->references('nobukti')->on('pelunasanpiutangheader');
 
         });
     }
