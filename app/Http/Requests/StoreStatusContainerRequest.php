@@ -13,7 +13,7 @@ class StoreStatusContainerRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +24,17 @@ class StoreStatusContainerRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'kodestatuscontainer' => 'required',
+            'keterangan' => 'required',
+            'statusaktif' => 'required|int',
+        ];
+    }
+
+    public function attributes()
+    {
+        return [
+            'kodestatuscontainer' => 'kode status container',
+            'statusaktif' => 'status aktif',
         ];
     }
 }

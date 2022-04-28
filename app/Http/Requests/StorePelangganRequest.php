@@ -13,7 +13,7 @@ class StorePelangganRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +24,23 @@ class StorePelangganRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'kodepelanggan' => 'required',
+            'namapelanggan' => 'required',
+            'telp' => 'required',
+            'alamat' => 'required',
+            'alamat2' => 'required',
+            'kota' => 'required',
+            'kodepos' => 'required',
+            'keterangan' => 'required',
+        ];
+    }
+
+    public function attributes()
+    {
+        return [
+            'kodepelanggan' => 'kode pelanggan',
+            'namapelanggan' => 'nama pelanggan',
+            'kodepos' => 'kode pos',
         ];
     }
 }
