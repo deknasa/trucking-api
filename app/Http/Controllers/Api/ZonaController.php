@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Models\Satuan;
-use App\Http\Requests\StoreSatuanRequest;
-use App\Http\Requests\UpdateSatuanRequest;
+use App\Models\Zona;
+use App\Http\Requests\StoreZonaRequest;
+use App\Http\Requests\UpdateZonaRequest;
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Models\Parameter;
 
@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-class SatuanController extends Controller
+class ZonaController extends Controller
 {
 
     public function index(Request $request)
@@ -28,60 +28,64 @@ class SatuanController extends Controller
             'sortOrder' => $request->sortOrder ?? 'asc',
         ];
 
-        $totalRows = Satuan::count();
+        $totalRows = Zona::count();
         $totalPages = $params['limit'] > 0 ? ceil($totalRows / $params['limit']) : 1;
 
         /* Sorting */
-        $query = Satuan::orderBy($params['sortIndex'], $params['sortOrder']);
+        $query = Zona::orderBy($params['sortIndex'], $params['sortOrder']);
 
         if ($params['sortIndex'] == 'id') {
-            $query = Satuan::select(
-                'satuan.id',
-                'satuan.satuan',
+            $query = Zona::select(
+                'zona.id',
+                'zona.zona',
+                'zona.keterangan',
                 'parameter.text as statusaktif',
-                'satuan.modifiedby',
-                'satuan.created_at',
-                'satuan.updated_at'
+                'zona.modifiedby',
+                'zona.created_at',
+                'zona.updated_at'
             )
-            ->leftJoin('parameter', 'satuan.statusaktif', '=', 'parameter.id')
-            ->orderBy('satuan.id', $params['sortOrder']);
-        } else if ($params['sortIndex'] == 'satuan') {
-            $query = Satuan::select(
-                'satuan.id',
-                'satuan.satuan',
+            ->leftJoin('parameter', 'zona.statusaktif', '=', 'parameter.id')
+            ->orderBy('zona.id', $params['sortOrder']);
+        } else if ($params['sortIndex'] == 'zona' or $params['sortIndex'] == 'keterangan') {
+            $query = Zona::select(
+                'zona.id',
+                'zona.zona',
+                'zona.keterangan',
                 'parameter.text as statusaktif',
-                'satuan.modifiedby',
-                'satuan.created_at',
-                'satuan.updated_at'
+                'zona.modifiedby',
+                'zona.created_at',
+                'zona.updated_at'
             )
-                ->leftJoin('parameter', 'satuan.statusaktif', '=', 'parameter.id')
+                ->leftJoin('parameter', 'zona.statusaktif', '=', 'parameter.id')
                 ->orderBy($params['sortIndex'], $params['sortOrder'])
-                ->orderBy('satuan.id', $params['sortOrder']);
+                ->orderBy('zona.id', $params['sortOrder']);
         } else {
             if ($params['sortOrder'] == 'asc') {
-                $query = Satuan::select(
-                    'satuan.id',
-                    'satuan.satuan',
+                $query = Zona::select(
+                    'zona.id',
+                    'zona.zona',
+                    'zona.keterangan',
                     'parameter.text as statusaktif',
-                    'satuan.modifiedby',
-                    'satuan.created_at',
-                    'satuan.updated_at'
+                    'zona.modifiedby',
+                    'zona.created_at',
+                    'zona.updated_at'
                 )
-                    ->leftJoin('parameter', 'satuan.statusaktif', '=', 'parameter.id')
+                    ->leftJoin('parameter', 'zona.statusaktif', '=', 'parameter.id')
                     ->orderBy($params['sortIndex'], $params['sortOrder'])
-                    ->orderBy('satuan.id', $params['sortOrder']);
+                    ->orderBy('zona.id', $params['sortOrder']);
             } else {
-                $query = Satuan::select(
-                    'satuan.id',
-                    'satuan.satuan',
+                $query = Zona::select(
+                    'zona.id',
+                    'zona.zona',
+                    'zona.keterangan',
                     'parameter.text as statusaktif',
-                    'satuan.modifiedby',
-                    'satuan.created_at',
-                    'satuan.updated_at'
+                    'zona.modifiedby',
+                    'zona.created_at',
+                    'zona.updated_at'
                 )
-                    ->leftJoin('parameter', 'satuan.statusaktif', '=', 'parameter.id')
+                    ->leftJoin('parameter', 'zona.statusaktif', '=', 'parameter.id')
                     ->orderBy($params['sortIndex'], $params['sortOrder'])
-                    ->orderBy('satuan.id', 'asc');
+                    ->orderBy('zona.id', 'asc');
             }
         }
 
@@ -93,7 +97,7 @@ class SatuanController extends Controller
                         if ($search['field'] == 'statusaktif') {
                             $query = $query->where('parameter.text', 'LIKE', "%$search[data]%");
                         } else {
-                            $query = $query->where('satuan.'.$search['field'], 'LIKE', "%$search[data]%");
+                            $query = $query->where('zona.'.$search['field'], 'LIKE', "%$search[data]%");
                         }
                     }
 
@@ -103,7 +107,7 @@ class SatuanController extends Controller
                         if ($search['field'] == 'statusaktif') {
                             $query = $query->orWhere('parameter.text', 'LIKE', "%$search[data]%");
                         } else {
-                            $query = $query->orWhere('satuan.'.$search['field'], 'LIKE', "%$search[data]%");
+                            $query = $query->orWhere('zona.'.$search['field'], 'LIKE', "%$search[data]%");
                         }
                     }
                     break;
@@ -120,7 +124,7 @@ class SatuanController extends Controller
         $query = $query->skip($params['offset'])
             ->take($params['limit']);
 
-        $satuan = $query->get();
+        $zona = $query->get();
 
         /* Set attributes */
         $attributes = [
@@ -130,7 +134,7 @@ class SatuanController extends Controller
 
         return response([
             'status' => true,
-            'data' => $satuan,
+            'data' => $zona,
             'attributes' => $attributes,
             'params' => $params
         ]);
@@ -141,27 +145,28 @@ class SatuanController extends Controller
         //
     }
 
-    public function store(StoreSatuanRequest $request)
+    public function store(StoreZonaRequest $request)
     {
         DB::beginTransaction();
 
         try {
-            $satuan = new Satuan();
-            $satuan->satuan = $request->satuan;
-            $satuan->statusaktif = $request->statusaktif;
-            $satuan->modifiedby = $request->modifiedby;
+            $zona = new Zona();
+            $zona->zona = $request->zona;
+            $zona->statusaktif = $request->statusaktif;
+            $zona->keterangan = $request->keterangan;
+            $zona->modifiedby = $request->modifiedby;
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
 
-            if ($satuan->save()) {
+            if ($zona->save()) {
                 $logTrail = [
-                    'namatabel' => strtoupper($satuan->getTable()),
-                    'postingdari' => 'ENTRY SATUAN',
-                    'idtrans' => $satuan->id,
-                    'nobuktitrans' => $satuan->id,
+                    'namatabel' => strtoupper($zona->getTable()),
+                    'postingdari' => 'ENTRY ZONA',
+                    'idtrans' => $zona->id,
+                    'nobuktitrans' => $zona->id,
                     'aksi' => 'ENTRY',
-                    'datajson' => $satuan->toArray(),
-                    'modifiedby' => $satuan->modifiedby
+                    'datajson' => $zona->toArray(),
+                    'modifiedby' => $zona->modifiedby
                 ];
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
@@ -172,17 +177,17 @@ class SatuanController extends Controller
 
             /* Set position and page */
             $del = 0;
-            $data = $this->getid($satuan->id, $request, $del);
-            $satuan->position = $data->row;
+            $data = $this->getid($zona->id, $request, $del);
+            $zona->position = $data->row;
 
             if (isset($request->limit)) {
-                $satuan->page = ceil($satuan->position / $request->limit);
+                $zona->page = ceil($zona->position / $request->limit);
             }
 
             return response([
                 'status' => true,
                 'message' => 'Berhasil disimpan',
-                'data' => $satuan
+                'data' => $zona
             ]);
         } catch (\Throwable $th) {
             DB::rollBack();
@@ -190,52 +195,53 @@ class SatuanController extends Controller
         }
     }
 
-    public function show(Satuan $satuan)
+    public function show(Zona $zona)
     {
         return response([
             'status' => true,
-            'data' => $satuan
+            'data' => $zona
         ]);
     }
 
-    public function edit(Satuan $satuan)
+    public function edit(Zona $zona)
     {
         //
     }
 
-    public function update(StoreSatuanRequest $request, Satuan $satuan)
+    public function update(StoreZonaRequest $request, Zona $zona)
     {
         try {
-            $satuan = Satuan::findOrFail($satuan->id);
-            $satuan->satuan = $request->satuan;
-            $satuan->statusaktif = $request->statusaktif;
-            $satuan->modifiedby = $request->modifiedby;
+            $zona = Zona::findOrFail($zona->id);
+            $zona->zona = $request->zona;
+            $zona->keterangan = $request->keterangan;
+            $zona->statusaktif = $request->statusaktif;
+            $zona->modifiedby = $request->modifiedby;
 
-            if ($satuan->save()) {
+            if ($zona->save()) {
                 $logTrail = [
-                    'namatabel' => strtoupper($satuan->getTable()),
-                    'postingdari' => 'EDIT SATUAN',
-                    'idtrans' => $satuan->id,
-                    'nobuktitrans' => $satuan->id,
+                    'namatabel' => strtoupper($zona->getTable()),
+                    'postingdari' => 'EDIT ZONA',
+                    'idtrans' => $zona->id,
+                    'nobuktitrans' => $zona->id,
                     'aksi' => 'EDIT',
-                    'datajson' => $satuan->toArray(),
-                    'modifiedby' => $satuan->modifiedby
+                    'datajson' => $zona->toArray(),
+                    'modifiedby' => $zona->modifiedby
                 ];
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
 
                 /* Set position and page */
-                $satuan->position = $this->getid($satuan->id, $request, 0)->row;
+                $zona->position = $this->getid($zona->id, $request, 0)->row;
 
                 if (isset($request->limit)) {
-                    $satuan->page = ceil($satuan->position / $request->limit);
+                    $zona->page = ceil($zona->position / $request->limit);
                 }
 
                 return response([
                     'status' => true,
                     'message' => 'Berhasil diubah',
-                    'data' => $satuan
+                    'data' => $zona
                 ]);
             } else {
                 return response([
@@ -248,19 +254,19 @@ class SatuanController extends Controller
         }
     }
 
-    public function destroy(Satuan $satuan, Request $request)
+    public function destroy(Zona $zona, Request $request)
     {
-        $delete = Satuan::destroy($satuan->id);
+        $delete = Zona::destroy($zona->id);
         $del = 1;
         if ($delete) {
             $logTrail = [
-                'namatabel' => strtoupper($satuan->getTable()),
-                'postingdari' => 'DELETE SATUAN',
-                'idtrans' => $satuan->id,
-                'nobuktitrans' => $satuan->id,
+                'namatabel' => strtoupper($zona->getTable()),
+                'postingdari' => 'DELETE ZONA',
+                'idtrans' => $zona->id,
+                'nobuktitrans' => $zona->id,
                 'aksi' => 'DELETE',
-                'datajson' => $satuan->toArray(),
-                'modifiedby' => $satuan->modifiedby
+                'datajson' => $zona->toArray(),
+                'modifiedby' => $zona->modifiedby
             ];
 
             $validatedLogTrail = new StoreLogTrailRequest($logTrail);
@@ -268,16 +274,16 @@ class SatuanController extends Controller
 
             DB::commit();
 
-            $data = $this->getid($satuan->id, $request, $del);
-            $satuan->position = $data->row;
-            $satuan->id = $data->id;
+            $data = $this->getid($zona->id, $request, $del);
+            $zona->position = $data->row;
+            $zona->id = $data->id;
             if (isset($request->limit)) {
-                $satuan->page = ceil($satuan->position / $request->limit);
+                $zona->page = ceil($zona->position / $request->limit);
             }
             return response([
                 'status' => true,
                 'message' => 'Berhasil dihapus',
-                'data' => $satuan
+                'data' => $zona
             ]);
         } else {
             return response([
@@ -290,7 +296,7 @@ class SatuanController extends Controller
     public function fieldLength()
     {
         $data = [];
-        $columns = DB::connection()->getDoctrineSchemaManager()->listTableDetails('satuan')->getColumns();
+        $columns = DB::connection()->getDoctrineSchemaManager()->listTableDetails('zona')->getColumns();
 
         foreach ($columns as $index => $column) {
             $data[$index] = $column->getLength();
@@ -301,9 +307,9 @@ class SatuanController extends Controller
         ]);
     }
 
-    public function getPosition($satuan, $request)
+    public function getPosition($zona, $request)
     {
-        return Satuan::where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $satuan->{$request->sortname})
+        return Zona::where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $zona->{$request->sortname})
             /* Jika sortname modifiedby atau ada data duplikat */
             // ->where('id', $request->sortorder == 'desc' ? '>=' : '<=', $parameter->id)
             ->count();
@@ -333,7 +339,8 @@ class SatuanController extends Controller
         Schema::create($temp, function ($table) {
             $table->id();
             $table->bigInteger('id_')->default('0');
-            $table->string('satuan', 50)->default('');
+            $table->string('zona', 50)->default('');
+            $table->string('keterangan', 50)->default('');
             $table->string('statusaktif', 50)->default('');
             $table->string('modifiedby', 30)->default('');
             $table->dateTime('created_at')->default('1900/1/1');
@@ -343,55 +350,59 @@ class SatuanController extends Controller
         });
 
         if ($params['sortname'] == 'id') {
-            $query = Satuan::select(
-                'satuan.id as id_',
-                'satuan.satuan',
-                'satuan.statusaktif',
-                'satuan.modifiedby',
-                'satuan.created_at',
-                'satuan.updated_at'
+            $query = Zona::select(
+                'zona.id as id_',
+                'zona.zona',
+                'zona.keterangan',
+                'zona.statusaktif',
+                'zona.modifiedby',
+                'zona.created_at',
+                'zona.updated_at'
             )
-                ->orderBy('satuan.id', $params['sortorder']);
-        } else if ($params['sortname'] == 'satuan') {
-            $query = Satuan::select(
-                'satuan.id as id_',
-                'satuan.satuan',
-                'satuan.statusaktif',
-                'satuan.modifiedby',
-                'satuan.created_at',
-                'satuan.updated_at'
+                ->orderBy('zona.id', $params['sortorder']);
+        } else if ($params['sortname'] == 'zona' or $params['sortname'] == 'keterangan') {
+            $query = Zona::select(
+                'zona.id as id_',
+                'zona.zona',
+                'zona.keterangan',
+                'zona.statusaktif',
+                'zona.modifiedby',
+                'zona.created_at',
+                'zona.updated_at'
             )
                 ->orderBy($params['sortname'], $params['sortorder'])
-                ->orderBy('satuan.id', $params['sortorder']);
+                ->orderBy('zona.id', $params['sortorder']);
         } else {
             if ($params['sortorder'] == 'asc') {
-                $query = Satuan::select(
-                    'satuan.id as id_',
-                    'satuan.satuan',
-                    'satuan.statusaktif',
-                    'satuan.modifiedby',
-                    'satuan.created_at',
-                    'satuan.updated_at'
+                $query = Zona::select(
+                    'zona.id as id_',
+                    'zona.zona',
+                    'zona.keterangan',
+                    'zona.statusaktif',
+                    'zona.modifiedby',
+                    'zona.created_at',
+                    'zona.updated_at'
                 )
                     ->orderBy($params['sortname'], $params['sortorder'])
-                    ->orderBy('satuan.id', $params['sortorder']);
+                    ->orderBy('zona.id', $params['sortorder']);
             } else {
-                $query = Satuan::select(
-                    'satuan.id as id_',
-                    'satuan.satuan',
-                    'satuan.statusaktif',
-                    'satuan.modifiedby',
-                    'satuan.created_at',
-                    'satuan.updated_at'
+                $query = Zona::select(
+                    'zona.id as id_',
+                    'zona.zona',
+                    'zona.keterangan',
+                    'zona.statusaktif',
+                    'zona.modifiedby',
+                    'zona.created_at',
+                    'zona.updated_at'
                 )
                     ->orderBy($params['sortname'], $params['sortorder'])
-                    ->orderBy('satuan.id', 'asc');
+                    ->orderBy('zona.id', 'asc');
             }
         }
 
 
 
-        DB::table($temp)->insertUsing(['id_', 'satuan', 'statusaktif', 'modifiedby', 'created_at', 'updated_at'], $query);
+        DB::table($temp)->insertUsing(['id_', 'zona', 'keterangan', 'statusaktif', 'modifiedby', 'created_at', 'updated_at'], $query);
 
 
         if ($del == 1) {

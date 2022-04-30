@@ -44,6 +44,10 @@ use App\Http\Controllers\Api\SupplierController;
 use App\Http\Controllers\Api\KotaController;
 use App\Http\Controllers\Api\MandorController;
 use App\Http\Controllers\Api\MerkController;
+use App\Http\Controllers\Api\SatuanController;
+use App\Http\Controllers\Api\ZonaController;
+use App\Http\Controllers\Api\TarifController;
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -325,3 +329,16 @@ Route::resource('mandor', MandorController::class);
 Route::get('merk/combo', [MerkController::class, 'combo']);
 Route::get('merk/field_length', [MerkController::class, 'fieldLength']);
 Route::resource('merk', MerkController::class);
+
+Route::get('satuan/combo', [SatuanController::class, 'combo']);
+Route::get('satuan/field_length', [SatuanController::class, 'fieldLength']);
+Route::resource('satuan', SatuanController::class);
+
+Route::get('zona/combo', [ZonaController::class, 'combo']);
+Route::get('zona/field_length', [ZonaController::class, 'fieldLength']);
+Route::resource('zona', ZonaController::class);
+
+Route::get('tarif/combo', [TarifController::class, 'combo']);
+Route::get('tarif/field_length', [TarifController::class, 'fieldLength']);
+Route::resource('tarif', TarifController::class);
+
