@@ -13,7 +13,7 @@ class StorePenerimaanTruckingRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +24,20 @@ class StorePenerimaanTruckingRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'kodepenerimaan' => 'required',
+            'keterangan' => 'required',
+            'coa' => 'required',
+            'formatbukti' => 'required',
+        ];
+    }
+
+    public function attributes()
+    {
+        return [
+            'kodepenerimaan' => 'kode penerimaan',
+            'keterangan' => 'keterangan',
+            'coa' => 'coa',
+            'formatbukti' => 'format bukti',
         ];
     }
 }

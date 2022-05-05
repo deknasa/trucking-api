@@ -44,6 +44,8 @@ use App\Http\Controllers\Api\SupplierController;
 use App\Http\Controllers\Api\KotaController;
 use App\Http\Controllers\Api\MandorController;
 use App\Http\Controllers\Api\MerkController;
+use App\Http\Controllers\Api\PenerimaanTruckingController;
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -288,6 +290,10 @@ route::middleware('auth:api')->group(function () {
     Route::get('status_container/export', [StatusContainerController::class, 'export']);
     Route::get('status_container/field_length', [StatusContainerController::class, 'fieldLength']);
     Route::resource('status_container', StatusContainerController::class);
+    
+    Route::get('penerimaan_trucking/export', [PenerimaanTruckingController::class, 'export']);
+    Route::get('penerimaan_trucking/field_length', [PenerimaanTruckingController::class, 'fieldLength']);
+    Route::resource('penerimaan_trucking', PenerimaanTruckingController::class);
 });
 
 Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
