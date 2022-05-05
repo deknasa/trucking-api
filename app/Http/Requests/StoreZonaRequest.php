@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class StoreTarifRequest extends FormRequest
+class StoreZonaRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,17 +24,9 @@ class StoreTarifRequest extends FormRequest
     public function rules()
     {
         return [
-            'tujuan' => 'required',
-            'container_id' => 'required',
-            'nominal' => 'required',
+            'zona' => 'required',
+            'keterangan' => 'required',
             'statusaktif' => 'required',
-            'tujuanasal' => 'required',
-            'sistemton' => 'required',
-            'zona_id' => 'required',
-            'kota_id' => 'required',
-            'nominalton' => 'required',
-            'tglberlaku' => 'required',
-            'statuspenyesuaianharga' => 'required',
         ];
     }
 }
