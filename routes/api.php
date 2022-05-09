@@ -48,6 +48,7 @@ use App\Http\Controllers\Api\PenerimaanTruckingController;
 use App\Http\Controllers\Api\SatuanController;
 use App\Http\Controllers\Api\ZonaController;
 use App\Http\Controllers\Api\TarifController;
+use App\Http\Controllers\Api\PengeluaranTruckingController;
 
 /*
 |--------------------------------------------------------------------------
@@ -297,6 +298,10 @@ route::middleware('auth:api')->group(function () {
     Route::get('penerimaan_trucking/export', [PenerimaanTruckingController::class, 'export']);
     Route::get('penerimaan_trucking/field_length', [PenerimaanTruckingController::class, 'fieldLength']);
     Route::resource('penerimaan_trucking', PenerimaanTruckingController::class);
+
+    Route::get('pengeluaran_trucking/export', [PengeluaranTruckingController::class, 'export']);
+    Route::get('pengeluaran_trucking/field_length', [PengeluaranTruckingController::class, 'fieldLength']);
+    Route::resource('pengeluaran_trucking', PengeluaranTruckingController::class);
 });
 
 Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');

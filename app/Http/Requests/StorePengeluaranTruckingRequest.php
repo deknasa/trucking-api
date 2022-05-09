@@ -13,7 +13,7 @@ class StorePengeluaranTruckingRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +24,10 @@ class StorePengeluaranTruckingRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'kodepengeluaran' => 'required',
+            'keterangan' => 'required',
+            'coa' => 'required',
+            'formatbukti' => 'required'
         ];
     }
 }
