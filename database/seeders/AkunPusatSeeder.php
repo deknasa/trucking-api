@@ -197,6 +197,52 @@ class AkunPusatSeeder extends Seeder
             'statuslabarugi' => '38',
             'coamain' => '01.08.01.06',
             'modifiedby' => 'ADMIN',
-        ]);     
+        ]);  
+
+        AkunPusat::create([
+            'coa' => '06.03.01.01',
+            'keterangancoa' => 'POTONGAN PENDAPATAN USAHA',
+            'type' => 'KAS',
+            'level' => '3',
+            'aktif' => '1',
+            'parent' => '01.08.01.00',
+            'statuscoa' => 63,
+            'statusaccountpayable' => '34',
+            'statusneraca' => '36',
+            'statuslabarugi' => '38',
+            'coamain' => '06.03.01.01',
+            'modifiedby' => 'ADMIN',
+        ]); 
+
+        AkunPusat::create([
+            'coa' => '01.03.03.00',
+            'keterangancoa' => 'PIUTANG GIRO',
+            'type' => 'KAS',
+            'level' => '3',
+            'aktif' => '1',
+            'parent' => '01.03.03.00',
+            'statuscoa' => 63,
+            'statusaccountpayable' => '34',
+            'statusneraca' => '36',
+            'statuslabarugi' => '38',
+            'coamain' => '01.03.03.00',
+            'modifiedby' => 'ADMIN',
+        ]); 
+
+        AkunPusat::create([
+            'coa' => '01.02.02.01',
+            'keterangancoa' => 'BCA 3490977545',
+            'type' => 'BANK',
+            'level' => '3',
+            'aktif' => '1',
+            'parent' => '01.02.02.00',
+            'statuscoa' => 63,
+            'statusaccountpayable' => '34',
+            'statusneraca' => '36',
+            'statuslabarugi' => '38',
+            'coamain' => '01.02.02.01',
+            'modifiedby' => 'ADMIN',
+        ]); 
+
     }
 }

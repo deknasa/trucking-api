@@ -150,5 +150,29 @@ class JurnalUmumHeaderSeeder extends Seeder
             'tglapproval' => '1900-01-01',
             'modifiedby' => 'ADMIN',
         ]); 
+
+
+        JurnalUmumHeader::create([
+            'nobukti' => 'NKT 0001/V/2022',
+            'tglbukti' => '2022/5/20',
+            'keterangan' => 'POTONGAN',
+            'postingdari' => '',
+            'statusapproval' => 4,
+            'userapproval' => '',
+            'tglapproval' => '1900-01-01',
+            'modifiedby' => 'ADMIN',
+        ]); 
+
+        JurnalUmumHeader::create([
+            'nobukti' => 'BPGT-M BCA 0001/V/2022',
+            'tglbukti' => '2022/5/20',
+            'keterangan' => 'GIRO',
+            'postingdari' => '',
+            'statusapproval' => 4,
+            'userapproval' => '',
+            'tglapproval' => '1900-01-01',
+            'modifiedby' => 'ADMIN',
+        ]); 
+
     }
 }

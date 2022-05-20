@@ -16,7 +16,7 @@ class CreateNotakreditheaderTable extends Migration
         Schema::create('notakreditheader', function (Blueprint $table) {
             $table->id();
             $table->string('nobukti',50)->unique();
-            $table->string('penerimaanpiutang_nobukti',50)->default('');
+            $table->string('pelunasanpiutang_nobukti',50)->default('');
             $table->date('tglbukti')->default('1900/1/1');
             $table->longText('keterangan')->default('');
             $table->string('postingdari',50)->default('');
@@ -24,10 +24,6 @@ class CreateNotakreditheaderTable extends Migration
             $table->date('tgllunas')->default('1900/1/1');
             $table->string('userapproval',50)->default('');
             $table->date('tglapproval')->default('1900/1/1');
-            $table->string('noresi',50)->default('');
-            $table->integer('berkas')->length(11)->default('0');
-            $table->string('userberkas',50)->default('');
-            $table->date('tglberkas')->default('1900/1/1');
             $table->string('modifiedby',50)->default('');
             $table->timestamps();
 

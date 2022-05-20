@@ -24,5 +24,16 @@ class BankSeeder extends Seeder
             'kodepengeluaran' => '33',
             'modifiedby' => 'ADMIN',
         ]);
+
+        Bank::create([
+            'kodebank' => 'BANK TRUCKING',
+            'namabank' => 'BANK TRUCKING',
+            'coa' => '01.02.02.01',
+            'tipe' => 'BANK',
+            'statusaktif' => '1',
+            'kodepenerimaan' => '32',
+            'kodepengeluaran' => '33',
+            'modifiedby' => 'ADMIN',
+        ]);
     }
 }

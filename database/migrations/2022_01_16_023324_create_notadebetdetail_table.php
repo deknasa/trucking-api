@@ -23,7 +23,7 @@ class CreateNotadebetdetailTable extends Migration
             $table->double('nominalbayar',15,2)->default('0');
             $table->double('lebihbayar',15,2)->default('0');
             $table->longText('keterangan')->default('');
-            $table->string('coaadjust',50)->default('');
+            $table->string('coalebihbayar',50)->default('');
             $table->string('modifiedby',50)->default('');
             $table->timestamps();
 

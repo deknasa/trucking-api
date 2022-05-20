@@ -3,9 +3,9 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\NotaKreditHeader;
+use App\Models\PenerimaanGiroHeader;
 
-class NotaKreditHeaderSeeder extends Seeder
+class PenerimaanGiroHeaderSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -14,14 +14,16 @@ class NotaKreditHeaderSeeder extends Seeder
      */
     public function run()
     {
-        NotaKreditHeader::create([
-            'nobukti' => 'NKT 0001/V/2022',
-            'pelunasanpiutang_nobukti' => 'PPT 0002/V/2022',
+        PenerimaanGiroHeader::create([
+            'nobukti' => 'BPGT-M BCA 0001/V/2022',
             'tglbukti' => '2022/5/20',
-            'keterangan' => 'POTONGAN',
+            'pelanggan_id' => 0,
+            'keterangan' => 'PENERIMAAN GIRO',
             'postingdari' => '',
-            'statusapproval' => 4,
+            'diterimadari' => '',
             'tgllunas' => '2022/5/20',
+            'cabang_id' => 3,
+            'statusapproval' => 4,
             'userapproval' => '',
             'tglapproval' => '1900/1/1',
             'modifiedby' => 'ADMIN',

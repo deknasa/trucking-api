@@ -304,5 +304,48 @@ class JurnalUmumDetailSeeder extends Seeder
             'keterangan' => 'PENDAPATAN LAIN',
             'modifiedby' => 'ADMIN',
         ]); 
+
+
+        JurnalUmumDetail::create([
+            'jurnalumum_id' => 13,
+            'nobukti' => 'NKT 0001/V/2022',
+            'tglbukti' => '2022/5/20',
+            'coa' => '06.03.01.01',
+            'nominal' => 300000,
+            'keterangan' => 'POTONGAN LAIN',
+            'modifiedby' => 'ADMIN',
+        ]);
+
+        JurnalUmumDetail::create([
+            'jurnalumum_id' => 13,
+            'nobukti' => 'NKT 0001/V/2022',
+            'tglbukti' => '2022/5/20',
+            'coa' => '01.03.01.02',
+            'nominal' => -300000,
+            'keterangan' => 'POTONGAN LAIN',
+            'modifiedby' => 'ADMIN',
+        ]); 
+
+
+        JurnalUmumDetail::create([
+            'jurnalumum_id' => 14,
+            'nobukti' => 'BPGT-M BCA 0001/V/2022',
+            'tglbukti' => '2022/5/20',
+            'coa' => '01.03.03.00',
+            'nominal' => 1021000,
+            'keterangan' => 'GIRO',
+            'modifiedby' => 'ADMIN',
+        ]);
+
+        JurnalUmumDetail::create([
+            'jurnalumum_id' => 13,
+            'nobukti' => 'BPGT-M BCA 0001/V/2022',
+            'tglbukti' => '2022/5/20',
+            'coa' => '01.03.01.02',
+            'nominal' => -1021000,
+            'keterangan' => 'GIRO',
+            'modifiedby' => 'ADMIN',
+        ]); 
+
     }
 }
