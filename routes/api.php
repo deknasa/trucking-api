@@ -49,6 +49,9 @@ use App\Http\Controllers\Api\SatuanController;
 use App\Http\Controllers\Api\ZonaController;
 use App\Http\Controllers\Api\TarifController;
 use App\Http\Controllers\Api\PengeluaranTruckingController;
+use App\Http\Controllers\Api\OrderanTruckingController;
+use App\Http\Controllers\Api\ProsesAbsensiSupirController;
+use App\Http\Controllers\Api\MekanikController;
 
 /*
 |--------------------------------------------------------------------------
@@ -352,3 +355,14 @@ Route::get('tarif/combo', [TarifController::class, 'combo']);
 Route::get('tarif/field_length', [TarifController::class, 'fieldLength']);
 Route::resource('tarif', TarifController::class);
 
+Route::get('orderantrucking/combo', [OrderanTruckingController::class, 'combo']);
+Route::get('orderantrucking/field_length', [OrderanTruckingController::class, 'fieldLength']);
+Route::resource('orderantrucking', OrderanTruckingController::class);
+
+Route::get('prosesabsensisupir/combo', [ProsesAbsensiSupirController::class, 'combo']);
+Route::get('prosesabsensisupir/field_length', [ProsesAbsensiSupirController::class, 'fieldLength']);
+Route::resource('prosesabsensisupir', ProsesAbsensiSupirController::class);
+
+Route::get('mekanik/combo', [MekanikController::class, 'combo']);
+Route::get('mekanik/field_length', [MekanikController::class, 'fieldLength']);
+Route::resource('mekanik', MekanikController::class);
