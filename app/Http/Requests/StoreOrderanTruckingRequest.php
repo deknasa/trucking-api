@@ -13,7 +13,7 @@ class StoreOrderanTruckingRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +24,17 @@ class StoreOrderanTruckingRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'tglbukti' => 'required',
+            'container_id' => 'required',
+            'agen_id' => 'required',
+            'jenisorder_id' => 'required',
+            'pelanggan_id' => 'required',
+            'tarif_id' => 'required',
+            'nojobemkl' => 'required',
+            'nocont' => 'required',
+            'noseal' => 'required',
+            'statuslangsir' => 'required',
+            'statusperalihan' => 'required',
         ];
     }
 }

@@ -3,8 +3,11 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
+<<<<<<< HEAD
 use App\Models\Mekanik;
 
+=======
+>>>>>>> 45bc0d5a7d263f6ec185c4c06e9fc88025a55e7c
 
 class MekanikSeeder extends Seeder
 {
@@ -15,6 +18,7 @@ class MekanikSeeder extends Seeder
      */
     public function run()
     {
+<<<<<<< HEAD
         
         Mekanik::create([
             'namamekanik' => 'SUKIR',
@@ -22,5 +26,8 @@ class MekanikSeeder extends Seeder
             'statusaktif' => 1,
             'modifiedby' => 'ADMIN',
         ]);
+=======
+        //
+>>>>>>> 45bc0d5a7d263f6ec185c4c06e9fc88025a55e7c
     }
 }

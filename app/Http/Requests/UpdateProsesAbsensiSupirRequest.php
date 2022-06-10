@@ -13,7 +13,7 @@ class UpdateProsesAbsensiSupirRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +24,9 @@ class UpdateProsesAbsensiSupirRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'tglbukti' => 'required',
+            'keterangan' => 'required',
+            'absensisupir_nobukti' => 'required',
         ];
     }
 }

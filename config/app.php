@@ -235,4 +235,10 @@ return [
         'Image' => Intervention\Image\Facades\Image::class,
     ],
 
+    /**
+     * To define API_URL. So that, it can
+     * be called for every API Request.
+     */
+    'api_url' => env('API_URL', 'http://tassby.kozow.com:8888/emkl-backend/public/api/'),
+    
 ];

@@ -13,7 +13,7 @@ class StoreProsesAbsensiSupirRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +24,16 @@ class StoreProsesAbsensiSupirRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'tglbukti' => 'required',
+            'keterangan' => 'required',
+            'absensisupir_nobukti' => 'required|unique:prosesabsensisupir',
+        ];
+    }
+
+    public function messages()
+    {
+        return [
+            'absensisupir_nobukti.unique' => 'Nomor Absensi Sudah Digunakan',
         ];
     }
 }

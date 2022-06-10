@@ -276,6 +276,7 @@ class JenisOrderController extends Controller
      */
     public function destroy(JenisOrder $jenisorder, Request $request)
     {
+        DB::beginTransaction();
         $delete = JenisOrder::destroy($jenisorder->id);
         $del = 1;
         if ($delete) {
@@ -306,6 +307,7 @@ class JenisOrderController extends Controller
                 'data' => $jenisorder
             ]);
         } else {
+            DB::rollBack();
             return response([
                 'status' => false,
                 'message' => 'Gagal dihapus'
