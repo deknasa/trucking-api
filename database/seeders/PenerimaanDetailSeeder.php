@@ -70,5 +70,43 @@ class PenerimaanDetailSeeder extends Seeder
             'bulanbeban' => '',
             'modifiedby' => 'ADMIN',
         ]);
+
+        PenerimaanDetail::create([
+            'penerimaan_id' => 4,
+            'nobukti' => 'BMT-M BCA 0001/V/2022',
+            'nowarkat' => '',
+            'tgljatuhtempo' => '2022/5/31',
+            'nominal' => 1021000,
+            'coadebet' => '01.02.02.01',
+            'coakredit' => '01.03.03.00',
+            'keterangan' => 'PENERIMAAN BANK',
+            'bank_id' => 2,
+            'pelanggan_id' => 0,
+            'invoice_nobukti' => 'INV 0001/IV/2022',
+            'bankpelanggan_id' => 0,
+            'jenisbiaya' => '',
+            'penerimaanpiutang_nobukti' => 'BPGT-M BCA 0001/V/2022',
+            'bulanbeban' => '',
+            'modifiedby' => 'ADMIN',
+        ]);
+
+        PenerimaanDetail::create([
+            'penerimaan_id' => 5,
+            'nobukti' => 'KMT 0001/V/2022',
+            'nowarkat' => '',
+            'tgljatuhtempo' => '2022/5/31',
+            'nominal' => 600000,
+            'coadebet' => '01.01.01.02',
+            'coakredit' => '01.01.02.02',
+            'keterangan' => 'PENGEMBALIAN KAS GANTUNG',
+            'bank_id' => 1,
+            'pelanggan_id' => 0,
+            'invoice_nobukti' => '',
+            'bankpelanggan_id' => 0,
+            'jenisbiaya' => '',
+            'penerimaanpiutang_nobukti' => '',
+            'bulanbeban' => '',
+            'modifiedby' => 'ADMIN',
+        ]);
     }
 }

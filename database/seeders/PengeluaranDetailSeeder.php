@@ -56,5 +56,19 @@ class PengeluaranDetailSeeder extends Seeder
             'bulanbeban' => '2022-04-08',
             'modifiedby' => 'ADMIN',
         ]);
+
+        PengeluaranDetail::create([
+            'pengeluaran_id' => 4,
+            'nobukti' => 'KBT 0001/V/2022',
+            'alatbayar_id' => 1,
+            'nowarkat' => '',
+            'tgljatuhtempo' => '2022-05-31',
+            'nominal' => 600000,
+            'coadebet' => '01.01.02.02',
+            'coakredit' => '01.01.01.02',
+            'keterangan' => 'PINJAMAN SUPIR',
+            'bulanbeban' => '2022-0-08',
+            'modifiedby' => 'ADMIN',
+        ]);
     }
 }

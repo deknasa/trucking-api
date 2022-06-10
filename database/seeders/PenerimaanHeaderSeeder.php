@@ -75,5 +75,47 @@ class PenerimaanHeaderSeeder extends Seeder
             'modifiedby' => 'ADMIN',
         ]);
 
+        PenerimaanHeader::create([
+            'nobukti' => 'BMT-M BCA 0001/V/2022',
+            'tglbukti' => '2022/5/31',
+            'pelanggan_id' => 0,
+            'keterangan' => 'PENERIMAAN GIRO',
+            'postingdari' => 'PENERIMAAN GIRO',
+            'diterimadari' => 'PENERIMAAN GIRO',
+            'tgllunas' => '2022/5/31',
+            'cabang_id' => 3,
+            'statuskas' => 55,
+            'statusapproval' => 4,
+            'userapproval' => '',
+            'tglapproval' => '1900/1/1',
+            'noresi' => '',
+            'statusberkas' => 82,
+            'userberkas' => '',
+            'tglberkas' => '1900/1/1',
+            'modifiedby' => 'ADMIN',
+        ]);
+
+
+        PenerimaanHeader::create([
+            'nobukti' => 'KMT 0001/V/2022',
+            'tglbukti' => '2022/5/31',
+            'pelanggan_id' => 0,
+            'keterangan' => 'PENGEMBALIAN KAS GANTUNG',
+            'postingdari' => 'PENGEMBALIAN KAS GANTUNG',
+            'diterimadari' => 'PENGEMBALIAN KAS GANTUNG',
+            'tgllunas' => '2022/5/31',
+            'cabang_id' => 3,
+            'statuskas' => 54,
+            'statusapproval' => 4,
+            'userapproval' => '',
+            'tglapproval' => '1900/1/1',
+            'noresi' => '',
+            'statusberkas' => 82,
+            'userberkas' => '',
+            'tglberkas' => '1900/1/1',
+            'modifiedby' => 'ADMIN',
+        ]);
+
+
     }
 }

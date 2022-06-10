@@ -70,5 +70,24 @@ class PengeluaranHeaderSeeder extends Seeder
             'transferkebank' => '',
             'modifiedby' => 'ADMIN',
         ]);
+
+        PengeluaranHeader::create([
+            'nobukti' => 'KBT 0001/V/2022',
+            'tglbukti' => '2022-05-31',
+            'pelanggan_id' => 0,
+            'keterangan' => 'KAS GANTUNG KO ASAN UNTUK BELI KEBUTUHAN SEMBAHYANG',
+            'statusjenistransaksi' => 54,
+            'postingdari' => '',
+            'statusapproval' => 4,
+            'dibayarke' => '',
+            'cabang_id' => 0,
+            'bank_id' => 1,
+            'userapproval' => '',
+            'tglapproval' => '1900-01-01',
+            'transferkeac' => '',
+            'transferkean' => '',
+            'transferkebank' => '',
+            'modifiedby' => 'ADMIN',
+        ]);
     }
 }

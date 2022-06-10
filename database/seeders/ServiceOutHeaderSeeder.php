@@ -3,9 +3,9 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\ServiceInDetail;
+use App\Models\ServiceOutHeader;
 
-class ServiceInDetailSeeder extends Seeder
+class ServiceOutHeaderSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -14,12 +14,15 @@ class ServiceInDetailSeeder extends Seeder
      */
     public function run()
     {
-        ServiceInDetail::create([
-            'nobukti' => 'SIN 0001/V/2022',
-            'servicein_id' => 1,
-            'mekanik_id' => 1,
+        ServiceOutHeader::create([
+            'nobukti' => 'SOUT 0001/V/2022',
+            'tglbukti' => '2022/5/31',
+            'trado_id' => 1,
+            'tglkeluar' => '2022/5/31',
             'keterangan' => 'Service Opname',
             'modifiedby' => 'ADMIN',
         ]);
+
+
     }
 }

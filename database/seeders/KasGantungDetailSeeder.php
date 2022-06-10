@@ -21,5 +21,14 @@ class KasGantungDetailSeeder extends Seeder
             'keterangan' => 'ABSENSI SUPIR',
             'modifiedby' => 'ADMIN',
             ]);
+
+            KasGantungDetail::create([
+                'kasgantung_id' => 2,
+                'nobukti' => 'KGT 0001/V/2022',
+                'nominal' => 600000,
+                'coa' => '',
+                'keterangan' => 'KAS GANTUNG KO ASAN UNTUK BELI KEBUTUHAN SEMBAHYANG',
+                'modifiedby' => 'ADMIN',
+                ]);
     }
 }

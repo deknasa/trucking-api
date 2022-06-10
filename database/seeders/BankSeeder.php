@@ -31,8 +31,8 @@ class BankSeeder extends Seeder
             'coa' => '01.02.02.01',
             'tipe' => 'BANK',
             'statusaktif' => '1',
-            'kodepenerimaan' => '32',
-            'kodepengeluaran' => '33',
+            'kodepenerimaan' => '87',
+            'kodepengeluaran' => '88',
             'modifiedby' => 'ADMIN',
         ]);
     }
