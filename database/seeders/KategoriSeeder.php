@@ -30,5 +30,13 @@ class KategoriSeeder extends Seeder
             'modifiedby' => 'ADMIN',
         ]);
 
+        Kategori::create([
+            'kodekategori' => 'BAUT',
+            'subkelompok_id' => 1,
+            'keterangan' => 'BAUT',
+            'statusaktif' => 1,
+            'modifiedby' => 'ADMIN',
+        ]);
+
     }
 }

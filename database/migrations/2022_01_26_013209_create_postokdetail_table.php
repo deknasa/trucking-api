@@ -21,7 +21,6 @@ class CreatePostokdetailTable extends Migration
             $table->integer('conv1')->length(11)->default('0');
             $table->integer('conv2')->length(11)->default('0');
             $table->integer('statusstok')->length(11)->default('0');
-            $table->string('satuan',50)->default('');
             $table->double('qty',15,2)->default('0');
             $table->double('hrgsatuan',15,2)->default('0');
             $table->double('total',15,2)->default('0');

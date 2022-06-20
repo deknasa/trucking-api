@@ -32,13 +32,9 @@ class CreateSuratpengantarTable extends Migration
             $table->unsignedBigInteger('supir_id')->default('0');
             $table->string('nojob',50)->default('');
             $table->string('nojob2',50)->default('');
-            $table->longText('keteranganritasi')->default('');
-            $table->unsignedBigInteger('ritasidari_id')->default('0');
-            $table->unsignedBigInteger('ritasisampai_id')->default('0');
             $table->integer('statuslongtrip')->length(11)->default('0');
             $table->decimal('gajisupir',15,2)->default('0');
             $table->decimal('gajikenek',15,2)->default('0');
-            $table->decimal('gajiritasi',15,2)->default('0');
             $table->unsignedBigInteger('agen_id')->default('0');
             $table->unsignedBigInteger('jenisorder_id')->default('0');
             $table->integer('statusperalihan')->length(11)->default('0');
@@ -84,8 +80,6 @@ class CreateSuratpengantarTable extends Migration
             $table->foreign('statuscontainer_id')->references('id')->on('statuscontainer');
             $table->foreign('trado_id')->references('id')->on('trado');
             $table->foreign('supir_id')->references('id')->on('supir');
-            $table->foreign('ritasidari_id')->references('id')->on('kota');
-            $table->foreign('ritasisampai_id')->references('id')->on('kota');
             $table->foreign('agen_id')->references('id')->on('agen');
             $table->foreign('jenisorder_id')->references('id')->on('jenisorder');
             $table->foreign('tarif_id')->references('id')->on('tarif');

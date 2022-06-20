@@ -21,7 +21,6 @@ class CreatebelistokdetailTable extends Migration
             $table->integer('conv1')->length(11)->default('0');
             $table->integer('conv2')->length(11)->default('0');
             $table->integer('statusstok')->length(11)->default('0');            
-            $table->string('satuan', 50)->default('');
             $table->double('qty', 15,2)->default(0);
             $table->double('hrgsatuan', 15,2)->default(0);
             $table->string('persentasediscount', 50)->default('');
@@ -29,12 +28,6 @@ class CreatebelistokdetailTable extends Migration
             $table->double('total', 15,2)->default(0);
             $table->longText('keterangan')->default('');
             $table->unsignedBigInteger('gudang_id')->default(0);            
-            $table->string('jenisvulkanisir', 50)->default('');
-            $table->integer('vulkanisirke')->length(11)->default(0);
-            $table->string('statusban', 50)->default('');
-            $table->string('pindahgudangstok_nobukti', 50)->default('');
-            $table->integer('vulkankeawal')->length(11)->default(0);
-            $table->integer('statuspindahgudang')->length(11)->default(0);
             $table->string('modifiedby', 50)->default('');
             $table->timestamps();
 

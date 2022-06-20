@@ -17,7 +17,6 @@ class CreateGudangTable extends Migration
             $table->id();
             $table->string('gudang', 100)->default('');             
             $table->integer('statusaktif')->length(11)->default('0');             
-            $table->integer('statusgudang')->length(11)->default('0');             
             $table->string('modifiedby', 50)->default('');             
             $table->timestamps();
         });
