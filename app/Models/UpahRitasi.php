@@ -21,4 +21,16 @@ class UpahRitasi extends MyModel
         'created_at',
         'updated_at',
     ];
+
+    public function upahritasiRincian() {
+        return $this->hasMany(UpahRitasiRincian::class, 'upahritasi_id');
+    }
+
+    public function kota() {
+        return $this->belongsTo(Kota::class, 'kota_id');
+    }
+
+    public function zona() {
+        return $this->belongsTo(Zona::class, 'zona_id');
+    }
 }

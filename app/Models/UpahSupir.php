@@ -21,4 +21,16 @@ class UpahSupir extends MyModel
         'created_at',
         'updated_at',
     ];
+
+    public function upahsupirRincian() {
+        return $this->hasMany(UpahSupirRincian::class, 'upahsupir_id');
+    }
+
+    public function kota() {
+        return $this->belongsTo(Kota::class, 'kota_id');
+    }
+
+    public function zona() {
+        return $this->belongsTo(Zona::class, 'zona_id');
+    }
 }

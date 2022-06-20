@@ -13,7 +13,7 @@ class StoreUpahSupirRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +24,12 @@ class StoreUpahSupirRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'kotadari_id' => 'required',
+            'kotasampai_id' => 'required',
+            'zona_id' => 'required',
+            'jarak' => 'required',
+            'statusaktif' => 'required',
+            'statusluarkota' => 'required',
         ];
     }
 }

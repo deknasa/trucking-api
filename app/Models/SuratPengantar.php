@@ -12,6 +12,8 @@ class SuratPengantar extends MyModel
     protected $table = 'suratpengantar';
 
     protected $casts = [
+        'tglbukti' => 'date:d-m-Y',
+        'tglsp' => 'date:d-m-Y',
         'created_at' => 'date:d-m-Y H:i:s',
         'updated_at' => 'date:d-m-Y H:i:s'
     ];
@@ -21,4 +23,8 @@ class SuratPengantar extends MyModel
         'created_at',
         'updated_at',
     ];
+
+    public function suratpengantarBiaya() {
+        return $this->hasMany(SuratPengantarBiayaTambahan::class, 'suratpengantar_id');
+    }
 }

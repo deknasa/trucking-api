@@ -13,7 +13,7 @@ class StoreUpahSupirRincianRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +24,13 @@ class StoreUpahSupirRincianRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'container_id' => 'required',
+            'statuscontainer_id' => 'required',
+            'nominalsupir' => 'required',
+            'nominalkenek' => 'required',
+            'nominalkomisi' => 'required',
+            'nominaltol' => 'required',
+            'liter' => 'required',
         ];
     }
 }
