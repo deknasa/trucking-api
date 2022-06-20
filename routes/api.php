@@ -52,7 +52,11 @@ use App\Http\Controllers\Api\PengeluaranTruckingController;
 use App\Http\Controllers\Api\OrderanTruckingController;
 use App\Http\Controllers\Api\ProsesAbsensiSupirController;
 use App\Http\Controllers\Api\MekanikController;
-
+use App\Http\Controllers\Api\SuratPengantarController;
+use App\Http\Controllers\Api\UpahSupirController;
+use App\Http\Controllers\Api\UpahSupirRincianController;
+use App\Http\Controllers\Api\UpahRitasiController;
+use App\Http\Controllers\Api\UpahRitasiRincianController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -366,3 +370,18 @@ Route::resource('prosesabsensisupir', ProsesAbsensiSupirController::class);
 Route::get('mekanik/combo', [MekanikController::class, 'combo']);
 Route::get('mekanik/field_length', [MekanikController::class, 'fieldLength']);
 Route::resource('mekanik', MekanikController::class);
+
+Route::get('suratpengantar/combo', [SuratPengantarController::class, 'combo']);
+Route::get('suratpengantar/field_length', [SuratPengantarController::class, 'fieldLength']);
+Route::get('suratpengantar/get_gaji', [SuratPengantarController::class, 'getGaji']);
+Route::resource('suratpengantar', SuratPengantarController::class);
+
+Route::get('upahsupir/combo', [UpahSupirController::class, 'combo']);
+Route::resource('upahsupir', UpahSupirController::class);
+
+Route::resource('upahsupirrincian', UpahSupirRincianController::class);
+
+Route::get('upahritasi/combo', [UpahRitasiController::class, 'combo']);
+Route::resource('upahritasi', UpahRitasiController::class);
+
+Route::resource('upahritasirincian', UpahRitasiRincianController::class);

@@ -372,7 +372,7 @@ class KasGantungHeaderController extends Controller
            
                 $logTrail = [
                     'namatabel' => strtoupper($kasgantungHeader->getTable()),
-                    'postingdari' => 'ENTRY KAS GANTUNG',
+                    'postingdari' => 'EDIT KAS GANTUNG',
                     'idtrans' => $kasgantungHeader->id,
                     'nobuktitrans' => $kasgantungHeader->nobukti,
                     'aksi' => 'EDIT',
