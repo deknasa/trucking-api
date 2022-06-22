@@ -140,7 +140,7 @@ class AbsenTradoController extends Controller
             $absenTrado->kodeabsen = $request->kodeabsen;
             $absenTrado->keterangan = $request->keterangan;
             $absenTrado->statusaktif = $request->statusaktif;
-            $absenTrado->modifiedby = $request->modifiedby;
+            $absenTrado->modifiedby = auth('api')->user()->name;;
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
 
@@ -199,7 +199,7 @@ class AbsenTradoController extends Controller
             $absenTrado->kodeabsen = $request->kodeabsen;
             $absenTrado->keterangan = $request->keterangan;
             $absenTrado->statusaktif = $request->statusaktif;
-            $absenTrado->modifiedby = $request->modifiedby;
+            $absenTrado->modifiedby = auth('api')->user()->name;;
 
             if ($absenTrado->save()) {
                 $logTrail = [
