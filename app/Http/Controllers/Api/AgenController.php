@@ -202,14 +202,14 @@ class AgenController extends Controller
             $agen->contactperson = $request->contactperson;
             $agen->top = $request->top;
             $agen->statusapproval = $request->statusapproval;
-            $agen->userapproval = $request->userapproval;
-            $agen->tglapproval = date('Y-m-d', strtotime($request->tglapproval));
+            $agen->userapproval = auth('api')->user()->name;
+            $agen->tglapproval = date('Y-m-d', time());
             $agen->statustas = $request->statustas;
             $agen->jenisemkl = $request->jenisemkl;
             $agen->modifiedby = auth('api')->user()->name;
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
-
+            
             if ($agen->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($agen->getTable()),
@@ -220,7 +220,7 @@ class AgenController extends Controller
                     'datajson' => $agen->toArray(),
                     'modifiedby' => $agen->modifiedby
                 ];
-
+                
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
@@ -273,8 +273,8 @@ class AgenController extends Controller
             $agen->contactperson = $request->contactperson;
             $agen->top = $request->top;
             $agen->statusapproval = $request->statusapproval;
-            $agen->userapproval = $request->userapproval;
-            $agen->tglapproval = $request->tglapproval;
+            $agen->userapproval = auth('api')->user()->name;
+            $agen->tglapproval = date('Y-m-d', time());
             $agen->statustas = $request->statustas;
             $agen->jenisemkl = $request->jenisemkl;
             $agen->modifiedby = auth('api')->user()->name;

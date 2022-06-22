@@ -36,8 +36,6 @@ class StoreAgenRequest extends FormRequest
             "contactperson" => "required",
             "top" => "required",
             "statusapproval" => "required",
-            "userapproval" => "required",
-            "tglapproval" => "required",
             "statustas" => "required",
             "jenisemkl" => "required",
         ];
@@ -54,8 +52,6 @@ class StoreAgenRequest extends FormRequest
             "nohp" => "no hp",
             "contactperson" => "contact person",
             "statusapproval" => "status approval",
-            "userapproval" => "user approval",
-            "tglapproval" => "tanggal approval",
             "statustas" => "status tas",
             "jenisemkl" => "jenis emkl",
         ];
