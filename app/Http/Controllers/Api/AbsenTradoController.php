@@ -17,17 +17,20 @@ class AbsenTradoController extends Controller
     /**
      * @ClassName 
      */
-    public function index(Request $request)
+    public function index()
     {
         $params = [
-            'offset' => $request->offset ?? 0,
-            'limit' => $request->limit ?? 10,
-            'search' => $request->search ?? [],
-            'sortIndex' => $request->sortIndex ?? 'id',
-            'sortOrder' => $request->sortOrder ?? 'asc',
+            'offset' => request()->offset ?? ((request()->page - 1) * request()->limit),
+            'limit' => request()->limit ?? 10,
+            'filters' => json_decode(request()->filters, true) ?? [],
+            'sortIndex' => request()->sortIndex ?? 'id',
+            'sortOrder' => request()->sortOrder ?? 'asc',
         ];
 
-        $totalRows = AbsenTrado::count();
+  
+
+        $totalRows = DB::table((new AbsenTrado)->getTable())->count();
+
         $totalPages = $params['limit'] > 0 ? ceil($totalRows / $params['limit']) : 1;
 
         /* Sorting */
