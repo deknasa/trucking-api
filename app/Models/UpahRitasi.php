@@ -12,6 +12,7 @@ class UpahRitasi extends MyModel
     protected $table = 'upahritasi';
 
     protected $casts = [
+        'tglmulaiberlaku' => 'date:d-m-Y',
         'created_at' => 'date:d-m-Y H:i:s',
         'updated_at' => 'date:d-m-Y H:i:s'
     ];

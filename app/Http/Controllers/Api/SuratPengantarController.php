@@ -98,6 +98,8 @@ class SuratPengantarController extends Controller
                 'suratpengantar.tgldoor',
                 'suratpengantar.upahritasi_id',
                 'suratpengantar.statusdisc',
+                'suratpengantar.gajisupir',
+                'suratpengantar.gajikenek',
                 'suratpengantar.modifiedby',
                 'suratpengantar.created_at',
                 'suratpengantar.updated_at'
@@ -167,6 +169,8 @@ class SuratPengantarController extends Controller
                 'suratpengantar.tgldoor',
                 'suratpengantar.upahritasi_id',
                 'suratpengantar.statusdisc',
+                'suratpengantar.gajisupir',
+                'suratpengantar.gajikenek',
                 'suratpengantar.modifiedby',
                 'suratpengantar.created_at',
                 'suratpengantar.updated_at'
@@ -238,6 +242,8 @@ class SuratPengantarController extends Controller
                 'suratpengantar.tgldoor',
                 'suratpengantar.upahritasi_id',
                 'suratpengantar.statusdisc',
+                'suratpengantar.gajisupir',
+                'suratpengantar.gajikenek',
                 'suratpengantar.modifiedby',
                 'suratpengantar.created_at',
                 'suratpengantar.updated_at'
@@ -308,6 +314,8 @@ class SuratPengantarController extends Controller
                 'suratpengantar.tgldoor',
                 'suratpengantar.upahritasi_id',
                 'suratpengantar.statusdisc',
+                'suratpengantar.gajisupir',
+                'suratpengantar.gajikenek',
                 'suratpengantar.modifiedby',
                 'suratpengantar.created_at',
                 'suratpengantar.updated_at'
@@ -334,13 +342,57 @@ class SuratPengantarController extends Controller
             switch ($params['search']['groupOp']) {
                 case "AND":
                     foreach ($params['search']['rules'] as $index => $search) {
-                        $query = $query->where($search['field'], 'LIKE', "%$search[data]%");
+                        if ($search['field'] == 'pelanggan_id') {
+                            $query = $query->where('pelanggan.namapelanggan', 'LIKE', "%$search[data]%");
+                        } elseif ($search['field'] == 'dari_id') {
+                            $query = $query->where('kotadari.keterangan', 'LIKE', "%$search[data]%");
+                        } elseif ($search['field'] == 'sampai_id') {
+                            $query = $query->where('kotasampai.keterangan', 'LIKE', "%$search[data]%");
+                        } elseif ($search['field'] == 'statuscontainer_id') {
+                            $query = $query->where('statuscontainer.keterangan', 'LIKE', "%$search[data]%");
+                        } elseif ($search['field'] == 'container_id') {
+                            $query = $query->where('container.keterangan', 'LIKE', "%$search[data]%");
+                        } elseif ($search['field'] == 'trado_id') {
+                            $query = $query->where('trado.keterangan', 'LIKE', "%$search[data]%");
+                        } elseif ($search['field'] == 'supir_id') {
+                            $query = $query->where('supir.namasupir', 'LIKE', "%$search[data]%");
+                        } elseif ($search['field'] == 'agen_id') {
+                            $query = $query->where('agen.namaagen', 'LIKE', "%$search[data]%");
+                        } elseif ($search['field'] == 'jenisorder_id') {
+                            $query = $query->where('jenisorder.keterangan', 'LIKE', "%$search[data]%");
+                        } elseif ($search['field'] == 'tarif_id') {
+                            $query = $query->where('tarif.tujuan', 'LIKE', "%$search[data]%");
+                        } else {
+                            $query = $query->where('suratpengantar.'.$search['field'], 'LIKE', "%$search[data]%");
+                        }
                     }
 
                     break;
                 case "OR":
                     foreach ($params['search']['rules'] as $index => $search) {
-                        $query = $query->orWhere($search['field'], 'LIKE', "%$search[data]%");
+                        if ($search['field'] == 'pelanggan_id') {
+                            $query = $query->where('pelanggan.namapelanggan', 'LIKE', "%$search[data]%");
+                        } elseif ($search['field'] == 'dari_id') {
+                            $query = $query->where('kotadari.keterangan', 'LIKE', "%$search[data]%");
+                        } elseif ($search['field'] == 'sampai_id') {
+                            $query = $query->where('kotasampai.keterangan', 'LIKE', "%$search[data]%");
+                        } elseif ($search['field'] == 'statuscontainer_id') {
+                            $query = $query->where('statuscontainer.keterangan', 'LIKE', "%$search[data]%");
+                        } elseif ($search['field'] == 'container_id') {
+                            $query = $query->where('container.keterangan', 'LIKE', "%$search[data]%");
+                        } elseif ($search['field'] == 'trado_id') {
+                            $query = $query->where('trado.keterangan', 'LIKE', "%$search[data]%");
+                        } elseif ($search['field'] == 'supir_id') {
+                            $query = $query->where('supir.namasupir', 'LIKE', "%$search[data]%");
+                        } elseif ($search['field'] == 'agen_id') {
+                            $query = $query->where('agen.namaagen', 'LIKE', "%$search[data]%");
+                        } elseif ($search['field'] == 'jenisorder_id') {
+                            $query = $query->where('jenisorder.keterangan', 'LIKE', "%$search[data]%");
+                        } elseif ($search['field'] == 'tarif_id') {
+                            $query = $query->where('tarif.tujuan', 'LIKE', "%$search[data]%");
+                        } else {
+                            $query = $query->where('suratpengantar.'.$search['field'], 'LIKE', "%$search[data]%");
+                        }
                     }
 
                     break;
@@ -396,6 +448,12 @@ class SuratPengantarController extends Controller
             $suratpengantar->dari_id = $request->dari_id;
             $suratpengantar->sampai_id = $request->sampai_id;
             $upahsupir = UpahSupir::where('kotadari_id',$request->dari_id)->where('kotasampai_id',$request->sampai_id)->first();
+            if ($upahsupir == '') {
+                return response([
+                    'status' => false,
+                    'message' => 'Kota Dari dan Sampai Belum terdaftar di master Upah Ritasi'
+                ]);
+            }
             $upahsupirRincian = UpahSupirRincian::where('upahsupir_id',$upahsupir->id)->where('container_id',$request->container_id)->where('statuscontainer_id',$request->statuscontainer_id)->first();
             $suratpengantar->upah_id = $upahsupir->id;
             $suratpengantar->jarak = $upahsupirRincian->jarak ?? 0;
@@ -408,11 +466,7 @@ class SuratPengantarController extends Controller
             $suratpengantar->nojob = $request->nojob ?? '';
             $suratpengantar->nojob2 = $request->nojob2 ?? '';
             $suratpengantar->statuslongtrip = $request->statuslongtrip ?? 0;
-            $request->gajisupir = str_replace('.', '', $request->gajisupir);
-            $request->gajisupir = str_replace(',', '', $request->gajisupir);
             $suratpengantar->gajisupir = $request->gajisupir ?? 0;
-            $request->gajikenek = str_replace('.', '', $request->gajikenek);
-            $request->gajikenek = str_replace(',', '', $request->gajikenek);
             $suratpengantar->gajikenek = $request->gajikenek ?? 0;
             $suratpengantar->gajiritasi = $request->gajiritasi ?? 0;
             $suratpengantar->agen_id = $request->agen_id;
@@ -433,8 +487,6 @@ class SuratPengantarController extends Controller
             $suratpengantar->tglsp = date('Y-m-d',strtotime($request->tglsp));
             $suratpengantar->statusritasiomset = $request->statusritasiomset ?? 0;
             $suratpengantar->cabang_id = $request->cabang_id ?? 0;
-            $request->komisisupir = str_replace('.', '', $request->komisisupir);
-            $request->komisisupir = str_replace(',', '', $request->komisisupir);
             $suratpengantar->komisisupir = $request->komisisupir;
             $suratpengantar->tolsupir = $request->tolsupir ?? 0;
             $suratpengantar->nosptagihlain = $request->nosptagihlain ?? 0;
@@ -566,6 +618,12 @@ class SuratPengantarController extends Controller
             $suratpengantar->dari_id = $request->dari_id;
             $suratpengantar->sampai_id = $request->sampai_id;
             $upahsupir = UpahSupir::where('kotadari_id',$request->dari_id)->where('kotasampai_id',$request->sampai_id)->first();
+            if ($upahsupir == '') {
+                return response([
+                    'status' => false,
+                    'message' => 'Kota Dari dan Sampai Belum terdaftar di master Upah Ritasi'
+                ]);
+            }
             $upahsupirRincian = UpahSupirRincian::where('upahsupir_id',$upahsupir->id)->where('container_id',$request->container_id)->where('statuscontainer_id',$request->statuscontainer_id)->first();
             $suratpengantar->upah_id = $upahsupir->id;
             $suratpengantar->jarak = $upahsupirRincian->jarak ?? 0;
@@ -578,11 +636,7 @@ class SuratPengantarController extends Controller
             $suratpengantar->nojob = $request->nojob ?? '';
             $suratpengantar->nojob2 = $request->nojob2 ?? '';
             $suratpengantar->statuslongtrip = $request->statuslongtrip ?? 0;
-            $request->gajisupir = str_replace('.', '', $request->gajisupir);
-            $request->gajisupir = str_replace(',', '', $request->gajisupir);
             $suratpengantar->gajisupir = $request->gajisupir ?? 0;
-            $request->gajikenek = str_replace('.', '', $request->gajikenek);
-            $request->gajikenek = str_replace(',', '', $request->gajikenek);
             $suratpengantar->gajikenek = $request->gajikenek ?? 0;
             $suratpengantar->gajiritasi = $request->gajiritasi ?? 0;
             $suratpengantar->agen_id = $request->agen_id;
@@ -603,8 +657,6 @@ class SuratPengantarController extends Controller
             $suratpengantar->tglsp = date('Y-m-d',strtotime($request->tglsp));
             $suratpengantar->statusritasiomset = $request->statusritasiomset ?? 0;
             $suratpengantar->cabang_id = $request->cabang_id ?? 0;
-            $request->komisisupir = str_replace('.', '', $request->komisisupir);
-            $request->komisisupir = str_replace(',', '', $request->komisisupir);
             $suratpengantar->komisisupir = $request->komisisupir;
             $suratpengantar->tolsupir = $request->tolsupir ?? 0;
             $suratpengantar->nosptagihlain = $request->nosptagihlain ?? 0;

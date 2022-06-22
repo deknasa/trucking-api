@@ -38,6 +38,7 @@ class StoreSuratPengantarRequest extends FormRequest
             'tarif_id' => 'required',
             'nosp' => 'required',
             'tglsp' => 'required',
+            // 'nominalsupir' => 'required|numeric|min:1'
             // 'tujuantagih' => 'required',
         ];
     }

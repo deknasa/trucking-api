@@ -57,6 +57,8 @@ use App\Http\Controllers\Api\UpahSupirController;
 use App\Http\Controllers\Api\UpahSupirRincianController;
 use App\Http\Controllers\Api\UpahRitasiController;
 use App\Http\Controllers\Api\UpahRitasiRincianController;
+use App\Http\Controllers\Api\RitasiController;
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -385,3 +387,7 @@ Route::get('upahritasi/combo', [UpahRitasiController::class, 'combo']);
 Route::resource('upahritasi', UpahRitasiController::class);
 
 Route::resource('upahritasirincian', UpahRitasiRincianController::class);
+
+Route::get('ritasi/combo', [RitasiController::class, 'combo']);
+Route::get('ritasi/field_length', [RitasiController::class, 'fieldLength']);
+Route::resource('ritasi', RitasiController::class);

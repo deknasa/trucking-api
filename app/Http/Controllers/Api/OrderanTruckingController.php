@@ -180,6 +180,14 @@ class OrderanTruckingController extends Controller
                             $query = $query->where('parameter.text', 'LIKE', "%$search[data]%");
                         } elseif($search['field'] == 'statusperalihan') {
                             $query = $query->where('param2.text', 'LIKE', "%$search[data]%");
+                        } elseif($search['field'] == 'agen_id') {
+                            $query = $query->where('agen.namaagen', 'LIKE', "%$search[data]%");
+                        } elseif($search['field'] == 'pelanggan_id') {
+                            $query = $query->where('pelanggan.namapelanggan', 'LIKE', "%$search[data]%");
+                        } elseif($search['field'] == 'container_id') {
+                            $query = $query->where('container.keterangan', 'LIKE', "%$search[data]%");
+                        } elseif($search['field'] == 'tarif_id') {
+                            $query = $query->where('tarif.tujuan', 'LIKE', "%$search[data]%");
                         } else {
                             $query = $query->where('orderantrucking.'.$search['field'], 'LIKE', "%$search[data]%");
                         }
@@ -192,6 +200,14 @@ class OrderanTruckingController extends Controller
                             $query = $query->orWhere('parameter.text', 'LIKE', "%$search[data]%");
                         } elseif($search['field'] == 'statusperalihan') {
                             $query = $query->where('param2.text', 'LIKE', "%$search[data]%");
+                        } elseif($search['field'] == 'agen_id') {
+                            $query = $query->where('agen.namaagen', 'LIKE', "%$search[data]%");
+                        } elseif($search['field'] == 'pelanggan_id') {
+                            $query = $query->where('pelanggan.namapelanggan', 'LIKE', "%$search[data]%");
+                        } elseif($search['field'] == 'container_id') {
+                            $query = $query->where('container.keterangan', 'LIKE', "%$search[data]%");
+                        } elseif($search['field'] == 'tarif_id') {
+                            $query = $query->where('tarif.tujuan', 'LIKE', "%$search[data]%");
                         } else {
                             $query = $query->orWhere('orderantrucking.'.$search['field'], 'LIKE', "%$search[data]%");
                         }
