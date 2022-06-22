@@ -27,8 +27,7 @@ class StoreAbsenTradoRequest extends FormRequest
         return [
             'kodeabsen' => 'required',
             'keterangan' => 'required',
-            'statusaktif' => 'required',
-            'modifiedby' => 'required'
+            'statusaktif' => 'required'
         ];
     }
 
@@ -37,7 +36,6 @@ class StoreAbsenTradoRequest extends FormRequest
         return [
             'kodeabsen' => 'kode absen',
             'statusaktif' => 'status',
-            'modifiedby' => 'modifiedby'
         ];
     }
 
@@ -49,7 +47,6 @@ class StoreAbsenTradoRequest extends FormRequest
             'kodeabsen.required' => ':attribute '. $controller->geterror('WI')->keterangan,
             'keterangan.required' => ':attribute '. $controller->geterror('WI')->keterangan,
             'statusaktif.required' => ':attribute '. $controller->geterror('WI')->keterangan,
-            'modifiedby.required' => ':attribute '. $controller->geterror('WI')->keterangan,
         ];
     }
 }

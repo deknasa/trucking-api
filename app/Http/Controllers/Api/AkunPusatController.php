@@ -21,24 +21,26 @@ class AkunPusatController extends Controller
     /**
      * @ClassName 
      */
-    public function index(Request $request)
+    public function index()
     {
+    
         $params = [
-            'offset' => $request->offset ?? 0,
-            'limit' => $request->limit ?? 10,
-            'search' => $request->search ?? [],
-            'sortIndex' => $request->sortIndex ?? 'id',
-            'sortOrder' => $request->sortOrder ?? 'asc',
+            'offset' => request()->offset ?? ((request()->page - 1) * request()->limit),
+            'limit' => request()->limit ?? 10,
+            'filters' => json_decode(request()->filters, true) ?? [],
+            'sortIndex' => request()->sortIndex ?? 'id',
+            'sortOrder' => request()->sortOrder ?? 'asc',
         ];
 
-        $totalRows = AkunPusat::count();
+        $totalRows = DB::table((new AkunPusat)->getTable())->count();
+
         $totalPages = $params['limit'] > 0 ? ceil($totalRows / $params['limit']) : 1;
 
         /* Sorting */
-        $query = AkunPusat::orderBy($params['sortIndex'], $params['sortOrder']);
+        $query = DB::table((new AkunPusat)->getTable())->orderBy($params['sortIndex'], $params['sortOrder']);
 
         if ($params['sortIndex'] == 'id') {
-            $query = AkunPusat::select(
+            $query = DB::table((new AkunPusat)->getTable())->select(
                 'akunpusat.id',
                 'akunpusat.coa',
                 'akunpusat.keterangancoa',
@@ -59,7 +61,7 @@ class AkunPusatController extends Controller
                 ->orderBy('akunpusat.id', $params['sortOrder']);
         } else {
             if ($params['sortOrder'] == 'asc') {
-                $query = AkunPusat::select(
+                $query = DB::table((new AkunPusat)->getTable())->select(
                     'akunpusat.id',
                     'akunpusat.coa',
                     'akunpusat.keterangancoa',
@@ -84,7 +86,7 @@ class AkunPusatController extends Controller
                     ->orderBy($params['sortIndex'], $params['sortOrder'])
                     ->orderBy('akunpusat.id', $params['sortOrder']);
             } else {
-                $query = AkunPusat::select(
+                $query = DB::table((new AkunPusat)->getTable())->select(
                     'akunpusat.id',
                     'akunpusat.coa',
                     'akunpusat.keterangancoa',
@@ -112,16 +114,16 @@ class AkunPusatController extends Controller
         }
 
         /* Searching */
-        if (count($params['search']) > 0 && @$params['search']['rules'][0]['data'] != '') {
-            switch ($params['search']['groupOp']) {
+        if (count($params['filters']) > 0 && @$params['filters']['rules'][0]['data'] != '') {
+            switch ($params['filters']['groupOp']) {
                 case "AND":
-                    foreach ($params['search']['rules'] as $index => $search) {
+                    foreach ($params['filters']['rules'] as $index => $search) {
                         $query = $query->where($search['field'], 'LIKE', "%$search[data]%");
                     }
 
                     break;
                 case "OR":
-                    foreach ($params['search']['rules'] as $index => $search) {
+                    foreach ($params['filters']['rules'] as $index => $search) {
                         $query = $query->orWhere($search['field'], 'LIKE', "%$search[data]%");
                     }
 
@@ -250,7 +252,7 @@ class AkunPusatController extends Controller
     public function update(UpdateAkunPusatRequest $request, AkunPusat $akunPusat)
     {
         try {
-            $akunPusat = AkunPusat::findOrFail($akunPusat->id);
+            $akunPusat = DB::table((new AkunPusat)->getTable())->findOrFail($akunPusat->id);
             $akunPusat->coa = $request->coa;
             $akunPusat->keterangancoa = $request->keterangancoa;
             $akunPusat->type = $request->type;
@@ -312,7 +314,7 @@ class AkunPusatController extends Controller
      */
     public function destroy(AkunPusat $akunPusat, Request $request)
     {
-        $delete = AkunPusat::destroy($akunPusat->id);
+        $delete = DB::table((new AkunPusat)->getTable())->destroy($akunPusat->id);
         $del = 1;
         if ($delete) {
             $logTrail = [
@@ -389,7 +391,7 @@ class AkunPusatController extends Controller
         });
 
         if ($params['sortname'] == 'id') {
-            $query = AkunPusat::select(
+            $query = DB::table((new AkunPusat)->getTable())->select(
                 'akunpusat.id as id_',
                 'akunpusat.coa',
                 'akunpusat.keterangancoa',
@@ -408,7 +410,7 @@ class AkunPusatController extends Controller
             )
                 ->orderBy('akunpusat.id', $params['sortorder']);
         } else if ($params['sortname'] == 'grp' or $params['sortname'] == 'subgrp') {
-            $query = AkunPusat::select(
+            $query = DB::table((new AkunPusat)->getTable())->select(
                 'akunpusat.id as id_',
                 'akunpusat.coa',
                 'akunpusat.keterangancoa',
@@ -430,7 +432,7 @@ class AkunPusatController extends Controller
                 ->orderBy('akunpusat.id', $params['sortorder']);
         } else {
             if ($params['sortorder'] == 'asc') {
-                $query = AkunPusat::select(
+                $query = DB::table((new AkunPusat)->getTable())->select(
                     'akunpusat.id as id_',
                     'akunpusat.coa',
                     'akunpusat.keterangancoa',
@@ -450,7 +452,7 @@ class AkunPusatController extends Controller
                     ->orderBy($params['sortname'], $params['sortorder'])
                     ->orderBy('akunpusat.id', $params['sortorder']);
             } else {
-                $query = AkunPusat::select(
+                $query = DB::table((new AkunPusat)->getTable())->select(
                     'akunpusat.id as id_',
                     'akunpusat.coa',
                     'akunpusat.keterangancoa',
