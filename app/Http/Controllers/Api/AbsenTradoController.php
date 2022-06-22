@@ -244,7 +244,7 @@ class AbsenTradoController extends Controller
      */
     public function destroy(AbsenTrado $absenTrado, Request $request)
     {
-        $delete = AbsenTrado::destroy($absenTrado->id);
+        $delete = DB::table((new AbsenTrado)->getTable())->destroy($absenTrado->id);
         $del = 1;
         if ($delete) {
             $logTrail = [
@@ -321,7 +321,7 @@ class AbsenTradoController extends Controller
         });
 
         if ($params['sortname'] == 'id') {
-            $query = AbsenTrado::select(
+            $query = DB::table((new AbsenTrado)->getTable())->select(
                 'absentrado.id as id_',
                 'absentrado.kodeabsen',
                 'absentrado.keterangan',
@@ -332,7 +332,7 @@ class AbsenTradoController extends Controller
             )
                 ->orderBy('absentrado.id', $params['sortorder']);
         } else if ($params['sortname'] == 'grp' or $params['sortname'] == 'subgrp') {
-            $query = AbsenTrado::select(
+            $query = DB::table((new AbsenTrado)->getTable())->select(
                 'absentrado.id as id_',
                 'absentrado.kodeabsen',
                 'absentrado.keterangan',
@@ -346,7 +346,7 @@ class AbsenTradoController extends Controller
                 ->orderBy('absentrado.id', $params['sortorder']);
         } else {
             if ($params['sortorder'] == 'asc') {
-                $query = AbsenTrado::select(
+                $query = DB::table((new AbsenTrado)->getTable())->select(
                     'absentrado.id as id_',
                     'absentrado.kodeabsen',
                     'absentrado.keterangan',
@@ -358,7 +358,7 @@ class AbsenTradoController extends Controller
                     ->orderBy($params['sortname'], $params['sortorder'])
                     ->orderBy('absentrado.id', $params['sortorder']);
             } else {
-                $query = AbsenTrado::select(
+                $query = DB::table((new AbsenTrado)->getTable())->select(
                     'absentrado.id as id_',
                     'absentrado.kodeabsen',
                     'absentrado.keterangan',

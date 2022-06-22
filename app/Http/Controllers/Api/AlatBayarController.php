@@ -23,24 +23,24 @@ class AlatBayarController extends Controller
     /**
      * @ClassName 
      */
-    public function index(Request $request)
+    public function index()
     {
         $params = [
-            'offset' => $request->offset ?? 0,
-            'limit' => $request->limit ?? 10,
-            'search' => $request->search ?? [],
-            'sortIndex' => $request->sortIndex ?? 'id',
-            'sortOrder' => $request->sortOrder ?? 'asc',
+            'offset' => request()->offset ?? ((request()->page - 1) * request()->limit),
+            'limit' => request()->limit ?? 10,
+            'filters' => json_decode(request()->filters, true) ?? [],
+            'sortIndex' => request()->sortIndex ?? 'id',
+            'sortOrder' => request()->sortOrder ?? 'asc',
         ];
 
-        $totalRows = AlatBayar::count();
+        $totalRows = DB::table((new AlatBayar)->getTable())->count();
         $totalPages = $params['limit'] > 0 ? ceil($totalRows / $params['limit']) : 1;
 
         /* Sorting */
-        $query = AlatBayar::orderBy($params['sortIndex'], $params['sortOrder']);
+        $query = DB::table((new AlatBayar)->getTable())->orderBy($params['sortIndex'], $params['sortOrder']);
 
         if ($params['sortIndex'] == 'id') {
-            $query = AlatBayar::select(
+            $query = DB::table((new AlatBayar)->getTable())->select(
                 'alatbayar.id',
                 'alatbayar.kodealatbayar',
                 'alatbayar.namaalatbayar',
@@ -53,7 +53,7 @@ class AlatBayarController extends Controller
                 'alatbayar.updated_at'
             )->orderBy('alatbayar.id', $params['sortOrder']);
         } else if ($params['sortIndex'] == 'kodebank' or $params['sortIndex'] == 'namabank') {
-            $query = AlatBayar::select(
+            $query = DB::table((new AlatBayar)->getTable())->select(
                 'alatbayar.id',
                 'alatbayar.kodealatbayar',
                 'alatbayar.namaalatbayar',
@@ -69,7 +69,7 @@ class AlatBayarController extends Controller
                 ->orderBy('alatbayar.id', $params['sortOrder']);
         } else {
             if ($params['sortOrder'] == 'asc') {
-                $query = AlatBayar::select(
+                $query = DB::table((new AlatBayar)->getTable())->select(
                     'alatbayar.id',
                     'alatbayar.kodealatbayar',
                     'alatbayar.namaalatbayar',
@@ -84,7 +84,7 @@ class AlatBayarController extends Controller
                     ->orderBy($params['sortIndex'], $params['sortOrder'])
                     ->orderBy('alatbayar.id', $params['sortOrder']);
             } else {
-                $query = AlatBayar::select(
+                $query = DB::table((new AlatBayar)->getTable())->select(
                     'alatbayar.id',
                     'alatbayar.kodealatbayar',
                     'alatbayar.namaalatbayar',
@@ -102,16 +102,16 @@ class AlatBayarController extends Controller
         }
 
         /* Searching */
-        if (count($params['search']) > 0 && @$params['search']['rules'][0]['data'] != '') {
-            switch ($params['search']['groupOp']) {
+        if (count($params['filters']) > 0 && @$params['filters']['rules'][0]['data'] != '') {
+            switch ($params['filters']['groupOp']) {
                 case "AND":
-                    foreach ($params['search']['rules'] as $index => $search) {
+                    foreach ($params['filters']['rules'] as $index => $search) {
                         $query = $query->where($search['field'], 'LIKE', "%$search[data]%");
                     }
 
                     break;
                 case "OR":
-                    foreach ($params['search']['rules'] as $index => $search) {
+                    foreach ($params['filters']['rules'] as $index => $search) {
                         $query = $query->orWhere($search['field'], 'LIKE', "%$search[data]%");
                     }
 
@@ -217,7 +217,7 @@ class AlatBayarController extends Controller
     public function update(StoreAlatBayarRequest $request, AlatBayar $alatbayar)
     {
         try {
-            $alatbayar = AlatBayar::findOrFail($alatbayar->id);
+            $alatbayar = DB::table((new AlatBayar)->getTable())->findOrFail($alatbayar->id);
             $alatbayar->kodealatbayar = $request->kodealatbayar;
             $alatbayar->namaalatbayar = $request->namaalatbayar;
             $alatbayar->keterangan = $request->keterangan;
@@ -267,7 +267,7 @@ class AlatBayarController extends Controller
      */
     public function destroy(AlatBayar $alatbayar, Request $request)
     {
-        $delete = AlatBayar::destroy($alatbayar->id);
+        $delete = DB::table((new AlatBayar)->getTable())->destroy($alatbayar->id);
         $del = 1;
         if ($delete) {
             $logTrail = [
@@ -345,7 +345,7 @@ class AlatBayarController extends Controller
         });
 
         if ($params['sortname'] == 'id') {
-            $query = AlatBayar::select(
+            $query = DB::table((new AlatBayar)->getTable())->select(
                 'alatbayar.id as id_',
                 'alatbayar.kodealatbayar',
                 'alatbayar.namaalatbayar',
@@ -359,7 +359,7 @@ class AlatBayarController extends Controller
             )
                 ->orderBy('alatbayar.id', $params['sortorder']);
         } else if ($params['sortname'] == 'kodealatbayar' or $params['sortname'] == 'namabank') {
-            $query = AlatBayar::select(
+            $query = DB::table((new AlatBayar)->getTable())->select(
                 'alatbayar.id as id_',
                 'alatbayar.kodealatbayar',
                 'alatbayar.namaalatbayar',
@@ -375,7 +375,7 @@ class AlatBayarController extends Controller
                 ->orderBy('alatbayar.id', $params['sortorder']);
         } else {
             if ($params['sortorder'] == 'asc') {
-                $query = AlatBayar::select(
+                $query = DB::table((new AlatBayar)->getTable())->select(
                     'alatbayar.id as id_',
                     'alatbayar.kodealatbayar',
                     'alatbayar.namaalatbayar',
@@ -390,7 +390,7 @@ class AlatBayarController extends Controller
                     ->orderBy($params['sortname'], $params['sortorder'])
                     ->orderBy('alatbayar.id', $params['sortorder']);
             } else {
-                $query = AlatBayar::select(
+                $query = DB::table((new AlatBayar)->getTable())->select(
                     'alatbayar.id as id_',
                     'alatbayar.kodealatbayar',
                     'alatbayar.namaalatbayar',
