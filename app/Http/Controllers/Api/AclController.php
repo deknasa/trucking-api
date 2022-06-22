@@ -28,6 +28,11 @@ class AclController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+
+        /**
+     * @ClassName 
+     */
+
     public function index()
     {
         $params = [

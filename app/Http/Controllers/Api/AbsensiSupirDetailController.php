@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 
+
 class AbsensiSupirDetailController extends Controller
 {
     public function index(Request $request)

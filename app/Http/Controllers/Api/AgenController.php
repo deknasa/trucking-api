@@ -18,6 +18,10 @@ class AgenController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+
+       /**
+     * @ClassName 
+     */
     public function index()
     {
         $params = [
@@ -178,6 +182,9 @@ class AgenController extends Controller
         ]);
     }
 
+          /**
+     * @ClassName 
+     */
     public function store(StoreAgenRequest $request)
     {
         DB::beginTransaction();
@@ -248,6 +255,9 @@ class AgenController extends Controller
         ]);
     }
 
+              /**
+     * @ClassName 
+     */
     public function update(UpdateAgenRequest $request, Agen $agen)
     {
         try {
@@ -308,6 +318,9 @@ class AgenController extends Controller
         }
     }
 
+               /**
+     * @ClassName 
+     */
     public function destroy(Agen $agen, Request $request)
     {
         $delete = Agen::destroy($agen->id);

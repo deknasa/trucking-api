@@ -15,6 +15,10 @@ use App\Http\Requests\StoreLogTrailRequest;
 
 class AbsensiSupirHeaderController extends Controller
 {
+    
+               /**
+     * @ClassName 
+     */
     public function index(Request $request)
     {
         $params = [
@@ -88,6 +92,11 @@ class AbsensiSupirHeaderController extends Controller
      *
      * @param  \App\Http\Requests\StoreAbsensiSupirHeaderRequest  $request
      * @return \Illuminate\Http\Response
+     */
+
+     
+               /**
+     * @ClassName 
      */
     public function store(StoreAbsensiSupirHeaderRequest $request)
     {
@@ -241,6 +250,11 @@ class AbsensiSupirHeaderController extends Controller
      * @param  \App\Models\Absensi  $absensi
      * @return \Illuminate\Http\Response
      */
+
+     
+               /**
+     * @ClassName 
+     */
     public function update(StoreAbsensiSupirHeaderRequest $request, AbsensiSupirHeader $absensiSupirHeader, $id)
     {
         DB::beginTransaction();
@@ -384,6 +398,11 @@ class AbsensiSupirHeaderController extends Controller
      *
      * @param  \App\Models\AbsensiSupirHeader  $absensiSupirHeader
      * @return \Illuminate\Http\Response
+     */
+
+     
+               /**
+     * @ClassName 
      */
     public function destroy(AbsensiSupirHeader $absensiSupirHeader, $id, Request $request)
     {

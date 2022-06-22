@@ -318,8 +318,8 @@ class UserRoleController extends Controller
             $del = 0;
             $data = $this->getid($request->user_id, $request, $del) ?? 0;
 
-            $userrole->position = $data->id;
-            $userrole->id = $data->row;
+            $userrole->position = $data->id ?? 0;
+            $userrole->id = $data->row ?? 0;
 
             if (isset($request->limit)) {
                 $userrole->page = ceil($userrole->position / $request->limit);

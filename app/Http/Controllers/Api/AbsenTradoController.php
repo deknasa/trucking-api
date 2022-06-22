@@ -13,6 +13,10 @@ use Illuminate\Support\Facades\DB;
 
 class AbsenTradoController extends Controller
 {
+       
+               /**
+     * @ClassName 
+     */
     public function index(Request $request)
     {
         $params = [
@@ -121,6 +125,10 @@ class AbsenTradoController extends Controller
         ]);
     }
 
+       
+               /**
+     * @ClassName 
+     */
     public function store(StoreAbsenTradoRequest $request)
     {
         DB::beginTransaction();
@@ -178,6 +186,10 @@ class AbsenTradoController extends Controller
         ]);
     }
 
+       
+               /**
+     * @ClassName 
+     */
     public function update(UpdateAbsenTradoRequest $request, AbsenTrado $absenTrado)
     {
         try {
@@ -223,6 +235,10 @@ class AbsenTradoController extends Controller
         }
     }
 
+       
+    /**
+     * @ClassName 
+     */
     public function destroy(AbsenTrado $absenTrado, Request $request)
     {
         $delete = AbsenTrado::destroy($absenTrado->id);
