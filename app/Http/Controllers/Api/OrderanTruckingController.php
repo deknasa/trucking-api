@@ -22,7 +22,9 @@ use Illuminate\Support\Facades\Http;
 
 class OrderanTruckingController extends Controller
 {
-
+   /**
+     * @ClassName 
+     */
     public function index(Request $request)
     {
         $params = [
@@ -246,7 +248,9 @@ class OrderanTruckingController extends Controller
     {
         
     }
-
+   /**
+     * @ClassName 
+     */
     public function store(StoreOrderanTruckingRequest $request)
     {
         DB::beginTransaction();
@@ -337,7 +341,9 @@ class OrderanTruckingController extends Controller
         ]);
     }
 
-
+   /**
+     * @ClassName 
+     */
     public function update(StoreOrderanTruckingRequest $request, OrderanTrucking $orderanTrucking, $id)
     {
         try {
@@ -397,7 +403,9 @@ class OrderanTruckingController extends Controller
             throw $th;
         }
     }
-
+   /**
+     * @ClassName 
+     */
     public function destroy(OrderanTrucking $orderantrucking, Request $request)
     {
         DB::beginTransaction();

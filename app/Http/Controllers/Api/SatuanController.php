@@ -17,7 +17,9 @@ use Illuminate\Support\Facades\Schema;
 
 class SatuanController extends Controller
 {
-
+ /**
+     * @ClassName 
+     */
     public function index(Request $request)
     {
         $params = [
@@ -140,7 +142,9 @@ class SatuanController extends Controller
     {
         //
     }
-
+ /**
+     * @ClassName 
+     */
     public function store(StoreSatuanRequest $request)
     {
         DB::beginTransaction();
@@ -202,7 +206,9 @@ class SatuanController extends Controller
     {
         //
     }
-
+ /**
+     * @ClassName 
+     */
     public function update(StoreSatuanRequest $request, Satuan $satuan)
     {
         try {
@@ -247,7 +253,9 @@ class SatuanController extends Controller
             throw $th;
         }
     }
-
+ /**
+     * @ClassName 
+     */
     public function destroy(Satuan $satuan, Request $request)
     {
         $delete = Satuan::destroy($satuan->id);

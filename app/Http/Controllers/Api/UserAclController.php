@@ -31,6 +31,9 @@ class UserAclController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+     /**
+     * @ClassName 
+     */
     public function index()
     {
         $params = [
@@ -291,6 +294,9 @@ class UserAclController extends Controller
      * @param  \App\Http\Requests\StoreUserAclRequest  $request
      * @return \Illuminate\Http\Response
      */
+     /**
+     * @ClassName 
+     */
     public function store(StoreUserAclRequest $request)
     {
         $request->validate([
@@ -382,6 +388,9 @@ class UserAclController extends Controller
      * @param  \App\Models\UserAcl  $userAcl
      * @return \Illuminate\Http\Response
      */
+     /**
+     * @ClassName 
+     */
     public function update(UpdateUserAclRequest $request, UserAcl $useracl)
     {
         DB::beginTransaction();
@@ -440,6 +449,9 @@ class UserAclController extends Controller
      *
      * @param  \App\Models\UserAcl  $userAcl
      * @return \Illuminate\Http\Response
+     */
+     /**
+     * @ClassName 
      */
     public function destroy(UserAcl $useracl, DestroyUserAclRequest $request)
     {

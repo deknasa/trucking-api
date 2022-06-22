@@ -13,6 +13,9 @@ use Illuminate\Support\Facades\Schema;
 
 class SubKelompokController extends Controller
 {
+     /**
+     * @ClassName 
+     */
     public function index()
     {
         $params = [
@@ -144,7 +147,9 @@ class SubKelompokController extends Controller
             'data' => $subKelompok
         ]);
     }
-
+ /**
+     * @ClassName 
+     */
     public function store(StoreSubKelompokRequest $request)
     {
         DB::beginTransaction();
@@ -195,7 +200,9 @@ class SubKelompokController extends Controller
             throw $th;
         }
     }
-
+ /**
+     * @ClassName 
+     */
     public function update(UpdateSubKelompokRequest $request, SubKelompok $subKelompok)
     {
         try {
@@ -241,7 +248,9 @@ class SubKelompokController extends Controller
             throw $th;
         }
     }
-
+ /**
+     * @ClassName 
+     */
     public function destroy(SubKelompok $subKelompok, Request $request)
     {
         $delete = SubKelompok::destroy($subKelompok->id);

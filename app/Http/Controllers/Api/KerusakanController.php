@@ -18,6 +18,9 @@ use Illuminate\Support\Facades\Schema;
 class KerusakanController extends Controller
 {
 
+          /**
+     * @ClassName 
+     */
     public function index(Request $request)
     {
         $params = [
@@ -141,7 +144,9 @@ class KerusakanController extends Controller
     {
         //
     }
-
+      /**
+     * @ClassName 
+     */
     public function store(StoreKerusakanRequest $request)
     {
         DB::beginTransaction();
@@ -203,7 +208,9 @@ class KerusakanController extends Controller
     {
         //
     }
-
+      /**
+     * @ClassName 
+     */
     public function update(StoreKerusakanRequest $request, Kerusakan $kerusakan)
     {
         try {
@@ -248,7 +255,9 @@ class KerusakanController extends Controller
             throw $th;
         }
     }
-
+      /**
+     * @ClassName 
+     */
     public function destroy(Kerusakan $kerusakan, Request $request)
     {
         $delete = Kerusakan::destroy($kerusakan->id);

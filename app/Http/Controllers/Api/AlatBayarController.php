@@ -20,7 +20,9 @@ use Illuminate\Support\Facades\Schema;
 
 class AlatBayarController extends Controller
 {
-    
+    /**
+     * @ClassName 
+     */
     public function index(Request $request)
     {
         $params = [
@@ -30,7 +32,7 @@ class AlatBayarController extends Controller
             'sortIndex' => $request->sortIndex ?? 'id',
             'sortOrder' => $request->sortOrder ?? 'asc',
         ];
-        
+
         $totalRows = AlatBayar::count();
         $totalPages = $params['limit'] > 0 ? ceil($totalRows / $params['limit']) : 1;
 
@@ -142,7 +144,9 @@ class AlatBayarController extends Controller
             'params' => $params
         ]);
     }
-
+    /**
+     * @ClassName 
+     */
     public function store(StoreAlatBayarRequest $request)
     {
         DB::beginTransaction();
@@ -207,7 +211,9 @@ class AlatBayarController extends Controller
     {
         //
     }
-
+    /**
+     * @ClassName 
+     */
     public function update(StoreAlatBayarRequest $request, AlatBayar $alatbayar)
     {
         try {
@@ -256,7 +262,9 @@ class AlatBayarController extends Controller
             return response($th->getMessage());
         }
     }
-
+    /**
+     * @ClassName 
+     */
     public function destroy(AlatBayar $alatbayar, Request $request)
     {
         $delete = AlatBayar::destroy($alatbayar->id);
@@ -299,8 +307,8 @@ class AlatBayarController extends Controller
     public function combo(Request $request)
     {
         $data = [
-            'langsungcair' => Parameter::where(['grp'=>'status langsung cair'])->get(),
-            'statusdefault' => Parameter::where(['grp'=>'status default'])->get(),
+            'langsungcair' => Parameter::where(['grp' => 'status langsung cair'])->get(),
+            'statusdefault' => Parameter::where(['grp' => 'status default'])->get(),
             'bank' => Bank::all(),
         ];
 
@@ -326,8 +334,8 @@ class AlatBayarController extends Controller
             $table->string('kodealatbayar', 50)->default('');
             $table->string('namaalatbayar', 50)->default('');
             $table->longtext('keterangan')->default('');
-            $table->string('statuslangsunggcair',300)->default('')->nullable();
-            $table->string('statusdefault',300)->default('')->nullable();
+            $table->string('statuslangsunggcair', 300)->default('')->nullable();
+            $table->string('statusdefault', 300)->default('')->nullable();
             $table->string('bank_id', 50)->default('');
             $table->string('modifiedby', 30)->default('');
             $table->dateTime('created_at')->default('1900/1/1');
@@ -401,7 +409,7 @@ class AlatBayarController extends Controller
 
 
 
-        DB::table($temp)->insertUsing(['id_', 'kodealatbayar', 'namaalatbayar', 'keterangan', 'statuslangsunggcair','statusdefault','bank_id', 'modifiedby', 'created_at', 'updated_at'], $query);
+        DB::table($temp)->insertUsing(['id_', 'kodealatbayar', 'namaalatbayar', 'keterangan', 'statuslangsunggcair', 'statusdefault', 'bank_id', 'modifiedby', 'created_at', 'updated_at'], $query);
 
 
         if ($del == 1) {

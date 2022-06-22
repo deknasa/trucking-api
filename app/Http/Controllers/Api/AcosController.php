@@ -27,6 +27,9 @@ class AcosController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+        /**
+     * @ClassName 
+     */
     public function index()
     {
         //
@@ -47,6 +50,9 @@ class AcosController extends Controller
      *
      * @param  \App\Http\Requests\StoreAcosRequest  $request
      * @return \Illuminate\Http\Response
+     */
+        /**
+     * @ClassName 
      */
     public function store(StoreAcosRequest $request)
     {
@@ -125,6 +131,9 @@ class AcosController extends Controller
      * @param  \App\Models\Acos  $acos
      * @return \Illuminate\Http\Response
      */
+        /**
+     * @ClassName 
+     */
     public function update(UpdateAcosRequest $request, Acos $acos)
     {
         //
@@ -135,6 +144,9 @@ class AcosController extends Controller
      *
      * @param  \App\Models\Acos  $acos
      * @return \Illuminate\Http\Response
+     */
+        /**
+     * @ClassName 
      */
     public function destroy(Acos $acos)
     {

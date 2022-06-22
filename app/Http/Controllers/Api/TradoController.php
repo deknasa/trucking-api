@@ -24,6 +24,9 @@ class TradoController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+     /**
+     * @ClassName 
+     */
     public function index(Request $request)
     {
         $params = [
@@ -83,7 +86,9 @@ class TradoController extends Controller
             'params' => $params
         ]);
     }
-
+ /**
+     * @ClassName 
+     */
     public function store(TradoRequest $request)
     {
         DB::beginTransaction();
@@ -151,7 +156,9 @@ class TradoController extends Controller
             return response($th->getMessage());
         }
     }
-
+ /**
+     * @ClassName 
+     */
     public function update(TradoRequest $request, $id)
     {
         DB::beginTransaction();
@@ -244,7 +251,9 @@ class TradoController extends Controller
             'data' => $trado
         ]);
     }
-
+ /**
+     * @ClassName 
+     */
     public function destroy(Trado $trado, Request $request)
     {
         DB::beginTransaction();

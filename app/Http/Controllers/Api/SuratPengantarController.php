@@ -29,7 +29,9 @@ use Illuminate\Support\Facades\Schema;
 
 class SuratPengantarController extends Controller
 {
-
+ /**
+     * @ClassName 
+     */
     public function index(Request $request)
     {
         $params = [
@@ -429,7 +431,9 @@ class SuratPengantarController extends Controller
     {
         //
     }
-
+ /**
+     * @ClassName 
+     */
     public function store(StoreSuratPengantarRequest $request)
     {
         DB::beginTransaction();
@@ -606,7 +610,9 @@ class SuratPengantarController extends Controller
         //
     }
 
-
+ /**
+     * @ClassName 
+     */
     public function update(StoreSuratPengantarRequest $request, SuratPengantar $suratpengantar)
     {
         try {
@@ -743,6 +749,9 @@ class SuratPengantarController extends Controller
      *
      * @param  \App\Models\suratpengantar  $suratpengantar
      * @return \Illuminate\Http\Response
+     */
+     /**
+     * @ClassName 
      */
     public function destroy(SuratPengantar $suratpengantar, Request $request)
     {

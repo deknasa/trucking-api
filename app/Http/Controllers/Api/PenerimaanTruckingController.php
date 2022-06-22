@@ -13,6 +13,9 @@ use Illuminate\Support\Facades\Schema;
 
 class PenerimaanTruckingController extends Controller
 {
+       /**
+     * @ClassName 
+     */
     public function index()
     {
         $params = [
@@ -121,7 +124,9 @@ class PenerimaanTruckingController extends Controller
             'data' => $penerimaanTrucking
         ]);
     }
-
+   /**
+     * @ClassName 
+     */
     public function store(StorePenerimaanTruckingRequest $request)
     {
         DB::beginTransaction();
@@ -172,7 +177,9 @@ class PenerimaanTruckingController extends Controller
             throw $th;
         }
     }
-    
+       /**
+     * @ClassName 
+     */
     public function update(UpdatePenerimaanTruckingRequest $request, PenerimaanTrucking $penerimaanTrucking)
     {
         try {
@@ -218,7 +225,9 @@ class PenerimaanTruckingController extends Controller
             throw $th;
         }
     }
-    
+       /**
+     * @ClassName 
+     */
     public function destroy(PenerimaanTrucking $penerimaanTrucking, Request $request)
     {
         $delete = PenerimaanTrucking::destroy($penerimaanTrucking->id);

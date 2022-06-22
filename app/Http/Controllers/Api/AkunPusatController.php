@@ -18,6 +18,9 @@ class AkunPusatController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+    /**
+     * @ClassName 
+     */
     public function index(Request $request)
     {
         $params = [
@@ -158,6 +161,10 @@ class AkunPusatController extends Controller
      * @param  \App\Http\Requests\StoreAkunPusatRequest  $request
      * @return \Illuminate\Http\Response
      */
+
+    /**
+     * @ClassName 
+     */
     public function store(StoreAkunPusatRequest $request)
     {
         DB::beginTransaction();
@@ -237,6 +244,9 @@ class AkunPusatController extends Controller
      * @param  \App\Models\AkunPusat  $akunPusat
      * @return \Illuminate\Http\Response
      */
+    /**
+     * @ClassName 
+     */
     public function update(UpdateAkunPusatRequest $request, AkunPusat $akunPusat)
     {
         try {
@@ -296,6 +306,9 @@ class AkunPusatController extends Controller
      *
      * @param  \App\Models\AkunPusat  $akunPusat
      * @return \Illuminate\Http\Response
+     */
+    /**
+     * @ClassName 
      */
     public function destroy(AkunPusat $akunPusat, Request $request)
     {

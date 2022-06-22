@@ -19,6 +19,9 @@ use Illuminate\Support\Facades\Schema;
 class BankPelangganController extends Controller
 {
     
+       /**
+     * @ClassName 
+     */
     public function index(Request $request)
     {
         $params = [
@@ -150,7 +153,9 @@ class BankPelangganController extends Controller
     {
         //
     }
-
+   /**
+     * @ClassName 
+     */
     public function store(StoreBankPelangganRequest $request)
     {
         DB::beginTransaction();
@@ -213,7 +218,9 @@ class BankPelangganController extends Controller
     {
         //
     }
-
+   /**
+     * @ClassName 
+     */
     public function update(StoreBankPelangganRequest $request, BankPelanggan $bankpelanggan)
     {
         try {
@@ -260,7 +267,9 @@ class BankPelangganController extends Controller
             return response($th->getMessage());
         }
     }
-
+   /**
+     * @ClassName 
+     */
     public function destroy(BankPelanggan $bankpelanggan, Request $request)
     {
         $delete = BankPelanggan::destroy($bankpelanggan->id);

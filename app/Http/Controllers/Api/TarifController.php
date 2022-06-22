@@ -20,7 +20,9 @@ use Illuminate\Support\Facades\Schema;
 
 class TarifController extends Controller
 {
-
+ /**
+     * @ClassName 
+     */
     public function index(Request $request)
     {
         $params = [
@@ -195,7 +197,9 @@ class TarifController extends Controller
     {
         //
     }
-
+ /**
+     * @ClassName 
+     */
     public function store(StoreTarifRequest $request)
     {
         DB::beginTransaction();
@@ -266,7 +270,9 @@ class TarifController extends Controller
     {
         //
     }
-
+ /**
+     * @ClassName 
+     */
     public function update(StoreTarifRequest $request, Tarif $tarif)
     {
         try {
@@ -320,7 +326,9 @@ class TarifController extends Controller
             throw $th;
         }
     }
-
+ /**
+     * @ClassName 
+     */
     public function destroy(Tarif $tarif, Request $request)
     {
         $delete = Tarif::destroy($tarif->id);

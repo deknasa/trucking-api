@@ -14,6 +14,10 @@ use Illuminate\Support\Facades\Schema;
 
 class SupplierController extends Controller
 {
+
+     /**
+     * @ClassName 
+     */
     public function index()
     {
         $params = [
@@ -205,7 +209,9 @@ class SupplierController extends Controller
             'data' => $supplier
         ]);
     }
-    
+     /**
+     * @ClassName 
+     */
     public function store(StoreSupplierRequest $request)
     {
         DB::beginTransaction();
@@ -273,7 +279,9 @@ class SupplierController extends Controller
             throw $th;
         }
     }
-
+ /**
+     * @ClassName 
+     */
     public function update(UpdateSupirRequest $request, Supplier $supplier)
     {
         try {
@@ -336,7 +344,9 @@ class SupplierController extends Controller
             throw $th;
         }
     }
-    
+     /**
+     * @ClassName 
+     */
     public function destroy(Supplier $supplier, Request $request)
     {
         $delete = Supplier::destroy($supplier->id);

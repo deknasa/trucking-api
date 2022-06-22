@@ -24,6 +24,9 @@ class RoleController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+     /**
+     * @ClassName 
+     */
     public function index()
     {
         $params = [
@@ -125,6 +128,9 @@ class RoleController extends Controller
      * @param  \App\Http\Requests\StoreRoleRequest  $request
      * @return \Illuminate\Http\Response
      */
+     /**
+     * @ClassName 
+     */
     public function store(StoreRoleRequest $request)
     {
         DB::beginTransaction();
@@ -191,6 +197,9 @@ class RoleController extends Controller
      * @param  \App\Models\Role  $role
      * @return \Illuminate\Http\Response
      */
+     /**
+     * @ClassName 
+     */
     public function update(UpdateRoleRequest $request, Role $role)
     {
         DB::beginTransaction();
@@ -239,6 +248,9 @@ class RoleController extends Controller
      *
      * @param  \App\Models\Role  $role
      * @return \Illuminate\Http\Response
+     */
+     /**
+     * @ClassName 
      */
     public function destroy(Role $role, Request $request)
     {

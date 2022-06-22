@@ -19,8 +19,10 @@ use Illuminate\Support\Facades\Schema;
 
 class BankController extends Controller
 {
-
-    public function index()
+    /**
+     * @ClassName 
+     */
+    public function index(Request $request)
     {
         $params = [
             'offset' => $request->offset ?? 0,
@@ -50,8 +52,8 @@ class BankController extends Controller
                 'bank.created_at',
                 'bank.updated_at'
             )
-            ->leftJoin('parameter', 'bank.statusaktif', '=', 'parameter.id')
-            ->orderBy('bank.id', $params['sortOrder']);
+                ->leftJoin('parameter', 'bank.statusaktif', '=', 'parameter.id')
+                ->orderBy('bank.id', $params['sortOrder']);
         } else if ($params['sortIndex'] == 'kodebank' or $params['sortIndex'] == 'namabank') {
             $query = Bank::select(
                 'bank.id',
@@ -150,7 +152,9 @@ class BankController extends Controller
             'params' => $params
         ]);
     }
-
+    /**
+     * @ClassName 
+     */
     public function store(StoreBankRequest $request)
     {
         DB::beginTransaction();
@@ -216,7 +220,9 @@ class BankController extends Controller
     {
         //
     }
-
+    /**
+     * @ClassName 
+     */
     public function update(StoreBankRequest $request, Bank $bank)
     {
         try {
@@ -266,7 +272,9 @@ class BankController extends Controller
             return response($th->getMessage());
         }
     }
-
+    /**
+     * @ClassName 
+     */
     public function destroy(Bank $bank, Request $request)
     {
         $delete = Bank::destroy($bank->id);
@@ -309,7 +317,7 @@ class BankController extends Controller
     public function combo(Request $request)
     {
         $data = [
-            'status' => Parameter::where(['grp'=>'status aktif'])->get(),
+            'status' => Parameter::where(['grp' => 'status aktif'])->get(),
             'akunpusat' => AkunPusat::all(),
         ];
 
@@ -336,7 +344,7 @@ class BankController extends Controller
             $table->string('namabank', 50)->default('');
             $table->string('coa', 50)->default('');
             $table->string('tipe', 50)->default('');
-            $table->string('statusaktif',300)->default('')->nullable();
+            $table->string('statusaktif', 300)->default('')->nullable();
             $table->string('kodepenerimaan', 50)->default('');
             $table->string('kodepengeluaran', 50)->default('');
             $table->string('modifiedby', 30)->default('');
@@ -415,7 +423,7 @@ class BankController extends Controller
 
 
 
-        DB::table($temp)->insertUsing(['id_', 'kodebank', 'namabank', 'coa', 'tipe','statusaktif','kodepenerimaan','kodepengeluaran', 'modifiedby', 'created_at', 'updated_at'], $query);
+        DB::table($temp)->insertUsing(['id_', 'kodebank', 'namabank', 'coa', 'tipe', 'statusaktif', 'kodepenerimaan', 'kodepengeluaran', 'modifiedby', 'created_at', 'updated_at'], $query);
 
 
         if ($del == 1) {

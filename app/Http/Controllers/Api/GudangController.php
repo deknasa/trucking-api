@@ -17,7 +17,9 @@ use Illuminate\Support\Facades\Schema;
 
 class GudangController extends Controller
 {
-    
+          /**
+     * @ClassName 
+     */
     public function index(Request $request)
     {
         $params = [
@@ -148,7 +150,9 @@ class GudangController extends Controller
     {
         //
     }
-
+      /**
+     * @ClassName 
+     */
     public function store(StoreGudangRequest $request)
     {
         DB::beginTransaction();
@@ -211,7 +215,9 @@ class GudangController extends Controller
     {
         //
     }
-
+      /**
+     * @ClassName 
+     */
     public function update(StoreGudangRequest $request, Gudang $gudang)
     {
         try {
@@ -257,7 +263,9 @@ class GudangController extends Controller
             throw $th;
         }
     }
-
+      /**
+     * @ClassName 
+     */
     public function destroy(Gudang $gudang, Request $request)
     {
         $delete = Gudang::destroy($gudang->id);

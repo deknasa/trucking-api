@@ -17,6 +17,9 @@ use Illuminate\Support\Facades\Schema;
 
 class KelompokController extends Controller
 {
+          /**
+     * @ClassName 
+     */
     public function index(Request $request)
     {
         $params = [
@@ -143,7 +146,9 @@ class KelompokController extends Controller
     {
         //
     }
-
+      /**
+     * @ClassName 
+     */
     public function store(StoreKelompokRequest $request)
     {
         DB::beginTransaction();
@@ -206,7 +211,9 @@ class KelompokController extends Controller
     {
         //
     }
-
+      /**
+     * @ClassName 
+     */
     public function update(StoreKelompokRequest $request, Kelompok $kelompok)
     {
         try {
@@ -252,7 +259,9 @@ class KelompokController extends Controller
             throw $th;
         }
     }
-
+      /**
+     * @ClassName 
+     */
     public function destroy(Kelompok $kelompok, Request $request)
     {
         $delete = Kelompok::destroy($kelompok->id);

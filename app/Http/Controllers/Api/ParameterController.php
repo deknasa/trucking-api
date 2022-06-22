@@ -18,6 +18,9 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class ParameterController extends Controller
 {
+       /**
+     * @ClassName 
+     */
     public function index()
     {
         $params = [
@@ -139,6 +142,9 @@ class ParameterController extends Controller
      * @param  \App\Http\Requests\ParameterRequest  $request
      * @return \Illuminate\Http\Response
      */
+       /**
+     * @ClassName 
+     */
     public function store(ParameterRequest $request)
     {
         DB::beginTransaction();
@@ -211,6 +217,9 @@ class ParameterController extends Controller
      * @param  \App\Models\Parameter  $parameter
      * @return \Illuminate\Http\Response
      */
+       /**
+     * @ClassName 
+     */
     public function update(ParameterRequest $request, Parameter $parameter)
     {
         try {
@@ -262,6 +271,9 @@ class ParameterController extends Controller
      *
      * @param  \App\Models\Parameter  $parameter
      * @return \Illuminate\Http\Response
+     */
+       /**
+     * @ClassName 
      */
     public function destroy(Parameter $parameter, Request $request)
     {

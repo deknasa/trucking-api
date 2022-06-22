@@ -27,6 +27,9 @@ class MenuController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+       /**
+     * @ClassName 
+     */
     public function index()
     {
         $params = [
@@ -174,6 +177,9 @@ class MenuController extends Controller
      *
      * @param  \App\Http\Requests\StoremenuRequest  $request
      * @return \Illuminate\Http\Response
+     */
+       /**
+     * @ClassName 
      */
     public function store(StoreMenuRequest $request)
     {
@@ -343,6 +349,9 @@ class MenuController extends Controller
      * @param  \App\Models\Menu  $Menu
      * @return \Illuminate\Http\Response
      */
+       /**
+     * @ClassName 
+     */
     public function update(UpdateMenuRequest $request, Menu $menu)
     {
         // dd(strtolower($request->get('menuexe')));
@@ -395,6 +404,9 @@ class MenuController extends Controller
      *
      * @param  \App\Models\Menu  $Menu
      * @return \Illuminate\Http\Response
+     */
+       /**
+     * @ClassName 
      */
     public function destroy(Menu $menu, Request $request)
     {

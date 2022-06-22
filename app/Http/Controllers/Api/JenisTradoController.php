@@ -17,7 +17,9 @@ use Illuminate\Support\Facades\Schema;
 
 class JenisTradoController extends Controller
 {
-
+      /**
+     * @ClassName 
+     */
     public function index(Request $request)
     {
         $params = [
@@ -139,7 +141,9 @@ class JenisTradoController extends Controller
             'params' => $params
         ]);
     }
-
+      /**
+     * @ClassName 
+     */
     public function store(StoreJenisTradoRequest $request)
     {
         DB::beginTransaction();
@@ -222,6 +226,9 @@ class JenisTradoController extends Controller
      * @param  \App\Models\jenistrado  $jenistrado
      * @return \Illuminate\Http\Response
      */
+          /**
+     * @ClassName 
+     */
     public function update(StoreJenisTradoRequest $request, jenistrado $jenistrado)
     {
         try {
@@ -273,6 +280,9 @@ class JenisTradoController extends Controller
      *
      * @param  \App\Models\jenistrado  $jenistrado
      * @return \Illuminate\Http\Response
+     */
+          /**
+     * @ClassName 
      */
     public function destroy(jenistrado $jenistrado, Request $request)
     {

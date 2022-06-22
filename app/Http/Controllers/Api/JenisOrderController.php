@@ -17,7 +17,9 @@ use Illuminate\Support\Facades\Schema;
 
 class JenisOrderController extends Controller
 {
-
+      /**
+     * @ClassName 
+     */
     public function index(Request $request)
     {
         $params = [
@@ -139,7 +141,9 @@ class JenisOrderController extends Controller
             'params' => $params
         ]);
     }
-
+      /**
+     * @ClassName 
+     */
     public function store(StoreJenisOrderRequest $request)
     {
         DB::beginTransaction();
@@ -222,6 +226,9 @@ class JenisOrderController extends Controller
      * @param  \App\Models\JenisOrder  $jenisOrder
      * @return \Illuminate\Http\Response
      */
+          /**
+     * @ClassName 
+     */
     public function update(StoreJenisOrderRequest $request, JenisOrder $jenisorder)
     {
         try {
@@ -273,6 +280,9 @@ class JenisOrderController extends Controller
      *
      * @param  \App\Models\JenisOrder  $jenisOrder
      * @return \Illuminate\Http\Response
+     */
+          /**
+     * @ClassName 
      */
     public function destroy(JenisOrder $jenisorder, Request $request)
     {

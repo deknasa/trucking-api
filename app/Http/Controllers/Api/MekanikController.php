@@ -1,63 +1,5 @@
 <?php
 
-<<<<<<< HEAD
-namespace App\Http\Controllers;
-
-use App\Models\Mekanik;
-use App\Http\Requests\StoreMekanikRequest;
-use App\Http\Requests\UpdateMekanikRequest;
-
-class MekanikController extends Controller
-{
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
-    {
-        //
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \App\Http\Requests\StoreMekanikRequest  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(StoreMekanikRequest $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\Mekanik  $mekanik
-     * @return \Illuminate\Http\Response
-     */
-    public function show(Mekanik $mekanik)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\Mekanik  $mekanik
-     * @return \Illuminate\Http\Response
-     */
-=======
 namespace App\Http\Controllers\Api;
 
 use App\Models\Mekanik;
@@ -77,8 +19,10 @@ use Illuminate\Support\Facades\Schema;
 
 class MekanikController extends Controller
 {
-
-    public function index()
+    /**
+     * @ClassName 
+     */
+    public function index(Request $request)
     {
         $params = [
             'offset' => $request->offset ?? 0,
@@ -188,7 +132,9 @@ class MekanikController extends Controller
             'params' => $params
         ]);
     }
-
+    /**
+     * @ClassName 
+     */
     public function store(StoreMekanikRequest $request)
     {
         DB::beginTransaction();
@@ -246,35 +192,13 @@ class MekanikController extends Controller
         ]);
     }
 
->>>>>>> 45bc0d5a7d263f6ec185c4c06e9fc88025a55e7c
     public function edit(Mekanik $mekanik)
     {
         //
     }
-
-<<<<<<< HEAD
     /**
-     * Update the specified resource in storage.
-     *
-     * @param  \App\Http\Requests\UpdateMekanikRequest  $request
-     * @param  \App\Models\Mekanik  $mekanik
-     * @return \Illuminate\Http\Response
+     * @ClassName 
      */
-    public function update(UpdateMekanikRequest $request, Mekanik $mekanik)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Mekanik  $mekanik
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(Mekanik $mekanik)
-    {
-        //
-=======
     public function update(StoreMekanikRequest $request, Mekanik $mekanik)
     {
         try {
@@ -319,7 +243,9 @@ class MekanikController extends Controller
             return response($th->getMessage());
         }
     }
-
+    /**
+     * @ClassName 
+     */
     public function destroy(Mekanik $mekanik, Request $request)
     {
         $delete = Mekanik::destroy($mekanik->id);
@@ -497,6 +423,5 @@ class MekanikController extends Controller
         return response([
             'data' => $data
         ]);
->>>>>>> 45bc0d5a7d263f6ec185c4c06e9fc88025a55e7c
     }
 }

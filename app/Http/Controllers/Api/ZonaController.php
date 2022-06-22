@@ -18,6 +18,9 @@ use Illuminate\Support\Facades\Schema;
 class ZonaController extends Controller
 {
 
+     /**
+     * @ClassName 
+     */
     public function index(Request $request)
     {
         $params = [
@@ -144,7 +147,9 @@ class ZonaController extends Controller
     {
         //
     }
-
+ /**
+     * @ClassName 
+     */
     public function store(StoreZonaRequest $request)
     {
         DB::beginTransaction();
@@ -207,7 +212,9 @@ class ZonaController extends Controller
     {
         //
     }
-
+ /**
+     * @ClassName 
+     */
     public function update(StoreZonaRequest $request, Zona $zona)
     {
         try {
@@ -253,7 +260,9 @@ class ZonaController extends Controller
             throw $th;
         }
     }
-
+ /**
+     * @ClassName 
+     */
     public function destroy(Zona $zona, Request $request)
     {
         $delete = Zona::destroy($zona->id);

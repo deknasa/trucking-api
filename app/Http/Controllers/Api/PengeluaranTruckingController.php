@@ -13,7 +13,9 @@ use Illuminate\Support\Facades\Schema;
 
 class PengeluaranTruckingController extends Controller
 {
-
+   /**
+     * @ClassName 
+     */
     public function index()
     {
         $params = [
@@ -119,7 +121,9 @@ class PengeluaranTruckingController extends Controller
     {
         //
     }
-
+   /**
+     * @ClassName 
+     */
     public function store(StorePengeluaranTruckingRequest $request)
     {
         DB::beginTransaction();
@@ -183,7 +187,9 @@ class PengeluaranTruckingController extends Controller
     {
         //
     }
-
+   /**
+     * @ClassName 
+     */
     public function update(StorePengeluaranTruckingRequest $request, PengeluaranTrucking $pengeluaranTrucking)
     {
         try {
@@ -229,7 +235,9 @@ class PengeluaranTruckingController extends Controller
             throw $th;
         }
     }
-
+   /**
+     * @ClassName 
+     */
     public function destroy(PengeluaranTrucking $pengeluaranTrucking, Request $request)
     {
         $delete = PengeluaranTrucking::destroy($pengeluaranTrucking->id);

@@ -18,7 +18,9 @@ use Illuminate\Support\Facades\Schema;
 
 class KotaController extends Controller
 {
-
+     /**
+     * @ClassName 
+     */
     public function index(Request $request)
     {
         $params = [
@@ -154,7 +156,9 @@ class KotaController extends Controller
     {
         //
     }
-
+     /**
+     * @ClassName 
+     */
     public function store(StoreKotaRequest $request)
     {
         DB::beginTransaction();
@@ -218,7 +222,9 @@ class KotaController extends Controller
     {
         //
     }
-
+     /**
+     * @ClassName 
+     */
     public function update(StoreKotaRequest $request, $id)
     {
         try {
@@ -265,7 +271,9 @@ class KotaController extends Controller
             throw $th;
         }
     }
-
+     /**
+     * @ClassName 
+     */
     public function destroy($id, Request $request)
     {
         $kota = Kota::find($id)->first();

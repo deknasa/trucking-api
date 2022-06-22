@@ -22,7 +22,9 @@ use Illuminate\Support\Facades\DB;
 
 class UpahSupirController extends Controller
 {
-
+ /**
+     * @ClassName 
+     */
     public function index(Request $request)
     {
         $params = [
@@ -175,7 +177,9 @@ class UpahSupirController extends Controller
     {
         //
     }
-
+ /**
+     * @ClassName 
+     */
     public function store(StoreUpahSupirRequest $request)
     {
         DB::beginTransaction();
@@ -316,7 +320,9 @@ class UpahSupirController extends Controller
     {
         //
     }
-
+ /**
+     * @ClassName 
+     */
     public function update(StoreUpahSupirRequest $request, $id)
     {
         DB::beginTransaction();
@@ -437,7 +443,9 @@ class UpahSupirController extends Controller
         return response($upahsupir->kasgantungDetail);
     }
 
-
+ /**
+     * @ClassName 
+     */
     public function destroy($id, Request $request)
     {
         DB::beginTransaction();

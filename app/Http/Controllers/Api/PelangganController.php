@@ -13,6 +13,9 @@ use Illuminate\Support\Facades\Schema;
 
 class PelangganController extends Controller
 {
+       /**
+     * @ClassName 
+     */
     public function index()
     {
         $params = [
@@ -134,7 +137,9 @@ class PelangganController extends Controller
             'data' => $pelanggan
         ]);
     }
-    
+       /**
+     * @ClassName 
+     */
     public function store(StorePelangganRequest $request)
     {
         DB::beginTransaction();
@@ -338,7 +343,9 @@ class PelangganController extends Controller
         return $data;
     }
 
-    
+       /**
+     * @ClassName 
+     */
     public function update(UpdatePelangganRequest $request, Pelanggan $pelanggan)
     {
         try {
@@ -388,7 +395,9 @@ class PelangganController extends Controller
             throw $th;
         }
     }
-    
+       /**
+     * @ClassName 
+     */
     public function destroy(Pelanggan $pelanggan, Request $request)
     {
         $delete = Pelanggan::destroy($pelanggan->id);

@@ -16,7 +16,9 @@ use Illuminate\Support\Facades\Schema;
 
 class MandorController extends Controller
 {
-
+     /**
+     * @ClassName 
+     */
     public function index(Request $request)
     {
         $params = [
@@ -143,7 +145,9 @@ class MandorController extends Controller
     {
         //
     }
-
+     /**
+     * @ClassName 
+     */
     public function store(StoreMandorRequest $request)
     {
         DB::beginTransaction();
@@ -206,7 +210,9 @@ class MandorController extends Controller
     {
         //
     }
-
+     /**
+     * @ClassName 
+     */
     public function update(Request $request, Mandor $mandor)
     {
         try {
@@ -252,7 +258,9 @@ class MandorController extends Controller
             throw $th;
         }
     }
-
+     /**
+     * @ClassName 
+     */
     public function destroy(Mandor $mandor, Request $request)
     {
         $delete = Mandor::destroy($mandor->id);

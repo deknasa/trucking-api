@@ -28,6 +28,9 @@ class UserController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+     /**
+     * @ClassName 
+     */
     public function index()
     {
         $params = [
@@ -170,6 +173,9 @@ class UserController extends Controller
      * @param  \App\Http\Requests\StoreCabangRequest  $request
      * @return \Illuminate\Http\Response
      */
+     /**
+     * @ClassName 
+     */
     public function store(StoreUserRequest $request)
     {
 
@@ -254,6 +260,9 @@ class UserController extends Controller
      * @param  \App\Models\User  $user
      * @return \Illuminate\Http\Response
      */
+     /**
+     * @ClassName 
+     */
     public function update(UpdateUserRequest $request, User $user)
     {
         //   dd($request->all());
@@ -310,6 +319,9 @@ class UserController extends Controller
      *
      * @param  \App\Models\User  $user
      * @return \Illuminate\Http\Response
+     */
+     /**
+     * @ClassName 
      */
     public function destroy(User $user, Request $request)
     {

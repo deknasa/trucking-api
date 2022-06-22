@@ -28,6 +28,9 @@ class UserRoleController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+     /**
+     * @ClassName 
+     */
     public function index()
     {
         $params = [
@@ -280,6 +283,9 @@ class UserRoleController extends Controller
      * @param  \App\Http\Requests\StoreUserRoleRequest  $request
      * @return \Illuminate\Http\Response
      */
+     /**
+     * @ClassName 
+     */
     public function store(StoreUserRoleRequest $request)
     {
         DB::beginTransaction();
@@ -361,6 +367,9 @@ class UserRoleController extends Controller
      * @param  \App\Models\UserRole  $userRole
      * @return \Illuminate\Http\Response
      */
+     /**
+     * @ClassName 
+     */
     public function update(UpdateUserRoleRequest $request, UserRole $userrole)
     {
         DB::beginTransaction();
@@ -418,6 +427,9 @@ class UserRoleController extends Controller
      *
      * @param  \App\Models\UserRole  $userRole
      * @return \Illuminate\Http\Response
+     */
+     /**
+     * @ClassName 
      */
     public function destroy(UserRole $userrole, DestroyUserRoleRequest $request)
     {

@@ -24,6 +24,10 @@ class ContainerController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+
+           /**
+     * @ClassName 
+     */
     public function index(Request $request)
     {
         $params = [
@@ -162,6 +166,10 @@ class ContainerController extends Controller
      * @param  \App\Http\Requests\StoreContainerRequest  $request
      * @return \Illuminate\Http\Response
      */
+
+           /**
+     * @ClassName 
+     */
     public function store(StoreContainerRequest $request)
     {
         DB::beginTransaction();
@@ -248,6 +256,10 @@ class ContainerController extends Controller
      * @param  \App\Models\Container  $container
      * @return \Illuminate\Http\Response
      */
+
+           /**
+     * @ClassName 
+     */
     public function update(StoreContainerRequest $request, Container $container)
     {
         DB::beginTransaction();
@@ -312,6 +324,9 @@ class ContainerController extends Controller
      *
      * @param  \App\Models\Container  $container
      * @return \Illuminate\Http\Response
+     */
+          /**
+     * @ClassName 
      */
     public function destroy(Container $container, Request $request)
     {

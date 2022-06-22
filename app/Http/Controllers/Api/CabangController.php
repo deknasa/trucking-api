@@ -26,6 +26,9 @@ class CabangController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+       /**
+     * @ClassName 
+     */
     public function index()
     {
         $params = [
@@ -167,6 +170,9 @@ class CabangController extends Controller
      * @param  \App\Http\Requests\StoreCabangRequest  $request
      * @return \Illuminate\Http\Response
      */
+       /**
+     * @ClassName 
+     */
     public function store(StoreCabangRequest $request)
     {
         DB::beginTransaction();
@@ -245,6 +251,9 @@ class CabangController extends Controller
      * @param  \App\Models\Cabang  $cabang
      * @return \Illuminate\Http\Response
      */
+       /**
+     * @ClassName 
+     */
     public function update(UpdateCabangRequest $request, Cabang $cabang)
     {
         DB::beginTransaction();
@@ -294,6 +303,9 @@ class CabangController extends Controller
      *
      * @param  \App\Models\Cabang  $cabang
      * @return \Illuminate\Http\Response
+     */
+       /**
+     * @ClassName 
      */
     public function destroy(Cabang $cabang, Request $request)
     {

@@ -23,7 +23,9 @@ use Illuminate\Support\Facades\Schema;
 
 class RitasiController extends Controller
 {
-
+   /**
+     * @ClassName 
+     */
     public function index(Request $request)
     {
         $params = [
@@ -214,7 +216,9 @@ class RitasiController extends Controller
     {
         //
     }
-
+   /**
+     * @ClassName 
+     */
     public function store(StoreRitasiRequest $request)
     {
         DB::beginTransaction();
@@ -298,7 +302,9 @@ class RitasiController extends Controller
     {
         //
     }
-
+   /**
+     * @ClassName 
+     */
     public function update(StoreRitasiRequest $request, Ritasi $ritasi)
     {
         try {
@@ -356,7 +362,9 @@ class RitasiController extends Controller
             throw $th;
         }
     }
-
+   /**
+     * @ClassName 
+     */
     public function destroy(Ritasi $ritasi, Request $request)
     {
         $del = 1;

@@ -293,6 +293,9 @@ class AclController extends Controller
      * @param  \App\Http\Requests\StoreaclRequest  $request
      * @return \Illuminate\Http\Response
      */
+        /**
+     * @ClassName 
+     */
     public function store(StoreAclRequest $request)
     {
         DB::beginTransaction();
@@ -376,6 +379,9 @@ class AclController extends Controller
      * @param  \App\Models\acl  $acl
      * @return \Illuminate\Http\Response
      */
+        /**
+     * @ClassName 
+     */
     public function update(UpdateAclRequest $request, acl $acl)
     {
         DB::beginTransaction();
@@ -436,6 +442,9 @@ class AclController extends Controller
      *
      * @param  \App\Models\acl  $acl
      * @return \Illuminate\Http\Response
+     */
+        /**
+     * @ClassName 
      */
     public function destroy(Acl $acl, Request $request)
     {

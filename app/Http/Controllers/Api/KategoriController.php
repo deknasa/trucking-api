@@ -18,7 +18,9 @@ use Illuminate\Support\Facades\Schema;
 
 class KategoriController extends Controller
 {
-
+      /**
+     * @ClassName 
+     */
     public function index(Request $request)
     {
         $params = [
@@ -153,7 +155,9 @@ class KategoriController extends Controller
     {
         //
     }
-
+      /**
+     * @ClassName 
+     */
     public function store(StoreKategoriRequest $request)
     {
         DB::beginTransaction();
@@ -217,7 +221,9 @@ class KategoriController extends Controller
     {
         //
     }
-
+      /**
+     * @ClassName 
+     */
     public function update(StoreKategoriRequest $request, Kategori $kategori)
     {
         try {
@@ -264,7 +270,9 @@ class KategoriController extends Controller
             throw $th;
         }
     }
-
+      /**
+     * @ClassName 
+     */
     public function destroy(Kategori $kategori, Request $request)
     {
         $delete = Kategori::destroy($kategori->id);

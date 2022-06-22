@@ -17,7 +17,9 @@ use Illuminate\Support\Facades\Schema;
 
 class MerkController extends Controller
 {
-
+   /**
+     * @ClassName 
+     */
     public function index(Request $request)
     {
         $params = [
@@ -144,7 +146,9 @@ class MerkController extends Controller
     {
         //
     }
-
+   /**
+     * @ClassName 
+     */
     public function store(StoreMerkRequest $request)
     {
         DB::beginTransaction();
@@ -207,7 +211,9 @@ class MerkController extends Controller
     {
         //
     }
-
+   /**
+     * @ClassName 
+     */
     public function update(StoreMerkRequest $request, Merk $merk)
     {
         try {
@@ -253,7 +259,9 @@ class MerkController extends Controller
             throw $th;
         }
     }
-
+   /**
+     * @ClassName 
+     */
     public function destroy(Merk $merk, Request $request)
     {
         $delete = Merk::destroy($merk->id);

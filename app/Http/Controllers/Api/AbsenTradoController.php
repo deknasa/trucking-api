@@ -13,8 +13,8 @@ use Illuminate\Support\Facades\DB;
 
 class AbsenTradoController extends Controller
 {
-       
-               /**
+
+    /**
      * @ClassName 
      */
     public function index(Request $request)
@@ -125,8 +125,8 @@ class AbsenTradoController extends Controller
         ]);
     }
 
-       
-               /**
+
+    /**
      * @ClassName 
      */
     public function store(StoreAbsenTradoRequest $request)
@@ -186,8 +186,8 @@ class AbsenTradoController extends Controller
         ]);
     }
 
-       
-               /**
+
+    /**
      * @ClassName 
      */
     public function update(UpdateAbsenTradoRequest $request, AbsenTrado $absenTrado)
@@ -235,7 +235,7 @@ class AbsenTradoController extends Controller
         }
     }
 
-       
+
     /**
      * @ClassName 
      */

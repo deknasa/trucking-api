@@ -28,7 +28,9 @@ use App\Http\Requests\StorePengeluaranDetailRequest;
 
 class KasGantungHeaderController extends Controller
 {
-
+      /**
+     * @ClassName 
+     */
     public function index(Request $request)
     {
         $params = [
@@ -103,7 +105,9 @@ class KasGantungHeaderController extends Controller
     {
         
     }
-
+      /**
+     * @ClassName 
+     */
     public function store(StoreKasGantungHeaderRequest $request)
     {
         DB::beginTransaction();
@@ -348,7 +352,9 @@ class KasGantungHeaderController extends Controller
     {
         //
     }
-
+      /**
+     * @ClassName 
+     */
     public function update(StoreKasGantungHeaderRequest $request, KasGantungHeader $kasGantungHeader, $id)
     {
         DB::beginTransaction();
@@ -567,7 +573,9 @@ class KasGantungHeaderController extends Controller
 
         return response($kasgantungHeader->kasgantungDetail);
     }
-
+      /**
+     * @ClassName 
+     */
     public function destroy(KasGantungHeader $kasGantungHeader, $id, Request $request)
     {
         DB::beginTransaction();

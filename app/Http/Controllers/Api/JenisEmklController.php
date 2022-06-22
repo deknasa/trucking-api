@@ -16,7 +16,9 @@ use Illuminate\Support\Facades\Schema;
 
 class JenisEmklController extends Controller
 {
-    
+          /**
+     * @ClassName 
+     */
     public function index(Request $request)
     {
         $params = [
@@ -127,7 +129,9 @@ class JenisEmklController extends Controller
     {
         //
     }
-
+      /**
+     * @ClassName 
+     */
     public function store(StoreJenisEmklRequest $request)
     {
         DB::beginTransaction();
@@ -203,6 +207,9 @@ class JenisEmklController extends Controller
      * @param  \App\Models\JenisEmkl  $jenisEmkl
      * @return \Illuminate\Http\Response
      */
+          /**
+     * @ClassName 
+     */
     public function update(StoreJenisEmklRequest $request, JenisEmkl $jenisemkl)
     {
         try {
@@ -253,6 +260,9 @@ class JenisEmklController extends Controller
      *
      * @param  \App\Models\JenisEmkl  $jenisEmkl
      * @return \Illuminate\Http\Response
+     */
+          /**
+     * @ClassName 
      */
     public function destroy(JenisEmkl $jenisemkl, Request $request)
     {

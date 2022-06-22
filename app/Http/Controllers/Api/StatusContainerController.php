@@ -13,6 +13,9 @@ use Illuminate\Support\Facades\Schema;
 
 class StatusContainerController extends Controller
 {
+     /**
+     * @ClassName 
+     */
     public function index()
     {
         $params = [
@@ -130,7 +133,9 @@ class StatusContainerController extends Controller
             'data' => $statusContainer
         ]);
     }
-
+ /**
+     * @ClassName 
+     */
     public function store(StoreStatusContainerRequest $request)
     {
         DB::beginTransaction();
@@ -181,7 +186,9 @@ class StatusContainerController extends Controller
         }
     }
 
-
+ /**
+     * @ClassName 
+     */
     public function update(UpdateStatusContainerRequest $request, StatusContainer $statusContainer)
     {
         try {
@@ -227,7 +234,9 @@ class StatusContainerController extends Controller
             throw $th;
         }
     }
-    
+     /**
+     * @ClassName 
+     */
     public function destroy(StatusContainer $statusContainer, Request $request)
     {
         $delete = StatusContainer::destroy($statusContainer->id);

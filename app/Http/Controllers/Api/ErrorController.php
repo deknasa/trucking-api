@@ -28,6 +28,10 @@ class ErrorController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+
+           /**
+     * @ClassName 
+     */
     public function index()
     {
         $params = [
@@ -141,6 +145,9 @@ class ErrorController extends Controller
      * @param  \App\Http\Requests\StoreErrorRequest  $request
      * @return \Illuminate\Http\Response
      */
+          /**
+     * @ClassName 
+     */
     public function store(StoreErrorRequest $request)
     {
         DB::beginTransaction();
@@ -219,6 +226,9 @@ class ErrorController extends Controller
      * @param  \App\Models\Error  $error
      * @return \Illuminate\Http\Response
      */
+          /**
+     * @ClassName 
+     */
     public function update(UpdateErrorRequest $request, Error $error)
     {
         DB::beginTransaction();
@@ -268,6 +278,9 @@ class ErrorController extends Controller
      *
      * @param  \App\Models\Error  $error
      * @return \Illuminate\Http\Response
+     */
+          /**
+     * @ClassName 
      */
     public function destroy(Error $error, Request $request)
     {

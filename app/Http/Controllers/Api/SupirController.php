@@ -19,7 +19,9 @@ use Illuminate\Support\Facades\Schema;
 
 class SupirController extends Controller
 {
-    
+     /**
+     * @ClassName 
+     */
     public function index(Request $request)
     {
         $params = [
@@ -79,7 +81,9 @@ class SupirController extends Controller
             'params' => $params
         ]);
     }
-
+ /**
+     * @ClassName 
+     */
     public function store(StoreSupirRequest $request)
     {
         DB::beginTransaction();
@@ -135,7 +139,9 @@ class SupirController extends Controller
             return response($th->getMessage());
         }
     }
-
+ /**
+     * @ClassName 
+     */
     public function update(Request $request, $id)
     {
         DB::beginTransaction();
@@ -216,7 +222,9 @@ class SupirController extends Controller
             'data' => $supir
         ]);
     }
-
+ /**
+     * @ClassName 
+     */
     public function destroy(Supir $supir, Request $request)
     {
         DB::beginTransaction();
