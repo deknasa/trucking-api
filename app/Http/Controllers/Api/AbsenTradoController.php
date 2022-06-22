@@ -35,7 +35,7 @@ class AbsenTradoController extends Controller
 
         /* Sorting */
         if ($params['sortIndex'] == 'id') {
-            $query = AbsenTrado::select(
+            $query = DB::table((new AbsenTrado)->getTable())->select(
                 'absentrado.id',
                 'absentrado.kodeabsen',
                 'absentrado.keterangan',
@@ -48,7 +48,7 @@ class AbsenTradoController extends Controller
                 ->orderBy('absentrado.id', $params['sortOrder']);
         } else {
             if ($params['sortOrder'] == 'asc') {
-                $query = AbsenTrado::select(
+                $query = DB::table((new AbsenTrado)->getTable())->select(
                     'absentrado.id',
                     'absentrado.kodeabsen',
                     'absentrado.keterangan',
@@ -61,7 +61,7 @@ class AbsenTradoController extends Controller
                     ->orderBy($params['sortIndex'], $params['sortOrder'])
                     ->orderBy('absentrado.id', $params['sortOrder']);
             } else {
-                $query = AbsenTrado::select(
+                $query = DB::table((new AbsenTrado)->getTable())->select(
                     'absentrado.id',
                     'absentrado.kodeabsen',
                     'absentrado.keterangan',
