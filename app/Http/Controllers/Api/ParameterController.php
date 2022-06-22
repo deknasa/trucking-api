@@ -493,4 +493,15 @@ class ParameterController extends Controller
 
         $this->toExcel('Parameter', $parameters, $columns);
     }
+
+    public function combo(Request $request)
+    {
+        $parameters = Parameter::where('grp', '=', $request->grp)
+            ->where('subgrp', '=', $request->subgrp)
+            ->get();
+
+        return response([
+            'data' => $parameters
+        ]);
+    }
 }
