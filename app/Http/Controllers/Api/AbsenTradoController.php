@@ -10,6 +10,11 @@ use App\Models\AbsenTrado;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
+use App\Http\Resources\AbsenTrado as ResourcesAbsenTrado;
+use App\Http\Resources\AbsenTradoResource;
+
 
 class AbsenTradoController extends Controller
 {
@@ -140,7 +145,7 @@ class AbsenTradoController extends Controller
             $absenTrado->kodeabsen = $request->kodeabsen;
             $absenTrado->keterangan = $request->keterangan;
             $absenTrado->statusaktif = $request->statusaktif;
-            $absenTrado->modifiedby = auth('api')->user()->name;;
+            $absenTrado->modifiedby = auth('api')->user()->name;
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
 
@@ -164,12 +169,13 @@ class AbsenTradoController extends Controller
             /* Set position and page */
             $del = 0;
             $data = $this->getid($absenTrado->id, $request, $del);
+           
             $absenTrado->position = $data->row;
-
+            
             if (isset($request->limit)) {
                 $absenTrado->page = ceil($absenTrado->position / $request->limit);
             }
-
+          
             return response([
                 'status' => true,
                 'message' => 'Berhasil disimpan',
@@ -215,9 +221,9 @@ class AbsenTradoController extends Controller
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
 
+                
                 /* Set position and page */
                 $absenTrado->position = $this->getid($absenTrado->id, $request, 0)->row;
-
                 if (isset($request->limit)) {
                     $absenTrado->page = ceil($absenTrado->position / $request->limit);
                 }
@@ -244,7 +250,7 @@ class AbsenTradoController extends Controller
      */
     public function destroy(AbsenTrado $absenTrado, Request $request)
     {
-        $delete = DB::table((new AbsenTrado)->getTable())->destroy($absenTrado->id);
+        $delete = AbsenTrado::destroy($absenTrado->id);
         $del = 1;
         if ($delete) {
             $logTrail = [
