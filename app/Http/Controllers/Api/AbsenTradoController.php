@@ -76,25 +76,25 @@ class AbsenTradoController extends Controller
             }
         }
 
-        /* Searching */
-        if (count($params['search']) > 0 && @$params['search']['rules'][0]['data'] != '') {
-            switch ($params['search']['groupOp']) {
+        /* filtersing */
+        if (count($params['filters']) > 0 && @$params['filters']['rules'][0]['data'] != '') {
+            switch ($params['filters']['groupOp']) {
                 case "AND":
-                    foreach ($params['search']['rules'] as $index => $search) {
-                        if ($search['field'] == 'statusaktif') {
-                            $query = $query->where('parameter.text', 'LIKE', "%$search[data]%");
+                    foreach ($params['filters']['rules'] as $index => $filters) {
+                        if ($filters['field'] == 'statusaktif') {
+                            $query = $query->where('parameter.text', 'LIKE', "%$filters[data]%");
                         } else {
-                            $query = $query->where($search['field'], 'LIKE', "%$search[data]%");
+                            $query = $query->where($filters['field'], 'LIKE', "%$filters[data]%");
                         }
                     }
 
                     break;
                 case "OR":
-                    foreach ($params['search']['rules'] as $index => $search) {
-                        if ($search['field'] == 'statusaktif') {
-                            $query = $query->where('parameter.text', 'LIKE', "%$search[data]%");
+                    foreach ($params['filters']['rules'] as $index => $filters) {
+                        if ($filters['field'] == 'statusaktif') {
+                            $query = $query->where('parameter.text', 'LIKE', "%$filters[data]%");
                         } else {
-                            $query = $query->orWhere($search['field'], 'LIKE', "%$search[data]%");
+                            $query = $query->orWhere($filters['field'], 'LIKE', "%$filters[data]%");
                         }
                     }
 
