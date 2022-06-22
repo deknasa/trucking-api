@@ -13,7 +13,7 @@ class StoreRitasiRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +24,13 @@ class StoreRitasiRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'tglbukti' => 'required',
+            'statusritasi' => 'required',
+            'suratpengantar_nobukti' => 'required',
+            'dari_id' => 'required',
+            'sampai_id' => 'required',
+            'trado_id' => 'required',
+            'supir_id' => 'required',
         ];
     }
 }
