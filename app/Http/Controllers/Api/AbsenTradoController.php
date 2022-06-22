@@ -140,7 +140,7 @@ class AbsenTradoController extends Controller
             $absenTrado->kodeabsen = $request->kodeabsen;
             $absenTrado->keterangan = $request->keterangan;
             $absenTrado->statusaktif = $request->statusaktif;
-            $absenTrado->modifiedby = auth('api')->user()->name;;
+            $absenTrado->modifiedby = auth('api')->user()->name;
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
 
