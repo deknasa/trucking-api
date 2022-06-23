@@ -46,13 +46,15 @@ class BankController extends Controller
                 'bank.coa',
                 'bank.tipe',
                 'parameter.text as statusaktif',
-                'bank.kodepenerimaan',
-                'bank.kodepengeluaran',
+                'kodepenerimaan.text as kodepenerimaan',
+                'kodepengeluaran.text as kodepengeluaran',
                 'bank.modifiedby',
                 'bank.created_at',
                 'bank.updated_at'
             )
-                ->leftJoin('parameter', 'bank.statusaktif', '=', 'parameter.id')
+                    ->leftJoin('parameter', 'bank.statusaktif', '=', 'parameter.id')
+                    ->leftJoin('parameter as kodepenerimaan', 'bank.kodepenerimaan', '=', 'kodepenerimaan.id')
+                    ->leftJoin('parameter as kodepengeluaran', 'bank.kodepengeluaran', '=', 'kodepengeluaran.id')
                 ->orderBy('bank.id', $params['sortOrder']);
         } else if ($params['sortIndex'] == 'kodebank' or $params['sortIndex'] == 'namabank') {
             $query = Bank::select(
@@ -62,13 +64,15 @@ class BankController extends Controller
                 'bank.coa',
                 'bank.tipe',
                 'parameter.text as statusaktif',
-                'bank.kodepenerimaan',
-                'bank.kodepengeluaran',
-                'bank.modifiedby',
-                'bank.created_at',
-                'bank.updated_at'
-            )
-                ->leftJoin('parameter', 'bank.statusaktif', '=', 'parameter.id')
+                'kodepenerimaan.text as kodepenerimaan',
+                    'kodepengeluaran.text as kodepengeluaran',
+                    'bank.modifiedby',
+                    'bank.created_at',
+                    'bank.updated_at'
+                )
+                    ->leftJoin('parameter', 'bank.statusaktif', '=', 'parameter.id')
+                    ->leftJoin('parameter as kodepenerimaan', 'bank.kodepenerimaan', '=', 'kodepenerimaan.id')
+                    ->leftJoin('parameter as kodepengeluaran', 'bank.kodepengeluaran', '=', 'kodepengeluaran.id')
                 ->orderBy($params['sortIndex'], $params['sortOrder'])
                 ->orderBy('bank.id', $params['sortOrder']);
         } else {
@@ -80,13 +84,15 @@ class BankController extends Controller
                     'bank.coa',
                     'bank.tipe',
                     'parameter.text as statusaktif',
-                    'bank.kodepenerimaan',
-                    'bank.kodepengeluaran',
+                    'kodepenerimaan.text as kodepenerimaan',
+                    'kodepengeluaran.text as kodepengeluaran',
                     'bank.modifiedby',
                     'bank.created_at',
                     'bank.updated_at'
                 )
                     ->leftJoin('parameter', 'bank.statusaktif', '=', 'parameter.id')
+                    ->leftJoin('parameter as kodepenerimaan', 'bank.kodepenerimaan', '=', 'kodepenerimaan.id')
+                    ->leftJoin('parameter as kodepengeluaran', 'bank.kodepengeluaran', '=', 'kodepengeluaran.id')
                     ->orderBy($params['sortIndex'], $params['sortOrder'])
                     ->orderBy('bank.id', $params['sortOrder']);
             } else {
@@ -97,13 +103,15 @@ class BankController extends Controller
                     'bank.coa',
                     'bank.tipe',
                     'parameter.text as statusaktif',
-                    'bank.kodepenerimaan',
-                    'bank.kodepengeluaran',
+                    'kodepenerimaan.text as kodepenerimaan',
+                    'kodepengeluaran.text as kodepengeluaran',
                     'bank.modifiedby',
                     'bank.created_at',
                     'bank.updated_at'
                 )
                     ->leftJoin('parameter', 'bank.statusaktif', '=', 'parameter.id')
+                    ->leftJoin('parameter as kodepenerimaan', 'bank.kodepenerimaan', '=', 'kodepenerimaan.id')
+                    ->leftJoin('parameter as kodepengeluaran', 'bank.kodepengeluaran', '=', 'kodepengeluaran.id')
                     ->orderBy($params['sortIndex'], $params['sortOrder'])
                     ->orderBy('bank.id', 'asc');
             }
@@ -234,7 +242,7 @@ class BankController extends Controller
             $bank->statusaktif = $request->statusaktif;
             $bank->kodepenerimaan = $request->kodepenerimaan;
             $bank->kodepengeluaran = $request->kodepengeluaran;
-            $bank->modifiedby = $request->modifiedby;
+            $bank->modifiedby = auth('api')->user()->name;
 
             if ($bank->save()) {
                 $logTrail = [
@@ -318,6 +326,8 @@ class BankController extends Controller
     {
         $data = [
             'status' => Parameter::where(['grp' => 'status aktif'])->get(),
+            'kodepenerimaan' => Parameter::where(['grp' => 'PENERIMAAN KAS'])->get(),
+            'kodepengeluaran' => Parameter::where(['grp' => 'PENGELUARAN KAS'])->get(),
             'akunpusat' => AkunPusat::all(),
         ];
 
