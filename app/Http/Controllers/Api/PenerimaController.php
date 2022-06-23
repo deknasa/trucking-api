@@ -13,6 +13,9 @@ use Illuminate\Support\Facades\Schema;
 
 class PenerimaController extends Controller
 {
+        /**
+     * @ClassName 
+     */
     public function index()
     {
         $params = [
@@ -140,7 +143,9 @@ class PenerimaController extends Controller
             'data' => $penerima
         ]);
     }
-
+    /**
+     * @ClassName 
+     */
     public function store(StorePenerimaRequest $request)
     {
         DB::beginTransaction();
@@ -192,7 +197,9 @@ class PenerimaController extends Controller
             throw $th;
         }
     }
-    
+        /**
+     * @ClassName 
+     */
     public function update(UpdatePenerimaRequest $request, Penerima $penerima)
     {
         try {
@@ -239,7 +246,9 @@ class PenerimaController extends Controller
             throw $th;
         }
     }
-    
+        /**
+     * @ClassName 
+     */
     public function destroy(Penerima $penerima, Request $request)
     {
         $delete = Penerima::destroy($penerima->id);

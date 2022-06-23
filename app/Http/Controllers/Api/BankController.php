@@ -165,9 +165,9 @@ class BankController extends Controller
             $bank->coa = $request->coa;
             $bank->tipe = $request->tipe;
             $bank->statusaktif = $request->statusaktif;
-            $bank->kodepenerimaan = $request->kodepenerimaan;
-            $bank->kodepengeluaran = $request->kodepengeluaran;
-            $bank->modifiedby = $request->modifiedby;
+            $bank->kodepenerimaan = $request->kodepenerimaan ?? 0;
+            $bank->kodepengeluaran = $request->kodepengeluaran ?? 0;
+            $bank->modifiedby = auth('api')->user()->name;
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
 
@@ -184,7 +184,7 @@ class BankController extends Controller
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
-
+                
                 DB::commit();
             }
 
@@ -192,15 +192,15 @@ class BankController extends Controller
             $del = 0;
             $data = $this->getid($bank->id, $request, $del);
             $bank->position = $data->row;
-
+            
             if (isset($request->limit)) {
                 $bank->page = ceil($bank->position / $request->limit);
             }
-
+            
             return response([
                 'status' => true,
                 'message' => 'Berhasil disimpan',
-                'data' => $bank
+                'data' => $bank,
             ]);
         } catch (\Throwable $th) {
             DB::rollBack();
@@ -296,8 +296,8 @@ class BankController extends Controller
             DB::commit();
 
             $data = $this->getid($bank->id, $request, $del);
-            $bank->position = $data->row;
-            $bank->id = $data->id;
+            $bank->position = @$data->row;
+            $bank->id = @$data->id;
             if (isset($request->limit)) {
                 $bank->page = ceil($bank->position / $request->limit);
             }
