@@ -27,7 +27,9 @@ use App\Http\Requests\StorePengeluaranDetailRequest;
 
 class ProsesAbsensiSupirController extends Controller
 {
-
+    /**
+     * @ClassName 
+     */
     public function index(Request $request)
     {
         $params = [
@@ -158,7 +160,9 @@ class ProsesAbsensiSupirController extends Controller
         ]);
     }
 
-
+    /**
+     * @ClassName 
+     */
     public function store(StoreProsesAbsensiSupirRequest $request)
     {
         DB::beginTransaction();
@@ -331,7 +335,9 @@ class ProsesAbsensiSupirController extends Controller
             'data' => $prosesabsensisupir
         ]);
     }
-
+    /**
+     * @ClassName 
+     */
     public function update(UpdateProsesAbsensiSupirRequest $request, ProsesAbsensiSupir $prosesabsensisupir)
     {
         DB::beginTransaction();
@@ -477,7 +483,9 @@ class ProsesAbsensiSupirController extends Controller
             throw $th;
         }
     }
-
+    /**
+     * @ClassName 
+     */
     public function destroy($id, Request $request)
     {
         DB::beginTransaction();
