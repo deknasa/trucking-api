@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Exceptions\NotDeletableModel;
 use App\Http\Controllers\Controller;
 use App\Models\Agen;
 use App\Http\Requests\StoreAgenRequest;
@@ -318,40 +319,51 @@ class AgenController extends Controller
      */
     public function destroy(Agen $agen, Request $request)
     {
-        $delete = Agen::destroy($agen->id);
-        $del = 1;
-        if ($delete) {
-            $logTrail = [
-                'namatabel' => strtoupper($agen->getTable()),
-                'postingdari' => 'DELETE AGEN',
-                'idtrans' => $agen->id,
-                'nobuktitrans' => $agen->id,
-                'aksi' => 'DELETE',
-                'datajson' => $agen->toArray(),
-                'modifiedby' => $agen->modifiedby
-            ];
+        DB::beginTransaction();
 
-            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-            app(LogTrailController::class)->store($validatedLogTrail);
+        try {
+            $delete = $agen->delete();
 
-            DB::commit();
+            $del = 1;
+            if ($delete) {
+                $logTrail = [
+                    'namatabel' => strtoupper($agen->getTable()),
+                    'postingdari' => 'DELETE AGEN',
+                    'idtrans' => $agen->id,
+                    'nobuktitrans' => $agen->id,
+                    'aksi' => 'DELETE',
+                    'datajson' => $agen->toArray(),
+                    'modifiedby' => $agen->modifiedby
+                ];
 
-            $data = $this->getid($agen->id, $request, $del);
-            $agen->position = $data->row;
-            $agen->id = $data->id;
-            if (isset($request->limit)) {
-                $agen->page = ceil($agen->position / $request->limit);
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                app(LogTrailController::class)->store($validatedLogTrail);
+
+                DB::commit();
+
+                $data = $this->getid($agen->id, $request, $del);
+                $agen->position = $data->row;
+                $agen->id = $data->id;
+                if (isset($request->limit)) {
+                    $agen->page = ceil($agen->position / $request->limit);
+                }
+                return response([
+                    'status' => true,
+                    'message' => 'Berhasil dihapus',
+                    'data' => $agen
+                ]);
+            } else {
+                return response([
+                    'status' => false,
+                    'message' => 'Gagal dihapus'
+                ]);
             }
+        } catch (NotDeletableModel $exeption) {
+            DB::rollBack();
+            
             return response([
-                'status' => true,
-                'message' => 'Berhasil dihapus',
-                'data' => $agen
-            ]);
-        } else {
-            return response([
-                'status' => false,
-                'message' => 'Gagal dihapus'
-            ]);
+                'message' => $exeption->getMessage()
+            ], 403);
         }
     }
 
