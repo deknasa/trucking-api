@@ -26,8 +26,7 @@ class StoreContainerRequest extends FormRequest
     {
         return [
             'keterangan' => 'required',
-            'statusaktif' => 'required',
-            'modifiedby' => 'required'
+            'statusaktif' => 'required'
         ];
     }
 
@@ -35,19 +34,17 @@ class StoreContainerRequest extends FormRequest
     {
         return [
             'keterangan' => 'Keterangan',
-            'statusaktif' => 'Status Aktif',
-            'modifiedby' => 'Modified By',
+            'statusaktif' => 'Status Aktif'
         ];
     }
 
-    // public function messages()
-    // {
-    //     $controller = new ErrorController;
-    //     return [
-    //         'keterangan.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
-    //         'statusaktif.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
-    //         'modifiedby.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
-
-    //     ];
-    // }
+    public function messages()
+    {
+        $controller = new ErrorController;
+        
+        return [
+            'keterangan.required' => ':attribute '. $controller->geterror('WI')->keterangan,
+            'statusaktif.required' => ':attribute '. $controller->geterror('WI')->keterangan,
+        ];
+    }
 }

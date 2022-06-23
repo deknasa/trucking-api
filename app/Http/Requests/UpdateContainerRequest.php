@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Http\Controllers\Api\ErrorController;
 
 class UpdateContainerRequest extends FormRequest
 {
@@ -13,7 +14,7 @@ class UpdateContainerRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +25,26 @@ class UpdateContainerRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'keterangan' => 'required',
+            'statusaktif' => 'required'
+        ];
+    }
+
+    public function attributes()
+    {
+        return [
+            'keterangan' => 'Keterangan',
+            'statusaktif' => 'Status Aktif'
+        ];
+    }
+
+    public function messages()
+    {
+        $controller = new ErrorController;
+        
+        return [
+            'keterangan.required' => ':attribute '. $controller->geterror('WI')->keterangan,
+            'statusaktif.required' => ':attribute '. $controller->geterror('WI')->keterangan,
         ];
     }
 }

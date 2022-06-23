@@ -28,22 +28,23 @@ class ContainerController extends Controller
            /**
      * @ClassName 
      */
-    public function index(Request $request)
+    public function index()
     {
         $params = [
-            'offset' => $request->offset ?? 0,
-            'limit' => $request->limit ?? 100,
-            'search' => $request->search ?? [],
-            'sortIndex' => $request->sortIndex ?? 'id',
-            'sortOrder' => $request->sortOrder ?? 'asc',
+            'offset' => request()->offset ?? ((request()->page - 1) * request()->limit),
+            'limit' => request()->limit ?? 10,
+            'filters' => json_decode(request()->filters, true) ?? [],
+            'sortIndex' => request()->sortIndex ?? 'id',
+            'sortOrder' => request()->sortOrder ?? 'asc',
         ];
+        dd($params);
         
-        $totalRows = Container::count();
+        $totalRows = DB::table((new Container)->getTable())->count();
         $totalPages = ceil($totalRows / $params['limit']);
 
         /* Sorting */
         if ($params['sortIndex'] == 'id') {
-            $query = Container::select(
+            $query = DB::table((new Container)->getTable())->select(
                 'container.id',
                 'container.keterangan',
                 'parameter.text as statusaktif',
@@ -54,7 +55,7 @@ class ContainerController extends Controller
                 ->leftJoin('parameter', 'container.statusaktif', '=', 'parameter.id')
                 ->orderBy('container.id', $params['sortOrder']);
         } else if ($params['sortIndex'] == 'keterangan') {
-            $query = Container::select(
+            $query = DB::table((new Container)->getTable())->select(
                 'container.id',
                 'container.keterangan',
                 'parameter.text as statusaktif',
@@ -67,7 +68,7 @@ class ContainerController extends Controller
                 ->orderBy('container.id', $params['sortOrder']);
         } else {
             if ($params['sortOrder'] == 'asc') {
-                $query = Container::select(
+                $query = DB::table((new Container)->getTable())->select(
                     'container.id',
                     'container.keterangan',
                     'parameter.text as statusaktif',
@@ -79,7 +80,7 @@ class ContainerController extends Controller
                     ->orderBy($params['sortIndex'], $params['sortOrder'])
                     ->orderBy('container.id', $params['sortOrder']);
             } else {
-                $query = Container::select(
+                $query = DB::table((new Container)->getTable())->select(
                     'container.id',
                     'container.keterangan',
                     'parameter.text as statusaktif',
@@ -95,10 +96,10 @@ class ContainerController extends Controller
 
 
         /* Searching */
-        if (count($params['search']) > 0 && @$params['search']['rules'][0]['data'] != '') {
-            switch ($params['search']['groupOp']) {
+        if (count($params['filters']) > 0 && @$params['filters']['rules'][0]['data'] != '') {
+            switch ($params['filters']['groupOp']) {
                 case "AND":
-                    foreach ($params['search']['rules'] as $index => $search) {
+                    foreach ($params['filters']['rules'] as $index => $search) {
                         if ($search['field'] == 'statusaktif') {
                             $query = $query->where('parameter.text', 'LIKE', "%$search[data]%");
                         } else {
@@ -108,7 +109,7 @@ class ContainerController extends Controller
 
                     break;
                 case "OR":
-                    foreach ($params['search']['rules'] as $index => $search) {
+                    foreach ($params['filters']['rules'] as $index => $search) {
                         if ($search['field'] == 'statusaktif') {
                             $query = $query->orWhere('parameter.text', 'LIKE', "%$search[data]%");
                         } else {
@@ -177,7 +178,7 @@ class ContainerController extends Controller
             $container = new Container();
             $container->keterangan = strtoupper($request->keterangan);
             $container->statusaktif = $request->statusaktif;
-            $container->modifiedby = strtoupper($request->modifiedby);
+            $container->modifiedby = auth('api')->user()->name;
 
             $container->save();
 
@@ -185,7 +186,7 @@ class ContainerController extends Controller
                 'id' => $container->id,
                 'keterangan' => strtoupper($request->keterangan),
                 'statusaktif' => $request->statusaktif,
-                'modifiedby' => strtoupper($request->modifiedby),
+                'modifiedby' => strtoupper(auth('api')->user()->name;),
             ];
 
 
@@ -270,7 +271,7 @@ class ContainerController extends Controller
                 'id' => $container->id,
                 'keterangan' => strtoupper($request->keterangan),
                 'statusaktif' => $request->statusaktif,
-                'modifiedby' => strtoupper($request->modifiedby),
+                'modifiedby' => strtoupper(auth('api')->user()->name;),
             ];
 
 
@@ -278,7 +279,7 @@ class ContainerController extends Controller
                 'id' => $container->id,
                 'keterangan' => strtoupper($request->keterangan),
                 'statusaktif' => $request->statusaktif,
-                'modifiedby' => strtoupper($request->modifiedby),
+                'modifiedby' => strtoupper(auth('api')->user()->name;),
             ];
 
 
@@ -339,7 +340,7 @@ class ContainerController extends Controller
                 'id' => $container->id,
                 'keterangan' => strtoupper($request->keterangan),
                 'statusaktif' => $request->statusaktif,
-                'modifiedby' => strtoupper($request->modifiedby),
+                'modifiedby' => strtoupper(auth('api')->user()->name;),
             ];
 
             $datalogtrail = [
@@ -356,7 +357,7 @@ class ContainerController extends Controller
             app(LogTrailController::class)->store($data);
 
             DB::commit();
-            Container::destroy($container->id);
+            DB::table((new Container)->getTable())->destroy($container->id);
             $del = 1;
             $data = $this->getid($container->id, $request, $del);
             $container->position = $data->row;
@@ -460,7 +461,7 @@ class ContainerController extends Controller
 
 
         if ($params['sortname'] == 'id') {
-            $query = Container::select(
+            $query = DB::table((new Container)->getTable())->select(
                 'container.id as id_',
                 'container.keterangan',
                 'parameter.text as statusaktif',
@@ -471,7 +472,7 @@ class ContainerController extends Controller
                 ->leftJoin('parameter', 'container.statusaktif', '=', 'parameter.id')
                 ->orderBy('container.id', $params['sortorder']);
         } else if ($params['sortname'] == 'keterangan') {
-            $query = Container::select(
+            $query = DB::table((new Container)->getTable())->select(
                 'container.id as id_',
                 'container.keterangan',
                 'parameter.text as statusaktif',
@@ -485,7 +486,7 @@ class ContainerController extends Controller
                 ->orderBy('container.id', $params['sortorder']);
         } else {
             if ($params['sortorder'] == 'asc') {
-                $query = Container::select(
+                $query = DB::table((new Container)->getTable())->select(
                     'container.id as id_',
                     'container.keterangan',
                     'parameter.text as statusaktif',
@@ -497,7 +498,7 @@ class ContainerController extends Controller
                     ->orderBy($params['sortname'], $params['sortorder'])
                     ->orderBy('container.id', $params['sortorder']);
             } else {
-                $query = Container::select(
+                $query = DB::table((new Container)->getTable())->select(
                     'container.id as id_',
                     'container.keterangan',
                     'parameter.text as statusaktif',
