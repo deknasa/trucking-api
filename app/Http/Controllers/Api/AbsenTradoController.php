@@ -248,8 +248,9 @@ class AbsenTradoController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(AbsenTrado $absenTrado, Request $request)
+    public function destroy(AbsenTrado $absen_trado, Request $request)
     {
+        dd($absen_trado);
         $delete = AbsenTrado::destroy($absenTrado->id);
         $del = 1;
         if ($delete) {
