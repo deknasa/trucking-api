@@ -19,24 +19,24 @@ class JenisEmklController extends Controller
           /**
      * @ClassName 
      */
-    public function index(Request $request)
+    public function index()
     {
         $params = [
-            'offset' => $request->offset ?? 0,
-            'limit' => $request->limit ?? 10,
-            'search' => $request->search ?? [],
-            'sortIndex' => $request->sortIndex ?? 'id',
-            'sortOrder' => $request->sortOrder ?? 'asc',
+            'offset' => request()->offset ?? ((request()->page - 1) * request()->limit),
+            'limit' => request()->limit ?? 10,
+            'filters' => json_decode(request()->filters, true) ?? [],
+            'sortIndex' => request()->sortIndex ?? 'id',
+            'sortOrder' => request()->sortOrder ?? 'asc',
         ];
 
-        $totalRows = JenisEmkl::count();
+        $totalRows = DB::table((new JenisEmkl)->getTable())->count();
         $totalPages = $params['limit'] > 0 ? ceil($totalRows / $params['limit']) : 1;
 
         /* Sorting */
-        $query = JenisEmkl::orderBy($params['sortIndex'], $params['sortOrder']);
+        $query = DB::table((new JenisEmkl)->getTable())->orderBy($params['sortIndex'], $params['sortOrder']);
 
         if ($params['sortIndex'] == 'id') {
-            $query = JenisEmkl::select(
+            $query = DB::table((new JenisEmkl)->getTable())->select(
                 'jenisemkl.id',
                 'jenisemkl.kodejenisemkl',
                 'jenisemkl.keterangan',
@@ -45,7 +45,7 @@ class JenisEmklController extends Controller
                 'jenisemkl.updated_at'
             )->orderBy('jenisemkl.id', $params['sortOrder']);
         } else if ($params['sortIndex'] == 'kodejenisemkl' or $params['sortIndex'] == 'keterangan') {
-            $query = JenisEmkl::select(
+            $query = DB::table((new JenisEmkl)->getTable())->select(
                 'jenisemkl.id',
                 'jenisemkl.kodejenisemkl',
                 'jenisemkl.keterangan',
@@ -57,7 +57,7 @@ class JenisEmklController extends Controller
                 ->orderBy('jenisemkl.id', $params['sortOrder']);
         } else {
             if ($params['sortOrder'] == 'asc') {
-                $query = JenisEmkl::select(
+                $query = DB::table((new JenisEmkl)->getTable())->select(
                     'jenisemkl.id',
                     'jenisemkl.kodejenisemkl',
                     'jenisemkl.keterangan',
@@ -68,7 +68,7 @@ class JenisEmklController extends Controller
                     ->orderBy($params['sortIndex'], $params['sortOrder'])
                     ->orderBy('jenisemkl.id', $params['sortOrder']);
             } else {
-                $query = JenisEmkl::select(
+                $query = DB::table((new JenisEmkl)->getTable())->select(
                     'jenisemkl.id',
                     'jenisemkl.kodejenisemkl',
                     'jenisemkl.keterangan',
@@ -82,16 +82,16 @@ class JenisEmklController extends Controller
         }
 
         /* Searching */
-        if (count($params['search']) > 0 && @$params['search']['rules'][0]['data'] != '') {
-            switch ($params['search']['groupOp']) {
+        if (count($params['filters']) > 0 && @$params['filters']['rules'][0]['data'] != '') {
+            switch ($params['filters']['groupOp']) {
                 case "AND":
-                    foreach ($params['search']['rules'] as $index => $search) {
+                    foreach ($params['filters']['rules'] as $index => $search) {
                         $query = $query->where($search['field'], 'LIKE', "%$search[data]%");
                     }
 
                     break;
                 case "OR":
-                    foreach ($params['search']['rules'] as $index => $search) {
+                    foreach ($params['filters']['rules'] as $index => $search) {
                         $query = $query->orWhere($search['field'], 'LIKE', "%$search[data]%");
                     }
 
@@ -140,7 +140,7 @@ class JenisEmklController extends Controller
             $jenisemkl = new JenisEmkl();
             $jenisemkl->kodejenisemkl = $request->kodejenisemkl;
             $jenisemkl->keterangan = $request->keterangan;
-            $jenisemkl->modifiedby = $request->modifiedby;
+            $jenisemkl->modifiedby = auth('api')->user()->name;
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
 
@@ -213,10 +213,10 @@ class JenisEmklController extends Controller
     public function update(StoreJenisEmklRequest $request, JenisEmkl $jenisemkl)
     {
         try {
-            $jenisemkl = JenisEmkl::findOrFail($jenisemkl->id);
+            $jenisemkl = DB::table((new JenisEmkl)->getTable())->findOrFail($jenisemkl->id);
             $jenisemkl->kodejenisemkl = $request->kodejenisemkl;
             $jenisemkl->keterangan = $request->keterangan;
-            $jenisemkl->modifiedby = $request->modifiedby;
+            $jenisemkl->modifiedby = auth('api')->user()->name;
 
             if ($jenisemkl->save()) {
                 $logTrail = [
@@ -319,7 +319,7 @@ class JenisEmklController extends Controller
 
     public function getPosition($jenisemkl, $request)
     {
-        return JenisEmkl::where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $jenisemkl->{$request->sortname})
+        return DB::table((new JenisEmkl)->getTable())->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $jenisemkl->{$request->sortname})
             /* Jika sortname modifiedby atau ada data duplikat */
             // ->where('id', $request->sortorder == 'desc' ? '>=' : '<=', $parameter->id)
             ->count();
@@ -348,7 +348,7 @@ class JenisEmklController extends Controller
         });
 
         if ($params['sortname'] == 'id') {
-            $query = JenisEmkl::select(
+            $query = DB::table((new JenisEmkl)->getTable())->select(
                 'jenisemkl.id as id_',
                 'jenisemkl.kodejenisemkl',
                 'jenisemkl.keterangan',
@@ -358,7 +358,7 @@ class JenisEmklController extends Controller
             )
                 ->orderBy('jenisemkl.id', $params['sortorder']);
         } else if ($params['sortname'] == 'kodejenisemkl' or $params['sortname'] == 'keterangan') {
-            $query = JenisEmkl::select(
+            $query = DB::table((new JenisEmkl)->getTable())->select(
                 'jenisemkl.id as id_',
                 'jenisemkl.kodejenisemkl',
                 'jenisemkl.keterangan',
@@ -370,7 +370,7 @@ class JenisEmklController extends Controller
                 ->orderBy('jenisemkl.id', $params['sortorder']);
         } else {
             if ($params['sortorder'] == 'asc') {
-                $query = JenisEmkl::select(
+                $query = DB::table((new JenisEmkl)->getTable())->select(
                     'jenisemkl.id as id_',
                     'jenisemkl.kodejenisemkl',
                     'jenisemkl.keterangan',
@@ -381,7 +381,7 @@ class JenisEmklController extends Controller
                     ->orderBy($params['sortname'], $params['sortorder'])
                     ->orderBy('jenisemkl.id', $params['sortorder']);
             } else {
-                $query = JenisEmkl::select(
+                $query = DB::table((new JenisEmkl)->getTable())->select(
                     'jenisemkl.id as id_',
                     'jenisemkl.kodejenisemkl',
                     'jenisemkl.keterangan',

@@ -23,24 +23,24 @@ class TarifController extends Controller
  /**
      * @ClassName 
      */
-    public function index(Request $request)
+    public function index()
     {
         $params = [
-            'offset' => $request->offset ?? 0,
-            'limit' => $request->limit ?? 10,
-            'search' => $request->search ?? [],
-            'sortIndex' => $request->sortIndex ?? 'id',
-            'sortOrder' => $request->sortOrder ?? 'asc',
+            'offset' => request()->offset ?? ((request()->page - 1) * request()->limit),
+            'limit' => request()->limit ?? 10,
+            'filters' => json_decode(request()->filters, true) ?? [],
+            'sortIndex' => request()->sortIndex ?? 'id',
+            'sortOrder' => request()->sortOrder ?? 'asc',
         ];
 
-        $totalRows = Tarif::count();
+        $totalRows = DB::table((new Tarif())->getTable())->count();
         $totalPages = $params['limit'] > 0 ? ceil($totalRows / $params['limit']) : 1;
 
         /* Sorting */
-        $query = Tarif::orderBy($params['sortIndex'], $params['sortOrder']);
+        $query = DB::table((new Tarif())->getTable())->orderBy($params['sortIndex'], $params['sortOrder']);
 
         if ($params['sortIndex'] == 'id') {
-            $query = Tarif::select(
+            $query = DB::table((new Tarif())->getTable())->select(
                 'tarif.id',
                 'tarif.tujuan',
                 'container.keterangan as container_id',
@@ -64,7 +64,7 @@ class TarifController extends Controller
             ->leftJoin('parameter AS p', 'tarif.statuspenyesuaianharga', '=', 'parameter.id')
             ->orderBy('tarif.id', $params['sortOrder']);
         } else if ($params['sortIndex'] == 'tujuan' or $params['sortIndex'] == 'container_id') {
-            $query = Tarif::select(
+            $query = DB::table((new Tarif())->getTable())->select(
                 'tarif.id',
                 'tarif.tujuan',
                 'container.keterangan as container_id',
@@ -90,7 +90,7 @@ class TarifController extends Controller
                 ->orderBy('tarif.id', $params['sortOrder']);
         } else {
             if ($params['sortOrder'] == 'asc') {
-                $query = Tarif::select(
+                $query = DB::table((new Tarif())->getTable())->select(
                     'tarif.id',
                     'tarif.tujuan',
                     'container.keterangan as container_id',
@@ -115,7 +115,7 @@ class TarifController extends Controller
                     ->orderBy($params['sortIndex'], $params['sortOrder'])
                     ->orderBy('tarif.id', $params['sortOrder']);
             } else {
-                $query = Tarif::select(
+                $query = DB::table((new Tarif())->getTable())->select(
                     'tarif.id',
                     'tarif.tujuan',
                     'container.keterangan as container_id',
@@ -143,10 +143,10 @@ class TarifController extends Controller
         }
 
         /* Searching */
-        if (count($params['search']) > 0 && @$params['search']['rules'][0]['data'] != '') {
-            switch ($params['search']['groupOp']) {
+        if (count($params['filters']) > 0 && @$params['filters']['rules'][0]['data'] != '') {
+            switch ($params['filters']['groupOp']) {
                 case "AND":
-                    foreach ($params['search']['rules'] as $index => $search) {
+                    foreach ($params['filters']['rules'] as $index => $search) {
                         if ($search['field'] == 'statusaktif') {
                             $query = $query->where('parameter.text', 'LIKE', "%$search[data]%");
                         } else {
@@ -156,7 +156,7 @@ class TarifController extends Controller
 
                     break;
                 case "OR":
-                    foreach ($params['search']['rules'] as $index => $search) {
+                    foreach ($params['filters']['rules'] as $index => $search) {
                         if ($search['field'] == 'statusaktif') {
                             $query = $query->orWhere('parameter.text', 'LIKE', "%$search[data]%");
                         } else {
@@ -217,7 +217,7 @@ class TarifController extends Controller
             $tarif->nominalton = $request->nominalton;
             $tarif->tglberlaku = date('Y-m-d', strtotime($request->tglberlaku));
             $tarif->statuspenyesuaianharga = $request->statuspenyesuaianharga;
-            $tarif->modifiedby = $request->modifiedby;
+            $tarif->modifiedby = auth('api')->user()->name;
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
 
@@ -276,7 +276,7 @@ class TarifController extends Controller
     public function update(StoreTarifRequest $request, Tarif $tarif)
     {
         try {
-            $tarif = Tarif::findOrFail($tarif->id);
+            $tarif = DB::table((new Tarif())->getTable())->findOrFail($tarif->id);
             $tarif->tujuan = $request->tujuan;
             $tarif->container_id = $request->container_id;
             $tarif->nominal = $request->nominal;
@@ -288,7 +288,7 @@ class TarifController extends Controller
             $tarif->nominalton = $request->nominalton;
             $tarif->tglberlaku = date('Y-m-d', strtotime($request->tglberlaku));
             $tarif->statuspenyesuaianharga = $request->statuspenyesuaianharga;
-            $tarif->modifiedby = $request->modifiedby;
+            $tarif->modifiedby = auth('api')->user()->name;
 
             if ($tarif->save()) {
                 $logTrail = [
@@ -384,7 +384,7 @@ class TarifController extends Controller
 
     public function getPosition($tarif, $request)
     {
-        return Tarif::where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $tarif->{$request->sortname})
+        return DB::table((new Tarif())->getTable())->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $tarif->{$request->sortname})
             /* Jika sortname modifiedby atau ada data duplikat */
             // ->where('id', $request->sortorder == 'desc' ? '>=' : '<=', $parameter->id)
             ->count();
@@ -438,7 +438,7 @@ class TarifController extends Controller
         });
         
         if ($params['sortname'] == 'id') {
-            $query = Tarif::select(
+            $query = DB::table((new Tarif())->getTable())->select(
                 'tarif.id as id_',
                 'tarif.tujuan',
                 'tarif.container_id',
@@ -457,7 +457,7 @@ class TarifController extends Controller
             )
                 ->orderBy('tarif.id', $params['sortorder']);
         } else if ($params['sortname'] == 'tujuan' or $params['sortname'] == 'container_id') {
-            $query = Tarif::select(
+            $query = DB::table((new Tarif())->getTable())->select(
                 'tarif.id as id_',
                 'tarif.tujuan',
                 'tarif.container_id',
@@ -478,7 +478,7 @@ class TarifController extends Controller
                 ->orderBy('tarif.id', $params['sortorder']);
         } else {
             if ($params['sortorder'] == 'asc') {
-                $query = Tarif::select(
+                $query = DB::table((new Tarif())->getTable())->select(
                     'tarif.id as id_',
                     'tarif.tujuan',
                     'tarif.container_id',
@@ -498,7 +498,7 @@ class TarifController extends Controller
                     ->orderBy($params['sortname'], $params['sortorder'])
                     ->orderBy('tarif.id', $params['sortorder']);
             } else {
-                $query = Tarif::select(
+                $query = DB::table((new Tarif())->getTable())->select(
                     'tarif.id as id_',
                     'tarif.tujuan',
                     'tarif.container_id',

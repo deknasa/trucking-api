@@ -186,7 +186,7 @@ class ContainerController extends Controller
                 'id' => $container->id,
                 'keterangan' => strtoupper($request->keterangan),
                 'statusaktif' => $request->statusaktif,
-                'modifiedby' => strtoupper(auth('api')->user()->name;),
+                'modifiedby' => auth('api')->user()->name,
             ];
 
 
@@ -271,7 +271,7 @@ class ContainerController extends Controller
                 'id' => $container->id,
                 'keterangan' => strtoupper($request->keterangan),
                 'statusaktif' => $request->statusaktif,
-                'modifiedby' => strtoupper(auth('api')->user()->name;),
+                'modifiedby' => auth('api')->user()->name,
             ];
 
 
@@ -279,7 +279,7 @@ class ContainerController extends Controller
                 'id' => $container->id,
                 'keterangan' => strtoupper($request->keterangan),
                 'statusaktif' => $request->statusaktif,
-                'modifiedby' => strtoupper(auth('api')->user()->name;),
+                'modifiedby' => auth('api')->user()->name,
             ];
 
 
@@ -334,13 +334,15 @@ class ContainerController extends Controller
         DB::beginTransaction();
         try {
 
-            Container::destroy($container->id);
-
+            $delete =Container::destroy($container->id);
+            $del = 1;
+            if ($delete) {
+        
             $datajson = [
                 'id' => $container->id,
                 'keterangan' => strtoupper($request->keterangan),
                 'statusaktif' => $request->statusaktif,
-                'modifiedby' => strtoupper(auth('api')->user()->name;),
+                'modifiedby' => auth('api')->user()->name,
             ];
 
             $datalogtrail = [
@@ -371,10 +373,12 @@ class ContainerController extends Controller
                 'message' => 'Berhasil dihapus',
                 'data' => $container
             ]);
+        }
         } catch (\Throwable $th) {
             DB::rollBack();
             return response($th->getMessage());
         }
+    
     }
 
     public function fieldLength()

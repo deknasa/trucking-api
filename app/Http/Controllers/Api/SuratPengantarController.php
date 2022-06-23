@@ -32,24 +32,24 @@ class SuratPengantarController extends Controller
  /**
      * @ClassName 
      */
-    public function index(Request $request)
+    public function index()
     {
         $params = [
-            'offset' => $request->offset ?? 0,
-            'limit' => $request->limit ?? 10,
-            'search' => $request->search ?? [],
-            'sortIndex' => $request->sortIndex ?? 'id',
-            'sortOrder' => $request->sortOrder ?? 'asc',
+            'offset' => request()->offset ?? ((request()->page - 1) * request()->limit),
+            'limit' => request()->limit ?? 10,
+            'filters' => json_decode(request()->filters, true) ?? [],
+            'sortIndex' => request()->sortIndex ?? 'id',
+            'sortOrder' => request()->sortOrder ?? 'asc',
         ];
 
-        $totalRows = SuratPengantar::count();
+        $totalRows = DB::table((new SuratPengantar())->getTable())->count();
         $totalPages = $params['limit'] > 0 ? ceil($totalRows / $params['limit']) : 1;
 
         /* Sorting */
-        $query = SuratPengantar::orderBy($params['sortIndex'], $params['sortOrder']);
+        $query = DB::table((new SuratPengantar())->getTable())->orderBy($params['sortIndex'], $params['sortOrder']);
 
         if ($params['sortIndex'] == 'id') {
-            $query = SuratPengantar::select(
+            $query = DB::table((new SuratPengantar())->getTable())->select(
                 'suratpengantar.id',
                 'suratpengantar.nobukti',
                 'suratpengantar.tglbukti',
@@ -120,7 +120,7 @@ class SuratPengantarController extends Controller
             ->leftJoin('parameter as statuslongtrip', 'suratpengantar.statuslongtrip', '=', 'statuslongtrip.id')
             ->orderBy('suratpengantar.id', $params['sortOrder']);
         } else if ($params['sortIndex'] == 'nobukti' or $params['sortIndex'] == 'keterangan') {
-            $query = SuratPengantar::select(
+            $query = DB::table((new SuratPengantar())->getTable())->select(
                 'suratpengantar.id',
                 'suratpengantar.nobukti',
                 'suratpengantar.tglbukti',
@@ -193,7 +193,7 @@ class SuratPengantarController extends Controller
                 ->orderBy('suratpengantar.id', $params['sortOrder']);
         } else {
             if ($params['sortOrder'] == 'asc') {
-                $query = SuratPengantar::select(
+                $query = DB::table((new SuratPengantar())->getTable())->select(
                 'suratpengantar.id',
                 'suratpengantar.nobukti',
                 'suratpengantar.tglbukti',
@@ -265,7 +265,7 @@ class SuratPengantarController extends Controller
                     ->orderBy($params['sortIndex'], $params['sortOrder'])
                     ->orderBy('suratpengantar.id', $params['sortOrder']);
             } else {
-                $query = SuratPengantar::select(
+                $query = DB::table((new SuratPengantar())->getTable())->select(
                 'suratpengantar.id',
                 'suratpengantar.nobukti',
                 'suratpengantar.tglbukti',
@@ -340,10 +340,10 @@ class SuratPengantarController extends Controller
         }
 
         /* Searching */
-        if (count($params['search']) > 0 && @$params['search']['rules'][0]['data'] != '') {
-            switch ($params['search']['groupOp']) {
+        if (count($params['filters']) > 0 && @$params['filters']['rules'][0]['data'] != '') {
+            switch ($params['filters']['groupOp']) {
                 case "AND":
-                    foreach ($params['search']['rules'] as $index => $search) {
+                    foreach ($params['filters']['rules'] as $index => $search) {
                         if ($search['field'] == 'pelanggan_id') {
                             $query = $query->where('pelanggan.namapelanggan', 'LIKE', "%$search[data]%");
                         } elseif ($search['field'] == 'dari_id') {
@@ -371,7 +371,7 @@ class SuratPengantarController extends Controller
 
                     break;
                 case "OR":
-                    foreach ($params['search']['rules'] as $index => $search) {
+                    foreach ($params['filters']['rules'] as $index => $search) {
                         if ($search['field'] == 'pelanggan_id') {
                             $query = $query->where('pelanggan.namapelanggan', 'LIKE', "%$search[data]%");
                         } elseif ($search['field'] == 'dari_id') {
@@ -516,7 +516,7 @@ class SuratPengantarController extends Controller
             $suratpengantar->tgldoor = date('Y-m-d',strtotime($request->tgldoor));
             $suratpengantar->upahritasi_id = $request->upahritasi_id ?? 0;
             $suratpengantar->statusdisc = $request->statusdisc ?? 0;
-            $suratpengantar->modifiedby = $request->modifiedby;
+            $suratpengantar->modifiedby = auth('api')->user()->name;;
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
 
@@ -557,7 +557,7 @@ class SuratPengantarController extends Controller
                         $suratpengantarbiayatambahan->suratpengantar_id = $suratpengantar->id;
                         $suratpengantarbiayatambahan->keteranganbiaya = $value;
                         $suratpengantarbiayatambahan->nominal = $nominal;
-                        $suratpengantarbiayatambahan->modifiedby = $request->modifiedby;
+                        $suratpengantarbiayatambahan->modifiedby = auth('api')->user()->name;;
                         $suratpengantarbiayatambahan->save();
                     } 
                     // else {
@@ -594,7 +594,7 @@ class SuratPengantarController extends Controller
 
     public function show($id)
     {
-        $data = SuratPengantar::with(
+        $data = DB::table((new SuratPengantar())->getTable())->with(
             'suratpengantarBiaya',
         )->find($id);
 
@@ -616,7 +616,7 @@ class SuratPengantarController extends Controller
     public function update(StoreSuratPengantarRequest $request, SuratPengantar $suratpengantar)
     {
         try {
-            // $suratpengantar = SuratPengantar::findOrFail($suratpengantar->id);
+            // $suratpengantar = DB::table((new SuratPengantar())->getTable())->findOrFail($suratpengantar->id);
             $suratpengantar->tglbukti = date('Y-m-d',strtotime($request->tglbukti));
             $suratpengantar->pelanggan_id = $request->pelanggan_id;
             $suratpengantar->keterangan = $request->keterangan;
@@ -688,7 +688,7 @@ class SuratPengantarController extends Controller
             $suratpengantar->tgldoor = date('Y-m-d',strtotime($request->tgldoor));
             $suratpengantar->upahritasi_id = $request->upahritasi_id ?? 0;
             $suratpengantar->statusdisc = $request->statusdisc ?? 0;
-            $suratpengantar->modifiedby = $request->modifiedby;
+            $suratpengantar->modifiedby = auth('api')->user()->name;;
 
             if ($suratpengantar->save()) {
                 $logTrail = [
@@ -716,7 +716,7 @@ class SuratPengantarController extends Controller
                         $suratpengantarbiayatambahan->suratpengantar_id = $suratpengantar->id;
                         $suratpengantarbiayatambahan->keteranganbiaya = $value;
                         $suratpengantarbiayatambahan->nominal = $nominal;
-                        $suratpengantarbiayatambahan->modifiedby = $request->modifiedby;
+                        $suratpengantarbiayatambahan->modifiedby = auth('api')->user()->name;;
                         $suratpengantarbiayatambahan->save();
                     }
                 }
@@ -826,7 +826,7 @@ class SuratPengantarController extends Controller
 
     public function getPosition($suratpengantar, $request)
     {
-        return SuratPengantar::where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $suratpengantar->{$request->sortname})
+        return DB::table((new SuratPengantar())->getTable())->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $suratpengantar->{$request->sortname})
             /* Jika sortname modifiedby atau ada data duplikat */
             // ->where('id', $request->sortorder == 'desc' ? '>=' : '<=', $parameter->id)
             ->count();
@@ -855,7 +855,7 @@ class SuratPengantarController extends Controller
         });
 
         if ($params['sortname'] == 'id') {
-            $query = SuratPengantar::select(
+            $query = DB::table((new SuratPengantar())->getTable())->select(
                 'suratpengantar.id as id_',
                 'suratpengantar.nobukti',
                 'suratpengantar.keterangan',
@@ -865,7 +865,7 @@ class SuratPengantarController extends Controller
             )
                 ->orderBy('suratpengantar.id', $params['sortorder']);
         } else if ($params['sortname'] == 'kodesuratpengantar' or $params['sortname'] == 'keterangan') {
-            $query = SuratPengantar::select(
+            $query = DB::table((new SuratPengantar())->getTable())->select(
                 'suratpengantar.id as id_',
                 'suratpengantar.nobukti',
                 'suratpengantar.keterangan',
@@ -877,7 +877,7 @@ class SuratPengantarController extends Controller
                 ->orderBy('suratpengantar.id', $params['sortorder']);
         } else {
             if ($params['sortorder'] == 'asc') {
-                $query = SuratPengantar::select(
+                $query = DB::table((new SuratPengantar())->getTable())->select(
                     'suratpengantar.id as id_',
                     'suratpengantar.nobukti',
                     'suratpengantar.keterangan',
@@ -888,7 +888,7 @@ class SuratPengantarController extends Controller
                     ->orderBy($params['sortname'], $params['sortorder'])
                     ->orderBy('suratpengantar.id', $params['sortorder']);
             } else {
-                $query = SuratPengantar::select(
+                $query = DB::table((new SuratPengantar())->getTable())->select(
                     'suratpengantar.id as id_',
                     'suratpengantar.nobukti',
                     'suratpengantar.keterangan',

@@ -25,24 +25,24 @@ class OrderanTruckingController extends Controller
    /**
      * @ClassName 
      */
-    public function index(Request $request)
+    public function index()
     {
         $params = [
-            'offset' => $request->offset ?? 0,
-            'limit' => $request->limit ?? 10,
-            'search' => $request->search ?? [],
-            'sortIndex' => $request->sortIndex ?? 'id',
-            'sortOrder' => $request->sortOrder ?? 'asc',
+            'offset' => request()->offset ?? ((request()->page - 1) * request()->limit),
+            'limit' => request()->limit ?? 10,
+            'filters' => json_decode(request()->filters, true) ?? [],
+            'sortIndex' => request()->sortIndex ?? 'id',
+            'sortOrder' => request()->sortOrder ?? 'asc',
         ];
 
-        $totalRows = OrderanTrucking::count();
+        $totalRows =  DB::table((new OrderanTrucking)->getTable())->count();
         $totalPages = $params['limit'] > 0 ? ceil($totalRows / $params['limit']) : 1;
 
         /* Sorting */
-        $query = OrderanTrucking::orderBy($params['sortIndex'], $params['sortOrder']);
+        $query = DB::table((new OrderanTrucking)->getTable())->orderBy($params['sortIndex'], $params['sortOrder']);
 
         if ($params['sortIndex'] == 'id') {
-            $query = OrderanTrucking::select(
+            $query = DB::table((new OrderanTrucking)->getTable())->select(
                 'orderantrucking.id',
                 'orderantrucking.nobukti',
                 'orderantrucking.tglbukti',
@@ -73,7 +73,7 @@ class OrderanTruckingController extends Controller
             ->leftJoin('parameter AS param2', 'orderantrucking.statusperalihan', '=', 'param2.id')
             ->orderBy('orderantrucking.id', $params['sortOrder']);
         } else if ($params['sortIndex'] == 'nobukti' or $params['sortIndex'] == 'nojobemkl') {
-            $query = OrderanTrucking::select(
+            $query = DB::table((new OrderanTrucking)->getTable())->select(
                 'orderantrucking.id',
                 'orderantrucking.nobukti',
                 'orderantrucking.tglbukti',
@@ -107,7 +107,7 @@ class OrderanTruckingController extends Controller
 
         } else {
             if ($params['sortOrder'] == 'asc') {
-                $query = OrderanTrucking::select(
+                $query = DB::table((new OrderanTrucking)->getTable())->select(
                 'orderantrucking.id',
                 'orderantrucking.nobukti',
                 'orderantrucking.tglbukti',
@@ -139,7 +139,7 @@ class OrderanTruckingController extends Controller
                     ->orderBy($params['sortIndex'], $params['sortOrder'])
                     ->orderBy('orderantrucking.id', $params['sortOrder']);
             } else {
-                $query = OrderanTrucking::select(
+                $query = DB::table((new OrderanTrucking)->getTable())->select(
                 'orderantrucking.id',
                 'orderantrucking.nobukti',
                 'orderantrucking.tglbukti',
@@ -174,10 +174,10 @@ class OrderanTruckingController extends Controller
         }
 
         /* Searching */
-        if (count($params['search']) > 0 && @$params['search']['rules'][0]['data'] != '') {
-            switch ($params['search']['groupOp']) {
+        if (count($params['filters']) > 0 && @$params['filters']['rules'][0]['data'] != '') {
+            switch ($params['filters']['groupOp']) {
                 case "AND":
-                    foreach ($params['search']['rules'] as $index => $search) {
+                    foreach ($params['filters']['rules'] as $index => $search) {
                         if ($search['field'] == 'statuslangsir') {
                             $query = $query->where('parameter.text', 'LIKE', "%$search[data]%");
                         } elseif($search['field'] == 'statusperalihan') {
@@ -197,7 +197,7 @@ class OrderanTruckingController extends Controller
 
                     break;
                 case "OR":
-                    foreach ($params['search']['rules'] as $index => $search) {
+                    foreach ($params['filters']['rules'] as $index => $search) {
                         if ($search['field'] == 'statuslangsir') {
                             $query = $query->orWhere('parameter.text', 'LIKE', "%$search[data]%");
                         } elseif($search['field'] == 'statusperalihan') {
@@ -276,7 +276,7 @@ class OrderanTruckingController extends Controller
             $orderanTrucking->noseal2 = $request->noseal2 ?? '';
             $orderanTrucking->statuslangsir = $request->statuslangsir;
             $orderanTrucking->statusperalihan = $request->statusperalihan;
-            $orderanTrucking->modifiedby = $request->modifiedby;
+            $orderanTrucking->modifiedby = auth('api')->user()->name;
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
 
@@ -333,7 +333,7 @@ class OrderanTruckingController extends Controller
 
     public function show(OrderanTrucking $orderanTrucking,$id)
     {
-        $data = OrderanTrucking::find($id);
+        $data = DB::table((new OrderanTrucking)->getTable())->find($id);
 
         return response([
             'status' => true,
@@ -347,7 +347,7 @@ class OrderanTruckingController extends Controller
     public function update(StoreOrderanTruckingRequest $request, OrderanTrucking $orderanTrucking, $id)
     {
         try {
-            $orderanTrucking = OrderanTrucking::findOrFail($id);
+            $orderanTrucking = DB::table((new OrderanTrucking)->getTable())->findOrFail($id);
             $orderanTrucking->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $orderanTrucking->container_id = $request->container_id;
             $orderanTrucking->agen_id = $request->agen_id;
@@ -362,7 +362,7 @@ class OrderanTruckingController extends Controller
             $orderanTrucking->noseal2 = $request->noseal2 ?? '';
             $orderanTrucking->statuslangsir = $request->statuslangsir;
             $orderanTrucking->statusperalihan = $request->statusperalihan;
-            $orderanTrucking->modifiedby = $request->modifiedby;
+            $orderanTrucking->modifiedby = auth('api')->user()->name;
 
             $tarif = Tarif::find($request->tarif_id);
             $orderanTrucking->nominal = $tarif->nominal;
@@ -409,7 +409,7 @@ class OrderanTruckingController extends Controller
     public function destroy(OrderanTrucking $orderantrucking, Request $request)
     {
         DB::beginTransaction();
-        $delete = OrderanTrucking::destroy($orderantrucking->id);
+        $delete = Orderantrucking::destroy($orderantrucking->id);
         $del = 1;
         if ($delete) {
             $logTrail = [
@@ -467,7 +467,7 @@ class OrderanTruckingController extends Controller
 
     public function getPosition($orderantrucking, $request)
     {
-        return OrderanTrucking::where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $orderantrucking->{$request->sortname})
+        return DB::table((new OrderanTrucking)->getTable())->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $orderantrucking->{$request->sortname})
             /* Jika sortname modifiedby atau ada data duplikat */
             // ->where('id', $request->sortorder == 'desc' ? '>=' : '<=', $parameter->id)
             ->count();
@@ -534,7 +534,7 @@ class OrderanTruckingController extends Controller
         });
 
         if ($params['sortname'] == 'id') {
-            $query = OrderanTrucking::select(
+            $query = DB::table((new OrderanTrucking)->getTable())->select(
                 'orderantrucking.id as id_',
                 'orderantrucking.nobukti',
                 'orderantrucking.tglbukti',
@@ -563,7 +563,7 @@ class OrderanTruckingController extends Controller
             ->leftJoin('parameter AS param2', 'orderantrucking.statusperalihan', '=', 'parameter.id')
                 ->orderBy('orderantrucking.id', $params['sortorder']);
         } else if ($params['sortname'] == 'nobukti' or $params['sortname'] == 'nojobemkl') {
-            $query = OrderanTrucking::select(
+            $query = DB::table((new OrderanTrucking)->getTable())->select(
                 'orderantrucking.id as id_',
                 'orderantrucking.nobukti',
                 'orderantrucking.tglbukti',
@@ -594,7 +594,7 @@ class OrderanTruckingController extends Controller
                 ->orderBy('orderantrucking.id', $params['sortorder']);
         } else {
             if ($params['sortorder'] == 'asc') {
-                $query = OrderanTrucking::select(
+                $query = DB::table((new OrderanTrucking)->getTable())->select(
                     'orderantrucking.id as id_',
                     'orderantrucking.nobukti',
                 'orderantrucking.tglbukti',
@@ -624,7 +624,7 @@ class OrderanTruckingController extends Controller
                     ->orderBy($params['sortname'], $params['sortorder'])
                     ->orderBy('orderantrucking.id', $params['sortorder']);
             } else {
-                $query = OrderanTrucking::select(
+                $query = DB::table((new OrderanTrucking)->getTable())->select(
                     'orderantrucking.id as id_',
                     'orderantrucking.nobukti',
                 'orderantrucking.tglbukti',

@@ -139,7 +139,7 @@ class UpahRitasiRincianController extends Controller
             $upahritasirincian->nominalkomisi = $request->nominalkomisi;
             $upahritasirincian->nominaltol = $request->nominaltol;
             $upahritasirincian->liter = $request->liter;
-            $upahritasirincian->modifiedby = $request->modifiedby;
+            $upahritasirincian->modifiedby = auth('api')->user()->name;
             
             $upahritasirincian->save();
             

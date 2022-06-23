@@ -21,24 +21,25 @@ class KerusakanController extends Controller
           /**
      * @ClassName 
      */
-    public function index(Request $request)
+    public function index()
     {
         $params = [
-            'offset' => $request->offset ?? 0,
-            'limit' => $request->limit ?? 10,
-            'search' => $request->search ?? [],
-            'sortIndex' => $request->sortIndex ?? 'id',
-            'sortOrder' => $request->sortOrder ?? 'asc',
+            'offset' => request()->offset ?? ((request()->page - 1) * request()->limit),
+            'limit' => request()->limit ?? 10,
+            'filters' => json_decode(request()->filters, true) ?? [],
+            'sortIndex' => request()->sortIndex ?? 'id',
+            'sortOrder' => request()->sortOrder ?? 'asc',
         ];
 
-        $totalRows = Kerusakan::count();
+
+        $totalRows = DB::table((new Kerusakan)->getTable())->count();
         $totalPages = $params['limit'] > 0 ? ceil($totalRows / $params['limit']) : 1;
 
         /* Sorting */
-        $query = Kerusakan::orderBy($params['sortIndex'], $params['sortOrder']);
+        $query = DB::table((new Kerusakan)->getTable())->orderBy($params['sortIndex'], $params['sortOrder']);
 
         if ($params['sortIndex'] == 'id') {
-            $query = Kerusakan::select(
+            $query = DB::table((new Kerusakan)->getTable())->select(
                 'kerusakan.id',
                 'kerusakan.keterangan',
                 'parameter.text as statusaktif',
@@ -49,7 +50,7 @@ class KerusakanController extends Controller
             ->leftJoin('parameter', 'kerusakan.statusaktif', '=', 'parameter.id')
             ->orderBy('kerusakan.id', $params['sortOrder']);
         } else if ($params['sortIndex'] == 'keterangan') {
-            $query = Kerusakan::select(
+            $query = DB::table((new Kerusakan)->getTable())->select(
                 'kerusakan.id',
                 'kerusakan.keterangan',
                 'parameter.text as statusaktif',
@@ -62,7 +63,7 @@ class KerusakanController extends Controller
                 ->orderBy('kerusakan.id', $params['sortOrder']);
         } else {
             if ($params['sortOrder'] == 'asc') {
-                $query = Kerusakan::select(
+                $query = DB::table((new Kerusakan)->getTable())->select(
                     'kerusakan.id',
                     'kerusakan.keterangan',
                     'parameter.text as statusaktif',
@@ -74,7 +75,7 @@ class KerusakanController extends Controller
                     ->orderBy($params['sortIndex'], $params['sortOrder'])
                     ->orderBy('kerusakan.id', $params['sortOrder']);
             } else {
-                $query = Kerusakan::select(
+                $query = DB::table((new Kerusakan)->getTable())->select(
                     'kerusakan.id',
                     'kerusakan.keterangan',
                     'parameter.text as statusaktif',
@@ -89,10 +90,10 @@ class KerusakanController extends Controller
         }
 
         /* Searching */
-        if (count($params['search']) > 0 && @$params['search']['rules'][0]['data'] != '') {
-            switch ($params['search']['groupOp']) {
+        if (count($params['filters']) > 0 && @$params['filters']['rules'][0]['data'] != '') {
+            switch ($params['filters']['groupOp']) {
                 case "AND":
-                    foreach ($params['search']['rules'] as $index => $search) {
+                    foreach ($params['filters']['rules'] as $index => $search) {
                         if ($search['field'] == 'statusaktif') {
                             $query = $query->where('parameter.text', 'LIKE', "%$search[data]%");
                         } else {
@@ -102,7 +103,7 @@ class KerusakanController extends Controller
 
                     break;
                 case "OR":
-                    foreach ($params['search']['rules'] as $index => $search) {
+                    foreach ($params['filters']['rules'] as $index => $search) {
                         if ($search['field'] == 'statusaktif') {
                             $query = $query->orWhere('parameter.text', 'LIKE', "%$search[data]%");
                         } else {
@@ -155,7 +156,7 @@ class KerusakanController extends Controller
             $kerusakan = new Kerusakan();
             $kerusakan->keterangan = $request->keterangan;
             $kerusakan->statusaktif = $request->statusaktif;
-            $kerusakan->modifiedby = $request->modifiedby;
+            $kerusakan->modifiedby = auth('api')->user()->name;
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
 
@@ -214,10 +215,10 @@ class KerusakanController extends Controller
     public function update(StoreKerusakanRequest $request, Kerusakan $kerusakan)
     {
         try {
-            $kerusakan = Kerusakan::findOrFail($kerusakan->id);
+            $kerusakan = DB::table((new Kerusakan)->getTable())->findOrFail($kerusakan->id);
             $kerusakan->keterangan = $request->keterangan;
             $kerusakan->statusaktif = $request->statusaktif;
-            $kerusakan->modifiedby = $request->modifiedby;
+            $kerusakan->modifiedby = auth('api')->user()->name;
 
             if ($kerusakan->save()) {
                 $logTrail = [
@@ -313,7 +314,7 @@ class KerusakanController extends Controller
 
     public function getPosition($kerusakan, $request)
     {
-        return Kerusakan::where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $kerusakan->{$request->sortname})
+        return DB::table((new Kerusakan)->getTable())->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $kerusakan->{$request->sortname})
             /* Jika sortname modifiedby atau ada data duplikat */
             // ->where('id', $request->sortorder == 'desc' ? '>=' : '<=', $parameter->id)
             ->count();
@@ -353,7 +354,7 @@ class KerusakanController extends Controller
         });
 
         if ($params['sortname'] == 'id') {
-            $query = Kerusakan::select(
+            $query = DB::table((new Kerusakan)->getTable())->select(
                 'kerusakan.id as id_',
                 'kerusakan.keterangan',
                 'kerusakan.statusaktif',
@@ -363,7 +364,7 @@ class KerusakanController extends Controller
             )
                 ->orderBy('kerusakan.id', $params['sortorder']);
         } else if ($params['sortname'] == 'keterangan') {
-            $query = Kerusakan::select(
+            $query = DB::table((new Kerusakan)->getTable())->select(
                 'kerusakan.id as id_',
                 'kerusakan.keterangan',
                 'kerusakan.statusaktif',
@@ -375,7 +376,7 @@ class KerusakanController extends Controller
                 ->orderBy('kerusakan.id', $params['sortorder']);
         } else {
             if ($params['sortorder'] == 'asc') {
-                $query = Kerusakan::select(
+                $query = DB::table((new Kerusakan)->getTable())->select(
                     'kerusakan.id as id_',
                     'kerusakan.keterangan',
                     'kerusakan.statusaktif',
@@ -386,7 +387,7 @@ class KerusakanController extends Controller
                     ->orderBy($params['sortname'], $params['sortorder'])
                     ->orderBy('kerusakan.id', $params['sortorder']);
             } else {
-                $query = Kerusakan::select(
+                $query = DB::table((new Kerusakan)->getTable())->select(
                     'kerusakan.id as id_',
                     'kerusakan.keterangan',
                     'kerusakan.statusaktif',

@@ -21,24 +21,24 @@ class ZonaController extends Controller
      /**
      * @ClassName 
      */
-    public function index(Request $request)
+    public function index()
     {
         $params = [
-            'offset' => $request->offset ?? 0,
-            'limit' => $request->limit ?? 10,
-            'search' => $request->search ?? [],
-            'sortIndex' => $request->sortIndex ?? 'id',
-            'sortOrder' => $request->sortOrder ?? 'asc',
+            'offset' => request()->offset ?? ((request()->page - 1) * request()->limit),
+            'limit' => request()->limit ?? 10,
+            'filters' => json_decode(request()->filters, true) ?? [],
+            'sortIndex' => request()->sortIndex ?? 'id',
+            'sortOrder' => request()->sortOrder ?? 'asc',
         ];
 
-        $totalRows = Zona::count();
+        $totalRows = DB::table((new Zona())->getTable())->count();
         $totalPages = $params['limit'] > 0 ? ceil($totalRows / $params['limit']) : 1;
 
         /* Sorting */
-        $query = Zona::orderBy($params['sortIndex'], $params['sortOrder']);
+        $query = DB::table((new Zona())->getTable())->orderBy($params['sortIndex'], $params['sortOrder']);
 
         if ($params['sortIndex'] == 'id') {
-            $query = Zona::select(
+            $query = DB::table((new Zona())->getTable())->select(
                 'zona.id',
                 'zona.zona',
                 'zona.keterangan',
@@ -50,7 +50,7 @@ class ZonaController extends Controller
             ->leftJoin('parameter', 'zona.statusaktif', '=', 'parameter.id')
             ->orderBy('zona.id', $params['sortOrder']);
         } else if ($params['sortIndex'] == 'zona' or $params['sortIndex'] == 'keterangan') {
-            $query = Zona::select(
+            $query = DB::table((new Zona())->getTable())->select(
                 'zona.id',
                 'zona.zona',
                 'zona.keterangan',
@@ -64,7 +64,7 @@ class ZonaController extends Controller
                 ->orderBy('zona.id', $params['sortOrder']);
         } else {
             if ($params['sortOrder'] == 'asc') {
-                $query = Zona::select(
+                $query = DB::table((new Zona())->getTable())->select(
                     'zona.id',
                     'zona.zona',
                     'zona.keterangan',
@@ -77,7 +77,7 @@ class ZonaController extends Controller
                     ->orderBy($params['sortIndex'], $params['sortOrder'])
                     ->orderBy('zona.id', $params['sortOrder']);
             } else {
-                $query = Zona::select(
+                $query = DB::table((new Zona())->getTable())->select(
                     'zona.id',
                     'zona.zona',
                     'zona.keterangan',
@@ -93,10 +93,10 @@ class ZonaController extends Controller
         }
 
         /* Searching */
-        if (count($params['search']) > 0 && @$params['search']['rules'][0]['data'] != '') {
-            switch ($params['search']['groupOp']) {
+        if (count($params['filters']) > 0 && @$params['filters']['rules'][0]['data'] != '') {
+            switch ($params['filters']['groupOp']) {
                 case "AND":
-                    foreach ($params['search']['rules'] as $index => $search) {
+                    foreach ($params['filters']['rules'] as $index => $search) {
                         if ($search['field'] == 'statusaktif') {
                             $query = $query->where('parameter.text', 'LIKE', "%$search[data]%");
                         } else {
@@ -106,7 +106,7 @@ class ZonaController extends Controller
 
                     break;
                 case "OR":
-                    foreach ($params['search']['rules'] as $index => $search) {
+                    foreach ($params['filters']['rules'] as $index => $search) {
                         if ($search['field'] == 'statusaktif') {
                             $query = $query->orWhere('parameter.text', 'LIKE', "%$search[data]%");
                         } else {
@@ -159,7 +159,7 @@ class ZonaController extends Controller
             $zona->zona = $request->zona;
             $zona->statusaktif = $request->statusaktif;
             $zona->keterangan = $request->keterangan;
-            $zona->modifiedby = $request->modifiedby;
+            $zona->modifiedby = auth('api')->user()->name;
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
 
@@ -218,11 +218,11 @@ class ZonaController extends Controller
     public function update(StoreZonaRequest $request, Zona $zona)
     {
         try {
-            $zona = Zona::findOrFail($zona->id);
+            $zona = DB::table((new Zona())->getTable())->findOrFail($zona->id);
             $zona->zona = $request->zona;
             $zona->keterangan = $request->keterangan;
             $zona->statusaktif = $request->statusaktif;
-            $zona->modifiedby = $request->modifiedby;
+            $zona->modifiedby = auth('api')->user()->name;
 
             if ($zona->save()) {
                 $logTrail = [
@@ -318,7 +318,7 @@ class ZonaController extends Controller
 
     public function getPosition($zona, $request)
     {
-        return Zona::where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $zona->{$request->sortname})
+        return DB::table((new Zona())->getTable())->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $zona->{$request->sortname})
             /* Jika sortname modifiedby atau ada data duplikat */
             // ->where('id', $request->sortorder == 'desc' ? '>=' : '<=', $parameter->id)
             ->count();
@@ -359,7 +359,7 @@ class ZonaController extends Controller
         });
 
         if ($params['sortname'] == 'id') {
-            $query = Zona::select(
+            $query = DB::table((new Zona())->getTable())->select(
                 'zona.id as id_',
                 'zona.zona',
                 'zona.keterangan',
@@ -370,7 +370,7 @@ class ZonaController extends Controller
             )
                 ->orderBy('zona.id', $params['sortorder']);
         } else if ($params['sortname'] == 'zona' or $params['sortname'] == 'keterangan') {
-            $query = Zona::select(
+            $query = DB::table((new Zona())->getTable())->select(
                 'zona.id as id_',
                 'zona.zona',
                 'zona.keterangan',
@@ -383,7 +383,7 @@ class ZonaController extends Controller
                 ->orderBy('zona.id', $params['sortorder']);
         } else {
             if ($params['sortorder'] == 'asc') {
-                $query = Zona::select(
+                $query = DB::table((new Zona())->getTable())->select(
                     'zona.id as id_',
                     'zona.zona',
                     'zona.keterangan',
@@ -395,7 +395,7 @@ class ZonaController extends Controller
                     ->orderBy($params['sortname'], $params['sortorder'])
                     ->orderBy('zona.id', $params['sortorder']);
             } else {
-                $query = Zona::select(
+                $query = DB::table((new Zona())->getTable())->select(
                     'zona.id as id_',
                     'zona.zona',
                     'zona.keterangan',
