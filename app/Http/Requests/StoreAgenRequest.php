@@ -35,7 +35,6 @@ class StoreAgenRequest extends FormRequest
             "nohp" => "required",
             "contactperson" => "required",
             "top" => "required",
-            "statusapproval" => "required",
             "statustas" => "required",
             "jenisemkl" => "required",
         ];
@@ -51,7 +50,6 @@ class StoreAgenRequest extends FormRequest
             "notelp" => "no telp",
             "nohp" => "no hp",
             "contactperson" => "contact person",
-            "statusapproval" => "status approval",
             "statustas" => "status tas",
             "jenisemkl" => "jenis emkl",
         ];

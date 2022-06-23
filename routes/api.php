@@ -92,6 +92,7 @@ route::middleware('auth:api')->group(function () {
 
     Route::get('agen/field_length', [AgenController::class, 'fieldLength']);
     Route::get('agen/export', [AgenController::class, 'export'])->name('export');
+    Route::post('agen/{agen}/approval', [AgenController::class, 'approval'])->name('agen.approval');
     Route::resource('agen', AgenController::class);
 
     Route::get('error/field_length', [ErrorController::class, 'fieldLength']);

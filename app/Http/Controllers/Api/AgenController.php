@@ -7,6 +7,7 @@ use App\Models\Agen;
 use App\Http\Requests\StoreAgenRequest;
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Http\Requests\UpdateAgenRequest;
+use App\Models\Parameter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -19,7 +20,7 @@ class AgenController extends Controller
      * @return \Illuminate\Http\Response
      */
 
-       /**
+    /**
      * @ClassName 
      */
     public function index()
@@ -182,7 +183,7 @@ class AgenController extends Controller
         ]);
     }
 
-          /**
+    /**
      * @ClassName 
      */
     public function store(StoreAgenRequest $request)
@@ -201,26 +202,23 @@ class AgenController extends Controller
             $agen->nohp = $request->nohp;
             $agen->contactperson = $request->contactperson;
             $agen->top = $request->top;
-            $agen->statusapproval = $request->statusapproval;
-            $agen->userapproval = auth('api')->user()->name;
-            $agen->tglapproval = date('Y-m-d', time());
             $agen->statustas = $request->statustas;
             $agen->jenisemkl = $request->jenisemkl;
             $agen->modifiedby = auth('api')->user()->name;
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
-            
+
             if ($agen->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($agen->getTable()),
-                    'postingdari' => 'ENTRY PARAMETER',
+                    'postingdari' => 'ENTRY AGEN',
                     'idtrans' => $agen->id,
                     'nobuktitrans' => $agen->id,
                     'aksi' => 'ENTRY',
                     'datajson' => $agen->toArray(),
                     'modifiedby' => $agen->modifiedby
                 ];
-                
+
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
@@ -255,7 +253,7 @@ class AgenController extends Controller
         ]);
     }
 
-              /**
+    /**
      * @ClassName 
      */
     public function update(UpdateAgenRequest $request, Agen $agen)
@@ -272,9 +270,6 @@ class AgenController extends Controller
             $agen->nohp = $request->nohp;
             $agen->contactperson = $request->contactperson;
             $agen->top = $request->top;
-            $agen->statusapproval = $request->statusapproval;
-            $agen->userapproval = auth('api')->user()->name;
-            $agen->tglapproval = date('Y-m-d', time());
             $agen->statustas = $request->statustas;
             $agen->jenisemkl = $request->jenisemkl;
             $agen->modifiedby = auth('api')->user()->name;
@@ -284,7 +279,7 @@ class AgenController extends Controller
             if ($agen->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($agen->getTable()),
-                    'postingdari' => 'EDIT PARAMETER',
+                    'postingdari' => 'EDIT AGEN',
                     'idtrans' => $agen->id,
                     'nobuktitrans' => $agen->id,
                     'aksi' => 'EDIT',
@@ -318,7 +313,7 @@ class AgenController extends Controller
         }
     }
 
-               /**
+    /**
      * @ClassName 
      */
     public function destroy(Agen $agen, Request $request)
@@ -328,7 +323,7 @@ class AgenController extends Controller
         if ($delete) {
             $logTrail = [
                 'namatabel' => strtoupper($agen->getTable()),
-                'postingdari' => 'DELETE PARAMETER',
+                'postingdari' => 'DELETE AGEN',
                 'idtrans' => $agen->id,
                 'nobuktitrans' => $agen->id,
                 'aksi' => 'DELETE',
@@ -552,5 +547,50 @@ class AgenController extends Controller
 
         $data = $querydata->first();
         return $data;
+    }
+
+    /**
+     * @ClassName
+     */
+    public function approval(Agen $agen)
+    {
+        DB::beginTransaction();
+
+        try {
+            $statusApproval = Parameter::where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
+            $statusNonApproval = Parameter::where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
+
+            if ($agen->statusapproval == $statusApproval->id) {
+                $agen->statusapproval = $statusNonApproval->id;
+            } else {
+                $agen->statusapproval = $statusApproval->id;
+            }
+
+            $agen->tglapproval = date('Y-m-d', time());
+            $agen->userapproval = auth('api')->user()->name;
+
+            if ($agen->save()) {
+                $logTrail = [
+                    'namatabel' => strtoupper($agen->getTable()),
+                    'postingdari' => 'UN/APPROVE AGEN',
+                    'idtrans' => $agen->id,
+                    'nobuktitrans' => $agen->id,
+                    'aksi' => 'UN/APPROVE',
+                    'datajson' => $agen->toArray(),
+                    'modifiedby' => $agen->modifiedby
+                ];
+
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+
+                DB::commit();
+            }
+
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
     }
 }
