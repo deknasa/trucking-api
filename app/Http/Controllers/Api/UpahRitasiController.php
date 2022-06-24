@@ -329,7 +329,7 @@ class UpahRitasiController extends Controller
         DB::beginTransaction();
 
         try {
-            $upahritasi = DB::table((new UpahRitasi())->getTable())->findOrFail($id);
+            $upahritasi = UpahRitasi::findOrFail($id);
             $upahritasi->kotadari_id = $request->kotadari_id;
             $upahritasi->kotasampai_id = $request->kotasampai_id;
             $upahritasi->jarak = $request->jarak;
@@ -452,9 +452,9 @@ class UpahRitasiController extends Controller
         DB::beginTransaction();
 
         try {
-            $get = DB::table((new UpahRitasi())->getTable())->find($id);
+            $get = UpahRitasi::find($id);
             $delete = UpahRitasiRincian::where('upahritasi_id',$id)->delete();
-            $delete = DB::table((new UpahRitasi())->getTable())->destroy($id);
+            $delete = UpahRitasi::destroy($id);
             
             $datalogtrail = [
                 'namatabel' => $get->getTable(),

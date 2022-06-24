@@ -234,7 +234,7 @@ class BankController extends Controller
     public function update(StoreBankRequest $request, Bank $bank)
     {
         try {
-            $bank = DB::table((new Bank)->getTable())->findOrFail($bank->id);
+            $bank = Bank::findOrFail($bank->id);
             $bank->kodebank = $request->kodebank;
             $bank->namabank = $request->namabank;
             $bank->coa = $request->coa;
