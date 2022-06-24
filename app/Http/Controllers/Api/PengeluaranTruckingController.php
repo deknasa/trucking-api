@@ -259,8 +259,8 @@ class PengeluaranTruckingController extends Controller
             DB::commit();
 
             $data = $this->getid($pengeluaranTrucking->id, $request, $del);
-            $pengeluaranTrucking->position = @$data->row;
-            $pengeluaranTrucking->id = @$data->id;
+            $pengeluaranTrucking->position = @$data->row  ?? 0;
+            $pengeluaranTrucking->id = @$data->id  ?? 0;
             if (isset($request->limit)) {
                 $pengeluaranTrucking->page = ceil($pengeluaranTrucking->position / $request->limit);
             }

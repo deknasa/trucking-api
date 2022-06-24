@@ -368,8 +368,8 @@ class SupplierController extends Controller
             DB::commit();
 
             $data = $this->getid($supplier->id, $request, $del);
-            $supplier->position = $data->row;
-            $supplier->id = $data->id;
+            $supplier->position = $data->row  ?? 0;
+            $supplier->id = $data->id  ?? 0;
             if (isset($request->limit)) {
                 $supplier->page = ceil($supplier->position / $request->limit);
             }

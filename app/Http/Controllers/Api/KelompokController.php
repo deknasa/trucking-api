@@ -217,7 +217,7 @@ class KelompokController extends Controller
     public function update(StoreKelompokRequest $request, Kelompok $kelompok)
     {
         try {
-            $kelompok = DB::table((new Kelompok)->getTable())->findOrFail($kelompok->id);
+            $kelompok = Kelompok::findOrFail($kelompok->id);
             $kelompok->kodekelompok = $request->kodekelompok;
             $kelompok->keterangan = $request->keterangan;
             $kelompok->statusaktif = $request->statusaktif;
@@ -283,8 +283,8 @@ class KelompokController extends Controller
             DB::commit();
 
             $data = $this->getid($kelompok->id, $request, $del);
-            $kelompok->position = @$data->row;
-            $kelompok->id = @$data->id;
+            $kelompok->position = @$data->row  ?? 0;
+            $kelompok->id = @$data->id  ?? 0;
             if (isset($request->limit)) {
                 $kelompok->page = ceil($kelompok->position / $request->limit);
             }

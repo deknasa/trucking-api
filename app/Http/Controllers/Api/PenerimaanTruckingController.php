@@ -249,8 +249,8 @@ class PenerimaanTruckingController extends Controller
             DB::commit();
 
             $data = $this->getid($penerimaanTrucking->id, $request, $del);
-            $penerimaanTrucking->position = $data->row;
-            $penerimaanTrucking->id = $data->id;
+            $penerimaanTrucking->position = $data->row ?? 0; 
+            $penerimaanTrucking->id = $data->id  ?? 0;
             if (isset($request->limit)) {
                 $penerimaanTrucking->page = ceil($penerimaanTrucking->position / $request->limit);
             }

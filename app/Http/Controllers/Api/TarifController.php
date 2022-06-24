@@ -276,7 +276,7 @@ class TarifController extends Controller
     public function update(StoreTarifRequest $request, Tarif $tarif)
     {
         try {
-            $tarif = DB::table((new Tarif())->getTable())->findOrFail($tarif->id);
+            $tarif = Tarif::findOrFail($tarif->id);
             $tarif->tujuan = $request->tujuan;
             $tarif->container_id = $request->container_id;
             $tarif->nominal = $request->nominal;
@@ -350,8 +350,8 @@ class TarifController extends Controller
             DB::commit();
 
             $data = $this->getid($tarif->id, $request, $del);
-            $tarif->position = $data->row;
-            $tarif->id = $data->id;
+            $tarif->position = $data->row  ?? 0;
+            $tarif->id = $data->id  ?? 0;
             if (isset($request->limit)) {
                 $tarif->page = ceil($tarif->position / $request->limit);
             }

@@ -227,7 +227,7 @@ class KategoriController extends Controller
     public function update(StoreKategoriRequest $request, Kategori $kategori)
     {
         try {
-            $kategori = DB::table((new Kategori)->getTable())->findOrFail($kategori->id);
+            $kategori = Kategori::findOrFail($kategori->id);
             $kategori->kodekategori = $request->kodekategori;
             $kategori->keterangan = $request->keterangan;
             $kategori->subkelompok_id = $request->subkelompok_id;
@@ -275,7 +275,7 @@ class KategoriController extends Controller
      */
     public function destroy(Kategori $kategori, Request $request)
     {
-        $delete = Kataegori::destroy($kategori->id);
+        $delete = Kategori::destroy($kategori->id);
         $del = 1;
         if ($delete) {
             $logTrail = [
@@ -294,8 +294,8 @@ class KategoriController extends Controller
             DB::commit();
 
             $data = $this->getid($kategori->id, $request, $del);
-            $kategori->position = @$data->row;
-            $kategori->id = @$data->id;
+            $kategori->position = @$data->row  ?? 0;
+            $kategori->id = @$data->id  ?? 0;
             if (isset($request->limit)) {
                 $kategori->page = ceil($kategori->position / $request->limit);
             }

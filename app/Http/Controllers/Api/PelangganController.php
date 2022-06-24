@@ -419,8 +419,8 @@ class PelangganController extends Controller
             DB::commit();
 
             $data = $this->getid($pelanggan->id, $request, $del);
-            $pelanggan->position = $data->row;
-            $pelanggan->id = $data->id;
+            $pelanggan->position = $data->row  ?? 0;
+            $pelanggan->id = $data->id  ?? 0; 
             if (isset($request->limit)) {
                 $pelanggan->page = ceil($pelanggan->position / $request->limit);
             }

@@ -45,6 +45,7 @@ class MekanikController extends Controller
                 'mekanik.namamekanik',
                 'mekanik.keterangan',
                 'parameter.text as statusaktif',
+                'mekanik.modifiedby',
                 'mekanik.created_at',
                 'mekanik.updated_at'
             )
@@ -56,6 +57,7 @@ class MekanikController extends Controller
                 'mekanik.namamekanik',
                 'mekanik.keterangan',
                 'parameter.text as statusaktif',
+                'mekanik.modifiedby',
                 'mekanik.created_at',
                 'mekanik.updated_at'
             )
@@ -69,6 +71,7 @@ class MekanikController extends Controller
                 'mekanik.namamekanik',
                 'mekanik.keterangan',
                 'parameter.text as statusaktif',
+                'mekanik.modifiedby',
                 'mekanik.created_at',
                 'mekanik.updated_at'
             )
@@ -81,6 +84,7 @@ class MekanikController extends Controller
                     'mekanik.namamekanik',
                     'mekanik.keterangan',
                     'parameter.text as statusaktif',
+                    'mekanik.modifiedby',
                     'mekanik.created_at',
                     'mekanik.updated_at'
                 )
@@ -94,14 +98,24 @@ class MekanikController extends Controller
         if (count($params['filters']) > 0 && @$params['filters']['rules'][0]['data'] != '') {
             switch ($params['filters']['groupOp']) {
                 case "AND":
-                    foreach ($params['filters']['rules'] as $index => $search) {
-                        $query = $query->where($search['field'], 'LIKE', "%$search[data]%");
+                    foreach ($params['filters']['rules'] as $index => $filters) {
+                        if ($filters['field'] == 'statusaktif') {
+                            $query = $query->where('parameter.text', 'LIKE', "%$filters[data]%");
+                        } else {
+                            $query = $query->where($filters['field'], 'LIKE', "%$filters[data]%");
+                        }
+
                     }
 
                     break;
                 case "OR":
-                    foreach ($params['filters']['rules'] as $index => $search) {
-                        $query = $query->orWhere($search['field'], 'LIKE', "%$search[data]%");
+                    foreach ($params['filters']['rules'] as $index => $filters) {
+
+                        if ($filters['field'] == 'statusaktif') {
+                            $query = $query->where('parameter.text', 'LIKE', "%$filters[data]%");
+                        } else {
+                            $query = $query->orWhere($filters['field'], 'LIKE', "%$filters[data]%");
+                        }
                     }
 
                     break;
@@ -268,8 +282,8 @@ class MekanikController extends Controller
             DB::commit();
 
             $data = $this->getid($mekanik->id, $request, $del);
-            $mekanik->position = @$data->row;
-            $mekanik->id = @$data->id;
+            $mekanik->position = @$data->row  ?? 0;
+            $mekanik->id = @$data->id  ?? 0;
             if (isset($request->limit)) {
                 $mekanik->page = ceil($mekanik->position / $request->limit);
             }

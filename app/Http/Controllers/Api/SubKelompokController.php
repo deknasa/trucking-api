@@ -272,8 +272,8 @@ class SubKelompokController extends Controller
             DB::commit();
 
             $data = $this->getid($subKelompok->id, $request, $del);
-            $subKelompok->position = $data->row;
-            $subKelompok->id = $data->id;
+            $subKelompok->position = $data->row  ?? 0;
+            $subKelompok->id = $data->id  ?? 0;
             if (isset($request->limit)) {
                 $subKelompok->page = ceil($subKelompok->position / $request->limit);
             }

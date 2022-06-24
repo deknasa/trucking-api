@@ -217,7 +217,7 @@ class MerkController extends Controller
     public function update(StoreMerkRequest $request, Merk $merk)
     {
         try {
-            $merk = DB::table((new Merk)->getTable())->findOrFail($merk->id);
+            $merk = Merk::findOrFail($merk->id);
             $merk->kodemerk = $request->kodemerk;
             $merk->keterangan = $request->keterangan;
             $merk->statusaktif = $request->statusaktif;
@@ -283,8 +283,8 @@ class MerkController extends Controller
             DB::commit();
 
             $data = $this->getid($merk->id, $request, $del);
-            $merk->position = @$data->row;
-            $merk->id = @$data->id;
+            $merk->position = @$data->row  ?? 0;
+            $merk->id = @$data->id  ?? 0;
             if (isset($request->limit)) {
                 $merk->page = ceil($merk->position / $request->limit);
             }

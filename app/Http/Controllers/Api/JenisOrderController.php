@@ -232,7 +232,6 @@ class JenisOrderController extends Controller
     public function update(StoreJenisOrderRequest $request, JenisOrder $jenisorder)
     {
         try {
-            $jenisorder = DB::table((new JenisOrder)->getTable())->findOrFail($jenisorder->id);
             $jenisorder->kodejenisorder = $request->kodejenisorder;
             $jenisorder->keterangan = $request->keterangan;
             $jenisorder->statusaktif = $request->statusaktif;
@@ -306,8 +305,8 @@ class JenisOrderController extends Controller
             DB::commit();
 
             $data = $this->getid($jenisorder->id, $request, $del);
-            $jenisorder->position = $data->row;
-            $jenisorder->id = $data->id;
+            $jenisorder->position = $data->row  ?? 0;
+            $jenisorder->id = $data->id  ?? 0;
             if (isset($request->limit)) {
                 $jenisorder->page = ceil($jenisorder->position / $request->limit);
             }

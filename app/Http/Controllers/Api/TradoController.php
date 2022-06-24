@@ -163,7 +163,7 @@ class TradoController extends Controller
     {
         DB::beginTransaction();
         try {
-            $trado = DB::table((new Trado())->getTable())->find($id);
+            $trado = Trado::find($id);
             $trado->keterangan = strtoupper($request->keterangan);
             $trado->statusaktif = $request->statusaktif;
             $trado->kmawal = $request->kmawal;
@@ -305,8 +305,8 @@ class TradoController extends Controller
 
             $del = 1;
             $data = $this->getid($trado->id, $request, $del);
-            $trado->position = $data->row;
-            $trado->id = $data->id;
+            $trado->position = $data->row  ?? 0;
+            $trado->id = $data->id  ?? 0;
             if (isset($request->limit)) {
                 $trado->page = ceil($trado->position / $request->limit);
             }
@@ -510,7 +510,7 @@ class TradoController extends Controller
             }
         }
 
-        $trado = DB::table((new Trado())->getTable())->find($id);
+        $trado = Trado::find($id);
         $trado->phototrado = json_encode($data['trado'] ?? []);
         $trado->photobpkb = json_encode($data['bpkb'] ?? []);
         $trado->photostnk = json_encode($data['stnk'] ?? []);

@@ -776,8 +776,8 @@ class SuratPengantarController extends Controller
             DB::commit();
 
             $data = $this->getid($suratpengantar->id, $request, $del);
-            $suratpengantar->position = @$data->row;
-            $suratpengantar->id = @$data->id;
+            $suratpengantar->position = @$data->row  ?? 0;
+            $suratpengantar->id = @$data->id  ?? 0;
             if (isset($request->limit)) {
                 $suratpengantar->page = ceil($suratpengantar->position / $request->limit);
             }

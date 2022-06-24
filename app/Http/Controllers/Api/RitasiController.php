@@ -385,8 +385,8 @@ class RitasiController extends Controller
             DB::commit();
 
             $data = $this->getid($ritasi->id, $request, $del);
-            $ritasi->position = @$data->row;
-            $ritasi->id = @$data->id;
+            $ritasi->position = @$data->row  ?? 0;
+            $ritasi->id = @$data->id  ?? 0;
             if (isset($request->limit)) {
                 $ritasi->page = ceil($ritasi->position / $request->limit);
             }

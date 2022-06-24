@@ -333,7 +333,7 @@ class OrderanTruckingController extends Controller
 
     public function show(OrderanTrucking $orderanTrucking,$id)
     {
-        $data = DB::table((new OrderanTrucking)->getTable())->find($id);
+        $data = OrderanTrucking::find($id);
 
         return response([
             'status' => true,
@@ -347,7 +347,7 @@ class OrderanTruckingController extends Controller
     public function update(StoreOrderanTruckingRequest $request, OrderanTrucking $orderanTrucking, $id)
     {
         try {
-            $orderanTrucking = DB::table((new OrderanTrucking)->getTable())->findOrFail($id);
+            $orderanTrucking = OrderanTrucking::findOrFail($id);
             $orderanTrucking->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $orderanTrucking->container_id = $request->container_id;
             $orderanTrucking->agen_id = $request->agen_id;
@@ -429,8 +429,8 @@ class OrderanTruckingController extends Controller
             DB::commit();
             $data = $this->getid($orderantrucking->id, $request, $del);
             
-            $orderantrucking->position = @$data->row;
-            $orderantrucking->id = @$data->id;
+            $orderantrucking->position = @$data->row  ?? 0;
+            $orderantrucking->id = @$data->id  ?? 0;
 
             if (isset($request->limit)) {
                 $orderantrucking->page = ceil($orderantrucking->position / $request->limit);
