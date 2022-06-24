@@ -28,24 +28,26 @@ class ContainerController extends Controller
            /**
      * @ClassName 
      */
-    public function index(Request $request)
+    public function index()
     {
         $params = [
-            'offset' => $request->offset ?? 0,
-            'limit' => $request->limit ?? 100,
-            'search' => $request->search ?? [],
-            'sortIndex' => $request->sortIndex ?? 'id',
-            'sortOrder' => $request->sortOrder ?? 'asc',
+            'offset' => request()->offset ?? ((request()->page - 1) * request()->limit),
+            'limit' => request()->limit ?? 10,
+            'filters' => json_decode(request()->filters, true) ?? [],
+            'sortIndex' => request()->sortIndex ?? 'id',
+            'sortOrder' => request()->sortOrder ?? 'asc',
         ];
+        // dd($params);
         
-        $totalRows = Container::count();
+        $totalRows = DB::table((new Container)->getTable())->count();
         $totalPages = ceil($totalRows / $params['limit']);
 
         /* Sorting */
         if ($params['sortIndex'] == 'id') {
-            $query = Container::select(
+            $query = DB::table((new Container)->getTable())->select(
                 'container.id',
                 'container.keterangan',
+                'container.kodecontainer',
                 'parameter.text as statusaktif',
                 'container.modifiedby',
                 'container.created_at',
@@ -54,8 +56,9 @@ class ContainerController extends Controller
                 ->leftJoin('parameter', 'container.statusaktif', '=', 'parameter.id')
                 ->orderBy('container.id', $params['sortOrder']);
         } else if ($params['sortIndex'] == 'keterangan') {
-            $query = Container::select(
+            $query = DB::table((new Container)->getTable())->select(
                 'container.id',
+                'container.kodecontainer',
                 'container.keterangan',
                 'parameter.text as statusaktif',
                 'container.modifiedby',
@@ -67,8 +70,9 @@ class ContainerController extends Controller
                 ->orderBy('container.id', $params['sortOrder']);
         } else {
             if ($params['sortOrder'] == 'asc') {
-                $query = Container::select(
+                $query = DB::table((new Container)->getTable())->select(
                     'container.id',
+                    'container.kodecontainer',
                     'container.keterangan',
                     'parameter.text as statusaktif',
                     'container.modifiedby',
@@ -79,8 +83,9 @@ class ContainerController extends Controller
                     ->orderBy($params['sortIndex'], $params['sortOrder'])
                     ->orderBy('container.id', $params['sortOrder']);
             } else {
-                $query = Container::select(
+                $query = DB::table((new Container)->getTable())->select(
                     'container.id',
+                    'container.kodecontainer',
                     'container.keterangan',
                     'parameter.text as statusaktif',
                     'container.modifiedby',
@@ -95,10 +100,10 @@ class ContainerController extends Controller
 
 
         /* Searching */
-        if (count($params['search']) > 0 && @$params['search']['rules'][0]['data'] != '') {
-            switch ($params['search']['groupOp']) {
+        if (count($params['filters']) > 0 && @$params['filters']['rules'][0]['data'] != '') {
+            switch ($params['filters']['groupOp']) {
                 case "AND":
-                    foreach ($params['search']['rules'] as $index => $search) {
+                    foreach ($params['filters']['rules'] as $index => $search) {
                         if ($search['field'] == 'statusaktif') {
                             $query = $query->where('parameter.text', 'LIKE', "%$search[data]%");
                         } else {
@@ -108,7 +113,7 @@ class ContainerController extends Controller
 
                     break;
                 case "OR":
-                    foreach ($params['search']['rules'] as $index => $search) {
+                    foreach ($params['filters']['rules'] as $index => $search) {
                         if ($search['field'] == 'statusaktif') {
                             $query = $query->orWhere('parameter.text', 'LIKE', "%$search[data]%");
                         } else {
@@ -175,17 +180,19 @@ class ContainerController extends Controller
         DB::beginTransaction();
         try {
             $container = new Container();
+            $container->kodecontainer = strtoupper($request->kodecontainer);
             $container->keterangan = strtoupper($request->keterangan);
             $container->statusaktif = $request->statusaktif;
-            $container->modifiedby = strtoupper($request->modifiedby);
+            $container->modifiedby = auth('api')->user()->name;
 
             $container->save();
 
             $datajson = [
                 'id' => $container->id,
+                'kodecontainer' => strtoupper($request->kodecontainer),
                 'keterangan' => strtoupper($request->keterangan),
                 'statusaktif' => $request->statusaktif,
-                'modifiedby' => strtoupper($request->modifiedby),
+                'modifiedby' => auth('api')->user()->name,
             ];
 
 
@@ -268,17 +275,19 @@ class ContainerController extends Controller
 
             $datajson = [
                 'id' => $container->id,
+                'kodecontainer' => strtoupper($request->kodecontainer),
                 'keterangan' => strtoupper($request->keterangan),
                 'statusaktif' => $request->statusaktif,
-                'modifiedby' => strtoupper($request->modifiedby),
+                'modifiedby' => auth('api')->user()->name,
             ];
 
 
             $datajson = [
                 'id' => $container->id,
+                'kodecontainer' => strtoupper($request->kodecontainer),
                 'keterangan' => strtoupper($request->keterangan),
                 'statusaktif' => $request->statusaktif,
-                'modifiedby' => strtoupper($request->modifiedby),
+                'modifiedby' => auth('api')->user()->name,
             ];
 
 
@@ -333,13 +342,16 @@ class ContainerController extends Controller
         DB::beginTransaction();
         try {
 
-            Container::destroy($container->id);
-
+            $delete =Container::destroy($container->id);
+            $del = 1;
+            if ($delete) {
+        
             $datajson = [
                 'id' => $container->id,
+                'kodecontainer' => strtoupper($request->kodecontainer),
                 'keterangan' => strtoupper($request->keterangan),
                 'statusaktif' => $request->statusaktif,
-                'modifiedby' => strtoupper($request->modifiedby),
+                'modifiedby' => auth('api')->user()->name,
             ];
 
             $datalogtrail = [
@@ -356,24 +368,27 @@ class ContainerController extends Controller
             app(LogTrailController::class)->store($data);
 
             DB::commit();
-            Container::destroy($container->id);
-            $del = 1;
             $data = $this->getid($container->id, $request, $del);
-            $container->position = $data->row;
-            $container->id = $data->id;
+            $container->position = $data->row ?? 0;
+            $container->id = $data->id ?? 0;
             if (isset($request->limit)) {
                 $container->page = ceil($container->position / $request->limit);
             }
+
+   
+
             // dd($cabang);
             return response([
                 'status' => true,
                 'message' => 'Berhasil dihapus',
                 'data' => $container
             ]);
+        }
         } catch (\Throwable $th) {
             DB::rollBack();
             return response($th->getMessage());
         }
+    
     }
 
     public function fieldLength()
@@ -448,6 +463,7 @@ class ContainerController extends Controller
         Schema::create($temp, function ($table) {
             $table->id();
             $table->bigInteger('id_')->default('0');
+            $table->string('kodecontainer', 50)->default('');
             $table->string('keterangan', 300)->default('');
             $table->string('statusaktif', 100)->default('');
             $table->string('modifiedby', 30)->default('');
@@ -460,8 +476,9 @@ class ContainerController extends Controller
 
 
         if ($params['sortname'] == 'id') {
-            $query = Container::select(
+            $query = DB::table((new Container)->getTable())->select(
                 'container.id as id_',
+                'container.kodecontainer',
                 'container.keterangan',
                 'parameter.text as statusaktif',
                 'container.modifiedby',
@@ -471,8 +488,9 @@ class ContainerController extends Controller
                 ->leftJoin('parameter', 'container.statusaktif', '=', 'parameter.id')
                 ->orderBy('container.id', $params['sortorder']);
         } else if ($params['sortname'] == 'keterangan') {
-            $query = Container::select(
+            $query = DB::table((new Container)->getTable())->select(
                 'container.id as id_',
+                'container.kodecontainer',
                 'container.keterangan',
                 'parameter.text as statusaktif',
                 'container.modifiedby',
@@ -485,8 +503,9 @@ class ContainerController extends Controller
                 ->orderBy('container.id', $params['sortorder']);
         } else {
             if ($params['sortorder'] == 'asc') {
-                $query = Container::select(
+                $query = DB::table((new Container)->getTable())->select(
                     'container.id as id_',
+                    'container.kodecontainer',
                     'container.keterangan',
                     'parameter.text as statusaktif',
                     'container.modifiedby',
@@ -497,8 +516,9 @@ class ContainerController extends Controller
                     ->orderBy($params['sortname'], $params['sortorder'])
                     ->orderBy('container.id', $params['sortorder']);
             } else {
-                $query = Container::select(
+                $query = DB::table((new Container)->getTable())->select(
                     'container.id as id_',
+                    'container.kodecontainer',
                     'container.keterangan',
                     'parameter.text as statusaktif',
                     'container.modifiedby',
@@ -514,7 +534,7 @@ class ContainerController extends Controller
 
 
 
-        DB::table($temp)->insertUsing(['id_', 'keterangan', 'statusaktif', 'modifiedby', 'created_at', 'updated_at'], $query);
+        DB::table($temp)->insertUsing(['id_', 'kodecontainer','keterangan', 'statusaktif', 'modifiedby', 'created_at', 'updated_at'], $query);
 
 
         if ($del == 1) {

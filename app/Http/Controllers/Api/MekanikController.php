@@ -22,39 +22,42 @@ class MekanikController extends Controller
     /**
      * @ClassName 
      */
-    public function index(Request $request)
+    public function index()
     {
         $params = [
-            'offset' => $request->offset ?? 0,
-            'limit' => $request->limit ?? 10,
-            'search' => $request->search ?? [],
-            'sortIndex' => $request->sortIndex ?? 'id',
-            'sortOrder' => $request->sortOrder ?? 'asc',
+            'offset' => request()->offset ?? ((request()->page - 1) * request()->limit),
+            'limit' => request()->limit ?? 10,
+            'filters' => json_decode(request()->filters, true) ?? [],
+            'sortIndex' => request()->sortIndex ?? 'id',
+            'sortOrder' => request()->sortOrder ?? 'asc',
         ];
 
-        $totalRows = Mekanik::count();
+        
+        $totalRows = DB::table((new Mekanik)->getTable())->count();
         $totalPages = $params['limit'] > 0 ? ceil($totalRows / $params['limit']) : 1;
 
         /* Sorting */
-        $query = Mekanik::orderBy($params['sortIndex'], $params['sortOrder']);
+        $query = DB::table((new Mekanik)->getTable())->orderBy($params['sortIndex'], $params['sortOrder']);
 
         if ($params['sortIndex'] == 'id') {
-            $query = Mekanik::select(
+            $query = DB::table((new Mekanik)->getTable())->select(
                 'mekanik.id',
                 'mekanik.namamekanik',
                 'mekanik.keterangan',
                 'parameter.text as statusaktif',
+                'mekanik.modifiedby',
                 'mekanik.created_at',
                 'mekanik.updated_at'
             )
             ->leftJoin('parameter', 'mekanik.statusaktif', '=', 'parameter.id')
             ->orderBy('mekanik.id', $params['sortOrder']);
         } else if ($params['sortIndex'] == 'namamekanik' or $params['sortIndex'] == 'keterangan') {
-            $query = Mekanik::select(
+            $query = DB::table((new Mekanik)->getTable())->select(
                 'mekanik.id',
                 'mekanik.namamekanik',
                 'mekanik.keterangan',
                 'parameter.text as statusaktif',
+                'mekanik.modifiedby',
                 'mekanik.created_at',
                 'mekanik.updated_at'
             )
@@ -63,11 +66,12 @@ class MekanikController extends Controller
                 ->orderBy('mekanik.id', $params['sortOrder']);
         } else {
             if ($params['sortOrder'] == 'asc') {
-                $query = Mekanik::select(
+                $query = DB::table((new Mekanik)->getTable())->select(
                 'mekanik.id',
                 'mekanik.namamekanik',
                 'mekanik.keterangan',
                 'parameter.text as statusaktif',
+                'mekanik.modifiedby',
                 'mekanik.created_at',
                 'mekanik.updated_at'
             )
@@ -75,11 +79,12 @@ class MekanikController extends Controller
                     ->orderBy($params['sortIndex'], $params['sortOrder'])
                     ->orderBy('mekanik.id', $params['sortOrder']);
             } else {
-                $query = Mekanik::select(
+                $query = DB::table((new Mekanik)->getTable())->select(
                     'mekanik.id',
                     'mekanik.namamekanik',
                     'mekanik.keterangan',
                     'parameter.text as statusaktif',
+                    'mekanik.modifiedby',
                     'mekanik.created_at',
                     'mekanik.updated_at'
                 )
@@ -90,17 +95,27 @@ class MekanikController extends Controller
         }
 
         /* Searching */
-        if (count($params['search']) > 0 && @$params['search']['rules'][0]['data'] != '') {
-            switch ($params['search']['groupOp']) {
+        if (count($params['filters']) > 0 && @$params['filters']['rules'][0]['data'] != '') {
+            switch ($params['filters']['groupOp']) {
                 case "AND":
-                    foreach ($params['search']['rules'] as $index => $search) {
-                        $query = $query->where($search['field'], 'LIKE', "%$search[data]%");
+                    foreach ($params['filters']['rules'] as $index => $filters) {
+                        if ($filters['field'] == 'statusaktif') {
+                            $query = $query->where('parameter.text', 'LIKE', "%$filters[data]%");
+                        } else {
+                            $query = $query->where($filters['field'], 'LIKE', "%$filters[data]%");
+                        }
+
                     }
 
                     break;
                 case "OR":
-                    foreach ($params['search']['rules'] as $index => $search) {
-                        $query = $query->orWhere($search['field'], 'LIKE', "%$search[data]%");
+                    foreach ($params['filters']['rules'] as $index => $filters) {
+
+                        if ($filters['field'] == 'statusaktif') {
+                            $query = $query->where('parameter.text', 'LIKE', "%$filters[data]%");
+                        } else {
+                            $query = $query->orWhere($filters['field'], 'LIKE', "%$filters[data]%");
+                        }
                     }
 
                     break;
@@ -143,7 +158,7 @@ class MekanikController extends Controller
             $mekanik->namamekanik = $request->namamekanik;
             $mekanik->keterangan = $request->keterangan;
             $mekanik->statusaktif = $request->statusaktif;
-            $mekanik->modifiedby = $request->modifiedby;
+            $mekanik->modifiedby = auth('api')->user()->name;
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
 
@@ -205,7 +220,7 @@ class MekanikController extends Controller
             $mekanik->namamekanik = $request->namamekanik;
             $mekanik->keterangan = $request->keterangan;
             $mekanik->statusaktif = $request->statusaktif;
-            $mekanik->modifiedby = $request->modifiedby;
+            $mekanik->modifiedby = auth('api')->user()->name;
 
             if ($mekanik->save()) {
                 $logTrail = [
@@ -267,8 +282,8 @@ class MekanikController extends Controller
             DB::commit();
 
             $data = $this->getid($mekanik->id, $request, $del);
-            $mekanik->position = @$data->row;
-            $mekanik->id = @$data->id;
+            $mekanik->position = @$data->row  ?? 0;
+            $mekanik->id = @$data->id  ?? 0;
             if (isset($request->limit)) {
                 $mekanik->page = ceil($mekanik->position / $request->limit);
             }
@@ -321,7 +336,7 @@ class MekanikController extends Controller
         });
 
         if ($params['sortname'] == 'id') {
-            $query = Mekanik::select(
+            $query = DB::table((new Mekanik)->getTable())->select(
                 'mekanik.id as id_',
                 'mekanik.namamekanik',
                 'mekanik.keterangan',
@@ -332,7 +347,7 @@ class MekanikController extends Controller
             )
                 ->orderBy('mekanik.id', $params['sortorder']);
         } else if ($params['sortname'] == 'namamekanik' or $params['sortname'] == 'keterangan') {
-            $query = Mekanik::select(
+            $query = DB::table((new Mekanik)->getTable())->select(
                 'mekanik.id as id_',
                 'mekanik.namamekanik',
                 'mekanik.keterangan',
@@ -345,7 +360,7 @@ class MekanikController extends Controller
                 ->orderBy('mekanik.id', $params['sortorder']);
         } else {
             if ($params['sortorder'] == 'asc') {
-                $query = Mekanik::select(
+                $query = DB::table((new Mekanik)->getTable())->select(
                     'mekanik.id as id_',
                     'mekanik.namamekanik',
                     'mekanik.keterangan',
@@ -357,7 +372,7 @@ class MekanikController extends Controller
                     ->orderBy($params['sortname'], $params['sortorder'])
                     ->orderBy('mekanik.id', $params['sortorder']);
             } else {
-                $query = Mekanik::select(
+                $query = DB::table((new Mekanik)->getTable())->select(
                     'mekanik.id as id_',
                     'mekanik.namamekanik',
                     'mekanik.keterangan',

@@ -25,25 +25,25 @@ class UpahSupirController extends Controller
  /**
      * @ClassName 
      */
-    public function index(Request $request)
+    public function index()
     {
         $params = [
-            'offset' => $request->offset ?? 0,
-            'limit' => $request->limit ?? 10,
-            'search' => $request->search ?? [],
-            'sortIndex' => $request->sortIndex ?? 'id',
-            'sortOrder' => $request->sortOrder ?? 'asc',
-            'withRelations' => $request->withRelations ?? false,
+            'offset' => request()->offset ?? ((request()->page - 1) * request()->limit),
+            'limit' => request()->limit ?? 10,
+            'filters' => json_decode(request()->filters, true) ?? [],
+            'sortIndex' => request()->sortIndex ?? 'id',
+            'sortOrder' => request()->sortOrder ?? 'asc',
+            'withRelations' => request()->withRelations ?? false,
         ];
 
-        $totalRows = UpahSupir::count();
+        $totalRows = DB::table((new UpahSupir())->getTable())->count();
         $totalPages = $params['limit'] > 0 ? ceil($totalRows / $params['limit']) : 1;
 
         /* Sorting */
-        $query = UpahSupir::orderBy($params['sortIndex'], $params['sortOrder']);
+        $query = DB::table((new UpahSupir())->getTable())->orderBy($params['sortIndex'], $params['sortOrder']);
 
         if ($params['sortIndex'] == 'id') {
-            $query = UpahSupir::select(
+            $query = DB::table((new UpahSupir())->getTable())->select(
                 'upahsupir.id',
                 'kotadari.keterangan as kotadari_id',
                 'kotasampai.keterangan as kotasampai_id',
@@ -63,7 +63,7 @@ class UpahSupirController extends Controller
             ->leftJoin('parameter as param', 'upahsupir.statusluarkota', '=', 'param.id')
             ->orderBy('upahsupir.id', $params['sortOrder']);
         } else if ($params['sortIndex'] == 'kotadari_id' or $params['sortIndex'] == 'kotasampai_id') {
-            $query = UpahSupir::select(
+            $query = DB::table((new UpahSupir())->getTable())->select(
                     'upahsupir.id',
                     'kotadari.keterangan as kotadari_id',
                     'kotasampai.keterangan as kotasampai_id',
@@ -85,7 +85,7 @@ class UpahSupirController extends Controller
             ->orderBy('upahsupir.id', $params['sortOrder']);
         } else {
             if ($params['sortOrder'] == 'asc') {
-                $query = UpahSupir::select(
+                $query = DB::table((new UpahSupir())->getTable())->select(
                     'upahsupir.id',
                     'kotadari.keterangan as kotadari_id',
                     'kotasampai.keterangan as kotasampai_id',
@@ -106,7 +106,7 @@ class UpahSupirController extends Controller
                 ->orderBy($params['sortIndex'], $params['sortOrder'])
                 ->orderBy('upahsupir.id', $params['sortOrder']);
             } else {
-                $query = UpahSupir::select(
+                $query = DB::table((new UpahSupir())->getTable())->select(
                     'upahsupir.id',
                     'kotadari.keterangan as kotadari_id',
                     'kotasampai.keterangan as kotasampai_id',
@@ -128,19 +128,42 @@ class UpahSupirController extends Controller
                 ->orderBy('upahsupir.id', 'asc');
             }
         }
-
         /* Searching */
-        if (count($params['search']) > 0 && @$params['search']['rules'][0]['data'] != '') {
-            switch ($params['search']['groupOp']) {
+        if (count($params['filters']) > 0 && @$params['filters']['rules'][0]['data'] != '') {
+            switch ($params['filters']['groupOp']) {
                 case "AND":
-                    foreach ($params['search']['rules'] as $index => $search) {
-                        $query = $query->where($search['field'], 'LIKE', "%$search[data]%");
+                    foreach ($params['filters']['rules'] as $index => $search) {
+                        if ($search['field'] == 'statusaktif') {
+                            $query = $query->where('parameter.text', 'LIKE', "%$search[data]%");
+                        } elseif ($search['field'] == 'statusluarkota') {
+                            $query = $query->where('param.text', 'LIKE', "%$search[data]%");
+                        } elseif ($search['field'] == 'kotadari_id') {
+                            $query = $query->where('kotadari.keterangan', 'LIKE', "%$search[data]%");
+                        } elseif ($search['field'] == 'kotasampai_id') {
+                            $query = $query->where('kotasampai.keterangan', 'LIKE', "%$search[data]%");
+                        } elseif ($search['field'] == 'zona_id') {
+                            $query = $query->where('zona.zona', 'LIKE', "%$search[data]%");
+                        } else {
+                            $query = $query->where($search['field'], 'LIKE', "%$search[data]%");
+                        }
                     }
 
                     break;
                 case "OR":
-                    foreach ($params['search']['rules'] as $index => $search) {
-                        $query = $query->orWhere($search['field'], 'LIKE', "%$search[data]%");
+                    foreach ($params['filters']['rules'] as $index => $search) {
+                        if ($search['field'] == 'statusaktif') {
+                            $query = $query->where('parameter.text', 'LIKE', "%$search[data]%");
+                        } elseif ($search['field'] == 'statusluarkota') {
+                            $query = $query->where('param.text', 'LIKE', "%$search[data]%");
+                        } elseif ($search['field'] == 'kotadari_id') {
+                            $query = $query->where('kotadari.keterangan', 'LIKE', "%$search[data]%");
+                        } elseif ($search['field'] == 'kotasampai_id') {
+                            $query = $query->where('kotasampai.keterangan', 'LIKE', "%$search[data]%");
+                        } elseif ($search['field'] == 'zona_id') {
+                            $query = $query->where('zona.zona', 'LIKE', "%$search[data]%");
+                        } else {
+                            $query = $query->where($search['field'], 'LIKE', "%$search[data]%");
+                        }
                     }
 
                     break;
@@ -193,7 +216,7 @@ class UpahSupirController extends Controller
             $upahsupir->statusaktif = $request->statusaktif;
             $upahsupir->tglmulaiberlaku = date('Y-m-d', strtotime($request->tglmulaiberlaku));
             $upahsupir->statusluarkota = $request->statusluarkota;
-            $upahsupir->modifiedby = $request->modifiedby;
+            $upahsupir->modifiedby = auth('api')->user()->name;
 
             if ($upahsupir->save()) {
                 $logTrail = [
@@ -276,7 +299,7 @@ class UpahSupirController extends Controller
             DB::commit();
         }
             /* Set position and page */
-            $upahsupir->position = UpahSupir::orderBy($request->sortname, $request->sortorder)
+            $upahsupir->position = DB::table((new UpahSupir())->getTable())->orderBy($request->sortname, $request->sortorder)
                 ->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $upahsupir->{$request->sortname})
                 ->where('id', '<=', $upahsupir->id)
                 ->count();
@@ -304,9 +327,6 @@ class UpahSupirController extends Controller
     {
         $data = UpahSupir::with(
             'upahsupirRincian',
-            // 'absensiSupirDetail.trado',
-            // 'absensiSupirDetail.supir',
-            // 'absensiSupirDetail.absenTrado',
         )->find($id);
 
         return response([
@@ -336,7 +356,7 @@ class UpahSupirController extends Controller
             $upahsupir->statusaktif = $request->statusaktif;
             $upahsupir->tglmulaiberlaku = date('Y-m-d', strtotime($request->tglmulaiberlaku));
             $upahsupir->statusluarkota = $request->statusluarkota;
-            $upahsupir->modifiedby = $request->modifiedby;
+            $upahsupir->modifiedby = auth('api')->user()->name;
 
             if ($upahsupir->save()) {
                 $logTrail = [
@@ -420,15 +440,15 @@ class UpahSupirController extends Controller
             DB::commit();
         }
             /* Set position and page */
-            $upahsupir->position = UpahSupir::orderBy($request->sortname, $request->sortorder)
+            $upahsupir->position = DB::table((new UpahSupir())->getTable())->orderBy($request->sortname, $request->sortorder)
                 ->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $upahsupir->{$request->sortname})
                 ->where('id', '<=', $upahsupir->id)
                 ->count();
-
+            
             if (isset($request->limit)) {
                 $upahsupir->page = ceil($upahsupir->position / $request->limit);
             }
-
+            
             return response([
                 'status' => true,
                 'message' => 'Berhasil disimpan',

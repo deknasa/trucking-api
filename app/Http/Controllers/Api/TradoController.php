@@ -27,33 +27,33 @@ class TradoController extends Controller
      /**
      * @ClassName 
      */
-    public function index(Request $request)
+    public function index()
     {
         $params = [
-            'offset' => $request->offset ?? 0,
-            'limit' => $request->limit ?? 10,
-            'search' => $request->search ?? [],
-            'sortIndex' => $request->sortIndex ?? 'id',
-            'sortOrder' => $request->sortOrder ?? 'asc',
+            'offset' => request()->offset ?? ((request()->page - 1) * request()->limit),
+            'limit' => request()->limit ?? 10,
+            'filters' => json_decode(request()->filters, true) ?? [],
+            'sortIndex' => request()->sortIndex ?? 'id',
+            'sortOrder' => request()->sortOrder ?? 'asc',
         ];
 
-        $totalRows = Trado::count();
+        $totalRows = DB::table((new Trado())->getTable())->count();
         $totalPages = ceil($totalRows / $params['limit']);
 
         /* Sorting */
-        $query = Trado::orderBy($params['sortIndex'], $params['sortOrder']);
+        $query = DB::table((new Trado())->getTable())->orderBy($params['sortIndex'], $params['sortOrder']);
         
         /* Searching */
-        if (count($params['search']) > 0) {
-            switch ($params['search']['groupOp']) {
+        if (count($params['filters']) > 0) {
+            switch ($params['filters']['groupOp']) {
                 case "AND":
-                    foreach ($params['search']['rules'] as $index => $search) {
+                    foreach ($params['filters']['rules'] as $index => $search) {
                         $query = $query->where($search['field'], 'LIKE', "%$search[data]%");
                     }
 
                     break;
                 case "OR":
-                    foreach ($params['search']['rules'] as $index => $search) {
+                    foreach ($params['filters']['rules'] as $index => $search) {
                         $query = $query->orWhere($search['field'], 'LIKE', "%".$search['data']."%");
                     }
 
@@ -109,7 +109,7 @@ class TradoController extends Controller
             $trado->nama = strtoupper($request->nama);
             $trado->nostnk = strtoupper($request->nostnk);
             $trado->alamatstnk = strtoupper($request->alamatstnk);
-            $trado->modifiedby = strtoupper($request->modifiedby);
+            $trado->modifiedby = strtoupper(auth('api')->user()->name);
             $trado->tglstandarisasi = date('Y-m-d',strtotime($request->tglstandarisasi));
             $trado->tglserviceopname = date('Y-m-d',strtotime($request->tglserviceopname));
             $trado->statusstandarisasi = $request->statusstandarisasi;
@@ -179,7 +179,7 @@ class TradoController extends Controller
             $trado->nama = strtoupper($request->nama);
             $trado->nostnk = strtoupper($request->nostnk);
             $trado->alamatstnk = strtoupper($request->alamatstnk);
-            $trado->modifiedby = strtoupper($request->modifiedby);
+            $trado->modifiedby = strtoupper(auth('api')->user()->name);
             $trado->tglstandarisasi = date('Y-m-d',strtotime($request->tglstandarisasi));
             $trado->tglserviceopname = date('Y-m-d',strtotime($request->tglserviceopname));
             $trado->statusstandarisasi = $request->statusstandarisasi;
@@ -224,7 +224,7 @@ class TradoController extends Controller
             DB::commit();
 
             /* Set position and page */
-            $trado->position = Trado::orderBy($request->sortIndex ?? 'id', $request->sortOrder ?? 'asc')
+            $trado->position = DB::table((new Trado())->getTable())->orderBy($request->sortIndex ?? 'id', $request->sortOrder ?? 'asc')
                 ->where($request->sortIndex, $request->sortOrder == 'desc' ? '>=' : '<=', $trado->{$request->sortIndex})
                 ->where('id', '<=', $trado->id)
                 ->count();
@@ -289,7 +289,7 @@ class TradoController extends Controller
                 }
             }
 
-            Trado::destroy($trado->id);
+            DB::table((new Trado())->getTable())->destroy($trado->id);
 
             $logtrail = new LogTrail();
             $logtrail->namatabel = 'TRADO';
@@ -305,8 +305,8 @@ class TradoController extends Controller
 
             $del = 1;
             $data = $this->getid($trado->id, $request, $del);
-            $trado->position = $data->row;
-            $trado->id = $data->id;
+            $trado->position = $data->row  ?? 0;
+            $trado->id = $data->id  ?? 0;
             if (isset($request->limit)) {
                 $trado->page = ceil($trado->position / $request->limit);
             }
@@ -361,7 +361,7 @@ class TradoController extends Controller
             if (isset($request['contents'])) {
                 $aksi = 'EDIT';
                 $request['contents'] = json_decode($request['contents']);
-                $get = Trado::where('id',$id)->first();
+                $get = DB::table((new Trado())->getTable())->where('id',$id)->first();
 
                 $phototrado   = json_decode($get->phototrado,true);
                 $photostnk    = json_decode($get->photostnk,true);
@@ -612,7 +612,7 @@ class TradoController extends Controller
 
 
         if ($request->sortIndex == 'id') {
-            $query = Trado::select(
+            $query = DB::table((new Trado())->getTable())->select(
                 'trado.id as id_',
                 'trado.keterangan',
                 'parameter.text as statusaktif',
@@ -663,7 +663,7 @@ class TradoController extends Controller
                 ->leftJoin('parameter', 'trado.statusaktif', '=', 'parameter.id')
                 ->orderBy('trado.id', $request->sortOrder);
         } else if ($request->sortIndex == 'keterangan') {
-            $query = Trado::select(
+            $query = DB::table((new Trado())->getTable())->select(
                 'trado.id as id_',
                 'trado.keterangan',
                 'parameter.text as statusaktif',
@@ -717,7 +717,7 @@ class TradoController extends Controller
                 ->orderBy('trado.id', $request->sortOrder);
         } else {
             if ($request->sortOrder == 'asc') {
-                $query = Trado::select(
+                $query = DB::table((new Trado())->getTable())->select(
                 'trado.id as id_',
                 'trado.keterangan',
                 'parameter.text as statusaktif',
@@ -769,7 +769,7 @@ class TradoController extends Controller
                     ->orderBy($request->sortIndex, $request->sortOrder)
                     ->orderBy('trado.id', $request->sortOrder);
             } else {
-                $query = Trado::select(
+                $query = DB::table((new Trado())->getTable())->select(
                     'trado.id as id_',
                     'trado.keterangan',
                     'parameter.text as statusaktif',

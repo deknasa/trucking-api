@@ -20,24 +20,24 @@ class JenisTradoController extends Controller
       /**
      * @ClassName 
      */
-    public function index(Request $request)
+    public function index()
     {
         $params = [
-            'offset' => $request->offset ?? 0,
-            'limit' => $request->limit ?? 10,
-            'search' => $request->search ?? [],
-            'sortIndex' => $request->sortIndex ?? 'id',
-            'sortOrder' => $request->sortOrder ?? 'asc',
+            'offset' => request()->offset ?? ((request()->page - 1) * request()->limit),
+            'limit' => request()->limit ?? 10,
+            'filters' => json_decode(request()->filters, true) ?? [],
+            'sortIndex' => request()->sortIndex ?? 'id',
+            'sortOrder' => request()->sortOrder ?? 'asc',
         ];
 
-        $totalRows = JenisTrado::count();
+        $totalRows = DB::table((new JenisTrado)->getTable())->count();
         $totalPages = $params['limit'] > 0 ? ceil($totalRows / $params['limit']) : 1;
 
         /* Sorting */
-        $query = JenisTrado::orderBy($params['sortIndex'], $params['sortOrder']);
+        $query = DB::table((new JenisTrado)->getTable())->orderBy($params['sortIndex'], $params['sortOrder']);
 
         if ($params['sortIndex'] == 'id') {
-            $query = JenisTrado::select(
+            $query = DB::table((new JenisTrado)->getTable())->select(
                 'jenistrado.id',
                 'jenistrado.kodejenistrado',
                 'jenistrado.keterangan',
@@ -49,7 +49,7 @@ class JenisTradoController extends Controller
             ->leftJoin('parameter', 'jenistrado.statusaktif', '=', 'parameter.id')
             ->orderBy('jenistrado.id', $params['sortOrder']);
         } else if ($params['sortIndex'] == 'kodejenistrado' or $params['sortIndex'] == 'keterangan') {
-            $query = JenisTrado::select(
+            $query = DB::table((new JenisTrado)->getTable())->select(
                 'jenistrado.id',
                 'jenistrado.kodejenistrado',
                 'jenistrado.keterangan',
@@ -63,7 +63,7 @@ class JenisTradoController extends Controller
                 ->orderBy('jenistrado.id', $params['sortOrder']);
         } else {
             if ($params['sortOrder'] == 'asc') {
-                $query = JenisTrado::select(
+                $query = DB::table((new JenisTrado)->getTable())->select(
                     'jenistrado.id',
                     'jenistrado.kodejenistrado',
                     'jenistrado.keterangan',
@@ -76,7 +76,7 @@ class JenisTradoController extends Controller
                     ->orderBy($params['sortIndex'], $params['sortOrder'])
                     ->orderBy('jenistrado.id', $params['sortOrder']);
             } else {
-                $query = JenisTrado::select(
+                $query = DB::table((new JenisTrado)->getTable())->select(
                     'jenistrado.id',
                     'jenistrado.kodejenistrado',
                     'jenistrado.keterangan',
@@ -92,10 +92,10 @@ class JenisTradoController extends Controller
         }
 
         /* Searching */
-        if (count($params['search']) > 0 && @$params['search']['rules'][0]['data'] != '') {
-            switch ($params['search']['groupOp']) {
+        if (count($params['filters']) > 0 && @$params['filters']['rules'][0]['data'] != '') {
+            switch ($params['filters']['groupOp']) {
                 case "AND":
-                    foreach ($params['search']['rules'] as $index => $search) {
+                    foreach ($params['filters']['rules'] as $index => $search) {
                         if ($search['field'] == 'statusaktif') {
                             $query = $query->where('parameter.text', 'LIKE', "%$search[data]%");
                         } else {
@@ -105,7 +105,7 @@ class JenisTradoController extends Controller
 
                     break;
                 case "OR":
-                    foreach ($params['search']['rules'] as $index => $search) {
+                    foreach ($params['filters']['rules'] as $index => $search) {
                         if ($search['field'] == 'statusaktif') {
                             $query = $query->orWhere('parameter.text', 'LIKE', "%$search[data]%");
                         } else {
@@ -153,7 +153,7 @@ class JenisTradoController extends Controller
             $jenistrado->kodejenistrado = $request->kodejenistrado;
             $jenistrado->statusaktif = $request->statusaktif;
             $jenistrado->keterangan = $request->keterangan;
-            $jenistrado->modifiedby = $request->modifiedby;
+            $jenistrado->modifiedby = auth('api')->user()->name;
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
 
@@ -236,7 +236,7 @@ class JenisTradoController extends Controller
             $jenistrado->kodejenistrado = $request->kodejenistrado;
             $jenistrado->keterangan = $request->keterangan;
             $jenistrado->statusaktif = $request->statusaktif;
-            $jenistrado->modifiedby = $request->modifiedby;
+            $jenistrado->modifiedby = auth('api')->user()->name;
 
             if ($jenistrado->save()) {
                 $logTrail = [
@@ -305,8 +305,8 @@ class JenisTradoController extends Controller
             DB::commit();
 
             $data = $this->getid($jenistrado->id, $request, $del);
-            $jenistrado->position = $data->row;
-            $jenistrado->id = $data->id;
+            $jenistrado->position = $data->row  ?? 0;
+            $jenistrado->id = $data->id  ?? 0;
             if (isset($request->limit)) {
                 $jenistrado->page = ceil($jenistrado->position / $request->limit);
             }
@@ -339,7 +339,7 @@ class JenisTradoController extends Controller
 
     public function getPosition($jenistrado, $request)
     {
-        return JenisTrado::where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $jenistrado->{$request->sortname})
+        return DB::table((new JenisTrado)->getTable())->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $jenistrado->{$request->sortname})
             /* Jika sortname modifiedby atau ada data duplikat */
             // ->where('id', $request->sortorder == 'desc' ? '>=' : '<=', $parameter->id)
             ->count();
@@ -380,7 +380,7 @@ class JenisTradoController extends Controller
         });
 
         if ($params['sortname'] == 'id') {
-            $query = JenisTrado::select(
+            $query = DB::table((new JenisTrado)->getTable())->select(
                 'jenistrado.id as id_',
                 'jenistrado.kodejenistrado',
                 'jenistrado.keterangan',
@@ -391,7 +391,7 @@ class JenisTradoController extends Controller
             )
                 ->orderBy('jenistrado.id', $params['sortorder']);
         } else if ($params['sortname'] == 'kodejenistrado' or $params['sortname'] == 'keterangan') {
-            $query = JenisTrado::select(
+            $query = DB::table((new JenisTrado)->getTable())->select(
                 'jenistrado.id as id_',
                 'jenistrado.kodejenistrado',
                 'jenistrado.keterangan',
@@ -404,7 +404,7 @@ class JenisTradoController extends Controller
                 ->orderBy('jenistrado.id', $params['sortorder']);
         } else {
             if ($params['sortorder'] == 'asc') {
-                $query = JenisTrado::select(
+                $query = DB::table((new JenisTrado)->getTable())->select(
                     'jenistrado.id as id_',
                     'jenistrado.kodejenistrado',
                     'jenistrado.keterangan',
@@ -416,7 +416,7 @@ class JenisTradoController extends Controller
                     ->orderBy($params['sortname'], $params['sortorder'])
                     ->orderBy('jenistrado.id', $params['sortorder']);
             } else {
-                $query = JenisTrado::select(
+                $query = DB::table((new JenisTrado)->getTable())->select(
                     'jenistrado.id as id_',
                     'jenistrado.kodejenistrado',
                     'jenistrado.keterangan',

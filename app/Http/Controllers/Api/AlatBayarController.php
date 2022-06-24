@@ -158,7 +158,7 @@ class AlatBayarController extends Controller
             $alatbayar->statuslangsunggcair = $request->statuslangsungcair;
             $alatbayar->statusdefault = $request->statusdefault;
             $alatbayar->bank_id = $request->bank_id;
-            $alatbayar->modifiedby = $request->modifiedby;
+            $alatbayar->modifiedby = auth('api')->user()->name;
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
 
@@ -224,7 +224,7 @@ class AlatBayarController extends Controller
             $alatbayar->statuslangsunggcair = $request->statuslangsungcair;
             $alatbayar->statusdefault = $request->statusdefault;
             $alatbayar->bank_id = $request->bank_id;
-            $alatbayar->modifiedby = $request->modifiedby;
+            $alatbayar->modifiedby = auth('api')->user()->name;
 
             if ($alatbayar->save()) {
                 $logTrail = [
@@ -267,7 +267,7 @@ class AlatBayarController extends Controller
      */
     public function destroy(AlatBayar $alatbayar, Request $request)
     {
-        $delete = DB::table((new AlatBayar)->getTable())->destroy($alatbayar->id);
+        $delete = AlatBayar::destroy($alatbayar->id);
         $del = 1;
         if ($delete) {
             $logTrail = [

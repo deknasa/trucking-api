@@ -139,7 +139,7 @@ class UpahSupirRincianController extends Controller
             $upahSupirRincian->nominalkomisi = $request->nominalkomisi;
             $upahSupirRincian->nominaltol = $request->nominaltol;
             $upahSupirRincian->liter = $request->liter;
-            $upahSupirRincian->modifiedby = $request->modifiedby;
+            $upahSupirRincian->modifiedby = auth('api')->user()->name;
             
             $upahSupirRincian->save();
             

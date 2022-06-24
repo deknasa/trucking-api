@@ -20,24 +20,24 @@ class MerkController extends Controller
    /**
      * @ClassName 
      */
-    public function index(Request $request)
+    public function index()
     {
         $params = [
-            'offset' => $request->offset ?? 0,
-            'limit' => $request->limit ?? 10,
-            'search' => $request->search ?? [],
-            'sortIndex' => $request->sortIndex ?? 'id',
-            'sortOrder' => $request->sortOrder ?? 'asc',
+            'offset' => request()->offset ?? ((request()->page - 1) * request()->limit),
+            'limit' => request()->limit ?? 10,
+            'filters' => json_decode(request()->filters, true) ?? [],
+            'sortIndex' => request()->sortIndex ?? 'id',
+            'sortOrder' => request()->sortOrder ?? 'asc',
         ];
 
-        $totalRows = Merk::count();
+        $totalRows = DB::table((new Merk)->getTable())->count();
         $totalPages = $params['limit'] > 0 ? ceil($totalRows / $params['limit']) : 1;
 
         /* Sorting */
-        $query = Merk::orderBy($params['sortIndex'], $params['sortOrder']);
+        $query = DB::table((new Merk)->getTable())->orderBy($params['sortIndex'], $params['sortOrder']);
 
         if ($params['sortIndex'] == 'id') {
-            $query = Merk::select(
+            $query = DB::table((new Merk)->getTable())->select(
                 'merk.id',
                 'merk.kodemerk',
                 'merk.keterangan',
@@ -49,7 +49,7 @@ class MerkController extends Controller
             ->leftJoin('parameter', 'merk.statusaktif', '=', 'parameter.id')
             ->orderBy('merk.id', $params['sortOrder']);
         } else if ($params['sortIndex'] == 'keterangan') {
-            $query = Merk::select(
+            $query = DB::table((new Merk)->getTable())->select(
                 'merk.id',
                 'merk.kodemerk',
                 'merk.keterangan',
@@ -63,7 +63,7 @@ class MerkController extends Controller
                 ->orderBy('merk.id', $params['sortOrder']);
         } else {
             if ($params['sortOrder'] == 'asc') {
-                $query = Merk::select(
+                $query = DB::table((new Merk)->getTable())->select(
                     'merk.id',
                     'merk.kodemerk',
                     'merk.keterangan',
@@ -76,7 +76,7 @@ class MerkController extends Controller
                     ->orderBy($params['sortIndex'], $params['sortOrder'])
                     ->orderBy('merk.id', $params['sortOrder']);
             } else {
-                $query = Merk::select(
+                $query = DB::table((new Merk)->getTable())->select(
                     'merk.id',
                     'merk.kodemerk',
                     'merk.keterangan',
@@ -92,10 +92,10 @@ class MerkController extends Controller
         }
 
         /* Searching */
-        if (count($params['search']) > 0 && @$params['search']['rules'][0]['data'] != '') {
-            switch ($params['search']['groupOp']) {
+        if (count($params['filters']) > 0 && @$params['filters']['rules'][0]['data'] != '') {
+            switch ($params['filters']['groupOp']) {
                 case "AND":
-                    foreach ($params['search']['rules'] as $index => $search) {
+                    foreach ($params['filters']['rules'] as $index => $search) {
                         if ($search['field'] == 'statusaktif') {
                             $query = $query->where('parameter.text', 'LIKE', "%$search[data]%");
                         } else {
@@ -105,7 +105,7 @@ class MerkController extends Controller
 
                     break;
                 case "OR":
-                    foreach ($params['search']['rules'] as $index => $search) {
+                    foreach ($params['filters']['rules'] as $index => $search) {
                         if ($search['field'] == 'statusaktif') {
                             $query = $query->orWhere('parameter.text', 'LIKE', "%$search[data]%");
                         } else {
@@ -158,7 +158,7 @@ class MerkController extends Controller
             $merk->kodemerk = $request->kodemerk;
             $merk->keterangan = $request->keterangan;
             $merk->statusaktif = $request->statusaktif;
-            $merk->modifiedby = $request->modifiedby;
+            $merk->modifiedby = auth('api')->user()->name;
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
 
@@ -221,7 +221,7 @@ class MerkController extends Controller
             $merk->kodemerk = $request->kodemerk;
             $merk->keterangan = $request->keterangan;
             $merk->statusaktif = $request->statusaktif;
-            $merk->modifiedby = $request->modifiedby;
+            $merk->modifiedby = auth('api')->user()->name;
 
             if ($merk->save()) {
                 $logTrail = [
@@ -283,8 +283,8 @@ class MerkController extends Controller
             DB::commit();
 
             $data = $this->getid($merk->id, $request, $del);
-            $merk->position = @$data->row;
-            $merk->id = @$data->id;
+            $merk->position = @$data->row  ?? 0;
+            $merk->id = @$data->id  ?? 0;
             if (isset($request->limit)) {
                 $merk->page = ceil($merk->position / $request->limit);
             }
@@ -317,7 +317,7 @@ class MerkController extends Controller
 
     public function getPosition($merk, $request)
     {
-        return Merk::where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $merk->{$request->sortname})
+        return DB::table((new Merk)->getTable())->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $merk->{$request->sortname})
             /* Jika sortname modifiedby atau ada data duplikat */
             // ->where('id', $request->sortorder == 'desc' ? '>=' : '<=', $parameter->id)
             ->count();
@@ -358,7 +358,7 @@ class MerkController extends Controller
         });
 
         if ($params['sortname'] == 'id') {
-            $query = Merk::select(
+            $query = DB::table((new Merk)->getTable())->select(
                 'merk.id as id_',
                 'merk.kodemerk',
                 'merk.keterangan',
@@ -369,7 +369,7 @@ class MerkController extends Controller
             )
                 ->orderBy('merk.id', $params['sortorder']);
         } else if ($params['sortname'] == 'keterangan') {
-            $query = Merk::select(
+            $query = DB::table((new Merk)->getTable())->select(
                 'merk.id as id_',
                 'merk.kodemerk',
                 'merk.keterangan',
@@ -382,7 +382,7 @@ class MerkController extends Controller
                 ->orderBy('merk.id', $params['sortorder']);
         } else {
             if ($params['sortorder'] == 'asc') {
-                $query = Merk::select(
+                $query = DB::table((new Merk)->getTable())->select(
                     'merk.id as id_',
                     'merk.kodemerk',
                     'merk.keterangan',
@@ -394,7 +394,7 @@ class MerkController extends Controller
                     ->orderBy($params['sortname'], $params['sortorder'])
                     ->orderBy('merk.id', $params['sortorder']);
             } else {
-                $query = Merk::select(
+                $query = DB::table((new Merk)->getTable())->select(
                     'merk.id as id_',
                     'merk.kodemerk',
                     'merk.keterangan',

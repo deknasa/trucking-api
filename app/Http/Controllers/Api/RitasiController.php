@@ -26,24 +26,24 @@ class RitasiController extends Controller
    /**
      * @ClassName 
      */
-    public function index(Request $request)
+    public function index()
     {
         $params = [
-            'offset' => $request->offset ?? 0,
-            'limit' => $request->limit ?? 10,
-            'search' => $request->search ?? [],
-            'sortIndex' => $request->sortIndex ?? 'id',
-            'sortOrder' => $request->sortOrder ?? 'asc',
+            'offset' => request()->offset ?? ((request()->page - 1) * request()->limit),
+            'limit' => request()->limit ?? 10,
+            'filters' => json_decode(request()->filters, true) ?? [],
+            'sortIndex' => request()->sortIndex ?? 'id',
+            'sortOrder' => request()->sortOrder ?? 'asc',
         ];
 
-        $totalRows = Ritasi::count();
+        $totalRows = DB::table((new Ritasi())->getTable())->count();
         $totalPages = $params['limit'] > 0 ? ceil($totalRows / $params['limit']) : 1;
 
         /* Sorting */
-        $query = Ritasi::orderBy($params['sortIndex'], $params['sortOrder']);
+        $query = DB::table((new Ritasi())->getTable())->orderBy($params['sortIndex'], $params['sortOrder']);
 
         if ($params['sortIndex'] == 'id') {
-            $query = Ritasi::select(
+            $query = DB::table((new Ritasi())->getTable())->select(
                 'ritasi.id',
                 'ritasi.nobukti',
                 'ritasi.tglbukti',
@@ -67,7 +67,7 @@ class RitasiController extends Controller
             ->leftJoin('kota as sampai', 'ritasi.sampai_id', '=', 'sampai.id')
             ->orderBy('ritasi.id', $params['sortOrder']);
         } else if ($params['sortIndex'] == 'nobukti' or $params['sortIndex'] == 'tglbukti') {
-            $query = Ritasi::select(
+            $query = DB::table((new Ritasi())->getTable())->select(
                 'ritasi.id',
                 'ritasi.nobukti',
                 'ritasi.tglbukti',
@@ -93,7 +93,7 @@ class RitasiController extends Controller
                 ->orderBy('ritasi.id', $params['sortOrder']);
         } else {
             if ($params['sortOrder'] == 'asc') {
-                $query = Ritasi::select(
+                $query = DB::table((new Ritasi())->getTable())->select(
                     'ritasi.id',
                     'ritasi.nobukti',
                     'ritasi.tglbukti',
@@ -118,7 +118,7 @@ class RitasiController extends Controller
                     ->orderBy($params['sortIndex'], $params['sortOrder'])
                     ->orderBy('ritasi.id', $params['sortOrder']);
             } else {
-                $query = Ritasi::select(
+                $query = DB::table((new Ritasi())->getTable())->select(
                     'ritasi.id',
                     'ritasi.nobukti',
                     'ritasi.tglbukti',
@@ -146,10 +146,10 @@ class RitasiController extends Controller
         }
 
         /* Searching */
-        if (count($params['search']) > 0 && @$params['search']['rules'][0]['data'] != '') {
-            switch ($params['search']['groupOp']) {
+        if (count($params['filters']) > 0 && @$params['filters']['rules'][0]['data'] != '') {
+            switch ($params['filters']['groupOp']) {
                 case "AND":
-                    foreach ($params['search']['rules'] as $index => $search) {
+                    foreach ($params['filters']['rules'] as $index => $search) {
                         if ($search['field'] == 'statusritasi') {
                             $query = $query->where('parameter.text', 'LIKE', "%$search[data]%");
                         } elseif ($search['field'] == 'supir_id') {
@@ -167,7 +167,7 @@ class RitasiController extends Controller
 
                     break;
                 case "OR":
-                    foreach ($params['search']['rules'] as $index => $search) {
+                    foreach ($params['filters']['rules'] as $index => $search) {
                         if ($search['field'] == 'statusritasi') {
                             $query = $query->orWhere('parameter.text', 'LIKE', "%$search[data]%");
                         } elseif ($search['field'] == 'supir_id') {
@@ -237,7 +237,7 @@ class RitasiController extends Controller
             $ritasi->trado_id = $request->trado_id;
             $ritasi->dari_id = $request->dari_id;
             $ritasi->sampai_id = $request->sampai_id;
-            $upahRitasi = UpahRitasi::where('kotadari_id',$request->dari_id)->where('kotasampai_id',$request->sampai_id)->first();
+            $upahRitasi = UpahDB::table((new Ritasi())->getTable())->where('kotadari_id',$request->dari_id)->where('kotasampai_id',$request->sampai_id)->first();
             if ($upahRitasi == '') {
                 return response([
                     'status' => false,
@@ -246,7 +246,7 @@ class RitasiController extends Controller
             }
             $ritasi->jarak = $upahRitasi->upahritasiRincian()->first()->liter;
             $ritasi->gaji = $upahRitasi->upahritasiRincian()->first()->nominalsupir;
-            $ritasi->modifiedby = $request->modifiedby;
+            $ritasi->modifiedby = auth('api')->user()->name;
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
 
@@ -313,7 +313,7 @@ class RitasiController extends Controller
             $ritasi->suratpengantar_nobukti = $request->suratpengantar_nobukti;
             $ritasi->supir_id = $request->supir_id;
             $ritasi->trado_id = $request->trado_id;
-            $upahRitasi = UpahRitasi::where('kotadari_id',$request->dari_id)->where('kotasampai_id',$request->sampai_id)->first();
+            $upahRitasi = UpahDB::table((new Ritasi())->getTable())->where('kotadari_id',$request->dari_id)->where('kotasampai_id',$request->sampai_id)->first();
             if ($upahRitasi == '') {
                 return response([
                     'status' => false,
@@ -324,7 +324,7 @@ class RitasiController extends Controller
             $ritasi->gaji = $upahRitasi->upahritasiRincian()->first()->nominalsupir;
             $ritasi->dari_id = $request->dari_id;
             $ritasi->sampai_id = $request->sampai_id;
-            $ritasi->modifiedby = $request->modifiedby;
+            $ritasi->modifiedby = auth('api')->user()->name;
 
             if ($ritasi->save()) {
                 $logTrail = [
@@ -385,8 +385,8 @@ class RitasiController extends Controller
             DB::commit();
 
             $data = $this->getid($ritasi->id, $request, $del);
-            $ritasi->position = @$data->row;
-            $ritasi->id = @$data->id;
+            $ritasi->position = @$data->row  ?? 0;
+            $ritasi->id = @$data->id  ?? 0;
             if (isset($request->limit)) {
                 $ritasi->page = ceil($ritasi->position / $request->limit);
             }
@@ -419,7 +419,7 @@ class RitasiController extends Controller
 
     public function getPosition($ritasi, $request)
     {
-        return Ritasi::where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $ritasi->{$request->sortname})
+        return DB::table((new Ritasi())->getTable())->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $ritasi->{$request->sortname})
             /* Jika sortname modifiedby atau ada data duplikat */
             // ->where('id', $request->sortorder == 'desc' ? '>=' : '<=', $parameter->id)
             ->count();
@@ -471,7 +471,7 @@ class RitasiController extends Controller
         });
 
         if ($params['sortname'] == 'id') {
-            $query = Ritasi::select(
+            $query = DB::table((new Ritasi())->getTable())->select(
                 'ritasi.id as id_',
                 'ritasi.nobukti',
                 'ritasi.tglbukti',
@@ -489,7 +489,7 @@ class RitasiController extends Controller
             )
                 ->orderBy('ritasi.id', $params['sortorder']);
         } else if ($params['sortname'] == 'nobukti' or $params['sortname'] == 'tglbukti') {
-            $query = Ritasi::select(
+            $query = DB::table((new Ritasi())->getTable())->select(
                 'ritasi.id as id_',
                 'ritasi.nobukti',
                 'ritasi.tglbukti',
@@ -509,7 +509,7 @@ class RitasiController extends Controller
                 ->orderBy('ritasi.id', $params['sortorder']);
         } else {
             if ($params['sortorder'] == 'asc') {
-                $query = Ritasi::select(
+                $query = DB::table((new Ritasi())->getTable())->select(
                     'ritasi.id as id_',
                     'ritasi.nobukti',
                     'ritasi.tglbukti',
@@ -528,7 +528,7 @@ class RitasiController extends Controller
                     ->orderBy($params['sortname'], $params['sortorder'])
                     ->orderBy('ritasi.id', $params['sortorder']);
             } else {
-                $query = Ritasi::select(
+                $query = DB::table((new Ritasi())->getTable())->select(
                     'ritasi.id as id_',
                     'ritasi.nobukti',
                     'ritasi.tglbukti',

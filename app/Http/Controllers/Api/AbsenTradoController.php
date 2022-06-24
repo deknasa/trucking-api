@@ -32,7 +32,7 @@ class AbsenTradoController extends Controller
             'sortOrder' => request()->sortOrder ?? 'asc',
         ];
 
-  
+
 
         $totalRows = DB::table((new AbsenTrado)->getTable())->count();
 
@@ -169,13 +169,13 @@ class AbsenTradoController extends Controller
             /* Set position and page */
             $del = 0;
             $data = $this->getid($absenTrado->id, $request, $del);
-           
+
             $absenTrado->position = $data->row;
-            
+
             if (isset($request->limit)) {
                 $absenTrado->page = ceil($absenTrado->position / $request->limit);
             }
-          
+
             return response([
                 'status' => true,
                 'message' => 'Berhasil disimpan',
@@ -205,7 +205,7 @@ class AbsenTradoController extends Controller
             $absenTrado->kodeabsen = $request->kodeabsen;
             $absenTrado->keterangan = $request->keterangan;
             $absenTrado->statusaktif = $request->statusaktif;
-            $absenTrado->modifiedby = auth('api')->user()->name;;
+            $absenTrado->modifiedby = auth('api')->user()->name;
 
             if ($absenTrado->save()) {
                 $logTrail = [
@@ -221,7 +221,7 @@ class AbsenTradoController extends Controller
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
 
-                
+
                 /* Set position and page */
                 $absenTrado->position = $this->getid($absenTrado->id, $request, 0)->row;
                 if (isset($request->limit)) {
@@ -248,9 +248,9 @@ class AbsenTradoController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(AbsenTrado $absen_trado, Request $request)
+    public function destroy(AbsenTrado $absenTrado, Request $request)
     {
-        dd($absen_trado);
+
         $delete = AbsenTrado::destroy($absenTrado->id);
         $del = 1;
         if ($delete) {
@@ -270,8 +270,8 @@ class AbsenTradoController extends Controller
             DB::commit();
 
             $data = $this->getid($absenTrado->id, $request, $del);
-            $absenTrado->position = $data->row;
-            $absenTrado->id = $data->id;
+            $absenTrado->position = $data->row ?? 0;
+            $absenTrado->id = $data->id ?? 0;
             if (isset($request->limit)) {
                 $absenTrado->page = ceil($absenTrado->position / $request->limit);
             }
@@ -337,6 +337,8 @@ class AbsenTradoController extends Controller
                 'absentrado.created_at',
                 'absentrado.updated_at'
             )
+                ->leftJoin('parameter', 'absentrado.statusaktif', '=', 'parameter.id')
+
                 ->orderBy('absentrado.id', $params['sortorder']);
         } else if ($params['sortname'] == 'grp' or $params['sortname'] == 'subgrp') {
             $query = DB::table((new AbsenTrado)->getTable())->select(
@@ -348,6 +350,8 @@ class AbsenTradoController extends Controller
                 'absentrado.created_at',
                 'absentrado.updated_at'
             )
+                ->leftJoin('parameter', 'absentrado.statusaktif', '=', 'parameter.id')
+
                 ->orderBy($params['sortname'], $params['sortorder'])
                 ->orderBy('parameter.text', $params['sortorder'])
                 ->orderBy('absentrado.id', $params['sortorder']);
@@ -361,7 +365,10 @@ class AbsenTradoController extends Controller
                     'absentrado.modifiedby',
                     'absentrado.created_at',
                     'absentrado.updated_at'
+
                 )
+                    ->leftJoin('parameter', 'absentrado.statusaktif', '=', 'parameter.id')
+
                     ->orderBy($params['sortname'], $params['sortorder'])
                     ->orderBy('absentrado.id', $params['sortorder']);
             } else {
@@ -374,6 +381,7 @@ class AbsenTradoController extends Controller
                     'absentrado.created_at',
                     'absentrado.updated_at'
                 )
+                    ->leftJoin('parameter', 'absentrado.statusaktif', '=', 'parameter.id')
                     ->orderBy($params['sortname'], $params['sortorder'])
                     ->orderBy('absentrado.id', 'asc');
             }

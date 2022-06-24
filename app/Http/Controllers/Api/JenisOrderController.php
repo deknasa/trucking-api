@@ -20,24 +20,24 @@ class JenisOrderController extends Controller
       /**
      * @ClassName 
      */
-    public function index(Request $request)
+    public function index()
     {
         $params = [
-            'offset' => $request->offset ?? 0,
-            'limit' => $request->limit ?? 10,
-            'search' => $request->search ?? [],
-            'sortIndex' => $request->sortIndex ?? 'id',
-            'sortOrder' => $request->sortOrder ?? 'asc',
+            'offset' => request()->offset ?? ((request()->page - 1) * request()->limit),
+            'limit' => request()->limit ?? 10,
+            'filters' => json_decode(request()->filters, true) ?? [],
+            'sortIndex' => request()->sortIndex ?? 'id',
+            'sortOrder' => request()->sortOrder ?? 'asc',
         ];
 
-        $totalRows = JenisOrder::count();
+        $totalRows = DB::table((new JenisOrder)->getTable())->count();
         $totalPages = $params['limit'] > 0 ? ceil($totalRows / $params['limit']) : 1;
 
         /* Sorting */
-        $query = JenisOrder::orderBy($params['sortIndex'], $params['sortOrder']);
+        $query = DB::table((new JenisOrder)->getTable())->orderBy($params['sortIndex'], $params['sortOrder']);
 
         if ($params['sortIndex'] == 'id') {
-            $query = JenisOrder::select(
+            $query = DB::table((new JenisOrder)->getTable())->select(
                 'jenisorder.id',
                 'jenisorder.kodejenisorder',
                 'jenisorder.keterangan',
@@ -49,7 +49,7 @@ class JenisOrderController extends Controller
             ->leftJoin('parameter', 'jenisorder.statusaktif', '=', 'parameter.id')
             ->orderBy('jenisorder.id', $params['sortOrder']);
         } else if ($params['sortIndex'] == 'kodejenisorder' or $params['sortIndex'] == 'keterangan') {
-            $query = JenisOrder::select(
+            $query = DB::table((new JenisOrder)->getTable())->select(
                 'jenisorder.id',
                 'jenisorder.kodejenisorder',
                 'jenisorder.keterangan',
@@ -63,7 +63,7 @@ class JenisOrderController extends Controller
                 ->orderBy('jenisorder.id', $params['sortOrder']);
         } else {
             if ($params['sortOrder'] == 'asc') {
-                $query = JenisOrder::select(
+                $query = DB::table((new JenisOrder)->getTable())->select(
                     'jenisorder.id',
                     'jenisorder.kodejenisorder',
                     'jenisorder.keterangan',
@@ -76,7 +76,7 @@ class JenisOrderController extends Controller
                     ->orderBy($params['sortIndex'], $params['sortOrder'])
                     ->orderBy('jenisorder.id', $params['sortOrder']);
             } else {
-                $query = JenisOrder::select(
+                $query = DB::table((new JenisOrder)->getTable())->select(
                     'jenisorder.id',
                     'jenisorder.kodejenisorder',
                     'jenisorder.keterangan',
@@ -92,10 +92,10 @@ class JenisOrderController extends Controller
         }
 
         /* Searching */
-        if (count($params['search']) > 0 && @$params['search']['rules'][0]['data'] != '') {
-            switch ($params['search']['groupOp']) {
+        if (count($params['filters']) > 0 && @$params['filters']['rules'][0]['data'] != '') {
+            switch ($params['filters']['groupOp']) {
                 case "AND":
-                    foreach ($params['search']['rules'] as $index => $search) {
+                    foreach ($params['filters']['rules'] as $index => $search) {
                         if ($search['field'] == 'statusaktif') {
                             $query = $query->where('parameter.text', 'LIKE', "%$search[data]%");
                         } else {
@@ -105,7 +105,7 @@ class JenisOrderController extends Controller
 
                     break;
                 case "OR":
-                    foreach ($params['search']['rules'] as $index => $search) {
+                    foreach ($params['filters']['rules'] as $index => $search) {
                         if ($search['field'] == 'statusaktif') {
                             $query = $query->orWhere('parameter.text', 'LIKE', "%$search[data]%");
                         } else {
@@ -153,7 +153,7 @@ class JenisOrderController extends Controller
             $jenisorder->kodejenisorder = $request->kodejenisorder;
             $jenisorder->statusaktif = $request->statusaktif;
             $jenisorder->keterangan = $request->keterangan;
-            $jenisorder->modifiedby = $request->modifiedby;
+            $jenisorder->modifiedby = auth('api')->user()->name;
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
 
@@ -232,11 +232,10 @@ class JenisOrderController extends Controller
     public function update(StoreJenisOrderRequest $request, JenisOrder $jenisorder)
     {
         try {
-            $jenisorder = JenisOrder::findOrFail($jenisorder->id);
             $jenisorder->kodejenisorder = $request->kodejenisorder;
             $jenisorder->keterangan = $request->keterangan;
             $jenisorder->statusaktif = $request->statusaktif;
-            $jenisorder->modifiedby = $request->modifiedby;
+            $jenisorder->modifiedby = auth('api')->user()->name;
 
             if ($jenisorder->save()) {
                 $logTrail = [
@@ -306,8 +305,8 @@ class JenisOrderController extends Controller
             DB::commit();
 
             $data = $this->getid($jenisorder->id, $request, $del);
-            $jenisorder->position = $data->row;
-            $jenisorder->id = $data->id;
+            $jenisorder->position = $data->row  ?? 0;
+            $jenisorder->id = $data->id  ?? 0;
             if (isset($request->limit)) {
                 $jenisorder->page = ceil($jenisorder->position / $request->limit);
             }
@@ -341,7 +340,7 @@ class JenisOrderController extends Controller
 
     public function getPosition($jenisorder, $request)
     {
-        return JenisOrder::where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $jenisorder->{$request->sortname})
+        return DB::table((new JenisOrder)->getTable())->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $jenisorder->{$request->sortname})
             /* Jika sortname modifiedby atau ada data duplikat */
             // ->where('id', $request->sortorder == 'desc' ? '>=' : '<=', $parameter->id)
             ->count();
@@ -382,7 +381,7 @@ class JenisOrderController extends Controller
         });
 
         if ($params['sortname'] == 'id') {
-            $query = JenisOrder::select(
+            $query = DB::table((new JenisOrder)->getTable())->select(
                 'jenisorder.id as id_',
                 'jenisorder.kodejenisorder',
                 'jenisorder.keterangan',
@@ -393,7 +392,7 @@ class JenisOrderController extends Controller
             )
                 ->orderBy('jenisorder.id', $params['sortorder']);
         } else if ($params['sortname'] == 'kodejenisorder' or $params['sortname'] == 'keterangan') {
-            $query = JenisOrder::select(
+            $query = DB::table((new JenisOrder)->getTable())->select(
                 'jenisorder.id as id_',
                 'jenisorder.kodejenisorder',
                 'jenisorder.keterangan',
@@ -406,7 +405,7 @@ class JenisOrderController extends Controller
                 ->orderBy('jenisorder.id', $params['sortorder']);
         } else {
             if ($params['sortorder'] == 'asc') {
-                $query = JenisOrder::select(
+                $query = DB::table((new JenisOrder)->getTable())->select(
                     'jenisorder.id as id_',
                     'jenisorder.kodejenisorder',
                     'jenisorder.keterangan',
@@ -418,7 +417,7 @@ class JenisOrderController extends Controller
                     ->orderBy($params['sortname'], $params['sortorder'])
                     ->orderBy('jenisorder.id', $params['sortorder']);
             } else {
-                $query = JenisOrder::select(
+                $query = DB::table((new JenisOrder)->getTable())->select(
                     'jenisorder.id as id_',
                     'jenisorder.kodejenisorder',
                     'jenisorder.keterangan',

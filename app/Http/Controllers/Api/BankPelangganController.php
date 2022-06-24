@@ -22,24 +22,24 @@ class BankPelangganController extends Controller
        /**
      * @ClassName 
      */
-    public function index(Request $request)
+    public function index()
     {
         $params = [
-            'offset' => $request->offset ?? 0,
-            'limit' => $request->limit ?? 10,
-            'search' => $request->search ?? [],
-            'sortIndex' => $request->sortIndex ?? 'id',
-            'sortOrder' => $request->sortOrder ?? 'asc',
+            'offset' => request()->offset ?? ((request()->page - 1) * request()->limit),
+            'limit' => request()->limit ?? 10,
+            'filters' => json_decode(request()->filters, true) ?? [],
+            'sortIndex' => request()->sortIndex ?? 'id',
+            'sortOrder' => request()->sortOrder ?? 'asc',
         ];
         
-        $totalRows = BankPelanggan::count();
+        $totalRows = DB::table((new BankPelanggan)->getTable())->count();
         $totalPages = $params['limit'] > 0 ? ceil($totalRows / $params['limit']) : 1;
 
         /* Sorting */
-        $query = BankPelanggan::orderBy($params['sortIndex'], $params['sortOrder']);
+        $query = DB::table((new BankPelanggan)->getTable())->orderBy($params['sortIndex'], $params['sortOrder']);
 
         if ($params['sortIndex'] == 'id') {
-            $query = BankPelanggan::select(
+            $query = DB::table((new BankPelanggan)->getTable())->select(
                 'bankpelanggan.id',
                 'bankpelanggan.kodebank',
                 'bankpelanggan.namabank',
@@ -52,7 +52,7 @@ class BankPelangganController extends Controller
             ->leftJoin('parameter', 'bankpelanggan.statusaktif', '=', 'parameter.id')
             ->orderBy('bankpelanggan.id', $params['sortOrder']);
         } else if ($params['sortIndex'] == 'kodebank' or $params['sortIndex'] == 'namabank') {
-            $query = BankPelanggan::select(
+            $query = DB::table((new BankPelanggan)->getTable())->select(
                 'bankpelanggan.id',
                 'bankpelanggan.kodebank',
                 'bankpelanggan.namabank',
@@ -67,7 +67,7 @@ class BankPelangganController extends Controller
                 ->orderBy('bankpelanggan.id', $params['sortOrder']);
         } else {
             if ($params['sortOrder'] == 'asc') {
-                $query = BankPelanggan::select(
+                $query = DB::table((new BankPelanggan)->getTable())->select(
                     'bankpelanggan.id',
                     'bankpelanggan.kodebank',
                     'bankpelanggan.namabank',
@@ -81,7 +81,7 @@ class BankPelangganController extends Controller
                     ->orderBy($params['sortIndex'], $params['sortOrder'])
                     ->orderBy('bankpelanggan.id', $params['sortOrder']);
             } else {
-                $query = BankPelanggan::select(
+                $query = DB::table((new BankPelanggan)->getTable())->select(
                     'bankpelanggan.id',
                     'bankpelanggan.kodebank',
                     'bankpelanggan.namabank',
@@ -98,10 +98,10 @@ class BankPelangganController extends Controller
         }
 
         /* Searching */
-        if (count($params['search']) > 0 && @$params['search']['rules'][0]['data'] != '') {
-            switch ($params['search']['groupOp']) {
+        if (count($params['BankPelanggan']) > 0 && @$params['BankPelanggan']['rules'][0]['data'] != '') {
+            switch ($params['BankPelanggan']['groupOp']) {
                 case "AND":
-                    foreach ($params['search']['rules'] as $index => $search) {
+                    foreach ($params['BankPelanggan']['rules'] as $index => $search) {
                         if ($search['field'] == 'statusaktif') {
                             $query = $query->where('parameter.text', 'LIKE', "%$search[data]%");
                         } else {
@@ -111,7 +111,7 @@ class BankPelangganController extends Controller
 
                     break;
                 case "OR":
-                    foreach ($params['search']['rules'] as $index => $search) {
+                    foreach ($params['BankPelanggan']['rules'] as $index => $search) {
                         if ($search['field'] == 'statusaktif') {
                             $query = $query->orWhere('parameter.text', 'LIKE', "%$search[data]%");
                         } else {
@@ -165,7 +165,7 @@ class BankPelangganController extends Controller
             $bankpelanggan->namabank = $request->namabank;
             $bankpelanggan->keterangan = $request->keterangan;
             $bankpelanggan->statusaktif = $request->statusaktif;
-            $bankpelanggan->modifiedby = $request->modifiedby;
+            $bankpelanggan->modifiedby = auth('api')->user()->name;
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
 
@@ -224,12 +224,12 @@ class BankPelangganController extends Controller
     public function update(StoreBankPelangganRequest $request, BankPelanggan $bankpelanggan)
     {
         try {
-            $bankpelanggan = BankPelanggan::findOrFail($bankpelanggan->id);
+            $bankpelanggan = DB::table((new BankPelanggan)->getTable())->findOrFail($bankpelanggan->id);
             $bankpelanggan->kodebank = $request->kodebank;
             $bankpelanggan->namabank = $request->namabank;
             $bankpelanggan->keterangan = $request->keterangan;
             $bankpelanggan->statusaktif = $request->statusaktif;
-            $bankpelanggan->modifiedby = $request->modifiedby;
+            $bankpelanggan->modifiedby = auth('api')->user()->name;
 
             if ($bankpelanggan->save()) {
                 $logTrail = [
@@ -346,7 +346,7 @@ class BankPelangganController extends Controller
         });
 
         if ($params['sortname'] == 'id') {
-            $query = BankPelanggan::select(
+            $query = DB::table((new BankPelanggan)->getTable())->select(
                 'bankpelanggan.id as id_',
                 'bankpelanggan.kodebank',
                 'bankpelanggan.namabank',
@@ -358,7 +358,7 @@ class BankPelangganController extends Controller
             )
                 ->orderBy('bankpelanggan.id', $params['sortorder']);
         } else if ($params['sortname'] == 'kodebank' or $params['sortname'] == 'namabank') {
-            $query = BankPelanggan::select(
+            $query = DB::table((new BankPelanggan)->getTable())->select(
                 'bankpelanggan.id as id_',
                 'bankpelanggan.kodebank',
                 'bankpelanggan.namabank',
@@ -372,7 +372,7 @@ class BankPelangganController extends Controller
                 ->orderBy('bankpelanggan.id', $params['sortorder']);
         } else {
             if ($params['sortorder'] == 'asc') {
-                $query = BankPelanggan::select(
+                $query = DB::table((new BankPelanggan)->getTable())->select(
                     'bankpelanggan.id as id_',
                     'bankpelanggan.kodebank',
                     'bankpelanggan.namabank',
@@ -385,7 +385,7 @@ class BankPelangganController extends Controller
                     ->orderBy($params['sortname'], $params['sortorder'])
                     ->orderBy('bankpelanggan.id', $params['sortorder']);
             } else {
-                $query = BankPelanggan::select(
+                $query = DB::table((new BankPelanggan)->getTable())->select(
                     'bankpelanggan.id as id_',
                     'bankpelanggan.kodebank',
                     'bankpelanggan.namabank',

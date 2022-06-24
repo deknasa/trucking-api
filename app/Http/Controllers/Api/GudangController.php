@@ -20,24 +20,24 @@ class GudangController extends Controller
           /**
      * @ClassName 
      */
-    public function index(Request $request)
+    public function index()
     {
         $params = [
-            'offset' => $request->offset ?? 0,
-            'limit' => $request->limit ?? 10,
-            'search' => $request->search ?? [],
-            'sortIndex' => $request->sortIndex ?? 'id',
-            'sortOrder' => $request->sortOrder ?? 'asc',
+            'offset' => request()->offset ?? ((request()->page - 1) * request()->limit),
+            'limit' => request()->limit ?? 10,
+            'filters' => json_decode(request()->filters, true) ?? [],
+            'sortIndex' => request()->sortIndex ?? 'id',
+            'sortOrder' => request()->sortOrder ?? 'asc',
         ];
 
-        $totalRows = Gudang::count();
+        $totalRows = DB::table((new Gudang)->getTable())->count();
         $totalPages = $params['limit'] > 0 ? ceil($totalRows / $params['limit']) : 1;
 
         /* Sorting */
-        $query = Gudang::orderBy($params['sortIndex'], $params['sortOrder']);
+        $query = DB::table((new Gudang)->getTable())->orderBy($params['sortIndex'], $params['sortOrder']);
 
         if ($params['sortIndex'] == 'id') {
-            $query = Gudang::select(
+            $query = DB::table((new Gudang)->getTable())->select(
                 'gudang.id',
                 'gudang.gudang',
                 'parameter.text as statusaktif',
@@ -50,7 +50,7 @@ class GudangController extends Controller
             ->leftJoin('parameter AS p', 'gudang.statusgudang', '=', 'p.id')
             ->orderBy('gudang.id', $params['sortOrder']);
         } else if ($params['sortIndex'] == 'gudang') {
-            $query = Gudang::select(
+            $query = DB::table((new Gudang)->getTable())->select(
                 'gudang.id',
                 'gudang.gudang',
                 'parameter.text as statusaktif',
@@ -65,7 +65,7 @@ class GudangController extends Controller
                 ->orderBy('gudang.id', $params['sortOrder']);
         } else {
             if ($params['sortOrder'] == 'asc') {
-                $query = Gudang::select(
+                $query = DB::table((new Gudang)->getTable())->select(
                     'gudang.id',
                     'gudang.gudang',
                     'parameter.text as statusaktif',
@@ -79,7 +79,7 @@ class GudangController extends Controller
                     ->orderBy($params['sortIndex'], $params['sortOrder'])
                     ->orderBy('gudang.id', $params['sortOrder']);
             } else {
-                $query = Gudang::select(
+                $query = DB::table((new Gudang)->getTable())->select(
                     'gudang.id',
                     'gudang.gudang',
                     'parameter.text as statusaktif',
@@ -96,10 +96,10 @@ class GudangController extends Controller
         }
 
         /* Searching */
-        if (count($params['search']) > 0 && @$params['search']['rules'][0]['data'] != '') {
-            switch ($params['search']['groupOp']) {
+        if (count($params['filters']) > 0 && @$params['filters']['rules'][0]['data'] != '') {
+            switch ($params['filters']['groupOp']) {
                 case "AND":
-                    foreach ($params['search']['rules'] as $index => $search) {
+                    foreach ($params['filters']['rules'] as $index => $search) {
                         if ($search['field'] == 'statusaktif') {
                             $query = $query->where('parameter.text', 'LIKE', "%$search[data]%");
                         } else {
@@ -109,7 +109,7 @@ class GudangController extends Controller
 
                     break;
                 case "OR":
-                    foreach ($params['search']['rules'] as $index => $search) {
+                    foreach ($params['filters']['rules'] as $index => $search) {
                         if ($search['field'] == 'statusaktif') {
                             $query = $query->orWhere('parameter.text', 'LIKE', "%$search[data]%");
                         } else {
@@ -162,7 +162,7 @@ class GudangController extends Controller
             $gudang->gudang = $request->gudang;
             $gudang->statusaktif = $request->statusaktif;
             $gudang->statusgudang = $request->statusgudang;
-            $gudang->modifiedby = $request->modifiedby;
+            $gudang->modifiedby = auth('api')->user()->name;
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
 
@@ -221,11 +221,11 @@ class GudangController extends Controller
     public function update(StoreGudangRequest $request, Gudang $gudang)
     {
         try {
-            $gudang = Gudang::findOrFail($gudang->id);
+            $gudang = DB::table((new Gudang)->getTable())->findOrFail($gudang->id);
             $gudang->gudang = $request->gudang;
             $gudang->statusaktif = $request->statusaktif;
             $gudang->statusgudang = $request->statusgudang;
-            $gudang->modifiedby = $request->modifiedby;
+            $gudang->modifiedby = auth('api')->user()->name;
 
             if ($gudang->save()) {
                 $logTrail = [
@@ -321,7 +321,7 @@ class GudangController extends Controller
 
     public function getPosition($gudang, $request)
     {
-        return Gudang::where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $gudang->{$request->sortname})
+        return DB::table((new Gudang)->getTable())->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $gudang->{$request->sortname})
             /* Jika sortname modifiedby atau ada data duplikat */
             // ->where('id', $request->sortorder == 'desc' ? '>=' : '<=', $parameter->id)
             ->count();
@@ -363,7 +363,7 @@ class GudangController extends Controller
         });
 
         if ($params['sortname'] == 'id') {
-            $query = Gudang::select(
+            $query = DB::table((new Gudang)->getTable())->select(
                 'gudang.id as id_',
                 'gudang.gudang',
                 'gudang.statusaktif',
@@ -374,7 +374,7 @@ class GudangController extends Controller
             )
                 ->orderBy('gudang.id', $params['sortorder']);
         } else if ($params['sortname'] == 'gudang' or $params['sortname'] == 'keterangan') {
-            $query = Gudang::select(
+            $query = DB::table((new Gudang)->getTable())->select(
                 'gudang.id as id_',
                 'gudang.gudang',
                 'gudang.statusaktif',
@@ -387,7 +387,7 @@ class GudangController extends Controller
                 ->orderBy('gudang.id', $params['sortorder']);
         } else {
             if ($params['sortorder'] == 'asc') {
-                $query = Gudang::select(
+                $query = DB::table((new Gudang)->getTable())->select(
                     'gudang.id as id_',
                     'gudang.gudang',
                     'gudang.statusaktif',
@@ -399,7 +399,7 @@ class GudangController extends Controller
                     ->orderBy($params['sortname'], $params['sortorder'])
                     ->orderBy('gudang.id', $params['sortorder']);
             } else {
-                $query = Gudang::select(
+                $query = DB::table((new Gudang)->getTable())->select(
                     'gudang.id as id_',
                     'gudang.gudang',
                     'gudang.statusaktif',

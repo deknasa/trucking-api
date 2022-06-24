@@ -184,7 +184,7 @@ class AkunPusatController extends Controller
             $akunPusat->statusneraca = $request->statusneraca;
             $akunPusat->statuslabarugi = $request->statuslabarugi;
             $akunPusat->coamain = $request->coamain;
-            $akunPusat->modifiedby = $request->modifiedby;
+            $akunPusat->modifiedby = auth('api')->user()->name;
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
 
@@ -264,7 +264,7 @@ class AkunPusatController extends Controller
             $akunPusat->statusneraca = $request->statusneraca;
             $akunPusat->statuslabarugi = $request->statuslabarugi;
             $akunPusat->coamain = $request->coamain;
-            $akunPusat->modifiedby = $request->modifiedby;
+            $akunPusat->modifiedby = auth('api')->user()->name;
 
             if ($akunPusat->save()) {
                 $logTrail = [
@@ -314,7 +314,7 @@ class AkunPusatController extends Controller
      */
     public function destroy(AkunPusat $akunPusat, Request $request)
     {
-        $delete = DB::table((new AkunPusat)->getTable())->destroy($akunPusat->id);
+        $delete = AkunPusat::destroy($akunPusat->id);
         $del = 1;
         if ($delete) {
             $logTrail = [

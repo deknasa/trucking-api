@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Http\Controllers\Api\ErrorController;
 
 class UpdateMekanikRequest extends FormRequest
 {
@@ -13,7 +14,7 @@ class UpdateMekanikRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +25,28 @@ class UpdateMekanikRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'namamekanik' => 'required',
+            'keterangan' => 'required',
+            'statusaktif' => 'required',
         ];
     }
-}
+
+    public function attributes()
+    {
+        return [
+            'namamekanik' => 'nama mekanik',
+            'keterangan' => 'keterangan',
+            'statusaktif' => 'status',
+        ];
+    }
+
+    public function messages()
+    {
+        $controller = new ErrorController;
+        
+        return [
+            'namamekanik.required' => ':attribute '. $controller->geterror('WI')->keterangan,
+            'keterangan.required' => ':attribute '. $controller->geterror('WI')->keterangan,
+            'statusaktif.required' => ':attribute '. $controller->geterror('WI')->keterangan,
+        ];
+    }}

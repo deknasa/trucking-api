@@ -270,8 +270,8 @@ class PenerimaController extends Controller
             DB::commit();
 
             $data = $this->getid($penerima->id, $request, $del);
-            $penerima->position = $data->row;
-            $penerima->id = $data->id;
+            $penerima->position = $data->row  ?? 0;
+            $penerima->id = $data->id  ?? 0;
             if (isset($request->limit)) {
                 $penerima->page = ceil($penerima->position / $request->limit);
             }

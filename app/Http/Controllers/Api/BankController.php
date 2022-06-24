@@ -22,104 +22,112 @@ class BankController extends Controller
     /**
      * @ClassName 
      */
-    public function index(Request $request)
+    public function index()
     {
         $params = [
-            'offset' => $request->offset ?? 0,
-            'limit' => $request->limit ?? 10,
-            'search' => $request->search ?? [],
-            'sortIndex' => $request->sortIndex ?? 'id',
-            'sortOrder' => $request->sortOrder ?? 'asc',
+            'offset' => request()->offset ?? ((request()->page - 1) * request()->limit),
+            'limit' => request()->limit ?? 10,
+            'filters' => json_decode(request()->filters, true) ?? [],
+            'sortIndex' => request()->sortIndex ?? 'id',
+            'sortOrder' => request()->sortOrder ?? 'asc',
         ];
 
-        $totalRows = Bank::count();
+        $totalRows = DB::table((new Bank)->getTable())->count();
         $totalPages = $params['limit'] > 0 ? ceil($totalRows / $params['limit']) : 1;
 
         /* Sorting */
-        $query = Bank::orderBy($params['sortIndex'], $params['sortOrder']);
+        $query = DB::table((new Bank)->getTable())->orderBy($params['sortIndex'], $params['sortOrder']);
 
         if ($params['sortIndex'] == 'id') {
-            $query = Bank::select(
+            $query = DB::table((new Bank)->getTable())->select(
                 'bank.id',
                 'bank.kodebank',
                 'bank.namabank',
                 'bank.coa',
                 'bank.tipe',
                 'parameter.text as statusaktif',
-                'bank.kodepenerimaan',
-                'bank.kodepengeluaran',
+                'kodepenerimaan.text as kodepenerimaan',
+                'kodepengeluaran.text as kodepengeluaran',
                 'bank.modifiedby',
                 'bank.created_at',
                 'bank.updated_at'
             )
-                ->leftJoin('parameter', 'bank.statusaktif', '=', 'parameter.id')
+                    ->leftJoin('parameter', 'bank.statusaktif', '=', 'parameter.id')
+                    ->leftJoin('parameter as kodepenerimaan', 'bank.kodepenerimaan', '=', 'kodepenerimaan.id')
+                    ->leftJoin('parameter as kodepengeluaran', 'bank.kodepengeluaran', '=', 'kodepengeluaran.id')
                 ->orderBy('bank.id', $params['sortOrder']);
         } else if ($params['sortIndex'] == 'kodebank' or $params['sortIndex'] == 'namabank') {
-            $query = Bank::select(
+            $query = DB::table((new Bank)->getTable())->select(
                 'bank.id',
                 'bank.kodebank',
                 'bank.namabank',
                 'bank.coa',
                 'bank.tipe',
                 'parameter.text as statusaktif',
-                'bank.kodepenerimaan',
-                'bank.kodepengeluaran',
-                'bank.modifiedby',
-                'bank.created_at',
-                'bank.updated_at'
-            )
-                ->leftJoin('parameter', 'bank.statusaktif', '=', 'parameter.id')
+                'kodepenerimaan.text as kodepenerimaan',
+                    'kodepengeluaran.text as kodepengeluaran',
+                    'bank.modifiedby',
+                    'bank.created_at',
+                    'bank.updated_at'
+                )
+                    ->leftJoin('parameter', 'bank.statusaktif', '=', 'parameter.id')
+                    ->leftJoin('parameter as kodepenerimaan', 'bank.kodepenerimaan', '=', 'kodepenerimaan.id')
+                    ->leftJoin('parameter as kodepengeluaran', 'bank.kodepengeluaran', '=', 'kodepengeluaran.id')
                 ->orderBy($params['sortIndex'], $params['sortOrder'])
                 ->orderBy('bank.id', $params['sortOrder']);
         } else {
             if ($params['sortOrder'] == 'asc') {
-                $query = Bank::select(
+                $query = DB::table((new Bank)->getTable())->select(
                     'bank.id',
                     'bank.kodebank',
                     'bank.namabank',
                     'bank.coa',
                     'bank.tipe',
                     'parameter.text as statusaktif',
-                    'bank.kodepenerimaan',
-                    'bank.kodepengeluaran',
+                    'kodepenerimaan.text as kodepenerimaan',
+                    'kodepengeluaran.text as kodepengeluaran',
                     'bank.modifiedby',
                     'bank.created_at',
                     'bank.updated_at'
                 )
                     ->leftJoin('parameter', 'bank.statusaktif', '=', 'parameter.id')
+                    ->leftJoin('parameter as kodepenerimaan', 'bank.kodepenerimaan', '=', 'kodepenerimaan.id')
+                    ->leftJoin('parameter as kodepengeluaran', 'bank.kodepengeluaran', '=', 'kodepengeluaran.id')
                     ->orderBy($params['sortIndex'], $params['sortOrder'])
                     ->orderBy('bank.id', $params['sortOrder']);
             } else {
-                $query = Bank::select(
+                $query = DB::table((new Bank)->getTable())->select(
                     'bank.id',
                     'bank.kodebank',
                     'bank.namabank',
                     'bank.coa',
                     'bank.tipe',
                     'parameter.text as statusaktif',
-                    'bank.kodepenerimaan',
-                    'bank.kodepengeluaran',
+                    'kodepenerimaan.text as kodepenerimaan',
+                    'kodepengeluaran.text as kodepengeluaran',
                     'bank.modifiedby',
                     'bank.created_at',
                     'bank.updated_at'
                 )
                     ->leftJoin('parameter', 'bank.statusaktif', '=', 'parameter.id')
+                    ->leftJoin('parameter as kodepenerimaan', 'bank.kodepenerimaan', '=', 'kodepenerimaan.id')
+                    ->leftJoin('parameter as kodepengeluaran', 'bank.kodepengeluaran', '=', 'kodepengeluaran.id')
                     ->orderBy($params['sortIndex'], $params['sortOrder'])
                     ->orderBy('bank.id', 'asc');
             }
         }
 
         /* Searching */
-        if (count($params['search']) > 0 && @$params['search']['rules'][0]['data'] != '') {
-            switch ($params['search']['groupOp']) {
+        if (count($params['filters']) > 0 && @$params['filters']['rules'][0]['data'] != '') {
+            switch ($params['filters']['groupOp']) {
                 case "AND":
-                    foreach ($params['search']['rules'] as $index => $search) {
+                    foreach ($params['filters']['rules'] as $index => $search) {
                         $query = $query->where($search['field'], 'LIKE', "%$search[data]%");
                     }
 
                     break;
                 case "OR":
-                    foreach ($params['search']['rules'] as $index => $search) {
+                    foreach ($params['filters']['rules'] as $index => $search) {
                         $query = $query->orWhere($search['field'], 'LIKE', "%$search[data]%");
                     }
 
@@ -226,7 +234,7 @@ class BankController extends Controller
     public function update(StoreBankRequest $request, Bank $bank)
     {
         try {
-            $bank = Bank::findOrFail($bank->id);
+            $bank = DB::table((new Bank)->getTable())->findOrFail($bank->id);
             $bank->kodebank = $request->kodebank;
             $bank->namabank = $request->namabank;
             $bank->coa = $request->coa;
@@ -234,7 +242,7 @@ class BankController extends Controller
             $bank->statusaktif = $request->statusaktif;
             $bank->kodepenerimaan = $request->kodepenerimaan;
             $bank->kodepengeluaran = $request->kodepengeluaran;
-            $bank->modifiedby = $request->modifiedby;
+            $bank->modifiedby = auth('api')->user()->name;
 
             if ($bank->save()) {
                 $logTrail = [
@@ -318,6 +326,8 @@ class BankController extends Controller
     {
         $data = [
             'status' => Parameter::where(['grp' => 'status aktif'])->get(),
+            'kodepenerimaan' => Parameter::where(['grp' => 'PENERIMAAN KAS'])->get(),
+            'kodepengeluaran' => Parameter::where(['grp' => 'PENGELUARAN KAS'])->get(),
             'akunpusat' => AkunPusat::all(),
         ];
 
@@ -355,7 +365,7 @@ class BankController extends Controller
         });
 
         if ($params['sortname'] == 'id') {
-            $query = Bank::select(
+            $query = DB::table((new Bank)->getTable())->select(
                 'bank.id as id_',
                 'bank.kodebank',
                 'bank.namabank',
@@ -370,7 +380,7 @@ class BankController extends Controller
             )
                 ->orderBy('bank.id', $params['sortorder']);
         } else if ($params['sortname'] == 'kodebank' or $params['sortname'] == 'namabank') {
-            $query = Bank::select(
+            $query = DB::table((new Bank)->getTable())->select(
                 'bank.id as id_',
                 'bank.kodebank',
                 'bank.namabank',
@@ -387,7 +397,7 @@ class BankController extends Controller
                 ->orderBy('bank.id', $params['sortorder']);
         } else {
             if ($params['sortorder'] == 'asc') {
-                $query = Bank::select(
+                $query = DB::table((new Bank)->getTable())->select(
                     'bank.id as id_',
                     'bank.kodebank',
                     'bank.namabank',
@@ -403,7 +413,7 @@ class BankController extends Controller
                     ->orderBy($params['sortname'], $params['sortorder'])
                     ->orderBy('bank.id', $params['sortorder']);
             } else {
-                $query = Bank::select(
+                $query = DB::table((new Bank)->getTable())->select(
                     'bank.id as id_',
                     'bank.kodebank',
                     'bank.namabank',

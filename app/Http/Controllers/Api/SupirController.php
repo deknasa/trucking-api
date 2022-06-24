@@ -22,33 +22,33 @@ class SupirController extends Controller
      /**
      * @ClassName 
      */
-    public function index(Request $request)
+    public function index()
     {
         $params = [
-            'offset' => $request->offset ?? 0,
-            'limit' => $request->limit ?? 10,
-            'search' => $request->search ?? [],
-            'sortIndex' => $request->sortIndex ?? 'id',
-            'sortOrder' => $request->sortOrder ?? 'asc',
+            'offset' => request()->offset ?? ((request()->page - 1) * request()->limit),
+            'limit' => request()->limit ?? 10,
+            'filters' => json_decode(request()->filters, true) ?? [],
+            'sortIndex' => request()->sortIndex ?? 'id',
+            'sortOrder' => request()->sortOrder ?? 'asc',
         ];
 
-        $totalRows = Supir::count();
+        $totalRows = DB::table((new Supir())->getTable())->count();
         $totalPages = ceil($totalRows / $params['limit']);
 
         /* Sorting */
-        $query = Supir::orderBy($params['sortIndex'], $params['sortOrder']);
+        $query = DB::table((new Supir())->getTable())->orderBy($params['sortIndex'], $params['sortOrder']);
 
         /* Searching */
-        if (count($params['search']) > 0) {
-            switch ($params['search']['groupOp']) {
+        if (count($params['filters']) > 0) {
+            switch ($params['filters']['groupOp']) {
                 case "AND":
-                    foreach ($params['search']['rules'] as $index => $search) {
+                    foreach ($params['filters']['rules'] as $index => $search) {
                         $query = $query->where($search['field'], 'LIKE', "%$search[data]%");
                     }
 
                     break;
                 case "OR":
-                    foreach ($params['search']['rules'] as $index => $search) {
+                    foreach ($params['filters']['rules'] as $index => $search) {
                         $query = $query->orWhere($search['field'], 'LIKE', "%$search[data]%");
                     }
 
@@ -115,7 +115,7 @@ class SupirController extends Controller
             $supir->tglberhentisupir = date('Y-m-d',strtotime($request->tglberhentisupir));
             $supir->tgllahir = date('Y-m-d',strtotime($request->tgllahir));
             $supir->tglterbitsim = date('Y-m-d',strtotime($request->tglterbitsim));
-            $supir->modifiedby = strtoupper($request->modifiedby);
+            $supir->modifiedby = strtoupper(auth('api')->user()->name);
             // dd($supir->getAttributes());
             $supir->save();
 
@@ -146,7 +146,7 @@ class SupirController extends Controller
     {
         DB::beginTransaction();
         try {
-            $supir = Supir::find($id);
+            $supir = DB::table((new Supir())->getTable())->find($id);
             $supir->namasupir = strtoupper($request->namasupir ?? '');
             $supir->alamat = strtoupper($request->alamat ?? '');
             $supir->kota = strtoupper($request->kota ?? '');
@@ -173,7 +173,7 @@ class SupirController extends Controller
             $supir->tglberhentisupir = date('Y-m-d',strtotime($request->tglberhentisupir));
             $supir->tgllahir = date('Y-m-d',strtotime($request->tgllahir));
             $supir->tglterbitsim = date('Y-m-d',strtotime($request->tglterbitsim));
-            $supir->modifiedby = strtoupper($request->modifiedby);
+            $supir->modifiedby = strtoupper(auth('api')->user()->name);
 
             $supir->save();
             // $datajson = [
@@ -195,7 +195,7 @@ class SupirController extends Controller
             DB::commit();
 
             /* Set position and page */
-            $supir->position = supir::orderBy($request->sortIndex ?? 'id', $request->sortOrder ?? 'asc')
+            $supir->position = DB::table((new Supir())->getTable())->orderBy($request->sortIndex ?? 'id', $request->sortOrder ?? 'asc')
                 ->where($request->sortIndex, $request->sortOrder == 'desc' ? '>=' : '<=', $supir->{$request->sortIndex})
                 ->where('id', '<=', $supir->id)
                 ->count();
@@ -290,7 +290,7 @@ class SupirController extends Controller
                 }
             }
 
-            Supir::destroy($supir->id);
+            DB::table((new Supir())->getTable())->destroy($supir->id);
 
             $logtrail = new LogTrail();
             $logtrail->namatabel = 'Supir';
@@ -341,7 +341,7 @@ class SupirController extends Controller
     {
         $data = [
             'status' => Parameter::where(['grp'=>'status aktif'])->get(),
-            'supir' => Supir::all(),
+            'supir' => DB::table((new Supir())->getTable())->all(),
             'updategambar' => Parameter::where(['grp'=>'status ada update gambar'])->get(),
             'luarkota' => Parameter::where(['grp'=>'status luar kota'])->get(),
             'zonatertentu' => Parameter::where(['grp'=>'status zona tertentu'])->get(),
@@ -364,7 +364,7 @@ class SupirController extends Controller
             if (isset($request['contents'])) {
                 $aksi = 'EDIT';
                 $request['contents'] = json_decode($request['contents']);
-                $get = Supir::where('id',$id)->first();
+                $get = DB::table((new Supir())->getTable())->where('id',$id)->first();
 
                 $photosupir     = json_decode(strtolower($get->photosupir),true);
                 $photoktp       = json_decode(strtolower($get->photoktp),true);
@@ -665,7 +665,7 @@ class SupirController extends Controller
             }
         }
 
-        $supir = Supir::find($id);
+        $supir = DB::table((new Supir())->getTable())->find($id);
         $supir->photosupir = json_encode($data['supir'] ?? []);
         $supir->photoktp = json_encode($data['ktp'] ?? []);
         $supir->photosim = json_encode($data['sim'] ?? []);
@@ -759,7 +759,7 @@ class SupirController extends Controller
 
 
         if ($request->sortIndex == 'id') {
-            $query = Supir::select(
+            $query = DB::table((new Supir())->getTable())->select(
                 'supir.id as id_',
                 'supir.namasupir',
                 'supir.alamat',
@@ -800,7 +800,7 @@ class SupirController extends Controller
                 ->leftJoin('parameter', 'supir.statusaktif', '=', 'parameter.id')
                 ->orderBy('supir.id', $request->sortOrder);
         } else if ($request->sortIndex == 'keterangan') {
-            $query = Supir::select(
+            $query = DB::table((new Supir())->getTable())->select(
                 'supir.id as id_',
                 'supir.namasupir',
                 'supir.alamat',
@@ -844,7 +844,7 @@ class SupirController extends Controller
                 ->orderBy('supir.id', $request->sortOrder);
         } else {
             if ($request->sortOrder == 'asc') {
-                $query = Supir::select(
+                $query = DB::table((new Supir())->getTable())->select(
                 'supir.id as id_',
                 'supir.namasupir',
                 'supir.alamat',
@@ -886,7 +886,7 @@ class SupirController extends Controller
                     ->orderBy($request->sortIndex, $request->sortOrder)
                     ->orderBy('supir.id', $request->sortOrder);
             } else {
-                $query = Supir::select(
+                $query = DB::table((new Supir())->getTable())->select(
                     'supir.id as id_',
                 'supir.namasupir',
                 'supir.alamat',
