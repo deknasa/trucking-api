@@ -17,11 +17,12 @@ use Illuminate\Support\Facades\Schema;
 
 class GudangController extends Controller
 {
-          /**
+    /**
      * @ClassName 
      */
     public function index()
     {
+
         $params = [
             'offset' => request()->offset ?? ((request()->page - 1) * request()->limit),
             'limit' => request()->limit ?? 10,
@@ -41,26 +42,22 @@ class GudangController extends Controller
                 'gudang.id',
                 'gudang.gudang',
                 'parameter.text as statusaktif',
-                'p.text as statusgudang',
-                'gudang.modifiedby',
-                'gudang.created_at',
-                'gudang.updated_at'
-            )
-            ->leftJoin('parameter', 'gudang.statusaktif', '=', 'parameter.id')
-            ->leftJoin('parameter AS p', 'gudang.statusgudang', '=', 'p.id')
-            ->orderBy('gudang.id', $params['sortOrder']);
-        } else if ($params['sortIndex'] == 'gudang') {
-            $query = DB::table((new Gudang)->getTable())->select(
-                'gudang.id',
-                'gudang.gudang',
-                'parameter.text as statusaktif',
-                'p.text as statusgudang',
                 'gudang.modifiedby',
                 'gudang.created_at',
                 'gudang.updated_at'
             )
                 ->leftJoin('parameter', 'gudang.statusaktif', '=', 'parameter.id')
-                ->leftJoin('parameter AS p', 'gudang.statusgudang', '=', 'p.id')
+                ->orderBy('gudang.id', $params['sortOrder']);
+        } else if ($params['sortIndex'] == 'gudang') {
+            $query = DB::table((new Gudang)->getTable())->select(
+                'gudang.id',
+                'gudang.gudang',
+                'parameter.text as statusaktif',
+                'gudang.modifiedby',
+                'gudang.created_at',
+                'gudang.updated_at'
+            )
+                ->leftJoin('parameter', 'gudang.statusaktif', '=', 'parameter.id')
                 ->orderBy($params['sortIndex'], $params['sortOrder'])
                 ->orderBy('gudang.id', $params['sortOrder']);
         } else {
@@ -69,13 +66,11 @@ class GudangController extends Controller
                     'gudang.id',
                     'gudang.gudang',
                     'parameter.text as statusaktif',
-                    'p.text as statusgudang',
                     'gudang.modifiedby',
                     'gudang.created_at',
                     'gudang.updated_at'
                 )
                     ->leftJoin('parameter', 'gudang.statusaktif', '=', 'parameter.id')
-                    ->leftJoin('parameter AS p', 'gudang.statusgudang', '=', 'p.id')
                     ->orderBy($params['sortIndex'], $params['sortOrder'])
                     ->orderBy('gudang.id', $params['sortOrder']);
             } else {
@@ -83,13 +78,11 @@ class GudangController extends Controller
                     'gudang.id',
                     'gudang.gudang',
                     'parameter.text as statusaktif',
-                    'p.text as statusgudang',
                     'gudang.modifiedby',
                     'gudang.created_at',
                     'gudang.updated_at'
                 )
                     ->leftJoin('parameter', 'gudang.statusaktif', '=', 'parameter.id')
-                    ->leftJoin('parameter AS p', 'gudang.statusgudang', '=', 'p.id')
                     ->orderBy($params['sortIndex'], $params['sortOrder'])
                     ->orderBy('gudang.id', 'asc');
             }
@@ -103,7 +96,7 @@ class GudangController extends Controller
                         if ($search['field'] == 'statusaktif') {
                             $query = $query->where('parameter.text', 'LIKE', "%$search[data]%");
                         } else {
-                            $query = $query->where('gudang.'.$search['field'], 'LIKE', "%$search[data]%");
+                            $query = $query->where('gudang.' . $search['field'], 'LIKE', "%$search[data]%");
                         }
                     }
 
@@ -113,7 +106,7 @@ class GudangController extends Controller
                         if ($search['field'] == 'statusaktif') {
                             $query = $query->orWhere('parameter.text', 'LIKE', "%$search[data]%");
                         } else {
-                            $query = $query->orWhere('gudang.'.$search['field'], 'LIKE', "%$search[data]%");
+                            $query = $query->orWhere('gudang.' . $search['field'], 'LIKE', "%$search[data]%");
                         }
                     }
                     break;
@@ -150,7 +143,7 @@ class GudangController extends Controller
     {
         //
     }
-      /**
+    /**
      * @ClassName 
      */
     public function store(StoreGudangRequest $request)
@@ -161,7 +154,6 @@ class GudangController extends Controller
             $gudang = new Gudang();
             $gudang->gudang = $request->gudang;
             $gudang->statusaktif = $request->statusaktif;
-            $gudang->statusgudang = $request->statusgudang;
             $gudang->modifiedby = auth('api')->user()->name;
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
@@ -215,16 +207,15 @@ class GudangController extends Controller
     {
         //
     }
-      /**
+    /**
      * @ClassName 
      */
     public function update(StoreGudangRequest $request, Gudang $gudang)
     {
         try {
-            $gudang = DB::table((new Gudang)->getTable())->findOrFail($gudang->id);
+            $gudang = Gudang::findOrFail($gudang->id);
             $gudang->gudang = $request->gudang;
             $gudang->statusaktif = $request->statusaktif;
-            $gudang->statusgudang = $request->statusgudang;
             $gudang->modifiedby = auth('api')->user()->name;
 
             if ($gudang->save()) {
@@ -242,8 +233,8 @@ class GudangController extends Controller
                 app(LogTrailController::class)->store($validatedLogTrail);
 
                 /* Set position and page */
+               
                 $gudang->position = $this->getid($gudang->id, $request, 0)->row;
-
                 if (isset($request->limit)) {
                     $gudang->page = ceil($gudang->position / $request->limit);
                 }
@@ -263,7 +254,7 @@ class GudangController extends Controller
             throw $th;
         }
     }
-      /**
+    /**
      * @ClassName 
      */
     public function destroy(Gudang $gudang, Request $request)
@@ -330,8 +321,8 @@ class GudangController extends Controller
     public function combo(Request $request)
     {
         $data = [
-            'statusaktif' => Parameter::where(['grp'=>'status aktif'])->get(),
-            'statusgudang' => Parameter::where(['grp'=>'status gudang'])->get(),
+            'statusaktif' => Parameter::where(['grp' => 'status aktif'])->get(),
+            'statusgudang' => Parameter::where(['grp' => 'status gudang'])->get(),
         ];
 
         return response([
@@ -354,7 +345,6 @@ class GudangController extends Controller
             $table->bigInteger('id_')->default('0');
             $table->string('gudang', 50)->default('');
             $table->string('statusaktif', 50)->default('');
-            $table->string('statusgudang', 50)->default('');
             $table->string('modifiedby', 30)->default('');
             $table->dateTime('created_at')->default('1900/1/1');
             $table->dateTime('updated_at')->default('1900/1/1');
@@ -366,56 +356,55 @@ class GudangController extends Controller
             $query = DB::table((new Gudang)->getTable())->select(
                 'gudang.id as id_',
                 'gudang.gudang',
-                'gudang.statusaktif',
-                'gudang.statusgudang',
+                'parameter.text as statusaktif',
                 'gudang.modifiedby',
                 'gudang.created_at',
                 'gudang.updated_at'
             )
+                ->leftJoin('parameter', 'gudang.statusaktif', '=', 'parameter.id')
                 ->orderBy('gudang.id', $params['sortorder']);
         } else if ($params['sortname'] == 'gudang' or $params['sortname'] == 'keterangan') {
             $query = DB::table((new Gudang)->getTable())->select(
                 'gudang.id as id_',
                 'gudang.gudang',
-                'gudang.statusaktif',
-                'gudang.statusgudang',
+                'parameter.text as statusaktif',
                 'gudang.modifiedby',
                 'gudang.created_at',
                 'gudang.updated_at'
             )
-                ->orderBy($params['sortname'], $params['sortorder'])
+            ->leftJoin('parameter', 'gudang.statusaktif', '=', 'parameter.id')
+            ->orderBy($params['sortname'], $params['sortorder'])
                 ->orderBy('gudang.id', $params['sortorder']);
         } else {
             if ($params['sortorder'] == 'asc') {
                 $query = DB::table((new Gudang)->getTable())->select(
                     'gudang.id as id_',
                     'gudang.gudang',
-                    'gudang.statusaktif',
-                    'gudang.statusgudang',
+                    'parameter.text as statusaktif',
                     'gudang.modifiedby',
                     'gudang.created_at',
                     'gudang.updated_at'
                 )
+                ->leftJoin('parameter', 'gudang.statusaktif', '=', 'parameter.id')
                     ->orderBy($params['sortname'], $params['sortorder'])
                     ->orderBy('gudang.id', $params['sortorder']);
             } else {
                 $query = DB::table((new Gudang)->getTable())->select(
                     'gudang.id as id_',
                     'gudang.gudang',
-                    'gudang.statusaktif',
-                    'gudang.statusgudang',
+                    'parameter.text as statusaktif',
                     'gudang.modifiedby',
                     'gudang.created_at',
                     'gudang.updated_at'
                 )
-                    ->orderBy($params['sortname'], $params['sortorder'])
+                ->leftJoin('parameter', 'gudang.statusaktif', '=', 'parameter.id')
+                ->orderBy($params['sortname'], $params['sortorder'])
                     ->orderBy('gudang.id', 'asc');
             }
         }
 
 
-
-        DB::table($temp)->insertUsing(['id_', 'gudang', 'statusaktif', 'statusgudang', 'modifiedby', 'created_at', 'updated_at'], $query);
+        DB::table($temp)->insertUsing(['id_', 'gudang', 'statusaktif',  'modifiedby', 'created_at', 'updated_at'], $query);
 
 
         if ($del == 1) {

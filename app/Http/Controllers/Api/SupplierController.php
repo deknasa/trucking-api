@@ -40,24 +40,20 @@ class SupplierController extends Controller
                 'supplier.namasupplier',
                 'supplier.namakontak',
                 'supplier.alamat',
-                'supplier.coa_id',
                 'supplier.kota',
                 'supplier.kodepos',
                 'supplier.notelp1',
                 'supplier.notelp2',
                 'supplier.email',
-                'supplier.statussupllier',
                 'supplier.web',
                 'supplier.namapemilik',
                 'supplier.jenisusaha',
                 'supplier.top',
                 'supplier.bank',
                 'supplier.rekeningbank',
-                'supplier.namabank',
                 'supplier.jabatan',
                 'supplier.statusdaftarharga',
                 'supplier.kategoriusaha',
-                'supplier.bataskredit',
                 'supplier.modifiedby',
                 'supplier.created_at',
                 'supplier.updated_at',
@@ -68,24 +64,20 @@ class SupplierController extends Controller
                 'supplier.namasupplier',
                 'supplier.namakontak',
                 'supplier.alamat',
-                'supplier.coa_id',
                 'supplier.kota',
                 'supplier.kodepos',
                 'supplier.notelp1',
                 'supplier.notelp2',
                 'supplier.email',
-                'supplier.statussupllier',
                 'supplier.web',
                 'supplier.namapemilik',
                 'supplier.jenisusaha',
                 'supplier.top',
                 'supplier.bank',
                 'supplier.rekeningbank',
-                'supplier.namabank',
                 'supplier.jabatan',
                 'supplier.statusdaftarharga',
                 'supplier.kategoriusaha',
-                'supplier.bataskredit',
                 'supplier.modifiedby',
                 'supplier.created_at',
                 'supplier.updated_at',
@@ -100,24 +92,20 @@ class SupplierController extends Controller
                     'supplier.namasupplier',
                     'supplier.namakontak',
                     'supplier.alamat',
-                    'supplier.coa_id',
                     'supplier.kota',
                     'supplier.kodepos',
                     'supplier.notelp1',
                     'supplier.notelp2',
                     'supplier.email',
-                    'supplier.statussupllier',
                     'supplier.web',
                     'supplier.namapemilik',
                     'supplier.jenisusaha',
                     'supplier.top',
                     'supplier.bank',
                     'supplier.rekeningbank',
-                    'supplier.namabank',
                     'supplier.jabatan',
                     'supplier.statusdaftarharga',
                     'supplier.kategoriusaha',
-                    'supplier.bataskredit',
                     'supplier.modifiedby',
                     'supplier.created_at',
                     'supplier.updated_at',
@@ -130,24 +118,20 @@ class SupplierController extends Controller
                     'supplier.namasupplier',
                     'supplier.namakontak',
                     'supplier.alamat',
-                    'supplier.coa_id',
                     'supplier.kota',
                     'supplier.kodepos',
                     'supplier.notelp1',
                     'supplier.notelp2',
                     'supplier.email',
-                    'supplier.statussupllier',
                     'supplier.web',
                     'supplier.namapemilik',
                     'supplier.jenisusaha',
                     'supplier.top',
                     'supplier.bank',
                     'supplier.rekeningbank',
-                    'supplier.namabank',
                     'supplier.jabatan',
                     'supplier.statusdaftarharga',
                     'supplier.kategoriusaha',
-                    'supplier.bataskredit',
                     'supplier.modifiedby',
                     'supplier.created_at',
                     'supplier.updated_at',
@@ -221,24 +205,20 @@ class SupplierController extends Controller
             $supplier->namasupplier = $request->namasupplier;
             $supplier->namakontak = $request->namakontak;
             $supplier->alamat = $request->alamat;
-            $supplier->coa_id = $request->coa_id;
             $supplier->kota = $request->kota;
             $supplier->kodepos = $request->kodepos;
             $supplier->notelp1 = $request->notelp1;
             $supplier->notelp2 = $request->notelp2;
             $supplier->email = $request->email;
-            $supplier->statussupllier = $request->statussupllier;
             $supplier->web = $request->web;
             $supplier->namapemilik = $request->namapemilik;
             $supplier->jenisusaha = $request->jenisusaha;
             $supplier->top = $request->top;
             $supplier->bank = $request->bank;
             $supplier->rekeningbank = $request->rekeningbank;
-            $supplier->namabank = $request->namabank;
             $supplier->jabatan = $request->jabatan;
             $supplier->statusdaftarharga = $request->statusdaftarharga;
             $supplier->kategoriusaha = $request->kategoriusaha;
-            $supplier->bataskredit = $request->bataskredit;
             $supplier->modifiedby = auth('api')->user()->name;
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
@@ -282,30 +262,26 @@ class SupplierController extends Controller
  /**
      * @ClassName 
      */
-    public function update(UpdateSupirRequest $request, Supplier $supplier)
+    public function update(UpdateSupplierRequest $request, Supplier $supplier)
     {
         try {
             $supplier->namasupplier = $request->namasupplier;
             $supplier->namakontak = $request->namakontak;
             $supplier->alamat = $request->alamat;
-            $supplier->coa_id = $request->coa_id;
             $supplier->kota = $request->kota;
             $supplier->kodepos = $request->kodepos;
             $supplier->notelp1 = $request->notelp1;
             $supplier->notelp2 = $request->notelp2;
             $supplier->email = $request->email;
-            $supplier->statussupllier = $request->statussupllier;
             $supplier->web = $request->web;
             $supplier->namapemilik = $request->namapemilik;
             $supplier->jenisusaha = $request->jenisusaha;
             $supplier->top = $request->top;
             $supplier->bank = $request->bank;
             $supplier->rekeningbank = $request->rekeningbank;
-            $supplier->namabank = $request->namabank;
             $supplier->jabatan = $request->jabatan;
             $supplier->statusdaftarharga = $request->statusdaftarharga;
             $supplier->kategoriusaha = $request->kategoriusaha;
-            $supplier->bataskredit = $request->bataskredit;
             $supplier->modifiedby = auth('api')->user()->name;
 
             if ($supplier->save()) {
@@ -417,24 +393,20 @@ class SupplierController extends Controller
             $table->string('namasupplier', 300)->default('');
             $table->string('namakontak', 300)->default('');
             $table->string('alamat', 300)->default('');
-            $table->string('coa_id', 300)->default('');
             $table->string('kota', 300)->default('');
             $table->string('kodepos', 300)->default('');
             $table->string('notelp1', 300)->default('');
             $table->string('notelp2', 300)->default('');
             $table->string('email', 300)->default('');
-            $table->string('statussupllier', 300)->default('');
             $table->string('web', 300)->default('');
             $table->string('namapemilik', 300)->default('');
             $table->string('jenisusaha', 300)->default('');
             $table->string('top', 300)->default('');
             $table->string('bank', 300)->default('');
             $table->string('rekeningbank', 300)->default('');
-            $table->string('namabank', 300)->default('');
             $table->string('jabatan', 300)->default('');
             $table->string('statusdaftarharga', 300)->default('');
             $table->string('kategoriusaha', 300)->default('');
-            $table->string('bataskredit', 300)->default('');
             $table->string('modifiedby', 30)->default('');
             $table->dateTime('created_at')->default('1900/1/1');
             $table->dateTime('updated_at')->default('1900/1/1');
@@ -448,24 +420,20 @@ class SupplierController extends Controller
                 'supplier.namasupplier',
                 'supplier.namakontak',
                 'supplier.alamat',
-                'supplier.coa_id',
                 'supplier.kota',
                 'supplier.kodepos',
                 'supplier.notelp1',
                 'supplier.notelp2',
                 'supplier.email',
-                'supplier.statussupllier',
                 'supplier.web',
                 'supplier.namapemilik',
                 'supplier.jenisusaha',
                 'supplier.top',
                 'supplier.bank',
                 'supplier.rekeningbank',
-                'supplier.namabank',
                 'supplier.jabatan',
                 'supplier.statusdaftarharga',
                 'supplier.kategoriusaha',
-                'supplier.bataskredit',
                 'supplier.modifiedby',
                 'supplier.created_at',
                 'supplier.updated_at',
@@ -477,24 +445,20 @@ class SupplierController extends Controller
                 'supplier.namasupplier',
                 'supplier.namakontak',
                 'supplier.alamat',
-                'supplier.coa_id',
                 'supplier.kota',
                 'supplier.kodepos',
                 'supplier.notelp1',
                 'supplier.notelp2',
                 'supplier.email',
-                'supplier.statussupllier',
                 'supplier.web',
                 'supplier.namapemilik',
                 'supplier.jenisusaha',
                 'supplier.top',
                 'supplier.bank',
                 'supplier.rekeningbank',
-                'supplier.namabank',
                 'supplier.jabatan',
                 'supplier.statusdaftarharga',
                 'supplier.kategoriusaha',
-                'supplier.bataskredit',
                 'supplier.modifiedby',
                 'supplier.created_at',
                 'supplier.updated_at',
@@ -509,24 +473,20 @@ class SupplierController extends Controller
                     'supplier.namasupplier',
                     'supplier.namakontak',
                     'supplier.alamat',
-                    'supplier.coa_id',
                     'supplier.kota',
                     'supplier.kodepos',
                     'supplier.notelp1',
                     'supplier.notelp2',
                     'supplier.email',
-                    'supplier.statussupllier',
                     'supplier.web',
                     'supplier.namapemilik',
                     'supplier.jenisusaha',
                     'supplier.top',
                     'supplier.bank',
                     'supplier.rekeningbank',
-                    'supplier.namabank',
                     'supplier.jabatan',
                     'supplier.statusdaftarharga',
                     'supplier.kategoriusaha',
-                    'supplier.bataskredit',
                     'supplier.modifiedby',
                     'supplier.created_at',
                     'supplier.updated_at',
@@ -539,24 +499,20 @@ class SupplierController extends Controller
                     'supplier.namasupplier',
                     'supplier.namakontak',
                     'supplier.alamat',
-                    'supplier.coa_id',
                     'supplier.kota',
                     'supplier.kodepos',
                     'supplier.notelp1',
                     'supplier.notelp2',
                     'supplier.email',
-                    'supplier.statussupllier',
                     'supplier.web',
                     'supplier.namapemilik',
                     'supplier.jenisusaha',
                     'supplier.top',
                     'supplier.bank',
                     'supplier.rekeningbank',
-                    'supplier.namabank',
                     'supplier.jabatan',
                     'supplier.statusdaftarharga',
                     'supplier.kategoriusaha',
-                    'supplier.bataskredit',
                     'supplier.modifiedby',
                     'supplier.created_at',
                     'supplier.updated_at',
@@ -571,24 +527,20 @@ class SupplierController extends Controller
             'namasupplier',
             'namakontak',
             'alamat',
-            'coa_id',
             'kota',
             'kodepos',
             'notelp1',
             'notelp2',
             'email',
-            'statussupllier',
             'web',
             'namapemilik',
             'jenisusaha',
             'top',
             'bank',
             'rekeningbank',
-            'namabank',
             'jabatan',
             'statusdaftarharga',
             'kategoriusaha',
-            'bataskredit',
             'modifiedby',
             'created_at',
             'updated_at',
@@ -680,10 +632,7 @@ class SupplierController extends Controller
                 'label' => 'Email',
                 'index' => 'email',
             ],
-            [
-                'label' => 'Status Supllier',
-                'index' => 'statussupllier',
-            ],
+           
             [
                 'label' => 'Web',
                 'index' => 'web',
@@ -708,10 +657,7 @@ class SupplierController extends Controller
                 'label' => 'Rekening Bank',
                 'index' => 'rekeningbank',
             ],
-            [
-                'label' => 'Nama Bank',
-                'index' => 'namabank',
-            ],
+       
             [
                 'label' => 'Jabatan',
                 'index' => 'jabatan',
@@ -724,10 +670,7 @@ class SupplierController extends Controller
                 'label' => 'Kategori Usaha',
                 'index' => 'kategoriusaha',
             ],
-            [
-                'label' => 'Batas Kredit',
-                'index' => 'bataskredit',
-            ],
+     
         ];
 
         $this->toExcel('Parameter', $parameters, $columns);

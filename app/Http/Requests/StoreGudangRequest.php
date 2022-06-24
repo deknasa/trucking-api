@@ -26,7 +26,6 @@ class StoreGudangRequest extends FormRequest
         return [
             'gudang' => 'required',
             'statusaktif' => 'required',
-            'statusgudang' => 'required'
         ];
     }
 }

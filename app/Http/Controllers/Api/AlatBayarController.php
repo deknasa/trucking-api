@@ -217,7 +217,7 @@ class AlatBayarController extends Controller
     public function update(StoreAlatBayarRequest $request, AlatBayar $alatbayar)
     {
         try {
-            $alatbayar = DB::table((new AlatBayar)->getTable())->findOrFail($alatbayar->id);
+            $alatbayar = AlatBayar::findOrFail($alatbayar->id);
             $alatbayar->kodealatbayar = $request->kodealatbayar;
             $alatbayar->namaalatbayar = $request->namaalatbayar;
             $alatbayar->keterangan = $request->keterangan;
