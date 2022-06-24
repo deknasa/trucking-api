@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Parameter;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class AgenFactory extends Factory
@@ -13,6 +14,8 @@ class AgenFactory extends Factory
      */
     public function definition()
     {
+        $statusNonApproval = Parameter::where('grp', '=', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
+        
         return [
             'kodeagen' => $this->faker->word(),
             'namaagen' => $this->faker->word(),
@@ -24,7 +27,7 @@ class AgenFactory extends Factory
             'nohp' => $this->faker->phoneNumber(),
             'contactperson' => $this->faker->firstName(),
             'top' => 1,
-            'statusapproval' => 1,
+            'statusapproval' => $statusNonApproval->id,
             'userapproval' => $this->faker->word(),
             'tglapproval' => $this->faker->date(),
             'statustas' => 1,

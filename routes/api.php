@@ -341,7 +341,7 @@ Route::resource('kerusakan', KerusakanController::class);
 
 Route::get('kota/combo', [KotaController::class, 'combo']);
 Route::get('kota/field_length', [KotaController::class, 'fieldLength']);
-Route::resource('kota', KotaController::class);
+Route::resource('kota', KotaController::class)->parameters(['kota' => 'kota']);
 
 Route::get('mandor/combo', [MandorController::class, 'combo']);
 Route::get('mandor/field_length', [MandorController::class, 'fieldLength']);
