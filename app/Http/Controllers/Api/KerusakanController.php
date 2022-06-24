@@ -215,7 +215,7 @@ class KerusakanController extends Controller
     public function update(StoreKerusakanRequest $request, Kerusakan $kerusakan)
     {
         try {
-            $kerusakan = DB::table((new Kerusakan)->getTable())->findOrFail($kerusakan->id);
+            $kerusakan = Kerusakan::findOrFail($kerusakan->id);
             $kerusakan->keterangan = $request->keterangan;
             $kerusakan->statusaktif = $request->statusaktif;
             $kerusakan->modifiedby = auth('api')->user()->name;
@@ -280,8 +280,8 @@ class KerusakanController extends Controller
             DB::commit();
 
             $data = $this->getid($kerusakan->id, $request, $del);
-            $kerusakan->position = @$data->row;
-            $kerusakan->id = @$data->id;
+            $kerusakan->position = @$data->row  ?? 0;
+            $kerusakan->id = @$data->id  ?? 0;
             if (isset($request->limit)) {
                 $kerusakan->page = ceil($kerusakan->position / $request->limit);
             }

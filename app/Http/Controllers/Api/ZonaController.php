@@ -218,7 +218,7 @@ class ZonaController extends Controller
     public function update(StoreZonaRequest $request, Zona $zona)
     {
         try {
-            $zona = DB::table((new Zona())->getTable())->findOrFail($zona->id);
+            $zona = Zona::findOrFail($zona->id);
             $zona->zona = $request->zona;
             $zona->keterangan = $request->keterangan;
             $zona->statusaktif = $request->statusaktif;
@@ -284,8 +284,8 @@ class ZonaController extends Controller
             DB::commit();
 
             $data = $this->getid($zona->id, $request, $del);
-            $zona->position = $data->row;
-            $zona->id = $data->id;
+            $zona->position = $data->row  ?? 0;
+            $zona->id = $data->id  ?? 0;
             if (isset($request->limit)) {
                 $zona->page = ceil($zona->position / $request->limit);
             }

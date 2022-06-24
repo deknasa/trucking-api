@@ -232,7 +232,7 @@ class JenisTradoController extends Controller
     public function update(StoreJenisTradoRequest $request, jenistrado $jenistrado)
     {
         try {
-            $jenistrado = DB::table((new JenisTrado)->getTable())->findOrFail($jenistrado->id);
+            $jenistrado = JenisTrado::findOrFail($jenistrado->id);
             $jenistrado->kodejenistrado = $request->kodejenistrado;
             $jenistrado->keterangan = $request->keterangan;
             $jenistrado->statusaktif = $request->statusaktif;
@@ -305,8 +305,8 @@ class JenisTradoController extends Controller
             DB::commit();
 
             $data = $this->getid($jenistrado->id, $request, $del);
-            $jenistrado->position = $data->row;
-            $jenistrado->id = $data->id;
+            $jenistrado->position = $data->row  ?? 0;
+            $jenistrado->id = $data->id  ?? 0;
             if (isset($request->limit)) {
                 $jenistrado->page = ceil($jenistrado->position / $request->limit);
             }

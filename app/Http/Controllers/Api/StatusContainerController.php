@@ -192,7 +192,7 @@ class StatusContainerController extends Controller
     public function update(UpdateStatusContainerRequest $request, StatusContainer $statusContainer)
     {
         try {
-            $statusContainer = new StatusContainer();
+            $statusContainer = StatusContainer::findOrFail($statusContainer->id);
             $statusContainer->kodestatuscontainer = $request->kodestatuscontainer;
             $statusContainer->keterangan = $request->keterangan;
             $statusContainer->statusaktif = $request->statusaktif;
@@ -258,8 +258,8 @@ class StatusContainerController extends Controller
             DB::commit();
 
             $data = $this->getid($statusContainer->id, $request, $del);
-            $statusContainer->position = $data->row;
-            $statusContainer->id = $data->id;
+            $statusContainer->position = $data->row  ?? 0;
+            $statusContainer->id = $data->id  ?? 0;
             if (isset($request->limit)) {
                 $statusContainer->page = ceil($statusContainer->position / $request->limit);
             }

@@ -216,7 +216,7 @@ class MandorController extends Controller
     public function update(Request $request, Mandor $mandor)
     {
         try {
-            $mandor = DB::table((new Mandor)->getTable())->findOrFail($mandor->id);
+            $mandor = Mandor::findOrFail($mandor->id);
             $mandor->namamandor = $request->namamandor;
             $mandor->keterangan = $request->keterangan;
             $mandor->statusaktif = $request->statusaktif;
@@ -282,8 +282,8 @@ class MandorController extends Controller
             DB::commit();
 
             $data = $this->getid($mandor->id, $request, $del);
-            $mandor->position = @$data->row;
-            $mandor->id = @$data->id;
+            $mandor->position = @$data->row  ?? 0;
+            $mandor->id = @$data->id  ?? 0;
             if (isset($request->limit)) {
                 $mandor->page = ceil($mandor->position / $request->limit);
             }

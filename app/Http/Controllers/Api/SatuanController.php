@@ -212,7 +212,7 @@ class SatuanController extends Controller
     public function update(StoreSatuanRequest $request, Satuan $satuan)
     {
         try {
-            $satuan = DB::table((new Satuan())->getTable())->findOrFail($satuan->id);
+            $satuan = Satuan::findOrFail($satuan->id);
             $satuan->satuan = $request->satuan;
             $satuan->statusaktif = $request->statusaktif;
             $satuan->modifiedby = auth('api')->user()->name;
@@ -277,8 +277,8 @@ class SatuanController extends Controller
             DB::commit();
 
             $data = $this->getid($satuan->id, $request, $del);
-            $satuan->position = $data->row;
-            $satuan->id = $data->id;
+            $satuan->position = $data->row  ?? 0;
+            $satuan->id = $data->id  ?? 0;
             if (isset($request->limit)) {
                 $satuan->page = ceil($satuan->position / $request->limit);
             }

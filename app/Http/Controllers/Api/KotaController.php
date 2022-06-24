@@ -212,9 +212,10 @@ class KotaController extends Controller
 
     public function show(Kota $Kota,$id)
     {
+        
         return response([
             'status' => true,
-            'data' => DB::table((new Kota)->getTable())->find($id)->first()
+            'data' => Kota::find($id)->first()
         ]);
     }
 
@@ -228,7 +229,7 @@ class KotaController extends Controller
     public function update(StoreKotaRequest $request, $id)
     {
         try {
-            $kota = DB::table((new Kota)->getTable())->findOrFail($id);
+            $kota = Kota::findOrFail($id);
             $kota->kodekota = $request->kodekota;
             $kota->keterangan = $request->keterangan;
             $kota->zona_id = $request->zona_id;
@@ -297,8 +298,8 @@ class KotaController extends Controller
             DB::commit();
 
             $data = $this->getid($kota->id, $request, $del);
-            $kota->position = @$data->row;
-            $kota->id = @$data->id;
+            $kota->position = @$data->row  ?? 0;
+            $kota->id = @$data->id  ?? 0;
             if (isset($request->limit)) {
                 $kota->page = ceil($kota->position / $request->limit);
             }
