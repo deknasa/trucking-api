@@ -210,12 +210,11 @@ class KotaController extends Controller
         }
     }
 
-    public function show(Kota $Kota,$id)
+    public function show(Kota $kota)
     {
-        
         return response([
             'status' => true,
-            'data' => Kota::find($id)->first()
+            'data' => $kota
         ]);
     }
 
@@ -275,11 +274,10 @@ class KotaController extends Controller
      /**
      * @ClassName 
      */
-    public function destroy($id, Request $request)
+    public function destroy(Kota $kota, Request $request)
     {
-        $kota = DB::table((new Kota)->getTable())->find($id)->first();
-        
-        $delete = Kota::destroy($kota->id);
+        $delete = $kota->delete();
+
         $del = 1;
         if ($delete) {
             $logTrail = [
