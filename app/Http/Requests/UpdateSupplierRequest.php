@@ -24,7 +24,25 @@ class UpdateSupplierRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'namasupplier' => 'required',
+            'namakontak' => 'required',
+            'alamat' => 'required',
+            'kota' => 'required',
+            'kodepos' => 'required',
+            'notelp1' => 'required',
+            'notelp2' => 'required',
+            'email' => 'required',
+            'statusaktif' => 'required|numeric',
+            'web' => 'required',
+            'namapemilik' => 'required',
+            'jenisusaha' => 'required',
+            'top' => 'required|numeric',
+            'bank' => 'required',
+            'rekeningbank' => 'required',
+            'namarekening' => 'required',
+            'jabatan' => 'required',
+            'statusdaftarharga' => 'required|numeric',
+            'kategoriusaha' => 'required',
         ];
     }
 }

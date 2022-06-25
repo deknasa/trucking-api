@@ -303,7 +303,7 @@ class UpahRitasiController extends Controller
 
     public function show($id)
     {
-        $data = DB::table((new UpahRitasi())->getTable())->with(
+        $data = UpahRitasi::with(
             'upahritasiRincian',
             // 'absensiSupirDetail.trado',
             // 'absensiSupirDetail.supir',

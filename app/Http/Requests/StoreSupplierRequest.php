@@ -32,14 +32,16 @@ class StoreSupplierRequest extends FormRequest
             'notelp1' => 'required',
             'notelp2' => 'required',
             'email' => 'required',
+            'statusaktif' => 'required|numeric',
             'web' => 'required',
             'namapemilik' => 'required',
             'jenisusaha' => 'required',
-            'top' => 'required|int',
+            'top' => 'required|numeric',
             'bank' => 'required',
             'rekeningbank' => 'required',
+            'namarekening' => 'required',
             'jabatan' => 'required',
-            'statusdaftarharga' => 'required|int',
+            'statusdaftarharga' => 'required|numeric',
             'kategoriusaha' => 'required',
         ];
     }
