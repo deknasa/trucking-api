@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Schema;
 class SupplierController extends Controller
 {
 
-     /**
+    /**
      * @ClassName 
      */
     public function index()
@@ -185,7 +185,7 @@ class SupplierController extends Controller
         ]);
     }
 
-    
+
     public function show(Supplier $supplier)
     {
         return response([
@@ -193,7 +193,7 @@ class SupplierController extends Controller
             'data' => $supplier
         ]);
     }
-     /**
+    /**
      * @ClassName 
      */
     public function store(StoreSupplierRequest $request)
@@ -210,12 +210,14 @@ class SupplierController extends Controller
             $supplier->notelp1 = $request->notelp1;
             $supplier->notelp2 = $request->notelp2;
             $supplier->email = $request->email;
+            $supplier->statusaktif = $request->statusaktif;
             $supplier->web = $request->web;
             $supplier->namapemilik = $request->namapemilik;
             $supplier->jenisusaha = $request->jenisusaha;
             $supplier->top = $request->top;
             $supplier->bank = $request->bank;
             $supplier->rekeningbank = $request->rekeningbank;
+            $supplier->namarekening = $request->namarekening;
             $supplier->jabatan = $request->jabatan;
             $supplier->statusdaftarharga = $request->statusdaftarharga;
             $supplier->kategoriusaha = $request->kategoriusaha;
@@ -243,7 +245,7 @@ class SupplierController extends Controller
             /* Set position and page */
             $del = 0;
             $data = $this->getid($supplier->id, $request, $del);
-            $supplier->position = $data->row;
+            $supplier->position = $data->row ?? 0;
 
             if (isset($request->limit)) {
                 $supplier->page = ceil($supplier->position / $request->limit);
@@ -259,7 +261,8 @@ class SupplierController extends Controller
             throw $th;
         }
     }
- /**
+
+    /**
      * @ClassName 
      */
     public function update(UpdateSupplierRequest $request, Supplier $supplier)
@@ -320,12 +323,12 @@ class SupplierController extends Controller
             throw $th;
         }
     }
-     /**
+    /**
      * @ClassName 
      */
     public function destroy(Supplier $supplier, Request $request)
     {
-        $delete = Supplier::destroy($supplier->id);
+        $delete = $supplier->delete();
         $del = 1;
         if ($delete) {
             $logTrail = [
@@ -581,7 +584,7 @@ class SupplierController extends Controller
         $data = $querydata->first();
         return $data;
     }
-    
+
     public function export()
     {
         $response = $this->index();
@@ -632,7 +635,7 @@ class SupplierController extends Controller
                 'label' => 'Email',
                 'index' => 'email',
             ],
-           
+
             [
                 'label' => 'Web',
                 'index' => 'web',
@@ -657,7 +660,7 @@ class SupplierController extends Controller
                 'label' => 'Rekening Bank',
                 'index' => 'rekeningbank',
             ],
-       
+
             [
                 'label' => 'Jabatan',
                 'index' => 'jabatan',
@@ -670,7 +673,7 @@ class SupplierController extends Controller
                 'label' => 'Kategori Usaha',
                 'index' => 'kategoriusaha',
             ],
-     
+
         ];
 
         $this->toExcel('Parameter', $parameters, $columns);
