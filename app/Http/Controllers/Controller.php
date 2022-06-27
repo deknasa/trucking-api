@@ -68,6 +68,8 @@ class Controller extends BaseController
     /* Compatible for single table */
     public function toExcel(string $title, array $data, array $columns)
     {
+        header('Access-Control-Allow-Origin: *');
+        
         $tableHeaderRow = 2;
         $startRow = $tableHeaderRow + 1;
         $alphabets = range('A', 'Z');
