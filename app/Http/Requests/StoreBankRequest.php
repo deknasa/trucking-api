@@ -24,7 +24,13 @@ class StoreBankRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'kodebank' => 'required',
+            'namabank' => 'required',
+            'coa' => 'required',
+            'tipe' => 'required',
+            'statusaktif' => 'required',
+            'kodepenerimaan' => 'required',
+            'kodepengeluaran' => 'required',
         ];
     }
 }

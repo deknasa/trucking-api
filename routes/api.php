@@ -193,8 +193,8 @@ route::middleware('auth:api')->group(function () {
     Route::get('jenistrado/field_length', [JenisTradoController::class, 'fieldLength']);
     Route::resource('jenistrado', JenisTradoController::class);
 
-    Route::get('akun_pusat/field_length', [AkunPusatController::class, 'fieldLength']);
-    Route::resource('akun_pusat', AkunPusatController::class);
+    Route::get('akunpusat/field_length', [AkunPusatController::class, 'fieldLength']);
+    Route::resource('akunpusat', AkunPusatController::class);
 
     Route::get('error/field_length', [ErrorController::class, 'fieldLength']);
     Route::get('error/geterror', [ErrorController::class, 'geterror']);

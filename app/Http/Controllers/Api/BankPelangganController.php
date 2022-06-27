@@ -86,7 +86,7 @@ class BankPelangganController extends Controller
                     'bankpelanggan.kodebank',
                     'bankpelanggan.namabank',
                     'bankpelanggan.keterangan',
-                    'bankpelanggan.text as statusaktif',
+                    'parameter.text as statusaktif',
                     'bankpelanggan.modifiedby',
                     'bankpelanggan.created_at',
                     'bankpelanggan.updated_at'
@@ -96,26 +96,29 @@ class BankPelangganController extends Controller
                     ->orderBy('bankpelanggan.id', 'asc');
             }
         }
-
+      
+      
         /* Searching */
-        if (count($params['BankPelanggan']) > 0 && @$params['BankPelanggan']['rules'][0]['data'] != '') {
-            switch ($params['BankPelanggan']['groupOp']) {
+        if (count($params['filters']) > 0 && @$params['filters']['rules'][0]['data'] != '') {
+            switch ($params['filters']['groupOp']) {
                 case "AND":
-                    foreach ($params['BankPelanggan']['rules'] as $index => $search) {
-                        if ($search['field'] == 'statusaktif') {
-                            $query = $query->where('parameter.text', 'LIKE', "%$search[data]%");
+                    foreach ($params['filters']['rules'] as $index => $filters) {
+                        if ($filters['field'] == 'statusaktif') {
+                            $query = $query->where('parameter.text', 'LIKE', "%$filters[data]%");
                         } else {
-                            $query = $query->where('bankpelanggan.'.$search['field'], 'LIKE', "%$search[data]%");
+                            $query = $query->where($filters['field'], 'LIKE', "%$filters[data]%");
                         }
+
+                        
                     }
 
                     break;
                 case "OR":
-                    foreach ($params['BankPelanggan']['rules'] as $index => $search) {
-                        if ($search['field'] == 'statusaktif') {
-                            $query = $query->orWhere('parameter.text', 'LIKE', "%$search[data]%");
+                    foreach ($params['filters']['rules'] as $index => $filters) {
+                        if ($filters['field'] == 'statusaktif') {
+                            $query = $query->where('parameter.text', 'LIKE', "%$filters[data]%");
                         } else {
-                            $query = $query->orWhere('bankpelanggan.'.$search['field'], 'LIKE', "%$search[data]%");
+                            $query = $query->orWhere($filters['field'], 'LIKE', "%$filters[data]%");
                         }
                     }
 
@@ -128,7 +131,7 @@ class BankPelangganController extends Controller
             $totalRows = count($query->get());
             $totalPages = $params['limit'] > 0 ? ceil($totalRows / $params['limit']) : 1;
         }
-
+        
         /* Paging */
         $query = $query->skip($params['offset'])
             ->take($params['limit']);
@@ -224,7 +227,7 @@ class BankPelangganController extends Controller
     public function update(StoreBankPelangganRequest $request, BankPelanggan $bankpelanggan)
     {
         try {
-            $bankpelanggan = DB::table((new BankPelanggan)->getTable())->findOrFail($bankpelanggan->id);
+            $bankpelanggan = BankPelanggan::findOrFail($bankpelanggan->id);
             $bankpelanggan->kodebank = $request->kodebank;
             $bankpelanggan->namabank = $request->namabank;
             $bankpelanggan->keterangan = $request->keterangan;

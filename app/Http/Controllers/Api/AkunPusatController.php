@@ -23,7 +23,6 @@ class AkunPusatController extends Controller
      */
     public function index()
     {
-    
         $params = [
             'offset' => request()->offset ?? ((request()->page - 1) * request()->limit),
             'limit' => request()->limit ?? 10,
