@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Schema;
 class SupplierController extends Controller
 {
 
-     /**
+    /**
      * @ClassName 
      */
     public function index()
@@ -28,131 +28,48 @@ class SupplierController extends Controller
             'sortOrder' => request()->sortOrder ?? 'asc',
         ];
 
-        /* Sorting */
-        $query = DB::table((new Supplier())->getTable())->orderBy($params['sortIndex'], $params['sortOrder']);
+        $table = (new Supplier())->getTable();
 
-        $totalRows = $query->count();
-        $totalPages = $params['limit'] > 0 ? ceil($totalRows / $params['limit']) : 1;
+        $totalRows = DB::table($table)->count();
+        $totalPages = ceil($totalRows / $params['limit']);
 
-        if ($params['sortIndex'] == 'id') {
-            $query = DB::table((new Supplier())->getTable())->select(
-                'supplier.id',
-                'supplier.namasupplier',
-                'supplier.namakontak',
-                'supplier.alamat',
-                'supplier.kota',
-                'supplier.kodepos',
-                'supplier.notelp1',
-                'supplier.notelp2',
-                'supplier.email',
-                'supplier.web',
-                'supplier.namapemilik',
-                'supplier.jenisusaha',
-                'supplier.top',
-                'supplier.bank',
-                'supplier.rekeningbank',
-                'supplier.jabatan',
-                'supplier.statusdaftarharga',
-                'supplier.kategoriusaha',
-                'supplier.modifiedby',
-                'supplier.created_at',
-                'supplier.updated_at',
-            )->orderBy('supplier.id', $params['sortOrder']);
-        } else if ($params['sortIndex'] == 'grp' or $params['sortIndex'] == 'subgrp') {
-            $query = DB::table((new Supplier())->getTable())->select(
-                'supplier.id',
-                'supplier.namasupplier',
-                'supplier.namakontak',
-                'supplier.alamat',
-                'supplier.kota',
-                'supplier.kodepos',
-                'supplier.notelp1',
-                'supplier.notelp2',
-                'supplier.email',
-                'supplier.web',
-                'supplier.namapemilik',
-                'supplier.jenisusaha',
-                'supplier.top',
-                'supplier.bank',
-                'supplier.rekeningbank',
-                'supplier.jabatan',
-                'supplier.statusdaftarharga',
-                'supplier.kategoriusaha',
-                'supplier.modifiedby',
-                'supplier.created_at',
-                'supplier.updated_at',
+        /* Select Columns */
+        $query = DB::table($table)
+            ->select(
+                "$table.*",
+                "parameter_statusaktif.text as statusaktif",
+                "parameter_statusdaftarharga.text as statusdaftarharga",
             )
-                ->orderBy($params['sortIndex'], $params['sortOrder'])
-                ->orderBy('supplier.text', $params['sortOrder'])
-                ->orderBy('supplier.id', $params['sortOrder']);
-        } else {
-            if ($params['sortOrder'] == 'asc') {
-                $query = DB::table((new Supplier())->getTable())->select(
-                    'supplier.id',
-                    'supplier.namasupplier',
-                    'supplier.namakontak',
-                    'supplier.alamat',
-                    'supplier.kota',
-                    'supplier.kodepos',
-                    'supplier.notelp1',
-                    'supplier.notelp2',
-                    'supplier.email',
-                    'supplier.web',
-                    'supplier.namapemilik',
-                    'supplier.jenisusaha',
-                    'supplier.top',
-                    'supplier.bank',
-                    'supplier.rekeningbank',
-                    'supplier.jabatan',
-                    'supplier.statusdaftarharga',
-                    'supplier.kategoriusaha',
-                    'supplier.modifiedby',
-                    'supplier.created_at',
-                    'supplier.updated_at',
-                )
-                    ->orderBy($params['sortIndex'], $params['sortOrder'])
-                    ->orderBy('supplier.id', $params['sortOrder']);
-            } else {
-                $query = DB::table((new Supplier())->getTable())->select(
-                    'supplier.id',
-                    'supplier.namasupplier',
-                    'supplier.namakontak',
-                    'supplier.alamat',
-                    'supplier.kota',
-                    'supplier.kodepos',
-                    'supplier.notelp1',
-                    'supplier.notelp2',
-                    'supplier.email',
-                    'supplier.web',
-                    'supplier.namapemilik',
-                    'supplier.jenisusaha',
-                    'supplier.top',
-                    'supplier.bank',
-                    'supplier.rekeningbank',
-                    'supplier.jabatan',
-                    'supplier.statusdaftarharga',
-                    'supplier.kategoriusaha',
-                    'supplier.modifiedby',
-                    'supplier.created_at',
-                    'supplier.updated_at',
-                )
-                    ->orderBy($params['sortIndex'], $params['sortOrder'])
-                    ->orderBy('supplier.id', 'asc');
-            }
-        }
+            ->leftJoin('parameter as parameter_statusaktif', "$table.statusaktif", '=', 'parameter_statusaktif.id')
+            ->leftJoin('parameter as parameter_statusdaftarharga', "$table.statusdaftarharga", '=', 'parameter_statusdaftarharga.id');
+
+        /* Sorting */
+        $query->orderBy($table . '.' . $params['sortIndex'], $params['sortOrder']);
 
         /* Searching */
         if (count($params['filters']) > 0 && @$params['filters']['rules'][0]['data'] != '') {
             switch ($params['filters']['groupOp']) {
                 case "AND":
                     foreach ($params['filters']['rules'] as $index => $filters) {
-                        $query = $query->where($filters['field'], 'LIKE', "%$filters[data]%");
+                        if ($filters['field'] == 'statusaktif') {
+                            $query->where('parameter_statusaktif.text', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'statusdaftarharga') {
+                            $query->where('parameter_statusdaftarharga.text', 'LIKE', "%$filters[data]%");
+                        } else {
+                            $query->where("$table." . $filters['field'], 'LIKE', "%$filters[data]%");
+                        }
                     }
 
                     break;
                 case "OR":
                     foreach ($params['filters']['rules'] as $index => $filters) {
-                        $query = $query->orWhere($filters['field'], 'LIKE', "%$filters[data]%");
+                        if ($filters['field'] == 'statusaktif') {
+                            $query->orWhere('parameter_statusaktif.text', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'statusdaftarharga') {
+                            $query->orWhere('parameter_statusdaftarharga.text', 'LIKE', "%$filters[data]%");
+                        } else {
+                            $query->orWhere("$table." . $filters['field'], 'LIKE', "%$filters[data]%");
+                        }
                     }
 
                     break;
@@ -185,7 +102,7 @@ class SupplierController extends Controller
         ]);
     }
 
-    
+
     public function show(Supplier $supplier)
     {
         return response([
@@ -193,7 +110,7 @@ class SupplierController extends Controller
             'data' => $supplier
         ]);
     }
-     /**
+    /**
      * @ClassName 
      */
     public function store(StoreSupplierRequest $request)
@@ -210,12 +127,14 @@ class SupplierController extends Controller
             $supplier->notelp1 = $request->notelp1;
             $supplier->notelp2 = $request->notelp2;
             $supplier->email = $request->email;
+            $supplier->statusaktif = $request->statusaktif;
             $supplier->web = $request->web;
             $supplier->namapemilik = $request->namapemilik;
             $supplier->jenisusaha = $request->jenisusaha;
             $supplier->top = $request->top;
             $supplier->bank = $request->bank;
             $supplier->rekeningbank = $request->rekeningbank;
+            $supplier->namarekening = $request->namarekening;
             $supplier->jabatan = $request->jabatan;
             $supplier->statusdaftarharga = $request->statusdaftarharga;
             $supplier->kategoriusaha = $request->kategoriusaha;
@@ -243,7 +162,7 @@ class SupplierController extends Controller
             /* Set position and page */
             $del = 0;
             $data = $this->getid($supplier->id, $request, $del);
-            $supplier->position = $data->row;
+            $supplier->position = $data->row ?? 0;
 
             if (isset($request->limit)) {
                 $supplier->page = ceil($supplier->position / $request->limit);
@@ -259,7 +178,8 @@ class SupplierController extends Controller
             throw $th;
         }
     }
- /**
+
+    /**
      * @ClassName 
      */
     public function update(UpdateSupplierRequest $request, Supplier $supplier)
@@ -273,12 +193,14 @@ class SupplierController extends Controller
             $supplier->notelp1 = $request->notelp1;
             $supplier->notelp2 = $request->notelp2;
             $supplier->email = $request->email;
+            $supplier->statusaktif = $request->statusaktif;
             $supplier->web = $request->web;
             $supplier->namapemilik = $request->namapemilik;
             $supplier->jenisusaha = $request->jenisusaha;
             $supplier->top = $request->top;
             $supplier->bank = $request->bank;
             $supplier->rekeningbank = $request->rekeningbank;
+            $supplier->namarekening = $request->namarekening;
             $supplier->jabatan = $request->jabatan;
             $supplier->statusdaftarharga = $request->statusdaftarharga;
             $supplier->kategoriusaha = $request->kategoriusaha;
@@ -320,12 +242,12 @@ class SupplierController extends Controller
             throw $th;
         }
     }
-     /**
+    /**
      * @ClassName 
      */
     public function destroy(Supplier $supplier, Request $request)
     {
-        $delete = Supplier::destroy($supplier->id);
+        $delete = $supplier->delete();
         $del = 1;
         if ($delete) {
             $logTrail = [
@@ -581,7 +503,7 @@ class SupplierController extends Controller
         $data = $querydata->first();
         return $data;
     }
-    
+
     public function export()
     {
         $response = $this->index();
@@ -609,10 +531,6 @@ class SupplierController extends Controller
                 'index' => 'alamat',
             ],
             [
-                'label' => 'Coa ID',
-                'index' => 'coa_id',
-            ],
-            [
                 'label' => 'Kota',
                 'index' => 'kota',
             ],
@@ -632,7 +550,10 @@ class SupplierController extends Controller
                 'label' => 'Email',
                 'index' => 'email',
             ],
-           
+            [
+                'label' => 'Status Aktif',
+                'index' => 'statusaktif',
+            ],
             [
                 'label' => 'Web',
                 'index' => 'web',
@@ -657,7 +578,10 @@ class SupplierController extends Controller
                 'label' => 'Rekening Bank',
                 'index' => 'rekeningbank',
             ],
-       
+            [
+                'label' => 'Nama Rekening',
+                'index' => 'namarekening',
+            ],
             [
                 'label' => 'Jabatan',
                 'index' => 'jabatan',
@@ -670,7 +594,7 @@ class SupplierController extends Controller
                 'label' => 'Kategori Usaha',
                 'index' => 'kategoriusaha',
             ],
-     
+
         ];
 
         $this->toExcel('Parameter', $parameters, $columns);

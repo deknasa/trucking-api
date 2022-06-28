@@ -205,6 +205,7 @@ class AgenController extends Controller
             $agen->top = $request->top;
             $agen->statustas = $request->statustas;
             $agen->jenisemkl = $request->jenisemkl;
+            $agen->tglapproval = date('Y-m-d', 0);
             $agen->modifiedby = auth('api')->user()->name;
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
@@ -228,8 +229,8 @@ class AgenController extends Controller
 
             /* Set position and page */
             $del = 0;
-            $data = $this->getid($agen->id, $request, $del);
-            $agen->position = $data->row;
+            $data = $this->getid($agen->id, $request, $del) ?? 0;
+            $agen->position = $data->row ?? 0;
 
             if (isset($request->limit)) {
                 $agen->page = ceil($agen->position / $request->limit);
@@ -360,7 +361,7 @@ class AgenController extends Controller
             }
         } catch (NotDeletableModel $exeption) {
             DB::rollBack();
-            
+
             return response([
                 'message' => $exeption->getMessage()
             ], 403);
@@ -482,7 +483,7 @@ class AgenController extends Controller
             $table->string('top', 300)->default('');
             $table->string('statusapproval', 300)->default('');
             $table->string('userapproval', 300)->default('');
-            $table->string('tglapproval', 300)->default('');
+            $table->date('tglapproval', 300)->nullable();
             $table->string('statustas', 300)->default('');
             $table->string('jenisemkl', 300)->default('');
             $table->string('modifiedby', 30)->default('');
@@ -493,6 +494,7 @@ class AgenController extends Controller
         });
 
         if ($params['sortname'] == 'id') {
+
             $query = Agen::orderBy('agen.id', $params['sortorder']);
         } else {
             if ($params['sortorder'] == 'asc') {
@@ -503,7 +505,6 @@ class AgenController extends Controller
                     ->orderBy('agen.id', 'asc');
             }
         }
-
 
         DB::table($temp)->insertUsing([
             'id_',
