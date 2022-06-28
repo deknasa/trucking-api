@@ -24,8 +24,8 @@ class Agen extends MyModel
 
     public function isDeletable()
     {
-        $statusApproval = Parameter::where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
+        $statusApproval = Parameter::where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
         
-        return $this->statusapproval == $statusApproval->id;
+        return $this->statusapproval != $statusApproval->id;
     }
 }
