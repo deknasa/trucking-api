@@ -47,7 +47,7 @@ class TarifController extends Controller
                 'tarif.nominal',
                 'parameter.text as statusaktif',
                 'tarif.tujuanasal',
-                'tarif.sistemton',
+                'sistemton.text as sistemton',
                 'kota.kodekota as kota_id',
                 'zona.zona as zona_id',
                 'tarif.nominalton',
@@ -61,7 +61,8 @@ class TarifController extends Controller
             ->leftJoin('container', 'tarif.container_id', '=', 'container.id')
             ->leftJoin('kota', 'tarif.kota_id', '=', 'kota.id')
             ->leftJoin('zona', 'tarif.zona_id', '=', 'zona.id')
-            ->leftJoin('parameter AS p', 'tarif.statuspenyesuaianharga', '=', 'parameter.id')
+            ->leftJoin('parameter AS p', 'tarif.statuspenyesuaianharga', '=', 'p.id')
+            ->leftJoin('parameter AS sistemton', 'tarif.sistemton', '=', 'sistemton.id')
             ->orderBy('tarif.id', $params['sortOrder']);
         } else if ($params['sortIndex'] == 'tujuan' or $params['sortIndex'] == 'container_id') {
             $query = DB::table((new Tarif())->getTable())->select(
@@ -71,7 +72,7 @@ class TarifController extends Controller
                 'tarif.nominal',
                 'parameter.text as statusaktif',
                 'tarif.tujuanasal',
-                'tarif.sistemton',
+                'sistemton.text as sistemton',
                 'kota.kodekota as kota_id',
                 'zona.zona as zona_id',
                 'tarif.nominalton',
@@ -85,7 +86,8 @@ class TarifController extends Controller
                 ->leftJoin('container', 'tarif.container_id', '=', 'container.id')
                 ->leftJoin('kota', 'tarif.kota_id', '=', 'kota.id')
                 ->leftJoin('zona', 'tarif.zona_id', '=', 'zona.id')
-                ->leftJoin('parameter AS p', 'tarif.statuspenyesuaianharga', '=', 'parameter.id')
+                ->leftJoin('parameter AS p', 'tarif.statuspenyesuaianharga', '=', 'p.id')
+                ->leftJoin('parameter AS sistemton', 'tarif.sistemton', '=', 'sistemton.id')
                 ->orderBy($params['sortIndex'], $params['sortOrder'])
                 ->orderBy('tarif.id', $params['sortOrder']);
         } else {
@@ -97,7 +99,7 @@ class TarifController extends Controller
                     'tarif.nominal',
                     'parameter.text as statusaktif',
                     'tarif.tujuanasal',
-                    'tarif.sistemton',
+                    'sistemton.text as sistemton',
                     'kota.kodekota as kota_id',
                     'zona.zona as zona_id',
                     'tarif.nominalton',
@@ -111,7 +113,8 @@ class TarifController extends Controller
                     ->leftJoin('container', 'tarif.container_id', '=', 'container.id')
                     ->leftJoin('kota', 'tarif.kota_id', '=', 'kota.id')
                     ->leftJoin('zona', 'tarif.zona_id', '=', 'zona.id')
-                    ->leftJoin('parameter AS p', 'tarif.statuspenyesuaianharga', '=', 'parameter.id')
+                    ->leftJoin('parameter AS p', 'tarif.statuspenyesuaianharga', '=', 'p.id')
+                    ->leftJoin('parameter AS sistemton', 'tarif.sistemton', '=', 'sistemton.id')
                     ->orderBy($params['sortIndex'], $params['sortOrder'])
                     ->orderBy('tarif.id', $params['sortOrder']);
             } else {
@@ -122,7 +125,7 @@ class TarifController extends Controller
                     'tarif.nominal',
                     'parameter.text as statusaktif',
                     'tarif.tujuanasal',
-                    'tarif.sistemton',
+                    'sistemton.text as sistemton',
                     'kota.kodekota as kota_id',
                     'zona.zona as zona_id',
                     'tarif.nominalton',
@@ -136,7 +139,8 @@ class TarifController extends Controller
                     ->leftJoin('container', 'tarif.container_id', '=', 'container.id')
                     ->leftJoin('kota', 'tarif.kota_id', '=', 'kota.id')
                     ->leftJoin('zona', 'tarif.zona_id', '=', 'zona.id')
-                    ->leftJoin('parameter AS p', 'tarif.statuspenyesuaianharga', '=', 'parameter.id')
+                    ->leftJoin('parameter AS p', 'tarif.statuspenyesuaianharga', '=', 'p.id')
+                    ->leftJoin('parameter AS sistemton', 'tarif.sistemton', '=', 'sistemton.id')
                     ->orderBy($params['sortIndex'], $params['sortOrder'])
                     ->orderBy('tarif.id', 'asc');
             }
@@ -148,7 +152,23 @@ class TarifController extends Controller
                 case "AND":
                     foreach ($params['filters']['rules'] as $index => $search) {
                         if ($search['field'] == 'statusaktif') {
-                            $query = $query->where('parameter.text', 'LIKE', "%$search[data]%");
+                            $query = $query->where('parameter.text', "$search[data]");
+                        } elseif ($search['field'] == 'container_id') {
+                            $query = $query->where('container.kodecontainer', 'LIKE' ,"%$search[data]%");
+                        } elseif ($search['field'] == 'sistemton') {
+                            $query = $query->where('sistemton.text', 'LIKE' ,"%$search[data]%");
+                        } elseif ($search['field'] == 'kota_id') {
+                            $query = $query->where('kota.kodekota', 'LIKE' ,"%$search[data]%");
+                        } elseif ($search['field'] == 'zona_id') {
+                            $query = $query->where('zona.zona', 'LIKE' ,"%$search[data]%");
+                        } elseif ($search['field'] == 'tglberlaku') {
+                            $query = $query->whereRaw("CONVERT(VARCHAR(25), tarif.tglberlaku, 105) like ?","%$search[data]%");
+                        } elseif ($search['field'] == 'created_at') {
+                            $query = $query->whereRaw("CONVERT(VARCHAR(25), tarif.created_at, 105) like ?","%$search[data]%");
+                        } elseif ($search['field'] == 'updated_at') {
+                            $query = $query->whereRaw("CONVERT(VARCHAR(25), tarif.updated_at, 105) like ?","%$search[data]%");
+                        } elseif ($search['field'] == 'statuspenyesuaianharga') {
+                            $query = $query->where('p.text', 'LIKE' ,"%$search[data]%");
                         } else {
                             $query = $query->where('tarif.'.$search['field'], 'LIKE', "%$search[data]%");
                         }
@@ -159,6 +179,22 @@ class TarifController extends Controller
                     foreach ($params['filters']['rules'] as $index => $search) {
                         if ($search['field'] == 'statusaktif') {
                             $query = $query->orWhere('parameter.text', 'LIKE', "%$search[data]%");
+                        } elseif ($search['field'] == 'container_id') {
+                            $query = $query->orWhere('container.kodecontainer', 'LIKE' ,"%$search[data]%");
+                        } elseif ($search['field'] == 'sistemton') {
+                            $query = $query->orWhere('sistemton.text', 'LIKE' ,"%$search[data]%");
+                        } elseif ($search['field'] == 'kota_id') {
+                            $query = $query->orWhere('kota.kodekota', 'LIKE' ,"%$search[data]%");
+                        } elseif ($search['field'] == 'zona_id') {
+                            $query = $query->orWhere('zona.zona', 'LIKE' ,"%$search[data]%");
+                        } elseif ($search['field'] == 'tglberlaku') {
+                            $query = $query->orWhereRaw("CONVERT(VARCHAR(25), tarif.tglberlaku, 105) like ?","%$search[data]%");
+                        } elseif ($search['field'] == 'created_at') {
+                            $query = $query->orWhereRaw("CONVERT(VARCHAR(25), tarif.created_at, 105) like ?","%$search[data]%");
+                        } elseif ($search['field'] == 'updated_at') {
+                            $query = $query->orWhereRaw("CONVERT(VARCHAR(25), tarif.updated_at, 105) like ?","%$search[data]%");
+                        } elseif ($search['field'] == 'statuspenyesuaianharga') {
+                            $query = $query->orWhere('p.text', 'LIKE' ,"%$search[data]%");
                         } else {
                             $query = $query->orWhere('tarif.'.$search['field'], 'LIKE', "%$search[data]%");
                         }
@@ -205,6 +241,9 @@ class TarifController extends Controller
         DB::beginTransaction();
 
         try {
+            $request->nominal = str_replace(',', '', str_replace('.', '', $request->nominal));
+            $request->nominalton = str_replace(',', '', str_replace('.', '', $request->nominalton));
+
             $tarif = new Tarif();
             $tarif->tujuan = $request->tujuan;
             $tarif->container_id = $request->container_id;
@@ -276,6 +315,9 @@ class TarifController extends Controller
     public function update(StoreTarifRequest $request, Tarif $tarif)
     {
         try {
+            $request->nominal = str_replace(',', '', str_replace('.', '', $request->nominal));
+            $request->nominalton = str_replace(',', '', str_replace('.', '', $request->nominalton));
+
             $tarif = Tarif::findOrFail($tarif->id);
             $tarif->tujuan = $request->tujuan;
             $tarif->container_id = $request->container_id;
@@ -398,6 +440,7 @@ class TarifController extends Controller
             'zona' => Zona::all(),
             'statusaktif' => Parameter::where(['grp'=>'status aktif'])->get(),
             'statuspenyesuaianharga' => Parameter::where(['grp'=>'status penyesuaian harga'])->get(),
+            'sistemton' => Parameter::where(['grp'=>'sistem ton'])->get(),
         ];
 
         return response([

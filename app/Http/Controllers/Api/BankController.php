@@ -122,13 +122,33 @@ class BankController extends Controller
             switch ($params['filters']['groupOp']) {
                 case "AND":
                     foreach ($params['filters']['rules'] as $index => $search) {
-                        $query = $query->where($search['field'], 'LIKE', "%$search[data]%");
+                        if ($search['field'] == 'modifiedby') {
+                            $query = $query->where('bank.modifiedby', 'LIKE', "%$search[data]%");
+                        } elseif ($search['field'] == 'updated_at') {
+                            $query = $query->whereRaw("CONVERT(VARCHAR(25), bank.updated_at, 105) like ?","%$search[data]%");
+                        } elseif ($search['field'] == 'id') {
+                            $query = $query->where('bank.id', 'LIKE', "%$search[data]%");
+                        } elseif ($search['field'] == 'statusaktif') {
+                            $query = $query->where('parameter.text', "$search[data]");
+                        } else {
+                            $query = $query->where($search['field'], 'LIKE', "%$search[data]%");
+                        }
                     }
 
                     break;
                 case "OR":
                     foreach ($params['filters']['rules'] as $index => $search) {
-                        $query = $query->orWhere($search['field'], 'LIKE', "%$search[data]%");
+                        if ($search['field'] == 'modifiedby') {
+                            $query = $query->orWhere('bank.modifiedby', 'LIKE', "%$search[data]%");
+                        } elseif ($search['field'] == 'updated_at') {
+                            $query = $query->orWhereRaw("CONVERT(VARCHAR(25), bank.updated_at, 105) like ?","%$search[data]%");
+                        } elseif ($search['field'] == 'id') {
+                            $query = $query->orWhere('bank.id', 'LIKE', "%$search[data]%");
+                        } elseif ($search['field'] == 'statusaktif') {
+                            $query = $query->orWhere('parameter.text', 'LIKE', "%$search[data]%");
+                        } else {
+                            $query = $query->orWhere($search['field'], 'LIKE', "%$search[data]%");
+                        }
                     }
 
                     break;

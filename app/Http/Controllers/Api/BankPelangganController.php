@@ -15,6 +15,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Str;
 
 class BankPelangganController extends Controller
 {
@@ -103,20 +104,35 @@ class BankPelangganController extends Controller
             switch ($params['filters']['groupOp']) {
                 case "AND":
                     foreach ($params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'statusaktif') {
-                            $query = $query->where('parameter.text', 'LIKE', "%$filters[data]%");
+                        if ($filters['field'] == 'id') {
+                            $query = $query->where('bankpelanggan.id', 'LIKE', "%$filters[data]%");
+                        } elseif ($filters['field'] == 'modifiedby') {
+                            $query = $query->where('bankpelanggan.modifiedby', 'LIKE', "%$filters[data]%");
+                        } elseif ($filters['field'] == 'updated_at') {
+                            $query = $query->whereRaw("CONVERT(VARCHAR(25), bankpelanggan.updated_at, 105) like ?","%$filters[data]%");
+                        } elseif ($filters['field'] == 'created_at') {
+                            $query = $query->whereRaw("CONVERT(VARCHAR(25), bankpelanggan.created_at, 105) like ?","%$filters[data]%");
+                        } elseif ($filters['field'] == 'statusaktif') {
+                            $query = $query->where('parameter.text', "$filters[data]");
                         } else {
                             $query = $query->where($filters['field'], 'LIKE', "%$filters[data]%");
                         }
-
-                        
                     }
 
                     break;
                 case "OR":
+                    // $query = $query->where('bankpelanggan.id','!=','0');
                     foreach ($params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'statusaktif') {
-                            $query = $query->where('parameter.text', 'LIKE', "%$filters[data]%");
+                        if ($filters['field'] == 'id') {
+                            $query = $query->orWhere('bankpelanggan.id', 'LIKE', "%$filters[data]%");
+                        } elseif ($filters['field'] == 'modifiedby') {
+                            $query = $query->orWhere('bankpelanggan.modifiedby', 'LIKE', "%$filters[data]%");
+                        } elseif ($filters['field'] == 'updated_at') {
+                            $query = $query->orWhereRaw("CONVERT(VARCHAR(25), bankpelanggan.updated_at, 105) like ?","%$filters[data]%");
+                        } elseif ($filters['field'] == 'created_at') {
+                            $query = $query->orWhereRaw("CONVERT(VARCHAR(25), bankpelanggan.created_at, 105) like ?","%$filters[data]%");
+                        } elseif ($filters['field'] == 'statusaktif') {
+                            $query = $query->orWhere('parameter.text', 'LIKE', "%$filters[data]%");
                         } else {
                             $query = $query->orWhere($filters['field'], 'LIKE', "%$filters[data]%");
                         }
@@ -127,7 +143,7 @@ class BankPelangganController extends Controller
 
                     break;
             }
-
+            
             $totalRows = count($query->get());
             $totalPages = $params['limit'] > 0 ? ceil($totalRows / $params['limit']) : 1;
         }

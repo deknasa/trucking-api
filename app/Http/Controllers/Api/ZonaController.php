@@ -98,7 +98,9 @@ class ZonaController extends Controller
                 case "AND":
                     foreach ($params['filters']['rules'] as $index => $search) {
                         if ($search['field'] == 'statusaktif') {
-                            $query = $query->where('parameter.text', 'LIKE', "%$search[data]%");
+                            $query = $query->where('parameter.text', "$search[data]");
+                        } elseif ($search['field'] == 'updated_at') {
+                            $query = $query->whereRaw("CONVERT(VARCHAR(25), zona.updated_at, 105) like ?","%$search[data]%");
                         } else {
                             $query = $query->where('zona.'.$search['field'], 'LIKE', "%$search[data]%");
                         }
@@ -109,6 +111,8 @@ class ZonaController extends Controller
                     foreach ($params['filters']['rules'] as $index => $search) {
                         if ($search['field'] == 'statusaktif') {
                             $query = $query->orWhere('parameter.text', 'LIKE', "%$search[data]%");
+                        } elseif ($search['field'] == 'updated_at') {
+                            $query = $query->orWhereRaw("CONVERT(VARCHAR(25), zona.updated_at, 105) like ?","%$search[data]%");
                         } else {
                             $query = $query->orWhere('zona.'.$search['field'], 'LIKE', "%$search[data]%");
                         }

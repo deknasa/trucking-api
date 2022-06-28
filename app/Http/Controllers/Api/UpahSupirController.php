@@ -134,7 +134,9 @@ class UpahSupirController extends Controller
                 case "AND":
                     foreach ($params['filters']['rules'] as $index => $search) {
                         if ($search['field'] == 'statusaktif') {
-                            $query = $query->where('parameter.text', 'LIKE', "%$search[data]%");
+                            $query = $query->where('parameter.text', "$search[data]");
+                        } elseif ($search['field'] == 'id') {
+                            $query = $query->where('upahsupir.id', 'LIKE', "%$search[data]%");
                         } elseif ($search['field'] == 'statusluarkota') {
                             $query = $query->where('param.text', 'LIKE', "%$search[data]%");
                         } elseif ($search['field'] == 'kotadari_id') {
@@ -143,6 +145,10 @@ class UpahSupirController extends Controller
                             $query = $query->where('kotasampai.keterangan', 'LIKE', "%$search[data]%");
                         } elseif ($search['field'] == 'zona_id') {
                             $query = $query->where('zona.zona', 'LIKE', "%$search[data]%");
+                        } elseif ($search['field'] == 'modifiedby') {
+                            $query = $query->where('upahsupir.modifiedby', 'LIKE', "%$search[data]%");
+                        } elseif ($search['field'] == 'updated_at') {
+                            $query = $query->whereRaw("CONVERT(VARCHAR(25), upahsupir.updated_at, 105) like ?","%$search[data]%");
                         } else {
                             $query = $query->where($search['field'], 'LIKE', "%$search[data]%");
                         }
@@ -152,17 +158,23 @@ class UpahSupirController extends Controller
                 case "OR":
                     foreach ($params['filters']['rules'] as $index => $search) {
                         if ($search['field'] == 'statusaktif') {
-                            $query = $query->where('parameter.text', 'LIKE', "%$search[data]%");
+                            $query = $query->orWhere('parameter.text', 'LIKE', "%$search[data]%");
+                        } elseif ($search['field'] == 'id') {
+                            $query = $query->orWhere('upahsupir.id', 'LIKE', "%$search[data]%");
                         } elseif ($search['field'] == 'statusluarkota') {
-                            $query = $query->where('param.text', 'LIKE', "%$search[data]%");
+                            $query = $query->orWhere('param.text', 'LIKE', "%$search[data]%");
                         } elseif ($search['field'] == 'kotadari_id') {
-                            $query = $query->where('kotadari.keterangan', 'LIKE', "%$search[data]%");
+                            $query = $query->orWhere('kotadari.keterangan', 'LIKE', "%$search[data]%");
                         } elseif ($search['field'] == 'kotasampai_id') {
-                            $query = $query->where('kotasampai.keterangan', 'LIKE', "%$search[data]%");
+                            $query = $query->orWhere('kotasampai.keterangan', 'LIKE', "%$search[data]%");
                         } elseif ($search['field'] == 'zona_id') {
-                            $query = $query->where('zona.zona', 'LIKE', "%$search[data]%");
+                            $query = $query->orWhere('zona.zona', 'LIKE', "%$search[data]%");
+                        } elseif ($search['field'] == 'modifiedby') {
+                            $query = $query->orWhere('upahsupir.modifiedby', 'LIKE', "%$search[data]%");
+                        } elseif ($search['field'] == 'updated_at') {
+                            $query = $query->orWhereRaw("CONVERT(VARCHAR(25), upahsupir.updated_at, 105) like ?","%$search[data]%");
                         } else {
-                            $query = $query->where($search['field'], 'LIKE', "%$search[data]%");
+                            $query = $query->orWhere($search['field'], 'LIKE', "%$search[data]%");
                         }
                     }
 
