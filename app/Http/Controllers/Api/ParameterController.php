@@ -461,6 +461,8 @@ class ParameterController extends Controller
 
     public function export()
     {
+        header('Access-Control-Allow-Origin: *');
+        
         $response = $this->index();
         $decodedResponse = json_decode($response->content(), true);
         $parameters = $decodedResponse['data'];

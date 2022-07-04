@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\UpdateExportProgress;
 use App\Helpers\App as AppHelper;
 use App\Models\Parameter;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
@@ -94,8 +95,13 @@ class Controller extends BaseController
             ->getStartColor()
             ->setARGB('FF02c4f5');
 
+        $totalRows = count($data);
+        
         /* Write each cell */
         foreach ($data as $dataIndex => $row) {
+            $progress = ($dataIndex + 1) * 100 / $totalRows;
+            event(new UpdateExportProgress($progress));
+            
             foreach ($columns as $columnsIndex => $column) {
                 $sheet->setCellValue($alphabets[$columnsIndex] . $startRow, isset($column['index']) ? $row[$column['index']] : $dataIndex + 1);
             }
