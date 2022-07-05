@@ -16,171 +16,18 @@ use Illuminate\Support\Facades\Schema;
 class AgenController extends Controller
 {
     /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-
-    /**
      * @ClassName 
      */
     public function index()
     {
-        $params = [
-            'offset' => request()->offset ?? ((request()->page - 1) * request()->limit),
-            'limit' => request()->limit ?? 10,
-            'filters' => json_decode(request()->filters, true) ?? [],
-            'sortIndex' => request()->sortIndex ?? 'id',
-            'sortOrder' => request()->sortOrder ?? 'asc',
-        ];
-
-        $totalRows = DB::table((new Agen)->getTable())->count();
-        $totalPages = $params['limit'] > 0 ? ceil($totalRows / $params['limit']) : 1;
-
-        /* Sorting */
-        $query = DB::table((new Agen)->getTable())->orderBy($params['sortIndex'], $params['sortOrder']);
-
-        if ($params['sortIndex'] == 'id') {
-            $query = DB::table((new Agen)->getTable())->select(
-                "agen.id",
-                "agen.kodeagen",
-                "agen.namaagen",
-                "agen.keterangan",
-                "parameter_statusaktif.text as statusaktif",
-                "agen.namaperusahaan",
-                "agen.alamat",
-                "agen.notelp",
-                "agen.nohp",
-                "agen.contactperson",
-                "agen.top",
-                "parameter_statusapproval.text as statusapproval",
-                "agen.userapproval",
-                "agen.tglapproval",
-                "parameter_statustas.text as statustas",
-                "agen.jenisemkl",
-                "agen.modifiedby",
-                "agen.created_at",
-                "agen.updated_at"
-            )
-                ->leftJoin('parameter as parameter_statusapproval', 'agen.statusapproval', '=', 'parameter_statusapproval.id')
-                ->leftJoin('parameter as parameter_statusaktif', 'agen.statusaktif', '=', 'parameter_statusaktif.id')
-                ->leftJoin('parameter as parameter_statustas', 'agen.statustas', '=', 'parameter_statustas.id')
-                ->orderBy('agen.id', $params['sortOrder']);
-        } else {
-            if ($params['sortOrder'] == 'asc') {
-                $query = DB::table((new Agen)->getTable())->select(
-                    "agen.id",
-                    "agen.kodeagen",
-                    "agen.namaagen",
-                    "agen.keterangan",
-                    "parameter_statusaktif.text as statusaktif",
-                    "agen.namaperusahaan",
-                    "agen.alamat",
-                    "agen.notelp",
-                    "agen.nohp",
-                    "agen.contactperson",
-                    "agen.top",
-                    "parameter_statusapproval.text as statusapproval",
-                    "agen.userapproval",
-                    "agen.tglapproval",
-                    "parameter_statustas.text as statustas",
-                    "agen.jenisemkl",
-                    "agen.modifiedby",
-                    "agen.created_at",
-                    "agen.updated_at"
-                )
-                    ->leftJoin('parameter as parameter_statusapproval', 'agen.statusapproval', '=', 'parameter_statusapproval.id')
-                    ->leftJoin('parameter as parameter_statusaktif', 'agen.statusaktif', '=', 'parameter_statusaktif.id')
-                    ->leftJoin('parameter as parameter_statustas', 'agen.statustas', '=', 'parameter_statustas.id')
-                    ->orderBy($params['sortIndex'], $params['sortOrder'])
-                    ->orderBy('agen.id', $params['sortOrder']);
-            } else {
-                $query = DB::table((new Agen)->getTable())->select(
-                    "agen.id",
-                    "agen.kodeagen",
-                    "agen.namaagen",
-                    "agen.keterangan",
-                    "parameter_statusaktif.text as statusaktif",
-                    "agen.namaperusahaan",
-                    "agen.alamat",
-                    "agen.notelp",
-                    "agen.nohp",
-                    "agen.contactperson",
-                    "agen.top",
-                    "parameter_statusapproval.text as statusapproval",
-                    "agen.userapproval",
-                    "agen.tglapproval",
-                    "parameter_statustas.text as statustas",
-                    "agen.jenisemkl",
-                    "agen.modifiedby",
-                    "agen.created_at",
-                    "agen.updated_at"
-                )
-                    ->leftJoin('parameter as parameter_statusapproval', 'agen.statusapproval', '=', 'parameter_statusapproval.id')
-                    ->leftJoin('parameter as parameter_statusaktif', 'agen.statusaktif', '=', 'parameter_statusaktif.id')
-                    ->leftJoin('parameter as parameter_statustas', 'agen.statustas', '=', 'parameter_statustas.id')
-                    ->orderBy($params['sortIndex'], $params['sortOrder'])
-                    ->orderBy('agen.id', 'asc');
-            }
-        }
-
-        /* Searching */
-        if (count($params['filters']) > 0 && @$params['filters']['rules'][0]['data'] != '') {
-            switch ($params['filters']['groupOp']) {
-                case "AND":
-                    foreach ($params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'statusaktif') {
-                            $query = $query->where('parameter_statusaktif.text', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'statusapproval') {
-                            $query = $query->where('parameter_statusapproval.text', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'statustas') {
-                            $query = $query->where('parameter_statustas.text', 'LIKE', "%$filters[data]%");
-                        } else {
-                            $query = $query->where('agen.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                        }
-                    }
-
-                    break;
-                case "OR":
-                    foreach ($params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'statusaktif') {
-                            $query = $query->orWhere('parameter_statusaktif.text', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'statusapproval') {
-                            $query = $query->orWhere('parameter_statusapproval.text', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'statustas') {
-                            $query = $query->orWhere('parameter_statustas.text', 'LIKE', "%$filters[data]%");
-                        } else {
-                            $query = $query->orWhere('agen.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                        }
-                    }
-
-                    break;
-                default:
-
-                    break;
-            }
-
-            $totalRows = count($query->get());
-            $totalPages = $params['limit'] > 0 ? ceil($totalRows / $params['limit']) : 1;
-        }
-
-        /* Paging */
-        $query = $query->skip($params['offset'])
-            ->take($params['limit']);
-
-        $agens = $query->get();
-
-        /* Set attributes */
-        $attributes = [
-            'totalRows' => $totalRows ?? 0,
-            'totalPages' => $totalPages ?? 0
-        ];
+        $agen = new Agen();
 
         return response([
-            'status' => true,
-            'data' => $agens,
-            'attributes' => $attributes,
-            'params' => $params
+            'data' => $agen->get(),
+            'attributes' => [
+                'totalRows' => $agen->totalRows,
+                'totalPages' => $agen->totalPages
+            ]
         ]);
     }
 
