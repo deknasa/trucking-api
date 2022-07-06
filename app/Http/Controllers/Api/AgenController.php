@@ -76,15 +76,6 @@ class AgenController extends Controller
                 DB::commit();
             }
 
-            /* Set position and page */
-            $selected = $this->getPosition($agen, $agen->getTable());
-            $agen->position = $selected->position;
-            $agen->page = ceil($agen->position / ($request->limit ?? 10));
-
-            if (isset($request->limit)) {
-                $agen->page = ceil($agen->position / $request->limit);
-            }
-
             return response([
                 'status' => true,
                 'message' => 'Berhasil disimpan',
@@ -139,11 +130,6 @@ class AgenController extends Controller
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
-
-                /* Set position and page */
-                $selected = $this->getPosition($agen, $agen->getTable());
-                $agen->position = $selected->position;
-                $agen->page = ceil($agen->position / ($request->limit ?? 10));
 
                 return response([
                     'status' => true,
