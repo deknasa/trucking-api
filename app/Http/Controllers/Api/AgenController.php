@@ -9,6 +9,8 @@ use App\Http\Requests\StoreAgenRequest;
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Http\Requests\UpdateAgenRequest;
 use App\Models\Parameter;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -75,9 +77,9 @@ class AgenController extends Controller
             }
 
             /* Set position and page */
-            $del = 0;
-            $data = $this->getid($agen->id, $request, $del) ?? 0;
-            $agen->position = $data->row ?? 0;
+            $selected = $this->getPosition($agen, $agen->getTable());
+            $agen->position = $selected->position;
+            $agen->page = ceil($agen->position / ($request->limit ?? 10));
 
             if (isset($request->limit)) {
                 $agen->page = ceil($agen->position / $request->limit);
@@ -108,7 +110,6 @@ class AgenController extends Controller
     public function update(UpdateAgenRequest $request, Agen $agen)
     {
         try {
-            $agen = Agen::findOrFail($agen->id);
             $agen->kodeagen = $request->kodeagen;
             $agen->namaagen = $request->namaagen;
             $agen->keterangan = $request->keterangan;
@@ -140,11 +141,9 @@ class AgenController extends Controller
                 app(LogTrailController::class)->store($validatedLogTrail);
 
                 /* Set position and page */
-                $agen->position = $this->getid($agen->id, $request, 0)->row;
-
-                if (isset($request->limit)) {
-                    $agen->page = ceil($agen->position / $request->limit);
-                }
+                $selected = $this->getPosition($agen, $agen->getTable());
+                $agen->position = $selected->position;
+                $agen->page = ceil($agen->position / ($request->limit ?? 10));
 
                 return response([
                     'status' => true,
@@ -172,7 +171,6 @@ class AgenController extends Controller
         try {
             $delete = $agen->delete();
 
-            $del = 1;
             if ($delete) {
                 $logTrail = [
                     'namatabel' => strtoupper($agen->getTable()),
@@ -189,9 +187,10 @@ class AgenController extends Controller
 
                 DB::commit();
 
-                $data = $this->getid($agen->id, $request, $del);
-                $agen->position = $data->row;
-                $agen->id = $data->id;
+                $selected = $this->getPosition($agen, $agen->getTable(), true);
+                $agen->position = $selected->position;
+                $agen->id = $selected->id;
+
                 if (isset($request->limit)) {
                     $agen->page = ceil($agen->position / $request->limit);
                 }
@@ -306,7 +305,6 @@ class AgenController extends Controller
 
     public function getid($id, $request, $del)
     {
-
         $params = [
             'indexRow' => $request->indexRow ?? 1,
             'limit' => $request->limit ?? 100,

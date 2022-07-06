@@ -171,9 +171,9 @@ class ParameterController extends Controller
             }
 
             /* Set position and page */
-            $del = 0;
-            $data = $this->getid($parameter->id, $request, $del);
-            $parameter->position = $data->row;
+            $selected = $this->getPosition($parameter, $parameter->getTable());
+            $parameter->position = $selected->position;
+            $parameter->page = ceil($parameter->position / ($request->limit ?? 10));
 
             if (isset($request->limit)) {
                 $parameter->page = ceil($parameter->position / $request->limit);
@@ -235,11 +235,9 @@ class ParameterController extends Controller
                 app(LogTrailController::class)->store($validatedLogTrail);
 
                 /* Set position and page */
-                $parameter->position = $this->getid($parameter->id, $request, 0)->row;
-
-                if (isset($request->limit)) {
-                    $parameter->page = ceil($parameter->position / $request->limit);
-                }
+                $selected = $this->getPosition($parameter, $parameter->getTable());
+                $parameter->position = $selected->position;
+                $parameter->page = ceil($parameter->position / ($request->limit ?? 10));
 
                 return response([
                     'status' => true,
@@ -283,9 +281,10 @@ class ParameterController extends Controller
 
             DB::commit();
 
-            $data = $this->getid($parameter->id, $request, $del);
-            $parameter->position = $data->row;
-            $parameter->id = $data->id;
+            $selected = $this->getPosition($parameter, $parameter->getTable(), true);
+            $parameter->position = $selected->position;
+            $parameter->id = $selected->id;
+
             if (isset($request->limit)) {
                 $parameter->page = ceil($parameter->position / $request->limit);
             }
@@ -314,14 +313,6 @@ class ParameterController extends Controller
         return response([
             'data' => $data
         ]);
-    }
-
-    public function getPosition($parameter, $request)
-    {
-        return Parameter::where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $parameter->{$request->sortname})
-            /* Jika sortname modifiedby atau ada data duplikat */
-            // ->where('id', $request->sortorder == 'desc' ? '>=' : '<=', $parameter->id)
-            ->count();
     }
 
     public function getid($id, $request, $del)
@@ -448,7 +439,7 @@ class ParameterController extends Controller
     public function getparameterid($grp, $subgrp, $text)
     {
 
-        $querydata = Parameter::select('id as id','text')
+        $querydata = Parameter::select('id as id', 'text')
             ->where('grp', '=',  $grp)
             ->where('subgrp', '=',  $subgrp)
             ->where('text', '=',  $text)
@@ -462,7 +453,7 @@ class ParameterController extends Controller
     public function export()
     {
         header('Access-Control-Allow-Origin: *');
-        
+
         $response = $this->index();
         $decodedResponse = json_decode($response->content(), true);
         $parameters = $decodedResponse['data'];
