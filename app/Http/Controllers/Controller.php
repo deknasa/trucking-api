@@ -149,7 +149,7 @@ class Controller extends BaseController
             $table->increments('position');
 
             foreach ($columns as $column) {
-                $table->string($column)->nullable();
+                $table->string($column, 3000)->nullable();
             }
 
             $table->index('id');
