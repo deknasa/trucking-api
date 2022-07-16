@@ -326,14 +326,6 @@ class KategoriController extends Controller
         ]);
     }
 
-    public function getPosition($kategori, $request)
-    {
-        return DB::table((new Kategori)->getTable())->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $kategori->{$request->sortname})
-            /* Jika sortname modifiedby atau ada data duplikat */
-            // ->where('id', $request->sortorder == 'desc' ? '>=' : '<=', $parameter->id)
-            ->count();
-    }
-
     public function combo(Request $request)
     {
         $data = [

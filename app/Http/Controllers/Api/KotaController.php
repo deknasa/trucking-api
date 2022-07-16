@@ -328,14 +328,6 @@ class KotaController extends Controller
         ]);
     }
 
-    public function getPosition($kota, $request)
-    {
-        return DB::table((new Kota)->getTable())->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $kota->{$request->sortname})
-            /* Jika sortname modifiedby atau ada data duplikat */
-            // ->where('id', $request->sortorder == 'desc' ? '>=' : '<=', $parameter->id)
-            ->count();
-    }
-
     public function combo(Request $request)
     {
         $data = [

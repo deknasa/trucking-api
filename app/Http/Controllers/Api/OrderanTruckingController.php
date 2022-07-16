@@ -465,14 +465,6 @@ class OrderanTruckingController extends Controller
         ]);
     }
 
-    public function getPosition($orderantrucking, $request)
-    {
-        return DB::table((new OrderanTrucking)->getTable())->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $orderantrucking->{$request->sortname})
-            /* Jika sortname modifiedby atau ada data duplikat */
-            // ->where('id', $request->sortorder == 'desc' ? '>=' : '<=', $parameter->id)
-            ->count();
-    }
-
     public function combo(Request $request)
     {
         $response = Http::withHeaders([

@@ -4,15 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Traits\RestrictDeletion;
-use App\Traits\WithSelectedPosition;
 use Illuminate\Support\Facades\DB;
 
 class Agen extends MyModel
 {
-    use HasFactory, RestrictDeletion, WithSelectedPosition {
-        RestrictDeletion::delete insteadof WithSelectedPosition;
-        WithSelectedPosition::delete insteadof RestrictDeletion;
-    }
+    use HasFactory, RestrictDeletion;
 
     protected $table = 'agen';
 

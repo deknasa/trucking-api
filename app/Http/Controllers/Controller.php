@@ -149,7 +149,11 @@ class Controller extends BaseController
             $table->increments('position');
 
             foreach ($columns as $column) {
-                $table->string($column, 3000)->nullable();
+                if (in_array($column, ['created_at', 'updated_at'])) {
+                    $table->dateTime($column)->default('1900/1/1');
+                } else {
+                    $table->string($column, 3000)->nullable();
+                }
             }
 
             $table->index('id');
@@ -157,6 +161,7 @@ class Controller extends BaseController
 
         DB::table($temporaryTable)->insertUsing($columns, $models);
 
+        // dd(DB::table($temporaryTable)->get());
         if ($isDeleting) {
             if ($page == 1) {
                 $position = $indexRow + 1;
@@ -176,8 +181,9 @@ class Controller extends BaseController
                 ->orderBy('position');
         } else {
             $query = DB::table($temporaryTable)->select('position')->where('id', $model->id)->orderBy('position');
+            
         }
-
+        
         $data = $query->first();
 
         return $data;
