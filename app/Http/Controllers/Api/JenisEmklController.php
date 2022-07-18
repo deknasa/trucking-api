@@ -225,14 +225,6 @@ class JenisEmklController extends Controller
         ]);
     }
 
-    public function getPosition($jenisemkl, $request)
-    {
-        return DB::table((new JenisEmkl)->getTable())->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $jenisemkl->{$request->sortname})
-            /* Jika sortname modifiedby atau ada data duplikat */
-            // ->where('id', $request->sortorder == 'desc' ? '>=' : '<=', $parameter->id)
-            ->count();
-    }
-
     public function getid($id, $request, $del)
     {
         $params = [

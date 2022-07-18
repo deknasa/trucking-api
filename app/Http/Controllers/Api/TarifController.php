@@ -225,14 +225,6 @@ class TarifController extends Controller
         ]);
     }
 
-    public function getPosition($tarif, $request)
-    {
-        return DB::table((new Tarif())->getTable())->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $tarif->{$request->sortname})
-            /* Jika sortname modifiedby atau ada data duplikat */
-            // ->where('id', $request->sortorder == 'desc' ? '>=' : '<=', $parameter->id)
-            ->count();
-    }
-
     public function combo(Request $request)
     {
         $data = [

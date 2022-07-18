@@ -310,14 +310,6 @@ class GudangController extends Controller
         ]);
     }
 
-    public function getPosition($gudang, $request)
-    {
-        return DB::table((new Gudang)->getTable())->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $gudang->{$request->sortname})
-            /* Jika sortname modifiedby atau ada data duplikat */
-            // ->where('id', $request->sortorder == 'desc' ? '>=' : '<=', $parameter->id)
-            ->count();
-    }
-
     public function combo(Request $request)
     {
         $data = [

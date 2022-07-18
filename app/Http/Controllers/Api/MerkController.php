@@ -206,14 +206,6 @@ class MerkController extends Controller
         ]);
     }
 
-    public function getPosition($merk, $request)
-    {
-        return DB::table((new Merk)->getTable())->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $merk->{$request->sortname})
-            /* Jika sortname modifiedby atau ada data duplikat */
-            // ->where('id', $request->sortorder == 'desc' ? '>=' : '<=', $parameter->id)
-            ->count();
-    }
-
     public function combo(Request $request)
     {
         $data = [

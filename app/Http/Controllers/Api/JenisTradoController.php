@@ -228,14 +228,6 @@ class JenisTradoController extends Controller
         ]);
     }
 
-    public function getPosition($jenistrado, $request)
-    {
-        return DB::table((new JenisTrado)->getTable())->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $jenistrado->{$request->sortname})
-            /* Jika sortname modifiedby atau ada data duplikat */
-            // ->where('id', $request->sortorder == 'desc' ? '>=' : '<=', $parameter->id)
-            ->count();
-    }
-
     public function combo(Request $request)
     {
         $data = [

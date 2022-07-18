@@ -207,14 +207,6 @@ class ZonaController extends Controller
         ]);
     }
 
-    public function getPosition($zona, $request)
-    {
-        return DB::table((new Zona())->getTable())->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $zona->{$request->sortname})
-            /* Jika sortname modifiedby atau ada data duplikat */
-            // ->where('id', $request->sortorder == 'desc' ? '>=' : '<=', $parameter->id)
-            ->count();
-    }
-
     public function combo(Request $request)
     {
         $data = [

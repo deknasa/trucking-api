@@ -229,14 +229,6 @@ class JenisOrderController extends Controller
         ]);
     }
 
-    public function getPosition($jenisorder, $request)
-    {
-        return DB::table((new JenisOrder)->getTable())->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $jenisorder->{$request->sortname})
-            /* Jika sortname modifiedby atau ada data duplikat */
-            // ->where('id', $request->sortorder == 'desc' ? '>=' : '<=', $parameter->id)
-            ->count();
-    }
-
     public function combo(Request $request)
     {
         $data = [

@@ -206,14 +206,6 @@ class KelompokController extends Controller
         ]);
     }
 
-    public function getPosition($kelompok, $request)
-    {
-        return DB::table((new Kelompok)->getTable())->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $kelompok->{$request->sortname})
-            /* Jika sortname modifiedby atau ada data duplikat */
-            // ->where('id', $request->sortorder == 'desc' ? '>=' : '<=', $parameter->id)
-            ->count();
-    }
-
     public function combo(Request $request)
     {
         $data = [
