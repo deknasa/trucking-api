@@ -81,10 +81,6 @@ class AgenController extends Controller
             $agen->position = $selected->position;
             $agen->page = ceil($agen->position / ($request->limit ?? 10));
 
-            if (isset($request->limit)) {
-                $agen->page = ceil($agen->position / $request->limit);
-            }
-
             return response([
                 'status' => true,
                 'message' => 'Berhasil disimpan',
@@ -309,110 +305,6 @@ class AgenController extends Controller
         return response([
             'data' => $data
         ]);
-    }
-
-    public function getid($id, $request, $del)
-    {
-        $params = [
-            'indexRow' => $request->indexRow ?? 1,
-            'limit' => $request->limit ?? 100,
-            'page' => $request->page ?? 1,
-            'sortname' => $request->sortname ?? 'id',
-            'sortorder' => $request->sortorder ?? 'asc',
-        ];
-        $temp = '##temp' . rand(1, 10000);
-        Schema::create($temp, function ($table) {
-            $table->id();
-            $table->bigInteger('id_')->default('0');
-            $table->string('kodeagen', 300)->default('');
-            $table->string('namaagen', 300)->default('');
-            $table->string('keterangan', 300)->default('');
-            $table->string('statusaktif', 300)->default('');
-            $table->string('namaperusahaan', 300)->default('');
-            $table->string('alamat', 300)->default('');
-            $table->string('notelp', 300)->default('');
-            $table->string('nohp', 300)->default('');
-            $table->string('contactperson', 300)->default('');
-            $table->string('top', 300)->default('');
-            $table->string('statusapproval', 300)->default('');
-            $table->string('userapproval', 300)->default('');
-            $table->date('tglapproval', 300)->nullable();
-            $table->string('statustas', 300)->default('');
-            $table->string('jenisemkl', 300)->default('');
-            $table->string('modifiedby', 30)->default('');
-            $table->dateTime('created_at')->default('1900/1/1');
-            $table->dateTime('updated_at')->default('1900/1/1');
-
-            $table->index('id_');
-        });
-
-        if ($params['sortname'] == 'id') {
-
-            $query = Agen::orderBy('agen.id', $params['sortorder']);
-        } else {
-            if ($params['sortorder'] == 'asc') {
-                $query = Agen::orderBy($params['sortname'], $params['sortorder'])
-                    ->orderBy('agen.id', $params['sortorder']);
-            } else {
-                $query = Agen::orderBy($params['sortname'], $params['sortorder'])
-                    ->orderBy('agen.id', 'asc');
-            }
-        }
-
-        DB::table($temp)->insertUsing([
-            'id_',
-            'kodeagen',
-            'namaagen',
-            'keterangan',
-            'statusaktif',
-            'namaperusahaan',
-            'alamat',
-            'notelp',
-            'nohp',
-            'contactperson',
-            'top',
-            'statusapproval',
-            'userapproval',
-            'tglapproval',
-            'statustas',
-            'jenisemkl',
-            'modifiedby',
-            'created_at',
-            'updated_at'
-        ], $query);
-
-        if ($del == 1) {
-            if ($params['page'] == 1) {
-                $baris = $params['indexRow'] + 1;
-            } else {
-                $hal = $params['page'] - 1;
-                $bar = $hal * $params['limit'];
-                $baris = $params['indexRow'] + $bar + 1;
-            }
-
-            if (DB::table($temp)
-                ->where('id', '=', $baris)->exists()
-            ) {
-                $querydata = DB::table($temp)
-                    ->select('id as row', 'id_ as id')
-                    ->where('id', '=', $baris)
-                    ->orderBy('id');
-            } else {
-                $querydata = DB::table($temp)
-                    ->select('id as row', 'id_ as id')
-                    ->where('id', '=', ($baris - 1))
-                    ->orderBy('id');
-            }
-        } else {
-            $querydata = DB::table($temp)
-                ->select('id as row')
-                ->where('id_', '=',  $id)
-                ->orderBy('id');
-        }
-
-
-        $data = $querydata->first();
-        return $data;
     }
 
     /**
