@@ -25,123 +25,14 @@ class AlatBayarController extends Controller
      */
     public function index()
     {
-        $params = [
-            'offset' => request()->offset ?? ((request()->page - 1) * request()->limit),
-            'limit' => request()->limit ?? 10,
-            'filters' => json_decode(request()->filters, true) ?? [],
-            'sortIndex' => request()->sortIndex ?? 'id',
-            'sortOrder' => request()->sortOrder ?? 'asc',
-        ];
-
-        $totalRows = DB::table((new AlatBayar)->getTable())->count();
-        $totalPages = $params['limit'] > 0 ? ceil($totalRows / $params['limit']) : 1;
-
-        /* Sorting */
-        $query = DB::table((new AlatBayar)->getTable())->orderBy($params['sortIndex'], $params['sortOrder']);
-
-        if ($params['sortIndex'] == 'id') {
-            $query = DB::table((new AlatBayar)->getTable())->select(
-                'alatbayar.id',
-                'alatbayar.kodealatbayar',
-                'alatbayar.namaalatbayar',
-                'alatbayar.keterangan',
-                'alatbayar.statuslangsunggcair',
-                'alatbayar.statusdefault',
-                'alatbayar.bank_id',
-                'alatbayar.modifiedby',
-                'alatbayar.created_at',
-                'alatbayar.updated_at'
-            )->orderBy('alatbayar.id', $params['sortOrder']);
-        } else if ($params['sortIndex'] == 'kodebank' or $params['sortIndex'] == 'namabank') {
-            $query = DB::table((new AlatBayar)->getTable())->select(
-                'alatbayar.id',
-                'alatbayar.kodealatbayar',
-                'alatbayar.namaalatbayar',
-                'alatbayar.keterangan',
-                'alatbayar.statuslangsunggcair',
-                'alatbayar.statusdefault',
-                'alatbayar.bank_id',
-                'alatbayar.modifiedby',
-                'alatbayar.created_at',
-                'alatbayar.updated_at'
-            )
-                ->orderBy($params['sortIndex'], $params['sortOrder'])
-                ->orderBy('alatbayar.id', $params['sortOrder']);
-        } else {
-            if ($params['sortOrder'] == 'asc') {
-                $query = DB::table((new AlatBayar)->getTable())->select(
-                    'alatbayar.id',
-                    'alatbayar.kodealatbayar',
-                    'alatbayar.namaalatbayar',
-                    'alatbayar.keterangan',
-                    'alatbayar.statuslangsunggcair',
-                    'alatbayar.statusdefault',
-                    'alatbayar.bank_id',
-                    'alatbayar.modifiedby',
-                    'alatbayar.created_at',
-                    'alatbayar.updated_at'
-                )
-                    ->orderBy($params['sortIndex'], $params['sortOrder'])
-                    ->orderBy('alatbayar.id', $params['sortOrder']);
-            } else {
-                $query = DB::table((new AlatBayar)->getTable())->select(
-                    'alatbayar.id',
-                    'alatbayar.kodealatbayar',
-                    'alatbayar.namaalatbayar',
-                    'alatbayar.keterangan',
-                    'alatbayar.statuslangsunggcair',
-                    'alatbayar.statusdefault',
-                    'alatbayar.bank_id',
-                    'alatbayar.modifiedby',
-                    'alatbayar.created_at',
-                    'alatbayar.updated_at'
-                )
-                    ->orderBy($params['sortIndex'], $params['sortOrder'])
-                    ->orderBy('alatbayar.id', 'asc');
-            }
-        }
-
-        /* Searching */
-        if (count($params['filters']) > 0 && @$params['filters']['rules'][0]['data'] != '') {
-            switch ($params['filters']['groupOp']) {
-                case "AND":
-                    foreach ($params['filters']['rules'] as $index => $search) {
-                        $query = $query->where($search['field'], 'LIKE', "%$search[data]%");
-                    }
-
-                    break;
-                case "OR":
-                    foreach ($params['filters']['rules'] as $index => $search) {
-                        $query = $query->orWhere($search['field'], 'LIKE', "%$search[data]%");
-                    }
-
-                    break;
-                default:
-
-                    break;
-            }
-
-            $totalRows = count($query->get());
-            $totalPages = $params['limit'] > 0 ? ceil($totalRows / $params['limit']) : 1;
-        }
-
-        /* Paging */
-        $query = $query->skip($params['offset'])
-            ->take($params['limit']);
-
-        $alatbayar = $query->get();
-
-        /* Set attributes */
-        $attributes = [
-            'totalRows' => $totalRows ?? 0,
-            'totalPages' => $totalPages ?? 0
-        ];
+        $alatbayar = new AlatBayar();
 
         return response([
-            'status' => true,
-            'data' => $alatbayar,
-            'attributes' => $attributes,
-            'params' => $params
+            'data' => $alatbayar->get(),
+            'attributes' => [
+                'totalRows' => $alatbayar->totalRows,
+                'totalPages' => $alatbayar->totalPages
+            ]
         ]);
     }
     /**

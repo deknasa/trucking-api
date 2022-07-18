@@ -21,123 +21,14 @@ class MandorController extends Controller
      */
     public function index()
     {
-        $params = [
-            'offset' => request()->offset ?? ((request()->page - 1) * request()->limit),
-            'limit' => request()->limit ?? 10,
-            'filters' => json_decode(request()->filters, true) ?? [],
-            'sortIndex' => request()->sortIndex ?? 'id',
-            'sortOrder' => request()->sortOrder ?? 'asc',
-        ];
-
-        $totalRows = DB::table((new Mandor)->getTable())->count();
-        $totalPages = $params['limit'] > 0 ? ceil($totalRows / $params['limit']) : 1;
-
-        /* Sorting */
-        $query = DB::table((new Mandor)->getTable())->orderBy($params['sortIndex'], $params['sortOrder']);
-
-        if ($params['sortIndex'] == 'id') {
-            $query = DB::table((new Mandor)->getTable())->select(
-                'mandor.id',
-                'mandor.namamandor',
-                'mandor.keterangan',
-                'parameter.text as statusaktif',
-                'mandor.modifiedby',
-                'mandor.created_at',
-                'mandor.updated_at'
-            )
-            ->leftJoin('parameter', 'mandor.statusaktif', '=', 'parameter.id')
-            ->orderBy('mandor.id', $params['sortOrder']);
-        } else if ($params['sortIndex'] == 'keterangan') {
-            $query = DB::table((new Mandor)->getTable())->select(
-                'mandor.id',
-                'mandor.namamandor',
-                'mandor.keterangan',
-                'parameter.text as statusaktif',
-                'mandor.modifiedby',
-                'mandor.created_at',
-                'mandor.updated_at'
-            )
-                ->leftJoin('parameter', 'mandor.statusaktif', '=', 'parameter.id')
-                ->orderBy($params['sortIndex'], $params['sortOrder'])
-                ->orderBy('mandor.id', $params['sortOrder']);
-        } else {
-            if ($params['sortOrder'] == 'asc') {
-                $query = DB::table((new Mandor)->getTable())->select(
-                    'mandor.id',
-                    'mandor.namamandor',
-                    'mandor.keterangan',
-                    'parameter.text as statusaktif',
-                    'mandor.modifiedby',
-                    'mandor.created_at',
-                    'mandor.updated_at'
-                )
-                    ->leftJoin('parameter', 'mandor.statusaktif', '=', 'parameter.id')
-                    ->orderBy($params['sortIndex'], $params['sortOrder'])
-                    ->orderBy('mandor.id', $params['sortOrder']);
-            } else {
-                $query = DB::table((new Mandor)->getTable())->select(
-                    'mandor.id',
-                    'mandor.namamandor',
-                    'mandor.keterangan',
-                    'parameter.text as statusaktif',
-                    'mandor.modifiedby',
-                    'mandor.created_at',
-                    'mandor.updated_at'
-                )
-                    ->leftJoin('parameter', 'mandor.statusaktif', '=', 'parameter.id')
-                    ->orderBy($params['sortIndex'], $params['sortOrder'])
-                    ->orderBy('mandor.id', 'asc');
-            }
-        }
-
-        /* Searching */
-        if (count($params['filters']) > 0 && @$params['filters']['rules'][0]['data'] != '') {
-            switch ($params['filters']['groupOp']) {
-                case "AND":
-                    foreach ($params['filters']['rules'] as $index => $search) {
-                        if ($search['field'] == 'statusaktif') {
-                            $query = $query->where('parameter.text', 'LIKE', "%$search[data]%");
-                        } else {
-                            $query = $query->where('mandor.'.$search['field'], 'LIKE', "%$search[data]%");
-                        }
-                    }
-
-                    break;
-                case "OR":
-                    foreach ($params['filters']['rules'] as $index => $search) {
-                        if ($search['field'] == 'statusaktif') {
-                            $query = $query->orWhere('parameter.text', 'LIKE', "%$search[data]%");
-                        } else {
-                            $query = $query->orWhere('mandor.'.$search['field'], 'LIKE', "%$search[data]%");
-                        }
-                    }
-                    break;
-                default:
-
-                    break;
-            }
-
-            $totalRows = count($query->get());
-            $totalPages = $params['limit'] > 0 ? ceil($totalRows / $params['limit']) : 1;
-        }
-
-        /* Paging */
-        $query = $query->skip($params['offset'])
-            ->take($params['limit']);
-
-        $mandor = $query->get();
-
-        /* Set attributes */
-        $attributes = [
-            'totalRows' => $totalRows ?? 0,
-            'totalPages' => $totalPages ?? 0
-        ];
+        $mandor = new Mandor();
 
         return response([
-            'status' => true,
-            'data' => $mandor,
-            'attributes' => $attributes,
-            'params' => $params
+            'data' => $mandor->get(),
+            'attributes' => [
+                'totalRows' => $mandor->totalRows,
+                'totalPages' => $mandor->totalPages
+            ]
         ]);
     }
 

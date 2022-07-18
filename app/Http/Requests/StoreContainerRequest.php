@@ -25,6 +25,7 @@ class StoreContainerRequest extends FormRequest
     public function rules()
     {
         return [
+            'kodecontainer' => 'required',
             'keterangan' => 'required',
             'statusaktif' => 'required'
         ];
@@ -33,6 +34,7 @@ class StoreContainerRequest extends FormRequest
     public function attributes()
     {
         return [
+            'kodecontainer' => 'Kode Container',
             'keterangan' => 'Keterangan',
             'statusaktif' => 'Status Aktif'
         ];
@@ -43,6 +45,7 @@ class StoreContainerRequest extends FormRequest
         $controller = new ErrorController;
         
         return [
+            'kodecontainer.required' => ':attribute '. $controller->geterror('WI')->keterangan,
             'keterangan.required' => ':attribute '. $controller->geterror('WI')->keterangan,
             'statusaktif.required' => ':attribute '. $controller->geterror('WI')->keterangan,
         ];

@@ -22,123 +22,14 @@ class KelompokController extends Controller
      */
     public function index()
     {
-        $params = [
-            'offset' => request()->offset ?? ((request()->page - 1) * request()->limit),
-            'limit' => request()->limit ?? 10,
-            'filters' => json_decode(request()->filters, true) ?? [],
-            'sortIndex' => request()->sortIndex ?? 'id',
-            'sortOrder' => request()->sortOrder ?? 'asc',
-        ];
-
-        $totalRows = DB::table((new Kelompok)->getTable())->count();
-        $totalPages = $params['limit'] > 0 ? ceil($totalRows / $params['limit']) : 1;
-
-        /* Sorting */
-        $query = DB::table((new Kelompok)->getTable())->orderBy($params['sortIndex'], $params['sortOrder']);
-
-        if ($params['sortIndex'] == 'id') {
-            $query = DB::table((new Kelompok)->getTable())->select(
-                'kelompok.id',
-                'kelompok.kodekelompok',
-                'kelompok.keterangan',
-                'parameter.text as statusaktif',
-                'kelompok.modifiedby',
-                'kelompok.created_at',
-                'kelompok.updated_at'
-            )
-            ->leftJoin('parameter', 'kelompok.statusaktif', '=', 'parameter.id')
-            ->orderBy('kelompok.id', $params['sortOrder']);
-        } else if ($params['sortIndex'] == 'kodekelompok') {
-            $query = DB::table((new Kelompok)->getTable())->select(
-                'kelompok.id',
-                'kelompok.kodekelompok',
-                'kelompok.keterangan',
-                'parameter.text as statusaktif',
-                'kelompok.modifiedby',
-                'kelompok.created_at',
-                'kelompok.updated_at'
-            )
-                ->leftJoin('parameter', 'kelompok.statusaktif', '=', 'parameter.id')
-                ->orderBy($params['sortIndex'], $params['sortOrder'])
-                ->orderBy('kelompok.id', $params['sortOrder']);
-        } else {
-            if ($params['sortOrder'] == 'asc') {
-                $query = DB::table((new Kelompok)->getTable())->select(
-                    'kelompok.id',
-                    'kelompok.kodekelompok',
-                    'kelompok.keterangan',
-                    'parameter.text as statusaktif',
-                    'kelompok.modifiedby',
-                    'kelompok.created_at',
-                    'kelompok.updated_at'
-                )
-                    ->leftJoin('parameter', 'kelompok.statusaktif', '=', 'parameter.id')
-                    ->orderBy($params['sortIndex'], $params['sortOrder'])
-                    ->orderBy('kelompok.id', $params['sortOrder']);
-            } else {
-                $query = DB::table((new Kelompok)->getTable())->select(
-                    'kelompok.id',
-                    'kelompok.kodekelompok',
-                    'kelompok.keterangan',
-                    'parameter.text as statusaktif',
-                    'kelompok.modifiedby',
-                    'kelompok.created_at',
-                    'kelompok.updated_at'
-                )
-                    ->leftJoin('parameter', 'kelompok.statusaktif', '=', 'parameter.id')
-                    ->orderBy($params['sortIndex'], $params['sortOrder'])
-                    ->orderBy('kelompok.id', 'asc');
-            }
-        }
-
-        /* Searching */
-        if (count($params['filters']) > 0 && @$params['filters']['rules'][0]['data'] != '') {
-            switch ($params['filters']['groupOp']) {
-                case "AND":
-                    foreach ($params['filters']['rules'] as $index => $search) {
-                        if ($search['field'] == 'statusaktif') {
-                            $query = $query->where('parameter.text', 'LIKE', "%$search[data]%");
-                        } else {
-                            $query = $query->where('gudang.'.$search['field'], 'LIKE', "%$search[data]%");
-                        }
-                    }
-
-                    break;
-                case "OR":
-                    foreach ($params['filters']['rules'] as $index => $search) {
-                        if ($search['field'] == 'statusaktif') {
-                            $query = $query->orWhere('parameter.text', 'LIKE', "%$search[data]%");
-                        } else {
-                            $query = $query->orWhere('gudang.'.$search['field'], 'LIKE', "%$search[data]%");
-                        }
-                    }
-                    break;
-                default:
-
-                    break;
-            }
-
-            $totalRows = count($query->get());
-            $totalPages = $params['limit'] > 0 ? ceil($totalRows / $params['limit']) : 1;
-        }
-
-        /* Paging */
-        $query = $query->skip($params['offset'])
-            ->take($params['limit']);
-
-        $kelompok = $query->get();
-
-        /* Set attributes */
-        $attributes = [
-            'totalRows' => $totalRows ?? 0,
-            'totalPages' => $totalPages ?? 0
-        ];
+        $kelompok = new Kelompok();
 
         return response([
-            'status' => true,
-            'data' => $kelompok,
-            'attributes' => $attributes,
-            'params' => $params
+            'data' => $kelompok->get(),
+            'attributes' => [
+                'totalRows' => $kelompok->totalRows,
+                'totalPages' => $kelompok->totalPages
+            ]
         ]);
     }
 

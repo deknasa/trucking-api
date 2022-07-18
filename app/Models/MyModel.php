@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\DB;
 
 class MyModel extends Model
 {
-    public $dateFormat = 'd-m-Y';
+    // public $dateFormat = 'd-m-Y';
 
     protected function serializeDate(DateTimeInterface $date)
     {

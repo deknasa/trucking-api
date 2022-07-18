@@ -22,123 +22,14 @@ class JenisTradoController extends Controller
      */
     public function index()
     {
-        $params = [
-            'offset' => request()->offset ?? ((request()->page - 1) * request()->limit),
-            'limit' => request()->limit ?? 10,
-            'filters' => json_decode(request()->filters, true) ?? [],
-            'sortIndex' => request()->sortIndex ?? 'id',
-            'sortOrder' => request()->sortOrder ?? 'asc',
-        ];
-
-        $totalRows = DB::table((new JenisTrado)->getTable())->count();
-        $totalPages = $params['limit'] > 0 ? ceil($totalRows / $params['limit']) : 1;
-
-        /* Sorting */
-        $query = DB::table((new JenisTrado)->getTable())->orderBy($params['sortIndex'], $params['sortOrder']);
-
-        if ($params['sortIndex'] == 'id') {
-            $query = DB::table((new JenisTrado)->getTable())->select(
-                'jenistrado.id',
-                'jenistrado.kodejenistrado',
-                'jenistrado.keterangan',
-                'parameter.text as statusaktif',
-                'jenistrado.modifiedby',
-                'jenistrado.created_at',
-                'jenistrado.updated_at'
-            )
-            ->leftJoin('parameter', 'jenistrado.statusaktif', '=', 'parameter.id')
-            ->orderBy('jenistrado.id', $params['sortOrder']);
-        } else if ($params['sortIndex'] == 'kodejenistrado' or $params['sortIndex'] == 'keterangan') {
-            $query = DB::table((new JenisTrado)->getTable())->select(
-                'jenistrado.id',
-                'jenistrado.kodejenistrado',
-                'jenistrado.keterangan',
-                'parameter.text as statusaktif',
-                'jenistrado.modifiedby',
-                'jenistrado.created_at',
-                'jenistrado.updated_at'
-            )
-                ->leftJoin('parameter', 'jenistrado.statusaktif', '=', 'parameter.id')
-                ->orderBy($params['sortIndex'], $params['sortOrder'])
-                ->orderBy('jenistrado.id', $params['sortOrder']);
-        } else {
-            if ($params['sortOrder'] == 'asc') {
-                $query = DB::table((new JenisTrado)->getTable())->select(
-                    'jenistrado.id',
-                    'jenistrado.kodejenistrado',
-                    'jenistrado.keterangan',
-                    'parameter.text as statusaktif',
-                    'jenistrado.modifiedby',
-                    'jenistrado.created_at',
-                    'jenistrado.updated_at'
-                )
-                    ->leftJoin('parameter', 'jenistrado.statusaktif', '=', 'parameter.id')
-                    ->orderBy($params['sortIndex'], $params['sortOrder'])
-                    ->orderBy('jenistrado.id', $params['sortOrder']);
-            } else {
-                $query = DB::table((new JenisTrado)->getTable())->select(
-                    'jenistrado.id',
-                    'jenistrado.kodejenistrado',
-                    'jenistrado.keterangan',
-                    'parameter.text as statusaktif',
-                    'jenistrado.modifiedby',
-                    'jenistrado.created_at',
-                    'jenistrado.updated_at'
-                )
-                    ->leftJoin('parameter', 'jenistrado.statusaktif', '=', 'parameter.id')
-                    ->orderBy($params['sortIndex'], $params['sortOrder'])
-                    ->orderBy('jenistrado.id', 'asc');
-            }
-        }
-
-        /* Searching */
-        if (count($params['filters']) > 0 && @$params['filters']['rules'][0]['data'] != '') {
-            switch ($params['filters']['groupOp']) {
-                case "AND":
-                    foreach ($params['filters']['rules'] as $index => $search) {
-                        if ($search['field'] == 'statusaktif') {
-                            $query = $query->where('parameter.text', 'LIKE', "%$search[data]%");
-                        } else {
-                            $query = $query->where('jenistrado.'.$search['field'], 'LIKE', "%$search[data]%");
-                        }
-                    }
-
-                    break;
-                case "OR":
-                    foreach ($params['filters']['rules'] as $index => $search) {
-                        if ($search['field'] == 'statusaktif') {
-                            $query = $query->orWhere('parameter.text', 'LIKE', "%$search[data]%");
-                        } else {
-                            $query = $query->orWhere('jenistrado.'.$search['field'], 'LIKE', "%$search[data]%");
-                        }
-                    }
-                    break;
-                default:
-
-                    break;
-            }
-
-            $totalRows = count($query->get());
-            $totalPages = $params['limit'] > 0 ? ceil($totalRows / $params['limit']) : 1;
-        }
-
-        /* Paging */
-        $query = $query->skip($params['offset'])
-            ->take($params['limit']);
-
-        $jenistrado = $query->get();
-
-        /* Set attributes */
-        $attributes = [
-            'totalRows' => $totalRows ?? 0,
-            'totalPages' => $totalPages ?? 0
-        ];
+        $jenistrado = new JenisTrado();
 
         return response([
-            'status' => true,
-            'data' => $jenistrado,
-            'attributes' => $attributes,
-            'params' => $params
+            'data' => $jenistrado->get(),
+            'attributes' => [
+                'totalRows' => $jenistrado->totalRows,
+                'totalPages' => $jenistrado->totalPages
+            ]
         ]);
     }
       /**

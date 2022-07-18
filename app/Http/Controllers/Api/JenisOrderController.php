@@ -22,123 +22,14 @@ class JenisOrderController extends Controller
      */
     public function index()
     {
-        $params = [
-            'offset' => request()->offset ?? ((request()->page - 1) * request()->limit),
-            'limit' => request()->limit ?? 10,
-            'filters' => json_decode(request()->filters, true) ?? [],
-            'sortIndex' => request()->sortIndex ?? 'id',
-            'sortOrder' => request()->sortOrder ?? 'asc',
-        ];
-
-        $totalRows = DB::table((new JenisOrder)->getTable())->count();
-        $totalPages = $params['limit'] > 0 ? ceil($totalRows / $params['limit']) : 1;
-
-        /* Sorting */
-        $query = DB::table((new JenisOrder)->getTable())->orderBy($params['sortIndex'], $params['sortOrder']);
-
-        if ($params['sortIndex'] == 'id') {
-            $query = DB::table((new JenisOrder)->getTable())->select(
-                'jenisorder.id',
-                'jenisorder.kodejenisorder',
-                'jenisorder.keterangan',
-                'parameter.text as statusaktif',
-                'jenisorder.modifiedby',
-                'jenisorder.created_at',
-                'jenisorder.updated_at'
-            )
-            ->leftJoin('parameter', 'jenisorder.statusaktif', '=', 'parameter.id')
-            ->orderBy('jenisorder.id', $params['sortOrder']);
-        } else if ($params['sortIndex'] == 'kodejenisorder' or $params['sortIndex'] == 'keterangan') {
-            $query = DB::table((new JenisOrder)->getTable())->select(
-                'jenisorder.id',
-                'jenisorder.kodejenisorder',
-                'jenisorder.keterangan',
-                'parameter.text as statusaktif',
-                'jenisorder.modifiedby',
-                'jenisorder.created_at',
-                'jenisorder.updated_at'
-            )
-                ->leftJoin('parameter', 'jenisorder.statusaktif', '=', 'parameter.id')
-                ->orderBy($params['sortIndex'], $params['sortOrder'])
-                ->orderBy('jenisorder.id', $params['sortOrder']);
-        } else {
-            if ($params['sortOrder'] == 'asc') {
-                $query = DB::table((new JenisOrder)->getTable())->select(
-                    'jenisorder.id',
-                    'jenisorder.kodejenisorder',
-                    'jenisorder.keterangan',
-                    'parameter.text as statusaktif',
-                    'jenisorder.modifiedby',
-                    'jenisorder.created_at',
-                    'jenisorder.updated_at'
-                )
-                    ->leftJoin('parameter', 'jenisorder.statusaktif', '=', 'parameter.id')
-                    ->orderBy($params['sortIndex'], $params['sortOrder'])
-                    ->orderBy('jenisorder.id', $params['sortOrder']);
-            } else {
-                $query = DB::table((new JenisOrder)->getTable())->select(
-                    'jenisorder.id',
-                    'jenisorder.kodejenisorder',
-                    'jenisorder.keterangan',
-                    'parameter.text as statusaktif',
-                    'jenisorder.modifiedby',
-                    'jenisorder.created_at',
-                    'jenisorder.updated_at'
-                )
-                    ->leftJoin('parameter', 'jenisorder.statusaktif', '=', 'parameter.id')
-                    ->orderBy($params['sortIndex'], $params['sortOrder'])
-                    ->orderBy('jenisorder.id', 'asc');
-            }
-        }
-
-        /* Searching */
-        if (count($params['filters']) > 0 && @$params['filters']['rules'][0]['data'] != '') {
-            switch ($params['filters']['groupOp']) {
-                case "AND":
-                    foreach ($params['filters']['rules'] as $index => $search) {
-                        if ($search['field'] == 'statusaktif') {
-                            $query = $query->where('parameter.text', 'LIKE', "%$search[data]%");
-                        } else {
-                            $query = $query->where('jenisorder.'.$search['field'], 'LIKE', "%$search[data]%");
-                        }
-                    }
-
-                    break;
-                case "OR":
-                    foreach ($params['filters']['rules'] as $index => $search) {
-                        if ($search['field'] == 'statusaktif') {
-                            $query = $query->orWhere('parameter.text', 'LIKE', "%$search[data]%");
-                        } else {
-                            $query = $query->orWhere('jenisorder.'.$search['field'], 'LIKE', "%$search[data]%");
-                        }
-                    }
-                    break;
-                default:
-
-                    break;
-            }
-
-            $totalRows = count($query->get());
-            $totalPages = $params['limit'] > 0 ? ceil($totalRows / $params['limit']) : 1;
-        }
-
-        /* Paging */
-        $query = $query->skip($params['offset'])
-            ->take($params['limit']);
-
-        $jenisorder = $query->get();
-
-        /* Set attributes */
-        $attributes = [
-            'totalRows' => $totalRows ?? 0,
-            'totalPages' => $totalPages ?? 0
-        ];
+        $jenisorder = new JenisOrder();
 
         return response([
-            'status' => true,
-            'data' => $jenisorder,
-            'attributes' => $attributes,
-            'params' => $params
+            'data' => $jenisorder->get(),
+            'attributes' => [
+                'totalRows' => $jenisorder->totalRows,
+                'totalPages' => $jenisorder->totalPages
+            ]
         ]);
     }
       /**
