@@ -286,9 +286,9 @@ route::middleware('auth:api')->group(function () {
     Route::get('bankpelanggan/field_length', [BankPelangganController::class, 'fieldLength']);
     Route::resource('bankpelanggan', BankPelangganController::class);
 
-    Route::get('sub_kelompok/export', [SubKelompokController::class, 'export']);
-    Route::get('sub_kelompok/field_length', [SubKelompokController::class, 'fieldLength']);
-    Route::resource('sub_kelompok', SubKelompokController::class);
+    Route::get('subkelompok/export', [SubKelompokController::class, 'export']);
+    Route::get('subkelompok/field_length', [SubKelompokController::class, 'fieldLength']);
+    Route::resource('subkelompok', SubKelompokController::class)->parameters(['subkelompok' => 'subKelompok']);
 
     Route::get('supplier/export', [SupplierController::class, 'export']);
     Route::get('supplier/field_length', [SupplierController::class, 'fieldLength']);

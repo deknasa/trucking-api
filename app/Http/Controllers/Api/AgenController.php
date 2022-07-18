@@ -149,7 +149,7 @@ class AgenController extends Controller
                 ]);
             } else {
                 DB::rollBack();
-                
+
                 return response([
                     'status' => false,
                     'message' => 'Gagal diubah'
@@ -192,23 +192,25 @@ class AgenController extends Controller
                 $agen->position = $selected->position;
                 $agen->id = $selected->id;
                 $agen->page = ceil($agen->position / ($request->limit ?? 10));
-                
+
                 return response([
                     'status' => true,
                     'message' => 'Berhasil dihapus',
                     'data' => $agen
                 ]);
             } else {
+                DB::rollBack();
+
                 return response([
                     'status' => false,
                     'message' => 'Gagal dihapus'
                 ]);
             }
-        } catch (NotDeletableModel $exeption) {
+        } catch (NotDeletableModel $exception) {
             DB::rollBack();
 
             return response([
-                'message' => $exeption->getMessage()
+                'message' => $exception->getMessage()
             ], 403);
         }
     }
