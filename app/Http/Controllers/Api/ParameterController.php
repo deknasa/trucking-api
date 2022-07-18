@@ -219,6 +219,8 @@ class ParameterController extends Controller
             $parameter->text = $request->text;
             $parameter->memo = $request->memo;
             $parameter->modifiedby = auth('api')->user()->name;
+            $request->sortname = $request->sortname ?? 'id';
+            $request->sortorder = $request->sortorder ?? 'asc';
 
             if ($parameter->save()) {
                 $logTrail = [
