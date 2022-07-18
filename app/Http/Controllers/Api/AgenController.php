@@ -9,11 +9,8 @@ use App\Http\Requests\StoreAgenRequest;
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Http\Requests\UpdateAgenRequest;
 use App\Models\Parameter;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 
 class AgenController extends Controller
 {
@@ -194,10 +191,8 @@ class AgenController extends Controller
                 $selected = $this->getPosition($agen, $agen->getTable(), true);
                 $agen->position = $selected->position;
                 $agen->id = $selected->id;
-
-                if (isset($request->limit)) {
-                    $agen->page = ceil($agen->position / $request->limit);
-                }
+                $agen->page = ceil($agen->position / ($request->limit ?? 10));
+                
                 return response([
                     'status' => true,
                     'message' => 'Berhasil dihapus',

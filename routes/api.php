@@ -194,7 +194,7 @@ route::middleware('auth:api')->group(function () {
     Route::resource('jenistrado', JenisTradoController::class);
 
     Route::get('akunpusat/field_length', [AkunPusatController::class, 'fieldLength']);
-    Route::resource('akunpusat', AkunPusatController::class);
+    Route::resource('akunpusat', AkunPusatController::class)->parameters(['akunpusat' => 'akunPusat']);
 
     Route::get('error/field_length', [ErrorController::class, 'fieldLength']);
     Route::get('error/geterror', [ErrorController::class, 'geterror']);
@@ -293,11 +293,11 @@ route::middleware('auth:api')->group(function () {
     Route::get('supplier/export', [SupplierController::class, 'export']);
     Route::get('supplier/field_length', [SupplierController::class, 'fieldLength']);
     Route::resource('supplier', SupplierController::class);
-    
+
     Route::get('penerima/export', [PenerimaController::class, 'export']);
     Route::get('penerima/field_length', [PenerimaController::class, 'fieldLength']);
     Route::resource('penerima', PenerimaController::class);
-    
+
     Route::get('pelanggan/export', [PelangganController::class, 'export']);
     Route::get('pelanggan/field_length', [PelangganController::class, 'fieldLength']);
     Route::resource('pelanggan', PelangganController::class);
@@ -305,7 +305,7 @@ route::middleware('auth:api')->group(function () {
     Route::get('status_container/export', [StatusContainerController::class, 'export']);
     Route::get('status_container/field_length', [StatusContainerController::class, 'fieldLength']);
     Route::resource('status_container', StatusContainerController::class);
-    
+
     Route::get('penerimaan_trucking/export', [PenerimaanTruckingController::class, 'export']);
     Route::get('penerimaan_trucking/field_length', [PenerimaanTruckingController::class, 'fieldLength']);
     Route::resource('penerimaan_trucking', PenerimaanTruckingController::class);

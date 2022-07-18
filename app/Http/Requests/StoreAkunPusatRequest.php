@@ -24,7 +24,18 @@ class StoreAkunPusatRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'coa' => 'required|unique:akunpusat,coa',
+            'keterangancoa' => 'required',
+            'type' => 'required',
+            'level' => 'required|int',
+            'aktif' => 'required|int',
+            'parent' => 'required',
+            'statuscoa' => 'required|int',
+            'statusaccountpayable' => 'required|int',
+            'statusneraca' => 'required|int',
+            'statuslabarugi' => 'required|int',
+            'coamain' => 'required',
+            'statusaktif' => 'required|int',
         ];
     }
 }
