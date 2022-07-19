@@ -178,6 +178,8 @@ class SupplierController extends Controller
      */
     public function destroy(Supplier $supplier, Request $request)
     {
+        DB::beginTransaction();
+
         $delete = $supplier->delete();
 
         if ($delete) {
@@ -207,6 +209,8 @@ class SupplierController extends Controller
                 'data' => $supplier
             ]);
         } else {
+            DB::rollBack();
+            
             return response([
                 'status' => false,
                 'message' => 'Gagal dihapus'
@@ -227,7 +231,7 @@ class SupplierController extends Controller
             'data' => $data
         ]);
     }
-    
+
     public function export()
     {
         $response = $this->index();

@@ -13,116 +13,19 @@ use Illuminate\Support\Facades\Schema;
 
 class StatusContainerController extends Controller
 {
-     /**
+    /**
      * @ClassName 
      */
     public function index()
     {
-        $params = [
-            'offset' => request()->offset ?? ((request()->page - 1) * request()->limit),
-            'limit' => request()->limit ?? 10,
-            'filters' => json_decode(request()->filters, true) ?? [],
-            'sortIndex' => request()->sortIndex ?? 'id',
-            'sortOrder' => request()->sortOrder ?? 'asc',
-        ];
-
-        /* Sorting */
-        $query = DB::table((new StatusContainer())->getTable())->orderBy($params['sortIndex'], $params['sortOrder']);
-
-        $totalRows = $query->count();
-        $totalPages = $params['limit'] > 0 ? ceil($totalRows / $params['limit']) : 1;
-
-        if ($params['sortIndex'] == 'id') {
-            $query = DB::table((new StatusContainer())->getTable())->select(
-                'statuscontainer.id',
-                'statuscontainer.kodestatuscontainer',
-                'statuscontainer.keterangan',
-                'parameter.text as statusaktif',
-                'statuscontainer.modifiedby',
-                'statuscontainer.created_at',
-                'statuscontainer.updated_at'
-            )
-                ->leftJoin('parameter', 'statuscontainer.statusaktif', '=', 'parameter.id')
-                ->orderBy('statuscontainer.id', $params['sortOrder']);
-        } else {
-            if ($params['sortOrder'] == 'asc') {
-                $query = DB::table((new StatusContainer())->getTable())->select(
-                    'statuscontainer.id',
-                    'statuscontainer.kodestatuscontainer',
-                    'statuscontainer.keterangan',
-                    'parameter.text as statusaktif',
-                    'statuscontainer.modifiedby',
-                    'statuscontainer.created_at',
-                    'statuscontainer.updated_at'
-                )
-                    ->leftJoin('parameter', 'statuscontainer.statusaktif', '=', 'parameter.id')
-                    ->orderBy($params['sortIndex'], $params['sortOrder'])
-                    ->orderBy('statuscontainer.id', $params['sortOrder']);
-            } else {
-                $query = DB::table((new StatusContainer())->getTable())->select(
-                    'statuscontainer.id',
-                    'statuscontainer.kodestatuscontainer',
-                    'statuscontainer.keterangan',
-                    'parameter.text as statusaktif',
-                    'statuscontainer.modifiedby',
-                    'statuscontainer.created_at',
-                    'statuscontainer.updated_at'
-                )
-                    ->leftJoin('parameter', 'statuscontainer.statusaktif', '=', 'parameter.id')
-                    ->orderBy($params['sortIndex'], $params['sortOrder'])
-                    ->orderBy('statuscontainer.id', 'asc');
-            }
-        }
-
-        /* Searching */
-        if (count($params['filters']) > 0 && @$params['filters']['rules'][0]['data'] != '') {
-            switch ($params['filters']['groupOp']) {
-                case "AND":
-                    foreach ($params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'statusaktif') {
-                            $query = $query->where('parameter.text', 'LIKE', "%$filters[data]%");
-                        } else {
-                            $query = $query->where('statuscontainer.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                        }
-                    }
-
-                    break;
-                case "OR":
-                    foreach ($params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'statusaktif') {
-                            $query = $query->orWhere('parameter.text', 'LIKE', "%$filters[data]%");
-                        } else {
-                            $query = $query->orWhere('statuscontainer.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                        }
-                    }
-
-                    break;
-                default:
-
-                    break;
-            }
-
-            $totalRows = $query->count();
-            $totalPages = $params['limit'] > 0 ? ceil($totalRows / $params['limit']) : 1;
-        }
-
-        /* Paging */
-        $query = $query->skip($params['offset'])
-            ->take($params['limit']);
-
-        $statusContainers = $query->get();
-
-        /* Set attributes */
-        $attributes = [
-            'totalRows' => $totalRows ?? 0,
-            'totalPages' => $totalPages ?? 0
-        ];
+        $statusContainer = new StatusContainer();
 
         return response([
-            'status' => true,
-            'data' => $statusContainers,
-            'attributes' => $attributes,
-            'params' => $params
+            'data' => $statusContainer->get(),
+            'attributes' => [
+                'totalRows' => $statusContainer->totalRows,
+                'totalPages' => $statusContainer->totalPages
+            ]
         ]);
     }
 
@@ -133,7 +36,8 @@ class StatusContainerController extends Controller
             'data' => $statusContainer
         ]);
     }
- /**
+
+    /**
      * @ClassName 
      */
     public function store(StoreStatusContainerRequest $request)
@@ -167,13 +71,9 @@ class StatusContainerController extends Controller
             }
 
             /* Set position and page */
-            $del = 0;
-            $data = $this->getid($statusContainer->id, $request, $del);
-            $statusContainer->position = $data->row;
-
-            if (isset($request->limit)) {
-                $statusContainer->page = ceil($statusContainer->position / $request->limit);
-            }
+            $selected = $this->getPosition($statusContainer, $statusContainer->getTable());
+            $statusContainer->position = $selected->position;
+            $statusContainer->page = ceil($statusContainer->position / ($request->limit ?? 10));
 
             return response([
                 'status' => true,
@@ -186,11 +86,13 @@ class StatusContainerController extends Controller
         }
     }
 
- /**
+    /**
      * @ClassName 
      */
     public function update(UpdateStatusContainerRequest $request, StatusContainer $statusContainer)
     {
+        DB::beginTransaction();
+
         try {
             $statusContainer = StatusContainer::findOrFail($statusContainer->id);
             $statusContainer->kodestatuscontainer = $request->kodestatuscontainer;
@@ -213,11 +115,9 @@ class StatusContainerController extends Controller
                 app(LogTrailController::class)->store($validatedLogTrail);
 
                 /* Set position and page */
-                $statusContainer->position = $this->getid($statusContainer->id, $request, 0)->row;
-
-                if (isset($request->limit)) {
-                    $statusContainer->page = ceil($statusContainer->position / $request->limit);
-                }
+                $selected = $this->getPosition($statusContainer, $statusContainer->getTable());
+                $statusContainer->position = $selected->position;
+                $statusContainer->page = ceil($statusContainer->position / ($request->limit ?? 10));
 
                 return response([
                     'status' => true,
@@ -225,22 +125,29 @@ class StatusContainerController extends Controller
                     'data' => $statusContainer
                 ]);
             } else {
+                DB::rollBack();
+
                 return response([
                     'status' => false,
                     'message' => 'Gagal diubah'
                 ]);
             }
         } catch (\Throwable $th) {
+            DB::rollBack();
+
             throw $th;
         }
     }
-     /**
+
+    /**
      * @ClassName 
      */
     public function destroy(StatusContainer $statusContainer, Request $request)
     {
-        $delete = StatusContainer::destroy($statusContainer->id);
-        $del = 1;
+        DB::beginTransaction();
+
+        $delete = $statusContainer->delete();
+
         if ($delete) {
             $logTrail = [
                 'namatabel' => strtoupper($statusContainer->getTable()),
@@ -257,18 +164,19 @@ class StatusContainerController extends Controller
 
             DB::commit();
 
-            $data = $this->getid($statusContainer->id, $request, $del);
-            $statusContainer->position = $data->row  ?? 0;
-            $statusContainer->id = $data->id  ?? 0;
-            if (isset($request->limit)) {
-                $statusContainer->page = ceil($statusContainer->position / $request->limit);
-            }
+            $selected = $this->getPosition($statusContainer, $statusContainer->getTable(), true);
+            $statusContainer->position = $selected->position;
+            $statusContainer->id = $selected->id;
+            $statusContainer->page = ceil($statusContainer->position / ($request->limit ?? 10));
+
             return response([
                 'status' => true,
                 'message' => 'Berhasil dihapus',
                 'data' => $statusContainer
             ]);
         } else {
+            DB::rollBack();
+
             return response([
                 'status' => false,
                 'message' => 'Gagal dihapus'
@@ -290,120 +198,9 @@ class StatusContainerController extends Controller
         ]);
     }
 
-    public function getid($id, $request, $del)
-    {
-
-        $params = [
-            'indexRow' => $request->indexRow ?? 1,
-            'limit' => $request->limit ?? 100,
-            'page' => $request->page ?? 1,
-            'sortname' => $request->sortname ?? 'id',
-            'sortorder' => $request->sortorder ?? 'asc',
-        ];
-        $temp = '##temp' . rand(1, 10000);
-        Schema::create($temp, function ($table) {
-            $table->id();
-            $table->bigInteger('id_')->default('0');
-            $table->string('kodestatuscontainer', 300)->default('');
-            $table->string('keterangan', 300)->default('');
-            $table->string('statusaktif', 300)->default('');
-            $table->string('modifiedby', 30)->default('');
-            $table->dateTime('created_at')->default('1900/1/1');
-            $table->dateTime('updated_at')->default('1900/1/1');
-
-            $table->index('id_');
-        });
-
-        if ($params['sortname'] == 'id') {
-            $query = StatusContainer::select(
-                'statuscontainer.id as id_',
-                'statuscontainer.kodestatuscontainer',
-                'statuscontainer.keterangan',
-                'parameter.text as statusaktif',
-                'statuscontainer.modifiedby',
-                'statuscontainer.created_at',
-                'statuscontainer.updated_at'
-            )
-                ->leftJoin('parameter', 'statuscontainer.statusaktif', '=', 'parameter.id')
-                ->orderBy('statuscontainer.id', $params['sortorder']);
-        } else {
-            if ($params['sortorder'] == 'asc') {
-                $query = StatusContainer::select(
-                    'statuscontainer.id as id_',
-                    'statuscontainer.kodestatuscontainer',
-                    'statuscontainer.keterangan',
-                    'parameter.text as statusaktif',
-                    'statuscontainer.modifiedby',
-                    'statuscontainer.created_at',
-                    'statuscontainer.updated_at'
-                )
-                    ->leftJoin('parameter', 'statuscontainer.statusaktif', '=', 'parameter.id')
-                    ->orderBy($params['sortname'], $params['sortorder'])
-                    ->orderBy('statuscontainer.id', $params['sortorder']);
-            } else {
-                $query = StatusContainer::select(
-                    'statuscontainer.id as id_',
-                    'statuscontainer.kodestatuscontainer',
-                    'statuscontainer.keterangan',
-                    'parameter.text as statusaktif',
-                    'statuscontainer.modifiedby',
-                    'statuscontainer.created_at',
-                    'statuscontainer.updated_at'
-                )
-                    ->leftJoin('parameter', 'statuscontainer.statusaktif', '=', 'parameter.id')
-                    ->orderBy($params['sortname'], $params['sortorder'])
-                    ->orderBy('statuscontainer.id', 'asc');
-            }
-        }
-
-
-
-        DB::table($temp)->insertUsing([
-            'id_',
-            'kodestatuscontainer',
-            'keterangan',
-            'statusaktif',
-            'modifiedby',
-            'created_at',
-            'updated_at'
-        ], $query);
-
-
-        if ($del == 1) {
-            if ($params['page'] == 1) {
-                $baris = $params['indexRow'] + 1;
-            } else {
-                $hal = $params['page'] - 1;
-                $bar = $hal * $params['limit'];
-                $baris = $params['indexRow'] + $bar + 1;
-            }
-
-
-            if (DB::table($temp)
-                ->where('id', '=', $baris)->exists()
-            ) {
-                $querydata = DB::table($temp)
-                    ->select('id as row', 'id_ as id')
-                    ->where('id', '=', $baris)
-                    ->orderBy('id');
-            } else {
-                $querydata = DB::table($temp)
-                    ->select('id as row', 'id_ as id')
-                    ->where('id', '=', ($baris - 1))
-                    ->orderBy('id');
-            }
-        } else {
-            $querydata = DB::table($temp)
-                ->select('id as row')
-                ->where('id_', '=',  $id)
-                ->orderBy('id');
-        }
-
-
-        $data = $querydata->first();
-        return $data;
-    }
-    
+    /**
+     * @ClassName
+     */
     public function export()
     {
         $response = $this->index();
