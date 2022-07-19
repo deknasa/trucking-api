@@ -306,9 +306,9 @@ route::middleware('auth:api')->group(function () {
     Route::get('statuscontainer/field_length', [StatusContainerController::class, 'fieldLength']);
     Route::resource('statuscontainer', StatusContainerController::class)->parameters(['statuscontainer' => 'statusContainer']);
 
-    Route::get('penerimaan_trucking/export', [PenerimaanTruckingController::class, 'export']);
-    Route::get('penerimaan_trucking/field_length', [PenerimaanTruckingController::class, 'fieldLength']);
-    Route::resource('penerimaan_trucking', PenerimaanTruckingController::class);
+    Route::get('penerimaantrucking/export', [PenerimaanTruckingController::class, 'export']);
+    Route::get('penerimaantrucking/field_length', [PenerimaanTruckingController::class, 'fieldLength']);
+    Route::resource('penerimaantrucking', PenerimaanTruckingController::class)->parameters(['penerimaantrucking' => 'penerimaanTrucking']);
 
     Route::get('pengeluaran_trucking/export', [PengeluaranTruckingController::class, 'export']);
     Route::get('pengeluaran_trucking/field_length', [PengeluaranTruckingController::class, 'fieldLength']);
