@@ -14,154 +14,20 @@ use Illuminate\Support\Facades\Schema;
 class AkunPusatController extends Controller
 {
     /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    /**
      * @ClassName 
      */
     public function index()
     {
-        $params = [
-            'offset' => request()->offset ?? ((request()->page - 1) * request()->limit),
-            'limit' => request()->limit ?? 10,
-            'filters' => json_decode(request()->filters, true) ?? [],
-            'sortIndex' => request()->sortIndex ?? 'id',
-            'sortOrder' => request()->sortOrder ?? 'asc',
-        ];
-
-        $totalRows = DB::table((new AkunPusat)->getTable())->count();
-
-        $totalPages = $params['limit'] > 0 ? ceil($totalRows / $params['limit']) : 1;
-
-        /* Sorting */
-        $query = DB::table((new AkunPusat)->getTable())->orderBy($params['sortIndex'], $params['sortOrder']);
-
-        if ($params['sortIndex'] == 'id') {
-            $query = DB::table((new AkunPusat)->getTable())->select(
-                'akunpusat.id',
-                'akunpusat.coa',
-                'akunpusat.keterangancoa',
-                'akunpusat.type',
-                'akunpusat.level',
-                'parameter_statusaktif.text as statusaktif',
-                'akunpusat.parent',
-                'parameter_statuscoa.text as statuscoa',
-                'parameter_statusaccountpayable.text as statusaccountpayable',
-                'parameter_statusneraca.text as statusneraca',
-                'parameter_statuslabarugi.text as statuslabarugi',
-                'akunpusat.coamain',
-                'akunpusat.modifiedby',
-                'akunpusat.created_at',
-                'akunpusat.updated_at'
-            )
-                ->leftJoin('parameter as parameter_statusaktif', 'akunpusat.statusaktif', '=', 'parameter_statusaktif.id')
-                ->orderBy('akunpusat.id', $params['sortOrder']);
-        } else {
-            if ($params['sortOrder'] == 'asc') {
-                $query = DB::table((new AkunPusat)->getTable())->select(
-                    'akunpusat.id',
-                    'akunpusat.coa',
-                    'akunpusat.keterangancoa',
-                    'akunpusat.type',
-                    'akunpusat.level',
-                    'parameter_statusaktif.text as statusaktif',
-                    'akunpusat.parent',
-                    'parameter_statuscoa.text as statuscoa',
-                    'parameter_statusaccountpayable.text as statusaccountpayable',
-                    'parameter_statusneraca.text as statusneraca',
-                    'parameter_statuslabarugi.text as statuslabarugi',
-                    'akunpusat.coamain',
-                    'akunpusat.modifiedby',
-                    'akunpusat.created_at',
-                    'akunpusat.updated_at'
-                )
-                    ->leftJoin('parameter as parameter_statusaktif', 'akunpusat.statusaktif', '=', 'parameter_statusaktif.id')
-                    ->leftJoin('parameter as parameter_statuscoa', 'akunpusat.statuscoa', '=', 'parameter_statuscoa.id')
-                    ->leftJoin('parameter as parameter_statusaccountpayable', 'akunpusat.statusaccountpayable', '=', 'parameter_statusaccountpayable.id')
-                    ->leftJoin('parameter as parameter_statusneraca', 'akunpusat.statusneraca', '=', 'parameter_statusneraca.id')
-                    ->leftJoin('parameter as parameter_statuslabarugi', 'akunpusat.statuslabarugi', '=', 'parameter_statuslabarugi.id')
-                    ->orderBy($params['sortIndex'], $params['sortOrder'])
-                    ->orderBy('akunpusat.id', $params['sortOrder']);
-            } else {
-                $query = DB::table((new AkunPusat)->getTable())->select(
-                    'akunpusat.id',
-                    'akunpusat.coa',
-                    'akunpusat.keterangancoa',
-                    'akunpusat.type',
-                    'akunpusat.level',
-                    'parameter_statusaktif.text as statusaktif',
-                    'akunpusat.parent',
-                    'parameter_statuscoa.text as statuscoa',
-                    'parameter_statusaccountpayable.text as statusaccountpayable',
-                    'parameter_statusneraca.text as statusneraca',
-                    'parameter_statuslabarugi.text as statuslabarugi',
-                    'akunpusat.coamain',
-                    'akunpusat.modifiedby',
-                    'akunpusat.created_at',
-                    'akunpusat.updated_at'
-                )
-                    ->leftJoin('parameter as parameter_statusaktif', 'akunpusat.statusaktif', '=', 'parameter_statusaktif.id')
-                    ->leftJoin('parameter as parameter_statuscoa', 'akunpusat.statuscoa', '=', 'parameter_statuscoa.id')
-                    ->leftJoin('parameter as parameter_statusaccountpayable', 'akunpusat.statusaccountpayable', '=', 'parameter_statusaccountpayable.id')
-                    ->leftJoin('parameter as parameter_statusneraca', 'akunpusat.statusneraca', '=', 'parameter_statusneraca.id')
-                    ->leftJoin('parameter as parameter_statuslabarugi', 'akunpusat.statuslabarugi', '=', 'parameter_statuslabarugi.id')
-                    ->orderBy($params['sortIndex'], $params['sortOrder'])
-                    ->orderBy('akunpusat.id', 'asc');
-            }
-        }
-
-        /* Searching */
-        if (count($params['filters']) > 0 && @$params['filters']['rules'][0]['data'] != '') {
-            switch ($params['filters']['groupOp']) {
-                case "AND":
-                    foreach ($params['filters']['rules'] as $index => $search) {
-                        $query = $query->where($search['field'], 'LIKE', "%$search[data]%");
-                    }
-
-                    break;
-                case "OR":
-                    foreach ($params['filters']['rules'] as $index => $search) {
-                        $query = $query->orWhere($search['field'], 'LIKE', "%$search[data]%");
-                    }
-
-                    break;
-                default:
-
-                    break;
-            }
-
-            $totalRows = count($query->get());
-            $totalPages = $params['limit'] > 0 ? ceil($totalRows / $params['limit']) : 1;
-        }
-
-        /* Paging */
-        $query = $query->skip($params['offset'])
-            ->take($params['limit']);
-
-        $akunPusats = $query->get();
-
-        /* Set attributes */
-        $attributes = [
-            'totalRows' => $totalRows ?? 0,
-            'totalPages' => $totalPages ?? 0
-        ];
+        $akunPusat = new AkunPusat();
 
         return response([
-            'status' => true,
-            'data' => $akunPusats,
-            'attributes' => $attributes,
-            'params' => $params
+            'data' => $akunPusat->get(),
+            'attributes' => [
+                'totalRows' => $akunPusat->totalRows,
+                'totalPages' => $akunPusat->totalPages
+            ]
         ]);
     }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \App\Http\Requests\StoreAkunPusatRequest  $request
-     * @return \Illuminate\Http\Response
-     */
 
     /**
      * @ClassName 
@@ -183,6 +49,7 @@ class AkunPusatController extends Controller
             $akunPusat->statusneraca = $request->statusneraca;
             $akunPusat->statuslabarugi = $request->statuslabarugi;
             $akunPusat->coamain = $request->coamain;
+            $akunPusat->statusaktif = $request->statusaktif;
             $akunPusat->modifiedby = auth('api')->user()->name;
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
@@ -205,13 +72,9 @@ class AkunPusatController extends Controller
             }
 
             /* Set position and page */
-            $del = 0;
-            $data = $this->getid($akunPusat->id, $request, $del);
-            $akunPusat->position = $data->row;
-
-            if (isset($request->limit)) {
-                $akunPusat->page = ceil($akunPusat->position / $request->limit);
-            }
+            $selected = $this->getPosition($akunPusat, $akunPusat->getTable());
+            $akunPusat->position = $selected->position;
+            $akunPusat->page = ceil($akunPusat->position / ($request->limit ?? 10));
 
             return response([
                 'status' => true,
@@ -220,6 +83,7 @@ class AkunPusatController extends Controller
             ]);
         } catch (\Throwable $th) {
             DB::rollBack();
+
             throw $th;
         }
     }
@@ -239,20 +103,13 @@ class AkunPusatController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
-     *
-     * @param  \App\Http\Requests\UpdateAkunPusatRequest  $request
-     * @param  \App\Models\AkunPusat  $akunPusat
-     * @return \Illuminate\Http\Response
-     */
-    /**
      * @ClassName 
      */
     public function update(UpdateAkunPusatRequest $request, AkunPusat $akunPusat)
     {
+        DB::beginTransaction();
+
         try {
-            $akunPusat = DB::table((new AkunPusat)->getTable())->findOrFail($akunPusat->id);
-            $akunPusat->coa = $request->coa;
             $akunPusat->keterangancoa = $request->keterangancoa;
             $akunPusat->type = $request->type;
             $akunPusat->level = $request->level;
@@ -262,6 +119,7 @@ class AkunPusatController extends Controller
             $akunPusat->statusaccountpayable = $request->statusaccountpayable;
             $akunPusat->statusneraca = $request->statusneraca;
             $akunPusat->statuslabarugi = $request->statuslabarugi;
+            $akunPusat->statusaktif = $request->statusaktif;
             $akunPusat->coamain = $request->coamain;
             $akunPusat->modifiedby = auth('api')->user()->name;
 
@@ -279,12 +137,12 @@ class AkunPusatController extends Controller
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
 
-                /* Set position and page */
-                $akunPusat->position = $this->getid($akunPusat->id, $request, 0)->row;
+                DB::commit();
 
-                if (isset($request->limit)) {
-                    $akunPusat->page = ceil($akunPusat->position / $request->limit);
-                }
+                /* Set position and page */
+                $selected = $this->getPosition($akunPusat, $akunPusat->getTable());
+                $akunPusat->position = $selected->position;
+                $akunPusat->page = ceil($akunPusat->position / ($request->limit ?? 10));
 
                 return response([
                     'status' => true,
@@ -292,29 +150,29 @@ class AkunPusatController extends Controller
                     'data' => $akunPusat
                 ]);
             } else {
+                DB::rollBack();
+
                 return response([
                     'status' => false,
                     'message' => 'Gagal diubah'
                 ]);
             }
         } catch (\Throwable $th) {
+            DB::rollBack();
+
             throw $th;
         }
     }
 
     /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\AkunPusat  $akunPusat
-     * @return \Illuminate\Http\Response
-     */
-    /**
      * @ClassName 
      */
     public function destroy(AkunPusat $akunPusat, Request $request)
     {
-        $delete = AkunPusat::destroy($akunPusat->id);
-        $del = 1;
+        DB::beginTransaction();
+
+        $delete = $akunPusat->delete();
+
         if ($delete) {
             $logTrail = [
                 'namatabel' => strtoupper($akunPusat->getTable()),
@@ -331,18 +189,19 @@ class AkunPusatController extends Controller
 
             DB::commit();
 
-            $data = $this->getid($akunPusat->id, $request, $del);
-            $akunPusat->position = $data->row;
-            $akunPusat->id = $data->id;
-            if (isset($request->limit)) {
-                $akunPusat->page = ceil($akunPusat->position / $request->limit);
-            }
+            /* Set position and page */
+            $selected = $this->getPosition($akunPusat, $akunPusat->getTable(), true);
+            $akunPusat->position = $selected->position;
+            $akunPusat->page = ceil($akunPusat->position / ($request->limit ?? 10));
+
             return response([
                 'status' => true,
                 'message' => 'Berhasil dihapus',
                 'data' => $akunPusat
             ]);
         } else {
+            DB::rollBack();
+
             return response([
                 'status' => false,
                 'message' => 'Gagal dihapus'
@@ -362,167 +221,5 @@ class AkunPusatController extends Controller
         return response([
             'data' => $data
         ]);
-    }
-
-    public function getid($id, $request, $del)
-    {
-
-        $params = [
-            'indexRow' => $request->indexRow ?? 1,
-            'limit' => $request->limit ?? 100,
-            'page' => $request->page ?? 1,
-            'sortname' => $request->sortname ?? 'id',
-            'sortorder' => $request->sortorder ?? 'asc',
-        ];
-        $temp = '##temp' . rand(1, 10000);
-        Schema::create($temp, function ($table) {
-            $table->id();
-            $table->bigInteger('id_')->default('0');
-            $table->string('grp', 300)->default('');
-            $table->string('subgrp', 300)->default('');
-            $table->string('text', 300)->default('');
-            $table->string('memo', 300)->default('');
-            $table->string('modifiedby', 30)->default('');
-            $table->dateTime('created_at')->default('1900/1/1');
-            $table->dateTime('updated_at')->default('1900/1/1');
-
-            $table->index('id_');
-        });
-
-        if ($params['sortname'] == 'id') {
-            $query = DB::table((new AkunPusat)->getTable())->select(
-                'akunpusat.id as id_',
-                'akunpusat.coa',
-                'akunpusat.keterangancoa',
-                'akunpusat.type',
-                'akunpusat.level',
-                'parameter_statusaktif.text as statusaktif',
-                'akunpusat.parent',
-                'parameter_statuscoa.text as statuscoa',
-                'parameter_statusaccountpayable.text as statusaccountpayable',
-                'parameter_statusneraca.text as statusneraca',
-                'parameter_statuslabarugi.text as statuslabarugi',
-                'akunpusat.coamain',
-                'akunpusat.modifiedby',
-                'akunpusat.created_at',
-                'akunpusat.updated_at'
-            )
-                ->orderBy('akunpusat.id', $params['sortorder']);
-        } else if ($params['sortname'] == 'grp' or $params['sortname'] == 'subgrp') {
-            $query = DB::table((new AkunPusat)->getTable())->select(
-                'akunpusat.id as id_',
-                'akunpusat.coa',
-                'akunpusat.keterangancoa',
-                'akunpusat.type',
-                'akunpusat.level',
-                'parameter_statusaktif.text as statusaktif',
-                'akunpusat.parent',
-                'parameter_statuscoa.text as statuscoa',
-                'parameter_statusaccountpayable.text as statusaccountpayable',
-                'parameter_statusneraca.text as statusneraca',
-                'parameter_statuslabarugi.text as statuslabarugi',
-                'akunpusat.coamain',
-                'akunpusat.modifiedby',
-                'akunpusat.created_at',
-                'akunpusat.updated_at'
-            )
-                ->orderBy($params['sortname'], $params['sortorder'])
-                ->orderBy('akunpusat.text', $params['sortorder'])
-                ->orderBy('akunpusat.id', $params['sortorder']);
-        } else {
-            if ($params['sortorder'] == 'asc') {
-                $query = DB::table((new AkunPusat)->getTable())->select(
-                    'akunpusat.id as id_',
-                    'akunpusat.coa',
-                    'akunpusat.keterangancoa',
-                    'akunpusat.type',
-                    'akunpusat.level',
-                    'akunpusat.statusaktif',
-                    'akunpusat.parent',
-                    'parameter_statuscoa.text as statuscoa',
-                    'parameter_statusaccountpayable.text as statusaccountpayable',
-                    'parameter_statusneraca.text as statusneraca',
-                    'parameter_statuslabarugi.text as statuslabarugi',
-                    'akunpusat.coamain',
-                    'akunpusat.modifiedby',
-                    'akunpusat.created_at',
-                    'akunpusat.updated_at'
-                )
-                    ->orderBy($params['sortname'], $params['sortorder'])
-                    ->orderBy('akunpusat.id', $params['sortorder']);
-            } else {
-                $query = DB::table((new AkunPusat)->getTable())->select(
-                    'akunpusat.id as id_',
-                    'akunpusat.coa',
-                    'akunpusat.keterangancoa',
-                    'akunpusat.type',
-                    'akunpusat.level',
-                    'akunpusat.statusaktif',
-                    'akunpusat.parent',
-                    'parameter_statuscoa.text as statuscoa',
-                    'parameter_statusaccountpayable.text as statusaccountpayable',
-                    'parameter_statusneraca.text as statusneraca',
-                    'parameter_statuslabarugi.text as statuslabarugi',
-                    'akunpusat.coamain',
-                    'akunpusat.modifiedby',
-                    'akunpusat.created_at',
-                    'akunpusat.updated_at'
-                )
-                    ->orderBy($params['sortname'], $params['sortorder'])
-                    ->orderBy('akunpusat.id', 'asc');
-            }
-        }
-
-        DB::table($temp)->insertUsing([
-            'id_',
-            'coa',
-            'keterangancoa',
-            'type',
-            'level',
-            'aktif',
-            'parent',
-            'statuscoa',
-            'statusaccountpayable',
-            'statusneraca',
-            'statuslabarugi',
-            'coamain',
-            'modifiedby',
-            'created_at',
-            'updated_at'
-        ], $query);
-
-        if ($del == 1) {
-            if ($params['page'] == 1) {
-                $baris = $params['indexRow'] + 1;
-            } else {
-                $hal = $params['page'] - 1;
-                $bar = $hal * $params['limit'];
-                $baris = $params['indexRow'] + $bar + 1;
-            }
-
-
-            if (DB::table($temp)
-                ->where('id', '=', $baris)->exists()
-            ) {
-                $querydata = DB::table($temp)
-                    ->select('id as row', 'id_ as id')
-                    ->where('id', '=', $baris)
-                    ->orderBy('id');
-            } else {
-                $querydata = DB::table($temp)
-                    ->select('id as row', 'id_ as id')
-                    ->where('id', '=', ($baris - 1))
-                    ->orderBy('id');
-            }
-        } else {
-            $querydata = DB::table($temp)
-                ->select('id as row')
-                ->where('id_', '=',  $id)
-                ->orderBy('id');
-        }
-
-
-        $data = $querydata->first();
-        return $data;
     }
 }
