@@ -174,7 +174,7 @@ class SubKelompokController extends Controller
             ]);
         } else {
             DB::rollBack();
-            
+
             return response([
                 'status' => false,
                 'message' => 'Gagal dihapus'
@@ -182,6 +182,9 @@ class SubKelompokController extends Controller
         }
     }
 
+    /**
+     * @ClassName
+     */
     public function export()
     {
         $response = $this->index();
