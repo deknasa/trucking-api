@@ -24,7 +24,9 @@ class StoreJenisTradoRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'kodejenistrado' => 'required',
+            'keterangan' => 'required',
+            'statusaktif' => 'required',
         ];
     }
 }

@@ -28,7 +28,6 @@ class StoreCabangRequest extends FormRequest
             'kodecabang' => 'required',
             'namacabang' => 'required',
             'statusaktif' => 'required',
-            'modifiedby' => 'required'
         ];
     }
 
@@ -38,19 +37,17 @@ class StoreCabangRequest extends FormRequest
             'kodecabang' => 'kode cabang',
             'namacabang' => 'nama cabang',
             'statusaktif' => 'status aktif',
-            'modifiedby' => 'modified by',
         ];
     }
 
     public function messages()
     {
         $controller = new ErrorController;
-        return [
-            'kodecabang.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
-            'namacabang.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
-            'statusaktif.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
-            'modifiedby.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
 
+        return [
+            'kodecabang.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+            'namacabang.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+            'statusaktif.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
         ];
     }
 }

@@ -25,207 +25,14 @@ class TarifController extends Controller
      */
     public function index()
     {
-        $params = [
-            'offset' => request()->offset ?? ((request()->page - 1) * request()->limit),
-            'limit' => request()->limit ?? 10,
-            'filters' => json_decode(request()->filters, true) ?? [],
-            'sortIndex' => request()->sortIndex ?? 'id',
-            'sortOrder' => request()->sortOrder ?? 'asc',
-        ];
-
-        $totalRows = DB::table((new Tarif())->getTable())->count();
-        $totalPages = $params['limit'] > 0 ? ceil($totalRows / $params['limit']) : 1;
-
-        /* Sorting */
-        $query = DB::table((new Tarif())->getTable())->orderBy($params['sortIndex'], $params['sortOrder']);
-
-        if ($params['sortIndex'] == 'id') {
-            $query = DB::table((new Tarif())->getTable())->select(
-                'tarif.id',
-                'tarif.tujuan',
-                'container.keterangan as container_id',
-                'tarif.nominal',
-                'parameter.text as statusaktif',
-                'tarif.tujuanasal',
-                'sistemton.text as sistemton',
-                'kota.kodekota as kota_id',
-                'zona.zona as zona_id',
-                'tarif.nominalton',
-                'tarif.tglberlaku',
-                'p.text as statuspenyesuaianharga',
-                'tarif.modifiedby',
-                'tarif.created_at',
-                'tarif.updated_at'
-            )
-            ->leftJoin('parameter', 'tarif.statusaktif', '=', 'parameter.id')
-            ->leftJoin('container', 'tarif.container_id', '=', 'container.id')
-            ->leftJoin('kota', 'tarif.kota_id', '=', 'kota.id')
-            ->leftJoin('zona', 'tarif.zona_id', '=', 'zona.id')
-            ->leftJoin('parameter AS p', 'tarif.statuspenyesuaianharga', '=', 'p.id')
-            ->leftJoin('parameter AS sistemton', 'tarif.sistemton', '=', 'sistemton.id')
-            ->orderBy('tarif.id', $params['sortOrder']);
-        } else if ($params['sortIndex'] == 'tujuan' or $params['sortIndex'] == 'container_id') {
-            $query = DB::table((new Tarif())->getTable())->select(
-                'tarif.id',
-                'tarif.tujuan',
-                'container.keterangan as container_id',
-                'tarif.nominal',
-                'parameter.text as statusaktif',
-                'tarif.tujuanasal',
-                'sistemton.text as sistemton',
-                'kota.kodekota as kota_id',
-                'zona.zona as zona_id',
-                'tarif.nominalton',
-                'tarif.tglberlaku',
-                'p.text as statuspenyesuaianharga',
-                'tarif.modifiedby',
-                'tarif.created_at',
-                'tarif.updated_at'
-            )
-                ->leftJoin('parameter', 'tarif.statusaktif', '=', 'parameter.id')
-                ->leftJoin('container', 'tarif.container_id', '=', 'container.id')
-                ->leftJoin('kota', 'tarif.kota_id', '=', 'kota.id')
-                ->leftJoin('zona', 'tarif.zona_id', '=', 'zona.id')
-                ->leftJoin('parameter AS p', 'tarif.statuspenyesuaianharga', '=', 'p.id')
-                ->leftJoin('parameter AS sistemton', 'tarif.sistemton', '=', 'sistemton.id')
-                ->orderBy($params['sortIndex'], $params['sortOrder'])
-                ->orderBy('tarif.id', $params['sortOrder']);
-        } else {
-            if ($params['sortOrder'] == 'asc') {
-                $query = DB::table((new Tarif())->getTable())->select(
-                    'tarif.id',
-                    'tarif.tujuan',
-                    'container.keterangan as container_id',
-                    'tarif.nominal',
-                    'parameter.text as statusaktif',
-                    'tarif.tujuanasal',
-                    'sistemton.text as sistemton',
-                    'kota.kodekota as kota_id',
-                    'zona.zona as zona_id',
-                    'tarif.nominalton',
-                    'tarif.tglberlaku',
-                    'p.text as statuspenyesuaianharga',
-                    'tarif.modifiedby',
-                    'tarif.created_at',
-                    'tarif.updated_at'
-                )
-                    ->leftJoin('parameter', 'tarif.statusaktif', '=', 'parameter.id')
-                    ->leftJoin('container', 'tarif.container_id', '=', 'container.id')
-                    ->leftJoin('kota', 'tarif.kota_id', '=', 'kota.id')
-                    ->leftJoin('zona', 'tarif.zona_id', '=', 'zona.id')
-                    ->leftJoin('parameter AS p', 'tarif.statuspenyesuaianharga', '=', 'p.id')
-                    ->leftJoin('parameter AS sistemton', 'tarif.sistemton', '=', 'sistemton.id')
-                    ->orderBy($params['sortIndex'], $params['sortOrder'])
-                    ->orderBy('tarif.id', $params['sortOrder']);
-            } else {
-                $query = DB::table((new Tarif())->getTable())->select(
-                    'tarif.id',
-                    'tarif.tujuan',
-                    'container.keterangan as container_id',
-                    'tarif.nominal',
-                    'parameter.text as statusaktif',
-                    'tarif.tujuanasal',
-                    'sistemton.text as sistemton',
-                    'kota.kodekota as kota_id',
-                    'zona.zona as zona_id',
-                    'tarif.nominalton',
-                    'tarif.tglberlaku',
-                    'p.text as statuspenyesuaianharga',
-                    'tarif.modifiedby',
-                    'tarif.created_at',
-                    'tarif.updated_at'
-                )
-                    ->leftJoin('parameter', 'tarif.statusaktif', '=', 'parameter.id')
-                    ->leftJoin('container', 'tarif.container_id', '=', 'container.id')
-                    ->leftJoin('kota', 'tarif.kota_id', '=', 'kota.id')
-                    ->leftJoin('zona', 'tarif.zona_id', '=', 'zona.id')
-                    ->leftJoin('parameter AS p', 'tarif.statuspenyesuaianharga', '=', 'p.id')
-                    ->leftJoin('parameter AS sistemton', 'tarif.sistemton', '=', 'sistemton.id')
-                    ->orderBy($params['sortIndex'], $params['sortOrder'])
-                    ->orderBy('tarif.id', 'asc');
-            }
-        }
-
-        /* Searching */
-        if (count($params['filters']) > 0 && @$params['filters']['rules'][0]['data'] != '') {
-            switch ($params['filters']['groupOp']) {
-                case "AND":
-                    foreach ($params['filters']['rules'] as $index => $search) {
-                        if ($search['field'] == 'statusaktif') {
-                            $query = $query->where('parameter.text', "$search[data]");
-                        } elseif ($search['field'] == 'container_id') {
-                            $query = $query->where('container.kodecontainer', 'LIKE' ,"%$search[data]%");
-                        } elseif ($search['field'] == 'sistemton') {
-                            $query = $query->where('sistemton.text', 'LIKE' ,"%$search[data]%");
-                        } elseif ($search['field'] == 'kota_id') {
-                            $query = $query->where('kota.kodekota', 'LIKE' ,"%$search[data]%");
-                        } elseif ($search['field'] == 'zona_id') {
-                            $query = $query->where('zona.zona', 'LIKE' ,"%$search[data]%");
-                        } elseif ($search['field'] == 'tglberlaku') {
-                            $query = $query->whereRaw("CONVERT(VARCHAR(25), tarif.tglberlaku, 105) like ?","%$search[data]%");
-                        } elseif ($search['field'] == 'created_at') {
-                            $query = $query->whereRaw("CONVERT(VARCHAR(25), tarif.created_at, 105) like ?","%$search[data]%");
-                        } elseif ($search['field'] == 'updated_at') {
-                            $query = $query->whereRaw("CONVERT(VARCHAR(25), tarif.updated_at, 105) like ?","%$search[data]%");
-                        } elseif ($search['field'] == 'statuspenyesuaianharga') {
-                            $query = $query->where('p.text', 'LIKE' ,"%$search[data]%");
-                        } else {
-                            $query = $query->where('tarif.'.$search['field'], 'LIKE', "%$search[data]%");
-                        }
-                    }
-
-                    break;
-                case "OR":
-                    foreach ($params['filters']['rules'] as $index => $search) {
-                        if ($search['field'] == 'statusaktif') {
-                            $query = $query->orWhere('parameter.text', 'LIKE', "%$search[data]%");
-                        } elseif ($search['field'] == 'container_id') {
-                            $query = $query->orWhere('container.kodecontainer', 'LIKE' ,"%$search[data]%");
-                        } elseif ($search['field'] == 'sistemton') {
-                            $query = $query->orWhere('sistemton.text', 'LIKE' ,"%$search[data]%");
-                        } elseif ($search['field'] == 'kota_id') {
-                            $query = $query->orWhere('kota.kodekota', 'LIKE' ,"%$search[data]%");
-                        } elseif ($search['field'] == 'zona_id') {
-                            $query = $query->orWhere('zona.zona', 'LIKE' ,"%$search[data]%");
-                        } elseif ($search['field'] == 'tglberlaku') {
-                            $query = $query->orWhereRaw("CONVERT(VARCHAR(25), tarif.tglberlaku, 105) like ?","%$search[data]%");
-                        } elseif ($search['field'] == 'created_at') {
-                            $query = $query->orWhereRaw("CONVERT(VARCHAR(25), tarif.created_at, 105) like ?","%$search[data]%");
-                        } elseif ($search['field'] == 'updated_at') {
-                            $query = $query->orWhereRaw("CONVERT(VARCHAR(25), tarif.updated_at, 105) like ?","%$search[data]%");
-                        } elseif ($search['field'] == 'statuspenyesuaianharga') {
-                            $query = $query->orWhere('p.text', 'LIKE' ,"%$search[data]%");
-                        } else {
-                            $query = $query->orWhere('tarif.'.$search['field'], 'LIKE', "%$search[data]%");
-                        }
-                    }
-                    break;
-                default:
-
-                    break;
-            }
-
-            $totalRows = count($query->get());
-            $totalPages = $params['limit'] > 0 ? ceil($totalRows / $params['limit']) : 1;
-        }
-
-        /* Paging */
-        $query = $query->skip($params['offset'])
-            ->take($params['limit']);
-
-        $tarif = $query->get();
-
-        /* Set attributes */
-        $attributes = [
-            'totalRows' => $totalRows ?? 0,
-            'totalPages' => $totalPages ?? 0
-        ];
+        $tarif = new Tarif();
 
         return response([
-            'status' => true,
-            'data' => $tarif,
-            'attributes' => $attributes,
-            'params' => $params
+            'data' => $tarif->get(),
+            'attributes' => [
+                'totalRows' => $tarif->totalRows,
+                'totalPages' => $tarif->totalPages
+            ]
         ]);
     }
 
@@ -241,9 +48,6 @@ class TarifController extends Controller
         DB::beginTransaction();
 
         try {
-            $request->nominal = str_replace(',', '', str_replace('.', '', $request->nominal));
-            $request->nominalton = str_replace(',', '', str_replace('.', '', $request->nominalton));
-
             $tarif = new Tarif();
             $tarif->tujuan = $request->tujuan;
             $tarif->container_id = $request->container_id;
@@ -315,9 +119,6 @@ class TarifController extends Controller
     public function update(StoreTarifRequest $request, Tarif $tarif)
     {
         try {
-            $request->nominal = str_replace(',', '', str_replace('.', '', $request->nominal));
-            $request->nominalton = str_replace(',', '', str_replace('.', '', $request->nominalton));
-
             $tarif = Tarif::findOrFail($tarif->id);
             $tarif->tujuan = $request->tujuan;
             $tarif->container_id = $request->container_id;
@@ -424,14 +225,6 @@ class TarifController extends Controller
         ]);
     }
 
-    public function getPosition($tarif, $request)
-    {
-        return DB::table((new Tarif())->getTable())->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $tarif->{$request->sortname})
-            /* Jika sortname modifiedby atau ada data duplikat */
-            // ->where('id', $request->sortorder == 'desc' ? '>=' : '<=', $parameter->id)
-            ->count();
-    }
-
     public function combo(Request $request)
     {
         $data = [
@@ -440,7 +233,6 @@ class TarifController extends Controller
             'zona' => Zona::all(),
             'statusaktif' => Parameter::where(['grp'=>'status aktif'])->get(),
             'statuspenyesuaianharga' => Parameter::where(['grp'=>'status penyesuaian harga'])->get(),
-            'sistemton' => Parameter::where(['grp'=>'sistem ton'])->get(),
         ];
 
         return response([

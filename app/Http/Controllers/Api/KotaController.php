@@ -23,131 +23,14 @@ class KotaController extends Controller
      */
     public function index()
     {
-        $params = [
-            'offset' => request()->offset ?? ((request()->page - 1) * request()->limit),
-            'limit' => request()->limit ?? 10,
-            'filters' => json_decode(request()->filters, true) ?? [],
-            'sortIndex' => request()->sortIndex ?? 'id',
-            'sortOrder' => request()->sortOrder ?? 'asc',
-        ];
-
-        $totalRows = DB::table((new Kota)->getTable())->count();
-        $totalPages = $params['limit'] > 0 ? ceil($totalRows / $params['limit']) : 1;
-
-        /* Sorting */
-        $query = DB::table((new Kota)->getTable())->orderBy($params['sortIndex'], $params['sortOrder']);
-
-        if ($params['sortIndex'] == 'id') {
-            $query = DB::table((new Kota)->getTable())->select(
-                'kota.id',
-                'kota.kodekota',
-                'kota.keterangan',
-                'zona.zona',
-                'parameter.text as statusaktif',
-                'kota.modifiedby',
-                'kota.created_at',
-                'kota.updated_at'
-            )
-            ->leftJoin('parameter', 'kota.statusaktif', '=', 'parameter.id')
-            ->leftJoin('zona', 'kota.zona_id', '=', 'zona.id')
-            ->orderBy('kota.id', $params['sortOrder']);
-        } else if ($params['sortIndex'] == 'keterangan') {
-            $query = DB::table((new Kota)->getTable())->select(
-                'kota.id',
-                'kota.kodekota',
-                'kota.keterangan',
-                'zona.zona',
-                'parameter.text as statusaktif',
-                'kota.modifiedby',
-                'kota.created_at',
-                'kota.updated_at'
-            )
-                ->leftJoin('parameter', 'kota.statusaktif', '=', 'parameter.id')
-                ->leftJoin('zona', 'kota.zona_id', '=', 'zona.id')
-                ->orderBy($params['sortIndex'], $params['sortOrder'])
-                ->orderBy('kota.id', $params['sortOrder']);
-        } else {
-            if ($params['sortOrder'] == 'asc') {
-                $query = DB::table((new Kota)->getTable())->select(
-                    'kota.id',
-                    'kota.kodekota',
-                    'kota.keterangan',
-                    'zona.zona',
-                    'parameter.text as statusaktif',
-                    'kota.modifiedby',
-                    'kota.created_at',
-                    'kota.updated_at'
-                )
-                    ->leftJoin('parameter', 'kota.statusaktif', '=', 'parameter.id')
-                    ->leftJoin('zona', 'kota.zona_id', '=', 'zona.id')
-                    ->orderBy($params['sortIndex'], $params['sortOrder'])
-                    ->orderBy('kota.id', $params['sortOrder']);
-            } else {
-                $query = DB::table((new Kota)->getTable())->select(
-                    'kota.id',
-                    'kota.kodekota',
-                    'kota.keterangan',
-                    'zona.zona',
-                    'parameter.text as statusaktif',
-                    'kota.modifiedby',
-                    'kota.created_at',
-                    'kota.updated_at'
-                )
-                    ->leftJoin('parameter', 'kota.statusaktif', '=', 'parameter.id')
-                    ->leftJoin('zona', 'kota.zona_id', '=', 'zona.id')
-                    ->orderBy($params['sortIndex'], $params['sortOrder'])
-                    ->orderBy('kota.id', 'asc');
-            }
-        }
-
-        /* Searching */
-        if (count($params['filters']) > 0 && @$params['filters']['rules'][0]['data'] != '') {
-            switch ($params['filters']['groupOp']) {
-                case "AND":
-                    foreach ($params['filters']['rules'] as $index => $search) {
-                        if ($search['field'] == 'statusaktif') {
-                            $query = $query->where('parameter.text', 'LIKE', "%$search[data]%");
-                        } else {
-                            $query = $query->where('kota.'.$search['field'], 'LIKE', "%$search[data]%");
-                        }
-                    }
-
-                    break;
-                case "OR":
-                    foreach ($params['filters']['rules'] as $index => $search) {
-                        if ($search['field'] == 'statusaktif') {
-                            $query = $query->orWhere('parameter.text', 'LIKE', "%$search[data]%");
-                        } else {
-                            $query = $query->orWhere('kota.'.$search['field'], 'LIKE', "%$search[data]%");
-                        }
-                    }
-                    break;
-                default:
-
-                    break;
-            }
-
-            $totalRows = count($query->get());
-            $totalPages = $params['limit'] > 0 ? ceil($totalRows / $params['limit']) : 1;
-        }
-
-        /* Paging */
-        $query = $query->skip($params['offset'])
-            ->take($params['limit']);
-
-        $kota = $query->get();
-
-        /* Set attributes */
-        $attributes = [
-            'totalRows' => $totalRows ?? 0,
-            'totalPages' => $totalPages ?? 0
-        ];
+        $kota = new Kota();
 
         return response([
-            'status' => true,
-            'data' => $kota,
-            'attributes' => $attributes,
-            'params' => $params
+            'data' => $kota->get(),
+            'attributes' => [
+                'totalRows' => $kota->totalRows,
+                'totalPages' => $kota->totalPages
+            ]
         ]);
     }
 
@@ -326,14 +209,6 @@ class KotaController extends Controller
         return response([
             'data' => $data
         ]);
-    }
-
-    public function getPosition($kota, $request)
-    {
-        return DB::table((new Kota)->getTable())->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $kota->{$request->sortname})
-            /* Jika sortname modifiedby atau ada data duplikat */
-            // ->where('id', $request->sortorder == 'desc' ? '>=' : '<=', $parameter->id)
-            ->count();
     }
 
     public function combo(Request $request)

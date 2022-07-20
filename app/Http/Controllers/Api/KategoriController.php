@@ -23,131 +23,14 @@ class KategoriController extends Controller
      */
     public function index()
     {
-        $params = [
-            'offset' => request()->offset ?? ((request()->page - 1) * request()->limit),
-            'limit' => request()->limit ?? 10,
-            'filters' => json_decode(request()->filters, true) ?? [],
-            'sortIndex' => request()->sortIndex ?? 'id',
-            'sortOrder' => request()->sortOrder ?? 'asc',
-        ];
-
-        $totalRows = DB::table((new Kategori)->getTable())->count();
-        $totalPages = $params['limit'] > 0 ? ceil($totalRows / $params['limit']) : 1;
-
-        /* Sorting */
-        $query = DB::table((new Kategori)->getTable())->orderBy($params['sortIndex'], $params['sortOrder']);
-
-        if ($params['sortIndex'] == 'id') {
-            $query = DB::table((new Kategori)->getTable())->select(
-                'kategori.id',
-                'kategori.kodekategori',
-                'kategori.keterangan',
-                'parameter.text as statusaktif',
-                'p.keterangan as subkelompok',
-                'kategori.modifiedby',
-                'kategori.created_at',
-                'kategori.updated_at'
-            )
-            ->leftJoin('parameter', 'kategori.statusaktif', '=', 'parameter.id')
-            ->leftJoin('subkelompok AS p', 'kategori.subkelompok_id', '=', 'p.id')
-            ->orderBy('kategori.id', $params['sortOrder']);
-        } else if ($params['sortIndex'] == 'kodekategori') {
-            $query = DB::table((new Kategori)->getTable())->select(
-                'kategori.id',
-                'kategori.kodekategori',
-                'kategori.keterangan',
-                'parameter.text as statusaktif',
-                'p.keterangan as subkelompok',
-                'kategori.modifiedby',
-                'kategori.created_at',
-                'kategori.updated_at'
-            )
-                ->leftJoin('parameter', 'kategori.statusaktif', '=', 'parameter.id')
-                ->leftJoin('subkelompok AS p', 'kategori.subkelompok_id', '=', 'p.id')
-                ->orderBy($params['sortIndex'], $params['sortOrder'])
-                ->orderBy('kategori.id', $params['sortOrder']);
-        } else {
-            if ($params['sortOrder'] == 'asc') {
-                $query = DB::table((new Kategori)->getTable())->select(
-                    'kategori.id',
-                    'kategori.kodekategori',
-                    'kategori.keterangan',
-                    'parameter.text as statusaktif',
-                    'p.keterangan as subkelompok',
-                    'kategori.modifiedby',
-                    'kategori.created_at',
-                    'kategori.updated_at'
-                )
-                    ->leftJoin('parameter', 'kategori.statusaktif', '=', 'parameter.id')
-                    ->leftJoin('subkelompok AS p', 'kategori.subkelompok_id', '=', 'p.id')
-                    ->orderBy($params['sortIndex'], $params['sortOrder'])
-                    ->orderBy('kategori.id', $params['sortOrder']);
-            } else {
-                $query = DB::table((new Kategori)->getTable())->select(
-                    'kategori.id',
-                    'kategori.kodekategori',
-                    'kategori.keterangan',
-                    'parameter.text as statusaktif',
-                    'p.keterangan as subkelompok',
-                    'kategori.modifiedby',
-                    'kategori.created_at',
-                    'kategori.updated_at'
-                )
-                    ->leftJoin('parameter', 'kategori.statusaktif', '=', 'parameter.id')
-                    ->leftJoin('subkelompok AS p', 'kategori.subkelompok_id', '=', 'p.id')
-                    ->orderBy($params['sortIndex'], $params['sortOrder'])
-                    ->orderBy('kategori.id', 'asc');
-            }
-        }
-
-        /* Searching */
-        if (count($params['filters']) > 0 && @$params['filters']['rules'][0]['data'] != '') {
-            switch ($params['filters']['groupOp']) {
-                case "AND":
-                    foreach ($params['filters']['rules'] as $index => $search) {
-                        if ($search['field'] == 'statusaktif') {
-                            $query = $query->where('parameter.text', 'LIKE', "%$search[data]%");
-                        } else {
-                            $query = $query->where('gudang.'.$search['field'], 'LIKE', "%$search[data]%");
-                        }
-                    }
-
-                    break;
-                case "OR":
-                    foreach ($params['filters']['rules'] as $index => $search) {
-                        if ($search['field'] == 'statusaktif') {
-                            $query = $query->orWhere('parameter.text', 'LIKE', "%$search[data]%");
-                        } else {
-                            $query = $query->orWhere('gudang.'.$search['field'], 'LIKE', "%$search[data]%");
-                        }
-                    }
-                    break;
-                default:
-
-                    break;
-            }
-
-            $totalRows = count($query->get());
-            $totalPages = $params['limit'] > 0 ? ceil($totalRows / $params['limit']) : 1;
-        }
-
-        /* Paging */
-        $query = $query->skip($params['offset'])
-            ->take($params['limit']);
-
-        $kategori = $query->get();
-
-        /* Set attributes */
-        $attributes = [
-            'totalRows' => $totalRows ?? 0,
-            'totalPages' => $totalPages ?? 0
-        ];
+        $kategori = new Kategori();
 
         return response([
-            'status' => true,
-            'data' => $kategori,
-            'attributes' => $attributes,
-            'params' => $params
+            'data' => $kategori->get(),
+            'attributes' => [
+                'totalRows' => $kategori->totalRows,
+                'totalPages' => $kategori->totalPages
+            ]
         ]);
     }
 
@@ -324,14 +207,6 @@ class KategoriController extends Controller
         return response([
             'data' => $data
         ]);
-    }
-
-    public function getPosition($kategori, $request)
-    {
-        return DB::table((new Kategori)->getTable())->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $kategori->{$request->sortname})
-            /* Jika sortname modifiedby atau ada data duplikat */
-            // ->where('id', $request->sortorder == 'desc' ? '>=' : '<=', $parameter->id)
-            ->count();
     }
 
     public function combo(Request $request)

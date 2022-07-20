@@ -194,7 +194,7 @@ route::middleware('auth:api')->group(function () {
     Route::resource('jenistrado', JenisTradoController::class);
 
     Route::get('akunpusat/field_length', [AkunPusatController::class, 'fieldLength']);
-    Route::resource('akunpusat', AkunPusatController::class);
+    Route::resource('akunpusat', AkunPusatController::class)->parameters(['akunpusat' => 'akunPusat']);
 
     Route::get('error/field_length', [ErrorController::class, 'fieldLength']);
     Route::get('error/geterror', [ErrorController::class, 'geterror']);
@@ -286,29 +286,29 @@ route::middleware('auth:api')->group(function () {
     Route::get('bankpelanggan/field_length', [BankPelangganController::class, 'fieldLength']);
     Route::resource('bankpelanggan', BankPelangganController::class);
 
-    Route::get('sub_kelompok/export', [SubKelompokController::class, 'export']);
-    Route::get('sub_kelompok/field_length', [SubKelompokController::class, 'fieldLength']);
-    Route::resource('sub_kelompok', SubKelompokController::class);
+    Route::get('subkelompok/export', [SubKelompokController::class, 'export']);
+    Route::get('subkelompok/field_length', [SubKelompokController::class, 'fieldLength']);
+    Route::resource('subkelompok', SubKelompokController::class)->parameters(['subkelompok' => 'subKelompok']);
 
     Route::get('supplier/export', [SupplierController::class, 'export']);
     Route::get('supplier/field_length', [SupplierController::class, 'fieldLength']);
     Route::resource('supplier', SupplierController::class);
-    
+
     Route::get('penerima/export', [PenerimaController::class, 'export']);
     Route::get('penerima/field_length', [PenerimaController::class, 'fieldLength']);
     Route::resource('penerima', PenerimaController::class);
-    
+
     Route::get('pelanggan/export', [PelangganController::class, 'export']);
     Route::get('pelanggan/field_length', [PelangganController::class, 'fieldLength']);
     Route::resource('pelanggan', PelangganController::class);
 
-    Route::get('status_container/export', [StatusContainerController::class, 'export']);
-    Route::get('status_container/field_length', [StatusContainerController::class, 'fieldLength']);
-    Route::resource('status_container', StatusContainerController::class);
-    
-    Route::get('penerimaan_trucking/export', [PenerimaanTruckingController::class, 'export']);
-    Route::get('penerimaan_trucking/field_length', [PenerimaanTruckingController::class, 'fieldLength']);
-    Route::resource('penerimaan_trucking', PenerimaanTruckingController::class);
+    Route::get('statuscontainer/export', [StatusContainerController::class, 'export']);
+    Route::get('statuscontainer/field_length', [StatusContainerController::class, 'fieldLength']);
+    Route::resource('statuscontainer', StatusContainerController::class)->parameters(['statuscontainer' => 'statusContainer']);
+
+    Route::get('penerimaantrucking/export', [PenerimaanTruckingController::class, 'export']);
+    Route::get('penerimaantrucking/field_length', [PenerimaanTruckingController::class, 'fieldLength']);
+    Route::resource('penerimaantrucking', PenerimaanTruckingController::class)->parameters(['penerimaantrucking' => 'penerimaanTrucking']);
 
     Route::get('pengeluaran_trucking/export', [PengeluaranTruckingController::class, 'export']);
     Route::get('pengeluaran_trucking/field_length', [PengeluaranTruckingController::class, 'fieldLength']);

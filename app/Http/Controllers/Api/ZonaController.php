@@ -23,127 +23,14 @@ class ZonaController extends Controller
      */
     public function index()
     {
-        $params = [
-            'offset' => request()->offset ?? ((request()->page - 1) * request()->limit),
-            'limit' => request()->limit ?? 10,
-            'filters' => json_decode(request()->filters, true) ?? [],
-            'sortIndex' => request()->sortIndex ?? 'id',
-            'sortOrder' => request()->sortOrder ?? 'asc',
-        ];
-
-        $totalRows = DB::table((new Zona())->getTable())->count();
-        $totalPages = $params['limit'] > 0 ? ceil($totalRows / $params['limit']) : 1;
-
-        /* Sorting */
-        $query = DB::table((new Zona())->getTable())->orderBy($params['sortIndex'], $params['sortOrder']);
-
-        if ($params['sortIndex'] == 'id') {
-            $query = DB::table((new Zona())->getTable())->select(
-                'zona.id',
-                'zona.zona',
-                'zona.keterangan',
-                'parameter.text as statusaktif',
-                'zona.modifiedby',
-                'zona.created_at',
-                'zona.updated_at'
-            )
-            ->leftJoin('parameter', 'zona.statusaktif', '=', 'parameter.id')
-            ->orderBy('zona.id', $params['sortOrder']);
-        } else if ($params['sortIndex'] == 'zona' or $params['sortIndex'] == 'keterangan') {
-            $query = DB::table((new Zona())->getTable())->select(
-                'zona.id',
-                'zona.zona',
-                'zona.keterangan',
-                'parameter.text as statusaktif',
-                'zona.modifiedby',
-                'zona.created_at',
-                'zona.updated_at'
-            )
-                ->leftJoin('parameter', 'zona.statusaktif', '=', 'parameter.id')
-                ->orderBy($params['sortIndex'], $params['sortOrder'])
-                ->orderBy('zona.id', $params['sortOrder']);
-        } else {
-            if ($params['sortOrder'] == 'asc') {
-                $query = DB::table((new Zona())->getTable())->select(
-                    'zona.id',
-                    'zona.zona',
-                    'zona.keterangan',
-                    'parameter.text as statusaktif',
-                    'zona.modifiedby',
-                    'zona.created_at',
-                    'zona.updated_at'
-                )
-                    ->leftJoin('parameter', 'zona.statusaktif', '=', 'parameter.id')
-                    ->orderBy($params['sortIndex'], $params['sortOrder'])
-                    ->orderBy('zona.id', $params['sortOrder']);
-            } else {
-                $query = DB::table((new Zona())->getTable())->select(
-                    'zona.id',
-                    'zona.zona',
-                    'zona.keterangan',
-                    'parameter.text as statusaktif',
-                    'zona.modifiedby',
-                    'zona.created_at',
-                    'zona.updated_at'
-                )
-                    ->leftJoin('parameter', 'zona.statusaktif', '=', 'parameter.id')
-                    ->orderBy($params['sortIndex'], $params['sortOrder'])
-                    ->orderBy('zona.id', 'asc');
-            }
-        }
-
-        /* Searching */
-        if (count($params['filters']) > 0 && @$params['filters']['rules'][0]['data'] != '') {
-            switch ($params['filters']['groupOp']) {
-                case "AND":
-                    foreach ($params['filters']['rules'] as $index => $search) {
-                        if ($search['field'] == 'statusaktif') {
-                            $query = $query->where('parameter.text', "$search[data]");
-                        } elseif ($search['field'] == 'updated_at') {
-                            $query = $query->whereRaw("CONVERT(VARCHAR(25), zona.updated_at, 105) like ?","%$search[data]%");
-                        } else {
-                            $query = $query->where('zona.'.$search['field'], 'LIKE', "%$search[data]%");
-                        }
-                    }
-
-                    break;
-                case "OR":
-                    foreach ($params['filters']['rules'] as $index => $search) {
-                        if ($search['field'] == 'statusaktif') {
-                            $query = $query->orWhere('parameter.text', 'LIKE', "%$search[data]%");
-                        } elseif ($search['field'] == 'updated_at') {
-                            $query = $query->orWhereRaw("CONVERT(VARCHAR(25), zona.updated_at, 105) like ?","%$search[data]%");
-                        } else {
-                            $query = $query->orWhere('zona.'.$search['field'], 'LIKE', "%$search[data]%");
-                        }
-                    }
-                    break;
-                default:
-
-                    break;
-            }
-
-            $totalRows = count($query->get());
-            $totalPages = $params['limit'] > 0 ? ceil($totalRows / $params['limit']) : 1;
-        }
-
-        /* Paging */
-        $query = $query->skip($params['offset'])
-            ->take($params['limit']);
-
-        $zona = $query->get();
-
-        /* Set attributes */
-        $attributes = [
-            'totalRows' => $totalRows ?? 0,
-            'totalPages' => $totalPages ?? 0
-        ];
+        $zona = new Zona();
 
         return response([
-            'status' => true,
-            'data' => $zona,
-            'attributes' => $attributes,
-            'params' => $params
+            'data' => $zona->get(),
+            'attributes' => [
+                'totalRows' => $zona->totalRows,
+                'totalPages' => $zona->totalPages
+            ]
         ]);
     }
 
@@ -318,14 +205,6 @@ class ZonaController extends Controller
         return response([
             'data' => $data
         ]);
-    }
-
-    public function getPosition($zona, $request)
-    {
-        return DB::table((new Zona())->getTable())->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $zona->{$request->sortname})
-            /* Jika sortname modifiedby atau ada data duplikat */
-            // ->where('id', $request->sortorder == 'desc' ? '>=' : '<=', $parameter->id)
-            ->count();
     }
 
     public function combo(Request $request)

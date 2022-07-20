@@ -24,106 +24,14 @@ class SupirController extends Controller
      */
     public function index()
     {
-        $params = [
-            'offset' => request()->offset ?? ((request()->page - 1) * request()->limit),
-            'limit' => request()->limit ?? 10,
-            'filters' => json_decode(request()->filters, true) ?? [],
-            'sortIndex' => request()->sortIndex ?? 'id',
-            'sortOrder' => request()->sortOrder ?? 'asc',
-        ];
-
-        $totalRows = DB::table((new Supir())->getTable())->count();
-        $totalPages = ceil($totalRows / $params['limit']);
-
-        /* Sorting */
-        // $query = DB::table((new Supir())->getTable())->orderBy($params['sortIndex'], $params['sortOrder']);
-
-        $query = DB::table((new Supir())->getTable())->select(
-            'supir.id',
-            'supir.namasupir',
-            'supir.tgllahir',
-            'supir.alamat',
-            'supir.kota',
-            'supir.telp',
-            'parameter.text as statusaktif',
-            'supir.nominaldepositsa',
-            // 'supir.tglmasuk',
-            'supirlama.namasupir as supirold_id',
-            'supir.nosim',
-            'supir.tglterbitsim',
-            'supir.tglexpsim',
-            'supir.keterangan',
-            'supir.noktp',
-            'supir.nokk',
-            'statusadaupdategambar.text as statusadaupdategambar',
-            'statusluarkota.text as statuslluarkota',
-            'statuszonatertentu.text as statuszonatertentu',
-            'zona.zona as zona_id',
-            'supir.photosupir',
-            'supir.photoktp',
-            'supir.photosim',
-            'supir.photokk',
-            'supir.photoskck',
-            'supir.photodomisili',
-            'supir.keteranganresign',
-            'supir.statusblacklist',
-            'supir.tglberhentisupir',
-            'supir.modifiedby',
-            'supir.created_at',
-            'supir.updated_at'
-        )
-        // ->join('kota as kotadari', 'kota.id', '=', 'upahritasi.kotadari_id')
-        // ->join('kota as kotasampai', 'kota.id', '=', 'upahritasi.kotasampai_id')
-        ->leftJoin('zona', 'zona.id', '=', 'supir.zona_id')
-        ->leftJoin('parameter', 'supir.statusaktif', '=', 'parameter.id')
-        ->leftJoin('parameter as statusadaupdategambar', 'supir.statusadaupdategambar', '=', 'statusadaupdategambar.id')
-        ->leftJoin('parameter as statusluarkota', 'supir.statuslluarkota', '=', 'statusluarkota.id')
-        ->leftJoin('parameter as statuszonatertentu', 'supir.statuszonatertentu', '=', 'statuszonatertentu.id')
-        ->leftJoin('supir as supirlama', 'supir.supirold_id', '=', 'supirlama.id')
-        // ->leftJoin('parameter as param', 'upahritasi.statusluarkota', '=', 'param.id')
-        ->orderBy($params['sortIndex'], $params['sortOrder']);
-
-        /* Searching */
-        if (count($params['filters']) > 0) {
-            switch ($params['filters']['groupOp']) {
-                case "AND":
-                    foreach ($params['filters']['rules'] as $index => $search) {
-                        $query = $query->where($search['field'], 'LIKE', "%$search[data]%");
-                    }
-
-                    break;
-                case "OR":
-                    foreach ($params['filters']['rules'] as $index => $search) {
-                        $query = $query->orWhere($search['field'], 'LIKE', "%$search[data]%");
-                    }
-
-                    break;
-                default:
-                
-                    break;
-            }
-
-            $totalRows = count($query->get());
-            $totalPages = ceil($totalRows / $params['limit']);
-        }
-
-        /* Paging */
-        $query = $query->skip($params['offset'])
-            ->take($params['limit']);
-
-        $supirs = $query->get();
-
-        /* Set attributes */
-        $attributes = [
-            'totalRows' => $totalRows,
-            'totalPages' => $totalPages
-        ];
+        $supir = new Supir();
 
         return response([
-            'status' => true,
-            'data' => $supirs,
-            'attributes' => $attributes,
-            'params' => $params
+            'data' => $supir->get(),
+            'attributes' => [
+                'totalRows' => $supir->totalRows,
+                'totalPages' => $supir->totalPages
+            ]
         ]);
     }
  /**

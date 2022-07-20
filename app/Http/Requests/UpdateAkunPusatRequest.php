@@ -13,7 +13,7 @@ class UpdateAkunPusatRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +24,17 @@ class UpdateAkunPusatRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'keterangancoa' => 'required',
+            'type' => 'required',
+            'level' => 'required|int',
+            'aktif' => 'required|int',
+            'parent' => 'required',
+            'statuscoa' => 'required|int',
+            'statusaccountpayable' => 'required|int',
+            'statusneraca' => 'required|int',
+            'statuslabarugi' => 'required|int',
+            'coamain' => 'required',
+            'statusaktif' => 'required|int',
         ];
     }
 }

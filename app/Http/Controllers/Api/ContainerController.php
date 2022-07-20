@@ -30,128 +30,14 @@ class ContainerController extends Controller
      */
     public function index()
     {
-        $params = [
-            'offset' => request()->offset ?? ((request()->page - 1) * request()->limit),
-            'limit' => request()->limit ?? 10,
-            'filters' => json_decode(request()->filters, true) ?? [],
-            'sortIndex' => request()->sortIndex ?? 'id',
-            'sortOrder' => request()->sortOrder ?? 'asc',
-        ];
-        // dd($params);
-        
-        $totalRows = DB::table((new Container)->getTable())->count();
-        $totalPages = ceil($totalRows / $params['limit']);
+        $container = new Container();
 
-        /* Sorting */
-        if ($params['sortIndex'] == 'id') {
-            $query = DB::table((new Container)->getTable())->select(
-                'container.id',
-                'container.keterangan',
-                'container.kodecontainer',
-                'parameter.text as statusaktif',
-                'container.modifiedby',
-                'container.created_at',
-                'container.updated_at'
-            )
-                ->leftJoin('parameter', 'container.statusaktif', '=', 'parameter.id')
-                ->orderBy('container.id', $params['sortOrder']);
-        } else if ($params['sortIndex'] == 'keterangan') {
-            $query = DB::table((new Container)->getTable())->select(
-                'container.id',
-                'container.kodecontainer',
-                'container.keterangan',
-                'parameter.text as statusaktif',
-                'container.modifiedby',
-                'container.created_at',
-                'container.updated_at'
-            )
-                ->leftJoin('parameter', 'container.statusaktif', '=', 'parameter.id')
-                ->orderBy('container.keterangan', $params['sortOrder'])
-                ->orderBy('container.id', $params['sortOrder']);
-        } else {
-            if ($params['sortOrder'] == 'asc') {
-                $query = DB::table((new Container)->getTable())->select(
-                    'container.id',
-                    'container.kodecontainer',
-                    'container.keterangan',
-                    'parameter.text as statusaktif',
-                    'container.modifiedby',
-                    'container.created_at',
-                    'container.updated_at'
-                )
-                    ->leftJoin('parameter', 'container.statusaktif', '=', 'parameter.id')
-                    ->orderBy($params['sortIndex'], $params['sortOrder'])
-                    ->orderBy('container.id', $params['sortOrder']);
-            } else {
-                $query = DB::table((new Container)->getTable())->select(
-                    'container.id',
-                    'container.kodecontainer',
-                    'container.keterangan',
-                    'parameter.text as statusaktif',
-                    'container.modifiedby',
-                    'container.created_at',
-                    'container.updated_at'
-                )
-                    ->leftJoin('parameter', 'container.statusaktif', '=', 'parameter.id')
-                    ->orderBy($params['sortIndex'], $params['sortOrder'])
-                    ->orderBy('container.id', 'asc');
-            }
-        }
-
-
-        /* Searching */
-        if (count($params['filters']) > 0 && @$params['filters']['rules'][0]['data'] != '') {
-            switch ($params['filters']['groupOp']) {
-                case "AND":
-                    foreach ($params['filters']['rules'] as $index => $search) {
-                        if ($search['field'] == 'statusaktif') {
-                            $query = $query->where('parameter.text', 'LIKE', "%$search[data]%");
-                        } else {
-                            $query = $query->where($search['field'], 'LIKE', "%$search[data]%");
-                        }
-                    }
-
-                    break;
-                case "OR":
-                    foreach ($params['filters']['rules'] as $index => $search) {
-                        if ($search['field'] == 'statusaktif') {
-                            $query = $query->orWhere('parameter.text', 'LIKE', "%$search[data]%");
-                        } else {
-                            $query = $query->orWhere($search['field'], 'LIKE', "%$search[data]%");
-                        }
-                    }
-
-                    break;
-                default:
-
-                    break;
-            }
-
-
-            $totalRows = count($query->get());
-
-            $totalPages = ceil($totalRows / $params['limit']);
-        }
-
-        /* Paging */
-        $query = $query->skip($params['offset'])
-            ->take($params['limit']);
-
-        $containers = $query->get();
-
-        /* Set attributes */
-        $attributes = [
-            'totalRows' => $totalRows,
-            'totalPages' => $totalPages
-        ];
-
-        // echo $time2-$time1;
-        // echo '---';
         return response([
-            'status' => true,
-            'data' => $containers,
-            'attributes' => $attributes,
-            'params' => $params
+            'data' => $container->get(),
+            'attributes' => [
+                'totalRows' => $container->totalRows,
+                'totalPages' => $container->totalPages
+            ]
         ]);
     }
 
@@ -227,7 +113,7 @@ class ContainerController extends Controller
             ]);
         } catch (\Throwable $th) {
             DB::rollBack();
-            return response($th->getMessage());
+            throw $th;
         }
     }
 

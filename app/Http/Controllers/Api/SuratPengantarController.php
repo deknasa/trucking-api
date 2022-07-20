@@ -824,14 +824,6 @@ class SuratPengantarController extends Controller
         ]);
     }
 
-    public function getPosition($suratpengantar, $request)
-    {
-        return DB::table((new SuratPengantar())->getTable())->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $suratpengantar->{$request->sortname})
-            /* Jika sortname modifiedby atau ada data duplikat */
-            // ->where('id', $request->sortorder == 'desc' ? '>=' : '<=', $parameter->id)
-            ->count();
-    }
-
     public function getid($id, $request, $del)
     {
         $params = [

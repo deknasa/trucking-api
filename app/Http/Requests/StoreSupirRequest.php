@@ -24,6 +24,9 @@ class StoreSupirRequest extends FormRequest
     public function rules()
     {
         return [
+            'namasupir' => 'required',
+            'tgllahir' => 'required',
+            'kota' => 'required',
             'alamat' => 'required',
             'statusaktif' => 'required',
             // 'tglstnkmati' => 'required',
