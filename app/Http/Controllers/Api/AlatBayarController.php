@@ -177,8 +177,8 @@ class AlatBayarController extends Controller
             DB::commit();
 
             $data = $this->getid($alatbayar->id, $request, $del);
-            $alatbayar->position = $data->row;
-            $alatbayar->id = $data->id;
+            $alatbayar->position = @$data->row;
+            $alatbayar->id = @$data->id;
             if (isset($request->limit)) {
                 $alatbayar->page = ceil($alatbayar->position / $request->limit);
             }
