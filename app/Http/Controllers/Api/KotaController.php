@@ -93,11 +93,11 @@ class KotaController extends Controller
         }
     }
 
-    public function show(Kota $kota)
+    public function show($id)
     {
         return response([
             'status' => true,
-            'data' => $kota
+            'data' => Kota::find($id)
         ]);
     }
 

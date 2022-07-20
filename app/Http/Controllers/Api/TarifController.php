@@ -233,6 +233,7 @@ class TarifController extends Controller
             'zona' => Zona::all(),
             'statusaktif' => Parameter::where(['grp'=>'status aktif'])->get(),
             'statuspenyesuaianharga' => Parameter::where(['grp'=>'status penyesuaian harga'])->get(),
+            'sistemton' => Parameter::where(['grp'=>'sistem ton'])->get(),
         ];
 
         return response([
