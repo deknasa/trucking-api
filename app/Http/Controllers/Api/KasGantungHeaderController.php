@@ -33,71 +33,14 @@ class KasGantungHeaderController extends Controller
      */
     public function index(Request $request)
     {
-        $params = [
-            'offset' => $request->offset ?? 0,
-            'limit' => $request->limit ?? 10,
-            'search' => $request->search ?? [],
-            'sortIndex' => $request->sortIndex ?? 'id',
-            'sortOrder' => $request->sortOrder ?? 'asc',
-            'withRelations' => $request->withRelations ?? false,
-        ];
-
-        $totalRows = KasGantungHeader::count();
-        $totalPages = $params['limit'] > 0 ? ceil($totalRows / $params['limit']) : 1;
-
-        /* Sorting */
-        $query = KasGantungHeader::orderBy($params['sortIndex'], $params['sortOrder']);
-
-        /* Searching */
-        if (count($params['search']) > 0 && @$params['search']['rules'][0]['data'] != '') {
-            switch ($params['search']['groupOp']) {
-                case "AND":
-                    foreach ($params['search']['rules'] as $index => $search) {
-                        $query = $query->where($search['field'], 'LIKE', "%$search[data]%");
-                    }
-
-                    break;
-                case "OR":
-                    foreach ($params['search']['rules'] as $index => $search) {
-                        $query = $query->orWhere($search['field'], 'LIKE', "%$search[data]%");
-                    }
-
-                    break;
-                default:
-
-                    break;
-            }
-
-            $totalRows = count($query->get());
-            $totalPages = $params['limit'] > 0 ? ceil($totalRows / $params['limit']) : 1;
-        }
-
-        /* Paging */
-        $query = $query->skip($params['offset'])
-            ->take($params['limit']);
-
-        $parameters = $params['withRelations'] == true
-            ? $query->with(
-                'kasgantungDetail',
-                'bank',
-            )->get()
-            : $query->with(
-                'kasgantungDetail',
-                'bank',
-                'penerima'
-            )->get();
-
-        /* Set attributes */
-        $attributes = [
-            'totalRows' => $totalRows,
-            'totalPages' => $totalPages
-        ];
+        $kasgantungHeader = new KasGantungHeader();
 
         return response([
-            'status' => true,
-            'data' => $parameters,
-            'attributes' => $attributes,
-            'params' => $params
+            'data' => $kasgantungHeader->get(),
+            'attributes' => [
+                'totalRows' => $kasgantungHeader->totalRows,
+                'totalPages' => $kasgantungHeader->totalPages
+            ]
         ]);
     }
 
@@ -316,7 +259,7 @@ class KasGantungHeaderController extends Controller
                     ->count();
 
                 if (isset($request->limit)) {
-                    $kasgantungHeader->page = ceil($kasgantungHeader->position / $request->limit);
+                    $kasgantungHeader->page = ceil($kasgantungHeader->position / ($request->limit ?? 10));
                 }
 
                 return response([
@@ -555,9 +498,9 @@ class KasGantungHeaderController extends Controller
                     ->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $kasgantungHeader->{$request->sortname})
                     ->where('id', '<=', $kasgantungHeader->id)
                     ->count();
-
+                
                 if (isset($request->limit)) {
-                    $kasgantungHeader->page = ceil($kasgantungHeader->position / $request->limit);
+                    $kasgantungHeader->page = ceil($kasgantungHeader->position / ($request->limit ?? 10));
                 }
 
                 return response([

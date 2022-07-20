@@ -163,12 +163,7 @@ route::middleware('auth:api')->group(function () {
     Route::get('container/combostatus', [ContainerController::class, 'combostatus']);
     Route::get('container/getPosition2', [ContainerController::class, 'getPosition2']);
     Route::resource('container', ContainerController::class);
-
-    Route::get('supir/combo', [SupirController::class, 'combo']);
-    Route::get('supir/field_length', [SupirController::class, 'fieldLength']);
-    Route::post('supir/upload_image/{id}', [SupirController::class, 'uploadImage']);
-    Route::resource('supir', SupirController::class);
-
+    
     Route::get('bank/combo', [BankController::class, 'combo']);
     Route::get('bank/field_length', [BankController::class, 'fieldLength']);
     Route::resource('bank', BankController::class);

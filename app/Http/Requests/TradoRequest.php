@@ -24,6 +24,7 @@ class TradoRequest extends FormRequest
     public function rules()
     {
         return [
+            'keterangan' => 'required',
             'statusaktif' => 'required',
             'tglstnkmati' => 'required',
             'tglasuransimati' => 'required',
