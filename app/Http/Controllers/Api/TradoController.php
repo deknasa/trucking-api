@@ -138,14 +138,14 @@ class TradoController extends Controller
             $trado->jenis = strtoupper($request->jenis);
             $trado->isisilinder = strtoupper($request->isisilinder);
             $trado->warna = strtoupper($request->warna);
-            $trado->bahanbakar = strtoupper($request->bahankabar);
-            $trado->jlhsumbu = strtoupper($request->jlhsumbu);
-            $trado->jlhroda = strtoupper($request->jlhroda);
+            $trado->jenisbahanbakar = strtoupper($request->jenisbahanbakar);
+            $trado->jumlahsumbu = strtoupper($request->jumlahsumbu);
+            $trado->jumlahroda = strtoupper($request->jumlahroda);
             $trado->model = strtoupper($request->model);
             $trado->nobpkb = strtoupper($request->nobpkb);
             $trado->statusmobilstoring = strtoupper($request->statusmobilstoring);
             $trado->mandor_id = $request->mandor_id;
-            $trado->jlhbanserap = strtoupper($request->jlhbanserap);
+            $trado->jumlahbanserap = strtoupper($request->jumlahbanserap);
             $trado->statusappeditban = strtoupper($request->statusappeditban);
             $trado->statuslewatvalidasi = strtoupper($request->statuslewatvalidasi);
 
@@ -210,14 +210,14 @@ class TradoController extends Controller
             $trado->jenis = strtoupper($request->jenis);
             $trado->isisilinder = strtoupper($request->isisilinder);
             $trado->warna = strtoupper($request->warna);
-            $trado->bahanbakar = strtoupper($request->bahankabar);
-            $trado->jlhsumbu = strtoupper($request->jlhsumbu);
-            $trado->jlhroda = strtoupper($request->jlhroda);
+            $trado->jenisbahanbakar = strtoupper($request->jenisbahanbakar);
+            $trado->jumlahsumbu = strtoupper($request->jumlahsumbu);
+            $trado->jumlahroda = strtoupper($request->jumlahroda);
             $trado->model = strtoupper($request->model);
             $trado->nobpkb = strtoupper($request->nobpkb);
             $trado->statusmobilstoring = strtoupper($request->statusmobilstoring);
             $trado->mandor_id = $request->mandor_id;
-            $trado->jlhbanserap = strtoupper($request->jlhbanserap);
+            $trado->jumlahbanserap = strtoupper($request->jumlahbanserap);
             $trado->statusappeditban = strtoupper($request->statusappeditban);
             $trado->statuslewatvalidasi = strtoupper($request->statuslewatvalidasi);
 
@@ -784,13 +784,13 @@ class TradoController extends Controller
             $table->integer('isisilinder')->length(11)->default(0);
             $table->string('warna', 30)->default('');
             // $table->string('jenisbahanbakar', 30)->default('');
-            $table->integer('jlhsumbu')->length(11)->default(0);
-            $table->integer('jlhroda')->length(11)->default(0);
+            $table->integer('jumlahsumbu')->length(11)->default(0);
+            $table->integer('jumlahroda')->length(11)->default(0);
             $table->string('model', 50)->default('');
             $table->string('nobpkb', 50)->default('');
             $table->integer('statusmobilstoring')->length(11)->default(0);
             $table->integer('mandor_id')->length(11)->default(0);
-            $table->integer('jlhbanserap')->length(11)->default(0);
+            $table->integer('jumlahbanserap')->length(11)->default(0);
             $table->integer('statusappeditban')->length(11)->default(0);
             $table->integer('statuslewatvalidasi')->length(11)->default(0);
             $table->string('photostnk', 1500)->default('');
@@ -838,13 +838,13 @@ class TradoController extends Controller
                 'trado.isisilinder',
                 'trado.warna',
                 // 'trado.jenisbahanbakar',
-                'trado.jlhsumbu',
-                'trado.jlhroda',
+                'trado.jumlahsumbu',
+                'trado.jumlahroda',
                 'trado.model',
                 'trado.nobpkb',
                 'trado.statusmobilstoring',
                 'trado.mandor_id',
-                'trado.jlhbanserap',
+                'trado.jumlahbanserap',
                 'trado.statusappeditban',
                 'trado.statuslewatvalidasi',
                 'trado.photostnk',
@@ -889,13 +889,13 @@ class TradoController extends Controller
                 'trado.isisilinder',
                 'trado.warna',
                 // 'trado.jenisbahanbakar',
-                'trado.jlhsumbu',
-                'trado.jlhroda',
+                'trado.jumlahsumbu',
+                'trado.jumlahroda',
                 'trado.model',
                 'trado.nobpkb',
                 'trado.statusmobilstoring',
                 'trado.mandor_id',
-                'trado.jlhbanserap',
+                'trado.jumlahbanserap',
                 'trado.statusappeditban',
                 'trado.statuslewatvalidasi',
                 'trado.photostnk',
@@ -943,13 +943,13 @@ class TradoController extends Controller
                 'trado.isisilinder',
                 'trado.warna',
                 // 'trado.jenisbahanbakar',
-                'trado.jlhsumbu',
-                'trado.jlhroda',
+                'trado.jumlahsumbu',
+                'trado.jumlahroda',
                 'trado.model',
                 'trado.nobpkb',
                 'trado.statusmobilstoring',
                 'trado.mandor_id',
-                'trado.jlhbanserap',
+                'trado.jumlahbanserap',
                 'trado.statusappeditban',
                 'trado.statuslewatvalidasi',
                 'trado.photostnk',
@@ -995,13 +995,13 @@ class TradoController extends Controller
                     'trado.isisilinder',
                     'trado.warna',
                     // 'trado.jenisbahanbakar',
-                    'trado.jlhsumbu',
-                    'trado.jlhroda',
+                    'trado.jumlahsumbu',
+                    'trado.jumlahroda',
                     'trado.model',
                     'trado.nobpkb',
                     'trado.statusmobilstoring',
                     'trado.mandor_id',
-                    'trado.jlhbanserap',
+                    'trado.jumlahbanserap',
                     'trado.statusappeditban',
                     'trado.statuslewatvalidasi',
                     'trado.photostnk',
@@ -1020,7 +1020,7 @@ class TradoController extends Controller
 
         DB::table($temp)->insertUsing(['id_','keterangan','statusaktif','kmawal','kmakhirgantioli','tglakhirgantioli','tglstnkmati','tglasuransimati','tahun','akhirproduksi','merek','norangka','nomesin','nama','nostnk','alamatstnk','modifiedby','tglstandarisasi','tglserviceopname','statusstandarisasi','keteranganprogressstandarisasi','tglspeksimati','tglpajakstnk','tglgantiakiterakhir','statusmutasi','statusvalidasikendaraan','tipe','jenis','isisilinder','warna',
             // 'jenisbahanbakar',
-            'jlhsumbu','jlhroda','model','nobpkb','statusmobilstoring','mandor_id','jlhbanserap','statusappeditban','statuslewatvalidasi','photostnk','photobpkb','phototrado','created_at','updated_at'], $query);
+            'jumlahsumbu','jumlahroda','model','nobpkb','statusmobilstoring','mandor_id','jumlahbanserap','statusappeditban','statuslewatvalidasi','photostnk','photobpkb','phototrado','created_at','updated_at'], $query);
 
 
         if ($del == 1) {
