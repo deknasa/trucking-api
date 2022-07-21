@@ -137,13 +137,17 @@ class Controller extends BaseController
         $indexRow = request()->indexRow ?? 1;
         $limit = request()->limit ?? 10;
         $page = request()->page ?? 1;
-        $sortname = request()->sortname ?? "id";
-        $sortorder = request()->sortorder ?? "asc";
+        $sortname = request()->sortIndex ?? "id";
+        $sortorder = request()->sortOrder ?? "asc";
 
         $temporaryTable = '##temp' . rand(1, 10000);
         $columns = Schema::getColumnListing($modelTable);
 
-        $models = DB::table($modelTable)->orderBy($modelTable . '.' . $sortname, $sortorder);
+        $query = DB::table($modelTable);
+        
+        $model->setRequestParameters();
+        
+        $models = $model->sort($query);
 
         Schema::create($temporaryTable, function (Blueprint $table) use ($columns) {
             $table->increments('position');
@@ -161,7 +165,6 @@ class Controller extends BaseController
 
         DB::table($temporaryTable)->insertUsing($columns, $models);
 
-        // dd(DB::table($temporaryTable)->get());
         if ($isDeleting) {
             if ($page == 1) {
                 $position = $indexRow + 1;
@@ -181,7 +184,6 @@ class Controller extends BaseController
                 ->orderBy('position');
         } else {
             $query = DB::table($temporaryTable)->select('position')->where('id', $model->id)->orderBy('position');
-            
         }
         
         $data = $query->first();
