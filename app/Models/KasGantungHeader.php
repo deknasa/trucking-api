@@ -43,11 +43,11 @@ class KasGantungHeader extends MyModel
         $query = DB::table($this->table)->select(
             'kasgantungheader.id',
             'kasgantungheader.nobukti',
-            'kasgantungheader.tgl',
+            'kasgantungheader.tglbukti',
             'penerima.namapenerima as penerima_id',
             'kasgantungheader.keterangan',
             'bank.namabank as bank_id',
-            'kasgantungheader.nobuktikaskeluar',
+            'kasgantungheader.pengeluaran_nobukti',
             'kasgantungheader.coakaskeluar',
             'kasgantungheader.tglkaskeluar',
             'kasgantungheader.modifiedby',
