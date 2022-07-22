@@ -4,27 +4,16 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Requests\StoreRoleRequest;
 use App\Http\Requests\UpdateRoleRequest;
-use App\Http\Requests\DestroyRoleRequest;
 use App\Http\Requests\StoreLogTrailRequest;
-
 use App\Models\Role;
-use App\Models\LogTrail;
-
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-
 use App\Http\Controllers\Controller;
 
 class RoleController extends Controller
 {
     /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-     /**
      * @ClassName 
      */
     public function index()
@@ -96,7 +85,6 @@ class RoleController extends Controller
                     break;
             }
 
-
             $totalRows = count($query->get());
 
             $totalPages = ceil($totalRows / $params['limit']);
@@ -123,12 +111,6 @@ class RoleController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \App\Http\Requests\StoreRoleRequest  $request
-     * @return \Illuminate\Http\Response
-     */
-     /**
      * @ClassName 
      */
     public function store(StoreRoleRequest $request)
@@ -160,7 +142,7 @@ class RoleController extends Controller
             $del = 0;
             $data = $this->getid($role->id, $request, $del);
             $role->position = $data->row;
-            // dd($role->position );
+
             if (isset($request->limit)) {
                 $role->page = ceil($role->position / $request->limit);
             }
@@ -191,13 +173,6 @@ class RoleController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
-     *
-     * @param  \App\Http\Requests\UpdateRoleRequest  $request
-     * @param  \App\Models\Role  $role
-     * @return \Illuminate\Http\Response
-     */
-     /**
      * @ClassName 
      */
     public function update(UpdateRoleRequest $request, Role $role)
@@ -244,12 +219,6 @@ class RoleController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Role  $role
-     * @return \Illuminate\Http\Response
-     */
-     /**
      * @ClassName 
      */
     public function destroy(Role $role, Request $request)
