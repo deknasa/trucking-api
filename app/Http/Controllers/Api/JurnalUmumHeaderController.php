@@ -60,7 +60,7 @@ class JurnalUmumHeaderController extends Controller
             $jurnalumumHeader = new JurnalUmumHeader();
 
             $jurnalumumHeader->nobukti = $request->nobukti;
-            $jurnalumumHeader->tgl = $request->tgl;
+            $jurnalumumHeader->tglbukti = $request->tgl;
             $jurnalumumHeader->keterangan = $request->keterangan ?? '';
             $jurnalumumHeader->postingdari = $request->postingdari;
             $jurnalumumHeader->statusapproval = $request->statusapproval;

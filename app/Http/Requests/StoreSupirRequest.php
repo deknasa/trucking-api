@@ -29,6 +29,7 @@ class StoreSupirRequest extends FormRequest
             'kota' => 'required',
             'alamat' => 'required',
             'statusaktif' => 'required',
+            'zona_id' => 'required',
             // 'tglstnkmati' => 'required',
             // 'tglasuransimati' => 'required',
             // 'tahun' => 'required',

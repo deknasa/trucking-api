@@ -46,7 +46,7 @@ class Controller extends BaseController
             ->where('grp', $request->group)
             ->where('subgrp', $request->subgroup)
             ->first();
-
+        
         if (!isset($parameter->text)) {
             return response([
                 'status' => false,

@@ -29,61 +29,76 @@ class TradoController extends Controller
      */
     public function index()
     {
-        $params = [
-            'offset' => request()->offset ?? ((request()->page - 1) * request()->limit),
-            'limit' => request()->limit ?? 10,
-            'filters' => json_decode(request()->filters, true) ?? [],
-            'sortIndex' => request()->sortIndex ?? 'id',
-            'sortOrder' => request()->sortOrder ?? 'asc',
-        ];
+        $trado = new Trado();
 
-        $totalRows = DB::table((new Trado())->getTable())->count();
-        $totalPages = ceil($totalRows / $params['limit']);
+        $rows = $trado->get();
 
-        /* Sorting */
-        $query = DB::table((new Trado())->getTable())->orderBy($params['sortIndex'], $params['sortOrder']);
-        
-        /* Searching */
-        if (count($params['filters']) > 0) {
-            switch ($params['filters']['groupOp']) {
-                case "AND":
-                    foreach ($params['filters']['rules'] as $index => $search) {
-                        $query = $query->where($search['field'], 'LIKE', "%$search[data]%");
+        $baseUrl = asset('');
+
+        foreach($rows as $key => $item) {
+            $arrtrado   = json_decode($item->phototrado);
+            $arrstnk    = json_decode($item->photostnk);
+            $arrbpkb    = json_decode($item->photobpkb);
+
+            $imgtrado='';
+            if (!empty($arrtrado)) {
+                $count = count($arrtrado);
+                if ($count > 0) {
+                    $total = $count / 3;
+                    $idx=2;
+                    for ($i=0; $i < $total; $i++) {
+                        if ($i>0){
+                            $idx+=3;
+                        }
+
+                        $imgtrado .= "<img src='".$baseUrl.'uploads/trado/'.$arrtrado[$idx]."' class='mr-2'>";
                     }
-
-                    break;
-                case "OR":
-                    foreach ($params['filters']['rules'] as $index => $search) {
-                        $query = $query->orWhere($search['field'], 'LIKE', "%".$search['data']."%");
-                    }
-
-                    break;
-                default:
-                
-                    break;
+                }
             }
 
-            $totalRows = count($query->get());
-            $totalPages = ceil($totalRows / $params['limit']);
+            $imgbpkb='';
+            if (!empty($arrbpkb)) {
+                $count = count($arrbpkb);
+                if ($count > 0) {
+                    $total = $count / 3;
+                    $idx=2;
+                    for ($i=0; $i < $total; $i++) {
+                        if ($i>0){
+                            $idx+=3;
+                        }
+
+                        $imgbpkb .= "<img src='".$baseUrl.'uploads/bpkb/'.$arrbpkb[$idx]."' class='mr-2'>";
+                    }
+                }
+            }
+
+            $imgstnk='';
+            if (!empty($arrstnk)) {
+                $count = count($arrstnk);
+                if ($count > 0) {
+                    $total = $count / 3;
+                    $idx=2;
+                    for ($i=0; $i < $total; $i++) {
+                        if ($i>0){
+                            $idx+=3;
+                        }
+
+                        $imgstnk .= "<img src='".$baseUrl.'uploads/stnk/'.$arrstnk[$idx]."' class='mr-2'>";
+                    }
+                }
+            }
+
+            $rows[$key]->phototrado   = $imgtrado;
+            $rows[$key]->photobpkb    = $imgbpkb;
+            $rows[$key]->photostnk    = $imgstnk;
         }
 
-        /* Paging */
-        $query = $query->skip($params['offset'])
-            ->take($params['limit']);
-
-        $trados = $query->get();
-
-        /* Set attributes */
-        $attributes = [
-            'totalRows' => $totalRows,
-            'totalPages' => $totalPages
-        ];
-
         return response([
-            'status' => true,
-            'data' => $trados,
-            'attributes' => $attributes,
-            'params' => $params
+            'data' => $rows,
+            'attributes' => [
+                'totalRows' => $trado->totalRows,
+                'totalPages' => $trado->totalPages
+            ]
         ]);
     }
  /**
@@ -114,7 +129,7 @@ class TradoController extends Controller
             $trado->tglserviceopname = date('Y-m-d',strtotime($request->tglserviceopname));
             $trado->statusstandarisasi = $request->statusstandarisasi;
             $trado->keteranganprogressstandarisasi = strtoupper($request->keteranganprogressstandarisasi);
-            $trado->statusjenisplat = $request->statusjenisplat;
+            // $trado->statusjenisplat = $request->statusjenisplat;
             $trado->tglspeksimati = date('Y-m-d',strtotime($request->tglspeksimati));
             $trado->tglgantiakiterakhir = date('Y-m-d',strtotime($request->tglgantiakiterakhir));
             $trado->statusmutasi = $request->statusmutasi;
@@ -123,25 +138,27 @@ class TradoController extends Controller
             $trado->jenis = strtoupper($request->jenis);
             $trado->isisilinder = strtoupper($request->isisilinder);
             $trado->warna = strtoupper($request->warna);
-            $trado->bahanbakar = strtoupper($request->bahankabar);
-            $trado->jlhsumbu = strtoupper($request->jlhsumbu);
-            $trado->jlhroda = strtoupper($request->jlhroda);
+            $trado->jenisbahanbakar = strtoupper($request->jenisbahanbakar);
+            $trado->jumlahsumbu = strtoupper($request->jumlahsumbu);
+            $trado->jumlahroda = strtoupper($request->jumlahroda);
             $trado->model = strtoupper($request->model);
             $trado->nobpkb = strtoupper($request->nobpkb);
             $trado->statusmobilstoring = strtoupper($request->statusmobilstoring);
             $trado->mandor_id = $request->mandor_id;
-            $trado->jlhbanserap = strtoupper($request->jlhbanserap);
+            $trado->jumlahbanserap = strtoupper($request->jumlahbanserap);
             $trado->statusappeditban = strtoupper($request->statusappeditban);
             $trado->statuslewatvalidasi = strtoupper($request->statuslewatvalidasi);
 
             $trado->save();
+
+            $upload = $this->upload_image($request,$trado->id,'ADD');
 
             DB::commit();
             /* Set position and page */
             $del = 0;
             // $data = $this->getid($trado->id, $request, $del);
             $trado->position = @$data->row;
-            // dd($cabang->position);
+            
             if (isset($request->limit)) {
                 $trado->page = ceil($trado->position / $request->limit);
             }
@@ -184,7 +201,7 @@ class TradoController extends Controller
             $trado->tglserviceopname = date('Y-m-d',strtotime($request->tglserviceopname));
             $trado->statusstandarisasi = $request->statusstandarisasi;
             $trado->keteranganprogressstandarisasi = strtoupper($request->keteranganprogressstandarisasi);
-            $trado->statusjenisplat = strtoupper($request->statusjenisplat);
+            // $trado->statusjenisplat = strtoupper($request->statusjenisplat);
             $trado->tglspeksimati = date('Y-m-d',strtotime($request->tglspeksimati));
             $trado->tglgantiakiterakhir = date('Y-m-d',strtotime($request->tglgantiakiterakhir));
             $trado->statusmutasi = $request->statusmutasi;
@@ -193,16 +210,18 @@ class TradoController extends Controller
             $trado->jenis = strtoupper($request->jenis);
             $trado->isisilinder = strtoupper($request->isisilinder);
             $trado->warna = strtoupper($request->warna);
-            $trado->bahanbakar = strtoupper($request->bahankabar);
-            $trado->jlhsumbu = strtoupper($request->jlhsumbu);
-            $trado->jlhroda = strtoupper($request->jlhroda);
+            $trado->jenisbahanbakar = strtoupper($request->jenisbahanbakar);
+            $trado->jumlahsumbu = strtoupper($request->jumlahsumbu);
+            $trado->jumlahroda = strtoupper($request->jumlahroda);
             $trado->model = strtoupper($request->model);
             $trado->nobpkb = strtoupper($request->nobpkb);
             $trado->statusmobilstoring = strtoupper($request->statusmobilstoring);
             $trado->mandor_id = $request->mandor_id;
-            $trado->jlhbanserap = strtoupper($request->jlhbanserap);
+            $trado->jumlahbanserap = strtoupper($request->jumlahbanserap);
             $trado->statusappeditban = strtoupper($request->statusappeditban);
             $trado->statuslewatvalidasi = strtoupper($request->statuslewatvalidasi);
+
+            $upload = $this->upload_image($request,$id,'EDIT');
 
             $trado->save();
             // $datajson = [
@@ -289,7 +308,7 @@ class TradoController extends Controller
                 }
             }
 
-            DB::table((new Trado())->getTable())->destroy($trado->id);
+            DB::table((new Trado())->getTable())->delete($trado->id);
 
             $logtrail = new LogTrail();
             $logtrail->namatabel = 'TRADO';
@@ -353,6 +372,180 @@ class TradoController extends Controller
         return response([
             'data' => $data
         ]);
+    }
+
+    public function upload_image($request,$id,$aksi) {
+
+        try {
+            if ($aksi == 'EDIT') {
+
+                $imageOld = json_decode($request->g_all);
+                $get = DB::table((new Trado())->getTable())->where('id',$id)->first();
+                
+                $phototrado   = json_decode($get->phototrado,true);
+                $photostnk    = json_decode($get->photostnk,true);
+                $photobpkb    = json_decode($get->photobpkb,true);
+
+                // $trado  = $request->file('g_trado');
+                // $bpkb   = $request->file('g_bpkb');
+                // $stnk   = $request->file('g_stnk');
+                $trado  = (array)$imageOld->trado;
+                $bpkb   = (array)$imageOld->bpkb;
+                $stnk   = (array)$imageOld->stnk;
+
+                if(!empty($trado)) {
+                    foreach($trado as $item) {
+                        $ori    = $item;
+                        $medium = substr_replace($item,"medium",0,3);
+                        $small  = substr_replace($item,"small",0,3);
+
+                        $data['trado'][] = strtoupper($ori);
+                        $data['trado'][] = strtoupper($medium);
+                        $data['trado'][] = strtoupper($small);
+                    }
+
+                    $diff = array_diff($phototrado,$data['trado']);
+
+                    foreach($diff as $val) {
+                        $path = public_path().'/uploads/trado/'.$val;
+                        if (File::exists($path)) {
+                            File::delete($path);
+                        }
+                    }
+                } else {
+                    if (!empty($phototrado)) {
+                        foreach($phototrado as $item) {
+                            $path = public_path().'/uploads/trado/'.$item;
+                            if (File::exists($path)) {
+                                File::delete($path);
+                            }
+                        }
+                    }
+                }
+                
+                if(!empty($bpkb)) {
+                    foreach($bpkb as $item) {
+                        $ori = $item;
+                        $medium = substr_replace($item,"medium",0,3);
+                        $small = substr_replace($item,"small",0,3);
+
+                        $data['bpkb'][] = strtoupper($ori);
+                        $data['bpkb'][] = strtoupper($medium);
+                        $data['bpkb'][] = strtoupper($small);
+                    }
+
+                    $diff = array_diff($photobpkb,$data['bpkb']);
+                        
+                    foreach($diff as $val) {
+                        $path = public_path().'/uploads/bpkb/'.$val;
+                        if (File::exists($path)) {
+                            File::delete($path);
+                        }
+                    }
+                } else {
+                    if (!empty($photobpkb)) {
+                        foreach($photobpkb as $item) {
+                            $path = public_path().'/uploads/bpkb/'.$item;
+                            if (File::exists($path)) {
+                                File::delete($path);
+                            }
+                        }
+                    }
+                }
+                if(!empty($stnk)) {
+                    foreach($stnk as $item) {
+                        $ori = $item;
+                        $medium = substr_replace($item,"medium",0,3);
+                        $small = substr_replace($item,"small",0,3);
+
+                        $data['stnk'][] = strtoupper($ori);
+                        $data['stnk'][] = strtoupper($medium);
+                        $data['stnk'][] = strtoupper($small);
+                    }
+                    
+                    $diff = array_diff($photostnk,$data['stnk']);
+                        
+                    foreach($diff as $val) {
+                        $path = public_path().'/uploads/stnk/'.$val;
+                        if (File::exists($path)) {
+                            File::delete($path);
+                        }
+                    }
+                } else {
+                    if (!empty($photostnk)) {
+                        foreach($photostnk as $item) {
+                            $path = public_path().'/uploads/stnk/'.$item;
+                            if (File::exists($path)) {
+                                File::delete($path);
+                            }
+                        }
+                    }
+                }
+            }
+
+        // UPLOAD TRADO
+        if ($request->file('g_trado')) {
+            foreach($request->file('g_trado') as $image) {
+                $basePath = public_path().'/uploads/trado/';
+                $uniqueName = time().rand().rand(10,100).'.'.$image->getClientOriginalName();
+                $name = "ori-".$uniqueName;
+                $image->move($basePath,$name);
+
+                $path = $basePath.$name;
+                $data['trado'][] = $name;
+                $imageResizes = App::imageResize($basePath,$path,$uniqueName);
+                $data['trado'][] = $imageResizes[0];
+                $data['trado'][] = $imageResizes[1];
+            }
+        }
+
+        // UPLOAD BPKB
+        if ($request->file('g_bpkb')) {
+            foreach($request->file('g_bpkb') as $image) {
+                $basePath = public_path().'/uploads/bpkb/';
+                $uniqueName = time().rand().rand(10,100).'.'.$image->getClientOriginalName();
+                $name = "ori-".$uniqueName;
+                $image->move($basePath,$name);
+                
+                $path = $basePath.$name;
+                $data['bpkb'][] = $name;
+                $imageResizes = App::imageResize($basePath,$path,$uniqueName);
+                $data['bpkb'][] = $imageResizes[0];
+                $data['bpkb'][] = $imageResizes[1];
+            }
+        }
+
+        // UPLOAD STNK
+        if ($request->file('g_stnk')) {
+            foreach($request->file('g_stnk') as $image) {
+                $basePath = public_path().'/uploads/stnk/';
+                $uniqueName = time().rand().rand(10,100).'.'.$image->getClientOriginalName();
+                $name = "ori-".$uniqueName;
+                $image->move($basePath,$name);
+                
+                $path = $basePath.$name;
+                $data['stnk'][] = $name;
+                $imageResizes = App::imageResize($basePath,$path,$uniqueName);
+                $data['stnk'][] = $imageResizes[0];
+                $data['stnk'][] = $imageResizes[1];
+            }
+        }
+
+        $trado = Trado::find($id);
+        $trado->phototrado = json_encode($data['trado'] ?? []);
+        $trado->photobpkb = json_encode($data['bpkb'] ?? []);
+        $trado->photostnk = json_encode($data['stnk'] ?? []);
+        $trado->save();
+
+        return [
+            'status' => true,
+            'message' => 'Berhasil disimpan',
+        ];
+
+        } catch (\Throwable $th) {
+            dd($th->getMessage());
+            return response($th->getMessage());
+        }
     }
 
     public function uploadImage(Request $request,$id) {
@@ -580,7 +773,7 @@ class TradoController extends Controller
             $table->date('tglserviceopname')->default('1900/1/1');
             $table->integer('statusstandarisasi')->length(11)->default(0);
             $table->string('keteranganprogressstandarisasi', 100)->default('');
-            $table->integer('statusjenisplat')->length(11)->default(0);
+            // $table->integer('statusjenisplat')->length(11)->default(0);
             $table->date('tglspeksimati')->default('1900/1/1');
             $table->date('tglpajakstnk')->default('1900/1/1');
             $table->date('tglgantiakiterakhir')->default('1900/1/1');
@@ -591,13 +784,13 @@ class TradoController extends Controller
             $table->integer('isisilinder')->length(11)->default(0);
             $table->string('warna', 30)->default('');
             // $table->string('jenisbahanbakar', 30)->default('');
-            $table->integer('jlhsumbu')->length(11)->default(0);
-            $table->integer('jlhroda')->length(11)->default(0);
+            $table->integer('jumlahsumbu')->length(11)->default(0);
+            $table->integer('jumlahroda')->length(11)->default(0);
             $table->string('model', 50)->default('');
             $table->string('nobpkb', 50)->default('');
             $table->integer('statusmobilstoring')->length(11)->default(0);
             $table->integer('mandor_id')->length(11)->default(0);
-            $table->integer('jlhbanserap')->length(11)->default(0);
+            $table->integer('jumlahbanserap')->length(11)->default(0);
             $table->integer('statusappeditban')->length(11)->default(0);
             $table->integer('statuslewatvalidasi')->length(11)->default(0);
             $table->string('photostnk', 1500)->default('');
@@ -634,7 +827,7 @@ class TradoController extends Controller
                 'trado.tglserviceopname',
                 'trado.statusstandarisasi',
                 'trado.keteranganprogressstandarisasi',
-                'trado.statusjenisplat',
+                // 'trado.statusjenisplat',
                 'trado.tglspeksimati',
                 'trado.tglpajakstnk',
                 'trado.tglgantiakiterakhir',
@@ -645,13 +838,13 @@ class TradoController extends Controller
                 'trado.isisilinder',
                 'trado.warna',
                 // 'trado.jenisbahanbakar',
-                'trado.jlhsumbu',
-                'trado.jlhroda',
+                'trado.jumlahsumbu',
+                'trado.jumlahroda',
                 'trado.model',
                 'trado.nobpkb',
                 'trado.statusmobilstoring',
                 'trado.mandor_id',
-                'trado.jlhbanserap',
+                'trado.jumlahbanserap',
                 'trado.statusappeditban',
                 'trado.statuslewatvalidasi',
                 'trado.photostnk',
@@ -685,7 +878,7 @@ class TradoController extends Controller
                 'trado.tglserviceopname',
                 'trado.statusstandarisasi',
                 'trado.keteranganprogressstandarisasi',
-                'trado.statusjenisplat',
+                // 'trado.statusjenisplat',
                 'trado.tglspeksimati',
                 'trado.tglpajakstnk',
                 'trado.tglgantiakiterakhir',
@@ -696,13 +889,13 @@ class TradoController extends Controller
                 'trado.isisilinder',
                 'trado.warna',
                 // 'trado.jenisbahanbakar',
-                'trado.jlhsumbu',
-                'trado.jlhroda',
+                'trado.jumlahsumbu',
+                'trado.jumlahroda',
                 'trado.model',
                 'trado.nobpkb',
                 'trado.statusmobilstoring',
                 'trado.mandor_id',
-                'trado.jlhbanserap',
+                'trado.jumlahbanserap',
                 'trado.statusappeditban',
                 'trado.statuslewatvalidasi',
                 'trado.photostnk',
@@ -739,7 +932,7 @@ class TradoController extends Controller
                 'trado.tglserviceopname',
                 'trado.statusstandarisasi',
                 'trado.keteranganprogressstandarisasi',
-                'trado.statusjenisplat',
+                // 'trado.statusjenisplat',
                 'trado.tglspeksimati',
                 'trado.tglpajakstnk',
                 'trado.tglgantiakiterakhir',
@@ -750,13 +943,13 @@ class TradoController extends Controller
                 'trado.isisilinder',
                 'trado.warna',
                 // 'trado.jenisbahanbakar',
-                'trado.jlhsumbu',
-                'trado.jlhroda',
+                'trado.jumlahsumbu',
+                'trado.jumlahroda',
                 'trado.model',
                 'trado.nobpkb',
                 'trado.statusmobilstoring',
                 'trado.mandor_id',
-                'trado.jlhbanserap',
+                'trado.jumlahbanserap',
                 'trado.statusappeditban',
                 'trado.statuslewatvalidasi',
                 'trado.photostnk',
@@ -791,7 +984,7 @@ class TradoController extends Controller
                     'trado.tglserviceopname',
                     'trado.statusstandarisasi',
                     'trado.keteranganprogressstandarisasi',
-                    'trado.statusjenisplat',
+                    // 'trado.statusjenisplat',
                     'trado.tglspeksimati',
                     'trado.tglpajakstnk',
                     'trado.tglgantiakiterakhir',
@@ -802,13 +995,13 @@ class TradoController extends Controller
                     'trado.isisilinder',
                     'trado.warna',
                     // 'trado.jenisbahanbakar',
-                    'trado.jlhsumbu',
-                    'trado.jlhroda',
+                    'trado.jumlahsumbu',
+                    'trado.jumlahroda',
                     'trado.model',
                     'trado.nobpkb',
                     'trado.statusmobilstoring',
                     'trado.mandor_id',
-                    'trado.jlhbanserap',
+                    'trado.jumlahbanserap',
                     'trado.statusappeditban',
                     'trado.statuslewatvalidasi',
                     'trado.photostnk',
@@ -825,9 +1018,9 @@ class TradoController extends Controller
         }
 
 
-        DB::table($temp)->insertUsing(['id_','keterangan','statusaktif','kmawal','kmakhirgantioli','tglakhirgantioli','tglstnkmati','tglasuransimati','tahun','akhirproduksi','merek','norangka','nomesin','nama','nostnk','alamatstnk','modifiedby','tglstandarisasi','tglserviceopname','statusstandarisasi','keteranganprogressstandarisasi','statusjenisplat','tglspeksimati','tglpajakstnk','tglgantiakiterakhir','statusmutasi','statusvalidasikendaraan','tipe','jenis','isisilinder','warna',
+        DB::table($temp)->insertUsing(['id_','keterangan','statusaktif','kmawal','kmakhirgantioli','tglakhirgantioli','tglstnkmati','tglasuransimati','tahun','akhirproduksi','merek','norangka','nomesin','nama','nostnk','alamatstnk','modifiedby','tglstandarisasi','tglserviceopname','statusstandarisasi','keteranganprogressstandarisasi','tglspeksimati','tglpajakstnk','tglgantiakiterakhir','statusmutasi','statusvalidasikendaraan','tipe','jenis','isisilinder','warna',
             // 'jenisbahanbakar',
-            'jlhsumbu','jlhroda','model','nobpkb','statusmobilstoring','mandor_id','jlhbanserap','statusappeditban','statuslewatvalidasi','photostnk','photobpkb','phototrado','created_at','updated_at'], $query);
+            'jumlahsumbu','jumlahroda','model','nobpkb','statusmobilstoring','mandor_id','jumlahbanserap','statusappeditban','statuslewatvalidasi','photostnk','photobpkb','phototrado','created_at','updated_at'], $query);
 
 
         if ($del == 1) {

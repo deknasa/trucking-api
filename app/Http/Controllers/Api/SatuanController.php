@@ -172,7 +172,7 @@ class SatuanController extends Controller
             DB::commit();
 
             $data = $this->getid($satuan->id, $request, $del);
-            $satuan->position = $data->row  ?? 0;
+            $satuan->position = $data->row ?? 0;
             $satuan->id = $data->id  ?? 0;
             if (isset($request->limit)) {
                 $satuan->page = ceil($satuan->position / $request->limit);

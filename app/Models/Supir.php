@@ -51,7 +51,7 @@ class Supir extends MyModel
             'supir.photoskck',
             'supir.photodomisili',
             'supir.keteranganresign',
-            'supir.statusblacklist',
+            'statusblacklist.text as statusblacklist',
             'supir.tglberhentisupir',
             'supir.modifiedby',
             'supir.created_at',
@@ -62,6 +62,7 @@ class Supir extends MyModel
             ->leftJoin('parameter as statusadaupdategambar', 'supir.statusadaupdategambar', '=', 'statusadaupdategambar.id')
             ->leftJoin('parameter as statusluarkota', 'supir.statuslluarkota', '=', 'statusluarkota.id')
             ->leftJoin('parameter as statuszonatertentu', 'supir.statuszonatertentu', '=', 'statuszonatertentu.id')
+            ->leftJoin('parameter as statusblacklist', 'supir.statusblacklist', '=', 'statusblacklist.id')
             ->leftJoin('supir as supirlama', 'supir.supirold_id', '=', 'supirlama.id');
 
         $this->totalRows = $query->count();
@@ -89,6 +90,10 @@ class Supir extends MyModel
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statusaktif') {
                             $query = $query->where('parameter.text', '=', $filters['data']);
+                        } elseif ($filters['field'] == 'zona_id') {
+                            $query = $query->where('zona.zona', 'LIKE', "%$filters[data]%");
+                        } elseif ($filters['field'] == 'statusluarkota') {
+                            $query = $query->where('statusluarkota.text', 'LIKE', "%$filters[data]%");
                         } else {
                             $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
@@ -105,6 +110,10 @@ class Supir extends MyModel
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statusaktif') {
                             $query = $query->orWhere('parameter.text', '=', $filters['data']);
+                        } elseif ($filters['field'] == 'zona_id') {
+                            $query = $query->orWhere('zona.zona', 'LIKE', "%$filters[data]%");
+                        } elseif ($filters['field'] == 'statusluarkota') {
+                            $query = $query->orWhere('statusluarkota.text', 'LIKE', "%$filters[data]%");
                         } else {
                             $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
