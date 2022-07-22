@@ -116,17 +116,10 @@ route::middleware('auth:api')->group(function () {
 
     Route::resource('absensi_detail', AbsensiSupirDetailController::class);
 
-    Route::get('user/field_length', [UserController::class, 'fieldLength']);
-    Route::get('user/combostatus', [UserController::class, 'combostatus']);
-    Route::get('user/combocabang', [UserController::class, 'combocabang']);
-    Route::get('user/getuserid', [UserController::class, 'getuserid']);
-    Route::resource('user', UserController::class);
-
     Route::get('menu/field_length', [MenuController::class, 'fieldLength']);
     Route::get('menu/combomenuparent', [MenuController::class, 'combomenuparent']);
     Route::get('menu/getdatanamaacos', [MenuController::class, 'getdatanamaacos']);
     Route::resource('menu', MenuController::class);
-
 
     Route::get('userrole/field_length', [UserRoleController::class, 'fieldLength']);
     Route::get('userrole/detail', [UserRoleController::class, 'detail']);
