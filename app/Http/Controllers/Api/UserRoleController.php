@@ -488,131 +488,34 @@ class UserRoleController extends Controller
         ]);
     }
 
-    public function getid($id, $request, $del)
+    /**
+     * @ClassName
+     */
+    public function export()
     {
+        $response = $this->index();
+        $decodedResponse = json_decode($response->content(), true);
+        $useracls = $decodedResponse['data'];
 
-        $params = [
-            'indexRow' => $request->indexRow ?? 1,
-            'limit' => $request->limit ?? 100,
-            'page' => $request->page ?? 1,
-            'sortname' => $request->sortname ?? 'id',
-            'sortorder' => $request->sortorder ?? 'asc',
+        $columns = [
+            [
+                'label' => 'No',
+            ],
+            [
+                'label' => 'ID',
+                'index' => 'id',
+            ],
+            [
+                'label' => 'User',
+                'index' => 'user',
+            ],
+            [
+                'label' => 'Nama User',
+                'index' => 'name',
+            ],
         ];
 
-        $temp = '##temp' . rand(1, 10000);
-        Schema::create($temp, function ($table) {
-            $table->id();
-            $table->bigInteger('user_id')->default('0');
-            $table->bigInteger('id_')->default('0');
-            $table->string('modifiedby', 30)->default('');
-            $table->dateTime('created_at')->default('1900/1/1');
-            $table->dateTime('updated_at')->default('1900/1/1');
-
-            $table->index('user_id');
-        });
-
-        $query = UserRole::select(
-            DB::raw("userrole.user_id as user_id,
-                        min(userrole.id) as id_,
-                        max(userrole.modifiedby) as modifiedby,
-                        max(userrole.created_at) as created_at,
-                            max(userrole.updated_at) as updated_at")
-        )
-            ->Join('user', 'userrole.user_id', '=', 'user.id')
-            ->groupby('userrole.user_id');
-
-
-        DB::table($temp)->insertUsing(['user_id', 'id_', 'modifiedby', 'created_at', 'updated_at'], $query);
-
-
-
-        /* Sorting */
-        if ($params['sortname'] == 'user') {
-            $query = DB::table($temp)
-                ->select(
-                    $temp . '.user_id as user_id',
-                    $temp . '.id_ as id',
-                    'user.user as user',
-                    'user.name as name',
-                    $temp . '.modifiedby as modifiedby',
-                    $temp . '.updated_at as updated_at'
-                )
-                ->Join('user', 'user.id', '=', $temp . '.user_id')
-                ->orderBy('user.name',  $params['sortorder']);
-        } else {
-            $query = DB::table($temp)
-                ->select(
-                    $temp . '.user_id as user_id',
-                    $temp . '.id_ as id',
-                    'user.user as user',
-                    'user.name as name',
-                    $temp . '.modifiedby as modifiedby',
-                    $temp . '.updated_at as updated_at'
-                )
-                ->Join('user', 'user.id', '=', $temp . '.user_id')
-                ->orderBy($temp . '.' . $params['sortname'],  $params['sortorder']);
-        }
-        // 
-        $temp = '##temp' . rand(1, 10000);
-        Schema::create($temp, function ($table) {
-            $table->id();
-            $table->bigInteger('user_id')->default('0');
-            $table->bigInteger('id_')->default('0');
-            $table->string('user', 300)->default('');
-            $table->string('name', 300)->default('');
-            $table->string('modifiedby', 30)->default('');
-            $table->dateTime('updated_at')->default('1900/1/1');
-
-            $table->index('user_id');
-        });
-
-
-
-
-
-
-
-        DB::table($temp)->insertUsing(['user_id', 'id_',  'user', 'name',  'modifiedby', 'updated_at'], $query);
-
-
-        if ($del == 1) {
-
-            if ($params['page'] == 1) {
-                $baris = $params['indexRow'] + 1;
-            } else {
-                $hal = $params['page'] - 1;
-                $bar = $hal * $params['limit'];
-                $baris = $params['indexRow'] + $bar + 1;
-            }
-
-
-            if (DB::table($temp)
-                ->where('id', '=', $baris)->exists()
-            ) {
-                $querydata = DB::table($temp)
-                    ->select('id_ as row', 'user_id as id')
-                    ->where('id', '=', $baris)
-                    ->orderBy('id');
-            } else {
-                $querydata = DB::table($temp)
-                    ->select('id_ as row', 'user_id as id')
-                    ->where('id', '=', ($baris - 1))
-                    ->orderBy('id');
-            }
-        } else {
-            $querydata = DB::table($temp)
-                ->select(
-                    'id_ as row',
-                    'user_id as id',
-                )
-                ->where('user_id', '=',  $id)
-                ->orderBy('id');
-        }
-
-
-        $data = $querydata->first();
-
-        return $data;
+        $this->toExcel('User Role', $useracls, $columns);
     }
 
     public function detaillist(Request $request)
