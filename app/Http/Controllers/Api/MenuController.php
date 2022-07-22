@@ -115,6 +115,8 @@ class MenuController extends Controller
                     foreach ($params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statusaktif') {
                             $query = $query->where('parameter.text', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'menuparent') {
+                            $query = $query->where('menu2.menuname', 'LIKE', "%$filters[data]%");
                         } else {
                             $query = $query->where('menu.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
@@ -125,6 +127,8 @@ class MenuController extends Controller
                     foreach ($params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statusaktif') {
                             $query = $query->orWhere('parameter.text', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'menuparent') {
+                            $query = $query->orWhere('menu2.menuname', 'LIKE', "%$filters[data]%");
                         } else {
                             $query = $query->orWhere('menu.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
