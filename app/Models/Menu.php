@@ -65,6 +65,10 @@ class Menu extends MyModel
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statusaktif') {
                             $query = $query->where('parameter.text', '=', $filters['data']);
+                        } else if ($filters['field'] == 'menuparent') {
+                            $query = $query->where('menu2.menuname', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'aco_id') {
+                            $query = $query->where('acos.nama', 'LIKE', "%$filters[data]%");
                         } else {
                             $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
@@ -75,6 +79,10 @@ class Menu extends MyModel
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statusaktif') {
                             $query = $query->orWhere('parameter.text', '=', $filters['data']);
+                        } else if ($filters['field'] == 'menuparent') {
+                            $query = $query->orWhere('menu2.menuname', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'aco_id') {
+                            $query = $query->orWhere('acos.nama', 'LIKE', "%$filters[data]%");
                         } else {
                             $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }

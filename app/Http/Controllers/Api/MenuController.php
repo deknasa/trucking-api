@@ -23,157 +23,19 @@ use App\Http\Controllers\Controller;
 class MenuController extends Controller
 {
     /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    /**
      * @ClassName 
      */
     public function index()
     {
-        $params = [
-            'offset' => request()->offset ?? ((request()->page - 1) * request()->limit),
-            'limit' => request()->limit ?? 10,
-            'filters' => json_decode(request()->filters, true) ?? [],
-            'sortIndex' => request()->sortIndex ?? 'id',
-            'sortOrder' => request()->sortOrder ?? 'asc',
-        ];
-
-        $totalRows = DB::table((new Menu)->getTable())->count();
-        $totalPages = ceil($totalRows / $params['limit']);
-
-        /* Sorting */
-        if ($params['sortIndex'] == 'id') {
-            $query = DB::table((new Menu)->getTable())->select(
-                DB::raw(
-                    "menu.id,
-                    menu.menuname,
-                    isnull(menu2.menuname,'') as menuparent,
-                    menu.menuicon,
-                    isnull(acos.nama,'') as aco_id,
-                    menu.link,
-                    menu.menuexe,
-                    menu.menukode,
-                    menu.modifiedby,
-                    menu.created_at,
-                    menu.updated_at"
-                )
-            )
-                ->leftJoin('menu as menu2', 'menu2.id', '=', 'menu.menuparent')
-                ->leftJoin('acos', 'acos.id', '=', 'menu.aco_id')
-                ->orderBy('menu.id', $params['sortOrder']);
-        } else {
-            if ($params['sortOrder'] == 'asc') {
-                $query = DB::table((new Menu)->getTable())->select(
-                    DB::raw(
-                        "menu.id,
-                        menu.menuname,
-                        isnull(menu2.menuname,'') as menuparent,
-                        menu.menuicon,
-                        isnull(acos.nama,'') as aco_id,
-                        menu.link,
-                        menu.menuexe,
-                        menu.menukode,
-                        menu.modifiedby,
-                        menu.created_at,
-                        menu.updated_at"
-                    )
-                )
-                    ->leftJoin('menu as menu2', 'menu2.id', '=', 'menu.menuparent')
-                    ->leftJoin('acos', 'acos.id', '=', 'menu.aco_id')
-                    ->orderBy('menu.' . $params['sortIndex'], $params['sortOrder'])
-                    ->orderBy('menu.id', $params['sortOrder']);
-            } else {
-                $query = DB::table((new Menu)->getTable())->select(
-                    DB::raw(
-                        "menu.id,
-                        menu.menuname,
-                        isnull(menu2.menuname,'') as menuparent,
-                        menu.menuicon,
-                        isnull(acos.nama,'') as aco_id,
-                        menu.link,
-                        menu.menuexe,
-                        menu.menukode,
-                        menu.modifiedby,
-                        menu.created_at,
-                        menu.updated_at"
-                    )
-                )
-                    ->leftJoin('menu as menu2', 'menu2.id', '=', 'menu.menuparent')
-                    ->leftJoin('acos', 'acos.id', '=', 'menu.aco_id')
-                    ->orderBy('menu.' . $params['sortIndex'], $params['sortOrder'])
-                    ->orderBy('menu.id', 'asc');
-            }
-        }
-
-
-        /* Searching */
-        if (count($params['filters']) > 0 && @$params['filters']['rules'][0]['data'] != '') {
-            switch ($params['filters']['groupOp']) {
-                case "AND":
-                    foreach ($params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'statusaktif') {
-                            $query = $query->where('parameter.text', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'menuparent') {
-                            $query = $query->where('menu2.menuname', 'LIKE', "%$filters[data]%");
-                        } else {
-                            $query = $query->where('menu.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                        }
-                    }
-
-                    break;
-                case "OR":
-                    foreach ($params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'statusaktif') {
-                            $query = $query->orWhere('parameter.text', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'menuparent') {
-                            $query = $query->orWhere('menu2.menuname', 'LIKE', "%$filters[data]%");
-                        } else {
-                            $query = $query->orWhere('menu.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                        }
-                    }
-
-                    break;
-                default:
-
-                    break;
-            }
-
-
-            $totalRows = count($query->get());
-
-            $totalPages = ceil($totalRows / $params['limit']);
-        }
-
-        /* Paging */
-        $query = $query->skip($params['offset'])
-            ->take($params['limit']);
-
-        $cabangs = $query->get();
-
-        /* Set attributes */
-        $attributes = [
-            'totalRows' => $totalRows,
-            'totalPages' => $totalPages
-        ];
+        $menu = new Menu();
 
         return response([
-            'status' => true,
-            'data' => $cabangs,
-            'attributes' => $attributes,
-            'params' => $params
+            'data' => $menu->get(),
+            'attributes' => [
+                'totalRows' => $menu->totalRows,
+                'totalPages' => $menu->totalPages
+            ]
         ]);
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
     }
 
     /**
@@ -310,29 +172,12 @@ class MenuController extends Controller
         }
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\Menu  $Menu
-     * @return \Illuminate\Http\Response
-     */
     public function show(Menu $menu)
     {
         return response([
             'status' => true,
             'data' => $menu
         ]);
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\Menu  $Menu
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Menu $menu)
-    {
-        //
     }
 
     /**
@@ -489,128 +334,6 @@ class MenuController extends Controller
         return response([
             'data' => $data
         ]);
-    }
-
-
-
-    public function getid($id, $request, $del)
-    {
-
-        $temp = '##temp' . rand(1, 10000);
-        Schema::create($temp, function ($table) {
-            $table->id();
-            $table->bigInteger('id_')->default('0');
-            $table->string('menuname', 50)->default('');
-            $table->integer('menuseq')->length(11)->default('0');
-            $table->string('menuparent', 250)->default('');
-            $table->string('menuicon', 50)->default('');
-            $table->string('aco_id', 100)->default('');
-            $table->string('menuexe', 100)->default('');
-            $table->string('modifiedby', 50)->default('');
-            $table->dateTime('created_at')->default('1900/1/1');
-            $table->dateTime('updated_at')->default('1900/1/1');
-
-            $table->index('id_');
-        });
-
-
-
-        if ($request->sortname == 'id') {
-            $query = Menu::select(
-                DB::raw("
-                menu.id as id_,
-                menu.menuname,
-                menu.menuseq,
-                isnull(menu2.menuname,'') as menuparent,
-                menu.menuicon,
-                isnull(menu2.menuname,'') as aco_id,
-                menu.modifiedby,
-                menu.created_at,
-                menu.updated_at
-                ")
-
-            )
-                ->leftJoin('menu as menu2', 'menu2.id', '=', 'menu.menuparent')
-                ->leftJoin('acos', 'acos.id', '=', 'menu.aco_id')
-                ->orderBy('menu.id', $request->sortorder);
-        } else {
-            if ($request->sortorder == 'asc') {
-                $query = Menu::select(
-                    DB::raw("
-                    menu.id as id_,
-                    menu.menuname,
-                    menu.menuseq,
-                    isnull(menu2.menuname,'') as menuparent,
-                    menu.menuicon,
-                    isnull(menu2.menuname,'') as aco_id,
-                    menu.modifiedby,
-                    menu.created_at,
-                    menu.updated_at
-                    ")
-                )
-                    ->leftJoin('menu as menu2', 'menu2.id', '=', 'menu.menuparent')
-                    ->leftJoin('acos', 'acos.id', '=', 'menu.aco_id')
-                    ->orderBy($request->sortname, $request->sortorder)
-                    ->orderBy('menu.id', $request->sortorder);
-            } else {
-                $query = Menu::select(
-                    DB::raw("
-                    menu.id as id_,
-                    menu.menuname,
-                    menu.menuseq,
-                    isnull(menu2.menuname,'') as menuparent,
-                    menu.menuicon,
-                    isnull(menu2.menuname,'') as aco_id,
-                    menu.modifiedby,
-                    menu.created_at,
-                    menu.updated_at
-                    ")
-                )
-                    ->leftJoin('menu as menu2', 'menu2.id', '=', 'menu.menuparent')
-                    ->leftJoin('acos', 'acos.id', '=', 'menu.aco_id')
-                    ->orderBy($request->sortname, $request->sortorder)
-                    ->orderBy('menu.id', 'asc');
-            }
-        }
-
-
-
-        DB::table($temp)->insertUsing(['id_', 'menuname', 'menuseq', 'menuparent', 'menuicon', 'aco_id',  'modifiedby', 'created_at', 'updated_at'], $query);
-
-
-        if ($del == 1) {
-            if ($request->page == 1) {
-                $baris = $request->indexRow + 1;
-            } else {
-                $hal = $request->page - 1;
-                $bar = $hal * $request->limit;
-                $baris = $request->indexRow + $bar + 1;
-            }
-
-
-            if (DB::table($temp)
-                ->where('id', '=', $baris)->exists()
-            ) {
-                $querydata = DB::table($temp)
-                    ->select('id as row', 'id_ as id')
-                    ->where('id', '=', $baris)
-                    ->orderBy('id');
-            } else {
-                $querydata = DB::table($temp)
-                    ->select('id as row', 'id_ as id')
-                    ->where('id', '=', ($baris - 1))
-                    ->orderBy('id');
-            }
-        } else {
-            $querydata = DB::table($temp)
-                ->select('id as row')
-                ->where('id_', '=',  $id)
-                ->orderBy('id');
-        }
-
-
-        $data = $querydata->first();
-        return $data;
     }
 
     public function combomenuparent(Request $request)
