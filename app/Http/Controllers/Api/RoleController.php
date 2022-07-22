@@ -4,131 +4,32 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Requests\StoreRoleRequest;
 use App\Http\Requests\UpdateRoleRequest;
-use App\Http\Requests\DestroyRoleRequest;
 use App\Http\Requests\StoreLogTrailRequest;
-
 use App\Models\Role;
-use App\Models\LogTrail;
-
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-
 use App\Http\Controllers\Controller;
 
 class RoleController extends Controller
 {
     /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-     /**
      * @ClassName 
      */
     public function index()
     {
-        $params = [
-            'offset' => request()->offset ?? ((request()->page - 1) * request()->limit),
-            'limit' => request()->limit ?? 10,
-            'filters' => json_decode(request()->filters, true) ?? [],
-            'sortIndex' => request()->sortIndex ?? 'id',
-            'sortOrder' => request()->sortOrder ?? 'asc',
-        ];
-
-        $totalRows = DB::table((new Role)->getTable())->count();
-        $totalPages = ceil($totalRows / $params['limit']);
-
-        /* Sorting */
-        if ($params['sortIndex'] == 'id') {
-            $query = DB::table((new Role)->getTable())->select(
-                'role.id',
-                'role.rolename',
-                'role.modifiedby',
-                'role.created_at',
-                'role.updated_at'
-            )
-                ->orderBy('role.id', $params['sortOrder']);
-        } else {
-            if ($params['sortOrder'] == 'asc') {
-                $query = DB::table((new Role)->getTable())->select(
-                    'role.id',
-                    'role.rolename',
-                    'role.modifiedby',
-                    'role.created_at',
-                    'role.updated_at'
-                )
-                    ->orderBy($params['sortIndex'], $params['sortOrder'])
-                    ->orderBy('role.id', $params['sortOrder']);
-            } else {
-                $query = DB::table((new Role)->getTable())->select(
-                    'role.id',
-                    'role.rolename',
-                    'role.modifiedby',
-                    'role.created_at',
-                    'role.updated_at'
-                )
-                    ->orderBy($params['sortIndex'], $params['sortOrder'])
-                    ->orderBy('role.id', 'asc');
-            }
-        }
-
-
-        /* Searching */
-        if (count($params['filters']) > 0 && @$params['filters']['rules'][0]['data'] != '') {
-            switch ($params['filters']['groupOp']) {
-                case "AND":
-                    foreach ($params['filters']['rules'] as $index => $filters) {
-
-                        $query = $query->where($filters['field'], 'LIKE', "%$filters[data]%");
-                    }
-
-                    break;
-                case "OR":
-                    foreach ($params['filters']['rules'] as $index => $filters) {
-                        $query = $query->orWhere($filters['field'], 'LIKE', "%$filters[data]%");
-                    }
-
-                    break;
-                default:
-
-                    break;
-            }
-
-
-            $totalRows = count($query->get());
-
-            $totalPages = ceil($totalRows / $params['limit']);
-        }
-
-        /* Paging */
-        $query = $query->skip($params['offset'])
-            ->take($params['limit']);
-
-        $roles = $query->get();
-
-        /* Set attributes */
-        $attributes = [
-            'totalRows' => $totalRows,
-            'totalPages' => $totalPages
-        ];
+        $role = new Role();
 
         return response([
-            'status' => true,
-            'data' => $roles,
-            'attributes' => $attributes,
-            'params' => $params
+            'data' => $role->get(),
+            'attributes' => [
+                'totalRows' => $role->totalRows,
+                'totalPages' => $role->totalPages
+            ]
         ]);
     }
 
     /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \App\Http\Requests\StoreRoleRequest  $request
-     * @return \Illuminate\Http\Response
-     */
-     /**
      * @ClassName 
      */
     public function store(StoreRoleRequest $request)
@@ -157,13 +58,9 @@ class RoleController extends Controller
             }
 
             /* Set position and page */
-            $del = 0;
-            $data = $this->getid($role->id, $request, $del);
-            $role->position = $data->row;
-            // dd($role->position );
-            if (isset($request->limit)) {
-                $role->page = ceil($role->position / $request->limit);
-            }
+            $selected = $this->getPosition($role, $role->getTable());
+            $role->position = $selected->position;
+            $role->page = ceil($role->position / ($request->limit ?? 10));
 
             return response([
                 'status' => true,
@@ -191,18 +88,12 @@ class RoleController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
-     *
-     * @param  \App\Http\Requests\UpdateRoleRequest  $request
-     * @param  \App\Models\Role  $role
-     * @return \Illuminate\Http\Response
-     */
-     /**
      * @ClassName 
      */
     public function update(UpdateRoleRequest $request, Role $role)
     {
         DB::beginTransaction();
+
         try {
             $role->rolename = $request->rolename;
             $role->modifiedby = auth('api')->user()->name;
@@ -225,12 +116,9 @@ class RoleController extends Controller
             }
 
             /* Set position and page */
-            $role->position = $this->getid($role->id, $request, 0)->row;
-
-
-            if (isset($request->limit)) {
-                $role->page = ceil($role->position / $request->limit);
-            }
+            $selected = $this->getPosition($role, $role->getTable());
+            $role->position = $selected->position;
+            $role->page = ceil($role->position / ($request->limit ?? 10));
 
             return response([
                 'status' => true,
@@ -239,22 +127,18 @@ class RoleController extends Controller
             ]);
         } catch (\Throwable $th) {
             DB::rollBack();
-            return response($th->getMessage());
+
+            throw $th;
         }
     }
 
     /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Role  $role
-     * @return \Illuminate\Http\Response
-     */
-     /**
      * @ClassName 
      */
     public function destroy(Role $role, Request $request)
     {
         DB::beginTransaction();
+
         try {
             if ($role->delete()) {
                 $logTrail = [
@@ -273,14 +157,10 @@ class RoleController extends Controller
                 DB::commit();
             }
 
-            $del = 1;
-            $data = $this->getid($role->id, $request, $del);
-            $role->position = $data->row;
-            $role->id = $data->id;
-
-            if (isset($request->limit)) {
-                $role->page = ceil($role->position / $request->limit);
-            }
+            $selected = $this->getPosition($role, $role->getTable(), true);
+            $role->position = $selected->position;
+            $role->id = $selected->id;
+            $role->page = ceil($role->position / ($request->limit ?? 10));
 
             return response([
                 'status' => true,
@@ -289,7 +169,8 @@ class RoleController extends Controller
             ]);
         } catch (\Throwable $th) {
             DB::rollBack();
-            return response($th->getMessage());
+
+            throw $th;
         }
     }
 

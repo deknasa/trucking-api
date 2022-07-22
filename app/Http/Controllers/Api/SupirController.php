@@ -166,7 +166,7 @@ class SupirController extends Controller
             $supir->statusaktif = $request->statusaktif;
             $supir->nominaldepositsa = $request->nominaldepositsa ?? 0;
             $supir->depositke = $request->depositke ?? 0;
-            $supir->tgl = date('Y-m-d',strtotime($request->tgl));
+            // $supir->tgl = date('Y-m-d',strtotime($request->tgl));
             $supir->nominalpinjamansaldoawal = $request->nominalpinjamansaldoawal ?? 0;
             $supir->supirold_id = $request->supirold_id ?? 0;
             $supir->tglexpsim = date('Y-m-d',strtotime($request->tglexpsim));
@@ -227,7 +227,7 @@ class SupirController extends Controller
             $supir->statusaktif = $request->statusaktif;
             $supir->nominaldepositsa = $request->nominaldepositsa;
             $supir->depositke = $request->depositke;
-            $supir->tgl = date('Y-m-d',strtotime($request->tgl));
+            // $supir->tgl = date('Y-m-d',strtotime($request->tgl));
             $supir->nominalpinjamansaldoawal = $request->nominalpinjamansaldoawal;
             $supir->supirold_id = $request->supirold_id ?? 0;
             $supir->tglexpsim = date('Y-m-d',strtotime($request->tglexpsim));
@@ -248,7 +248,7 @@ class SupirController extends Controller
             $supir->tglterbitsim = date('Y-m-d',strtotime($request->tglterbitsim));
             $supir->modifiedby = strtoupper(auth('api')->user()->name);
 
-            $upload = $this->upload_image($request,$supir->id,'ADD');
+            $upload = $this->upload_image($request,$supir->id,'EDIT');
 
             $supir->save();
             // $datajson = [
@@ -456,7 +456,7 @@ class SupirController extends Controller
                 $kk         = (array)$imageOld->kk;
                 $skck       = (array)$imageOld->skck;
                 $domisili   = (array)$imageOld->domisili;
-
+                
                 if(!empty($supir)) {
                     foreach($supir as $item) {
                         $item = strtolower($item);
@@ -464,9 +464,9 @@ class SupirController extends Controller
                         $medium = substr_replace($item,"medium",0,3);
                         $small  = substr_replace($item,"small",0,3);
 
-                        $data['supir'][] = strtoupper($ori);
-                        $data['supir'][] = strtoupper($medium);
-                        $data['supir'][] = strtoupper($small);
+                        $data['supir'][] = $ori;
+                        $data['supir'][] = $medium;
+                        $data['supir'][] = $small;
                     }
 
                     $diff = array_diff($photosupir,$data['supir']);
@@ -495,9 +495,9 @@ class SupirController extends Controller
                         $medium = substr_replace($item,"medium",0,3);
                         $small = substr_replace($item,"small",0,3);
 
-                        $data['ktp'][] = strtoupper($ori);
-                        $data['ktp'][] = strtoupper($medium);
-                        $data['ktp'][] = strtoupper($small);
+                        $data['ktp'][] = $ori;
+                        $data['ktp'][] = $medium;
+                        $data['ktp'][] = $small;
                     }
 
                     $diff = array_diff($photoktp,$data['ktp']);
@@ -526,9 +526,9 @@ class SupirController extends Controller
                         $medium = substr_replace($item,"medium",0,3);
                         $small = substr_replace($item,"small",0,3);
 
-                        $data['sim'][] = strtoupper($ori);
-                        $data['sim'][] = strtoupper($medium);
-                        $data['sim'][] = strtoupper($small);
+                        $data['sim'][] = $ori;
+                        $data['sim'][] = $medium;
+                        $data['sim'][] = $small;
                     }
                     
                     $diff = array_diff($photosim,$data['sim']);
@@ -557,9 +557,9 @@ class SupirController extends Controller
                         $medium = substr_replace($item,"medium",0,3);
                         $small = substr_replace($item,"small",0,3);
 
-                        $data['kk'][] = strtoupper($ori);
-                        $data['kk'][] = strtoupper($medium);
-                        $data['kk'][] = strtoupper($small);
+                        $data['kk'][] = $ori;
+                        $data['kk'][] = $medium;
+                        $data['kk'][] = $small;
                     }
                     
                     $diff = array_diff($photokk,$data['kk']);
@@ -589,9 +589,9 @@ class SupirController extends Controller
                         $medium = substr_replace($item,"medium",0,3);
                         $small = substr_replace($item,"small",0,3);
 
-                        $data['skck'][] = strtoupper($ori);
-                        $data['skck'][] = strtoupper($medium);
-                        $data['skck'][] = strtoupper($small);
+                        $data['skck'][] = $ori;
+                        $data['skck'][] = $medium;
+                        $data['skck'][] = $small;
                     }
                     
                     $diff = array_diff($photoskck,$data['skck']);
@@ -621,9 +621,9 @@ class SupirController extends Controller
                         $medium = substr_replace($item,"medium",0,3);
                         $small = substr_replace($item,"small",0,3);
 
-                        $data['domisili'][] = strtoupper($ori);
-                        $data['domisili'][] = strtoupper($medium);
-                        $data['domisili'][] = strtoupper($small);
+                        $data['domisili'][] = $ori;
+                        $data['domisili'][] = $medium;
+                        $data['domisili'][] = $small;
                     }
                     
                     $diff = array_diff($photodomisili,$data['domisili']);
@@ -1129,7 +1129,7 @@ class SupirController extends Controller
             $table->string('statusaktif',300)->default('')->nullable();
             $table->double('nominaldepositsa', 15,2)->default(0);
             $table->BigInteger('depositke')->default(0);
-            $table->date('tgl')->default('1900/1/1');
+            // $table->date('tgl')->default('1900/1/1');
             $table->double('nominalpinjamansaldoawal', 15,2)->default(0);
             $table->unsignedBigInteger('supirold_id')->default(0);
             $table->date('tglexpsim')->default('1900/1/1');
@@ -1172,7 +1172,7 @@ class SupirController extends Controller
                 'parameter.text as statusaktif',
                 'supir.nominaldepositsa',
                 'supir.depositke',
-                'supir.tgl',
+                // 'supir.tgl',
                 'supir.nominalpinjamansaldoawal',
                 'supir.supirold_id',
                 'supir.tglexpsim',
@@ -1213,7 +1213,7 @@ class SupirController extends Controller
                 'parameter.text as statusaktif',
                 'supir.nominaldepositsa',
                 'supir.depositke',
-                'supir.tgl',
+                // 'supir.tgl',
                 'supir.nominalpinjamansaldoawal',
                 'supir.supirold_id',
                 'supir.tglexpsim',
@@ -1257,7 +1257,7 @@ class SupirController extends Controller
                 'parameter.text as statusaktif',
                 'supir.nominaldepositsa',
                 'supir.depositke',
-                'supir.tgl',
+                // 'supir.tgl',
                 'supir.nominalpinjamansaldoawal',
                 'supir.supirold_id',
                 'supir.tglexpsim',
@@ -1299,7 +1299,7 @@ class SupirController extends Controller
                 'parameter.text as statusaktif',
                 'supir.nominaldepositsa',
                 'supir.depositke',
-                'supir.tgl',
+                // 'supir.tgl',
                 'supir.nominalpinjamansaldoawal',
                 'supir.supirold_id',
                 'supir.tglexpsim',
@@ -1336,7 +1336,7 @@ class SupirController extends Controller
         }
 
 
-        DB::table($temp)->insertUsing(['id_','namasupir','alamat','kota','telp','statusaktif','nominaldepositsa','depositke','tgl','nominalpinjamansaldoawal','supirold_id','tglexpsim','nosim','keterangan','noktp','nokk','statusadaupdategambar','statuslluarkota','statuszonatertentu','zona_id','angsuranpinjaman','plafondeposito','photosupir','photoktp','photosim','photokk','photoskck','photodomisili','keteranganresign','statusblacklist','tglberhentisupir','tgllahir','tglterbitsim','modifiedby','created_at','updated_at'], $query);
+        DB::table($temp)->insertUsing(['id_','namasupir','alamat','kota','telp','statusaktif','nominaldepositsa','depositke','nominalpinjamansaldoawal','supirold_id','tglexpsim','nosim','keterangan','noktp','nokk','statusadaupdategambar','statuslluarkota','statuszonatertentu','zona_id','angsuranpinjaman','plafondeposito','photosupir','photoktp','photosim','photokk','photoskck','photodomisili','keteranganresign','statusblacklist','tglberhentisupir','tgllahir','tglterbitsim','modifiedby','created_at','updated_at'], $query);
 
 
         if ($del == 1) {

@@ -99,56 +99,15 @@ route::middleware('auth:api')->group(function () {
     Route::post('agen/{agen}/approval', [AgenController::class, 'approval'])->name('agen.approval');
     Route::resource('agen', AgenController::class);
 
-    Route::get('error/field_length', [ErrorController::class, 'fieldLength']);
-    Route::resource('error', ErrorController::class);
-
     Route::get('cabang/field_length', [CabangController::class, 'fieldLength']);
     Route::get('cabang/combostatus', [CabangController::class, 'combostatus']);
     Route::get('cabang/getPosition2', [CabangController::class, 'getPosition2']);
     Route::resource('cabang', CabangController::class);
 
-    Route::get('error/field_length', [ErrorController::class, 'fieldLength']);
-    Route::get('error/geterror', [ErrorController::class, 'geterror']);
-    Route::resource('error', ErrorController::class);
-
-    Route::get('role/getroleid', [RoleController::class, 'getroleid']);
-    Route::get('role/field_length', [RoleController::class, 'fieldLength']);
-    Route::resource('role', RoleController::class);
-
     Route::get('acos/field_length', [AcosController::class, 'fieldLength']);
     Route::resource('acos', AcosController::class);
 
     Route::resource('absensi_detail', AbsensiSupirDetailController::class);
-
-    Route::get('user/field_length', [UserController::class, 'fieldLength']);
-    Route::get('user/combostatus', [UserController::class, 'combostatus']);
-    Route::get('user/combocabang', [UserController::class, 'combocabang']);
-    Route::get('user/getuserid', [UserController::class, 'getuserid']);
-    Route::resource('user', UserController::class);
-
-    Route::get('menu/field_length', [MenuController::class, 'fieldLength']);
-    Route::get('menu/combomenuparent', [MenuController::class, 'combomenuparent']);
-    Route::get('menu/getdatanamaacos', [MenuController::class, 'getdatanamaacos']);
-    Route::resource('menu', MenuController::class);
-
-
-    Route::get('userrole/field_length', [UserRoleController::class, 'fieldLength']);
-    Route::get('userrole/detail', [UserRoleController::class, 'detail']);
-    Route::get('userrole/detaillist', [UserRoleController::class, 'detaillist']);
-    Route::get('userrole/combostatus', [UserRoleController::class, 'combostatus']);
-    Route::resource('userrole', UserRoleController::class);
-
-    Route::get('acl/field_length', [AclController::class, 'fieldLength']);
-    Route::get('acl/detail', [AclController::class, 'detail']);
-    Route::get('acl/detaillist', [AclController::class, 'detaillist']);
-    Route::get('acl/combostatus', [AclController::class, 'combostatus']);
-    Route::resource('acl', AclController::class);
-
-    Route::get('useracl/field_length', [UserAclController::class, 'fieldLength']);
-    Route::get('useracl/detail', [UserAclController::class, 'detail']);
-    Route::get('useracl/detaillist', [UserAclController::class, 'detaillist']);
-    Route::get('useracl/combostatus', [UserAclController::class, 'combostatus']);
-    Route::resource('useracl', UserAclController::class);
 
     Route::get('logtrail/detail', [LogTrailController::class, 'detail']);
     Route::get('logtrail/header', [LogTrailController::class, 'header']);
@@ -232,6 +191,7 @@ route::middleware('auth:api')->group(function () {
     Route::get('userrole/detail', [UserRoleController::class, 'detail']);
     Route::get('userrole/detaillist', [UserRoleController::class, 'detaillist']);
     Route::get('userrole/combostatus', [UserRoleController::class, 'combostatus']);
+    Route::get('userrole/export', [UserRoleController::class, 'export'])->name('userrole.export');
     Route::resource('userrole', UserRoleController::class);
 
     Route::get('acl/field_length', [AclController::class, 'fieldLength']);

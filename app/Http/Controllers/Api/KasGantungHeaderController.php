@@ -60,17 +60,17 @@ class KasGantungHeaderController extends Controller
             $bank = Bank::find($request->bank_id);
 
             $content = new Request();
-            $content['group'] = 'KASGANTUNG';
-            $content['subgroup'] = 'KASGANTUNG';
+            $content['group'] = 'KAS GANTUNG';
+            $content['subgroup'] = 'NOMOR KAS GANTUNG';
             $content['table'] = 'kasgantungheader';
 
             
             $kasgantungHeader = new KasGantungHeader();
-            $kasgantungHeader->tgl = date('Y-m-d', strtotime($request->tgl));
+            $kasgantungHeader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $kasgantungHeader->penerima_id = $request->penerima_id;
             $kasgantungHeader->keterangan = $request->keterangan ?? '';
             $kasgantungHeader->bank_id = $request->bank_id ?? 0;
-            $kasgantungHeader->nobuktikaskeluar = $request->nobuktikaskeluar ?? '';
+            $kasgantungHeader->pengeluaran_nobukti = $request->pengeluaran_nobukti ?? '';
             $kasgantungHeader->coakaskeluar = $bank->coa ?? '';
             $kasgantungHeader->postingdari = 'ENTRY KAS GANTUNG';
             $kasgantungHeader->tglkaskeluar = date('Y-m-d', strtotime($request->tglkaskeluar));
@@ -166,14 +166,14 @@ class KasGantungHeaderController extends Controller
                     $coaKasKeluar = $parameterController->getparameterid('COA','COAKASKELUAR','09.01.01.03');
 
                     $content = new Request();
-                    $content['group'] = 'NOBUKTI';
-                    $content['subgroup'] = 'KASKELUAR';
+                    $content['group'] = 'PENGELUARAN KAS';
+                    $content['subgroup'] = 'NOMOR PENGELUARAN KAS';
                     $content['table'] = 'pengeluaranheader';
 
                     ATAS:
                     $nobuktikaskeluar = app(Controller::class)->getRunningNumber($content)->original['data'];
                     
-                    $kasgantungHeader->nobuktikaskeluar = $nobuktikaskeluar;
+                    $kasgantungHeader->pengeluaran_nobukti = $nobuktikaskeluar;
                     $kasgantungHeader->save();
 
                     $pengeluaranHeader = [
@@ -307,11 +307,11 @@ class KasGantungHeaderController extends Controller
 
             /* Store header */
             $kasgantungHeader = KasGantungHeader::findOrFail($id);
-            $kasgantungHeader->tgl = date('Y-m-d', strtotime($request->tgl));
+            $kasgantungHeader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $kasgantungHeader->penerima_id = $request->penerima_id;
             $kasgantungHeader->keterangan = $request->keterangan ?? '';
             $kasgantungHeader->bank_id = $request->bank_id ?? 0;
-            $kasgantungHeader->nobuktikaskeluar = $request->nobuktikaskeluar ?? '';
+            $kasgantungHeader->pengeluaran_nobukti = $request->pengeluaran_nobukti ?? '';
             $kasgantungHeader->coakaskeluar = $bank->coa ?? '';
             $kasgantungHeader->postingdari = 'ENTRY KAS GANTUNG';
             $kasgantungHeader->tglkaskeluar = date('Y-m-d', strtotime($request->tglkaskeluar));
@@ -400,7 +400,7 @@ class KasGantungHeaderController extends Controller
             $request->sortorder = $request->sortorder ?? 'asc';
 
             if ($kasgantungHeader && $kasgantungHeader->kasgantungDetail) {
-                $kasgantungHeader->nobuktikaskeluar = '-';
+                $kasgantungHeader->pengeluaran_nobukti = '-';
                 $kasgantungHeader->save();
 
                 if ($request->bank_id != '') {
@@ -409,13 +409,13 @@ class KasGantungHeaderController extends Controller
                     $coaKasKeluar = $parameterController->getparameterid('COA','COAKASKELUAR','09.01.01.03');
 
                     $content = new Request();
-                    $content['group'] = 'NOBUKTI';
-                    $content['subgroup'] = 'KASKELUAR';
+                    $content['group'] = 'PENGELUARAN KAS';
+                    $content['subgroup'] = 'NOMOR PENGELUARAN KAS';
                     $content['table'] = 'pengeluaranheader';
                     ATAS:
                     $nobuktikaskeluar = app(Controller::class)->getRunningNumber($content)->original['data'];
 
-                    $kasgantungHeader->nobuktikaskeluar = $nobuktikaskeluar;
+                    $kasgantungHeader->pengeluaran_nobukti = $nobuktikaskeluar;
                     $kasgantungHeader->save();
                     
                     $pengeluaranHeader = [
@@ -599,7 +599,8 @@ class KasGantungHeaderController extends Controller
             
             foreach ($detail as $key => $value) {
                 $value['jurnalumum_id'] = $jurnals['id'];
-
+                
+                
                 $jurnal = new StoreJurnalUmumDetailRequest($value);
                 app(JurnalUmumDetailController::class)->store($jurnal);
             }

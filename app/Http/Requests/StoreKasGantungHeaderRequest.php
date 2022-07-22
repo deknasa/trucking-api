@@ -25,7 +25,7 @@ class StoreKasGantungHeaderRequest extends FormRequest
     {
         return [
             'nobukti' => 'required',
-            'tgl' => 'required',
+            'tglbukti' => 'required',
             'penerima_id' => 'required',
         ];
     }
