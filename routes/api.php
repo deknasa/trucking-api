@@ -107,10 +107,6 @@ route::middleware('auth:api')->group(function () {
     Route::get('error/geterror', [ErrorController::class, 'geterror']);
     Route::resource('error', ErrorController::class);
 
-    Route::get('role/getroleid', [RoleController::class, 'getroleid']);
-    Route::get('role/field_length', [RoleController::class, 'fieldLength']);
-    Route::resource('role', RoleController::class);
-
     Route::get('acos/field_length', [AcosController::class, 'fieldLength']);
     Route::resource('acos', AcosController::class);
 

@@ -18,95 +18,14 @@ class RoleController extends Controller
      */
     public function index()
     {
-        $params = [
-            'offset' => request()->offset ?? ((request()->page - 1) * request()->limit),
-            'limit' => request()->limit ?? 10,
-            'filters' => json_decode(request()->filters, true) ?? [],
-            'sortIndex' => request()->sortIndex ?? 'id',
-            'sortOrder' => request()->sortOrder ?? 'asc',
-        ];
-
-        $totalRows = DB::table((new Role)->getTable())->count();
-        $totalPages = ceil($totalRows / $params['limit']);
-
-        /* Sorting */
-        if ($params['sortIndex'] == 'id') {
-            $query = DB::table((new Role)->getTable())->select(
-                'role.id',
-                'role.rolename',
-                'role.modifiedby',
-                'role.created_at',
-                'role.updated_at'
-            )
-                ->orderBy('role.id', $params['sortOrder']);
-        } else {
-            if ($params['sortOrder'] == 'asc') {
-                $query = DB::table((new Role)->getTable())->select(
-                    'role.id',
-                    'role.rolename',
-                    'role.modifiedby',
-                    'role.created_at',
-                    'role.updated_at'
-                )
-                    ->orderBy($params['sortIndex'], $params['sortOrder'])
-                    ->orderBy('role.id', $params['sortOrder']);
-            } else {
-                $query = DB::table((new Role)->getTable())->select(
-                    'role.id',
-                    'role.rolename',
-                    'role.modifiedby',
-                    'role.created_at',
-                    'role.updated_at'
-                )
-                    ->orderBy($params['sortIndex'], $params['sortOrder'])
-                    ->orderBy('role.id', 'asc');
-            }
-        }
-
-
-        /* Searching */
-        if (count($params['filters']) > 0 && @$params['filters']['rules'][0]['data'] != '') {
-            switch ($params['filters']['groupOp']) {
-                case "AND":
-                    foreach ($params['filters']['rules'] as $index => $filters) {
-
-                        $query = $query->where($filters['field'], 'LIKE', "%$filters[data]%");
-                    }
-
-                    break;
-                case "OR":
-                    foreach ($params['filters']['rules'] as $index => $filters) {
-                        $query = $query->orWhere($filters['field'], 'LIKE', "%$filters[data]%");
-                    }
-
-                    break;
-                default:
-
-                    break;
-            }
-
-            $totalRows = count($query->get());
-
-            $totalPages = ceil($totalRows / $params['limit']);
-        }
-
-        /* Paging */
-        $query = $query->skip($params['offset'])
-            ->take($params['limit']);
-
-        $roles = $query->get();
-
-        /* Set attributes */
-        $attributes = [
-            'totalRows' => $totalRows,
-            'totalPages' => $totalPages
-        ];
+        $role = new Role();
 
         return response([
-            'status' => true,
-            'data' => $roles,
-            'attributes' => $attributes,
-            'params' => $params
+            'data' => $role->get(),
+            'attributes' => [
+                'totalRows' => $role->totalRows,
+                'totalPages' => $role->totalPages
+            ]
         ]);
     }
 
@@ -139,13 +58,9 @@ class RoleController extends Controller
             }
 
             /* Set position and page */
-            $del = 0;
-            $data = $this->getid($role->id, $request, $del);
-            $role->position = $data->row;
-
-            if (isset($request->limit)) {
-                $role->page = ceil($role->position / $request->limit);
-            }
+            $selected = $this->getPosition($role, $role->getTable());
+            $role->position = $selected->position;
+            $role->page = ceil($role->position / ($request->limit ?? 10));
 
             return response([
                 'status' => true,
@@ -178,6 +93,7 @@ class RoleController extends Controller
     public function update(UpdateRoleRequest $request, Role $role)
     {
         DB::beginTransaction();
+
         try {
             $role->rolename = $request->rolename;
             $role->modifiedby = auth('api')->user()->name;
@@ -200,12 +116,9 @@ class RoleController extends Controller
             }
 
             /* Set position and page */
-            $role->position = $this->getid($role->id, $request, 0)->row;
-
-
-            if (isset($request->limit)) {
-                $role->page = ceil($role->position / $request->limit);
-            }
+            $selected = $this->getPosition($role, $role->getTable());
+            $role->position = $selected->position;
+            $role->page = ceil($role->position / ($request->limit ?? 10));
 
             return response([
                 'status' => true,
@@ -214,7 +127,8 @@ class RoleController extends Controller
             ]);
         } catch (\Throwable $th) {
             DB::rollBack();
-            return response($th->getMessage());
+
+            throw $th;
         }
     }
 
@@ -224,6 +138,7 @@ class RoleController extends Controller
     public function destroy(Role $role, Request $request)
     {
         DB::beginTransaction();
+
         try {
             if ($role->delete()) {
                 $logTrail = [
@@ -242,14 +157,10 @@ class RoleController extends Controller
                 DB::commit();
             }
 
-            $del = 1;
-            $data = $this->getid($role->id, $request, $del);
-            $role->position = $data->row;
-            $role->id = $data->id;
-
-            if (isset($request->limit)) {
-                $role->page = ceil($role->position / $request->limit);
-            }
+            $selected = $this->getPosition($role, $role->getTable(), true);
+            $role->position = $selected->position;
+            $role->id = $selected->id;
+            $role->page = ceil($role->position / ($request->limit ?? 10));
 
             return response([
                 'status' => true,
@@ -258,7 +169,8 @@ class RoleController extends Controller
             ]);
         } catch (\Throwable $th) {
             DB::rollBack();
-            return response($th->getMessage());
+
+            throw $th;
         }
     }
 
