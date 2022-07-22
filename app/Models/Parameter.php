@@ -42,7 +42,8 @@ class Parameter extends MyModel
         if ($this->params['sortIndex'] == 'grp' or $this->params['sortIndex'] == 'subgrp') {
             return $query
                 ->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder'])
-                ->orderBy($this->table . '.subgrp', $this->params['sortOrder']);
+                ->orderBy($this->table . '.subgrp', $this->params['sortOrder'])
+                ->orderBy($this->table . '.id', $this->params['sortOrder']);
         }
 
         return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
