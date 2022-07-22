@@ -27,7 +27,7 @@ class MenuController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-       /**
+    /**
      * @ClassName 
      */
     public function index()
@@ -173,22 +173,14 @@ class MenuController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \App\Http\Requests\StoremenuRequest  $request
-     * @return \Illuminate\Http\Response
-     */
-       /**
      * @ClassName 
      */
     public function store(StoreMenuRequest $request)
     {
-
-        //  dd($request->all());
         DB::beginTransaction();
+
         try {
-            $class=$this->listFolderFiles($request['controller']);
-            // dd($class);
+            $class = $this->listFolderFiles($request['controller']);
             if ($class <> '') {
 
                 foreach ($class as $value) {
@@ -298,13 +290,9 @@ class MenuController extends Controller
             }
 
             /* Set position and page */
-            $del = 0;
-            $data = $this->getid($menu->id, $request, $del);
-            $menu->position = $data->row;
-
-            if (isset($request->limit)) {
-                $menu->page = ceil($menu->position / $request->limit);
-            }
+            $selected = $this->getPosition($menu, $menu->getTable());
+            $menu->position = $selected->position;
+            $menu->page = ceil($menu->position / ($request->limit ?? 10));
 
             return response([
                 'status' => true,
@@ -313,7 +301,8 @@ class MenuController extends Controller
             ]);
         } catch (\Throwable $th) {
             DB::rollBack();
-            return response($th->getMessage());
+
+            throw $th;
         }
     }
 
@@ -343,126 +332,97 @@ class MenuController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
-     *
-     * @param  \App\Http\Requests\UpdatemenuRequest  $request
-     * @param  \App\Models\Menu  $Menu
-     * @return \Illuminate\Http\Response
-     */
-       /**
      * @ClassName 
      */
     public function update(UpdateMenuRequest $request, Menu $menu)
     {
-        // dd(strtolower($request->get('menuexe')));
         DB::beginTransaction();
-        try {
-            $menu = new Menu();
-            $menu = Menu::find($request->id);
-            $menu->menuname = ucwords(strtolower($request->menuname));
-            $menu->menuseq = $request->menuseq;
-            $menu->menuicon = strtolower($request->menuicon);
 
-            if ($menu->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($menu->getTable()),
-                    'postingdari' => 'EDIT MENU',
-                    'idtrans' => $menu->id,
-                    'nobuktitrans' => $menu->id,
-                    'aksi' => 'EDIT',
-                    'datajson' => $menu->toArray(),
-                    'modifiedby' => $menu->modifiedby
-                ];
+        $menu = new Menu();
+        $menu = Menu::find($request->id);
+        $menu->menuname = ucwords(strtolower($request->menuname));
+        $menu->menuseq = $request->menuseq;
+        $menu->menuicon = strtolower($request->menuicon);
 
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+        if ($menu->save()) {
+            $logTrail = [
+                'namatabel' => strtoupper($menu->getTable()),
+                'postingdari' => 'EDIT MENU',
+                'idtrans' => $menu->id,
+                'nobuktitrans' => $menu->id,
+                'aksi' => 'EDIT',
+                'datajson' => $menu->toArray(),
+                'modifiedby' => $menu->modifiedby
+            ];
 
-                DB::commit();
-            }
+            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+            $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-            /* Set position and page */
-            $menu->position = $this->getid($menu->id, $request, 0)->row;
-
-
-            if (isset($request->limit)) {
-                $menu->page = ceil($menu->position / $request->limit);
-            }
-
-            return response([
-                'status' => true,
-                'message' => 'Berhasil diubah',
-                'data' => $menu
-            ]);
-        } catch (\Throwable $th) {
-            DB::rollBack();
-            return response($th->getMessage());
+            DB::commit();
         }
+
+        /* Set position and page */
+        $selected = $this->getPosition($menu, $menu->getTable());
+        $menu->position = $selected->position;
+        $menu->page = ceil($menu->position / ($request->limit ?? 10));
+
+        return response([
+            'status' => true,
+            'message' => 'Berhasil diubah',
+            'data' => $menu
+        ]);
     }
 
     /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Menu  $Menu
-     * @return \Illuminate\Http\Response
-     */
-       /**
      * @ClassName 
      */
     public function destroy(Menu $menu, Request $request)
     {
         DB::beginTransaction();
 
-        try {
-            $list = Menu::Select('aco_id')
-                ->where('id', '=', $menu->id)
+        $list = Menu::Select('aco_id')
+            ->where('id', '=', $menu->id)
+            ->first();
+
+
+        if (Acos::select('id')
+            ->where('id', '=', $list->aco_id)
+            ->exists()
+        ) {
+            $list = Acos::select('class')
+                ->where('id', '=', $list->aco_id)
                 ->first();
 
-
-            if (Acos::select('id')
-                ->where('id', '=', $list->aco_id)
-                ->exists()
-            ) {
-                $list = Acos::select('class')
-                    ->where('id', '=', $list->aco_id)
-                    ->first();
-
-                Acos::where('class', $list->class)->delete();
-            }
-
-            if ($menu->delete()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($menu->getTable()),
-                    'postingdari' => 'DELETE MENU',
-                    'idtrans' => $menu->id,
-                    'nobuktitrans' => $menu->id,
-                    'aksi' => 'DELETE',
-                    'datajson' => $menu->toArray(),
-                    'modifiedby' => $menu->modifiedby
-                ];
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
-                DB::commit();
-            }
-
-            $del = 1;
-            $data = $this->getid($menu->id, $request, $del);
-            $menu->position = $data->row;
-            $menu->id = $data->id;
-            if (isset($request->limit)) {
-                $menu->page = ceil($menu->position / $request->limit);
-            }
-            // dd($menu);
-            return response([
-                'status' => true,
-                'message' => 'Berhasil dihapus',
-                'data' => $menu
-            ]);
-        } catch (\Throwable $th) {
-            DB::rollBack();
-            return response($th->getMessage());
+            Acos::where('class', $list->class)->delete();
         }
+
+        if ($menu->delete()) {
+            $logTrail = [
+                'namatabel' => strtoupper($menu->getTable()),
+                'postingdari' => 'DELETE MENU',
+                'idtrans' => $menu->id,
+                'nobuktitrans' => $menu->id,
+                'aksi' => 'DELETE',
+                'datajson' => $menu->toArray(),
+                'modifiedby' => $menu->modifiedby
+            ];
+
+            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+            $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+
+            DB::commit();
+        }
+
+        $selected = $this->getPosition($menu, $menu->getTable(), true);
+        $menu->position = $selected->position;
+        $menu->id = $selected->id;
+        $menu->page = ceil($menu->position / ($request->limit ?? 10));
+
+        return response([
+            'status' => true,
+            'message' => 'Berhasil dihapus',
+            'data' => $menu
+        ]);
     }
 
     public function export()
