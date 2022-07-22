@@ -13,7 +13,7 @@ class StoreServiceInDetailRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +24,9 @@ class StoreServiceInDetailRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'mekanik_id' => 'required',
+            'keterangan' => 'required',
+
         ];
     }
 }

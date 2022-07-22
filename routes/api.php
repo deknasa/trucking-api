@@ -58,6 +58,10 @@ use App\Http\Controllers\Api\UpahSupirRincianController;
 use App\Http\Controllers\Api\UpahRitasiController;
 use App\Http\Controllers\Api\UpahRitasiRincianController;
 use App\Http\Controllers\Api\RitasiController;
+use App\Http\Controllers\Api\ServiceInHeaderController;
+use App\Http\Controllers\Api\ServiceInDetailController;
+use App\Http\Controllers\Api\ServiceOutHeaderController;
+use App\Http\Controllers\Api\ServiceOutDetailController;
 
 /*
 |--------------------------------------------------------------------------
@@ -388,3 +392,13 @@ Route::resource('upahritasirincian', UpahRitasiRincianController::class);
 Route::get('ritasi/combo', [RitasiController::class, 'combo']);
 Route::get('ritasi/field_length', [RitasiController::class, 'fieldLength']);
 Route::resource('ritasi', RitasiController::class);
+
+Route::get('servicein/combo', [ServiceInHeaderController::class, 'combo']);
+Route::resource('servicein', ServiceInHeaderController::class);
+
+Route::resource('serviceindetail', ServiceInDetailController::class);
+
+Route::get('serviceout/combo', [ServiceOutHeaderController::class, 'combo']);
+Route::resource('serviceout', ServiceOutHeaderController::class);
+
+Route::resource('serviceoutdetail', ServiceOutDetailController::class);
