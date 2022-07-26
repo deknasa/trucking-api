@@ -100,7 +100,7 @@ class MekanikController extends Controller
                 case "AND":
                     foreach ($params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statusaktif') {
-                            $query = $query->where('parameter.text', 'LIKE', "%$filters[data]%");
+                            $query = $query->where('parameter.text', '=', "$filters[data]");
                         } else {
                             $query = $query->where($filters['field'], 'LIKE', "%$filters[data]%");
                         }
@@ -112,7 +112,7 @@ class MekanikController extends Controller
                     foreach ($params['filters']['rules'] as $index => $filters) {
 
                         if ($filters['field'] == 'statusaktif') {
-                            $query = $query->where('parameter.text', 'LIKE', "%$filters[data]%");
+                            $query = $query->where('parameter.text', '=', "$filters[data]");
                         } else {
                             $query = $query->orWhere($filters['field'], 'LIKE', "%$filters[data]%");
                         }
