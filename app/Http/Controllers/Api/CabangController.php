@@ -106,7 +106,7 @@ class CabangController extends Controller
                 case "AND":
                     foreach ($params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statusaktif') {
-                            $query = $query->where('parameter.text', 'LIKE', "%$filters[data]%");
+                            $query = $query->where('parameter.text', '=', "$filters[data]");
                         } else {
                             $query = $query->where('cabang.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
@@ -116,7 +116,7 @@ class CabangController extends Controller
                 case "OR":
                     foreach ($params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statusaktif') {
-                            $query = $query->orWhere('parameter.text', 'LIKE', "%$filters[data]%");
+                            $query = $query->orWhere('parameter.text', '=', "$filters[data]");
                         } else {
                             $query = $query->orWhere('cabang.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
@@ -264,7 +264,7 @@ class CabangController extends Controller
             $cabang->kodecabang = $request->kodecabang;
             $cabang->namacabang = $request->namacabang;
             $cabang->statusaktif = $request->statusaktif;
-            $cabang->modifiedby = $request->modifiedby;
+            $cabang->modifiedby = auth('api')->user()->name;
 
             if ($cabang->save()) {
                 $logTrail = [

@@ -20,7 +20,9 @@ use App\Models\ServiceInDetail;
 
 class ServiceInHeaderController extends Controller
 {
-
+    /**
+     * @ClassName
+     */
     public function index(Request $request)
     {
         $servicein = new ServiceInHeader();
@@ -35,20 +37,7 @@ class ServiceInHeaderController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \App\Http\Requests\StoreServiceInHeaderRequest  $request
-     * @return \Illuminate\Http\Response
+     * @ClassName
      */
     public function store(StoreServiceInHeaderRequest $request)
     {
@@ -175,12 +164,6 @@ class ServiceInHeaderController extends Controller
         }
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\ServiceInHeader  $serviceInHeader
-     * @return \Illuminate\Http\Response
-     */
     public function show($id)
     {
         $data = ServiceInHeader::with(
@@ -194,22 +177,7 @@ class ServiceInHeaderController extends Controller
     }
 
     /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\ServiceInHeader  $serviceInHeader
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(ServiceInHeader $serviceInHeader)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \App\Http\Requests\UpdateServiceInHeaderRequest  $request
-     * @param  \App\Models\ServiceInHeader  $serviceInHeader
-     * @return \Illuminate\Http\Response
+     * @ClassName
      */
     public function update(StoreServiceInHeaderRequest $request, $id)
     {
@@ -321,10 +289,7 @@ class ServiceInHeaderController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\ServiceInHeader  $serviceInHeader
-     * @return \Illuminate\Http\Response
+     * @ClassName
      */
     public function destroy($id, Request $request)
     {
