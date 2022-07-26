@@ -13,7 +13,7 @@ class StoreServiceOutDetailRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +24,8 @@ class StoreServiceOutDetailRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'serviceout_id' => 'required',
+            'keterangan' => 'required',
         ];
     }
 }
