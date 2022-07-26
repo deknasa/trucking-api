@@ -24,127 +24,14 @@ class MekanikController extends Controller
      */
     public function index()
     {
-        $params = [
-            'offset' => request()->offset ?? ((request()->page - 1) * request()->limit),
-            'limit' => request()->limit ?? 10,
-            'filters' => json_decode(request()->filters, true) ?? [],
-            'sortIndex' => request()->sortIndex ?? 'id',
-            'sortOrder' => request()->sortOrder ?? 'asc',
-        ];
-
-        
-        $totalRows = DB::table((new Mekanik)->getTable())->count();
-        $totalPages = $params['limit'] > 0 ? ceil($totalRows / $params['limit']) : 1;
-
-        /* Sorting */
-        $query = DB::table((new Mekanik)->getTable())->orderBy($params['sortIndex'], $params['sortOrder']);
-
-        if ($params['sortIndex'] == 'id') {
-            $query = DB::table((new Mekanik)->getTable())->select(
-                'mekanik.id',
-                'mekanik.namamekanik',
-                'mekanik.keterangan',
-                'parameter.text as statusaktif',
-                'mekanik.modifiedby',
-                'mekanik.created_at',
-                'mekanik.updated_at'
-            )
-            ->leftJoin('parameter', 'mekanik.statusaktif', '=', 'parameter.id')
-            ->orderBy('mekanik.id', $params['sortOrder']);
-        } else if ($params['sortIndex'] == 'namamekanik' or $params['sortIndex'] == 'keterangan') {
-            $query = DB::table((new Mekanik)->getTable())->select(
-                'mekanik.id',
-                'mekanik.namamekanik',
-                'mekanik.keterangan',
-                'parameter.text as statusaktif',
-                'mekanik.modifiedby',
-                'mekanik.created_at',
-                'mekanik.updated_at'
-            )
-                ->leftJoin('parameter', 'mekanik.statusaktif', '=', 'parameter.id')
-                ->orderBy($params['sortIndex'], $params['sortOrder'])
-                ->orderBy('mekanik.id', $params['sortOrder']);
-        } else {
-            if ($params['sortOrder'] == 'asc') {
-                $query = DB::table((new Mekanik)->getTable())->select(
-                'mekanik.id',
-                'mekanik.namamekanik',
-                'mekanik.keterangan',
-                'parameter.text as statusaktif',
-                'mekanik.modifiedby',
-                'mekanik.created_at',
-                'mekanik.updated_at'
-            )
-                    ->leftJoin('parameter', 'mekanik.statusaktif', '=', 'parameter.id')
-                    ->orderBy($params['sortIndex'], $params['sortOrder'])
-                    ->orderBy('mekanik.id', $params['sortOrder']);
-            } else {
-                $query = DB::table((new Mekanik)->getTable())->select(
-                    'mekanik.id',
-                    'mekanik.namamekanik',
-                    'mekanik.keterangan',
-                    'parameter.text as statusaktif',
-                    'mekanik.modifiedby',
-                    'mekanik.created_at',
-                    'mekanik.updated_at'
-                )
-                    ->leftJoin('parameter', 'mekanik.statusaktif', '=', 'parameter.id')
-                    ->orderBy($params['sortIndex'], $params['sortOrder'])
-                    ->orderBy('mekanik.id', 'asc');
-            }
-        }
-
-        /* Searching */
-        if (count($params['filters']) > 0 && @$params['filters']['rules'][0]['data'] != '') {
-            switch ($params['filters']['groupOp']) {
-                case "AND":
-                    foreach ($params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'statusaktif') {
-                            $query = $query->where('parameter.text', '=', "$filters[data]");
-                        } else {
-                            $query = $query->where($filters['field'], 'LIKE', "%$filters[data]%");
-                        }
-
-                    }
-
-                    break;
-                case "OR":
-                    foreach ($params['filters']['rules'] as $index => $filters) {
-
-                        if ($filters['field'] == 'statusaktif') {
-                            $query = $query->where('parameter.text', '=', "$filters[data]");
-                        } else {
-                            $query = $query->orWhere($filters['field'], 'LIKE', "%$filters[data]%");
-                        }
-                    }
-
-                    break;
-                default:
-
-                    break;
-            }
-
-            $totalRows = count($query->get());
-            $totalPages = $params['limit'] > 0 ? ceil($totalRows / $params['limit']) : 1;
-        }
-
-        /* Paging */
-        $query = $query->skip($params['offset'])
-            ->take($params['limit']);
-
-        $mekanik = $query->get();
-
-        /* Set attributes */
-        $attributes = [
-            'totalRows' => $totalRows ?? 0,
-            'totalPages' => $totalPages ?? 0
-        ];
+        $mekanik = new Mekanik();
 
         return response([
-            'status' => true,
-            'data' => $mekanik,
-            'attributes' => $attributes,
-            'params' => $params
+            'data' => $mekanik->get(),
+            'attributes' => [
+                'totalRows' => $mekanik->totalRows,
+                'totalPages' => $mekanik->totalPages
+            ]
         ]);
     }
     /**
