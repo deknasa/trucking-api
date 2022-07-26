@@ -74,7 +74,7 @@ class KasGantungHeaderController extends Controller
             $kasgantungHeader->coakaskeluar = $bank->coa ?? '';
             $kasgantungHeader->postingdari = 'ENTRY KAS GANTUNG';
             $kasgantungHeader->tglkaskeluar = date('Y-m-d', strtotime($request->tglkaskeluar));
-            $kasgantungHeader->modifiedby = $request->modifiedby;
+            $kasgantungHeader->modifiedby = auth('api')->user()->name;
             
             TOP:
             $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
@@ -104,14 +104,17 @@ class KasGantungHeaderController extends Controller
             
             /* Store detail */
             $detaillog=[];
+
+            $total = 0;
             for ($i = 0; $i < count($request->nominal); $i++) {
+                $nominal = str_replace(',','',str_replace('.','',$request->nominal[$i]));
                 $datadetail = [
                     'kasgantung_id' => $kasgantungHeader->id,
                     'nobukti' => $kasgantungHeader->nobukti,
-                    'nominal' => $request->nominal[$i],
+                    'nominal' => $nominal,
                     'coa' => $bank->coa ?? '',
                     'keterangan' => $request->keterangan_detail[$i],
-                    'modifiedby' => $request->modifiedby,
+                    'modifiedby' => auth('api')->user()->name,
                     ];
                 $data = new StoreKasGantungDetailRequest($datadetail);
                 $datadetails = app(KasGantungDetailController::class)->store($data);
@@ -127,14 +130,16 @@ class KasGantungHeaderController extends Controller
                     'id' => $iddetail,
                     'kasgantung_id' => $kasgantungHeader->id,
                     'nobukti' => $kasgantungHeader->nobukti,
-                    'nominal' => $request->nominal[$i],
+                    'nominal' => $nominal,
                     'coa' => $bank->coa ?? '',
                     'keterangan' => $request->keterangan_detail[$i],
-                    'modifiedby' => $request->modifiedby,
+                    'modifiedby' => auth('api')->user()->name,
                     'created_at' => date('d-m-Y H:i:s',strtotime($kasgantungHeader->created_at)),
                     'updated_at' => date('d-m-Y H:i:s',strtotime($kasgantungHeader->updated_at)),
                     ];
                 $detaillog[]=$datadetaillog;
+
+                $total += $nominal;
             }
 
             $dataid = LogTrail::select('id')
@@ -150,7 +155,7 @@ class KasGantungHeaderController extends Controller
                 'nobuktitrans' => $kasgantungHeader->nobukti,
                 'aksi' => 'ENTRY',
                 'datajson' => $detaillog,
-                'modifiedby' => $request->modifiedby,
+                'modifiedby' => auth('api')->user()->name,
             ];
 
             $data = new StoreLogTrailRequest($datalogtrail);
@@ -192,7 +197,7 @@ class KasGantungHeaderController extends Controller
                         'transferkeac' => '',
                         'transferkean' => '',
                         'trasnferkebank' => '',
-                        'modifiedby' => $request->modifiedby,
+                        'modifiedby' => auth('api')->user()->name,
                     ];
 
                     $pengeluaranDetail = [
@@ -200,12 +205,12 @@ class KasGantungHeaderController extends Controller
                         'alatbayar_id' => 2,
                         'nowarkat' => '',
                         'tgljatuhtempo' => '',
-                        'nominal' => array_sum($request->nominal),
+                        'nominal' => $total,
                         'coadebet' => $coaKasKeluar->text,
                         'coakredit' => $coaKasKeluar->text,
                         'keterangan' => $request->keterangan,
                         'bulanbeban' => '',
-                        'modifiedby' => $request->modifiedby,
+                        'modifiedby' => auth('api')->user()->name,
                     ];
 
                     $jurnalHeader = [
@@ -216,7 +221,7 @@ class KasGantungHeaderController extends Controller
                         'statusapproval' => $statusApp->id,
                         'userapproval' => "",
                         'tglapproval' => "",
-                        'modifiedby' => $request->modifiedby,
+                        'modifiedby' => auth('api')->user()->name,
                     ];
 
                     $jurnalDetail = [
@@ -224,17 +229,17 @@ class KasGantungHeaderController extends Controller
                             'nobukti' => $nobuktikaskeluar,
                             'tgl' => date('Y-m-d', strtotime($request->tglkaskeluar)),
                             'coa' => $coaKasKeluar->text,
-                            'nominal' => array_sum($request->nominal),
+                            'nominal' => $total,
                             'keterangan' => $request->keterangan,
-                            'modifiedby' => $request->modifiedby,
+                            'modifiedby' => auth('api')->user()->name,
                         ],
                         [
                             'nobukti' => $nobuktikaskeluar,
                             'tgl' => date('Y-m-d', strtotime($request->tglkaskeluar)),
                             'coa' => $bank->coa ?? '',
-                            'nominal' => -array_sum($request->nominal),
+                            'nominal' => -$total,
                             'keterangan' => $request->keterangan,
-                            'modifiedby' => $request->modifiedby,
+                            'modifiedby' => auth('api')->user()->name,
                         ]
                     ];
 
@@ -315,7 +320,7 @@ class KasGantungHeaderController extends Controller
             $kasgantungHeader->coakaskeluar = $bank->coa ?? '';
             $kasgantungHeader->postingdari = 'ENTRY KAS GANTUNG';
             $kasgantungHeader->tglkaskeluar = date('Y-m-d', strtotime($request->tglkaskeluar));
-            $kasgantungHeader->modifiedby = $request->modifiedby;
+            $kasgantungHeader->modifiedby = auth('api')->user()->name;
             
             if ($kasgantungHeader->save()) {
            
@@ -343,15 +348,16 @@ class KasGantungHeaderController extends Controller
 
             /* Store detail */
             $detaillog=[];
+            $total=0;
             for ($i = 0; $i < count($request->nominal); $i++) {
-                
+                $nominal = str_replace(',','',str_replace('.','',$request->nominal[$i]));
                 $datadetail = [
                     'kasgantung_id' => $kasgantungHeader->id,
                     'nobukti' => $kasgantungHeader->nobukti,
-                    'nominal' => $request->nominal[$i],
+                    'nominal' => $nominal,
                     'coa' => $bank->coa ?? '',
                     'keterangan' => $request->keterangan_detail[$i],
-                    'modifiedby' => $request->modifiedby,
+                    'modifiedby' => auth('api')->user()->name,
                     ];
                 $data = new StoreKasGantungDetailRequest($datadetail);
                 $datadetails = app(KasGantungDetailController::class)->store($data);
@@ -367,14 +373,16 @@ class KasGantungHeaderController extends Controller
                     'id' => $iddetail,
                     'kasgantung_id' => $kasgantungHeader->id,
                     'nobukti' => $kasgantungHeader->nobukti,
-                    'nominal' => $request->nominal[$i],
+                    'nominal' => $nominal,
                     'coa' => $bank->coa ?? '',
                     'keterangan' => $request->keterangan_detail[$i],
-                    'modifiedby' => $request->modifiedby,
+                    'modifiedby' => auth('api')->user()->name,
                     'created_at' => date('d-m-Y H:i:s',strtotime($kasgantungHeader->created_at)),
                     'updated_at' => date('d-m-Y H:i:s',strtotime($kasgantungHeader->updated_at)),
                     ];
                 $detaillog[]=$datadetaillog;
+
+                $total += $nominal;
             }
 
             $dataid = LogTrail::select('id')
@@ -390,7 +398,7 @@ class KasGantungHeaderController extends Controller
                 'nobuktitrans' => $kasgantungHeader->nobukti,
                 'aksi' => 'EDIT',
                 'datajson' => $detaillog,
-                'modifiedby' => $request->modifiedby,
+                'modifiedby' => auth('api')->user()->name,
             ];
 
             $data = new StoreLogTrailRequest($datalogtrail);
@@ -434,7 +442,7 @@ class KasGantungHeaderController extends Controller
                         'transferkeac' => '',
                         'transferkean' => '',
                         'trasnferkebank' => '',
-                        'modifiedby' => $request->modifiedby,
+                        'modifiedby' => auth('api')->user()->name,
                     ];
 
                     $pengeluaranDetail = [
@@ -442,12 +450,12 @@ class KasGantungHeaderController extends Controller
                         'alatbayar_id' => 2,
                         'nowarkat' => '',
                         'tgljatuhtempo' => '',
-                        'nominal' => array_sum($request->nominal),
+                        'nominal' => $total,
                         'coadebet' => $coaKasKeluar->text,
                         'coakredit' => $coaKasKeluar->text,
                         'keterangan' => $request->keterangan,
                         'bulanbeban' => '',
-                        'modifiedby' => $request->modifiedby,
+                        'modifiedby' => auth('api')->user()->name,
                     ];
 
                     $jurnalHeader = [
@@ -458,7 +466,7 @@ class KasGantungHeaderController extends Controller
                         'statusapproval' => $statusApp->id,
                         'userapproval' => "",
                         'tglapproval' => "",
-                        'modifiedby' => $request->modifiedby,
+                        'modifiedby' => auth('api')->user()->name,
                     ];
 
                     $jurnalDetail = [
@@ -466,17 +474,17 @@ class KasGantungHeaderController extends Controller
                             'nobukti' => $nobuktikaskeluar,
                             'tgl' => date('Y-m-d', strtotime($request->tglkaskeluar)),
                             'coa' => $coaKasKeluar->text,
-                            'nominal' => array_sum($request->nominal),
+                            'nominal' => $total,
                             'keterangan' => $request->keterangan,
-                            'modifiedby' => $request->modifiedby,
+                            'modifiedby' => auth('api')->user()->name,
                         ],
                         [
                             'nobukti' => $nobuktikaskeluar,
                             'tgl' => date('Y-m-d', strtotime($request->tglkaskeluar)),
                             'coa' => $bank->coa ?? '',
-                            'nominal' => -array_sum($request->nominal),
+                            'nominal' => -$total,
                             'keterangan' => $request->keterangan,
-                            'modifiedby' => $request->modifiedby,
+                            'modifiedby' => auth('api')->user()->name,
                         ]
                     ];
 

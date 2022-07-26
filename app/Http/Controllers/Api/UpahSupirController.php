@@ -77,15 +77,21 @@ class UpahSupirController extends Controller
                 /* Store detail */
                 $detaillog=[];
                 for ($i = 0; $i < count($request->nominalsupir); $i++) {
+                    $nominalsupir = str_replace(',','',str_replace('.','',$request->nominalsupir[$i]));
+                    $nominalkenek = str_replace(',','',str_replace('.','',$request->nominalkenek[$i]));
+                    $nominalkomisi = str_replace(',','',str_replace('.','',$request->nominalkomisi[$i]));
+                    $nominaltol = str_replace(',','',str_replace('.','',$request->nominaltol[$i]));
+                    $liter = str_replace(',','',str_replace('.','',$request->liter[$i]));
+
                     $datadetail = [
                         'upahsupir_id' => $upahsupir->id,
                         'container_id' => $request->container_id[$i],
                         'statuscontainer_id' => $request->statuscontainer_id[$i],
-                        'nominalsupir' => $request->nominalsupir[$i],
-                        'nominalkenek' => $request->nominalkenek[$i],
-                        'nominalkomisi' => $request->nominalkomisi[$i],
-                        'nominaltol' => $request->nominaltol[$i],
-                        'liter' => $request->liter[$i],
+                        'nominalsupir' => $nominalsupir,
+                        'nominalkenek' => $nominalkenek,
+                        'nominalkomisi' => $nominalkomisi,
+                        'nominaltol' => $nominaltol,
+                        'liter' => $liter,
                         'modifiedby' => $request->modifiedby,
                     ];
 
@@ -104,11 +110,11 @@ class UpahSupirController extends Controller
                         'upahsupir_id' => $upahsupir->id,
                         'container_id' => $request->container_id[$i],
                         'statuscontainer_id' => $request->statuscontainer_id[$i],
-                        'nominalsupir' => $request->nominalsupir[$i],
-                        'nominalkenek' => $request->nominalkenek[$i],
-                        'nominalkomisi' => $request->nominalkomisi[$i],
-                        'nominaltol' => $request->nominaltol[$i],
-                        'liter' => $request->liter[$i],
+                        'nominalsupir' => $nominalsupir,
+                        'nominalkenek' => $nominalkenek,
+                        'nominalkomisi' => $nominalkomisi,
+                        'nominaltol' => $nominaltol,
+                        'liter' => $liter,
                         'modifiedby' => $request->modifiedby,
                         'created_at' => date('d-m-Y H:i:s',strtotime($upahsupir->created_at)),
                         'updated_at' => date('d-m-Y H:i:s',strtotime($upahsupir->updated_at)),
@@ -219,15 +225,21 @@ class UpahSupirController extends Controller
                 /* Store detail */
                 $detaillog=[];
                 for ($i = 0; $i < count($request->nominalsupir); $i++) {
+                    $nominalsupir = str_replace(',','',str_replace('.','',$request->nominalsupir[$i]));
+                    $nominalkenek = str_replace(',','',str_replace('.','',$request->nominalkenek[$i]));
+                    $nominalkomisi = str_replace(',','',str_replace('.','',$request->nominalkomisi[$i]));
+                    $nominaltol = str_replace(',','',str_replace('.','',$request->nominaltol[$i]));
+                    $liter = str_replace(',','',str_replace('.','',$request->liter[$i]));
+
                     $datadetail = [
                         'upahsupir_id' => $upahsupir->id,
                         'container_id' => $request->container_id[$i],
                         'statuscontainer_id' => $request->statuscontainer_id[$i],
-                        'nominalsupir' => $request->nominalsupir[$i],
-                        'nominalkenek' => $request->nominalkenek[$i],
-                        'nominalkomisi' => $request->nominalkomisi[$i],
-                        'nominaltol' => $request->nominaltol[$i],
-                        'liter' => $request->liter[$i],
+                        'nominalsupir' => $nominalsupir,
+                        'nominalkenek' => $nominalkenek,
+                        'nominalkomisi' => $nominalkomisi,
+                        'nominaltol' => $nominaltol,
+                        'liter' => $liter,
                         'modifiedby' => $request->modifiedby,
                         ];
                     $data = new StoreUpahSupirRincianRequest($datadetail);
