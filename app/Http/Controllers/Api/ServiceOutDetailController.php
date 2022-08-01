@@ -5,8 +5,6 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\ServiceOutDetail;
 use App\Http\Requests\StoreServiceOutDetailRequest;
-use App\Http\Requests\UpdateServiceOutDetailRequest;
-
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -37,10 +35,6 @@ class ServiceOutDetailController extends Controller
             if (isset($params['serviceout_id'])) {
                 $query->where('detail.serviceout_id', $params['serviceout_id']);
             }
-
-            // if ($params['withHeader']) {
-            //     $query->join('serviceout', 'serviceout.id', 'detail.serviceout_id');
-            // }
 
             if (count($params['whereIn']) > 0) {
                 $query->whereIn('serviceout_id', $params['whereIn']);
