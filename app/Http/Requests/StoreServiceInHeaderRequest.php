@@ -30,4 +30,8 @@ class StoreServiceInHeaderRequest extends FormRequest
             'keterangan' => 'required',
         ];
     }
+
+    public function attributes() {
+        return [];
+    }
 }

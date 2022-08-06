@@ -8,14 +8,10 @@ use App\Models\Trado;
 use App\Models\Mekanik;
 use App\Http\Requests\StoreServiceOutHeaderRequest;
 use App\Http\Requests\StoreServiceOutDetailRequest;
-use App\Http\Requests\UpdateServiceOutHeaderRequest;
-use Database\Factories\MekanikFactory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Validator;
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Models\LogTrail;
-use App\Models\Parameter;
 use App\Models\ServiceInHeader;
 use App\Models\ServiceOutDetail;
 
@@ -109,7 +105,7 @@ class ServiceOutHeaderController extends Controller
 
                 $datadetaillog = [
                     'id' => $iddetail,
-                    'servicein_id' => $serviceout->id,
+                    'serviceout_id' => $serviceout->id,
                     'nobukti' => $serviceout->nobukti,
                     'servicein_nobukti' => $request->servicein_nobukti[$i],
                     'keterangan' => $request->keterangan_detail[$i],
@@ -231,7 +227,7 @@ class ServiceOutHeaderController extends Controller
 
                     $datadetaillog = [
                         'id' => $iddetail,
-                        'servicein_id' => $serviceout->id,
+                        'serviceout_id' => $serviceout->id,
                         'nobukti' => $serviceout->nobukti,
                         'servicein_nobukti' => $request->servicein_nobukti[$i],
                         'keterangan' => $request->keterangan_detail[$i],

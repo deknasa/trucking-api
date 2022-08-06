@@ -99,6 +99,11 @@ route::middleware('auth:api')->group(function () {
     Route::post('agen/{agen}/approval', [AgenController::class, 'approval'])->name('agen.approval');
     Route::resource('agen', AgenController::class);
 
+    Route::get('cabang/field_length', [CabangController::class, 'fieldLength']);
+    Route::get('cabang/combostatus', [CabangController::class, 'combostatus']);
+    Route::get('cabang/getPosition2', [CabangController::class, 'getPosition2']);
+    Route::resource('cabang', CabangController::class);
+
     Route::get('acos/field_length', [AcosController::class, 'fieldLength']);
     Route::resource('acos', AcosController::class);
 

@@ -20,10 +20,11 @@ use App\Models\ServiceInDetail;
 
 class ServiceInHeaderController extends Controller
 {
+
     /**
      * @ClassName
      */
-    public function index(Request $request)
+    public function index()
     {
         $servicein = new ServiceInHeader();
 
@@ -36,9 +37,6 @@ class ServiceInHeaderController extends Controller
         ]);
     }
 
-    /**
-     * @ClassName
-     */
     public function store(StoreServiceInHeaderRequest $request)
     {
         DB::beginTransaction();
@@ -60,7 +58,7 @@ class ServiceInHeaderController extends Controller
             TOP:
             $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
             $servicein->nobukti = $nobukti;
-
+            
 
             try {
                 $servicein->save();
@@ -176,9 +174,7 @@ class ServiceInHeaderController extends Controller
         ]);
     }
 
-    /**
-     * @ClassName
-     */
+
     public function update(StoreServiceInHeaderRequest $request, $id)
     {
         DB::beginTransaction();
@@ -288,9 +284,7 @@ class ServiceInHeaderController extends Controller
         }
     }
 
-    /**
-     * @ClassName
-     */
+ 
     public function destroy($id, Request $request)
     {
         DB::beginTransaction();
