@@ -64,7 +64,6 @@ class KasGantungHeaderController extends Controller
             $content['subgroup'] = 'NOMOR KAS GANTUNG';
             $content['table'] = 'kasgantungheader';
 
-            
             $kasgantungHeader = new KasGantungHeader();
             $kasgantungHeader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $kasgantungHeader->penerima_id = $request->penerima_id;

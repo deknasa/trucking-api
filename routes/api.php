@@ -357,7 +357,6 @@ Route::resource('ritasi', RitasiController::class);
 
 Route::get('servicein/combo', [ServiceInHeaderController::class, 'combo']);
 Route::resource('servicein', ServiceInHeaderController::class);
-
 Route::resource('serviceindetail', ServiceInDetailController::class);
 
 Route::get('serviceout/combo', [ServiceOutHeaderController::class, 'combo']);

@@ -140,14 +140,10 @@ class ServiceOutHeaderController extends Controller
             DB::commit();
 
             /* Set position and page */
-            $serviceout->position = DB::table((new ServiceOutHeader())->getTable())->orderBy($request->sortname, $request->sortorder)
-                ->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $serviceout->{$request->sortname})
-                ->where('id', '<=', $serviceout->id)
-                ->count();
+            $selected = $this->getPosition($serviceout, $serviceout->getTable());
+            $serviceout->position = $selected->position;
+            $serviceout->page = ceil($serviceout->position / ($request->limit ?? 10));
 
-            if (isset($request->limit)) {
-                $serviceout->page = ceil($serviceout->position / $request->limit);
-            }
             return response([
                 'status' => true,
                 'message' => 'Berhasil disimpan',

@@ -72,15 +72,7 @@ class ServiceInDetailController extends Controller
                 'message' => $th->getMessage()
             ]);
         }
-        // $upahsupir = new UpahSupir();
-
-        // return response([
-        //     'data' => $upahsupir->get(),
-        //     'attributes' => [
-        //         'totalRows' => $upahsupir->totalRows,
-        //         'totalPages' => $upahsupir->totalPages
-        //     ]
-        // ]);
+     
     }
 
     public function store(StoreServiceInDetailRequest $request)
@@ -124,6 +116,3 @@ class ServiceInDetailController extends Controller
             return response($th->getMessage());
         }     
     }
-
-    
-}

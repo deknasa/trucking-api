@@ -8,14 +8,10 @@ use App\Models\Trado;
 use App\Models\Mekanik;
 use App\Http\Requests\StoreServiceInHeaderRequest;
 use App\Http\Requests\StoreServiceInDetailRequest;
-use App\Http\Requests\UpdateServiceInHeaderRequest;
-use Database\Factories\MekanikFactory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Validator;
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Models\LogTrail;
-use App\Models\Parameter;
 use App\Models\ServiceInDetail;
 
 class ServiceInHeaderController extends Controller
@@ -26,6 +22,9 @@ class ServiceInHeaderController extends Controller
      */
     public function index()
     {
+        // return response([
+        //     'data' => ServiceInHeader::all()
+        // ]);
         $servicein = new ServiceInHeader();
 
         return response([
@@ -58,7 +57,6 @@ class ServiceInHeaderController extends Controller
             TOP:
             $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
             $servicein->nobukti = $nobukti;
-            
 
             try {
                 $servicein->save();
@@ -162,6 +160,9 @@ class ServiceInHeaderController extends Controller
         }
     }
 
+    /**
+     * @ClassName
+     */
     public function show($id)
     {
         $data = ServiceInHeader::with(
@@ -284,37 +285,46 @@ class ServiceInHeaderController extends Controller
         }
     }
 
- 
-    public function destroy($id, Request $request)
+    /**
+     * @ClassName
+     */
+    public function destroy($id, $servicein, Request $request)
     {
+
         DB::beginTransaction();
 
         try {
-            $get = ServiceInHeader::find($id);
-            $delete = ServiceInDetail::where('servicein_id', $id)->delete();
-            $delete = ServiceInHeader::destroy($id);
-
-            $datalogtrail = [
-                'namatabel' => $get->getTable(),
-                'postingdari' => 'DELETE SERVICE IN',
-                'idtrans' => $id,
-                'nobuktitrans' => '',
-                'aksi' => 'HAPUS',
-                'datajson' => '',
-                'modifiedby' => $get->modifiedby,
-            ];
-
-            $data = new StoreLogTrailRequest($datalogtrail);
-            app(LogTrailController::class)->store($data);
+            $delete = $servicein->delete();
 
             if ($delete) {
+                $logTrail = [
+                    'namatabel' => strtoupper($servicein->getTable()),
+                    'postingdari' => 'DELETE SERVICE IN',
+                    'idtrans' => $servicein->id,
+                    'nobuktitrans' => $servicein->id,
+                    'aksi' => 'DELETE',
+                    'datajson' => $servicein->toArray(),
+                    'modifiedby' => $servicein->modifiedby
+                ];
+
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                app(LogTrailController::class)->store($validatedLogTrail);
+
                 DB::commit();
+
+                $selected = $this->getPosition($servicein, $servicein->getTable(), true);
+                $servicein->position = $selected->position;
+                $servicein->id = $selected->id;
+                $servicein->page = ceil($servicein->position / ($request->limit ?? 10));
+
                 return response([
                     'status' => true,
-                    'message' => 'Berhasil dihapus'
+                    'message' => 'Berhasil dihapus',
+                    'data' => $servicein
                 ]);
             } else {
                 DB::rollBack();
+
                 return response([
                     'status' => false,
                     'message' => 'Gagal dihapus'
@@ -326,7 +336,8 @@ class ServiceInHeaderController extends Controller
         }
     }
 
-    public function combo(Request $request)
+
+    public function combo()
     {
         $data = [
             'mekanik' => Mekanik::all(),
