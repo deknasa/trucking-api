@@ -13,7 +13,7 @@ class StorePenerimaanHeaderRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +24,22 @@ class StorePenerimaanHeaderRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            // 'keterangan' => 'required',
+            // 'tgllunas' => 'required',
+            // 'cabang_id' => 'required',
+            // 'statuskas' => 'required',
+            // 'noresi' => 'required',
+            // 'nowarkat' => 'required',
+            // 'tgljatuhtempo' => 'required',
+            // 'nominal' => 'required',
+            // 'keterangan_detail' => 'required',
+            // 'bank_id' => 'required',
+            // 'bankpelanggan_id' => 'required',
+            // 'jenisbiaya' => 'required',
         ];
+    }
+    public function attributes()
+    {
+        return [];
     }
 }
