@@ -27,172 +27,14 @@ class UpahSupirController extends Controller
      */
     public function index()
     {
-        $params = [
-            'offset' => request()->offset ?? ((request()->page - 1) * request()->limit),
-            'limit' => request()->limit ?? 10,
-            'filters' => json_decode(request()->filters, true) ?? [],
-            'sortIndex' => request()->sortIndex ?? 'id',
-            'sortOrder' => request()->sortOrder ?? 'asc',
-            'withRelations' => request()->withRelations ?? false,
-        ];
-
-        $totalRows = DB::table((new UpahSupir())->getTable())->count();
-        $totalPages = $params['limit'] > 0 ? ceil($totalRows / $params['limit']) : 1;
-
-        /* Sorting */
-        $query = DB::table((new UpahSupir())->getTable())->orderBy($params['sortIndex'], $params['sortOrder']);
-
-        if ($params['sortIndex'] == 'id') {
-            $query = DB::table((new UpahSupir())->getTable())->select(
-                'upahsupir.id',
-                'kotadari.keterangan as kotadari_id',
-                'kotasampai.keterangan as kotasampai_id',
-                'upahsupir.jarak',
-                'zona.zona as zona_id',
-                'parameter.text as statusaktif',
-                'upahsupir.tglmulaiberlaku',
-                'param.text as statusluarkota',
-                'upahsupir.modifiedby',
-                'upahsupir.created_at',
-                'upahsupir.updated_at'
-            )
-            ->join('kota as kotadari', 'kotadari.id', '=', 'upahsupir.kotadari_id')
-            ->join('kota as kotasampai', 'kotasampai.id', '=', 'upahsupir.kotasampai_id')
-            ->join('zona', 'zona.id', '=', 'upahsupir.zona_id')
-            ->leftJoin('parameter', 'upahsupir.statusaktif', '=', 'parameter.id')
-            ->leftJoin('parameter as param', 'upahsupir.statusluarkota', '=', 'param.id')
-            ->orderBy('upahsupir.id', $params['sortOrder']);
-        } else if ($params['sortIndex'] == 'kotadari_id' or $params['sortIndex'] == 'kotasampai_id') {
-            $query = DB::table((new UpahSupir())->getTable())->select(
-                    'upahsupir.id',
-                    'kotadari.keterangan as kotadari_id',
-                    'kotasampai.keterangan as kotasampai_id',
-                    'upahsupir.jarak',
-                    'zona.zona as zona_id',
-                    'parameter.text as statusaktif',
-                    'upahsupir.tglmulaiberlaku',
-                    'param.text as statusluarkota',
-                    'upahsupir.modifiedby',
-                    'upahsupir.created_at',
-                    'upahsupir.updated_at'
-                )
-            ->join('kota as kotadari', 'kota.id', '=', 'upahsupir.kotadari_id')
-            ->join('kota as kotasampai', 'kota.id', '=', 'upahsupir.kotasampai_id')
-            ->join('zona', 'zona.id', '=', 'upahsupir.zona_id')
-            ->leftJoin('parameter', 'upahsupir.statusaktif', '=', 'parameter.id')
-            ->leftJoin('parameter as param', 'upahsupir.statusluarkota', '=', 'param.id')
-            ->orderBy($params['sortIndex'], $params['sortOrder'])
-            ->orderBy('upahsupir.id', $params['sortOrder']);
-        } else {
-            if ($params['sortOrder'] == 'asc') {
-                $query = DB::table((new UpahSupir())->getTable())->select(
-                    'upahsupir.id',
-                    'kotadari.keterangan as kotadari_id',
-                    'kotasampai.keterangan as kotasampai_id',
-                    'upahsupir.jarak',
-                    'zona.zona as zona_id',
-                    'parameter.text as statusaktif',
-                    'upahsupir.tglmulaiberlaku',
-                    'param.text as statusluarkota',
-                    'upahsupir.modifiedby',
-                    'upahsupir.created_at',
-                    'upahsupir.updated_at'
-                )
-                ->join('kota as kotadari', 'kota.id', '=', 'upahsupir.kotadari_id')
-                ->join('kota as kotasampai', 'kota.id', '=', 'upahsupir.kotasampai_id')
-                ->join('zona', 'zona.id', '=', 'upahsupir.zona_id')
-                ->leftJoin('parameter', 'upahsupir.statusaktif', '=', 'parameter.id')
-                ->leftJoin('parameter as param', 'upahsupir.statusluarkota', '=', 'param.id')
-                ->orderBy($params['sortIndex'], $params['sortOrder'])
-                ->orderBy('upahsupir.id', $params['sortOrder']);
-            } else {
-                $query = DB::table((new UpahSupir())->getTable())->select(
-                    'upahsupir.id',
-                    'kotadari.keterangan as kotadari_id',
-                    'kotasampai.keterangan as kotasampai_id',
-                    'upahsupir.jarak',
-                    'zona.zona as zona_id',
-                    'parameter.text as statusaktif',
-                    'upahsupir.tglmulaiberlaku',
-                    'param.text as statusluarkota',
-                    'upahsupir.modifiedby',
-                    'upahsupir.created_at',
-                    'upahsupir.updated_at'
-                )
-                ->join('kota as kotadari', 'kota.id', '=', 'upahsupir.kotadari_id')
-                ->join('kota as kotasampai', 'kota.id', '=', 'upahsupir.kotasampai_id')
-                ->join('zona', 'zona.id', '=', 'upahsupir.zona_id')
-                ->leftJoin('parameter', 'upahsupir.statusaktif', '=', 'parameter.id')
-                ->leftJoin('parameter as param', 'upahsupir.statusluarkota', '=', 'param.id')
-                ->orderBy($params['sortIndex'], $params['sortOrder'])
-                ->orderBy('upahsupir.id', 'asc');
-            }
-        }
-        /* Searching */
-        if (count($params['filters']) > 0 && @$params['filters']['rules'][0]['data'] != '') {
-            switch ($params['filters']['groupOp']) {
-                case "AND":
-                    foreach ($params['filters']['rules'] as $index => $search) {
-                        if ($search['field'] == 'statusaktif') {
-                            $query = $query->where('parameter.text', 'LIKE', "%$search[data]%");
-                        } elseif ($search['field'] == 'statusluarkota') {
-                            $query = $query->where('param.text', 'LIKE', "%$search[data]%");
-                        } elseif ($search['field'] == 'kotadari_id') {
-                            $query = $query->where('kotadari.keterangan', 'LIKE', "%$search[data]%");
-                        } elseif ($search['field'] == 'kotasampai_id') {
-                            $query = $query->where('kotasampai.keterangan', 'LIKE', "%$search[data]%");
-                        } elseif ($search['field'] == 'zona_id') {
-                            $query = $query->where('zona.zona', 'LIKE', "%$search[data]%");
-                        } else {
-                            $query = $query->where($search['field'], 'LIKE', "%$search[data]%");
-                        }
-                    }
-
-                    break;
-                case "OR":
-                    foreach ($params['filters']['rules'] as $index => $search) {
-                        if ($search['field'] == 'statusaktif') {
-                            $query = $query->where('parameter.text', 'LIKE', "%$search[data]%");
-                        } elseif ($search['field'] == 'statusluarkota') {
-                            $query = $query->where('param.text', 'LIKE', "%$search[data]%");
-                        } elseif ($search['field'] == 'kotadari_id') {
-                            $query = $query->where('kotadari.keterangan', 'LIKE', "%$search[data]%");
-                        } elseif ($search['field'] == 'kotasampai_id') {
-                            $query = $query->where('kotasampai.keterangan', 'LIKE', "%$search[data]%");
-                        } elseif ($search['field'] == 'zona_id') {
-                            $query = $query->where('zona.zona', 'LIKE', "%$search[data]%");
-                        } else {
-                            $query = $query->where($search['field'], 'LIKE', "%$search[data]%");
-                        }
-                    }
-
-                    break;
-                default:
-
-                    break;
-            }
-
-            $totalRows = count($query->get());
-            $totalPages = $params['limit'] > 0 ? ceil($totalRows / $params['limit']) : 1;
-        }
-
-        /* Paging */
-        $query = $query->skip($params['offset'])
-            ->take($params['limit']);
-
-        $upahsupir = $query->get();
-
-        /* Set attributes */
-        $attributes = [
-            'totalRows' => $totalRows ?? 0,
-            'totalPages' => $totalPages ?? 0
-        ];
+        $upahsupir = new UpahSupir();
 
         return response([
-            'status' => true,
-            'data' => $upahsupir,
-            'attributes' => $attributes,
-            'params' => $params
+            'data' => $upahsupir->get(),
+            'attributes' => [
+                'totalRows' => $upahsupir->totalRows,
+                'totalPages' => $upahsupir->totalPages
+            ]
         ]);
     }
 
@@ -235,15 +77,21 @@ class UpahSupirController extends Controller
                 /* Store detail */
                 $detaillog=[];
                 for ($i = 0; $i < count($request->nominalsupir); $i++) {
+                    $nominalsupir = str_replace(',','',str_replace('.','',$request->nominalsupir[$i]));
+                    $nominalkenek = str_replace(',','',str_replace('.','',$request->nominalkenek[$i]));
+                    $nominalkomisi = str_replace(',','',str_replace('.','',$request->nominalkomisi[$i]));
+                    $nominaltol = str_replace(',','',str_replace('.','',$request->nominaltol[$i]));
+                    $liter = str_replace(',','',str_replace('.','',$request->liter[$i]));
+
                     $datadetail = [
                         'upahsupir_id' => $upahsupir->id,
                         'container_id' => $request->container_id[$i],
                         'statuscontainer_id' => $request->statuscontainer_id[$i],
-                        'nominalsupir' => $request->nominalsupir[$i],
-                        'nominalkenek' => $request->nominalkenek[$i],
-                        'nominalkomisi' => $request->nominalkomisi[$i],
-                        'nominaltol' => $request->nominaltol[$i],
-                        'liter' => $request->liter[$i],
+                        'nominalsupir' => $nominalsupir,
+                        'nominalkenek' => $nominalkenek,
+                        'nominalkomisi' => $nominalkomisi,
+                        'nominaltol' => $nominaltol,
+                        'liter' => $liter,
                         'modifiedby' => $request->modifiedby,
                     ];
 
@@ -262,11 +110,11 @@ class UpahSupirController extends Controller
                         'upahsupir_id' => $upahsupir->id,
                         'container_id' => $request->container_id[$i],
                         'statuscontainer_id' => $request->statuscontainer_id[$i],
-                        'nominalsupir' => $request->nominalsupir[$i],
-                        'nominalkenek' => $request->nominalkenek[$i],
-                        'nominalkomisi' => $request->nominalkomisi[$i],
-                        'nominaltol' => $request->nominaltol[$i],
-                        'liter' => $request->liter[$i],
+                        'nominalsupir' => $nominalsupir,
+                        'nominalkenek' => $nominalkenek,
+                        'nominalkomisi' => $nominalkomisi,
+                        'nominaltol' => $nominaltol,
+                        'liter' => $liter,
                         'modifiedby' => $request->modifiedby,
                         'created_at' => date('d-m-Y H:i:s',strtotime($upahsupir->created_at)),
                         'updated_at' => date('d-m-Y H:i:s',strtotime($upahsupir->updated_at)),
@@ -377,15 +225,21 @@ class UpahSupirController extends Controller
                 /* Store detail */
                 $detaillog=[];
                 for ($i = 0; $i < count($request->nominalsupir); $i++) {
+                    $nominalsupir = str_replace(',','',str_replace('.','',$request->nominalsupir[$i]));
+                    $nominalkenek = str_replace(',','',str_replace('.','',$request->nominalkenek[$i]));
+                    $nominalkomisi = str_replace(',','',str_replace('.','',$request->nominalkomisi[$i]));
+                    $nominaltol = str_replace(',','',str_replace('.','',$request->nominaltol[$i]));
+                    $liter = str_replace(',','',str_replace('.','',$request->liter[$i]));
+
                     $datadetail = [
                         'upahsupir_id' => $upahsupir->id,
                         'container_id' => $request->container_id[$i],
                         'statuscontainer_id' => $request->statuscontainer_id[$i],
-                        'nominalsupir' => $request->nominalsupir[$i],
-                        'nominalkenek' => $request->nominalkenek[$i],
-                        'nominalkomisi' => $request->nominalkomisi[$i],
-                        'nominaltol' => $request->nominaltol[$i],
-                        'liter' => $request->liter[$i],
+                        'nominalsupir' => $nominalsupir,
+                        'nominalkenek' => $nominalkenek,
+                        'nominalkomisi' => $nominalkomisi,
+                        'nominaltol' => $nominaltol,
+                        'liter' => $liter,
                         'modifiedby' => $request->modifiedby,
                         ];
                     $data = new StoreUpahSupirRincianRequest($datadetail);

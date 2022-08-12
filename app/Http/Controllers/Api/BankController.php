@@ -24,140 +24,14 @@ class BankController extends Controller
      */
     public function index()
     {
-        $params = [
-            'offset' => request()->offset ?? ((request()->page - 1) * request()->limit),
-            'limit' => request()->limit ?? 10,
-            'filters' => json_decode(request()->filters, true) ?? [],
-            'sortIndex' => request()->sortIndex ?? 'id',
-            'sortOrder' => request()->sortOrder ?? 'asc',
-        ];
-
-        $totalRows = DB::table((new Bank)->getTable())->count();
-        $totalPages = $params['limit'] > 0 ? ceil($totalRows / $params['limit']) : 1;
-
-        /* Sorting */
-        $query = DB::table((new Bank)->getTable())->orderBy($params['sortIndex'], $params['sortOrder']);
-
-        if ($params['sortIndex'] == 'id') {
-            $query = DB::table((new Bank)->getTable())->select(
-                'bank.id',
-                'bank.kodebank',
-                'bank.namabank',
-                'bank.coa',
-                'bank.tipe',
-                'parameter.text as statusaktif',
-                'kodepenerimaan.text as kodepenerimaan',
-                'kodepengeluaran.text as kodepengeluaran',
-                'bank.modifiedby',
-                'bank.created_at',
-                'bank.updated_at'
-            )
-                    ->leftJoin('parameter', 'bank.statusaktif', '=', 'parameter.id')
-                    ->leftJoin('parameter as kodepenerimaan', 'bank.kodepenerimaan', '=', 'kodepenerimaan.id')
-                    ->leftJoin('parameter as kodepengeluaran', 'bank.kodepengeluaran', '=', 'kodepengeluaran.id')
-                ->orderBy('bank.id', $params['sortOrder']);
-        } else if ($params['sortIndex'] == 'kodebank' or $params['sortIndex'] == 'namabank') {
-            $query = DB::table((new Bank)->getTable())->select(
-                'bank.id',
-                'bank.kodebank',
-                'bank.namabank',
-                'bank.coa',
-                'bank.tipe',
-                'parameter.text as statusaktif',
-                'kodepenerimaan.text as kodepenerimaan',
-                    'kodepengeluaran.text as kodepengeluaran',
-                    'bank.modifiedby',
-                    'bank.created_at',
-                    'bank.updated_at'
-                )
-                    ->leftJoin('parameter', 'bank.statusaktif', '=', 'parameter.id')
-                    ->leftJoin('parameter as kodepenerimaan', 'bank.kodepenerimaan', '=', 'kodepenerimaan.id')
-                    ->leftJoin('parameter as kodepengeluaran', 'bank.kodepengeluaran', '=', 'kodepengeluaran.id')
-                ->orderBy($params['sortIndex'], $params['sortOrder'])
-                ->orderBy('bank.id', $params['sortOrder']);
-        } else {
-            if ($params['sortOrder'] == 'asc') {
-                $query = DB::table((new Bank)->getTable())->select(
-                    'bank.id',
-                    'bank.kodebank',
-                    'bank.namabank',
-                    'bank.coa',
-                    'bank.tipe',
-                    'parameter.text as statusaktif',
-                    'kodepenerimaan.text as kodepenerimaan',
-                    'kodepengeluaran.text as kodepengeluaran',
-                    'bank.modifiedby',
-                    'bank.created_at',
-                    'bank.updated_at'
-                )
-                    ->leftJoin('parameter', 'bank.statusaktif', '=', 'parameter.id')
-                    ->leftJoin('parameter as kodepenerimaan', 'bank.kodepenerimaan', '=', 'kodepenerimaan.id')
-                    ->leftJoin('parameter as kodepengeluaran', 'bank.kodepengeluaran', '=', 'kodepengeluaran.id')
-                    ->orderBy($params['sortIndex'], $params['sortOrder'])
-                    ->orderBy('bank.id', $params['sortOrder']);
-            } else {
-                $query = DB::table((new Bank)->getTable())->select(
-                    'bank.id',
-                    'bank.kodebank',
-                    'bank.namabank',
-                    'bank.coa',
-                    'bank.tipe',
-                    'parameter.text as statusaktif',
-                    'kodepenerimaan.text as kodepenerimaan',
-                    'kodepengeluaran.text as kodepengeluaran',
-                    'bank.modifiedby',
-                    'bank.created_at',
-                    'bank.updated_at'
-                )
-                    ->leftJoin('parameter', 'bank.statusaktif', '=', 'parameter.id')
-                    ->leftJoin('parameter as kodepenerimaan', 'bank.kodepenerimaan', '=', 'kodepenerimaan.id')
-                    ->leftJoin('parameter as kodepengeluaran', 'bank.kodepengeluaran', '=', 'kodepengeluaran.id')
-                    ->orderBy($params['sortIndex'], $params['sortOrder'])
-                    ->orderBy('bank.id', 'asc');
-            }
-        }
-
-        /* Searching */
-        if (count($params['filters']) > 0 && @$params['filters']['rules'][0]['data'] != '') {
-            switch ($params['filters']['groupOp']) {
-                case "AND":
-                    foreach ($params['filters']['rules'] as $index => $search) {
-                        $query = $query->where($search['field'], 'LIKE', "%$search[data]%");
-                    }
-
-                    break;
-                case "OR":
-                    foreach ($params['filters']['rules'] as $index => $search) {
-                        $query = $query->orWhere($search['field'], 'LIKE', "%$search[data]%");
-                    }
-
-                    break;
-                default:
-
-                    break;
-            }
-
-            $totalRows = count($query->get());
-            $totalPages = $params['limit'] > 0 ? ceil($totalRows / $params['limit']) : 1;
-        }
-
-        /* Paging */
-        $query = $query->skip($params['offset'])
-            ->take($params['limit']);
-
-        $banks = $query->get();
-
-        /* Set attributes */
-        $attributes = [
-            'totalRows' => $totalRows ?? 0,
-            'totalPages' => $totalPages ?? 0
-        ];
+        $bank = new Bank();
 
         return response([
-            'status' => true,
-            'data' => $banks,
-            'attributes' => $attributes,
-            'params' => $params
+            'data' => $bank->get(),
+            'attributes' => [
+                'totalRows' => $bank->totalRows,
+                'totalPages' => $bank->totalPages
+            ]
         ]);
     }
     /**

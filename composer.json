@@ -6,6 +6,7 @@
     "license": "MIT",
     "require": {
         "php": "^7.3|^8.0",
+        "beyondcode/laravel-websockets": "^1.13",
         "doctrine/dbal": "^3.2",
         "fruitcake/laravel-cors": "^2.0",
         "guzzlehttp/guzzle": "^7.0.1",
@@ -14,7 +15,8 @@
         "laravel/passport": "^10.3",
         "laravel/sanctum": "^2.11",
         "laravel/tinker": "^2.5",
-        "phpoffice/phpspreadsheet": "^1.22"
+        "phpoffice/phpspreadsheet": "^1.22",
+        "pusher/pusher-php-server": "~3.0"
     },
     "require-dev": {
         "brianium/paratest": "^6.4",

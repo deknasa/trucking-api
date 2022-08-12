@@ -58,6 +58,10 @@ use App\Http\Controllers\Api\UpahSupirRincianController;
 use App\Http\Controllers\Api\UpahRitasiController;
 use App\Http\Controllers\Api\UpahRitasiRincianController;
 use App\Http\Controllers\Api\RitasiController;
+use App\Http\Controllers\Api\ServiceInHeaderController;
+use App\Http\Controllers\Api\ServiceInDetailController;
+use App\Http\Controllers\Api\ServiceOutHeaderController;
+use App\Http\Controllers\Api\ServiceOutDetailController;
 
 /*
 |--------------------------------------------------------------------------
@@ -95,56 +99,10 @@ route::middleware('auth:api')->group(function () {
     Route::post('agen/{agen}/approval', [AgenController::class, 'approval'])->name('agen.approval');
     Route::resource('agen', AgenController::class);
 
-    Route::get('error/field_length', [ErrorController::class, 'fieldLength']);
-    Route::resource('error', ErrorController::class);
-
-    Route::get('cabang/field_length', [CabangController::class, 'fieldLength']);
-    Route::get('cabang/combostatus', [CabangController::class, 'combostatus']);
-    Route::get('cabang/getPosition2', [CabangController::class, 'getPosition2']);
-    Route::resource('cabang', CabangController::class);
-
-    Route::get('error/field_length', [ErrorController::class, 'fieldLength']);
-    Route::get('error/geterror', [ErrorController::class, 'geterror']);
-    Route::resource('error', ErrorController::class);
-
-    Route::get('role/getroleid', [RoleController::class, 'getroleid']);
-    Route::get('role/field_length', [RoleController::class, 'fieldLength']);
-    Route::resource('role', RoleController::class);
-
     Route::get('acos/field_length', [AcosController::class, 'fieldLength']);
     Route::resource('acos', AcosController::class);
 
     Route::resource('absensi_detail', AbsensiSupirDetailController::class);
-
-    Route::get('user/field_length', [UserController::class, 'fieldLength']);
-    Route::get('user/combostatus', [UserController::class, 'combostatus']);
-    Route::get('user/combocabang', [UserController::class, 'combocabang']);
-    Route::get('user/getuserid', [UserController::class, 'getuserid']);
-    Route::resource('user', UserController::class);
-
-    Route::get('menu/field_length', [MenuController::class, 'fieldLength']);
-    Route::get('menu/combomenuparent', [MenuController::class, 'combomenuparent']);
-    Route::get('menu/getdatanamaacos', [MenuController::class, 'getdatanamaacos']);
-    Route::resource('menu', MenuController::class);
-
-
-    Route::get('userrole/field_length', [UserRoleController::class, 'fieldLength']);
-    Route::get('userrole/detail', [UserRoleController::class, 'detail']);
-    Route::get('userrole/detaillist', [UserRoleController::class, 'detaillist']);
-    Route::get('userrole/combostatus', [UserRoleController::class, 'combostatus']);
-    Route::resource('userrole', UserRoleController::class);
-
-    Route::get('acl/field_length', [AclController::class, 'fieldLength']);
-    Route::get('acl/detail', [AclController::class, 'detail']);
-    Route::get('acl/detaillist', [AclController::class, 'detaillist']);
-    Route::get('acl/combostatus', [AclController::class, 'combostatus']);
-    Route::resource('acl', AclController::class);
-
-    Route::get('useracl/field_length', [UserAclController::class, 'fieldLength']);
-    Route::get('useracl/detail', [UserAclController::class, 'detail']);
-    Route::get('useracl/detaillist', [UserAclController::class, 'detaillist']);
-    Route::get('useracl/combostatus', [UserAclController::class, 'combostatus']);
-    Route::resource('useracl', UserAclController::class);
 
     Route::get('logtrail/detail', [LogTrailController::class, 'detail']);
     Route::get('logtrail/header', [LogTrailController::class, 'header']);
@@ -163,12 +121,7 @@ route::middleware('auth:api')->group(function () {
     Route::get('container/combostatus', [ContainerController::class, 'combostatus']);
     Route::get('container/getPosition2', [ContainerController::class, 'getPosition2']);
     Route::resource('container', ContainerController::class);
-
-    Route::get('supir/combo', [SupirController::class, 'combo']);
-    Route::get('supir/field_length', [SupirController::class, 'fieldLength']);
-    Route::post('supir/upload_image/{id}', [SupirController::class, 'uploadImage']);
-    Route::resource('supir', SupirController::class);
-
+    
     Route::get('bank/combo', [BankController::class, 'combo']);
     Route::get('bank/field_length', [BankController::class, 'fieldLength']);
     Route::resource('bank', BankController::class);
@@ -194,7 +147,7 @@ route::middleware('auth:api')->group(function () {
     Route::resource('jenistrado', JenisTradoController::class);
 
     Route::get('akunpusat/field_length', [AkunPusatController::class, 'fieldLength']);
-    Route::resource('akunpusat', AkunPusatController::class);
+    Route::resource('akunpusat', AkunPusatController::class)->parameters(['akunpusat' => 'akunPusat']);
 
     Route::get('error/field_length', [ErrorController::class, 'fieldLength']);
     Route::get('error/geterror', [ErrorController::class, 'geterror']);
@@ -233,6 +186,7 @@ route::middleware('auth:api')->group(function () {
     Route::get('userrole/detail', [UserRoleController::class, 'detail']);
     Route::get('userrole/detaillist', [UserRoleController::class, 'detaillist']);
     Route::get('userrole/combostatus', [UserRoleController::class, 'combostatus']);
+    Route::get('userrole/export', [UserRoleController::class, 'export'])->name('userrole.export');
     Route::resource('userrole', UserRoleController::class);
 
     Route::get('acl/field_length', [AclController::class, 'fieldLength']);
@@ -286,29 +240,29 @@ route::middleware('auth:api')->group(function () {
     Route::get('bankpelanggan/field_length', [BankPelangganController::class, 'fieldLength']);
     Route::resource('bankpelanggan', BankPelangganController::class);
 
-    Route::get('sub_kelompok/export', [SubKelompokController::class, 'export']);
-    Route::get('sub_kelompok/field_length', [SubKelompokController::class, 'fieldLength']);
-    Route::resource('sub_kelompok', SubKelompokController::class);
+    Route::get('subkelompok/export', [SubKelompokController::class, 'export']);
+    Route::get('subkelompok/field_length', [SubKelompokController::class, 'fieldLength']);
+    Route::resource('subkelompok', SubKelompokController::class)->parameters(['subkelompok' => 'subKelompok']);
 
     Route::get('supplier/export', [SupplierController::class, 'export']);
     Route::get('supplier/field_length', [SupplierController::class, 'fieldLength']);
     Route::resource('supplier', SupplierController::class);
-    
+
     Route::get('penerima/export', [PenerimaController::class, 'export']);
     Route::get('penerima/field_length', [PenerimaController::class, 'fieldLength']);
     Route::resource('penerima', PenerimaController::class);
-    
+
     Route::get('pelanggan/export', [PelangganController::class, 'export']);
     Route::get('pelanggan/field_length', [PelangganController::class, 'fieldLength']);
     Route::resource('pelanggan', PelangganController::class);
 
-    Route::get('status_container/export', [StatusContainerController::class, 'export']);
-    Route::get('status_container/field_length', [StatusContainerController::class, 'fieldLength']);
-    Route::resource('status_container', StatusContainerController::class);
-    
-    Route::get('penerimaan_trucking/export', [PenerimaanTruckingController::class, 'export']);
-    Route::get('penerimaan_trucking/field_length', [PenerimaanTruckingController::class, 'fieldLength']);
-    Route::resource('penerimaan_trucking', PenerimaanTruckingController::class);
+    Route::get('statuscontainer/export', [StatusContainerController::class, 'export']);
+    Route::get('statuscontainer/field_length', [StatusContainerController::class, 'fieldLength']);
+    Route::resource('statuscontainer', StatusContainerController::class)->parameters(['statuscontainer' => 'statusContainer']);
+
+    Route::get('penerimaantrucking/export', [PenerimaanTruckingController::class, 'export']);
+    Route::get('penerimaantrucking/field_length', [PenerimaanTruckingController::class, 'fieldLength']);
+    Route::resource('penerimaantrucking', PenerimaanTruckingController::class)->parameters(['penerimaantrucking' => 'penerimaanTrucking']);
 
     Route::get('pengeluaran_trucking/export', [PengeluaranTruckingController::class, 'export']);
     Route::get('pengeluaran_trucking/field_length', [PengeluaranTruckingController::class, 'fieldLength']);
@@ -393,3 +347,11 @@ Route::resource('upahritasirincian', UpahRitasiRincianController::class);
 Route::get('ritasi/combo', [RitasiController::class, 'combo']);
 Route::get('ritasi/field_length', [RitasiController::class, 'fieldLength']);
 Route::resource('ritasi', RitasiController::class);
+
+Route::get('servicein/combo', [ServiceInHeaderController::class, 'combo']);
+Route::resource('servicein', ServiceInHeaderController::class);
+Route::resource('serviceindetail', ServiceInDetailController::class);
+
+Route::get('serviceout/combo', [ServiceOutHeaderController::class, 'combo']);
+Route::resource('serviceout', ServiceOutHeaderController::class);
+Route::resource('serviceoutdetail', ServiceOutDetailController::class);

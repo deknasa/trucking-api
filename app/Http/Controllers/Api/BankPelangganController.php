@@ -24,131 +24,14 @@ class BankPelangganController extends Controller
      */
     public function index()
     {
-        $params = [
-            'offset' => request()->offset ?? ((request()->page - 1) * request()->limit),
-            'limit' => request()->limit ?? 10,
-            'filters' => json_decode(request()->filters, true) ?? [],
-            'sortIndex' => request()->sortIndex ?? 'id',
-            'sortOrder' => request()->sortOrder ?? 'asc',
-        ];
-        
-        $totalRows = DB::table((new BankPelanggan)->getTable())->count();
-        $totalPages = $params['limit'] > 0 ? ceil($totalRows / $params['limit']) : 1;
-
-        /* Sorting */
-        $query = DB::table((new BankPelanggan)->getTable())->orderBy($params['sortIndex'], $params['sortOrder']);
-
-        if ($params['sortIndex'] == 'id') {
-            $query = DB::table((new BankPelanggan)->getTable())->select(
-                'bankpelanggan.id',
-                'bankpelanggan.kodebank',
-                'bankpelanggan.namabank',
-                'bankpelanggan.keterangan',
-                'parameter.text as statusaktif',
-                'bankpelanggan.modifiedby',
-                'bankpelanggan.created_at',
-                'bankpelanggan.updated_at'
-            )
-            ->leftJoin('parameter', 'bankpelanggan.statusaktif', '=', 'parameter.id')
-            ->orderBy('bankpelanggan.id', $params['sortOrder']);
-        } else if ($params['sortIndex'] == 'kodebank' or $params['sortIndex'] == 'namabank') {
-            $query = DB::table((new BankPelanggan)->getTable())->select(
-                'bankpelanggan.id',
-                'bankpelanggan.kodebank',
-                'bankpelanggan.namabank',
-                'bankpelanggan.keterangan',
-                'parameter.text as statusaktif',
-                'bankpelanggan.modifiedby',
-                'bankpelanggan.created_at',
-                'bankpelanggan.updated_at'
-            )
-                ->leftJoin('parameter', 'bankpelanggan.statusaktif', '=', 'parameter.id')
-                ->orderBy($params['sortIndex'], $params['sortOrder'])
-                ->orderBy('bankpelanggan.id', $params['sortOrder']);
-        } else {
-            if ($params['sortOrder'] == 'asc') {
-                $query = DB::table((new BankPelanggan)->getTable())->select(
-                    'bankpelanggan.id',
-                    'bankpelanggan.kodebank',
-                    'bankpelanggan.namabank',
-                    'bankpelanggan.keterangan',
-                    'parameter.text as statusaktif',
-                    'bankpelanggan.modifiedby',
-                    'bankpelanggan.created_at',
-                    'bankpelanggan.updated_at'
-                )
-                    ->leftJoin('parameter', 'bankpelanggan.statusaktif', '=', 'parameter.id')
-                    ->orderBy($params['sortIndex'], $params['sortOrder'])
-                    ->orderBy('bankpelanggan.id', $params['sortOrder']);
-            } else {
-                $query = DB::table((new BankPelanggan)->getTable())->select(
-                    'bankpelanggan.id',
-                    'bankpelanggan.kodebank',
-                    'bankpelanggan.namabank',
-                    'bankpelanggan.keterangan',
-                    'parameter.text as statusaktif',
-                    'bankpelanggan.modifiedby',
-                    'bankpelanggan.created_at',
-                    'bankpelanggan.updated_at'
-                )
-                    ->leftJoin('parameter', 'bankpelanggan.statusaktif', '=', 'parameter.id')
-                    ->orderBy($params['sortIndex'], $params['sortOrder'])
-                    ->orderBy('bankpelanggan.id', 'asc');
-            }
-        }
-      
-      
-        /* Searching */
-        if (count($params['filters']) > 0 && @$params['filters']['rules'][0]['data'] != '') {
-            switch ($params['filters']['groupOp']) {
-                case "AND":
-                    foreach ($params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'statusaktif') {
-                            $query = $query->where('parameter.text', 'LIKE', "%$filters[data]%");
-                        } else {
-                            $query = $query->where($filters['field'], 'LIKE', "%$filters[data]%");
-                        }
-
-                        
-                    }
-
-                    break;
-                case "OR":
-                    foreach ($params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'statusaktif') {
-                            $query = $query->where('parameter.text', 'LIKE', "%$filters[data]%");
-                        } else {
-                            $query = $query->orWhere($filters['field'], 'LIKE', "%$filters[data]%");
-                        }
-                    }
-
-                    break;
-                default:
-
-                    break;
-            }
-
-            $totalRows = count($query->get());
-            $totalPages = $params['limit'] > 0 ? ceil($totalRows / $params['limit']) : 1;
-        }
-        
-        /* Paging */
-        $query = $query->skip($params['offset'])
-            ->take($params['limit']);
-
-        $bankpelanggan = $query->get();
-
-        /* Set attributes */
-        $attributes = [
-            'totalRows' => $totalRows ?? 0,
-            'totalPages' => $totalPages ?? 0
-        ];
+        $bankpelanggan = new BankPelanggan();
 
         return response([
-            'status' => true,
-            'data' => $bankpelanggan,
-            'attributes' => $attributes,
-            'params' => $params
+            'data' => $bankpelanggan->get(),
+            'attributes' => [
+                'totalRows' => $bankpelanggan->totalRows,
+                'totalPages' => $bankpelanggan->totalPages
+            ]
         ]);
     }
 

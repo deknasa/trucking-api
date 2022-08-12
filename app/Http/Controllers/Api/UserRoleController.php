@@ -300,6 +300,7 @@ class UserRoleController extends Controller
                 $userrole->user_id = $request->user_id;
                 $userrole->role_id = $request->role_id[$i]  ?? 0;
                 $userrole->modifiedby = auth('api')->user()->name;
+                
                 if ($request->status[$i] == $aktif) {
                     if ($userrole->save()) {
                         $logTrail = [
@@ -486,6 +487,36 @@ class UserRoleController extends Controller
         return response([
             'data' => $data
         ]);
+    }
+
+    /**
+     * @ClassName
+     */
+    public function export()
+    {
+        $response = $this->index();
+        $decodedResponse = json_decode($response->content(), true);
+        $useracls = $decodedResponse['data'];
+
+        $columns = [
+            [
+                'label' => 'No',
+            ],
+            [
+                'label' => 'ID',
+                'index' => 'id',
+            ],
+            [
+                'label' => 'User',
+                'index' => 'user',
+            ],
+            [
+                'label' => 'Nama User',
+                'index' => 'name',
+            ],
+        ];
+
+        $this->toExcel('User Role', $useracls, $columns);
     }
 
     public function getid($id, $request, $del)

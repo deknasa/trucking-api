@@ -13,7 +13,7 @@ class StoreServiceInHeaderRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +24,14 @@ class StoreServiceInHeaderRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'tglbukti' => 'required',
+            'trado_id' => 'required',
+            'tglmasuk' => 'required',
+            'keterangan' => 'required',
         ];
+    }
+    
+    public function attributes() {
+        return [];
     }
 }

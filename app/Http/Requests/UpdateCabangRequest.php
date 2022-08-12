@@ -28,7 +28,6 @@ class UpdateCabangRequest extends FormRequest
             'kodecabang' => 'required',
             'namacabang' => 'required',
             'statusaktif' => 'required',
-            'modifiedby' => 'required'
         ];
     }
 
@@ -38,7 +37,6 @@ class UpdateCabangRequest extends FormRequest
             'kodecabang' => 'kode cabang',
             'namacabang' => 'nama cabang',
             'statusaktif' => 'status',
-            'modifiedby' => 'modified by',
         ];
     }
 
@@ -49,7 +47,6 @@ class UpdateCabangRequest extends FormRequest
             'kodecabang.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
             'namacabang.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
             'statusaktif.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
-            'modifiedby.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
 
         ];
     }

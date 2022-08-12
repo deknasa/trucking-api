@@ -24,12 +24,6 @@ use App\Http\Controllers\Api\LogTrailController;
 class ErrorController extends Controller
 {
     /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-
-           /**
      * @ClassName 
      */
     public function index()
@@ -145,7 +139,7 @@ class ErrorController extends Controller
      * @param  \App\Http\Requests\StoreErrorRequest  $request
      * @return \Illuminate\Http\Response
      */
-          /**
+    /**
      * @ClassName 
      */
     public function store(StoreErrorRequest $request)
@@ -226,7 +220,7 @@ class ErrorController extends Controller
      * @param  \App\Models\Error  $error
      * @return \Illuminate\Http\Response
      */
-          /**
+    /**
      * @ClassName 
      */
     public function update(UpdateErrorRequest $request, Error $error)
@@ -279,7 +273,7 @@ class ErrorController extends Controller
      * @param  \App\Models\Error  $error
      * @return \Illuminate\Http\Response
      */
-          /**
+    /**
      * @ClassName 
      */
     public function destroy(Error $error, Request $request)

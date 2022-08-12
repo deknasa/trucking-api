@@ -7,132 +7,27 @@ use App\Http\Requests\StoreAbsenTradoRequest;
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Http\Requests\UpdateAbsenTradoRequest;
 use App\Models\AbsenTrado;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Auth;
-use Carbon\Carbon;
-use App\Http\Resources\AbsenTrado as ResourcesAbsenTrado;
-use App\Http\Resources\AbsenTradoResource;
 
 
 class AbsenTradoController extends Controller
 {
-
     /**
      * @ClassName 
      */
     public function index()
     {
-        $params = [
-            'offset' => request()->offset ?? ((request()->page - 1) * request()->limit),
-            'limit' => request()->limit ?? 10,
-            'filters' => json_decode(request()->filters, true) ?? [],
-            'sortIndex' => request()->sortIndex ?? 'id',
-            'sortOrder' => request()->sortOrder ?? 'asc',
-        ];
-
-
-
-        $totalRows = DB::table((new AbsenTrado)->getTable())->count();
-
-        $totalPages = $params['limit'] > 0 ? ceil($totalRows / $params['limit']) : 1;
-
-        /* Sorting */
-        if ($params['sortIndex'] == 'id') {
-            $query = DB::table((new AbsenTrado)->getTable())->select(
-                'absentrado.id',
-                'absentrado.kodeabsen',
-                'absentrado.keterangan',
-                'parameter.text as statusaktif',
-                'absentrado.modifiedby',
-                'absentrado.created_at',
-                'absentrado.updated_at'
-            )
-                ->leftJoin('parameter', 'absentrado.statusaktif', '=', 'parameter.id')
-                ->orderBy('absentrado.id', $params['sortOrder']);
-        } else {
-            if ($params['sortOrder'] == 'asc') {
-                $query = DB::table((new AbsenTrado)->getTable())->select(
-                    'absentrado.id',
-                    'absentrado.kodeabsen',
-                    'absentrado.keterangan',
-                    'parameter.text as statusaktif',
-                    'absentrado.modifiedby',
-                    'absentrado.created_at',
-                    'absentrado.updated_at'
-                )
-                    ->leftJoin('parameter', 'absentrado.statusaktif', '=', 'parameter.id')
-                    ->orderBy($params['sortIndex'], $params['sortOrder'])
-                    ->orderBy('absentrado.id', $params['sortOrder']);
-            } else {
-                $query = DB::table((new AbsenTrado)->getTable())->select(
-                    'absentrado.id',
-                    'absentrado.kodeabsen',
-                    'absentrado.keterangan',
-                    'parameter.text as statusaktif',
-                    'absentrado.modifiedby',
-                    'absentrado.created_at',
-                    'absentrado.updated_at'
-                )
-                    ->leftJoin('parameter', 'absentrado.statusaktif', '=', 'parameter.id')
-                    ->orderBy($params['sortIndex'], $params['sortOrder'])
-                    ->orderBy('absentrado.id', 'asc');
-            }
-        }
-
-        /* filtersing */
-        if (count($params['filters']) > 0 && @$params['filters']['rules'][0]['data'] != '') {
-            switch ($params['filters']['groupOp']) {
-                case "AND":
-                    foreach ($params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'statusaktif') {
-                            $query = $query->where('parameter.text', 'LIKE', "%$filters[data]%");
-                        } else {
-                            $query = $query->where($filters['field'], 'LIKE', "%$filters[data]%");
-                        }
-                    }
-
-                    break;
-                case "OR":
-                    foreach ($params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'statusaktif') {
-                            $query = $query->where('parameter.text', 'LIKE', "%$filters[data]%");
-                        } else {
-                            $query = $query->orWhere($filters['field'], 'LIKE', "%$filters[data]%");
-                        }
-                    }
-
-                    break;
-                default:
-
-                    break;
-            }
-
-            $totalRows = count($query->get());
-            $totalPages = $params['limit'] > 0 ? ceil($totalRows / $params['limit']) : 1;
-        }
-
-        /* Paging */
-        $query = $query->skip($params['offset'])
-            ->take($params['limit']);
-
-        $absenTrados = $query->get();
-
-        /* Set attributes */
-        $attributes = [
-            'totalRows' => $totalRows ?? 0,
-            'totalPages' => $totalPages ?? 0
-        ];
+        $absenTrado = new AbsenTrado();
 
         return response([
-            'status' => true,
-            'data' => $absenTrados,
-            'attributes' => $attributes,
-            'params' => $params
+            'data' => $absenTrado->get(),
+            'attributes' => [
+                'totalRows' => $absenTrado->totalRows,
+                'totalPages' => $absenTrado->totalPages
+            ]
         ]);
     }
-
 
     /**
      * @ClassName 
@@ -140,6 +35,7 @@ class AbsenTradoController extends Controller
     public function store(StoreAbsenTradoRequest $request)
     {
         DB::beginTransaction();
+
         try {
             $absenTrado = new AbsenTrado();
             $absenTrado->kodeabsen = $request->kodeabsen;
@@ -167,14 +63,9 @@ class AbsenTradoController extends Controller
             }
 
             /* Set position and page */
-            $del = 0;
-            $data = $this->getid($absenTrado->id, $request, $del);
-
-            $absenTrado->position = $data->row;
-
-            if (isset($request->limit)) {
-                $absenTrado->page = ceil($absenTrado->position / $request->limit);
-            }
+            $selected = $this->getPosition($absenTrado, $absenTrado->getTable());
+            $absenTrado->position = $selected->position;
+            $absenTrado->page = ceil($absenTrado->position / ($request->limit ?? 10));
 
             return response([
                 'status' => true,
@@ -195,12 +86,13 @@ class AbsenTradoController extends Controller
         ]);
     }
 
-
     /**
      * @ClassName 
      */
     public function update(UpdateAbsenTradoRequest $request, AbsenTrado $absenTrado)
     {
+        DB::beginTransaction();
+
         try {
             $absenTrado->kodeabsen = $request->kodeabsen;
             $absenTrado->keterangan = $request->keterangan;
@@ -221,12 +113,12 @@ class AbsenTradoController extends Controller
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
 
+                DB::commit();
 
                 /* Set position and page */
-                $absenTrado->position = $this->getid($absenTrado->id, $request, 0)->row;
-                if (isset($request->limit)) {
-                    $absenTrado->page = ceil($absenTrado->position / $request->limit);
-                }
+                $selected = $this->getPosition($absenTrado, $absenTrado->getTable());
+                $absenTrado->position = $selected->position;
+                $absenTrado->page = ceil($absenTrado->position / ($request->limit ?? 10));
 
                 return response([
                     'status' => true,
@@ -234,12 +126,16 @@ class AbsenTradoController extends Controller
                     'data' => $absenTrado
                 ]);
             } else {
+                DB::rollBack();
+
                 return response([
                     'status' => false,
                     'message' => 'Gagal diubah'
                 ]);
             }
         } catch (\Throwable $th) {
+            DB::rollBack();
+
             throw $th;
         }
     }
@@ -250,9 +146,10 @@ class AbsenTradoController extends Controller
      */
     public function destroy(AbsenTrado $absenTrado, Request $request)
     {
+        DB::beginTransaction();
 
-        $delete = AbsenTrado::destroy($absenTrado->id);
-        $del = 1;
+        $delete = $absenTrado->delete();
+
         if ($delete) {
             $logTrail = [
                 'namatabel' => strtoupper($absenTrado->getTable()),
@@ -269,18 +166,19 @@ class AbsenTradoController extends Controller
 
             DB::commit();
 
-            $data = $this->getid($absenTrado->id, $request, $del);
-            $absenTrado->position = $data->row ?? 0;
-            $absenTrado->id = $data->id ?? 0;
-            if (isset($request->limit)) {
-                $absenTrado->page = ceil($absenTrado->position / $request->limit);
-            }
+            $selected = $this->getPosition($absenTrado, $absenTrado->getTable(), true);
+            $absenTrado->position = $selected->position;
+            $absenTrado->id = $selected->id;
+            $absenTrado->page = ceil($absenTrado->position / ($request->limit ?? 10));
+
             return response([
                 'status' => true,
                 'message' => 'Berhasil dihapus',
                 'data' => $absenTrado
             ]);
         } else {
+            DB::rollBack();
+
             return response([
                 'status' => false,
                 'message' => 'Gagal dihapus'
@@ -300,127 +198,5 @@ class AbsenTradoController extends Controller
         return response([
             'data' => $data
         ]);
-    }
-
-    public function getid($id, $request, $del)
-    {
-
-        $params = [
-            'indexRow' => $request->indexRow ?? 1,
-            'limit' => $request->limit ?? 100,
-            'page' => $request->page ?? 1,
-            'sortname' => $request->sortname ?? 'id',
-            'sortorder' => $request->sortorder ?? 'asc',
-        ];
-
-        $temp = '##temp' . rand(1, 10000);
-        Schema::create($temp, function ($table) {
-            $table->id();
-            $table->bigInteger('id_')->default('0');
-            $table->string('kodeabsen', 300)->default('');
-            $table->string('keterangan', 1000)->default('');
-            $table->string('statusaktif', 300)->default('');
-            $table->string('modifiedby', 30)->default('');
-            $table->dateTime('created_at')->default('1900/1/1');
-            $table->dateTime('updated_at')->default('1900/1/1');
-
-            $table->index('id_');
-        });
-
-        if ($params['sortname'] == 'id') {
-            $query = DB::table((new AbsenTrado)->getTable())->select(
-                'absentrado.id as id_',
-                'absentrado.kodeabsen',
-                'absentrado.keterangan',
-                'absentrado.statusaktif',
-                'absentrado.modifiedby',
-                'absentrado.created_at',
-                'absentrado.updated_at'
-            )
-                ->leftJoin('parameter', 'absentrado.statusaktif', '=', 'parameter.id')
-
-                ->orderBy('absentrado.id', $params['sortorder']);
-        } else if ($params['sortname'] == 'grp' or $params['sortname'] == 'subgrp') {
-            $query = DB::table((new AbsenTrado)->getTable())->select(
-                'absentrado.id as id_',
-                'absentrado.kodeabsen',
-                'absentrado.keterangan',
-                'absentrado.statusaktif',
-                'absentrado.modifiedby',
-                'absentrado.created_at',
-                'absentrado.updated_at'
-            )
-                ->leftJoin('parameter', 'absentrado.statusaktif', '=', 'parameter.id')
-
-                ->orderBy($params['sortname'], $params['sortorder'])
-                ->orderBy('parameter.text', $params['sortorder'])
-                ->orderBy('absentrado.id', $params['sortorder']);
-        } else {
-            if ($params['sortorder'] == 'asc') {
-                $query = DB::table((new AbsenTrado)->getTable())->select(
-                    'absentrado.id as id_',
-                    'absentrado.kodeabsen',
-                    'absentrado.keterangan',
-                    'absentrado.statusaktif',
-                    'absentrado.modifiedby',
-                    'absentrado.created_at',
-                    'absentrado.updated_at'
-
-                )
-                    ->leftJoin('parameter', 'absentrado.statusaktif', '=', 'parameter.id')
-
-                    ->orderBy($params['sortname'], $params['sortorder'])
-                    ->orderBy('absentrado.id', $params['sortorder']);
-            } else {
-                $query = DB::table((new AbsenTrado)->getTable())->select(
-                    'absentrado.id as id_',
-                    'absentrado.kodeabsen',
-                    'absentrado.keterangan',
-                    'absentrado.statusaktif',
-                    'absentrado.modifiedby',
-                    'absentrado.created_at',
-                    'absentrado.updated_at'
-                )
-                    ->leftJoin('parameter', 'absentrado.statusaktif', '=', 'parameter.id')
-                    ->orderBy($params['sortname'], $params['sortorder'])
-                    ->orderBy('absentrado.id', 'asc');
-            }
-        }
-
-        DB::table($temp)->insertUsing(['id_', 'kodeabsen', 'keterangan', 'statusaktif', 'modifiedby', 'created_at', 'updated_at'], $query);
-
-        if ($del == 1) {
-            if ($params['page'] == 1) {
-                $baris = $params['indexRow'] + 1;
-            } else {
-                $hal = $params['page'] - 1;
-                $bar = $hal * $params['limit'];
-                $baris = $params['indexRow'] + $bar + 1;
-            }
-
-
-            if (DB::table($temp)
-                ->where('id', '=', $baris)->exists()
-            ) {
-                $querydata = DB::table($temp)
-                    ->select('id as row', 'id_ as id')
-                    ->where('id', '=', $baris)
-                    ->orderBy('id');
-            } else {
-                $querydata = DB::table($temp)
-                    ->select('id as row', 'id_ as id')
-                    ->where('id', '=', ($baris - 1))
-                    ->orderBy('id');
-            }
-        } else {
-            $querydata = DB::table($temp)
-                ->select('id as row')
-                ->where('id_', '=',  $id)
-                ->orderBy('id');
-        }
-
-
-        $data = $querydata->first();
-        return $data;
     }
 }
