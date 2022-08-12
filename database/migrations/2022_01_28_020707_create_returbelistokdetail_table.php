@@ -21,8 +21,6 @@ class CreateReturbelistokdetailTable extends Migration
             $table->unsignedBigInteger('gudang_id')->deaullt('0');
             $table->integer('conv1')->length(11)->default('0');
             $table->integer('conv2')->length(11)->default('0');
-            $table->integer('statusstok')->length(11)->default('0');
-            $table->string('satuan',50)->default('');
             $table->double('qty',15,2)->default('0');
             $table->double('hrgsatuan',15,2)->default('0');            
             $table->double('persentasediscount',15,2)->default('0');            

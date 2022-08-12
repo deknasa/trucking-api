@@ -15,17 +15,11 @@ class BeliStokHeaderSeeder extends Seeder
     public function run()
     {
         BeliStokHeader::create([
-            'nobukti' => '',
-            'tgl' => '',
-            'postok_nobukti' => '',
-            'supplier_id' => '',            
-            'persentasedisc' => '',
-            'nominaldisc' => '',
-            'persentaseppn' => '',
-            'nominalppn' => '',
-            'total' => '',
-            'keterangan' => '',
-            'tgljatuhtempo' => '',
+            'nobukti' => 'PBT 0001/VII/2022',
+            'tglbukti' => '2022/7/1',
+            'postok_nobukti' => 'POT 0001/VI/2022',
+            'supplier_id' => 1,            
+            'keterangan' => 'PEMBELIAN BAUT',
             'nobon' => '',
             'hutang_nobukti' => '',
             'modifiedby' => 'ADMIN',
