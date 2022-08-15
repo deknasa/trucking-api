@@ -13,14 +13,17 @@ class AlatBayarSeeder extends Seeder
      */
     public function run()
     {
+
         AlatBayar::create([
-            'kodealatbayar' => 'TUNAI',
-            'namaalatbayar' => 'TUNAI',
-            'keterangan' => 'TUNAI',
-            'statuslangsunggcair' => 56,
-            'statusdefault' => 58,
-            'bank_id' => 1,
+            'kodealatbayar' => 'TRANSFER',
+            'namaalatbayar' => 'TRANSFER',
+            'keterangan' => 'TRANSFER',
+            'statuslangsunggcair' => 45,
+            'statusdefault' => 21,
+            'bank_id' => 2,
             'modifiedby' => 'ADMIN',
         ]);
+
+
     }
 }

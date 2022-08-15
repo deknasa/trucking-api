@@ -1,4 +1,5 @@
-<?php
+
+ <?php
 
 use App\Http\Controllers\Api\AkunPusatController;
 use App\Http\Controllers\Api\AbsensiSupirDetailController;
@@ -64,6 +65,9 @@ use App\Http\Controllers\Api\ServiceOutHeaderController;
 use App\Http\Controllers\Api\ServiceOutDetailController;
 use App\Http\Controllers\Api\PenerimaanHeaderController;
 use App\Http\Controllers\Api\PenerimaanDetailController;
+use App\Http\Controllers\Api\PengeluaranHeaderController;
+use App\Http\Controllers\Api\PengeluaranDetailController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -377,3 +381,14 @@ Route::get('penerimaan/grid', [PenerimaanHeaderController::class, 'grid']);
 Route::resource('penerimaan', PenerimaanHeaderController::class);
 
 Route::resource('penerimaandetail', PenerimaanDetailController::class);
+
+
+//pengeluaran
+Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
+Route::post('pengeluaran/{id}/approval', [PengeluaranHeaderController::class, 'approval'])->name('pengeluaran.approval');
+Route::get('pengeluaran/no_bukti', [PengeluaranHeaderController::class, 'getNoBukti']);
+Route::get('pengeluaran/combo', [PengeluaranHeaderController::class, 'combo']);
+Route::get('pengeluaran/grid', [PengeluaranHeaderController::class, 'grid']);
+Route::resource('pengeluaran', PengeluaranHeaderController::class);
+
+Route::resource('pengeluarandetail', PengeluaranDetailController::class);
