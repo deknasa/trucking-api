@@ -44,6 +44,7 @@ class PenerimaanHeaderController extends Controller
         ]);
     }
 
+    
 
     public function show($id)
     {
@@ -510,7 +511,7 @@ class PenerimaanHeaderController extends Controller
 
             $datalogtrail = [
                 'namatabel' => $get->getTable(),
-                'postingdari' => 'DELETE SERVICE IN',
+                'postingdari' => 'DELETE PENERIMAAN',
                 'idtrans' => $id,
                 'nobuktitrans' => '',
                 'aksi' => 'HAPUS',

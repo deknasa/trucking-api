@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\ServiceInDetail;
 use App\Http\Requests\StoreServiceInDetailRequest;
-use App\Http\Requests\UpdateServiceInDetailRequest;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -76,7 +75,6 @@ class ServiceInDetailController extends Controller
      
     }
 
-  
     public function store(StoreServiceInDetailRequest $request)
     {
         DB::beginTransaction();
@@ -118,5 +116,3 @@ class ServiceInDetailController extends Controller
             return response($th->getMessage());
         }     
     }
-
-}

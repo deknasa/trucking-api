@@ -19,13 +19,7 @@ class CreateReturbelistokheaderTable extends Migration
             $table->date('tglbukti')->default('1900/1/1');
             $table->string('belistok_nobukti',50)->default('');
             $table->unsignedBigInteger('supplier_id')->default('0');
-            $table->double('persentasediscount',15,2)->default('0');
-            $table->double('nominaldiscount',15,2)->default('0');
-            $table->double('persentaseppn',15,2)->default('0');
-            $table->double('nominalppn',15,2)->default('0');
-            $table->double('total',15,2)->default('0');
             $table->longText('keterangan')->default('');
-            $table->date('tgljt')->default('1900/1/1');
             $table->string('modifiedby',50)->default('');
             $table->timestamps();
 

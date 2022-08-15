@@ -19,11 +19,6 @@ class CreatebelistokheaderTable extends Migration
             $table->date('tglbukti')->default('1900/1/1');
             $table->string('postok_nobukti', 50)->default('');
             $table->unsignedBigInteger('supplier_id')->default(0);            
-            $table->string('persentasedisc', 50)->default('');
-            $table->double('nominaldisc', 15,2)->default(0);
-            $table->double('persentaseppn', 15,2)->default(0);
-            $table->double('nominalppn', 15,2)->default(0);
-            $table->double('total', 15,2)->default(0);
             $table->longText('keterangan')->default('');
             $table->string('nobon', 50)->default('');
             $table->string('hutang_nobukti', 50)->default('');

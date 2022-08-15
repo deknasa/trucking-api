@@ -20,9 +20,13 @@ class CreatePostokdetailTable extends Migration
             $table->unsignedBigInteger('stok_id')->default('0');
             $table->integer('conv1')->length(11)->default('0');
             $table->integer('conv2')->length(11)->default('0');
-            $table->integer('statusstok')->length(11)->default('0');
-            $table->double('qty',15,2)->default('0');
-            $table->double('hrgsatuan',15,2)->default('0');
+            $table->double('qty0',15,2)->default('0');
+            $table->double('qty1',15,2)->default('0');
+            $table->double('qty2',15,2)->default('0');
+            $table->double('totalqty',15,2)->default('0');
+            $table->double('harga0',15,2)->default('0');
+            $table->double('harga1',15,2)->default('0');
+            $table->double('harga2',15,2)->default('0');
             $table->double('total',15,2)->default('0');
             $table->longText('keterangan')->default('');
             $table->string('modifiedby',50)->default('');
