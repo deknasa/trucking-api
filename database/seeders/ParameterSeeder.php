@@ -16,12 +16,12 @@ class ParameterSeeder extends Seeder
     public function run()
     {
         Parameter::create([
-            'grp' => 'COA',
-            'subgrp' => 'PENGELUARAN KAS KREDIT',
-            'text' => '',
-            'memo' => 'NOMOR PENGELUARAN KAS',
-            'modifiedby' => 'ADMIN',
-        ]);
+        'grp' => 'COA',
+        'subgrp' => 'PENGELUARAN KAS DEBET',
+        'text' => '',
+        'memo' => 'NOMOR PENGELUARAN KAS',
+        'modifiedby' => 'ADMIN',
+    ]);
 
         // Parameter::create([
         //     'grp' => 'ABSENSI',

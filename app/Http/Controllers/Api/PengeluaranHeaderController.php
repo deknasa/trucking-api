@@ -59,13 +59,15 @@ class PengeluaranHeaderController extends Controller
             $content['subgroup'] = 'NOMOR PENGELUARAN KAS';
             $content['table'] = 'pengeluaranheader';
 
+            $statusApproval = Parameter::where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
+
             $pengeluaranHeader = new PengeluaranHeader();
             $pengeluaranHeader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $pengeluaranHeader->pelanggan_id = $request->pelanggan_id;
             $pengeluaranHeader->keterangan = $request->keterangan ?? '';
             $pengeluaranHeader->statusjenistransaksi = $request->statusjenistransaksi ?? 0;
             $pengeluaranHeader->postingdari = $request->postingdari ?? 'PENGELUARAN';
-            $pengeluaranHeader->statusapproval = $request->statusapproval ?? 0;
+            $pengeluaranHeader->statusapproval = $statusApproval->id ?? 0;
             $pengeluaranHeader->dibayarke = $request->dibayarke ?? '';
             $pengeluaranHeader->cabang_id = $request->cabang_id ?? 0;
             $pengeluaranHeader->bank_id = $request->bank_id ?? 0;
@@ -349,6 +351,7 @@ class PengeluaranHeaderController extends Controller
                     $iddetail = $datadetails['id'];
                     $tabeldetail = $datadetails['tabel'];
                 }
+             
 
                 $datadetaillog = [
                     'pengeluaran_id' => $pengeluaranHeader->id,
@@ -430,7 +433,6 @@ class PengeluaranHeaderController extends Controller
                 ];
 
                 $jurnal = $this->storeJurnal($jurnalHeader, $jurnalDetail);
-
 
                 // if (!$jurnal['status'] AND @$jurnal['errorCode'] == 2601) {
                 //     goto ATAS;
