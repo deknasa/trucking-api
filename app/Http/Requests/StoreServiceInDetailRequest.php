@@ -24,9 +24,9 @@ class StoreServiceInDetailRequest extends FormRequest
     public function rules()
     {
         return [
-            'mekanik_id' => 'required',
-            'keterangan' => 'required',
-
+            'servicein_id' => 'required',
+            'mekanik_id' => 'required|int',
+            'keterangan' => 'required'
         ];
     }
 }

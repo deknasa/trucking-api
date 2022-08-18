@@ -24,9 +24,11 @@ class CreatePenerimaanheaderTable extends Migration
             $table->date('tgllunas')->default('1900/1/1');
             $table->unsignedBigInteger('cabang_id')->default('0');
             $table->integer('statuskas')->length(11)->default('0');
+
             $table->integer('statusapproval')->length(11)->default('0');
             $table->string('userapproval',50)->default('');
             $table->date('tglapproval')->default('1900/1/1');
+            
             $table->string('noresi',50)->default('');
             $table->integer('statusberkas')->length(11)->default('0');
             $table->string('userberkas',50)->default('');

@@ -49,6 +49,8 @@ class KasGantungDetailController extends Controller
                 $query->select(
                     // 'header.id as id_header',
                     // 'header.nobukti as nobukti_header',
+               
+               
                     // 'header.tgl as tgl_header',
                     // 'header.keterangan as keterangan_header',
                     // 'header.kasgantung_nobukti as kasgantung_nobukti_header',

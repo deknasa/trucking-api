@@ -105,7 +105,7 @@ class ServiceOutHeaderController extends Controller
 
                 $datadetaillog = [
                     'id' => $iddetail,
-                    'servicein_id' => $serviceout->id,
+                    'serviceout_id' => $serviceout->id,
                     'nobukti' => $serviceout->nobukti,
                     'servicein_nobukti' => $request->servicein_nobukti[$i],
                     'keterangan' => $request->keterangan_detail[$i],
@@ -223,7 +223,7 @@ class ServiceOutHeaderController extends Controller
 
                     $datadetaillog = [
                         'id' => $iddetail,
-                        'servicein_id' => $serviceout->id,
+                        'serviceout_id' => $serviceout->id,
                         'nobukti' => $serviceout->nobukti,
                         'servicein_nobukti' => $request->servicein_nobukti[$i],
                         'keterangan' => $request->keterangan_detail[$i],

@@ -36,9 +36,6 @@ class ServiceInHeaderController extends Controller
         ]);
     }
 
-    /**
-     * @ClassName
-     */
     public function store(StoreServiceInHeaderRequest $request)
     {
         DB::beginTransaction();
@@ -60,7 +57,7 @@ class ServiceInHeaderController extends Controller
             TOP:
             $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
             $servicein->nobukti = $nobukti;
-            
+
             try {
                 $servicein->save();
             } catch (\Exception $e) {
@@ -178,9 +175,7 @@ class ServiceInHeaderController extends Controller
         ]);
     }
 
-    /**
-     * @ClassName
-     */
+
     public function update(StoreServiceInHeaderRequest $request, $id)
     {
         DB::beginTransaction();
