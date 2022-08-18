@@ -28,5 +28,13 @@ class SubKelompokSeeder extends Seeder
             'statusaktif' => 1,
             'modifiedby' => 'ADMIN',
         ]);
+
+        Subkelompok::create([
+            'kodesubkelompok' => 'RADIATOR',
+            'keterangan' => 'RADIATOR',
+            'kelompok_id' => 2,
+            'statusaktif' => 1,
+            'modifiedby' => 'ADMIN',
+        ]);
     }
 }

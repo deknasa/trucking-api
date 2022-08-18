@@ -38,5 +38,13 @@ class KategoriSeeder extends Seeder
             'modifiedby' => 'ADMIN',
         ]);
 
+        Kategori::create([
+            'kodekategori' => 'RADIATOR',
+            'subkelompok_id' => 3,
+            'keterangan' => 'RADIATOR',
+            'statusaktif' => 1,
+            'modifiedby' => 'ADMIN',
+        ]);
+
     }
 }
