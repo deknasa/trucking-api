@@ -82,6 +82,7 @@ class PengeluaranHeaderController extends Controller
             try {
                 $pengeluaranHeader->save();
             } catch (\Exception $e) {
+                
                 $errorCode = @$e->errorInfo[1];
                 if ($errorCode == 2601) {
                     goto TOP;
@@ -96,7 +97,7 @@ class PengeluaranHeaderController extends Controller
                 'datajson' => $pengeluaranHeader->toArray(),
                 'modifiedby' => $pengeluaranHeader->modifiedby
             ];
-
+            
             $validatedLogTrail = new StoreLogTrailRequest($logTrail);
             $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
        
