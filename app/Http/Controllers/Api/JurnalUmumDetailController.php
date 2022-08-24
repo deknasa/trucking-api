@@ -55,20 +55,18 @@ class JurnalUmumDetailController extends Controller
                 'messages' => $validator->messages()
             ];
         }
-
         try {
             $jurnalumumDetail = new JurnalUmumDetail();
-
+            
             $jurnalumumDetail->jurnalumum_id = $request->jurnalumum_id;
             $jurnalumumDetail->nobukti = $request->nobukti;
-            $jurnalumumDetail->tgl = $request->tgl;
+            $jurnalumumDetail->tglbukti = $request->tglbukti;
             $jurnalumumDetail->coa = $request->coa;
             $jurnalumumDetail->nominal = $request->nominal;
             $jurnalumumDetail->keterangan = $request->keterangan ?? '';
             $jurnalumumDetail->modifiedby = $request->modifiedby;
             
             $jurnalumumDetail->save();
-            
            
             DB::commit();
             if ($validator->passes()) {
