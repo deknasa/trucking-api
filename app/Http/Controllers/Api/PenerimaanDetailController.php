@@ -51,16 +51,15 @@ class PenerimaanDetailController extends Controller
                     'detail.nowarkat',
                     'detail.tgljatuhtempo',
                     'detail.nominal',
-                    //'detail.coadebet',
                     'detail.keterangan',
                     'bank.namabank as bank_id',
-                    'pelanggan.namapelanggan as pelanggan_id', //
+                    'pelanggan.namapelanggan as pelanggan_id', 
                     'detail.invoice_nobukti',
-                    'bankpelanggan.namabank as bankpelanggan_id', ///
+                    'bankpelanggan.namabank as bankpelanggan_id',
                     'detail.jenisbiaya',
                     'detail.penerimaanpiutang_nobukti',
                     'detail.bulanbeban',
-                    'akunpusat.keterangancoa as coakredit', //coakredit_id
+                    'akunpusat.keterangancoa as coakredit', 
                     'bank.coa as coadebet',
                     // 'detail.pelanggan',
                 )
@@ -77,21 +76,23 @@ class PenerimaanDetailController extends Controller
                     'detail.nowarkat',
                     'detail.tgljatuhtempo',
                     'detail.nominal',
-                    // 'detail.coadebet',
+                    'coadebet.keterangancoa as coadebet',
                     'detail.keterangan',
                     'bank.namabank as bank_id',
                     'pelanggan.namapelanggan as pelanggan_id', //
                     'detail.invoice_nobukti',
                     'bankpelanggan.namabank as bankpelanggan_id', ///
                     'detail.jenisbiaya',
+                    
                     'detail.penerimaanpiutang_nobukti',
                     'detail.bulanbeban',
                     'akunpusat.keterangancoa as coakredit',
-                    'bank.coa as coadebet',
+                    // 'bank.coa as coadebet',
                     // 'detail.pelanggan',
 
                 )
                     ->leftJoin('akunpusat', 'detail.coakredit', '=', 'akunpusat.id')
+                    ->leftJoin('akunpusat as coadebet', 'detail.coadebet', '=', 'coadebet.id')
                     ->leftJoin('bank', 'bank.id', '=', 'detail.bank_id')
                     ->leftJoin('pelanggan', 'pelanggan.id', '=', 'detail.pelanggan_id')
                     ->leftJoin('bankpelanggan', 'bankpelanggan.id', '=', 'detail.bankpelanggan_id');
