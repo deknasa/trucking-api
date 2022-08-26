@@ -58,8 +58,18 @@ class PengeluaranHeaderController extends Controller
             /* Store header */
 
             $content = new Request();
-            $content['group'] = 'PENGELUARAN KAS';
-            $content['subgroup'] = 'NOMOR PENGELUARAN KAS';
+            $bankid = $request->bank_id;
+            $querysubgrppengeluaran = DB::table('bank')
+                ->select(
+                    'parameter.grp',
+                    'parameter.subgrp',
+                )
+                ->join('parameter', 'bank.kodepengeluaran', 'parameter.id')
+                ->where('bank.id', '=', $bankid)
+                ->first();
+
+            $content['group'] = $querysubgrppengeluaran->grp;
+            $content['subgroup'] = $querysubgrppengeluaran->subgrp;
             $content['table'] = 'pengeluaranheader';
 
             $statusApproval = Parameter::where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
@@ -199,7 +209,7 @@ class PengeluaranHeaderController extends Controller
                     [
                         'nobukti' => $pengeluaranHeader->nobukti,
                         'tgl' => date('Y-m-d', strtotime($request->tglbukti)),
-                        'coa' => $request->coadebet,
+                        'coa' => $request->coadebet[0],
                         'nominal' => $total,
                         'keterangan' => $request->keterangan,
                         'modifiedby' => auth('api')->user()->name,
@@ -286,7 +296,7 @@ class PengeluaranHeaderController extends Controller
             $pengeluaranHeader->keterangan = $request->keterangan ?? '';
             $pengeluaranHeader->statusjenistransaksi = $request->statusjenistransaksi ?? 0;
             $pengeluaranHeader->postingdari = $request->postingdari ?? 'PENGELUARAN';
-            $pengeluaranHeader->statusapproval = $request->statusapproval ?? 0;
+            $pengeluaranHeader->statusapproval = $statusApproval->id ?? 0;
             $pengeluaranHeader->dibayarke = $request->dibayarke ?? '';
             $pengeluaranHeader->cabang_id = $request->cabang_id ?? 0;
             $pengeluaranHeader->bank_id = $request->bank_id ?? 0;
@@ -298,10 +308,10 @@ class PengeluaranHeaderController extends Controller
             if ($pengeluaranHeader->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($pengeluaranHeader->getTable()),
-                    'postingdari' => 'EDIT PENGELUARAN',
+                    'postingdari' => 'EDIT PENGELUARAN KAS',
                     'idtrans' => $pengeluaranHeader->id,
                     'nobuktitrans' => $pengeluaranHeader->nobukti,
-                    'aksi' => 'EDIT',
+                    'aksi' => 'ENTRY',
                     'datajson' => $pengeluaranHeader->toArray(),
                     'modifiedby' => $pengeluaranHeader->modifiedby
                 ];
@@ -330,10 +340,8 @@ class PengeluaranHeaderController extends Controller
                     'nowarkat' => $request->nowarkat[$i],
                     'tgljatuhtempo' =>  date('Y-m-d', strtotime($request->tgljatuhtempo[$i])),
                     'nominal' => $nominal,
-                    'coadebet' => $coaDebet->text ?? '',
-                    'coakredit' => $coaKredit->text ?? '',
-                    // 'coadebet' => $request->coadebet[$i],
-                    // 'coakredit' => $request->coakredit[$i],
+                    'coadebet' => $request->coadebet[$i],
+                    'coakredit' => $pengeluaranHeader->bank_id,
                     'keterangan' => $request->keterangan_detail[$i],
                     'bulanbeban' =>  date('Y-m-d', strtotime($request->bulanbeban[$i])),
                     'modifiedby' => auth('api')->user()->name,
@@ -357,10 +365,8 @@ class PengeluaranHeaderController extends Controller
                     'nowarkat' => $request->nowarkat[$i],
                     'tgljatuhtempo' =>  date('Y-m-d', strtotime($request->tgljatuhtempo[$i])),
                     'nominal' => $nominal,
-                    'coadebet' => $coaDebet->text ?? '',
-                    'coakredit' => $coaKredit->text ?? '',
-                    // 'coadebet' => $request->coadebet[$i],
-                    // 'coakredit' => $request->coakredit[$i],
+                    'coadebet' => $request->coadebet[$i],
+                    'coakredit' => $pengeluaranHeader->bank_id,
                     'keterangan' => $request->keterangan_detail[$i],
                     'bulanbeban' =>  date('Y-m-d', strtotime($request->bulanbeban[$i])),
                     'modifiedby' => auth('api')->user()->name,
@@ -378,15 +384,15 @@ class PengeluaranHeaderController extends Controller
                 ->orderBy('id', 'DESC')
                 ->first();
 
-            $datalogtrail = [
-                'namatabel' => $tabeldetail,
-                'postingdari' => 'EDIT PENGELUARAN',
-                'idtrans' =>  $dataid->id,
-                'nobuktitrans' => $pengeluaranHeader->nobukti,
-                'aksi' => 'EDIT',
-                'datajson' => $detaillog,
-                'modifiedby' => auth('api')->user()->name,
-            ];
+                $datalogtrail = [
+                    'namatabel' => $tabeldetail,
+                    'postingdari' => 'EDIT PENGELUARAN',
+                    'idtrans' =>  $dataid->id,
+                    'nobuktitrans' => $pengeluaranHeader->nobukti,
+                    'aksi' => 'ENTRY',
+                    'datajson' => $detaillog,
+                    'modifiedby' => auth('api')->user()->name,
+                ];
 
             $data = new StoreLogTrailRequest($datalogtrail);
             app(LogTrailController::class)->store($data);
@@ -409,11 +415,12 @@ class PengeluaranHeaderController extends Controller
                     'modifiedby' => auth('api')->user()->name,
                 ];
 
+
                 $jurnalDetail = [
                     [
                         'nobukti' => $pengeluaranHeader->nobukti,
                         'tgl' => date('Y-m-d', strtotime($request->tglbukti)),
-                        'coa' => $coaDebet->text ?? '',
+                        'coa' => $request->coadebet,
                         'nominal' => $total,
                         'keterangan' => $request->keterangan,
                         'modifiedby' => auth('api')->user()->name,
@@ -421,7 +428,7 @@ class PengeluaranHeaderController extends Controller
                     [
                         'nobukti' => $pengeluaranHeader->nobukti,
                         'tgl' => date('Y-m-d', strtotime($request->tglbukti)),
-                        'coa' => $coaKredit->text ?? '',
+                        'coa' =>  $pengeluaranHeader->bank_id,
                         'nominal' => -$total,
                         'keterangan' => $request->keterangan,
                         'modifiedby' => auth('api')->user()->name,

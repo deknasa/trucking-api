@@ -402,12 +402,27 @@ class PenerimaanHeaderController extends Controller
             /* Store header */
 
             $content = new Request();
-            $content['group'] = 'PENERIMAAN KAS';
-            $content['subgroup'] = 'NOMOR PENERIMAAN KAS';
+            $bankid = $request->bank_id;
+            $querysubgrppenerimaan = DB::table('bank')
+                ->select(
+                    'parameter.grp',
+                    'parameter.subgrp',
+                )
+                ->join('parameter', 'bank.kodepenerimaan', 'parameter.id')
+                ->where('bank.id', '=', $bankid)
+                ->first();
+
+           // dd($querysubgrppenerimaan->subgrp);
+            //select B.subgrp,B.grp
+            // from bank A
+            // inner join parameter B on A.kodepenerimaan = B.id
+            // where A.id=2
+
+            $content['group'] = $querysubgrppenerimaan->grp;
+            $content['subgroup'] = $querysubgrppenerimaan->subgrp;
             $content['table'] = 'penerimaanheader';
 
             $statusApproval = Parameter::where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
-
             $penerimaanHeader = new PenerimaanHeader();
             $penerimaanHeader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $penerimaanHeader->pelanggan_id = $request->pelanggan_id;
@@ -424,12 +439,12 @@ class PenerimaanHeaderController extends Controller
             $penerimaanHeader->modifiedby = auth('api')->user()->name;
             TOP:
             $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
-            $penerimaanHeader->nobukti = $nobukti;
 
+            $penerimaanHeader->nobukti = $nobukti;
+            
             try {
                 $penerimaanHeader->save();
             } catch (\Exception $e) {
-                //dd($e->getMessage());
                 $errorCode = @$e->errorInfo[1];
                 if ($errorCode == 2601) {
                     goto TOP;
@@ -459,7 +474,6 @@ class PenerimaanHeaderController extends Controller
                     'nowarkat' => $request->nowarkat[$i],
                     'tgljatuhtempo' =>  date('Y-m-d', strtotime($request->tgljatuhtempo[$i])),
                     'nominal' => $nominal,
-                    //'coadebet' => $coaDebet->subgrp ?? 'PENERIMAAN KAS DEBET',
                     'coadebet' => $penerimaanHeader->bank_id,
                     'coakredit' => $request->coakredit[$i],
                     'keterangan' => $request->keterangan_detail[$i],
@@ -485,11 +499,9 @@ class PenerimaanHeaderController extends Controller
                     'nowarkat' => $request->nowarkat[$i],
                     'tgljatuhtempo' =>  date('Y-m-d', strtotime($request->tgljatuhtempo[$i])),
                     'nominal' => $nominal,
-                    // 'coadebet' => $coaDebet->subgrp ?? 'PENERIMAAN KAS DEBET',
                     'coadebet' =>  $penerimaanHeader->bank_id,
                     'coakredit' => $request->coakredit[$i],
                     'keterangan' => $request->keterangan_detail[$i],
-                    // 'bank_id' => $request->bank_id,
                     'bankpelanggan_id' => $request->bankpelanggan_id[$i],
                     'pelanggan_id' => $request->pelanggan_id,
                     'jenisbiaya' => $request->jenisbiaya[$i],
@@ -524,7 +536,7 @@ class PenerimaanHeaderController extends Controller
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
 
-            if ($penerimaanHeader->save() && $penerimaanHeader->penerimaandetail()) {
+            if ($penerimaanHeader->save() && $penerimaanHeader->penerimaandetail) {
                 $parameterController = new ParameterController;
                 $statusApp = $parameterController->getparameterid('STATUS APPROVAL', 'STATUS APPROVAL', 'NON APPROVAL');
 
@@ -542,10 +554,8 @@ class PenerimaanHeaderController extends Controller
                 $jurnalDetail = [
                     [
                         'nobukti' => $penerimaanHeader->nobukti,
-                        'tglbukti' => date('Y-m-d', strtotime($request->tglbuktibukti)),
-                        //'coa' => $coaDebet->subgrp ?? 'PENERIMAAN KAS DEBET',
+                        'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
                         'coa' =>  $penerimaanHeader->bank_id,
-                        // 'coadebet' => 'PENERIMAAN KAS DEBET',
                         'nominal' => $total,
                         'keterangan' => $request->keterangan,
                         'modifiedby' => auth('api')->user()->name,
@@ -553,13 +563,13 @@ class PenerimaanHeaderController extends Controller
                     [
                         'nobukti' => $penerimaanHeader->nobukti,
                         'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
-                        'coa' => $request->coakredit,
+                        'coa' => $request->coakredit[0],
+                        //'coa' =>  $penerimaanHeader->bank_id,
                         'nominal' => -$total,
                         'keterangan' => $request->keterangan,
                         'modifiedby' => auth('api')->user()->name,
                     ]
                 ];
-
 
                 $jurnal = $this->storeJurnal($jurnalHeader, $jurnalDetail);
 
