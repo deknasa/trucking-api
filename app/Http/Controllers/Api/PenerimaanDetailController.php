@@ -51,55 +51,56 @@ class PenerimaanDetailController extends Controller
                     'detail.nowarkat',
                     'detail.tgljatuhtempo',
                     'detail.nominal',
-                    'detail.coadebet',
-                    'detail.coakredit',
                     'detail.keterangan',
-
-                    'bank.namabank as bank_id', //
-                    'pelanggan.namapelanggan as pelanggan_id', //
-
+                    'bank.namabank as bank_id',
+                    'pelanggan.namapelanggan as pelanggan_id', 
                     'detail.invoice_nobukti',
-                    
-                    'bankpelanggan.namabank as bankpelanggan_id', ///
-                    
+                    'bankpelanggan.namabank as bankpelanggan_id',
                     'detail.jenisbiaya',
                     'detail.penerimaanpiutang_nobukti',
-                    
                     'detail.bulanbeban',
-                    
-                    )
+                    'akunpusat.keterangancoa as coakredit', 
+                    'bank.coa as coadebet',
+                    // 'detail.pelanggan',
+                )
+                    // ->leftJoin('akunpusat', 'coa.id', '=', 'detail.coakredit')//
+                    ->leftJoin('akunpusat', 'penerimaandetail.coakredit', '=', 'akunpusat.coa')
                     ->leftJoin('bank', 'bank.id', '=', 'detail.bank_id')
                     ->leftJoin('pelanggan', 'pelanggan.id', '=', 'detail.pelanggan_id')
-                    ->leftJoin('bankpelanggan', 'bankpelanggan.id', '=', 'detail.bankpelanggan_id');
-                    // ->join('pelunasanpiutangheader', 'pelunasanpiutangheader.id', '=', 'detail.pelunasanpiutangheader_id');
-                    
-                    $penerimaanDetail = $query->get();
-                } else {
-             //   DB::enableQueryLog();
+                    ->leftJoin('bankpelanggan', 'bankpelanggan.id', '=', 'detail.bankpelanggan_id')
+                    ->leftjoin('bank', 'penerimaandetail.coadebet', '=', 'bank.namabank');
+                $penerimaanDetail = $query->get();
+            } else {
+                //   DB::enableQueryLog();
                 $query->select(
                     'detail.nowarkat',
                     'detail.tgljatuhtempo',
                     'detail.nominal',
-                    'detail.coadebet',
-                    'detail.coakredit',
+                    'coadebet.keterangancoa as coadebet',
                     'detail.keterangan',
-
-                    'bank.namabank as bank_id', //
+                    'bank.namabank as bank_id',
                     'pelanggan.namapelanggan as pelanggan_id', //
-
                     'detail.invoice_nobukti',
-
                     'bankpelanggan.namabank as bankpelanggan_id', ///
-
                     'detail.jenisbiaya',
+                    
                     'detail.penerimaanpiutang_nobukti',
-
                     'detail.bulanbeban',
+                    'akunpusat.keterangancoa as coakredit',
+                    // 'bank.coa as coadebet',
+                    // 'detail.pelanggan',
 
                 )
+                    ->leftJoin('akunpusat', 'detail.coakredit', '=', 'akunpusat.id')
+                    ->leftJoin('akunpusat as coadebet', 'detail.coadebet', '=', 'coadebet.id')
                     ->leftJoin('bank', 'bank.id', '=', 'detail.bank_id')
                     ->leftJoin('pelanggan', 'pelanggan.id', '=', 'detail.pelanggan_id')
                     ->leftJoin('bankpelanggan', 'bankpelanggan.id', '=', 'detail.bankpelanggan_id');
+
+
+                //  ->leftjoin('bank', 'detail.coadebet', '=', 'bank.id');
+
+
                 $penerimaanDetail = $query->get();
             }
 
@@ -143,12 +144,13 @@ class PenerimaanDetailController extends Controller
             $penerimaanDetail->keterangan = $request->keterangan ?? '';
             $penerimaanDetail->bank_id = $request->bank_id;
             $penerimaanDetail->bankpelanggan_id = $request->bankpelanggan_id;
+            $penerimaanDetail->pelanggan_id = $request->pelanggan_id;
             $penerimaanDetail->jenisbiaya = $request->jenisbiaya;
             $penerimaanDetail->modifiedby = $request->modifiedby;
-            
+
             $penerimaanDetail->save();
-            
-           
+
+
             DB::commit();
             if ($validator->passes()) {
                 return [
@@ -160,6 +162,6 @@ class PenerimaanDetailController extends Controller
         } catch (\Throwable $th) {
             DB::rollBack();
             return response($th->getMessage());
-        }        
+        }
     }
 }

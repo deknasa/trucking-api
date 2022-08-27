@@ -48,11 +48,6 @@ class PengeluaranHeader extends MyModel
                 
                 'statusjenistransaksi.text as statusjenistransaksi',
                 'statusapproval.text as statusapproval',
-                'users.name as userapproval',
-
-                // 'pengeluaranheader.coadebet',
-                // 'pengeluaranheader.coakredit',
-                
                 'pengeluaranheader.transferkeac',
                 'pengeluaranheader.transferkean',
                 'pengeluaranheader.transferkebank',
@@ -65,14 +60,8 @@ class PengeluaranHeader extends MyModel
             ->leftJoin('pelanggan', 'pengeluaranheader.pelanggan_id', 'pelanggan.id')
             ->leftJoin('cabang', 'pengeluaranheader.cabang_id', 'cabang.id')
             ->leftJoin('bank', 'pengeluaranheader.bank_id', 'bank.id')
-
-            // ->leftJoin('akunpusat', 'pengeluaranheader.coadebet', 'coa.id')
-            // ->leftJoin('akunpusat', 'pengeluaranheader.coakredit', 'coa.id')
-
             ->leftJoin('parameter as statusapproval' , 'pengeluaranheader.statusapproval', 'statusapproval.id')
-            ->leftJoin('parameter as statusjenistransaksi' , 'pengeluaranheader.statusjenistransaksi', 'statusjenistransaksi.id')
-            ->leftJoin('users' , 'pengeluaranheader.userapproval', 'users.id');
-            
+            ->leftJoin('parameter as statusjenistransaksi' , 'pengeluaranheader.statusjenistransaksi', 'statusjenistransaksi.id');
     
             $this->totalRows = $query->count();
             $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;

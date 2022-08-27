@@ -23,8 +23,29 @@ class StorePengeluaranHeaderRequest extends FormRequest
      */
     public function rules()
     {
-        return [
-            //
+        $rules = [
+            'pelanggan_id' => 'required',
+            'keterangan' => 'required',
+            'cabang_id' => 'required',
+            'statusjenistransaksi' => 'required',
+            'dibayarke' => 'required',
+            'bank_id' => 'required',
+            'transferkeac' => 'required',
+            'transferkean' => 'required',
+            'transferkebank' => 'required',
         ];
+        $relatedRequests = [
+            StorePengeluaranDetailRequest::class
+        ];
+        
+        foreach ($relatedRequests as $relatedRequest) {
+            $rules = array_merge(
+                $rules,
+                (new $relatedRequest)->rules()
+            );
+        }
+
+        return $rules;
+
     }
 }

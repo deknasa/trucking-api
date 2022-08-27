@@ -38,7 +38,7 @@ class PengeluaranDetailController extends Controller
             }
 
             if ($params['withHeader']) {
-                $query->join('pengeluaran', 'pengeluaran.id', 'detail.pengeluaran_id');
+                $query->join('pengeluaranheader', 'pengeluaranheader.id', 'detail.pengeluaran_id');
             }
 
             if (count($params['whereIn']) > 0) {
@@ -47,42 +47,42 @@ class PengeluaranDetailController extends Controller
 
             if ($params['forReport']) {
                 $query->select(
-                    'detail.pengeluaran_id',
                     'detail.alatbayar_id',
                     'detail.nobukti',
                     'detail.nowarkat',
                     'detail.tgljatuhtempo',
                     'detail.nominal',
-                    'detail.coadebet',
-                    'detail.coakredit',
                     'detail.keterangan',
                     'detail.bulanbeban',
-
                     'alatbayar.namaalatbayar as alatbayar_id',
+                    'bank.namabank as bank_id',
+                    'akunpusat.keterangancoa as coadebet',
+                    'bank.coa as coakredit',
 
                 )
-                    ->leftJoin('alatbayar', 'alatbayar.id', '=', 'detail.alatbayar_id');
-                    // ->leftjoin('akunpusat', 'coa.id', '=', 'detail.coadebet')
-                    // ->leftjoin('akunpusat', 'coa.id', '=', 'detail.coakredit');
-
+                    ->leftJoin('alatbayar', 'alatbayar.id', '=', 'detail.alatbayar_id')
+                    ->leftJoin('akunpusat', 'pengeluarandetail.coadebet', '=', 'akunpusat.coa')
+                    ->leftjoin('bank', 'pengeluarandetail.coakredit', '=', 'bank.namabank')
+                    ->leftJoin('bank', 'bank.id', '=', 'detail.bank_id');
                 $pengeluaranDetail = $query->get();
             } else {
                 $query->select(
                     'detail.pengeluaran_id',
-                    'detail.alatbayar_id',
                     'detail.nobukti',
                     'detail.nowarkat',
                     'detail.tgljatuhtempo',
                     'detail.nominal',
-                    'detail.coadebet',
-                    'detail.coakredit',
                     'detail.keterangan',
                     'detail.bulanbeban',
+                    'alatbayar.namaalatbayar as alatbayar_id',
+                    'coakredit.keterangancoa as coakredit',
+                    'akunpusat.keterangancoa as coadebet',
 
-                    'alatbayar.namaalatbayar as alatbayar_id', 
                 )
                     ->leftJoin('alatbayar', 'alatbayar.id', '=', 'detail.alatbayar_id')
-                ;
+                    ->leftJoin('akunpusat', 'detail.coadebet', '=', 'akunpusat.id')
+                    ->leftJoin('akunpusat as coakredit', 'detail.coakredit', '=', 'coakredit.id');
+
                 $pengeluaranDetail = $query->get();
                 // dd{$pengeluaranDetail};
             }
@@ -127,9 +127,9 @@ class PengeluaranDetailController extends Controller
             $pengeluaranDetail->keterangan = $request->keterangan ?? '';
             $pengeluaranDetail->bulanbeban = $request->bulanbeban;
             $pengeluaranDetail->modifiedby = $request->modifiedby;
-            
+
             $pengeluaranDetail->save();
-            
+
             DB::commit();
             if ($validator->passes()) {
                 return [
@@ -141,7 +141,6 @@ class PengeluaranDetailController extends Controller
         } catch (\Throwable $th) {
             DB::rollBack();
             return response($th->getMessage());
-        }        
+        }
     }
-
 }

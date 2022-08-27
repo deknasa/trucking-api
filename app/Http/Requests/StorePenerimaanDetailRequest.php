@@ -24,7 +24,13 @@ class StorePenerimaanDetailRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'nowarkat' => 'required|array',
+            'tgljatuhtempo' => 'required|array',
+            'nominal' => 'required|array',
+            'keterangan_detail' => 'required|array',
+            'coakredit' => 'required|array',
+            'bankpelanggan_id' => 'required|array',
+            'jenisbiaya' => 'required|array',
         ];
     }
 }

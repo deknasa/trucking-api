@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\JurnalUmumHeader;
+use App\Models\JurnalUmumDetail;
+
 use App\Http\Requests\StoreJurnalUmumHeaderRequest;
 use App\Http\Requests\UpdateJurnalUmumHeaderRequest;
 
