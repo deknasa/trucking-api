@@ -52,8 +52,8 @@ class PenerimaanHeader extends MyModel
             'statusapproval.text as statusapproval',
             'statusberkas.text as statusberkas',
 
-            'users.name as userapproval',
-            
+            // 'users.name as userapproval',
+            'penerimaanheader.userapproval',
             'penerimaanheader.tglapproval',
             'penerimaanheader.userberkas',
 
@@ -66,12 +66,11 @@ class PenerimaanHeader extends MyModel
         )
         ->leftJoin('pelanggan', 'penerimaanheader.pelanggan_id', 'pelanggan.id')
        ->leftJoin('bank', 'penerimaanheader.bank_id', 'bank.id')
-
         ->leftJoin('cabang', 'penerimaanheader.cabang_id', 'cabang.id')
         ->leftJoin('parameter as statuskas' , 'penerimaanheader.statuskas', 'statuskas.id')
         ->leftJoin('parameter as statusapproval' , 'penerimaanheader.statusapproval', 'statusapproval.id')
-        ->leftJoin('parameter as statusberkas' , 'penerimaanheader.statusberkas', 'statusberkas.id')
-        ->leftJoin('users' , 'penerimaanheader.userapproval', 'users.id');
+        ->leftJoin('parameter as statusberkas' , 'penerimaanheader.statusberkas', 'statusberkas.id');
+        // ->leftJoin('users' , 'penerimaanheader.userapproval', 'users.id');
 
 
         $this->totalRows = $query->count();

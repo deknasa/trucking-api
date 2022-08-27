@@ -93,7 +93,6 @@ class JurnalUmumDetailController extends Controller
                 'errors' => $validator->messages()
             ];
         }
-
         try {
             $jurnalumumDetail = new JurnalUmumDetail();
             
@@ -106,7 +105,6 @@ class JurnalUmumDetailController extends Controller
             $jurnalumumDetail->modifiedby = auth('api')->user()->name;
             
             $jurnalumumDetail->save();
-            
            
             DB::commit();
             if ($validator->passes()) {
