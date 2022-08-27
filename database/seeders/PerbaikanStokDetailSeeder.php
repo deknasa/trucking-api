@@ -15,26 +15,28 @@ class PerbaikanStokDetailSeeder extends Seeder
     public function run()
     {
         PerbaikanStokDetail::create([
-            'perbaikanstok_id' => '',
-            'nobukti' => '',
-            'stok_id' => '',
-            'conv1' => '',
-            'conv2' => '',
-            'qty' => '',
-            'hrgsat' => '',
-            'persentasediscount' => '',
-            'nominaldiscount' => '',
-            'total' => '',
-            'keterangan' => '',
-            'gudang_id' => '',
+            'perbaikanstok_id' => 1,
+            'nobukti' => 'PST 0001/VIII/2022',
+            'stok_id' => 2,
+            'conv1' => 1,
+            'conv2' => 1,
+            'qty' => 1,
+            'hrgsat' => 200000,
+            'persentasediscount' => 0,
+            'nominaldiscount' => 0,
+            'total' => 200000,
+            'keterangan' => 'PERBAIKAN RADIATOR',
+            'gudang_id' => 3,
             'jenisvulkan' => '',
             'vulkanisirke' => '',
-            'statusban' => '',
-            'pindahgudangstok_nobukti' => '',
+            'statusban' => 95,
+            'pindahgudangstok_nobukti' => 'DOT 0001/VIiI/2022',
             'vulkankeawal' => '',
-            'statuspindahgudang' => '',
+            'statuspindahgudang' => 104,
             'modifiedby' => 'ADMIN',
         ]);
+
+   
 
     }
 }

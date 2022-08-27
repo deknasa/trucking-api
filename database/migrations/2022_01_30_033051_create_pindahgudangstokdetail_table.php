@@ -27,7 +27,6 @@ class CreatePindahgudangstokdetailTable extends Migration
             $table->integer('vulkanisirke')->length(11)->default('');
             $table->string('statusban',50)->default('');
             $table->string('keadaanban',50)->default('');
-            $table->integer('statuscadangan')->length(11)->default('');
             $table->string('modifiedby',50)->default('');            
             $table->timestamps();
 
