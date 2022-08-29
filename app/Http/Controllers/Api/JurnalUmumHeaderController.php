@@ -75,15 +75,19 @@ class JurnalUmumHeaderController extends Controller
             
             TOP:
             if ($tanpaprosesnobukti==0) {
+                
                 $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
                 $jurnalumum->nobukti = $nobukti;
     
             }
 
 
-            
             try {
+
                 $jurnalumum->save();
+                if ($tanpaprosesnobukti==1) {
+                DB::commit();
+                }
             } catch (\Exception $e) {
                 $errorCode = @$e->errorInfo[1];
                 if ($errorCode == 2601) {
@@ -91,7 +95,7 @@ class JurnalUmumHeaderController extends Controller
                 }
             }
 
-            
+        
             $logTrail = [
                 'namatabel' => strtoupper($jurnalumum->getTable()),
                 'postingdari' => 'ENTRY JURNAL UMUM',
@@ -107,7 +111,9 @@ class JurnalUmumHeaderController extends Controller
             
             /* Store detail */
            
-            
+  
+            if ($tanpaprosesnobukti==0) {
+
             for ($i = 0; $i < count($request->nominal_detail); $i++) {
                 $detaillog = [];
                 for($x = 0; $x <= 1; $x++)
@@ -137,7 +143,6 @@ class JurnalUmumHeaderController extends Controller
                         ];
                     }
 
-                    
                     //STORE 
                     $data = new StoreJurnalUmumDetailRequest($datadetail);
                     
@@ -208,13 +213,15 @@ class JurnalUmumHeaderController extends Controller
                     app(LogTrailController::class)->store($data);
                 }
             }
-
+     
            
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
             DB::commit();
             
             /* Set position and page */
+        
+
             $jurnalumum->position = DB::table((new JurnalUmumHeader())->getTable())->orderBy($request->sortname, $request->sortorder)
                 ->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $jurnalumum->{$request->sortname})
                 ->where('id', '<=', $jurnalumum->id)
@@ -223,12 +230,16 @@ class JurnalUmumHeaderController extends Controller
             if (isset($request->limit)) {
                 $jurnalumum->page = ceil($jurnalumum->position / $request->limit);
             }
+            // dd('test');
 
-            return response([
-                'status' => true,
-                'message' => 'Berhasil disimpan',
-                'data' => $jurnalumum
-            ]);
+            
+        } 
+
+        return response([
+            'status' => true,
+            'message' => 'Berhasil disimpan',
+            'data' => $jurnalumum 
+        ]);
             
         } catch (\Throwable $th) {
             throw $th;

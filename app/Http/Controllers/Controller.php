@@ -75,8 +75,9 @@ class Controller extends BaseController
            ->count();
         }
         
+        
         $runningNumber = $this->appHelper->runningNumber($text, $lastRow,$bulan);
-
+        
         return response([
             'status' => true,
             'data' => $runningNumber

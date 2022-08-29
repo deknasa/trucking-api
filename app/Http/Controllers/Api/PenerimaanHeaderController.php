@@ -209,6 +209,7 @@ class PenerimaanHeaderController extends Controller
                 $statusApp = $parameterController->getparameterid('STATUS APPROVAL', 'STATUS APPROVAL', 'NON APPROVAL');
 
                 $jurnalHeader = [
+                    'tanpaprosesnobukti' => 1,
                     'nobukti' => $penerimaanHeader->nobukti,
                     'tgl' => date('Y-m-d', strtotime($request->tglbukti)),
                     'keterangan' => $request->keterangan,
@@ -229,6 +230,7 @@ class PenerimaanHeaderController extends Controller
                         'nominal' => $total,
                         'keterangan' => $request->keterangan,
                         'modifiedby' => auth('api')->user()->name,
+                        'baris' =>$i,
                     ],
                     [
                         'nobukti' => $penerimaanHeader->nobukti,
@@ -237,6 +239,7 @@ class PenerimaanHeaderController extends Controller
                         'nominal' => -$total,
                         'keterangan' => $request->keterangan,
                         'modifiedby' => auth('api')->user()->name,
+                        'baris' =>$i,
                     ]
                 ];
 
@@ -524,6 +527,7 @@ class PenerimaanHeaderController extends Controller
                 $statusApp = $parameterController->getparameterid('STATUS APPROVAL', 'STATUS APPROVAL', 'NON APPROVAL');
 
                 $jurnalHeader = [
+                    'tanpaprosesnobukti' => 1,
                     'nobukti' => $penerimaanHeader->nobukti,
                     'tgl' => date('Y-m-d', strtotime($request->tglbukti)),
                     'keterangan' => $request->keterangan,
@@ -542,7 +546,8 @@ class PenerimaanHeaderController extends Controller
                         'nominal' => $total,
                         'keterangan' => $request->keterangan,
                         'modifiedby' => auth('api')->user()->name,
-                    ],
+                        'baris' => $i,
+                                            ],
                     [
                         'nobukti' => $penerimaanHeader->nobukti,
                         'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
@@ -551,6 +556,7 @@ class PenerimaanHeaderController extends Controller
                         'nominal' => -$total,
                         'keterangan' => $request->keterangan,
                         'modifiedby' => auth('api')->user()->name,
+                        'baris' => $i,
                     ]
                 ];
 
@@ -593,12 +599,17 @@ class PenerimaanHeaderController extends Controller
 
     private function storeJurnal($header, $detail)
     {
+        
         try {
             $jurnal = new StoreJurnalUmumHeaderRequest($header);
+            // dd($header);
             $jurnals = app(JurnalUmumHeaderController::class)->store($jurnal);
+           
             foreach ($detail as $key => $value) {
-                $value['jurnalumum_id'] = $jurnals['id'];
+                // dd($jurnals->original['data']['id']);
+                $value['jurnalumum_id'] = $jurnals->original['data']['id'];
                 $jurnal = new StoreJurnalUmumDetailRequest($value);
+                
                 app(JurnalUmumDetailController::class)->store($jurnal);
             }
 
