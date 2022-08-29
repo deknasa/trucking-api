@@ -46,18 +46,23 @@ class JurnalUmumHeaderController extends Controller
     {
         DB::beginTransaction();
 
+        $tanpaprosesnobukti=$request->tanpaprosesnobukti ??0;
         try {
 
+            if ($tanpaprosesnobukti==0) {
             $content = new Request();
             $content['group'] = 'JURNAL UMUM';
             $content['subgroup'] = 'JURNAL UMUM';
             $content['table'] = 'jurnalumumheader';
             $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
             $content['nobukti'] = 'ADJ';
-
+        }
             
             $jurnalumum = new JurnalUmumHeader();
 
+            if ($tanpaprosesnobukti==1) {
+                $jurnalumum->nobukti = $request->nobukti;
+            }
             
             $jurnalumum->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $jurnalumum->keterangan = $request->keterangan;
@@ -70,8 +75,13 @@ class JurnalUmumHeaderController extends Controller
             
             
             TOP:
-            $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
-            $jurnalumum->nobukti = $nobukti;
+            if ($tanpaprosesnobukti==0) {
+                $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
+                $jurnalumum->nobukti = $nobukti;
+    
+            }
+
+
             
             try {
                 $jurnalumum->save();
