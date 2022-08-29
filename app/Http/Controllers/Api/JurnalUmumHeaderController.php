@@ -15,10 +15,11 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 use App\Http\Requests\StoreLogTrailRequest;
+use App\Models\AkunPusat;
 use App\Models\LogTrail;
 
 
-class JurnalUmumController extends Controller
+class JurnalUmumHeaderController extends Controller
 {
      /**
      * @ClassName
@@ -71,7 +72,7 @@ class JurnalUmumController extends Controller
             TOP:
             $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
             $jurnalumum->nobukti = $nobukti;
-            // dd($nobukti);
+            
             try {
                 $jurnalumum->save();
             } catch (\Exception $e) {
@@ -199,6 +200,7 @@ class JurnalUmumController extends Controller
                 }
             }
 
+           
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
             DB::commit();
@@ -226,9 +228,7 @@ class JurnalUmumController extends Controller
         }        
     }
 
-    /**
-     * @ClassName
-     */
+    
     public function show($id)
     {
         
@@ -328,7 +328,7 @@ class JurnalUmumController extends Controller
                         $data = new StoreJurnalUmumDetailRequest($datadetail);
                         
                         $datadetails = app(JurnalUmumDetailController::class)->store($data);
-                        
+                        // dd('here');
                         
                         if ($datadetails['error']) {
                             return response($datadetails, 422);
@@ -478,5 +478,15 @@ class JurnalUmumController extends Controller
             DB::rollBack();
             return response($th->getMessage());
         }
+    }
+    public function combo(Request $request)
+    {
+        $data = [
+            'coa' => AkunPusat::all()
+        ];
+
+        return response([
+            'data' => $data
+        ]);
     }
 }

@@ -14,7 +14,8 @@ class AlterBankTable extends Migration
     public function up()
     {
         Schema::table('bank', function (Blueprint $table) {
-            $table->string('formatbukti',50)->default('');;
+            $table->string('formatbuktipenerimaan',50)->default('');
+            $table->string('formatbuktipengeluaran',50)->default('');
 
 
        });
