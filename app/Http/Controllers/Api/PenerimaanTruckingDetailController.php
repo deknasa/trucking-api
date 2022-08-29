@@ -19,7 +19,7 @@ class PenerimaanTruckingDetailController extends Controller
     {
         $params = [
             'id' => $request->id,
-            'penerimaantrucking_id' => $request->penerimaantrucking_id,
+            'penerimaantruckingheader_id' => $request->penerimaantrucking_id,
             'withHeader' => $request->withHeader ?? false,
             'whereIn' => $request->whereIn ?? [],
             'forReport' => $request->forReport ?? false,
@@ -33,16 +33,16 @@ class PenerimaanTruckingDetailController extends Controller
                 $query->where('detail.id', $params['id']);
             }
             
-            if (isset($params['penerimaantrucking_id'])) {
-                $query->where('detail.penerimaantrucking_id', $params['penerimaantrucking_id']);
+            if (isset($params['penerimaantruckingheader_id'])) {
+                $query->where('detail.penerimaantruckingheader_id', $params['penerimaantruckingheader_id']);
             }
 
             if ($params['withHeader']) {
-                $query->join('penerimaantrucking', 'penerimaantrucking.id', 'detail.penerimaantrucking_id');
+                $query->join('penerimaantrucking', 'penerimaantrucking.id', 'detail.penerimaantruckingheader_id');
             }
 
             if (count($params['whereIn']) > 0) {
-                $query->whereIn('penerimaantrucking_id', $params['whereIn']);
+                $query->whereIn('penerimaantruckingheader_id', $params['whereIn']);
             }
 
             if ($params['forReport']) {

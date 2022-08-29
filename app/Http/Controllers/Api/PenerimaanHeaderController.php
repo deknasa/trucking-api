@@ -407,6 +407,7 @@ class PenerimaanHeaderController extends Controller
                 ->select(
                     'parameter.grp',
                     'parameter.subgrp',
+                    'bank.formatbukti'
                 )
                 ->join('parameter', 'bank.kodepenerimaan', 'parameter.id')
                 ->where('bank.id', '=', $bankid)
@@ -415,9 +416,8 @@ class PenerimaanHeaderController extends Controller
             $content['group'] = $querysubgrppenerimaan->grp;
             $content['subgroup'] = $querysubgrppenerimaan->subgrp;
             $content['table'] = 'penerimaanheader';
-            $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
-           
-            $content['nobukti'] = '';
+            $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));      
+            $content['nobukti'] = $querysubgrppenerimaan->formatbukti;
 
             $statusApproval = Parameter::where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
             $penerimaanHeader = new PenerimaanHeader();

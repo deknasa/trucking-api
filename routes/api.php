@@ -72,10 +72,10 @@ use App\Http\Controllers\Api\PengeluaranDetailController;
 use App\Http\Controllers\Api\PenerimaanTruckingHeaderController;
 use App\Http\Controllers\Api\PenerimaanTruckingDetailController;
 
-=======
+
 use App\Http\Controllers\Api\JurnalUmumController;
 use App\Http\Controllers\Api\JurnalUmumDetailController;
->>>>>>> d3a4dcc3012e077c694c9098e0e46f647adb0784
+
 
 /*
 |--------------------------------------------------------------------------
