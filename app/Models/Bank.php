@@ -32,6 +32,8 @@ class Bank extends MyModel
             'bank.namabank',
             'bank.coa',
             'bank.tipe',
+            'bank.formatbuktipenerimaan',
+            'bank.formatbuktipengeluaran',
             'parameter.text as statusaktif',
             'kodepenerimaan.text as kodepenerimaan',
             'kodepengeluaran.text as kodepengeluaran',
