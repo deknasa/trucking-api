@@ -412,15 +412,12 @@ class PenerimaanHeaderController extends Controller
                 ->where('bank.id', '=', $bankid)
                 ->first();
 
-           // dd($querysubgrppenerimaan->subgrp);
-            //select B.subgrp,B.grp
-            // from bank A
-            // inner join parameter B on A.kodepenerimaan = B.id
-            // where A.id=2
-
             $content['group'] = $querysubgrppenerimaan->grp;
             $content['subgroup'] = $querysubgrppenerimaan->subgrp;
             $content['table'] = 'penerimaanheader';
+            $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
+           
+            $content['nobukti'] = '';
 
             $statusApproval = Parameter::where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
             $penerimaanHeader = new PenerimaanHeader();

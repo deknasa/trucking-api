@@ -40,6 +40,8 @@ class Controller extends BaseController
             'group' => 'required',
             'subgroup' => 'required',
             'table' => 'required',
+            'nobukti' => 'required',
+            'tgl' => 'required',
         ]);
 
         $parameter = DB::table('parameter')
@@ -57,10 +59,22 @@ class Controller extends BaseController
         $tahun = date('Y', strtotime($request->tgl));
 
         $text = $parameter->text;
-        $lastRow = DB::table($request->table)
-            // ->where('month(tgl)','=',$bulan)
-            // ->where('year(tgl)','=',$tahun)
-            ->count();
+
+        $lennobukti=strlen($request->nobukti);
+        if ($lennobukti==0) {
+            $lastRow = DB::table($request->table)
+            ->where(DB::raw('month(tglbukti)'),'=',$bulan)
+            ->where(DB::raw('year(tglbukti)'),'=',$tahun)
+           ->count();
+        } else {
+            $lastRow = DB::table($request->table)
+            ->where(DB::raw('month(tglbukti)'),'=',$bulan)
+            ->where(DB::raw('year(tglbukti)'),'=',$tahun)
+            ->where(DB::raw('LEFT(nobukti,'. $lennobukti.')'),'=',$request->nobukti)
+            
+           ->count();
+        }
+        
         $runningNumber = $this->appHelper->runningNumber($text, $lastRow);
 
         return response([

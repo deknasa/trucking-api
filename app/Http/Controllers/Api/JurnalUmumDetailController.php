@@ -13,46 +13,84 @@ use Illuminate\Support\Facades\Validator;
 
 class JurnalUmumDetailController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
+    
+    public function index(Request $request)
     {
-        //
+        $params = [
+            'id' => $request->id,
+            'jurnalumum_id' => $request->jurnalumum_id,
+            'withHeader' => $request->withHeader ?? false,
+            'whereIn' => $request->whereIn ?? [],
+            'forReport' => $request->forReport ?? false,
+            'sortIndex' => $request->sortOrder ?? 'id',
+            'sortOrder' => $request->sortOrder ?? 'asc',
+        ];
+        try {
+            $query = JurnalUmumDetail::from('jurnalumumdetail as detail');
+
+            if (isset($params['id'])) {
+                $query->where('detail.id', $params['id']);
+            }
+
+            if (isset($params['jurnalumum_id'])) {
+                $query->where('detail.jurnalumum_id', $params['jurnalumum_id']);
+            }
+
+            if (count($params['whereIn']) > 0) {
+                $query->whereIn('jurnalumum_id', $params['whereIn']);
+            }
+            if ($params['forReport']) {
+                $query->select(
+                    'detail.nobukti',
+                    'detail.tglbukti',
+                    'detail.coa',
+                    'detail.nominal',
+                    'detail.keterangan',
+                );
+
+                $jurnalUmumDetail = $query->get();
+            } else {
+
+                $query->select(
+                    'detail.nobukti',
+                    'detail.tglbukti',
+                    'detail.coa',
+                    'detail.nominal',
+                    'detail.keterangan',
+                )->where('nominal','>','0');
+                $jurnalUmumDetail = $query->get();
+                
+                // $jurnalUmumDetail = $query->get(['nobukti','tglbukti','coa','nominal','keterangan']);
+            }
+
+            return response([
+                'data' => $jurnalUmumDetail
+            ]);
+        } catch (\Throwable $th) {
+            return response([
+                'message' => $th->getMessage()
+            ]);
+        }
     }
 
     /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \App\Http\Requests\StoreJurnalUmumDetailRequest  $request
-     * @return \Illuminate\Http\Response
+     * @ClassName
      */
     public function store(StoreJurnalUmumDetailRequest $request)
     {
         DB::beginTransaction();
         $validator = Validator::make($request->all(), [
-            'nobukti' => 'required',
+           'coa' => 'required',
+            'keterangan' => 'required',
         ], [
-            'nobukti.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
+            'coa.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
         ], [
-            'nobukti' => 'NoBukti',
+            'coa' => 'jurnalumumdetail',
         ]);
         if (!$validator->passes()) {
             return [
                 'error' => true,
-                'messages' => $validator->messages()
+                'errors' => $validator->messages()
             ];
         }
         try {
@@ -64,7 +102,8 @@ class JurnalUmumDetailController extends Controller
             $jurnalumumDetail->coa = $request->coa;
             $jurnalumumDetail->nominal = $request->nominal;
             $jurnalumumDetail->keterangan = $request->keterangan ?? '';
-            $jurnalumumDetail->modifiedby = $request->modifiedby;
+            $jurnalumumDetail->modifiedby = auth('api')->user()->name;
+            $jurnalumumDetail->baris = $request->baris;
             
             $jurnalumumDetail->save();
            
@@ -78,52 +117,10 @@ class JurnalUmumDetailController extends Controller
             }
         } catch (\Throwable $th) {
             DB::rollBack();
-            return response($th->getMessage());
+
+            throw $th;
         }        
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\JurnalUmumDetail  $jurnalUmumDetail
-     * @return \Illuminate\Http\Response
-     */
-    public function show(JurnalUmumDetail $jurnalUmumDetail)
-    {
-        //
-    }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\JurnalUmumDetail  $jurnalUmumDetail
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(JurnalUmumDetail $jurnalUmumDetail)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \App\Http\Requests\UpdateJurnalUmumDetailRequest  $request
-     * @param  \App\Models\JurnalUmumDetail  $jurnalUmumDetail
-     * @return \Illuminate\Http\Response
-     */
-    public function update(UpdateJurnalUmumDetailRequest $request, JurnalUmumDetail $jurnalUmumDetail)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\JurnalUmumDetail  $jurnalUmumDetail
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(JurnalUmumDetail $jurnalUmumDetail)
-    {
-        //
-    }
 }

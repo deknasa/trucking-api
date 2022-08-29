@@ -49,8 +49,8 @@ class PenerimaanTruckingHeaderController extends Controller
     {
         $data = PenerimaanTruckingHeader::with(
             'penerimaantruckingdetail',
-            )->find($id);
-            
+        )->find($id);
+
         return response([
             'status' => true,
             'data' => $data
@@ -105,7 +105,7 @@ class PenerimaanTruckingHeaderController extends Controller
             $penerimaanHeader->statuskas = $request->statuskas ?? 0;
             $penerimaanHeader->bank_id = $request->bank_id ?? 'KAS';
             $penerimaanHeader->noresi = $request->noresi ?? 0;
-           // $penerimaanHeader->statusapproval = $statusApproval->id ?? 0;
+            // $penerimaanHeader->statusapproval = $statusApproval->id ?? 0;
 
             // $penerimaanHeader->statusberkas = $request->statusberkas ?? 0;
             $penerimaanHeader->modifiedby = auth('api')->user()->name;
@@ -400,15 +400,11 @@ class PenerimaanTruckingHeaderController extends Controller
                 ->where('bank.id', '=', $bankid)
                 ->first();
 
-           // dd($querysubgrppenerimaan->subgrp);
-            //select B.subgrp,B.grp
-            // from bank A
-            // inner join parameter B on A.kodepenerimaan = B.id
-            // where A.id=2
-
             $content['group'] = $querysubgrppenerimaan->grp;
             $content['subgroup'] = $querysubgrppenerimaan->subgrp;
-            $content['table'] = 'penerimaanheader';
+            $content['table'] = 'penerimaantruckingheader';
+            $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
+            $content['nobukti'] = '';
 
             $statusApproval = Parameter::where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
             $penerimaanHeader = new PenerimaanTruckingHeader();
@@ -429,7 +425,7 @@ class PenerimaanTruckingHeaderController extends Controller
             $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
 
             $penerimaanHeader->nobukti = $nobukti;
-            
+
             try {
                 $penerimaanHeader->save();
             } catch (\Exception $e) {

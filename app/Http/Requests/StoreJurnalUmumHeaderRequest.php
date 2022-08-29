@@ -23,8 +23,22 @@ class StoreJurnalUmumHeaderRequest extends FormRequest
      */
     public function rules()
     {
-        return [
-            //
+        $rules = [
+            'tglbukti' => 'required',
+            'keterangan' => 'required',
         ];
+
+        $relatedRequests = [
+            StoreJurnalUmumDetailRequest::class
+        ];
+
+        foreach ($relatedRequests as $relatedRequest) {
+            $rules = array_merge(
+                $rules,
+                (new $relatedRequest)->rules()
+            );
+        }
+        
+        return $rules;
     }
 }

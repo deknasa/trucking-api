@@ -24,7 +24,11 @@ class StoreJurnalUmumDetailRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'coadebet_detail' => 'required|array',
+            'coakredit_detail' => 'required|array',
+            'nominal_detail' => 'required|array',
+            // 'nominal_detail.*' => 'numeric',
+            'keterangan_detail' => 'required|array',
         ];
     }
 }

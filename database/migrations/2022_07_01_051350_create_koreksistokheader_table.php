@@ -20,7 +20,6 @@ class CreateKoreksistokheaderTable extends Migration
             $table->longText('keterangan')->default('');
             $table->unsignedBigInteger('trado_id')->default('0');
             $table->unsignedBigInteger('gudang_id')->default('0');
-            $table->string('tipe',50)->default('');
             $table->string('modifiedby',50)->default('');
             $table->timestamps();
 
