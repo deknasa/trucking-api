@@ -68,7 +68,7 @@ use App\Http\Controllers\Api\PenerimaanDetailController;
 
 use App\Http\Controllers\Api\PengeluaranHeaderController;
 use App\Http\Controllers\Api\PengeluaranDetailController;
-use App\Http\Controllers\Api\JurnalUmumController;
+use App\Http\Controllers\Api\JurnalUmumHeaderController;
 use App\Http\Controllers\Api\JurnalUmumDetailController;
 
 /*
@@ -283,9 +283,10 @@ route::middleware('auth:api')->group(function () {
 
     
     Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
-    Route::get('jurnalumum/no_bukti', [JurnalUmumController::class, 'getNoBukti']);
-    Route::get('jurnalumum/grid', [JurnalUmumController::class, 'grid']);
-    Route::resource('jurnalumum', JurnalUmumController::class);
+    Route::get('jurnalumumheader/no_bukti', [JurnalUmumHeaderController::class, 'getNoBukti']);
+    Route::get('jurnalumumheader/combo', [JurnalUmumHeaderController::class, 'combo']);
+    Route::get('jurnalumumheader/grid', [JurnalUmumHeaderController::class, 'grid']);
+    Route::resource('jurnalumumheader', JurnalUmumHeaderController::class);
     Route::resource('jurnalumumdetail', JurnalUmumDetailController::class);
 });
 
