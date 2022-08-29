@@ -65,9 +65,11 @@ use App\Http\Controllers\Api\ServiceOutHeaderController;
 use App\Http\Controllers\Api\ServiceOutDetailController;
 use App\Http\Controllers\Api\PenerimaanHeaderController;
 use App\Http\Controllers\Api\PenerimaanDetailController;
-
 use App\Http\Controllers\Api\PengeluaranHeaderController;
 use App\Http\Controllers\Api\PengeluaranDetailController;
+
+use App\Http\Controllers\Api\PenerimaanTruckingHeaderController;
+use App\Http\Controllers\Api\PenerimaanTruckingDetailController;
 
 
 /*
@@ -393,3 +395,13 @@ Route::get('pengeluaran/grid', [PengeluaranHeaderController::class, 'grid']);
 Route::resource('pengeluaran', PengeluaranHeaderController::class);
 
 Route::resource('pengeluarandetail', PengeluaranDetailController::class);
+
+//Penerimaan trucking
+Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
+Route::post('penerimaantrucking/{id}/approval', [PenerimaanTruckingHeaderController::class, 'approval'])->name('penerimaantrucking.approval');
+Route::get('penerimaantrucking/no_bukti', [PenerimaanTruckingHeaderController::class, 'getNoBukti']);
+Route::get('penerimaantrucking/combo', [PenerimaanTruckingHeaderController::class, 'combo']);
+Route::get('penerimaantrucking/grid', [PenerimaanTruckingHeaderController::class, 'grid']);
+Route::resource('penerimaantrucking', PenerimaanTruckingHeaderController::class);
+
+Route::resource('penerimaantruckingdetail', PenerimaanTruckingDetailController::class);
