@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\JurnalUmumDetail;
+use App\Models\JurnalUmumHeader;
+
 use App\Http\Requests\StoreJurnalUmumDetailRequest;
 use App\Http\Requests\UpdateJurnalUmumDetailRequest;
 
@@ -50,17 +52,22 @@ class JurnalUmumDetailController extends Controller
 
                 $jurnalUmumDetail = $query->get();
             } else {
-
-                $query->select(
-                    'detail.nobukti',
-                    'detail.tglbukti',
-                    'detail.coa',
-                    'detail.nominal',
-                    'detail.keterangan',
-                )->where('nominal','>','0');
-                $jurnalUmumDetail = $query->get();
+                $id = $request->jurnalumum_id;
+                $data = JurnalUmumHeader::find($id);
+                $nobukti = $data['nobukti'];
                 
-                // $jurnalUmumDetail = $query->get(['nobukti','tglbukti','coa','nominal','keterangan']);
+                $jurnalUmumDetail = DB::table('jurnalumumdetail AS A')
+                    ->select(['A.coa as coadebet','b.coa as coakredit','A.nominal','A.keterangan','A.nobukti','A.tglbukti'])            
+                    ->join(DB::raw("(SELECT baris,coa FROM jurnalumumdetail WHERE nobukti='$nobukti' AND nominal<0) B"),
+                        function($join)
+                        {
+                        $join->on('A.baris', '=', 'B.baris');
+                        })
+                    ->where([
+                        ['A.nobukti','=',$nobukti],
+                        ['A.nominal', '>=' ,'0']
+                    ])
+                    ->get();        
             }
 
             return response([

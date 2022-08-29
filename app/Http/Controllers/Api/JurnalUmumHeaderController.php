@@ -73,7 +73,6 @@ class JurnalUmumHeaderController extends Controller
             
             $jurnalumum->modifiedby = auth('api')->user()->name;
             
-            
             TOP:
             if ($tanpaprosesnobukti==0) {
                 $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];

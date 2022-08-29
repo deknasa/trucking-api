@@ -71,6 +71,8 @@ class PengeluaranHeaderController extends Controller
             $content['group'] = $querysubgrppengeluaran->grp;
             $content['subgroup'] = $querysubgrppengeluaran->subgrp;
             $content['table'] = 'pengeluaranheader';
+            $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
+            $content['nobukti'] = '';
 
             $statusApproval = Parameter::where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
 

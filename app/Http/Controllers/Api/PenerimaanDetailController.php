@@ -26,7 +26,6 @@ class PenerimaanDetailController extends Controller
             'sortIndex' => $request->sortOrder ?? 'id',
             'sortOrder' => $request->sortOrder ?? 'asc',
         ];
-
         try {
             $query = PenerimaanDetail::from('penerimaandetail as detail');
 
@@ -53,13 +52,13 @@ class PenerimaanDetailController extends Controller
                     'detail.nominal',
                     'detail.keterangan',
                     'bank.namabank as bank_id',
-                    'pelanggan.namapelanggan as pelanggan_id', 
+                    'pelanggan.namapelanggan as pelanggan_id',
                     'detail.invoice_nobukti',
                     'bankpelanggan.namabank as bankpelanggan_id',
                     'detail.jenisbiaya',
                     'detail.penerimaanpiutang_nobukti',
                     'detail.bulanbeban',
-                    'akunpusat.keterangancoa as coakredit', 
+                    'akunpusat.keterangancoa as coakredit',
                     'bank.coa as coadebet',
                     // 'detail.pelanggan',
                 )
@@ -83,7 +82,7 @@ class PenerimaanDetailController extends Controller
                     'detail.invoice_nobukti',
                     'bankpelanggan.namabank as bankpelanggan_id', ///
                     'detail.jenisbiaya',
-                    
+
                     'detail.penerimaanpiutang_nobukti',
                     'detail.bulanbeban',
                     'akunpusat.keterangancoa as coakredit',

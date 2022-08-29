@@ -22,6 +22,7 @@ use App\Models\PelunasanPiutangHeader;
 use App\Models\PenerimaanDetail;
 use App\Http\Requests\StoreJurnalUmumHeaderRequest;
 use App\Http\Requests\StoreJurnalUmumDetailRequest;
+use Exception;
 use PhpParser\Builder\Param;
 
 class PenerimaanHeaderController extends Controller
@@ -78,23 +79,6 @@ class PenerimaanHeaderController extends Controller
         ]);
     }
 
-    /**
-     * @ClassName
-     */
-    public function create()
-    {
-        //
-    }
-
-
-
-    /**
-     * @ClassName
-     */
-    public function edit(PenerimaanHeader $penerimaanHeader)
-    {
-        //
-    }
 
     /**
      * @ClassName
@@ -264,7 +248,7 @@ class PenerimaanHeaderController extends Controller
                 // }
 
                 if (!$jurnal['status']) {
-                    throw new \Throwable($jurnal['message']);
+                    throw new Exception($jurnal['message']);
                 }
 
                 DB::commit();
@@ -287,7 +271,7 @@ class PenerimaanHeaderController extends Controller
             }
         } catch (\Throwable $th) {
             DB::rollBack();
-            return response($th->getMessage());
+            throw $th;
         }
 
         return response($penerimaanHeader->penerimaandetail);
@@ -342,7 +326,7 @@ class PenerimaanHeaderController extends Controller
             }
         } catch (\Throwable $th) {
             DB::rollBack();
-            return response($th->getMessage());
+            throw $th;
         }
     }
 
@@ -407,21 +391,19 @@ class PenerimaanHeaderController extends Controller
                 ->select(
                     'parameter.grp',
                     'parameter.subgrp',
+                    'bank.formatbuktipenerimaan'
                 )
                 ->join('parameter', 'bank.kodepenerimaan', 'parameter.id')
                 ->where('bank.id', '=', $bankid)
                 ->first();
 
-           // dd($querysubgrppenerimaan->subgrp);
-            //select B.subgrp,B.grp
-            // from bank A
-            // inner join parameter B on A.kodepenerimaan = B.id
-            // where A.id=2
-
             $content['group'] = $querysubgrppenerimaan->grp;
             $content['subgroup'] = $querysubgrppenerimaan->subgrp;
             $content['table'] = 'penerimaanheader';
+            $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));      
+            $content['nobukti'] = $querysubgrppenerimaan->formatbuktipenerimaan;
 
+            
             $statusApproval = Parameter::where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
             $penerimaanHeader = new PenerimaanHeader();
             $penerimaanHeader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
@@ -461,6 +443,7 @@ class PenerimaanHeaderController extends Controller
             ];
             $validatedLogTrail = new StoreLogTrailRequest($logTrail);
             $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+
 
             /* Store detail */
             $detaillog = [];
@@ -572,15 +555,15 @@ class PenerimaanHeaderController extends Controller
                 ];
 
                 $jurnal = $this->storeJurnal($jurnalHeader, $jurnalDetail);
-
-
+                
+                
                 // if (!$jurnal['status'] AND @$jurnal['errorCode'] == 2601) {
-                //     goto ATAS;
-                // }
-
-                if (!$jurnal['status']) {
-                    throw new \Throwable($jurnal['message']);
-                }
+                    //     goto ATAS;
+                    // }
+                  
+                    if (!$jurnal['status']) {
+                        throw new Exception($jurnal['message']);
+                    }
 
                 DB::commit();
 
@@ -602,7 +585,7 @@ class PenerimaanHeaderController extends Controller
             }
         } catch (\Throwable $th) {
             DB::rollBack();
-            return response($th->getMessage());
+            throw $th;
         }
 
         return response($penerimaanHeader->penerimaandetail);
