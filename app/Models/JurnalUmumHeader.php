@@ -27,6 +27,8 @@ class JurnalUmumHeader extends MyModel
     {
         $this->setRequestParameters();
 
+        $lennobukti=3;
+
         $query = DB::table($this->table)->select(
             'jurnalumumheader.id',
             'jurnalumumheader.nobukti',
@@ -40,6 +42,8 @@ class JurnalUmumHeader extends MyModel
             'jurnalumumheader.created_at',
             'jurnalumumheader.updated_at'
         );
+        // ->where(DB::raw('LEFT(nobukti,'. $lennobukti.')'),  '=', 'KGT');
+        
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;

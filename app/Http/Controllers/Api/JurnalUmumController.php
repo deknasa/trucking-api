@@ -26,6 +26,7 @@ class JurnalUmumController extends Controller
     public function index()
     {
         
+        
         $jurnalumum = new JurnalUmumHeader();
 
         return response([
@@ -50,6 +51,8 @@ class JurnalUmumController extends Controller
             $content['group'] = 'JURNAL UMUM';
             $content['subgroup'] = 'JURNAL UMUM';
             $content['table'] = 'jurnalumumheader';
+            $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
+            $content['nobukti'] = 'ADJ';
 
             
             $jurnalumum = new JurnalUmumHeader();
