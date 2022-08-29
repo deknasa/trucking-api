@@ -68,7 +68,7 @@ class JurnalUmumController extends Controller
             TOP:
             $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
             $jurnalumum->nobukti = $nobukti;
-            
+            // dd($nobukti);
             try {
                 $jurnalumum->save();
             } catch (\Exception $e) {
@@ -109,6 +109,7 @@ class JurnalUmumController extends Controller
                             'nominal' => '-'.str_replace(',', '',$request->nominal_detail[$i]),
                             'keterangan' => $request->keterangan_detail[$i],
                             'modifiedby' => $jurnalumum->modifiedby,
+                            'baris' => $i,
                         ];
                     }else{
                         $datadetail = [
@@ -119,6 +120,7 @@ class JurnalUmumController extends Controller
                             'nominal' => str_replace(',', '',$request->nominal_detail[$i]),
                             'keterangan' => $request->keterangan_detail[$i],
                             'modifiedby' => $jurnalumum->modifiedby,
+                            'baris' => $i,
                         ];
                     }
 
@@ -150,6 +152,7 @@ class JurnalUmumController extends Controller
                         'modifiedby' => $jurnalumum->modifiedby,
                         'created_at' => date('d-m-Y H:i:s', strtotime($jurnalumum->created_at)),
                         'updated_at' => date('d-m-Y H:i:s', strtotime($jurnalumum->updated_at)),
+                        'baris' => $i,
                     ];
                    }else{
                     $datadetaillog = [
@@ -163,6 +166,7 @@ class JurnalUmumController extends Controller
                         'modifiedby' => $jurnalumum->modifiedby,
                         'created_at' => date('d-m-Y H:i:s', strtotime($jurnalumum->created_at)),
                         'updated_at' => date('d-m-Y H:i:s', strtotime($jurnalumum->updated_at)),
+                        'baris' => $i,
                     ];
                    }
                     
@@ -224,21 +228,33 @@ class JurnalUmumController extends Controller
      */
     public function show($id)
     {
-        $data = JurnalUmumHeader::with(
-            'jurnalumumdetail',
-        )->find($id);
         
-       
+        $data = JurnalUmumHeader::find($id);
+
+        $nobukti = $data['nobukti'];
+        
+        $query = DB::table('jurnalumumdetail AS A')
+            ->select(['A.coa as coadebet','b.coa as coakredit','A.nominal','A.keterangan'])            
+            ->join(DB::raw("(SELECT baris,coa FROM jurnalumumdetail WHERE nobukti='$nobukti' AND nominal<0) B"),
+                function($join)
+                {
+                $join->on('A.baris', '=', 'B.baris');
+                })
+            ->where([
+                ['A.nobukti','=',$nobukti],
+                ['A.nominal', '>=' ,'0']
+            ])
+            ->get();
+        
+        
         return response([
             'status' => true,
-            'data' => $data
+            'data' => $data,
+            'detail' => $query
         ]);
     }
    
-    public function getNominal($id)
-    {
-
-    }
+   
      /**
      * @ClassName
      */
@@ -251,8 +267,10 @@ class JurnalUmumController extends Controller
             $jurnalumum->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $jurnalumum->keterangan = $request->keterangan;
             $jurnalumum->modifiedby = auth('api')->user()->name;
-
+            
+           
             if ($jurnalumum->save()) {
+            
                 $logTrail = [
                     'namatabel' => strtoupper($jurnalumum->getTable()),
                     'postingdari' => 'ENTRY JURNAL UMUM',
@@ -263,12 +281,14 @@ class JurnalUmumController extends Controller
                     'modifiedby' => $jurnalumum->modifiedby
                 ];
 
+                
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-                $jurnalumum->jurnalumumdetail()->delete();
-
-
+                
+               JurnalUmumDetail::where('jurnalumum_id',$id)->delete();
+               
                 /* Store detail */
                 
 
@@ -282,10 +302,11 @@ class JurnalUmumController extends Controller
                                 'jurnalumum_id' => $jurnalumum->id,
                                 'nobukti' => $jurnalumum->nobukti,
                                 'tglbukti' => $jurnalumum->tglbukti,
-                                'coa' => '-'.$request->coakredit_detail[$i],
-                                'nominal' => $request->nominal_detail[$i],
+                                'coa' => $request->coakredit_detail[$i],
+                                'nominal' => '-'.str_replace(',', '',$request->nominal_detail[$i]),
                                 'keterangan' => $request->keterangan_detail[$i],
                                 'modifiedby' => $jurnalumum->modifiedby,
+                                'baris' => $i,
                             ];
                         }else{
                             $datadetail = [
@@ -293,16 +314,18 @@ class JurnalUmumController extends Controller
                                 'nobukti' => $jurnalumum->nobukti,
                                 'tglbukti' => $jurnalumum->tglbukti,
                                 'coa' => $request->coadebet_detail[$i],
-                                'nominal' => $request->nominal_detail[$i],
+                                'nominal' => str_replace(',', '',$request->nominal_detail[$i]),
                                 'keterangan' => $request->keterangan_detail[$i],
                                 'modifiedby' => $jurnalumum->modifiedby,
+                                'baris' => $i,
                             ];
                         }
     
                         //STORE 
                         $data = new StoreJurnalUmumDetailRequest($datadetail);
+                        
                         $datadetails = app(JurnalUmumDetailController::class)->store($data);
-    
+                        
                         
                         if ($datadetails['error']) {
                             return response($datadetails, 422);
@@ -311,20 +334,36 @@ class JurnalUmumController extends Controller
                             $tabeldetail = $datadetails['tabel'];
                         }
                         
-                       
-                        
-                        $datadetaillog = [
-                            'id' => $iddetail,
-                            'jurnalumum_id' => $jurnalumum->id,
-                            'nobukti' => $jurnalumum->nobukti,
-                            'tglbukti' => $jurnalumum->tglbukti,
-                            'coa' => $request->coadebet_detail[$i],
-                            'nominal' => $request->nominal_detail[$i],
-                            'keterangan' => $request->keterangan_detail[$i],
-                            'modifiedby' => $jurnalumum->modifiedby,
-                            'created_at' => date('d-m-Y H:i:s', strtotime($jurnalumum->created_at)),
-                            'updated_at' => date('d-m-Y H:i:s', strtotime($jurnalumum->updated_at)),
-                        ];
+                        if($x==1)
+                        {
+                            $datadetaillog = [
+                                'id' => $iddetail,
+                                'jurnalumum_id' => $jurnalumum->id,
+                                'nobukti' => $jurnalumum->nobukti,
+                                'tglbukti' => $jurnalumum->tglbukti,
+                                'coa' => $request->coakredit_detail[$i],
+                                'nominal' => $request->nominal_detail[$i],
+                                'keterangan' => $request->keterangan_detail[$i],
+                                'modifiedby' => $jurnalumum->modifiedby,
+                                'created_at' => date('d-m-Y H:i:s', strtotime($jurnalumum->created_at)),
+                                'updated_at' => date('d-m-Y H:i:s', strtotime($jurnalumum->updated_at)),
+                                'baris' => $i,
+                            ];
+                        }else{
+                            $datadetaillog = [
+                                'id' => $iddetail,
+                                'jurnalumum_id' => $jurnalumum->id,
+                                'nobukti' => $jurnalumum->nobukti,
+                                'tglbukti' => $jurnalumum->tglbukti,
+                                'coa' => $request->coadebet_detail[$i],
+                                'nominal' => $request->nominal_detail[$i],
+                                'keterangan' => $request->keterangan_detail[$i],
+                                'modifiedby' => $jurnalumum->modifiedby,
+                                'created_at' => date('d-m-Y H:i:s', strtotime($jurnalumum->created_at)),
+                                'updated_at' => date('d-m-Y H:i:s', strtotime($jurnalumum->updated_at)),
+                                'baris' => $i,
+                            ];
+                        }
                         
                         $detaillog[] = $datadetaillog;
     
@@ -334,7 +373,7 @@ class JurnalUmumController extends Controller
                         ->where('namatabel', '=', $jurnalumum->getTable())
                         ->orderBy('id', 'DESC')
                         ->first();
-    
+                        
                         $datalogtrail = [
                             'namatabel' => $tabeldetail,
                             'postingdari' => 'ENTRY JURNAL UMUM',
@@ -344,38 +383,22 @@ class JurnalUmumController extends Controller
                             'datajson' => $detaillog,
                             'modifiedby' => $request->modifiedby,
                         ];
-    
-                        $data = new StoreLogTrailRequest($datalogtrail);
-                        app(LogTrailController::class)->store($data);
                         
-                        $dataid = LogTrail::select('id')
-                        ->where('idtrans', '=', $jurnalumum->id)
-                        ->where('namatabel', '=', $jurnalumum->getTable())
-                        ->orderBy('id', 'DESC')
-                        ->first();
-
-                        $datalogtrail = [
-                            'namatabel' => $tabeldetail,
-                            'postingdari' => 'EDIT JURNAL UMUM',
-                            'idtrans' =>  $dataid->id,
-                            'nobuktitrans' => $jurnalumum->id,
-                            'aksi' => 'EDIT',
-                            'datajson' => $detaillog,
-                            'modifiedby' => $request->modifiedby,
-                        ];
-
                         $data = new StoreLogTrailRequest($datalogtrail);
+                        
                         app(LogTrailController::class)->store($data);
-
+                         
                     }
                 }
-
+                
             }
+            
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
+            
             DB::commit();
 
-
+            
             /* Set position and page */
             $jurnalumum->position = DB::table((new JurnalUmumHeader())->getTable())->orderBy($request->sortname, $request->sortorder)
                 ->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $jurnalumum->{$request->sortname})

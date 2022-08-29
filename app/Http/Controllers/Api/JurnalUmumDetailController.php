@@ -57,7 +57,7 @@ class JurnalUmumDetailController extends Controller
                     'detail.coa',
                     'detail.nominal',
                     'detail.keterangan',
-                );
+                )->where('nominal','>','0');
                 $jurnalUmumDetail = $query->get();
                 
                 // $jurnalUmumDetail = $query->get(['nobukti','tglbukti','coa','nominal','keterangan']);
@@ -103,6 +103,7 @@ class JurnalUmumDetailController extends Controller
             $jurnalumumDetail->nominal = $request->nominal;
             $jurnalumumDetail->keterangan = $request->keterangan ?? '';
             $jurnalumumDetail->modifiedby = auth('api')->user()->name;
+            $jurnalumumDetail->baris = $request->baris;
             
             $jurnalumumDetail->save();
            
