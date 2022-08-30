@@ -24,7 +24,13 @@ class StorePengeluaranDetailRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'alatbayar_id' => 'required|array',         
+            'nowarkat' => 'required|array',
+            'tgljatuhtempo' => 'required|array',
+            'nominal' => 'required|array',
+            'coadebet' => 'required|array',
+            'keterangan_detail' => 'required|array',
+            'bulanbeban' => 'required|array',
         ];
     }
 }

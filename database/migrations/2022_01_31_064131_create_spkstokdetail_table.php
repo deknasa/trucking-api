@@ -32,7 +32,6 @@ class CreateSpkstokdetailTable extends Migration
             $table->string('jenisvulkanisir',50)->default('');
             $table->string('pindahgudang_nobukti',50)->default('');
             $table->string('keadaanban',50)->default('');
-            $table->string('pinjaman_nobukti',50)->default('');
             $table->string('modifiedby',50)->default('');
 
             $table->timestamps();
@@ -41,7 +40,6 @@ class CreateSpkstokdetailTable extends Migration
             $table->foreign('stok_id')->references('id')->on('stok');
             $table->foreign('coa')->references('coa')->on('akunpusat');
             $table->foreign('pindahgudang_nobukti')->references('nobukti')->on('pindahgudangstokheader');
-            // $table->foreign('pinjaman_nobukti')->references('nobukti')->on('pinjaman');
 
         });
     }

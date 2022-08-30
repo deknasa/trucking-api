@@ -23,20 +23,28 @@ class StorePenerimaanHeaderRequest extends FormRequest
      */
     public function rules()
     {
-        return [
-            // 'keterangan' => 'required',
-            // 'tgllunas' => 'required',
-            // 'cabang_id' => 'required',
-            // 'statuskas' => 'required',
-            // 'noresi' => 'required',
-            // 'nowarkat' => 'required',
-            // 'tgljatuhtempo' => 'required',
-            // 'nominal' => 'required',
-            // 'keterangan_detail' => 'required',
-            // 'bank_id' => 'required',
-            // 'bankpelanggan_id' => 'required',
-            // 'jenisbiaya' => 'required',
+        $rules = [
+            'pelanggan_id' => 'required',
+            'keterangan' => 'required',
+            'tgllunas'  => 'required',
+            'cabang_id' => 'required',
+            'statuskas' => 'required',
+            'bank_id'   => 'required',
+            'noresi' => 'required'
         ];
+        $relatedRequests = [
+            StorePenerimaanDetailRequest::class
+        ];
+        
+        foreach ($relatedRequests as $relatedRequest) {
+            $rules = array_merge(
+                $rules,
+                (new $relatedRequest)->rules()
+            );
+        }
+
+        return $rules;
+
     }
     public function attributes()
     {

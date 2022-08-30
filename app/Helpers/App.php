@@ -12,7 +12,7 @@ use Intervention\Image\ImageManagerStatic as Image;
 
 class App
 {
-    public function runningNumber(string $format, int $lastRow): string
+    public function runningNumber(string $format, int $lastRow, int $bulan): string
     {
         $totalSeparator = 0;
         $staticSeparator = '#';
@@ -73,7 +73,7 @@ class App
         foreach ($dynamicTexts as $index => $dynamicText) {
             switch (str_replace(' ', '', $dynamicText)) {
                 case 'R':
-                    $dynamicTexts[$index] = $this->numberToRoman(date('n'));
+                    $dynamicTexts[$index] = $this->numberToRoman($bulan);
                     break;
                 case $this->isDateFormat($dynamicText):
                     $dynamicTexts[$index] = date($dynamicText);

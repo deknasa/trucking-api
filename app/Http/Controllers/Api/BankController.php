@@ -47,6 +47,8 @@ class BankController extends Controller
             $bank->coa = $request->coa;
             $bank->tipe = $request->tipe;
             $bank->statusaktif = $request->statusaktif;
+            $bank->formatbuktipenerimaan = $request->formatbuktipenerimaan;
+            $bank->formatbuktipengeluaran = $request->formatbuktipengeluaran;
             $bank->kodepenerimaan = $request->kodepenerimaan ?? 0;
             $bank->kodepengeluaran = $request->kodepengeluaran ?? 0;
             $bank->modifiedby = auth('api')->user()->name;
@@ -71,9 +73,14 @@ class BankController extends Controller
             }
 
             /* Set position and page */
-            $del = 0;
-            $data = $this->getid($bank->id, $request, $del);
-            $bank->position = $data->row;
+            // $del = 0;
+            // $data = $this->getid($bank->id, $request, $del);
+            // $bank->position = $data->row;
+
+            $selected = $this->getPosition($bank, $bank->getTable());
+            $bank->position = $selected->position;
+            $bank->page = ceil($bank->position / ($request->limit ?? 10));
+
             
             if (isset($request->limit)) {
                 $bank->page = ceil($bank->position / $request->limit);
@@ -114,6 +121,8 @@ class BankController extends Controller
             $bank->coa = $request->coa;
             $bank->tipe = $request->tipe;
             $bank->statusaktif = $request->statusaktif;
+            $bank->formatbuktipenerimaan = $request->formatbuktipenerimaan;
+            $bank->formatbuktipengeluaran = $request->formatbuktipengeluaran;
             $bank->kodepenerimaan = $request->kodepenerimaan;
             $bank->kodepengeluaran = $request->kodepengeluaran;
             $bank->modifiedby = auth('api')->user()->name;
@@ -133,11 +142,15 @@ class BankController extends Controller
                 app(LogTrailController::class)->store($validatedLogTrail);
 
                 /* Set position and page */
-                $bank->position = $this->getid($bank->id, $request, 0)->row;
+                // $bank->position = $this->getid($bank->id, $request, 0)->row;
 
-                if (isset($request->limit)) {
-                    $bank->page = ceil($bank->position / $request->limit);
-                }
+                // if (isset($request->limit)) {
+                //     $bank->page = ceil($bank->position / $request->limit);
+                // }
+
+                $selected = $this->getPosition($bank, $bank->getTable());
+                $bank->position = $selected->position;
+                $bank->page = ceil($bank->position / ($request->limit ?? 10));
 
                 return response([
                     'status' => true,
@@ -177,12 +190,18 @@ class BankController extends Controller
 
             DB::commit();
 
-            $data = $this->getid($bank->id, $request, $del);
-            $bank->position = @$data->row;
-            $bank->id = @$data->id;
-            if (isset($request->limit)) {
-                $bank->page = ceil($bank->position / $request->limit);
-            }
+            // $data = $this->getid($bank->id, $request, $del);
+            // $bank->position = @$data->row;
+            // $bank->id = @$data->id;
+            // if (isset($request->limit)) {
+            //     $bank->page = ceil($bank->position / $request->limit);
+            // }
+
+            $selected = $this->getPosition($bank, $bank->getTable(), true);
+            $bank->position = $selected->position;
+            $bank->id = $selected->id;
+            $bank->page = ceil($bank->position / ($request->limit ?? 10));
+
             return response([
                 'status' => true,
                 'message' => 'Berhasil dihapus',

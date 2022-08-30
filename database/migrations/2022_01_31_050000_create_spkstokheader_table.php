@@ -21,13 +21,10 @@ class CreateSpkstokheaderTable extends Migration
             $table->unsignedBigInteger('trado_id')->default('0');
             $table->unsignedBigInteger('gudang_id')->default('0');
             $table->unsignedBigInteger('supir_id')->default('0');
-            $table->double('nominal',15,2)->default('0');
-            $table->string('tipe',50)->default('');
             $table->string('pg_nobukti',50)->default('');
             $table->integer('editke')->length(11)->default('0');
             $table->string('sin_nobukti',50)->unique();
             $table->unsignedBigInteger('kerusakan_id')->default('0');
-            $table->integer('statusspk')->length(11)->default('0');
             $table->string('modifiedby',50)->default('');
             $table->timestamps();
 
