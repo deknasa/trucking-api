@@ -8,14 +8,10 @@ use App\Models\Trado;
 use App\Models\Mekanik;
 use App\Http\Requests\StoreServiceOutHeaderRequest;
 use App\Http\Requests\StoreServiceOutDetailRequest;
-use App\Http\Requests\UpdateServiceOutHeaderRequest;
-use Database\Factories\MekanikFactory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Validator;
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Models\LogTrail;
-use App\Models\Parameter;
 use App\Models\ServiceInHeader;
 use App\Models\ServiceOutDetail;
 
@@ -109,7 +105,7 @@ class ServiceOutHeaderController extends Controller
 
                 $datadetaillog = [
                     'id' => $iddetail,
-                    'servicein_id' => $serviceout->id,
+                    'serviceout_id' => $serviceout->id,
                     'nobukti' => $serviceout->nobukti,
                     'servicein_nobukti' => $request->servicein_nobukti[$i],
                     'keterangan' => $request->keterangan_detail[$i],
@@ -144,14 +140,10 @@ class ServiceOutHeaderController extends Controller
             DB::commit();
 
             /* Set position and page */
-            $serviceout->position = DB::table((new ServiceOutHeader())->getTable())->orderBy($request->sortname, $request->sortorder)
-                ->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $serviceout->{$request->sortname})
-                ->where('id', '<=', $serviceout->id)
-                ->count();
+            $selected = $this->getPosition($serviceout, $serviceout->getTable());
+            $serviceout->position = $selected->position;
+            $serviceout->page = ceil($serviceout->position / ($request->limit ?? 10));
 
-            if (isset($request->limit)) {
-                $serviceout->page = ceil($serviceout->position / $request->limit);
-            }
             return response([
                 'status' => true,
                 'message' => 'Berhasil disimpan',
@@ -231,7 +223,7 @@ class ServiceOutHeaderController extends Controller
 
                     $datadetaillog = [
                         'id' => $iddetail,
-                        'servicein_id' => $serviceout->id,
+                        'serviceout_id' => $serviceout->id,
                         'nobukti' => $serviceout->nobukti,
                         'servicein_nobukti' => $request->servicein_nobukti[$i],
                         'keterangan' => $request->keterangan_detail[$i],

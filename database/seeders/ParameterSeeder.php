@@ -16,28 +16,28 @@ class ParameterSeeder extends Seeder
     public function run()
     {
         Parameter::create([
-            'grp' => 'STATUS AKTIF',
-            'subgrp' => 'STATUS AKTIF',
-            'text' => 'AKTIF',
-            'memo' => '',
-            'modifiedby' => 'ADMIN',
-        ]);
+        'grp' => 'COA',
+        'subgrp' => 'PENGELUARAN KAS DEBET',
+        'text' => '',
+        'memo' => 'NOMOR PENGELUARAN KAS',
+        'modifiedby' => 'ADMIN',
+    ]);
 
-        Parameter::create([
-            'grp' => 'ABSENSI',
-            'subgrp' => 'ABSENSI',
-            'text' => '#ABS# 9999#/#R#/#Y',
-            'memo' => '',
-            'modifiedby' => 'ADMIN',
-        ]);
+        // Parameter::create([
+        //     'grp' => 'ABSENSI',
+        //     'subgrp' => 'ABSENSI',
+        //     'text' => '#ABS# 9999#/#R#/#Y',
+        //     'memo' => '',
+        //     'modifiedby' => 'ADMIN',
+        // ]);
         
-        Parameter::create([
-            'grp' => 'KAS GANTUNG',
-            'subgrp' => 'NOMOR KAS GANTUNG',
-            'text' => '#KGT# 9999#/#R#/#Y',
-            'memo' => '',
-            'modifiedby' => 'ADMIN',
-        ]);
+        // Parameter::create([
+        //     'grp' => 'KAS GANTUNG',
+        //     'subgrp' => 'NOMOR KAS GANTUNG',
+        //     'text' => '#KGT# 9999#/#R#/#Y',
+        //     'memo' => '',
+        //     'modifiedby' => 'ADMIN',
+        // ]);
         
         Parameter::factory()
             ->count(100)

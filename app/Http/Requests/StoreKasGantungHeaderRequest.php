@@ -27,6 +27,8 @@ class StoreKasGantungHeaderRequest extends FormRequest
             'nobukti' => 'required',
             'tglbukti' => 'required',
             'penerima_id' => 'required',
+            'nominal' => 'required',
+            'keterangan_detail' => 'required',
         ];
     }
 

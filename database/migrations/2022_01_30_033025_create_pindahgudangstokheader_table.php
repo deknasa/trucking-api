@@ -23,15 +23,12 @@ class CreatePindahgudangstokheaderTable extends Migration
             $table->string('tipe',50)->default('');
             $table->string('nobuktido',50)->default('');
             $table->unsignedBigInteger('supplier_id')->default('0');
-            $table->string('coa',50)->default('');
-            $table->integer('statusvulkan')->length(11)->default('0');
             $table->string('modifiedby',50)->default('');            
             $table->timestamps();
 
             $table->foreign('trado_id')->references('id')->on('trado');
             $table->foreign('gudang_id')->references('id')->on('gudang');
             $table->foreign('supplier_id')->references('id')->on('supplier');
-            $table->foreign('coa')->references('coa')->on('akunpusat');
 
         });
     }

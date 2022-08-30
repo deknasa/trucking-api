@@ -1,4 +1,5 @@
-<?php
+
+ <?php
 
 use App\Http\Controllers\Api\AkunPusatController;
 use App\Http\Controllers\Api\AbsensiSupirDetailController;
@@ -62,6 +63,12 @@ use App\Http\Controllers\Api\ServiceInHeaderController;
 use App\Http\Controllers\Api\ServiceInDetailController;
 use App\Http\Controllers\Api\ServiceOutHeaderController;
 use App\Http\Controllers\Api\ServiceOutDetailController;
+use App\Http\Controllers\Api\PenerimaanHeaderController;
+use App\Http\Controllers\Api\PenerimaanDetailController;
+
+use App\Http\Controllers\Api\PengeluaranHeaderController;
+use App\Http\Controllers\Api\PengeluaranDetailController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -98,6 +105,11 @@ route::middleware('auth:api')->group(function () {
     Route::get('agen/export', [AgenController::class, 'export'])->name('export');
     Route::post('agen/{agen}/approval', [AgenController::class, 'approval'])->name('agen.approval');
     Route::resource('agen', AgenController::class);
+
+    Route::get('cabang/field_length', [CabangController::class, 'fieldLength']);
+    Route::get('cabang/combostatus', [CabangController::class, 'combostatus']);
+    Route::get('cabang/getPosition2', [CabangController::class, 'getPosition2']);
+    Route::resource('cabang', CabangController::class);
 
     Route::get('acos/field_length', [AcosController::class, 'fieldLength']);
     Route::resource('acos', AcosController::class);
@@ -345,10 +357,34 @@ Route::resource('ritasi', RitasiController::class);
 
 Route::get('servicein/combo', [ServiceInHeaderController::class, 'combo']);
 Route::resource('servicein', ServiceInHeaderController::class);
-
 Route::resource('serviceindetail', ServiceInDetailController::class);
 
 Route::get('serviceout/combo', [ServiceOutHeaderController::class, 'combo']);
 Route::resource('serviceout', ServiceOutHeaderController::class);
+Route::resource('serviceoutdetail', ServiceOutDetailController::class);
 
 Route::resource('serviceoutdetail', ServiceOutDetailController::class);
+
+// Route::get('penerimaan/combo', [PenerimaanHeaderController::class, 'combo']);
+// Route::resource('penerimaan', PenerimaanHeaderController::class);
+
+// Route::resource('penerimaandetail', PenerimaanDetailController::class);
+
+Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
+Route::post('penerimaan/{id}/approval', [PenerimaanHeaderController::class, 'approval'])->name('penerimaan.approval');
+Route::get('penerimaan/no_bukti', [PenerimaanHeaderController::class, 'getNoBukti']);
+Route::get('penerimaan/combo', [PenerimaanHeaderController::class, 'combo']);
+Route::get('penerimaan/grid', [PenerimaanHeaderController::class, 'grid']);
+Route::resource('penerimaan', PenerimaanHeaderController::class);
+
+Route::resource('penerimaandetail', PenerimaanDetailController::class);
+
+//pengeluaran
+Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
+Route::post('pengeluaran/{id}/approval', [PengeluaranHeaderController::class, 'approval'])->name('pengeluaran.approval');
+Route::get('pengeluaran/no_bukti', [PengeluaranHeaderController::class, 'getNoBukti']);
+Route::get('pengeluaran/combo', [PengeluaranHeaderController::class, 'combo']);
+Route::get('pengeluaran/grid', [PengeluaranHeaderController::class, 'grid']);
+Route::resource('pengeluaran', PengeluaranHeaderController::class);
+
+Route::resource('pengeluarandetail', PengeluaranDetailController::class);

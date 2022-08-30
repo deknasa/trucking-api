@@ -34,5 +34,26 @@ class StokSeeder extends Seeder
             'namaterpusat' => 'BAUT 12',
             'modifiedby' => 'ADMIN',
         ]);
+
+         Stok::create([
+            'jenistrado_id' => 0,
+            'kelompok_id' => 2,
+            'subkelompok_id' => 3,
+            'kategori_id' => 5,
+            'merk_id' => 0,
+            'conv1' => 1,
+            'conv2' => 1,
+            'namastok' => 'RADIATOR',
+            'statusaktif' => 1,
+            'qtymin' => 1,
+            'qtymax' => 1,
+            'hrgbelimax' => 0,
+            'statusban' => 95,
+            'ukuranban' => 0,
+            'keterangan' => '',
+            'gambar' => '',
+            'namaterpusat' => 'RADIATOR',
+            'modifiedby' => 'ADMIN',
+        ]);
     }
 }
