@@ -22,6 +22,7 @@ use App\Models\PelunasanPiutangHeader;
 use App\Models\PenerimaanDetail;
 use App\Http\Requests\StoreJurnalUmumHeaderRequest;
 use App\Http\Requests\StoreJurnalUmumDetailRequest;
+use Exception;
 use PhpParser\Builder\Param;
 
 class PenerimaanHeaderController extends Controller
@@ -78,23 +79,6 @@ class PenerimaanHeaderController extends Controller
         ]);
     }
 
-    /**
-     * @ClassName
-     */
-    public function create()
-    {
-        //
-    }
-
-
-
-    /**
-     * @ClassName
-     */
-    public function edit(PenerimaanHeader $penerimaanHeader)
-    {
-        //
-    }
 
     /**
      * @ClassName
@@ -225,6 +209,7 @@ class PenerimaanHeaderController extends Controller
                 $statusApp = $parameterController->getparameterid('STATUS APPROVAL', 'STATUS APPROVAL', 'NON APPROVAL');
 
                 $jurnalHeader = [
+                    'tanpaprosesnobukti' => 1,
                     'nobukti' => $penerimaanHeader->nobukti,
                     'tgl' => date('Y-m-d', strtotime($request->tglbukti)),
                     'keterangan' => $request->keterangan,
@@ -245,6 +230,7 @@ class PenerimaanHeaderController extends Controller
                         'nominal' => $total,
                         'keterangan' => $request->keterangan,
                         'modifiedby' => auth('api')->user()->name,
+                        'baris' =>$i,
                     ],
                     [
                         'nobukti' => $penerimaanHeader->nobukti,
@@ -253,6 +239,7 @@ class PenerimaanHeaderController extends Controller
                         'nominal' => -$total,
                         'keterangan' => $request->keterangan,
                         'modifiedby' => auth('api')->user()->name,
+                        'baris' =>$i,
                     ]
                 ];
 
@@ -264,7 +251,7 @@ class PenerimaanHeaderController extends Controller
                 // }
 
                 if (!$jurnal['status']) {
-                    throw new \Throwable($jurnal['message']);
+                    throw new Exception($jurnal['message']);
                 }
 
                 DB::commit();
@@ -287,7 +274,7 @@ class PenerimaanHeaderController extends Controller
             }
         } catch (\Throwable $th) {
             DB::rollBack();
-            return response($th->getMessage());
+            throw $th;
         }
 
         return response($penerimaanHeader->penerimaandetail);
@@ -342,7 +329,7 @@ class PenerimaanHeaderController extends Controller
             }
         } catch (\Throwable $th) {
             DB::rollBack();
-            return response($th->getMessage());
+            throw $th;
         }
     }
 
@@ -407,7 +394,7 @@ class PenerimaanHeaderController extends Controller
                 ->select(
                     'parameter.grp',
                     'parameter.subgrp',
-                    'bank.formatbukti'
+                    'bank.formatbuktipenerimaan'
                 )
                 ->join('parameter', 'bank.kodepenerimaan', 'parameter.id')
                 ->where('bank.id', '=', $bankid)
@@ -417,8 +404,9 @@ class PenerimaanHeaderController extends Controller
             $content['subgroup'] = $querysubgrppenerimaan->subgrp;
             $content['table'] = 'penerimaanheader';
             $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));      
-            $content['nobukti'] = $querysubgrppenerimaan->formatbukti;
+            $content['nobukti'] = $querysubgrppenerimaan->formatbuktipenerimaan;
 
+            
             $statusApproval = Parameter::where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
             $penerimaanHeader = new PenerimaanHeader();
             $penerimaanHeader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
@@ -458,6 +446,7 @@ class PenerimaanHeaderController extends Controller
             ];
             $validatedLogTrail = new StoreLogTrailRequest($logTrail);
             $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+
 
             /* Store detail */
             $detaillog = [];
@@ -538,6 +527,7 @@ class PenerimaanHeaderController extends Controller
                 $statusApp = $parameterController->getparameterid('STATUS APPROVAL', 'STATUS APPROVAL', 'NON APPROVAL');
 
                 $jurnalHeader = [
+                    'tanpaprosesnobukti' => 1,
                     'nobukti' => $penerimaanHeader->nobukti,
                     'tgl' => date('Y-m-d', strtotime($request->tglbukti)),
                     'keterangan' => $request->keterangan,
@@ -556,7 +546,8 @@ class PenerimaanHeaderController extends Controller
                         'nominal' => $total,
                         'keterangan' => $request->keterangan,
                         'modifiedby' => auth('api')->user()->name,
-                    ],
+                        'baris' => $i,
+                                            ],
                     [
                         'nobukti' => $penerimaanHeader->nobukti,
                         'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
@@ -565,19 +556,20 @@ class PenerimaanHeaderController extends Controller
                         'nominal' => -$total,
                         'keterangan' => $request->keterangan,
                         'modifiedby' => auth('api')->user()->name,
+                        'baris' => $i,
                     ]
                 ];
 
                 $jurnal = $this->storeJurnal($jurnalHeader, $jurnalDetail);
-
-
+                
+                
                 // if (!$jurnal['status'] AND @$jurnal['errorCode'] == 2601) {
-                //     goto ATAS;
-                // }
-
-                if (!$jurnal['status']) {
-                    throw new \Throwable($jurnal['message']);
-                }
+                    //     goto ATAS;
+                    // }
+                  
+                    if (!$jurnal['status']) {
+                        throw new Exception($jurnal['message']);
+                    }
 
                 DB::commit();
 
@@ -599,7 +591,7 @@ class PenerimaanHeaderController extends Controller
             }
         } catch (\Throwable $th) {
             DB::rollBack();
-            return response($th->getMessage());
+            throw $th;
         }
 
         return response($penerimaanHeader->penerimaandetail);
@@ -607,12 +599,17 @@ class PenerimaanHeaderController extends Controller
 
     private function storeJurnal($header, $detail)
     {
+        
         try {
             $jurnal = new StoreJurnalUmumHeaderRequest($header);
+            // dd($header);
             $jurnals = app(JurnalUmumHeaderController::class)->store($jurnal);
+           
             foreach ($detail as $key => $value) {
-                $value['jurnalumum_id'] = $jurnals['id'];
+                // dd($jurnals->original['data']['id']);
+                $value['jurnalumum_id'] = $jurnals->original['data']['id'];
                 $jurnal = new StoreJurnalUmumDetailRequest($value);
+                
                 app(JurnalUmumDetailController::class)->store($jurnal);
             }
 
