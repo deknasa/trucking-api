@@ -440,8 +440,8 @@ class JurnalUmumHeaderController extends Controller
                 'data' => $jurnalumum
             ]);
         } catch (\Throwable $th) {
-            DB::rollBack();
             return response($th->getMessage());
+            DB::rollBack();
         }
     }
 
@@ -497,8 +497,8 @@ class JurnalUmumHeaderController extends Controller
                 ]);
             }
         } catch (\Throwable $th) {
-            DB::rollBack();
             return response($th->getMessage());
+            DB::rollBack();            
         }
     }
     public function approval($id)

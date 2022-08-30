@@ -123,9 +123,8 @@ class JurnalUmumDetailController extends Controller
                 ];
             }
         } catch (\Throwable $th) {
-            DB::rollBack();
-
             throw $th;
+            DB::rollBack();
         }        
     }
 
