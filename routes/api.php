@@ -291,6 +291,7 @@ route::middleware('auth:api')->group(function () {
     
     Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
     Route::get('jurnalumumheader/no_bukti', [JurnalUmumHeaderController::class, 'getNoBukti']);
+    Route::post('jurnalumumheader/{id}/approval', [JurnalUmumHeaderController::class, 'approval'])->name('jurnalumumheader.approval');
     Route::get('jurnalumumheader/combo', [JurnalUmumHeaderController::class, 'combo']);
     Route::get('jurnalumumheader/grid', [JurnalUmumHeaderController::class, 'grid']);
     Route::resource('jurnalumumheader', JurnalUmumHeaderController::class);

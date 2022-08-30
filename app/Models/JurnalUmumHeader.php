@@ -28,8 +28,10 @@ class JurnalUmumHeader extends MyModel
         $this->setRequestParameters();
 
         $lennobukti=3;
-
-        $query = DB::table($this->table)->select(
+    
+        $query = DB::table($this->table)
+        ->select(
+           
             'jurnalumumheader.id',
             'jurnalumumheader.nobukti',
             'jurnalumumheader.tglbukti',
@@ -37,11 +39,15 @@ class JurnalUmumHeader extends MyModel
             'jurnalumumheader.postingdari',
             'jurnalumumheader.statusapproval',
             'jurnalumumheader.userapproval',
-            'jurnalumumheader.tglapproval',
+            DB::raw('(case when (year(jurnalumumheader.tglapproval) = 1900) then null else jurnalumumheader.tglapproval end'),
             'jurnalumumheader.modifiedby',
             'jurnalumumheader.created_at',
-            'jurnalumumheader.updated_at'
-        );
+            'jurnalumumheader.updated_at',
+
+            'statusapproval.text as statusapproval'
+        )
+        ->leftJoin('parameter as statusapproval' , 'jurnalumumheader.statusapproval', 'statusapproval.id');
+        
         // ->where(DB::raw('LEFT(nobukti,'. $lennobukti.')'),  '=', 'KGT');
         
 
@@ -52,6 +58,7 @@ class JurnalUmumHeader extends MyModel
         $this->filter($query);
         $this->paginate($query);
 
+      
         $data = $query->get();
 
         return $data;

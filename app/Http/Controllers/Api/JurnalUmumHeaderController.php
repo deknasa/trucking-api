@@ -16,6 +16,8 @@ use Illuminate\Support\Facades\Validator;
 
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Models\AkunPusat;
+use App\Models\Parameter;
+
 use App\Models\LogTrail;
 
 
@@ -29,7 +31,6 @@ class JurnalUmumHeaderController extends Controller
         
         
         $jurnalumum = new JurnalUmumHeader();
-
         return response([
             'data' => $jurnalumum->get(),
             'attributes' => [
@@ -57,14 +58,14 @@ class JurnalUmumHeaderController extends Controller
 
             
             $jurnalumum = new JurnalUmumHeader();
+            $statusApproval = Parameter::where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
 
-            
             $jurnalumum->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $jurnalumum->keterangan = $request->keterangan;
             $jurnalumum->postingdari = '';
-            $jurnalumum->statusapproval = '4';
+            $jurnalumum->statusapproval = $statusApproval->id ?? 0;
             $jurnalumum->userapproval = '';
-            $jurnalumum->tglapproval = date('Y-m-d H:i:s', strtotime($request->tglapproval));
+            $jurnalumum->tglapproval = '';
             
             $jurnalumum->modifiedby = auth('api')->user()->name;
             
@@ -477,6 +478,48 @@ class JurnalUmumHeaderController extends Controller
         } catch (\Throwable $th) {
             DB::rollBack();
             return response($th->getMessage());
+        }
+    }
+    public function approval($id)
+    {
+        DB::beginTransaction();
+
+        try {
+            $jurnalumum = JurnalUmumHeader::find($id);
+            $statusApproval = Parameter::where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
+            $statusNonApproval = Parameter::where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
+
+            if ($jurnalumum->statusapproval == $statusApproval->id) {
+                $jurnalumum->statusapproval = $statusNonApproval->id;
+            } else {
+                $jurnalumum->statusapproval = $statusApproval->id;
+            }
+
+            $jurnalumum->tglapproval = date('Y-m-d h:i:s');
+            $jurnalumum->userapproval = auth('api')->user()->name;
+
+            if ($jurnalumum->save()) {
+                $logTrail = [
+                    'namatabel' => strtoupper($jurnalumum->getTable()),
+                    'postingdari' => 'UN/APPROVE Jurnal Umum',
+                    'idtrans' => $jurnalumum->id,
+                    'nobuktitrans' => $jurnalumum->id,
+                    'aksi' => 'UN/APPROVE',
+                    'datajson' => $jurnalumum->toArray(),
+                    'modifiedby' => $jurnalumum->modifiedby
+                ];
+
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+
+                DB::commit();
+            }
+
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            throw $th;
         }
     }
     public function combo(Request $request)
