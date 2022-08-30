@@ -46,7 +46,7 @@ class Controller extends BaseController
             ->where('grp', $request->group)
             ->where('subgrp', $request->subgroup)
             ->first();
-        
+
         if (!isset($parameter->text)) {
             return response([
                 'status' => false,
@@ -137,17 +137,19 @@ class Controller extends BaseController
         $indexRow = request()->indexRow ?? 1;
         $limit = request()->limit ?? 10;
         $page = request()->page ?? 1;
-        $sortname = request()->sortIndex ?? "id";
-        $sortorder = request()->sortOrder ?? "asc";
 
         $temporaryTable = '##temp' . rand(1, 10000);
         $columns = Schema::getColumnListing($modelTable);
 
         $query = DB::table($modelTable);
-        
+
         $model->setRequestParameters();
-        
-        $models = $model->sort($query);
+
+        $query = $model->selectColumns($query);
+
+        $model->sort($query);
+
+        $models = $model->filter($query);
 
         Schema::create($temporaryTable, function (Blueprint $table) use ($columns) {
             $table->increments('position');
@@ -185,7 +187,7 @@ class Controller extends BaseController
         } else {
             $query = DB::table($temporaryTable)->select('position')->where('id', $model->id)->orderBy('position');
         }
-        
+
         $data = $query->first();
 
         return $data;
