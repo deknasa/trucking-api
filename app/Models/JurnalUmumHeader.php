@@ -39,11 +39,10 @@ class JurnalUmumHeader extends MyModel
             'jurnalumumheader.postingdari',
             'jurnalumumheader.statusapproval',
             'jurnalumumheader.userapproval',
-            DB::raw('(case when (year(jurnalumumheader.tglapproval) = 1900) then null else jurnalumumheader.tglapproval end'),
+            DB::raw('(case when (year(jurnalumumheader.tglapproval) <= 2000) then null else jurnalumumheader.tglapproval end ) as tglapproval') ,
             'jurnalumumheader.modifiedby',
             'jurnalumumheader.created_at',
             'jurnalumumheader.updated_at',
-
             'statusapproval.text as statusapproval'
         )
         ->leftJoin('parameter as statusapproval' , 'jurnalumumheader.statusapproval', 'statusapproval.id');
