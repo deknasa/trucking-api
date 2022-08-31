@@ -94,7 +94,6 @@ class JurnalUmumHeaderController extends Controller
     
             }
 
-
             try {
 
                 $jurnalumum->save();
