@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Validator;
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Models\AkunPusat;
 use App\Models\Parameter;
-
+use App\Models\Error;
 use App\Models\LogTrail;
 
 
@@ -244,9 +244,9 @@ class JurnalUmumHeaderController extends Controller
         ]);
             
         } catch (\Throwable $th) {
-            throw $th;
             DB::rollBack();
-            // return response($th->getMessage());
+            throw $th;
+            return response($th->getMessage());
         }        
     }
 
@@ -440,8 +440,8 @@ class JurnalUmumHeaderController extends Controller
                 'data' => $jurnalumum
             ]);
         } catch (\Throwable $th) {
-            return response($th->getMessage());
             DB::rollBack();
+            return response($th->getMessage());
         }
     }
 
@@ -497,8 +497,8 @@ class JurnalUmumHeaderController extends Controller
                 ]);
             }
         } catch (\Throwable $th) {
-            return response($th->getMessage());
-            DB::rollBack();            
+            DB::rollBack();         
+            return response($th->getMessage());   
         }
     }
     public function approval($id)
@@ -553,4 +553,56 @@ class JurnalUmumHeaderController extends Controller
             'data' => $data
         ]);
     }
+    public function cekapproval($id)
+    {
+        $jurnalumum = JurnalUmumHeader::find($id);
+        $nobukti = $jurnalumum->nobukti;
+        $kode = substr($nobukti,0,3);
+        $status = $jurnalumum->statusapproval;
+        
+        if($kode == 'ADJ')
+        {   
+            if($status == '3')
+            {
+                $query = DB::table('error')
+                        ->select('keterangan')
+                        ->where('kodeerror','=','SAP')
+                        ->get();
+                $keterangan = $query['0'];
+                $data = [
+                    'message' => $keterangan,
+                    'errors' => 'sudah approve',
+                    'kodestatus' => '1',
+                    'kodenobukti' => '1'
+                ];
+
+                return response($data);
+            }else{
+                $data = [
+                    'message' => '',
+                    'errors' => 'belum approve',
+                    'kodestatus' => '0',
+                    'kodenobukti' => '1'
+                ];
+
+                return response($data);
+            }
+            
+        }else{
+            $query = DB::table('error')
+                        ->select('keterangan')
+                        ->where('kodeerror','=','BADJ')
+                        ->get();
+            $keterangan = $query['0'];
+            $data = [
+                'message' => $keterangan,
+                'errors' => 'bukan adj',
+                'kodenobukti' => '0'
+            ];
+
+            return response($data);
+        }
+        
+    }
+
 }
