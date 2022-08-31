@@ -131,14 +131,17 @@ class AbsensiSupirHeaderController extends Controller
             $noBuktiRequest['group'] = 'ABSENSI';
             $noBuktiRequest['subgroup'] = 'ABSENSI';
             $noBuktiRequest['table'] = 'absensisupirheader';
+            $noBuktiRequest['tgl'] = $request->tglbukti;
 
             $noBuktiKasgantungRequest = new Request();
             $noBuktiKasgantungRequest['group'] = 'KAS GANTUNG';
             $noBuktiKasgantungRequest['subgroup'] = 'NOMOR KAS GANTUNG';
             $noBuktiKasgantungRequest['table'] = 'absensisupirheader';
+            $noBuktiKasgantungRequest['tgl'] = $request->tglbukti;
 
             /* Store header */
             $absensiSupirHeader = new AbsensiSupirHeader();
+            
             $absensiSupirHeader->nobukti = app(Controller::class)->getRunningNumber($noBuktiRequest)->original['data'];
             $absensiSupirHeader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $absensiSupirHeader->keterangan = $request->keterangan ?? '';

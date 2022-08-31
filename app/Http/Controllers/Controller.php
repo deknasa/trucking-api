@@ -40,7 +40,6 @@ class Controller extends BaseController
             'group' => 'required',
             'subgroup' => 'required',
             'table' => 'required',
-            'nobukti' => 'required',
             'tgl' => 'required',
         ]);
 

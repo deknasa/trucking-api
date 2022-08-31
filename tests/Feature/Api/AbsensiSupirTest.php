@@ -289,5 +289,11 @@ class AbsensiSupirTest extends TestCase
                     'updated_at',
                 ]
             ]);
+
+        $confirmResponse = $this->actingAs($this->user, 'api')->deleteJson(route('absensisupirheader.destroy', $this->existingAbsensiSupir->id));
+
+        $confirmResponse
+            ->assertHeader('Content-Type', 'application/json')
+            ->assertStatus(404);
     }
 }
