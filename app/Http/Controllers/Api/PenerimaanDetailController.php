@@ -60,22 +60,19 @@ class PenerimaanDetailController extends Controller
                     'detail.bulanbeban',
                     'akunpusat.keterangancoa as coakredit',
                     'bank.coa as coadebet',
-                    // 'detail.pelanggan',
+
                 )
-                    // ->leftJoin('akunpusat', 'coa.id', '=', 'detail.coakredit')//
-                    ->leftJoin('akunpusat', 'penerimaandetail.coakredit', '=', 'akunpusat.coa')
                     ->leftJoin('bank', 'bank.id', '=', 'detail.bank_id')
                     ->leftJoin('pelanggan', 'pelanggan.id', '=', 'detail.pelanggan_id')
                     ->leftJoin('bankpelanggan', 'bankpelanggan.id', '=', 'detail.bankpelanggan_id')
+                    ->leftJoin('akunpusat', 'penerimaandetail.coakredit', '=', 'akunpusat.coa')
                     ->leftjoin('bank', 'penerimaandetail.coadebet', '=', 'bank.namabank');
                 $penerimaanDetail = $query->get();
             } else {
-                //   DB::enableQueryLog();
                 $query->select(
                     'detail.nowarkat',
                     'detail.tgljatuhtempo',
                     'detail.nominal',
-                    'coadebet.keterangancoa as coadebet',
                     'detail.keterangan',
                     'bank.namabank as bank_id',
                     'pelanggan.namapelanggan as pelanggan_id', //
@@ -86,18 +83,14 @@ class PenerimaanDetailController extends Controller
                     'detail.penerimaanpiutang_nobukti',
                     'detail.bulanbeban',
                     'akunpusat.keterangancoa as coakredit',
-                    // 'bank.coa as coadebet',
-                    // 'detail.pelanggan',
+                    'akunpusat.keterangancoa as coadebet',
 
                 )
-                    ->leftJoin('akunpusat', 'detail.coakredit', '=', 'akunpusat.id')
-                    ->leftJoin('akunpusat as coadebet', 'detail.coadebet', '=', 'coadebet.id')
                     ->leftJoin('bank', 'bank.id', '=', 'detail.bank_id')
                     ->leftJoin('pelanggan', 'pelanggan.id', '=', 'detail.pelanggan_id')
-                    ->leftJoin('bankpelanggan', 'bankpelanggan.id', '=', 'detail.bankpelanggan_id');
-
-
-                //  ->leftjoin('bank', 'detail.coadebet', '=', 'bank.id');
+                    ->leftJoin('bankpelanggan', 'bankpelanggan.id', '=', 'detail.bankpelanggan_id')
+                    ->leftJoin('akunpusat', 'detail.coakredit', '=', 'akunpusat.coa')
+                    ->leftJoin('akunpusat as coadebet', 'detail.coadebet', '=', 'akunpusat.coa');
 
 
                 $penerimaanDetail = $query->get();
@@ -107,9 +100,7 @@ class PenerimaanDetailController extends Controller
                 'data' => $penerimaanDetail
             ]);
         } catch (\Throwable $th) {
-            return response([
-                'message' => $th->getMessage()
-            ]);
+            throw $th;
         }
     }
 

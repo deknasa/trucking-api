@@ -47,6 +47,9 @@ class PenerimaanHeader extends MyModel
 
             'cabang.namacabang as cabang_id',
             'bank.namabank as bank_id',
+            // 'akunpusat.coa as coakredit',
+            // 'akunpusat.coa as coadebet',
+
             
             'statuskas.text as statuskas',
             'statusapproval.text as statusapproval',
@@ -66,12 +69,14 @@ class PenerimaanHeader extends MyModel
         )
         ->leftJoin('pelanggan', 'penerimaanheader.pelanggan_id', 'pelanggan.id')
        ->leftJoin('bank', 'penerimaanheader.bank_id', 'bank.id')
-        ->leftJoin('cabang', 'penerimaanheader.cabang_id', 'cabang.id')
-        ->leftJoin('parameter as statuskas' , 'penerimaanheader.statuskas', 'statuskas.id')
-        ->leftJoin('parameter as statusapproval' , 'penerimaanheader.statusapproval', 'statusapproval.id')
-        ->leftJoin('parameter as statusberkas' , 'penerimaanheader.statusberkas', 'statusberkas.id');
-        // ->leftJoin('users' , 'penerimaanheader.userapproval', 'users.id');
-
+       ->leftJoin('cabang', 'penerimaanheader.cabang_id', 'cabang.id')
+       ->leftJoin('parameter as statuskas' , 'penerimaanheader.statuskas', 'statuskas.id')
+       ->leftJoin('parameter as statusapproval' , 'penerimaanheader.statusapproval', 'statusapproval.id')
+       ->leftJoin('parameter as statusberkas' , 'penerimaanheader.statusberkas', 'statusberkas.id');
+       // ->leftJoin('users' , 'penerimaanheader.userapproval', 'users.id');
+       
+    //    ->leftJoin('akunpusat', 'penerimaandetail.coadebet', 'akunpusat.id')
+    //    ->leftJoin('akunpusat', 'penerimaandetail.coakredit', 'akunpusat.id')     
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
