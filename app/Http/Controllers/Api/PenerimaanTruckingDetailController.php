@@ -49,8 +49,8 @@ class PenerimaanTruckingDetailController extends Controller
                 $query->select(
                     'detail.nobukti',
                     'detail.nominal',
-               
-                );
+                    'supir.namasupir as supir_id',
+                )->leftJoin('supir', 'supir.id', '=', 'detail.supir_id');
               
                 $penerimaantruckingDetail = $query->get();
             } else {
@@ -58,8 +58,9 @@ class PenerimaanTruckingDetailController extends Controller
                 $query->select(
                     'detail.nobukti',
                     'detail.nominal',
-                  
-                );
+                    'supir.namasupir as supir_id',
+                )->leftJoin('supir', 'supir.id', '=', 'detail.supir_id');
+            
                 $penerimaantruckingDetail = $query->get();
             }
 

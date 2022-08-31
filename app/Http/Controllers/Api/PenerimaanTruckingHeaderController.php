@@ -43,8 +43,6 @@ class PenerimaanTruckingHeaderController extends Controller
         ]);
     }
 
-
-
     public function show($id)
     {
         $data = PenerimaanTruckingHeader::with(
@@ -61,21 +59,10 @@ class PenerimaanTruckingHeaderController extends Controller
     {
         $data = [
             'penerimaan'    => PenerimaanTruckingHeader::all(),
-            'cabang'        => Cabang::all(),
-            'pelanggan'     => Pelanggan::all(),
-            'akunpusat'     => AkunPusat::all(),
             'bank'          => Bank::all(),
-            'statuskas'     => Parameter::where('grp', 'STATUS KAS')->get(),
             'penerimaantruckingheader'    => PenerimaanTruckingHeader::all(),
             'akunpusat'     => AkunPusat::all(),
             'penerimaanheader' => PenerimaanHeader::all(),
-
-            // 'statuskas'     => Parameter::where('grp', 'STATUS KAS')->get(),
-            // 'statusapproval' => Parameter::where('grp', 'STATUS APPROVAL')->get(),
-            // 'statusberkas'  => Parameter::where('grp', 'STATUS BERKAS')->get(),
-            // 'statusapproval' => Parameter::where('grp', 'STATUS APPROVAL')->get(),
-            // 'statusberkas'  => Parameter::where('grp', 'STATUS BERKAS')->get(),
-
         ];
 
         return response([
