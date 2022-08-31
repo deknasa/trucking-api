@@ -49,14 +49,25 @@ class JurnalUmumHeaderController extends Controller
 
         $tanpaprosesnobukti=$request->tanpaprosesnobukti ??0;
         try {
+            $group='JURNAL UMUM';
+            $subgroup='JURNAL UMUM';
+            // $nobukti = DB::table('parameter')
+            // ->select('text as format')
+            // // ->select( DB::raw('ltrim(rtrim(substring(text,CHARINDEX('|', text)+1,
+            // //                 charindex('|',substring(text,CHARINDEX('|', text)+1,500))-1))
+            // //                 ) as format') 
+            // // )
+            // ->where('group','=',$group)
+            // ->where('subgroup','=',$subgroup)            
+            // ->first();
 
             if ($tanpaprosesnobukti==0) {
             $content = new Request();
-            $content['group'] = 'JURNAL UMUM';
-            $content['subgroup'] = 'JURNAL UMUM';
+            $content['group'] = $group;
+            $content['subgroup'] = $subgroup;
             $content['table'] = 'jurnalumumheader';
             $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
-            $content['nobukti'] = 'ADJ';
+            // $content['nobukti'] = $nobukti->format;
         }
             
             $jurnalumum = new JurnalUmumHeader();

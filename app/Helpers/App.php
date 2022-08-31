@@ -16,6 +16,7 @@ class App
     {
         $totalSeparator = 0;
         $staticSeparator = '#';
+        $staticSeparatorformat = '|';
         $staticIterator = 0;
         $dynamicSeparator = '*';
         $dynamicIterator = 0;
@@ -25,6 +26,8 @@ class App
         $dynamicTexts = [];
         $tempResult = '';
         $separatedResults = [];
+
+        $format=str_replace($staticSeparatorformat,"",$format);
 
         /**
          * Separate static and dynamic text
