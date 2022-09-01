@@ -46,10 +46,8 @@ class PenerimaanTruckingController extends Controller
 
         try {
             $penerimaanTrucking = new PenerimaanTrucking();
-            $penerimaanTrucking->kodepenerimaan = $request->kodepenerimaan;
             $penerimaanTrucking->keterangan = $request->keterangan;
             $penerimaanTrucking->coa = $request->coa;
-            $penerimaanTrucking->formatbukti = $request->formatbukti;
             $penerimaanTrucking->modifiedby = auth('api')->user()->name;
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';

@@ -275,9 +275,9 @@ route::middleware('auth:api')->group(function () {
     Route::get('statuscontainer/field_length', [StatusContainerController::class, 'fieldLength']);
     Route::resource('statuscontainer', StatusContainerController::class)->parameters(['statuscontainer' => 'statusContainer']);
 
-    Route::get('penerimaantrucking/export', [PenerimaanTruckingController::class, 'export']);
-    Route::get('penerimaantrucking/field_length', [PenerimaanTruckingController::class, 'fieldLength']);
-    Route::resource('penerimaantrucking', PenerimaanTruckingController::class)->parameters(['penerimaantrucking' => 'penerimaanTrucking']);
+    // Route::get('penerimaantrucking/export', [PenerimaanTruckingController::class, 'export']);
+    // Route::get('penerimaantrucking/field_length', [PenerimaanTruckingController::class, 'fieldLength']);
+    // Route::resource('penerimaantrucking', PenerimaanTruckingController::class)->parameters(['penerimaantrucking' => 'penerimaanTrucking']);
 
     Route::get('pengeluaran_trucking/export', [PengeluaranTruckingController::class, 'export']);
     Route::get('pengeluaran_trucking/field_length', [PengeluaranTruckingController::class, 'fieldLength']);
@@ -380,13 +380,6 @@ Route::get('serviceout/combo', [ServiceOutHeaderController::class, 'combo']);
 Route::resource('serviceout', ServiceOutHeaderController::class);
 Route::resource('serviceoutdetail', ServiceOutDetailController::class);
 
-Route::resource('serviceoutdetail', ServiceOutDetailController::class);
-
-// Route::get('penerimaan/combo', [PenerimaanHeaderController::class, 'combo']);
-// Route::resource('penerimaan', PenerimaanHeaderController::class);
-
-// Route::resource('penerimaandetail', PenerimaanDetailController::class);
-
 Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
 Route::post('penerimaan/{id}/approval', [PenerimaanHeaderController::class, 'approval'])->name('penerimaan.approval');
 Route::get('penerimaan/no_bukti', [PenerimaanHeaderController::class, 'getNoBukti']);
@@ -405,7 +398,6 @@ Route::get('pengeluaran/grid', [PengeluaranHeaderController::class, 'grid']);
 Route::resource('pengeluaran', PengeluaranHeaderController::class);
 
 Route::resource('pengeluarandetail', PengeluaranDetailController::class);
-
 
 //Penerimaan trucking
 Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
