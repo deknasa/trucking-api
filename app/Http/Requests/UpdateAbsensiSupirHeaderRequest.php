@@ -23,8 +23,22 @@ class UpdateAbsensiSupirHeaderRequest extends FormRequest
      */
     public function rules()
     {
-        return [
-            //
+        $rules = [
+            'tglbukti' => 'required|date',
+            'keterangan' => 'required',
         ];
+
+        $relatedRequests = [
+            StoreAbsensiSupirDetailRequest::class
+        ];
+
+        foreach ($relatedRequests as $relatedRequest) {
+            $rules = array_merge(
+                $rules,
+                (new $relatedRequest)->rules()
+            );
+        }
+
+        return $rules;
     }
 }

@@ -90,7 +90,6 @@ use App\Http\Controllers\Api\PengeluaranTruckingDetailController;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
-
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
@@ -103,10 +102,11 @@ route::middleware('auth:api')->group(function () {
     Route::get('parameter/combo', [ParameterController::class, 'combo']);
     Route::resource('parameter', ParameterController::class);
 
-    Route::get('absensi/no_bukti', [AbsensiSupirHeaderController::class, 'getNoBukti']);
-    Route::get('absensi/running_number', [AbsensiSupirHeaderController::class, 'getRunningNumber']);
-    Route::get('absensi/grid', [AbsensiSupirHeaderController::class, 'grid']);
-    Route::resource('absensi', AbsensiSupirHeaderController::class);
+    Route::get('absensisupirheader/{id}/detail', [AbsensiSupirHeaderController::class, 'detail'])->name('absensi.detail');
+    Route::get('absensisupirheader/no_bukti', [AbsensiSupirHeaderController::class, 'getNoBukti']);
+    Route::get('absensisupirheader/running_number', [AbsensiSupirHeaderController::class, 'getRunningNumber']);
+    Route::get('absensisupirheader/grid', [AbsensiSupirHeaderController::class, 'grid']);
+    Route::apiResource('absensisupirheader', AbsensiSupirHeaderController::class)->parameter('absensisupirheader', 'absensiSupirHeader');
 
     Route::get('absen_trado/field_length', [AbsenTradoController::class, 'fieldLength']);
     Route::resource('absen_trado', AbsenTradoController::class);
@@ -124,7 +124,6 @@ route::middleware('auth:api')->group(function () {
     Route::get('acos/field_length', [AcosController::class, 'fieldLength']);
     Route::resource('acos', AcosController::class);
 
-    Route::resource('absensi_detail', AbsensiSupirDetailController::class);
 
     Route::get('logtrail/detail', [LogTrailController::class, 'detail']);
     Route::get('logtrail/header', [LogTrailController::class, 'header']);
@@ -135,8 +134,6 @@ route::middleware('auth:api')->group(function () {
     Route::post('trado/upload_image/{id}', [TradoController::class, 'uploadImage']);
     Route::resource('trado', TradoController::class);
 
-    Route::resource('absensi', AbsensiSupirHeaderController::class);
-    Route::resource('absensi_detail', AbsensiSupirDetailController::class);
     Route::resource('absentrado', AbsenTradoController::class);
 
     Route::get('container/field_length', [ContainerController::class, 'fieldLength']);
@@ -234,8 +231,6 @@ route::middleware('auth:api')->group(function () {
     Route::post('trado/upload_image/{id}', [TradoController::class, 'uploadImage']);
     Route::resource('trado', TradoController::class);
 
-    Route::resource('absensi', AbsensiSupirHeaderController::class);
-    Route::resource('absensi_detail', AbsensiSupirDetailController::class);
     Route::resource('absentrado', AbsenTradoController::class);
 
     Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
@@ -294,7 +289,6 @@ route::middleware('auth:api')->group(function () {
     Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
     Route::get('jurnalumumheader/no_bukti', [JurnalUmumHeaderController::class, 'getNoBukti']);
     Route::post('jurnalumumheader/{id}/approval', [JurnalUmumHeaderController::class, 'approval'])->name('jurnalumumheader.approval');
-    Route::post('jurnalumumheader/{id}/cekapproval', [JurnalUmumHeaderController::class, 'cekapproval'])->name('jurnalumumheader.cekapproval');
     Route::get('jurnalumumheader/combo', [JurnalUmumHeaderController::class, 'combo']);
     Route::get('jurnalumumheader/grid', [JurnalUmumHeaderController::class, 'grid']);
     Route::resource('jurnalumumheader', JurnalUmumHeaderController::class);

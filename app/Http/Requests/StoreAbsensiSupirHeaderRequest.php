@@ -24,21 +24,20 @@ class StoreAbsensiSupirHeaderRequest extends FormRequest
     public function rules()
     {
         $rules = [
-            'nobukti' => 'required|unique:absensisupirheader,nobukti',
-            'tgl' => 'required|date',
+            'tglbukti' => 'required|date',
             'keterangan' => 'required',
         ];
 
-        // $relatedRequests = [
-        //     StoreAbsensiSupirDetailRequest::class
-        // ];
+        $relatedRequests = [
+            StoreAbsensiSupirDetailRequest::class
+        ];
 
-        // foreach ($relatedRequests as $relatedRequest) {
-        //     $rules = array_merge(
-        //         $rules,
-        //         (new $relatedRequest)->rules()
-        //     );
-        // }
+        foreach ($relatedRequests as $relatedRequest) {
+            $rules = array_merge(
+                $rules,
+                (new $relatedRequest)->rules()
+            );
+        }
 
         return $rules;
     }

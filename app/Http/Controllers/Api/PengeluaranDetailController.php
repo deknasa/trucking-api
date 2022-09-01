@@ -61,9 +61,9 @@ class PengeluaranDetailController extends Controller
 
                 )
                     ->leftJoin('alatbayar', 'alatbayar.id', '=', 'detail.alatbayar_id')
+                    ->leftJoin('bank', 'bank.id', '=', 'detail.bank_id')
                     ->leftJoin('akunpusat', 'pengeluarandetail.coadebet', '=', 'akunpusat.coa')
-                    ->leftjoin('bank', 'pengeluarandetail.coakredit', '=', 'bank.namabank')
-                    ->leftJoin('bank', 'bank.id', '=', 'detail.bank_id');
+                    ->leftjoin('bank', 'pengeluarandetail.coakredit', '=', 'bank.namabank');
                 $pengeluaranDetail = $query->get();
             } else {
                 $query->select(
@@ -75,13 +75,17 @@ class PengeluaranDetailController extends Controller
                     'detail.keterangan',
                     'detail.bulanbeban',
                     'alatbayar.namaalatbayar as alatbayar_id',
-                    'coakredit.keterangancoa as coakredit',
+                    // 'coakredit.keterangancoa as coakredit',
+                    // 'akunpusat.keterangancoa as coadebet',
                     'akunpusat.keterangancoa as coadebet',
+                    'akunpusat.keterangancoa as coakredit',
 
                 )
                     ->leftJoin('alatbayar', 'alatbayar.id', '=', 'detail.alatbayar_id')
-                    ->leftJoin('akunpusat', 'detail.coadebet', '=', 'akunpusat.id')
-                    ->leftJoin('akunpusat as coakredit', 'detail.coakredit', '=', 'coakredit.id');
+                    // ->leftJoin('akunpusat', 'detail.coadebet', '=', 'akunpusat.id')
+                    // ->leftJoin('akunpusat as coakredit', 'detail.coakredit', '=', 'coakredit.id');
+                    ->leftJoin('akunpusat', 'detail.coadebet', '=', 'akunpusat.coa')
+                    ->leftJoin('akunpusat as coakredit', 'detail.coakredit', '=', 'akunpusat.coa');
 
                 $pengeluaranDetail = $query->get();
                 // dd{$pengeluaranDetail};
@@ -90,9 +94,7 @@ class PengeluaranDetailController extends Controller
                 'data' => $pengeluaranDetail
             ]);
         } catch (\Throwable $th) {
-            return response([
-                'message' => $th->getMessage()
-            ]);
+            throw $th;
         }
     }
 
@@ -140,7 +142,7 @@ class PengeluaranDetailController extends Controller
             }
         } catch (\Throwable $th) {
             DB::rollBack();
-            return response($th->getMessage());
+            throw $th;
         }
     }
 }
