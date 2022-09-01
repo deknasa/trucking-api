@@ -73,9 +73,11 @@ use App\Http\Controllers\Api\PenerimaanTruckingHeaderController;
 use App\Http\Controllers\Api\PenerimaanTruckingDetailController;
 
 
-use App\Http\Controllers\Api\JurnalUmumController;
 use App\Http\Controllers\Api\JurnalUmumHeaderController;
 use App\Http\Controllers\Api\JurnalUmumDetailController;
+use App\Http\Controllers\Api\PengeluaranTruckingHeaderController;
+use App\Http\Controllers\Api\PengeluaranTruckingDetailController;
+
 
 
 /*
@@ -291,6 +293,13 @@ route::middleware('auth:api')->group(function () {
     Route::get('jurnalumumheader/grid', [JurnalUmumHeaderController::class, 'grid']);
     Route::resource('jurnalumumheader', JurnalUmumHeaderController::class);
     Route::resource('jurnalumumdetail', JurnalUmumDetailController::class);
+
+    Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
+    Route::get('pengeluarantruckingheader/no_bukti', [PengeluaranTruckingHeaderController::class, 'getNoBukti']);
+     Route::get('pengeluarantruckingheader/combo', [PengeluaranTruckingHeaderController::class, 'combo']);
+    Route::get('pengeluarantruckingheader/grid', [PengeluaranTruckingHeaderController::class, 'grid']);
+    Route::resource('pengeluarantruckingheader', PengeluaranTruckingHeaderController::class);
+    Route::resource('pengeluarantruckingdetail', PengeluaranTruckingDetailController::class);
 });
 
 Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');

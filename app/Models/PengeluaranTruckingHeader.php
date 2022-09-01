@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class PengeluaranTruckingHeader extends MyModel
 {
@@ -20,4 +21,91 @@ class PengeluaranTruckingHeader extends MyModel
         'created_at',
         'updated_at',
     ];  
+
+    public function get()
+    {
+        $this->setRequestParameters();
+
+        $query = DB::table($this->table)->select(
+            'pengeluarantruckingheader.id',
+            'pengeluarantruckingheader.nobukti',
+            'pengeluarantruckingheader.tglbukti',
+            'pengeluarantruckingheader.keterangan',
+
+            'pengeluarantrucking.id as pengeluarantrucking_id',
+            'pengeluaranheader.nobukti as pengeluaran_nobukti',
+            'pengeluaranheader.tglbukti as pengeluaran_tglbukti',
+
+            'bank.namabank as bank_id',
+            
+            'akunpusat.coa as coa',
+            'statusposting.text as statusposting'
+        )
+            ->leftJoin('pengeluarantrucking', 'pengeluarantruckingheader.pengeluarantrucking_id','pengeluarantrucking.id')
+            ->leftJoin('pengeluaranheader', 'pengeluarantruckingheader.pengeluaran_nobukti', 'pengeluaranheader.nobukti')
+            ->leftJoin('bank', 'pengeluarantruckingheader.bank_id', 'bank.id')
+            ->leftJoin('akunpusat', 'pengeluarantruckingheader.coa', 'akunpusat.coa')
+            ->leftJoin('parameter as statusposting' , 'jurnalumumheader.statusposting', 'statusposting.id');
+            
+
+
+        $this->totalRows = $query->count();
+        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+
+        $this->sort($query);
+        $this->filter($query);
+        $this->paginate($query);
+
+        $data = $query->get();
+
+        return $data;
+    }
+    public function pengeluarantruckingdetail() {
+        return $this->hasMany(PengeluaranTruckingDetail::class, 'pengeluarantruckingheader_id');
+    }
+    public function sort($query)
+    {
+        return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+    }
+
+    public function filter($query, $relationFields = [])
+    {
+        if (count($this->params['filters']) > 0 && @$this->params['filters']['rules'][0]['data'] != '') {
+            switch ($this->params['filters']['groupOp']) {
+                case "AND":
+                    foreach ($this->params['filters']['rules'] as $index => $filters) {
+                         if ($filters['field'] == 'pelanggan_id') {
+                            $query = $query->where('pelanggan.namapelanggan', 'LIKE', "%$filters[data]%");
+                        } else {
+                            $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                        }
+                    }
+
+                    break;
+                case "OR":
+                    foreach ($this->params['filters']['rules'] as $index => $filters) {
+                         if ($filters['field'] == 'pelanggan_id') {
+                            $query = $query->orWhere('pelanggan.namapelanggan', 'LIKE', "%$filters[data]%");
+                        } else {
+                            $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                        }
+                    }
+
+                    break;
+                default:
+
+                    break;
+            }
+
+            $this->totalRows = $query->count();
+            $this->totalPages = $this->params['limit'] > 0 ? ceil($this->totalRows / $this->params['limit']) : 1;
+        }
+
+        return $query;
+    }
+
+    public function paginate($query)
+    {
+        return $query->skip($this->params['offset'])->take($this->params['limit']);
+    }
 }
