@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\PenerimaanTruckingHeader;
-use App\Http\Requests\StorePenerimaanHeaderRequest;
+use App\Http\Requests\StorePenerimaanTruckingHeaderRequest;
 use App\Http\Requests\StorePenerimaanDetailRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -19,7 +19,7 @@ use App\Models\Pelanggan;
 use App\Models\JurnalUmumDetail;
 use App\Models\JurnalUmumHeader;
 use App\Models\Parameter;
-use App\Models\PenerimaanDetail;
+use App\Models\PenerimaanTruckingDetail;
 use App\Http\Requests\StoreJurnalUmumHeaderRequest;
 use App\Http\Requests\StoreJurnalUmumDetailRequest;
 use App\Models\PenerimaanTrucking;
@@ -83,7 +83,7 @@ class PenerimaanTruckingHeaderController extends Controller
     /**
      * @ClassName
      */
-    public function update(StorePenerimaanHeaderRequest $request, PenerimaanTruckingHeader $penerimaanHeader, $id)
+    public function update(StorePenerimaanTruckingHeaderRequest $request, PenerimaanTruckingHeader $penerimaanHeader, $id)
     {
         DB::beginTransaction();
 
@@ -289,9 +289,9 @@ class PenerimaanTruckingHeaderController extends Controller
             // $get = JurnalUmumDetail::find($id);
             // $get = JurnalUmumHeader::find($id);
 
-            $delete = PenerimaanDetail::where('penerimaan_id', $id)->delete();
-            $delete = JurnalUmumHeader::where('nobukti', $get->nobukti)->delete();
-            $delete = JurnalUmumDetail::where('nobukti', $get->nobukti)->delete();
+            $delete = PenerimaanTruckingDetail::where('penerimaantrucking_id', $id)->delete();
+            // $delete = JurnalUmumHeader::where('nobukti', $get->nobukti)->delete();
+            // $delete = JurnalUmumDetail::where('nobukti', $get->nobukti)->delete();
 
             $delete = PenerimaanTruckingHeader::destroy($id);
             // $delete = JurnalUmumHeader::destroy($id);
@@ -300,7 +300,7 @@ class PenerimaanTruckingHeaderController extends Controller
 
             $datalogtrail = [
                 'namatabel' => $get->getTable(),
-                'postingdari' => 'DELETE PENERIMAAN',
+                'postingdari' => 'DELETE PENERIMAAN TRUCKING',
                 'idtrans' => $id,
                 'nobuktitrans' => '',
                 'aksi' => 'HAPUS',
@@ -326,7 +326,7 @@ class PenerimaanTruckingHeaderController extends Controller
             }
         } catch (\Throwable $th) {
             DB::rollBack();
-            return response($th->getMessage());
+            throw $th;
         }
     }
 
@@ -378,7 +378,7 @@ class PenerimaanTruckingHeaderController extends Controller
     /**
      * @ClassName
      */
-    public function store(StorePenerimaanHeaderRequest $request)
+    public function store(StorePenerimaanTruckingHeaderRequest $request)
     {
         DB::beginTransaction();
 
@@ -400,8 +400,7 @@ class PenerimaanTruckingHeaderController extends Controller
             $content['subgroup'] = $querysubgrppenerimaantrucking->subgrp;
             $content['table'] = 'penerimaantruckingheader';
             $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
-            $content['nobukti'] = $querysubgrppenerimaantrucking->formatbuktipenerimaan;
-
+             $content['format'] = $querysubgrppenerimaantrucking->format;
 
             $penerimaantruckingHeader = new PenerimaanTruckingHeader();
             $penerimaantruckingHeader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
@@ -426,6 +425,7 @@ class PenerimaanTruckingHeaderController extends Controller
                     goto TOP;
                 }
             }
+
             $logTrail = [
                 'namatabel' => strtoupper($penerimaantruckingHeader->getTable()),
                 'postingdari' => 'ENTRY PENERIMAAN TRUCKING',
