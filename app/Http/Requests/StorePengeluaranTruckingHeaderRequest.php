@@ -23,8 +23,15 @@ class StorePengeluaranTruckingHeaderRequest extends FormRequest
      */
     public function rules()
     {
-        return [
-            //
+        $rules = [
+            'tglbukti' => 'required',
+            'keterangan' => 'required',
+            'pengeluarantrucking_id' => 'required',
+            'bank_id' => 'required',
+            'coa' => 'required',
+            'pengeluaran_nobukti' => 'required',
         ];
+
+        return $rules;
     }
 }

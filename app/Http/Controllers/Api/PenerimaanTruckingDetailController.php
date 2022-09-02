@@ -92,31 +92,23 @@ class PenerimaanTruckingDetailController extends Controller
         }
 
         try {
-            $penerimaanDetail = new PenerimaanTruckingDetail();
+            $penerimaantruckingDetail = new PenerimaanTruckingDetail();
 
-            $penerimaanDetail->penerimaan_id = $request->penerimaan_id;
-            $penerimaanDetail->nobukti = $request->nobukti;
-            $penerimaanDetail->nowarkat = $request->nowarkat;
-            $penerimaanDetail->tgljatuhtempo = $request->tgljatuhtempo;
-            $penerimaanDetail->nominal = $request->nominal;
-            $penerimaanDetail->coadebet = $request->coadebet;
-            $penerimaanDetail->coakredit = $request->coakredit;
-            $penerimaanDetail->keterangan = $request->keterangan ?? '';
-            $penerimaanDetail->bank_id = $request->bank_id;
-            $penerimaanDetail->bankpelanggan_id = $request->bankpelanggan_id;
-            $penerimaanDetail->pelanggan_id = $request->pelanggan_id;
-            $penerimaanDetail->jenisbiaya = $request->jenisbiaya;
-            $penerimaanDetail->modifiedby = $request->modifiedby;
+            $penerimaantruckingDetail->penerimaan_id = $request->penerimaan_id;
+            $penerimaantruckingDetail->nobukti = $request->nobukti;
+            $penerimaantruckingDetail->nominal = $request->nominal;
+            $penerimaantruckingDetail->supir_id= $request->supir_id;
+            $penerimaantruckingDetail->modifiedby = $request->modifiedby;
 
-            $penerimaanDetail->save();
+            $penerimaantruckingDetail->save();
 
 
             DB::commit();
             if ($validator->passes()) {
                 return [
                     'error' => false,
-                    'id' => $penerimaanDetail->id,
-                    'tabel' => $penerimaanDetail->getTable(),
+                    'id' => $penerimaantruckingDetail->id,
+                    'tabel' => $penerimaantruckingDetail->getTable(),
                 ];
             }
         } catch (\Throwable $th) {
