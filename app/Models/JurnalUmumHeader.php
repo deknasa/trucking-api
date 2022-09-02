@@ -27,28 +27,28 @@ class JurnalUmumHeader extends MyModel
     {
         $this->setRequestParameters();
 
-        $lennobukti=3;
-    
+        $lennobukti = 3;
+
         $query = DB::table($this->table)
-        ->select(
-           
-            'jurnalumumheader.id',
-            'jurnalumumheader.nobukti',
-            'jurnalumumheader.tglbukti',
-            'jurnalumumheader.keterangan',
-            'jurnalumumheader.postingdari',
-            'jurnalumumheader.statusapproval',
-            'jurnalumumheader.userapproval',
-            DB::raw('(case when (year(jurnalumumheader.tglapproval) <= 2000) then null else jurnalumumheader.tglapproval end ) as tglapproval') ,
-            'jurnalumumheader.modifiedby',
-            'jurnalumumheader.created_at',
-            'jurnalumumheader.updated_at',
-            'statusapproval.text as statusapproval'
-        )
-        ->leftJoin('parameter as statusapproval' , 'jurnalumumheader.statusapproval', 'statusapproval.id');
-        
+            ->select(
+
+                'jurnalumumheader.id',
+                'jurnalumumheader.nobukti',
+                'jurnalumumheader.tglbukti',
+                'jurnalumumheader.keterangan',
+                'jurnalumumheader.postingdari',
+                'jurnalumumheader.statusapproval',
+                'jurnalumumheader.userapproval',
+                DB::raw('(case when (year(jurnalumumheader.tglapproval) <= 2000) then null else jurnalumumheader.tglapproval end ) as tglapproval'),
+                'jurnalumumheader.modifiedby',
+                'jurnalumumheader.created_at',
+                'jurnalumumheader.updated_at',
+                'statusapproval.text as statusapproval'
+            )
+            ->leftJoin('parameter as statusapproval', 'jurnalumumheader.statusapproval', 'statusapproval.id');
+
         // ->where(DB::raw('LEFT(nobukti,'. $lennobukti.')'),  '=', 'KGT');
-        
+
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -57,12 +57,13 @@ class JurnalUmumHeader extends MyModel
         $this->filter($query);
         $this->paginate($query);
 
-      
+
         $data = $query->get();
 
         return $data;
     }
-    public function jurnalumumdetail() {
+    public function jurnalumumdetail()
+    {
         return $this->hasMany(JurnalUmumDetail::class, 'jurnalumum_id');
     }
 

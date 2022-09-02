@@ -31,131 +31,145 @@ class UserController extends Controller
      /**
      * @ClassName 
      */
+
     public function index()
     {
-        $params = [
-            'offset' => request()->offset ?? ((request()->page - 1) * request()->limit),
-            'limit' => request()->limit ?? 10,
-            'filters' => json_decode(request()->filters, true) ?? [],
-            'sortIndex' => request()->sortIndex ?? 'id',
-            'sortOrder' => request()->sortOrder ?? 'asc',
-        ];
-
-        $totalRows = DB::table((new User)->getTable())->count();
-        $totalPages = ceil($totalRows / $params['limit']);
-
-        /* Sorting */
-        if ($params['sortIndex'] == 'id') {
-            $query = DB::table((new User)->getTable())->select(
-                'user.id',
-                'user.user',
-                'user.name',
-                'cabang.namacabang as cabang_id',
-                'user.karyawan_id',
-                'user.dashboard',
-                'parameter.text as statusaktif',
-                'user.modifiedby',
-                'user.created_at',
-                'user.updated_at'
-            )
-                ->leftJoin('parameter', 'user.statusaktif', '=', 'parameter.id')
-                ->leftJoin('cabang', 'user.cabang_id', '=', 'cabang.id')
-                ->orderBy('user.id', $params['sortOrder']);
-        } else {
-            if ($params['sortOrder'] == 'asc') {
-                $query = DB::table((new User)->getTable())->select(
-                    'user.id',
-                    'user.user',
-                    'user.name',
-                    'cabang.namacabang as cabang_id',
-                    'user.karyawan_id',
-                    'user.dashboard',
-                    'parameter.text as statusaktif',
-                    'user.modifiedby',
-                    'user.created_at',
-                    'user.updated_at'
-                )
-                    ->leftJoin('parameter', 'user.statusaktif', '=', 'parameter.id')
-                    ->leftJoin('cabang', 'user.cabang_id', '=', 'cabang.id')
-                    ->orderBy($params['sortIndex'], $params['sortOrder'])
-                    ->orderBy('user.id', $params['sortOrder']);
-            } else {
-                $query = DB::table((new User)->getTable())->select(
-                    'user.id',
-                    'user.user',
-                    'user.name',
-                    'cabang.namacabang as cabang_id',
-                    'user.karyawan_id',
-                    'user.dashboard',
-                    'parameter.text as statusaktif',
-                    'user.modifiedby',
-                    'user.created_at',
-                    'user.updated_at'
-                )
-                    ->leftJoin('parameter', 'user.statusaktif', '=', 'parameter.id')
-                    ->leftJoin('cabang', 'user.cabang_id', '=', 'cabang.id')
-                    ->orderBy($params['sortIndex'], $params['sortOrder'])
-                    ->orderBy('user.id', 'asc');
-            }
-        }
-
-        /* Searching */
-        if (count($params['filters']) > 0 && @$params['filters']['rules'][0]['data'] != '') {
-            switch ($params['filters']['groupOp']) {
-                case "AND":
-                    foreach ($params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'statusaktif') {
-                            $query = $query->where('parameter.text', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'cabang_id') {
-                            $query = $query->where('cabang.namacabang', 'LIKE', "%$filters[data]%");
-                        } else {
-                            $query = $query->where('user.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                        }
-                    }
-
-                    break;
-                case "OR":
-                    foreach ($params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'statusaktif') {
-                            $query = $query->orWhere('parameter.text', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'cabang_id') {
-                            $query = $query->orWhere('cabang.namacabang', 'LIKE', "%$filters[data]%");
-                        } else {
-                            $query = $query->orWhere('user.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                        }
-                    }
-
-                    break;
-                default:
-
-                    break;
-            }
-
-
-            $totalRows = count($query->get());
-
-            $totalPages = ceil($totalRows / $params['limit']);
-        }
-
-        /* Paging */
-        $query = $query->skip($params['offset'])
-            ->take($params['limit']);
-
-        $cabangs = $query->get();
-
-        /* Set attributes */
-        $attributes = [
-            'totalRows' => $totalRows,
-            'totalPages' => $totalPages
-        ];
+        $parameter = new Parameter();
 
         return response([
-            'status' => true,
-            'data' => $cabangs,
-            'attributes' => $attributes,
-            'params' => $params
+            'data' => $parameter->get(),
+            'attributes' => [
+                'totalRows' => $parameter->totalRows,
+                'totalPages' => $parameter->totalPages
+            ]
         ]);
     }
+
+    // public function index()
+    // {
+    //     $params = [
+    //         'offset' => request()->offset ?? ((request()->page - 1) * request()->limit),
+    //         'limit' => request()->limit ?? 10,
+    //         'filters' => json_decode(request()->filters, true) ?? [],
+    //         'sortIndex' => request()->sortIndex ?? 'id',
+    //         'sortOrder' => request()->sortOrder ?? 'asc',
+    //     ];
+
+    //     $totalRows = DB::table((new User)->getTable())->count();
+    //     $totalPages = ceil($totalRows / $params['limit']);
+
+    //     /* Sorting */
+    //     if ($params['sortIndex'] == 'id') {
+    //         $query = DB::table((new User)->getTable())->select(
+    //             'user.id',
+    //             'user.user',
+    //             'user.name',
+    //             'cabang.namacabang as cabang_id',
+    //             'user.karyawan_id',
+    //             'user.dashboard',
+    //             'parameter.text as statusaktif',
+    //             'user.modifiedby',
+    //             'user.created_at',
+    //             'user.updated_at'
+    //         )
+    //             ->leftJoin('parameter', 'user.statusaktif', '=', 'parameter.id')
+    //             ->leftJoin('cabang', 'user.cabang_id', '=', 'cabang.id')
+    //             ->orderBy('user.id', $params['sortOrder']);
+    //     } else {
+    //         if ($params['sortOrder'] == 'asc') {
+    //             $query = DB::table((new User)->getTable())->select(
+    //                 'user.id',
+    //                 'user.user',
+    //                 'user.name',
+    //                 'cabang.namacabang as cabang_id',
+    //                 'user.karyawan_id',
+    //                 'user.dashboard',
+    //                 'parameter.text as statusaktif',
+    //                 'user.modifiedby',
+    //                 'user.created_at',
+    //                 'user.updated_at'
+    //             )
+    //                 ->leftJoin('parameter', 'user.statusaktif', '=', 'parameter.id')
+    //                 ->leftJoin('cabang', 'user.cabang_id', '=', 'cabang.id')
+    //                 ->orderBy($params['sortIndex'], $params['sortOrder'])
+    //                 ->orderBy('user.id', $params['sortOrder']);
+    //         } else {
+    //             $query = DB::table((new User)->getTable())->select(
+    //                 'user.id',
+    //                 'user.user',
+    //                 'user.name',
+    //                 'cabang.namacabang as cabang_id',
+    //                 'user.karyawan_id',
+    //                 'user.dashboard',
+    //                 'parameter.text as statusaktif',
+    //                 'user.modifiedby',
+    //                 'user.created_at',
+    //                 'user.updated_at'
+    //             )
+    //                 ->leftJoin('parameter', 'user.statusaktif', '=', 'parameter.id')
+    //                 ->leftJoin('cabang', 'user.cabang_id', '=', 'cabang.id')
+    //                 ->orderBy($params['sortIndex'], $params['sortOrder'])
+    //                 ->orderBy('user.id', 'asc');
+    //         }
+    //     }
+
+    //     /* Searching */
+    //     if (count($params['filters']) > 0 && @$params['filters']['rules'][0]['data'] != '') {
+    //         switch ($params['filters']['groupOp']) {
+    //             case "AND":
+    //                 foreach ($params['filters']['rules'] as $index => $filters) {
+    //                     if ($filters['field'] == 'statusaktif') {
+    //                         $query = $query->where('parameter.text', 'LIKE', "%$filters[data]%");
+    //                     } else if ($filters['field'] == 'cabang_id') {
+    //                         $query = $query->where('cabang.namacabang', 'LIKE', "%$filters[data]%");
+    //                     } else {
+    //                         $query = $query->where('user.' . $filters['field'], 'LIKE', "%$filters[data]%");
+    //                     }
+    //                 }
+
+    //                 break;
+    //             case "OR":
+    //                 foreach ($params['filters']['rules'] as $index => $filters) {
+    //                     if ($filters['field'] == 'statusaktif') {
+    //                         $query = $query->orWhere('parameter.text', 'LIKE', "%$filters[data]%");
+    //                     } else if ($filters['field'] == 'cabang_id') {
+    //                         $query = $query->orWhere('cabang.namacabang', 'LIKE', "%$filters[data]%");
+    //                     } else {
+    //                         $query = $query->orWhere('user.' . $filters['field'], 'LIKE', "%$filters[data]%");
+    //                     }
+    //                 }
+
+    //                 break;
+    //             default:
+
+    //                 break;
+    //         }
+
+
+    //         $totalRows = count($query->get());
+
+    //         $totalPages = ceil($totalRows / $params['limit']);
+    //     }
+
+    //     /* Paging */
+    //     $query = $query->skip($params['offset'])
+    //         ->take($params['limit']);
+
+    //     $cabangs = $query->get();
+
+    //     /* Set attributes */
+    //     $attributes = [
+    //         'totalRows' => $totalRows,
+    //         'totalPages' => $totalPages
+    //     ];
+
+    //     return response([
+    //         'status' => true,
+    //         'data' => $cabangs,
+    //         'attributes' => $attributes,
+    //         'params' => $params
+    //     ]);
+    // }
 
     /**
      * Show the form for creating a new resource.

@@ -195,34 +195,8 @@ $nobukti=substr( $text,$awal,$jumlah);
         $limit = request()->limit ?? 10;
         $page = request()->page ?? 1;
 
-        $temporaryTable = '##temp' . rand(1, 10000);
-        $columns = Schema::getColumnListing($modelTable);
-
-        $query = DB::table($modelTable);
-
-        $model->setRequestParameters();
-
-        $query = $model->selectColumns($query);
-
-        $model->sort($query);
-
-        $models = $model->filter($query);
-
-        Schema::create($temporaryTable, function (Blueprint $table) use ($columns) {
-            $table->increments('position');
-
-            foreach ($columns as $column) {
-                if (in_array($column, ['created_at', 'updated_at'])) {
-                    $table->dateTime($column)->default('1900/1/1');
-                } else {
-                    $table->string($column, 3000)->nullable();
-                }
-            }
-
-            $table->index('id');
-        });
-
-        DB::table($temporaryTable)->insertUsing($columns, $models);
+        
+        $temporaryTable = $model->createTemp($modelTable);
 
         if ($isDeleting) {
             if ($page == 1) {
