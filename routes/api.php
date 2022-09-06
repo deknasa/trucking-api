@@ -72,7 +72,8 @@
     use App\Http\Controllers\Api\JurnalUmumDetailController;
     use App\Http\Controllers\Api\PengeluaranTruckingHeaderController;
     use App\Http\Controllers\Api\PengeluaranTruckingDetailController;
-
+    use App\Http\Controllers\Api\PiutangHeaderController;
+    use App\Http\Controllers\Api\PiutangDetailController;
 
     /*
     |--------------------------------------------------------------------------
@@ -195,7 +196,6 @@
         Route::get('menu/export', [MenuController::class, 'export'])->name('menu.export');
         Route::resource('menu', MenuController::class);
 
-
         Route::get('userrole/field_length', [UserRoleController::class, 'fieldLength']);
         Route::get('userrole/detail', [UserRoleController::class, 'detail']);
         Route::get('userrole/detaillist', [UserRoleController::class, 'detaillist']);
@@ -289,6 +289,19 @@
         Route::get('jurnalumumheader/grid', [JurnalUmumHeaderController::class, 'grid']);
         Route::resource('jurnalumumheader', JurnalUmumHeaderController::class);
         Route::resource('jurnalumumdetail', JurnalUmumDetailController::class);
+
+        Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
+        Route::get('pengeluarantruckingheader/no_bukti', [PengeluaranTruckingHeaderController::class, 'getNoBukti']);
+        Route::get('pengeluarantruckingheader/combo', [PengeluaranTruckingHeaderController::class, 'combo']);
+        Route::get('pengeluarantruckingheader/grid', [PengeluaranTruckingHeaderController::class, 'grid']);
+        Route::resource('pengeluarantruckingheader', PengeluaranTruckingHeaderController::class);
+        Route::resource('pengeluarantruckingdetail', PengeluaranTruckingDetailController::class);
+
+        Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
+        Route::get('piutang/no_bukti', [PiutangHeaderController::class, 'getNoBukti']);
+        Route::get('piutang/grid', [PiutangHeaderController::class, 'grid']);
+        Route::resource('piutang', PiutangHeaderController::class);
+        Route::resource('piutangdetail', PiutangDetailController::class);
     });
 
     Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
@@ -379,35 +392,12 @@
     Route::resource('serviceout', ServiceOutHeaderController::class);
     Route::resource('serviceoutdetail', ServiceOutDetailController::class);
 
-    Route::resource('serviceoutdetail', ServiceOutDetailController::class);
-
-    // Route::get('penerimaan/combo', [PenerimaanHeaderController::class, 'combo']);
-    // Route::resource('penerimaan', PenerimaanHeaderController::class);
-
-    // Route::resource('penerimaandetail', PenerimaanDetailController::class);
-
     Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
-
     Route::post('penerimaan/{id}/approval', [PenerimaanHeaderController::class, 'approval'])->name('penerimaan.approval');
     Route::get('penerimaan/no_bukti', [PenerimaanHeaderController::class, 'getNoBukti']);
     Route::get('penerimaan/combo', [PenerimaanHeaderController::class, 'combo']);
     Route::get('penerimaan/grid', [PenerimaanHeaderController::class, 'grid']);
     Route::resource('penerimaan', PenerimaanHeaderController::class);
-
-    Route::get('jurnalumumheader/no_bukti', [JurnalUmumHeaderController::class, 'getNoBukti']);
-    Route::post('jurnalumumheader/{id}/approval', [JurnalUmumHeaderController::class, 'approval'])->name('jurnalumumheader.approval');
-    Route::get('jurnalumumheader/combo', [JurnalUmumHeaderController::class, 'combo']);
-    Route::get('jurnalumumheader/grid', [JurnalUmumHeaderController::class, 'grid']);
-    Route::resource('jurnalumumheader', JurnalUmumHeaderController::class);
-    Route::resource('jurnalumumdetail', JurnalUmumDetailController::class);
-
-    Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
-    Route::get('pengeluarantruckingheader/no_bukti', [PengeluaranTruckingHeaderController::class, 'getNoBukti']);
-    Route::get('pengeluarantruckingheader/combo', [PengeluaranTruckingHeaderController::class, 'combo']);
-    Route::get('pengeluarantruckingheader/grid', [PengeluaranTruckingHeaderController::class, 'grid']);
-    Route::resource('pengeluarantruckingheader', PengeluaranTruckingHeaderController::class);
-    Route::resource('pengeluarantruckingdetail', PengeluaranTruckingDetailController::class);
-
 
     Route::resource('penerimaandetail', PenerimaanDetailController::class);
 
@@ -418,7 +408,6 @@
     Route::get('pengeluaran/combo', [PengeluaranHeaderController::class, 'combo']);
     Route::get('pengeluaran/grid', [PengeluaranHeaderController::class, 'grid']);
     Route::resource('pengeluaran', PengeluaranHeaderController::class);
-
 
     Route::resource('pengeluarandetail', PengeluaranDetailController::class);
 
@@ -431,110 +420,9 @@
     Route::get('penerimaantruckingheader/grid', [PenerimaanTruckingHeaderController::class, 'grid']);
     Route::resource('penerimaantruckingheader', PenerimaanTruckingHeaderController::class);
 
-    Route::get('gudang/combo', [GudangController::class, 'combo']);
-    Route::get('gudang/field_length', [GudangController::class, 'fieldLength']);
-    Route::resource('gudang', GudangController::class);
-
-    Route::get('kategori/combo', [KategoriController::class, 'combo']);
-    Route::get('kategori/field_length', [KategoriController::class, 'fieldLength']);
-    Route::resource('kategori', KategoriController::class);
-
-    Route::get('kelompok/combo', [KelompokController::class, 'combo']);
-    Route::get('kelompok/field_length', [KelompokController::class, 'fieldLength']);
-    Route::resource('kelompok', KelompokController::class);
-
-    Route::get('kerusakan/combo', [KerusakanController::class, 'combo']);
-    Route::get('kerusakan/field_length', [KerusakanController::class, 'fieldLength']);
-    Route::resource('kerusakan', KerusakanController::class);
-
-    Route::get('kota/combo', [KotaController::class, 'combo']);
-    Route::get('kota/field_length', [KotaController::class, 'fieldLength']);
-    Route::resource('kota', KotaController::class)->parameters(['kota' => 'kota']);
-
-    Route::get('mandor/combo', [MandorController::class, 'combo']);
-    Route::get('mandor/field_length', [MandorController::class, 'fieldLength']);
-    Route::resource('mandor', MandorController::class);
-
-    Route::get('merk/combo', [MerkController::class, 'combo']);
-    Route::get('merk/field_length', [MerkController::class, 'fieldLength']);
-    Route::resource('merk', MerkController::class);
-
-    Route::get('satuan/combo', [SatuanController::class, 'combo']);
-    Route::get('satuan/field_length', [SatuanController::class, 'fieldLength']);
-    Route::resource('satuan', SatuanController::class);
-
-    Route::get('zona/combo', [ZonaController::class, 'combo']);
-    Route::get('zona/field_length', [ZonaController::class, 'fieldLength']);
-    Route::resource('zona', ZonaController::class);
-
-    Route::get('tarif/combo', [TarifController::class, 'combo']);
-    Route::get('tarif/field_length', [TarifController::class, 'fieldLength']);
-    Route::resource('tarif', TarifController::class);
-
-    Route::get('orderantrucking/combo', [OrderanTruckingController::class, 'combo']);
-    Route::get('orderantrucking/field_length', [OrderanTruckingController::class, 'fieldLength']);
-    Route::resource('orderantrucking', OrderanTruckingController::class);
-
-    Route::get('prosesabsensisupir/combo', [ProsesAbsensiSupirController::class, 'combo']);
-    Route::get('prosesabsensisupir/field_length', [ProsesAbsensiSupirController::class, 'fieldLength']);
-    Route::resource('prosesabsensisupir', ProsesAbsensiSupirController::class);
-
-    Route::get('mekanik/combo', [MekanikController::class, 'combo']);
-    Route::get('mekanik/field_length', [MekanikController::class, 'fieldLength']);
-    Route::resource('mekanik', MekanikController::class);
-
-    Route::get('suratpengantar/combo', [SuratPengantarController::class, 'combo']);
-    Route::get('suratpengantar/field_length', [SuratPengantarController::class, 'fieldLength']);
-    Route::get('suratpengantar/get_gaji', [SuratPengantarController::class, 'getGaji']);
-    Route::resource('suratpengantar', SuratPengantarController::class);
-
-    Route::get('upahsupir/combo', [UpahSupirController::class, 'combo']);
-    Route::resource('upahsupir', UpahSupirController::class);
-
-    Route::resource('upahsupirrincian', UpahSupirRincianController::class);
-
-    Route::get('upahritasi/combo', [UpahRitasiController::class, 'combo']);
-    Route::resource('upahritasi', UpahRitasiController::class);
-
-    Route::resource('upahritasirincian', UpahRitasiRincianController::class);
-
-    Route::get('ritasi/combo', [RitasiController::class, 'combo']);
-    Route::get('ritasi/field_length', [RitasiController::class, 'fieldLength']);
-    Route::resource('ritasi', RitasiController::class);
-
-    Route::get('servicein/combo', [ServiceInHeaderController::class, 'combo']);
-    Route::resource('servicein', ServiceInHeaderController::class);
-    Route::resource('serviceindetail', ServiceInDetailController::class);
-
-    Route::get('serviceout/combo', [ServiceOutHeaderController::class, 'combo']);
-    Route::resource('serviceout', ServiceOutHeaderController::class);
-    Route::resource('serviceoutdetail', ServiceOutDetailController::class);
-
-    Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
-    Route::post('penerimaan/{id}/approval', [PenerimaanHeaderController::class, 'approval'])->name('penerimaan.approval');
-    Route::get('penerimaan/no_bukti', [PenerimaanHeaderController::class, 'getNoBukti']);
-    Route::get('penerimaan/combo', [PenerimaanHeaderController::class, 'combo']);
-    Route::get('penerimaan/grid', [PenerimaanHeaderController::class, 'grid']);
-    Route::resource('penerimaan', PenerimaanHeaderController::class);
-
-    Route::resource('penerimaandetail', PenerimaanDetailController::class);
-
-    //pengeluaran
-    Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
-    Route::post('pengeluaran/{id}/approval', [PengeluaranHeaderController::class, 'approval'])->name('pengeluaran.approval');
-    Route::get('pengeluaran/no_bukti', [PengeluaranHeaderController::class, 'getNoBukti']);
-    Route::get('pengeluaran/combo', [PengeluaranHeaderController::class, 'combo']);
-    Route::get('pengeluaran/grid', [PengeluaranHeaderController::class, 'grid']);
-    Route::resource('pengeluaran', PengeluaranHeaderController::class);
-
-    Route::resource('pengeluarandetail', PengeluaranDetailController::class);
-
-    //Penerimaan trucking
-    Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
-    Route::post('penerimaantrucking/{id}/approval', [PenerimaanTruckingHeaderController::class, 'approval'])->name('penerimaantrucking.approval');
-    Route::get('penerimaantrucking/no_bukti', [PenerimaanTruckingHeaderController::class, 'getNoBukti']);
-    Route::get('penerimaantrucking/combo', [PenerimaanTruckingHeaderController::class, 'combo']);
-    Route::get('penerimaantrucking/grid', [PenerimaanTruckingHeaderController::class, 'grid']);
-    Route::resource('penerimaantrucking', PenerimaanTruckingHeaderController::class);
-
     Route::resource('penerimaantruckingdetail', PenerimaanTruckingDetailController::class);
+
+
+    
+
+

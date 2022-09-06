@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\PengeluaranTruckingHeader;
@@ -56,12 +56,12 @@ class PengeluaranTruckingHeaderController extends Controller
             $format = $request->pengeluarantrucking_id;
             $formatBukti = PengeluaranTrucking::where('id', $format);
 
-            $content = new Request();
-            $content['group'] = 'JURNAL UMUM';
-            $content['subgroup'] = 'JURNAL UMUM';
-            $content['table'] = 'jurnalumumheader';
-            $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
-            $content['format'] = $formatBukti;
+            // $content = new Request();
+            // $content['group'] = 'JURNAL UMUM';
+            // $content['subgroup'] = 'JURNAL UMUM';
+            // $content['table'] = 'jurnalumumheader';
+            // $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
+            // $content['format'] = $formatBukti;
 
     
             $pengeluarantruckingheader = new PengeluaranTruckingHeader();
@@ -70,7 +70,7 @@ class PengeluaranTruckingHeaderController extends Controller
             $noBuktiPengeluaran = $request->pengeluaran_nobukti;
             $PengeluaranHeader = PengeluaranHeader::where('nobukti', $noBuktiPengeluaran);
           
-            
+            $pengeluarantruckingheader->nobukti = $request->nobukti;
             $pengeluarantruckingheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $pengeluarantruckingheader->pengeluarantrucking_id = $format;
             $pengeluarantruckingheader->keterangan = $request->keterangan;
@@ -82,9 +82,9 @@ class PengeluaranTruckingHeaderController extends Controller
             $pengeluarantruckingheader->proses_nobukti = '';
             $pengeluarantruckingheader->modifiedby = auth('api')->user()->name;
             
-            TOP:
-                $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
-                $pengeluarantruckingheader->nobukti = $nobukti;
+            // TOP:
+            //     $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
+            //     $pengeluarantruckingheader->nobukti = $nobukti;
     
 
             try {
@@ -94,7 +94,7 @@ class PengeluaranTruckingHeaderController extends Controller
             } catch (\Exception $e) {
                 $errorCode = @$e->errorInfo[1];
                 if ($errorCode == 2601) {
-                    goto TOP;
+                    // goto TOP;
                 }
             }
 
@@ -103,7 +103,7 @@ class PengeluaranTruckingHeaderController extends Controller
                 'namatabel' => strtoupper($pengeluarantruckingheader->getTable()),
                 'postingdari' => 'ENTRY PENGELUARAN TRUCKING HEADER',
                 'idtrans' => $pengeluarantruckingheader->id,
-                'nobuktitrans' => $pengeluarantruckingheader->id,
+                'nobuktitrans' => $pengeluarantruckingheader->nobukti,
                 'aksi' => 'ENTRY',
                 'datajson' => $pengeluarantruckingheader->toArray(),
                 'modifiedby' => $pengeluarantruckingheader->modifiedby
@@ -170,7 +170,7 @@ class PengeluaranTruckingHeaderController extends Controller
                     'namatabel' => $tabeldetail,
                     'postingdari' => 'ENTRY PENGELUARAN TRUCKING HEADER',
                     'idtrans' =>  $dataid->id,
-                    'nobuktitrans' => $pengeluarantruckingheader->id,
+                    'nobuktitrans' => $pengeluarantruckingheader->nobukti,
                     'aksi' => 'ENTRY',
                     'datajson' => $detaillog,
                     'modifiedby' => $request->modifiedby,
@@ -253,10 +253,10 @@ class PengeluaranTruckingHeaderController extends Controller
             
                 $logTrail = [
                     'namatabel' => strtoupper($pengeluarantruckingheader->getTable()),
-                    'postingdari' => 'ENTRY PENGELUARAN TRUCKING HEADER',
+                    'postingdari' => 'EDIT PENGELUARAN TRUCKING HEADER',
                     'idtrans' => $pengeluarantruckingheader->id,
-                    'nobuktitrans' => $pengeluarantruckingheader->id,
-                    'aksi' => 'ENTRY',
+                    'nobuktitrans' => $pengeluarantruckingheader->nobukti,
+                    'aksi' => 'EDIT',
                     'datajson' => $pengeluarantruckingheader->toArray(),
                     'modifiedby' => $pengeluarantruckingheader->modifiedby
                 ];
@@ -324,10 +324,10 @@ class PengeluaranTruckingHeaderController extends Controller
                     
                     $datalogtrail = [
                         'namatabel' => $tabeldetail,
-                        'postingdari' => 'ENTRY PENGELUARAN TRUCKING DETAIL',
+                        'postingdari' => 'EDIT PENGELUARAN TRUCKING DETAIL',
                         'idtrans' =>  $dataid->id,
-                        'nobuktitrans' => $pengeluarantruckingdetail->id,
-                        'aksi' => 'ENTRY',
+                        'nobuktitrans' => $pengeluarantruckingdetail->nobukti,
+                        'aksi' => 'EDIT',
                         'datajson' => $detaillog,
                         'modifiedby' => $request->modifiedby,
                     ];

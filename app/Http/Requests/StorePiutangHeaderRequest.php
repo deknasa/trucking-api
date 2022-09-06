@@ -24,7 +24,10 @@ class StorePiutangHeaderRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'tglbukti' => 'required',
+            'keterangan' => 'required',
+            'postingdari' => 'required',
+            'nominal' => 'required'
         ];
     }
 }
