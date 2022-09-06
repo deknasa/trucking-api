@@ -11,6 +11,7 @@ use App\Http\Resources\ParameterResource;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
@@ -84,7 +85,7 @@ class ParameterController extends Controller
             ]);
         } catch (\Throwable $th) {
             DB::rollBack();
-            
+
             throw $th;
         }
     }
@@ -103,7 +104,7 @@ class ParameterController extends Controller
     public function update(ParameterRequest $request, Parameter $parameter)
     {
         DB::beginTransaction();
-        
+
         try {
             $parameter->grp = $request->grp;
             $parameter->subgrp = $request->subgrp;
@@ -141,7 +142,7 @@ class ParameterController extends Controller
                 ]);
             } else {
                 DB::rollBack();
-                
+
                 return response([
                     'status' => false,
                     'message' => 'Gagal diubah'
@@ -149,7 +150,7 @@ class ParameterController extends Controller
             }
         } catch (\Throwable $th) {
             DB::rollBack();
-            
+
             throw $th;
         }
     }
@@ -160,9 +161,9 @@ class ParameterController extends Controller
     public function destroy(Parameter $parameter, Request $request)
     {
         DB::beginTransaction();
-        
+
         $delete = $parameter->delete();
-        
+
         if ($delete) {
             $logTrail = [
                 'namatabel' => strtoupper($parameter->getTable()),
@@ -191,7 +192,7 @@ class ParameterController extends Controller
             ]);
         } else {
             DB::rollBack();
-            
+
             return response([
                 'status' => false,
                 'message' => 'Gagal dihapus'
