@@ -69,12 +69,11 @@ class Parameter extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id','grp','subgrp','text','memo','created_at','updated_at','modifiedby'],$models);
+        DB::table($temp)->insertUsing(['id', 'grp', 'subgrp', 'text', 'memo', 'created_at', 'updated_at', 'modifiedby'], $models);
 
+        return  $temp;
+    }
 
-        return  $temp;         
-
-      }
     public function sort($query)
     {
         if ($this->params['sortIndex'] == 'grp') {
