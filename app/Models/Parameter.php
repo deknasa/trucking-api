@@ -51,7 +51,10 @@ class Parameter extends MyModel
 
     public function createTemp(string $modelTable)
     {
+        $this->setRequestParameters();
+
         $temp = '##temp' . rand(1, 10000);
+
         Schema::create($temp, function ($table) {
             $table->bigInteger('id')->default('0');
             $table->string('grp', 500)->default('');
@@ -64,12 +67,21 @@ class Parameter extends MyModel
             $table->increments('position');
         });
 
-        $this->setRequestParameters();
         $query = DB::table($modelTable);
         $query = $this->selectColumns($query);
-        $this->sort($query);
+        $query = $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id', 'grp', 'subgrp', 'text', 'memo', 'created_at', 'updated_at', 'modifiedby'], $models);
+        
+        DB::table($temp)->insertUsing([
+            'id',
+            'grp',
+            'subgrp',
+            'text',
+            'memo',
+            'created_at',
+            'updated_at',
+            'modifiedby'
+        ], $models);
 
         return  $temp;
     }
