@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+
 
 class Menu extends MyModel
 {
@@ -22,7 +24,25 @@ class Menu extends MyModel
     {
         $this->setRequestParameters();
 
-        $query = DB::table($this->table)->select(
+        $query = DB::table($this->table);
+
+        $this->totalRows = $query->count();
+        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+        
+        $this->selectColumns($query);
+        $this->sort($query);
+        $this->filter($query);
+        $this->paginate($query);
+
+        $data = $query->get();
+
+        return $data;
+    }
+
+    
+    public function selectColumns($query)
+    {
+        return $query->select(
             DB::raw(
                 "$this->table.id,
                 $this->table.menuname,
@@ -40,17 +60,38 @@ class Menu extends MyModel
             ->leftJoin('menu as menu2', 'menu2.id', '=', 'menu.menuparent')
             ->leftJoin('acos', 'acos.id', '=', 'menu.aco_id');
 
-        $this->totalRows = $query->count();
-        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
-
-        $this->sort($query);
-        $this->filter($query);
-        $this->paginate($query);
-
-        $data = $query->get();
-
-        return $data;
+        
     }
+    public function createTemp(string $modelTable)
+    {
+        $temp = '##temp' . rand(1, 10000);
+        Schema::create($temp, function ($table) {
+            $table->bigInteger('id')->default('0');
+            $table->string('menuname', 50)->default('');
+            $table->string('menuparent', 250)->default('');
+            $table->string('menuicon', 50)->default('');
+            $table->string('aco_id', 100)->default('');
+            $table->string('link', 100)->default('');
+            $table->string('menuexe', 100)->default('');
+            $table->string('menukode', 100)->default('');
+            $table->string('modifiedby', 50)->default('');
+            $table->dateTime('created_at')->default('1900/1/1');
+            $table->dateTime('updated_at')->default('1900/1/1');
+            $table->increments('position');
+        });
+
+        $this->setRequestParameters();
+        $query = DB::table($modelTable);
+        $query = $this->selectColumns($query);
+        $this->sort($query);
+        $models = $this->filter($query);
+        DB::table($temp)->insertUsing(['id','menuname','menuparent','menuicon','aco_id','link','menuexe','menukode','modifiedby','created_at','updated_at'],$models);
+
+
+        return  $temp;         
+
+      }
+
 
     public function sort($query)
     {

@@ -28,8 +28,6 @@ class StoreBankRequest extends FormRequest
             'namabank' => 'required',
             'coa' => 'required',
             'tipe' => 'required',
-            'formatbuktipenerimaan' => 'required',
-            'formatbuktipengeluaran' => 'required',
             'statusaktif' => 'required',
             'kodepenerimaan' => 'required',
             'kodepengeluaran' => 'required',

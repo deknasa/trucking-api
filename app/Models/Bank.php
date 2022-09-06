@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class Bank extends MyModel
 {
@@ -26,28 +27,12 @@ class Bank extends MyModel
     {
         $this->setRequestParameters();
 
-        $query = DB::table($this->table)->select(
-            'bank.id',
-            'bank.kodebank',
-            'bank.namabank',
-            'bank.coa',
-            'bank.tipe',
-            'bank.formatbuktipenerimaan',
-            'bank.formatbuktipengeluaran',
-            'parameter.text as statusaktif',
-            'kodepenerimaan.text as kodepenerimaan',
-            'kodepengeluaran.text as kodepengeluaran',
-            'bank.modifiedby',
-            'bank.created_at',
-            'bank.updated_at'
-        )
-            ->leftJoin('parameter', 'bank.statusaktif', '=', 'parameter.id')
-            ->leftJoin('parameter as kodepenerimaan', 'bank.kodepenerimaan', '=', 'kodepenerimaan.id')
-            ->leftJoin('parameter as kodepengeluaran', 'bank.kodepengeluaran', '=', 'kodepengeluaran.id');
+        $query = DB::table($this->table);
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
-
+        
+        $this->selectColumns($query);
         $this->sort($query);
         $this->filter($query);
         $this->paginate($query);
@@ -56,6 +41,62 @@ class Bank extends MyModel
 
         return $data;
     }
+
+
+    public function selectColumns($query)
+    {
+        return $query->select(
+            DB::raw(
+            "$this->table.id,
+            $this->table.kodebank,
+            $this->table.namabank,
+            $this->table.coa,
+            $this->table.tipe,
+            parameter.text as statusaktif,
+            kodepenerimaan.text as kodepenerimaan,
+            kodepengeluaran.text as kodepengeluaran,
+            $this->table.modifiedby,
+            $this->table.created_at,
+            $this->table.updated_at"
+            )
+        )
+            ->leftJoin('parameter', 'bank.statusaktif', '=', 'parameter.id')
+            ->leftJoin('parameter as kodepenerimaan', 'bank.kodepenerimaan', '=', 'kodepenerimaan.id')
+            ->leftJoin('parameter as kodepengeluaran', 'bank.kodepengeluaran', '=', 'kodepengeluaran.id');
+
+    }
+
+    public function createTemp(string $modelTable)
+    {
+        $temp = '##temp' . rand(1, 10000);
+        Schema::create($temp, function ($table) {
+            $table->bigInteger('id')->default('0');
+            $table->string('kodebank', 1000)->default('');
+            $table->string('namabank', 1000)->default('');
+            $table->string('coa', 1000)->default('');
+            $table->string('tipe', 1000)->default('');
+            $table->string('statusaktif', 1000)->default('');
+            $table->string('kodepenerimaan', 1000)->default('');
+            $table->string('kodepengeluaran', 1000)->default('');
+            $table->string('modifiedby', 50)->default('');
+            $table->dateTime('created_at')->default('1900/1/1');
+            $table->dateTime('updated_at')->default('1900/1/1');
+            $table->increments('position');
+        });
+
+        $this->setRequestParameters();
+        $query = DB::table($modelTable);
+        $query = $this->selectColumns($query);
+        $this->sort($query);
+        $models = $this->filter($query);
+        DB::table($temp)->insertUsing(['id','kodebank','namabank','coa','tipe','statusaktif','kodepenerimaan','kodepengeluaran','modifiedby','created_at','updated_at'],$models);
+
+
+        return  $temp;         
+
+      }
+
+
 
     public function sort($query)
     {

@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+
 
 
 class PenerimaanHeader extends MyModel
@@ -24,7 +26,8 @@ class PenerimaanHeader extends MyModel
         'updated_at',
     ];
 
-    public function penerimaandetail() {
+    public function penerimaandetail()
+    {
         return $this->hasMany(penerimaandetail::class, 'penerimaan_id');
     }
 
@@ -32,55 +35,12 @@ class PenerimaanHeader extends MyModel
     {
         $this->setRequestParameters();
 
-        $query = DB::table($this->table)->select(
-            'penerimaanheader.id',
-            'penerimaanheader.nobukti',
-            'penerimaanheader.tglbukti',
-
-            'pelanggan.namapelanggan as pelanggan_id',
-
-            'penerimaanheader.keterangan',
-            'penerimaanheader.postingdari',
-            'penerimaanheader.statusapproval',
-            'penerimaanheader.diterimadari',
-            'penerimaanheader.tgllunas',
-
-            'cabang.namacabang as cabang_id',
-            'bank.namabank as bank_id',
-            // 'akunpusat.coa as coakredit',
-            // 'akunpusat.coa as coadebet',
-
-            
-            'statuskas.text as statuskas',
-            'statusapproval.text as statusapproval',
-            'statusberkas.text as statusberkas',
-
-            // 'users.name as userapproval',
-            'penerimaanheader.userapproval',
-            'penerimaanheader.tglapproval',
-            'penerimaanheader.userberkas',
-
-            'penerimaanheader.noresi',
-            'penerimaanheader.tglberkas',
-            'penerimaanheader.modifiedby',
-            'penerimaanheader.created_at',
-            'penerimaanheader.updated_at'
-
-        )
-        ->leftJoin('pelanggan', 'penerimaanheader.pelanggan_id', 'pelanggan.id')
-       ->leftJoin('bank', 'penerimaanheader.bank_id', 'bank.id')
-       ->leftJoin('cabang', 'penerimaanheader.cabang_id', 'cabang.id')
-       ->leftJoin('parameter as statuskas' , 'penerimaanheader.statuskas', 'statuskas.id')
-       ->leftJoin('parameter as statusapproval' , 'penerimaanheader.statusapproval', 'statusapproval.id')
-       ->leftJoin('parameter as statusberkas' , 'penerimaanheader.statusberkas', 'statusberkas.id');
-       // ->leftJoin('users' , 'penerimaanheader.userapproval', 'users.id');
-       
-    //    ->leftJoin('akunpusat', 'penerimaandetail.coadebet', 'akunpusat.id')
-    //    ->leftJoin('akunpusat', 'penerimaandetail.coakredit', 'akunpusat.id')     
+        $query = DB::table($this->table);
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
+        $this->selectColumns($query);
         $this->sort($query);
         $this->filter($query);
         $this->paginate($query);
@@ -89,6 +49,89 @@ class PenerimaanHeader extends MyModel
 
         return $data;
     }
+
+    public function selectColumns($query)
+    {
+        return $query->select(
+            DB::raw(
+                "$this->table.id,
+            $this->table.nobukti,
+            $this->table.tglbukti,
+            pelanggan.namapelanggan as pelanggan_id,
+            $this->table.keterangan,
+            $this->table.postingdari,
+            $this->table.statusapproval,
+            $this->table.diterimadari,
+            $this->table.tgllunas,
+            cabang.namacabang as cabang_id,
+            bank.namabank as bank_id,
+            statuskas.text as statuskas,
+            statusapproval.text as statusapproval,
+            statusberkas.text as statusberkas,
+            $this->table.userapproval,
+            $this->table.tglapproval,
+            $this->table.userberkas,
+            $this->table.noresi,
+            $this->table.tglberkas,
+            $this->table.modifiedby,
+            $this->table.created_at,
+            $this->table.updated_at"
+            )
+        )
+            ->leftJoin('pelanggan', 'penerimaanheader.pelanggan_id', 'pelanggan.id')
+            ->leftJoin('bank', 'penerimaanheader.bank_id', 'bank.id')
+            ->leftJoin('cabang', 'penerimaanheader.cabang_id', 'cabang.id')
+            ->leftJoin('parameter as statuskas', 'penerimaanheader.statuskas', 'statuskas.id')
+            ->leftJoin('parameter as statusapproval', 'penerimaanheader.statusapproval', 'statusapproval.id')
+            ->leftJoin('parameter as statusberkas', 'penerimaanheader.statusberkas', 'statusberkas.id');
+    }
+
+    public function createTemp(string $modelTable)
+    {
+        $temp = '##temp' . rand(1, 10000);
+        Schema::create($temp, function ($table) {
+            $table->bigInteger('id')->default('0');
+            $table->string('nobukti', 1000)->default('');
+            $table->date('tglbukti', 1000)->default('1900/1/1');
+            $table->string('pelanggan_id', 1000)->default('');
+            $table->string('keterangan', 3000)->default('');
+            $table->string('postingdari', 1000)->default('');
+            $table->string('statusapproval', 1000)->default('');
+            $table->string('diterimadari', 1000)->default('');
+            $table->date('tgllunas', 1000)->default('1900/1/1');
+            $table->string('cabang_id', 1000)->default('');
+            $table->string('bank_id', 1000)->default('');
+            $table->string('statuskas', 1000)->default('');
+            $table->string('statusapproval', 1000)->default('');
+            $table->string('statusberkas', 1000)->default('');
+            $table->string('userapproval', 1000)->default('');
+            $table->dateTime('tglapproval')->default('1900/1/1');
+            $table->string('userberkas', 1000)->default('');
+            $table->string('noresi', 1000)->default('');
+            $table->dateTime('tglberkas')->default('1900/1/1');
+            $table->string('modifiedby', 50)->default('');
+            $table->dateTime('created_at')->default('1900/1/1');
+            $table->dateTime('updated_at')->default('1900/1/1');
+            $table->increments('position');
+        });
+
+        $this->setRequestParameters();
+        $query = DB::table($modelTable);
+        $query = $this->selectColumns($query);
+        $this->sort($query);
+        $models = $this->filter($query);
+        DB::table($temp)->insertUsing([
+            'id', 'nobukti', 'tglbukti', 'pelanggan_id', 'keterangan', 'postingdari', 'statusapproval',
+            'diterimadari', 'tgllunas', 'cabang_id', 'bank_id', 'statuskas', 
+            'statusapproval', 'statusberkas', 'userapproval', 'tglapproval', 'userberkas', 
+            'noresi', 'tglberkas',
+            'modifiedby', 'created_at', 'updated_at'
+        ], $models);
+
+
+        return  $temp;
+    }
+
 
     public function sort($query)
     {
@@ -101,7 +144,7 @@ class PenerimaanHeader extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                         if ($filters['field'] == 'pelanggan_id') {
+                        if ($filters['field'] == 'pelanggan_id') {
                             $query = $query->where('pelanggan.namapelanggan', 'LIKE', "%$filters[data]%");
                         } else {
                             $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
@@ -111,7 +154,7 @@ class PenerimaanHeader extends MyModel
                     break;
                 case "OR":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                         if ($filters['field'] == 'pelanggan_id') {
+                        if ($filters['field'] == 'pelanggan_id') {
                             $query = $query->orWhere('pelanggan.namapelanggan', 'LIKE', "%$filters[data]%");
                         } else {
                             $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
@@ -135,5 +178,4 @@ class PenerimaanHeader extends MyModel
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
-
 }

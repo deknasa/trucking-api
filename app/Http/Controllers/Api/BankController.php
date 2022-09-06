@@ -25,7 +25,6 @@ class BankController extends Controller
     public function index()
     {
         $bank = new Bank();
-
         return response([
             'data' => $bank->get(),
             'attributes' => [
@@ -47,8 +46,6 @@ class BankController extends Controller
             $bank->coa = $request->coa;
             $bank->tipe = $request->tipe;
             $bank->statusaktif = $request->statusaktif;
-            $bank->formatbuktipenerimaan = $request->formatbuktipenerimaan;
-            $bank->formatbuktipengeluaran = $request->formatbuktipengeluaran;
             $bank->kodepenerimaan = $request->kodepenerimaan ?? 0;
             $bank->kodepengeluaran = $request->kodepengeluaran ?? 0;
             $bank->modifiedby = auth('api')->user()->name;
@@ -121,8 +118,6 @@ class BankController extends Controller
             $bank->coa = $request->coa;
             $bank->tipe = $request->tipe;
             $bank->statusaktif = $request->statusaktif;
-            $bank->formatbuktipenerimaan = $request->formatbuktipenerimaan;
-            $bank->formatbuktipengeluaran = $request->formatbuktipengeluaran;
             $bank->kodepenerimaan = $request->kodepenerimaan;
             $bank->kodepengeluaran = $request->kodepengeluaran;
             $bank->modifiedby = auth('api')->user()->name;

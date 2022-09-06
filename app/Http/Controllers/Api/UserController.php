@@ -31,6 +31,20 @@ class UserController extends Controller
      /**
      * @ClassName 
      */
+
+    // public function index()
+    // {
+    //     $parameter = new Parameter();
+
+    //     return response([
+    //         'data' => $parameter->get(),
+    //         'attributes' => [
+    //             'totalRows' => $parameter->totalRows,
+    //             'totalPages' => $parameter->totalPages
+    //         ]
+    //     ]);
+    // }
+
     public function index()
     {
         $params = [

@@ -430,7 +430,9 @@ class PenerimaanHeaderController extends Controller
             $content['subgroup'] = $querysubgrppenerimaan->subgrp;
             $content['table'] = 'penerimaanheader';
             $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
-            $content['nobukti'] = $querysubgrppenerimaan->formatbuktipenerimaan;
+            $content['format'] = $querysubgrppenerimaan->format;
+
+            // $content['nobukti'] = $querysubgrppenerimaan->formatbuktipenerimaan;
 
             $statusApproval = Parameter::where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
             $penerimaanHeader = new PenerimaanHeader();

@@ -79,8 +79,8 @@ class PenerimaanTruckingHeader extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                         if ($filters['field'] == 'pelanggan_id') {
-                            $query = $query->where('pelanggan.namapelanggan', 'LIKE', "%$filters[data]%");
+                         if ($filters['field'] == 'penerimaantrucking_id') {
+                            $query = $query->where('kodepenerimaan.keterangan', 'LIKE', "%$filters[data]%");
                         } else {
                             $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
@@ -89,8 +89,8 @@ class PenerimaanTruckingHeader extends MyModel
                     break;
                 case "OR":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                         if ($filters['field'] == 'pelanggan_id') {
-                            $query = $query->orWhere('pelanggan.namapelanggan', 'LIKE', "%$filters[data]%");
+                         if ($filters['field'] == 'penerimaantrucking_id') {
+                            $query = $query->orWhere('kodepenerimaan.keterangan', 'LIKE', "%$filters[data]%");
                         } else {
                             $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
