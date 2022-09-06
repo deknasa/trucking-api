@@ -44,18 +44,6 @@ class Controller extends BaseController
             'format' => 'required',
         ]);
 
-        // $parameter = DB::table('parameter')
-        //     ->where('grp', $request->group)
-        //     ->where('subgrp', $request->subgroup)
-        //     ->first();
-        
-        // if (!isset($parameter->text)) {
-        //     return response([
-        //         'status' => false,
-        //         'message' => 'Parameter tidak ditemukan'
-        //     ]);
-        // }
-
         $parameter = DB::table('parameter')
             ->where('grp', $request->group)
             ->where('subgrp', $request->subgroup)
@@ -67,59 +55,51 @@ class Controller extends BaseController
                 'message' => 'Parameter tidak ditemukan'
             ]);
         }
+
         $bulan = date('n', strtotime($request->tgl));
         $tahun = date('Y', strtotime($request->tgl));
 
         $text = $request->format;
-// 
 
-$staticformat='|';
-$awal=0;
+        $staticformat = '|';
+        $awal = 0;
 
-for ($i = 0; $i < strlen($text ); $i++) {
-    if ($text[$i] == $staticformat AND $awal==0)  {
-        $awal=$i;
-    }
-    if ($awal!=0) {
-        if ($text[$i] == $staticformat) {
-            $akhir=$i;
+        for ($i = 0; $i < strlen($text); $i++) {
+            if ($text[$i] == $staticformat and $awal == 0) {
+                $awal = $i;
+            }
+            if ($awal != 0) {
+                if ($text[$i] == $staticformat) {
+                    $akhir = $i;
+                }
+            }
         }
-    
-    }
-}
 
-$posisi=$awal+2;
-$jumlah=($akhir-$awal)-1;
+        $jumlah = ($akhir - $awal) - 1;
 
-$awal=$awal+1;
+        $awal = $awal + 1;
 
-$nobukti=substr( $text,$awal,$jumlah);
+        $nobukti = substr($text, $awal, $jumlah);
 
+        $lennobukti = strlen($nobukti);
 
-// 
-        $lennobukti=strlen($nobukti);
-        
- 
-
-        if ($lennobukti==0) {
+        if ($lennobukti == 0) {
             $lastRow = DB::table($request->table)
-            ->where(DB::raw('month(tglbukti)'),'=',$bulan)
-            ->where(DB::raw('year(tglbukti)'),'=',$tahun)
-             ->count();
+                ->where(DB::raw('month(tglbukti)'), '=', $bulan)
+                ->where(DB::raw('year(tglbukti)'), '=', $tahun)
+                ->count();
         } else {
 
-            $runningNumberuji = $this->appHelper->runningNumber($text, 0,$bulan);
+            $runningNumberuji = $this->appHelper->runningNumber($text, 0, $bulan);
             $lastRow = DB::table($request->table)
-            ->where(DB::raw('month(tglbukti)'),'=',$bulan)
-            ->where(DB::raw('year(tglbukti)'),'=',$tahun)
-            ->where(DB::raw("substring(nobukti,CHARINDEX('".$nobukti."','". $runningNumberuji."')".','.$jumlah.')'),'=',$nobukti)
-            ->count();
+                ->where(DB::raw('month(tglbukti)'), '=', $bulan)
+                ->where(DB::raw('year(tglbukti)'), '=', $tahun)
+                ->where(DB::raw("substring(nobukti,CHARINDEX('" . $nobukti . "','" . $runningNumberuji . "')" . ',' . $jumlah . ')'), '=', $nobukti)
+                ->count();
         }
-        
-        // dd($lastRow);
-        $runningNumber = $this->appHelper->runningNumber($text, $lastRow,$bulan);
-        
-        // dd($runningNumber);
+
+        $runningNumber = $this->appHelper->runningNumber($text, $lastRow, $bulan);
+
         return response([
             'status' => true,
             'data' => $runningNumber
@@ -195,7 +175,6 @@ $nobukti=substr( $text,$awal,$jumlah);
         $limit = request()->limit ?? 10;
         $page = request()->page ?? 1;
 
-        
         $temporaryTable = $model->createTemp($modelTable);
 
         if ($isDeleting) {
