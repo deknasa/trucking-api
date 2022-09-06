@@ -21,13 +21,12 @@ class Parameter extends MyModel
     {
         $this->setRequestParameters();
 
-        $query = DB::table($this->table)->select(
-            "$this->table.*",
-        );
+        $query = DB::table($this->table);
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
+        $this->selectColumns($query);
         $this->sort($query);
         $this->filter($query);
         $this->paginate($query);
@@ -35,6 +34,20 @@ class Parameter extends MyModel
         $data = $query->get();
 
         return $data;
+    }
+
+    public function selectColumns($query)
+    {
+        return $query->select(
+            "$this->table.id",
+            "$this->table.grp",
+            "$this->table.subgrp",
+            "$this->table.text",
+            "$this->table.memo",
+            "$this->table.created_at",
+            "$this->table.updated_at",
+            "$this->table.modifiedby",
+        );
     }
 
     public function sort($query)
