@@ -78,6 +78,8 @@ use App\Http\Controllers\Api\JurnalUmumDetailController;
 use App\Http\Controllers\Api\PengeluaranTruckingHeaderController;
 use App\Http\Controllers\Api\PengeluaranTruckingDetailController;
 
+use App\Http\Controllers\Api\PiutangHeaderController;
+use App\Http\Controllers\Api\PiutangDetailController;
 
 
 /*
@@ -296,10 +298,16 @@ route::middleware('auth:api')->group(function () {
 
     Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
     Route::get('pengeluarantruckingheader/no_bukti', [PengeluaranTruckingHeaderController::class, 'getNoBukti']);
-     Route::get('pengeluarantruckingheader/combo', [PengeluaranTruckingHeaderController::class, 'combo']);
+    Route::get('pengeluarantruckingheader/combo', [PengeluaranTruckingHeaderController::class, 'combo']);
     Route::get('pengeluarantruckingheader/grid', [PengeluaranTruckingHeaderController::class, 'grid']);
     Route::resource('pengeluarantruckingheader', PengeluaranTruckingHeaderController::class);
     Route::resource('pengeluarantruckingdetail', PengeluaranTruckingDetailController::class);
+    
+    Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
+    Route::get('piutang/no_bukti', [PiutangHeaderController::class, 'getNoBukti']);
+    Route::get('piutang/grid', [PiutangHeaderController::class, 'grid']);
+    Route::resource('piutang', PiutangHeaderController::class);
+    Route::resource('piutangdetail', PiutangDetailController::class);
 });
 
 Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');

@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
 use App\Models\PengeluaranTruckingDetail;
 use App\Http\Requests\StorePengeluaranTruckingDetailRequest;
 use App\Http\Requests\UpdatePengeluaranTruckingDetailRequest;
@@ -55,9 +56,9 @@ class PengeluaranTruckingDetailController extends Controller
                     'supir.namasupir as supir_id',
                     'penerimaantruckingheader.nobukti as penerimaantruckingheader_nobukti',
                 )
-                ->leftJoin('supir', 'pengeluarantruckingdetail.supir_id', 'supir.id')
-                ->leftJoin('penerimaantruckingheader', 'pengeluarantruckingdetail.nobukti', 'penerimaantruckingheader.nobukti');        
-
+                ->leftJoin('supir', 'detail.supir_id', 'supir.id')
+                ->leftJoin('penerimaantruckingheader', 'detail.nobukti', 'penerimaantruckingheader.nobukti');       
+                 
                 $pengeluaranTruckingDetail = $query->get();
             }
 

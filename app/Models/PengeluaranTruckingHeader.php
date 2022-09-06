@@ -45,7 +45,7 @@ class PengeluaranTruckingHeader extends MyModel
             ->leftJoin('pengeluaranheader', 'pengeluarantruckingheader.pengeluaran_nobukti', 'pengeluaranheader.nobukti')
             ->leftJoin('bank', 'pengeluarantruckingheader.bank_id', 'bank.id')
             ->leftJoin('akunpusat', 'pengeluarantruckingheader.coa', 'akunpusat.coa')
-            ->leftJoin('parameter as statusposting' , 'jurnalumumheader.statusposting', 'statusposting.id');
+            ->leftJoin('parameter as statusposting' , 'pengeluarantruckingheader.statusposting', 'statusposting.id');
             
 
 
