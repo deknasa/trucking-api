@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AlterBankTable extends Migration
+class AlterParameter1Table extends Migration
 {
     /**
      * Run the migrations.
@@ -13,9 +13,8 @@ class AlterBankTable extends Migration
      */
     public function up()
     {
-        Schema::table('bank', function (Blueprint $table) {
-            $table->string('formatbuktipenerimaan',50)->default('');
-            $table->string('formatbuktipengeluaran',50)->default('');
+        Schema::table('parameter', function (Blueprint $table) {
+            $table->unsignedBigInteger('type')->default(0);
 
 
        });

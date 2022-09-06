@@ -66,7 +66,6 @@ class JurnalUmumHeaderController extends Controller
                 $content['subgroup'] = $subgroup;
                 $content['table'] = 'jurnalumumheader';
                 $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
-                $content['format'] = $format->text;
             }
 
             $jurnalumum = new JurnalUmumHeader();
@@ -82,6 +81,7 @@ class JurnalUmumHeaderController extends Controller
             $jurnalumum->statusapproval = $statusApproval->id ?? 0;
             $jurnalumum->userapproval = '';
             $jurnalumum->tglapproval = '';
+            $jurnalumum->statusformat =  $format->id;
 
             $jurnalumum->modifiedby = auth('api')->user()->name;
 
