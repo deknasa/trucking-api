@@ -93,52 +93,7 @@ class Controller extends BaseController
             ->count();
         }
 
-        // 
-
-        // $staticformat='|';
-        // $awal=0;
-
-        // for ($i = 0; $i < strlen($text ); $i++) {
-        //     if ($text[$i] == $staticformat AND $awal==0)  {
-        //         $awal=$i;
-        //     }
-        //     if ($awal!=0) {
-        //         if ($text[$i] == $staticformat) {
-        //             $akhir=$i;
-        //         }
-
-        //     }
-        // }
-
-        // $posisi=$awal+2;
-        // $jumlah=($akhir-$awal)-1;
-
-        // $awal=$awal+1;
-
-        // $nobukti=substr( $text,$awal,$jumlah);
-
-
-        // // 
-        //         $lennobukti=strlen($nobukti);
-
-
-
-        //         if ($lennobukti==0) {
-        //             $lastRow = DB::table($request->table)
-        //             ->where(DB::raw('month(tglbukti)'),'=',$bulan)
-        //             ->where(DB::raw('year(tglbukti)'),'=',$tahun)
-        //              ->count();
-        //         } else {
-
-        //             $runningNumberuji = $this->appHelper->runningNumber($text, 0,$bulan);
-        //             $lastRow = DB::table($request->table)
-        //             ->where(DB::raw('month(tglbukti)'),'=',$bulan)
-        //             ->where(DB::raw('year(tglbukti)'),'=',$tahun)
-        //             ->where(DB::raw("substring(nobukti,CHARINDEX('".$nobukti."','". $runningNumberuji."')".','.$jumlah.')'),'=',$nobukti)
-        //             ->count();
-        //         }
-
-        // dd($lastRow);
+      
         $runningNumber = $this->appHelper->runningNumber($text, $lastRow, $bulan);
 
         // dd($runningNumber);
@@ -216,7 +171,6 @@ class Controller extends BaseController
         $indexRow = request()->indexRow ?? 1;
         $limit = request()->limit ?? 10;
         $page = request()->page ?? 1;
-
 
         $temporaryTable = $model->createTemp($modelTable);
 

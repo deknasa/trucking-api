@@ -2,12 +2,9 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Helpers\App;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreAbsensiSupirHeaderRequest;
-use App\Http\Requests\StoreAbsensiSupirDetailRequest;
 use App\Models\AbsensiSupirHeader;
-use App\Models\LogTrail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Requests\StoreLogTrailRequest;
@@ -30,71 +27,6 @@ class AbsensiSupirHeaderController extends Controller
                 'totalPages' => $absensiSupirHeader->totalPages
             ]
         ]);
-
-        // $params = [
-        //     'offset' => $request->offset ?? 0,
-        //     'limit' => $request->limit ?? 10,
-        //     'search' => $request->search ?? [],
-        //     'sortIndex' => $request->sortIndex ?? 'id',
-        //     'sortOrder' => $request->sortOrder ?? 'asc',
-        //     'withRelations' => $request->withRelations ?? false,
-        // ];
-
-        // $totalRows = AbsensiSupirHeader::count();
-        // $totalPages = $params['limit'] > 0 ? ceil($totalRows / $params['limit']) : 1;
-
-        // /* Sorting */
-        // $query = AbsensiSupirHeader::orderBy($params['sortIndex'], $params['sortOrder']);
-
-        // /* Searching */
-        // if (count($params['search']) > 0 && @$params['search']['rules'][0]['data'] != '') {
-        //     switch ($params['search']['groupOp']) {
-        //         case "AND":
-        //             foreach ($params['search']['rules'] as $index => $search) {
-        //                 $query = $query->where($search['field'], 'LIKE', "%$search[data]%");
-        //             }
-
-        //             break;
-        //         case "OR":
-        //             foreach ($params['search']['rules'] as $index => $search) {
-        //                 $query = $query->orWhere($search['field'], 'LIKE', "%$search[data]%");
-        //             }
-
-        //             break;
-        //         default:
-
-        //             break;
-        //     }
-
-        //     $totalRows = count($query->get());
-        //     $totalPages = $params['limit'] > 0 ? ceil($totalRows / $params['limit']) : 1;
-        // }
-
-        // /* Paging */
-        // $query = $query->skip($params['offset'])
-        //     ->take($params['limit']);
-
-        // $absensiSupirs = $params['withRelations'] == true
-        //     ? $query->with(
-        //         'absensiSupirDetail',
-        //         'absensiSupirDetail.trado',
-        //         'absensiSupirDetail.supir',
-        //         'absensiSupirDetail.absenTrado'
-        //     )->get()
-        //     : $query->get();
-
-        // /* Set attributes */
-        // $attributes = [
-        //     'totalRows' => $totalRows,
-        //     'totalPages' => $totalPages
-        // ];
-
-        // return response([
-        //     'status' => true,
-        //     'data' => $absensiSupirs,
-        //     'attributes' => $attributes,
-        //     'params' => $params
-        // ]);
     }
 
     public function show(AbsensiSupirHeader $absensiSupirHeader)
