@@ -10,6 +10,7 @@ use App\Http\Requests\UpdatePengeluaranTruckingHeaderRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Schema;
 
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Http\Requests\StorePengeluaranTruckingDetailRequest;
@@ -23,6 +24,7 @@ use App\Models\PengeluaranHeader;
 use App\Models\PengeluaranTrucking;
 use App\Models\PengeluaranTruckingDetail;
 use App\Models\Supir;
+
 
 class PengeluaranTruckingHeaderController extends Controller
 {
@@ -50,29 +52,48 @@ class PengeluaranTruckingHeaderController extends Controller
     {
         DB::beginTransaction();
 
-        
         try {
 
-            $format = $request->pengeluarantrucking_id;
-            $formatBukti = PengeluaranTrucking::where('id', $format);
+            $idpengeluaran = $request->pengeluarantrucking_id;
+            $formatBukti =  DB::table('pengeluarantrucking')
+            ->where('id', $idpengeluaran)
+            ->first();
+            // echo $formatBukti->kodepengeluaran;
+            // die();
+            $kodepengeluaran = $formatBukti->kodepengeluaran;
 
-            // $content = new Request();
-            // $content['group'] = 'JURNAL UMUM';
-            // $content['subgroup'] = 'JURNAL UMUM';
-            // $content['table'] = 'jurnalumumheader';
-            // $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
-            // $content['format'] = $formatBukti;
+            
 
+            if($kodepengeluaran == 'PJT')
+            {
+                $group = 'PINJAMAN SUPIR';
+                $subgroup = 'PINJAMAN SUPIR';
+            }else{
+                $group = 'BIAYA LAIN SUPIR';
+                $subgroup = 'BIAYA LAIN SUPIR';
+            }
+           
+            $format = DB::table('parameter')
+                ->where('grp', $group )
+                ->where('subgrp', $subgroup)
+                ->first();
     
+            $content = new Request();
+            $content['group'] = $group;
+            $content['subgroup'] = $subgroup;
+            $content['table'] = 'pengeluarantruckingheader';
+            $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
+
             $pengeluarantruckingheader = new PengeluaranTruckingHeader();
             $statusPosting = Parameter::where('grp', 'STATUS POSTING')->where('text', 'BUKAN POSTING')->first();
 
             $noBuktiPengeluaran = $request->pengeluaran_nobukti;
-            $PengeluaranHeader = PengeluaranHeader::where('nobukti', $noBuktiPengeluaran);
-          
-            $pengeluarantruckingheader->nobukti = $request->nobukti;
+            $PengeluaranHeader =  DB::table('pengeluaranheader')
+            ->where('nobukti', $noBuktiPengeluaran)
+            ->first();
+
             $pengeluarantruckingheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
-            $pengeluarantruckingheader->pengeluarantrucking_id = $format;
+            $pengeluarantruckingheader->pengeluarantrucking_id = $idpengeluaran;
             $pengeluarantruckingheader->keterangan = $request->keterangan;
             $pengeluarantruckingheader->bank_id = $request->bank_id;
             $pengeluarantruckingheader->statusposting = $statusPosting->id ?? 0;
@@ -80,11 +101,12 @@ class PengeluaranTruckingHeaderController extends Controller
             $pengeluarantruckingheader->pengeluaran_nobukti = $noBuktiPengeluaran;
             $pengeluarantruckingheader->pengeluaran_tgl = $PengeluaranHeader->tglbukti;
             $pengeluarantruckingheader->proses_nobukti = '';
+            $pengeluarantruckingheader->statusformat =  $format->id;
             $pengeluarantruckingheader->modifiedby = auth('api')->user()->name;
             
-            // TOP:
-            //     $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
-            //     $pengeluarantruckingheader->nobukti = $nobukti;
+            TOP:
+                $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
+                $pengeluarantruckingheader->nobukti = $nobukti;
     
 
             try {
@@ -94,7 +116,7 @@ class PengeluaranTruckingHeaderController extends Controller
             } catch (\Exception $e) {
                 $errorCode = @$e->errorInfo[1];
                 if ($errorCode == 2601) {
-                    // goto TOP;
+                    goto TOP;
                 }
             }
 
@@ -155,8 +177,6 @@ class PengeluaranTruckingHeaderController extends Controller
                     
                 ];
                 
-                
-                
                 $detaillog[] = $datadetaillog;
 
                 
@@ -168,7 +188,7 @@ class PengeluaranTruckingHeaderController extends Controller
 
                 $datalogtrail = [
                     'namatabel' => $tabeldetail,
-                    'postingdari' => 'ENTRY PENGELUARAN TRUCKING HEADER',
+                    'postingdari' => 'ENTRY PENGELUARAN TRUCKING DETAIL',
                     'idtrans' =>  $dataid->id,
                     'nobuktitrans' => $pengeluarantruckingheader->nobukti,
                     'aksi' => 'ENTRY',
@@ -217,10 +237,19 @@ class PengeluaranTruckingHeaderController extends Controller
         $data = PengeluaranTruckingHeader::with(
             'pengeluarantruckingdetail',
         )->find($id);
-
+        
+        $idpengeluaran = $data['pengeluarantrucking_id'];
+        $formatBukti =  DB::table('pengeluarantrucking')
+        ->where('id', $idpengeluaran)
+        ->first();
+        
+        $kodepengeluaran = $formatBukti->kodepengeluaran;
+        
+            
         return response([
             'status' => true,
-            'data' => $data
+            'data' => $data,
+            'kode' => $kodepengeluaran
         ]);
     }
 
@@ -228,27 +257,52 @@ class PengeluaranTruckingHeaderController extends Controller
     /**
      * @ClassName
      */
-    public function update(UpdatePengeluaranTruckingHeaderRequest $request, $id)
+    public function update(StorePengeluaranTruckingHeaderRequest $request, $id)
     {
         DB::beginTransaction();
 
         try {
 
+            $idpengeluaran = $request->pengeluarantrucking_id;
+            $formatBukti =  DB::table('pengeluarantrucking')
+            ->where('id', $idpengeluaran)
+            ->first();
+            $kodepengeluaran = $formatBukti->kodepengeluaran;
+
+            if($kodepengeluaran == 'PJT')
+            {
+                $group = 'PINJAMAN SUPIR';
+                $subgroup = 'PINJAMAN SUPIR';
+            }else{
+                $group = 'BIAYA LAIN SUPIR';
+                $subgroup = 'BIAYA LAIN SUPIR';
+            }
+           
+            $format = DB::table('parameter')
+                ->where('grp', $group )
+                ->where('subgrp', $subgroup)
+                ->first();
+
+           
             $noBuktiPengeluaran = $request->pengeluaran_nobukti;
-            $PengeluaranHeader = PengeluaranHeader::where('nobukti', $noBuktiPengeluaran);
+            $PengeluaranHeader =  DB::table('pengeluaranheader')
+            ->where('nobukti', $noBuktiPengeluaran)
+            ->first();
 
             $pengeluarantruckingheader = PengeluaranTruckingHeader::findOrFail($id);
 
             $pengeluarantruckingheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
-            $pengeluarantruckingheader->pengeluarantrucking_id = $request->pengeluarantrucking_id;
+            $pengeluarantruckingheader->pengeluarantrucking_id = $idpengeluaran;
             $pengeluarantruckingheader->keterangan = $request->keterangan;
             $pengeluarantruckingheader->bank_id = $request->bank_id;
             $pengeluarantruckingheader->coa = $request->coa;
             $pengeluarantruckingheader->pengeluaran_nobukti = $noBuktiPengeluaran;
             $pengeluarantruckingheader->pengeluaran_tgl = $PengeluaranHeader->tglbukti;
             $pengeluarantruckingheader->proses_nobukti = '';
+            $pengeluarantruckingheader->statusformat =  $format->id;
             $pengeluarantruckingheader->modifiedby = auth('api')->user()->name;
-           
+            
+            
             if ($pengeluarantruckingheader->save()) {
             
                 $logTrail = [
@@ -315,18 +369,13 @@ class PengeluaranTruckingHeaderController extends Controller
                     
                     $detaillog[] = $datadetaillog;
 
-                    $pengeluarantruckingdetail = PengeluaranTruckingDetail::findOrFail($id);
-                    $dataid = LogTrail::select('id')
-                    ->where('idtrans', '=', $pengeluarantruckingdetail->id)
-                    ->where('namatabel', '=', $pengeluarantruckingdetail->getTable())
-                    ->orderBy('id', 'DESC')
-                    ->first();
+                    
                     
                     $datalogtrail = [
                         'namatabel' => $tabeldetail,
                         'postingdari' => 'EDIT PENGELUARAN TRUCKING DETAIL',
-                        'idtrans' =>  $dataid->id,
-                        'nobuktitrans' => $pengeluarantruckingdetail->nobukti,
+                        'idtrans' =>  $iddetail,
+                        'nobuktitrans' => $pengeluarantruckingheader->nobukti,
                         'aksi' => 'EDIT',
                         'datajson' => $detaillog,
                         'modifiedby' => $request->modifiedby,
@@ -363,6 +412,7 @@ class PengeluaranTruckingHeaderController extends Controller
             ]);
         } catch (\Throwable $th) {
             DB::rollBack();
+            throw $th;
             return response($th->getMessage());
         }
     }
@@ -376,7 +426,6 @@ class PengeluaranTruckingHeaderController extends Controller
         DB::beginTransaction();
         $pengeluarantruckingheader = new PengeluaranTruckingHeader();
         try {
-            
             
             $delete = PengeluaranTruckingDetail::where('pengeluarantruckingheader_id',$id)->delete();
             $delete = PengeluaranTruckingHeader::destroy($id);
@@ -429,12 +478,14 @@ class PengeluaranTruckingHeaderController extends Controller
             'bank' => Bank::all(),
             'coa' => AkunPusat::all(),
             'penerimaantruckingheader' => PenerimaanTruckingHeader::all(),
-            'supir' => Supir::all()
+            'supir' => Supir::select('id','namasupir')->get()
         ];
 
         return response([
             'data' => $data
         ]);
     }
+
+   
 }
 

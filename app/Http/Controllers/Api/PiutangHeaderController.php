@@ -49,12 +49,22 @@ class PiutangHeaderController extends Controller
         
         try {
 
+            $group = 'PIUTANG';
+            $subgroup = 'PIUTANG';
+
+
+            $format = DB::table('parameter')
+                ->where('grp', $group )
+                ->where('subgrp', $subgroup)
+                ->first();
+
+           
             $content = new Request();
-            $content['group'] = 'PIUTANG';
-            $content['subgroup'] = 'PIUTANG';
+            $content['group'] = $group;
+            $content['subgroup'] = $subgroup;
             $content['table'] = 'piutangheader';
             $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
-
+                       
             $piutang = new PiutangHeader();
            
             $piutang->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
