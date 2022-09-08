@@ -63,13 +63,11 @@ class PengeluaranTruckingHeaderController extends Controller
             $kodepengeluaran = $formatBukti->kodepengeluaran;
 
             
-
+            $group = 'PENGELUARAN TRUCKING HEADER';
             if($kodepengeluaran == 'PJT')
             {
-                $group = 'PINJAMAN SUPIR';
                 $subgroup = 'PINJAMAN SUPIR';
             }else{
-                $group = 'BIAYA LAIN SUPIR';
                 $subgroup = 'BIAYA LAIN SUPIR';
             }
            

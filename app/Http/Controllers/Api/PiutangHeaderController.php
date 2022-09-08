@@ -175,71 +175,82 @@ class PiutangHeaderController extends Controller
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
 
-            // if ($piutang->save() && $piutang->piutangdetail) {
-                $parameterController = new ParameterController;
-                $statusApp = $parameterController->getparameterid('STATUS APPROVAL', 'STATUS APPROVAL', 'NON APPROVAL');
-                
-                $coadebet = DB::table('parameter')
-                ->where('grp', 'JURNAL UMUM PIUTANG')
-                ->first();
-
-                $jurnalHeader = [
-                    'tanpaprosesnobukti' => 1,
-                    'nobukti' => $piutang->nobukti,
-                    'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
-                    'keterangan' => $request->keterangan,
-                    'postingdari' => "ENTRY PIUTANG",
-                    'statusapproval' => $statusApp->id,
-                    'userapproval' => "",
-                    'tglapproval' => "",
-                    'modifiedby' => auth('api')->user()->name,
-                ];
-
-                $jurnaldetail = [];
-                for ($i = 0; $i < count($request->nominal_detail); $i++) {
-                    $jurnalDetail = [
-                            'nobukti' => $piutang->nobukti,
-                            'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
-                            'coa' =>  $coadebet->text,
-                            'nominal' => str_replace(',', '',$request->nominal_detail[$i]),
-                            'keterangan' => $request->keterangan_detail[$i],
-                            'modifiedby' => auth('api')->user()->name,
-                            'baris' => $i,
-                    ];
-                    $jurnaldetail = array_merge($jurnaldetail, $jurnalDetail);
-                }
-                
-                $jurnal = $this->storeJurnal($jurnalHeader, $jurnaldetail);
-
-                
-
-                // if (!$jurnal['status'] AND @$jurnal['errorCode'] == 2601) {
-                //     goto ATAS;
-                // }
-
-                if (!$jurnal['status']) {
-                    throw new \Throwable($jurnal['message']);
-                }
-                // dd('here');
-                DB::commit();
+           
+            $parameterController = new ParameterController;
+            $statusApp = $parameterController->getparameterid('STATUS APPROVAL', 'STATUS APPROVAL', 'NON APPROVAL');
             
-            /* Set position and page */
-        
+            $coapiutang = DB::table('parameter')
+            ->where('grp', 'COA PIUTANG MANUAL')->get();
 
-                $piutang->position = DB::table((new PiutangHeader())->getTable())->orderBy($request->sortname, $request->sortorder)
-                    ->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $piutang->{$request->sortname})
-                    ->where('id', '<=', $piutang->id)
-                    ->count();
+            $jurnalHeader = [
+                'tanpaprosesnobukti' => 1,
+                'nobukti' => $piutang->nobukti,
+                'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
+                'keterangan' => $request->keterangan,
+                'postingdari' => "ENTRY PIUTANG",
+                'statusapproval' => $statusApp->id,
+                'userapproval' => "",
+                'tglapproval' => "",
+                'modifiedby' => auth('api')->user()->name,
+            ];
 
-                if (isset($request->limit)) {
-                    $piutang->page = ceil($piutang->position / $request->limit);
+            $jurnaldetail = [];
+            
+            for ($i = 0; $i < count($request->nominal_detail); $i++) {
+                $detail = [];
+                
+                foreach($coapiutang as $key => $coa){
+                    $a = 0;
+                    $getcoa = DB::table('akunpusat')
+                    ->where('id', $coa->text)->first();
+
+                    
+                    $jurnalDetail = [ 
+                        [
+                        'nobukti' => $piutang->nobukti,
+                        'tglbukti' => date('Y-m-d', strtotime($piutang->tglbukti)),
+                        'coa' =>  $getcoa->coa,
+                        'keterangan' => $request->keterangan_detail[$i],
+                        'modifiedby' => auth('api')->user()->name,
+                        'baris' => $i,
+                        ]
+                    ];
+                    if($coa->subgrp == 'DEBET'){
+                        $jurnalDetail[$a]['nominal'] = str_replace(',', '',$request->nominal_detail[$i]);
+                    }else{
+                        $jurnalDetail[$a]['nominal'] = '-'.str_replace(',', '',$request->nominal_detail[$i]);
+                    }
+                
+                    $detail = array_merge($detail, $jurnalDetail);
+                    $a++;
                 }
+                    $jurnaldetail = array_merge($jurnaldetail, $detail);
+            }
+            
+            $jurnal = $this->storeJurnal($jurnalHeader, $jurnaldetail);
 
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil disimpan',
-                    'data' => $piutang 
-                ]);
+            if (!$jurnal['status']) {
+                throw new \Throwable($jurnal['message']);
+            }
+            DB::commit();
+        
+        /* Set position and page */
+    
+
+            $piutang->position = DB::table((new PiutangHeader())->getTable())->orderBy($request->sortname, $request->sortorder)
+                ->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $piutang->{$request->sortname})
+                ->where('id', '<=', $piutang->id)
+                ->count();
+
+            if (isset($request->limit)) {
+                $piutang->page = ceil($piutang->position / $request->limit);
+            }
+
+            return response([
+                'status' => true,
+                'message' => 'Berhasil disimpan',
+                'data' => $piutang 
+            ]);
             
             
             
@@ -266,7 +277,7 @@ class PiutangHeaderController extends Controller
     /**
      * @ClassName
      */
-    public function update(UpdatePiutangHeaderRequest $request, $id)
+    public function update(StorePiutangHeaderRequest $request, $id)
     {
         DB::beginTransaction();
         try {
@@ -311,16 +322,17 @@ class PiutangHeaderController extends Controller
                     ];
 
                     //STORE
+                    
                     $data = new StorePiutangDetailRequest($datadetail);
                     $datadetails = app(PiutangDetailController::class)->store($data);
-
+                    
                     if($datadetails['error']){
                         return response($datadetails, 422);
                     }else{
                         $iddetail = $datadetails['id'];
                         $tabeldetail = $datadetails['tabel'];
                     }
-
+                    dd('here');
                     $datadetaillog = [
                         'id' => $iddetail,
                         'piutang_id' => $piutang->$id,
@@ -361,7 +373,67 @@ class PiutangHeaderController extends Controller
 
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
+
+            JurnalUmumHeader::where('nobukti', $piutang->nobukti)->delete();
+            JurnalUmumDetail::where('nobukti', $piutang->nobukti)->delete();
+
+            $parameterController = new ParameterController;
+            $statusApp = $parameterController->getparameterid('STATUS APPROVAL', 'STATUS APPROVAL', 'NON APPROVAL');
             
+            $coapiutang = DB::table('parameter')
+            ->where('grp', 'COA PIUTANG MANUAL')->get();
+
+            $jurnalHeader = [
+                'tanpaprosesnobukti' => 1,
+                'nobukti' => $piutang->nobukti,
+                'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
+                'keterangan' => $request->keterangan,
+                'postingdari' => "ENTRY PIUTANG",
+                'statusapproval' => $statusApp->id,
+                'userapproval' => "",
+                'tglapproval' => "",
+                'modifiedby' => auth('api')->user()->name,
+            ];
+
+            $jurnaldetail = [];
+            
+            for ($i = 0; $i < count($request->nominal_detail); $i++) {
+                $detail = [];
+                
+                foreach($coapiutang as $key => $coa){
+                    $a = 0;
+                    $getcoa = DB::table('akunpusat')
+                    ->where('id', $coa->text)->first();
+
+                    
+                    $jurnalDetail = [ 
+                        [
+                        'nobukti' => $piutang->nobukti,
+                        'tglbukti' => date('Y-m-d', strtotime($piutang->tglbukti)),
+                        'coa' =>  $getcoa->coa,
+                        'keterangan' => $request->keterangan_detail[$i],
+                        'modifiedby' => auth('api')->user()->name,
+                        'baris' => $i,
+                        ]
+                    ];
+                    if($coa->subgrp == 'DEBET'){
+                        $jurnalDetail[$a]['nominal'] = str_replace(',', '',$request->nominal_detail[$i]);
+                    }else{
+                        $jurnalDetail[$a]['nominal'] = '-'.str_replace(',', '',$request->nominal_detail[$i]);
+                    }
+                
+                    $detail = array_merge($detail, $jurnalDetail);
+                    $a++;
+                }
+                    $jurnaldetail = array_merge($jurnaldetail, $detail);
+            }
+            
+            $jurnal = $this->storeJurnal($jurnalHeader, $jurnaldetail);
+
+            if (!$jurnal['status']) {
+                throw new \Throwable($jurnal['message']);
+            }
+
             DB::commit();
 
              /* Set position and page */
