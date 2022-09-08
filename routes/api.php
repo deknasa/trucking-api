@@ -298,9 +298,9 @@
         Route::resource('pengeluarantruckingdetail', PengeluaranTruckingDetailController::class);
 
         Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
-        Route::get('piutang/no_bukti', [PiutangHeaderController::class, 'getNoBukti']);
-        Route::get('piutang/grid', [PiutangHeaderController::class, 'grid']);
-        Route::resource('piutang', PiutangHeaderController::class);
+        Route::get('piutangheader/no_bukti', [PiutangHeaderController::class, 'getNoBukti']);
+        Route::get('piutangheader/grid', [PiutangHeaderController::class, 'grid']);
+        Route::resource('piutangheader', PiutangHeaderController::class);
         Route::resource('piutangdetail', PiutangDetailController::class);
     });
 

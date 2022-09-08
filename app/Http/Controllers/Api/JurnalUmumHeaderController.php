@@ -77,7 +77,11 @@ class JurnalUmumHeaderController extends Controller
 
             $jurnalumum->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $jurnalumum->keterangan = $request->keterangan;
-            $jurnalumum->postingdari = '';
+            if ($tanpaprosesnobukti == 1) {
+                $jurnalumum->postingdari = $request->postingdari;
+            }else{
+                $jurnalumum->postingdari = '';
+            }
             $jurnalumum->statusapproval = $statusApproval->id ?? 0;
             $jurnalumum->userapproval = '';
             $jurnalumum->tglapproval = '';
@@ -228,11 +232,14 @@ class JurnalUmumHeaderController extends Controller
 
                 /* Set position and page */
 
+                $selected = $this->getPosition($jurnalumum, $jurnalumum->getTable());
+                $jurnalumum->position = $selected->position;
+                $jurnalumum->page = ceil($jurnalumum->position / ($request->limit ?? 10));
 
-                $jurnalumum->position = DB::table((new JurnalUmumHeader())->getTable())->orderBy($request->sortname, $request->sortorder)
-                    ->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $jurnalumum->{$request->sortname})
-                    ->where('id', '<=', $jurnalumum->id)
-                    ->count();
+                // $jurnalumum->position = DB::table((new JurnalUmumHeader())->getTable())->orderBy($request->sortname, $request->sortorder)
+                //     ->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $jurnalumum->{$request->sortname})
+                //     ->where('id', '<=', $jurnalumum->id)
+                //     ->count();
 
                 if (isset($request->limit)) {
                     $jurnalumum->page = ceil($jurnalumum->position / $request->limit);
@@ -425,14 +432,18 @@ class JurnalUmumHeaderController extends Controller
 
 
             /* Set position and page */
-            $jurnalumum->position = DB::table((new JurnalUmumHeader())->getTable())->orderBy($request->sortname, $request->sortorder)
-                ->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $jurnalumum->{$request->sortname})
-                ->where('id', '<=', $jurnalumum->id)
-                ->count();
+            // $jurnalumum->position = DB::table((new JurnalUmumHeader())->getTable())->orderBy($request->sortname, $request->sortorder)
+            //     ->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $jurnalumum->{$request->sortname})
+            //     ->where('id', '<=', $jurnalumum->id)
+            //     ->count();
 
-            if (isset($request->limit)) {
-                $jurnalumum->page = ceil($jurnalumum->position / $request->limit);
-            }
+            $selected = $this->getPosition($jurnalumum, $jurnalumum->getTable());
+            $jurnalumum->position = $selected->position;
+            $jurnalumum->page = ceil($jurnalumum->position / ($request->limit ?? 10));
+
+            // if (isset($request->limit)) {
+            //     $jurnalumum->page = ceil($jurnalumum->position / $request->limit);
+            // }
 
             return response([
                 'status' => true,
