@@ -79,10 +79,9 @@ class ParameterController extends Controller
             }
 
             return response([
-                'status' => true,
                 'message' => 'Berhasil disimpan',
                 'data' => $parameter
-            ]);
+            ], 201);
         } catch (\Throwable $th) {
             DB::rollBack();
 

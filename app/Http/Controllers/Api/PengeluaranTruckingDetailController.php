@@ -57,7 +57,7 @@ class PengeluaranTruckingDetailController extends Controller
                     'penerimaantruckingheader.nobukti as penerimaantruckingheader_nobukti',
                 )
                 ->leftJoin('supir', 'detail.supir_id', 'supir.id')
-                ->leftJoin('penerimaantruckingheader', 'detail.nobukti', 'penerimaantruckingheader.nobukti');       
+                ->leftJoin('penerimaantruckingheader', 'detail.penerimaantruckingheader_nobukti', 'penerimaantruckingheader.nobukti');       
                  
                 $pengeluaranTruckingDetail = $query->get();
             }
