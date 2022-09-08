@@ -132,13 +132,16 @@ class ParameterSeeder extends Seeder
         Parameter::create(['grp' => 'STATUS LUAR KOTA',  'subgrp' => 'STATUS LUAR KOTA',  'text' => 'TIDAK',  'type' => '0',  'memo' => '',  'modifiedby' => '1',]);
         Parameter::create(['grp' => 'RITASI',  'subgrp' => 'RITASI',  'text' => '#RTT #9999#/#R#/#Y',  'type' => '0',  'memo' => '',  'modifiedby' => '1',]);
         Parameter::create(['grp' => 'STATUS RITASI',  'subgrp' => 'STATUS RITASI',  'text' => 'YA',  'type' => '0',  'memo' => '',  'modifiedby' => '1',]);
-        Parameter::create(['grp' => 'JURNAL UMUM',  'subgrp' => 'JURNAL UMUM',  'text' => '9999#/#R#/#Y#ADJ #',  'type' => '118',  'memo' => 'JURNAL UMUM',  'modifiedby' => 'ADMIN',]);
+        Parameter::create(['grp' => 'JURNAL UMUM BUKTI',  'subgrp' => 'JURNAL UMUM BUKTI',  'text' => '9999#/#R#/#Y#ADJ #',  'type' => '118',  'memo' => 'JURNAL UMUM',  'modifiedby' => 'ADMIN',]);
         Parameter::create(['grp' => 'STATUS KAS',  'subgrp' => 'STATUS KAS',  'text' => 'KAS',  'type' => '0',  'memo' => 'KAS',  'modifiedby' => 'ADMIN',]);
         Parameter::create(['grp' => 'STATUS KAS',  'subgrp' => 'STATUS KAS',  'text' => 'BUKAN STATUS KAS',  'type' => '0',  'memo' => 'BUKAN STATUS KAS',  'modifiedby' => 'ADMIN',]);
         Parameter::create(['grp' => 'RESET PENOMORAN',  'subgrp' => 'RESET PENOMORAN',  'text' => 'RESET BULAN',  'type' => '0',  'memo' => 'RESET BULAN',  'modifiedby' => 'ADMIN',]);
         Parameter::create(['grp' => 'RESET PENOMORAN',  'subgrp' => 'RESET PENOMORAN',  'text' => 'RESET TAHUN',  'type' => '0',  'memo' => 'RESET TAHUN',  'modifiedby' => 'ADMIN',]);
         Parameter::create(['grp' => 'COA PIUTANG MANUAL',  'subgrp' => 'DEBET',  'text' => '49',  'type' => '0',  'memo' => 'COA PIUTANG MANUAL DEBET',  'modifiedby' => 'ADMIN',]);
         Parameter::create(['grp' => 'COA PIUTANG MANUAL',  'subgrp' => 'KREDIT',  'text' => '138',  'type' => '0',  'memo' => 'COA PIUTANG MANUAL KREDIT',  'modifiedby' => 'ADMIN',]);
+        Parameter::create(['grp' => 'PINJAMAN SUPIR BUKTI',  'subgrp' => 'PINJAMAN SUPIR BUKTI',  'text' => '#PJT #9999#/#R#/#Y',  'type' => '118',  'memo' => 'PINJAMAN SUPIR BUKTI',  'modifiedby' => 'ADMIN',]);
+        Parameter::create(['grp' => 'BIAYA LAIN SUPIR BUKTI',  'subgrp' => 'BIAYA LAIN SUPIR BUKTI',  'text' => '#BLS #9999#/#R#/#Y',  'type' => '118',  'memo' => 'BIAYA LAIN SUPIR BUKTI',  'modifiedby' => 'ADMIN',]);
+        Parameter::create(['grp' => 'PIUTANG BUKTI',  'subgrp' => 'PIUTANG BUKTI',  'text' => '#EPT #9999#/#R#/#Y',  'type' => '118',  'memo' => 'PIUTANG BUKTI',  'modifiedby' => 'ADMIN',]);
 
 
 
