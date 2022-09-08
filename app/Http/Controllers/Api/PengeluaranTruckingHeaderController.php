@@ -209,11 +209,9 @@ class PengeluaranTruckingHeaderController extends Controller
             /* Set position and page */
         
 
-            $pengeluarantruckingheader->position = DB::table((new PengeluaranTruckingHeader())->getTable())->orderBy($request->sortname, $request->sortorder)
-                ->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $pengeluarantruckingheader->{$request->sortname})
-                ->where('id', '<=', $pengeluarantruckingheader->id)
-                ->count();
-
+            $selected = $this->getPosition($pengeluarantruckingheader, $pengeluarantruckingheader->getTable());
+            $pengeluarantruckingheader->position = $selected->position;
+            $pengeluarantruckingheader->page = ceil($pengeluarantruckingheader->position / ($request->limit ?? 10));
             if (isset($request->limit)) {
                 $pengeluarantruckingheader->page = ceil($pengeluarantruckingheader->position / $request->limit);
             }
@@ -396,14 +394,14 @@ class PengeluaranTruckingHeaderController extends Controller
 
             
             /* Set position and page */
-            $pengeluarantruckingheader->position = DB::table((new PengeluaranTruckingHeader())->getTable())->orderBy($request->sortname, $request->sortorder)
-                ->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $pengeluarantruckingheader->{$request->sortname})
-                ->where('id', '<=', $pengeluarantruckingheader->id)
-                ->count();
+            $selected = $this->getPosition($pengeluarantruckingheader, $pengeluarantruckingheader->getTable());
+            $pengeluarantruckingheader->position = $selected->position;
+            $pengeluarantruckingheader->page = ceil($pengeluarantruckingheader->position / ($request->limit ?? 10));
 
-            if (isset($request->limit)) {
-                $pengeluarantruckingheader->page = ceil($pengeluarantruckingheader->position / $request->limit);
-            }
+
+            // if (isset($request->limit)) {
+            //     $pengeluarantruckingheader->page = ceil($pengeluarantruckingheader->position / $request->limit);
+            // }
 
             return response([
                 'status' => true,

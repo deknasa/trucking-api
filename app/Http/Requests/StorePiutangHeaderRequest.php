@@ -13,7 +13,7 @@ class StorePiutangHeaderRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -26,7 +26,6 @@ class StorePiutangHeaderRequest extends FormRequest
         return [
             'tglbukti' => 'required',
             'keterangan' => 'required',
-            'postingdari' => 'required',
             'nominal' => 'required'
         ];
     }

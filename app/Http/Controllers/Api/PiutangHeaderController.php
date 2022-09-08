@@ -10,6 +10,8 @@ use App\Http\Requests\UpdatePiutangHeaderRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Schema;
+
 
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Models\LogTrail;
@@ -69,10 +71,11 @@ class PiutangHeaderController extends Controller
            
             $piutang->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $piutang->keterangan = $request->keterangan;
-            $piutang->postingdari = $request->postingdari;
+            $piutang->postingdari = '';
             $piutang->nominal = str_replace(',','',$request->nominal);
             $piutang->invoice_nobukti = '';
             $piutang->modifiedby = auth('api')->user()->name;
+            $piutang->statusformat = $format->id;
             
             TOP:
                 $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
@@ -149,8 +152,8 @@ class PiutangHeaderController extends Controller
                 $detaillog[] = $datadetaillog;
 
                 $dataid = LogTrail::select('id')
-                ->where('idtrans', '=', $iddetail)
-                ->where('namatabel', '=', $tabeldetail)
+                ->where('idtrans', '=', $piutang->id)
+                ->where('namatabel', '=', $piutang->getTable())
                 ->orderBy('id', 'DESC')
                 ->first();
                     
@@ -172,14 +175,18 @@ class PiutangHeaderController extends Controller
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
 
-            if ($piutang->save() && $piutang->piutangdetail) {
+            // if ($piutang->save() && $piutang->piutangdetail) {
                 $parameterController = new ParameterController;
                 $statusApp = $parameterController->getparameterid('STATUS APPROVAL', 'STATUS APPROVAL', 'NON APPROVAL');
-                $coadebet = $parameterController->getparameterid('JURNAL UMUM DEBET PIUTANG', 'JURNAL UMUM DEBET PIUTANG','JURNAL UMUM DEBET PIUTANG');
-                $coakredit = $parameterController->getparameterid('JURNAL UMUM KREDIT PIUTANG', 'JURNAL UMUM KREDIT PIUTANG','JURNAL UMUM KREDIT PIUTANG');
+                
+                $coadebet = DB::table('parameter')
+                ->where('grp', 'JURNAL UMUM PIUTANG')
+                ->first();
+
                 $jurnalHeader = [
+                    'tanpaprosesnobukti' => 1,
                     'nobukti' => $piutang->nobukti,
-                    'tgl' => date('Y-m-d', strtotime($request->tglbukti)),
+                    'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
                     'keterangan' => $request->keterangan,
                     'postingdari' => "ENTRY PIUTANG",
                     'statusapproval' => $statusApp->id,
@@ -188,30 +195,23 @@ class PiutangHeaderController extends Controller
                     'modifiedby' => auth('api')->user()->name,
                 ];
 
+                $jurnaldetail = [];
                 for ($i = 0; $i < count($request->nominal_detail); $i++) {
                     $jurnalDetail = [
-                        [
                             'nobukti' => $piutang->nobukti,
                             'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
-                            'coa' =>  $coadebet,
+                            'coa' =>  $coadebet->text,
                             'nominal' => str_replace(',', '',$request->nominal_detail[$i]),
-                            'keterangan' => $request->keterangan,
+                            'keterangan' => $request->keterangan_detail[$i],
                             'modifiedby' => auth('api')->user()->name,
-                        ],
-                        [
-                            'nobukti' => $piutang->nobukti,
-                            'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
-                            'coa' => $coakredit,
-                            'nominal' => '-'.str_replace(',', '',$request->nominal_detail[$i]),
-                            'keterangan' => $request->keterangan,
-                            'modifiedby' => auth('api')->user()->name,
-                        ]
+                            'baris' => $i,
                     ];
+                    $jurnaldetail = array_merge($jurnaldetail, $jurnalDetail);
                 }
                 
+                $jurnal = $this->storeJurnal($jurnalHeader, $jurnaldetail);
 
-                $jurnal = $this->storeJurnal($jurnalHeader, $jurnalDetail);
-
+                
 
                 // if (!$jurnal['status'] AND @$jurnal['errorCode'] == 2601) {
                 //     goto ATAS;
@@ -220,7 +220,7 @@ class PiutangHeaderController extends Controller
                 if (!$jurnal['status']) {
                     throw new \Throwable($jurnal['message']);
                 }
-
+                // dd('here');
                 DB::commit();
             
             /* Set position and page */
@@ -240,8 +240,8 @@ class PiutangHeaderController extends Controller
                     'message' => 'Berhasil disimpan',
                     'data' => $piutang 
                 ]);
-            }
-           
+            
+            
             
         } catch (\Throwable $th) {
             DB::rollBack();
@@ -434,12 +434,21 @@ class PiutangHeaderController extends Controller
         try {
             $jurnal = new StoreJurnalUmumHeaderRequest($header);
             $jurnals = app(JurnalUmumHeaderController::class)->store($jurnal);
+            $nobukti = $header['nobukti'];
+            $fetchId = JurnalUmumHeader::select('id')
+            ->where('nobukti','=',$nobukti)
+            ->first();
+
+            $id = $fetchId->id;
+
             foreach ($detail as $key => $value) {
-                $value['jurnalumum_id'] = $jurnals['id'];
-                $jurnal = new StoreJurnalUmumDetailRequest($value);
-                app(JurnalUmumDetailController::class)->store($jurnal);
+                $value['jurnalumum_id'] = $id;
+            
+                $detail = new StoreJurnalUmumDetailRequest($value);
+                app(JurnalUmumDetailController::class)->store($detail);
             }
 
+            
             return [
                 'status' => true,
             ];
