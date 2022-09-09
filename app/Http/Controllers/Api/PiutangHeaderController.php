@@ -46,45 +46,57 @@ class PiutangHeaderController extends Controller
      */
     public function store(StorePiutangHeaderRequest $request)
     {
+        
+
         DB::beginTransaction();
 
         
         try {
 
-            $group = 'PIUTANG';
-            $subgroup = 'PIUTANG';
+            $group = 'PIUTANG BUKTI';
+            $subgroup = 'PIUTANG BUKTI';
 
 
             $format = DB::table('parameter')
                 ->where('grp', $group )
                 ->where('subgrp', $subgroup)
                 ->first();
-
-           
+            
+            $nominal = str_replace('.','', $request->nominal);
             $content = new Request();
             $content['group'] = $group;
             $content['subgroup'] = $subgroup;
             $content['table'] = 'piutangheader';
             $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
-                       
+
             $piutang = new PiutangHeader();
            
             $piutang->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $piutang->keterangan = $request->keterangan;
             $piutang->postingdari = '';
-            $piutang->nominal = str_replace(',','',$request->nominal);
-            $piutang->invoice_nobukti = '';
+            $piutang->invoice_nobukti = $request->invoice_nobukti ?? '';
             $piutang->modifiedby = auth('api')->user()->name;
             $piutang->statusformat = $format->id;
+            
+        //    SUM NOMINAL
+            $sum = 0;
+            for ($i = 0; $i < count($request->nominal_detail); $i++) {
+                $nominal_detail = str_replace('.00','', $request->nominal_detail[$i]);
+                $nominal_detail = str_replace(',','',$nominal_detail);
+
+                $sum += $nominal_detail;
+            }
+
+            $piutang->nominal = $sum;
+
             
             TOP:
                 $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
                 $piutang->nobukti = $nobukti;
-    
+            
 
             try {
-
-                $piutang->save();
+                $piutang->save();   
             } catch (\Exception $e) {
                 $errorCode = @$e->errorInfo[1];
                 if ($errorCode == 2601) {
@@ -92,7 +104,7 @@ class PiutangHeaderController extends Controller
                 }
             }
 
-        
+            
             $logTrail = [
                 'namatabel' => strtoupper($piutang->getTable()),
                 'postingdari' => 'ENTRY PIUTANG HEADER',
@@ -102,29 +114,30 @@ class PiutangHeaderController extends Controller
                 'datajson' => $piutang->toArray(),
                 'modifiedby' => $piutang->modifiedby
             ];
-
+            
+            
             $validatedLogTrail = new StoreLogTrailRequest($logTrail);
             $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-            
             /* Store detail */
                       
             $detaillog = [];
             for ($i = 0; $i < count($request->nominal_detail); $i++) {
+            
+                $nominal = str_replace('.','', $request->nominal_detail[$i]);
+
                 $datadetail = [
                     'piutang_id' => $piutang->id,
                     'nobukti' => $piutang->nobukti,
-                    'nominal' => str_replace(',', '',$request->nominal_detail[$i]),
+                    'nominal' => str_replace(',', '',$nominal),
                     'keterangan' => $request->keterangan_detail[$i],
-                    'invoice_nobukti' => '',
+                    'invoice_nobukti' => $request->invoice_nobukti ?? '',
                     'modifiedby' => $piutang->modifiedby,
                 ];
-
+                
                 //STORE 
                 $data = new StorePiutangDetailRequest($datadetail);
                 
                 $datadetails = app(PiutangDetailController::class)->store($data);
-                // dd('tes');
-                
                 
                 if ($datadetails['error']) {
                     return response($datadetails, 422);
@@ -138,7 +151,7 @@ class PiutangHeaderController extends Controller
                     'id' => $iddetail,
                     'piutang_id' => $piutang->id,
                     'nobukti' => $piutang->nobukti,
-                    'nominal' => str_replace(',', '',$request->nominal_detail[$i]),
+                    'nominal' => str_replace(',', '',$nominal),
                     'keterangan' => $request->keterangan_detail[$i],
                     'invoice_nobukti' => '',
                     'modifiedby' => $piutang->modifiedby,
@@ -146,32 +159,24 @@ class PiutangHeaderController extends Controller
                     'updated_at' => date('d-m-Y H:i:s', strtotime($piutang->updated_at)),
                     
                 ];
-                
-                
+                             
                 
                 $detaillog[] = $datadetaillog;
 
-                $dataid = LogTrail::select('id')
-                ->where('idtrans', '=', $piutang->id)
-                ->where('namatabel', '=', $piutang->getTable())
-                ->orderBy('id', 'DESC')
-                ->first();
-                    
                 $datalogtrail = [
                     'namatabel' => $tabeldetail,
                     'postingdari' => 'ENTRY PIUTANG DETAIL',
-                    'idtrans' =>  $dataid->id,
+                    'idtrans' =>  $iddetail,
                     'nobuktitrans' => $piutang->nobukti,
                     'aksi' => 'ENTRY',
                     'datajson' => $detaillog,
-                    'modifiedby' => $request->modifiedby,
+                    'modifiedby' => $piutang->modifiedby,
                 ];
 
                 $data = new StoreLogTrailRequest($datalogtrail);
                 app(LogTrailController::class)->store($data);
-                
             }
-     
+            
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
 
@@ -192,6 +197,7 @@ class PiutangHeaderController extends Controller
                 'userapproval' => "",
                 'tglapproval' => "",
                 'modifiedby' => auth('api')->user()->name,
+                'statusformat' => "0",
             ];
 
             $jurnaldetail = [];
@@ -203,7 +209,8 @@ class PiutangHeaderController extends Controller
                     $a = 0;
                     $getcoa = DB::table('akunpusat')
                     ->where('id', $coa->text)->first();
-
+                    
+                    $nominal = str_replace('.','', $request->nominal_detail[$i]);
                     
                     $jurnalDetail = [ 
                         [
@@ -216,9 +223,9 @@ class PiutangHeaderController extends Controller
                         ]
                     ];
                     if($coa->subgrp == 'DEBET'){
-                        $jurnalDetail[$a]['nominal'] = str_replace(',', '',$request->nominal_detail[$i]);
+                        $jurnalDetail[$a]['nominal'] = str_replace(',', '',$nominal);
                     }else{
-                        $jurnalDetail[$a]['nominal'] = '-'.str_replace(',', '',$request->nominal_detail[$i]);
+                        $jurnalDetail[$a]['nominal'] = '-'.str_replace(',', '',$nominal);
                     }
                 
                     $detail = array_merge($detail, $jurnalDetail);
@@ -226,12 +233,17 @@ class PiutangHeaderController extends Controller
                 }
                     $jurnaldetail = array_merge($jurnaldetail, $detail);
             }
-            
-            $jurnal = $this->storeJurnal($jurnalHeader, $jurnaldetail);
 
+            $jurnal = $this->storeJurnal($jurnalHeader, $jurnaldetail);
+        //    dd($jurnal['det']);
+           
+            
             if (!$jurnal['status']) {
                 throw new \Throwable($jurnal['message']);
             }
+            
+            
+            
             DB::commit();
         
         /* Set position and page */
@@ -280,28 +292,35 @@ class PiutangHeaderController extends Controller
     public function update(StorePiutangHeaderRequest $request, $id)
     {
         DB::beginTransaction();
+        
         try {
 
             $piutang = PiutangHeader::findOrFail($id);
-
+            
             $piutang->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $piutang->keterangan = $request->keterangan;
             $piutang->postingdari = '';
-            $piutang->nominal = str_replace(',','',$request->nominal);
             $piutang->invoice_nobukti = '';
             $piutang->modifiedby = auth('api')->user()->name;
+
+            $sum = 0;
+            for($i=0; $i < count($request->nominal_detail); $i++){
+                $nominal = str_replace('.00','',$request->nominal_detail[$i]);
+                $nominal = str_replace(',','',$nominal);
+                $sum += $nominal;
+            }
+            $piutang->nominal = $sum;
 
             if($piutang->save()){
                 $logTrail = [
                     'namatabel' => strtoupper($piutang->getTable()),
                     'postingdari' => 'EDIT PIUTANG HEADER',
-                    'idtrans' => $piutang->id,
+                    'idtrans' => $id,
                     'nobuktitrans' => $piutang->nobukti,
                     'aksi' => 'EDIT',
                     'datajson' => $piutang->toArray(),
                     'modifiedby' => $piutang->modifiedby
                 ];
-
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
@@ -310,14 +329,15 @@ class PiutangHeaderController extends Controller
                 /* Store detail */
                 
                 $detaillog = [];
-
                 for($i = 0; $i < count($request->nominal_detail); $i++){
+                     $nominal = str_replace('.00','', $request->nominal_detail[$i]);
+
                     $datadetail = [
-                        'piutang_id' => $piutang->$id,
+                        'piutang_id' => $id,
                         'nobukti' => $piutang->nobukti,
-                        'nominal' => str_replace(',','',$request->nominal_detail[$i]),
+                        'nominal' => str_replace(',','',$nominal),
                         'keterangan' => $request->keterangan_detail[$i],
-                        'invoice_nobukti' => '',
+                        'invoice_nobukti' => $request->invoice_nobukti ?? '',
                         'modifiedby' => $piutang->modifiedby,
                     ];
 
@@ -332,14 +352,14 @@ class PiutangHeaderController extends Controller
                         $iddetail = $datadetails['id'];
                         $tabeldetail = $datadetails['tabel'];
                     }
-                    dd('here');
+                    
                     $datadetaillog = [
                         'id' => $iddetail,
                         'piutang_id' => $piutang->$id,
                         'nobukti' => $piutang->nobukti,
                         'nominal' => str_replace(',','',$request->nominal_detail[$i]),
-                        'keterangan' => $request->keterangan_deteail[$i],
-                        'invoice_nobukti' => '',
+                        'keterangan' => $request->keterangan_detail[$i],
+                        'invoice_nobukti' => $request->invoice_nobukti ?? '',
                         'modifiedby' => $piutang->modifiedby,
                         'created_at' => date('d-m-Y H:i:s', strtotime($piutang->created_at)),
                         'updated_at' => date('d-m-Y H:i:s', strtotime($piutang->updated_at)),
@@ -348,18 +368,11 @@ class PiutangHeaderController extends Controller
 
                     $detaillog[] = $datadetaillog;
 
-                    $piutangdetail = PiutangDetail::findOrFail($id);
-                    $dataid = LogTrail::select('id')
-                    ->where('idtrans', '=', $piutangdetail->id)
-                    ->where('namatabel', '=', $piutangdetail->getTable())
-                    ->orderBy('id', 'DESC')
-                    ->first();
-
                     $datalogtrail = [
                         'namatabel' => $tabeldetail,
                         'postingdari' => 'EDIT PIUTANG DETAIL',
-                        'idtrans' =>  $dataid->id,
-                        'nobuktitrans' => $piutangdetail->nobukti,
+                        'idtrans' =>  $iddetail,
+                        'nobuktitrans' => $piutang->nobukti,
                         'aksi' => 'EDIT',
                         'datajson' => $detaillog,
                         'modifiedby' => $request->modifiedby,
@@ -369,11 +382,11 @@ class PiutangHeaderController extends Controller
                     
                     app(LogTrailController::class)->store($data);
                 }
+                
             }
 
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
-
             JurnalUmumHeader::where('nobukti', $piutang->nobukti)->delete();
             JurnalUmumDetail::where('nobukti', $piutang->nobukti)->delete();
 
@@ -393,6 +406,7 @@ class PiutangHeaderController extends Controller
                 'userapproval' => "",
                 'tglapproval' => "",
                 'modifiedby' => auth('api')->user()->name,
+                'statusformat' => "0",
             ];
 
             $jurnaldetail = [];
@@ -464,16 +478,23 @@ class PiutangHeaderController extends Controller
     {
         DB::beginTransaction();
         $piutang = new PiutangHeader();
+        $piutangs = PiutangHeader::findOrFail($id);
+
+        $nobukti = $piutangs->nobukti;
+
         try{
             $delete = PiutangDetail::where('piutang_id',$id)->delete();
             $delete = PiutangHeader::destroy($id);
+
+            JurnalUmumHeader::where('nobukti', $piutangs->nobukti)->delete();
+            JurnalUmumDetail::where('nobukti', $piutangs->nobukti)->delete();
 
             if($delete) {
                 $logTrail = [
                     'namatabel' => strtoupper($piutang->getTable()),
                     'postingdari' => 'DELETE PIUTANG HEADER',
                     'idtrans' => $id,
-                    'nobuktitrans' => $piutang->nobukti,
+                    'nobuktitrans' => $nobukti,
                     'aksi' => 'DELETE',
                     'datajson' => $piutang->toArray(),
                     'modifiedby' => $piutang->modifiedby
@@ -503,32 +524,36 @@ class PiutangHeaderController extends Controller
 
     private function storeJurnal($header, $detail)
     {
+        DB::beginTransaction();
+        
         try {
+            
             $jurnal = new StoreJurnalUmumHeaderRequest($header);
             $jurnals = app(JurnalUmumHeaderController::class)->store($jurnal);
             $nobukti = $header['nobukti'];
             $fetchId = JurnalUmumHeader::select('id')
             ->where('nobukti','=',$nobukti)
             ->first();
-
             $id = $fetchId->id;
+            $details = [];
 
-            foreach ($detail as $key => $value) {
+            foreach ($detail as $value) {
                 $value['jurnalumum_id'] = $id;
-            
                 $detail = new StoreJurnalUmumDetailRequest($value);
-                app(JurnalUmumDetailController::class)->store($detail);
+                 app(JurnalUmumDetailController::class)->store($detail);
+                $details = $detail;
             }
-
-            
+            // die;
+            DB::commit();
             return [
                 'status' => true,
+                'head' => $jurnals,
+                'det' => $details,
             ];
-        } catch (\Exception $e) {
-            return [
-                'status' => false,
-                'message' => $e->getMessage(),
-            ];
+           
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return response($th->getMessage()); 
         }
     }
     

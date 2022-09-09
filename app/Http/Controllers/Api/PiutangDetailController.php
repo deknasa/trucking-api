@@ -72,12 +72,14 @@ class PiutangDetailController extends Controller
         DB::beginTransaction();
 
         $validator = Validator::make($request->all(), [
-           'keterangan_detail' => 'required|array',
-            'nominal_detail' => 'required|array',
+            'nominal' => 'required',
+           'keterangan' => 'required'
         ], [
-            'keterangan_detail.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
-            'nominal_detail.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
+            'nominal.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
+            'keterangan.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan
         ]);
+        // dd($request->all());
+
         if (!$validator->passes()) {
             return [
                 'error' => true,

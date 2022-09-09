@@ -63,12 +63,14 @@ class PengeluaranTruckingHeaderController extends Controller
             $kodepengeluaran = $formatBukti->kodepengeluaran;
 
             
-            $group = 'PENGELUARAN TRUCKING HEADER';
+            
             if($kodepengeluaran == 'PJT')
             {
-                $subgroup = 'PINJAMAN SUPIR';
+                $group = 'PINJAMAN SUPIR BUKTI';
+                $subgroup = 'PINJAMAN SUPIR BUKTI';
             }else{
-                $subgroup = 'BIAYA LAIN SUPIR';
+                $group = 'BIAYA LAIN SUPIR BUKTI';
+                $subgroup = 'BIAYA LAIN SUPIR BUKTI';
             }
            
             $format = DB::table('parameter')

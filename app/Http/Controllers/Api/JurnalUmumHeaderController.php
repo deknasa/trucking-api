@@ -49,18 +49,15 @@ class JurnalUmumHeaderController extends Controller
 
         $tanpaprosesnobukti = $request->tanpaprosesnobukti ?? 0;
         try {
-            $group = 'JURNAL UMUM';
-            $subgroup = 'JURNAL UMUM';
-
-
-            $format = DB::table('parameter')
+            
+            if ($tanpaprosesnobukti == 0) {
+                $group = 'JURNAL UMUM BUKTI';
+                $subgroup = 'JURNAL UMUM BUKTI';
+                $format = DB::table('parameter')
                 ->where('grp', $group )
                 ->where('subgrp', $subgroup)
                 ->first();
 
-  
-
-            if ($tanpaprosesnobukti == 0) {
                 $content = new Request();
                 $content['group'] = $group;
                 $content['subgroup'] = $subgroup;
@@ -77,18 +74,14 @@ class JurnalUmumHeaderController extends Controller
 
             $jurnalumum->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $jurnalumum->keterangan = $request->keterangan;
-            if ($tanpaprosesnobukti == 1) {
-                $jurnalumum->postingdari = $request->postingdari;
-            }else{
-                $jurnalumum->postingdari = '';
-            }
+            $jurnalumum->postingdari = $request->postingdari ?? '';
             $jurnalumum->statusapproval = $statusApproval->id ?? 0;
             $jurnalumum->userapproval = '';
             $jurnalumum->tglapproval = '';
-            $jurnalumum->statusformat =  $format->id;
+            $jurnalumum->statusformat =  $format->id ?? $request->statusformat;
 
             $jurnalumum->modifiedby = auth('api')->user()->name;
-
+               
             TOP:
             if ($tanpaprosesnobukti == 0) {
 
@@ -567,11 +560,10 @@ class JurnalUmumHeaderController extends Controller
     public function cekapproval($id)
     {
         $jurnalumum = JurnalUmumHeader::find($id);
-        $nobukti = $jurnalumum->nobukti;
-        $kode = substr($nobukti, 0, 3);
+        $statusformat = $jurnalumum->statusformat;
         $status = $jurnalumum->statusapproval;
 
-        if ($kode == 'ADJ') {
+        if ($statusformat != 0) {
             if ($status == '3') {
                 $query = DB::table('error')
                     ->select('keterangan')
