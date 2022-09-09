@@ -51,8 +51,8 @@ class Controller extends BaseController
                     "parameter.id,
                     parameter.text,
                     isnull(type.text,'') as type"
-                    )
-    
+                )
+
             )
             ->leftJoin('parameter as type', 'parameter.type', 'type.id')
             ->where('parameter.grp', $request->group)
@@ -89,14 +89,33 @@ class Controller extends BaseController
         }
         if ($type == '') {
             $lastRow = DB::table($request->table)
-            ->where(DB::raw('statusformat'), '=', $statusformat)
-            ->count();
+                ->where(DB::raw('statusformat'), '=', $statusformat)
+                ->count();
         }
 
-      
-        $runningNumber = $this->appHelper->runningNumber($text, $lastRow, $bulan);
 
+        $runningNumber = $this->appHelper->runningNumber($text, $lastRow, $bulan);
         // dd($runningNumber);
+        $nilai = 0;
+        $nomor=$lastRow;
+        while ($nilai < 1) { 
+            $cekbukti = DB::table($request->table)
+                ->where(DB::raw('nobukti'), '=', $runningNumber)
+                ->first();
+                if (!isset($cekbukti)) {
+                    $nilai++;
+                    break;
+                }
+                $nomor++;
+                $runningNumber = $this->appHelper->runningNumber($text, $nomor, $bulan);
+
+
+        }
+
+
+
+
+     
         return response([
             'status' => true,
             'data' => $runningNumber
