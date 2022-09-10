@@ -13,7 +13,7 @@ class StorePiutangDetailRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +24,8 @@ class StorePiutangDetailRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'nominal_detail' => 'required|array',
+            'keterangan_detail' => 'required|array',
         ];
     }
 }

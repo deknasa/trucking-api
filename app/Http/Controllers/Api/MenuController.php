@@ -160,6 +160,8 @@ class MenuController extends Controller
             $menu->position = $selected->position;
             $menu->page = ceil($menu->position / ($request->limit ?? 10));
 
+            
+
             return response([
                 'status' => true,
                 'message' => 'Berhasil disimpan',

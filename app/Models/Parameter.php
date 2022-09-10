@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class Parameter extends MyModel
 {
@@ -20,10 +21,7 @@ class Parameter extends MyModel
     public function get()
     {
         $this->setRequestParameters();
-
-        $query = DB::table($this->table)->select(
-            "$this->table.*",
-        );
+        $query = DB::table($this->table);
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -37,6 +35,57 @@ class Parameter extends MyModel
         return $data;
     }
 
+    public function selectColumns($query)
+    {
+        return $query->select(
+            "$this->table.id",
+            "$this->table.grp",
+            "$this->table.subgrp",
+            "$this->table.text",
+            "$this->table.memo",
+            "$this->table.created_at",
+            "$this->table.updated_at",
+            "$this->table.modifiedby"
+        );
+    }
+
+    public function createTemp(string $modelTable)
+    {
+        $this->setRequestParameters();
+
+        $temp = '##temp' . rand(1, 10000);
+
+        Schema::create($temp, function ($table) {
+            $table->bigInteger('id')->default('0');
+            $table->string('grp', 500)->default('');
+            $table->string('subgrp', 250)->default('');
+            $table->string('text', 500)->default('');
+            $table->string('memo', 1000)->default('');
+            $table->dateTime('created_at')->default('1900/1/1');
+            $table->dateTime('updated_at')->default('1900/1/1');
+            $table->string('modifiedby', 50)->default('');
+            $table->increments('position');
+        });
+
+        $query = DB::table($modelTable);
+        $query = $this->selectColumns($query);
+        $query = $this->sort($query);
+        $models = $this->filter($query);
+        
+        DB::table($temp)->insertUsing([
+            'id',
+            'grp',
+            'subgrp',
+            'text',
+            'memo',
+            'created_at',
+            'updated_at',
+            'modifiedby'
+        ], $models);
+
+        return  $temp;
+    }
+
     public function sort($query)
     {
         if ($this->params['sortIndex'] == 'grp') {
@@ -48,7 +97,7 @@ class Parameter extends MyModel
 
         if ($this->params['sortIndex'] == 'subgrp') {
             return $query
-            ->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder'])
+                ->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder'])
                 ->orderBy($this->table . '.grp', $this->params['sortOrder'])
                 ->orderBy($this->table . '.id', $this->params['sortOrder']);
         }

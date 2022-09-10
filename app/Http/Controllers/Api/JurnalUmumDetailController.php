@@ -111,10 +111,10 @@ class JurnalUmumDetailController extends Controller
             $jurnalumumDetail->keterangan = $request->keterangan ?? '';
             $jurnalumumDetail->modifiedby = auth('api')->user()->name;
             $jurnalumumDetail->baris = $request->baris;
-            
             $jurnalumumDetail->save();
            
             DB::commit();
+
             if ($validator->passes()) {
                 return [
                     'error' => false,
@@ -122,6 +122,7 @@ class JurnalUmumDetailController extends Controller
                     'tabel' => $jurnalumumDetail->getTable(),
                 ];
             }
+
         } catch (\Throwable $th) {
             throw $th;
             DB::rollBack();

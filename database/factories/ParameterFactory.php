@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class ParameterFactory extends Factory
@@ -18,7 +19,7 @@ class ParameterFactory extends Factory
             'subgrp' => $this->faker->name(),
             'text' => $this->faker->name(),
             'memo' => $this->faker->name(),
-            'modifiedby' => rand(0, 1) == 0 ? 'ADMIN' : 'GUEST',
+            'modifiedby' => $this->faker->randomElement(User::all()->pluck('user'))
         ];
     }
 }
