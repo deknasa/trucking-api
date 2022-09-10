@@ -78,6 +78,9 @@ use App\Http\Controllers\Api\JurnalUmumDetailController;
 use App\Http\Controllers\Api\PengeluaranTruckingHeaderController;
 use App\Http\Controllers\Api\PengeluaranTruckingDetailController;
 
+use App\Http\Controllers\Api\HutangHeaderController;
+use App\Http\Controllers\Api\HutangDetailController;
+
 
 
 /*
@@ -417,3 +420,13 @@ Route::get('penerimaantrucking/grid', [PenerimaanTruckingHeaderController::class
 Route::resource('penerimaantrucking', PenerimaanTruckingHeaderController::class);
 
 Route::resource('penerimaantruckingdetail', PenerimaanTruckingDetailController::class);
+
+//Hutang
+Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
+Route::post('hutang/{id}/approval', [HutangHeaderController::class, 'approval'])->name('hutang.approval');
+Route::get('hutang/no_bukti', [HutangHeaderController::class, 'getNoBukti']);
+Route::get('hutang/combo', [HutangHeaderController::class, 'combo']);
+Route::get('hutang/grid', [HutangHeaderController::class, 'grid']);
+Route::resource('hutang', HutangHeaderController::class);
+
+Route::resource('hutangdetail', HutangDetailController::class);
