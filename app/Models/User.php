@@ -7,6 +7,7 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\DB;
 use Laravel\Passport\HasApiTokens;
 use Illuminate\Support\Facades\Schema;
 
@@ -15,7 +16,7 @@ class User extends Authenticatable
     use HasApiTokens, HasFactory, Notifiable;
 
     protected $table = 'user';
-    
+
     /**
      * The attributes that are mass assignable.
      *
@@ -57,13 +58,32 @@ class User extends Authenticatable
     {
         return $date->format('d-m-Y H:i:s');
     }
-    
+
+    public function setAttribute($key, $value)
+    {
+        parent::setAttribute($key, $value);
+
+        if (is_string($value)) {
+            return $this->attributes[$key] = strtoupper($value);
+        }
+    }
+
+    public function setRequestParameters()
+    {
+        $this->params = [
+            'offset' => request()->offset ?? ((request()->page - 1) * request()->limit),
+            'limit' => request()->limit ?? 10,
+            'filters' => json_decode(request()->filters, true) ?? [],
+            'sortIndex' => request()->sortIndex ?? 'id',
+            'sortOrder' => request()->sortOrder ?? 'asc',
+        ];
+    }
+
     public function findForPassport($username)
     {
         return $this->where('username', $username)->first();
     }
 
-    
     public function get()
     {
         $this->setRequestParameters();
@@ -72,7 +92,7 @@ class User extends Authenticatable
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
-        
+
         $this->selectColumns($query);
         $this->sort($query);
         $this->filter($query);
@@ -83,28 +103,24 @@ class User extends Authenticatable
         return $data;
     }
 
-    
     public function selectColumns($query)
     {
         return $query->select(
-            DB::raw(
-                "$this->table.id,
-                $this->table.user,
-                $this->table.name,
-                cabang.namacabang as cabang_id',
-                $this->table.karyawan_id,
-                $this->table.dashboard,
-                parameter.text as statusaktif,
-                $this->table.modifiedby,
-                $this->table.created_at,
-                $this->table.updated_at"
-            )
+            "$this->table.id",
+            "$this->table.user",
+            "$this->table.name",
+            "cabang.namacabang as cabang_id",
+            "$this->table.karyawan_id",
+            "$this->table.dashboard",
+            "parameter.text as statusaktif",
+            "$this->table.modifiedby",
+            "$this->table.created_at",
+            "$this->table.updated_at"
         )
-        ->leftJoin('parameter', 'user.statusaktif', '=', 'parameter.id')
-        ->leftJoin('cabang', 'user.cabang_id', '=', 'cabang.id');
-
-        
+            ->leftJoin('parameter', 'user.statusaktif', '=', 'parameter.id')
+            ->leftJoin('cabang', 'user.cabang_id', '=', 'cabang.id');
     }
+
     public function createTemp(string $modelTable)
     {
         $temp = '##temp' . rand(1, 10000);
@@ -112,27 +128,27 @@ class User extends Authenticatable
             $table->bigInteger('id')->default('0');
             $table->string('user', 255)->default('');
             $table->string('name', 255)->default('');
-            $table->string('password', 255)->default('');
             $table->string('cabang_id', 300)->default('');
             $table->bigInteger('karyawan_id')->length(11)->default('0');
             $table->string('dashboard', 255)->default('');
             $table->string('statusaktif', 300)->default('');
             $table->string('modifiedby', 30)->default('');
             $table->dateTime('created_at')->default('1900/1/1');
-            $table->dateTime('updated_at')->default('1900/1/1');            $table->increments('position');
+            $table->dateTime('updated_at')->default('1900/1/1');
+            $table->increments('position');
         });
 
         $this->setRequestParameters();
+
         $query = DB::table($modelTable);
         $query = $this->selectColumns($query);
-        $this->sort($query);
+        $query = $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id','user','name','password','cabang_id','karyawan_id','dashboard','statusaktif','modifiedby','created_at','updated_at'],$models);
 
+        DB::table($temp)->insertUsing(['id', 'user', 'name', 'cabang_id', 'karyawan_id', 'dashboard', 'statusaktif', 'modifiedby', 'created_at', 'updated_at'], $models);
 
-        return  $temp;         
-
-      }
+        return  $temp;
+    }
 
 
     public function sort($query)
@@ -188,5 +204,4 @@ class User extends Authenticatable
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
-
 }

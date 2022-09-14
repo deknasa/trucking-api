@@ -30,6 +30,7 @@ class UpdateUserRequest extends FormRequest
             'name' => 'required',
             'cabang_id' => 'required',
             'karyawan_id' => 'required',
+            'dashboard' => 'required',
             'statusaktif' => 'required',
         ];
     }
