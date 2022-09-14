@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\PenerimaanTruckingHeader;
 use App\Http\Requests\StorePenerimaanTruckingHeaderRequest;
 use App\Http\Requests\StorePenerimaanDetailRequest;
+use App\Http\Requests\StorePenerimaanTruckingDetailRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Requests\StoreLogTrailRequest;
@@ -20,6 +21,7 @@ use App\Models\JurnalUmumDetail;
 use App\Models\JurnalUmumHeader;
 use App\Models\Parameter;
 use App\Models\PenerimaanTruckingDetail;
+use App\Models\StorePenerimaanTruckingDetail;
 use App\Http\Requests\StoreJurnalUmumHeaderRequest;
 use App\Http\Requests\StoreJurnalUmumDetailRequest;
 use App\Models\PenerimaanTrucking;
@@ -90,31 +92,24 @@ class PenerimaanTruckingHeaderController extends Controller
         try {
             /* Store header */
 
-            $penerimaanHeader = PenerimaanTruckingHeader::findOrFail($id);
-            $penerimaanHeader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
-            $penerimaanHeader->pelanggan_id = $request->pelanggan_id;
-            $penerimaanHeader->keterangan = $request->keterangan ?? '';
-            $penerimaanHeader->postingdari = $request->postingdari ?? 'PENERIMAAN';
-            $penerimaanHeader->diterimadari = $request->diterimadari ?? '';
-            // $penerimaanHeader->tgllunas = date('Y-m-d', strtotime($request->tgllunas));
-            $penerimaanHeader->cabang_id = $request->cabang_id ?? 0;
-            $penerimaanHeader->statuskas = $request->statuskas ?? 0;
-            $penerimaanHeader->bank_id = $request->bank_id ?? 'KAS';
-            $penerimaanHeader->noresi = $request->noresi ?? 0;
-            // $penerimaanHeader->statusapproval = $statusApproval->id ?? 0;
-
-            // $penerimaanHeader->statusberkas = $request->statusberkas ?? 0;
-            $penerimaanHeader->modifiedby = auth('api')->user()->name;
+            $penerimaantruckingHeader = PenerimaanTruckingHeader::findOrFail($id);
+            $penerimaantruckingHeader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
+            $penerimaantruckingHeader->keterangan = $request->keterangan ?? '';
+            $penerimaantruckingHeader->postingdari = $request->postingdari ?? 'PENERIMAAN TRUCKING';
+            $penerimaantruckingHeader->diterimadari = $request->diterimadari ?? '';
+            $penerimaantruckingHeader->bank_id = $request->bank_id ?? '';
+            $penerimaantruckingHeader->coa = $request->coa ?? '';
+            $penerimaantruckingHeader->modifiedby = auth('api')->user()->name;
 
             if ($penerimaanHeader->save()) {
                 $logTrail = [
-                    'namatabel' => strtoupper($penerimaanHeader->getTable()),
-                    'postingdari' => 'EDIT PENERIMAAN',
-                    'idtrans' => $penerimaanHeader->id,
-                    'nobuktitrans' => $penerimaanHeader->nobukti,
-                    'aksi' => 'EDIT',
-                    'datajson' => $penerimaanHeader->toArray(),
-                    'modifiedby' => $penerimaanHeader->modifiedby
+                    'namatabel' => strtoupper($penerimaantruckingHeader->getTable()),
+                    'postingdari' => 'EDIT PENERIMAAN TRUCKING',
+                    'idtrans' => $penerimaantruckingHeader->id,
+                    'nobuktitrans' => $penerimaantruckingHeader->nobukti,
+                    'aksi' => 'ENTRY',
+                    'datajson' => $penerimaantruckingHeader->toArray(),
+                    'modifiedby' => $penerimaantruckingHeader->modifiedby
                 ];
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
@@ -133,19 +128,10 @@ class PenerimaanTruckingHeaderController extends Controller
             for ($i = 0; $i < count($request->nominal); $i++) {
                 $nominal = str_replace(',', '', str_replace('.', '', $request->nominal[$i]));
                 $datadetail = [
-                    'penerimaan_id' => $penerimaanHeader->id,
-                    'nobukti' => $penerimaanHeader->nobukti,
-                    'nowarkat' => $request->nowarkat[$i],
-                    'tgljatuhtempo' =>  date('Y-m-d', strtotime($request->tgljatuhtempo[$i])),
+                    'penerimaan_id' => $penerimaantruckingHeader->id,
+                    'nobukti' => $penerimaantruckingHeader->nobukti,
+                    'supir_id' => $penerimaantruckingHeader->supir,
                     'nominal' => $nominal,
-                    //'coadebet' => $coaDebet->subgrp ?? 'PENERIMAAN KAS DEBET',
-                    'coadebet' => $penerimaanHeader->bank_id,
-                    'coakredit' => $request->coakredit[$i],
-                    'keterangan' => $request->keterangan_detail[$i],
-                    'bank_id' => $request->bank_id,
-                    'bankpelanggan_id' => $request->bankpelanggan_id[$i],
-                    'pelanggan_id' => $request->pelanggan_id,
-                    // 'jenisbiaya' => $request->jenisbiaya[$i],
                     'modifiedby' => auth('api')->user()->name,
                 ];
 
@@ -160,22 +146,13 @@ class PenerimaanTruckingHeaderController extends Controller
                 }
 
                 $datadetaillog = [
-                    'penerimaan_id' => $penerimaanHeader->id,
-                    'nobukti' => $penerimaanHeader->nobukti,
-                    'nowarkat' => $request->nowarkat[$i],
-                    'tgljatuhtempo' =>  date('Y-m-d', strtotime($request->tgljatuhtempo[$i])),
+                    'penerimaan_id' => $penerimaantruckingHeader->id,
+                    'nobukti' => $penerimaantruckingHeader->nobukti,
+                    'supir_id' => $penerimaantruckingHeader->supir_id[$i],
                     'nominal' => $nominal,
-                    // 'coadebet' => $coaDebet->subgrp ?? 'PENERIMAAN KAS DEBET',
-                    'coadebet' =>  $penerimaanHeader->bank_id,
-                    'coakredit' => $request->coakredit[$i],
-                    'keterangan' => $request->keterangan_detail[$i],
-                    // 'bank_id' => $request->bank_id,
-                    'bankpelanggan_id' => $request->bankpelanggan_id[$i],
-                    'pelanggan_id' => $request->pelanggan_id,
-                    // 'jenisbiaya' => $request->jenisbiaya[$i],
                     'modifiedby' => auth('api')->user()->name,
-                    'created_at' => date('d-m-Y H:i:s', strtotime($penerimaanHeader->created_at)),
-                    'updated_at' => date('d-m-Y H:i:s', strtotime($penerimaanHeader->updated_at)),
+                    'created_at' => date('d-m-Y H:i:s', strtotime($penerimaantruckingHeader->created_at)),
+                    'updated_at' => date('d-m-Y H:i:s', strtotime($penerimaantruckingHeader->updated_at)),
                 ];
                 $detaillog[] = $datadetaillog;
 
@@ -190,10 +167,10 @@ class PenerimaanTruckingHeaderController extends Controller
 
             $datalogtrail = [
                 'namatabel' => $tabeldetail,
-                'postingdari' => 'EDIT PENERIMAAN',
+                'postingdari' => 'EDIT PENERIMAAN TRUCKING',
                 'idtrans' =>  $dataid->id,
-                'nobuktitrans' => $penerimaanHeader->nobukti,
-                'aksi' => 'EDIT',
+                'nobuktitrans' => $penerimaantruckingHeader->nobukti,
+                'aksi' => 'ENTRY',
                 'datajson' => $detaillog,
                 'modifiedby' => auth('api')->user()->name,
             ];
@@ -204,77 +181,29 @@ class PenerimaanTruckingHeaderController extends Controller
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
 
-            if ($penerimaanHeader->save() && $penerimaanHeader->penerimaandetail()) {
-                $parameterController = new ParameterController;
-                $statusApp = $parameterController->getparameterid('STATUS APPROVAL', 'STATUS APPROVAL', 'NON APPROVAL');
+            DB::commit();
 
-                $jurnalHeader = [
-                    'nobukti' => $penerimaanHeader->nobukti,
-                    'tgl' => date('Y-m-d', strtotime($request->tglbukti)),
-                    'keterangan' => $request->keterangan,
-                    'postingdari' => "EDIT PENERIMAAN KAS",
-                    'statusapproval' => $statusApp->id,
-                    'userapproval' => "",
-                    'tglapproval' => "",
-                    'modifiedby' => auth('api')->user()->name,
-                ];
+            /* Set position and page */
+            $penerimaantruckingHeader->position = DB::table((new PenerimaanTruckingHeader())->getTable())->orderBy($request->sortname, $request->sortorder)
+                ->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $penerimaantruckingHeader->{$request->sortname})
+                ->where('id', '<=', $penerimaantruckingHeader->id)
+                ->count();
 
-                $jurnalDetail = [
-                    [
-                        'nobukti' => $penerimaanHeader->nobukti,
-                        'tglbukti' => date('Y-m-d', strtotime($request->tglbuktibukti)),
-                        //'coa' => $coaDebet->subgrp ?? 'PENERIMAAN KAS DEBET',
-                        'coa' =>  $penerimaanHeader->bank_id,
-                        // 'coadebet' => 'PENERIMAAN KAS DEBET',
-                        'nominal' => $total,
-                        'keterangan' => $request->keterangan,
-                        'modifiedby' => auth('api')->user()->name,
-                    ],
-                    [
-                        'nobukti' => $penerimaanHeader->nobukti,
-                        'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
-                        'coa' => $request->coakredit,
-                        'nominal' => -$total,
-                        'keterangan' => $request->keterangan,
-                        'modifiedby' => auth('api')->user()->name,
-                    ]
-                ];
-
-                $jurnal = $this->storeJurnal($jurnalHeader, $jurnalDetail);
-
-
-                // if (!$jurnal['status'] AND @$jurnal['errorCode'] == 2601) {
-                //     goto ATAS;
-                // }
-
-                if (!$jurnal['status']) {
-                    throw new \Throwable($jurnal['message']);
-                }
-
-                DB::commit();
-
-                /* Set position and page */
-                $penerimaanHeader->position = PenerimaanTruckingHeader::orderBy($request->sortname, $request->sortorder)
-                    ->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $penerimaanHeader->{$request->sortname})
-                    ->where('id', '<=', $penerimaanHeader->id)
-                    ->count();
-
-                if (isset($request->limit)) {
-                    $penerimaanHeader->page = ceil($penerimaanHeader->position / ($request->limit ?? 10));
-                }
-
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil disimpan',
-                    'data' => $penerimaanHeader
-                ]);
+            if (isset($request->limit)) {
+                $penerimaantruckingHeader->page = ceil($penerimaantruckingHeader->position / $request->limit);
             }
+
+            return response([
+                'status' => true,
+                'message' => 'Berhasil disimpan',
+                'data' => $penerimaantruckingHeader
+            ]);
         } catch (\Throwable $th) {
             DB::rollBack();
-            return response($th->getMessage());
+            throw $th;
         }
 
-        return response($penerimaanHeader->penerimaandetail);
+        return response($penerimaantruckingHeader->penerimaantruckingdetail());
     }
 
     /**
@@ -332,48 +261,48 @@ class PenerimaanTruckingHeaderController extends Controller
 
 
 
-    public function approval($id)
-    {
-        DB::beginTransaction();
+    // public function approval($id)
+    // {
+    //     DB::beginTransaction();
 
-        try {
-            $penerimaanHeader = PenerimaanTruckingHeader::find($id);
-            $statusApproval = Parameter::where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
-            $statusNonApproval = Parameter::where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
+    //     try {
+    //         $penerimaanHeader = PenerimaanTruckingHeader::find($id);
+    //         $statusApproval = Parameter::where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
+    //         $statusNonApproval = Parameter::where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
 
-            if ($penerimaanHeader->statusapproval == $statusApproval->id) {
-                $penerimaanHeader->statusapproval = $statusNonApproval->id;
-            } else {
-                $penerimaanHeader->statusapproval = $statusApproval->id;
-            }
+    //         if ($penerimaanHeader->statusapproval == $statusApproval->id) {
+    //             $penerimaanHeader->statusapproval = $statusNonApproval->id;
+    //         } else {
+    //             $penerimaanHeader->statusapproval = $statusApproval->id;
+    //         }
 
-            $penerimaanHeader->tglapproval = date('Y-m-d', time());
-            $penerimaanHeader->userapproval = auth('api')->user()->name;
+    //         $penerimaanHeader->tglapproval = date('Y-m-d', time());
+    //         $penerimaanHeader->userapproval = auth('api')->user()->name;
 
-            if ($penerimaanHeader->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($penerimaanHeader->getTable()),
-                    'postingdari' => 'UN/APPROVE PENERIMAANHEADER',
-                    'idtrans' => $penerimaanHeader->id,
-                    'nobuktitrans' => $penerimaanHeader->id,
-                    'aksi' => 'UN/APPROVE',
-                    'datajson' => $penerimaanHeader->toArray(),
-                    'modifiedby' => $penerimaanHeader->modifiedby
-                ];
+    //         if ($penerimaanHeader->save()) {
+    //             $logTrail = [
+    //                 'namatabel' => strtoupper($penerimaanHeader->getTable()),
+    //                 'postingdari' => 'UN/APPROVE PENERIMAANHEADER',
+    //                 'idtrans' => $penerimaanHeader->id,
+    //                 'nobuktitrans' => $penerimaanHeader->id,
+    //                 'aksi' => 'UN/APPROVE',
+    //                 'datajson' => $penerimaanHeader->toArray(),
+    //                 'modifiedby' => $penerimaanHeader->modifiedby
+    //             ];
 
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+    //             $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+    //             $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-                DB::commit();
-            }
+    //             DB::commit();
+    //         }
 
-            return response([
-                'message' => 'Berhasil'
-            ]);
-        } catch (\Throwable $th) {
-            throw $th;
-        }
-    }
+    //         return response([
+    //             'message' => 'Berhasil'
+    //         ]);
+    //     } catch (\Throwable $th) {
+    //         throw $th;
+    //     }
+    // }
 
     /**
      * @ClassName
@@ -385,30 +314,47 @@ class PenerimaanTruckingHeaderController extends Controller
         try {
             /* Store header */
 
-            $content = new Request();
-            $bankid = $request->bank_id;
-            $querysubgrppenerimaantrucking = DB::table('bank')
-                ->select(
-                    'parameter.grp',
-                    'parameter.subgrp',
-                )
-                ->join('parameter', 'bank.kodepenerimaan', 'parameter.id')
-                ->where('bank.id', '=', $bankid)
+            $idpenerimaan = $request->penerimaantrucking_id;
+            $formatBukti =  DB::table('penerimaantrucking')
+                ->where('id', $idpenerimaan)
+                ->first();
+            
+            $kodepenerimaan = $formatBukti->kodepenerimaan;
+            if ($kodepenerimaan == 'PJP') {
+                $group = 'PENGEMBALIAN PINJAMAN SUPIR';
+                $subgroup = 'PENGEMBALIAN PINJAMAN SUPIR';
+            } else {
+                $group = 'DEPOSITO SUPIR';
+                $subgroup = 'DEPOSITO SUPIR';
+            }
+
+            $format = DB::table('parameter')
+                ->where('grp', $group)
+                ->where('subgrp', $subgroup)
+                ->where('id', $statusformat)
                 ->first();
 
-            $content['group'] = $querysubgrppenerimaantrucking->grp;
-            $content['subgroup'] = $querysubgrppenerimaantrucking->subgrp;
+            $content = new Request();
+            $content['group'] = $group;
+            $content['subgroup'] = $subgroup;
             $content['table'] = 'penerimaantruckingheader';
             $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
-             $content['format'] = $querysubgrppenerimaantrucking->format;
 
             $penerimaantruckingHeader = new PenerimaanTruckingHeader();
+            $statusPosting = Parameter::where('grp', 'STATUS POSTING')->where('text', 'BUKAN POSTING')->first();
+
+            $noBuktiPenerimaan = $request->penerimaan_nobukti;
+            $PenerimaanHeader =  DB::table('penerimaanheader')
+                ->where('nobukti', $noBuktiPenerimaan)
+                ->first();
+
             $penerimaantruckingHeader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $penerimaantruckingHeader->keterangan = $request->keterangan ?? '';
             $penerimaantruckingHeader->postingdari = $request->postingdari ?? 'PENERIMAAN TRUCKING';
             $penerimaantruckingHeader->diterimadari = $request->diterimadari ?? '';
             $penerimaantruckingHeader->bank_id = $request->bank_id ?? '';
             $penerimaantruckingHeader->coa = $request->coa ?? '';
+            $penerimaantruckingHeader->statusformat =  $format->id;
             $penerimaantruckingHeader->modifiedby = auth('api')->user()->name;
 
             TOP:
@@ -451,8 +397,9 @@ class PenerimaanTruckingHeaderController extends Controller
                     'nominal' => $nominal,
                     'modifiedby' => auth('api')->user()->name,
                 ];
-                $data = new StorePenerimaanDetailRequest($datadetail);
-                $datadetails = app(PenerimaanDetailController::class)->store($data);
+
+                $data = new StorePenerimaanTruckingDetailRequest($datadetail);
+                $datadetails = app(PenerimaanTruckingDetailController::class)->store($data);
 
                 if ($datadetails['error']) {
                     return response($datadetails, 422);
@@ -496,29 +443,32 @@ class PenerimaanTruckingHeaderController extends Controller
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
 
-                DB::commit();
+            DB::commit();
 
-                /* Set position and page */
-            $penerimaantruckingHeader->position = DB::table((new PenerimaanTruckingHeader())->getTable())->orderBy($request->sortname, $request->sortorder)
-            ->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $penerimaantruckingHeader->{$request->sortname})
-            ->where('id', '<=', $penerimaantruckingHeader->id)
-            ->count();
+            /* Set position and page */
+            // $penerimaantruckingHeader->position = DB::table((new PenerimaanTruckingHeader())->getTable())->orderBy($request->sortname, $request->sortorder)
+            // ->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $penerimaantruckingHeader->{$request->sortname})
+            // ->where('id', '<=', $penerimaantruckingHeader->id)
+            // ->count();
 
-        if (isset($request->limit)) {
-            $penerimaantruckingHeader->page = ceil($penerimaantruckingHeader->position / $request->limit);
+            $selected = $this->getPosition($penerimaantruckingHeader, $penerimaantruckingHeader->getTable());
+            $penerimaantruckingHeader->position = $selected->position;
+            $penerimaantruckingHeader->page = ceil($penerimaantruckingHeader->position / ($request->limit ?? 10));
+
+            if (isset($request->limit)) {
+                $penerimaantruckingHeader->page = ceil($penerimaantruckingHeader->position / $request->limit);
+            }
+
+            return response([
+                'status' => true,
+                'message' => 'Berhasil disimpan',
+                'data' => $penerimaantruckingHeader
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
         }
 
-        return response([
-            'status' => true,
-            'message' => 'Berhasil disimpan',
-            'data' => $penerimaantruckingHeader
-        ]);
-    } catch (\Throwable $th) {
-        DB::rollBack();
-        throw $th;
-    }
-    
         return response($penerimaantruckingHeader->penerimaantruckingdetail());
     }
-
 }
