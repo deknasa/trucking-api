@@ -62,7 +62,6 @@ class PiutangHeaderController extends Controller
                 ->where('subgrp', $subgroup)
                 ->first();
             
-            $nominal = str_replace('.','', $request->nominal);
             $content = new Request();
             $content['group'] = $group;
             $content['subgroup'] = $subgroup;
@@ -123,7 +122,7 @@ class PiutangHeaderController extends Controller
             $detaillog = [];
             for ($i = 0; $i < count($request->nominal_detail); $i++) {
             
-                $nominal = str_replace('.','', $request->nominal_detail[$i]);
+                $nominal = str_replace('.00','', $request->nominal_detail[$i]);
 
                 $datadetail = [
                     'piutang_id' => $piutang->id,

@@ -55,53 +55,41 @@ class PengeluaranTruckingHeaderController extends Controller
         try {
 
             $idpengeluaran = $request->pengeluarantrucking_id;
-            $formatBukti =  DB::table('pengeluarantrucking')
-            ->where('id', $idpengeluaran)
-            ->first();
-            // echo $formatBukti->kodepengeluaran;
-            // die();
-            $kodepengeluaran = $formatBukti->kodepengeluaran;
+            $fetchFormat =  DB::table('pengeluarantrucking')
+                            ->where('id', $idpengeluaran)
+                            ->first();
+            $statusformat = $fetchFormat->statusformat;
 
-            
-            
-            if($kodepengeluaran == 'PJT')
-            {
-                $group = 'PINJAMAN SUPIR BUKTI';
-                $subgroup = 'PINJAMAN SUPIR BUKTI';
-            }else{
-                $group = 'BIAYA LAIN SUPIR BUKTI';
-                $subgroup = 'BIAYA LAIN SUPIR BUKTI';
-            }
+            $fetchGrp = Parameter::where('id', $statusformat)->first();
            
             $format = DB::table('parameter')
-                ->where('grp', $group )
-                ->where('subgrp', $subgroup)
+                ->where('grp', $fetchGrp->grp)
+                ->where('subgrp', $fetchGrp->subgrp)
                 ->first();
-    
+            
             $content = new Request();
-            $content['group'] = $group;
-            $content['subgroup'] = $subgroup;
+            $content['group'] = $fetchGrp->grp ;
+            $content['subgroup'] = $fetchGrp->subgrp ;
             $content['table'] = 'pengeluarantruckingheader';
             $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
 
             $pengeluarantruckingheader = new PengeluaranTruckingHeader();
             $statusPosting = Parameter::where('grp', 'STATUS POSTING')->where('text', 'BUKAN POSTING')->first();
 
-            $noBuktiPengeluaran = $request->pengeluaran_nobukti;
-            $PengeluaranHeader =  DB::table('pengeluaranheader')
-            ->where('nobukti', $noBuktiPengeluaran)
-            ->first();
+            $nobuktiPengeluaran = $request->pengeluaran_nobukti;
+            $PengeluaranHeader =  PengeluaranHeader::where('nobukti', $nobuktiPengeluaran)->first();
 
+            
             $pengeluarantruckingheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
-            $pengeluarantruckingheader->pengeluarantrucking_id = $idpengeluaran;
+            $pengeluarantruckingheader->pengeluarantrucking_id = $request->pengeluarantrucking_id;
             $pengeluarantruckingheader->keterangan = $request->keterangan;
             $pengeluarantruckingheader->bank_id = $request->bank_id;
             $pengeluarantruckingheader->statusposting = $statusPosting->id ?? 0;
-            $pengeluarantruckingheader->coa = $request->coa;
-            $pengeluarantruckingheader->pengeluaran_nobukti = $noBuktiPengeluaran;
+            $pengeluarantruckingheader->coa = $request->akunpusat;
+            $pengeluarantruckingheader->pengeluaran_nobukti = $nobuktiPengeluaran;
             $pengeluarantruckingheader->pengeluaran_tgl = $PengeluaranHeader->tglbukti;
             $pengeluarantruckingheader->proses_nobukti = '';
-            $pengeluarantruckingheader->statusformat =  $format->id;
+            $pengeluarantruckingheader->statusformat = $format->id;
             $pengeluarantruckingheader->modifiedby = auth('api')->user()->name;
             
             TOP:
@@ -120,7 +108,6 @@ class PengeluaranTruckingHeaderController extends Controller
                 }
             }
 
-        
             $logTrail = [
                 'namatabel' => strtoupper($pengeluarantruckingheader->getTable()),
                 'postingdari' => 'ENTRY PENGELUARAN TRUCKING HEADER',
@@ -138,14 +125,14 @@ class PengeluaranTruckingHeaderController extends Controller
                       
             $detaillog = [];
 
-            for ($i = 0; $i < count($request->nominal); $i++) {
+            // for ($i = 0; $i < count($request->nominal); $i++) {
                     
                 $datadetail = [
                     'pengeluarantruckingheader_id' => $pengeluarantruckingheader->id,
                     'nobukti' => $pengeluarantruckingheader->nobukti,
-                    'supir_id' => $request->supir_id[$i],
-                    'penerimaantruckingheader_nobukti' => $request->penerimaantruckingheader_nobukti[$i],
-                    'nominal' => str_replace(',', '',$request->nominal[$i]),
+                    'supir_id' => $request->supir_id,
+                    'penerimaantruckingheader_nobukti' => $request->penerimaantruckingheader_nobukti,
+                    'nominal' => str_replace(',', '',$request->nominal),
                     'modifiedby' => $pengeluarantruckingheader->modifiedby,
                 ];
 
@@ -168,9 +155,9 @@ class PengeluaranTruckingHeaderController extends Controller
                     'id' => $iddetail,
                     'pengeluarantruckingheader_id' => $pengeluarantruckingheader->id,
                     'nobukti' => $pengeluarantruckingheader->nobukti,
-                    'supir_id' => $request->supir_id[$i],
-                    'penerimaantruckingheader_nobukti' => $request->penerimaantruckingheader_nobukti[$i],
-                    'nominal' => $request->nominal[$i],
+                    'supir_id' => $request->supir_id,
+                    'penerimaantruckingheader_nobukti' => $request->penerimaantruckingheader_nobukti,
+                    'nominal' => $request->nominal,
                     'modifiedby' => $pengeluarantruckingheader->modifiedby,
                     'created_at' => date('d-m-Y H:i:s', strtotime($pengeluarantruckingheader->created_at)),
                     'updated_at' => date('d-m-Y H:i:s', strtotime($pengeluarantruckingheader->updated_at)),
@@ -199,7 +186,7 @@ class PengeluaranTruckingHeaderController extends Controller
                 $data = new StoreLogTrailRequest($datalogtrail);
                 app(LogTrailController::class)->store($data);
                 
-            }
+            // }
      
            
             $request->sortname = $request->sortname ?? 'id';
@@ -212,9 +199,8 @@ class PengeluaranTruckingHeaderController extends Controller
             $selected = $this->getPosition($pengeluarantruckingheader, $pengeluarantruckingheader->getTable());
             $pengeluarantruckingheader->position = $selected->position;
             $pengeluarantruckingheader->page = ceil($pengeluarantruckingheader->position / ($request->limit ?? 10));
-            if (isset($request->limit)) {
-                $pengeluarantruckingheader->page = ceil($pengeluarantruckingheader->position / $request->limit);
-            }
+            
+            // dd($pengeluarantruckingheader->page);
 
             return response([
                 'status' => true,
@@ -232,22 +218,20 @@ class PengeluaranTruckingHeaderController extends Controller
    
     public function show($id)
     {
-        $data = PengeluaranTruckingHeader::with(
+        $datates = PengeluaranTruckingHeader::with(
             'pengeluarantruckingdetail',
         )->find($id);
-        
-        $idpengeluaran = $data['pengeluarantrucking_id'];
-        $formatBukti =  DB::table('pengeluarantrucking')
-        ->where('id', $idpengeluaran)
-        ->first();
-        
-        $kodepengeluaran = $formatBukti->kodepengeluaran;
-        
+        $data = PengeluaranTruckingHeader::find($id);
+        $detail = PengeluaranTruckingDetail::getAll($id);
+        $details = json_encode($detail);
+
+        // dd($details);
+        // $datas = array_merge($data, $detail);
             
         return response([
             'status' => true,
             'data' => $data,
-            'kode' => $kodepengeluaran
+            'detail' => $detail
         ]);
     }
 
@@ -261,27 +245,21 @@ class PengeluaranTruckingHeaderController extends Controller
 
         try {
 
+           
+
             $idpengeluaran = $request->pengeluarantrucking_id;
-            $formatBukti =  DB::table('pengeluarantrucking')
-            ->where('id', $idpengeluaran)
-            ->first();
-            $kodepengeluaran = $formatBukti->kodepengeluaran;
+            $fetchFormat =  DB::table('pengeluarantrucking')
+                            ->where('id', $idpengeluaran)
+                            ->first();
+            $statusformat = $fetchFormat->statusformat;
 
-            if($kodepengeluaran == 'PJT')
-            {
-                $group = 'PINJAMAN SUPIR';
-                $subgroup = 'PINJAMAN SUPIR';
-            }else{
-                $group = 'BIAYA LAIN SUPIR';
-                $subgroup = 'BIAYA LAIN SUPIR';
-            }
-           
+            $fetchGrp = Parameter::where('id', $statusformat)->first();
+            
             $format = DB::table('parameter')
-                ->where('grp', $group )
-                ->where('subgrp', $subgroup)
+                ->where('grp', $fetchGrp->grp)
+                ->where('subgrp', $fetchGrp->subgrp)
                 ->first();
-
-           
+                
             $noBuktiPengeluaran = $request->pengeluaran_nobukti;
             $PengeluaranHeader =  DB::table('pengeluaranheader')
             ->where('nobukti', $noBuktiPengeluaran)
@@ -293,7 +271,7 @@ class PengeluaranTruckingHeaderController extends Controller
             $pengeluarantruckingheader->pengeluarantrucking_id = $idpengeluaran;
             $pengeluarantruckingheader->keterangan = $request->keterangan;
             $pengeluarantruckingheader->bank_id = $request->bank_id;
-            $pengeluarantruckingheader->coa = $request->coa;
+            $pengeluarantruckingheader->coa = $request->akunpusat;
             $pengeluarantruckingheader->pengeluaran_nobukti = $noBuktiPengeluaran;
             $pengeluarantruckingheader->pengeluaran_tgl = $PengeluaranHeader->tglbukti;
             $pengeluarantruckingheader->proses_nobukti = '';
@@ -397,11 +375,6 @@ class PengeluaranTruckingHeaderController extends Controller
             $selected = $this->getPosition($pengeluarantruckingheader, $pengeluarantruckingheader->getTable());
             $pengeluarantruckingheader->position = $selected->position;
             $pengeluarantruckingheader->page = ceil($pengeluarantruckingheader->position / ($request->limit ?? 10));
-
-
-            // if (isset($request->limit)) {
-            //     $pengeluarantruckingheader->page = ceil($pengeluarantruckingheader->position / $request->limit);
-            // }
 
             return response([
                 'status' => true,

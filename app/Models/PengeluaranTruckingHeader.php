@@ -35,6 +35,7 @@ class PengeluaranTruckingHeader extends MyModel
             'pengeluarantruckingheader.keterangan',
             'pengeluarantruckingheader.modifiedby',
             'pengeluarantruckingheader.updated_at',
+            'pengeluarantruckingheader.proses_nobukti',
 
             'pengeluarantrucking.kodepengeluaran as pengeluarantrucking_id',
             'pengeluaranheader.nobukti as pengeluaran_nobukti',
@@ -64,6 +65,36 @@ class PengeluaranTruckingHeader extends MyModel
 
         return $data;
     }
+
+    public function find($id)
+    {
+       
+
+        $query = DB::table('pengeluarantruckingheader')->select(
+            'pengeluarantruckingheader.id',
+            'pengeluarantruckingheader.nobukti',
+            'pengeluarantruckingheader.tglbukti',
+            'pengeluarantruckingheader.keterangan',
+            'pengeluarantruckingheader.pengeluaran_nobukti',
+
+            'pengeluarantrucking.kodepengeluaran as pengeluarantrucking',
+            'pengeluarantrucking.id as pengeluarantrucking_id',
+
+            'bank.namabank as bank',
+            'bank.id as bank_id',
+            
+            'akunpusat.coa as akunpusat'
+        )
+            ->leftJoin('pengeluarantrucking', 'pengeluarantruckingheader.pengeluarantrucking_id','pengeluarantrucking.id')
+            ->leftJoin('bank', 'pengeluarantruckingheader.bank_id', 'bank.id')
+            ->leftJoin('akunpusat', 'pengeluarantruckingheader.coa', 'akunpusat.coa')
+            ->where('pengeluarantruckingheader.id', '=', $id);
+            
+
+        $data = $query->first();
+
+        return $data;
+    }
     public function pengeluarantruckingdetail() {
         return $this->hasMany(PengeluaranTruckingDetail::class, 'pengeluarantruckingheader_id');
     }
@@ -83,10 +114,8 @@ class PengeluaranTruckingHeader extends MyModel
             'akunpusat.coa as coa',
             'statusposting.text as statusposting',
             $this->table.modifiedby,
-            $this->table.created_at,
             $this->table.updated_at,
-            $this->table.proses_nobukti,
-            $this->table.statusformat"
+            $this->table.proses_nobukti"
             )
         )
         ->leftJoin('pengeluarantrucking', 'pengeluarantruckingheader.pengeluarantrucking_id', 'pengeluarantrucking.id')
@@ -112,10 +141,8 @@ class PengeluaranTruckingHeader extends MyModel
             $table->string('pengeluaran_nobukti', 1000)->default('');
             $table->string('pengeluaran_tgl', 1000)->default('');
             $table->string('modifiedby', 50)->default('');
-            $table->dateTime('created_at')->default('1900/1/1');
             $table->dateTime('updated_at')->default('1900/1/1');
             $table->string('proses_nobukti', 1000)->default('');
-            $table->bigInteger('statusformat')->default('');
             $table->increments('position');
         });
 
@@ -124,7 +151,7 @@ class PengeluaranTruckingHeader extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id','nobukti','tglbukti','pengeluarantrucking_id','keterangan','bank_id','statusposting','coa','pengeluaran_nobukti','pengeluaran_tgl','modifiedby','created_at','updated_at','proses_nobukti','statusformat'],$models);
+        DB::table($temp)->insertUsing(['id','nobukti','tglbukti','pengeluarantrucking_id','keterangan','bank_id','statusposting','coa','pengeluaran_nobukti','pengeluaran_tgl','modifiedby','updated_at','proses_nobukti'],$models);
 
 
         return  $temp;         
