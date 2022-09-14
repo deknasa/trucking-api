@@ -35,6 +35,7 @@ class RoleController extends Controller
     public function store(StoreRoleRequest $request)
     {
         DB::beginTransaction();
+
         try {
             $role = new Role();
             $role->rolename = $request->rolename;
@@ -66,10 +67,11 @@ class RoleController extends Controller
                 'status' => true,
                 'message' => 'Berhasil disimpan',
                 'data' => $role
-            ]);
+            ], 201);
         } catch (\Throwable $th) {
             DB::rollBack();
-            return response($th->getMessage());
+            
+            throw $th;
         }
     }
 
@@ -209,105 +211,6 @@ class RoleController extends Controller
         return response([
             'data' => $data
         ]);
-    }
-
-    public function getid($id, $request, $del)
-    {
-
-        $params = [
-            'indexRow' => $request->indexRow ?? 1,
-            'limit' => $request->limit ?? 100,
-            'page' => $request->page ?? 1,
-            'sortname' => $request->sortname ?? 'id',
-            'sortorder' => $request->sortorder ?? 'asc',
-        ];
-
-        $temp = '##temp' . rand(1, 10000);
-        Schema::create($temp, function ($table) {
-            $table->id();
-            $table->bigInteger('id_')->default('0');
-            $table->string('rolename', 300)->default('');
-            $table->string('modifiedby', 30)->default('');
-            $table->dateTime('created_at')->default('1900/1/1');
-            $table->dateTime('updated_at')->default('1900/1/1');
-
-            $table->index('id_');
-        });
-
-
-
-        if ($params['sortname'] == 'id') {
-            $query = Role::select(
-                'role.id as id_',
-                'role.rolename',
-                'role.modifiedby',
-                'role.created_at',
-                'role.updated_at'
-            )
-                ->orderBy('role.id', $params['sortorder']);
-        } else {
-            if ($params['sortorder'] == 'asc') {
-                $query = Role::select(
-                    'role.id as id_',
-                    'role.rolename',
-                    'role.modifiedby',
-                    'role.created_at',
-                    'role.updated_at'
-                )
-                    ->orderBy($params['sortname'], $params['sortorder'])
-                    ->orderBy('role.id', $params['sortorder']);
-            } else {
-                $query = Role::select(
-                    'role.id as id_',
-                    'role.rolename',
-                    'role.modifiedby',
-                    'role.created_at',
-                    'role.updated_at'
-                )
-                    ->orderBy($params['sortname'], $params['sortorder'])
-
-                    ->orderBy('role.id', 'asc');
-            }
-        }
-
-
-
-        DB::table($temp)->insertUsing(['id_', 'rolename',  'modifiedby', 'created_at', 'updated_at'], $query);
-
-
-        if ($del == 1) {
-            if ($request->page == 1) {
-                $baris = $request->indexRow + 1;
-            } else {
-                $hal = $request->page - 1;
-                $bar = $hal * $request->limit;
-                $baris = $request->indexRow + $bar + 1;
-            }
-
-
-            if (DB::table($temp)
-                ->where('id', '=', $baris)->exists()
-            ) {
-                $querydata = DB::table($temp)
-                    ->select('id as row', 'id_ as id')
-                    ->where('id', '=', $baris)
-                    ->orderBy('id');
-            } else {
-                $querydata = DB::table($temp)
-                    ->select('id as row', 'id_ as id')
-                    ->where('id', '=', ($baris - 1))
-                    ->orderBy('id');
-            }
-        } else {
-            $querydata = DB::table($temp)
-                ->select('id as row')
-                ->where('id_', '=',  $id)
-                ->orderBy('id');
-        }
-
-
-        $data = $querydata->first();
-        return $data;
     }
 
     public function getroleid(Request $request)
