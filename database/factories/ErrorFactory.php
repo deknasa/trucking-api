@@ -14,7 +14,8 @@ class ErrorFactory extends Factory
     public function definition()
     {
         return [
-            //
+            'kodeerror' => $this->faker->word(),
+            'keterangan' => $this->faker->words(3, true)
         ];
     }
 }

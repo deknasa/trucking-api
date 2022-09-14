@@ -6,7 +6,6 @@ use App\Http\Requests\StoreRoleRequest;
 use App\Http\Requests\UpdateRoleRequest;
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Models\Role;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
@@ -70,7 +69,7 @@ class RoleController extends Controller
             ], 201);
         } catch (\Throwable $th) {
             DB::rollBack();
-            
+
             throw $th;
         }
     }

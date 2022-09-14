@@ -4,22 +4,15 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
-use App\Http\Requests\DestroyUserRequest;
 use App\Http\Requests\StoreLogTrailRequest;
-
+use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Parameter;
 use App\Models\Cabang;
-use App\Models\LogTrail;
-
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-
-use App\Http\Controllers\Controller;
-
 
 class UserController extends Controller
 {
