@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class Error extends MyModel
 {
@@ -27,13 +28,12 @@ class Error extends MyModel
     {
         $this->setRequestParameters();
 
-        $query = DB::table($this->table)->select(
-            "$this->table.*"
-        );
+        $query = DB::table($this->table);
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
+        $this->selectColumns($query);
         $this->sort($query);
         $this->filter($query);
         $this->paginate($query);
@@ -41,6 +41,51 @@ class Error extends MyModel
         $data = $query->get();
 
         return $data;
+    }
+
+    public function selectColumns($query)
+    {
+        return $query->select(
+            "$this->table.id",
+            "$this->table.kodeerror",
+            "$this->table.keterangan",
+            "$this->table.modifiedby",
+            "$this->table.created_at",
+            "$this->table.updated_at",
+        );
+    }
+
+    public function createTemp(string $modelTable)
+    {
+        $this->setRequestParameters();
+
+        $temp = '##temp' . rand(1, 10000);
+
+        Schema::create($temp, function ($table) {
+            $table->bigInteger('id')->default('0');
+            $table->string('kodeerror', 500)->default('');
+            $table->string('keterangan', 50)->default('');
+            $table->string('modifiedby', 50)->default('');
+            $table->dateTime('created_at')->default('1900/1/1');
+            $table->dateTime('updated_at')->default('1900/1/1');
+            $table->increments('position');
+        });
+
+        $query = DB::table($modelTable);
+        $query = $this->selectColumns($query);
+        $query = $this->sort($query);
+        $models = $this->filter($query);
+
+        DB::table($temp)->insertUsing([
+            'id',
+            'kodeerror',
+            'keterangan',
+            'modifiedby',
+            'created_at',
+            'updated_at',
+        ], $models);
+
+        return  $temp;
     }
 
     public function sort($query)
