@@ -275,13 +275,13 @@ class PiutangHeaderController extends Controller
     
     public function show($id)
     {
-        $data = PiutangHeader::with(
-            'piutangdetail',
-        )->find($id);
+        $data = PiutangHeader::findUpdate($id);
+        $detail = PiutangDetail::findUpdate($id);
 
         return response([
             'status' => true,
-            'data' => $data
+            'data' => $data,
+            'detail' => $detail
         ]);
     }
 
