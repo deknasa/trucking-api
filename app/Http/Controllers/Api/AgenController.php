@@ -38,6 +38,8 @@ class AgenController extends Controller
         DB::beginTransaction();
 
         try {
+            $statusNonApproval = Parameter::where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
+
             $agen = new Agen();
             $agen->kodeagen = $request->kodeagen;
             $agen->namaagen = $request->namaagen;
@@ -49,9 +51,10 @@ class AgenController extends Controller
             $agen->nohp = $request->nohp;
             $agen->contactperson = $request->contactperson;
             $agen->top = $request->top;
+            $agen->statusapproval = $statusNonApproval->id;
             $agen->statustas = $request->statustas;
             $agen->jenisemkl = $request->jenisemkl;
-            $agen->tglapproval = date('Y-m-d', 0);
+            $agen->tglapproval = date('Y-m-d');
             $agen->modifiedby = auth('api')->user()->name;
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
@@ -82,7 +85,7 @@ class AgenController extends Controller
                 'status' => true,
                 'message' => 'Berhasil disimpan',
                 'data' => $agen
-            ]);
+            ], 201);
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
@@ -342,7 +345,8 @@ class AgenController extends Controller
             }
 
             return response([
-                'message' => 'Berhasil'
+                'message' => 'Berhasil',
+                'data' => $agen
             ]);
         } catch (\Throwable $th) {
             throw $th;

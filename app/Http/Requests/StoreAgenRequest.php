@@ -34,7 +34,7 @@ class StoreAgenRequest extends FormRequest
             "notelp" => "required",
             "nohp" => "required",
             "contactperson" => "required",
-            "top" => "required",
+            "top" => "required|numeric",
             "statustas" => "required",
             "jenisemkl" => "required",
         ];
