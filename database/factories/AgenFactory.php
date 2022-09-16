@@ -26,7 +26,7 @@ class AgenFactory extends Factory
             'notelp' => $this->faker->word(),
             'nohp' => $this->faker->phoneNumber(),
             'contactperson' => $this->faker->firstName(),
-            'top' => 1,
+            'top' => 1.0,
             'statusapproval' => $statusNonApproval->id,
             'userapproval' => $this->faker->word(),
             'tglapproval' => $this->faker->date(),

@@ -76,7 +76,8 @@
     use App\Http\Controllers\Api\PiutangDetailController;
     use App\Http\Controllers\Api\HutangHeaderController;
     use App\Http\Controllers\Api\HutangDetailController;
-
+    use App\Http\Controllers\Api\PelunasanPiutangHeaderController;
+    use App\Http\Controllers\Api\PelunasanPiutangDetailController;
 
     /*
     |--------------------------------------------------------------------------
@@ -321,6 +322,14 @@
         Route::get('hutangheader/grid', [HutangHeaderController::class, 'grid']);
         Route::resource('hutangheader', HutangHeaderController::class);
         Route::resource('hutangdetail', HutangDetailController::class);
+
+        Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
+        Route::get('pelunasanpiutangheader/no_bukti', [PelunasanPiutangHeaderController::class, 'getNoBukti']);
+        Route::get('pelunasanpiutangheader/combo', [PelunasanPiutangHeaderController::class, 'combo']);
+        Route::get('pelunasanpiutangheader/grid', [PelunasanPiutangHeaderController::class, 'grid']);
+        Route::resource('pelunasanpiutangheader', PelunasanPiutangHeaderController::class);
+        Route::resource('pelunasanpiutangdetail', PelunasanPiutangDetailController::class);
+
     });
 
     Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');

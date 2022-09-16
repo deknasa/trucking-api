@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Traits\RestrictDeletion;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class Agen extends MyModel
 {
@@ -33,19 +34,12 @@ class Agen extends MyModel
     {
         $this->setRequestParameters();
 
-        $query = DB::table($this->table)->select(
-            'agen.*',
-            'parameter_statusaktif.text as statusaktif',
-            'parameter_statusapproval.text as statusapproval',
-            'parameter_statustas.text as statustas'
-        )
-            ->leftJoin('parameter as parameter_statusaktif', 'agen.statusaktif', 'parameter_statusaktif.id')
-            ->leftJoin('parameter as parameter_statusapproval', 'agen.statusapproval', 'parameter_statusapproval.id')
-            ->leftJoin('parameter as parameter_statustas', 'agen.statustas', 'parameter_statustas.id');
+        $query = DB::table($this->table);
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
+        $this->selectColumns($query);
         $this->sort($query);
         $this->filter($query);
         $this->paginate($query);
@@ -53,6 +47,93 @@ class Agen extends MyModel
         $data = $query->get();
 
         return $data;
+    }
+
+    public function selectColumns($query)
+    {
+        return $query->select(
+            "$this->table.id",
+            "$this->table.kodeagen",
+            "$this->table.namaagen",
+            "$this->table.keterangan",
+            "parameter_statusaktif.text as statusaktif",
+            "$this->table.namaperusahaan",
+            "$this->table.alamat",
+            "$this->table.notelp",
+            "$this->table.nohp",
+            "$this->table.contactperson",
+            "$this->table.top",
+            "parameter_statusapproval.text as statusapproval",
+            "$this->table.userapproval",
+            "$this->table.tglapproval",
+            "parameter_statustas.text as statustas",
+            "$this->table.jenisemkl",
+            "$this->table.created_at",
+            "$this->table.updated_at",
+            "$this->table.modifiedby",
+        )
+            ->leftJoin("parameter as parameter_statusaktif", "agen.statusaktif", "parameter_statusaktif.id")
+            ->leftJoin("parameter as parameter_statusapproval", "agen.statusapproval", "parameter_statusapproval.id")
+            ->leftJoin("parameter as parameter_statustas", "agen.statustas", "parameter_statustas.id");
+    }
+
+    public function createTemp(string $modelTable)
+    {
+        $this->setRequestParameters();
+
+        $temp = '##temp' . rand(1, 10000);
+
+        Schema::create($temp, function ($table) {
+            $table->bigInteger('id')->default('0');
+            $table->string('kodeagen', 1000)->default('');
+            $table->string('namaagen', 1000)->default('');
+            $table->string('keterangan', 1000)->default('');
+            $table->string('statusaktif', 1000)->default('');
+            $table->string('namaperusahaan', 1000)->default('');
+            $table->string('alamat', 1000)->default('');
+            $table->string('notelp', 1000)->default('');
+            $table->string('nohp', 1000)->default('');
+            $table->string('contactperson', 1000)->default('');
+            $table->string('top', 1000)->default('');
+            $table->string('statusapproval', 1000)->default('');
+            $table->string('userapproval', 1000)->default('');
+            $table->string('tglapproval', 1000)->default('');
+            $table->string('statustas', 1000)->default('');
+            $table->string('jenisemkl', 1000)->default('');
+            $table->dateTime('created_at')->default('1900/1/1');
+            $table->dateTime('updated_at')->default('1900/1/1');
+            $table->string('modifiedby', 50)->default('');
+            $table->increments('position');
+        });
+
+        $query = DB::table($modelTable);
+        $query = $this->selectColumns($query);
+        $query = $this->sort($query);
+        $models = $this->filter($query);
+
+        DB::table($temp)->insertUsing([
+            'id',
+            'kodeagen',
+            'namaagen',
+            'keterangan',
+            'statusaktif',
+            'namaperusahaan',
+            'alamat',
+            'notelp',
+            'nohp',
+            'contactperson',
+            'top',
+            'statusapproval',
+            'userapproval',
+            'tglapproval',
+            'statustas',
+            'jenisemkl',
+            'created_at',
+            'updated_at',
+            'modifiedby'
+        ], $models);
+
+        return  $temp;
     }
 
     public function sort($query)

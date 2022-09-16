@@ -13,7 +13,7 @@ class StorePelunasanPiutangHeaderRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +24,11 @@ class StorePelunasanPiutangHeaderRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'tglbukti' => 'required',
+            'keterangan' => 'required',
+            'bank' => 'required',
+            'agen' => 'required',
+            'cabang' => 'required'
         ];
     }
 }

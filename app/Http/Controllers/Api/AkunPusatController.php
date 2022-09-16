@@ -42,7 +42,6 @@ class AkunPusatController extends Controller
             $akunPusat->keterangancoa = $request->keterangancoa;
             $akunPusat->type = $request->type;
             $akunPusat->level = $request->level;
-            $akunPusat->aktif = $request->aktif;
             $akunPusat->parent = $request->parent;
             $akunPusat->statuscoa = $request->statuscoa;
             $akunPusat->statusaccountpayable = $request->statusaccountpayable;
@@ -113,7 +112,6 @@ class AkunPusatController extends Controller
             $akunPusat->keterangancoa = $request->keterangancoa;
             $akunPusat->type = $request->type;
             $akunPusat->level = $request->level;
-            $akunPusat->aktif = $request->aktif;
             $akunPusat->parent = $request->parent;
             $akunPusat->statuscoa = $request->statuscoa;
             $akunPusat->statusaccountpayable = $request->statusaccountpayable;
