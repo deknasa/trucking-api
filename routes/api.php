@@ -315,6 +315,12 @@
         Route::get('piutangheader/grid', [PiutangHeaderController::class, 'grid']);
         Route::resource('piutangheader', PiutangHeaderController::class);
         Route::resource('piutangdetail', PiutangDetailController::class);
+
+        Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
+        Route::get('hutangheader/no_bukti', [HutangHeaderController::class, 'getNoBukti']);
+        Route::get('hutangheader/grid', [HutangHeaderController::class, 'grid']);
+        Route::resource('hutangheader', HutangHeaderController::class);
+        Route::resource('hutangdetail', HutangDetailController::class);
     });
 
     Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
@@ -551,11 +557,11 @@
     // Route::resource('penerimaantruckingdetail', PenerimaanTruckingDetailController::class);
 
     //Hutang
-    Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
-    Route::post('hutang/{id}/approval', [HutangHeaderController::class, 'approval'])->name('hutang.approval');
-    Route::get('hutang/no_bukti', [HutangHeaderController::class, 'getNoBukti']);
-    Route::get('hutang/combo', [HutangHeaderController::class, 'combo']);
-    Route::get('hutang/grid', [HutangHeaderController::class, 'grid']);
-    Route::resource('hutang', HutangHeaderController::class);
+    // Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
+    // Route::post('hutang/{id}/approval', [HutangHeaderController::class, 'approval'])->name('hutang.approval');
+    // Route::get('hutang/no_bukti', [HutangHeaderController::class, 'getNoBukti']);
+    // Route::get('hutang/combo', [HutangHeaderController::class, 'combo']);
+    // Route::get('hutang/grid', [HutangHeaderController::class, 'grid']);
+    // Route::resource('hutang', HutangHeaderController::class);
 
-    Route::resource('hutangdetail', HutangDetailController::class);
+    // Route::resource('hutangdetail', HutangDetailController::class);

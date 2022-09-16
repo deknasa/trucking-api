@@ -62,6 +62,37 @@ class PenerimaanTruckingHeader extends MyModel
 
         return $data;
     }
+
+    public function find($id)
+    {
+       
+
+        $query = DB::table('penerimaantruckingheader')->select(
+            'penerimaantruckingheader.id',
+            'penerimaantruckingheader.nobukti',
+            'penerimaantruckingheader.tglbukti',
+            'penerimaantruckingheader.keterangan',
+            'penerimaantruckingheader.penerimaan_nobukti',
+
+            'penerimaantrucking.kodepenerimaan as penerimaantrucking',
+            'penerimaantrucking.id as penerimaantrucking_id',
+
+            'bank.namabank as bank',
+            'bank.id as bank_id',
+            
+            'akunpusat.coa as akunpusat'
+        )
+            ->leftJoin('penerimaantrucking', 'penerimaantruckingheader.penerimaantrucking_id','penerimaantrucking.id')
+            ->leftJoin('bank', 'penerimaantruckingheader.bank_id', 'bank.id')
+            ->leftJoin('akunpusat', 'penerimaantruckingheader.coa', 'akunpusat.coa')
+            ->where('penerimaantruckingheader.id', '=', $id);
+            
+
+        $data = $query->first();
+
+        return $data;
+    }
+
     public function penerimaantruckingdetail() {
         return $this->hasMany(PenerimaanTruckingDetail::class, 'penerimaantruckingheader_id');
     }
