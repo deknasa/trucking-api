@@ -5,12 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 
 class PenerimaanTruckingHeader extends MyModel
 {
     use HasFactory;
-
     protected $table = 'penerimaantruckingheader';
 
     protected $casts = [
@@ -22,11 +22,7 @@ class PenerimaanTruckingHeader extends MyModel
         'id',
         'created_at',
         'updated_at',
-    ];
-
-    public function penerimaantruckingdetail() {
-        return $this->hasMany(penerimaantruckingdetail::class, 'penerimaantrucking_id');
-    }
+    ];  
 
     public function get()
     {
@@ -37,23 +33,22 @@ class PenerimaanTruckingHeader extends MyModel
             'penerimaantruckingheader.nobukti',
             'penerimaantruckingheader.tglbukti',
             'penerimaantruckingheader.keterangan',
+            'penerimaantruckingheader.modifiedby',
+            'penerimaantruckingheader.updated_at',
 
-            'bank.namabank as bank_id',
             'penerimaantrucking.kodepenerimaan as penerimaantrucking_id',
             'penerimaanheader.nobukti as penerimaan_nobukti',
             'penerimaanheader.tglbukti as penerimaan_tgl',
 
+            'bank.namabank as bank_id',
+            
             'akunpusat.coa as coa',
         )
-            ->leftJoin('bank', 'penerimaantruckingheader.bank_id', 'bank.id')
-            ->join('penerimaantrucking', 'penerimaantrucking.id', '=', 'penerimaantruckingheader.penerimaantrucking_id')
+            ->leftJoin('penerimaantrucking', 'penerimaantruckingheader.penerimaantrucking_id','penerimaantrucking.id')
             ->leftJoin('penerimaanheader', 'penerimaantruckingheader.penerimaan_nobukti', 'penerimaanheader.nobukti')
-            ->leftJoin('akunpusat', 'penerimaantruckingheader.coa', 'akunpusat.coa')
-          //  ->leftJoin('penerimaanheader', 'penerimaantruckingheader.penerimaan_tgl', 'penerimaanheader.tglbukti')
-
-           // ->leftJoin('parameter as statuskas', 'penerimaantruckingheader.statuskas', 'statuskas.id')
-          //  ->leftJoin('parameter as statusapproval', 'penerimaantruckingheader.statusapproval', 'statusapproval.id')
-            ;
+            ->leftJoin('bank', 'penerimaantruckingheader.bank_id', 'bank.id')
+            ->leftJoin('akunpusat', 'penerimaantruckingheader.coa', 'akunpusat.coa');
+            
 
 
         $this->totalRows = $query->count();
@@ -66,6 +61,69 @@ class PenerimaanTruckingHeader extends MyModel
         $data = $query->get();
 
         return $data;
+    }
+    public function penerimaantruckingdetail() {
+        return $this->hasMany(PenerimaanTruckingDetail::class, 'penerimaantruckingheader_id');
+    }
+
+    public function selectColumns($query)
+    {
+        return $query->select(
+            DB::raw(
+            "$this->table.id,
+            $this->table.nobukti,
+            $this->table.tglbukti,
+            $this->table.keterangan,
+            'penerimaantrucking.kodepenerimaan as penerimaantrucking_id',
+            'penerimaanheader.nobukti as penerimaan_nobukti',
+            'penerimaanheader.tglbukti as penerimaan_tgl',
+            'bank.namabank as bank_id',
+            'akunpusat.coa as coa',
+            $this->table.modifiedby,
+            $this->table.created_at,
+            $this->table.updated_at,
+            $this->table.proses_nobukti,
+            $this->table.statusformat"
+            )
+        )
+        ->leftJoin('penerimaantrucking', 'penerimaantruckingheader.penerimaantrucking_id', 'penerimaantrucking.id')
+        ->leftJoin('penerimaanheader', 'penerimaantruckingheader.penerimaan_nobukti', 'penerimaanheader.nobukti')
+        ->leftJoin('bank', 'penerimaantruckingheader.bank_id', 'bank.id')
+        ->leftJoin('akunpusat', 'penerimaantruckingheader.coa', 'akunpusat.coa');
+
+    }
+
+    public function createTemp(string $modelTable)
+    {
+        $temp = '##temp' . rand(1, 10000);
+        Schema::create($temp, function ($table) {
+            $table->bigInteger('id')->default('0');
+            $table->string('nobukti', 1000)->default('');
+            $table->date('tglbukti')->default('');
+            $table->string('penerimaantrucking_id', 1000)->default('');
+            $table->string('keterangan', 1000)->default('');
+            $table->string('bank_id', 1000)->default('');
+            $table->string('coa', 1000)->default('');
+            $table->string('penerimaan_nobukti', 1000)->default('');
+            $table->string('penerimaan_tgl', 1000)->default('');
+            $table->string('modifiedby', 50)->default('');
+            $table->dateTime('created_at')->default('1900/1/1');
+            $table->dateTime('updated_at')->default('1900/1/1');
+            $table->string('proses_nobukti', 1000)->default('');
+            $table->bigInteger('statusformat')->default('');
+            $table->increments('position');
+        });
+
+        $this->setRequestParameters();
+        $query = DB::table($modelTable);
+        $query = $this->selectColumns($query);
+        $this->sort($query);
+        $models = $this->filter($query);
+        DB::table($temp)->insertUsing(['id','nobukti','tglbukti','penerimaantrucking_id','keterangan','bank_id','coa','penerimaan_nobukti','penerimaan_tgl','modifiedby','created_at','updated_at','proses_nobukti','statusformat'],$models);
+
+
+        return  $temp;         
+
     }
 
     public function sort($query)
@@ -80,7 +138,9 @@ class PenerimaanTruckingHeader extends MyModel
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                          if ($filters['field'] == 'penerimaantrucking_id') {
-                            $query = $query->where('kodepenerimaan.keterangan', 'LIKE', "%$filters[data]%");
+                            $query = $query->where('penerimaantrucking.kodepenerimaan', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'bank_id') {
+                            $query = $query->where('bank.namabank', 'LIKE', "%$filters[data]%");
                         } else {
                             $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
@@ -90,7 +150,9 @@ class PenerimaanTruckingHeader extends MyModel
                 case "OR":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                          if ($filters['field'] == 'penerimaantrucking_id') {
-                            $query = $query->orWhere('kodepenerimaan.keterangan', 'LIKE', "%$filters[data]%");
+                            $query = $query->orWhere('penerimaantrucking.kodepenerimaan', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'bank_id') {
+                            $query = $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");
                         } else {
                             $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
@@ -113,5 +175,4 @@ class PenerimaanTruckingHeader extends MyModel
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
-
 }

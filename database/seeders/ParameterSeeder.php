@@ -144,6 +144,8 @@ class ParameterSeeder extends Seeder
         Parameter::create(['grp' => 'PIUTANG BUKTI',  'subgrp' => 'PIUTANG BUKTI',  'text' => '#EPT #9999#/#R#/#Y',  'type' => '118',  'memo' => 'PIUTANG BUKTI',  'modifiedby' => 'ADMIN',]);
         Parameter::create(['grp' => 'DEPOSITO SUPIR BUKTI',  'subgrp' => 'DEPOSITO SUPIR BUKTI',  'text' => '#DPO #9999#/#R#/#Y',  'type' => '118',  'memo' => 'PIUTANG BUKTI',  'modifiedby' => 'ADMIN',]);
         Parameter::create(['grp' => 'PENGEMBALIAN PINJAMAN SUPIR BUKTI',  'subgrp' => 'PENGEMBALIAN PINJAMAN SUPIR BUKTI',  'text' => '#PJP #9999#/#R#/#Y',  'type' => '118',  'memo' => 'PIUTANG BUKTI',  'modifiedby' => 'ADMIN',]);
+        Parameter::create(['grp' => 'HUTANG BUKTI',  'subgrp' => 'HUTANG BUKTI',  'text' => '#EHT #9999#/#R#/#Y',  'type' => '118',  'memo' => 'HUTANG BUKTI',  'modifiedby' => 'ADMIN',]);
+        Parameter::create(['grp' => 'PELUNASAN PIUTANG BUKTI',  'subgrp' => 'PELUNASAN PIUTANG BUKTI',  'text' => '#PPT #9999#/#R#/#Y',  'type' => '118',  'memo' => 'PELUNASAN PIUTANG BUKTI',  'modifiedby' => 'ADMIN',]);
 
 
 
