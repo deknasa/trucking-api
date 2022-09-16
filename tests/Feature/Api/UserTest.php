@@ -197,6 +197,38 @@ class UserTest extends TestCase
             ->assertJsonMissingValidationErrors('password');
     }
 
+    public function test_success_update()
+    {
+        $user = User::factory()->make();
+
+        $response = $this->actingAs($this->user, 'api')->patchJson(route('user.update', $this->existingUser->id), $user->makeVisible('password')->toArray());
+
+        $response
+            ->assertHeader('Content-Type', 'application/json')
+            ->assertStatus(200)
+            ->assertJsonStructure([
+                'data' => [
+                    'id',
+                    'user',
+                    'name',
+                    'dashboard',
+                    'karyawan_id',
+                    'cabang_id',
+                    'statusaktif',
+                    'modifiedby',
+                    'updated_at',
+                    'created_at',
+                ]
+            ])
+            ->assertJson([
+                'data' => array_merge(
+                    ['id' => $this->existingUser->id],
+                    $user->makeHidden(['password', 'modifiedby'])->toArray(),
+                    ['modifiedby' => strtoupper($this->user->name)]
+                )
+            ]);
+    }
+
     public function test_authenticate_destroy()
     {
         $response = $this->deleteJson(route('user.destroy', $this->existingUser->id));
