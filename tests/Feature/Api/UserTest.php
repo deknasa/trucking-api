@@ -2,32 +2,30 @@
 
 namespace Tests\Feature\Api;
 
-use App\Models\Parameter;
 use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
-use Illuminate\Testing\Fluent\AssertableJson;
 use Tests\TestCase;
 
-class ParameterTest extends TestCase
+class UserTest extends TestCase
 {
     use DatabaseTransactions;
 
     private $user;
-    private $existingParameter;
+    private $existingUser;
 
     public function setUp(): void
     {
         parent::setUp();
 
         $this->user = User::factory()->create();
-        $this->existingParameter = Parameter::factory()->create();
+        $this->existingUser = User::factory()->create();
     }
 
     public function test_authenticate_get()
     {
-        $response = $this->getJson(route('parameter.index'));
+        $response = $this->getJson(route('user.index'));
 
         $response
             ->assertHeader('Content-Type', 'application/json')
@@ -39,7 +37,7 @@ class ParameterTest extends TestCase
 
     public function test_success_get()
     {
-        $response = $this->actingAs($this->user, 'api')->getJson(route('parameter.index'));
+        $response = $this->actingAs($this->user, 'api')->getJson(route('user.index'));
 
         $response
             ->assertHeader('Content-Type', 'application/json')
@@ -48,13 +46,15 @@ class ParameterTest extends TestCase
                 'data' => [
                     '*' => [
                         'id',
-                        'grp',
-                        'subgrp',
-                        'text',
-                        'memo',
+                        'user',
+                        'name',
+                        'dashboard',
+                        'karyawan_id',
+                        'cabang_id',
+                        'statusaktif',
                         'modifiedby',
+                        'updated_at',
                         'created_at',
-                        'updated_at'
                     ]
                 ]
             ]);
@@ -62,7 +62,7 @@ class ParameterTest extends TestCase
 
     public function test_authenticate_show()
     {
-        $response = $this->getJson(route('parameter.show', $this->existingParameter->id));
+        $response = $this->getJson(route('user.show', $this->existingUser->id));
 
         $response
             ->assertHeader('Content-Type', 'application/json')
@@ -74,7 +74,7 @@ class ParameterTest extends TestCase
 
     public function test_success_show()
     {
-        $response = $this->actingAs($this->user, 'api')->getJson(route('parameter.show', $this->existingParameter->id));
+        $response = $this->actingAs($this->user, 'api')->getJson(route('user.show', $this->existingUser->id));
 
         $response
             ->assertHeader('Content-Type', 'application/json')
@@ -82,23 +82,25 @@ class ParameterTest extends TestCase
             ->assertJsonStructure([
                 'data' => [
                     'id',
-                    'grp',
-                    'subgrp',
-                    'text',
-                    'memo',
+                    'user',
+                    'name',
+                    'dashboard',
+                    'karyawan_id',
+                    'cabang_id',
+                    'statusaktif',
                     'modifiedby',
+                    'updated_at',
                     'created_at',
-                    'updated_at'
                 ]
             ])
             ->assertJson([
-                'data' => $this->existingParameter->toArray()
+                'data' => $this->existingUser->toArray()
             ]);
     }
 
     public function test_authenticate_store()
     {
-        $response = $this->postJson(route('parameter.store'));
+        $response = $this->postJson(route('user.store'));
 
         $response
             ->assertHeader('Content-Type', 'application/json')
@@ -110,7 +112,7 @@ class ParameterTest extends TestCase
 
     public function test_validate_store()
     {
-        $response = $this->actingAs($this->user, 'api')->postJson(route('parameter.store'));
+        $response = $this->actingAs($this->user, 'api')->postJson(route('user.store'));
 
         $response
             ->assertHeader('Content-Type', 'application/json')
@@ -118,14 +120,23 @@ class ParameterTest extends TestCase
             ->assertJsonStructure([
                 'message',
                 'errors' => []
+            ])
+            ->assertJsonValidationErrors([
+                'user',
+                'name',
+                'password',
+                'cabang_id',
+                'karyawan_id',
+                'dashboard',
+                'statusaktif'
             ]);
     }
 
     public function test_success_store()
     {
-        $parameter = Parameter::factory()->make();
+        $user = User::factory()->make();
 
-        $response = $this->actingAs($this->user, 'api')->postJson(route('parameter.store'), $parameter->toArray());
+        $response = $this->actingAs($this->user, 'api')->postJson(route('user.store'), $user->makeVisible('password')->toArray());
 
         $response
             ->assertHeader('Content-Type', 'application/json')
@@ -133,18 +144,20 @@ class ParameterTest extends TestCase
             ->assertJsonStructure([
                 'data' => [
                     'id',
-                    'grp',
-                    'subgrp',
-                    'text',
-                    'memo',
+                    'user',
+                    'name',
+                    'dashboard',
+                    'karyawan_id',
+                    'cabang_id',
+                    'statusaktif',
                     'modifiedby',
+                    'updated_at',
                     'created_at',
-                    'updated_at'
                 ]
             ])
             ->assertJson([
                 'data' => array_merge(
-                    $parameter->makeHidden('modifiedby')->toArray(),
+                    $user->makeHidden(['password', 'modifiedby'])->toArray(),
                     ['modifiedby' => strtoupper($this->user->name)]
                 )
             ]);
@@ -152,7 +165,7 @@ class ParameterTest extends TestCase
 
     public function test_authenticate_update()
     {
-        $response = $this->patchJson(route('parameter.update', $this->existingParameter->id));
+        $response = $this->patchJson(route('user.update', $this->existingUser->id));
 
         $response
             ->assertHeader('Content-Type', 'application/json')
@@ -164,7 +177,7 @@ class ParameterTest extends TestCase
 
     public function test_validate_update()
     {
-        $response = $this->actingAs($this->user, 'api')->patchJson(route('parameter.update', $this->existingParameter->id));
+        $response = $this->actingAs($this->user, 'api')->patchJson(route('user.update', $this->existingUser->id));
 
         $response
             ->assertHeader('Content-Type', 'application/json')
@@ -172,42 +185,21 @@ class ParameterTest extends TestCase
             ->assertJsonStructure([
                 'message',
                 'errors' => []
-            ]);
-    }
-
-    public function test_success_update()
-    {
-        $parameter = Parameter::factory()->make();
-
-        $response = $this->actingAs($this->user, 'api')->patchJson(route('parameter.update', $this->existingParameter->id), $parameter->toArray());
-
-        $response
-            ->assertHeader('Content-Type', 'application/json')
-            ->assertStatus(200)
-            ->assertJsonStructure([
-                'data' => [
-                    'id',
-                    'grp',
-                    'subgrp',
-                    'text',
-                    'memo',
-                    'modifiedby',
-                    'created_at',
-                    'updated_at'
-                ]
             ])
-            ->assertJson([
-                'data' => array_merge(
-                    ['id' => $this->existingParameter->id],
-                    $parameter->makeHidden('modifiedby')->toArray(),
-                    ['modifiedby' => strtoupper($this->user->name)]
-                )
-            ]);
+            ->assertJsonValidationErrors([
+                'user',
+                'name',
+                'cabang_id',
+                'karyawan_id',
+                'dashboard',
+                'statusaktif'
+            ])
+            ->assertJsonMissingValidationErrors('password');
     }
 
     public function test_authenticate_destroy()
     {
-        $response = $this->deleteJson(route('parameter.destroy', $this->existingParameter->id));
+        $response = $this->deleteJson(route('user.destroy', $this->existingUser->id));
 
         $response
             ->assertHeader('Content-Type', 'application/json')
@@ -219,7 +211,7 @@ class ParameterTest extends TestCase
 
     public function test_success_destroy()
     {
-        $response = $this->actingAs($this->user, 'api')->deleteJson(route('parameter.destroy', $this->existingParameter->id));
+        $response = $this->actingAs($this->user, 'api')->deleteJson(route('user.destroy', $this->existingUser->id));
 
         $response
             ->assertHeader('Content-Type', 'application/json')
@@ -227,17 +219,19 @@ class ParameterTest extends TestCase
             ->assertJsonStructure([
                 'data' => [
                     'id',
-                    'grp',
-                    'subgrp',
-                    'text',
-                    'memo',
+                    'user',
+                    'name',
+                    'dashboard',
+                    'karyawan_id',
+                    'cabang_id',
+                    'statusaktif',
                     'modifiedby',
+                    'updated_at',
                     'created_at',
-                    'updated_at'
                 ]
             ]);
 
-        $confirmResponse = $this->actingAs($this->user, 'api')->getJson(route('parameter.show', $this->existingParameter->id));
+        $confirmResponse = $this->actingAs($this->user, 'api')->deleteJson(route('user.destroy', $this->existingUser->id));
 
         $confirmResponse
             ->assertHeader('Content-Type', 'application/json')

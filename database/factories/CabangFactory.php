@@ -17,7 +17,7 @@ class CabangFactory extends Factory
         return [
             'kodecabang' => $this->faker->word(2, true),
             'namacabang' => $this->faker->city(),
-            'statusaktif' => 1,
+            'statusaktif' => $this->faker->randomElement(Parameter::where('grp', 'STATUS AKTIF')->get()),
         ];
     }
 }

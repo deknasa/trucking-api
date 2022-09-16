@@ -51,6 +51,16 @@ class PiutangHeader extends MyModel
 
         return $data;
     }
+    public function findUpdate($id) {
+        $data = DB::table('piutangheader')->select(
+            'piutangheader.id',
+            'piutangheader.nobukti',
+            'piutangheader.tglbukti',
+            'piutangheader.keterangan'
+        )->where('id', $id)->first();
+
+        return $data;
+    }
     public function piutangdetail() {
         return $this->hasMany(PiutangDetail::class, 'piutang_id');
     }

@@ -192,7 +192,7 @@ class Controller extends BaseController
         $page = request()->page ?? 1;
 
         $temporaryTable = $model->createTemp($modelTable);
-
+        
         if ($isDeleting) {
             if ($page == 1) {
                 $position = $indexRow + 1;
@@ -212,10 +212,12 @@ class Controller extends BaseController
                 ->orderBy('position');
         } else {
             $query = DB::table($temporaryTable)->select('position')->where('id', $model->id)->orderBy('position');
+        // dd($query->toSql());
+            
         }
-
+        
         $data = $query->first();
-
+        // var_dump($data);
         return $data;
     }
 }

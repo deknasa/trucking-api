@@ -15,10 +15,10 @@ class ParameterFactory extends Factory
     public function definition()
     {
         return [
-            'grp' => $this->faker->name(),
-            'subgrp' => $this->faker->name(),
-            'text' => $this->faker->name(),
-            'memo' => $this->faker->name(),
+            'grp' => $this->faker->word(),
+            'subgrp' => $this->faker->word(),
+            'text' => $this->faker->word(),
+            'memo' => $this->faker->word(),
             'modifiedby' => $this->faker->randomElement(User::all()->pluck('user'))
         ];
     }

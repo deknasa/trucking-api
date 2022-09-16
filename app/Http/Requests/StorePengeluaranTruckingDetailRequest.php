@@ -24,9 +24,13 @@ class StorePengeluaranTruckingDetailRequest extends FormRequest
     public function rules()
     {
         return [
-            'supir_id' => 'required|array',
-            'penerimaantruckingheader_nobukti' => 'required|array',
-            'nominal' => 'required|array',
+            // 'supir_id' => 'required|array',
+            // 'penerimaantruckingheader_nobukti' => 'required|array',
+            // 'nominal' => 'required|array',
+            
+            'supir' => 'required',
+            'penerimaantruckingheader_nobukti' => 'required',
+            'nominal' => 'required',
         ];
     }
 }

@@ -62,7 +62,6 @@ class PiutangHeaderController extends Controller
                 ->where('subgrp', $subgroup)
                 ->first();
             
-            $nominal = str_replace('.','', $request->nominal);
             $content = new Request();
             $content['group'] = $group;
             $content['subgroup'] = $subgroup;
@@ -73,7 +72,7 @@ class PiutangHeaderController extends Controller
            
             $piutang->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $piutang->keterangan = $request->keterangan;
-            $piutang->postingdari = '';
+            $piutang->postingdari = $request->postingdari ?? '';
             $piutang->invoice_nobukti = $request->invoice_nobukti ?? '';
             $piutang->modifiedby = auth('api')->user()->name;
             $piutang->statusformat = $format->id;
@@ -123,7 +122,7 @@ class PiutangHeaderController extends Controller
             $detaillog = [];
             for ($i = 0; $i < count($request->nominal_detail); $i++) {
             
-                $nominal = str_replace('.','', $request->nominal_detail[$i]);
+                $nominal = str_replace('.00','', $request->nominal_detail[$i]);
 
                 $datadetail = [
                     'piutang_id' => $piutang->id,
@@ -276,13 +275,13 @@ class PiutangHeaderController extends Controller
     
     public function show($id)
     {
-        $data = PiutangHeader::with(
-            'piutangdetail',
-        )->find($id);
+        $data = PiutangHeader::findUpdate($id);
+        $detail = PiutangDetail::findUpdate($id);
 
         return response([
             'status' => true,
-            'data' => $data
+            'data' => $data,
+            'detail' => $detail
         ]);
     }
 
@@ -299,8 +298,8 @@ class PiutangHeaderController extends Controller
             
             $piutang->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $piutang->keterangan = $request->keterangan;
-            $piutang->postingdari = '';
-            $piutang->invoice_nobukti = '';
+            $piutang->postingdari = $request->postingdari ?? '';
+            $piutang->invoice_nobukti = $request->invoice_nobukti ?? '';
             $piutang->modifiedby = auth('api')->user()->name;
 
             $sum = 0;
