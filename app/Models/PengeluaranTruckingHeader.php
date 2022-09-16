@@ -68,8 +68,6 @@ class PengeluaranTruckingHeader extends MyModel
 
     public function find($id)
     {
-       
-
         $query = DB::table('pengeluarantruckingheader')->select(
             'pengeluarantruckingheader.id',
             'pengeluarantruckingheader.nobukti',

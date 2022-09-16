@@ -218,13 +218,10 @@ class PengeluaranTruckingHeaderController extends Controller
    
     public function show($id)
     {
-        $datates = PengeluaranTruckingHeader::with(
-            'pengeluarantruckingdetail',
-        )->find($id);
+        
         $data = PengeluaranTruckingHeader::find($id);
         $detail = PengeluaranTruckingDetail::getAll($id);
-        $details = json_encode($detail);
-
+        
         // dd($details);
         // $datas = array_merge($data, $detail);
             
