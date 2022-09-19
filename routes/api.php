@@ -280,9 +280,9 @@
         Route::get('penerimaantrucking/field_length', [PenerimaanTruckingController::class, 'fieldLength']);
         Route::resource('penerimaantrucking', PenerimaanTruckingController::class)->parameters(['penerimaantrucking' => 'penerimaanTrucking']);
 
-        Route::get('pengeluaran_trucking/export', [PengeluaranTruckingController::class, 'export']);
-        Route::get('pengeluaran_trucking/field_length', [PengeluaranTruckingController::class, 'fieldLength']);
-        Route::resource('pengeluaran_trucking', PengeluaranTruckingController::class);
+        Route::get('pengeluarantrucking/export', [PengeluaranTruckingController::class, 'export']);
+        Route::get('pengeluarantrucking/field_length', [PengeluaranTruckingController::class, 'fieldLength']);
+        Route::resource('pengeluarantrucking', PengeluaranTruckingController::class)->parameters(['pengeluarantrucking' => 'pengeluaranTrucking']);
 
 
         Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
