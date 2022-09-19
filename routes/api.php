@@ -195,6 +195,7 @@
 
         Route::get('menu/field_length', [MenuController::class, 'fieldLength']);
         Route::get('menu/combomenuparent', [MenuController::class, 'combomenuparent']);
+        Route::get('menu/controller', [MenuController::class, 'listclassall']);
         Route::get('menu/getdatanamaacos', [MenuController::class, 'getdatanamaacos']);
         Route::get('menu/export', [MenuController::class, 'export'])->name('menu.export');
         Route::resource('menu', MenuController::class);
