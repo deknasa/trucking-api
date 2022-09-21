@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
+
 
 class PenerimaanTruckingDetail extends MyModel
 {
@@ -20,5 +22,25 @@ class PenerimaanTruckingDetail extends MyModel
         'id',
         'created_at',
         'updated_at',
-    ];      
+    ];  
+    public function getAll($id)
+    {
+       
+
+        $query = DB::table('penerimaantruckingdetail')->select(
+            'penerimaantruckingdetail.penerimaantruckingheader_id',
+            'penerimaantruckingdetail.nominal',
+            'penerimaantruckingdetail.pengeluarantruckingheader_nobukti',
+
+            'supir.namasupir as supir',
+            'supir.id as supir_id'
+        )
+            ->leftJoin('supir', 'penerimaantruckingdetail.supir_id','supir.id')
+            ->where('penerimaantruckingdetail.penerimaantruckingheader_id', '=', $id);
+            
+
+        $data = $query->get();
+
+        return $data;
+    }        
 }

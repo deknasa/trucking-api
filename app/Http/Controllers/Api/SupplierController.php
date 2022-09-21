@@ -9,6 +9,8 @@ use App\Http\Requests\StoreSupplierRequest;
 use App\Http\Requests\UpdateSupirRequest;
 use App\Http\Requests\UpdateSupplierRequest;
 use Illuminate\Http\Request;
+use App\Models\Parameter;
+
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
@@ -21,6 +23,10 @@ class SupplierController extends Controller
     public function index()
     {
         $supplier = new Supplier();
+
+        $rows = $supplier->get();
+
+        $baseUrl = asset('');
 
         return response([
             'data' => $supplier->get(),

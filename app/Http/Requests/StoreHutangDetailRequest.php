@@ -13,7 +13,7 @@ class StoreHutangDetailRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +24,8 @@ class StoreHutangDetailRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'supplier' => 'required|array',
+            'keterangan_detail' => 'required|array',
         ];
     }
 }
