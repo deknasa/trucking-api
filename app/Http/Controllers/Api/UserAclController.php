@@ -657,7 +657,6 @@ class UserAclController extends Controller
 
     public function detaillist(Request $request)
     {
-
         $param1 = $request->user_id;
 
         $controller = new ParameterController;

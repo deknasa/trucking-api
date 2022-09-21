@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Validator;
 
 class ServiceInDetailController extends Controller
 {
-   
+
     public function index(Request $request)
     {
         $params = [
@@ -50,7 +50,7 @@ class ServiceInDetailController extends Controller
                     'detail.keterangan',
 
                 )
-                     ->join('mekanik', 'mekanik.id', '=', 'detail.mekanik_id');
+                    ->join('mekanik', 'mekanik.id', '=', 'detail.mekanik_id');
 
                 $serviceInDetail = $query->get();
             } else {
@@ -59,7 +59,7 @@ class ServiceInDetailController extends Controller
                     'detail.keterangan',
 
                 )
-                     ->join('mekanik', 'mekanik.id', '=', 'detail.mekanik_id');
+                    ->join('mekanik', 'mekanik.id', '=', 'detail.mekanik_id');
 
                 $serviceInDetail = $query->get();
             }
@@ -72,7 +72,6 @@ class ServiceInDetailController extends Controller
                 'message' => $th->getMessage()
             ]);
         }
-     
     }
 
     public function store(StoreServiceInDetailRequest $request)
@@ -100,9 +99,9 @@ class ServiceInDetailController extends Controller
             $serviceindetail->mekanik_id = $request->mekanik_id;
             $serviceindetail->keterangan = $request->keterangan;
             $serviceindetail->modifiedby = auth('api')->user()->name;
-            
+
             $serviceindetail->save();
-            
+
             DB::commit();
             if ($validator->passes()) {
                 return [
@@ -114,5 +113,6 @@ class ServiceInDetailController extends Controller
         } catch (\Throwable $th) {
             DB::rollBack();
             return response($th->getMessage());
-        }     
+        }
     }
+}
