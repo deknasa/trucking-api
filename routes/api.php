@@ -78,6 +78,8 @@
     use App\Http\Controllers\Api\HutangDetailController;
     use App\Http\Controllers\Api\PelunasanPiutangHeaderController;
     use App\Http\Controllers\Api\PelunasanPiutangDetailController;
+    use App\Http\Controllers\Api\HutangBayarHeaderController;
+    use App\Http\Controllers\Api\HutangBayarDetailController;
 
     /*
     |--------------------------------------------------------------------------
@@ -329,6 +331,13 @@
         Route::get('pelunasanpiutangheader/grid', [PelunasanPiutangHeaderController::class, 'grid']);
         Route::resource('pelunasanpiutangheader', PelunasanPiutangHeaderController::class);
         Route::resource('pelunasanpiutangdetail', PelunasanPiutangDetailController::class);
+
+        Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
+        Route::get('hutangbayarheader/no_bukti', [HutangBayarHeaderController::class, 'getNoBukti']);
+        Route::get('hutangbayarheader/combo', [HutangBayarHeaderController::class, 'combo']);
+        Route::get('hutangbayarheader/grid', [HutangBayarHeaderController::class, 'grid']);
+        Route::resource('hutangbayarheader', HutangBayarHeaderController::class);
+        Route::resource('hutangbayardetail', HutangBayarDetailController::class);
 
     });
 
