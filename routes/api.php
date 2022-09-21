@@ -312,14 +312,6 @@
         Route::resource('piutangdetail', PiutangDetailController::class);
     });
 
-    Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
-    Route::get('kasgantung/no_bukti', [KasGantungHeaderController::class, 'getNoBukti']);
-    Route::get('kasgantung/combo', [KasGantungHeaderController::class, 'combo']);
-    Route::get('kasgantung/grid', [KasGantungHeaderController::class, 'grid']);
-    Route::resource('kasgantung', KasGantungHeaderController::class);
-
-    Route::resource('kasgantung_detail', KasGantungDetailController::class);
-
     Route::get('gudang/combo', [GudangController::class, 'combo']);
     Route::get('gudang/field_length', [GudangController::class, 'fieldLength']);
     Route::resource('gudang', GudangController::class);
@@ -379,6 +371,7 @@
     Route::resource('suratpengantar', SuratPengantarController::class);
 
     Route::get('upahsupir/combo', [UpahSupirController::class, 'combo']);
+    Route::get('upahsupir/field_length', [UpahSupirController::class, 'fieldLength']);
     Route::resource('upahsupir', UpahSupirController::class);
 
     Route::resource('upahsupirrincian', UpahSupirRincianController::class);
@@ -439,6 +432,7 @@
     Route::get('kasgantung/no_bukti', [KasGantungHeaderController::class, 'getNoBukti']);
     Route::get('kasgantung/combo', [KasGantungHeaderController::class, 'combo']);
     Route::get('kasgantung/grid', [KasGantungHeaderController::class, 'grid']);
+    Route::get('kasgantung/field_length', [KasGantungHeaderController::class, 'fieldLength']);
     Route::resource('kasgantung', KasGantungHeaderController::class);
 
     Route::resource('kasgantung_detail', KasGantungDetailController::class);
@@ -499,11 +493,6 @@
     Route::get('suratpengantar/field_length', [SuratPengantarController::class, 'fieldLength']);
     Route::get('suratpengantar/get_gaji', [SuratPengantarController::class, 'getGaji']);
     Route::resource('suratpengantar', SuratPengantarController::class);
-
-    Route::get('upahsupir/combo', [UpahSupirController::class, 'combo']);
-    Route::resource('upahsupir', UpahSupirController::class);
-
-    Route::resource('upahsupirrincian', UpahSupirRincianController::class);
 
     Route::get('upahritasi/combo', [UpahRitasiController::class, 'combo']);
     Route::resource('upahritasi', UpahRitasiController::class);
