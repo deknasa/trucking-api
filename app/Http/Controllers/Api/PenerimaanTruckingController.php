@@ -40,50 +40,51 @@ class PenerimaanTruckingController extends Controller
     /**
      * @ClassName 
      */
-    // public function store(StorePenerimaanTruckingRequest $request)
-    // {
-    //     DB::beginTransaction();
+    public function store(StorePenerimaanTruckingRequest $request)
+    {
+        DB::beginTransaction();
 
-    //     try {
-    //         $penerimaanTrucking = new PenerimaanTrucking();
-    //         $penerimaanTrucking->keterangan = $request->keterangan;
-    //         $penerimaanTrucking->coa = $request->coa;
-    //         $penerimaanTrucking->modifiedby = auth('api')->user()->name;
-    //         $request->sortname = $request->sortname ?? 'id';
-    //         $request->sortorder = $request->sortorder ?? 'asc';
+        try {
+            $penerimaanTrucking = new PenerimaanTrucking();
+            $penerimaanTrucking->keterangan = $request->keterangan;
+            $penerimaanTrucking->coa = $request->coa;
+            $penerimaanTrucking->modifiedby = auth('api')->user()->name;
+            $request->sortname = $request->sortname ?? 'id';
+            $request->sortorder = $request->sortorder ?? 'asc';
 
-    //         if ($penerimaanTrucking->save()) {
-    //             $logTrail = [
-    //                 'namatabel' => strtoupper($penerimaanTrucking->getTable()),
-    //                 'postingdari' => 'ENTRY PENERIMAAN TRUCKING',
-    //                 'idtrans' => $penerimaanTrucking->id,
-    //                 'nobuktitrans' => $penerimaanTrucking->id,
-    //                 'aksi' => 'ENTRY',
-    //                 'datajson' => $penerimaanTrucking->toArray(),
-    //                 'modifiedby' => $penerimaanTrucking->modifiedby
-    //             ];
+            if ($penerimaanTrucking->save()) {
+                $logTrail = [
+                    'namatabel' => strtoupper($penerimaanTrucking->getTable()),
+                    'postingdari' => 'ENTRY PENERIMAAN TRUCKING',
+                    'idtrans' => $penerimaanTrucking->id,
+                    'nobuktitrans' => $penerimaanTrucking->id,
+                    'aksi' => 'ENTRY',
+                    'datajson' => $penerimaanTrucking->toArray(),
+                    'modifiedby' => $penerimaanTrucking->modifiedby
+                ];
 
-    //             $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-    //             $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-    //             DB::commit();
-    //         }
+                DB::commit();
+            }
 
-    //         /* Set position and page */
-    //         $selected = $this->getPosition($penerimaanTrucking, $penerimaanTrucking->getTable());
-    //         $penerimaanTrucking->position = $selected->position;
-    //         $penerimaanTrucking->page = ceil($penerimaanTrucking->position / ($request->limit ?? 10));
+            /* Set position and page */
+            $selected = $this->getPosition($penerimaanTrucking, $penerimaanTrucking->getTable());
+            $penerimaanTrucking->position = $selected->position;
+            $penerimaanTrucking->page = ceil($penerimaanTrucking->position / ($request->limit ?? 10));
 
-    //         return response([
-    //             'status' => true,
-    //             'message' => 'Berhasil disimpan',
-    //             'data' => $penerimaanTrucking
-    //         ]);
-    //     } catch (\Throwable $th) {
-    //         DB::rollBack();
-    //         throw $th;
-    //     }
-    // }
+            return response([
+                'status' => true,
+                'message' => 'Berhasil disimpan',
+                'data' => $penerimaanTrucking
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
+    }
+
     /**
      * @ClassName 
      */
@@ -134,6 +135,7 @@ class PenerimaanTruckingController extends Controller
             throw $th;
         }
     }
+
     /**
      * @ClassName 
      */
