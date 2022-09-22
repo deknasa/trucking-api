@@ -149,6 +149,14 @@ class ParameterSeeder extends Seeder
         Parameter::create(['grp' => 'PEMBAYARAN HUTANG BUKTI',  'subgrp' => 'PEMBAYARAN HUTANG BUKTI',  'text' => '#PHT #9999#/#R#/#Y',  'type' => '118',  'memo' => 'PEMBAYARAN HUTANG BUKTI',  'modifiedby' => 'ADMIN',]);
         Parameter::create(['grp' => 'COA HUTANG MANUAL',  'subgrp' => 'DEBET',  'text' => '88',  'type' => '0',  'memo' => 'COA HUTANG MANUAL DEBET',  'modifiedby' => 'ADMIN',]);
         Parameter::create(['grp' => 'COA HUTANG MANUAL',  'subgrp' => 'KREDIT',  'text' => '96',  'type' => '0',  'memo' => 'COA HUTANG MANUAL KREDIT',  'modifiedby' => 'ADMIN',]);
+        Parameter::create(['grp' => 'DELIVERY ORDER BUKTI',  'subgrp' => 'DELIVERY ORDER BUKTI',  'text' => '#DOT #9999#/#R#/#Y',  'type' => '118',  'memo' => 'DELIVERY ORDER BUKTI',  'modifiedby' => 'ADMIN',]);
+        Parameter::create(['grp' => 'PO STOK BUKTI',  'subgrp' => 'PO STOK BUKTI',  'text' => '#POT #9999#/#R#/#Y',  'type' => '118',  'memo' => 'PO STOK BUKTI',  'modifiedby' => 'ADMIN',]);
+        Parameter::create(['grp' => 'BELI STOK BUKTI',  'subgrp' => 'BELI STOK BUKTI',  'text' => '#PBT #9999#/#R#/#Y',  'type' => '118',  'memo' => 'BELI STOK BUKTI',  'modifiedby' => 'ADMIN',]);
+        Parameter::create(['grp' => 'SPK STOK BUKTI',  'subgrp' => 'SPK STOK BUKTI',  'text' => '#SPK #9999#/#R#/#Y',  'type' => '118',  'memo' => 'SPK STOK BUKTI',  'modifiedby' => 'ADMIN',]);
+        Parameter::create(['grp' => 'KOREKSI STOK BUKTI',  'subgrp' => 'KOREKSI STOK BUKTI',  'text' => '#KST #9999#/#R#/#Y',  'type' => '118',  'memo' => 'KOREKSI STOK BUKTI',  'modifiedby' => 'ADMIN',]);
+        Parameter::create(['grp' => 'PINDAH GUDANG BUKTI',  'subgrp' => 'PINDAH GUDANG BUKTI',  'text' => '#PGT #9999#/#R#/#Y',  'type' => '118',  'memo' => 'PINDAH GUDANG BUKTI',  'modifiedby' => 'ADMIN',]);
+        Parameter::create(['grp' => 'PERBAIKAN STOK BUKTI',  'subgrp' => 'PERBAIKAN STOK BUKTI',  'text' => '#PST #9999#/#R#/#Y',  'type' => '118',  'memo' => 'PERBAIKAN STOK BUKTI',  'modifiedby' => 'ADMIN',]);
+        Parameter::create(['grp' => 'RETUR BELI BUKTI',  'subgrp' => 'RETUR BELI BUKTI',  'text' => '#RBT #9999#/#R#/#Y',  'type' => '118',  'memo' => 'RETUR BELI BUKTI',  'modifiedby' => 'ADMIN',]);
        
 
 
