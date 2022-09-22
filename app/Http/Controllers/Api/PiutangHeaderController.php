@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Schema;
 
+
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Models\LogTrail;
 use App\Http\Requests\StorePiutangDetailRequest;
@@ -247,10 +248,14 @@ class PiutangHeaderController extends Controller
         /* Set position and page */
     
 
-            $selected = $this->getPosition($piutang, $piutang->getTable(), true);
-            $piutang->position = $selected->position;
-            $piutang->id = $selected->id;
-            $piutang->page = ceil($piutang->position / ($request->limit ?? 10));
+            $piutang->position = DB::table((new PiutangHeader())->getTable())->orderBy($request->sortname, $request->sortorder)
+                ->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $piutang->{$request->sortname})
+                ->where('id', '<=', $piutang->id)
+                ->count();
+
+            if (isset($request->limit)) {
+                $piutang->page = ceil($piutang->position / $request->limit);
+            }
 
             return response([
                 'status' => true,
@@ -445,9 +450,14 @@ class PiutangHeaderController extends Controller
             DB::commit();
 
              /* Set position and page */
-            $selected = $this->getPosition($piutang, $piutang->getTable());
-            $piutang->position = $selected->position;
-            $piutang->page = ceil($piutang->position / ($request->limit ?? 10));
+             $piutang->position = DB::table((new PiutangHeader())->getTable())->orderBy($request->sortname, $request->sortorder)
+             ->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $piutang->{$request->sortname})
+             ->where('id', '<=', $piutang->id)
+             ->count();
+
+            if (isset($request->limit)) {
+                $piutang->page = ceil($piutang->position / $request->limit);
+            }
 
             return response([
                 'status' => true,

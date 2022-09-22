@@ -314,53 +314,51 @@ class HutangHeaderController extends Controller
     /**
      * @ClassName destroy
      */
-    public function destroy($id, JurnalUmumHeader $jurnalumumheader, Request $request)
+    public function destroy($id, Request $request)
     {
         DB::beginTransaction();
-
+        $hutangheader = new HutangHeader();
         try {
-            $get = HutangHeader::find($id);
-            // $get = JurnalUmumDetail::find($id);
-            // $get = JurnalUmumHeader::find($id);
-
-            $delete = HutangDetail::where('hutang_id', $id)->delete();
-            // $delete = JurnalUmumHeader::where('nobukti', $get->nobukti)->delete();
-            // $delete = JurnalUmumDetail::where('nobukti', $get->nobukti)->delete();
-
+            $delete = HutangDetail::where('hutang_id',$id)->delete();
             $delete = HutangHeader::destroy($id);
-            // $delete = JurnalUmumHeader::destroy($id);
-            // $delete = JurnalUmumDetail::destroy($id);
-
-
-            $datalogtrail = [
-                'namatabel' => $get->getTable(),
-                'postingdari' => 'DELETE HUTANG',
-                'idtrans' => $id,
-                'nobuktitrans' => '',
-                'aksi' => 'HAPUS',
-                'datajson' => '',
-                'modifiedby' => $get->modifiedby,
-            ];
-
-            $data = new StoreLogTrailRequest($datalogtrail);
-            app(LogTrailController::class)->store($data);
-
+            
             if ($delete) {
+                $logTrail = [
+                    'namatabel' => strtoupper($hutangheader->getTable()),
+                    'postingdari' => 'DELETE HUTANG HEADER',
+                    'idtrans' => $id,
+                    'nobuktitrans' => '',
+                    'aksi' => 'DELETE',
+                    'datajson' => $hutangheader->toArray(),
+                    'modifiedby' => $hutangheader->modifiedby
+                ];
+
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                app(LogTrailController::class)->store($validatedLogTrail);
+
                 DB::commit();
+
+                $selected = $this->getPosition($hutangheader, $hutangheader->getTable(), true);
+                $hutangheader->position = $selected->position;
+                $hutangheader->id = $selected->id;
+                $hutangheader->page = ceil($hutangheader->position / ($request->limit ?? 10));
+
                 return response([
                     'status' => true,
-                    'message' => 'Berhasil dihapus'
+                    'message' => 'Berhasil dihapus',
+                    'data' => $hutangheader
                 ]);
             } else {
                 DB::rollBack();
+
                 return response([
                     'status' => false,
                     'message' => 'Gagal dihapus'
                 ]);
             }
         } catch (\Throwable $th) {
-            DB::rollBack();
-            throw $th;
+            DB::rollBack();         
+            return response($th->getMessage());   
         }
     }
 
