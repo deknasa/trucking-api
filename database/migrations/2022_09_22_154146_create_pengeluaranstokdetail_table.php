@@ -20,7 +20,6 @@ class CreatePengeluaranstokdetailTable extends Migration
             $table->unsignedBigInteger('stok_id');
             $table->integer('conv1')->length(11)->default('0');
             $table->integer('conv2')->length(11)->default('0');
-            $table->double('qty2', 15,2)->default(0);
             $table->double('harga', 15,2)->default(0);
             $table->string('persentasediscount', 50)->default('');
             $table->double('nominaldiscount', 15,2)->default(0);

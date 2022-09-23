@@ -157,6 +157,8 @@ class ParameterSeeder extends Seeder
         Parameter::create(['grp' => 'PINDAH GUDANG BUKTI',  'subgrp' => 'PINDAH GUDANG BUKTI',  'text' => '#PGT #9999#/#R#/#Y',  'type' => '118',  'memo' => 'PINDAH GUDANG BUKTI',  'modifiedby' => 'ADMIN',]);
         Parameter::create(['grp' => 'PERBAIKAN STOK BUKTI',  'subgrp' => 'PERBAIKAN STOK BUKTI',  'text' => '#PST #9999#/#R#/#Y',  'type' => '118',  'memo' => 'PERBAIKAN STOK BUKTI',  'modifiedby' => 'ADMIN',]);
         Parameter::create(['grp' => 'RETUR BELI BUKTI',  'subgrp' => 'RETUR BELI BUKTI',  'text' => '#RBT #9999#/#R#/#Y',  'type' => '118',  'memo' => 'RETUR BELI BUKTI',  'modifiedby' => 'ADMIN',]);
+        Parameter::create(['grp' => 'STATUS HITUNG STOK',  'subgrp' => 'STATUS HITUNG STOK',  'text' => 'YA',  'type' => '0',  'memo' => 'STATUS HITUNG STOK',  'modifiedby' => 'ADMIN',]);
+        Parameter::create(['grp' => 'STATUS HITUNG STOK',  'subgrp' => 'STATUS HITUNG STOK',  'text' => 'TIDAK',  'type' => '0',  'memo' => 'STATUS HITUNG STOK',  'modifiedby' => 'ADMIN',]);
        
 
 

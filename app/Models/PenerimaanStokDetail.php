@@ -8,4 +8,17 @@ use Illuminate\Database\Eloquent\Model;
 class PenerimaanStokDetail extends Model
 {
     use HasFactory;
+
+    protected $table = 'PenerimaanStokDetail';
+
+    protected $casts = [
+        'created_at' => 'date:d-m-Y H:i:s',
+        'updated_at' => 'date:d-m-Y H:i:s'
+    ];
+
+    protected $guarded = [
+        'id',
+        'created_at',
+        'updated_at',
+    ];
 }
