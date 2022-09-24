@@ -1,86 +1,425 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
-use App\Models\HutangBayarHeader;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+
+use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreHutangBayarHeaderRequest;
-use App\Http\Requests\UpdateHutangBayarHeaderRequest;
+use App\Http\Requests\StoreHutangBayarDetailRequest;
+
+use App\Http\Requests\StoreLogTrailRequest;
+use App\Models\AlatBayar;
+use App\Models\Bank;
+use App\Models\AkunPusat;
+use App\Models\Supplier;
+use App\Models\HutangBayarHeader;
+use App\Models\HutangBayarDetail;
+use App\Models\Parameter;
+use App\Models\HutangHeader;
+use App\Models\LogTrail;
+use App\Models\PengeluaranHeader;
 
 class HutangBayarHeaderController extends Controller
 {
     /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
+     * @ClassName index
      */
     public function index()
     {
-        //
+        $hutangbayarheader = new HutangBayarHeader();
+        return response([
+            'data' => $hutangbayarheader->get(),
+            'attributes' => [
+                'totalRows' => $hutangbayarheader->totalRows,
+                'totalPages' => $hutangbayarheader->totalPages
+            ]
+        ]);
     }
 
     /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \App\Http\Requests\StoreHutangBayarHeaderRequest  $request
-     * @return \Illuminate\Http\Response
+     * @ClassName store
      */
     public function store(StoreHutangBayarHeaderRequest $request)
     {
-        //
+        DB::beginTransaction();
+
+        try {
+
+            $group = 'PEMBAYARAN HUTANG BUKTI';
+            $subgroup = 'PEMBAYARAN HUTANG BUKTI';
+
+
+            $format = DB::table('parameter')
+                ->where('grp', $group)
+                ->where('subgrp', $subgroup)
+                ->first();
+
+            $content = new Request();
+            $content['group'] = $group;
+            $content['subgroup'] = $subgroup;
+            $content['table'] = 'hutangbayarheader';
+            $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
+
+            $pelunasanpiutangheader = new HutangBayarHeader();
+            $hutangbayarheader = new HutangBayarHeader();
+            $statusPosting = Parameter::where('grp', 'STATUS POSTING')->where('text', 'BUKAN POSTING')->first();
+
+            $nobuktiPengeluaran = $request->pengeluaran_nobukti;
+            $PengeluaranHeader =  HutangHeader::where('nobukti', $nobuktiPengeluaran)->first();
+
+            $hutangbayarheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
+            $hutangbayarheader->keterangan = $request->keterangan;
+            $hutangbayarheader->bank_id = $request->bank_id;
+            $hutangbayarheader->supplier_id = $request->supplier_id;
+            // $hutangbayarheader->pengeluaran_nobukti = $request->pengeluaran_nobukti;
+            $hutangbayarheader->coa = $request->akunpusat;
+            // $hutangbayarheader->pengeluaran_nobukti = $nobuktiPengeluaran;
+            $hutangbayarheader->statusformat =  $format->id;
+            $hutangbayarheader->modifiedby = auth('api')->user()->name;
+
+            TOP:
+            $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
+            $hutangbayarheader->nobukti = $nobukti;
+
+            try {
+                $hutangbayarheader->save();
+
+                DB::commit();
+            } catch (\Exception $e) {
+                dd($e->getMessage());
+                $errorCode = @$e->errorInfo[1];
+                if ($errorCode == 2601) {
+                    goto TOP;
+                }
+            }
+
+            $logTrail = [
+                'namatabel' => strtoupper($hutangbayarheader->getTable()),
+                'postingdari' => 'ENTRY HUTANG BAYAR HEADER',
+                'idtrans' => $hutangbayarheader->id,
+                'nobuktitrans' => $hutangbayarheader->nobukti,
+                'aksi' => 'ENTRY',
+                'datajson' => $hutangbayarheader->toArray(),
+                'modifiedby' => $hutangbayarheader->modifiedby
+            ];
+            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+            $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+
+            /* Store detail */
+
+            $detaillog = [];
+
+            //   for ($i = 0; $i < count($request->nominal); $i++) {
+
+            $datadetail = [
+                'hutangbayar_id' => $hutangbayarheader->id,
+                'nobukti' => $hutangbayarheader->nobukti,
+                'nominal' => str_replace(',', '', $request->nominal),
+                'hutang_nobukti' => $request->hutang_nobukti,
+                'cicilan' => str_replace(',', '', $request->cicilan),
+                'alatbayar_id' => $request->alatbayar_id,
+                'potongan' => str_replace(',', '', $request->potongan),
+                'keterangan' => $request->keterangan_detail,
+                'modifiedby' => $hutangbayarheader->modifiedby,
+            ];
+            //STORE 
+            $data = new StoreHutangBayarDetailRequest($datadetail);
+            $datadetails = app(HutangBayarDetailController::class)->store($data);
+            
+            if ($datadetails['error']) {
+                return response($datadetails, 422);
+            } else {
+                $iddetail = $datadetails['id'];
+                $tabeldetail = $datadetails['tabel'];
+            }
+
+
+            $datadetaillog = [
+                'id' => $iddetail,
+                'hutangbayar_id' => $hutangbayarheader->id,
+                'nobukti' => $hutangbayarheader->nobukti,
+                'nominal' => str_replace(',', '', $request->nominal),
+                'hutang_nobukti' => $request->hutang_nobukti,
+                'cicilan' => str_replace(',', '', $request->cicilan),
+                'alatbayar_id' => $request->alatbayar_id,
+                'potongan' => str_replace(',', '', $request->potongan),
+                'keterangan' => $request->keterangan_detail,
+                'modifiedby' => $hutangbayarheader->modifiedby,
+                'created_at' => date('d-m-Y H:i:s', strtotime($hutangbayarheader->created_at)),
+                'updated_at' => date('d-m-Y H:i:s', strtotime($hutangbayarheader->updated_at)),
+
+            ];
+
+            $detaillog[] = $datadetaillog;
+
+
+            $dataid = LogTrail::select('id')
+                ->where('idtrans', '=', $hutangbayarheader->id)
+                ->where('namatabel', '=', $hutangbayarheader->getTable())
+                ->orderBy('id', 'DESC')
+                ->first();
+
+            $datalogtrail = [
+                'namatabel' => $tabeldetail,
+                'postingdari' => 'ENTRY HUTANG BAYAR DETAIL',
+                'idtrans' =>  $dataid->id,
+                'nobuktitrans' => $hutangbayarheader->nobukti,
+                'aksi' => 'ENTRY',
+                'datajson' => $detaillog,
+                'modifiedby' => $request->modifiedby,
+            ];
+            $data = new StoreLogTrailRequest($datalogtrail);
+            app(LogTrailController::class)->store($data);
+            //   }
+
+
+            $request->sortname = $request->sortname ?? 'id';
+            $request->sortorder = $request->sortorder ?? 'asc';
+            DB::commit();
+
+            /* Set position and page */
+
+
+            $selected = $this->getPosition($hutangbayarheader, $hutangbayarheader->getTable());
+            $hutangbayarheader->position = $selected->position;
+            $hutangbayarheader->page = ceil($hutangbayarheader->position / ($request->limit ?? 10));
+            if (isset($request->limit)) {
+                $hutangbayarheader->page = ceil($hutangbayarheader->position / $request->limit);
+            }
+
+            return response([
+                'status' => true,
+                'message' => 'Berhasil disimpan',
+                'data' => $hutangbayarheader
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+            return response($th->getMessage());
+        }
+    }
+
+
+    public function show($id)
+    {
+
+        $data = HutangBayarHeader::find($id);
+        $detail = HutangBayarDetail::getAll($id);
+
+        return response([
+            'status' => true,
+            'data' => $data,
+            'detail' => $detail
+        ]);
     }
 
     /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\HutangBayarHeader  $hutangBayarHeader
-     * @return \Illuminate\Http\Response
+     * @ClassName update
      */
-    public function show(HutangBayarHeader $hutangBayarHeader)
+    public function update(StoreHutangBayarHeaderRequest $request, $id)
     {
-        //
+        DB::beginTransaction();
+
+        try {
+
+            $hutangbayarheader = HutangBayarHeader::findOrFail($id);
+
+            $hutangbayarheader = new HutangBayarHeader();
+            $statusPosting = Parameter::where('grp', 'STATUS POSTING')->where('text', 'BUKAN POSTING')->first();
+
+            $nobuktiPengeluaran = $request->pengeluaran_nobukti;
+            $PengeluaranHeader =  HutangHeader::where('nobukti', $nobuktiPengeluaran)->first();
+
+            $hutangbayarheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
+            $hutangbayarheader->keterangan = $request->keterangan;
+            $hutangbayarheader->bank_id = $request->bank_id;
+            $hutangbayarheader->supplier_id = $request->supplier_id;
+            // $hutangbayarheader->pengeluaran_nobukti = $request->pengeluaran_nobukti;
+            $hutangbayarheader->coa = $request->akunpusat;
+            // $hutangbayarheader->pengeluaran_nobukti = $nobuktiPengeluaran;
+            $hutangbayarheader->modifiedby = auth('api')->user()->name;
+
+
+            if ($hutangbayarheader->save()) {
+
+                $logTrail = [
+                    'namatabel' => strtoupper($hutangbayarheader->getTable()),
+                    'postingdari' => 'UPDATE HUTANG BAYAR HEADER',
+                    'idtrans' => $hutangbayarheader->id,
+                    'nobuktitrans' => $hutangbayarheader->nobukti,
+                    'aksi' => 'UPDATE',
+                    'datajson' => $hutangbayarheader->toArray(),
+                    'modifiedby' => $hutangbayarheader->modifiedby
+                ];
+
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+
+                HutangBayarDetail::where('hutangbayar_id', $id)->delete();
+
+                /* Store detail */
+
+                $detaillog = [];
+
+                for ($i = 0; $i < count($request->nominal); $i++) {
+
+
+                    $datadetail = [
+                        'hutangbayar_id' => $hutangbayarheader->id,
+                        'nobukti' => $hutangbayarheader->nobukti,
+                        'nominal' => str_replace(',', '', $request->nominal),
+                        'hutang_nobukti' => $request->hutang_nobukti,
+                        'cicilan' => str_replace(',', '', $request->cicilan),
+                        'alatbayar_id' => $request->alatbayar_id,
+                        'potongan' => str_replace(',', '', $request->potongan),
+                        'keterangan' => $request->keterangan_detail,
+                        'modifiedby' => $hutangbayarheader->modifiedby,
+                    ];
+
+
+                    //STORE 
+                    $data = new StoreHutangBayarDetailRequest($datadetail);
+                    $datadetails = app(HutangBayarDetailController::class)->store($data);
+                    // dd('here');
+
+                    if ($datadetails['error']) {
+                        return response($datadetails, 422);
+                    } else {
+                        $iddetail = $datadetails['id'];
+                        $tabeldetail = $datadetails['tabel'];
+                    }
+
+
+                    $datadetaillog = [
+                        'id' => $iddetail,
+                        'hutangbayar_id' => $hutangbayarheader->id,
+                        'nobukti' => $hutangbayarheader->nobukti,
+                        'nominal' => str_replace(',', '', $request->nominal),
+                        'hutang_nobukti' => $request->hutang_nobukti,
+                        'cicilan' => str_replace(',', '', $request->cicilan),
+                        'alatbayar_id' => $request->alatbayar_id,
+                        'potongan' => str_replace(',', '', $request->potongan),
+                        'keterangan' => $request->keterangan_detail,
+                        'modifiedby' => $hutangbayarheader->modifiedby,
+                        'created_at' => date('d-m-Y H:i:s', strtotime($hutangbayarheader->created_at)),
+                        'updated_at' => date('d-m-Y H:i:s', strtotime($hutangbayarheader->updated_at)),
+        
+                    ];
+
+                    $detaillog[] = $datadetaillog;
+
+                $datalogtrail = [
+                    'namatabel' => $tabeldetail,
+                    'postingdari' => 'UPDATE HUTANG BAYAR DETAIL',
+                    'idtrans' => $iddetail,
+                    'nobuktitrans' => $hutangbayarheader->nobukti,
+                    'aksi' => 'UPDATE',
+                    'datajson' => $detaillog,
+                    'modifiedby' => $request->modifiedby,
+                ];
+                    $data = new StoreLogTrailRequest($datalogtrail);
+
+                    app(LogTrailController::class)->store($data);
+                }
+            }
+
+            $request->sortname = $request->sortname ?? 'id';
+            $request->sortorder = $request->sortorder ?? 'asc';
+
+            DB::commit();
+
+
+            /* Set position and page */
+            $selected = $this->getPosition($hutangbayarheader, $hutangbayarheader->getTable());
+            $hutangbayarheader->position = $selected->position;
+            $hutangbayarheader->page = ceil($hutangbayarheader->position / ($request->limit ?? 10));
+            if (isset($request->limit)) {
+                $hutangbayarheader->page = ceil($hutangbayarheader->position / $request->limit);
+            }
+
+            return response([
+                'status' => true,
+                'message' => 'Berhasil disimpan',
+                'data' => $hutangbayarheader
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+            return response($th->getMessage());
+        }
     }
 
     /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\HutangBayarHeader  $hutangBayarHeader
-     * @return \Illuminate\Http\Response
+     * @ClassName destroy
      */
-    public function edit(HutangBayarHeader $hutangBayarHeader)
+    public function destroy($id, Request $request)
     {
-        //
+        DB::beginTransaction();
+        $hutangbayarheader = new HutangBayarHeader();
+        try {
+
+            $delete = HutangBayarDetail::where('hutangbayar_id', $id)->delete();
+            $delete = HutangBayarHeader::destroy($id);
+
+            if ($delete) {
+                $logTrail = [
+                    'namatabel' => strtoupper($hutangbayarheader->getTable()),
+                    'postingdari' => 'DELETE PEMBAYARAN HUTANG HEADER',
+                    'idtrans' => $id,
+                    'nobuktitrans' => '',
+                    'aksi' => 'DELETE',
+                    'datajson' => $hutangbayarheader->toArray(),
+                    'modifiedby' => $hutangbayarheader->modifiedby
+                ];
+
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                app(LogTrailController::class)->store($validatedLogTrail);
+
+                DB::commit();
+
+                $selected = $this->getPosition($hutangbayarheader, $hutangbayarheader->getTable(), true);
+                $hutangbayarheader->position = $selected->position;
+                $hutangbayarheader->id = $selected->id;
+                $hutangbayarheader->page = ceil($hutangbayarheader->position / ($request->limit ?? 10));
+
+                return response([
+                    'status' => true,
+                    'message' => 'Berhasil dihapus',
+                    'data' => $hutangbayarheader
+                ]);
+            } else {
+                DB::rollBack();
+
+                return response([
+                    'status' => false,
+                    'message' => 'Gagal dihapus'
+                ]);
+            }
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return response($th->getMessage());
+        }
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \App\Http\Requests\UpdateHutangBayarHeaderRequest  $request
-     * @param  \App\Models\HutangBayarHeader  $hutangBayarHeader
-     * @return \Illuminate\Http\Response
-     */
-    public function update(UpdateHutangBayarHeaderRequest $request, HutangBayarHeader $hutangBayarHeader)
+    public function combo(Request $request)
     {
-        //
-    }
+        $data = [
+            'supplier' => Supplier::all(),
+            'bank' => Bank::all(),
+            'coa' => AkunPusat::all(),
+            'alatbayar' => AlatBayar::all(),
+            'hutangbayar' => HutangBayarHeader::all(),
+            'pengeluaran' => PengeluaranHeader::all(),
+            'hutangheader' => HutangHeader::all(),
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\HutangBayarHeader  $hutangBayarHeader
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(HutangBayarHeader $hutangBayarHeader)
-    {
-        //
+
+
+        ];
+
+        return response([
+            'data' => $data
+        ]);
     }
 }
