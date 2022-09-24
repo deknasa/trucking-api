@@ -21,7 +21,6 @@ class CreatePenerimaanstokheaderTable extends Migration
             $table->string('penerimaanstok_nobukti',50)->default('');
             $table->string('pengeluaranstok_nobukti',50)->default('');
             $table->unsignedBigInteger('supplier_id')->default(0);            
-            $table->unsignedBigInteger('statushitungstok')->default(0);
             $table->string('nobon', 50)->default('');
             $table->string('hutang_nobukti', 50)->default('');
             $table->unsignedBigInteger('gudangdari_id')->default('0');

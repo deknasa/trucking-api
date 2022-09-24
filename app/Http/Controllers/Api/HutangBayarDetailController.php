@@ -25,6 +25,7 @@ class HutangBayarDetailController extends Controller
             'sortOrder' => $request->sortOrder ?? 'asc',
         ];
 
+
         try {
             $query = HutangBayarDetail::from('hutangbayardetail as detail');
 

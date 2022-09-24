@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Api;
 
 use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\DB;
 
-use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreHutangBayarHeaderRequest;
 use App\Http\Requests\StoreHutangBayarDetailRequest;
 
@@ -47,35 +47,70 @@ class HutangBayarHeaderController extends Controller
 
         try {
 
-            $group = 'PEMBAYARAN HUTANG BUKTI';
-            $subgroup = 'PEMBAYARAN HUTANG BUKTI';
+            // $group = 'PEMBAYARAN HUTANG BUKTI';
+            // $subgroup = 'PEMBAYARAN HUTANG BUKTI';
 
+
+            // $format = DB::table('parameter')
+            //     ->where('grp', $group)
+            //     ->where('subgrp', $subgroup)
+            //     ->first();
+
+            // $content = new Request();
+            // $content['group'] = $group;
+            // $content['subgroup'] = $subgroup;
+            // $content['table'] = 'hutangbayarheader';
+            // $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
+
+            // $pelunasanpiutangheader = new HutangBayarHeader();
+            // $hutangbayarheader = new HutangBayarHeader();
+            // $statusPosting = Parameter::where('grp', 'STATUS POSTING')->where('text', 'BUKAN POSTING')->first();
+
+            // $nobuktiPengeluaran = $request->pengeluaran_nobukti;
+            // $PengeluaranHeader =  HutangHeader::where('nobukti', $nobuktiPengeluaran)->first();
+
+            // $hutangbayarheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
+            // $hutangbayarheader->keterangan = $request->keterangan;
+            // $hutangbayarheader->bank_id = $request->bank_id;
+            // $hutangbayarheader->supplier_id = $request->supplier_id;
+            // // $hutangbayarheader->pengeluaran_nobukti = $request->pengeluaran_nobukti;
+            // $hutangbayarheader->coa = $request->akunpusat;
+            // // $hutangbayarheader->pengeluaran_nobukti = $nobuktiPengeluaran;
+          
+            $idhutang = $request->hutangbayar_id;
+            $fetchFormat =  DB::table('hutangheader')
+                ->where('id', $idhutang)
+                ->first();
+            // dd($fetchFormat);
+            $statusformat = $fetchFormat->statusformat;
+
+            $fetchGrp = Parameter::where('id', $statusformat)->first();
 
             $format = DB::table('parameter')
-                ->where('grp', $group)
-                ->where('subgrp', $subgroup)
+                ->where('grp', $fetchGrp->grp)
+                ->where('subgrp', $fetchGrp->subgrp)
                 ->first();
 
             $content = new Request();
-            $content['group'] = $group;
-            $content['subgroup'] = $subgroup;
+            $content['group'] = $fetchGrp->grp;
+            $content['subgroup'] = $fetchGrp->subgrp;
             $content['table'] = 'hutangbayarheader';
             $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
 
-            $pelunasanpiutangheader = new HutangBayarHeader();
             $hutangbayarheader = new HutangBayarHeader();
             $statusPosting = Parameter::where('grp', 'STATUS POSTING')->where('text', 'BUKAN POSTING')->first();
 
-            $nobuktiPengeluaran = $request->pengeluaran_nobukti;
-            $PengeluaranHeader =  HutangHeader::where('nobukti', $nobuktiPengeluaran)->first();
+            $nobuktiHutang = $request->hutang_nobukti;
+            $HutangHeader =  HutangHeader::where('nobukti', $nobuktiHutang)->first();
 
             $hutangbayarheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
+            $hutangbayarheader->hutangbayar_id = $idhutang;
             $hutangbayarheader->keterangan = $request->keterangan;
             $hutangbayarheader->bank_id = $request->bank_id;
-            $hutangbayarheader->supplier_id = $request->supplier_id;
-            // $hutangbayarheader->pengeluaran_nobukti = $request->pengeluaran_nobukti;
             $hutangbayarheader->coa = $request->akunpusat;
-            // $hutangbayarheader->pengeluaran_nobukti = $nobuktiPengeluaran;
+            $hutangbayarheader->hutang_nobukti = $nobuktiHutang;
+            $hutangbayarheader->hutang_tgl = $HutangHeader->tglbukti;
+            $hutangbayarheader->proses_nobukti = '';
             $hutangbayarheader->statusformat =  $format->id;
             $hutangbayarheader->modifiedby = auth('api')->user()->name;
 
@@ -104,6 +139,7 @@ class HutangBayarHeaderController extends Controller
                 'datajson' => $hutangbayarheader->toArray(),
                 'modifiedby' => $hutangbayarheader->modifiedby
             ];
+
             $validatedLogTrail = new StoreLogTrailRequest($logTrail);
             $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
@@ -122,6 +158,9 @@ class HutangBayarHeaderController extends Controller
                 'alatbayar_id' => $request->alatbayar_id,
                 'potongan' => str_replace(',', '', $request->potongan),
                 'keterangan' => $request->keterangan_detail,
+                // 'supir_id' => $request->supir_id,
+                // 'pengeluarantruckingheader_nobukti' => $request->pengeluarantruckingheader_nobukti,
+                // 'nominal' => str_replace(',', '', $request->nominal),
                 'modifiedby' => $hutangbayarheader->modifiedby,
             ];
             //STORE 
@@ -146,6 +185,9 @@ class HutangBayarHeaderController extends Controller
                 'alatbayar_id' => $request->alatbayar_id,
                 'potongan' => str_replace(',', '', $request->potongan),
                 'keterangan' => $request->keterangan_detail,
+                // 'supir_id' => $request->supir_id,
+                // 'pengeluarantruckingheader_nobukti' => $request->pengeluarantruckingheader_nobukti,
+                // 'nominal' => str_replace(',', '', $request->nominal),
                 'modifiedby' => $hutangbayarheader->modifiedby,
                 'created_at' => date('d-m-Y H:i:s', strtotime($hutangbayarheader->created_at)),
                 'updated_at' => date('d-m-Y H:i:s', strtotime($hutangbayarheader->updated_at)),
@@ -239,6 +281,34 @@ class HutangBayarHeaderController extends Controller
             // $hutangbayarheader->pengeluaran_nobukti = $request->pengeluaran_nobukti;
             $hutangbayarheader->coa = $request->akunpusat;
             // $hutangbayarheader->pengeluaran_nobukti = $nobuktiPengeluaran;
+            // $idhutang = $request->hutangbayar_id;
+            // $fetchFormat =  DB::table('hutangheader')
+            //     ->where('id', $idhutang)
+            //     ->first();
+            // // dd($fetchFormat);
+            // $statusformat = $fetchFormat->statusformat;
+
+            // $fetchGrp = Parameter::where('id', $statusformat)->first();
+
+            // $format = DB::table('parameter')
+            //     ->where('grp', $fetchGrp->grp)
+            //     ->where('subgrp', $fetchGrp->subgrp)
+            //     ->first();
+
+            // $nobuktiHutang = $request->hutang_nobukti;
+            // $HutangHeader =  HutangHeader::where('nobukti', $nobuktiHutang)->first();
+
+            // $hutangbayarheader = HutangBayarHeader::findOrFail($id);
+
+            // $hutangbayarheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
+            // $hutangbayarheader->hutangbayar_id = $idhutang;
+            // $hutangbayarheader->keterangan = $request->keterangan;
+            // $hutangbayarheader->bank_id = $request->bank_id;
+            // $hutangbayarheader->coa = $request->akunpusat;
+            // $hutangbayarheader->hutang_nobukti = $nobuktiHutang;
+            // $hutangbayarheader->hutang_tgl = $HutangHeader->tglbukti;
+            // $hutangbayarheader->proses_nobukti = '';
+            // $hutangbayarheader->statusformat =  $format->id;
             $hutangbayarheader->modifiedby = auth('api')->user()->name;
 
 
@@ -275,6 +345,9 @@ class HutangBayarHeaderController extends Controller
                         'alatbayar_id' => $request->alatbayar_id,
                         'potongan' => str_replace(',', '', $request->potongan),
                         'keterangan' => $request->keterangan_detail,
+                        // 'supir_id' => $request->supir_id,
+                        // 'pengeluarantruckingheader_nobukti' => $request->pengeluarantruckingheader_nobukti,
+                        // 'nominal' => str_replace(',', '', $request->nominal),
                         'modifiedby' => $hutangbayarheader->modifiedby,
                     ];
 
@@ -306,19 +379,33 @@ class HutangBayarHeaderController extends Controller
                         'created_at' => date('d-m-Y H:i:s', strtotime($hutangbayarheader->created_at)),
                         'updated_at' => date('d-m-Y H:i:s', strtotime($hutangbayarheader->updated_at)),
         
+                        // 'supir_id' => $request->supir_id,
+                        // 'pengeluarantruckingheader_nobukti' => $request->pengeluarantruckingheader_nobukti,
+                        // 'nominal' => str_replace(',', '', $request->nominal),
+                        // 'modifiedby' => $hutangbayarheader->modifiedby,
+                        // 'created_at' => date('d-m-Y H:i:s', strtotime($hutangbayarheader->created_at)),
+                        // 'updated_at' => date('d-m-Y H:i:s', strtotime($hutangbayarheader->updated_at)),
+
                     ];
 
                     $detaillog[] = $datadetaillog;
 
-                $datalogtrail = [
-                    'namatabel' => $tabeldetail,
-                    'postingdari' => 'UPDATE HUTANG BAYAR DETAIL',
-                    'idtrans' => $iddetail,
-                    'nobuktitrans' => $hutangbayarheader->nobukti,
-                    'aksi' => 'UPDATE',
-                    'datajson' => $detaillog,
-                    'modifiedby' => $request->modifiedby,
-                ];
+
+                    $dataid = LogTrail::select('id')
+                        ->where('idtrans', '=', $hutangbayarheader->id)
+                        ->where('namatabel', '=', $hutangbayarheader->getTable())
+                        ->orderBy('id', 'DESC')
+                        ->first();
+
+                    $datalogtrail = [
+                        'namatabel' => $tabeldetail,
+                        'postingdari' => 'ENTRY HUTANG BAYAR DETAIL',
+                        'idtrans' =>  $dataid->id,
+                        'nobuktitrans' => $hutangbayarheader->nobukti,
+                        'aksi' => 'ENTRY',
+                        'datajson' => $detaillog,
+                        'modifiedby' => $request->modifiedby,
+                    ];
                     $data = new StoreLogTrailRequest($datalogtrail);
 
                     app(LogTrailController::class)->store($data);
@@ -339,6 +426,11 @@ class HutangBayarHeaderController extends Controller
                 $hutangbayarheader->page = ceil($hutangbayarheader->position / $request->limit);
             }
 
+
+            // if (isset($request->limit)) {
+            //     $penerimaantruckingheader->page = ceil($penerimaantruckingheader->position / $request->limit);
+            // }
+
             return response([
                 'status' => true,
                 'message' => 'Berhasil disimpan',
@@ -351,7 +443,7 @@ class HutangBayarHeaderController extends Controller
         }
     }
 
-    /**
+     /**
      * @ClassName destroy
      */
     public function destroy($id, Request $request)
@@ -359,10 +451,10 @@ class HutangBayarHeaderController extends Controller
         DB::beginTransaction();
         $hutangbayarheader = new HutangBayarHeader();
         try {
-
-            $delete = HutangBayarDetail::where('hutangbayar_id', $id)->delete();
+            
+            $delete = HutangBayarDetail::where('hutangbayar_id',$id)->delete();
             $delete = HutangBayarHeader::destroy($id);
-
+            
             if ($delete) {
                 $logTrail = [
                     'namatabel' => strtoupper($hutangbayarheader->getTable()),
