@@ -95,7 +95,8 @@ class HutangBayarHeader extends MyModel
     }
 
     public function selectColumns($query)
-    {
+    {//sesuaikan dengan createtemp
+    
         return $query->select(
             DB::raw(
                 "$this->table.id,
@@ -117,21 +118,20 @@ class HutangBayarHeader extends MyModel
             //  ->leftJoin('hutangbayar', 'penerimaantruckingheader.penerimaan_nobukti', 'hutangbayar.nobukti')
             ->leftJoin('bank', 'hutangbayarheader.bank_id', 'bank.id')
             ->leftJoin('supplier', 'hutangbayarheader.supplier_id', 'supplier.id')
-
             ->leftJoin('akunpusat', 'hutangbayarheader.coa', 'akunpusat.coa');
     }
 
     public function createTemp(string $modelTable)
-    {
+    {//sesuaikan dengan column index
         $temp = '##temp' . rand(1, 10000);
         Schema::create($temp, function ($table) {
             $table->bigInteger('id')->default('0');
             $table->string('nobukti', 1000)->default('');
-            $table->date('tglbukti')->default('');
-            $table->string('keterangan', 1000)->default('');
-            $table->string('bank_id', 1000)->default('');
-            $table->string('supplier_id', 1000)->default('');
-            $table->string('coa', 1000)->default('');
+            $table->date('tglbukti')->default('1900/1/1');            
+            $table->longText('keterangan')->default('');            
+            $table->unsignedBigInteger('bank_id')->default('0');            
+            $table->unsignedBigInteger('supplier_id')->default('0');            
+            $table->string('coa',50)->default('');  
 
             // $table->string('pengeluaran_nobukti', 1000)->default('');
             $table->string('modifiedby', 50)->default('');

@@ -340,6 +340,13 @@
         Route::resource('hutangbayarheader', HutangBayarHeaderController::class);
         Route::resource('hutangbayardetail', HutangBayarDetailController::class);
 
+        Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
+        Route::get('servicein/no_bukti', [ServiceInHeaderController::class, 'getNoBukti']);
+        Route::get('servicein/combo', [ServiceInHeaderController::class, 'combo']);
+        Route::get('servicein/grid', [ServiceInHeaderController::class, 'grid']);
+        Route::resource('servicein', ServiceInHeaderController::class);
+        Route::resource('serviceindetail', ServiceInDetailController::class);
+
     });
 
     Route::get('gudang/combo', [GudangController::class, 'combo']);
@@ -409,10 +416,6 @@
     Route::get('ritasi/combo', [RitasiController::class, 'combo']);
     Route::get('ritasi/field_length', [RitasiController::class, 'fieldLength']);
     Route::resource('ritasi', RitasiController::class);
-
-    Route::get('servicein/combo', [ServiceInHeaderController::class, 'combo']);
-    Route::resource('servicein', ServiceInHeaderController::class);
-    Route::resource('serviceindetail', ServiceInDetailController::class);
 
     Route::get('serviceout/combo', [ServiceOutHeaderController::class, 'combo']);
     Route::resource('serviceout', ServiceOutHeaderController::class);
@@ -522,10 +525,6 @@
     Route::get('ritasi/field_length', [RitasiController::class, 'fieldLength']);
     Route::resource('ritasi', RitasiController::class);
 
-    Route::get('servicein/combo', [ServiceInHeaderController::class, 'combo']);
-    Route::resource('servicein', ServiceInHeaderController::class);
-    Route::resource('serviceindetail', ServiceInDetailController::class);
-
     Route::get('serviceout/combo', [ServiceOutHeaderController::class, 'combo']);
     Route::resource('serviceout', ServiceOutHeaderController::class);
     Route::resource('serviceoutdetail', ServiceOutDetailController::class);
@@ -559,12 +558,3 @@
 
     // Route::resource('penerimaantruckingdetail', PenerimaanTruckingDetailController::class);
 
-    //Hutang
-    // Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
-    // Route::post('hutang/{id}/approval', [HutangHeaderController::class, 'approval'])->name('hutang.approval');
-    // Route::get('hutang/no_bukti', [HutangHeaderController::class, 'getNoBukti']);
-    // Route::get('hutang/combo', [HutangHeaderController::class, 'combo']);
-    // Route::get('hutang/grid', [HutangHeaderController::class, 'grid']);
-    // Route::resource('hutang', HutangHeaderController::class);
-
-    // Route::resource('hutangdetail', HutangDetailController::class);

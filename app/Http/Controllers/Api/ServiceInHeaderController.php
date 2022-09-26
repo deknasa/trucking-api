@@ -18,13 +18,10 @@ class ServiceInHeaderController extends Controller
 {
 
     /**
-     * @ClassName
+     * @ClassName index
      */
     public function index()
     {
-        // return response([
-        //     'data' => ServiceInHeader::all()
-        // ]);
         $servicein = new ServiceInHeader();
 
         return response([
@@ -140,14 +137,9 @@ class ServiceInHeaderController extends Controller
             DB::commit();
 
             /* Set position and page */
-            $servicein->position = DB::table((new ServiceInHeader())->getTable())->orderBy($request->sortname, $request->sortorder)
-                ->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $servicein->{$request->sortname})
-                ->where('id', '<=', $servicein->id)
-                ->count();
-
-            if (isset($request->limit)) {
-                $servicein->page = ceil($servicein->position / $request->limit);
-            }
+            $selected = $this->getPosition($servicein, $servicein->getTable());
+            $servicein->position = $selected->position;
+            $servicein->page = ceil($servicein->position / ($request->limit ?? 10));
 
             return response([
                 'status' => true,
@@ -265,14 +257,9 @@ class ServiceInHeaderController extends Controller
 
 
             /* Set position and page */
-            $servicein->position = DB::table((new ServiceInHeader())->getTable())->orderBy($request->sortname, $request->sortorder)
-                ->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $servicein->{$request->sortname})
-                ->where('id', '<=', $servicein->id)
-                ->count();
-
-            if (isset($request->limit)) {
-                $servicein->page = ceil($servicein->position / $request->limit);
-            }
+            $selected = $this->getPosition($servicein, $servicein->getTable());
+            $servicein->position = $selected->position;
+            $servicein->page = ceil($servicein->position / ($request->limit ?? 10));
 
             return response([
                 'status' => true,
@@ -312,6 +299,7 @@ class ServiceInHeaderController extends Controller
 
                 DB::commit();
 
+                /* Set position and page */
                 $selected = $this->getPosition($servicein, $servicein->getTable(), true);
                 $servicein->position = $selected->position;
                 $servicein->id = $selected->id;

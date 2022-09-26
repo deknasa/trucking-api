@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+
 
 class StatusContainer extends MyModel
 {
@@ -26,7 +28,7 @@ class StatusContainer extends MyModel
             "$this->table.*",
             'parameter.text as statusaktif',
         )
-        ->leftJoin('parameter', 'statuscontainer.statusaktif', '=', 'parameter.id');
+            ->leftJoin('parameter', 'statuscontainer.statusaktif', '=', 'parameter.id');
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -38,6 +40,54 @@ class StatusContainer extends MyModel
         $data = $query->get();
 
         return $data;
+    }
+
+    public function selectColumns($query)
+    { //sesuaikan dengan createtemp
+
+        return $query->select(
+            DB::raw(
+                "$this->table.id,
+            $this->table.kodestatuscontainer,
+            $this->table.keterangan,
+            
+            'parameter.text as statusaktif',
+            
+            $this->table.modifiedby,
+            $this->table.created_at,
+            $this->table.updated_at,
+            $this->table.statusformat"
+            )
+
+        )
+            ->leftJoin('parameter', 'statuscontainer.statusaktif', '=', 'parameter.id');
+    }
+
+    public function createTemp(string $modelTable)
+    { //sesuaikan dengan column index
+        $temp = '##temp' . rand(1, 10000);
+        Schema::create($temp, function ($table) {
+            $table->bigInteger('id')->default('0');
+            $table->string('kodestatuscontainer', 50)->default('');
+            $table->longText('keterangan')->default('');
+            $table->integer('statusaktif')->length(11)->default('');
+
+            $table->string('modifiedby', 50)->default('');
+            $table->dateTime('created_at')->default('1900/1/1');
+            $table->dateTime('updated_at')->default('1900/1/1');
+            $table->bigInteger('statusformat')->default('');
+            $table->increments('position');
+        });
+
+        $this->setRequestParameters();
+        $query = DB::table($modelTable);
+        $query = $this->selectColumns($query);
+        $this->sort($query);
+        $models = $this->filter($query);
+        DB::table($temp)->insertUsing(['id', 'kodestatuscontainer',  'keterangan', 'statusaktif', 'modifiedby', 'created_at', 'updated_at', 'statusformat'], $models);
+
+
+        return  $temp;
     }
 
     public function sort($query)

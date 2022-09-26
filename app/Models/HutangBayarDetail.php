@@ -22,9 +22,9 @@ class HutangBayarDetail extends MyModel
     protected $casts = [
         'created_at' => 'date:d-m-Y H:i:s',
         'updated_at' => 'date:d-m-Y H:i:s'
-    ]; 
+    ];
 
-     
+
     // public function findUpdate($id) {
     //     $detail = DB::table('hutangbayardetail')->select(
     //         'nominal',
@@ -36,29 +36,29 @@ class HutangBayarDetail extends MyModel
 
     public function getAll($id)
     {
-       
+
         $query = DB::table('hutangbayardetail')->select(
             'hutangbayardetail.nominal',
             'hutangbayardetail.hutang_nobukti',
             'hutangbayardetail.cicilan',
             'hutangbayardetail.tglcair',
             'hutangbayardetail.potongan',
-            
-            'alatbayar.namaalatbayar as alatbayar',
-            // 'alatbayar.namaalatbayar as alatbayar',
-            'alatbayar.id as alatbayar_id',
-
-            // 'hutangheader.nobukti as supplier',
-            // 'supplier.id as supplier_id',
-
             'hutangbayardetail.keterangan',
+
+            'alatbayar.namaalatbayar as alatbayar',
+            'alatbayar.id as alatbayar_id',
+            // 
+            // 'hutangheader.nobukti as hutang',
+            // 'hutangheader.id as hutang_nobukti',
+
         )
-            ->leftJoin('alatbayar', 'hutangbayardetail.alatbayar_id','alatbayar.id')
-            
+            ->leftJoin('alatbayar', 'hutangbayardetail.alatbayar_id', 'alatbayar.id')
+            // ->leftJoin('hutangheader', 'hutangbayardetail.hutangbayar_id', 'hutangheader.id')
+
             ->where('hutangbayar_id', '=', $id);
 
         $data = $query->get();
 
         return $data;
-    } 
+    }
 }

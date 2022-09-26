@@ -66,7 +66,7 @@ class HutangHeader extends MyModel
             'hutangheader.tglbukti',
             'hutangheader.keterangan',
 
-           'akunpusat.coa as akunpusat',
+            'akunpusat.coa as akunpusat',
             'pelanggan.namapelanggan as pelanggan',
             'pelanggan.id as pelanggan_id',
 
@@ -115,12 +115,12 @@ class HutangHeader extends MyModel
         $temp = '##temp' . rand(1, 10000);
         Schema::create($temp, function ($table) {
             $table->bigInteger('id')->default('0');
-            $table->string('nobukti', 1000)->default('');
-            $table->date('tglbukti')->default('');
-            $table->string('keterangan', 1000)->default('');
-            $table->string('coa', 1000)->default('');
-            $table->string('pelanggan_id')->default('');
-            $table->string('total')->default('');
+            $table->string('nobukti', 50)->unique();
+            $table->date('tglbukti')->default('1900/1/1');
+            $table->longText('keterangan')->default('');
+            $table->string('coa', 50)->default('');
+            $table->string('pelanggan_id', 50)->default('');
+            $table->double('total', 15, 2)->default(0);
             $table->string('modifiedby')->default();
             $table->dateTime('created_at')->default('1900/1/1');
             $table->dateTime('updated_at')->default('1900/1/1');
