@@ -164,9 +164,9 @@ class StatusContainerController extends Controller
 
             DB::commit();
 
-            $selected = $this->getPosition($statusContainer, $statusContainer->getTable(), true);
+            /* Set position and page */
+            $selected = $this->getPosition($statusContainer, $statusContainer->getTable());
             $statusContainer->position = $selected->position;
-            $statusContainer->id = $selected->id;
             $statusContainer->page = ceil($statusContainer->position / ($request->limit ?? 10));
 
             return response([

@@ -1,0 +1,72 @@
+<?php
+
+namespace Database\Seeders;
+
+use Illuminate\Database\Seeder;
+use App\Models\PenerimaanStok;
+use Illuminate\Support\Facades\DB;
+
+class PenerimaanStokSeeder extends Seeder
+{
+    /**
+     * Run the database seeds.
+     *
+     * @return void
+     */
+    public function run()
+    {
+        DB::statement("delete PenerimaanStok");
+        DB::statement("DBCC CHECKIDENT ('PenerimaanStok', RESEED, 0);");
+
+        PenerimaanStok::create([
+            'kodepenerimaan' => 'DOT',
+            'keterangan' => 'DELIVERY ORDER',
+            'coa' => '',
+            'statusformat' => 132,
+            'statushitungstok' => 142,
+            'modifiedby' => 'ADMIN',
+        ]);
+        PenerimaanStok::create([
+            'kodepenerimaan' => 'POT',
+            'keterangan' => 'PO STOK',
+            'coa' => '',
+            'statusformat' => 133,
+            'statushitungstok' => 142,
+            'modifiedby' => 'ADMIN',
+        ]);
+        PenerimaanStok::create([
+            'kodepenerimaan' => 'PBT',
+            'keterangan' => 'BELI STOK',
+            'coa' => '',
+            'statusformat' => 134,
+            'statushitungstok' => 141,
+            'modifiedby' => 'ADMIN',
+        ]);
+        PenerimaanStok::create([
+            'kodepenerimaan' => 'KST',
+            'keterangan' => 'KOREKSI STOK',
+            'coa' => '',
+            'statusformat' => 136,
+            'statushitungstok' => 141,
+            'modifiedby' => 'ADMIN',
+        ]);
+
+        PenerimaanStok::create([
+            'kodepenerimaan' => 'PGT',
+            'keterangan' => 'PINDAH GUDANG',
+            'coa' => '',
+            'statusformat' => 137,
+            'statushitungstok' => 141,
+            'modifiedby' => 'ADMIN',
+        ]);        
+        PenerimaanStok::create([
+            'kodepenerimaan' => 'PST',
+            'keterangan' => 'PERBAIKAN STOK',
+            'coa' => '',
+            'statusformat' => 138,
+            'statushitungstok' => 141,
+            'modifiedby' => 'ADMIN',
+        ]);        
+
+    }
+}

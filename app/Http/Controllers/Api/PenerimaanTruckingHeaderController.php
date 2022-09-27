@@ -216,22 +216,14 @@ class PenerimaanTruckingHeaderController extends Controller
 
     public function show($id)
     {
-        $data = PenerimaanTruckingHeader::with(
-            'penerimaantruckingdetail',
-        )->find($id);
-
-        $idpenerimaan = $data['penerimaantrucking_id'];
-        $formatBukti =  DB::table('penerimaantrucking')
-            ->where('id', $idpenerimaan)
-            ->first();
-
-        $kodepenerimaan = $formatBukti->kodepenerimaan;
-
-
+       
+        $data = PenerimaanTruckingHeader::find($id);
+        $detail = PenerimaanTruckingDetail::getAll($id);
+            
         return response([
             'status' => true,
             'data' => $data,
-            'kode' => $kodepenerimaan
+            'detail' => $detail
         ]);
     }
 

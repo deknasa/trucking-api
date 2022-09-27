@@ -27,7 +27,6 @@ class UpdateAkunPusatRequest extends FormRequest
             'keterangancoa' => 'required',
             'type' => 'required',
             'level' => 'required|int',
-            'aktif' => 'required|int',
             'parent' => 'required',
             'statuscoa' => 'required|int',
             'statusaccountpayable' => 'required|int',

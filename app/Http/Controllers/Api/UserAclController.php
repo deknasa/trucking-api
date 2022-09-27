@@ -31,7 +31,7 @@ class UserAclController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-     /**
+    /**
      * @ClassName 
      */
     public function index()
@@ -294,7 +294,7 @@ class UserAclController extends Controller
      * @param  \App\Http\Requests\StoreUserAclRequest  $request
      * @return \Illuminate\Http\Response
      */
-     /**
+    /**
      * @ClassName 
      */
     public function store(StoreUserAclRequest $request)
@@ -339,6 +339,12 @@ class UserAclController extends Controller
                     }
                 }
             }
+
+              /* Set position and page */
+              $selected = $this->getPosition($useracl, $useracl->getTable());
+              $useracl->position = $selected->position;
+              $useracl->page = ceil($useracl->position / ($request->limit ?? 10));
+
 
             return response([
                 'status' => true,
@@ -388,7 +394,7 @@ class UserAclController extends Controller
      * @param  \App\Models\UserAcl  $userAcl
      * @return \Illuminate\Http\Response
      */
-     /**
+    /**
      * @ClassName 
      */
     public function update(UpdateUserAclRequest $request, UserAcl $useracl)
@@ -423,15 +429,21 @@ class UserAclController extends Controller
                 }
             }
 
-            /* Set position and page */
-            $del = 0;
-            $data = $this->getid($request->user_id, $request, $del);
-            $useracl->position = $data->id;
-            $useracl->id = $data->row;
+            // /* Set position and page */
+            // $del = 0;
+            // $data = $this->getid($request->user_id, $request, $del);
+            // $useracl->position = $data->id;
+            // $useracl->id = $data->row;
 
-            if (isset($request->limit)) {
-                $useracl->page = ceil($useracl->position / $request->limit);
-            }
+            // if (isset($request->limit)) {
+            //     $useracl->page = ceil($useracl->position / $request->limit);
+            // }
+
+             /* Set position and page */
+             $selected = $this->getPosition($useracl, $useracl->getTable());
+             $useracl->position = $selected->position;
+             $useracl->page = ceil($useracl->position / ($request->limit ?? 10));
+
 
             return response([
                 'status' => true,
@@ -450,7 +462,7 @@ class UserAclController extends Controller
      * @param  \App\Models\UserAcl  $userAcl
      * @return \Illuminate\Http\Response
      */
-     /**
+    /**
      * @ClassName 
      */
     public function destroy(UserAcl $useracl, DestroyUserAclRequest $request)
@@ -477,15 +489,22 @@ class UserAclController extends Controller
                 DB::commit();
             }
 
-            $del = 1;
+            // $del = 1;
 
-            $data = $this->getid($request->user_id, $request, $del);
+            // $data = $this->getid($request->user_id, $request, $del);
 
-            $useracl->position = $data->row;
-            $useracl->id = $data->id;
-            if (isset($request->limit)) {
-                $useracl->page = ceil($useracl->position / $request->limit);
-            }
+            // $useracl->position = $data->row;
+            // $useracl->id = $data->id;
+            // if (isset($request->limit)) {
+            //     $useracl->page = ceil($useracl->position / $request->limit);
+            // }
+
+            /* Set position and page */
+            $selected = $this->getPosition($useracl, $useracl->getTable(), true);
+            $useracl->position = $selected->position;
+            $useracl->id = $selected->id;
+            $useracl->page = ceil($useracl->position / ($request->limit ?? 10));
+
             return response([
                 'status' => true,
                 'message' => 'Berhasil dihapus',
@@ -657,7 +676,6 @@ class UserAclController extends Controller
 
     public function detaillist(Request $request)
     {
-
         $param1 = $request->user_id;
 
         $controller = new ParameterController;

@@ -9,6 +9,8 @@ use App\Http\Requests\StoreSupplierRequest;
 use App\Http\Requests\UpdateSupirRequest;
 use App\Http\Requests\UpdateSupplierRequest;
 use Illuminate\Http\Request;
+use App\Models\Parameter;
+
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
@@ -21,6 +23,10 @@ class SupplierController extends Controller
     public function index()
     {
         $supplier = new Supplier();
+
+        $rows = $supplier->get();
+
+        $baseUrl = asset('');
 
         return response([
             'data' => $supplier->get(),
@@ -198,7 +204,8 @@ class SupplierController extends Controller
 
             DB::commit();
 
-            $selected = $this->getPosition($supplier, $supplier->getTable(), true);
+            /* Set position and page */
+           $selected = $this->getPosition($supplier, $supplier->getTable(), true);
             $supplier->position = $selected->position;
             $supplier->id = $selected->id;
             $supplier->page = ceil($supplier->position / ($request->limit ?? 10));
@@ -210,7 +217,7 @@ class SupplierController extends Controller
             ]);
         } else {
             DB::rollBack();
-            
+
             return response([
                 'status' => false,
                 'message' => 'Gagal dihapus'

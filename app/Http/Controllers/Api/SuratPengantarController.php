@@ -572,14 +572,19 @@ class SuratPengantarController extends Controller
                 DB::commit();
             }
 
-            /* Set position and page */
-            $del = 0;
-            $data = $this->getid($suratpengantar->id, $request, $del);
-            $suratpengantar->position = $data->row;
+              /* Set position and page */
+              $selected = $this->getPosition($suratpengantar, $suratpengantar->getTable());
+              $suratpengantar->position = $selected->position;
+              $suratpengantar->page = ceil($suratpengantar->position / ($request->limit ?? 10));
 
-            if (isset($request->limit)) {
-                $suratpengantar->page = ceil($suratpengantar->position / $request->limit);
-            }
+            // /* Set position and page */
+            // $del = 0;
+            // $data = $this->getid($suratpengantar->id, $request, $del);
+            // $suratpengantar->position = $data->row;
+
+            // if (isset($request->limit)) {
+            //     $suratpengantar->page = ceil($suratpengantar->position / $request->limit);
+            // }
 
             return response([
                 'status' => true,
@@ -721,12 +726,17 @@ class SuratPengantarController extends Controller
                     }
                 }
 
-                /* Set position and page */
-                $suratpengantar->position = $this->getid($suratpengantar->id, $request, 0)->row;
+                  /* Set position and page */
+              $selected = $this->getPosition($suratpengantar, $suratpengantar->getTable());
+              $suratpengantar->position = $selected->position;
+              $suratpengantar->page = ceil($suratpengantar->position / ($request->limit ?? 10));
 
-                if (isset($request->limit)) {
-                    $suratpengantar->page = ceil($suratpengantar->position / $request->limit);
-                }
+                // /* Set position and page */
+                // $suratpengantar->position = $this->getid($suratpengantar->id, $request, 0)->row;
+
+                // if (isset($request->limit)) {
+                //     $suratpengantar->page = ceil($suratpengantar->position / $request->limit);
+                // }
 
                 return response([
                     'status' => true,
@@ -774,13 +784,18 @@ class SuratPengantarController extends Controller
             app(LogTrailController::class)->store($validatedLogTrail);
 
             DB::commit();
+              
+            $selected = $this->getPosition($suratpengantar, $suratpengantar->getTable(), true);
+            $suratpengantar->position = $selected->position;
+            $suratpengantar->id = $selected->id;
+            $suratpengantar->page = ceil($suratpengantar->position / ($request->limit ?? 10));
 
-            $data = $this->getid($suratpengantar->id, $request, $del);
-            $suratpengantar->position = @$data->row  ?? 0;
-            $suratpengantar->id = @$data->id  ?? 0;
-            if (isset($request->limit)) {
-                $suratpengantar->page = ceil($suratpengantar->position / $request->limit);
-            }
+            // $data = $this->getid($suratpengantar->id, $request, $del);
+            // $suratpengantar->position = @$data->row  ?? 0;
+            // $suratpengantar->id = @$data->id  ?? 0;
+            // if (isset($request->limit)) {
+            //     $suratpengantar->page = ceil($suratpengantar->position / $request->limit);
+            // }
             return response([
                 'status' => true,
                 'message' => 'Berhasil dihapus',

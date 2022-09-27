@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Schema;
 class ZonaController extends Controller
 {
 
-     /**
+    /**
      * @ClassName 
      */
     public function index()
@@ -38,7 +38,7 @@ class ZonaController extends Controller
     {
         //
     }
- /**
+    /**
      * @ClassName 
      */
     public function store(StoreZonaRequest $request)
@@ -72,13 +72,18 @@ class ZonaController extends Controller
             }
 
             /* Set position and page */
-            $del = 0;
-            $data = $this->getid($zona->id, $request, $del);
-            $zona->position = $data->row;
+            // $del = 0;
+            // $data = $this->getid($zona->id, $request, $del);
+            // $zona->position = $data->row;
 
-            if (isset($request->limit)) {
-                $zona->page = ceil($zona->position / $request->limit);
-            }
+            // if (isset($request->limit)) {
+            //     $zona->page = ceil($zona->position / $request->limit);
+            // }
+
+            /* Set position and page */
+            $selected = $this->getPosition($zona, $zona->getTable());
+            $zona->position = $selected->position;
+            $zona->page = ceil($zona->position / ($request->limit ?? 10));
 
             return response([
                 'status' => true,
@@ -103,7 +108,7 @@ class ZonaController extends Controller
     {
         //
     }
- /**
+    /**
      * @ClassName 
      */
     public function update(StoreZonaRequest $request, Zona $zona)
@@ -129,12 +134,17 @@ class ZonaController extends Controller
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
 
-                /* Set position and page */
-                $zona->position = $this->getid($zona->id, $request, 0)->row;
+                // /* Set position and page */
+                // $zona->position = $this->getid($zona->id, $request, 0)->row;
 
-                if (isset($request->limit)) {
-                    $zona->page = ceil($zona->position / $request->limit);
-                }
+                // if (isset($request->limit)) {
+                //     $zona->page = ceil($zona->position / $request->limit);
+                // }
+
+                /* Set position and page */
+                $selected = $this->getPosition($zona, $zona->getTable());
+                $zona->position = $selected->position;
+                $zona->page = ceil($zona->position / ($request->limit ?? 10));
 
                 return response([
                     'status' => true,
@@ -151,7 +161,7 @@ class ZonaController extends Controller
             throw $th;
         }
     }
- /**
+    /**
      * @ClassName 
      */
     public function destroy(Zona $zona, Request $request)
@@ -174,12 +184,18 @@ class ZonaController extends Controller
 
             DB::commit();
 
-            $data = $this->getid($zona->id, $request, $del);
-            $zona->position = $data->row  ?? 0;
-            $zona->id = $data->id  ?? 0;
-            if (isset($request->limit)) {
-                $zona->page = ceil($zona->position / $request->limit);
-            }
+            // $data = $this->getid($zona->id, $request, $del);
+            // $zona->position = $data->row  ?? 0;
+            // $zona->id = $data->id  ?? 0;
+            // if (isset($request->limit)) {
+            //     $zona->page = ceil($zona->position / $request->limit);
+            // }
+
+            $selected = $this->getPosition($zona, $zona->getTable(), true);
+            $zona->position = $selected->position;
+            $zona->id = $selected->id;
+            $zona->page = ceil($zona->position / ($request->limit ?? 10));
+
             return response([
                 'status' => true,
                 'message' => 'Berhasil dihapus',
@@ -210,7 +226,7 @@ class ZonaController extends Controller
     public function combo(Request $request)
     {
         $data = [
-            'statusaktif' => Parameter::where(['grp'=>'status aktif'])->get(),
+            'statusaktif' => Parameter::where(['grp' => 'status aktif'])->get(),
         ];
 
         return response([

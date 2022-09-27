@@ -451,7 +451,6 @@ class MenuController extends Controller
 
     public function listclassall()
     {
-
         $dir = base_path('app/http') . '/controllers/api/';
         $ffs = scandir($dir);
         unset($ffs[0], $ffs[1]);
@@ -478,7 +477,10 @@ class MenuController extends Controller
                 }
             }
         }
-        return $data ?? '';
+
+        return response([
+            'data' => $data ?? []
+        ]);
     }
 
     public function get_php_classes($php_code, $methods = false)

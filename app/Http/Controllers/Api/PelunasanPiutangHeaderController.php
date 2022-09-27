@@ -478,6 +478,7 @@ class PelunasanPiutangHeaderController extends Controller
             ]
         ]);
     }
+    
 
     public function getpelunasanpiutang($id,$agenid)
     {

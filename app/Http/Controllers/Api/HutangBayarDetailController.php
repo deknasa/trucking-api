@@ -1,86 +1,131 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
+use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
 use App\Models\HutangBayarDetail;
 use App\Http\Requests\StoreHutangBayarDetailRequest;
-use App\Http\Requests\UpdateHutangBayarDetailRequest;
+
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
+
 
 class HutangBayarDetailController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        $params = [
+            'id' => $request->id,
+            'hutangbayar_id' => $request->hutangbayar_id,
+            'withHeader' => $request->withHeader ?? false,
+            'whereIn' => $request->whereIn ?? [],
+            'forReport' => $request->forReport ?? false,
+            'sortIndex' => $request->sortOrder ?? 'id',
+            'sortOrder' => $request->sortOrder ?? 'asc',
+        ];
+
+
+        try {
+            $query = HutangBayarDetail::from('hutangbayardetail as detail');
+
+            if (isset($params['id'])) {
+                $query->where('detail.id', $params['id']);
+            }
+
+            if (isset($params['hutangbayar_id'])) {
+                $query->where('detail.hutangbayar_id', $params['hutangbayar_id']);
+            }
+
+            if (count($params['whereIn']) > 0) {
+                $query->whereIn('hutangbayar_id', $params['whereIn']);
+            }
+            if ($params['forReport']) {
+                $query->select(
+                    'detail.nobukti',
+                    'detail.nominal',
+                    'detail.keterangan',
+                    // 'detail.hutang_nobukti',
+                    // 'detail.cicilan',
+                    // 'detail.alatbayar_id',
+                    // 'detail.potongan',
+                    // 'detail.tglcair',
+
+                );
+
+                $hutangbayarDetail = $query->get();
+            } else {
+                $query->select(
+                    'detail.nobukti',
+                    'detail.nominal',
+                    'detail.keterangan',
+                    'detail.cicilan',
+                    'detail.tglcair',
+                    'detail.potongan',
+                    'detail.hutang_nobukti',
+
+                    'alatbayar.namaalatbayar as alatbayar_id',
+
+                    'hutangheader.nobukti as hutang_nobukti',
+                )
+                    ->leftJoin('alatbayar', 'detail.alatbayar_id', 'alatbayar.id')
+                    ->leftJoin('hutangheader', 'detail.hutang_nobukti', 'hutangheader.nobukti');
+
+                $hutangbayarDetail = $query->get();
+            }
+
+            return response([
+                'data' => $hutangbayarDetail
+            ]);
+        } catch (\Throwable $th) {
+            return response([
+                'message' => $th->getMessage()
+            ]);
+        }
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \App\Http\Requests\StoreHutangBayarDetailRequest  $request
-     * @return \Illuminate\Http\Response
-     */
     public function store(StoreHutangBayarDetailRequest $request)
     {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\HutangBayarDetail  $hutangBayarDetail
-     * @return \Illuminate\Http\Response
-     */
-    public function show(HutangBayarDetail $hutangBayarDetail)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\HutangBayarDetail  $hutangBayarDetail
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(HutangBayarDetail $hutangBayarDetail)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \App\Http\Requests\UpdateHutangBayarDetailRequest  $request
-     * @param  \App\Models\HutangBayarDetail  $hutangBayarDetail
-     * @return \Illuminate\Http\Response
-     */
-    public function update(UpdateHutangBayarDetailRequest $request, HutangBayarDetail $hutangBayarDetail)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\HutangBayarDetail  $hutangBayarDetail
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(HutangBayarDetail $hutangBayarDetail)
-    {
-        //
+        DB::beginTransaction();
+        $validator = Validator::make($request->all(), [
+            'nominal' => 'required',
+        ], [
+            'nominal.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
+        ], [
+            'alatbayar_id' => 'hutangbayardetail',
+        ]);
+        if (!$validator->passes()) {
+            return [
+                'error' => true,
+                'errors' => $validator->messages()
+            ];
+        }
+        try {
+            $hutangbayarDetail = new HutangBayarDetail();
+            
+            $hutangbayarDetail->hutangbayar_id = $request->hutangbayar_id;
+            $hutangbayarDetail->nobukti = $request->nobukti;
+            $hutangbayarDetail->nominal = $request->nominal;
+            $hutangbayarDetail->hutang_nobukti = $request->hutang_nobukti;
+            $hutangbayarDetail->cicilan = $request->cicilan;
+            $hutangbayarDetail->alatbayar_id = $request->alatbayar_id;
+            $hutangbayarDetail->potongan = $request->potongan;
+            $hutangbayarDetail->keterangan = $request->keterangan;
+            $hutangbayarDetail->modifiedby = auth('api')->user()->name;
+            
+            $hutangbayarDetail->save();
+           
+            DB::commit();
+            if ($validator->passes()) {
+                return [
+                    'error' => false,
+                    'id' => $hutangbayarDetail->id,
+                    'tabel' => $hutangbayarDetail->getTable(),
+                ];
+            }
+        } catch (\Throwable $th) {
+            throw $th;
+            DB::rollBack();
+        }        
     }
 }

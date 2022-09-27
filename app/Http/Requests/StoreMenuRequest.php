@@ -26,7 +26,7 @@ class StoreMenuRequest extends FormRequest
     {
         return [
             'menuname' => 'required',
-            'menuseq' => 'required',
+            'menuseq' => 'required|int',
             'menuicon' => 'required',
         ];
     }

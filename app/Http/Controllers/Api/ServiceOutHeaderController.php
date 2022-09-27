@@ -260,14 +260,9 @@ class ServiceOutHeaderController extends Controller
 
 
             /* Set position and page */
-            $serviceout->position = DB::table((new ServiceOutHeader())->getTable())->orderBy($request->sortname, $request->sortorder)
-                ->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $serviceout->{$request->sortname})
-                ->where('id', '<=', $serviceout->id)
-                ->count();
-
-            if (isset($request->limit)) {
-                $serviceout->page = ceil($serviceout->position / $request->limit);
-            }
+            $selected = $this->getPosition($serviceout, $serviceout->getTable());
+            $serviceout->position = $selected->position;
+            $serviceout->page = ceil($serviceout->position / ($request->limit ?? 10));
 
             return response([
                 'status' => true,
@@ -283,7 +278,7 @@ class ServiceOutHeaderController extends Controller
     /**
      * @ClassName
      */
-    public function destroy($id, Request $request)
+    public function destroy($id,$serviceout, Request $request)
     {
         DB::beginTransaction();
 
@@ -291,28 +286,38 @@ class ServiceOutHeaderController extends Controller
             $get = ServiceOutHeader::find($id);
             $delete = ServiceOutDetail::where('serviceout_id', $id)->delete();
             $delete = ServiceOutHeader::destroy($id);
-
-            $datalogtrail = [
-                'namatabel' => $get->getTable(),
-                'postingdari' => 'DELETE SERVICE OUT',
-                'idtrans' => $id,
-                'nobuktitrans' => '',
-                'aksi' => 'HAPUS',
-                'datajson' => '',
-                'modifiedby' => $get->modifiedby,
-            ];
-
-            $data = new StoreLogTrailRequest($datalogtrail);
-            app(LogTrailController::class)->store($data);
+            // $delete = $serviceout->delete();
 
             if ($delete) {
+                $datalogtrail = [
+                    'namatabel' => $get->getTable(),
+                    'postingdari' => 'DELETE SERVICE OUT',
+                    'idtrans' => $id,
+                    'nobuktitrans' => '',
+                    'aksi' => 'HAPUS',
+                    'datajson' => '',
+                    'modifiedby' => $get->modifiedby,
+                ];
+
+                $data = new StoreLogTrailRequest($datalogtrail);
+                app(LogTrailController::class)->store($data);
+
                 DB::commit();
+
+                /* Set position and page */
+                $selected = $this->getPosition($serviceout, $serviceout->getTable(), true);
+                $serviceout->position = $selected->position;
+                $serviceout->id = $selected->id;
+                $serviceout->page = ceil($serviceout->position / ($request->limit ?? 10));
+
                 return response([
                     'status' => true,
-                    'message' => 'Berhasil dihapus'
+                    'message' => 'Berhasil dihapus',
+                    'data' => $serviceout
                 ]);
             } else {
                 DB::rollBack();
+
                 return response([
                     'status' => false,
                     'message' => 'Gagal dihapus'
