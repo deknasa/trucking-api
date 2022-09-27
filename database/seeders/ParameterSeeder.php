@@ -159,6 +159,8 @@ class ParameterSeeder extends Seeder
         Parameter::create(['grp' => 'RETUR BELI BUKTI',  'subgrp' => 'RETUR BELI BUKTI',  'text' => '#RBT #9999#/#R#/#Y',  'type' => '118',  'memo' => 'RETUR BELI BUKTI',  'modifiedby' => 'ADMIN',]);
         Parameter::create(['grp' => 'STATUS HITUNG STOK',  'subgrp' => 'STATUS HITUNG STOK',  'text' => 'YA',  'type' => '0',  'memo' => 'STATUS HITUNG STOK',  'modifiedby' => 'ADMIN',]);
         Parameter::create(['grp' => 'STATUS HITUNG STOK',  'subgrp' => 'STATUS HITUNG STOK',  'text' => 'TIDAK',  'type' => '0',  'memo' => 'STATUS HITUNG STOK',  'modifiedby' => 'ADMIN',]);
+        Parameter::create(['grp' => 'SERVICE IN BUKTI',  'subgrp' => 'SERVICE IN BUKTI',  'text' => '#SIN #9999#/#R#/#Y',  'type' => '118',  'memo' => 'SERVICE IN BUKTI',  'modifiedby' => 'ADMIN',]);
+        Parameter::create(['grp' => 'SERVICE OUT BUKTI',  'subgrp' => 'SERVICE OUT BUKTI',  'text' => '#SOU #9999#/#R#/#Y',  'type' => '118',  'memo' => 'SERVICE OUT BUKTI',  'modifiedby' => 'ADMIN',]);
        
 
 
