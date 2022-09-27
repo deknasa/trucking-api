@@ -48,6 +48,7 @@ class JurnalUmumHeaderController extends Controller
         DB::beginTransaction();
 
         $tanpaprosesnobukti = $request->tanpaprosesnobukti ?? 0;
+       
         try {
             
             if ($tanpaprosesnobukti == 0) {
@@ -71,31 +72,33 @@ class JurnalUmumHeaderController extends Controller
             if ($tanpaprosesnobukti == 1) {
                 $jurnalumum->nobukti = $request->nobukti;
             }
-
+            
             $jurnalumum->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $jurnalumum->keterangan = $request->keterangan;
             $jurnalumum->postingdari = $request->postingdari ?? '';
-            $jurnalumum->statusapproval = $statusApproval->id ?? 0;
+            $jurnalumum->statusapproval = $statusApproval->id ?? $request->statusapproval;
             $jurnalumum->userapproval = '';
             $jurnalumum->tglapproval = '';
             $jurnalumum->statusformat =  $format->id ?? $request->statusformat;
-
             $jurnalumum->modifiedby = auth('api')->user()->name;
-               
+
             TOP:
             if ($tanpaprosesnobukti == 0) {
 
                 $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
                 $jurnalumum->nobukti = $nobukti;
             }
-
+            
             try {
-
+                dd($jurnalumum->save());
                 $jurnalumum->save();
+                dd($jurnalumum);
+
                 if ($tanpaprosesnobukti == 1) {
                     DB::commit();
                 }
             } catch (\Exception $e) {
+                throw $e;
                 $errorCode = @$e->errorInfo[1];
                 if ($errorCode == 2601) {
                     goto TOP;

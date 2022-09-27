@@ -65,17 +65,12 @@ class PelunasanPiutangHeader extends MyModel
         $tempPelunasan = $this->createTempPelunasan($id,$agenid);
 
         
-        $piutang = DB::table($tempPiutang)
-            ->select(DB::raw("null as pelunasanpiutang_id,$tempPiutang.nobukti as piutang_nobukti, null as tglbayar, $tempPiutang.tglbukti as tglbukti, $tempPiutang.agen_id as agen_id,null as nominal, null as keterangan, null as penyesuaian, null as keteranganpenyesuaian, null as nominallebihbayar, $tempPiutang.nominalpiutang, $tempPiutang.sisa"))
-            ->distinct("$tempPiutang.nobukti")
-            ->leftJoin($tempPelunasan,"$tempPiutang.agen_id","$tempPelunasan.agen_id")
-            ->whereRaw("$tempPiutang.nobukti != $tempPelunasan.piutang_nobukti");
-            // ->whereRaw("$tempPiutang.sisa is null")
-            // ->orWhereRaw("$tempPiutang.sisa != $tempPelunasan.sisa");
-            // ->where(function ($piutang) use ($tempPiutang,$tempPelunasan) {
-            //     $piutang->whereRaw("$tempPiutang.sisa = $tempPelunasan.sisa")
-            //           ->orWhereRaw("$tempPiutang.sisa is null");
-            // });
+        $piutang = DB::table("$tempPiutang as A")
+            ->select(DB::raw("null as pelunasanpiutang_id,A.nobukti as piutang_nobukti, null as tglbayar, A.tglbukti as tglbukti, A.agen_id as agen_id,null as nominal, null as keterangan, null as penyesuaian, null as keteranganpenyesuaian, null as nominallebihbayar, A.nominalpiutang, A.sisa"))
+            ->distinct("A.nobukti")
+            ->leftJoin("$tempPelunasan as B","A.nobukti","B.piutang_nobukti")
+            ->whereRaw("isnull(b.piutang_nobukti,'') = ''");
+           
 
         $pelunasan = DB::table($tempPelunasan)
             ->select(DB::raw("pelunasanpiutang_id,piutang_nobukti,tglbayar,tglbukti,agen_id,nominal,keterangan,penyesuaian,keteranganpenyesuaian,nominallebihbayar,nominalpiutang,sisa"))
