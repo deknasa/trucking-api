@@ -24,6 +24,8 @@ class HutangBayarDetailController extends Controller
             'sortIndex' => $request->sortOrder ?? 'id',
             'sortOrder' => $request->sortOrder ?? 'asc',
         ];
+
+
         try {
             $query = HutangBayarDetail::from('hutangbayardetail as detail');
 
@@ -31,19 +33,24 @@ class HutangBayarDetailController extends Controller
                 $query->where('detail.id', $params['id']);
             }
 
-            if (isset($params['hutangbayarheader_id'])) {
-                $query->where('detail.hutangbayarheader_id', $params['hutangbayarheader_id']);
+            if (isset($params['hutangbayar_id'])) {
+                $query->where('detail.hutangbayar_id', $params['hutangbayar_id']);
             }
 
             if (count($params['whereIn']) > 0) {
-                $query->whereIn('hutangbayarheader_id', $params['whereIn']);
+                $query->whereIn('hutangbayar_id', $params['whereIn']);
             }
             if ($params['forReport']) {
                 $query->select(
                     'detail.nobukti',
-                    'detail.supir_id',
-                    'detail.pengeluarantruckingheader_nobukti',
-                    'detail.nominal'
+                    'detail.nominal',
+                    'detail.keterangan',
+                    // 'detail.hutang_nobukti',
+                    // 'detail.cicilan',
+                    // 'detail.alatbayar_id',
+                    // 'detail.potongan',
+                    // 'detail.tglcair',
+
                 );
 
                 $hutangbayarDetail = $query->get();
@@ -51,12 +58,18 @@ class HutangBayarDetailController extends Controller
                 $query->select(
                     'detail.nobukti',
                     'detail.nominal',
+                    'detail.keterangan',
+                    'detail.cicilan',
+                    'detail.tglcair',
+                    'detail.potongan',
+                    'detail.hutang_nobukti',
 
-                    'supir.namasupir as supir_id',
-                    'pengeluarantruckingheader.nobukti as pengeluarantruckingheader_nobukti',
+                    'alatbayar.namaalatbayar as alatbayar_id',
+
+                    'hutangheader.nobukti as hutang_nobukti',
                 )
-                    ->leftJoin('supir', 'detail.supir_id', 'supir.id')
-                    ->leftJoin('pengeluarantruckingheader', 'detail.pengeluarantruckingheader_nobukti', 'pengeluarantruckingheader.nobukti');
+                    ->leftJoin('alatbayar', 'detail.alatbayar_id', 'alatbayar.id')
+                    ->leftJoin('hutangheader', 'detail.hutang_nobukti', 'hutangheader.nobukti');
 
                 $hutangbayarDetail = $query->get();
             }
@@ -79,7 +92,7 @@ class HutangBayarDetailController extends Controller
         ], [
             'nominal.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
         ], [
-            'supir_id' => 'pengeluarantruckingdetail',
+            'alatbayar_id' => 'hutangbayardetail',
         ]);
         if (!$validator->passes()) {
             return [
@@ -92,9 +105,12 @@ class HutangBayarDetailController extends Controller
             
             $hutangbayarDetail->hutangbayar_id = $request->hutangbayar_id;
             $hutangbayarDetail->nobukti = $request->nobukti;
-            $hutangbayarDetail->supir_id = $request->supir_id;
-            $hutangbayarDetail->pengeluarantruckingheader_nobukti = $request->pengeluarantruckingheader_nobukti;
             $hutangbayarDetail->nominal = $request->nominal;
+            $hutangbayarDetail->hutang_nobukti = $request->hutang_nobukti;
+            $hutangbayarDetail->cicilan = $request->cicilan;
+            $hutangbayarDetail->alatbayar_id = $request->alatbayar_id;
+            $hutangbayarDetail->potongan = $request->potongan;
+            $hutangbayarDetail->keterangan = $request->keterangan;
             $hutangbayarDetail->modifiedby = auth('api')->user()->name;
             
             $hutangbayarDetail->save();

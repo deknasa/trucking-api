@@ -322,15 +322,20 @@ class UserRoleController extends Controller
             }
 
             /* Set position and page */
-            $del = 0;
-            $data = $this->getid($request->user_id, $request, $del) ?? 0;
+            // $del = 0;
+            // $data = $this->getid($request->user_id, $request, $del) ?? 0;
 
-            $userrole->position = $data->id ?? 0;
-            $userrole->id = $data->row ?? 0;
+            // $userrole->position = $data->id ?? 0;
+            // $userrole->id = $data->row ?? 0;
 
-            if (isset($request->limit)) {
-                $userrole->page = ceil($userrole->position / $request->limit);
-            }
+            // if (isset($request->limit)) {
+            //     $userrole->page = ceil($userrole->position / $request->limit);
+            // }
+
+            /* Set position and page */
+            $selected = $this->getPosition($userrole, $userrole->getTable());
+            $userrole->position = $selected->position;
+            $userrole->page = ceil($userrole->position / ($request->limit ?? 10));
 
             return response([
                 'status' => true,
@@ -404,13 +409,18 @@ class UserRoleController extends Controller
             }
 
             /* Set position and page */
-            $del = 0;
-            $data = $this->getid($request->user_id, $request, $del);
-            $userrole->position = $data->id;
-            $userrole->id = $data->row;
-            if (isset($request->limit)) {
-                $userrole->page = ceil($userrole->position / $request->limit);
-            }
+            // $del = 0;
+            // $data = $this->getid($request->user_id, $request, $del);
+            // $userrole->position = $data->id;
+            // $userrole->id = $data->row;
+            // if (isset($request->limit)) {
+            //     $userrole->page = ceil($userrole->position / $request->limit);
+            // }
+
+             /* Set position and page */
+             $selected = $this->getPosition($userrole, $userrole->getTable());
+             $userrole->position = $selected->position;
+             $userrole->page = ceil($userrole->position / ($request->limit ?? 10));
 
             return response([
                 'status' => true,
@@ -456,15 +466,21 @@ class UserRoleController extends Controller
                 DB::commit();
             }
 
-            $del = 1;
+            // $del = 1;
 
-            $data = $this->getid($request->user_id, $request, $del);
+            // $data = $this->getid($request->user_id, $request, $del);
 
-            $userrole->position = $data->row;
-            $userrole->id = $data->id;
-            if (isset($request->limit)) {
-                $userrole->page = ceil($userrole->position / $request->limit);
-            }
+            // $userrole->position = $data->row;
+            // $userrole->id = $data->id;
+            // if (isset($request->limit)) {
+            //     $userrole->page = ceil($userrole->position / $request->limit);
+            // }
+
+            $selected = $this->getPosition($userrole, $userrole->getTable(), true);
+            $userrole->position = $selected->position;
+            $userrole->id = $selected->id;
+            $userrole->page = ceil($userrole->position / ($request->limit ?? 10));
+            
             return response([
                 'status' => true,
                 'message' => 'Berhasil dihapus',

@@ -162,6 +162,7 @@ class SubKelompokController extends Controller
 
             DB::commit();
 
+            /* Set position and page */
             $selected = $this->getPosition($subKelompok, $subKelompok->getTable(), true);
             $subKelompok->position = $selected->position;
             $subKelompok->id = $selected->id;

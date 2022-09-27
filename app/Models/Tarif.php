@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+
 
 class Tarif extends MyModel
 {
@@ -62,6 +64,74 @@ class Tarif extends MyModel
         return $data;
     }
 
+    public function selectColumns($query)
+    { //sesuaikan dengan createtemp
+
+        return $query->select(
+            DB::raw(
+                "$this->table.id,
+            $this->table.tujuan,
+            'container.keterangan as container_id',
+            $this->table.nominal,
+            'parameter.text as statusaktif',
+             $this->table.tujuanasal,
+             $this->table.sistemton,
+            'kota.kodekota as kota_id',
+           'zona.zona as zona_id',
+             $this->table.nominalton,
+             $this->table.tglberlaku,
+            'p.text as statuspenyesuaianharga',
+             $this->table.modifiedby,
+             $this->table.created_at,
+             $this->table.updated_at"
+
+            )
+
+        )
+
+            ->leftJoin('parameter', 'tarif.statusaktif', '=', 'parameter.id')
+            ->leftJoin('container', 'tarif.container_id', '=', 'container.id')
+            ->leftJoin('kota', 'tarif.kota_id', '=', 'kota.id')
+            ->leftJoin('zona', 'tarif.zona_id', '=', 'zona.id')
+            ->leftJoin('parameter AS p', 'tarif.statuspenyesuaianharga', '=', 'p.id');
+    }
+
+    public function createTemp(string $modelTable)
+    { //sesuaikan dengan column index
+        $temp = '##temp' . rand(1, 10000);
+        Schema::create($temp, function ($table) {
+            $table->bigInteger('id')->default('0');
+            $table->string('tujuan', 200)->default('');
+            $table->unsignedBigInteger('container_id')->default('0');
+            $table->double('nominal', 15, 2)->default('0');
+            $table->integer('statusaktif')->length(11)->default('0');
+            $table->string('tujuanasal', 300)->default('');
+            $table->integer('sistemton')->length(11)->default('0');
+            $table->unsignedBigInteger('kota_id')->default('0');
+            $table->unsignedBigInteger('zona_id')->default('0');
+            $table->double('nominalton', 15, 2)->default('0');
+            $table->date('tglberlaku')->default('1900/1/1');
+
+            $table->integer('statuspenyesuaianharga')->length(11)->default('0');
+            $table->string('modifiedby', 50)->default('');
+            $table->dateTime('created_at')->default('1900/1/1');
+            $table->dateTime('updated_at')->default('1900/1/1');
+            $table->bigInteger('statusformat')->default('');
+            $table->increments('position');
+        });
+
+        $this->setRequestParameters();
+        $query = DB::table($modelTable);
+        $query = $this->selectColumns($query);
+        $this->sort($query);
+        $models = $this->filter($query);
+        DB::table($temp)->insertUsing(['id', 'tujuan', 'container_id', 'nominal', 'statusaktif', 'tujuanasal', 'sistemton', 'kota_id', 'zona_id', 'nominalton', 'tglberlaku', 'statuspenyesuaianharga', 'modifiedby', 'created_at', 'updated_at', 'statusformat'], $models);
+
+
+        return  $temp;
+    }
+
+
     public function sort($query)
     {
         return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
@@ -75,10 +145,10 @@ class Tarif extends MyModel
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statusaktif') {
                             $query = $query->where('parameter.text', '=', "$filters[data]");
-                        } elseif($filters['field'] == 'container_id') {
+                        } elseif ($filters['field'] == 'container_id') {
                             $query = $query->where('container.keterangan', 'LIKE', "%$filters[data]%");
-                        }else {
-                            $query = $query->where('tarif.'.$filters['field'], 'LIKE', "%$filters[data]%");
+                        } else {
+                            $query = $query->where('tarif.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
                     }
 
@@ -90,7 +160,7 @@ class Tarif extends MyModel
                         } elseif ($filters['field'] == 'container_id') {
                             $query = $query->orWhere('container.keterangan', 'LIKE', "%$filters[data]%");
                         } else {
-                            $query = $query->orWhere('tarif.'.$filters['field'], 'LIKE', "%$filters[data]%");
+                            $query = $query->orWhere('tarif.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
                     }
 

@@ -204,7 +204,8 @@ class SupplierController extends Controller
 
             DB::commit();
 
-            $selected = $this->getPosition($supplier, $supplier->getTable(), true);
+            /* Set position and page */
+           $selected = $this->getPosition($supplier, $supplier->getTable(), true);
             $supplier->position = $selected->position;
             $supplier->id = $selected->id;
             $supplier->page = ceil($supplier->position / ($request->limit ?? 10));
@@ -216,7 +217,7 @@ class SupplierController extends Controller
             ]);
         } else {
             DB::rollBack();
-            
+
             return response([
                 'status' => false,
                 'message' => 'Gagal dihapus'

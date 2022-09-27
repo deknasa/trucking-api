@@ -22,7 +22,7 @@ use Illuminate\Support\Facades\DB;
 
 class UpahRitasiController extends Controller
 {
- /**
+    /**
      * @ClassName 
      */
     public function index()
@@ -43,7 +43,7 @@ class UpahRitasiController extends Controller
     {
         //
     }
- /**
+    /**
      * @ClassName 
      */
     public function store(StoreUpahRitasiRequest $request)
@@ -74,15 +74,15 @@ class UpahRitasiController extends Controller
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-                
+
                 /* Store detail */
-                $detaillog=[];
+                $detaillog = [];
                 for ($i = 0; $i < count($request->nominalsupir); $i++) {
-                    $nominalsupir = str_replace(',','',str_replace('.','',$request->nominalsupir[$i]));
-                    $nominalkenek = str_replace(',','',str_replace('.','',$request->nominalkenek[$i]));
-                    $nominalkomisi = str_replace(',','',str_replace('.','',$request->nominalkomisi[$i]));
-                    $nominaltol = str_replace(',','',str_replace('.','',$request->nominaltol[$i]));
-                    $liter = str_replace(',','',str_replace('.','',$request->liter[$i]));
+                    $nominalsupir = str_replace(',', '', str_replace('.', '', $request->nominalsupir[$i]));
+                    $nominalkenek = str_replace(',', '', str_replace('.', '', $request->nominalkenek[$i]));
+                    $nominalkomisi = str_replace(',', '', str_replace('.', '', $request->nominalkomisi[$i]));
+                    $nominaltol = str_replace(',', '', str_replace('.', '', $request->nominaltol[$i]));
+                    $liter = str_replace(',', '', str_replace('.', '', $request->liter[$i]));
 
                     $datadetail = [
                         'upahritasi_id' => $upahritasi->id,
@@ -102,8 +102,8 @@ class UpahRitasiController extends Controller
                     if ($datadetails['error']) {
                         return response($datadetails, 422);
                     } else {
-                        $iddetail=$datadetails['id'];
-                        $tabeldetail=$datadetails['tabel'];
+                        $iddetail = $datadetails['id'];
+                        $tabeldetail = $datadetails['tabel'];
                     }
 
                     $datadetaillog = [
@@ -117,18 +117,18 @@ class UpahRitasiController extends Controller
                         'nominaltol' => $nominaltol,
                         'liter' => $liter,
                         'modifiedby' => $request->modifiedby,
-                        'created_at' => date('d-m-Y H:i:s',strtotime($upahritasi->created_at)),
-                        'updated_at' => date('d-m-Y H:i:s',strtotime($upahritasi->updated_at)),
+                        'created_at' => date('d-m-Y H:i:s', strtotime($upahritasi->created_at)),
+                        'updated_at' => date('d-m-Y H:i:s', strtotime($upahritasi->updated_at)),
                     ];
-                    $detaillog[]=$datadetaillog;
+                    $detaillog[] = $datadetaillog;
                 }
 
                 $dataid = LogTrail::select('id')
-                ->where('idtrans', '=', $upahritasi->id)
-                ->where('namatabel', '=', $upahritasi->getTable())
-                ->orderBy('id', 'DESC')
-                ->first(); 
-                
+                    ->where('idtrans', '=', $upahritasi->id)
+                    ->where('namatabel', '=', $upahritasi->getTable())
+                    ->orderBy('id', 'DESC')
+                    ->first();
+
                 $datalogtrail = [
                     'namatabel' => $tabeldetail,
                     'postingdari' => 'ENTRY UPAH RITASI',
@@ -144,25 +144,29 @@ class UpahRitasiController extends Controller
 
                 $request->sortname = $request->sortname ?? 'id';
                 $request->sortorder = $request->sortorder ?? 'asc';
-            
-            DB::commit();
-        }
-            /* Set position and page */
-            $upahritasi->position = DB::table((new UpahRitasi())->getTable())->orderBy($request->sortname, $request->sortorder)
-                ->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $upahritasi->{$request->sortname})
-                ->where('id', '<=', $upahritasi->id)
-                ->count();
 
-            if (isset($request->limit)) {
-                $upahritasi->page = ceil($upahritasi->position / $request->limit);
+                DB::commit();
             }
+            // /* Set position and page */
+            // $upahritasi->position = DB::table((new UpahRitasi())->getTable())->orderBy($request->sortname, $request->sortorder)
+            //     ->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $upahritasi->{$request->sortname})
+            //     ->where('id', '<=', $upahritasi->id)
+            //     ->count();
+
+            // if (isset($request->limit)) {
+            //     $upahritasi->page = ceil($upahritasi->position / $request->limit);
+            // }
+
+            /* Set position and page */
+            $selected = $this->getPosition($upahritasi, $upahritasi->getTable());
+            $upahritasi->position = $selected->position;
+            $upahritasi->page = ceil($upahritasi->position / ($request->limit ?? 10));
 
             return response([
                 'status' => true,
                 'message' => 'Berhasil disimpan',
                 'data' => $upahritasi
             ]);
-            
         } catch (\Throwable $th) {
             DB::rollBack();
             return response($th->getMessage());
@@ -192,7 +196,7 @@ class UpahRitasiController extends Controller
     {
         //
     }
- /**
+    /**
      * @ClassName 
      */
     public function update(StoreUpahRitasiRequest $request, $id)
@@ -223,18 +227,18 @@ class UpahRitasiController extends Controller
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-                
+
                 $upahritasi->upahritasiRincian()->delete();
 
                 /* Store detail */
-                $detaillog=[];
+                $detaillog = [];
                 for ($i = 0; $i < count($request->nominalsupir); $i++) {
-                    $nominalsupir = str_replace(',','',str_replace('.','',$request->nominalsupir[$i]));
-                    $nominalkenek = str_replace(',','',str_replace('.','',$request->nominalkenek[$i]));
-                    $nominalkomisi = str_replace(',','',str_replace('.','',$request->nominalkomisi[$i]));
-                    $nominaltol = str_replace(',','',str_replace('.','',$request->nominaltol[$i]));
-                    $liter = str_replace(',','',str_replace('.','',$request->liter[$i]));
-                    
+                    $nominalsupir = str_replace(',', '', str_replace('.', '', $request->nominalsupir[$i]));
+                    $nominalkenek = str_replace(',', '', str_replace('.', '', $request->nominalkenek[$i]));
+                    $nominalkomisi = str_replace(',', '', str_replace('.', '', $request->nominalkomisi[$i]));
+                    $nominaltol = str_replace(',', '', str_replace('.', '', $request->nominaltol[$i]));
+                    $liter = str_replace(',', '', str_replace('.', '', $request->liter[$i]));
+
                     $datadetail = [
                         'upahritasi_id' => $upahritasi->id,
                         'container_id' => $request->container_id[$i],
@@ -245,15 +249,15 @@ class UpahRitasiController extends Controller
                         'nominaltol' => $nominaltol,
                         'liter' => $liter,
                         'modifiedby' => $request->modifiedby,
-                        ];
+                    ];
                     $data = new StoreUpahRitasiRincianRequest($datadetail);
                     $datadetails = app(UpahRitasiRincianController::class)->store($data);
 
                     if ($datadetails['error']) {
                         return response($datadetails, 422);
                     } else {
-                        $iddetail=$datadetails['id'];
-                        $tabeldetail=$datadetails['tabel'];
+                        $iddetail = $datadetails['id'];
+                        $tabeldetail = $datadetails['tabel'];
                     }
 
                     $datadetaillog = [
@@ -267,18 +271,18 @@ class UpahRitasiController extends Controller
                         'nominaltol' => $nominaltol,
                         'liter' => $liter,
                         'modifiedby' => $request->modifiedby,
-                        'created_at' => date('d-m-Y H:i:s',strtotime($upahritasi->created_at)),
-                        'updated_at' => date('d-m-Y H:i:s',strtotime($upahritasi->updated_at)),
-                        ];
-                    $detaillog[]=$datadetaillog;
+                        'created_at' => date('d-m-Y H:i:s', strtotime($upahritasi->created_at)),
+                        'updated_at' => date('d-m-Y H:i:s', strtotime($upahritasi->updated_at)),
+                    ];
+                    $detaillog[] = $datadetaillog;
                 }
 
                 $dataid = LogTrail::select('id')
-                ->where('idtrans', '=', $upahritasi->id)
-                ->where('namatabel', '=', $upahritasi->getTable())
-                ->orderBy('id', 'DESC')
-                ->first(); 
-                
+                    ->where('idtrans', '=', $upahritasi->id)
+                    ->where('namatabel', '=', $upahritasi->getTable())
+                    ->orderBy('id', 'DESC')
+                    ->first();
+
                 $datalogtrail = [
                     'namatabel' => $tabeldetail,
                     'postingdari' => 'EDIT UPAH RITASI',
@@ -294,25 +298,29 @@ class UpahRitasiController extends Controller
 
                 $request->sortname = $request->sortname ?? 'id';
                 $request->sortorder = $request->sortorder ?? 'asc';
-            
-            DB::commit();
-        }
-            /* Set position and page */
-            $upahritasi->position = DB::table((new UpahRitasi())->getTable())->orderBy($request->sortname, $request->sortorder)
-                ->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $upahritasi->{$request->sortname})
-                ->where('id', '<=', $upahritasi->id)
-                ->count();
 
-            if (isset($request->limit)) {
-                $upahritasi->page = ceil($upahritasi->position / $request->limit);
+                DB::commit();
             }
+            /* Set position and page */
+            // $upahritasi->position = DB::table((new UpahRitasi())->getTable())->orderBy($request->sortname, $request->sortorder)
+            //     ->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $upahritasi->{$request->sortname})
+            //     ->where('id', '<=', $upahritasi->id)
+            //     ->count();
+
+            // if (isset($request->limit)) {
+            //     $upahritasi->page = ceil($upahritasi->position / $request->limit);
+            // }
+
+            /* Set position and page */
+            $selected = $this->getPosition($upahritasi, $upahritasi->getTable());
+            $upahritasi->position = $selected->position;
+            $upahritasi->page = ceil($upahritasi->position / ($request->limit ?? 10));
 
             return response([
                 'status' => true,
                 'message' => 'Berhasil disimpan',
                 'data' => $upahritasi
             ]);
-            
         } catch (\Throwable $th) {
             DB::rollBack();
             return response($th->getMessage());
@@ -321,18 +329,18 @@ class UpahRitasiController extends Controller
         return response($upahritasi->kasgantungDetail);
     }
 
- /**
+    /**
      * @ClassName 
      */
-    public function destroy($id, Request $request)
+    public function destroy($id, $upahritasi, Request $request)
     {
         DB::beginTransaction();
 
         try {
             $get = UpahRitasi::find($id);
-            $delete = UpahRitasiRincian::where('upahritasi_id',$id)->delete();
+            $delete = UpahRitasiRincian::where('upahritasi_id', $id)->delete();
             $delete = UpahRitasi::destroy($id);
-            
+
             $datalogtrail = [
                 'namatabel' => $get->getTable(),
                 'postingdari' => 'DELETE UPAH SUPIR',
@@ -348,6 +356,12 @@ class UpahRitasiController extends Controller
 
             if ($delete) {
                 DB::commit();
+
+                $selected = $this->getPosition($upahritasi, $upahritasi->getTable(), true);
+                $upahritasi->position = $selected->position;
+                $upahritasi->id = $selected->id;
+                $upahritasi->page = ceil($upahritasi->position / ($request->limit ?? 10));
+                
                 return response([
                     'status' => true,
                     'message' => 'Berhasil dihapus'
@@ -372,8 +386,8 @@ class UpahRitasiController extends Controller
             'zona' => Zona::all(),
             'container' => Container::all(),
             'statuscontainer' => StatusContainer::all(),
-            'statusaktif' => Parameter::where('grp','STATUS AKTIF')->get(),
-            'statusluarkota' => Parameter::where('grp','STATUS LUAR KOTA')->get(),
+            'statusaktif' => Parameter::where('grp', 'STATUS AKTIF')->get(),
+            'statusluarkota' => Parameter::where('grp', 'STATUS LUAR KOTA')->get(),
         ];
 
         return response([

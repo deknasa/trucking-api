@@ -20,7 +20,7 @@ use Illuminate\Support\Facades\Schema;
 
 class TarifController extends Controller
 {
- /**
+    /**
      * @ClassName 
      */
     public function index()
@@ -40,7 +40,7 @@ class TarifController extends Controller
     {
         //
     }
- /**
+    /**
      * @ClassName 
      */
     public function store(StoreTarifRequest $request)
@@ -81,14 +81,19 @@ class TarifController extends Controller
                 DB::commit();
             }
 
-            /* Set position and page */
-            $del = 0;
-            $data = $this->getid($tarif->id, $request, $del);
-            $tarif->position = $data->row;
+            // /* Set position and page */
+            // $del = 0;
+            // $data = $this->getid($tarif->id, $request, $del);
+            // $tarif->position = $data->row;
 
-            if (isset($request->limit)) {
-                $tarif->page = ceil($tarif->position / $request->limit);
-            }
+            // if (isset($request->limit)) {
+            //     $tarif->page = ceil($tarif->position / $request->limit);
+            // }
+
+            /* Set position and page */
+            $selected = $this->getPosition($tarif, $tarif->getTable());
+            $tarif->position = $selected->position;
+            $tarif->page = ceil($tarif->position / ($request->limit ?? 10));
 
             return response([
                 'status' => true,
@@ -113,7 +118,7 @@ class TarifController extends Controller
     {
         //
     }
- /**
+    /**
      * @ClassName 
      */
     public function update(StoreTarifRequest $request, Tarif $tarif)
@@ -147,12 +152,17 @@ class TarifController extends Controller
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
 
-                /* Set position and page */
-                $tarif->position = $this->getid($tarif->id, $request, 0)->row;
+                // /* Set position and page */
+                // $tarif->position = $this->getid($tarif->id, $request, 0)->row;
 
-                if (isset($request->limit)) {
-                    $tarif->page = ceil($tarif->position / $request->limit);
-                }
+                // if (isset($request->limit)) {
+                //     $tarif->page = ceil($tarif->position / $request->limit);
+                // }
+
+                /* Set position and page */
+                $selected = $this->getPosition($tarif, $tarif->getTable());
+                $tarif->position = $selected->position;
+                $tarif->page = ceil($tarif->position / ($request->limit ?? 10));
 
                 return response([
                     'status' => true,
@@ -169,7 +179,7 @@ class TarifController extends Controller
             throw $th;
         }
     }
- /**
+    /**
      * @ClassName 
      */
     public function destroy(Tarif $tarif, Request $request)
@@ -192,12 +202,18 @@ class TarifController extends Controller
 
             DB::commit();
 
-            $data = $this->getid($tarif->id, $request, $del);
-            $tarif->position = $data->row  ?? 0;
-            $tarif->id = $data->id  ?? 0;
-            if (isset($request->limit)) {
-                $tarif->page = ceil($tarif->position / $request->limit);
-            }
+            // $data = $this->getid($tarif->id, $request, $del);
+            // $tarif->position = $data->row  ?? 0;
+            // $tarif->id = $data->id  ?? 0;
+            // if (isset($request->limit)) {
+            //     $tarif->page = ceil($tarif->position / $request->limit);
+            // }
+
+            $selected = $this->getPosition($tarif, $tarif->getTable(), true);
+            $tarif->position = $selected->position;
+            $tarif->id = $selected->id;
+            $tarif->page = ceil($tarif->position / ($request->limit ?? 10));
+            
             return response([
                 'status' => true,
                 'message' => 'Berhasil dihapus',
@@ -231,9 +247,9 @@ class TarifController extends Controller
             'container' => Container::all(),
             'kota' => Kota::all(),
             'zona' => Zona::all(),
-            'statusaktif' => Parameter::where(['grp'=>'status aktif'])->get(),
-            'statuspenyesuaianharga' => Parameter::where(['grp'=>'status penyesuaian harga'])->get(),
-            'sistemton' => Parameter::where(['grp'=>'sistem ton'])->get(),
+            'statusaktif' => Parameter::where(['grp' => 'status aktif'])->get(),
+            'statuspenyesuaianharga' => Parameter::where(['grp' => 'status penyesuaian harga'])->get(),
+            'sistemton' => Parameter::where(['grp' => 'sistem ton'])->get(),
         ];
 
         return response([
@@ -272,7 +288,7 @@ class TarifController extends Controller
 
             $table->index('id_');
         });
-        
+
         if ($params['sortname'] == 'id') {
             $query = DB::table((new Tarif())->getTable())->select(
                 'tarif.id as id_',
@@ -356,7 +372,7 @@ class TarifController extends Controller
             }
         }
 
-        DB::table($temp)->insertUsing(['id_', 'tujuan', 'container_id','nominal', 'statusaktif','tujuanasal','sistemton','kota_id','zona_id','nominalton','tglberlaku','statuspenyesuaianharga', 'modifiedby', 'created_at', 'updated_at'], $query);
+        DB::table($temp)->insertUsing(['id_', 'tujuan', 'container_id', 'nominal', 'statusaktif', 'tujuanasal', 'sistemton', 'kota_id', 'zona_id', 'nominalton', 'tglberlaku', 'statuspenyesuaianharga', 'modifiedby', 'created_at', 'updated_at'], $query);
 
 
         if ($del == 1) {
