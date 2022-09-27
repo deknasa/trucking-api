@@ -39,16 +39,32 @@ class ServiceInHeaderController extends Controller
 
         try {
 
+            // $content = new Request();
+            // $content['group'] = 'SERVICEIN';
+            // $content['subgroup'] = 'SERVICEIN';
+            // $content['table'] = 'serviceinheader';
+
+            $group = 'SERVICE IN';
+            $subgroup = 'SERVICE IN';
+
+            $format = DB::table('parameter')
+                ->where('grp', $group)
+                ->where('subgrp', $subgroup)
+                ->first();
+
             $content = new Request();
-            $content['group'] = 'SERVICEIN';
-            $content['subgroup'] = 'SERVICEIN';
+            $content['group'] = $group;
+            $content['subgroup'] = $subgroup;
             $content['table'] = 'serviceinheader';
+            $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
 
             $servicein = new ServiceInHeader();
+
             $servicein->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $servicein->trado_id = $request->trado_id;
             $servicein->tglmasuk = date('Y-m-d', strtotime($request->tglmasuk));
             $servicein->keterangan = $request->keterangan;
+            $servicein->statusformat =  $format->id;
             $servicein->modifiedby = auth('api')->user()->name;
 
             TOP:
@@ -58,6 +74,7 @@ class ServiceInHeaderController extends Controller
             try {
                 $servicein->save();
             } catch (\Exception $e) {
+                dd($e->getMessage());
                 $errorCode = @$e->errorInfo[1];
                 if ($errorCode == 2601) {
                     goto TOP;
@@ -66,9 +83,9 @@ class ServiceInHeaderController extends Controller
 
             $logTrail = [
                 'namatabel' => strtoupper($servicein->getTable()),
-                'postingdari' => 'ENTRY SERVICE IN',
+                'postingdari' => 'ENTRY SERVICE IN HEADER',
                 'idtrans' => $servicein->id,
-                'nobuktitrans' => '',
+                'nobuktitrans' => $servicein->nobukti,
                 'aksi' => 'ENTRY',
                 'datajson' => $servicein->toArray(),
                 'modifiedby' => $servicein->modifiedby
@@ -81,12 +98,12 @@ class ServiceInHeaderController extends Controller
 
             /* Store detail */
             $detaillog = [];
-            for ($i = 0; $i < count($request->mekanik_id); $i++) {
+           // for ($i = 0; $i < count($request->mekanik_id); $i++) {
                 $datadetail = [
                     'servicein_id' => $servicein->id,
                     'nobukti' => $servicein->nobukti,
-                    'mekanik_id' => $request->mekanik_id[$i],
-                    'keterangan' => $request->keterangan_detail[$i],
+                    'mekanik_id' => $request->mekanik_id,
+                    'keterangan' => $request->keterangan_detail,
                     'modifiedby' => $servicein->modifiedby,
                 ];
 
@@ -111,7 +128,7 @@ class ServiceInHeaderController extends Controller
                     'updated_at' => date('d-m-Y H:i:s', strtotime($servicein->updated_at)),
                 ];
                 $detaillog[] = $datadetaillog;
-            }
+            //}
 
             $dataid = LogTrail::select('id')
                 ->where('idtrans', '=', $servicein->id)
