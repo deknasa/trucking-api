@@ -282,8 +282,6 @@
         Route::get('penerimaantrucking/export', [PenerimaanTruckingController::class, 'export']);
         Route::get('penerimaantrucking/field_length', [PenerimaanTruckingController::class, 'fieldLength']);
         Route::resource('penerimaantrucking', PenerimaanTruckingController::class);
-//        Route::resource('penerimaantrucking', PenerimaanTruckingController::class)->parameters(['penerimaantrucking' => 'penerimaanTrucking']);
-
 
         Route::get('pengeluarantrucking/export', [PengeluaranTruckingController::class, 'export']);
         Route::get('pengeluarantrucking/field_length', [PengeluaranTruckingController::class, 'fieldLength']);

@@ -340,10 +340,10 @@ class UserAclController extends Controller
                 }
             }
 
-            /* Set position and page */
-            $selected = $this->getPosition($useracl, $useracl->getTable());
-            $useracl->position = $selected->position;
-            $useracl->page = ceil($useracl->position / ($request->limit ?? 10));
+              /* Set position and page */
+              $selected = $this->getPosition($useracl, $useracl->getTable());
+              $useracl->position = $selected->position;
+              $useracl->page = ceil($useracl->position / ($request->limit ?? 10));
 
 
             return response([
@@ -439,10 +439,11 @@ class UserAclController extends Controller
             //     $useracl->page = ceil($useracl->position / $request->limit);
             // }
 
-            /* Set position and page */
-            $selected = $this->getPosition($useracl, $useracl->getTable());
-            $useracl->position = $selected->position;
-            $useracl->page = ceil($useracl->position / ($request->limit ?? 10));
+             /* Set position and page */
+             $selected = $this->getPosition($useracl, $useracl->getTable());
+             $useracl->position = $selected->position;
+             $useracl->page = ceil($useracl->position / ($request->limit ?? 10));
+
 
             return response([
                 'status' => true,
@@ -498,6 +499,7 @@ class UserAclController extends Controller
             //     $useracl->page = ceil($useracl->position / $request->limit);
             // }
 
+            /* Set position and page */
             $selected = $this->getPosition($useracl, $useracl->getTable(), true);
             $useracl->position = $selected->position;
             $useracl->id = $selected->id;
