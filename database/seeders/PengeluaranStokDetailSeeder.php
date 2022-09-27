@@ -15,8 +15,7 @@ class PengeluaranStokDetailSeeder extends Seeder
      */
     public function run()
     {
-        DB::statement("ALTER TABLE PengeluaranStokDetail CHECK CONSTRAINT pengeluaranstokdetail_pengeluaranstokheader_id_foreign");
-        DB::statement("ALTER TABLE PengeluaranStokDetail NOCHECK CONSTRAINT pengeluaranstokdetail_stok_id_foreign");
+
 
         DB::statement("delete PengeluaranStokDetail");
         DB::statement("DBCC CHECKIDENT ('PengeluaranStokDetail', RESEED, 0);");
