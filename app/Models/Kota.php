@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class Kota extends MyModel
 {
@@ -49,6 +50,53 @@ class Kota extends MyModel
         $data = $query->get();
 
         return $data;
+    }
+
+    public function selectColumns($query)
+    {
+        return $query->select(
+            DB::raw(
+            "$this->table.id,
+            $this->table.kodekota,
+            $this->table.keterangan,
+            'zona.zona',
+            'parameter.text as statusaktif',
+            $this->table.modifiedby,
+            $this->table.created_at,
+            $this->table.updated_at"
+            )
+        )
+        
+        ->leftJoin('parameter', 'kota.statusaktif', '=', 'parameter.id')
+        ->leftJoin('zona', 'kota.zona_id', '=', 'zona.id');
+
+    }
+
+    public function createTemp(string $modelTable)
+    {
+        $temp = '##temp' . rand(1, 10000);
+        Schema::create($temp, function ($table) {
+            $table->bigInteger('id')->default('0');
+            $table->string('kodekota', 1000)->default('');
+            $table->string('keterangan', 1000)->default('');
+            $table->string('zona', 1000)->default('');
+            $table->string('statusaktif', 1000)->default('');
+            $table->string('modifiedby', 50)->default('');
+            $table->dateTime('created_at')->default('1900/1/1');
+            $table->dateTime('updated_at')->default('1900/1/1');
+            $table->increments('position');
+        });
+
+        $this->setRequestParameters();
+        $query = DB::table($modelTable);
+        $query = $this->selectColumns($query);
+        $this->sort($query);
+        $models = $this->filter($query);
+        DB::table($temp)->insertUsing(['id','kodekota','keterangan','zona','statusaktif','modifiedby','created_at','updated_at'],$models);
+
+
+        return  $temp;         
+
     }
 
     public function sort($query)

@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\PelunasanPiutangDetail;
-use App\Http\Requests\StorePiutangDetailRequest;
-use App\Http\Requests\UpdatePiutangDetailRequest;
+use App\Http\Requests\StorePelunasanPiutangDetailRequest;
+use App\Http\Requests\UpdatePelunasanPiutangDetailRequest;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -73,16 +73,15 @@ class PelunasanPiutangDetailController extends Controller
     }
 
 
-    public function store(StorePiutangDetailRequest $request)
+    public function store(StorePelunasanPiutangDetailRequest $request)
     {
         DB::beginTransaction();
 
         $validator = Validator::make($request->all(), [
-            'nominal' => 'required',
-           'keterangan' => 'required'
+            'pelanggan_id' => 'required',
         ], [
-            'nominal.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
-            'keterangan.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan
+            'pelanggan_id.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
+            
         ]);
         // dd($request->all());
 
@@ -93,23 +92,36 @@ class PelunasanPiutangDetailController extends Controller
             ];
         }
         try {
-            $piutangdetail = new PiutangDetail();
+            $pelunasanpiutangdetail = new PelunasanPiutangDetail();
             
-            $piutangdetail->piutang_id = $request->piutang_id;
-            $piutangdetail->nobukti = $request->nobukti;
-            $piutangdetail->nominal = $request->nominal;
-            $piutangdetail->keterangan = $request->keterangan;
-            $piutangdetail->invoice_nobukti = $request->invoice_nobukti;
-            $piutangdetail->modifiedby = auth('api')->user()->name;
+            $pelunasanpiutangdetail->pelunasanpiutang_id = $request->pelunasanpiutang_id;
+            $pelunasanpiutangdetail->nobukti = $request->nobukti;
+            $pelunasanpiutangdetail->tgl = $request->tgl;
+            $pelunasanpiutangdetail->pelanggan_id = $request->pelanggan_id;
+            $pelunasanpiutangdetail->agen_id = $request->agen_id;
+            $pelunasanpiutangdetail->nominal = $request->nominal;
+            $pelunasanpiutangdetail->piutang_nobukti = $request->piutang_nobukti;
+            $pelunasanpiutangdetail->cicilan = $request->cicilan;
+            $pelunasanpiutangdetail->tglcair = $request->tglcair;
+            $pelunasanpiutangdetail->keterangan = $request->keterangan;
+            $pelunasanpiutangdetail->tgljt = $request->tgljt;
+            $pelunasanpiutangdetail->penyesuaian = $request->penyesuaian;
+            $pelunasanpiutangdetail->coapenyesuaian = $request->coapenyesuaian;
+            $pelunasanpiutangdetail->invoice_bukti = $request->invoice_bukti;
+            $pelunasanpiutangdetail->keteranganpenyesuaian = $request->keteranganpenyesuaian;
+            $pelunasanpiutangdetail->nominallebihbayar = $request->nominallebihbayar;
+            $pelunasanpiutangdetail->coalebihbayar = $request->coalebihbayar;
             
-            $piutangdetail->save();
+            $pelunasanpiutangdetail->modifiedby = auth('api')->user()->name;
+            
+            $pelunasanpiutangdetail->save();
            
             DB::commit();
             if ($validator->passes()) {
                 return [
                     'error' => false,
-                    'id' => $piutangdetail->id,
-                    'tabel' => $piutangdetail->getTable(),
+                    'id' => $pelunasanpiutangdetail->id,
+                    'tabel' => $pelunasanpiutangdetail->getTable(),
                 ];
             }
         } catch (\Throwable $th) {

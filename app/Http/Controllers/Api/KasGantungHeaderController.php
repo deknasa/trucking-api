@@ -59,10 +59,19 @@ class KasGantungHeaderController extends Controller
             /* Store header */
             $bank = Bank::find($request->bank_id);
 
+            $group = 'KAS GANTUNG';
+            $subgroup = 'NOMOR KAS GANTUNG';
+            $format = DB::table('parameter')
+            ->where('grp', $group )
+            ->where('subgrp', $subgroup)
+            ->first();
+
             $content = new Request();
-            $content['group'] = 'KAS GANTUNG';
-            $content['subgroup'] = 'NOMOR KAS GANTUNG';
+            $content['group'] = $group;
+            $content['subgroup'] = $subgroup;
             $content['table'] = 'kasgantungheader';
+            $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
+
 
             $kasgantungHeader = new KasGantungHeader();
             $kasgantungHeader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
@@ -74,6 +83,7 @@ class KasGantungHeaderController extends Controller
             $kasgantungHeader->postingdari = 'ENTRY KAS GANTUNG';
             $kasgantungHeader->tglkaskeluar = date('Y-m-d', strtotime($request->tglkaskeluar));
             $kasgantungHeader->modifiedby = auth('api')->user()->name;
+            $kasgantungHeader->statusformat = $format->id;
             
             TOP:
             $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
@@ -173,6 +183,7 @@ class KasGantungHeaderController extends Controller
                     $content['group'] = 'PENGELUARAN KAS';
                     $content['subgroup'] = 'NOMOR PENGELUARAN KAS';
                     $content['table'] = 'pengeluaranheader';
+                    $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
 
                     ATAS:
                     $nobuktikaskeluar = app(Controller::class)->getRunningNumber($content)->original['data'];
@@ -257,14 +268,10 @@ class KasGantungHeaderController extends Controller
                 DB::commit();
 
                 /* Set position and page */
-                $kasgantungHeader->position = KasGantungHeader::orderBy($request->sortname, $request->sortorder)
-                    ->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $kasgantungHeader->{$request->sortname})
-                    ->where('id', '<=', $kasgantungHeader->id)
-                    ->count();
 
-                if (isset($request->limit)) {
-                    $kasgantungHeader->page = ceil($kasgantungHeader->position / ($request->limit ?? 10));
-                }
+                $selected = $this->getPosition($kasgantungHeader, $kasgantungHeader->getTable());
+                $kasgantungHeader->position = $selected->position;
+                $kasgantungHeader->page = ceil($kasgantungHeader->position / ($request->limit ?? 10));
 
                 return response([
                     'status' => true,
@@ -419,6 +426,8 @@ class KasGantungHeaderController extends Controller
                     $content['group'] = 'PENGELUARAN KAS';
                     $content['subgroup'] = 'NOMOR PENGELUARAN KAS';
                     $content['table'] = 'pengeluaranheader';
+                    $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
+                    
                     ATAS:
                     $nobuktikaskeluar = app(Controller::class)->getRunningNumber($content)->original['data'];
 
@@ -501,14 +510,9 @@ class KasGantungHeaderController extends Controller
                 DB::commit();
 
                 /* Set position and page */
-                $kasgantungHeader->position = KasGantungHeader::orderBy($request->sortname, $request->sortorder)
-                    ->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $kasgantungHeader->{$request->sortname})
-                    ->where('id', '<=', $kasgantungHeader->id)
-                    ->count();
-                
-                if (isset($request->limit)) {
-                    $kasgantungHeader->page = ceil($kasgantungHeader->position / ($request->limit ?? 10));
-                }
+                $selected = $this->getPosition($kasgantungHeader, $kasgantungHeader->getTable());
+                $kasgantungHeader->position = $selected->position;
+                $kasgantungHeader->page = ceil($kasgantungHeader->position / ($request->limit ?? 10));
 
                 return response([
                     'status' => true,
@@ -554,9 +558,16 @@ class KasGantungHeaderController extends Controller
 
             if ($delete) {
                 DB::commit();
+
+                $selected = $this->getPosition($kasGantungHeader, $kasGantungHeader->getTable(), true);
+                $kasGantungHeader->position = $selected->position;
+                $kasGantungHeader->id = $selected->id;
+                $kasGantungHeader->page = ceil($kasGantungHeader->position / ($request->limit ?? 10));
+
                 return response([
                     'status' => true,
-                    'message' => 'Berhasil dihapus'
+                    'message' => 'Berhasil dihapus',
+                    'data' => $kasGantungHeader
                 ]);
             } else {
                 DB::rollBack();

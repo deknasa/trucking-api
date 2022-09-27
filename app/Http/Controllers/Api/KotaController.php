@@ -74,13 +74,9 @@ class KotaController extends Controller
             }
 
             /* Set position and page */
-            $del = 0;
-            $data = $this->getid($kota->id, $request, $del);
-            $kota->position = @$data->row;
-
-            if (isset($request->limit)) {
-                $kota->page = ceil($kota->position / $request->limit);
-            }
+            $selected = $this->getPosition($kota, $kota->getTable(), true);
+            $kota->position = $selected->position;
+            $kota->page = ceil($kota->position / ($request->limit ?? 10));
 
             return response([
                 'status' => true,
@@ -133,11 +129,9 @@ class KotaController extends Controller
                 app(LogTrailController::class)->store($validatedLogTrail);
 
                 /* Set position and page */
-                $kota->position = $this->getid($kota->id, $request, 0)->row;
-
-                if (isset($request->limit)) {
-                    $kota->page = ceil($kota->position / $request->limit);
-                }
+                $selected = $this->getPosition($kota, $kota->getTable(), true);
+                $kota->position = $selected->position;
+                $kota->page = ceil($kota->position / ($request->limit ?? 10));
 
                 return response([
                     'status' => true,
@@ -177,13 +171,11 @@ class KotaController extends Controller
             app(LogTrailController::class)->store($validatedLogTrail);
 
             DB::commit();
+            $selected = $this->getPosition($kota, $kota->getTable(), true);
+            $kota->position = $selected->position;
+            $kota->id = $selected->id;
+            $kota->page = ceil($kota->position / ($request->limit ?? 10));
 
-            $data = $this->getid($kota->id, $request, $del);
-            $kota->position = @$data->row  ?? 0;
-            $kota->id = @$data->id  ?? 0;
-            if (isset($request->limit)) {
-                $kota->page = ceil($kota->position / $request->limit);
-            }
             return response([
                 'status' => true,
                 'message' => 'Berhasil dihapus',

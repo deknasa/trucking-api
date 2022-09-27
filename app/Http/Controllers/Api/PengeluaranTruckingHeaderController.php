@@ -200,7 +200,6 @@ class PengeluaranTruckingHeaderController extends Controller
             $pengeluarantruckingheader->position = $selected->position;
             $pengeluarantruckingheader->page = ceil($pengeluarantruckingheader->position / ($request->limit ?? 10));
             
-            // dd($pengeluarantruckingheader->page);
 
             return response([
                 'status' => true,
@@ -242,8 +241,6 @@ class PengeluaranTruckingHeaderController extends Controller
 
         try {
 
-           
-
             $idpengeluaran = $request->pengeluarantrucking_id;
             $fetchFormat =  DB::table('pengeluarantrucking')
                             ->where('id', $idpengeluaran)
@@ -256,6 +253,12 @@ class PengeluaranTruckingHeaderController extends Controller
                 ->where('grp', $fetchGrp->grp)
                 ->where('subgrp', $fetchGrp->subgrp)
                 ->first();
+
+            $content = new Request();
+            $content['group'] = $fetchGrp->grp ;
+            $content['subgroup'] = $fetchGrp->subgrp ;
+            $content['table'] = 'pengeluarantruckingheader';
+            $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
                 
             $noBuktiPengeluaran = $request->pengeluaran_nobukti;
             $PengeluaranHeader =  DB::table('pengeluaranheader')
@@ -264,6 +267,8 @@ class PengeluaranTruckingHeaderController extends Controller
 
             $pengeluarantruckingheader = PengeluaranTruckingHeader::findOrFail($id);
 
+            $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
+            $pengeluarantruckingheader->nobukti = $nobukti;
             $pengeluarantruckingheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $pengeluarantruckingheader->pengeluarantrucking_id = $idpengeluaran;
             $pengeluarantruckingheader->keterangan = $request->keterangan;

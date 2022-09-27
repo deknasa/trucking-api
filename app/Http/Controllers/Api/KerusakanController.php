@@ -72,14 +72,10 @@ class KerusakanController extends Controller
             }
 
             /* Set position and page */
-            $del = 0;
-            $data = $this->getid($kerusakan->id, $request, $del);
-            $kerusakan->position = @$data->row;
-
-            if (isset($request->limit)) {
-                $kerusakan->page = ceil($kerusakan->position / $request->limit);
-            }
-
+            $selected = $this->getPosition($kerusakan, $kerusakan->getTable(), true);
+            $kerusakan->position = $selected->position;
+            $kerusakan->page = ceil($kerusakan->position / ($request->limit ?? 10));
+            
             return response([
                 'status' => true,
                 'message' => 'Berhasil disimpan',
@@ -129,11 +125,9 @@ class KerusakanController extends Controller
                 app(LogTrailController::class)->store($validatedLogTrail);
 
                 /* Set position and page */
-                $kerusakan->position = $this->getid($kerusakan->id, $request, 0)->row;
-
-                if (isset($request->limit)) {
-                    $kerusakan->page = ceil($kerusakan->position / $request->limit);
-                }
+                $selected = $this->getPosition($kerusakan, $kerusakan->getTable(), true);
+                $kerusakan->position = $selected->position;
+                $kerusakan->page = ceil($kerusakan->position / ($request->limit ?? 10));
 
                 return response([
                     'status' => true,
@@ -173,12 +167,11 @@ class KerusakanController extends Controller
 
             DB::commit();
 
-            $data = $this->getid($kerusakan->id, $request, $del);
-            $kerusakan->position = @$data->row  ?? 0;
-            $kerusakan->id = @$data->id  ?? 0;
-            if (isset($request->limit)) {
-                $kerusakan->page = ceil($kerusakan->position / $request->limit);
-            }
+            $selected = $this->getPosition($kerusakan, $kerusakan->getTable(), true);
+            $kerusakan->position = $selected->position;
+            $kerusakan->id = $selected->id;
+            $kerusakan->page = ceil($kerusakan->position / ($request->limit ?? 10));
+
             return response([
                 'status' => true,
                 'message' => 'Berhasil dihapus',

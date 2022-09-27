@@ -73,9 +73,10 @@ class KategoriController extends Controller
             }
 
             /* Set position and page */
-            $del = 0;
-            $data = $this->getid($kategori->id, $request, $del);
-            $kategori->position = @$data->row;
+
+            $selected = $this->getPosition($kategori, $kategori->getTable());
+            $kategori->position = $selected->position;
+            $kategori->page = ceil($kategori->position / ($request->limit ?? 10));
 
             if (isset($request->limit)) {
                 $kategori->page = ceil($kategori->position / $request->limit);
@@ -131,12 +132,11 @@ class KategoriController extends Controller
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
 
-                /* Set position and page */
-                $kategori->position = $this->getid($kategori->id, $request, 0)->row;
+               /* Set position and page */
 
-                if (isset($request->limit)) {
-                    $kategori->page = ceil($kategori->position / $request->limit);
-                }
+               $selected = $this->getPosition($kategori, $kategori->getTable());
+               $kategori->position = $selected->position;
+               $kategori->page = ceil($kategori->position / ($request->limit ?? 10));
 
                 return response([
                     'status' => true,
@@ -175,13 +175,13 @@ class KategoriController extends Controller
             app(LogTrailController::class)->store($validatedLogTrail);
 
             DB::commit();
+            /* Set position and page */
 
-            $data = $this->getid($kategori->id, $request, $del);
-            $kategori->position = @$data->row  ?? 0;
-            $kategori->id = @$data->id  ?? 0;
-            if (isset($request->limit)) {
-                $kategori->page = ceil($kategori->position / $request->limit);
-            }
+            $selected = $this->getPosition($kategori, $kategori->getTable());
+            $kategori->position = $selected->position;
+            $kategori->id = $selected->id;
+            $kategori->page = ceil($kategori->position / ($request->limit ?? 10));
+            
             return response([
                 'status' => true,
                 'message' => 'Berhasil dihapus',

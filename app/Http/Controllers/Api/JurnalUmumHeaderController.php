@@ -229,14 +229,7 @@ class JurnalUmumHeaderController extends Controller
                 $jurnalumum->position = $selected->position;
                 $jurnalumum->page = ceil($jurnalumum->position / ($request->limit ?? 10));
 
-                // $jurnalumum->position = DB::table((new JurnalUmumHeader())->getTable())->orderBy($request->sortname, $request->sortorder)
-                //     ->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $jurnalumum->{$request->sortname})
-                //     ->where('id', '<=', $jurnalumum->id)
-                //     ->count();
-
-                if (isset($request->limit)) {
-                    $jurnalumum->page = ceil($jurnalumum->position / $request->limit);
-                }
+                
                 // dd('test');
 
 
@@ -424,19 +417,11 @@ class JurnalUmumHeaderController extends Controller
             DB::commit();
 
 
-            /* Set position and page */
-            // $jurnalumum->position = DB::table((new JurnalUmumHeader())->getTable())->orderBy($request->sortname, $request->sortorder)
-            //     ->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $jurnalumum->{$request->sortname})
-            //     ->where('id', '<=', $jurnalumum->id)
-            //     ->count();
+            
 
             $selected = $this->getPosition($jurnalumum, $jurnalumum->getTable());
             $jurnalumum->position = $selected->position;
             $jurnalumum->page = ceil($jurnalumum->position / ($request->limit ?? 10));
-
-            // if (isset($request->limit)) {
-            //     $jurnalumum->page = ceil($jurnalumum->position / $request->limit);
-            // }
 
             return response([
                 'status' => true,

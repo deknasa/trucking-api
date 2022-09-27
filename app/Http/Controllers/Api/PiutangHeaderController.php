@@ -40,7 +40,7 @@ class PiutangHeaderController extends Controller
             ]
         ]);
     }
-
+    
      /**
      * @ClassName
      */
@@ -76,6 +76,7 @@ class PiutangHeaderController extends Controller
             $piutang->invoice_nobukti = $request->invoice_nobukti ?? '';
             $piutang->modifiedby = auth('api')->user()->name;
             $piutang->statusformat = $format->id;
+            $piutang->agen_id = $request->agen_id;
             
         //    SUM NOMINAL
             $sum = 0;
@@ -93,7 +94,6 @@ class PiutangHeaderController extends Controller
                 $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
                 $piutang->nobukti = $nobukti;
             
-
             try {
                 $piutang->save();   
             } catch (\Exception $e) {
@@ -232,9 +232,10 @@ class PiutangHeaderController extends Controller
                 }
                     $jurnaldetail = array_merge($jurnaldetail, $detail);
             }
+           
 
             $jurnal = $this->storeJurnal($jurnalHeader, $jurnaldetail);
-        //    dd($jurnal['det']);
+           
            
             
             if (!$jurnal['status']) {
@@ -248,14 +249,9 @@ class PiutangHeaderController extends Controller
         /* Set position and page */
     
 
-            $piutang->position = DB::table((new PiutangHeader())->getTable())->orderBy($request->sortname, $request->sortorder)
-                ->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $piutang->{$request->sortname})
-                ->where('id', '<=', $piutang->id)
-                ->count();
-
-            if (isset($request->limit)) {
-                $piutang->page = ceil($piutang->position / $request->limit);
-            }
+            $selected = $this->getPosition($piutang, $piutang->getTable(), true);
+            $piutang->position = $selected->position;
+            $piutang->page = ceil($piutang->position / ($request->limit ?? 10));
 
             return response([
                 'status' => true,
@@ -301,6 +297,8 @@ class PiutangHeaderController extends Controller
             $piutang->postingdari = $request->postingdari ?? '';
             $piutang->invoice_nobukti = $request->invoice_nobukti ?? '';
             $piutang->modifiedby = auth('api')->user()->name;
+            $piutang->agen_id = $request->agen_id;
+
 
             $sum = 0;
             for($i=0; $i < count($request->nominal_detail); $i++){
@@ -556,4 +554,6 @@ class PiutangHeaderController extends Controller
         }
     }
     
+    
+
 }
