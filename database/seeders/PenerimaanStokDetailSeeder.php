@@ -16,8 +16,7 @@ class PenerimaanStokDetailSeeder extends Seeder
     public function run()
     {
 
-        DB::statement("ALTER TABLE PenerimaanStokDetail CHECK CONSTRAINT penerimaanstokdetail_penerimaanstokheader_id_foreign");
-        DB::statement("ALTER TABLE PenerimaanStokDetail NOCHECK CONSTRAINT penerimaanstokdetail_stok_id_foreign");
+
 
         DB::statement("delete PenerimaanStokDetail");
         DB::statement("DBCC CHECKIDENT ('PenerimaanStokDetail', RESEED, 0);");

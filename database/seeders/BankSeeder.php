@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\Bank;
+use Illuminate\Support\Facades\DB;
 
 class BankSeeder extends Seeder
 {
@@ -14,26 +15,10 @@ class BankSeeder extends Seeder
      */
     public function run()
     {
-        Bank::create([
-            'kodebank' => 'KAS TRUCKING',
-            'namabank' => 'KAS TRUCKING',
-            'coa' => '01.01.01.02',
-            'tipe' => 'KAS',
-            'statusaktif' => '1',
-            'kodepenerimaan' => '32',
-            'kodepengeluaran' => '33',
-            'modifiedby' => 'ADMIN',
-        ]);
+        DB::statement("delete Bank");
+        DB::statement("DBCC CHECKIDENT ('Bank', RESEED, 1);");
 
-        Bank::create([
-            'kodebank' => 'BANK TRUCKING',
-            'namabank' => 'BANK TRUCKING',
-            'coa' => '01.02.02.01',
-            'tipe' => 'BANK',
-            'statusaktif' => '1',
-            'kodepenerimaan' => '87',
-            'kodepengeluaran' => '88',
-            'modifiedby' => 'ADMIN',
-        ]);
+        Bank::create([  'kodebank' => 'KAS TRUCKING',  'namabank' => 'KAS TRUCKING',  'coa' => '01.01.01.02',  'tipe' => 'KAS',  'statusformatpenerimaan' => '32',  'statusformatpengeluaran' => '33',  'statusaktif' => '1',  'modifiedby' => 'ADMIN',  ]);
+        Bank::create([  'kodebank' => 'BANK TRUCKING',  'namabank' => 'BANK TRUCKING',  'coa' => '01.02.02.01',  'tipe' => 'BANK',  'statusformatpenerimaan' => '87',  'statusformatpengeluaran' => '88',  'statusaktif' => '1',  'modifiedby' => 'ADMIN',  ]);
     }
 }
