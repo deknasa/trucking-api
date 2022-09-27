@@ -70,14 +70,9 @@ class KelompokController extends Controller
                 DB::commit();
             }
 
-            /* Set position and page */
-            $del = 0;
-            $data = $this->getid($kelompok->id, $request, $del);
-            $kelompok->position = @$data->row;
-
-            if (isset($request->limit)) {
-                $kelompok->page = ceil($kelompok->position / $request->limit);
-            }
+            $selected = $this->getPosition($kelompok, $kelompok->getTable(), true);
+            $kelompok->position = $selected->position;
+            $kelompok->page = ceil($kelompok->position / ($request->limit ?? 10));
 
             return response([
                 'status' => true,
@@ -129,11 +124,9 @@ class KelompokController extends Controller
                 app(LogTrailController::class)->store($validatedLogTrail);
 
                 /* Set position and page */
-                $kelompok->position = $this->getid($kelompok->id, $request, 0)->row;
-
-                if (isset($request->limit)) {
-                    $kelompok->page = ceil($kelompok->position / $request->limit);
-                }
+                $selected = $this->getPosition($kelompok, $kelompok->getTable(), true);
+                $kelompok->position = $selected->position;
+                $kelompok->page = ceil($kelompok->position / ($request->limit ?? 10));
 
                 return response([
                     'status' => true,
@@ -173,12 +166,11 @@ class KelompokController extends Controller
 
             DB::commit();
 
-            $data = $this->getid($kelompok->id, $request, $del);
-            $kelompok->position = @$data->row  ?? 0;
-            $kelompok->id = @$data->id  ?? 0;
-            if (isset($request->limit)) {
-                $kelompok->page = ceil($kelompok->position / $request->limit);
-            }
+            $selected = $this->getPosition($kelompok, $kelompok->getTable(), true);
+            $kelompok->position = $selected->position;
+            $kelompok->id = $selected->id;
+            $kelompok->page = ceil($kelompok->position / ($request->limit ?? 10));
+            
             return response([
                 'status' => true,
                 'message' => 'Berhasil dihapus',

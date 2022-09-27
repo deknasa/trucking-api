@@ -27,220 +27,14 @@ class OrderanTruckingController extends Controller
      */
     public function index()
     {
-        $params = [
-            'offset' => request()->offset ?? ((request()->page - 1) * request()->limit),
-            'limit' => request()->limit ?? 10,
-            'filters' => json_decode(request()->filters, true) ?? [],
-            'sortIndex' => request()->sortIndex ?? 'id',
-            'sortOrder' => request()->sortOrder ?? 'asc',
-        ];
 
-        $totalRows =  DB::table((new OrderanTrucking)->getTable())->count();
-        $totalPages = $params['limit'] > 0 ? ceil($totalRows / $params['limit']) : 1;
-
-        /* Sorting */
-        $query = DB::table((new OrderanTrucking)->getTable())->orderBy($params['sortIndex'], $params['sortOrder']);
-
-        if ($params['sortIndex'] == 'id') {
-            $query = DB::table((new OrderanTrucking)->getTable())->select(
-                'orderantrucking.id',
-                'orderantrucking.nobukti',
-                'orderantrucking.tglbukti',
-                'container.keterangan as container_id',
-                'agen.namaagen as agen_id',
-                'jenisorder.keterangan as jenisorder_id',
-                'pelanggan.namapelanggan as pelanggan_id',
-                'tarif.tujuan as tarif_id',
-                'orderantrucking.nominal',
-                'orderantrucking.nojobemkl',
-                'orderantrucking.nocont',
-                'orderantrucking.noseal',
-                'orderantrucking.nojobemkl2',
-                'orderantrucking.nocont2',
-                'orderantrucking.noseal2',
-                'parameter.text as statuslangsir',
-                'param2.text as statusperalihan',
-                'orderantrucking.modifiedby',
-                'orderantrucking.created_at',
-                'orderantrucking.updated_at'
-            )
-            ->leftJoin('tarif', 'orderantrucking.tarif_id', '=', 'tarif.id')
-            ->leftJoin('container', 'orderantrucking.container_id', '=', 'container.id')
-            ->leftJoin('agen', 'orderantrucking.agen_id', '=', 'agen.id')
-            ->leftJoin('jenisorder', 'orderantrucking.jenisorder_id', '=', 'jenisorder.id')
-            ->leftJoin('pelanggan', 'orderantrucking.pelanggan_id', '=', 'pelanggan.id')
-            ->leftJoin('parameter', 'orderantrucking.statuslangsir', '=', 'parameter.id')
-            ->leftJoin('parameter AS param2', 'orderantrucking.statusperalihan', '=', 'param2.id')
-            ->orderBy('orderantrucking.id', $params['sortOrder']);
-        } else if ($params['sortIndex'] == 'nobukti' or $params['sortIndex'] == 'nojobemkl') {
-            $query = DB::table((new OrderanTrucking)->getTable())->select(
-                'orderantrucking.id',
-                'orderantrucking.nobukti',
-                'orderantrucking.tglbukti',
-                'container.keterangan as container_id',
-                'agen.namaagen as agen_id',
-                'jenisorder.keterangan as jenisorder_id',
-                'pelanggan.namapelanggan as pelanggan_id',
-                'tarif.tujuan as tarif_id',
-                'orderantrucking.nominal',
-                'orderantrucking.nojobemkl',
-                'orderantrucking.nocont',
-                'orderantrucking.noseal',
-                'orderantrucking.nojobemkl2',
-                'orderantrucking.nocont2',
-                'orderantrucking.noseal2',
-                'parameter.text as statuslangsir',
-                'param2.text as statusperalihan',
-                'orderantrucking.modifiedby',
-                'orderantrucking.created_at',
-                'orderantrucking.updated_at'
-            )
-            ->leftJoin('tarif', 'orderantrucking.tarif_id', '=', 'tarif.id')
-            ->leftJoin('container', 'orderantrucking.container_id', '=', 'container.id')
-            ->leftJoin('agen', 'orderantrucking.agen_id', '=', 'agen.id')
-            ->leftJoin('jenisorder', 'orderantrucking.jenisorder_id', '=', 'jenisorder.id')
-            ->leftJoin('pelanggan', 'orderantrucking.pelanggan_id', '=', 'pelanggan.id')
-            ->leftJoin('parameter', 'orderantrucking.statuslangsir', '=', 'parameter.id')
-            ->leftJoin('parameter AS param2', 'orderantrucking.statusperalihan', '=', 'param2.id')
-                ->orderBy($params['sortIndex'], $params['sortOrder'])
-                ->orderBy('orderantrucking.id', $params['sortOrder']);
-
-        } else {
-            if ($params['sortOrder'] == 'asc') {
-                $query = DB::table((new OrderanTrucking)->getTable())->select(
-                'orderantrucking.id',
-                'orderantrucking.nobukti',
-                'orderantrucking.tglbukti',
-                'container.keterangan as container_id',
-                'agen.namaagen as agen_id',
-                'jenisorder.keterangan as jenisorder_id',
-                'pelanggan.namapelanggan as pelanggan_id',
-                'tarif.tujuan as tarif_id',
-                'orderantrucking.nominal',
-                'orderantrucking.nojobemkl',
-                'orderantrucking.nocont',
-                'orderantrucking.noseal',
-                'orderantrucking.nojobemkl2',
-                'orderantrucking.nocont2',
-                'orderantrucking.noseal2',
-                'parameter.text as statuslangsir',
-                'param2.text as statusperalihan',
-                'orderantrucking.modifiedby',
-                'orderantrucking.created_at',
-                'orderantrucking.updated_at'
-            )
-            ->leftJoin('tarif', 'orderantrucking.tarif_id', '=', 'tarif.id')
-            ->leftJoin('container', 'orderantrucking.container_id', '=', 'container.id')
-            ->leftJoin('agen', 'orderantrucking.agen_id', '=', 'agen.id')
-            ->leftJoin('jenisorder', 'orderantrucking.jenisorder_id', '=', 'jenisorder.id')
-            ->leftJoin('pelanggan', 'orderantrucking.pelanggan_id', '=', 'pelanggan.id')
-            ->leftJoin('parameter', 'orderantrucking.statuslangsir', '=', 'parameter.id')
-            ->leftJoin('parameter AS param2', 'orderantrucking.statusperalihan', '=', 'param2.id')
-                    ->orderBy($params['sortIndex'], $params['sortOrder'])
-                    ->orderBy('orderantrucking.id', $params['sortOrder']);
-            } else {
-                $query = DB::table((new OrderanTrucking)->getTable())->select(
-                'orderantrucking.id',
-                'orderantrucking.nobukti',
-                'orderantrucking.tglbukti',
-                'container.keterangan as container_id',
-                'agen.namaagen as agen_id',
-                'jenisorder.keterangan as jenisorder_id',
-                'pelanggan.namapelanggan as pelanggan_id',
-                'tarif.tujuan as tarif_id',
-                'orderantrucking.nominal',
-                'orderantrucking.nojobemkl',
-                'orderantrucking.nocont',
-                'orderantrucking.noseal',
-                'orderantrucking.nojobemkl2',
-                'orderantrucking.nocont2',
-                'orderantrucking.noseal2',
-                'parameter.text as statuslangsir',
-                'param2.text as statusperalihan',
-                'orderantrucking.modifiedby',
-                'orderantrucking.created_at',
-                'orderantrucking.updated_at'
-            )
-            ->leftJoin('tarif', 'orderantrucking.tarif_id', '=', 'tarif.id')
-            ->leftJoin('container', 'orderantrucking.container_id', '=', 'container.id')
-            ->leftJoin('agen', 'orderantrucking.agen_id', '=', 'agen.id')
-            ->leftJoin('jenisorder', 'orderantrucking.jenisorder_id', '=', 'jenisorder.id')
-            ->leftJoin('pelanggan', 'orderantrucking.pelanggan_id', '=', 'pelanggan.id')
-            ->leftJoin('parameter', 'orderantrucking.statuslangsir', '=', 'parameter.id')
-            ->leftJoin('parameter AS param2', 'orderantrucking.statusperalihan', '=', 'param2.id')
-                    ->orderBy($params['sortIndex'], $params['sortOrder'])
-                    ->orderBy('orderantrucking.id', 'asc');
-            }
-        }
-
-        /* Searching */
-        if (count($params['filters']) > 0 && @$params['filters']['rules'][0]['data'] != '') {
-            switch ($params['filters']['groupOp']) {
-                case "AND":
-                    foreach ($params['filters']['rules'] as $index => $search) {
-                        if ($search['field'] == 'statuslangsir') {
-                            $query = $query->where('parameter.text', 'LIKE', "%$search[data]%");
-                        } elseif($search['field'] == 'statusperalihan') {
-                            $query = $query->where('param2.text', 'LIKE', "%$search[data]%");
-                        } elseif($search['field'] == 'agen_id') {
-                            $query = $query->where('agen.namaagen', 'LIKE', "%$search[data]%");
-                        } elseif($search['field'] == 'pelanggan_id') {
-                            $query = $query->where('pelanggan.namapelanggan', 'LIKE', "%$search[data]%");
-                        } elseif($search['field'] == 'container_id') {
-                            $query = $query->where('container.keterangan', 'LIKE', "%$search[data]%");
-                        } elseif($search['field'] == 'tarif_id') {
-                            $query = $query->where('tarif.tujuan', 'LIKE', "%$search[data]%");
-                        } else {
-                            $query = $query->where('orderantrucking.'.$search['field'], 'LIKE', "%$search[data]%");
-                        }
-                    }
-
-                    break;
-                case "OR":
-                    foreach ($params['filters']['rules'] as $index => $search) {
-                        if ($search['field'] == 'statuslangsir') {
-                            $query = $query->orWhere('parameter.text', 'LIKE', "%$search[data]%");
-                        } elseif($search['field'] == 'statusperalihan') {
-                            $query = $query->where('param2.text', 'LIKE', "%$search[data]%");
-                        } elseif($search['field'] == 'agen_id') {
-                            $query = $query->where('agen.namaagen', 'LIKE', "%$search[data]%");
-                        } elseif($search['field'] == 'pelanggan_id') {
-                            $query = $query->where('pelanggan.namapelanggan', 'LIKE', "%$search[data]%");
-                        } elseif($search['field'] == 'container_id') {
-                            $query = $query->where('container.keterangan', 'LIKE', "%$search[data]%");
-                        } elseif($search['field'] == 'tarif_id') {
-                            $query = $query->where('tarif.tujuan', 'LIKE', "%$search[data]%");
-                        } else {
-                            $query = $query->orWhere('orderantrucking.'.$search['field'], 'LIKE', "%$search[data]%");
-                        }
-                    }
-                    break;
-                default:
-
-                    break;
-            }
-
-            $totalRows = count($query->get());
-            $totalPages = $params['limit'] > 0 ? ceil($totalRows / $params['limit']) : 1;
-        }
-
-        /* Paging */
-        $query = $query->skip($params['offset'])
-            ->take($params['limit']);
-
-        $orderantrucking = $query->get();
-
-        /* Set attributes */
-        $attributes = [
-            'totalRows' => $totalRows ?? 0,
-            'totalPages' => $totalPages ?? 0
-        ];
-
+        $orderanTrucking = new OrderanTrucking();
         return response([
-            'status' => true,
-            'data' => $orderantrucking,
-            'attributes' => $attributes,
-            'params' => $params
+            'data' => $orderanTrucking->get(),
+            'attributes' => [
+                'totalRows' => $orderanTrucking->totalRows,
+                'totalPages' => $orderanTrucking->totalPages
+            ]
         ]);
     }
 
@@ -256,10 +50,18 @@ class OrderanTruckingController extends Controller
         DB::beginTransaction();
 
         try {
+            $group = 'ORDERANTRUCKING';
+            $subgroup = 'ORDERANTRUCKING';
+            $format = DB::table('parameter')
+            ->where('grp', $group )
+            ->where('subgrp', $subgroup)
+            ->first();
+
             $content = new Request();
-            $content['group'] = 'ORDERANTRUCKING';
-            $content['subgroup'] = 'ORDERANTRUCKING';
+            $content['group'] = $group;
+            $content['subgroup'] = $subgroup;
             $content['table'] = 'orderantrucking';
+            $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
 
             $orderanTrucking = new OrderanTrucking();
             $orderanTrucking->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
@@ -277,8 +79,9 @@ class OrderanTruckingController extends Controller
             $orderanTrucking->statuslangsir = $request->statuslangsir;
             $orderanTrucking->statusperalihan = $request->statusperalihan;
             $orderanTrucking->modifiedby = auth('api')->user()->name;
-            $request->sortname = $request->sortname ?? 'id';
-            $request->sortorder = $request->sortorder ?? 'asc';
+            $orderanTrucking->statusformat = $format->id;
+            // $request->sortname = $request->sortname ?? 'id';
+            // $request->sortorder = $request->sortorder ?? 'asc';
 
             $tarif = Tarif::find($request->tarif_id);
             $orderanTrucking->nominal = $tarif->nominal;
@@ -312,13 +115,10 @@ class OrderanTruckingController extends Controller
             DB::commit();
 
             /* Set position and page */
-            $del = 0;
-            $data = $this->getid($orderanTrucking->id, $request, $del);
-            $orderanTrucking->position = $data->row;
+            $selected = $this->getPosition($orderanTrucking, $orderanTrucking->getTable(), true);
+            $orderanTrucking->position = $selected->position;
+            $orderanTrucking->page = ceil($orderanTrucking->position / ($request->limit ?? 10));
 
-            if (isset($request->limit)) {
-                $orderanTrucking->page = ceil($orderanTrucking->position / $request->limit);
-            }
 
             return response([
                 'status' => true,
@@ -382,11 +182,9 @@ class OrderanTruckingController extends Controller
                 app(LogTrailController::class)->store($validatedLogTrail);
 
                 /* Set position and page */
-                $orderanTrucking->position = $this->getid($orderanTrucking->id, $request, 0)->row;
-
-                if (isset($request->limit)) {
-                    $orderanTrucking->page = ceil($orderanTrucking->position / $request->limit);
-                }
+                $selected = $this->getPosition($orderanTrucking, $orderanTrucking->getTable(), true);
+                $orderanTrucking->position = $selected->position;
+                $orderanTrucking->page = ceil($orderanTrucking->position / ($request->limit ?? 10));
 
                 return response([
                     'status' => true,
@@ -427,14 +225,10 @@ class OrderanTruckingController extends Controller
 
             
             DB::commit();
-            $data = $this->getid($orderantrucking->id, $request, $del);
-            
-            $orderantrucking->position = @$data->row  ?? 0;
-            $orderantrucking->id = @$data->id  ?? 0;
-
-            if (isset($request->limit)) {
-                $orderantrucking->page = ceil($orderantrucking->position / $request->limit);
-            }
+            $selected = $this->getPosition($orderantrucking, $orderantrucking->getTable(), true);
+            $orderantrucking->position = $selected->position;
+            $orderantrucking->id = $selected->id;
+            $orderantrucking->page = ceil($orderantrucking->position / ($request->limit ?? 10));
 
             
             return response([

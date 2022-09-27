@@ -82,13 +82,10 @@ class JurnalUmumHeader extends MyModel
             $this->table.userapproval,
             $this->table.tglapproval,
             $this->table.modifiedby,
-            $this->table.created_at,
-            $this->table.updated_at,
-            $this->table.statusformat"
+            $this->table.updated_at"
             )
         )
         ->leftJoin('parameter as statusapproval', 'jurnalumumheader.statusapproval', 'statusapproval.id');
-        
 
     }
 
@@ -105,9 +102,7 @@ class JurnalUmumHeader extends MyModel
             $table->string('userapproval', 1000)->default('');
             $table->string('tglapproval', 1000)->default('');
             $table->string('modifiedby', 50)->default('');
-            $table->dateTime('created_at')->default('1900/1/1');
             $table->dateTime('updated_at')->default('1900/1/1');
-            $table->string('statusformat', 1000)->default('');
             $table->increments('position');
         });
 
@@ -116,7 +111,7 @@ class JurnalUmumHeader extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id','nobukti','tglbukti','keterangan','postingdari','statusapproval','userapproval','tglapproval','modifiedby','created_at','updated_at','statusformat'],$models);
+        DB::table($temp)->insertUsing(['id','nobukti','tglbukti','keterangan','postingdari','statusapproval','userapproval','tglapproval','modifiedby','updated_at'],$models);
 
 
         return  $temp;         

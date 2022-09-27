@@ -320,6 +320,8 @@
         Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
         Route::get('pelunasanpiutangheader/no_bukti', [PelunasanPiutangHeaderController::class, 'getNoBukti']);
         Route::get('pelunasanpiutangheader/combo', [PelunasanPiutangHeaderController::class, 'combo']);
+        Route::get('pelunasanpiutangheader/{id}/getpiutang', [PelunasanPiutangHeaderController::class, 'getpiutang'])->name('pelunasanpiutangheader.getpiutang');
+        Route::get('pelunasanpiutangheader/{id}/{agenid}/getpelunasanpiutang', [PelunasanPiutangHeaderController::class, 'getpelunasanpiutang']);
         Route::get('pelunasanpiutangheader/grid', [PelunasanPiutangHeaderController::class, 'grid']);
         Route::resource('pelunasanpiutangheader', PelunasanPiutangHeaderController::class);
         Route::resource('pelunasanpiutangdetail', PelunasanPiutangDetailController::class);

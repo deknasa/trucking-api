@@ -71,13 +71,9 @@ class MerkController extends Controller
             }
 
             /* Set position and page */
-            $del = 0;
-            $data = $this->getid($merk->id, $request, $del);
-            $merk->position = @$data->row;
-
-            if (isset($request->limit)) {
-                $merk->page = ceil($merk->position / $request->limit);
-            }
+            $selected = $this->getPosition($merk, $merk->getTable(), true);
+            $merk->position = $selected->position;
+            $merk->page = ceil($merk->position / ($request->limit ?? 10));
 
             return response([
                 'status' => true,
@@ -129,11 +125,9 @@ class MerkController extends Controller
                 app(LogTrailController::class)->store($validatedLogTrail);
 
                 /* Set position and page */
-                $merk->position = $this->getid($merk->id, $request, 0)->row;
-
-                if (isset($request->limit)) {
-                    $merk->page = ceil($merk->position / $request->limit);
-                }
+                $selected = $this->getPosition($merk, $merk->getTable(), true);
+                $merk->position = $selected->position;
+                $merk->page = ceil($merk->position / ($request->limit ?? 10));
 
                 return response([
                     'status' => true,
@@ -173,12 +167,11 @@ class MerkController extends Controller
 
             DB::commit();
 
-            $data = $this->getid($merk->id, $request, $del);
-            $merk->position = @$data->row  ?? 0;
-            $merk->id = @$data->id  ?? 0;
-            if (isset($request->limit)) {
-                $merk->page = ceil($merk->position / $request->limit);
-            }
+            $selected = $this->getPosition($merk, $merk->getTable(), true);
+            $merk->position = $selected->position;
+            $merk->id = $selected->id;
+            $merk->page = ceil($merk->position / ($request->limit ?? 10));
+
             return response([
                 'status' => true,
                 'message' => 'Berhasil dihapus',
