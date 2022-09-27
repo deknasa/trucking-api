@@ -1,0 +1,47 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
+
+class CreatePendapatansupirdetailTable extends Migration
+{
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
+    public function up()
+    {
+        Schema::dropIfExists('pendapatansupirdetail');
+
+        Schema::create('pendapatansupirdetail', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('pendapatansupir_id')->default('0');
+            $table->string('nobukti',50)->default('');
+            $table->unsignedBigInteger('supir_id')->default('0');
+            $table->double('nominal',15,2)->default('0');
+            $table->longText('keterangan')->default('');
+            $table->string('modifiedby',50)->default('');            
+            $table->timestamps();
+
+            $table->foreign('pendapatansupir_id', 'pendapatansupirdetail_pendapatansupirheader_pendapatansupir_id_foreign')->references('id')->on('pendapatansupirheader')->onDelete('cascade');    
+            $table->foreign('supir_id', 'pendapatansupirdetail_supir_supir_id_foreign')->references('id')->on('supir');    
+
+
+        });
+        DB::statement("ALTER TABLE pendapatansupirdetail NOCHECK CONSTRAINT pendapatansupirdetail_supir_supir_id_foreign");
+
+    }
+
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
+    public function down()
+    {
+        Schema::dropIfExists('pendapatansupirdetail');
+    }
+}
