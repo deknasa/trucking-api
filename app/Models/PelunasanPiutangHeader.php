@@ -173,18 +173,21 @@ class PelunasanPiutangHeader extends MyModel
     public function selectColumns($query)
     {
         return $query->select(
-            DB::raw(
-                "$this->table.id,
-                 $this->table.nobukti,
-                 $this->table.tglbukti,
-                 $this->table.keterangan,
-                 $this->table.bank_id,
-                 $this->table.agen_id,
-                 $this->table.cabang_id,
-                 $this->table.modifiedby,
-                 $this->table.updated_at"
-            )
-        );
+            'pelunasanpiutangheader.id',
+            'pelunasanpiutangheader.nobukti',
+            'pelunasanpiutangheader.tglbukti',
+            'pelunasanpiutangheader.keterangan',
+            'pelunasanpiutangheader.modifiedby',
+            'pelunasanpiutangheader.updated_at',
+
+            'bank.namabank as bank_id',
+            'agen.namaagen as agen_id',
+            'cabang.namacabang as cabang_id',
+        )
+            ->leftJoin('bank', 'pelunasanpiutangheader.bank_id', 'bank.id')
+            ->leftJoin('agen', 'pelunasanpiutangheader.agen_id', 'agen.id')
+            ->leftJoin('cabang' , 'pelunasanpiutangheader.cabang_id', 'cabang.id');
+            
     }
 
     public function createTemp(string $modelTable)
@@ -195,9 +198,9 @@ class PelunasanPiutangHeader extends MyModel
             $table->string('nobukti', 1000)->default('');
             $table->date('tglbukti')->default('');
             $table->string('keterangan', 1000)->default('');
-            $table->bigInteger('bank_id')->default('');
-            $table->bigInteger('agen_id')->default('');
-            $table->bigInteger('cabang_id')->default('');
+            $table->string('bank_id')->default('');
+            $table->string('agen_id')->default('');
+            $table->string('cabang_id')->default('');
             $table->string('modifiedby')->default();
             $table->dateTime('updated_at')->default('1900/1/1');
             $table->increments('position');

@@ -235,15 +235,12 @@ class PiutangHeaderController extends Controller
            
 
             $jurnal = $this->storeJurnal($jurnalHeader, $jurnaldetail);
-        //    dd($jurnal);
-           
-            
-            dd($jurnal->original);
             
             if (!$jurnal['status']) {
                 throw new \Throwable($jurnal['message']);
             }
             
+            dd('tes');
             
             DB::commit();
         
