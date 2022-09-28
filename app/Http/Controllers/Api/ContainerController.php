@@ -97,14 +97,19 @@ class ContainerController extends Controller
             app(LogTrailController::class)->store($data);
 
             DB::commit();
+            // /* Set position and page */
+            // $del = 0;
+            // $data = $this->getid($container->id, $request, $del);
+            // $container->position = $data->row;
+            // // dd($container->position );
+            // if (isset($request->limit)) {
+            //     $container->page = ceil($container->position / $request->limit);
+            // }
+
             /* Set position and page */
-            $del = 0;
-            $data = $this->getid($container->id, $request, $del);
-            $container->position = $data->row;
-            // dd($container->position );
-            if (isset($request->limit)) {
-                $container->page = ceil($container->position / $request->limit);
-            }
+            $selected = $this->getPosition($container, $container->getTable());
+            $container->position = $selected->position;
+            $container->page = ceil($container->position / ($request->limit ?? 10));
 
             return response([
                 'status' => true,
@@ -194,14 +199,17 @@ class ContainerController extends Controller
 
             DB::commit();
 
-            /* Set position and page */
+            // /* Set position and page */
+            // $container->position = $this->getid($container->id, $request, 0)->row;
 
+            // if (isset($request->limit)) {
+            //     $container->page = ceil($container->position / $request->limit);
+            // }
 
-            $container->position = $this->getid($container->id, $request, 0)->row;
-
-            if (isset($request->limit)) {
-                $container->page = ceil($container->position / $request->limit);
-            }
+              /* Set position and page */
+              $selected = $this->getPosition($container, $container->getTable());
+              $container->position = $selected->position;
+              $container->page = ceil($container->position / ($request->limit ?? 10));
 
             return response([
                 'status' => true,

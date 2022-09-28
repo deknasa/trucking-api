@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
+
 
 class ServiceInDetail extends MyModel
 {
@@ -21,4 +23,21 @@ class ServiceInDetail extends MyModel
         'created_at',
         'updated_at',
     ];
+
+    function getAll($id)
+    {
+
+
+        $query = DB::table('serviceindetail')->select(
+            'serviceindetail.nobukti',
+            'mekanik.namamekanik as mekanik_id',
+            'serviceindetail.keterangan',
+        )
+            ->leftJoin('mekanik', 'serviceindetail.mekanik_id', 'mekanik.id')
+            ->where('serviceindetail_id', '=', $id);
+
+        $data = $query->get();
+
+        return $data;
+    }
 }

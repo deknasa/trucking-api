@@ -59,10 +59,10 @@ class ErrorController extends Controller
                 DB::commit();
             }
 
-            /* Set position and page */
-            $selected = $this->getPosition($error, $error->getTable());
-            $error->position = $selected->position;
-            $error->page = ceil($error->position / ($request->limit ?? 10));
+             /* Set position and page */
+             $selected = $this->getPosition($error, $error->getTable());
+             $error->position = $selected->position;
+             $error->page = ceil($error->position / ($request->limit ?? 10));
 
             return response([
                 'status' => true,
@@ -111,10 +111,10 @@ class ErrorController extends Controller
                 DB::commit();
             }
 
-            /* Set position and page */
-            $selected = $this->getPosition($error, $error->getTable());
-            $error->position = $selected->position;
-            $error->page = ceil($error->position / ($request->limit ?? 10));
+           /* Set position and page */
+           $selected = $this->getPosition($error, $error->getTable());
+           $error->position = $selected->position;
+           $error->page = ceil($error->position / ($request->limit ?? 10));
 
             return response([
                 'status' => true,
@@ -151,6 +151,7 @@ class ErrorController extends Controller
                 DB::commit();
             }
 
+            /* Set position and page */
             $selected = $this->getPosition($error, $error->getTable(), true);
             $error->position = $selected->position;
             $error->id = $selected->id;
