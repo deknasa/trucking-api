@@ -26,6 +26,14 @@ class DatabaseSeeder extends Seeder
             UserRoleSeeder::class,
             ZonaSeeder::class,
             BankSeeder::class,
+            ErrorSeeder::class,
+            SupirSeeder::class,
+            TradoSeeder::class,
+            AbsensiSupirHeaderSeeder::class,
+            AbsensiSupirDetailSeeder::class,
+            AbsensiSupirApprovalHeaderSeeder::class,
+            AbsensiSupirApprovalDetailSeeder::class,
+            
         ]);
     }
 }

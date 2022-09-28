@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\Error;
+use Illuminate\Support\Facades\DB;
 
 
 class ErrorSeeder extends Seeder
@@ -15,29 +16,13 @@ class ErrorSeeder extends Seeder
      */
     public function run()
     {
-        /*Error::create([
-            'kodeerror' => 'WI',
-            'keterangan' => 'WAJIB DIISI',
-            'modifiedby' => 'ADMIN',    
-        ]);
+        DB::statement("delete [error]");
+        DB::statement("DBCC CHECKIDENT ('[error]', RESEED, 1);");
 
-        Error::create([
-            'kodeerror' => 'SPI',
-            'keterangan' => 'SUDAH PERNAH INPUT',
-            'modifiedby' => 'ADMIN',    
-        ]);
+        error::create([ 'kodeerror' => 'WI', 'keterangan' => 'WAJIB DI ISI', 'modifiedby' => 'ADMIN',]);
+        error::create([ 'kodeerror' => 'SPI', 'keterangan' => 'SUDAH PERNAH INPUT', 'modifiedby' => 'ADMIN',]);
+        error::create([ 'kodeerror' => 'SAP', 'keterangan' => 'SUDAH DI APPROVAL', 'modifiedby' => 'ADMIN',]);
+        error::create([ 'kodeerror' => 'BADJ', 'keterangan' => 'BUKAN ENTRYAN JURNAL MANUAL', 'modifiedby' => 'ADMIN',]);
 
-        Error::create([
-            'kodeerror' => 'SAP',
-            'keterangan' => 'SUDAH DI APPROVAL',
-            'modifiedby' => 'ADMIN',    
-        ]);
-
-        Error::create([
-            'kodeerror' => 'BADJ',
-            'keterangan' => 'BUKAN ENTRYAN JURNAL MANUAL',
-            'modifiedby' => 'ADMIN',    
-        ]);
-*/
     }
 }
