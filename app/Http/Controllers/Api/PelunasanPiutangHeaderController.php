@@ -393,7 +393,7 @@ class PelunasanPiutangHeaderController extends Controller
             DB::commit();
 
              /* Set position and page */
-             $selected = $this->getPosition($pelunasanpiutangheader, $pelunasanpiutangheader->getTable(), true);
+             $selected = $this->getPosition($pelunasanpiutangheader, $pelunasanpiutangheader->getTable());
                 $pelunasanpiutangheader->position = $selected->position;
                 $pelunasanpiutangheader->page = ceil($pelunasanpiutangheader->position / ($request->limit ?? 10));
 

@@ -233,7 +233,6 @@ class PiutangHeaderController extends Controller
                     $jurnaldetail = array_merge($jurnaldetail, $detail);
             }
            
-
             $jurnal = $this->storeJurnal($jurnalHeader, $jurnaldetail);
             
             if (!$jurnal['status']) {
@@ -247,7 +246,7 @@ class PiutangHeaderController extends Controller
         /* Set position and page */
     
 
-            $selected = $this->getPosition($piutang, $piutang->getTable(), true);
+            $selected = $this->getPosition($piutang, $piutang->getTable());
             $piutang->position = $selected->position;
             $piutang->page = ceil($piutang->position / ($request->limit ?? 10));
 
@@ -446,14 +445,9 @@ class PiutangHeaderController extends Controller
             DB::commit();
 
              /* Set position and page */
-             $piutang->position = DB::table((new PiutangHeader())->getTable())->orderBy($request->sortname, $request->sortorder)
-             ->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $piutang->{$request->sortname})
-             ->where('id', '<=', $piutang->id)
-             ->count();
-
-            if (isset($request->limit)) {
-                $piutang->page = ceil($piutang->position / $request->limit);
-            }
+             $selected = $this->getPosition($piutang, $piutang->getTable());
+             $piutang->position = $selected->position;
+             $piutang->page = ceil($piutang->position / ($request->limit ?? 10));
 
             return response([
                 'status' => true,
@@ -525,7 +519,7 @@ class PiutangHeaderController extends Controller
             
             $jurnal = new StoreJurnalUmumHeaderRequest($header);
             $jurnals = app(JurnalUmumHeaderController::class)->store($jurnal);
-            dd('after header jurnal');
+            
 
             $nobukti = $header['nobukti'];
             $fetchId = JurnalUmumHeader::select('id')

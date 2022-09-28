@@ -67,7 +67,7 @@ class MekanikController extends Controller
             }
 
             /* Set position and page */
-            $selected = $this->getPosition($mekanik, $mekanik->getTable(), true);
+            $selected = $this->getPosition($mekanik, $mekanik->getTable());
             $mekanik->position = $selected->position;
             $mekanik->page = ceil($mekanik->position / ($request->limit ?? 10));
 
@@ -120,7 +120,7 @@ class MekanikController extends Controller
                 app(LogTrailController::class)->store($validatedLogTrail);
 
                 /* Set position and page */
-                $selected = $this->getPosition($mekanik, $mekanik->getTable(), true);
+                $selected = $this->getPosition($mekanik, $mekanik->getTable());
                 $mekanik->position = $selected->position;
                 $mekanik->page = ceil($mekanik->position / ($request->limit ?? 10));
 

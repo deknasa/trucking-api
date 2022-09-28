@@ -105,7 +105,7 @@ class RitasiController extends Controller
             }
 
             /* Set position and page */
-            $selected = $this->getPosition($ritasi, $ritasi->getTable(), true);
+            $selected = $this->getPosition($ritasi, $ritasi->getTable());
             $ritasi->position = $selected->position;
             $ritasi->page = ceil($ritasi->position / ($request->limit ?? 10));
 
@@ -171,7 +171,7 @@ class RitasiController extends Controller
                 app(LogTrailController::class)->store($validatedLogTrail);
 
                 /* Set position and page */
-                $selected = $this->getPosition($ritasi, $ritasi->getTable(), true);
+                $selected = $this->getPosition($ritasi, $ritasi->getTable());
                 $ritasi->position = $selected->position;
                 $ritasi->page = ceil($ritasi->position / ($request->limit ?? 10));
 

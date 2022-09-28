@@ -115,7 +115,7 @@ class OrderanTruckingController extends Controller
             DB::commit();
 
             /* Set position and page */
-            $selected = $this->getPosition($orderanTrucking, $orderanTrucking->getTable(), true);
+            $selected = $this->getPosition($orderanTrucking, $orderanTrucking->getTable());
             $orderanTrucking->position = $selected->position;
             $orderanTrucking->page = ceil($orderanTrucking->position / ($request->limit ?? 10));
 
@@ -182,7 +182,7 @@ class OrderanTruckingController extends Controller
                 app(LogTrailController::class)->store($validatedLogTrail);
 
                 /* Set position and page */
-                $selected = $this->getPosition($orderanTrucking, $orderanTrucking->getTable(), true);
+                $selected = $this->getPosition($orderanTrucking, $orderanTrucking->getTable());
                 $orderanTrucking->position = $selected->position;
                 $orderanTrucking->page = ceil($orderanTrucking->position / ($request->limit ?? 10));
 

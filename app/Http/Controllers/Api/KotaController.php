@@ -74,7 +74,7 @@ class KotaController extends Controller
             }
 
             /* Set position and page */
-            $selected = $this->getPosition($kota, $kota->getTable(), true);
+            $selected = $this->getPosition($kota, $kota->getTable());
             $kota->position = $selected->position;
             $kota->page = ceil($kota->position / ($request->limit ?? 10));
 
@@ -129,7 +129,7 @@ class KotaController extends Controller
                 app(LogTrailController::class)->store($validatedLogTrail);
 
                 /* Set position and page */
-                $selected = $this->getPosition($kota, $kota->getTable(), true);
+                $selected = $this->getPosition($kota, $kota->getTable());
                 $kota->position = $selected->position;
                 $kota->page = ceil($kota->position / ($request->limit ?? 10));
 

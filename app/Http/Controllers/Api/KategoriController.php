@@ -177,7 +177,8 @@ class KategoriController extends Controller
             DB::commit();
             /* Set position and page */
 
-            $selected = $this->getPosition($kategori, $kategori->getTable());
+            $selected = $this->getPosition($kategori, $kategori->getTable(), true);
+            
             $kategori->position = $selected->position;
             $kategori->id = $selected->id;
             $kategori->page = ceil($kategori->position / ($request->limit ?? 10));
