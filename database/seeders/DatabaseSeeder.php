@@ -26,10 +26,6 @@ class DatabaseSeeder extends Seeder
             UserRoleSeeder::class,
             ZonaSeeder::class,
             BankSeeder::class,
-
-
-
-
         ]);
     }
 }

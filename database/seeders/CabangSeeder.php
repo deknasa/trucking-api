@@ -16,7 +16,7 @@ class CabangSeeder extends Seeder
     public function run()
     {
         DB::statement("delete cabang");
-        DB::statement("DBCC CHECKIDENT ('cabang', RESEED, 0);");
+        DB::statement("DBCC CHECKIDENT ('cabang', RESEED, 1);");
 
         cabang::create(['kodecabang' => 'PST',  'namacabang' => 'PUSAT',  'statusaktif' => '1',  'modifiedby' => 'ADMIN',]);
         cabang::create(['kodecabang' => 'JKT',  'namacabang' => 'JAKARTA',  'statusaktif' => '1',  'modifiedby' => 'ADMIN',]);

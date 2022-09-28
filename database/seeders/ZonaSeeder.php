@@ -16,7 +16,7 @@ class ZonaSeeder extends Seeder
     public function run()
     {
         DB::statement("delete zona");
-        DB::statement("DBCC CHECKIDENT ('zona', RESEED, 0);");
+        DB::statement("DBCC CHECKIDENT ('zona', RESEED, 1);");
 
         zona::create(['zona' => 'luar kota',  'keterangan' => 'luar kota',  'statusaktif' => '1',  'modifiedby' => 'ADMIN',]);
     }

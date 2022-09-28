@@ -17,7 +17,7 @@ class AclSeeder extends Seeder
     {
 
         DB::statement("delete Acl");
-        DB::statement("DBCC CHECKIDENT ('Acl', RESEED, 0);");
+        DB::statement("DBCC CHECKIDENT ('Acl', RESEED, 1);");
 
         Acl::create(['aco_id' => '1',  'role_id' => '2',  'modifiedby' => 'ADMIN',]);
         Acl::create(['aco_id' => '2',  'role_id' => '2',  'modifiedby' => 'ADMIN',]);

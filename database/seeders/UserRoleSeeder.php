@@ -17,7 +17,7 @@ class UserRoleSeeder extends Seeder
     {
 
         DB::statement("delete userrole");
-        DB::statement("DBCC CHECKIDENT ('userrole', RESEED, 0);");
+        DB::statement("DBCC CHECKIDENT ('userrole', RESEED, 1);");
 
         userrole::create(['user_id' => '2',  'role_id' => '1',  'modifiedby' => 'ADMIN',]);
         userrole::create(['user_id' => '2',  'role_id' => '2',  'modifiedby' => 'ADMIN',]);

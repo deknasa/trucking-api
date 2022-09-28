@@ -16,7 +16,7 @@ class UserAclSeeder extends Seeder
     public function run()
     {
         DB::statement("delete useracl");
-        DB::statement("DBCC CHECKIDENT ('useracl', RESEED, 0);");
+        DB::statement("DBCC CHECKIDENT ('useracl', RESEED, 1);");
 
         useracl::create(['aco_id' => '1',  'user_id' => '2',  'modifiedby' => 'ADMIN',]);
         useracl::create(['aco_id' => '2',  'user_id' => '2',  'modifiedby' => 'ADMIN',]);

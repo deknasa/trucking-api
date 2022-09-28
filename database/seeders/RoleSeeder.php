@@ -18,7 +18,7 @@ class RoleSeeder extends Seeder
 
 
         DB::statement("delete Role");
-        DB::statement("DBCC CHECKIDENT ('Role', RESEED, 0);");
+        DB::statement("DBCC CHECKIDENT ('Role', RESEED, 1);");
 
         Role::create(['rolename' => 'ADMIN',  'modifiedby' => 'ADMIN',]);
         Role::create(['rolename' => 'TEST',  'modifiedby' => 'ADMIN',]);

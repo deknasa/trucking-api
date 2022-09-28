@@ -15,7 +15,7 @@ class AcosSeeder extends Seeder
     public function run()
     {
         DB::statement("delete Acos");
-        DB::statement("DBCC CHECKIDENT ('Acos', RESEED, 0);");
+        DB::statement("DBCC CHECKIDENT ('Acos', RESEED, 1);");
 
         acos::create(['class' => 'parameter',  'method' => 'index',  'nama' => 'index ParameterController',  'modifiedby' => 'ADMIN',]);
         acos::create(['class' => 'parameter',  'method' => 'store',  'nama' => 'store ParameterController',  'modifiedby' => 'ADMIN',]);

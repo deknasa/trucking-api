@@ -16,7 +16,7 @@ class BankSeeder extends Seeder
     public function run()
     {
         DB::statement("delete Bank");
-        DB::statement("DBCC CHECKIDENT ('Bank', RESEED, 0);");
+        DB::statement("DBCC CHECKIDENT ('Bank', RESEED, 1);");
 
         Bank::create([  'kodebank' => 'KAS TRUCKING',  'namabank' => 'KAS TRUCKING',  'coa' => '01.01.01.02',  'tipe' => 'KAS',  'statusformatpenerimaan' => '32',  'statusformatpengeluaran' => '33',  'statusaktif' => '1',  'modifiedby' => 'ADMIN',  ]);
         Bank::create([  'kodebank' => 'BANK TRUCKING',  'namabank' => 'BANK TRUCKING',  'coa' => '01.02.02.01',  'tipe' => 'BANK',  'statusformatpenerimaan' => '87',  'statusformatpengeluaran' => '88',  'statusaktif' => '1',  'modifiedby' => 'ADMIN',  ]);

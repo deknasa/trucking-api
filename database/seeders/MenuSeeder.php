@@ -16,7 +16,7 @@ class MenuSeeder extends Seeder
     public function run()
     {
         DB::statement("delete Menu");
-        DB::statement("DBCC CHECKIDENT ('Menu', RESEED, 0);");
+        DB::statement("DBCC CHECKIDENT ('Menu', RESEED, 1);");
 
         menu::create(['menuname' => 'Home',  'menuseq' => '0',  'menuparent' => '0',  'menuicon' => 'icon-home',  'aco_id' => '0',  'link' => '',  'menuexe' => '',  'menukode' => '0',  'modifiedby' => '',]);
         menu::create(['menuname' => 'Logout',  'menuseq' => '4',  'menuparent' => '0',  'menuicon' => 'icon-out',  'aco_id' => '0',  'link' => '',  'menuexe' => '/logout',  'menukode' => '4',  'modifiedby' => '',]);
