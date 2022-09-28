@@ -20,10 +20,10 @@ class CreateMenuTable extends Migration
             $table->integer('menuparent')->length(11)->default('0');
             $table->string('menuicon',50)->default('');
             $table->unsignedBigInteger('aco_id')->default('0');
-            $table->string('modifiedby',50)->default('');
             $table->string('link',2000)->default('');
             $table->string('menuexe',200)->default('');
-            $table->integer('menukode')->length(11)->default('0');
+            $table->string('menukode',50)->default('');
+            $table->string('modifiedby',50)->default('');
             $table->timestamps();
         });
     }

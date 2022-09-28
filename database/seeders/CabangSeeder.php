@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Cabang;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class CabangSeeder extends Seeder
 {
@@ -14,35 +15,13 @@ class CabangSeeder extends Seeder
      */
     public function run()
     {
-        Cabang::create([
-            'kodecabang' => 'PST',
-            'namacabang' => 'PUSAT',
-            'statusaktif' => 1,
-            'modifiedby' => 'ADMIN',
-        ]);
-        Cabang::create([
-            'kodecabang' => 'JKT',
-            'namacabang' => 'JAKARTA',
-            'statusaktif' => 1,
-            'modifiedby' => 'ADMIN',
-        ]);
-        Cabang::create([
-            'kodecabang' => 'MDN',
-            'namacabang' => 'MEDAN',
-            'statusaktif' => 1,
-            'modifiedby' => 'ADMIN',
-        ]);
-        Cabang::create([
-            'kodecabang' => 'SBY',
-            'namacabang' => 'SURABAYA',
-            'statusaktif' => 1,
-            'modifiedby' => 'ADMIN',
-        ]);
-        Cabang::create([
-            'kodecabang' => 'MKS',
-            'namacabang' => 'MAKASSAR',
-            'statusaktif' => 1,
-            'modifiedby' => 'ADMIN',
-        ]);
+        DB::statement("delete cabang");
+        DB::statement("DBCC CHECKIDENT ('cabang', RESEED, 0);");
+
+        cabang::create(['kodecabang' => 'PST',  'namacabang' => 'PUSAT',  'statusaktif' => '1',  'modifiedby' => 'ADMIN',]);
+        cabang::create(['kodecabang' => 'JKT',  'namacabang' => 'JAKARTA',  'statusaktif' => '1',  'modifiedby' => 'ADMIN',]);
+        cabang::create(['kodecabang' => 'MDN',  'namacabang' => 'MEDAN',  'statusaktif' => '1',  'modifiedby' => 'ADMIN',]);
+        cabang::create(['kodecabang' => 'SBY',  'namacabang' => 'SURABAYA',  'statusaktif' => '1',  'modifiedby' => 'ADMIN',]);
+        cabang::create(['kodecabang' => 'MKS',  'namacabang' => 'MAKASSAR',  'statusaktif' => '1',  'modifiedby' => 'ADMIN',]);
     }
 }

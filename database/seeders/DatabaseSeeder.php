@@ -14,22 +14,22 @@ class DatabaseSeeder extends Seeder
     public function run()
     {
         $this->call([
-            UserSeeder::class,
             ParameterSeeder::class,
-            AbsensiSupirHeaderSeeder::class,
-            MandorSeeder::class,
-            TradoSeeder::class,
-            ZonaSeeder::class,
-            SupirSeeder::class,
-            AbsenTradoSeeder::class,
             CabangSeeder::class,
+            UserSeeder::class,
+            AkunPusatSeeder::class,
+            AcosSeeder::class,            
             MenuSeeder::class,
-            UserRoleSeeder::class,
             RoleSeeder::class,
-            AcoSeeder::class,
             AclSeeder::class,
             UserAclSeeder::class,
-            AbsensiSupirDetailSeeder::class,
+            UserRoleSeeder::class,
+            ZonaSeeder::class,
+            BankSeeder::class,
+
+
+
+
         ]);
     }
 }
