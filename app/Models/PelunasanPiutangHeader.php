@@ -65,17 +65,12 @@ class PelunasanPiutangHeader extends MyModel
         $tempPelunasan = $this->createTempPelunasan($id,$agenid);
 
         
-        $piutang = DB::table($tempPiutang)
-            ->select(DB::raw("null as pelunasanpiutang_id,$tempPiutang.nobukti as piutang_nobukti, null as tglbayar, $tempPiutang.tglbukti as tglbukti, $tempPiutang.agen_id as agen_id,null as nominal, null as keterangan, null as penyesuaian, null as keteranganpenyesuaian, null as nominallebihbayar, $tempPiutang.nominalpiutang, $tempPiutang.sisa"))
-            ->distinct("$tempPiutang.nobukti")
-            ->leftJoin($tempPelunasan,"$tempPiutang.agen_id","$tempPelunasan.agen_id")
-            ->whereRaw("$tempPiutang.nobukti != $tempPelunasan.piutang_nobukti");
-            // ->whereRaw("$tempPiutang.sisa is null")
-            // ->orWhereRaw("$tempPiutang.sisa != $tempPelunasan.sisa");
-            // ->where(function ($piutang) use ($tempPiutang,$tempPelunasan) {
-            //     $piutang->whereRaw("$tempPiutang.sisa = $tempPelunasan.sisa")
-            //           ->orWhereRaw("$tempPiutang.sisa is null");
-            // });
+        $piutang = DB::table("$tempPiutang as A")
+            ->select(DB::raw("null as pelunasanpiutang_id,A.nobukti as piutang_nobukti, null as tglbayar, A.tglbukti as tglbukti, A.agen_id as agen_id,null as nominal, null as keterangan, null as penyesuaian, null as keteranganpenyesuaian, null as nominallebihbayar, A.nominalpiutang, A.sisa"))
+            ->distinct("A.nobukti")
+            ->leftJoin("$tempPelunasan as B","A.nobukti","B.piutang_nobukti")
+            ->whereRaw("isnull(b.piutang_nobukti,'') = ''");
+           
 
         $pelunasan = DB::table($tempPelunasan)
             ->select(DB::raw("pelunasanpiutang_id,piutang_nobukti,tglbayar,tglbukti,agen_id,nominal,keterangan,penyesuaian,keteranganpenyesuaian,nominallebihbayar,nominalpiutang,sisa"))
@@ -178,18 +173,21 @@ class PelunasanPiutangHeader extends MyModel
     public function selectColumns($query)
     {
         return $query->select(
-            DB::raw(
-                "$this->table.id,
-                 $this->table.nobukti,
-                 $this->table.tglbukti,
-                 $this->table.keterangan,
-                 $this->table.bank_id,
-                 $this->table.agen_id,
-                 $this->table.cabang_id,
-                 $this->table.modifiedby,
-                 $this->table.updated_at"
-            )
-        );
+            'pelunasanpiutangheader.id',
+            'pelunasanpiutangheader.nobukti',
+            'pelunasanpiutangheader.tglbukti',
+            'pelunasanpiutangheader.keterangan',
+            'pelunasanpiutangheader.modifiedby',
+            'pelunasanpiutangheader.updated_at',
+
+            'bank.namabank as bank_id',
+            'agen.namaagen as agen_id',
+            'cabang.namacabang as cabang_id',
+        )
+            ->leftJoin('bank', 'pelunasanpiutangheader.bank_id', 'bank.id')
+            ->leftJoin('agen', 'pelunasanpiutangheader.agen_id', 'agen.id')
+            ->leftJoin('cabang' , 'pelunasanpiutangheader.cabang_id', 'cabang.id');
+            
     }
 
     public function createTemp(string $modelTable)
@@ -200,9 +198,9 @@ class PelunasanPiutangHeader extends MyModel
             $table->string('nobukti', 1000)->default('');
             $table->date('tglbukti')->default('');
             $table->string('keterangan', 1000)->default('');
-            $table->bigInteger('bank_id')->default('');
-            $table->bigInteger('agen_id')->default('');
-            $table->bigInteger('cabang_id')->default('');
+            $table->string('bank_id')->default('');
+            $table->string('agen_id')->default('');
+            $table->string('cabang_id')->default('');
             $table->string('modifiedby')->default();
             $table->dateTime('updated_at')->default('1900/1/1');
             $table->increments('position');

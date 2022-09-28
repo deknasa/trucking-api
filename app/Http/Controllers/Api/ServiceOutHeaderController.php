@@ -44,10 +44,24 @@ class ServiceOutHeaderController extends Controller
 
         try {
 
+            // $content = new Request();
+            // $content['group'] = 'SERVICEOUT';
+            // $content['subgroup'] = 'SERVICEOUT';
+            // $content['table'] = 'serviceoutheader';
+
+            $group = 'SERVICE OUT BUKTI';
+            $subgroup = 'SERVICE OUT BUKTI';
+
+            $format = DB::table('parameter')
+                ->where('grp', $group )
+                ->where('subgrp', $subgroup)
+                ->first();
+            
             $content = new Request();
-            $content['group'] = 'SERVICEOUT';
-            $content['subgroup'] = 'SERVICEOUT';
+            $content['group'] = $group;
+            $content['subgroup'] = $subgroup;
             $content['table'] = 'serviceoutheader';
+            $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
 
             $serviceout = new ServiceOutHeader();
             $serviceout->tglbukti = date('Y-m-d', strtotime($request->tglbukti));

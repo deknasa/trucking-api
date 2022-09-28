@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class BankPelanggan extends MyModel
 {
@@ -17,10 +18,10 @@ class BankPelanggan extends MyModel
         'updated_at',
     ];
 
-    // protected $casts = [
-    //     'created_at' => 'date:d-m-Y H:i:s',
-    //     'updated_at' => 'date:d-m-Y H:i:s'
-    // ];      
+    protected $casts = [
+        'created_at' => 'date:d-m-Y H:i:s',
+        'updated_at' => 'date:d-m-Y H:i:s'
+    ];      
 
     public function get()
     {
@@ -48,6 +49,49 @@ class BankPelanggan extends MyModel
         $data = $query->get();
 
         return $data;
+    }
+
+    public function selectColumns($query) 
+    {
+        return $query->select(
+            DB::raw("
+                $this->table.id,
+                $this->table.kodebank,
+                $this->table.namabank,
+                $this->table.keterangan,
+                'parameter.text as statusaktif',
+                $this->table.modifiedby,
+                $this->table.created_at,
+                $this->table.updated_at
+            ")
+        )
+        ->leftJoin('parameter', 'bankpelanggan.statusaktif', '=', 'parameter.id');
+
+    }
+
+    public function createTemp(string $modelTable)
+    {
+        $temp = '##temp' . rand(1, 10000);
+        Schema::create($temp, function ($table){
+            $table->bigInteger('id')->default('0');
+            $table->string('kodebank', 1000)->default('');
+            $table->string('namabank', 1000)->default('');
+            $table->string('keterangan', 1000)->default('');
+            $table->string('statusaktif', 1000)->default('');
+            $table->string('modifiedby')->default();
+            $table->dateTime('created_at')->default('1900/1/1');
+            $table->dateTime('updated_at')->default('1900/1/1');
+            $table->increments('position');
+        });
+
+        $this->setRequestParameters();
+        $query = DB::table($modelTable);
+        $query = $this->selectColumns($query);
+        $this->sort($query);
+        $models = $this->filter($query);
+        DB::table($temp)->insertUsing(['id','kodebank','namabank','keterangan','statusaktif','modifiedby','created_at','updated_at'], $models);
+
+        return $temp;
     }
 
     public function sort($query)

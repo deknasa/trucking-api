@@ -203,14 +203,19 @@ class SupirController extends Controller
             // }
 
             /* Set position and page */
-            $supir->position = DB::table((new Supir())->getTable())->orderBy($request->sortname, $request->sortorder)
-                ->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $supir->{$request->sortname})
-                ->where('id', '<=', $supir->id)
-                ->count();
+            // $supir->position = DB::table((new Supir())->getTable())->orderBy($request->sortname, $request->sortorder)
+            //     ->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $supir->{$request->sortname})
+            //     ->where('id', '<=', $supir->id)
+            //     ->count();
 
-            if (isset($request->limit)) {
-                $supir->page = ceil($supir->position / $request->limit);
-            }
+            // if (isset($request->limit)) {
+            //     $supir->page = ceil($supir->position / $request->limit);
+            // }
+
+               /* Set position and page */
+               $selected = $this->getPosition($supir, $supir->getTable());
+               $supir->position = $selected->position;
+               $supir->page = ceil($supir->position / ($request->limit ?? 10));
 
             return response([
                 'status' => true,
@@ -280,23 +285,28 @@ class SupirController extends Controller
             DB::commit();
 
             /* Set position and page */
-            $supir->position = DB::table((new Supir())->getTable())->orderBy($request->sortIndex ?? 'id', $request->sortOrder ?? 'asc')
-                ->where($request->sortIndex, $request->sortOrder == 'desc' ? '>=' : '<=', $supir->{$request->sortIndex})
-                ->where('id', '<=', $supir->id)
-                ->count();
+            // $supir->position = DB::table((new Supir())->getTable())->orderBy($request->sortIndex ?? 'id', $request->sortOrder ?? 'asc')
+            //     ->where($request->sortIndex, $request->sortOrder == 'desc' ? '>=' : '<=', $supir->{$request->sortIndex})
+            //     ->where('id', '<=', $supir->id)
+            //     ->count();
 
-            $supir->position = DB::table((new Supir())->getTable())->orderBy($request->sortname, $request->sortorder)
-                ->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $supir->{$request->sortname})
-                ->where('id', '<=', $supir->id)
-                ->count();
+            // $supir->position = DB::table((new Supir())->getTable())->orderBy($request->sortname, $request->sortorder)
+            //     ->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $supir->{$request->sortname})
+            //     ->where('id', '<=', $supir->id)
+            //     ->count();
 
-            if (isset($request->limit)) {
-                $supir->page = ceil($supir->position / $request->limit);
-            }
+            // if (isset($request->limit)) {
+            //     $supir->page = ceil($supir->position / $request->limit);
+            // }
 
-            if (isset($request->limit)) {
-                $supir->page = ceil($supir->position / ($request->limit ?? 10));
-            }
+            // if (isset($request->limit)) {
+            //     $supir->page = ceil($supir->position / ($request->limit ?? 10));
+            // }
+
+               /* Set position and page */
+               $selected = $this->getPosition($supir, $supir->getTable());
+               $supir->position = $selected->position;
+               $supir->page = ceil($supir->position / ($request->limit ?? 10));
 
             return response([
                 'status' => true,
@@ -398,13 +408,18 @@ class SupirController extends Controller
 
 
 
-            $del = 1;
-            $data = $this->getid($supir->id, $request, $del);
-            $supir->position = @$data->row;
-            $supir->id = @$data->id;
-            if (isset($request->limit)) {
-                $supir->page = ceil($supir->position / ($request->limit ?? 10));
-            }
+            // $del = 1;
+            // $data = $this->getid($supir->id, $request, $del);
+            // $supir->position = @$data->row;
+            // $supir->id = @$data->id;
+            // if (isset($request->limit)) {
+            //     $supir->page = ceil($supir->position / ($request->limit ?? 10));
+            // }
+
+            $selected = $this->getPosition($supir, $supir->getTable(), true);
+            $supir->position = $selected->position;
+            $supir->id = $selected->id;
+            $supir->page = ceil($supir->position / ($request->limit ?? 10));
 
             DB::commit();
             // dd($supir);

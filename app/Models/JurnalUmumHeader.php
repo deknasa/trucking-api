@@ -14,16 +14,18 @@ class JurnalUmumHeader extends MyModel
 
     protected $table = 'jurnalumumheader';
 
+    protected $casts = [
+        'created_at' => 'date:d-m-Y H:i:s',
+        'updated_at' => 'date:d-m-Y H:i:s'
+    ];
+    
     protected $guarded = [
         'id',
         'created_at',
         'updated_at',
     ];
 
-    protected $casts = [
-        'created_at' => 'date:d-m-Y H:i:s',
-        'updated_at' => 'date:d-m-Y H:i:s'
-    ];
+    
 
     public function get()
     {
@@ -39,11 +41,9 @@ class JurnalUmumHeader extends MyModel
                 'jurnalumumheader.tglbukti',
                 'jurnalumumheader.keterangan',
                 'jurnalumumheader.postingdari',
-                'jurnalumumheader.statusapproval',
                 'jurnalumumheader.userapproval',
                 DB::raw('(case when (year(jurnalumumheader.tglapproval) <= 2000) then null else jurnalumumheader.tglapproval end ) as tglapproval'),
                 'jurnalumumheader.modifiedby',
-                'jurnalumumheader.created_at',
                 'jurnalumumheader.updated_at',
                 'statusapproval.text as statusapproval'
             )

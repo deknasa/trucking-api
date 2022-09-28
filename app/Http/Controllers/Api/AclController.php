@@ -35,121 +35,14 @@ class AclController extends Controller
 
     public function index()
     {
-        $params = [
-            'offset' => request()->offset ?? ((request()->page - 1) * request()->limit),
-            'limit' => request()->limit ?? 10,
-            'filters' => json_decode(request()->filters, true) ?? [],
-            'sortIndex' => request()->sortIndex ?? 'id',
-            'sortOrder' => request()->sortOrder ?? 'asc',
-        ];
-
-        $temp = '##temp' . rand(1, 10000);
-        Schema::create($temp, function ($table) {
-            $table->id();
-            $table->bigInteger('role_id')->default('0');
-            $table->bigInteger('id_')->default('0');
-            $table->string('modifiedby', 30)->default('');
-            $table->dateTime('created_at')->default('1900/1/1');
-            $table->dateTime('updated_at')->default('1900/1/1');
-
-            $table->index('role_id');
-        });
-
-        $query = Acl::select(
-            DB::raw("acl.role_id as role_id,
-                        min(acl.id) as id_,
-                        max(acl.modifiedby) as modifiedby,
-                        max(acl.created_at) as created_at,
-                            max(acl.updated_at) as updated_at")
-        )
-            ->Join('role', 'acl.role_id', '=', 'role.id')
-            ->groupby('acl.role_id');
-
-
-        DB::table($temp)->insertUsing(['role_id', 'id_', 'modifiedby', 'created_at', 'updated_at'], $query);
-
-        $totalRows = DB::table($temp)
-            ->count();
-        $totalPages = ceil($totalRows / $params['limit']);
-
-        /* Sorting */
-        if ($params['sortIndex'] == 'rolename') {
-            $query = DB::table($temp)
-                ->select(
-                    $temp . '.role_id as role_id',
-                    $temp . '.id_ as id',
-                    'role.rolename as rolename',
-                    $temp . '.modifiedby as modifiedby',
-                    $temp . '.updated_at as updated_at'
-                )
-                ->Join('role', 'role.id', '=', $temp . '.role_id')
-                ->orderBy('role.rolename', $params['sortOrder']);
-        } else {
-            $query = DB::table($temp)
-                ->select(
-                    $temp . '.role_id as role_id',
-                    $temp . '.id_ as id',
-                    'role.rolename as rolename',
-                    $temp . '.modifiedby as modifiedby',
-                    $temp . '.updated_at as updated_at'
-                )
-                ->Join('role', 'role.id', '=', $temp . '.role_id')
-                ->orderBy($temp . '.' . $params['sortIndex'], $params['sortOrder']);
-        }
-
-
-
-        /* Searching */
-        if (count($params['filters']) > 0 && @$params['filters']['rules'][0]['data'] != '') {
-            switch ($params['filters']['groupOp']) {
-                case "AND":
-                    foreach ($params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'rolename') {
-                            $query = $query->where('role.rolename', 'LIKE', "%$filters[data]%");
-                        } else {
-                            $query = $query->where($filters['field'], 'LIKE', "%$filters[data]%");
-                        }
-                    }
-
-                    break;
-                case "OR":
-                    foreach ($params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'rolename') {
-                            $query = $query->orWhere('role.rolename', 'LIKE', "%$filters[data]%");
-                        } else {
-                            $query = $query->orWhere($filters['field'], 'LIKE', "%$filters[data]%");
-                        }
-                    }
-
-                    break;
-                default:
-
-                    break;
-            }
-
-
-            $totalRows = count($query->get());
-
-            $totalPages = ceil($totalRows / $params['limit']);
-        }
-
-        /* Paging */
-        $query = $query->skip($params['offset'])
-            ->take($params['limit']);
-
-        $acl = $query->get();
-
-        /* Set attributes */
-        $attributes = [
-            'totalRows' => $totalRows,
-            'totalPages' => $totalPages
-        ];
+        $acl = new Acl();
 
         return response([
-            'status' => true,
-            'data' => $acl,
-            'attributes' => $attributes,
-            'params' => $params
+            'data' => $acl->get(),
+            'attributes' => [
+                'totalRows' => $acl->totalRows,
+                'totalPages' => $acl->totalPages
+            ]
         ]);
     }
 
@@ -304,9 +197,10 @@ class AclController extends Controller
             $dataaktif = $controller->getparameterid('STATUS AKTIF', 'STATUS AKTIF', 'AKTIF');
             $aktif = $dataaktif->id;
 
+            $acl = new Acl();
+
             for ($i = 0; $i < count($request->aco_id); $i++) {
                 if ($request->status[$i] == $aktif) {
-                    $acl = new Acl();
                     $acl->role_id = $request->role_id;
                     $acl->modifiedby = auth('api')->user()->name;
                     $acl->aco_id = $request->aco_id[$i]  ?? 0;
@@ -330,6 +224,10 @@ class AclController extends Controller
                     }
                 }
             }
+            $selected = $this->getPosition($acl, $acl->getTable(), true);
+            $acl->position = $selected->position;
+            $acl->page = ceil($acl->position / ($request->limit ?? 10));
+
 
             return response([
                 'status' => true,
@@ -417,14 +315,9 @@ class AclController extends Controller
             }
 
             /* Set position and page */
-            $del = 0;
-            $data = $this->getid($request->role_id, $request, $del);
-            $acl->position = $data->id;
-            $acl->id = $data->row;
-            
-            if (isset($request->limit)) {
-                $acl->page = ceil($acl->position / $request->limit);
-            }
+            $selected = $this->getPosition($acl, $acl->getTable(), true);
+            $acl->position = $selected->position;
+            $acl->page = ceil($acl->position / ($request->limit ?? 10));
 
             return response([
                 'status' => true,
@@ -472,16 +365,10 @@ class AclController extends Controller
                 }
             }
 
-            $del = 1;
-
-            $data = $this->getid($request->role_id, $request, $del);
-
-            $acl->position = $data->row;
-            $acl->id = $data->id;
-
-            if (isset($request->limit)) {
-                $acl->page = ceil($acl->position / $request->limit);
-            }
+            $selected = $this->getPosition($acl, $acl->getTable(), true);
+            $acl->position = $selected->position;
+            $acl->id = $selected->id;
+            $acl->page = ceil($acl->position / ($request->limit ?? 10));
 
             return response([
                 'status' => true,

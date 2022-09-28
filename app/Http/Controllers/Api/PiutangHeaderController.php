@@ -102,7 +102,6 @@ class PiutangHeaderController extends Controller
                     goto TOP;
                 }
             }
-
             
             $logTrail = [
                 'namatabel' => strtoupper($piutang->getTable()),
@@ -176,6 +175,7 @@ class PiutangHeaderController extends Controller
                 app(LogTrailController::class)->store($data);
             }
             
+           
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
 
@@ -235,14 +235,12 @@ class PiutangHeaderController extends Controller
            
 
             $jurnal = $this->storeJurnal($jurnalHeader, $jurnaldetail);
-           
-           
             
             if (!$jurnal['status']) {
                 throw new \Throwable($jurnal['message']);
             }
             
-            
+            dd('tes');
             
             DB::commit();
         
@@ -527,13 +525,15 @@ class PiutangHeaderController extends Controller
             
             $jurnal = new StoreJurnalUmumHeaderRequest($header);
             $jurnals = app(JurnalUmumHeaderController::class)->store($jurnal);
+            dd('after header jurnal');
+
             $nobukti = $header['nobukti'];
             $fetchId = JurnalUmumHeader::select('id')
             ->where('nobukti','=',$nobukti)
             ->first();
             $id = $fetchId->id;
             $details = [];
-
+            
             foreach ($detail as $value) {
                 $value['jurnalumum_id'] = $id;
                 $detail = new StoreJurnalUmumDetailRequest($value);

@@ -70,13 +70,24 @@ class JenisEmklController extends Controller
             }
 
             /* Set position and page */
-            $del = 0;
-            $data = $this->getid($jenisemkl->id, $request, $del);
-            $jenisemkl->position = $data->row;
+            // $del = 0;
+            // $data = $this->getid($jenisemkl->id, $request, $del);
+            // $jenisemkl->position = $data->row;
 
-            if (isset($request->limit)) {
-                $jenisemkl->page = ceil($jenisemkl->position / $request->limit);
-            }
+            // if (isset($request->limit)) {
+            //     $jenisemkl->page = ceil($jenisemkl->position / $request->limit);
+            // }
+
+              /* Set position and page */
+            // $selected = $this->getPosition($jenisemkl, $jenisemkl->getTable());
+            // $jenisemkl->position = $selected->position;
+            // $jenisemkl->page = ceil($jenisemkl->position / ($request->limit ?? 10));
+
+            /* Set position and page */
+			  $selected = $this->getPosition($jenisemkl, $jenisemkl->getTable(), true);
+            $jenisemkl->position = $selected->position;
+            $jenisemkl->id = $selected->id;
+            $jenisemkl->page = ceil($jenisemkl->position / ($request->limit ?? 10));
 
             return response([
                 'status' => true,
@@ -141,11 +152,16 @@ class JenisEmklController extends Controller
                 app(LogTrailController::class)->store($validatedLogTrail);
 
                 /* Set position and page */
-                $jenisemkl->position = $this->getid($jenisemkl->id, $request, 0)->row;
+                // $jenisemkl->position = $this->getid($jenisemkl->id, $request, 0)->row;
 
-                if (isset($request->limit)) {
-                    $jenisemkl->page = ceil($jenisemkl->position / $request->limit);
-                }
+                // if (isset($request->limit)) {
+                //     $jenisemkl->page = ceil($jenisemkl->position / $request->limit);
+                // }
+
+                 /* Set position and page */
+            $selected = $this->getPosition($jenisemkl, $jenisemkl->getTable());
+            $jenisemkl->position = $selected->position;
+            $jenisemkl->page = ceil($jenisemkl->position / ($request->limit ?? 10));
 
                 return response([
                     'status' => true,
