@@ -180,6 +180,7 @@ class Trado extends MyModel
         return  $temp;
     }
 
+    
     public function sort($query)
     {
         return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);

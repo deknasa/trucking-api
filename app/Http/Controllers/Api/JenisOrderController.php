@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Schema;
 
 class JenisOrderController extends Controller
 {
-      /**
+    /**
      * @ClassName 
      */
     public function index()
@@ -32,7 +32,7 @@ class JenisOrderController extends Controller
             ]
         ]);
     }
-      /**
+    /**
      * @ClassName 
      */
     public function store(StoreJenisOrderRequest $request)
@@ -66,13 +66,18 @@ class JenisOrderController extends Controller
             }
 
             /* Set position and page */
-            $del = 0;
-            $data = $this->getid($jenisorder->id, $request, $del);
-            $jenisorder->position = $data->row;
+            // $del = 0;
+            // $data = $this->getid($jenisorder->id, $request, $del);
+            // $jenisorder->position = $data->row;
 
-            if (isset($request->limit)) {
-                $jenisorder->page = ceil($jenisorder->position / $request->limit);
-            }
+            // if (isset($request->limit)) {
+            //     $jenisorder->page = ceil($jenisorder->position / $request->limit);
+            // }
+
+            /* Set position and page */
+            $selected = $this->getPosition($jenisorder, $jenisorder->getTable());
+            $jenisorder->position = $selected->position;
+            $jenisorder->page = ceil($jenisorder->position / ($request->limit ?? 10));
 
             return response([
                 'status' => true,
@@ -117,7 +122,7 @@ class JenisOrderController extends Controller
      * @param  \App\Models\JenisOrder  $jenisOrder
      * @return \Illuminate\Http\Response
      */
-          /**
+    /**
      * @ClassName 
      */
     public function update(StoreJenisOrderRequest $request, JenisOrder $jenisorder)
@@ -143,11 +148,16 @@ class JenisOrderController extends Controller
                 app(LogTrailController::class)->store($validatedLogTrail);
 
                 /* Set position and page */
-                $jenisorder->position = $this->getid($jenisorder->id, $request, 0)->row;
+                // $jenisorder->position = $this->getid($jenisorder->id, $request, 0)->row;
 
-                if (isset($request->limit)) {
-                    $jenisorder->page = ceil($jenisorder->position / $request->limit);
-                }
+                // if (isset($request->limit)) {
+                //     $jenisorder->page = ceil($jenisorder->position / $request->limit);
+                // }
+
+                /* Set position and page */
+                $selected = $this->getPosition($jenisorder, $jenisorder->getTable());
+                $jenisorder->position = $selected->position;
+                $jenisorder->page = ceil($jenisorder->position / ($request->limit ?? 10));
 
                 return response([
                     'status' => true,
@@ -171,7 +181,7 @@ class JenisOrderController extends Controller
      * @param  \App\Models\JenisOrder  $jenisOrder
      * @return \Illuminate\Http\Response
      */
-          /**
+    /**
      * @ClassName 
      */
     public function destroy(JenisOrder $jenisorder, Request $request)
@@ -195,12 +205,19 @@ class JenisOrderController extends Controller
 
             DB::commit();
 
-            $data = $this->getid($jenisorder->id, $request, $del);
-            $jenisorder->position = $data->row  ?? 0;
-            $jenisorder->id = $data->id  ?? 0;
-            if (isset($request->limit)) {
-                $jenisorder->page = ceil($jenisorder->position / $request->limit);
-            }
+            // $data = $this->getid($jenisorder->id, $request, $del);
+            // $jenisorder->position = $data->row  ?? 0;
+            // $jenisorder->id = $data->id  ?? 0;
+            // if (isset($request->limit)) {
+            //     $jenisorder->page = ceil($jenisorder->position / $request->limit);
+            // }
+
+            /* Set position and page */
+            $selected = $this->getPosition($jenisorder, $jenisorder->getTable(), true);
+            $jenisorder->position = $selected->position;
+            $jenisorder->id = $selected->id;
+            $jenisorder->page = ceil($jenisorder->position / ($request->limit ?? 10));
+            
             return response([
                 'status' => true,
                 'message' => 'Berhasil dihapus',
@@ -232,7 +249,7 @@ class JenisOrderController extends Controller
     public function combo(Request $request)
     {
         $data = [
-            'statusaktif' => Parameter::where(['grp'=>'status aktif'])->get(),
+            'statusaktif' => Parameter::where(['grp' => 'status aktif'])->get(),
         ];
 
         return response([

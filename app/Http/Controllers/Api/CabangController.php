@@ -190,9 +190,14 @@ class CabangController extends Controller
             }
 
             /* Set position and page */
-            $selected = $this->getPosition($cabang, $cabang->getTable());
-            $cabang->position = $selected->position;
-            $cabang->page = ceil($cabang->position / ($request->limit ?? 10));
+            // $selected = $this->getPosition($cabang, $cabang->getTable());
+            // $cabang->position = $selected->position;
+            // $cabang->page = ceil($cabang->position / ($request->limit ?? 10));
+
+             /* Set position and page */
+             $selected = $this->getPosition($cabang, $cabang->getTable());
+             $cabang->position = $selected->position;
+             $cabang->page = ceil($cabang->position / ($request->limit ?? 10));
 
             return response([
                 'status' => true,
@@ -285,6 +290,12 @@ class CabangController extends Controller
                 DB::commit();
             }
 
+            // $selected = $this->getPosition($cabang, $cabang->getTable(), true);
+            // $cabang->position = $selected->position;
+            // $cabang->id = $selected->id;
+            // $cabang->page = ceil($cabang->position / ($request->limit ?? 10));
+
+               /* Set position and page */
             $selected = $this->getPosition($cabang, $cabang->getTable(), true);
             $cabang->position = $selected->position;
             $cabang->id = $selected->id;

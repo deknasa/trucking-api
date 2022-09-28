@@ -39,13 +39,8 @@ class ServiceInHeaderController extends Controller
 
         try {
 
-            // $content = new Request();
-            // $content['group'] = 'SERVICEIN';
-            // $content['subgroup'] = 'SERVICEIN';
-            // $content['table'] = 'serviceinheader';
-
-            $group = 'SERVICE IN';
-            $subgroup = 'SERVICE IN';
+            $group = 'SERVICE IN BUKTI';
+            $subgroup = 'SERVICE IN BUKTI';
 
             $format = DB::table('parameter')
                 ->where('grp', $group)
@@ -98,48 +93,42 @@ class ServiceInHeaderController extends Controller
 
             /* Store detail */
             $detaillog = [];
-           // for ($i = 0; $i < count($request->mekanik_id); $i++) {
-                $datadetail = [
-                    'servicein_id' => $servicein->id,
-                    'nobukti' => $servicein->nobukti,
-                    'mekanik_id' => $request->mekanik_id,
-                    'keterangan' => $request->keterangan_detail,
-                    'modifiedby' => $servicein->modifiedby,
-                ];
+            // for ($i = 0; $i < count($request->mekanik_id); $i++) {
+            $datadetail = [
+                'servicein_id' => $servicein->id,
+                'nobukti' => $servicein->nobukti,
+                'mekanik_id' => $request->mekanik_id,
+                'keterangan' => $request->keterangan_detail,
+                'modifiedby' => $servicein->modifiedby,
+            ];
 
-                $data = new StoreServiceInDetailRequest($datadetail);
-                $datadetails = app(ServiceInDetailController::class)->store($data);
+            $data = new StoreServiceInDetailRequest($datadetail);
+            $datadetails = app(ServiceInDetailController::class)->store($data);
 
-                if ($datadetails['error']) {
-                    return response($datadetails, 422);
-                } else {
-                    $iddetail = $datadetails['id'];
-                    $tabeldetail = $datadetails['tabel'];
-                }
+            if ($datadetails['error']) {
+                return response($datadetails, 422);
+            } else {
+                $iddetail = $datadetails['id'];
+                $tabeldetail = $datadetails['tabel'];
+            }
 
-                $datadetaillog = [
-                    'id' => $iddetail,
-                    'servicein_id' => $servicein->id,
-                    'nobukti' => $servicein->nobukti,
-                    'mekanik_id' => $request->mekanik_id[$i],
-                    'keterangan' => $request->keterangan_detail[$i],
-                    'modifiedby' => $servicein->modifiedby,
-                    'created_at' => date('d-m-Y H:i:s', strtotime($servicein->created_at)),
-                    'updated_at' => date('d-m-Y H:i:s', strtotime($servicein->updated_at)),
-                ];
-                $detaillog[] = $datadetaillog;
+            $datadetaillog = [
+                'id' => $iddetail,
+                'servicein_id' => $servicein->id,
+                'nobukti' => $servicein->nobukti,
+                'mekanik_id' => $request->mekanik_id,
+                'keterangan' => $request->keterangan_detail,
+                'modifiedby' => $servicein->modifiedby,
+                'created_at' => date('d-m-Y H:i:s', strtotime($servicein->created_at)),
+                'updated_at' => date('d-m-Y H:i:s', strtotime($servicein->updated_at)),
+            ];
+            $detaillog[] = $datadetaillog;
             //}
-
-            $dataid = LogTrail::select('id')
-                ->where('idtrans', '=', $servicein->id)
-                ->where('namatabel', '=', $servicein->getTable())
-                ->orderBy('id', 'DESC')
-                ->first();
 
             $datalogtrail = [
                 'namatabel' => $tabeldetail,
                 'postingdari' => 'ENTRY SERVICE IN',
-                'idtrans' =>  $dataid->id,
+                'idtrans' =>  $iddetail->id,
                 'nobuktitrans' => '',
                 'aksi' => 'ENTRY',
                 'datajson' => $detaillog,
@@ -165,9 +154,12 @@ class ServiceInHeaderController extends Controller
             ]);
         } catch (\Throwable $th) {
             DB::rollBack();
-            return response($th->getMessage());
+            throw $th;
         }
+
+        return response($servicein->serviceindetail());
     }
+
 
     /**
      * @ClassName
@@ -191,6 +183,7 @@ class ServiceInHeaderController extends Controller
 
         try {
             $servicein = ServiceInHeader::findOrFail($id);
+
             $servicein->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $servicein->trado_id = $request->trado_id;
             $servicein->tglmasuk = date('Y-m-d', strtotime($request->tglmasuk));
@@ -211,17 +204,19 @@ class ServiceInHeaderController extends Controller
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-                $servicein->serviceindetail()->delete();
+                ServiceInDetail::where('servicein_id', $id)->delete();
+
+                // $servicein->serviceindetail()->delete();
 
 
                 /* Store detail */
                 $detaillog = [];
-                for ($i = 0; $i < count($request->mekanik_id); $i++) {
+               // for ($i = 0; $i < count($request->mekanik_id); $i++) {
                     $datadetail = [
                         'servicein_id' => $servicein->id,
                         'nobukti' => $servicein->nobukti,
-                        'mekanik_id' => $request->mekanik_id[$i],
-                        'keterangan' => $request->keterangan_detail[$i],
+                        'mekanik_id' => $request->mekanik_id,
+                        'keterangan' => $request->keterangan_detail,
                         'modifiedby' => $servicein->modifiedby,
                     ];
 
@@ -239,25 +234,25 @@ class ServiceInHeaderController extends Controller
                         'id' => $iddetail,
                         'servicein_id' => $servicein->id,
                         'nobukti' => $servicein->nobukti,
-                        'mekanik_id' => $request->mekanik_id[$i],
-                        'keterangan' => $request->keterangan_detail[$i],
+                        'mekanik_id' => $request->mekanik_id,
+                        'keterangan' => $request->keterangan_detail,
                         'modifiedby' => $servicein->modifiedby,
                         'created_at' => date('d-m-Y H:i:s', strtotime($servicein->created_at)),
                         'updated_at' => date('d-m-Y H:i:s', strtotime($servicein->updated_at)),
                     ];
                     $detaillog[] = $datadetaillog;
-                }
+               // }
 
-                $dataid = LogTrail::select('id')
-                    ->where('idtrans', '=', $servicein->id)
-                    ->where('namatabel', '=', $servicein->getTable())
-                    ->orderBy('id', 'DESC')
-                    ->first();
+                // $dataid = LogTrail::select('id')
+                //     ->where('idtrans', '=', $servicein->id)
+                //     ->where('namatabel', '=', $servicein->getTable())
+                //     ->orderBy('id', 'DESC')
+                //     ->first();
 
                 $datalogtrail = [
                     'namatabel' => $tabeldetail,
                     'postingdari' => 'EDIT SERVICE IN',
-                    'idtrans' =>  $dataid->id,
+                    'idtrans' =>  $iddetail->id,
                     'nobuktitrans' => '',
                     'aksi' => 'EDIT',
                     'datajson' => $detaillog,
@@ -285,7 +280,7 @@ class ServiceInHeaderController extends Controller
             ]);
         } catch (\Throwable $th) {
             DB::rollBack();
-            return response($th->getMessage());
+            throw $th;
         }
     }
 
@@ -296,9 +291,12 @@ class ServiceInHeaderController extends Controller
     {
 
         DB::beginTransaction();
+        $servicein = new ServiceInHeader();
 
         try {
-            $delete = $servicein->delete();
+            // $delete = $servicein->delete();
+            $delete = ServiceInDetail::where('Servicein_id', $id)->delete();
+            $delete = ServiceInHeader::destroy($id);
 
             if ($delete) {
                 $logTrail = [
