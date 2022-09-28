@@ -26,22 +26,24 @@ class PelunasanPiutangDetail extends MyModel
     public function findAll($id) {
       
         $query = DB::table('pelunasanpiutangdetail')->select(
-            'pelunasanpiutangdetail.id',
-            'pelunasanpiutangdetail.keterangan',
-            'pelunasanpiutangdetail.piutang_nobukti',
+            
 
-            'pelunasanpiutangdetail.pelanggan_id',
-            'pelunasanpiutangdetail.agen_id',
+            'pelunasanpiutangdetail.pelanggan_id as pelanggan_id',
+            'pelunasanpiutangdetail.agen_id as agendetail_id',
             
             'pelanggan.namapelanggan as pelanggan',
-            'agen.namaagen as agen'
+            'agen.namaagen as agendetail'
         )
             ->leftJoin('pelanggan', 'pelunasanpiutangdetail.pelanggan_id', 'pelanggan.id')
             ->leftJoin('agen', 'pelunasanpiutangdetail.agen_id', 'agen.id')
             ->where('pelunasanpiutangdetail.pelunasanpiutang_id', '=', $id);
 
-        $data = $query->get();
+        $data = $query->first();
 
         return $data;
     }
+
+    
+
+    
 }

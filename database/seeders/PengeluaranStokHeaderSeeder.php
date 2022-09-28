@@ -15,13 +15,7 @@ class PengeluaranStokHeaderSeeder extends Seeder
      */
     public function run()
     {
-        DB::statement("ALTER TABLE PengeluaranStokHeader NOCHECK CONSTRAINT pengeluaranstokheader_gudang_id_foreign");
-        DB::statement("ALTER TABLE PengeluaranStokHeader NOCHECK CONSTRAINT pengeluaranstokheader_kerusakan_id_foreign");
-        DB::statement("ALTER TABLE PengeluaranStokHeader NOCHECK CONSTRAINT pengeluaranstokheader_supir_id_foreign");
-        DB::statement("ALTER TABLE PengeluaranStokHeader NOCHECK CONSTRAINT pengeluaranstokheader_supplier_id_foreign");
-        DB::statement("ALTER TABLE PengeluaranStokHeader NOCHECK CONSTRAINT pengeluaranstokheader_trado_id_foreign");
-        DB::statement("ALTER TABLE PengeluaranStokHeader NOCHECK CONSTRAINT pengeluaranstokheader_servicein_nobukti_foreign");
-        DB::statement("ALTER TABLE PengeluaranStokHeader NOCHECK CONSTRAINT pengeluaranstokheader_pengeluaranstok_id_foreign");
+
 
         
         DB::statement("delete PengeluaranStokHeader");

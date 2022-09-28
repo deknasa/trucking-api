@@ -67,13 +67,9 @@ class MekanikController extends Controller
             }
 
             /* Set position and page */
-            $del = 0;
-            $data = $this->getid($mekanik->id, $request, $del);
-            $mekanik->position = $data->row;
-
-            if (isset($request->limit)) {
-                $mekanik->page = ceil($mekanik->position / $request->limit);
-            }
+            $selected = $this->getPosition($mekanik, $mekanik->getTable(), true);
+            $mekanik->position = $selected->position;
+            $mekanik->page = ceil($mekanik->position / ($request->limit ?? 10));
 
             return response([
                 'status' => true,
@@ -124,11 +120,9 @@ class MekanikController extends Controller
                 app(LogTrailController::class)->store($validatedLogTrail);
 
                 /* Set position and page */
-                $mekanik->position = $this->getid($mekanik->id, $request, 0)->row;
-
-                if (isset($request->limit)) {
-                    $mekanik->page = ceil($mekanik->position / $request->limit);
-                }
+                $selected = $this->getPosition($mekanik, $mekanik->getTable(), true);
+                $mekanik->position = $selected->position;
+                $mekanik->page = ceil($mekanik->position / ($request->limit ?? 10));
 
                 return response([
                     'status' => true,
@@ -167,13 +161,11 @@ class MekanikController extends Controller
             app(LogTrailController::class)->store($validatedLogTrail);
 
             DB::commit();
+            $selected = $this->getPosition($mekanik, $mekanik->getTable(), true);
+            $mekanik->position = $selected->position;
+            $mekanik->id = $selected->id;
+            $mekanik->page = ceil($mekanik->position / ($request->limit ?? 10));
 
-            $data = $this->getid($mekanik->id, $request, $del);
-            $mekanik->position = @$data->row  ?? 0;
-            $mekanik->id = @$data->id  ?? 0;
-            if (isset($request->limit)) {
-                $mekanik->page = ceil($mekanik->position / $request->limit);
-            }
             return response([
                 'status' => true,
                 'message' => 'Berhasil dihapus',

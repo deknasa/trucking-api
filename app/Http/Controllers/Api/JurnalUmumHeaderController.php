@@ -48,6 +48,7 @@ class JurnalUmumHeaderController extends Controller
         DB::beginTransaction();
 
         $tanpaprosesnobukti = $request->tanpaprosesnobukti ?? 0;
+       
         try {
             
             if ($tanpaprosesnobukti == 0) {
@@ -71,31 +72,31 @@ class JurnalUmumHeaderController extends Controller
             if ($tanpaprosesnobukti == 1) {
                 $jurnalumum->nobukti = $request->nobukti;
             }
-
+            
             $jurnalumum->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $jurnalumum->keterangan = $request->keterangan;
             $jurnalumum->postingdari = $request->postingdari ?? '';
-            $jurnalumum->statusapproval = $statusApproval->id ?? 0;
+            $jurnalumum->statusapproval = $statusApproval->id ?? $request->statusapproval;
             $jurnalumum->userapproval = '';
             $jurnalumum->tglapproval = '';
             $jurnalumum->statusformat =  $format->id ?? $request->statusformat;
-
             $jurnalumum->modifiedby = auth('api')->user()->name;
-               
+
             TOP:
             if ($tanpaprosesnobukti == 0) {
 
                 $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
                 $jurnalumum->nobukti = $nobukti;
             }
-
+            
             try {
-
                 $jurnalumum->save();
+
                 if ($tanpaprosesnobukti == 1) {
                     DB::commit();
                 }
             } catch (\Exception $e) {
+                // throw $e;
                 $errorCode = @$e->errorInfo[1];
                 if ($errorCode == 2601) {
                     goto TOP;
@@ -229,14 +230,7 @@ class JurnalUmumHeaderController extends Controller
                 $jurnalumum->position = $selected->position;
                 $jurnalumum->page = ceil($jurnalumum->position / ($request->limit ?? 10));
 
-                // $jurnalumum->position = DB::table((new JurnalUmumHeader())->getTable())->orderBy($request->sortname, $request->sortorder)
-                //     ->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $jurnalumum->{$request->sortname})
-                //     ->where('id', '<=', $jurnalumum->id)
-                //     ->count();
-
-                if (isset($request->limit)) {
-                    $jurnalumum->page = ceil($jurnalumum->position / $request->limit);
-                }
+                
                 // dd('test');
 
 
@@ -424,19 +418,11 @@ class JurnalUmumHeaderController extends Controller
             DB::commit();
 
 
-            /* Set position and page */
-            // $jurnalumum->position = DB::table((new JurnalUmumHeader())->getTable())->orderBy($request->sortname, $request->sortorder)
-            //     ->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $jurnalumum->{$request->sortname})
-            //     ->where('id', '<=', $jurnalumum->id)
-            //     ->count();
+            
 
             $selected = $this->getPosition($jurnalumum, $jurnalumum->getTable());
             $jurnalumum->position = $selected->position;
             $jurnalumum->page = ceil($jurnalumum->position / ($request->limit ?? 10));
-
-            // if (isset($request->limit)) {
-            //     $jurnalumum->page = ceil($jurnalumum->position / $request->limit);
-            // }
 
             return response([
                 'status' => true,

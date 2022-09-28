@@ -63,7 +63,7 @@ class User extends Authenticatable
     {
         parent::setAttribute($key, $value);
 
-        if (is_string($value)) {
+        if (is_string($value) && $key !== 'password') {
             return $this->attributes[$key] = strtoupper($value);
         }
     }

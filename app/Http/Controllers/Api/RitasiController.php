@@ -28,187 +28,13 @@ class RitasiController extends Controller
      */
     public function index()
     {
-        $params = [
-            'offset' => request()->offset ?? ((request()->page - 1) * request()->limit),
-            'limit' => request()->limit ?? 10,
-            'filters' => json_decode(request()->filters, true) ?? [],
-            'sortIndex' => request()->sortIndex ?? 'id',
-            'sortOrder' => request()->sortOrder ?? 'asc',
-        ];
-
-        $totalRows = DB::table((new Ritasi())->getTable())->count();
-        $totalPages = $params['limit'] > 0 ? ceil($totalRows / $params['limit']) : 1;
-
-        /* Sorting */
-        $query = DB::table((new Ritasi())->getTable())->orderBy($params['sortIndex'], $params['sortOrder']);
-
-        if ($params['sortIndex'] == 'id') {
-            $query = DB::table((new Ritasi())->getTable())->select(
-                'ritasi.id',
-                'ritasi.nobukti',
-                'ritasi.tglbukti',
-                'parameter.text as statusritasi',
-                'suratpengantar.nobukti as suratpengantar_nobukti',
-                'supir.namasupir as supir_id',
-                'trado.keterangan as trado_id',
-                'ritasi.jarak',
-                'ritasi.gaji',
-                'dari.keterangan as dari_id',
-                'sampai.keterangan as sampai_id',
-                'ritasi.modifiedby',
-                'ritasi.created_at',
-                'ritasi.updated_at'
-            )
-            ->leftJoin('parameter', 'ritasi.statusritasi', '=', 'parameter.id')
-            ->leftJoin('suratpengantar', 'ritasi.suratpengantar_nobukti', '=', 'suratpengantar.nobukti')
-            ->leftJoin('supir', 'ritasi.supir_id', '=', 'supir.id')
-            ->leftJoin('trado', 'ritasi.trado_id', '=', 'trado.id')
-            ->leftJoin('kota as dari', 'ritasi.dari_id', '=', 'dari.id')
-            ->leftJoin('kota as sampai', 'ritasi.sampai_id', '=', 'sampai.id')
-            ->orderBy('ritasi.id', $params['sortOrder']);
-        } else if ($params['sortIndex'] == 'nobukti' or $params['sortIndex'] == 'tglbukti') {
-            $query = DB::table((new Ritasi())->getTable())->select(
-                'ritasi.id',
-                'ritasi.nobukti',
-                'ritasi.tglbukti',
-                'parameter.text as statusritasi',
-                'suratpengantar.nobukti as suratpengantar_nobukti',
-                'supir.namasupir as supir_id',
-                'trado.keterangan as trado_id',
-                'ritasi.jarak',
-                'ritasi.gaji',
-                'dari.keterangan as dari_id',
-                'sampai.keterangan as sampai_id',
-                'ritasi.modifiedby',
-                'ritasi.created_at',
-                'ritasi.updated_at'
-            )
-            ->leftJoin('parameter', 'ritasi.statusritasi', '=', 'parameter.id')
-            ->leftJoin('suratpengantar', 'ritasi.suratpengantar_nobukti', '=', 'suratpengantar.nobukti')
-            ->leftJoin('supir', 'ritasi.supir_id', '=', 'supir.id')
-            ->leftJoin('trado', 'ritasi.trado_id', '=', 'trado.id')
-            ->leftJoin('kota as dari', 'ritasi.dari_id', '=', 'dari.id')
-            ->leftJoin('kota as sampai', 'ritasi.sampai_id', '=', 'sampai.id')
-                ->orderBy($params['sortIndex'], $params['sortOrder'])
-                ->orderBy('ritasi.id', $params['sortOrder']);
-        } else {
-            if ($params['sortOrder'] == 'asc') {
-                $query = DB::table((new Ritasi())->getTable())->select(
-                    'ritasi.id',
-                    'ritasi.nobukti',
-                    'ritasi.tglbukti',
-                    'parameter.text as statusritasi',
-                    'suratpengantar.nobukti as suratpengantar_nobukti',
-                    'supir.namasupir as supir_id',
-                    'trado.keterangan as trado_id',
-                    'ritasi.jarak',
-                    'ritasi.gaji',
-                    'dari.keterangan as dari_id',
-                    'sampai.keterangan as sampai_id',
-                    'ritasi.modifiedby',
-                    'ritasi.created_at',
-                    'ritasi.updated_at'
-                )
-                ->leftJoin('parameter', 'ritasi.statusritasi', '=', 'parameter.id')
-                ->leftJoin('suratpengantar', 'ritasi.suratpengantar_nobukti', '=', 'suratpengantar.nobukti')
-                ->leftJoin('supir', 'ritasi.supir_id', '=', 'supir.id')
-                ->leftJoin('trado', 'ritasi.trado_id', '=', 'trado.id')
-                ->leftJoin('kota as dari', 'ritasi.dari_id', '=', 'dari.id')
-                ->leftJoin('kota as sampai', 'ritasi.sampai_id', '=', 'sampai.id')
-                    ->orderBy($params['sortIndex'], $params['sortOrder'])
-                    ->orderBy('ritasi.id', $params['sortOrder']);
-            } else {
-                $query = DB::table((new Ritasi())->getTable())->select(
-                    'ritasi.id',
-                    'ritasi.nobukti',
-                    'ritasi.tglbukti',
-                    'parameter.text as statusritasi',
-                    'suratpengantar.nobukti as suratpengantar_nobukti',
-                    'supir.namasupir as supir_id',
-                    'trado.keterangan as trado_id',
-                    'ritasi.jarak',
-                    'ritasi.gaji',
-                    'dari.keterangan as dari_id',
-                    'sampai.keterangan as sampai_id',
-                    'ritasi.modifiedby',
-                    'ritasi.created_at',
-                    'ritasi.updated_at'
-                )
-                ->leftJoin('parameter', 'ritasi.statusritasi', '=', 'parameter.id')
-                ->leftJoin('suratpengantar', 'ritasi.suratpengantar_nobukti', '=', 'suratpengantar.nobukti')
-                ->leftJoin('supir', 'ritasi.supir_id', '=', 'supir.id')
-                ->leftJoin('trado', 'ritasi.trado_id', '=', 'trado.id')
-                ->leftJoin('kota as dari', 'ritasi.dari_id', '=', 'dari.id')
-                ->leftJoin('kota as sampai', 'ritasi.sampai_id', '=', 'sampai.id')
-                    ->orderBy($params['sortIndex'], $params['sortOrder'])
-                    ->orderBy('ritasi.id', 'asc');
-            }
-        }
-
-        /* Searching */
-        if (count($params['filters']) > 0 && @$params['filters']['rules'][0]['data'] != '') {
-            switch ($params['filters']['groupOp']) {
-                case "AND":
-                    foreach ($params['filters']['rules'] as $index => $search) {
-                        if ($search['field'] == 'statusritasi') {
-                            $query = $query->where('parameter.text', 'LIKE', "%$search[data]%");
-                        } elseif ($search['field'] == 'supir_id') {
-                            $query = $query->where('supir.namasupir', 'LIKE', "%$search[data]%");
-                        } elseif ($search['field'] == 'trado_id') {
-                            $query = $query->where('trado.keterangan', 'LIKE', "%$search[data]%");
-                        } elseif ($search['field'] == 'dari_id') {
-                            $query = $query->where('dari.keterangan', 'LIKE', "%$search[data]%");
-                        } elseif ($search['field'] == 'sampai_id') {
-                            $query = $query->where('sampai.keterangan', 'LIKE', "%$search[data]%");
-                        } else {
-                            $query = $query->where('ritasi.'.$search['field'], 'LIKE', "%$search[data]%");
-                        }
-                    }
-
-                    break;
-                case "OR":
-                    foreach ($params['filters']['rules'] as $index => $search) {
-                        if ($search['field'] == 'statusritasi') {
-                            $query = $query->orWhere('parameter.text', 'LIKE', "%$search[data]%");
-                        } elseif ($search['field'] == 'supir_id') {
-                            $query = $query->where('supir.namasupir', 'LIKE', "%$search[data]%");
-                        } elseif ($search['field'] == 'trado_id') {
-                            $query = $query->where('trado.keterangan', 'LIKE', "%$search[data]%");
-                        } elseif ($search['field'] == 'dari_id') {
-                            $query = $query->where('dari.keterangan', 'LIKE', "%$search[data]%");
-                        } elseif ($search['field'] == 'sampai_id') {
-                            $query = $query->where('sampai.keterangan', 'LIKE', "%$search[data]%");
-                        } else {
-                            $query = $query->orWhere('ritasi.'.$search['field'], 'LIKE', "%$search[data]%");
-                        }
-                    }
-                    break;
-                default:
-
-                    break;
-            }
-
-            $totalRows = count($query->get());
-            $totalPages = $params['limit'] > 0 ? ceil($totalRows / $params['limit']) : 1;
-        }
-
-        /* Paging */
-        $query = $query->skip($params['offset'])
-            ->take($params['limit']);
-
-        $ritasi = $query->get();
-
-        /* Set attributes */
-        $attributes = [
-            'totalRows' => $totalRows ?? 0,
-            'totalPages' => $totalPages ?? 0
-        ];
-
+        $ritasi = new Ritasi();
         return response([
-            'status' => true,
-            'data' => $ritasi,
-            'attributes' => $attributes,
-            'params' => $params
+            'data' => $ritasi->get(),
+            'attributes' => [
+                'totalRows' => $ritasi->totalRows,
+                'totalPages' => $ritasi->totalPages
+            ]
         ]);
     }
 
@@ -224,10 +50,19 @@ class RitasiController extends Controller
         DB::beginTransaction();
 
         try {
+            
+            $group = 'RITASI';
+            $subgroup = 'RITASI';
+            $format = DB::table('parameter')
+            ->where('grp', $group )
+            ->where('subgrp', $subgroup)
+            ->first();
+
             $content = new Request();
-            $content['group'] = 'RITASI';
-            $content['subgroup'] = 'RITASI';
+            $content['group'] = $group;
+            $content['subgroup'] = $subgroup;
             $content['table'] = 'ritasi';
+            $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
 
             $ritasi = new Ritasi();
             $ritasi->tglbukti = date('Y-m-d',strtotime($request->tglbukti));
@@ -247,8 +82,7 @@ class RitasiController extends Controller
             $ritasi->jarak = $upahRitasi->upahritasiRincian()->first()->liter;
             $ritasi->gaji = $upahRitasi->upahritasiRincian()->first()->nominalsupir;
             $ritasi->modifiedby = auth('api')->user()->name;
-            $request->sortname = $request->sortname ?? 'id';
-            $request->sortorder = $request->sortorder ?? 'asc';
+            $ritasi->statusformat = $format->id;
 
             $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
             $ritasi->nobukti = $nobukti;
@@ -271,13 +105,9 @@ class RitasiController extends Controller
             }
 
             /* Set position and page */
-            $del = 0;
-            $data = $this->getid($ritasi->id, $request, $del);
-            $ritasi->position = $data->row;
-
-            if (isset($request->limit)) {
-                $ritasi->page = ceil($ritasi->position / $request->limit);
-            }
+            $selected = $this->getPosition($ritasi, $ritasi->getTable(), true);
+            $ritasi->position = $selected->position;
+            $ritasi->page = ceil($ritasi->position / ($request->limit ?? 10));
 
             return response([
                 'status' => true,
@@ -341,11 +171,9 @@ class RitasiController extends Controller
                 app(LogTrailController::class)->store($validatedLogTrail);
 
                 /* Set position and page */
-                $ritasi->position = $this->getid($ritasi->id, $request, 0)->row;
-
-                if (isset($request->limit)) {
-                    $ritasi->page = ceil($ritasi->position / $request->limit);
-                }
+                $selected = $this->getPosition($ritasi, $ritasi->getTable(), true);
+                $ritasi->position = $selected->position;
+                $ritasi->page = ceil($ritasi->position / ($request->limit ?? 10));
 
                 return response([
                     'status' => true,
@@ -384,12 +212,11 @@ class RitasiController extends Controller
 
             DB::commit();
 
-            $data = $this->getid($ritasi->id, $request, $del);
-            $ritasi->position = @$data->row  ?? 0;
-            $ritasi->id = @$data->id  ?? 0;
-            if (isset($request->limit)) {
-                $ritasi->page = ceil($ritasi->position / $request->limit);
-            }
+            $selected = $this->getPosition($ritasi, $ritasi->getTable(), true);
+            $ritasi->position = $selected->position;
+            $ritasi->id = $selected->id;
+            $ritasi->page = ceil($ritasi->position / ($request->limit ?? 10));
+
             return response([
                 'status' => true,
                 'message' => 'Berhasil dihapus',

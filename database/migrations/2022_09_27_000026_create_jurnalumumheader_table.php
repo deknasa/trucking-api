@@ -58,11 +58,13 @@ class CreateJurnalumumheaderTable extends Migration
         DB::statement("ALTER TABLE jurnalumumheader NOCHECK CONSTRAINT jurnalumumheader_hutangheader_nobukti_foreign");
         DB::statement("ALTER TABLE jurnalumumheader NOCHECK CONSTRAINT jurnalumumheader_penerimaanstokheader_nobukti_foreign");
         DB::statement("ALTER TABLE jurnalumumheader NOCHECK CONSTRAINT jurnalumumheader_pengeluaranstokheader_nobukti_foreign");
+        DB::statement("ALTER TABLE jurnalumumheader NOCHECK CONSTRAINT jurnalumumheader_penerimaantruckingheader_nobukti_foreign");
         DB::statement("ALTER TABLE jurnalumumheader NOCHECK CONSTRAINT jurnalumumheader_pendapatansupirheader_nobukti_foreign");
         DB::statement("ALTER TABLE jurnalumumheader NOCHECK CONSTRAINT jurnalumumheader_notakreditheader_nobukti_foreign");
         DB::statement("ALTER TABLE jurnalumumheader NOCHECK CONSTRAINT jurnalumumheader_notadebetheader_nobukti_foreign");
         DB::statement("ALTER TABLE jurnalumumheader NOCHECK CONSTRAINT jurnalumumheader_pelunasanpiutangheader_nobukti_foreign");
         DB::statement("ALTER TABLE jurnalumumheader NOCHECK CONSTRAINT jurnalumumheader_piutangheader_nobukti_foreign");
+        DB::statement("ALTER TABLE jurnalumumheader NOCHECK CONSTRAINT jurnalumumheader_kasgantungheader_nobukti_foreign");
         DB::statement("ALTER TABLE jurnalumumheader NOCHECK CONSTRAINT jurnalumumheader_kasgantungheader_nobukti_foreign");
 
     }

@@ -16,15 +16,6 @@ class PenerimaanStokHeaderSeeder extends Seeder
     public function run()
     {
 
-        DB::statement("ALTER TABLE PenerimaanStokHeader NOCHECK CONSTRAINT penerimaanstokheader_coa_foreign");
-        DB::statement("ALTER TABLE PenerimaanStokHeader NOCHECK CONSTRAINT penerimaanstokheader_gudangdari_id_foreign");
-        DB::statement("ALTER TABLE PenerimaanStokHeader NOCHECK CONSTRAINT penerimaanstokheader_gudangke_id_foreign");
-        DB::statement("ALTER TABLE PenerimaanStokHeader NOCHECK CONSTRAINT penerimaanstokheader_hutang_nobukti_foreign");
-        DB::statement("ALTER TABLE PenerimaanStokHeader NOCHECK CONSTRAINT penerimaanstokheader_penerimaanstok_id_foreign");
-        DB::statement("ALTER TABLE PenerimaanStokHeader NOCHECK CONSTRAINT penerimaanstokheader_supplier_id_foreign");
-        DB::statement("ALTER TABLE PenerimaanStokHeader NOCHECK CONSTRAINT penerimaanstokheader_trado_id_foreign");
-        DB::statement("ALTER TABLE PenerimaanStokHeader NOCHECK CONSTRAINT penerimaanstokheader_gudang_id_foreign");
-
         DB::statement("delete PenerimaanStokHeader");
         DB::statement("DBCC CHECKIDENT ('PenerimaanStokHeader', RESEED, 0);");
 

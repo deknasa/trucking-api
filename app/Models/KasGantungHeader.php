@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class KasGantungHeader extends MyModel
 {
@@ -68,6 +69,61 @@ class KasGantungHeader extends MyModel
         
         return $data;
     }
+
+    public function selectColumns($query)
+    {
+        return $query->select(
+            DB::raw(
+            "$this->table.id,
+            $this->table.nobukti,
+            $this->table.tglbukti,
+            'penerima.namapenerima as penerima_id',
+            $this->table.keterangan,
+            'bank.namabank as bank_id',
+            $this->table.pengeluaran_nobukti,
+            $this->table.coakaskeluar,
+            $this->table.tglkaskeluar,
+            $this->table.modifiedby,
+            $this->table.created_at,
+            $this->table.updated_at"
+            )
+        )
+        ->leftJoin('penerima', 'kasgantungheader.penerima_id', 'penerima.id')
+        ->leftJoin('bank', 'kasgantungheader.bank_id', 'bank.id');
+
+    }
+
+    public function createTemp(string $modelTable)
+    {
+        $temp = '##temp' . rand(1, 10000);
+        Schema::create($temp, function ($table) {
+            $table->bigInteger('id')->default('0');
+            $table->string('nobukti', 1000)->default('');
+            $table->date('tglbukti')->default('');
+            $table->string('penerima_id', 1000)->default('');
+            $table->string('keterangan', 1000)->default('');
+            $table->string('bank_id', 1000)->default('');
+            $table->string('pengeluaran_nobukti', 1000)->default('');
+            $table->string('coakaskeluar', 1000)->default('');
+            $table->string('tglkaskeluar', 1000)->default('');
+            $table->string('modifiedby', 50)->default('');
+            $table->dateTime('created_at')->default('1900/1/1');
+            $table->dateTime('updated_at')->default('1900/1/1');
+            $table->increments('position');
+        });
+
+        $this->setRequestParameters();
+        $query = DB::table($modelTable);
+        $query = $this->selectColumns($query);
+        $this->sort($query);
+        $models = $this->filter($query);
+        DB::table($temp)->insertUsing(['id','nobukti','tglbukti','penerima_id','keterangan','bank_id','pengeluaran_nobukti','coakaskeluar','tglkaskeluar','modifiedby','created_at','updated_at'],$models);
+
+
+        return  $temp;         
+
+    }
+
 
     public function sort($query)
     {

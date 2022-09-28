@@ -25,7 +25,8 @@ class StorePiutangHeaderRequest extends FormRequest
     {
         return [
             'tglbukti' => 'required',
-            'keterangan' => 'required'
+            'keterangan' => 'required',
+            'agen' => 'required'
         ];
     }
 }

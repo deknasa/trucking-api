@@ -70,13 +70,9 @@ class MandorController extends Controller
             }
 
             /* Set position and page */
-            $del = 0;
-            $data = $this->getid($mandor->id, $request, $del);
-            $mandor->position = @$data->row;
-
-            if (isset($request->limit)) {
-                $mandor->page = ceil($mandor->position / $request->limit);
-            }
+            $selected = $this->getPosition($mandor, $mandor->getTable(), true);
+            $mandor->position = $selected->position;
+            $mandor->page = ceil($mandor->position / ($request->limit ?? 10));
 
             return response([
                 'status' => true,
@@ -128,11 +124,9 @@ class MandorController extends Controller
                 app(LogTrailController::class)->store($validatedLogTrail);
 
                 /* Set position and page */
-                $mandor->position = $this->getid($mandor->id, $request, 0)->row;
-
-                if (isset($request->limit)) {
-                    $mandor->page = ceil($mandor->position / $request->limit);
-                }
+                $selected = $this->getPosition($mandor, $mandor->getTable(), true);
+                $mandor->position = $selected->position;
+                $mandor->page = ceil($mandor->position / ($request->limit ?? 10));
 
                 return response([
                     'status' => true,
@@ -171,13 +165,11 @@ class MandorController extends Controller
             app(LogTrailController::class)->store($validatedLogTrail);
 
             DB::commit();
+            $selected = $this->getPosition($mandor, $mandor->getTable(), true);
+            $mandor->position = $selected->position;
+            $mandor->id = $selected->id;
+            $mandor->page = ceil($mandor->position / ($request->limit ?? 10));
 
-            $data = $this->getid($mandor->id, $request, $del);
-            $mandor->position = @$data->row  ?? 0;
-            $mandor->id = @$data->id  ?? 0;
-            if (isset($request->limit)) {
-                $mandor->page = ceil($mandor->position / $request->limit);
-            }
             return response([
                 'status' => true,
                 'message' => 'Berhasil dihapus',

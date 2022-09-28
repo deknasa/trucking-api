@@ -190,6 +190,7 @@ class AkunPusatController extends Controller
             /* Set position and page */
             $selected = $this->getPosition($akunPusat, $akunPusat->getTable(), true);
             $akunPusat->position = $selected->position;
+            $akunPusat->id = $selected->id;
             $akunPusat->page = ceil($akunPusat->position / ($request->limit ?? 10));
 
             return response([

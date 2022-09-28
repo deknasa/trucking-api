@@ -156,11 +156,9 @@ class MenuController extends Controller
             }
 
             /* Set position and page */
-            $selected = $this->getPosition($menu, $menu->getTable());
+            $selected = $this->getPosition($menu, $menu->getTable(), true);
             $menu->position = $selected->position;
             $menu->page = ceil($menu->position / ($request->limit ?? 10));
-
-            
 
             return response([
                 'status' => true,

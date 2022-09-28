@@ -33,7 +33,17 @@ class AbsensiSupirHeader extends MyModel
     {
         $this->setRequestParameters();
 
-        $query = DB::table($this->table);
+        $query = DB::table($this->table)->select(
+            'absensisupirheader.id',
+            'absensisupirheader.nobukti',
+            'absensisupirheader.tglbukti',
+            'absensisupirheader.keterangan',
+            'absensisupirheader.kasgantung_nobukti',
+            'absensisupirheader.nominal',
+            'absensisupirheader.modifiedby',
+            'absensisupirheader.created_at',
+            'absensisupirheader.updated_at',
+        );
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -114,29 +124,13 @@ class AbsensiSupirHeader extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'statusaktif') {
-                            $query = $query->where('parameter_statusaktif.text', '=', $filters['data']);
-                        } else if ($filters['field'] == 'statusapproval') {
-                            $query = $query->where('parameter_statusapproval.text', '=', $filters['data']);
-                        } else if ($filters['field'] == 'statustas') {
-                            $query = $query->where('parameter_statustas.text', '=', $filters['data']);
-                        } else {
-                            $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                        }
+                        $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                     }
 
                     break;
                 case "OR":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'statusaktif') {
-                            $query = $query->orWhere('parameter_statusaktif.text', '=', $filters['data']);
-                        } else if ($filters['field'] == 'statusapproval') {
-                            $query = $query->orWhere('parameter_statusapproval.text', '=', $filters['data']);
-                        } else if ($filters['field'] == 'statustas') {
-                            $query = $query->orWhere('parameter_statustas.text', '=', $filters['data']);
-                        } else {
-                            $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                        }
+                       $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                     }
 
                     break;
