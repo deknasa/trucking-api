@@ -70,7 +70,8 @@ class KelompokController extends Controller
                 DB::commit();
             }
 
-            $selected = $this->getPosition($kelompok, $kelompok->getTable(), true);
+            $selected = $this->getPosition($kelompok, $kelompok->getTable());
+           
             $kelompok->position = $selected->position;
             $kelompok->page = ceil($kelompok->position / ($request->limit ?? 10));
 
@@ -124,7 +125,7 @@ class KelompokController extends Controller
                 app(LogTrailController::class)->store($validatedLogTrail);
 
                 /* Set position and page */
-                $selected = $this->getPosition($kelompok, $kelompok->getTable(), true);
+                $selected = $this->getPosition($kelompok, $kelompok->getTable());
                 $kelompok->position = $selected->position;
                 $kelompok->page = ceil($kelompok->position / ($request->limit ?? 10));
 

@@ -233,7 +233,6 @@ class PiutangHeaderController extends Controller
                     $jurnaldetail = array_merge($jurnaldetail, $detail);
             }
            
-
             $jurnal = $this->storeJurnal($jurnalHeader, $jurnaldetail);
             
             if (!$jurnal['status']) {
@@ -525,7 +524,7 @@ class PiutangHeaderController extends Controller
             
             $jurnal = new StoreJurnalUmumHeaderRequest($header);
             $jurnals = app(JurnalUmumHeaderController::class)->store($jurnal);
-            dd('after header jurnal');
+            
 
             $nobukti = $header['nobukti'];
             $fetchId = JurnalUmumHeader::select('id')

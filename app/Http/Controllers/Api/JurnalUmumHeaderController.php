@@ -90,13 +90,14 @@ class JurnalUmumHeaderController extends Controller
             }
             
             try {
+               
                 $jurnalumum->save();
 
                 if ($tanpaprosesnobukti == 1) {
                     DB::commit();
                 }
             } catch (\Exception $e) {
-                // throw $e;
+                throw $e;
                 $errorCode = @$e->errorInfo[1];
                 if ($errorCode == 2601) {
                     goto TOP;
