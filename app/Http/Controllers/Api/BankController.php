@@ -70,9 +70,7 @@ class BankController extends Controller
             }
 
             /* Set position and page */
-            // $del = 0;
-            // $data = $this->getid($bank->id, $request, $del);
-            // $bank->position = $data->row;
+           
 
             $selected = $this->getPosition($bank, $bank->getTable());
             $bank->position = $selected->position;
@@ -137,12 +135,7 @@ class BankController extends Controller
                 app(LogTrailController::class)->store($validatedLogTrail);
 
                 /* Set position and page */
-                // $bank->position = $this->getid($bank->id, $request, 0)->row;
-
-                // if (isset($request->limit)) {
-                //     $bank->page = ceil($bank->position / $request->limit);
-                // }
-
+                
                 $selected = $this->getPosition($bank, $bank->getTable());
                 $bank->position = $selected->position;
                 $bank->page = ceil($bank->position / ($request->limit ?? 10));
@@ -185,13 +178,6 @@ class BankController extends Controller
 
             DB::commit();
 
-            // $data = $this->getid($bank->id, $request, $del);
-            // $bank->position = @$data->row;
-            // $bank->id = @$data->id;
-            // if (isset($request->limit)) {
-            //     $bank->page = ceil($bank->position / $request->limit);
-            // }
-
             $selected = $this->getPosition($bank, $bank->getTable(), true);
             $bank->position = $selected->position;
             $bank->id = $selected->id;
@@ -224,140 +210,7 @@ class BankController extends Controller
         ]);
     }
 
-    public function getid($id, $request, $del)
-    {
-        $params = [
-            'indexRow' => $request->indexRow ?? 1,
-            'limit' => $request->limit ?? 100,
-            'page' => $request->page ?? 1,
-            'sortname' => $request->sortname ?? 'id',
-            'sortorder' => $request->sortorder ?? 'asc',
-        ];
-
-        $temp = '##temp' . rand(1, 10000);
-        Schema::create($temp, function ($table) {
-            $table->id();
-            $table->bigInteger('id_')->default('0');
-            $table->string('kodebank', 50)->default('');
-            $table->string('namabank', 50)->default('');
-            $table->string('coa', 50)->default('');
-            $table->string('tipe', 50)->default('');
-            $table->string('statusaktif', 300)->default('')->nullable();
-            $table->string('kodepenerimaan', 50)->default('');
-            $table->string('kodepengeluaran', 50)->default('');
-            $table->string('modifiedby', 30)->default('');
-            $table->dateTime('created_at')->default('1900/1/1');
-            $table->dateTime('updated_at')->default('1900/1/1');
-
-            $table->index('id_');
-        });
-
-        if ($params['sortname'] == 'id') {
-            $query = DB::table((new Bank)->getTable())->select(
-                'bank.id as id_',
-                'bank.kodebank',
-                'bank.namabank',
-                'bank.coa',
-                'bank.tipe',
-                'bank.statusaktif',
-                'bank.kodepenerimaan',
-                'bank.kodepengeluaran',
-                'bank.modifiedby',
-                'bank.created_at',
-                'bank.updated_at'
-            )
-                ->orderBy('bank.id', $params['sortorder']);
-        } else if ($params['sortname'] == 'kodebank' or $params['sortname'] == 'namabank') {
-            $query = DB::table((new Bank)->getTable())->select(
-                'bank.id as id_',
-                'bank.kodebank',
-                'bank.namabank',
-                'bank.coa',
-                'bank.tipe',
-                'bank.statusaktif',
-                'bank.kodepenerimaan',
-                'bank.kodepengeluaran',
-                'bank.modifiedby',
-                'bank.created_at',
-                'bank.updated_at'
-            )
-                ->orderBy($params['sortname'], $params['sortorder'])
-                ->orderBy('bank.id', $params['sortorder']);
-        } else {
-            if ($params['sortorder'] == 'asc') {
-                $query = DB::table((new Bank)->getTable())->select(
-                    'bank.id as id_',
-                    'bank.kodebank',
-                    'bank.namabank',
-                    'bank.coa',
-                    'bank.tipe',
-                    'bank.statusaktif',
-                    'bank.kodepenerimaan',
-                    'bank.kodepengeluaran',
-                    'bank.modifiedby',
-                    'bank.created_at',
-                    'bank.updated_at'
-                )
-                    ->orderBy($params['sortname'], $params['sortorder'])
-                    ->orderBy('bank.id', $params['sortorder']);
-            } else {
-                $query = DB::table((new Bank)->getTable())->select(
-                    'bank.id as id_',
-                    'bank.kodebank',
-                    'bank.namabank',
-                    'bank.coa',
-                    'bank.tipe',
-                    'bank.statusaktif',
-                    'bank.kodepenerimaan',
-                    'bank.kodepengeluaran',
-                    'bank.modifiedby',
-                    'bank.created_at',
-                    'bank.updated_at'
-                )
-                    ->orderBy($params['sortname'], $params['sortorder'])
-                    ->orderBy('bank.id', 'asc');
-            }
-        }
-
-
-
-        DB::table($temp)->insertUsing(['id_', 'kodebank', 'namabank', 'coa', 'tipe', 'statusaktif', 'kodepenerimaan', 'kodepengeluaran', 'modifiedby', 'created_at', 'updated_at'], $query);
-
-
-        if ($del == 1) {
-            if ($params['page'] == 1) {
-                $baris = $params['indexRow'] + 1;
-            } else {
-                $hal = $params['page'] - 1;
-                $bar = $hal * $params['limit'];
-                $baris = $params['indexRow'] + $bar + 1;
-            }
-
-
-            if (DB::table($temp)
-                ->where('id', '=', $baris)->exists()
-            ) {
-                $querydata = DB::table($temp)
-                    ->select('id as row', 'id_ as id')
-                    ->where('id', '=', $baris)
-                    ->orderBy('id');
-            } else {
-                $querydata = DB::table($temp)
-                    ->select('id as row', 'id_ as id')
-                    ->where('id', '=', ($baris - 1))
-                    ->orderBy('id');
-            }
-        } else {
-            $querydata = DB::table($temp)
-                ->select('id as row')
-                ->where('id_', '=',  $id)
-                ->orderBy('id');
-        }
-
-
-        $data = $querydata->first();
-        return $data;
-    }
+   
 
     public function fieldLength()
     {

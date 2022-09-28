@@ -175,14 +175,20 @@ class GudangController extends Controller
                 DB::commit();
             }
 
-            /* Set position and page */
-            $del = 0;
-            $data = $this->getid($gudang->id, $request, $del);
-            $gudang->position = @$data->row;
+            // /* Set position and page */
+            // $del = 0;
+            // $data = $this->getid($gudang->id, $request, $del);
+            // $gudang->position = @$data->row;
 
-            if (isset($request->limit)) {
-                $gudang->page = ceil($gudang->position / $request->limit);
-            }
+            // if (isset($request->limit)) {
+            //     $gudang->page = ceil($gudang->position / $request->limit);
+            // }
+
+            /* Set position and page */
+            $selected = $this->getPosition($gudang, $gudang->getTable());
+            $gudang->position = $selected->position;
+            $gudang->page = ceil($gudang->position / ($request->limit ?? 10));
+
 
             return response([
                 'status' => true,
@@ -232,12 +238,17 @@ class GudangController extends Controller
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
 
+                // /* Set position and page */
+
+                // $gudang->position = $this->getid($gudang->id, $request, 0)->row;
+                // if (isset($request->limit)) {
+                //     $gudang->page = ceil($gudang->position / $request->limit);
+                // }
+
                 /* Set position and page */
-               
-                $gudang->position = $this->getid($gudang->id, $request, 0)->row;
-                if (isset($request->limit)) {
-                    $gudang->page = ceil($gudang->position / $request->limit);
-                }
+                $selected = $this->getPosition($gudang, $gudang->getTable());
+                $gudang->position = $selected->position;
+                $gudang->page = ceil($gudang->position / ($request->limit ?? 10));
 
                 return response([
                     'status' => true,
@@ -277,12 +288,19 @@ class GudangController extends Controller
 
             DB::commit();
 
-            $data = $this->getid($gudang->id, $request, $del);
-            $gudang->position = @$data->row;
-            $gudang->id = @$data->id;
-            if (isset($request->limit)) {
-                $gudang->page = ceil($gudang->position / $request->limit);
-            }
+            // $data = $this->getid($gudang->id, $request, $del);
+            // $gudang->position = @$data->row;
+            // $gudang->id = @$data->id;
+            // if (isset($request->limit)) {
+            //     $gudang->page = ceil($gudang->position / $request->limit);
+            // }
+
+             /* Set position and page */
+            $selected = $this->getPosition($gudang, $gudang->getTable(), true);
+            $gudang->position = $selected->position;
+            $gudang->id = $selected->id;
+            $gudang->page = ceil($gudang->position / ($request->limit ?? 10));
+            
             return response([
                 'status' => true,
                 'message' => 'Berhasil dihapus',
@@ -364,8 +382,8 @@ class GudangController extends Controller
                 'gudang.created_at',
                 'gudang.updated_at'
             )
-            ->leftJoin('parameter', 'gudang.statusaktif', '=', 'parameter.id')
-            ->orderBy($params['sortname'], $params['sortorder'])
+                ->leftJoin('parameter', 'gudang.statusaktif', '=', 'parameter.id')
+                ->orderBy($params['sortname'], $params['sortorder'])
                 ->orderBy('gudang.id', $params['sortorder']);
         } else {
             if ($params['sortorder'] == 'asc') {
@@ -377,7 +395,7 @@ class GudangController extends Controller
                     'gudang.created_at',
                     'gudang.updated_at'
                 )
-                ->leftJoin('parameter', 'gudang.statusaktif', '=', 'parameter.id')
+                    ->leftJoin('parameter', 'gudang.statusaktif', '=', 'parameter.id')
                     ->orderBy($params['sortname'], $params['sortorder'])
                     ->orderBy('gudang.id', $params['sortorder']);
             } else {
@@ -389,8 +407,8 @@ class GudangController extends Controller
                     'gudang.created_at',
                     'gudang.updated_at'
                 )
-                ->leftJoin('parameter', 'gudang.statusaktif', '=', 'parameter.id')
-                ->orderBy($params['sortname'], $params['sortorder'])
+                    ->leftJoin('parameter', 'gudang.statusaktif', '=', 'parameter.id')
+                    ->orderBy($params['sortname'], $params['sortorder'])
                     ->orderBy('gudang.id', 'asc');
             }
         }

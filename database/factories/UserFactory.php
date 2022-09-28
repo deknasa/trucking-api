@@ -24,7 +24,7 @@ class UserFactory extends Factory
             'dashboard' => $this->faker->word(),
             'cabang_id' => $this->faker->randomElement(Cabang::all()),
             'karyawan_id' => $this->faker->randomElement(Parameter::where('grp', 'STATUS KARYAWAN')->get()),
-            'statusaktif' => $this->faker->randomElement(Parameter::where('grp', 'STATUS AKTIF')->get())
+            'statusaktif' => '1'
         ];
     }
 

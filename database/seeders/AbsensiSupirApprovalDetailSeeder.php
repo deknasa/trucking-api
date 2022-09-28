@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\AbsensiSupirApprovalDetail;
+use Illuminate\Support\Facades\DB;
 
 class AbsensiSupirApprovalDetailSeeder extends Seeder
 {

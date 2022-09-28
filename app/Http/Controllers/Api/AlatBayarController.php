@@ -71,13 +71,10 @@ class AlatBayarController extends Controller
             }
 
             /* Set position and page */
-            $del = 0;
-            $data = $this->getid($alatbayar->id, $request, $del);
-            $alatbayar->position = $data->row;
+            $selected = $this->getPosition($alatbayar, $alatbayar->getTable(), true);
+            $alatbayar->position = $selected->position;
+            $alatbayar->page = ceil($alatbayar->position / ($request->limit ?? 10));
 
-            if (isset($request->limit)) {
-                $alatbayar->page = ceil($alatbayar->position / $request->limit);
-            }
 
             return response([
                 'status' => true,
@@ -132,11 +129,10 @@ class AlatBayarController extends Controller
                 app(LogTrailController::class)->store($validatedLogTrail);
 
                 /* Set position and page */
-                $alatbayar->position = $this->getid($alatbayar->id, $request, 0)->row;
-
-                if (isset($request->limit)) {
-                    $alatbayar->page = ceil($alatbayar->position / $request->limit);
-                }
+                $selected = $this->getPosition($alatbayar, $alatbayar->getTable(), true);
+                $alatbayar->position = $selected->position;
+                $alatbayar->page = ceil($alatbayar->position / ($request->limit ?? 10));
+    
 
                 return response([
                     'status' => true,
@@ -176,12 +172,11 @@ class AlatBayarController extends Controller
 
             DB::commit();
 
-            $data = $this->getid($alatbayar->id, $request, $del);
-            $alatbayar->position = @$data->row;
-            $alatbayar->id = @$data->id;
-            if (isset($request->limit)) {
-                $alatbayar->page = ceil($alatbayar->position / $request->limit);
-            }
+            $selected = $this->getPosition($alatbayar, $alatbayar->getTable(), true);
+            $alatbayar->position = $selected->position;
+            $alatbayar->id = $selected->id;
+            $alatbayar->page = ceil($alatbayar->position / ($request->limit ?? 10));
+
             return response([
                 'status' => true,
                 'message' => 'Berhasil dihapus',

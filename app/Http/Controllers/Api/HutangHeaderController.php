@@ -428,7 +428,7 @@ class HutangHeaderController extends Controller
             /* Store detail */
             $detaillog = [];
 
-            $detaillog = [];
+           // $detaillog = [];
             //   for ($i = 0; $i < count($request->nominal_detail); $i++) {
 
             $total = str_replace('.00', '', $request->total_detail);

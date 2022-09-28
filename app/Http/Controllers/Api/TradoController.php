@@ -164,6 +164,11 @@ class TradoController extends Controller
             // }
 
             /* Set position and page */
+            // $selected = $this->getPosition($trado, $trado->getTable());
+            // $trado->position = $selected->position;
+            // $trado->page = ceil($trado->position / ($request->limit ?? 10));
+
+            /* Set position and page */
             $selected = $this->getPosition($trado, $trado->getTable());
             $trado->position = $selected->position;
             $trado->page = ceil($trado->position / ($request->limit ?? 10));
@@ -248,9 +253,14 @@ class TradoController extends Controller
             DB::commit();
 
             /* Set position and page */
-            $selected = $this->getPosition($trado, $trado->getTable());
-            $trado->position = $selected->position;
-            $trado->page = ceil($trado->position / ($request->limit ?? 10));
+            // $selected = $this->getPosition($trado, $trado->getTable());
+            // $trado->position = $selected->position;
+            // $trado->page = ceil($trado->position / ($request->limit ?? 10));
+
+             /* Set position and page */
+             $selected = $this->getPosition($trado, $trado->getTable());
+             $trado->position = $selected->position;
+             $trado->page = ceil($trado->position / ($request->limit ?? 10));
 
             return response([
                 'status' => true,
@@ -330,7 +340,13 @@ class TradoController extends Controller
             //     $trado->page = ceil($trado->position / $request->limit);
             // }
 
-            $selected = $this->getPosition($trado, $trado->getTable(), true);
+            // $selected = $this->getPosition($trado, $trado->getTable(), true);
+            // $trado->position = $selected->position;
+            // $trado->id = $selected->id;
+            // $trado->page = ceil($trado->position / ($request->limit ?? 10));
+
+            /* Set position and page */
+			  $selected = $this->getPosition($trado, $trado->getTable(), true);
             $trado->position = $selected->position;
             $trado->id = $selected->id;
             $trado->page = ceil($trado->position / ($request->limit ?? 10));

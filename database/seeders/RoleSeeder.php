@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Role;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class RoleSeeder extends Seeder
 {
@@ -14,16 +15,12 @@ class RoleSeeder extends Seeder
      */
     public function run()
     {
-        $roles = [
-            [
-                'rolename' => 'ADMIN',
-            ],
-        ];
 
-        foreach ($roles as $role ) {
-            Role::create([
-                'rolename' => $role['rolename']
-            ]);
-        }
+
+        DB::statement("delete Role");
+        DB::statement("DBCC CHECKIDENT ('Role', RESEED, 1);");
+
+        Role::create(['rolename' => 'ADMIN',  'modifiedby' => 'ADMIN',]);
+        Role::create(['rolename' => 'TEST',  'modifiedby' => 'ADMIN',]);
     }
 }

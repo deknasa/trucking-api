@@ -18,10 +18,10 @@ class Bank extends MyModel
         'updated_at',
     ];
 
-    // protected $casts = [
-    //     'created_at' => 'date:d-m-Y H:i:s',
-    //     'updated_at' => 'date:d-m-Y H:i:s'
-    // ];
+    protected $casts = [
+        'created_at' => 'date:d-m-Y H:i:s',
+        'updated_at' => 'date:d-m-Y H:i:s'
+    ];
 
     public function get()
     {

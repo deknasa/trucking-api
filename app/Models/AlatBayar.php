@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Traits\RestrictDeletion;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Carbon\Carbon;
 
 class AlatBayar extends MyModel
@@ -13,10 +14,10 @@ class AlatBayar extends MyModel
 
     protected $table = 'alatbayar';
 
-    // protected $casts = [
-    //     'created_at' => 'date:d-m-Y H:i:s',
-    //     'updated_at' => 'date:d-m-Y H:i:s'
-    // ];
+    protected $casts = [
+        'created_at' => 'date:d-m-Y H:i:s',
+        'updated_at' => 'date:d-m-Y H:i:s'
+    ];
     
     protected $guarded = [
         'id',
@@ -54,6 +55,55 @@ class AlatBayar extends MyModel
         $data = $query->get();
 
         return $data;
+    }
+
+    public function selectColumns($query)
+    {
+        return $query->select(
+            DB::raw("
+                $this->table.id,
+                $this->table.kodealatbayar,
+                $this->table.namaalatbayar,
+                $this->table.keterangan,
+                'parameter_statuslangsunggcair.text as statuslangsunggcair',
+                'parameter_statusdefault.text as statusdefault',
+                'bank.namabank as bank_id',
+                $this->table.modifiedby,
+                $this->table.created_at,
+                $this->table.updated_at
+            ")
+        )
+        ->leftJoin('bank', 'alatbayar.bank_id', 'bank.id')
+        ->leftJoin('parameter as parameter_statuslangsunggcair', 'alatbayar.statuslangsunggcair', 'parameter_statuslangsunggcair.id')
+        ->leftJoin('parameter as parameter_statusdefault', 'alatbayar.statusdefault', 'parameter_statusdefault.id');
+
+    }
+
+    public function createTemp(string $modelTable)
+    {
+        $temp = '##temp' . rand(1, 10000);
+        Schema::create($temp, function ($table){
+            $table->bigInteger('id')->default('0');
+            $table->string('kodealatbayar', 1000)->default('');
+            $table->string('namaalatbayar', 1000)->default('');
+            $table->string('keterangan', 1000)->default('');
+            $table->string('statuslangsungcair')->default('');
+            $table->string('statusdefault')->default('');
+            $table->string('bank_id')->default('');
+            $table->string('modifiedby')->default();
+            $table->dateTime('created_at')->default('1900/1/1');
+            $table->dateTime('updated_at')->default('1900/1/1');
+            $table->increments('position');
+        });
+
+        $this->setRequestParameters();
+        $query = DB::table($modelTable);
+        $query = $this->selectColumns($query);
+        $this->sort($query);
+        $models = $this->filter($query);
+        DB::table($temp)->insertUsing(['id','kodealatbayar','namaalatbayar','keterangan','statuslangsungcair','statusdefault','bank_id','modifiedby','created_at','updated_at'], $models);
+
+        return $temp;
     }
 
     public function sort($query)

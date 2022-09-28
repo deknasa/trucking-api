@@ -73,13 +73,9 @@ class BankPelangganController extends Controller
             }
 
             /* Set position and page */
-            $del = 0;
-            $data = $this->getid($bankpelanggan->id, $request, $del);
-            $bankpelanggan->position = $data->row;
-
-            if (isset($request->limit)) {
-                $bankpelanggan->page = ceil($bankpelanggan->position / $request->limit);
-            }
+            $selected = $this->getPosition($bankpelanggan, $bankpelanggan->getTable(), true);
+            $bankpelanggan->position = $selected->position;
+            $bankpelanggan->page = ceil($bankpelanggan->position / ($request->limit ?? 10 ));
 
             return response([
                 'status' => true,
@@ -132,11 +128,10 @@ class BankPelangganController extends Controller
                 app(LogTrailController::class)->store($validatedLogTrail);
 
                 /* Set position and page */
-                $bankpelanggan->position = $this->getid($bankpelanggan->id, $request, 0)->row;
-
-                if (isset($request->limit)) {
-                    $bankpelanggan->page = ceil($bankpelanggan->position / $request->limit);
-                }
+               
+                $selected = $this->getPosition($bankpelanggan, $bankpelanggan->getTable(), true);
+                $bankpelanggan->position = $selected->position;
+                $bankpelanggan->page = ceil($bankpelanggan->position / ($request->limit ?? 10 ));
 
                 return response([
                     'status' => true,
@@ -176,12 +171,11 @@ class BankPelangganController extends Controller
 
             DB::commit();
 
-            $data = $this->getid($bankpelanggan->id, $request, $del);
-            $bankpelanggan->position = $data->row ?? 0;
-            $bankpelanggan->id = $data->id ?? 0;
-            if (isset($request->limit)) {
-                $bankpelanggan->page = ceil($bankpelanggan->position / $request->limit);
-            }
+            
+            $selected = $this->getPosition($bankpelanggan, $bankpelanggan->getTable(), true);
+            $bankpelanggan->position = $selected->position;
+            $bankpelanggan->id = $selected->id;
+            $bankpelanggan->page = ceil($bankpelanggan->position / ($request->limit ?? 10 ));
             return response([
                 'status' => true,
                 'message' => 'Berhasil dihapus',
@@ -206,125 +200,6 @@ class BankPelangganController extends Controller
         ]);
     }
 
-    public function getid($id, $request, $del)
-    {
-        $params = [
-            'indexRow' => $request->indexRow ?? 1,
-            'limit' => $request->limit ?? 100,
-            'page' => $request->page ?? 1,
-            'sortname' => $request->sortname ?? 'id',
-            'sortorder' => $request->sortorder ?? 'asc',
-        ];
-
-        $temp = '##temp' . rand(1, 10000);
-        Schema::create($temp, function ($table) {
-            $table->id();
-            $table->bigInteger('id_')->default('0');
-            $table->string('kodebank', 50)->default('');
-            $table->string('namabank', 50)->default('');
-            $table->longtext('keterangan')->default('');
-            $table->string('statusaktif',300)->default('')->nullable();
-            $table->string('modifiedby', 30)->default('');
-            $table->dateTime('created_at')->default('1900/1/1');
-            $table->dateTime('updated_at')->default('1900/1/1');
-
-            $table->index('id_');
-        });
-
-        if ($params['sortname'] == 'id') {
-            $query = DB::table((new BankPelanggan)->getTable())->select(
-                'bankpelanggan.id as id_',
-                'bankpelanggan.kodebank',
-                'bankpelanggan.namabank',
-                'bankpelanggan.keterangan',
-                'bankpelanggan.statusaktif',
-                'bankpelanggan.modifiedby',
-                'bankpelanggan.created_at',
-                'bankpelanggan.updated_at'
-            )
-                ->orderBy('bankpelanggan.id', $params['sortorder']);
-        } else if ($params['sortname'] == 'kodebank' or $params['sortname'] == 'namabank') {
-            $query = DB::table((new BankPelanggan)->getTable())->select(
-                'bankpelanggan.id as id_',
-                'bankpelanggan.kodebank',
-                'bankpelanggan.namabank',
-                'bankpelanggan.keterangan',
-                'bankpelanggan.statusaktif',
-                'bankpelanggan.modifiedby',
-                'bankpelanggan.created_at',
-                'bankpelanggan.updated_at'
-            )
-                ->orderBy($params['sortname'], $params['sortorder'])
-                ->orderBy('bankpelanggan.id', $params['sortorder']);
-        } else {
-            if ($params['sortorder'] == 'asc') {
-                $query = DB::table((new BankPelanggan)->getTable())->select(
-                    'bankpelanggan.id as id_',
-                    'bankpelanggan.kodebank',
-                    'bankpelanggan.namabank',
-                    'bankpelanggan.keterangan',
-                    'bankpelanggan.statusaktif',
-                    'bankpelanggan.modifiedby',
-                    'bankpelanggan.created_at',
-                    'bankpelanggan.updated_at'
-                )
-                    ->orderBy($params['sortname'], $params['sortorder'])
-                    ->orderBy('bankpelanggan.id', $params['sortorder']);
-            } else {
-                $query = DB::table((new BankPelanggan)->getTable())->select(
-                    'bankpelanggan.id as id_',
-                    'bankpelanggan.kodebank',
-                    'bankpelanggan.namabank',
-                    'bankpelanggan.keterangan',
-                    'bankpelanggan.statusaktif',
-                    'bankpelanggan.modifiedby',
-                    'bankpelanggan.created_at',
-                    'bankpelanggan.updated_at'
-                )
-                    ->orderBy($params['sortname'], $params['sortorder'])
-                    ->orderBy('bankpelanggan.id', 'asc');
-            }
-        }
-
-
-
-        DB::table($temp)->insertUsing(['id_', 'kodebank', 'namabank', 'keterangan', 'statusaktif','modifiedby', 'created_at', 'updated_at'], $query);
-
-
-        if ($del == 1) {
-            if ($params['page'] == 1) {
-                $baris = $params['indexRow'] + 1;
-            } else {
-                $hal = $params['page'] - 1;
-                $bar = $hal * $params['limit'];
-                $baris = $params['indexRow'] + $bar + 1;
-            }
-
-
-            if (DB::table($temp)
-                ->where('id', '=', $baris)->exists()
-            ) {
-                $querydata = DB::table($temp)
-                    ->select('id as row', 'id_ as id')
-                    ->where('id', '=', $baris)
-                    ->orderBy('id');
-            } else {
-                $querydata = DB::table($temp)
-                    ->select('id as row', 'id_ as id')
-                    ->where('id', '=', ($baris - 1))
-                    ->orderBy('id');
-            }
-        } else {
-            $querydata = DB::table($temp)
-                ->select('id as row')
-                ->where('id_', '=',  $id)
-                ->orderBy('id');
-        }
-
-
-        $data = $querydata->first();
-        return $data;
-    }
 
     public function fieldLength()
     {
