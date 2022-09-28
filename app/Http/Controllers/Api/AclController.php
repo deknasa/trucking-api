@@ -224,7 +224,7 @@ class AclController extends Controller
                     }
                 }
             }
-            $selected = $this->getPosition($acl, $acl->getTable(), true);
+            $selected = $this->getPosition($acl, $acl->getTable());
             $acl->position = $selected->position;
             $acl->page = ceil($acl->position / ($request->limit ?? 10));
 
@@ -315,7 +315,7 @@ class AclController extends Controller
             }
 
             /* Set position and page */
-            $selected = $this->getPosition($acl, $acl->getTable(), true);
+            $selected = $this->getPosition($acl, $acl->getTable());
             $acl->position = $selected->position;
             $acl->page = ceil($acl->position / ($request->limit ?? 10));
 

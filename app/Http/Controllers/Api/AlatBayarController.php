@@ -71,7 +71,7 @@ class AlatBayarController extends Controller
             }
 
             /* Set position and page */
-            $selected = $this->getPosition($alatbayar, $alatbayar->getTable(), true);
+            $selected = $this->getPosition($alatbayar, $alatbayar->getTable());
             $alatbayar->position = $selected->position;
             $alatbayar->page = ceil($alatbayar->position / ($request->limit ?? 10));
 
@@ -129,7 +129,7 @@ class AlatBayarController extends Controller
                 app(LogTrailController::class)->store($validatedLogTrail);
 
                 /* Set position and page */
-                $selected = $this->getPosition($alatbayar, $alatbayar->getTable(), true);
+                $selected = $this->getPosition($alatbayar, $alatbayar->getTable());
                 $alatbayar->position = $selected->position;
                 $alatbayar->page = ceil($alatbayar->position / ($request->limit ?? 10));
     
