@@ -16,9 +16,11 @@ class MyModel extends Model
     public function setAttribute($key, $value)
     {
         parent::setAttribute($key, $value);
-
-        if (is_string($value)) {
-            return $this->attributes[$key] = strtoupper($value);
+        
+        if (!isset($this->toUppercase) || $this->toUppercase) {
+            if (is_string($value)) {
+                return $this->attributes[$key] = strtoupper($value);
+            }
         }
     }
 
@@ -31,5 +33,10 @@ class MyModel extends Model
             'sortIndex' => request()->sortIndex ?? 'id',
             'sortOrder' => request()->sortOrder ?? 'asc',
         ];
+    }
+
+    private function mustUppercase($key): bool
+    {
+        return true;
     }
 }
