@@ -59,26 +59,34 @@ class AbsensiSupirHeaderController extends Controller
         DB::beginTransaction();
 
         try {
-            $noBuktiRequest = new Request();
-            $noBuktiRequest['group'] = 'ABSENSI';
-            $noBuktiRequest['subgroup'] = 'ABSENSI';
-            $noBuktiRequest['table'] = 'absensisupirheader';
-            $noBuktiRequest['tgl'] = $request->tglbukti;
+
+            $group = 'ABSENSI';
+            $subgroup = 'ABSENSI';
+            $format = DB::table('parameter')
+                ->where('grp', $group )
+                ->where('subgrp', $subgroup)
+                ->first();
+
+            $content = new Request();
+            $content['group'] = $group;
+            $content['subgroup'] = $subgroup;
+            $content['table'] = 'absensisupirheader';
+            $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
 
             $noBuktiKasgantungRequest = new Request();
             $noBuktiKasgantungRequest['group'] = 'KAS GANTUNG';
             $noBuktiKasgantungRequest['subgroup'] = 'NOMOR KAS GANTUNG';
             $noBuktiKasgantungRequest['table'] = 'absensisupirheader';
-            $noBuktiKasgantungRequest['tgl'] = $request->tglbukti;
-
+            $noBuktiKasgantungRequest['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
             /* Store header */
             $absensiSupirHeader = new AbsensiSupirHeader();
             
-            $absensiSupirHeader->nobukti = app(Controller::class)->getRunningNumber($noBuktiRequest)->original['data'];
+            $absensiSupirHeader->nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
             $absensiSupirHeader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $absensiSupirHeader->keterangan = $request->keterangan ?? '';
             $absensiSupirHeader->kasgantung_nobukti = app(Controller::class)->getRunningNumber($noBuktiKasgantungRequest)->original['data'];
             $absensiSupirHeader->nominal = array_sum($request->uangjalan);
+            $absensiSupirHeader->statusformat = $format->id;
             $absensiSupirHeader->modifiedby = auth('api')->user()->name;
 
             if ($absensiSupirHeader->save()) {
@@ -158,6 +166,13 @@ class AbsensiSupirHeaderController extends Controller
         try {
             $absensiSupirHeader->absensiSupirDetail()->delete();
 
+            $group = 'ABSENSI';
+            $subgroup = 'ABSENSI';
+            $format = DB::table('parameter')
+                ->where('grp', $group )
+                ->where('subgrp', $subgroup)
+                ->first();
+
             /* Store header */
             $absensiSupirHeader->nobukti = $request->nobukti;
             $absensiSupirHeader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
@@ -165,6 +180,7 @@ class AbsensiSupirHeaderController extends Controller
             $absensiSupirHeader->kasgantung_nobukti = $request->kasgantung_nobukti ?? '1';
             $absensiSupirHeader->nominal = array_sum($request->uangjalan);
             $absensiSupirHeader->modifiedby = auth('api')->user()->name;
+            $absensiSupirHeader->statusformat = $format->id;
 
             if ($absensiSupirHeader->save()) {
                 /* Store Header LogTrail */
