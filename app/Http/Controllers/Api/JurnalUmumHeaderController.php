@@ -123,7 +123,7 @@ class JurnalUmumHeaderController extends Controller
 
             if ($tanpaprosesnobukti == 0) {
 
-                for ($i = 0; $i < count($request->nominal_detail); $i++) {
+                // for ($i = 0; $i < count($request->nominal_detail); $i++) {
                     $detaillog = [];
                     for ($x = 0; $x <= 1; $x++) {
                         if ($x == 1) {
@@ -131,22 +131,24 @@ class JurnalUmumHeaderController extends Controller
                                 'jurnalumum_id' => $jurnalumum->id,
                                 'nobukti' => $jurnalumum->nobukti,
                                 'tglbukti' => $jurnalumum->tglbukti,
-                                'coa' => $request->coakredit_detail[$i],
-                                'nominal' => '-' . str_replace(',', '', $request->nominal_detail[$i]),
-                                'keterangan' => $request->keterangan_detail[$i],
+                                'coa' => $request->coakredit_detail,
+                                'nominal' => '-' . str_replace(',', '', $request->nominal_detail),
+                                'keterangan' => $request->keterangan_detail,
                                 'modifiedby' => $jurnalumum->modifiedby,
-                                'baris' => $i,
+                                // 'baris' => $i,
+                                'baris' => 0
                             ];
                         } else {
                             $datadetail = [
                                 'jurnalumum_id' => $jurnalumum->id,
                                 'nobukti' => $jurnalumum->nobukti,
                                 'tglbukti' => $jurnalumum->tglbukti,
-                                'coa' => $request->coadebet_detail[$i],
-                                'nominal' => str_replace(',', '', $request->nominal_detail[$i]),
-                                'keterangan' => $request->keterangan_detail[$i],
+                                'coa' => $request->coadebet_detail,
+                                'nominal' => str_replace(',', '', $request->nominal_detail),
+                                'keterangan' => $request->keterangan_detail,
                                 'modifiedby' => $jurnalumum->modifiedby,
-                                'baris' => $i,
+                                // 'baris' => $i,
+                                'baris' => 0
                             ];
                         }
 
@@ -170,13 +172,14 @@ class JurnalUmumHeaderController extends Controller
                                 'jurnalumum_id' => $jurnalumum->id,
                                 'nobukti' => $jurnalumum->nobukti,
                                 'tglbukti' => $jurnalumum->tglbukti,
-                                'coa' => $request->coakredit_detail[$i],
-                                'nominal' => $request->nominal_detail[$i],
-                                'keterangan' => $request->keterangan_detail[$i],
+                                'coa' => $request->coakredit_detail,
+                                'nominal' => $request->nominal_detail,
+                                'keterangan' => $request->keterangan_detail,
                                 'modifiedby' => $jurnalumum->modifiedby,
                                 'created_at' => date('d-m-Y H:i:s', strtotime($jurnalumum->created_at)),
                                 'updated_at' => date('d-m-Y H:i:s', strtotime($jurnalumum->updated_at)),
-                                'baris' => $i,
+                                // 'baris' => $i,
+                                'baris' => 0
                             ];
                         } else {
                             $datadetaillog = [
@@ -184,13 +187,14 @@ class JurnalUmumHeaderController extends Controller
                                 'jurnalumum_id' => $jurnalumum->id,
                                 'nobukti' => $jurnalumum->nobukti,
                                 'tglbukti' => $jurnalumum->tglbukti,
-                                'coa' => $request->coadebet_detail[$i],
-                                'nominal' => $request->nominal_detail[$i],
-                                'keterangan' => $request->keterangan_detail[$i],
+                                'coa' => $request->coadebet_detail,
+                                'nominal' => $request->nominal_detail,
+                                'keterangan' => $request->keterangan_detail,
                                 'modifiedby' => $jurnalumum->modifiedby,
                                 'created_at' => date('d-m-Y H:i:s', strtotime($jurnalumum->created_at)),
                                 'updated_at' => date('d-m-Y H:i:s', strtotime($jurnalumum->updated_at)),
-                                'baris' => $i,
+                                // 'baris' => $i,
+                                'baris' => 0
                             ];
                         }
 
@@ -218,7 +222,7 @@ class JurnalUmumHeaderController extends Controller
                         $data = new StoreLogTrailRequest($datalogtrail);
                         app(LogTrailController::class)->store($data);
                     }
-                }
+                // }
 
 
                 $request->sortname = $request->sortname ?? 'id';

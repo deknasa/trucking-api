@@ -128,7 +128,6 @@ class PelunasanPiutangHeaderController extends Controller
                 $datadetail = [
                     'pelunasanpiutang_id' => $pelunasanpiutangheader->id,
                     'nobukti' => $pelunasanpiutangheader->nobukti,
-                    'tgl' => $pelunasanpiutangheader->tglbukti,
                     'pelanggan_id' => $request->pelanggan_id,
                     'agen_id' => $request->agendetail_id,
                     'nominal' => $request->bayarppd[$i],
@@ -139,7 +138,7 @@ class PelunasanPiutangHeaderController extends Controller
                     'tgljt' => $piutang->tglbukti,
                     'penyesuaian' => $penyesuaian ?? '',
                     'coapenyesuaian' => $getCoaPenyesuaian->coa ?? '',
-                    'invoice_bukti' => $piutang->invoice_nobukti,
+                    'invoice_nobukti' => $piutang->invoice_nobukti,
                     'keteranganpenyesuaian' => $keteranganpenyesuaianppd[$i] ?? '',
                     'nominallebihbayar' => $nominallebih ?? '',
                     'coalebihbayar' => $getNominalLebih->coa ?? '',
@@ -165,7 +164,6 @@ class PelunasanPiutangHeaderController extends Controller
                     'id' => $iddetail,
                     'pelunasanpiutang_id' => $pelunasanpiutangheader->id,
                     'nobukti' => $pelunasanpiutangheader->nobukti,
-                    'tgl' => $pelunasanpiutangheader->tglbukti,
                     'pelanggan_id' => $request->pelanggan_id,
                     'agen_id' => $request->agendetail_id,
                     'nominal' => $request->bayarppd[$i],
@@ -176,7 +174,7 @@ class PelunasanPiutangHeaderController extends Controller
                     'tgljt' => $piutang->tglbukti,
                     'penyesuaian' => $penyesuaian ?? '',
                     'coapenyesuaian' => $getCoaPenyesuaian->coa ?? '',
-                    'invoice_bukti' => $piutang->invoice_nobukti,
+                    'invoice_nobukti' => $piutang->invoice_nobukti,
                     'keteranganpenyesuaian' => $keteranganpenyesuaianppd[$i] ?? '',
                     'nominallebihbayar' => $nominallebih ?? '',
                     'coalebihbayar' => $getNominalLebih->coa ?? '',
@@ -311,7 +309,6 @@ class PelunasanPiutangHeaderController extends Controller
                     $datadetail = [
                         'pelunasanpiutang_id' => $pelunasanpiutangheader->id,
                         'nobukti' => $pelunasanpiutangheader->nobukti,
-                        'tgl' => $pelunasanpiutangheader->tglbukti,
                         'pelanggan_id' => $request->pelanggan_id,
                         'agen_id' => $request->agendetail_id,
                         'nominal' => $request->bayarppd[$i],
@@ -322,7 +319,7 @@ class PelunasanPiutangHeaderController extends Controller
                         'tgljt' => $piutang->tglbukti,
                         'penyesuaian' => $penyesuaian ?? '',
                         'coapenyesuaian' => $getCoaPenyesuaian->coa ?? '',
-                        'invoice_bukti' => $piutang->invoice_nobukti,
+                        'invoice_nobukti' => $piutang->invoice_nobukti,
                         'keteranganpenyesuaian' => $keteranganpenyesuaianppd[$i] ?? '',
                         'nominallebihbayar' => $nominallebih ?? '',
                         'coalebihbayar' => $getNominalLebih->coa ?? '',
@@ -346,7 +343,6 @@ class PelunasanPiutangHeaderController extends Controller
                         'id' => $iddetail,
                         'pelunasanpiutangheader_id' => $pelunasanpiutangheader->id,
                         'nobukti' => $pelunasanpiutangheader->nobukti,
-                        'tgl' => $pelunasanpiutangheader->tglbukti,
                         'pelanggan_id' => $request->pelanggan_id,
                         'agen_id' => $request->agendetail_id,
                         'nominal' => $request->bayarppd[$i],
@@ -357,7 +353,7 @@ class PelunasanPiutangHeaderController extends Controller
                         'tgljt' => $piutang->tglbukti,
                         'penyesuaian' => $penyesuaian ?? '',
                         'coapenyesuaian' => $getCoaPenyesuaian->coa ?? '',
-                        'invoice_bukti' => $piutang->invoice_nobukti,
+                        'invoice_nobukti' => $piutang->invoice_nobukti,
                         'keteranganpenyesuaian' => $keteranganpenyesuaianppd[$i] ?? '',
                         'nominallebihbayar' => $nominallebih ?? '',
                         'coalebihbayar' => $getNominalLebih->coa ?? '',
@@ -485,6 +481,18 @@ class PelunasanPiutangHeaderController extends Controller
         $pelunasanpiutang = new PelunasanPiutangHeader();
         return response([
             'data' => $pelunasanpiutang->getPelunasanPiutang($id,$agenid),
+            'attributes' => [
+                'totalRows' => $pelunasanpiutang->totalRows,
+                'totalPages' => $pelunasanpiutang->totalPages
+            ]
+        ]);
+    }
+
+    public function getDeletePelunasanPiutang($id)
+    {
+        $pelunasanpiutang = new PelunasanPiutangHeader();
+        return response([
+            'data' => $pelunasanpiutang->getDeletePelunasanPiutang($id),
             'attributes' => [
                 'totalRows' => $pelunasanpiutang->totalRows,
                 'totalPages' => $pelunasanpiutang->totalPages

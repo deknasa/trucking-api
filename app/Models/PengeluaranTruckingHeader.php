@@ -35,19 +35,15 @@ class PengeluaranTruckingHeader extends MyModel
             'pengeluarantruckingheader.keterangan',
             'pengeluarantruckingheader.modifiedby',
             'pengeluarantruckingheader.updated_at',
-            'pengeluarantruckingheader.proses_nobukti',
+            'pengeluarantruckingheader.pengeluaran_nobukti',
 
             'pengeluarantrucking.kodepengeluaran as pengeluarantrucking_id',
-            'pengeluaranheader.nobukti as pengeluaran_nobukti',
-            'pengeluaranheader.tglbukti as pengeluaran_tgl',
-
             'bank.namabank as bank_id',
             
             'akunpusat.coa as coa',
             'statusposting.text as statusposting'
         )
             ->leftJoin('pengeluarantrucking', 'pengeluarantruckingheader.pengeluarantrucking_id','pengeluarantrucking.id')
-            ->leftJoin('pengeluaranheader', 'pengeluarantruckingheader.pengeluaran_nobukti', 'pengeluaranheader.nobukti')
             ->leftJoin('bank', 'pengeluarantruckingheader.bank_id', 'bank.id')
             ->leftJoin('akunpusat', 'pengeluarantruckingheader.coa', 'akunpusat.coa')
             ->leftJoin('parameter as statusposting' , 'pengeluarantruckingheader.statusposting', 'statusposting.id');
@@ -109,15 +105,12 @@ class PengeluaranTruckingHeader extends MyModel
             'bank.namabank as bank_id',
             'statusposting.text as statusposting',
             'akunpusat.coa as coa',
-            'pengeluaranheader.nobukti as pengeluaran_nobukti',
-            'pengeluaranheader.tglbukti as pengeluaran_tgl',
-            $this->table.proses_nobukti,
+            $this->table.pengeluaran_nobukti,
             $this->table.modifiedby,
             $this->table.updated_at"
             )
         )
         ->leftJoin('pengeluarantrucking', 'pengeluarantruckingheader.pengeluarantrucking_id', 'pengeluarantrucking.id')
-        ->leftJoin('pengeluaranheader', 'pengeluarantruckingheader.pengeluaran_nobukti', 'pengeluaranheader.nobukti')
         ->leftJoin('bank', 'pengeluarantruckingheader.bank_id', 'bank.id')
         ->leftJoin('akunpusat', 'pengeluarantruckingheader.coa', 'akunpusat.coa')
         ->leftJoin('parameter as statusposting' , 'pengeluarantruckingheader.statusposting', 'statusposting.id');
@@ -137,8 +130,6 @@ class PengeluaranTruckingHeader extends MyModel
             $table->string('statusposting', 1000)->default('');
             $table->string('coa', 1000)->default('');
             $table->string('pengeluaran_nobukti', 1000)->default('');
-            $table->string('pengeluaran_tgl', 1000)->default('');
-            $table->string('proses_nobukti', 1000)->default('');
             $table->string('modifiedby', 50)->default('');
             $table->dateTime('updated_at')->default('1900/1/1');
             $table->increments('position');
@@ -149,7 +140,7 @@ class PengeluaranTruckingHeader extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id','nobukti','tglbukti','pengeluarantrucking_id','keterangan','bank_id','statusposting','coa','pengeluaran_nobukti','pengeluaran_tgl','proses_nobukti','modifiedby','updated_at'],$models);
+        DB::table($temp)->insertUsing(['id','nobukti','tglbukti','pengeluarantrucking_id','keterangan','bank_id','statusposting','coa','pengeluaran_nobukti','modifiedby','updated_at'],$models);
 
 
         return  $temp;         
