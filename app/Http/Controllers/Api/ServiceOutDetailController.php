@@ -71,13 +71,11 @@ class ServiceOutDetailController extends Controller
     {
         DB::beginTransaction();
         $validator = Validator::make($request->all(), [
-           //'mekanik_id' => 'required',
             'keterangan' => 'required',
-            'serviceout_id' => 'required'
         ], [
-            'serviceout_id.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
+            'keterangan.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
         ], [
-            'serviceout_id' => 'serviceoutdetail',
+            'keterangan' => 'keterangan',
         ]);
         if (!$validator->passes()) {
             return [
@@ -85,7 +83,6 @@ class ServiceOutDetailController extends Controller
                 'errors' => $validator->messages()
             ];
         }
-
         try {
             $serviceoutdetail = new ServiceOutDetail();
             $serviceoutdetail->serviceout_id = $request->serviceout_id;
@@ -93,9 +90,8 @@ class ServiceOutDetailController extends Controller
             $serviceoutdetail->servicein_nobukti = $request->servicein_nobukti;
             $serviceoutdetail->keterangan = $request->keterangan;
             $serviceoutdetail->modifiedby = auth('api')->user()->name;
-            
             $serviceoutdetail->save();
-            
+
             DB::commit();
             if ($validator->passes()) {
                 return [
@@ -107,7 +103,7 @@ class ServiceOutDetailController extends Controller
         } catch (\Throwable $th) {
             DB::rollBack();
             return response($th->getMessage());
-        }     
+        }
     }
 
     

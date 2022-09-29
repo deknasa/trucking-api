@@ -34,7 +34,6 @@ class ServiceOutHeader extends MyModel
     public function get()
     {
         $this->setRequestParameters();
-
         $query = DB::table($this->table)->select(
             'serviceoutheader.id',
             'serviceoutheader.nobukti',
@@ -92,7 +91,7 @@ class ServiceOutHeader extends MyModel
             $table->bigInteger('id')->default('0');
             $table->string('nobukti',50)->unique();
             $table->date('tglbukti')->default('1900/1/1');
-            $table->unsignedBigInteger('trado_id')->default('0');
+            $table->string('trado_id')->default('0');
             $table->date('tglkeluar')->default('1900/1/1');
             $table->longText('keterangan')->default('');
 

@@ -113,7 +113,7 @@ class UpahSupir extends MyModel
             $table->unsignedBigInteger('kotasampai_id')->default('0');
             $table->double('jarak', 15, 2)->default('0');
             $table->unsignedBigInteger('zona_id')->default('0');
-            $table->integer('statusaktif')->length(11)->default('0');
+            $table->string('statusaktif', 500)->default('');
             $table->date('tglmulaiberlaku')->default('1900/1/1');
             $table->integer('statusluarkota')->length(11)->default('0');
 

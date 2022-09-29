@@ -24,16 +24,6 @@ class HutangBayarDetail extends MyModel
         'updated_at' => 'date:d-m-Y H:i:s'
     ];
 
-
-    // public function findUpdate($id) {
-    //     $detail = DB::table('hutangbayardetail')->select(
-    //         'nominal',
-    //         'keterangan'
-    //     )->where('hutangbayar_id', $id)->get();
-
-    //     return $detail;
-    // }
-
     public function getAll($id)
     {
 
@@ -47,13 +37,9 @@ class HutangBayarDetail extends MyModel
 
             'alatbayar.namaalatbayar as alatbayar',
             'alatbayar.id as alatbayar_id',
-            // 
-            // 'hutangheader.nobukti as hutang',
-            // 'hutangheader.id as hutang_nobukti',
-
+           
         )
             ->leftJoin('alatbayar', 'hutangbayardetail.alatbayar_id', 'alatbayar.id')
-            // ->leftJoin('hutangheader', 'hutangbayardetail.hutangbayar_id', 'hutangheader.id')
 
             ->where('hutangbayar_id', '=', $id);
 

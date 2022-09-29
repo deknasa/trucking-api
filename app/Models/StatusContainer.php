@@ -25,8 +25,15 @@ class StatusContainer extends MyModel
         $this->setRequestParameters();
 
         $query = DB::table($this->table)->select(
-            "$this->table.*",
+            'statuscontainer.id',
+            'statuscontainer.kodestatuscontainer',
+            'statuscontainer.keterangan',
+
             'parameter.text as statusaktif',
+
+            'statuscontainer.modifiedby',
+            'statuscontainer.created_at',
+            'statuscontainer.updated_at'
         )
             ->leftJoin('parameter', 'statuscontainer.statusaktif', '=', 'parameter.id');
 
@@ -55,8 +62,7 @@ class StatusContainer extends MyModel
             
             $this->table.modifiedby,
             $this->table.created_at,
-            $this->table.updated_at,
-            $this->table.statusformat"
+            $this->table.updated_at"
             )
 
         )
@@ -70,12 +76,11 @@ class StatusContainer extends MyModel
             $table->bigInteger('id')->default('0');
             $table->string('kodestatuscontainer', 50)->default('');
             $table->longText('keterangan')->default('');
-            $table->integer('statusaktif')->length(11)->default('');
+            $table->string('statusaktif', 500)->default('');
 
             $table->string('modifiedby', 50)->default('');
             $table->dateTime('created_at')->default('1900/1/1');
             $table->dateTime('updated_at')->default('1900/1/1');
-            $table->bigInteger('statusformat')->default('');
             $table->increments('position');
         });
 
@@ -84,7 +89,7 @@ class StatusContainer extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id', 'kodestatuscontainer',  'keterangan', 'statusaktif', 'modifiedby', 'created_at', 'updated_at', 'statusformat'], $models);
+        DB::table($temp)->insertUsing(['id', 'kodestatuscontainer',  'keterangan', 'statusaktif', 'modifiedby', 'created_at', 'updated_at'], $models);
 
 
         return  $temp;

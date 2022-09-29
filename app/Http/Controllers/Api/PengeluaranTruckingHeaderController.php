@@ -75,10 +75,6 @@ class PengeluaranTruckingHeaderController extends Controller
 
             $pengeluarantruckingheader = new PengeluaranTruckingHeader();
             $statusPosting = Parameter::where('grp', 'STATUS POSTING')->where('text', 'BUKAN POSTING')->first();
-
-            $nobuktiPengeluaran = $request->pengeluaran_nobukti;
-            $PengeluaranHeader =  PengeluaranHeader::where('nobukti', $nobuktiPengeluaran)->first();
-
             
             $pengeluarantruckingheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $pengeluarantruckingheader->pengeluarantrucking_id = $request->pengeluarantrucking_id;
@@ -86,9 +82,7 @@ class PengeluaranTruckingHeaderController extends Controller
             $pengeluarantruckingheader->bank_id = $request->bank_id;
             $pengeluarantruckingheader->statusposting = $statusPosting->id ?? 0;
             $pengeluarantruckingheader->coa = $request->akunpusat;
-            $pengeluarantruckingheader->pengeluaran_nobukti = $nobuktiPengeluaran;
-            $pengeluarantruckingheader->pengeluaran_tgl = $PengeluaranHeader->tglbukti;
-            $pengeluarantruckingheader->proses_nobukti = '';
+            $pengeluarantruckingheader->pengeluaran_nobukti = $request->pengeluaran_nobukti;
             $pengeluarantruckingheader->statusformat = $format->id;
             $pengeluarantruckingheader->modifiedby = auth('api')->user()->name;
             
@@ -260,10 +254,7 @@ class PengeluaranTruckingHeaderController extends Controller
             $content['table'] = 'pengeluarantruckingheader';
             $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
                 
-            $noBuktiPengeluaran = $request->pengeluaran_nobukti;
-            $PengeluaranHeader =  DB::table('pengeluaranheader')
-            ->where('nobukti', $noBuktiPengeluaran)
-            ->first();
+            
 
             $pengeluarantruckingheader = PengeluaranTruckingHeader::findOrFail($id);
 
@@ -274,9 +265,7 @@ class PengeluaranTruckingHeaderController extends Controller
             $pengeluarantruckingheader->keterangan = $request->keterangan;
             $pengeluarantruckingheader->bank_id = $request->bank_id;
             $pengeluarantruckingheader->coa = $request->akunpusat;
-            $pengeluarantruckingheader->pengeluaran_nobukti = $noBuktiPengeluaran;
-            $pengeluarantruckingheader->pengeluaran_tgl = $PengeluaranHeader->tglbukti;
-            $pengeluarantruckingheader->proses_nobukti = '';
+            $pengeluarantruckingheader->pengeluaran_nobukti = $request->pengeluaran_nobukti;
             $pengeluarantruckingheader->statusformat =  $format->id;
             $pengeluarantruckingheader->modifiedby = auth('api')->user()->name;
             
@@ -441,22 +430,6 @@ class PengeluaranTruckingHeaderController extends Controller
             DB::rollBack();         
             return response($th->getMessage());   
         }
-    }
-
-    public function combo(Request $request)
-    {
-        $data = [
-            'pengeluarantrucking' => PengeluaranTrucking::all(),
-            'pengeluaranheader' => PengeluaranHeader::all(),
-            'bank' => Bank::all(),
-            'coa' => AkunPusat::all(),
-            'penerimaantruckingheader' => PenerimaanTruckingHeader::all(),
-            'supir' => Supir::select('id','namasupir')->get()
-        ];
-
-        return response([
-            'data' => $data
-        ]);
     }
 
    

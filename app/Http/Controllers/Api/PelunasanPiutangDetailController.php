@@ -49,7 +49,6 @@ class PelunasanPiutangDetailController extends Controller
             } else {
                 $query->select(
                     'detail.nobukti',
-                    'detail.tgl',
                     'detail.nominal',
                     'detail.keterangan',
                     'detail.piutang_nobukti',
@@ -96,7 +95,6 @@ class PelunasanPiutangDetailController extends Controller
             
             $pelunasanpiutangdetail->pelunasanpiutang_id = $request->pelunasanpiutang_id;
             $pelunasanpiutangdetail->nobukti = $request->nobukti;
-            $pelunasanpiutangdetail->tgl = $request->tgl;
             $pelunasanpiutangdetail->pelanggan_id = $request->pelanggan_id;
             $pelunasanpiutangdetail->agen_id = $request->agen_id;
             $pelunasanpiutangdetail->nominal = $request->nominal;
@@ -107,7 +105,7 @@ class PelunasanPiutangDetailController extends Controller
             $pelunasanpiutangdetail->tgljt = $request->tgljt;
             $pelunasanpiutangdetail->penyesuaian = $request->penyesuaian;
             $pelunasanpiutangdetail->coapenyesuaian = $request->coapenyesuaian;
-            $pelunasanpiutangdetail->invoice_bukti = $request->invoice_bukti;
+            $pelunasanpiutangdetail->invoice_nobukti = $request->invoice_nobukti;
             $pelunasanpiutangdetail->keteranganpenyesuaian = $request->keteranganpenyesuaian;
             $pelunasanpiutangdetail->nominallebihbayar = $request->nominallebihbayar;
             $pelunasanpiutangdetail->coalebihbayar = $request->coalebihbayar;

@@ -46,8 +46,8 @@ class BankController extends Controller
             $bank->coa = $request->coa;
             $bank->tipe = $request->tipe;
             $bank->statusaktif = $request->statusaktif;
-            $bank->kodepenerimaan = $request->kodepenerimaan ?? 0;
-            $bank->kodepengeluaran = $request->kodepengeluaran ?? 0;
+            $bank->statusformatpenerimaan = $request->statusformatpenerimaan ?? 0;
+            $bank->statusformatpengeluaran = $request->statusformatpengeluaran ?? 0;
             $bank->modifiedby = auth('api')->user()->name;
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
@@ -116,8 +116,8 @@ class BankController extends Controller
             $bank->coa = $request->coa;
             $bank->tipe = $request->tipe;
             $bank->statusaktif = $request->statusaktif;
-            $bank->kodepenerimaan = $request->kodepenerimaan;
-            $bank->kodepengeluaran = $request->kodepengeluaran;
+            $bank->statusformatpenerimaan = $request->statusformatpenerimaan;
+            $bank->statusformatpengeluaran = $request->statusformatpengeluaran;
             $bank->modifiedby = auth('api')->user()->name;
 
             if ($bank->save()) {
@@ -200,8 +200,8 @@ class BankController extends Controller
     {
         $data = [
             'status' => Parameter::where(['grp' => 'status aktif'])->get(),
-            'kodepenerimaan' => Parameter::where(['grp' => 'PENERIMAAN KAS'])->get(),
-            'kodepengeluaran' => Parameter::where(['grp' => 'PENGELUARAN KAS'])->get(),
+            'statusformatpenerimaan' => Parameter::where(['grp' => 'PENERIMAAN KAS'])->get(),
+            'statusformatpengeluaran' => Parameter::where(['grp' => 'PENGELUARAN KAS'])->get(),
             'akunpusat' => AkunPusat::all(),
         ];
 

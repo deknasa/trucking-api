@@ -239,7 +239,6 @@ class PiutangHeaderController extends Controller
                 throw new \Throwable($jurnal['message']);
             }
             
-            dd('tes');
             
             DB::commit();
         

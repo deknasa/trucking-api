@@ -89,9 +89,8 @@ class StatusContainerController extends Controller
     /**
      * @ClassName 
      */
-    public function update(UpdateStatusContainerRequest $request, StatusContainer $statusContainer)
+    public function update(StoreStatusContainerRequest $request, StatusContainer $statusContainer)
     {
-        DB::beginTransaction();
 
         try {
             $statusContainer = StatusContainer::findOrFail($statusContainer->id);
@@ -110,31 +109,26 @@ class StatusContainerController extends Controller
                     'datajson' => $statusContainer->toArray(),
                     'modifiedby' => $statusContainer->modifiedby
                 ];
-
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
-
+                
                 /* Set position and page */
                 $selected = $this->getPosition($statusContainer, $statusContainer->getTable());
                 $statusContainer->position = $selected->position;
                 $statusContainer->page = ceil($statusContainer->position / ($request->limit ?? 10));
-
+                
                 return response([
                     'status' => true,
                     'message' => 'Berhasil diubah',
                     'data' => $statusContainer
                 ]);
             } else {
-                DB::rollBack();
-
                 return response([
                     'status' => false,
                     'message' => 'Gagal diubah'
                 ]);
             }
         } catch (\Throwable $th) {
-            DB::rollBack();
-
             throw $th;
         }
     }
@@ -144,10 +138,9 @@ class StatusContainerController extends Controller
      */
     public function destroy(StatusContainer $statusContainer, Request $request)
     {
-        DB::beginTransaction();
 
-        $delete = $statusContainer->delete();
-
+        $delete = StatusContainer::destroy($statusContainer->id);
+        $del = 1;
         if ($delete) {
             $logTrail = [
                 'namatabel' => strtoupper($statusContainer->getTable()),
@@ -165,8 +158,9 @@ class StatusContainerController extends Controller
             DB::commit();
 
             /* Set position and page */
-            $selected = $this->getPosition($statusContainer, $statusContainer->getTable());
+            $selected = $this->getPosition($statusContainer, $statusContainer->getTable(), true);
             $statusContainer->position = $selected->position;
+            $statusContainer->id = $selected->id;
             $statusContainer->page = ceil($statusContainer->position / ($request->limit ?? 10));
 
             return response([
