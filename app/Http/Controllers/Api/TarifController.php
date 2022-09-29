@@ -58,7 +58,7 @@ class TarifController extends Controller
             $tarif->kota_id = $request->kota_id;
             $tarif->zona_id = $request->zona_id;
             $tarif->nominalton = $request->nominalton;
-            $tarif->tglberlaku = date('Y-m-d', strtotime($request->tglberlaku));
+            $tarif->tglmulaiberlaku = date('Y-m-d', strtotime($request->tglmulaiberlaku));
             $tarif->statuspenyesuaianharga = $request->statuspenyesuaianharga;
             $tarif->modifiedby = auth('api')->user()->name;
             $request->sortname = $request->sortname ?? 'id';
@@ -134,7 +134,8 @@ class TarifController extends Controller
             $tarif->kota_id = $request->kota_id;
             $tarif->zona_id = $request->zona_id;
             $tarif->nominalton = $request->nominalton;
-            $tarif->tglberlaku = date('Y-m-d', strtotime($request->tglberlaku));
+            $tarif->tglmulaiberlaku = date('Y-m-d', strtotime($request->tglmulaiberlaku));
+            $tarif->tglakhirberlaku = date('Y-m-d', strtotime($request->tglakhirberlaku));
             $tarif->statuspenyesuaianharga = $request->statuspenyesuaianharga;
             $tarif->modifiedby = auth('api')->user()->name;
 
@@ -280,7 +281,7 @@ class TarifController extends Controller
             $table->string('kota_id', 50)->default('');
             $table->string('zona_id', 50)->default('');
             $table->string('nominalton', 50)->default('0');
-            $table->date('tglberlaku', 50)->default('1900/1/1');
+            $table->date('tglmulaiberlaku', 50)->default('1900/1/1');
             $table->string('statuspenyesuaianharga', 50)->default('');
             $table->string('modifiedby', 30)->default('');
             $table->dateTime('created_at')->default('1900/1/1');
@@ -301,7 +302,7 @@ class TarifController extends Controller
                 'tarif.kota_id',
                 'tarif.zona_id',
                 'tarif.nominalton',
-                'tarif.tglberlaku',
+                'tarif.tglmulaiberlaku',
                 'tarif.statuspenyesuaianharga',
                 'tarif.modifiedby',
                 'tarif.created_at',
@@ -320,7 +321,7 @@ class TarifController extends Controller
                 'tarif.kota_id',
                 'tarif.zona_id',
                 'tarif.nominalton',
-                'tarif.tglberlaku',
+                'tarif.tglmulaiberlaku',
                 'tarif.statuspenyesuaianharga',
                 'tarif.modifiedby',
                 'tarif.created_at',
@@ -341,7 +342,7 @@ class TarifController extends Controller
                     'tarif.kota_id',
                     'tarif.zona_id',
                     'tarif.nominalton',
-                    'tarif.tglberlaku',
+                    'tarif.tglmulaiberlaku',
                     'tarif.statuspenyesuaianharga',
                     'tarif.modifiedby',
                     'tarif.created_at',
@@ -361,7 +362,7 @@ class TarifController extends Controller
                     'tarif.kota_id',
                     'tarif.zona_id',
                     'tarif.nominalton',
-                    'tarif.tglberlaku',
+                    'tarif.tglmulaiberlaku',
                     'tarif.statuspenyesuaianharga',
                     'tarif.modifiedby',
                     'tarif.created_at',
@@ -372,7 +373,7 @@ class TarifController extends Controller
             }
         }
 
-        DB::table($temp)->insertUsing(['id_', 'tujuan', 'container_id', 'nominal', 'statusaktif', 'tujuanasal', 'sistemton', 'kota_id', 'zona_id', 'nominalton', 'tglberlaku', 'statuspenyesuaianharga', 'modifiedby', 'created_at', 'updated_at'], $query);
+        DB::table($temp)->insertUsing(['id_', 'tujuan', 'container_id', 'nominal', 'statusaktif', 'tujuanasal', 'sistemton', 'kota_id', 'zona_id', 'nominalton', 'tglmulaiberlaku', 'statuspenyesuaianharga', 'modifiedby', 'created_at', 'updated_at'], $query);
 
 
         if ($del == 1) {

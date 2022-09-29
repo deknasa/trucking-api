@@ -65,7 +65,6 @@ class ServiceInHeaderController extends Controller
             TOP:
             $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
             $servicein->nobukti = $nobukti;
-
             try {
                 $servicein->save();
             } catch (\Exception $e) {
@@ -85,7 +84,7 @@ class ServiceInHeaderController extends Controller
                 'datajson' => $servicein->toArray(),
                 'modifiedby' => $servicein->modifiedby
             ];
-
+            
             $validatedLogTrail = new StoreLogTrailRequest($logTrail);
             $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
@@ -101,7 +100,7 @@ class ServiceInHeaderController extends Controller
                 'keterangan' => $request->keterangan_detail,
                 'modifiedby' => $servicein->modifiedby,
             ];
-
+            
             $data = new StoreServiceInDetailRequest($datadetail);
             $datadetails = app(ServiceInDetailController::class)->store($data);
 
@@ -128,11 +127,11 @@ class ServiceInHeaderController extends Controller
             $datalogtrail = [
                 'namatabel' => $tabeldetail,
                 'postingdari' => 'ENTRY SERVICE IN',
-                'idtrans' =>  $iddetail->id,
-                'nobuktitrans' => '',
+                'idtrans' =>  $iddetail,
+                'nobuktitrans' => $servicein->nobukti,
                 'aksi' => 'ENTRY',
                 'datajson' => $detaillog,
-                'modifiedby' => $request->modifiedby,
+                'modifiedby' => $servicein->modifiedby,
             ];
 
             $data = new StoreLogTrailRequest($datalogtrail);
@@ -166,13 +165,14 @@ class ServiceInHeaderController extends Controller
      */
     public function show($id)
     {
-        $data = ServiceInHeader::with(
-            'serviceindetail',
-        )->find($id);
+        
+        $data = ServiceInHeader::find($id);
+        $detail = ServiceInDetail::getAll($id);
 
         return response([
             'status' => true,
-            'data' => $data
+            'data' => $data,
+            'detail' => $detail
         ]);
     }
 
@@ -287,7 +287,7 @@ class ServiceInHeaderController extends Controller
     /**
      * @ClassName
      */
-    public function destroy($id, $servicein, Request $request)
+    public function destroy($id,  Request $request)
     {
 
         DB::beginTransaction();
@@ -301,9 +301,9 @@ class ServiceInHeaderController extends Controller
             if ($delete) {
                 $logTrail = [
                     'namatabel' => strtoupper($servicein->getTable()),
-                    'postingdari' => 'DELETE SERVICE IN',
-                    'idtrans' => $servicein->id,
-                    'nobuktitrans' => $servicein->id,
+                    'postingdari' => 'DELETE SERVICEIN',
+                    'idtrans' => $id,
+                    'nobuktitrans' => '',
                     'aksi' => 'DELETE',
                     'datajson' => $servicein->toArray(),
                     'modifiedby' => $servicein->modifiedby

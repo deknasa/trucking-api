@@ -4,12 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
+
 
 class ServiceOutDetail extends MyModel
 {
     use HasFactory;
 
-    protected $table = 'ServiceOutDetail';
+    protected $table = 'serviceoutdetail';
 
     protected $casts = [
         'created_at' => 'date:d-m-Y H:i:s',
@@ -21,4 +23,19 @@ class ServiceOutDetail extends MyModel
         'created_at',
         'updated_at',
     ];
+
+    function getAll($id)
+    {
+        $query = DB::table('serviceoutdetail')->select(
+            'serviceoutdetail.nobukti',
+            'serviceoutdetail.keterangan',
+            'serviceinheader.nobukti as servicein_nobukti',
+        )
+            ->leftJoin('serviceinheader', 'serviceoutdetail.servicein_nobukti', 'serviceinheader.nobukti')
+
+            ->where('serviceout_id', '=', $id);
+
+        $data = $query->get();
+        return $data;
+    }
 }

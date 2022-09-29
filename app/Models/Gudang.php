@@ -66,8 +66,7 @@ class Gudang extends MyModel
            
             $this->table.modifiedby,
             $this->table.created_at,
-            $this->table.updated_at,
-            $this->table.statusformat"
+            $this->table.updated_at"
             )
 
         )
@@ -81,8 +80,8 @@ class Gudang extends MyModel
         Schema::create($temp, function ($table) {
             $table->bigInteger('id')->default('0');
             $table->string('gudang', 100)->default('');             
-            $table->integer('statusaktif')->length(11)->default('0');             
-
+            $table->string('statusaktif', 500)->default('');
+           
             $table->string('modifiedby', 50)->default('');
             $table->dateTime('created_at')->default('1900/1/1');
             $table->dateTime('updated_at')->default('1900/1/1');
@@ -94,7 +93,7 @@ class Gudang extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id', 'gudang', 'statusaktif', 'modifiedby', 'created_at', 'updated_at', 'statusformat'], $models);
+        DB::table($temp)->insertUsing(['id', 'gudang', 'statusaktif', 'modifiedby', 'created_at', 'updated_at'], $models);
 
 
         return  $temp;
