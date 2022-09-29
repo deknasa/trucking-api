@@ -26,15 +26,16 @@ class ServiceInDetail extends MyModel
 
     function getAll($id)
     {
-
-
         $query = DB::table('serviceindetail')->select(
             'serviceindetail.nobukti',
-            'mekanik.namamekanik as mekanik_id',
+
+            'mekanik.namamekanik as mekanik',
+            'mekanik.id as mekanik_id',
+
             'serviceindetail.keterangan',
         )
             ->leftJoin('mekanik', 'serviceindetail.mekanik_id', 'mekanik.id')
-            ->where('serviceindetail_id', '=', $id);
+            ->where('servicein_id', '=', $id);
 
         $data = $query->get();
 

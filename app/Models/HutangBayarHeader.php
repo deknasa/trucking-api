@@ -26,6 +26,8 @@ class HutangBayarHeader extends MyModel
 
     public function get()
     {
+    dd('0');
+
         $this->setRequestParameters();
 
         $query = DB::table($this->table)->select(
@@ -60,6 +62,7 @@ class HutangBayarHeader extends MyModel
     public function find($id)
     {
 
+        dd('1');
 
         $query = DB::table('hutangbayarheader')->select(
             'hutangbayarheader.id',
@@ -96,7 +99,7 @@ class HutangBayarHeader extends MyModel
 
     public function selectColumns($query)
     {//sesuaikan dengan createtemp
-    
+    dd('2');
         return $query->select(
             DB::raw(
                 "$this->table.id,
@@ -112,10 +115,8 @@ class HutangBayarHeader extends MyModel
             $this->table.updated_at,
             $this->table.statusformat"
             )
-            //'hutangbayar.nobukti as pengeluaran_nobukti',
             
         )
-            //  ->leftJoin('hutangbayar', 'penerimaantruckingheader.penerimaan_nobukti', 'hutangbayar.nobukti')
             ->leftJoin('bank', 'hutangbayarheader.bank_id', 'bank.id')
             ->leftJoin('supplier', 'hutangbayarheader.supplier_id', 'supplier.id')
             ->leftJoin('akunpusat', 'hutangbayarheader.coa', 'akunpusat.coa');
@@ -133,7 +134,6 @@ class HutangBayarHeader extends MyModel
             $table->unsignedBigInteger('supplier_id')->default('0');            
             $table->string('coa',50)->default('');  
 
-            // $table->string('pengeluaran_nobukti', 1000)->default('');
             $table->string('modifiedby', 50)->default('');
             $table->dateTime('created_at')->default('1900/1/1');
             $table->dateTime('updated_at')->default('1900/1/1');

@@ -33,12 +33,13 @@ class ServiceInHeader extends MyModel
     public function get()
     {
         $this->setRequestParameters();
-
         $query = DB::table($this->table)->select(
             'serviceinheader.id',
             'serviceinheader.nobukti',
             'serviceinheader.tglbukti',
+
             'trado.keterangan as trado_id',
+
             'serviceinheader.tglmasuk',
             'serviceinheader.keterangan',
             'serviceinheader.modifiedby',
@@ -46,7 +47,9 @@ class ServiceInHeader extends MyModel
             'serviceinheader.updated_at'
 
         )
-            ->join('trado', 'trado.id', '=', 'serviceinheader.trado_id');
+        ->leftJoin('trado', 'serviceinheader.trado_id', 'trado.id');
+
+        // ->join('trado', 'trado.id', '=', 'serviceinheader.trado_id');
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -56,6 +59,31 @@ class ServiceInHeader extends MyModel
         $this->paginate($query);
 
         $data = $query->get();
+
+        return $data;
+    }
+
+    public function find($id)
+    {
+
+        $query = DB::table('serviceinheader')->select(
+            'serviceinheader.id',
+            'serviceinheader.nobukti',
+            'serviceinheader.tglbukti',
+            'serviceinheader.trado_id',
+
+            'trado.keterangan as trado',
+
+            'serviceinheader.tglmasuk',
+            'serviceinheader.keterangan',
+            'serviceinheader.modifiedby',
+            'serviceinheader.created_at',
+            'serviceinheader.updated_at'
+
+        )
+        ->leftJoin('trado', 'serviceinheader.trado_id', 'trado.id');
+
+        $data = $query->first();
 
         return $data;
     }
@@ -79,7 +107,7 @@ class ServiceInHeader extends MyModel
             )
             
         )
-        ->join('trado', 'trado.id', '=', 'serviceinheader.trado_id');
+        ->leftJoin('trado', 'serviceinheader.trado_id', 'trado.id');
 
     }
 
@@ -90,7 +118,7 @@ class ServiceInHeader extends MyModel
             $table->bigInteger('id')->default('0');
             $table->string('nobukti',50)->unique();
             $table->date('tglbukti')->default('1900/1/1');
-            $table->unsignedBigInteger('trado_id')->default('0');
+            $table->string('trado_id')->default('0');
             $table->date('tglmasuk')->default('1900/1/1');
             $table->longText('keterangan')->default('');
 

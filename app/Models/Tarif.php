@@ -36,11 +36,11 @@ class Tarif extends MyModel
             'tarif.nominal',
             'parameter.text as statusaktif',
             'tarif.tujuanasal',
-            'tarif.sistemton',
+            'tarif.statussistemton',
             'kota.kodekota as kota_id',
             'zona.zona as zona_id',
             'tarif.nominalton',
-            'tarif.tglberlaku',
+            'tarif.tglmulaiberlaku',
             'p.text as statuspenyesuaianharga',
             'tarif.modifiedby',
             'tarif.created_at',
@@ -75,11 +75,11 @@ class Tarif extends MyModel
             $this->table.nominal,
             'parameter.text as statusaktif',
              $this->table.tujuanasal,
-             $this->table.sistemton,
+             $this->table.statussistemton,
             'kota.kodekota as kota_id',
            'zona.zona as zona_id',
              $this->table.nominalton,
-             $this->table.tglberlaku,
+             $this->table.tglmulaiberlaku,
             'p.text as statuspenyesuaianharga',
              $this->table.modifiedby,
              $this->table.created_at,
@@ -88,7 +88,6 @@ class Tarif extends MyModel
             )
 
         )
-
             ->leftJoin('parameter', 'tarif.statusaktif', '=', 'parameter.id')
             ->leftJoin('container', 'tarif.container_id', '=', 'container.id')
             ->leftJoin('kota', 'tarif.kota_id', '=', 'kota.id')
@@ -106,17 +105,16 @@ class Tarif extends MyModel
             $table->double('nominal', 15, 2)->default('0');
             $table->integer('statusaktif')->length(11)->default('0');
             $table->string('tujuanasal', 300)->default('');
-            $table->integer('sistemton')->length(11)->default('0');
+            $table->integer('statussistemton')->length(11)->default('0');
             $table->unsignedBigInteger('kota_id')->default('0');
             $table->unsignedBigInteger('zona_id')->default('0');
             $table->double('nominalton', 15, 2)->default('0');
-            $table->date('tglberlaku')->default('1900/1/1');
-
+            $table->date('tglmulaiberlaku')->default('1900/1/1');
             $table->integer('statuspenyesuaianharga')->length(11)->default('0');
+
             $table->string('modifiedby', 50)->default('');
             $table->dateTime('created_at')->default('1900/1/1');
             $table->dateTime('updated_at')->default('1900/1/1');
-            $table->bigInteger('statusformat')->default('');
             $table->increments('position');
         });
 
@@ -125,7 +123,7 @@ class Tarif extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id', 'tujuan', 'container_id', 'nominal', 'statusaktif', 'tujuanasal', 'sistemton', 'kota_id', 'zona_id', 'nominalton', 'tglberlaku', 'statuspenyesuaianharga', 'modifiedby', 'created_at', 'updated_at', 'statusformat'], $models);
+        DB::table($temp)->insertUsing(['id', 'tujuan', 'container_id', 'nominal', 'statusaktif', 'tujuanasal', 'statussistemton', 'kota_id', 'zona_id', 'nominalton', 'tglmulaiberlaku', 'statuspenyesuaianharga', 'modifiedby', 'created_at', 'updated_at'], $models);
 
 
         return  $temp;

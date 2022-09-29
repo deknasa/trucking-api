@@ -318,12 +318,6 @@ class HutangBayarHeaderController extends Controller
             $hutangbayarheader->position = $selected->position;
             $hutangbayarheader->page = ceil($hutangbayarheader->position / ($request->limit ?? 10));
 
-
-
-            // if (isset($request->limit)) {
-            //     $penerimaantruckingheader->page = ceil($penerimaantruckingheader->position / $request->limit);
-            // }
-
             return response([
                 'status' => true,
                 'message' => 'Berhasil disimpan',
@@ -399,8 +393,6 @@ class HutangBayarHeaderController extends Controller
             'hutangbayar' => HutangBayarHeader::all(),
             'pengeluaran' => PengeluaranHeader::all(),
             'hutangheader' => HutangHeader::all(),
-
-
 
         ];
 

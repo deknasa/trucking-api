@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Schema;
 
 class SatuanController extends Controller
 {
- /**
+    /**
      * @ClassName 
      */
     public function index()
@@ -37,7 +37,7 @@ class SatuanController extends Controller
     {
         //
     }
- /**
+    /**
      * @ClassName 
      */
     public function store(StoreSatuanRequest $request)
@@ -70,13 +70,18 @@ class SatuanController extends Controller
             }
 
             /* Set position and page */
-            $del = 0;
-            $data = $this->getid($satuan->id, $request, $del);
-            $satuan->position = $data->row;
+            // $del = 0;
+            // $data = $this->getid($satuan->id, $request, $del);
+            // $satuan->position = $data->row;
 
-            if (isset($request->limit)) {
-                $satuan->page = ceil($satuan->position / $request->limit);
-            }
+            // if (isset($request->limit)) {
+            //     $satuan->page = ceil($satuan->position / $request->limit);
+            // }
+
+            /* Set position and page */
+            $selected = $this->getPosition($satuan, $satuan->getTable());
+            $satuan->position = $selected->position;
+            $satuan->page = ceil($satuan->position / ($request->limit ?? 10));
 
             return response([
                 'status' => true,
@@ -101,7 +106,7 @@ class SatuanController extends Controller
     {
         //
     }
- /**
+    /**
      * @ClassName 
      */
     public function update(StoreSatuanRequest $request, Satuan $satuan)
@@ -126,12 +131,17 @@ class SatuanController extends Controller
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
 
-                /* Set position and page */
-                $satuan->position = $this->getid($satuan->id, $request, 0)->row;
+                // /* Set position and page */
+                // $satuan->position = $this->getid($satuan->id, $request, 0)->row;
 
-                if (isset($request->limit)) {
-                    $satuan->page = ceil($satuan->position / $request->limit);
-                }
+                // if (isset($request->limit)) {
+                //     $satuan->page = ceil($satuan->position / $request->limit);
+                // }
+
+                /* Set position and page */
+                $selected = $this->getPosition($satuan, $satuan->getTable());
+                $satuan->position = $selected->position;
+                $satuan->page = ceil($satuan->position / ($request->limit ?? 10));
 
                 return response([
                     'status' => true,
@@ -148,7 +158,7 @@ class SatuanController extends Controller
             throw $th;
         }
     }
- /**
+    /**
      * @ClassName 
      */
     public function destroy(Satuan $satuan, Request $request)
@@ -171,12 +181,19 @@ class SatuanController extends Controller
 
             DB::commit();
 
-            $data = $this->getid($satuan->id, $request, $del);
-            $satuan->position = $data->row ?? 0;
-            $satuan->id = $data->id  ?? 0;
-            if (isset($request->limit)) {
-                $satuan->page = ceil($satuan->position / $request->limit);
-            }
+            // $data = $this->getid($satuan->id, $request, $del);
+            // $satuan->position = $data->row ?? 0;
+            // $satuan->id = $data->id  ?? 0;
+            // if (isset($request->limit)) {
+            //     $satuan->page = ceil($satuan->position / $request->limit);
+            // }
+
+            /* Set position and page */
+			  $selected = $this->getPosition($satuan, $satuan->getTable(), true);
+              $satuan->position = $selected->position;
+              $satuan->id = $selected->id;
+              $satuan->page = ceil($satuan->position / ($request->limit ?? 10));
+
             return response([
                 'status' => true,
                 'message' => 'Berhasil dihapus',
@@ -207,7 +224,7 @@ class SatuanController extends Controller
     public function combo(Request $request)
     {
         $data = [
-            'statusaktif' => Parameter::where(['grp'=>'status aktif'])->get(),
+            'statusaktif' => Parameter::where(['grp' => 'status aktif'])->get(),
         ];
 
         return response([
