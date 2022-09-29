@@ -1,8 +1,10 @@
 <?php
 
 namespace Database\Seeders;
+
 use App\Models\JenisEmkl;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class JenisEmklSeeder extends Seeder
 {
@@ -13,17 +15,10 @@ class JenisEmklSeeder extends Seeder
      */
     public function run()
     {
-        JenisEmkl::create([
-            'kodejenisemkl' => 'TAS',
-            'keterangan' => 'EMKL TAS',
-            'modifiedby' => 'ADMIN',
-        ]);
+        DB::statement("delete JenisEmkl");
+        DB::statement("DBCC CHECKIDENT ('JenisEmkl', RESEED, 1);");
 
-        JenisEmkl::create([
-            'kodejenisemkl' => 'OL',
-            'keterangan' => 'ORDERAN LUAR',
-            'modifiedby' => 'ADMIN',
-        ]);
-
+        jenisemkl::create(['kodejenisemkl' => 'TAS', 'keterangan' => 'EMKL TAS', 'statusaktif' => '1', 'modifiedby' => 'ADMIN',]);
+        jenisemkl::create(['kodejenisemkl' => 'OL', 'keterangan' => 'ORDERAN LUAR', 'statusaktif' => '1', 'modifiedby' => 'ADMIN',]);
     }
 }

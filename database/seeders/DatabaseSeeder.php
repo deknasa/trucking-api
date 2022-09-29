@@ -33,6 +33,9 @@ class DatabaseSeeder extends Seeder
             AbsensiSupirDetailSeeder::class,
             AbsensiSupirApprovalHeaderSeeder::class,
             AbsensiSupirApprovalDetailSeeder::class,
+            ContainerSeeder::class,
+            JenisEmklSeeder::class,
+
             
         ]);
     }
