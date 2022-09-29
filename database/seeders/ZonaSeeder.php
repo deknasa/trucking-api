@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Zona;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class ZonaSeeder extends Seeder
 {
@@ -14,12 +15,9 @@ class ZonaSeeder extends Seeder
      */
     public function run()
     {
+        DB::statement("delete zona");
+        DB::statement("DBCC CHECKIDENT ('zona', RESEED, 1);");
 
-        Zona::create([
-            'zona' => 'ZONA 2',
-            'keterangan' => 'ZONA 2',
-            'statusaktif' => 1,
-            'modifiedby' => 'ADMIN',
-        ]);
+        zona::create(['zona' => 'luar kota',  'keterangan' => 'luar kota',  'statusaktif' => '1',  'modifiedby' => 'ADMIN',]);
     }
 }

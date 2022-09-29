@@ -18,10 +18,10 @@ class Bank extends MyModel
         'updated_at',
     ];
 
-    // protected $casts = [
-    //     'created_at' => 'date:d-m-Y H:i:s',
-    //     'updated_at' => 'date:d-m-Y H:i:s'
-    // ];
+    protected $casts = [
+        'created_at' => 'date:d-m-Y H:i:s',
+        'updated_at' => 'date:d-m-Y H:i:s'
+    ];
 
     public function get()
     {
@@ -53,16 +53,16 @@ class Bank extends MyModel
             $this->table.coa,
             $this->table.tipe,
             parameter.text as statusaktif,
-            kodepenerimaan.text as kodepenerimaan,
-            kodepengeluaran.text as kodepengeluaran,
+            statusformatpenerimaan.text as statusformatpenerimaan,
+            statusformatpengeluaran.text as statusformatpengeluaran,
             $this->table.modifiedby,
             $this->table.created_at,
             $this->table.updated_at"
             )
         )
             ->leftJoin('parameter', 'bank.statusaktif', '=', 'parameter.id')
-            ->leftJoin('parameter as kodepenerimaan', 'bank.kodepenerimaan', '=', 'kodepenerimaan.id')
-            ->leftJoin('parameter as kodepengeluaran', 'bank.kodepengeluaran', '=', 'kodepengeluaran.id');
+            ->leftJoin('parameter as statusformatpenerimaan', 'bank.statusformatpenerimaan', '=', 'statusformatpenerimaan.id')
+            ->leftJoin('parameter as statusformatpengeluaran', 'bank.statusformatpengeluaran', '=', 'statusformatpengeluaran.id');
 
     }
 
@@ -76,8 +76,8 @@ class Bank extends MyModel
             $table->string('coa', 1000)->default('');
             $table->string('tipe', 1000)->default('');
             $table->string('statusaktif', 1000)->default('');
-            $table->string('kodepenerimaan', 1000)->default('');
-            $table->string('kodepengeluaran', 1000)->default('');
+            $table->string('statusformatpenerimaan', 1000)->default('');
+            $table->string('statusformatpengeluaran', 1000)->default('');
             $table->string('modifiedby', 50)->default('');
             $table->dateTime('created_at')->default('1900/1/1');
             $table->dateTime('updated_at')->default('1900/1/1');
@@ -89,7 +89,7 @@ class Bank extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id','kodebank','namabank','coa','tipe','statusaktif','kodepenerimaan','kodepengeluaran','modifiedby','created_at','updated_at'],$models);
+        DB::table($temp)->insertUsing(['id','kodebank','namabank','coa','tipe','statusaktif','statusformatpenerimaan','statusformatpengeluaran','modifiedby','created_at','updated_at'],$models);
 
 
         return  $temp;         
@@ -111,10 +111,10 @@ class Bank extends MyModel
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statusaktif') {
                             $query = $query->where('parameter.text', '=', $filters['data']);
-                        } else if ($filters['field'] == 'kodepenerimaan') {
-                            $query = $query->where('kodepenerimaan.text', '=', $filters['data']);
-                        } else if ($filters['field'] == 'kodepengeluaran') {
-                            $query = $query->where('kodepengeluaran.text', '=', $filters['data']);
+                        } else if ($filters['field'] == 'statusformatpenerimaan') {
+                            $query = $query->where('statusformatpenerimaan.text', '=', $filters['data']);
+                        } else if ($filters['field'] == 'statusformatpengeluaran') {
+                            $query = $query->where('statusformatpengeluaran.text', '=', $filters['data']);
                         } else {
                             $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
@@ -125,10 +125,10 @@ class Bank extends MyModel
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statusaktif') {
                             $query = $query->orWhere('parameter.text', '=', $filters['data']);
-                        } else if ($filters['field'] == 'kodepenerimaan') {
-                            $query = $query->orWhere('kodepenerimaan.text', '=', $filters['data']);
-                        } else if ($filters['field'] == 'kodepengeluaran') {
-                            $query = $query->orWhere('kodepengeluaran.text', '=', $filters['data']);
+                        } else if ($filters['field'] == 'statusformatpenerimaan') {
+                            $query = $query->orWhere('statusformatpenerimaan.text', '=', $filters['data']);
+                        } else if ($filters['field'] == 'statusformatpengeluaran') {
+                            $query = $query->orWhere('statusformatpengeluaran.text', '=', $filters['data']);
                         } else {
                             $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }

@@ -72,7 +72,7 @@ class KerusakanController extends Controller
             }
 
             /* Set position and page */
-            $selected = $this->getPosition($kerusakan, $kerusakan->getTable(), true);
+            $selected = $this->getPosition($kerusakan, $kerusakan->getTable());
             $kerusakan->position = $selected->position;
             $kerusakan->page = ceil($kerusakan->position / ($request->limit ?? 10));
             
@@ -125,7 +125,7 @@ class KerusakanController extends Controller
                 app(LogTrailController::class)->store($validatedLogTrail);
 
                 /* Set position and page */
-                $selected = $this->getPosition($kerusakan, $kerusakan->getTable(), true);
+                $selected = $this->getPosition($kerusakan, $kerusakan->getTable());
                 $kerusakan->position = $selected->position;
                 $kerusakan->page = ceil($kerusakan->position / ($request->limit ?? 10));
 

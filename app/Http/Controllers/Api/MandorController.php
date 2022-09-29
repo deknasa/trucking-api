@@ -70,7 +70,7 @@ class MandorController extends Controller
             }
 
             /* Set position and page */
-            $selected = $this->getPosition($mandor, $mandor->getTable(), true);
+            $selected = $this->getPosition($mandor, $mandor->getTable());
             $mandor->position = $selected->position;
             $mandor->page = ceil($mandor->position / ($request->limit ?? 10));
 
@@ -124,7 +124,7 @@ class MandorController extends Controller
                 app(LogTrailController::class)->store($validatedLogTrail);
 
                 /* Set position and page */
-                $selected = $this->getPosition($mandor, $mandor->getTable(), true);
+                $selected = $this->getPosition($mandor, $mandor->getTable());
                 $mandor->position = $selected->position;
                 $mandor->page = ceil($mandor->position / ($request->limit ?? 10));
 

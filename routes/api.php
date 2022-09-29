@@ -329,6 +329,7 @@
         Route::get('pelunasanpiutangheader/combo', [PelunasanPiutangHeaderController::class, 'combo']);
         Route::get('pelunasanpiutangheader/{id}/getpiutang', [PelunasanPiutangHeaderController::class, 'getpiutang'])->name('pelunasanpiutangheader.getpiutang');
         Route::get('pelunasanpiutangheader/{id}/{agenid}/getpelunasanpiutang', [PelunasanPiutangHeaderController::class, 'getpelunasanpiutang']);
+        Route::get('pelunasanpiutangheader/{id}/getDeletePelunasanPiutang', [PelunasanPiutangHeaderController::class, 'getDeletePelunasanPiutang']);
         Route::get('pelunasanpiutangheader/grid', [PelunasanPiutangHeaderController::class, 'grid']);
         Route::resource('pelunasanpiutangheader', PelunasanPiutangHeaderController::class);
         Route::resource('pelunasanpiutangdetail', PelunasanPiutangDetailController::class);

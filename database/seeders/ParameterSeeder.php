@@ -139,28 +139,29 @@ class ParameterSeeder extends Seeder
         Parameter::create(['grp' => 'RESET PENOMORAN',  'subgrp' => 'RESET PENOMORAN',  'text' => 'RESET TAHUN',  'type' => '0',  'memo' => 'RESET TAHUN',  'modifiedby' => 'ADMIN',]);
         Parameter::create(['grp' => 'COA PIUTANG MANUAL',  'subgrp' => 'DEBET',  'text' => '49',  'type' => '0',  'memo' => 'COA PIUTANG MANUAL DEBET',  'modifiedby' => 'ADMIN',]);
         Parameter::create(['grp' => 'COA PIUTANG MANUAL',  'subgrp' => 'KREDIT',  'text' => '138',  'type' => '0',  'memo' => 'COA PIUTANG MANUAL KREDIT',  'modifiedby' => 'ADMIN',]);
-        Parameter::create(['grp' => 'PINJAMAN SUPIR BUKTI',  'subgrp' => 'PINJAMAN SUPIR BUKTI',  'text' => '#PJT #9999#/#R#/#Y',  'type' => '118',  'memo' => 'PINJAMAN SUPIR BUKTI',  'modifiedby' => 'ADMIN',]);
-        Parameter::create(['grp' => 'BIAYA LAIN SUPIR BUKTI',  'subgrp' => 'BIAYA LAIN SUPIR BUKTI',  'text' => '#BLS #9999#/#R#/#Y',  'type' => '118',  'memo' => 'BIAYA LAIN SUPIR BUKTI',  'modifiedby' => 'ADMIN',]);
+        Parameter::create(['grp' => 'PENGELUARAN TRUCKING',  'subgrp' => 'PINJAMAN SUPIR BUKTI',  'text' => '#PJT #9999#/#R#/#Y',  'type' => '118',  'memo' => 'PINJAMAN SUPIR BUKTI',  'modifiedby' => 'ADMIN',]);
+        Parameter::create(['grp' => 'PENGELUARAN TRUCKING',  'subgrp' => 'BIAYA LAIN SUPIR BUKTI',  'text' => '#BLS #9999#/#R#/#Y',  'type' => '118',  'memo' => 'BIAYA LAIN SUPIR BUKTI',  'modifiedby' => 'ADMIN',]);
         Parameter::create(['grp' => 'PIUTANG BUKTI',  'subgrp' => 'PIUTANG BUKTI',  'text' => '#EPT #9999#/#R#/#Y',  'type' => '118',  'memo' => 'PIUTANG BUKTI',  'modifiedby' => 'ADMIN',]);
-        Parameter::create(['grp' => 'DEPOSITO SUPIR BUKTI',  'subgrp' => 'DEPOSITO SUPIR BUKTI',  'text' => '#DPO #9999#/#R#/#Y',  'type' => '118',  'memo' => 'PIUTANG BUKTI',  'modifiedby' => 'ADMIN',]);
-        Parameter::create(['grp' => 'PENGEMBALIAN PINJAMAN SUPIR BUKTI',  'subgrp' => 'PENGEMBALIAN PINJAMAN SUPIR BUKTI',  'text' => '#PJP #9999#/#R#/#Y',  'type' => '118',  'memo' => 'PIUTANG BUKTI',  'modifiedby' => 'ADMIN',]);
+        Parameter::create(['grp' => 'PENERIMAAN TRUCKING',  'subgrp' => 'DEPOSITO SUPIR BUKTI',  'text' => '#DPO #9999#/#R#/#Y',  'type' => '118',  'memo' => 'PIUTANG BUKTI',  'modifiedby' => 'ADMIN',]);
+        Parameter::create(['grp' => 'PENERIMAAN TRUCKING',  'subgrp' => 'PENGEMBALIAN PINJAMAN SUPIR BUKTI',  'text' => '#PJP #9999#/#R#/#Y',  'type' => '118',  'memo' => 'PIUTANG BUKTI',  'modifiedby' => 'ADMIN',]);
         Parameter::create(['grp' => 'HUTANG BUKTI',  'subgrp' => 'HUTANG BUKTI',  'text' => '#EHT #9999#/#R#/#Y',  'type' => '118',  'memo' => 'HUTANG BUKTI',  'modifiedby' => 'ADMIN',]);
         Parameter::create(['grp' => 'PELUNASAN PIUTANG BUKTI',  'subgrp' => 'PELUNASAN PIUTANG BUKTI',  'text' => '#PPT #9999#/#R#/#Y',  'type' => '118',  'memo' => 'PELUNASAN PIUTANG BUKTI',  'modifiedby' => 'ADMIN',]);
         Parameter::create(['grp' => 'PEMBAYARAN HUTANG BUKTI',  'subgrp' => 'PEMBAYARAN HUTANG BUKTI',  'text' => '#PHT #9999#/#R#/#Y',  'type' => '118',  'memo' => 'PEMBAYARAN HUTANG BUKTI',  'modifiedby' => 'ADMIN',]);
         Parameter::create(['grp' => 'COA HUTANG MANUAL',  'subgrp' => 'DEBET',  'text' => '88',  'type' => '0',  'memo' => 'COA HUTANG MANUAL DEBET',  'modifiedby' => 'ADMIN',]);
         Parameter::create(['grp' => 'COA HUTANG MANUAL',  'subgrp' => 'KREDIT',  'text' => '96',  'type' => '0',  'memo' => 'COA HUTANG MANUAL KREDIT',  'modifiedby' => 'ADMIN',]);
-        Parameter::create(['grp' => 'DELIVERY ORDER BUKTI',  'subgrp' => 'DELIVERY ORDER BUKTI',  'text' => '#DOT #9999#/#R#/#Y',  'type' => '118',  'memo' => 'DELIVERY ORDER BUKTI',  'modifiedby' => 'ADMIN',]);
-        Parameter::create(['grp' => 'PO STOK BUKTI',  'subgrp' => 'PO STOK BUKTI',  'text' => '#POT #9999#/#R#/#Y',  'type' => '118',  'memo' => 'PO STOK BUKTI',  'modifiedby' => 'ADMIN',]);
-        Parameter::create(['grp' => 'BELI STOK BUKTI',  'subgrp' => 'BELI STOK BUKTI',  'text' => '#PBT #9999#/#R#/#Y',  'type' => '118',  'memo' => 'BELI STOK BUKTI',  'modifiedby' => 'ADMIN',]);
-        Parameter::create(['grp' => 'SPK STOK BUKTI',  'subgrp' => 'SPK STOK BUKTI',  'text' => '#SPK #9999#/#R#/#Y',  'type' => '118',  'memo' => 'SPK STOK BUKTI',  'modifiedby' => 'ADMIN',]);
-        Parameter::create(['grp' => 'KOREKSI STOK BUKTI',  'subgrp' => 'KOREKSI STOK BUKTI',  'text' => '#KST #9999#/#R#/#Y',  'type' => '118',  'memo' => 'KOREKSI STOK BUKTI',  'modifiedby' => 'ADMIN',]);
-        Parameter::create(['grp' => 'PINDAH GUDANG BUKTI',  'subgrp' => 'PINDAH GUDANG BUKTI',  'text' => '#PGT #9999#/#R#/#Y',  'type' => '118',  'memo' => 'PINDAH GUDANG BUKTI',  'modifiedby' => 'ADMIN',]);
-        Parameter::create(['grp' => 'PERBAIKAN STOK BUKTI',  'subgrp' => 'PERBAIKAN STOK BUKTI',  'text' => '#PST #9999#/#R#/#Y',  'type' => '118',  'memo' => 'PERBAIKAN STOK BUKTI',  'modifiedby' => 'ADMIN',]);
-        Parameter::create(['grp' => 'RETUR BELI BUKTI',  'subgrp' => 'RETUR BELI BUKTI',  'text' => '#RBT #9999#/#R#/#Y',  'type' => '118',  'memo' => 'RETUR BELI BUKTI',  'modifiedby' => 'ADMIN',]);
+        Parameter::create(['grp' => 'PENERIMAAN STOK',  'subgrp' => 'DELIVERY ORDER BUKTI',  'text' => '#DOT #9999#/#R#/#Y',  'type' => '118',  'memo' => 'DELIVERY ORDER BUKTI',  'modifiedby' => 'ADMIN',]);
+        Parameter::create(['grp' => 'PENERIMAAN STOK',  'subgrp' => 'PO STOK BUKTI',  'text' => '#POT #9999#/#R#/#Y',  'type' => '118',  'memo' => 'PO STOK BUKTI',  'modifiedby' => 'ADMIN',]);
+        Parameter::create(['grp' => 'PENERIMAAN STOK',  'subgrp' => 'BELI STOK BUKTI',  'text' => '#PBT #9999#/#R#/#Y',  'type' => '118',  'memo' => 'BELI STOK BUKTI',  'modifiedby' => 'ADMIN',]);
+        Parameter::create(['grp' => 'PENGELUARAN STOK',  'subgrp' => 'SPK STOK BUKTI',  'text' => '#SPK #9999#/#R#/#Y',  'type' => '118',  'memo' => 'SPK STOK BUKTI',  'modifiedby' => 'ADMIN',]);
+        Parameter::create(['grp' => 'PENERIMAAN STOK',  'subgrp' => 'KOREKSI STOK BUKTI',  'text' => '#KST #9999#/#R#/#Y',  'type' => '118',  'memo' => 'KOREKSI STOK BUKTI',  'modifiedby' => 'ADMIN',]);
+        Parameter::create(['grp' => 'PENERIMAAN STOK',  'subgrp' => 'PINDAH GUDANG BUKTI',  'text' => '#PGT #9999#/#R#/#Y',  'type' => '118',  'memo' => 'PINDAH GUDANG BUKTI',  'modifiedby' => 'ADMIN',]);
+        Parameter::create(['grp' => 'PENERIMAAN STOK',  'subgrp' => 'PERBAIKAN STOK BUKTI',  'text' => '#PST #9999#/#R#/#Y',  'type' => '118',  'memo' => 'PERBAIKAN STOK BUKTI',  'modifiedby' => 'ADMIN',]);
+        Parameter::create(['grp' => 'PENGELUARAN STOK',  'subgrp' => 'RETUR BELI BUKTI',  'text' => '#RBT #9999#/#R#/#Y',  'type' => '118',  'memo' => 'RETUR BELI BUKTI',  'modifiedby' => 'ADMIN',]);
         Parameter::create(['grp' => 'STATUS HITUNG STOK',  'subgrp' => 'STATUS HITUNG STOK',  'text' => 'YA',  'type' => '0',  'memo' => 'STATUS HITUNG STOK',  'modifiedby' => 'ADMIN',]);
         Parameter::create(['grp' => 'STATUS HITUNG STOK',  'subgrp' => 'STATUS HITUNG STOK',  'text' => 'TIDAK',  'type' => '0',  'memo' => 'STATUS HITUNG STOK',  'modifiedby' => 'ADMIN',]);
         Parameter::create(['grp' => 'SERVICE IN BUKTI',  'subgrp' => 'SERVICE IN BUKTI',  'text' => '#SIN #9999#/#R#/#Y',  'type' => '118',  'memo' => 'SERVICE IN BUKTI',  'modifiedby' => 'ADMIN',]);
         Parameter::create(['grp' => 'SERVICE OUT BUKTI',  'subgrp' => 'SERVICE OUT BUKTI',  'text' => '#SOU #9999#/#R#/#Y',  'type' => '118',  'memo' => 'SERVICE OUT BUKTI',  'modifiedby' => 'ADMIN',]);
+        Parameter::create(['grp' => 'ABSENSI SUPIR APPROVAL BUKTI',  'subgrp' => 'ABSENSI SUPIR APPROVAL BUKTI',  'text' => '#ASA #9999#/#R#/#Y',  'type' => '118',  'memo' => 'SERVICE OUT BUKTI',  'modifiedby' => 'ADMIN',]);
        
 
 

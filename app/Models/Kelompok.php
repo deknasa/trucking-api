@@ -19,10 +19,10 @@ class Kelompok extends MyModel
         'updated_at',
     ];
 
-    // protected $casts = [
-    //     'created_at' => 'date:d-m-Y H:i:s',
-    //     'updated_at' => 'date:d-m-Y H:i:s'
-    // ]; 
+    protected $casts = [
+        'created_at' => 'date:d-m-Y H:i:s',
+        'updated_at' => 'date:d-m-Y H:i:s'
+    ]; 
 
     public function get()
     {
@@ -55,16 +55,15 @@ class Kelompok extends MyModel
     {
         return $query->select(
             DB::raw(
-            "$this->table.id,
-            $this->table.kodekelompok,
-            $this->table.keterangan,
-            'parameter.text as statusaktif',
-            $this->table.modifiedby,
-            $this->table.created_at,
-            $this->table.updated_at"
+            "   $this->table.id,
+                $this->table.kodekelompok,
+                $this->table.keterangan,
+                $this->table.statusaktif,
+                $this->table.modifiedby,
+                $this->table.created_at,
+                $this->table.updated_at"
             )
-        )
-        ->leftJoin('parameter', 'kelompok.statusaktif', '=', 'parameter.id');
+            );
 
     }
     
@@ -75,7 +74,7 @@ class Kelompok extends MyModel
             $table->bigInteger('id')->default('0');
             $table->string('kodekelompok', 1000)->default('');
             $table->string('keterangan', 1000)->default('');
-            $table->string('statusaktif', 1000)->default('');
+            $table->bigInteger('statusaktif')->default('0');
             $table->string('modifiedby', 50)->default('');
             $table->dateTime('created_at')->default('1900/1/1');
             $table->dateTime('updated_at')->default('1900/1/1');

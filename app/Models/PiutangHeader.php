@@ -87,7 +87,7 @@ class PiutangHeader extends MyModel
 
 
         $fetch = DB::table('piutangheader')
-        ->select(DB::raw("piutangheader.nobukti,piutangheader.agen_id, sum(pelunasanpiutangdetail.nominal) as nominalbayar, (SELECT (piutangheader.nominal - SUM(pelunasanpiutangdetail.nominal)) FROM pelunasanpiutangdetail WHERE pelunasanpiutangdetail.piutang_nobukti= piutangheader.nobukti) AS sisa"))
+        ->select(DB::raw("piutangheader.nobukti,piutangheader.agen_id, sum(pelunasanpiutangdetail.nominal) as nominalbayar, (SELECT (piutangheader.nominal - coalesce(SUM(pelunasanpiutangdetail.nominal),0)) FROM pelunasanpiutangdetail WHERE pelunasanpiutangdetail.piutang_nobukti= piutangheader.nobukti) AS sisa"))
         ->leftJoin('pelunasanpiutangdetail','pelunasanpiutangdetail.piutang_nobukti','piutangheader.nobukti')
         ->whereRaw("piutangheader.agen_id = $id")
         ->groupBy('piutangheader.nobukti','piutangheader.agen_id','piutangheader.nominal');
@@ -115,7 +115,7 @@ class PiutangHeader extends MyModel
             'piutangheader.agen_id',
             'agen.namaagen as agen'
         )->leftJoin('agen','piutangheader.agen_id','agen.id')
-        ->where('id', $id)->first();
+        ->where('piutangheader.id', $id)->first();
 
         return $data;
     }
@@ -153,7 +153,7 @@ class PiutangHeader extends MyModel
             $table->string('postingdari', 1000)->default('');
             $table->float('nominal')->default('');
             $table->string('invoice_nobukti')->default('');
-            $table->bigInteger('agen_id')->default('');
+            $table->string('agen_id')->default('');
             $table->string('modifiedby')->default();
             $table->dateTime('updated_at')->default('1900/1/1');
             $table->increments('position');

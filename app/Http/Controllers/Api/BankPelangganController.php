@@ -73,7 +73,7 @@ class BankPelangganController extends Controller
             }
 
             /* Set position and page */
-            $selected = $this->getPosition($bankpelanggan, $bankpelanggan->getTable(), true);
+            $selected = $this->getPosition($bankpelanggan, $bankpelanggan->getTable());
             $bankpelanggan->position = $selected->position;
             $bankpelanggan->page = ceil($bankpelanggan->position / ($request->limit ?? 10 ));
 
@@ -129,7 +129,7 @@ class BankPelangganController extends Controller
 
                 /* Set position and page */
                
-                $selected = $this->getPosition($bankpelanggan, $bankpelanggan->getTable(), true);
+                $selected = $this->getPosition($bankpelanggan, $bankpelanggan->getTable());
                 $bankpelanggan->position = $selected->position;
                 $bankpelanggan->page = ceil($bankpelanggan->position / ($request->limit ?? 10 ));
 

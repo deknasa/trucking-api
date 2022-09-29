@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\AbsensiSupirApprovalHeader;
+use Illuminate\Support\Facades\DB;
 
 class AbsensiSupirApprovalHeaderSeeder extends Seeder
 {
@@ -14,15 +15,9 @@ class AbsensiSupirApprovalHeaderSeeder extends Seeder
      */
     public function run()
     {
-        AbsensiSupirApprovalHeader::create([
-            'nobukti' => 'ASA 0001/II/2022',
-            'tglbukti' => '2022-02-24',
-            'absensisupir_nobukti' => '',
-            'keterangan' => '',
-            'statusapproval' => 4,
-            'tglapproval' => '',
-            'userapproval' => '',           
-            'modifiedby' => 'ADMIN',
-        ]);
+        DB::statement("delete AbsensiSupirApprovalHeader");
+        DB::statement("DBCC CHECKIDENT ('AbsensiSupirApprovalHeader', RESEED, 1);");
+
+        AbsensiSupirApprovalHeader::create([ 'nobukti' => 'ASA 0001/II/2022', 'tglbukti' => '2022/2/24', 'absensisupir_nobukti' => '', 'keterangan' => '', 'statusapproval' => '4', 'tglapproval' => '1900/1/1', 'userapproval' => '', 'statusformat' => '144', 'modifiedby' => 'ADMIN',]);
     }
 }

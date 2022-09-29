@@ -66,14 +66,14 @@ class PelunasanPiutangHeader extends MyModel
 
         
         $piutang = DB::table("$tempPiutang as A")
-            ->select(DB::raw("null as pelunasanpiutang_id,A.nobukti as piutang_nobukti, null as tglbayar, A.tglbukti as tglbukti, A.agen_id as agen_id,null as nominal, null as keterangan, null as penyesuaian, null as keteranganpenyesuaian, null as nominallebihbayar, A.nominalpiutang, A.sisa"))
+            ->select(DB::raw("null as pelunasanpiutang_id,A.nobukti as piutang_nobukti, A.tglbukti as tglbukti, A.agen_id as agen_id,null as nominal, null as keterangan, null as penyesuaian, null as keteranganpenyesuaian, null as nominallebihbayar, A.nominalpiutang, A.sisa"))
             ->distinct("A.nobukti")
             ->leftJoin("$tempPelunasan as B","A.nobukti","B.piutang_nobukti")
             ->whereRaw("isnull(b.piutang_nobukti,'') = ''");
            
 
         $pelunasan = DB::table($tempPelunasan)
-            ->select(DB::raw("pelunasanpiutang_id,piutang_nobukti,tglbayar,tglbukti,agen_id,nominal,keterangan,penyesuaian,keteranganpenyesuaian,nominallebihbayar,nominalpiutang,sisa"))
+            ->select(DB::raw("pelunasanpiutang_id,piutang_nobukti,tglbukti,agen_id,nominal,keterangan,penyesuaian,keteranganpenyesuaian,nominallebihbayar,nominalpiutang,sisa"))
             ->unionAll($piutang);
         
         // $this->totalRows = $pelunasan->count();
@@ -89,7 +89,7 @@ class PelunasanPiutangHeader extends MyModel
     }
     
     public function createTempPiutang($id,$agenid) {
-        $temp = '##temp' . rand(1, 10000);
+        $temp = '##tempPiutang' . rand(1, 10000);
 
 
         $fetch = DB::table('piutangheader')
@@ -113,17 +113,16 @@ class PelunasanPiutangHeader extends MyModel
     }
 
     public function createTempPelunasan($id,$agenid) {
-        $tempo = '##tempo' . rand(1, 10000);
+        $tempo = '##tempPelunasan' . rand(1, 10000);
         
         $fetch = DB::table('pelunasanpiutangdetail as ppd')
-        ->select(DB::raw("ppd.pelunasanpiutang_id,ppd.piutang_nobukti,ppd.tgl as tglbayar,piutangheader.tglbukti,ppd.agen_id,ppd.nominal,ppd.keterangan,ppd.penyesuaian,ppd.keteranganpenyesuaian,ppd.nominallebihbayar, piutangheader.nominal as nominalpiutang, (SELECT (piutangheader.nominal - SUM(pelunasanpiutangdetail.nominal)) FROM pelunasanpiutangdetail WHERE pelunasanpiutangdetail.piutang_nobukti= piutangheader.nobukti) AS sisa"))
+        ->select(DB::raw("ppd.pelunasanpiutang_id,ppd.piutang_nobukti,piutangheader.tglbukti,ppd.agen_id,ppd.nominal,ppd.keterangan,ppd.penyesuaian,ppd.keteranganpenyesuaian,ppd.nominallebihbayar, piutangheader.nominal as nominalpiutang, (SELECT (piutangheader.nominal - SUM(pelunasanpiutangdetail.nominal)) FROM pelunasanpiutangdetail WHERE pelunasanpiutangdetail.piutang_nobukti= piutangheader.nobukti) AS sisa"))
         ->leftJoin('piutangheader','ppd.piutang_nobukti','piutangheader.nobukti')
         ->whereRaw("ppd.pelunasanpiutang_id = $id");
                
         Schema::create($tempo, function ($table) {
             $table->bigInteger('pelunasanpiutang_id')->default('0');
             $table->string('piutang_nobukti');
-            $table->date('tglbayar')->default('');
             $table->date('tglbukti')->default('');
             $table->bigInteger('agen_id')->default('0');
             $table->bigInteger('nominal')->nullable();
@@ -135,9 +134,30 @@ class PelunasanPiutangHeader extends MyModel
             $table->bigInteger('sisa')->nullable();
         });
     
-        $tes = DB::table($tempo)->insertUsing(['pelunasanpiutang_id','piutang_nobukti','tglbayar','tglbukti','agen_id','nominal','keterangan','penyesuaian','keteranganpenyesuaian','nominallebihbayar','nominalpiutang','sisa'], $fetch);
+        $tes = DB::table($tempo)->insertUsing(['pelunasanpiutang_id','piutang_nobukti','tglbukti','agen_id','nominal','keterangan','penyesuaian','keteranganpenyesuaian','nominallebihbayar','nominalpiutang','sisa'], $fetch);
         
         return $tempo;
+    }
+
+    public function getDeletePelunasanPiutang($id) {
+        $this->setRequestParameters();
+
+        $query = DB::table('pelunasanpiutangdetail')
+            ->select(
+                DB::raw("pelunasanpiutangdetail.piutang_nobukti, 
+                piutangheader.tglbukti, 
+                piutangheader.nominal as nominalpiutang, 
+                pelunasanpiutangdetail.nominal as bayar, 
+                pelunasanpiutangdetail.keterangan, pelunasanpiutangdetail.penyesuaian,
+                pelunasanpiutangdetail.coapenyesuaian, pelunasanpiutangdetail.keteranganpenyesuaian, pelunasanpiutangdetail.nominallebihbayar, 
+                pelunasanpiutangdetail.coalebihbayar,
+                (SELECT (piutangheader.nominal - SUM(pelunasanpiutangdetail.nominal))
+                    FROM pelunasanpiutangdetail 
+                    WHERE pelunasanpiutangdetail.piutang_nobukti= piutangheader.nobukti) AS sisa")
+            )
+        ->join('piutangheader','pelunasanpiutangdetail.piutang_nobukti','piutangheader.nobukti')
+        ->whereRaw("pelunasanpiutangdetail.pelunasanpiutang_id = $id");
+        
     }
 
     public function findAll($id) {
@@ -173,16 +193,17 @@ class PelunasanPiutangHeader extends MyModel
     public function selectColumns($query)
     {
         return $query->select(
-            'pelunasanpiutangheader.id',
-            'pelunasanpiutangheader.nobukti',
-            'pelunasanpiutangheader.tglbukti',
-            'pelunasanpiutangheader.keterangan',
-            'pelunasanpiutangheader.modifiedby',
-            'pelunasanpiutangheader.updated_at',
-
+            DB::raw("
+            $this->table.id,
+            $this->table.nobukti,
+            $this->table.tglbukti,
+            $this->table.keterangan,
             'bank.namabank as bank_id',
             'agen.namaagen as agen_id',
             'cabang.namacabang as cabang_id',
+            $this->table.modifiedby,
+            $this->table.updated_at
+            ")
         )
             ->leftJoin('bank', 'pelunasanpiutangheader.bank_id', 'bank.id')
             ->leftJoin('agen', 'pelunasanpiutangheader.agen_id', 'agen.id')

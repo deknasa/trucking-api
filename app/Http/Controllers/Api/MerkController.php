@@ -71,7 +71,7 @@ class MerkController extends Controller
             }
 
             /* Set position and page */
-            $selected = $this->getPosition($merk, $merk->getTable(), true);
+            $selected = $this->getPosition($merk, $merk->getTable());
             $merk->position = $selected->position;
             $merk->page = ceil($merk->position / ($request->limit ?? 10));
 
@@ -125,7 +125,7 @@ class MerkController extends Controller
                 app(LogTrailController::class)->store($validatedLogTrail);
 
                 /* Set position and page */
-                $selected = $this->getPosition($merk, $merk->getTable(), true);
+                $selected = $this->getPosition($merk, $merk->getTable());
                 $merk->position = $selected->position;
                 $merk->page = ceil($merk->position / ($request->limit ?? 10));
 
