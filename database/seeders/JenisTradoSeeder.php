@@ -1,8 +1,10 @@
 <?php
 
 namespace Database\Seeders;
+
 use App\Models\JenisTrado;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class JenisTradoSeeder extends Seeder
 {
@@ -13,19 +15,9 @@ class JenisTradoSeeder extends Seeder
      */
     public function run()
     {
-        JenisTrado::create([
-            'kodejenistrado' => 'ALL',
-            'keterangan' => 'UNTUK ALL TRUCK',
-            'statusaktif' => 1,
-            'modifiedby' => 'ADMIN',
-        ]);
-
-        JenisTrado::create([
-            'kodejenistrado' => 'HINO',
-            'keterangan' => 'UNTUK TRAILER HINO',
-            'statusaktif' => 1,
-            'modifiedby' => 'ADMIN',
-        ]);
-
+        DB::statement("delete JenisTrado");
+        DB::statement("DBCC CHECKIDENT ('JenisTrado', RESEED, 1);");
+        JenisTrado::create(['kodejenistrado' => 'ALL', 'keterangan' => 'UNTUK ALL TRUCK', 'statusaktif' => '1', 'modifiedby' => 'ADMIN',]);
+        JenisTrado::create(['kodejenistrado' => 'HINO', 'keterangan' => 'UNTUK TRAILER HINO', 'statusaktif' => '1', 'modifiedby' => 'ADMIN',]);
     }
 }

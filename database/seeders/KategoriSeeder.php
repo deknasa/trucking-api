@@ -1,9 +1,11 @@
 <?php
 
 namespace Database\Seeders;
+
 use App\Models\Kategori;
 
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class KategoriSeeder extends Seeder
 {
@@ -14,37 +16,13 @@ class KategoriSeeder extends Seeder
      */
     public function run()
     {
-        Kategori::create([
-            'kodekategori' => 'BAUT RODA',
-            'subkelompok_id' => 1,
-            'keterangan' => 'UNTUK BAUT RODA',
-            'statusaktif' => 1,
-            'modifiedby' => 'ADMIN',
-        ]);
 
-        Kategori::create([
-            'kodekategori' => 'MUR RODA',
-            'subkelompok_id' => 2,
-            'keterangan' => 'UNTUK MUR RODA',
-            'statusaktif' => 1,
-            'modifiedby' => 'ADMIN',
-        ]);
+        DB::statement("delete Kategori");
+        DB::statement("DBCC CHECKIDENT ('Kategori', RESEED, 1);");
 
-        Kategori::create([
-            'kodekategori' => 'BAUT',
-            'subkelompok_id' => 1,
-            'keterangan' => 'BAUT',
-            'statusaktif' => 1,
-            'modifiedby' => 'ADMIN',
-        ]);
-
-        Kategori::create([
-            'kodekategori' => 'RADIATOR',
-            'subkelompok_id' => 3,
-            'keterangan' => 'RADIATOR',
-            'statusaktif' => 1,
-            'modifiedby' => 'ADMIN',
-        ]);
-
+        Kategori::create(['kodekategori' => 'BAUT RODA', 'keterangan' => 'UNTUK BAUT RODA', 'subkelompok_id' => '1', 'statusaktif' => '1', 'modifiedby' => 'ADMIN',]);
+        Kategori::create(['kodekategori' => 'MUR RODA', 'keterangan' => 'UNTUK MUR RODA', 'subkelompok_id' => '2', 'statusaktif' => '1', 'modifiedby' => 'ADMIN',]);
+        Kategori::create(['kodekategori' => 'BAUT', 'keterangan' => 'BAUT', 'subkelompok_id' => '1', 'statusaktif' => '1', 'modifiedby' => 'ADMIN',]);
+        Kategori::create(['kodekategori' => 'RADIATOR', 'keterangan' => 'RADIATOR', 'subkelompok_id' => '3', 'statusaktif' => '1', 'modifiedby' => 'ADMIN',]);
     }
 }

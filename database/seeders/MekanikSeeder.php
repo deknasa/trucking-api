@@ -3,11 +3,9 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-<<<<<<< HEAD
 use App\Models\Mekanik;
+use Illuminate\Support\Facades\DB;
 
-=======
->>>>>>> 45bc0d5a7d263f6ec185c4c06e9fc88025a55e7c
 
 class MekanikSeeder extends Seeder
 {
@@ -18,16 +16,10 @@ class MekanikSeeder extends Seeder
      */
     public function run()
     {
-<<<<<<< HEAD
-        
-        Mekanik::create([
-            'namamekanik' => 'SUKIR',
-            'keterangan' => 'SUKIR',
-            'statusaktif' => 1,
-            'modifiedby' => 'ADMIN',
-        ]);
-=======
-        //
->>>>>>> 45bc0d5a7d263f6ec185c4c06e9fc88025a55e7c
+        DB::statement("delete Mekanik");
+        DB::statement("DBCC CHECKIDENT ('Mekanik', RESEED, 1);");
+
+        Mekanik::create(['namamekanik' => 'SUKIR', 'keterangan' => 'SUKIR', 'statusaktif' => '1', 'modifiedby' => 'ADMIN',]);
+        Mekanik::create(['namamekanik' => 'UDIN', 'keterangan' => 'JUNIOR 1', 'statusaktif' => '1', 'modifiedby' => 'ADMIN',]);
     }
 }
