@@ -440,4 +440,6 @@ class PengeluaranTruckingController extends Controller
         $data = $querydata->first();
         return $data;
     }
+
+    
 }

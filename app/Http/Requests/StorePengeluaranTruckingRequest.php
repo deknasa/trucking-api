@@ -27,7 +27,7 @@ class StorePengeluaranTruckingRequest extends FormRequest
             'kodepengeluaran' => 'required',
             'keterangan' => 'required',
             'coa' => 'required',
-            'formatbukti' => 'required'
+            'statusformat' => 'required'
         ];
     }
 }
