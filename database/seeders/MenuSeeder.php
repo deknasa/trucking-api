@@ -80,6 +80,5 @@ class MenuSeeder extends Seeder
         menu::create(['menuname' => 'JURNAL UMUM',  'menuseq' => '100',  'menuparent' => '0',  'menuicon' => 'FAS FA-TRUCKING',  'aco_id' => '0',  'link' => '',  'menuexe' => '',  'menukode' => '5',  'modifiedby' => 'ADMIN',]);
         menu::create(['menuname' => 'JURNAL UMUM',  'menuseq' => '100',  'menuparent' => '60',  'menuicon' => 'FAS FA-TRUCK',  'aco_id' => '189',  'link' => '',  'menuexe' => '',  'menukode' => '51',  'modifiedby' => 'ADMIN',]);
         menu::create(['menuname' => 'PENERIMAAN KAS/BANK',  'menuseq' => '100',  'menuparent' => '29',  'menuicon' => 'FAS FA-TRUCK',  'aco_id' => '194',  'link' => '',  'menuexe' => '',  'menukode' => '32',  'modifiedby' => 'ADMIN',]);
-        menu::create(['menuname' => 'TEST',  'menuseq' => '100',  'menuparent' => '0',  'menuicon' => 'FAS FA-TRUCK',  'aco_id' => '0',  'link' => '',  'menuexe' => '',  'menukode' => '6',  'modifiedby' => 'ADMIN',]);
     }
 }
