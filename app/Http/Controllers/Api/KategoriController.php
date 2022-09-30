@@ -93,11 +93,12 @@ class KategoriController extends Controller
         }
     }
 
-    public function show(Kategori $kategori)
+    public function show($id)
     {
+        $kategori = new Kategori();
         return response([
             'status' => true,
-            'data' => $kategori
+            'data' => $kategori->find($id)
         ]);
     }
 

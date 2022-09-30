@@ -52,6 +52,29 @@ class Kategori extends MyModel
         return $data;
     }
 
+    public function find($id)
+    {
+        $this->setRequestParameters();
+
+        $data = DB::table($this->table)->select(
+            'kategori.id',
+            'kategori.kodekategori',
+            'kategori.keterangan',
+            'kategori.subkelompok_id',
+            'p.keterangan as subkelompok',
+            'kategori.statusaktif',
+            'kategori.modifiedby',
+            'kategori.created_at',
+            'kategori.updated_at'
+        )
+            ->leftJoin('parameter', 'kategori.statusaktif', '=', 'parameter.id')
+            ->leftJoin('subkelompok AS p', 'kategori.subkelompok_id', '=', 'p.id')
+        ->where('kategori.id', $id)->first();
+
+
+
+        return $data;
+    }
     public function selectColumns($query)
     {
         return $query->select(
