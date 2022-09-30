@@ -32,6 +32,36 @@ class DatabaseSeeder extends Seeder
             ContainerSeeder::class,
             JenisEmklSeeder::class,
 
+            JenisTradoSeeder::class,
+            JenisOrderSeeder::class,
+            KelompokSeeder::class,
+            SubKelompokSeeder::class,
+            KategoriSeeder::class,
+            KerusakanSeeder::class,
+            KotaSeeder::class,
+            MandorSeeder::class,
+            MekanikSeeder::class,
+            MerkSeeder::class,
+            PelangganSeeder::class,
+            PenerimaSeeder::class,
+            SatuanSeeder::class,
+            SupplierSeeder::class,
+            TarifSeeder::class,
+            StokSeeder::class,
+            StatusContainerSeeder::class,
+            GudangSeeder::class,
+            ServiceInHeaderSeeder::class,
+            ServiceInDetailSeeder::class,
+            ServiceOutHeaderSeeder::class,
+            ServiceOutDetailSeeder::class,
+            AbsensiSupirHeaderSeeder::class,
+            AbsensiSupirDetailSeeder::class,
+            AbsensiSupirApprovalHeaderSeeder::class,
+            AbsensiSupirApprovalDetailSeeder::class,
+            SuratPengantarSeeder::class,
+
+
+
             
         ]);
     }
