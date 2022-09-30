@@ -31,6 +31,7 @@ class DatabaseSeeder extends Seeder
             TradoSeeder::class,
             ContainerSeeder::class,
             JenisEmklSeeder::class,
+
             JenisTradoSeeder::class,
             JenisOrderSeeder::class,
             KelompokSeeder::class,
