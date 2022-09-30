@@ -29,10 +29,6 @@ class DatabaseSeeder extends Seeder
             ErrorSeeder::class,
             SupirSeeder::class,
             TradoSeeder::class,
-            AbsensiSupirHeaderSeeder::class,
-            AbsensiSupirDetailSeeder::class,
-            AbsensiSupirApprovalHeaderSeeder::class,
-            AbsensiSupirApprovalDetailSeeder::class,
             ContainerSeeder::class,
             JenisEmklSeeder::class,
 
