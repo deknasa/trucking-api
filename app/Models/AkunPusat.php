@@ -85,8 +85,8 @@ class AkunPusat extends MyModel
             $table->bigInteger('id')->default('0');
             $table->string('coa', 1000)->default('');
             $table->string('keterangancoa', 1000)->default('');
-            $table->bigInteger('type', 1000)->default('');
-            $table->bigInteger('level', 1000)->default('');
+            $table->string('type', 1000)->default('');
+            $table->bigInteger('level')->default('');
             $table->string('statusaktif', 1000)->default('');
             $table->string('parent', 1000)->default('');
             $table->string('statuscoa', 1000)->default('');
