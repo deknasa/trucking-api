@@ -50,7 +50,7 @@ class AbsenTrado extends MyModel
                 'parameter.text as statusaktif',
                 $this->table.modifiedby,
                 $this->table.created_at,
-                $this->table.updated_at,
+                $this->table.updated_at
             ")
         )
         ->leftJoin('parameter', 'absentrado.statusaktif', '=', 'parameter.id');

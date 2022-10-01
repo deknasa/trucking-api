@@ -25,6 +25,7 @@ class StorePiutangDetailRequest extends FormRequest
     {
         return [
             'nominal_detail' => 'required|array',
+            'nominal_detail.*' => 'gt:0|numeric',
             'keterangan_detail' => 'required|array',
         ];
     }
