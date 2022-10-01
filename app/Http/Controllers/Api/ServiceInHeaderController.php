@@ -206,9 +206,6 @@ class ServiceInHeaderController extends Controller
 
                 ServiceInDetail::where('servicein_id', $id)->delete();
 
-                // $servicein->serviceindetail()->delete();
-
-
                 /* Store detail */
                 $detaillog = [];
                // for ($i = 0; $i < count($request->mekanik_id); $i++) {
@@ -243,17 +240,11 @@ class ServiceInHeaderController extends Controller
                     $detaillog[] = $datadetaillog;
                // }
 
-                // $dataid = LogTrail::select('id')
-                //     ->where('idtrans', '=', $servicein->id)
-                //     ->where('namatabel', '=', $servicein->getTable())
-                //     ->orderBy('id', 'DESC')
-                //     ->first();
-
                 $datalogtrail = [
                     'namatabel' => $tabeldetail,
                     'postingdari' => 'EDIT SERVICE IN',
-                    'idtrans' =>  $iddetail->id,
-                    'nobuktitrans' => '',
+                    'idtrans' =>  $iddetail,
+                    'nobuktitrans' => $servicein->nobukti,
                     'aksi' => 'EDIT',
                     'datajson' => $detaillog,
                     'modifiedby' => $request->modifiedby,
