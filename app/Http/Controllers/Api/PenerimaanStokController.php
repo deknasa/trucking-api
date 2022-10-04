@@ -1,10 +1,15 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
+use App\Http\Requests\StoreLogTrailRequest;
+use App\Http\Controllers\Controller;
 use App\Models\PenerimaanStok;
 use App\Http\Requests\StorePenerimaanStokRequest;
 use App\Http\Requests\UpdatePenerimaanStokRequest;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class PenerimaanStokController extends Controller
 {
@@ -15,17 +20,14 @@ class PenerimaanStokController extends Controller
      */
     public function index()
     {
-        //
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
+        $penerimaanStok = new PenerimaanStok();
+        return response([
+            'data' => $penerimaanStok->get(),
+            'attributes' => [
+                'totalRows' => $penerimaanStok->totalRows,
+                'totalPages' => $penerimaanStok->totalPages
+            ]
+        ]);
     }
 
     /**
@@ -36,7 +38,54 @@ class PenerimaanStokController extends Controller
      */
     public function store(StorePenerimaanStokRequest $request)
     {
-        //
+        DB::beginTransaction();
+
+        try {
+            $penerimaanStok = new PenerimaanStok();
+            $penerimaanStok->kodepenerimaan = $request->kodepenerimaan;
+            $penerimaanStok->keterangan = $request->keterangan;
+            $penerimaanStok->coa = $request->coa;
+            $penerimaanStok->statusformat = $request->statusformat;
+            $penerimaanStok->statushitungstok = $request->statushitungstok;
+            $penerimaanStok->modifiedby = auth('api')->user()->name;
+            $request->sortname = $request->sortname ?? 'id';
+            $request->sortorder = $request->sortorder ?? 'asc';
+
+            if ($penerimaanStok->save()) {
+                $logTrail = [
+                    'namatabel' => strtoupper($penerimaanStok->getTable()),
+                    'postingdari' => 'ENTRY PENERIMAAN STOK',
+                    'idtrans' => $penerimaanStok->id,
+                    'nobuktitrans' => $penerimaanStok->id,
+                    'aksi' => 'ENTRY',
+                    'datajson' => $penerimaanStok->toArray(),
+                    'modifiedby' => $penerimaanStok->modifiedby
+                ];
+
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+
+                DB::commit();
+            }
+
+            /* Set position and page */
+            $selected = $this->getPosition($penerimaanStok, $penerimaanStok->getTable());
+            $penerimaanStok->position = $selected->position;
+            $penerimaanStok->page = ceil($penerimaanStok->position / ($request->limit ?? 10));
+
+            if (isset($request->limit)) {
+                $penerimaanStok->page = ceil($penerimaanStok->position / $request->limit);
+            }
+
+            return response([
+                'message' => 'Berhasil disimpan',
+                'data' => $penerimaanStok
+            ], 201);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+
+            throw $th;
+        }
     }
 
     /**
@@ -45,20 +94,16 @@ class PenerimaanStokController extends Controller
      * @param  \App\Models\PenerimaanStok  $penerimaanStok
      * @return \Illuminate\Http\Response
      */
-    public function show(PenerimaanStok $penerimaanStok)
+    public function show(PenerimaanStok $penerimaanStok,$id)
     {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\PenerimaanStok  $penerimaanStok
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(PenerimaanStok $penerimaanStok)
-    {
-        //
+        $penerimaanStok = new PenerimaanStok();
+        return response([
+            'data' => $penerimaanStok->find($id),
+            'attributes' => [
+                'totalRows' => $penerimaanStok->totalRows,
+                'totalPages' => $penerimaanStok->totalPages
+            ]
+        ]);
     }
 
     /**
@@ -68,19 +113,154 @@ class PenerimaanStokController extends Controller
      * @param  \App\Models\PenerimaanStok  $penerimaanStok
      * @return \Illuminate\Http\Response
      */
-    public function update(UpdatePenerimaanStokRequest $request, PenerimaanStok $penerimaanStok)
+    public function update(UpdatePenerimaanStokRequest $request, PenerimaanStok $penerimaanStok,$id)
     {
-        //
+        DB::beginTransaction();
+        try {
+            $penerimaanStok = PenerimaanStok::where('id',$id)->first();
+            $penerimaanStok->kodepenerimaan = $request->kodepenerimaan;
+            $penerimaanStok->keterangan = $request->keterangan;
+            $penerimaanStok->coa = $request->coa;
+            $penerimaanStok->statusformat = $request->statusformat;
+            $penerimaanStok->statushitungstok = $request->statushitungstok;
+            $penerimaanStok->modifiedby = auth('api')->user()->name;
+            $request->sortname = $request->sortname ?? 'id';
+            $request->sortorder = $request->sortorder ?? 'asc';
+
+            if ($penerimaanStok->save()) {
+                $logTrail = [
+                    'namatabel' => strtoupper($penerimaanStok->getTable()),
+                    'postingdari' => 'EDIT PENERIMAAN STOK',
+                    'idtrans' => $penerimaanStok->id,
+                    'nobuktitrans' => $penerimaanStok->id,
+                    'aksi' => 'EDIT',
+                    'datajson' => $penerimaanStok->toArray(),
+                    'modifiedby' => $penerimaanStok->modifiedby
+                ];
+
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+
+                DB::commit();
+            }
+
+            /* Set position and page */
+            $selected = $this->getPosition($penerimaanStok, $penerimaanStok->getTable());
+            $penerimaanStok->position = $selected->position;
+            $penerimaanStok->page = ceil($penerimaanStok->position / ($request->limit ?? 10));
+
+            if (isset($request->limit)) {
+                $penerimaanStok->page = ceil($penerimaanStok->position / $request->limit);
+            }
+
+            return response([
+                'message' => 'Berhasil disimpan',
+                'data' => $penerimaanStok
+            ], 201);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+
+            throw $th;
+        }
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\PenerimaanStok  $penerimaanStok
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(PenerimaanStok $penerimaanStok)
+    public function fieldLength()
     {
-        //
+        $data = [];
+        $columns = DB::connection()->getDoctrineSchemaManager()->listTableDetails('penerimaanstok')->getColumns();
+
+        foreach ($columns as $index => $column) {
+            $data[$index] = $column->getLength();
+        }
+
+        return response([
+            'data' => $data
+        ]);
+    }
+
+    public function destroy(PenerimaanStok $penerimaanStok,$id)
+    {
+        DB::beginTransaction();
+
+        $penerimaanStok = PenerimaanStok::where('id',$id)->first();
+        $delete = $penerimaanStok->delete();
+
+        if ($delete) {
+            $logTrail = [
+                'namatabel' => strtoupper($penerimaanStok->getTable()),
+                'postingdari' => 'DELETE PENERIMAAN STOK',
+                'idtrans' => $penerimaanStok->id,
+                'nobuktitrans' => $penerimaanStok->id,
+                'aksi' => 'DELETE',
+                'datajson' => $penerimaanStok->toArray(),
+                'modifiedby' => $penerimaanStok->modifiedby
+            ];
+
+            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+            app(LogTrailController::class)->store($validatedLogTrail);
+
+            DB::commit();
+
+            $selected = $this->getPosition($penerimaanStok, $penerimaanStok->getTable(), true);
+            $penerimaanStok->position = $selected->position;
+            $penerimaanStok->id = $selected->id;
+            $penerimaanStok->page = ceil($penerimaanStok->position / ($request->limit ?? 10));
+
+            return response([
+                'status' => true,
+                'message' => 'Berhasil dihapus',
+                'data' => $penerimaanStok
+            ]);
+        } else {
+            DB::rollBack();
+
+            return response([
+                'status' => false,
+                'message' => 'Gagal dihapus'
+            ]);
+        }
+    }
+
+    public function export()
+    {
+        header('Access-Control-Allow-Origin: *');
+
+        $response = $this->index();
+        $decodedResponse = json_decode($response->content(), true);
+        $penerimaan = $decodedResponse['data'];
+        $columns = [
+            [
+                'label' => 'No',
+            ],
+            [
+                'label' => 'id',
+                'index' => 'id',
+            ],
+            [
+                'label' => 'kode penerimaan',
+                'index' => 'kodepenerimaan',
+            ],
+            [
+                'label' => 'keterangan',
+                'index' => 'keterangan',
+            ],
+            [
+                'label' => 'coa',
+                'index' => 'coa',
+            ],
+            [
+                'label' => 'status format',
+                'index' => 'statusformat',
+            ],
+            [
+                'label' => 'status hitung stok',
+                'index' => 'statushitungstok',
+            ],
+            [
+                'label' => 'modifiedby',
+                'index' => 'modifiedby',
+            ],
+        ];
+        $this->toExcel('Parameter', $penerimaan, $columns);
     }
 }

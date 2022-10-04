@@ -13,7 +13,7 @@ class UpdatePenerimaanStokRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +24,11 @@ class UpdatePenerimaanStokRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            "kodepenerimaan" => "required",
+            "keterangan" => "required",
+            "coa"=>"required",
+            "statusformat" => "required",
+            "statushitungstok" => "required"
         ];
     }
 }
