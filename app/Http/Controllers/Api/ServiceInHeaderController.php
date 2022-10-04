@@ -54,7 +54,6 @@ class ServiceInHeaderController extends Controller
             $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
 
             $servicein = new ServiceInHeader();
-
             $servicein->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $servicein->trado_id = $request->trado_id;
             $servicein->tglmasuk = date('Y-m-d', strtotime($request->tglmasuk));
@@ -100,22 +99,21 @@ class ServiceInHeaderController extends Controller
                 'keterangan' => $request->keterangan_detail,
                 'modifiedby' => $servicein->modifiedby,
             ];
-            
             $data = new StoreServiceInDetailRequest($datadetail);
             $datadetails = app(ServiceInDetailController::class)->store($data);
-
+            
             if ($datadetails['error']) {
                 return response($datadetails, 422);
             } else {
                 $iddetail = $datadetails['id'];
                 $tabeldetail = $datadetails['tabel'];
             }
-
+            
             $datadetaillog = [
                 'id' => $iddetail,
                 'servicein_id' => $servicein->id,
                 'nobukti' => $servicein->nobukti,
-                'mekanik_id' => $request->mekanik_id,
+                'mekanik_id' => $request->mekanik,
                 'keterangan' => $request->keterangan_detail,
                 'modifiedby' => $servicein->modifiedby,
                 'created_at' => date('d-m-Y H:i:s', strtotime($servicein->created_at)),
@@ -189,7 +187,7 @@ class ServiceInHeaderController extends Controller
             $servicein->tglmasuk = date('Y-m-d', strtotime($request->tglmasuk));
             $servicein->keterangan = $request->keterangan;
             $servicein->modifiedby = auth('api')->user()->name;
-
+            
             if ($servicein->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($servicein->getTable()),
