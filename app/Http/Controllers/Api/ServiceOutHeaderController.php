@@ -50,6 +50,7 @@ class ServiceOutHeaderController extends Controller
                 ->where('grp', $group)
                 ->where('subgrp', $subgroup)
                 ->first();
+                
             $content = new Request();
             $content['group'] = $group;
             $content['subgroup'] = $subgroup;
