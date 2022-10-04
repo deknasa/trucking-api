@@ -35,6 +35,7 @@ class CreateHutangheaderTable extends Migration
         });
 
         DB::statement("ALTER TABLE hutangheader NOCHECK CONSTRAINT hutangheader_pelanggan_pelanggan_id_foreign");
+        DB::statement("ALTER TABLE hutangheader NOCHECK CONSTRAINT hutangheader_akunpusat_coa_foreign");
 
     }
 

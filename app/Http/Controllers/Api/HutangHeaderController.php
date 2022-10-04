@@ -13,12 +13,14 @@ use Illuminate\Support\Facades\DB;
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Models\LogTrail;
 use App\Models\AkunPusat;
+use App\Models\Supplier;
 use App\Models\Bank;
 use App\Models\JurnalUmumDetail;
 use App\Models\JurnalUmumHeader;
 use App\Models\Parameter;
 use App\Http\Requests\StoreJurnalUmumHeaderRequest;
 use App\Http\Requests\StoreJurnalUmumDetailRequest;
+use App\Models\Pelanggan;
 use PhpParser\Builder\Param;
 
 class HutangHeaderController extends Controller
@@ -58,9 +60,10 @@ class HutangHeaderController extends Controller
     public function combo(Request $request)
     {
         $data = [
-            'bank'          => Bank::all(),
             'coa'           => AkunPusat::all(),
             'parameter'     => Parameter::all(),
+            'pelanggan'     => Pelanggan::all(),
+            'supplier'      => Supplier::all(),
 
             'statuskas'     => Parameter::where('grp', 'STATUS KAS')->get(),
             'statusapproval' => Parameter::where('grp', 'STATUS APPROVAL')->get(),
@@ -258,10 +261,10 @@ class HutangHeaderController extends Controller
 
             DB::commit();
 
-              /* Set position and page */
-              $selected = $this->getPosition($hutangHeader, $hutangHeader->getTable());
-              $hutangHeader->position = $selected->position;
-              $hutangHeader->page = ceil($hutangHeader->position / ($request->limit ?? 10));
+            /* Set position and page */
+            $selected = $this->getPosition($hutangHeader, $hutangHeader->getTable());
+            $hutangHeader->position = $selected->position;
+            $hutangHeader->page = ceil($hutangHeader->position / ($request->limit ?? 10));
 
             return response([
                 'status' => true,
@@ -386,18 +389,16 @@ class HutangHeaderController extends Controller
             $content['subgroup'] = $subgroup;
             $content['table'] = 'hutangheader';
             $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
-            $hutangHeader = new HutangHeader();
 
+            $hutangHeader = new HutangHeader();
             $hutangHeader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $hutangHeader->keterangan = $request->keterangan ?? '';
             $hutangHeader->coa = $request->akunpusat;
             $hutangHeader->pelanggan_id = $request->pelanggan_id;
-
-            //            $hutangHeader->pelanggan_id = $request->pelanggan_id;
-            // $hutangHeader->total = $request->total ?? '';
             $hutangHeader->postingdari = $request->postingdari ?? 'HUTANG HEADER';
-            $hutangHeader->modifiedby = auth('api')->user()->name;
             $hutangHeader->statusformat = $format->id;
+            $hutangHeader->modifiedby = auth('api')->user()->name;
+           
             TOP:
             $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
 
@@ -422,13 +423,15 @@ class HutangHeaderController extends Controller
                 'datajson' => $hutangHeader->toArray(),
                 'modifiedby' => $hutangHeader->modifiedby
             ];
+            dd($logTrail);
+
             $validatedLogTrail = new StoreLogTrailRequest($logTrail);
             $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
             /* Store detail */
             $detaillog = [];
 
-           // $detaillog = [];
+            // $detaillog = [];
             //   for ($i = 0; $i < count($request->nominal_detail); $i++) {
 
             $total = str_replace('.00', '', $request->total_detail);
