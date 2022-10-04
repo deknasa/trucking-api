@@ -69,7 +69,9 @@ class ServiceOutHeaderController extends Controller
 
             try {
                 $serviceout->save();
+                DB::commit();
             } catch (\Exception $e) {
+                dd($e->getMessage());
                 $errorCode = @$e->errorInfo[1];
                 if ($errorCode == 2601) {
                     goto TOP;

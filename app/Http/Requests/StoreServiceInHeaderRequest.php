@@ -25,7 +25,7 @@ class StoreServiceInHeaderRequest extends FormRequest
     {
         return [
             'tglbukti' => 'required',
-            'trado_id' => 'required',
+            'trado' => 'required',
             'tglmasuk' => 'required',
             'keterangan' => 'required',
         ];
