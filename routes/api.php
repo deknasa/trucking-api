@@ -68,6 +68,9 @@
     use App\Http\Controllers\Api\PengeluaranDetailController;
     use App\Http\Controllers\Api\PenerimaanTruckingHeaderController;
     use App\Http\Controllers\Api\PenerimaanTruckingDetailController;
+    use App\Http\Controllers\Api\PenerimaanStokController;
+    use App\Http\Controllers\Api\PenerimaanStokHeaderController;
+    use App\Http\Controllers\Api\PengeluaranStokController;
     use App\Http\Controllers\Api\JurnalUmumHeaderController;
     use App\Http\Controllers\Api\JurnalUmumDetailController;
     use App\Http\Controllers\Api\PengeluaranTruckingHeaderController;
@@ -311,6 +314,14 @@
         Route::resource('pengeluarantruckingheader', PengeluaranTruckingHeaderController::class);
         Route::resource('pengeluarantruckingdetail', PengeluaranTruckingDetailController::class);
 
+        Route::get('penerimaanstok/field_length', [PenerimaanStokController::class,'fieldLength']);
+        Route::get('penerimaanstok/export', [PenerimaanStokController::class,'export']);
+        Route::apiResource('penerimaanstok', PenerimaanStokController::class);
+        Route::apiResource('penerimaanstokheader', PenerimaanStokHeaderController::class);
+
+        Route::get('pengeluaranstok/field_length', [PengeluaranStokController::class,'fieldLength']);
+        // Route::get('pengeluaranstok/export', [PengeluaranStokController::class,'export']);
+        Route::apiResource('pengeluaranstok', PengeluaranStokController::class);
 
         Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
         Route::get('piutangheader/no_bukti', [PiutangHeaderController::class, 'getNoBukti']);

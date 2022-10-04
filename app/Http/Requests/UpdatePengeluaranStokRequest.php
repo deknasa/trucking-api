@@ -13,7 +13,7 @@ class UpdatePengeluaranStokRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +24,11 @@ class UpdatePengeluaranStokRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            "kodepengeluaran" => "required",
+            "keterangan" => "required",
+            "coa"=>"required",
+            "statusformat" => "required",
+            "statushitungstok" => "required"
         ];
     }
 }
