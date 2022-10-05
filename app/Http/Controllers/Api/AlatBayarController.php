@@ -87,11 +87,12 @@ class AlatBayarController extends Controller
         }
     }
 
-    public function show(AlatBayar $alatbayar)
+    public function show($id)
     {
+        $data = AlatBayar::find($id);
         return response([
             'status' => true,
-            'data' => $alatbayar
+            'data' => $data
         ]);
     }
 

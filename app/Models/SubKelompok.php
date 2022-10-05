@@ -30,7 +30,9 @@ class SubKelompok extends MyModel
         $this->setRequestParameters();
 
         $query = DB::table($this->table)->select(
-            'subkelompok.*',
+            'subkelompok.id',
+            'subkelompok.kodesubkelompok',
+            'subkelompok.keterangan',
             'kelompok.keterangan as kelompok_id',
             'parameter.text as statusaktif',
         )
@@ -110,13 +112,21 @@ class SubKelompok extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                        if ($filters['field'] == 'statusaktif') {
+                            $query = $query->where('parameter.text', '=', $filters['data']);
+                        } else {
+                            $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                        }
                     }
 
                     break;
                 case "OR":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                        if ($filters['field'] == 'statusaktif') {
+                            $query = $query->orWhere('parameter.text', '=', $filters['data']);
+                        } else {
+                            $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                        }
                     }
 
                     break;
