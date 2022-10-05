@@ -21,15 +21,8 @@ class CreatePenerimaanstokdetailTable extends Migration
             $table->unsignedBigInteger('penerimaanstokheader_id');
             $table->string('nobukti',50)->default('');
             $table->unsignedBigInteger('stok_id');
-            $table->integer('conv1')->length(11)->default('0');
-            $table->integer('conv2')->length(11)->default('0');
-            $table->double('qty0', 15,2)->default(0);
-            $table->double('qty1', 15,2)->default(0);
-            $table->double('qty2', 15,2)->default(0);
-            $table->double('totalqty', 15,2)->default(0);
-            $table->double('harga0', 15,2)->default(0);
-            $table->double('harga1', 15,2)->default(0);
-            $table->double('harga2', 15,2)->default(0);
+            $table->double('qty', 15,2)->default(0);
+            $table->double('harga', 15,2)->default(0);
             $table->string('persentasediscount', 50)->default('');
             $table->double('nominaldiscount', 15,2)->default(0);
             $table->double('total', 15,2)->default(0);

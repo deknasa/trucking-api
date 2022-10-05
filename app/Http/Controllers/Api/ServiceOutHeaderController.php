@@ -50,6 +50,7 @@ class ServiceOutHeaderController extends Controller
                 ->where('grp', $group)
                 ->where('subgrp', $subgroup)
                 ->first();
+                
             $content = new Request();
             $content['group'] = $group;
             $content['subgroup'] = $subgroup;
@@ -69,7 +70,9 @@ class ServiceOutHeaderController extends Controller
 
             try {
                 $serviceout->save();
+                DB::commit();
             } catch (\Exception $e) {
+                dd($e->getMessage());
                 $errorCode = @$e->errorInfo[1];
                 if ($errorCode == 2601) {
                     goto TOP;

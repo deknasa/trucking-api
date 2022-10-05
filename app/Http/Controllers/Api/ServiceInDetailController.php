@@ -91,17 +91,16 @@ class ServiceInDetailController extends Controller
                 'errors' => $validator->messages()
             ];
         }
-
         try {
             $serviceindetail = new ServiceInDetail();
+            
             $serviceindetail->servicein_id = $request->servicein_id;
             $serviceindetail->nobukti = $request->nobukti;
             $serviceindetail->mekanik_id = $request->mekanik_id;
             $serviceindetail->keterangan = $request->keterangan;
             $serviceindetail->modifiedby = auth('api')->user()->name;
-
+            
             $serviceindetail->save();
-
             DB::commit();
             if ($validator->passes()) {
                 return [

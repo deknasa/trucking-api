@@ -81,7 +81,9 @@ class ServiceInHeader extends MyModel
             'serviceinheader.updated_at'
 
         )
-        ->leftJoin('trado', 'serviceinheader.trado_id', 'trado.id');
+        ->leftJoin('trado', 'serviceinheader.trado_id', 'trado.id')
+        ->where('serviceinheader.id', $id);
+
 
         $data = $query->first();
 

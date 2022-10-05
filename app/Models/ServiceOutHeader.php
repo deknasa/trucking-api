@@ -13,7 +13,7 @@ class ServiceOutHeader extends MyModel
 {
     use HasFactory;
 
-    protected $table = 'ServiceOutHeader';
+    protected $table = 'serviceoutheader';
 
     protected $casts = [
         'created_at' => 'date:d-m-Y H:i:s',
@@ -38,7 +38,9 @@ class ServiceOutHeader extends MyModel
             'serviceoutheader.id',
             'serviceoutheader.nobukti',
             'serviceoutheader.tglbukti',
+
             'trado.keterangan as trado_id',
+
             'serviceoutheader.tglkeluar',
             'serviceoutheader.keterangan',
             'serviceoutheader.modifiedby',
@@ -46,7 +48,7 @@ class ServiceOutHeader extends MyModel
             'serviceoutheader.updated_at'
 
         )
-            ->join('trado', 'trado.id', '=', 'serviceoutheader.trado_id');
+            ->leftJoin('trado', 'serviceoutheader.trado_id', 'trado.id');
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -60,6 +62,31 @@ class ServiceOutHeader extends MyModel
         return $data;
     }
 
+    public function find($id)
+    {
+
+        $query = DB::table('serviceoutheader')->select(
+            'serviceoutheader.id',
+            'serviceoutheader.nobukti',
+            'serviceoutheader.tglbukti',
+            'serviceoutheader.trado_id',
+
+            'trado.keterangan as trado',
+
+            'serviceoutheader.tglkeluar',
+            'serviceoutheader.keterangan',
+            'serviceoutheader.modifiedby',
+            'serviceoutheader.created_at',
+            'serviceoutheader.updated_at'
+
+        )
+        ->leftJoin('trado', 'serviceoutheader.trado_id', 'trado.id')
+        ->where('serviceoutheader.id', $id);
+        $data = $query->first();
+
+        return $data;
+    }
+
     public function selectColumns($query)
     { //sesuaikan dengan createtemp
 
@@ -68,10 +95,9 @@ class ServiceOutHeader extends MyModel
                 "$this->table.id,
             $this->table.nobukti,
             $this->table.tglbukti,
-            $this->table.keterangan,
-            $this->table.tglkeluar,
-
             'trado.keterangan as trado_id',
+            $this->table.tglkeluar,
+            $this->table.keterangan,
 
             $this->table.modifiedby,
             $this->table.created_at,
@@ -80,7 +106,7 @@ class ServiceOutHeader extends MyModel
             )
 
         )
-        ->join('trado', 'trado.id', '=', 'serviceoutheader.trado_id');
+         ->leftJoin('trado', 'serviceoutheader.trado_id', 'trado.id');
 
     }
 

@@ -1,10 +1,17 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
 use App\Models\PenerimaanStokHeader;
+
+use App\Http\Requests\StoreLogTrailRequest;
 use App\Http\Requests\StorePenerimaanStokHeaderRequest;
 use App\Http\Requests\UpdatePenerimaanStokHeaderRequest;
+
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class PenerimaanStokHeaderController extends Controller
 {
@@ -15,7 +22,14 @@ class PenerimaanStokHeaderController extends Controller
      */
     public function index()
     {
-        //
+        $penerimaanStokHeader = new PenerimaanStokHeader();
+        return response([
+            'data' => $penerimaanStokHeader->get(),
+            'attributes' => [
+                'totalRows' => $penerimaanStokHeader->totalRows,
+                'totalPages' => $penerimaanStokHeader->totalPages
+            ]
+        ]);
     }
 
     /**
@@ -45,9 +59,12 @@ class PenerimaanStokHeaderController extends Controller
      * @param  \App\Models\PenerimaanStokHeader  $penerimaanStokHeader
      * @return \Illuminate\Http\Response
      */
-    public function show(PenerimaanStokHeader $penerimaanStokHeader)
+    public function show(PenerimaanStokHeader $penerimaanStokHeader,$id)
     {
-        //
+        return response([
+            'status' => true,
+            'data' => $penerimaanStokHeader->find($id),
+        ]);
     }
 
     /**
