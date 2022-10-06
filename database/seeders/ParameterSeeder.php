@@ -127,7 +127,7 @@ class ParameterSeeder extends Seeder
         Parameter::create(['grp' => 'STATUS LONGTRIP',  'subgrp' => 'STATUS LONGTRIP',  'text' => 'YA',  'type' => '0',  'memo' => '',  'modifiedby' => '1',]);
         Parameter::create(['grp' => 'STATUS PERALIHAN',  'subgrp' => 'STATUS PERALIHAN',  'text' => 'YA',  'type' => '0',  'memo' => '',  'modifiedby' => '1',]);
         Parameter::create(['grp' => 'STATUS RITASIOMSET',  'subgrp' => 'STATUS RITASIOMSET',  'text' => 'YA',  'type' => '0',  'memo' => '',  'modifiedby' => '1',]);
-        Parameter::create(['grp' => 'SURATPENGANTAR',  'subgrp' => 'SURATPENGANTAR',  'text' => '#TRP #9999#/#R#/#Y',  'type' => '0',  'memo' => '',  'modifiedby' => '1',]);
+        Parameter::create(['grp' => 'COA KAS GANTUNG',  'subgrp' => 'COA KAS GANTUNG',  'text' => '01.01.02.00',  'type' => '0',  'memo' => 'COA KAS GANTUNG',  'modifiedby' => '1',]);
         Parameter::create(['grp' => 'STATUS LUAR KOTA',  'subgrp' => 'STATUS LUAR KOTA',  'text' => 'YA',  'type' => '0',  'memo' => '',  'modifiedby' => '1',]);
         Parameter::create(['grp' => 'STATUS LUAR KOTA',  'subgrp' => 'STATUS LUAR KOTA',  'text' => 'TIDAK',  'type' => '0',  'memo' => '',  'modifiedby' => '1',]);
         Parameter::create(['grp' => 'RITASI',  'subgrp' => 'RITASI',  'text' => '#RTT #9999#/#R#/#Y',  'type' => '0',  'memo' => '',  'modifiedby' => '1',]);
