@@ -320,6 +320,7 @@
 
         Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
         Route::get('hutangheader/no_bukti', [HutangHeaderController::class, 'getNoBukti']);
+        Route::get('hutangheader/combo', [HutangHeaderController::class, 'combo']);
         Route::get('hutangheader/grid', [HutangHeaderController::class, 'grid']);
         Route::resource('hutangheader', HutangHeaderController::class);
         Route::resource('hutangdetail', HutangDetailController::class);
@@ -525,10 +526,6 @@
     Route::get('ritasi/combo', [RitasiController::class, 'combo']);
     Route::get('ritasi/field_length', [RitasiController::class, 'fieldLength']);
     Route::resource('ritasi', RitasiController::class);
-
-    Route::get('serviceout/combo', [ServiceOutHeaderController::class, 'combo']);
-    Route::resource('serviceout', ServiceOutHeaderController::class);
-    Route::resource('serviceoutdetail', ServiceOutDetailController::class);
 
     Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
     Route::post('penerimaan/{id}/approval', [PenerimaanHeaderController::class, 'approval'])->name('penerimaan.approval');

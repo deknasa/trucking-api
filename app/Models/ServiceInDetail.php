@@ -31,7 +31,8 @@ class ServiceInDetail extends MyModel
             'mekanik.id as mekanik_id',
             'mekanik.namamekanik as mekanik',
 
-            'serviceindetail.keterangan as keterangan_detail',
+            'serviceindetail.keterangan',
+
         )
             ->leftJoin('mekanik', 'serviceindetail.mekanik_id', 'mekanik.id')
             ->where('servicein_id', '=', $id);

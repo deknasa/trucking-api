@@ -87,8 +87,6 @@ class ServiceInHeaderController extends Controller
             $validatedLogTrail = new StoreLogTrailRequest($logTrail);
             $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-            // dd(count($request->mekanik_id));
-
             /* Store detail */
             $detaillog = [];
             // for ($i = 0; $i < count($request->mekanik_id); $i++) {
@@ -113,14 +111,14 @@ class ServiceInHeaderController extends Controller
                 'id' => $iddetail,
                 'servicein_id' => $servicein->id,
                 'nobukti' => $servicein->nobukti,
-                'mekanik_id' => $request->mekanik,
+                'mekanik_id' => $request->mekanik_id,
                 'keterangan' => $request->keterangan_detail,
                 'modifiedby' => $servicein->modifiedby,
                 'created_at' => date('d-m-Y H:i:s', strtotime($servicein->created_at)),
                 'updated_at' => date('d-m-Y H:i:s', strtotime($servicein->updated_at)),
             ];
             $detaillog[] = $datadetaillog;
-            //}
+            // }
 
             $datalogtrail = [
                 'namatabel' => $tabeldetail,
@@ -191,9 +189,9 @@ class ServiceInHeaderController extends Controller
             if ($servicein->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($servicein->getTable()),
-                    'postingdari' => 'ENTRY SERVICE IN',
+                    'postingdari' => 'ENTRY SERVICE IN HEADER',
                     'idtrans' => $servicein->id,
-                    'nobuktitrans' => '',
+                    'nobuktitrans' => $servicein->nobukti,
                     'aksi' => 'ENTRY',
                     'datajson' => $servicein->toArray(),
                     'modifiedby' => $servicein->modifiedby
@@ -203,7 +201,6 @@ class ServiceInHeaderController extends Controller
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
                 ServiceInDetail::where('servicein_id', $id)->delete();
-
                 /* Store detail */
                 $detaillog = [];
                // for ($i = 0; $i < count($request->mekanik_id); $i++) {
@@ -214,10 +211,10 @@ class ServiceInHeaderController extends Controller
                         'keterangan' => $request->keterangan_detail,
                         'modifiedby' => $servicein->modifiedby,
                     ];
-
+                   
                     $data = new StoreServiceInDetailRequest($datadetail);
                     $datadetails = app(ServiceInDetailController::class)->store($data);
-
+                    
                     if ($datadetails['error']) {
                         return response($datadetails, 422);
                     } else {
@@ -251,9 +248,9 @@ class ServiceInHeaderController extends Controller
                 $data = new StoreLogTrailRequest($datalogtrail);
                 app(LogTrailController::class)->store($data);
 
+            }
                 $request->sortname = $request->sortname ?? 'id';
                 $request->sortorder = $request->sortorder ?? 'asc';
-            }
             DB::commit();
 
 

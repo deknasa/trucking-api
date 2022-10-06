@@ -316,23 +316,26 @@ class HutangHeaderController extends Controller
     /**
      * @ClassName destroy
      */
-    public function destroy($id, $hutangHeader, Request $request)
+    public function destroy($id,  Request $request)
     {
+
         DB::beginTransaction();
-        $hutangheader = new HutangHeader();
+        $hutangHeader = new HutangHeader();
+
         try {
+            // $delete = $servicein->delete();
             $delete = HutangDetail::where('hutang_id', $id)->delete();
             $delete = HutangHeader::destroy($id);
 
             if ($delete) {
                 $logTrail = [
-                    'namatabel' => strtoupper($hutangheader->getTable()),
-                    'postingdari' => 'DELETE HUTANG HEADER',
+                    'namatabel' => strtoupper($hutangHeader->getTable()),
+                    'postingdari' => 'DELETE hutanghe$hutangHeader',
                     'idtrans' => $id,
                     'nobuktitrans' => '',
                     'aksi' => 'DELETE',
-                    'datajson' => $hutangheader->toArray(),
-                    'modifiedby' => $hutangheader->modifiedby
+                    'datajson' => $hutangHeader->toArray(),
+                    'modifiedby' => $hutangHeader->modifiedby
                 ];
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
@@ -341,15 +344,15 @@ class HutangHeaderController extends Controller
                 DB::commit();
 
                 /* Set position and page */
-                $selected = $this->getPosition($hutangheader, $hutangheader->getTable(), true);
-                $hutangheader->position = $selected->position;
-                $hutangheader->id = $selected->id;
-                $hutangheader->page = ceil($hutangheader->position / ($request->limit ?? 10));
+                $selected = $this->getPosition($hutangHeader, $hutangHeader->getTable(), true);
+                $hutangHeader->position = $selected->position;
+                $hutangHeader->id = $selected->id;
+                $hutangHeader->page = ceil($hutangHeader->position / ($request->limit ?? 10));
 
                 return response([
                     'status' => true,
                     'message' => 'Berhasil dihapus',
-                    'data' => $hutangheader
+                    'data' => $hutangHeader
                 ]);
             } else {
                 DB::rollBack();
@@ -423,7 +426,6 @@ class HutangHeaderController extends Controller
                 'datajson' => $hutangHeader->toArray(),
                 'modifiedby' => $hutangHeader->modifiedby
             ];
-            dd($logTrail);
 
             $validatedLogTrail = new StoreLogTrailRequest($logTrail);
             $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
@@ -476,6 +478,8 @@ class HutangHeaderController extends Controller
                 'updated_at' => date('d-m-Y H:i:s', strtotime($hutangHeader->updated_at)),
 
             ];
+
+
             $detaillog[] = $datadetaillog;
 
             $datalogtrail = [

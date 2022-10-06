@@ -46,12 +46,10 @@ class ServiceInDetailController extends Controller
 
             if ($params['forReport']) {
                 $query->select(
-                    'mekanik.namamekanik as mekanik_id',
+                    'detail.mekanik_id',
                     'detail.keterangan',
 
-                )
-                    ->join('mekanik', 'mekanik.id', '=', 'detail.mekanik_id');
-
+                );
                 $serviceInDetail = $query->get();
             } else {
                 $query->select(
@@ -59,7 +57,8 @@ class ServiceInDetailController extends Controller
                     'detail.keterangan',
 
                 )
-                    ->join('mekanik', 'mekanik.id', '=', 'detail.mekanik_id');
+                ->leftJoin('mekanik', 'detail.mekanik_id', 'mekanik.id')
+                ;
 
                 $serviceInDetail = $query->get();
             }
@@ -78,12 +77,11 @@ class ServiceInDetailController extends Controller
     {
         DB::beginTransaction();
         $validator = Validator::make($request->all(), [
-            'mekanik_id' => 'required',
             'keterangan' => 'required',
         ], [
-            'mekanik_id.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
+            'keterangan.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
         ], [
-            'mekanik_id' => 'mekanik',
+            'keterangan' => 'keterangan',
         ]);
         if (!$validator->passes()) {
             return [
@@ -92,26 +90,27 @@ class ServiceInDetailController extends Controller
             ];
         }
         try {
-            $serviceindetail = new ServiceInDetail();
+            $serviceInDetail = new serviceInDetail();
+
+            $serviceInDetail->servicein_id = $request->servicein_id;
+            $serviceInDetail->nobukti = $request->nobukti;
+            $serviceInDetail->mekanik_id =  $request->mekanik_id;
+            $serviceInDetail->keterangan = $request->keterangan;
+            $serviceInDetail->modifiedby = auth('api')->user()->name;
             
-            $serviceindetail->servicein_id = $request->servicein_id;
-            $serviceindetail->nobukti = $request->nobukti;
-            $serviceindetail->mekanik_id = $request->mekanik_id;
-            $serviceindetail->keterangan = $request->keterangan;
-            $serviceindetail->modifiedby = auth('api')->user()->name;
-            
-            $serviceindetail->save();
+            $serviceInDetail->save();
+
             DB::commit();
             if ($validator->passes()) {
                 return [
                     'error' => false,
-                    'id' => $serviceindetail->id,
-                    'tabel' => $serviceindetail->getTable(),
+                    'id' => $serviceInDetail->id,
+                    'tabel' => $serviceInDetail->getTable(),
                 ];
             }
         } catch (\Throwable $th) {
             DB::rollBack();
-            return response($th->getMessage());
+            throw $th;
         }
     }
 }

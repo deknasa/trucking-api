@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\ServiceOutHeader;
 use App\Models\Trado;
+use App\Models\Mekanik;
 use App\Http\Requests\StoreServiceOutHeaderRequest;
 use App\Http\Requests\StoreServiceOutDetailRequest;
 use Illuminate\Http\Request;
@@ -50,7 +51,7 @@ class ServiceOutHeaderController extends Controller
                 ->where('grp', $group)
                 ->where('subgrp', $subgroup)
                 ->first();
-                
+
             $content = new Request();
             $content['group'] = $group;
             $content['subgroup'] = $subgroup;
@@ -248,10 +249,10 @@ class ServiceOutHeaderController extends Controller
 
                 $datalogtrail = [
                     'namatabel' => $tabeldetail,
-                    'postingdari' => 'ENTRY SERVICE OUT',
+                    'postingdari' => '  EDIT SERVICE OUT',
                     'idtrans' =>  $iddetail,
                     'nobuktitrans' => $serviceout->nobukti,
-                    'aksi' => 'ENTRY',
+                    'aksi' => 'EDIT',
                     'datajson' => $detaillog,
                     'modifiedby' => $request->modifiedby,
                 ];
