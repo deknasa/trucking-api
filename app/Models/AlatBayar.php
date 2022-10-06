@@ -56,6 +56,25 @@ class AlatBayar extends MyModel
 
         return $data;
     }
+    public function find($id)
+    {
+        $query = DB::table('alatbayar')->select(
+            'alatbayar.id',
+            'alatbayar.kodealatbayar',
+            'alatbayar.namaalatbayar',
+            'alatbayar.keterangan',
+            'alatbayar.statuslangsunggcair',
+            'alatbayar.statusdefault',
+            'alatbayar.bank_id',
+            'bank.namabank as bank',
+        )
+            ->leftJoin('bank', 'alatbayar.bank_id', 'bank.id')
+            ->where('alatbayar.id',$id);
+
+        $data = $query->first();
+
+        return $data;
+    }
 
     public function selectColumns($query)
     {

@@ -66,14 +66,14 @@ class PelunasanPiutangHeader extends MyModel
 
         
         $piutang = DB::table("$tempPiutang as A")
-            ->select(DB::raw("null as pelunasanpiutang_id,A.nobukti as piutang_nobukti, A.tglbukti as tglbukti, A.agen_id as agen_id,null as nominal, null as keterangan, null as penyesuaian, null as keteranganpenyesuaian, null as nominallebihbayar, A.nominalpiutang, A.sisa"))
+            ->select(DB::raw("A.id as id,A.nobukti as piutang_nobukti, A.tglbukti as tglbukti, A.agen_id as agen_id, A.invoice_nobukti as invoice_nobukti,null as nominal, null as keterangan, null as penyesuaian, null as keteranganpenyesuaian, null as nominallebihbayar, A.nominalpiutang, A.sisa as sisa"))
             ->distinct("A.nobukti")
             ->leftJoin("$tempPelunasan as B","A.nobukti","B.piutang_nobukti")
             ->whereRaw("isnull(b.piutang_nobukti,'') = ''");
            
 
         $pelunasan = DB::table($tempPelunasan)
-            ->select(DB::raw("pelunasanpiutang_id,piutang_nobukti,tglbukti,agen_id,nominal,keterangan,penyesuaian,keteranganpenyesuaian,nominallebihbayar,nominalpiutang,sisa"))
+            ->select(DB::raw("id,piutang_nobukti,tglbukti,agen_id,invoice_nobukti,nominal,keterangan,penyesuaian,keteranganpenyesuaian,nominallebihbayar,nominalpiutang,sisa"))
             ->unionAll($piutang);
         
         // $this->totalRows = $pelunasan->count();
@@ -93,21 +93,23 @@ class PelunasanPiutangHeader extends MyModel
 
 
         $fetch = DB::table('piutangheader')
-        ->select(DB::raw("piutangheader.nobukti,piutangheader.tglbukti,piutangheader.agen_id,piutangheader.nominal as nominalpiutang, (SELECT (piutangheader.nominal - SUM(pelunasanpiutangdetail.nominal)) FROM pelunasanpiutangdetail WHERE pelunasanpiutangdetail.piutang_nobukti= piutangheader.nobukti) AS sisa"))
+        ->select(DB::raw("piutangheader.id,piutangheader.nobukti,piutangheader.tglbukti,piutangheader.agen_id,piutangheader.nominal as nominalpiutang,piutangheader.invoice_nobukti, (SELECT (piutangheader.nominal - COALESCE(SUM(pelunasanpiutangdetail.nominal),0)) FROM pelunasanpiutangdetail WHERE pelunasanpiutangdetail.piutang_nobukti= piutangheader.nobukti) AS sisa"))
         ->leftJoin('pelunasanpiutangdetail','pelunasanpiutangdetail.agen_id','piutangheader.agen_id')
         ->whereRaw("piutangheader.agen_id = $agenid")
-        ->groupBy('piutangheader.nobukti','piutangheader.agen_id','piutangheader.nominal','piutangheader.tglbukti');
+        ->groupBy('piutangheader.id','piutangheader.nobukti','piutangheader.agen_id','piutangheader.nominal','piutangheader.tglbukti','piutangheader.invoice_nobukti');
                
         Schema::create($temp, function ($table) {
+            $table->bigInteger('id');
             $table->string('nobukti');
             $table->date('tglbukti')->default('');
             $table->bigInteger('agen_id')->default('0');
             $table->bigInteger('nominalpiutang');
+            $table->string('invoice_nobukti');
             $table->bigInteger('sisa')->nullable();
             
         });
     
-        $tes = DB::table($temp)->insertUsing(['nobukti','tglbukti','agen_id','nominalpiutang','sisa'], $fetch);
+        $tes = DB::table($temp)->insertUsing(['id','nobukti','tglbukti','agen_id','nominalpiutang','invoice_nobukti','sisa'], $fetch);
        
         return $temp;
     }
@@ -116,12 +118,12 @@ class PelunasanPiutangHeader extends MyModel
         $tempo = '##tempPelunasan' . rand(1, 10000);
         
         $fetch = DB::table('pelunasanpiutangdetail as ppd')
-        ->select(DB::raw("ppd.pelunasanpiutang_id,ppd.piutang_nobukti,piutangheader.tglbukti,ppd.agen_id,ppd.nominal,ppd.keterangan,ppd.penyesuaian,ppd.keteranganpenyesuaian,ppd.nominallebihbayar, piutangheader.nominal as nominalpiutang, (SELECT (piutangheader.nominal - SUM(pelunasanpiutangdetail.nominal)) FROM pelunasanpiutangdetail WHERE pelunasanpiutangdetail.piutang_nobukti= piutangheader.nobukti) AS sisa"))
+        ->select(DB::raw("piutangheader.id,ppd.piutang_nobukti,piutangheader.tglbukti,ppd.agen_id,ppd.nominal,ppd.keterangan,ppd.penyesuaian,ppd.keteranganpenyesuaian,ppd.nominallebihbayar, piutangheader.nominal as nominalpiutang,ppd.invoice_nobukti, (SELECT (piutangheader.nominal - SUM(pelunasanpiutangdetail.nominal)) FROM pelunasanpiutangdetail WHERE pelunasanpiutangdetail.piutang_nobukti= piutangheader.nobukti) AS sisa"))
         ->leftJoin('piutangheader','ppd.piutang_nobukti','piutangheader.nobukti')
         ->whereRaw("ppd.pelunasanpiutang_id = $id");
                
         Schema::create($tempo, function ($table) {
-            $table->bigInteger('pelunasanpiutang_id')->default('0');
+            $table->bigInteger('id')->default('0');
             $table->string('piutang_nobukti');
             $table->date('tglbukti')->default('');
             $table->bigInteger('agen_id')->default('0');
@@ -131,10 +133,11 @@ class PelunasanPiutangHeader extends MyModel
             $table->string('keteranganpenyesuaian');
             $table->bigInteger('nominallebihbayar')->default('0');
             $table->bigInteger('nominalpiutang');
+            $table->string('invoice_nobukti');
             $table->bigInteger('sisa')->nullable();
         });
     
-        $tes = DB::table($tempo)->insertUsing(['pelunasanpiutang_id','piutang_nobukti','tglbukti','agen_id','nominal','keterangan','penyesuaian','keteranganpenyesuaian','nominallebihbayar','nominalpiutang','sisa'], $fetch);
+        $tes = DB::table($tempo)->insertUsing(['id','piutang_nobukti','tglbukti','agen_id','nominal','keterangan','penyesuaian','keteranganpenyesuaian','nominallebihbayar','nominalpiutang','invoice_nobukti','sisa'], $fetch);
         
         return $tempo;
     }
