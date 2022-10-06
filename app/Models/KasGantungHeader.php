@@ -29,13 +29,13 @@ class KasGantungHeader extends MyModel
         return $this->hasMany(KasGantungDetail::class, 'kasgantung_id');
     }
 
-    public function bank() {
-        return $this->belongsTo(Bank::class, 'bank_id');
-    }
+    // public function bank() {
+    //     return $this->belongsTo(Bank::class, 'bank_id');
+    // }
 
-    public function penerima() {
-        return $this->belongsTo(Penerima::class, 'penerima_id');
-    }
+    // public function penerima() {
+    //     return $this->belongsTo(Penerima::class, 'penerima_id');
+    // }
 
     public function get()
     {
@@ -67,6 +67,34 @@ class KasGantungHeader extends MyModel
 
         $data = $query->get();
         
+        return $data;
+    }
+
+    public function find($id) 
+    {
+        $query = DB::table('kasgantungheader')
+        ->select(
+            'kasgantungheader.id',
+            'kasgantungheader.nobukti',
+            'kasgantungheader.tglbukti',
+            'kasgantungheader.penerima_id',
+            'penerima.namapenerima as penerima',
+            'kasgantungheader.keterangan',
+            'kasgantungheader.bank_id',
+            'bank.namabank as bank',
+            'kasgantungheader.pengeluaran_nobukti',
+            'kasgantungheader.coakaskeluar',
+            'kasgantungheader.tglkaskeluar',
+            'kasgantungheader.modifiedby',
+            'kasgantungheader.created_at',
+            'kasgantungheader.updated_at'
+        )
+            ->leftJoin('penerima', 'kasgantungheader.penerima_id', 'penerima.id')
+            ->leftJoin('bank', 'kasgantungheader.bank_id', 'bank.id')
+            ->where('kasgantungheader.id',$id);
+
+        $data = $query->first();
+
         return $data;
     }
 

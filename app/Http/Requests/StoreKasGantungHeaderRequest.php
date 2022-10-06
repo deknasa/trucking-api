@@ -26,8 +26,9 @@ class StoreKasGantungHeaderRequest extends FormRequest
         return [
             'tglbukti' => 'required',
             'penerima_id' => 'required',
-            'nominal' => 'required',
-            'keterangan_detail' => 'required',
+            'keterangan' => 'required',
+            'bank_id' => 'required',
+            'tglkaskeluar' => 'required',
         ];
     }
 
