@@ -72,6 +72,47 @@ class OrderanTrucking extends MyModel
         return $data;
     }
 
+    public function find($id)
+    {
+        $query = DB::table('orderantrucking')
+            ->select(
+                'orderantrucking.id',
+                'orderantrucking.nobukti',
+                'orderantrucking.tglbukti',
+                'orderantrucking.container_id',
+                'container.keterangan as container',
+                'orderantrucking.agen_id',
+                'agen.namaagen as agen',
+                'orderantrucking.jenisorder_id',
+                'jenisorder.keterangan as jenisorder',
+                'orderantrucking.pelanggan_id',
+                'pelanggan.namapelanggan as pelanggan',
+                'orderantrucking.tarif_id',
+                'tarif.tujuan as tarif',
+                'orderantrucking.nominal',
+                'orderantrucking.nojobemkl',
+                'orderantrucking.nocont',
+                'orderantrucking.noseal',
+                'orderantrucking.nojobemkl2',
+                'orderantrucking.nocont2',
+                'orderantrucking.noseal2',
+                'orderantrucking.statuslangsir',
+                'orderantrucking.statusperalihan',
+                'orderantrucking.modifiedby',
+                'orderantrucking.created_at',
+                'orderantrucking.updated_at'
+            )
+            ->leftJoin('tarif', 'orderantrucking.tarif_id', '=', 'tarif.id')
+            ->leftJoin('container', 'orderantrucking.container_id', '=', 'container.id')
+            ->leftJoin('agen', 'orderantrucking.agen_id', '=', 'agen.id')
+            ->leftJoin('jenisorder', 'orderantrucking.jenisorder_id', '=', 'jenisorder.id')
+            ->leftJoin('pelanggan', 'orderantrucking.pelanggan_id', '=', 'pelanggan.id');
+
+            $data = $query->first();
+
+        return $data;
+    }
+
     public function agen() {
         return $this->belongsTo(Agen::class, 'agen_id');
     }
@@ -147,6 +188,8 @@ class OrderanTrucking extends MyModel
             $table->string('nojobemkl2', 1000)->default('');
             $table->string('nocont2', 1000)->default('');
             $table->string('noseal2', 1000)->default('');
+            $table->string('statuslangsir', 1000)->default('');
+            $table->string('statusperalihan', 1000)->default('');
             $table->string('modifiedby', 50)->default('');
             $table->dateTime('created_at')->default('1900/1/1');
             $table->dateTime('updated_at')->default('1900/1/1');
@@ -158,7 +201,7 @@ class OrderanTrucking extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id','nobukti','tglbukti','container_id','agen_id','jenisorder_id','pelanggan_id','tarif_id','nominal','nojobemkl','nocont','noseal','nojobemkl2','nocont2','noseal2','modifiedby','created_at','updated_at'],$models);
+        DB::table($temp)->insertUsing(['id','nobukti','tglbukti','container_id','agen_id','jenisorder_id','pelanggan_id','tarif_id','nominal','nojobemkl','nocont','noseal','nojobemkl2','nocont2','noseal2','statuslangsir','statusperalihan','modifiedby','created_at','updated_at'],$models);
 
 
         return  $temp;         

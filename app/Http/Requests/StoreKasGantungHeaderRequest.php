@@ -24,7 +24,6 @@ class StoreKasGantungHeaderRequest extends FormRequest
     public function rules()
     {
         return [
-            'nobukti' => 'required',
             'tglbukti' => 'required',
             'penerima_id' => 'required',
             'nominal' => 'required',
@@ -34,7 +33,6 @@ class StoreKasGantungHeaderRequest extends FormRequest
 
     public function attributes() {
         return [
-            'nobukti' => 'No Bukti',
             'tgl' => 'Tanggal',
             'penerima_id' => 'Penerima',
         ];

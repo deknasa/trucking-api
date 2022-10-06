@@ -54,7 +54,7 @@ class KasGantungHeaderController extends Controller
     public function store(StoreKasGantungHeaderRequest $request)
     {
         DB::beginTransaction();
-
+        
         try {
             /* Store header */
             $bank = Bank::find($request->bank_id);
@@ -97,7 +97,7 @@ class KasGantungHeaderController extends Controller
                     goto TOP;
                 }
             }
-
+            
             $logTrail = [
                 'namatabel' => strtoupper($kasgantungHeader->getTable()),
                 'postingdari' => 'ENTRY KAS GANTUNG',
@@ -109,14 +109,17 @@ class KasGantungHeaderController extends Controller
             ];
 
             $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+            
             $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
             
             /* Store detail */
             $detaillog=[];
 
             $total = 0;
+            
             for ($i = 0; $i < count($request->nominal); $i++) {
-                $nominal = str_replace(',','',str_replace('.','',$request->nominal[$i]));
+                
+                $nominal = str_replace(',','',str_replace('.00','',$request->nominal[$i]));
                 $datadetail = [
                     'kasgantung_id' => $kasgantungHeader->id,
                     'nobukti' => $kasgantungHeader->nobukti,
@@ -125,7 +128,9 @@ class KasGantungHeaderController extends Controller
                     'keterangan' => $request->keterangan_detail[$i],
                     'modifiedby' => auth('api')->user()->name,
                     ];
+                    
                 $data = new StoreKasGantungDetailRequest($datadetail);
+                
                 $datadetails = app(KasGantungDetailController::class)->store($data);
 
                 if ($datadetails['error']) {
@@ -168,28 +173,38 @@ class KasGantungHeaderController extends Controller
             ];
 
             $data = new StoreLogTrailRequest($datalogtrail);
+            
             app(LogTrailController::class)->store($data);
 
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
-
+            
+//  
             if ($kasgantungHeader->save() && $kasgantungHeader->kasgantungDetail) {
                 if ($request->bank_id != '') {
+                    
                     $parameterController = new ParameterController;
                     $statusApp = $parameterController->getparameterid('STATUS APPROVAL','STATUS APPROVAL','NON APPROVAL');
+
                     $coaKasKeluar = $parameterController->getparameterid('COA','COAKASKELUAR','09.01.01.03');
+
+                    dd('here');
+
 
                     $content = new Request();
                     $content['group'] = 'PENGELUARAN KAS';
-                    $content['subgroup'] = 'NOMOR PENGELUARAN KAS';
+                    $content['subgroup'] = 'NOMOR  PENGELUARAN KAS';
                     $content['table'] = 'pengeluaranheader';
                     $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
+
 
                     ATAS:
                     $nobuktikaskeluar = app(Controller::class)->getRunningNumber($content)->original['data'];
                     
+                    
                     $kasgantungHeader->pengeluaran_nobukti = $nobuktikaskeluar;
                     $kasgantungHeader->save();
+
 
                     $pengeluaranHeader = [
                         'nobukti' => $nobuktikaskeluar,
@@ -207,7 +222,8 @@ class KasGantungHeaderController extends Controller
                         'transferkeac' => '',
                         'transferkean' => '',
                         'trasnferkebank' => '',
-                        'modifiedby' => auth('api')->user()->name,
+                        'statusformat' => '0',
+                        'modifiedby' =>  auth('api')->user()->name
                     ];
 
                     $pengeluaranDetail = [
@@ -216,54 +232,26 @@ class KasGantungHeaderController extends Controller
                         'nowarkat' => '',
                         'tgljatuhtempo' => '',
                         'nominal' => $total,
-                        'coadebet' => $coaKasKeluar->text,
+                        'coadebet' => $bank->coa,
                         'coakredit' => $coaKasKeluar->text,
                         'keterangan' => $request->keterangan,
                         'bulanbeban' => '',
-                        'modifiedby' => auth('api')->user()->name,
+                        'modifiedby' =>  auth('api')->user()->name
                     ];
+                    dd('here');
 
-                    $jurnalHeader = [
-                        'nobukti' => $nobuktikaskeluar,
-                        'tgl' => date('Y-m-d', strtotime($request->tglkaskeluar)),
-                        'keterangan' => $request->keterangan,
-                        'postingdari' => "ENTRY KAS GANTUNG",
-                        'statusapproval' => $statusApp->id,
-                        'userapproval' => "",
-                        'tglapproval' => "",
-                        'modifiedby' => auth('api')->user()->name,
-                    ];
-
-                    $jurnalDetail = [
-                        [
-                            'nobukti' => $nobuktikaskeluar,
-                            'tgl' => date('Y-m-d', strtotime($request->tglkaskeluar)),
-                            'coa' => $coaKasKeluar->text,
-                            'nominal' => $total,
-                            'keterangan' => $request->keterangan,
-                            'modifiedby' => auth('api')->user()->name,
-                        ],
-                        [
-                            'nobukti' => $nobuktikaskeluar,
-                            'tgl' => date('Y-m-d', strtotime($request->tglkaskeluar)),
-                            'coa' => $bank->coa ?? '',
-                            'nominal' => -$total,
-                            'keterangan' => $request->keterangan,
-                            'modifiedby' => auth('api')->user()->name,
-                        ]
-                    ];
-
-                    $jurnal = $this->storeJurnal($pengeluaranHeader,$pengeluaranDetail,$jurnalHeader , $jurnalDetail);
+                    $pengeluaran = $this->storePengeluaran($pengeluaranHeader,$pengeluaranDetail);
                     
-                    if (!$jurnal['status'] AND @$jurnal['errorCode'] == 2601) {
+                    if (!$pengeluaran['status'] AND @$pengeluaran['errorCode'] == 2601) {
                         goto ATAS;
                     }
 
-                    if (!$jurnal['status']) {
-                        throw new \Throwable($jurnal['message']);
+                    if (!$pengeluaran['status']) {
+                        throw new \Throwable($pengeluaran['message']);
                     }
 
                 }
+            
 
                 DB::commit();
 
@@ -594,7 +582,7 @@ class KasGantungHeaderController extends Controller
         ]);
     }
 
-    private function storeJurnal($pengeluaranHeader,$pengeluaranDetail,$header,$detail) {
+    private function storePengeluaran($pengeluaranHeader,$pengeluaranDetail) {
         try {
             $pengeluaran = new StorePengeluaranHeaderRequest($pengeluaranHeader);
             $pengeluarans = app(PengeluaranHeaderController::class)->store($pengeluaran);
@@ -612,17 +600,6 @@ class KasGantungHeaderController extends Controller
             $pengeluaran = new StorePengeluaranDetailRequest($pengeluaranDetail);
             $pengeluarans = app(PengeluaranDetailController::class)->store($pengeluaran);
             
-            $jurnal = new StoreJurnalUmumHeaderRequest($header);
-            $jurnals = app(JurnalUmumHeaderController::class)->store($jurnal);
-            
-            foreach ($detail as $key => $value) {
-                $value['jurnalumum_id'] = $jurnals['id'];
-                
-                
-                $jurnal = new StoreJurnalUmumDetailRequest($value);
-                app(JurnalUmumDetailController::class)->store($jurnal);
-            }
-
             return [
                 'status' => true,
             ];

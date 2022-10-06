@@ -483,11 +483,11 @@ class PelunasanPiutangHeaderController extends Controller
     }
     
 
-    public function getpelunasanpiutang($id,$agenid)
+    public function getPelunasanPiutang($id, $agenId)
     {
         $pelunasanpiutang = new PelunasanPiutangHeader();
         return response([
-            'data' => $pelunasanpiutang->getPelunasanPiutang($id,$agenid),
+            'data' => $pelunasanpiutang->getPelunasanPiutang($id,$agenId),
             'attributes' => [
                 'totalRows' => $pelunasanpiutang->totalRows,
                 'totalPages' => $pelunasanpiutang->totalPages
@@ -495,11 +495,11 @@ class PelunasanPiutangHeaderController extends Controller
         ]);
     }
 
-    public function getDeletePelunasanPiutang($id)
+    public function getDeletePelunasanPiutang($id, $agenId)
     {
         $pelunasanpiutang = new PelunasanPiutangHeader();
         return response([
-            'data' => $pelunasanpiutang->getDeletePelunasanPiutang($id),
+            'data' => $pelunasanpiutang->getDeletePelunasanPiutang($id, $agenId),
             'attributes' => [
                 'totalRows' => $pelunasanpiutang->totalRows,
                 'totalPages' => $pelunasanpiutang->totalPages

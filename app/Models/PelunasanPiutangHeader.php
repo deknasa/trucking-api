@@ -66,14 +66,14 @@ class PelunasanPiutangHeader extends MyModel
 
         
         $piutang = DB::table("$tempPiutang as A")
-            ->select(DB::raw("A.id as id,A.nobukti as piutang_nobukti, A.tglbukti as tglbukti, A.agen_id as agen_id, A.invoice_nobukti as invoice_nobukti,null as nominal, null as keterangan, null as penyesuaian, null as keteranganpenyesuaian, null as nominallebihbayar, A.nominalpiutang, A.sisa as sisa"))
+            ->select(DB::raw("A.id as id,null as pelunasanpiutang_id,A.nobukti as piutang_nobukti, A.tglbukti as tglbukti, A.agen_id as agen_id, A.invoice_nobukti as invoice_nobukti,null as nominal, null as keterangan, null as penyesuaian, null as keteranganpenyesuaian, null as nominallebihbayar, A.nominalpiutang, A.sisa as sisa"))
             ->distinct("A.nobukti")
             ->leftJoin("$tempPelunasan as B","A.nobukti","B.piutang_nobukti")
             ->whereRaw("isnull(b.piutang_nobukti,'') = ''");
            
 
         $pelunasan = DB::table($tempPelunasan)
-            ->select(DB::raw("id,piutang_nobukti,tglbukti,agen_id,invoice_nobukti,nominal,keterangan,penyesuaian,keteranganpenyesuaian,nominallebihbayar,nominalpiutang,sisa"))
+            ->select(DB::raw("id,pelunasanpiutang_id,piutang_nobukti,tglbukti,agen_id,invoice_nobukti,nominal,keterangan,penyesuaian,keteranganpenyesuaian,nominallebihbayar,nominalpiutang,sisa"))
             ->unionAll($piutang);
         
         // $this->totalRows = $pelunasan->count();
@@ -118,12 +118,13 @@ class PelunasanPiutangHeader extends MyModel
         $tempo = '##tempPelunasan' . rand(1, 10000);
         
         $fetch = DB::table('pelunasanpiutangdetail as ppd')
-        ->select(DB::raw("piutangheader.id,ppd.piutang_nobukti,piutangheader.tglbukti,ppd.agen_id,ppd.nominal,ppd.keterangan,ppd.penyesuaian,ppd.keteranganpenyesuaian,ppd.nominallebihbayar, piutangheader.nominal as nominalpiutang,ppd.invoice_nobukti, (SELECT (piutangheader.nominal - SUM(pelunasanpiutangdetail.nominal)) FROM pelunasanpiutangdetail WHERE pelunasanpiutangdetail.piutang_nobukti= piutangheader.nobukti) AS sisa"))
+        ->select(DB::raw("piutangheader.id,ppd.pelunasanpiutang_id,ppd.piutang_nobukti,piutangheader.tglbukti,ppd.agen_id,ppd.nominal,ppd.keterangan,ppd.penyesuaian,ppd.keteranganpenyesuaian,ppd.nominallebihbayar, piutangheader.nominal as nominalpiutang,ppd.invoice_nobukti, (SELECT (piutangheader.nominal - SUM(pelunasanpiutangdetail.nominal)) FROM pelunasanpiutangdetail WHERE pelunasanpiutangdetail.piutang_nobukti= piutangheader.nobukti) AS sisa"))
         ->leftJoin('piutangheader','ppd.piutang_nobukti','piutangheader.nobukti')
         ->whereRaw("ppd.pelunasanpiutang_id = $id");
                
         Schema::create($tempo, function ($table) {
             $table->bigInteger('id')->default('0');
+            $table->bigInteger('pelunasanpiutang_id')->default('0');
             $table->string('piutang_nobukti');
             $table->date('tglbukti')->default('');
             $table->bigInteger('agen_id')->default('0');
@@ -137,17 +138,18 @@ class PelunasanPiutangHeader extends MyModel
             $table->bigInteger('sisa')->nullable();
         });
     
-        $tes = DB::table($tempo)->insertUsing(['id','piutang_nobukti','tglbukti','agen_id','nominal','keterangan','penyesuaian','keteranganpenyesuaian','nominallebihbayar','nominalpiutang','invoice_nobukti','sisa'], $fetch);
+        $tes = DB::table($tempo)->insertUsing(['id','pelunasanpiutang_id','piutang_nobukti','tglbukti','agen_id','nominal','keterangan','penyesuaian','keteranganpenyesuaian','nominallebihbayar','nominalpiutang','invoice_nobukti','sisa'], $fetch);
         
         return $tempo;
     }
 
-    public function getDeletePelunasanPiutang($id) {
-        $this->setRequestParameters();
-
+    public function getDeletePelunasanPiutang($id, $agenId) {
+       
         $query = DB::table('pelunasanpiutangdetail')
             ->select(
-                DB::raw("pelunasanpiutangdetail.piutang_nobukti, 
+                DB::raw("
+                pelunasanpiutangdetail.pelunasanpiutang_id, 
+                pelunasanpiutangdetail.piutang_nobukti, 
                 piutangheader.tglbukti, 
                 piutangheader.nominal as nominalpiutang, 
                 pelunasanpiutangdetail.nominal as bayar, 
@@ -159,8 +161,11 @@ class PelunasanPiutangHeader extends MyModel
                     WHERE pelunasanpiutangdetail.piutang_nobukti= piutangheader.nobukti) AS sisa")
             )
         ->join('piutangheader','pelunasanpiutangdetail.piutang_nobukti','piutangheader.nobukti')
-        ->whereRaw("pelunasanpiutangdetail.pelunasanpiutang_id = $id");
+        ->whereRaw("pelunasanpiutangdetail.pelunasanpiutang_id = $id")
+        ->whereRaw("pelunasanpiutangdetail.agen_id = $agenId");
         
+        $data = $query->get();
+        return $data;
     }
 
     public function findAll($id) {

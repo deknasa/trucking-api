@@ -94,6 +94,8 @@ class PengeluaranHeaderController extends Controller
             $pengeluaranHeader->transferkeac = $request->transferkeac ?? '';
             $pengeluaranHeader->transferkean = $request->transferkean ?? '';
             $pengeluaranHeader->transferkebank = $request->transferkebank ?? '';
+            $pengeluaranHeader->userapproval = $request->userapproval ?? '';
+            $pengeluaranHeader->tglapproval = $request->tglapproval ?? '';
             $pengeluaranHeader->modifiedby = auth('api')->user()->name;
             TOP:
             $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
