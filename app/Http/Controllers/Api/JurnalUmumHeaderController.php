@@ -123,7 +123,7 @@ class JurnalUmumHeaderController extends Controller
 
             if ($tanpaprosesnobukti == 0) {
 
-                // for ($i = 0; $i < count($request->nominal_detail); $i++) {
+                for ($i = 0; $i < count($request->nominal_detail); $i++) {
                     $detaillog = [];
                     for ($x = 0; $x <= 1; $x++) {
                         if ($x == 1) {
@@ -131,24 +131,22 @@ class JurnalUmumHeaderController extends Controller
                                 'jurnalumum_id' => $jurnalumum->id,
                                 'nobukti' => $jurnalumum->nobukti,
                                 'tglbukti' => $jurnalumum->tglbukti,
-                                'coa' => $request->coakredit_detail,
-                                'nominal' => '-' . str_replace(',', '', $request->nominal_detail),
-                                'keterangan' => $request->keterangan_detail,
+                                'coa' => $request->coakredit_detail[$i],
+                                'nominal' => '-' . $request->nominal_detail[$i],
+                                'keterangan' => $request->keterangan_detail[$i],
                                 'modifiedby' => $jurnalumum->modifiedby,
-                                // 'baris' => $i,
-                                'baris' => 0
+                                'baris' => $i,
                             ];
                         } else {
                             $datadetail = [
                                 'jurnalumum_id' => $jurnalumum->id,
                                 'nobukti' => $jurnalumum->nobukti,
                                 'tglbukti' => $jurnalumum->tglbukti,
-                                'coa' => $request->coadebet_detail,
-                                'nominal' => str_replace(',', '', $request->nominal_detail),
-                                'keterangan' => $request->keterangan_detail,
+                                'coa' => $request->coadebet_detail[$i],
+                                'nominal' => $request->nominal_detail[$i],
+                                'keterangan' => $request->keterangan_detail[$i],
                                 'modifiedby' => $jurnalumum->modifiedby,
-                                // 'baris' => $i,
-                                'baris' => 0
+                                'baris' => $i,
                             ];
                         }
 
@@ -172,14 +170,13 @@ class JurnalUmumHeaderController extends Controller
                                 'jurnalumum_id' => $jurnalumum->id,
                                 'nobukti' => $jurnalumum->nobukti,
                                 'tglbukti' => $jurnalumum->tglbukti,
-                                'coa' => $request->coakredit_detail,
-                                'nominal' => $request->nominal_detail,
-                                'keterangan' => $request->keterangan_detail,
+                                'coa' => $request->coakredit_detail[$i],
+                                'nominal' => $request->nominal_detail[$i],
+                                'keterangan' => $request->keterangan_detail[$i],
                                 'modifiedby' => $jurnalumum->modifiedby,
                                 'created_at' => date('d-m-Y H:i:s', strtotime($jurnalumum->created_at)),
                                 'updated_at' => date('d-m-Y H:i:s', strtotime($jurnalumum->updated_at)),
-                                // 'baris' => $i,
-                                'baris' => 0
+                                'baris' => $i,
                             ];
                         } else {
                             $datadetaillog = [
@@ -187,14 +184,13 @@ class JurnalUmumHeaderController extends Controller
                                 'jurnalumum_id' => $jurnalumum->id,
                                 'nobukti' => $jurnalumum->nobukti,
                                 'tglbukti' => $jurnalumum->tglbukti,
-                                'coa' => $request->coadebet_detail,
-                                'nominal' => $request->nominal_detail,
-                                'keterangan' => $request->keterangan_detail,
+                                'coa' => $request->coadebet_detail[$i],
+                                'nominal' => $request->nominal_detail[$i],
+                                'keterangan' => $request->keterangan_detail[$i],
                                 'modifiedby' => $jurnalumum->modifiedby,
                                 'created_at' => date('d-m-Y H:i:s', strtotime($jurnalumum->created_at)),
                                 'updated_at' => date('d-m-Y H:i:s', strtotime($jurnalumum->updated_at)),
-                                // 'baris' => $i,
-                                'baris' => 0
+                                'baris' => $i,
                             ];
                         }
 
@@ -222,7 +218,7 @@ class JurnalUmumHeaderController extends Controller
                         $data = new StoreLogTrailRequest($datalogtrail);
                         app(LogTrailController::class)->store($data);
                     }
-                // }
+                }
 
 
                 $request->sortname = $request->sortname ?? 'id';
@@ -323,6 +319,7 @@ class JurnalUmumHeaderController extends Controller
 
                 for ($i = 0; $i < count($request->nominal_detail); $i++) {
                     $detaillog = [];
+                    $nominal = str_replace('.00','',$request->nominal_detail[$i]);
                     for ($x = 0; $x <= 1; $x++) {
                         if ($x == 1) {
                             $datadetail = [
@@ -330,7 +327,7 @@ class JurnalUmumHeaderController extends Controller
                                 'nobukti' => $jurnalumum->nobukti,
                                 'tglbukti' => $jurnalumum->tglbukti,
                                 'coa' => $request->coakredit_detail[$i],
-                                'nominal' => '-' . str_replace(',', '', $request->nominal_detail[$i]),
+                                'nominal' => '-' .str_replace(',','',$nominal),
                                 'keterangan' => $request->keterangan_detail[$i],
                                 'modifiedby' => $jurnalumum->modifiedby,
                                 'baris' => $i,
@@ -341,7 +338,7 @@ class JurnalUmumHeaderController extends Controller
                                 'nobukti' => $jurnalumum->nobukti,
                                 'tglbukti' => $jurnalumum->tglbukti,
                                 'coa' => $request->coadebet_detail[$i],
-                                'nominal' => str_replace(',', '', $request->nominal_detail[$i]),
+                                'nominal' => str_replace(',','',$nominal),
                                 'keterangan' => $request->keterangan_detail[$i],
                                 'modifiedby' => $jurnalumum->modifiedby,
                                 'baris' => $i,
@@ -368,7 +365,7 @@ class JurnalUmumHeaderController extends Controller
                                 'nobukti' => $jurnalumum->nobukti,
                                 'tglbukti' => $jurnalumum->tglbukti,
                                 'coa' => $request->coakredit_detail[$i],
-                                'nominal' => $request->nominal_detail[$i],
+                                'nominal' => '-'.str_replace(',','',$nominal),
                                 'keterangan' => $request->keterangan_detail[$i],
                                 'modifiedby' => $jurnalumum->modifiedby,
                                 'created_at' => date('d-m-Y H:i:s', strtotime($jurnalumum->created_at)),
@@ -382,7 +379,7 @@ class JurnalUmumHeaderController extends Controller
                                 'nobukti' => $jurnalumum->nobukti,
                                 'tglbukti' => $jurnalumum->tglbukti,
                                 'coa' => $request->coadebet_detail[$i],
-                                'nominal' => $request->nominal_detail[$i],
+                                'nominal' => str_replace(',','',$nominal),
                                 'keterangan' => $request->keterangan_detail[$i],
                                 'modifiedby' => $jurnalumum->modifiedby,
                                 'created_at' => date('d-m-Y H:i:s', strtotime($jurnalumum->created_at)),

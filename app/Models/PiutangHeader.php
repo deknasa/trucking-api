@@ -61,7 +61,7 @@ class PiutangHeader extends MyModel
 
         $temp = $this->createTempPiutang($id);
         $query = DB::table('piutangheader')
-        ->select(DB::raw("piutangheader.id as id,piutangheader.nobukti as nobukti,piutangheader.tglbukti, piutangheader.keterangan, piutangheader.nominal, piutangheader.agen_id,".$temp.".sisa"))
+        ->select(DB::raw("piutangheader.id as id,piutangheader.nobukti as nobukti,piutangheader.tglbukti, piutangheader.keterangan, piutangheader.invoice_nobukti, piutangheader.nominal, piutangheader.agen_id,".$temp.".sisa"))
         ->leftJoin($temp,'piutangheader.agen_id',$temp.".agen_id")
         ->whereRaw("piutangheader.agen_id = $id")
         ->whereRaw("piutangheader.nobukti = $temp.nobukti")

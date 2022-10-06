@@ -28,14 +28,14 @@ class acl extends MyModel
         $this->setRequestParameters();
 
         $query = DB::table($this->table)->select(
-            DB::raw("acl.role_id as role_id,
+            DB::raw("role.rolename as rolename,
                         min(acl.id) as id_,
                         max(acl.modifiedby) as modifiedby,
                         max(acl.created_at) as created_at,
                             max(acl.updated_at) as updated_at")
         )
         ->Join('role', 'acl.role_id', '=', 'role.id')
-        ->groupby('acl.role_id');
+        ->groupby('acl.role_id','role.rolename');
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;

@@ -92,11 +92,12 @@ class BankController extends Controller
         }
     }
 
-    public function show(Bank $bank)
+    public function show($id)
     {
+        $data = Bank::find($id);
         return response([
             'status' => true,
-            'data' => $bank
+            'data' => $data
         ]);
     }
 

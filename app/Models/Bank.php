@@ -42,6 +42,27 @@ class Bank extends MyModel
         return $data;
     }
 
+    public function find($id) {
+        $query =  DB::table('bank')->select(
+            'bank.id',
+            'bank.kodebank',
+            'bank.namabank',
+            'bank.coa',
+            'bank.tipe',
+            'bank.statusaktif',
+            'bank.statusformatpenerimaan',
+            'penerimaan.text as kodepenerimaan',
+            'bank.statusformatpengeluaran',
+            'pengeluaran.text as kodepengeluaran'
+            
+        )
+        ->join('parameter as penerimaan','bank.statusformatpenerimaan','penerimaan.id')
+        ->join('parameter as pengeluaran','bank.statusformatpengeluaran','pengeluaran.id')
+        ->where('bank.id',$id);
+
+        $data = $query->first();
+        return $data;
+    }
 
     public function selectColumns($query)
     {

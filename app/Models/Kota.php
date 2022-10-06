@@ -52,6 +52,16 @@ class Kota extends MyModel
         return $data;
     }
 
+    public function find($id)
+    {
+    
+        $query =  DB::table('kota')->select(DB::raw('kota.*, zona.zona as zona'))
+        ->join('zona','kota.zona_id','zona.id')->whereRaw("kota.id = $id");
+
+        $data = $query->first();
+        return $data;
+    }
+
     public function selectColumns($query)
     {
         return $query->select(

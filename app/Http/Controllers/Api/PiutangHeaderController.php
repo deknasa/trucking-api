@@ -81,10 +81,7 @@ class PiutangHeaderController extends Controller
         //    SUM NOMINAL
             $sum = 0;
             for ($i = 0; $i < count($request->nominal_detail); $i++) {
-                $nominal_detail = str_replace('.00','', $request->nominal_detail[$i]);
-                $nominal_detail = str_replace(',','',$nominal_detail);
-
-                $sum += $nominal_detail;
+                $sum += $request->nominal_detail[$i];
             }
 
             $piutang->nominal = $sum;
@@ -121,12 +118,12 @@ class PiutangHeaderController extends Controller
             $detaillog = [];
             for ($i = 0; $i < count($request->nominal_detail); $i++) {
             
-                $nominal = str_replace('.00','', $request->nominal_detail[$i]);
+               
 
                 $datadetail = [
                     'piutang_id' => $piutang->id,
                     'nobukti' => $piutang->nobukti,
-                    'nominal' => str_replace(',', '',$nominal),
+                    'nominal' => str_replace(',', '',$request->nominal_detail[$i]),
                     'keterangan' => $request->keterangan_detail[$i],
                     'invoice_nobukti' => $request->invoice_nobukti ?? '',
                     'modifiedby' => $piutang->modifiedby,
@@ -149,7 +146,7 @@ class PiutangHeaderController extends Controller
                     'id' => $iddetail,
                     'piutang_id' => $piutang->id,
                     'nobukti' => $piutang->nobukti,
-                    'nominal' => str_replace(',', '',$nominal),
+                    'nominal' => str_replace(',', '',$request->nominal_detail[$i]),
                     'keterangan' => $request->keterangan_detail[$i],
                     'invoice_nobukti' => '',
                     'modifiedby' => $piutang->modifiedby,
@@ -209,7 +206,7 @@ class PiutangHeaderController extends Controller
                     $getcoa = DB::table('akunpusat')
                     ->where('id', $coa->text)->first();
                     
-                    $nominal = str_replace('.','', $request->nominal_detail[$i]);
+                    
                     
                     $jurnalDetail = [ 
                         [
@@ -222,9 +219,9 @@ class PiutangHeaderController extends Controller
                         ]
                     ];
                     if($coa->subgrp == 'DEBET'){
-                        $jurnalDetail[$a]['nominal'] = str_replace(',', '',$nominal);
+                        $jurnalDetail[$a]['nominal'] = str_replace(',', '',$request->nominal_detail[$i]);
                     }else{
-                        $jurnalDetail[$a]['nominal'] = '-'.str_replace(',', '',$nominal);
+                        $jurnalDetail[$a]['nominal'] = '-'.str_replace(',', '',$request->nominal_detail[$i]);
                     }
                 
                     $detail = array_merge($detail, $jurnalDetail);

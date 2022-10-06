@@ -27,6 +27,14 @@ class StorePiutangDetailRequest extends FormRequest
             'nominal_detail' => 'required|array',
             'nominal_detail.*' => 'gt:0|numeric',
             'keterangan_detail' => 'required|array',
+            'keterangan_detail.*' => 'required'
+        ];
+    }
+
+    public function attributes() {
+        return [
+            'nominal_detail' => 'Nominal Detail',
+            'keterangan_detail' => 'Keterangan Detail',
         ];
     }
 }

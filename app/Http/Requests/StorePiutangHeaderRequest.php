@@ -42,4 +42,11 @@ class StorePiutangHeaderRequest extends FormRequest
         
         return $rules;
     }
+    public function attributes() {
+        return [
+            'tglbukti' => 'Tanggal',
+            'keterangan' => 'Keterangan',
+            'agen_id' => 'Agen'
+        ];
+    }
 }

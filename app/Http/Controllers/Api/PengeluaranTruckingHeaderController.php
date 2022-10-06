@@ -126,7 +126,7 @@ class PengeluaranTruckingHeaderController extends Controller
                     'nobukti' => $pengeluarantruckingheader->nobukti,
                     'supir_id' => $request->supir_id,
                     'penerimaantruckingheader_nobukti' => $request->penerimaantruckingheader_nobukti,
-                    'nominal' => str_replace(',', '',$request->nominal),
+                    'nominal' => $request->nominal,
                     'modifiedby' => $pengeluarantruckingheader->modifiedby,
                 ];
 
@@ -302,7 +302,7 @@ class PengeluaranTruckingHeaderController extends Controller
                         'nobukti' => $pengeluarantruckingheader->nobukti,
                         'supir_id' => $request->supir_id[$i],
                         'penerimaantruckingheader_nobukti' => $request->penerimaantruckingheader_nobukti[$i],
-                        'nominal' => str_replace(',', '',$request->nominal[$i]),
+                        'nominal' => $request->nominal[$i],
                         'modifiedby' => $pengeluarantruckingheader->modifiedby,
                     ];
                     
