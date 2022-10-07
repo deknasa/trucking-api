@@ -514,11 +514,12 @@ class KasGantungHeaderController extends Controller
         DB::beginTransaction();
 
         try {
-            $get = KasGantungHeader::find($id);
-            $delete = PengeluaranDetail::where('nobukti',$get->nobuktikaskeluar)->delete();
-            $delete = PengeluaranHeader::where('nobukti',$get->nobuktikaskeluar)->delete();
-            $delete = JurnalUmumDetail::where('nobukti',$get->nobuktikaskeluar)->delete();
-            $delete = JurnalUmumHeader::where('nobukti',$get->nobuktikaskeluar)->delete();
+            $get = KasGantungHeader::findOrFail($id);
+
+            $delete = PengeluaranDetail::where('nobukti',$get->pengeluaran_nobukti)->delete();
+            $delete = PengeluaranHeader::where('nobukti',$get->pengeluaran_nobukti)->delete();
+            $delete = JurnalUmumDetail::where('nobukti',$get->pengeluaran_nobukti)->delete();
+            $delete = JurnalUmumHeader::where('nobukti',$get->pengeluaran_nobukti)->delete();
             $delete = KasGantungDetail::where('kasgantung_id',$id)->delete();
             $delete = KasGantungHeader::destroy($id);
             

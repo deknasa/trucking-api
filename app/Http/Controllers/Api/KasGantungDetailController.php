@@ -72,6 +72,12 @@ class KasGantungDetailController extends Controller
                 $kasgantungDetail = $query->get();
             } else {
                 // $query->with('trado', 'supir', 'absenTrado');
+                $query->select(
+                    'detail.keterangan',
+                    'detail.nominal',
+                    'detail.modifiedby',
+                    'detail.updated_at',
+                );
                 $kasgantungDetail = $query->get();
             }
 
