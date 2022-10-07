@@ -201,9 +201,9 @@ class BankController extends Controller
     {
         $data = [
             'status' => Parameter::where(['grp' => 'status aktif'])->get(),
-            'statusformatpenerimaan' => Parameter::where(['grp' => 'PENERIMAAN KAS'])->get(),
-            'statusformatpengeluaran' => Parameter::where(['grp' => 'PENGELUARAN KAS'])->get(),
-            'akunpusat' => AkunPusat::all(),
+            // 'statusformatpenerimaan' => Parameter::where(['grp' => 'PENERIMAAN KAS'])->get(),
+            // 'statusformatpengeluaran' => Parameter::where(['grp' => 'PENGELUARAN KAS'])->get(),
+            // 'akunpusat' => AkunPusat::all(),
         ];
 
         return response([

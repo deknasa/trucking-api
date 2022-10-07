@@ -23,12 +23,25 @@ class StorePelunasanPiutangHeaderRequest extends FormRequest
      */
     public function rules()
     {
-        return [
+        $rules = [
             'tglbukti' => 'required',
             'keterangan' => 'required',
             'bank' => 'required',
             'agen' => 'required',
             'cabang' => 'required'
         ];
+
+        $relatedRequests = [
+            StorePelunasanPiutangDetailRequest::class
+        ];
+
+        foreach ($relatedRequests as $relatedRequest) {
+            $rules = array_merge(
+                $rules,
+                (new $relatedRequest)->rules()
+            );
+        }
+        
+        return $rules;
     }
 }

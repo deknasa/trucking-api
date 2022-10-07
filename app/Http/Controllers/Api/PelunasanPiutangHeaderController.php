@@ -112,20 +112,14 @@ class PelunasanPiutangHeaderController extends Controller
                 $idpiutang = $request->piutang_id[$i];
                 $piutang = PiutangHeader::where('id',$idpiutang)->first();
                 
-                $bayar = str_replace('.00','',$request->bayarppd[$i]);
-                $bayars = str_replace(',','',$bayar);
                 
                 //get coa penyesuaian
-                $penyesuaian = str_replace('.00','',$request->penyesuaianppd[$i]);
-                $penyesuaian = str_replace(',','',$penyesuaian);
-                if($penyesuaian > 0) {
+                if($request->penyesuaianppd[$i] > 0) {
                     $getCoaPenyesuaian = AkunPusat::where('id', '143')->first();
                 }
 
-                //get coa nominal lebih bayar
-                $nominallebih = str_replace('.00','',$request->nominallebihbayarppd[$i]);
-                $nominallebih = str_replace(',','',$nominallebih);
-                if($nominallebih > 0) {
+                //get coa nominal lebih bayar                
+                if($request->nominallebihbayarppd[$i] > 0) {
                     $getNominalLebih = AkunPusat::where('id', '138')->first();
                 }
                 
@@ -134,17 +128,17 @@ class PelunasanPiutangHeaderController extends Controller
                     'nobukti' => $pelunasanpiutangheader->nobukti,
                     'pelanggan_id' => $request->pelanggan_id,
                     'agen_id' => $request->agendetail_id,
-                    'nominal' => $bayars,
+                    'nominal' => $request->bayarppd[$i],
                     'piutang_nobukti' => $piutang->nobukti,
                     'cicilan' => '',
                     'tglcair' => $piutang->tglbukti,
                     'keterangan' => $request->keterangandetailppd[$i] ?? '',
                     'tgljt' => $piutang->tglbukti,
-                    'penyesuaian' => $penyesuaian ?? '',
+                    'penyesuaian' => $request->penyesuaianppd[$i] ?? '',
                     'coapenyesuaian' => $getCoaPenyesuaian->coa ?? '',
                     'invoice_nobukti' => $piutang->invoice_nobukti,
                     'keteranganpenyesuaian' => $request->keteranganpenyesuaianppd[$i] ?? '',
-                    'nominallebihbayar' => $nominallebih ?? '',
+                    'nominallebihbayar' => $request->nominallebihbayarppd[$i] ?? '',
                     'coalebihbayar' => $getNominalLebih->coa ?? '',
                     'modifiedby' => $pelunasanpiutangheader->modifiedby,
                 ];
@@ -176,11 +170,11 @@ class PelunasanPiutangHeaderController extends Controller
                     'tglcair' => $piutang->tglbukti,
                     'keterangan' => $request->keterangandetailppd[$i] ?? '',
                     'tgljt' => $piutang->tglbukti,
-                    'penyesuaian' => $penyesuaian ?? '',
+                    'penyesuaian' => $request->penyesuaianppd[$i] ?? '',
                     'coapenyesuaian' => $getCoaPenyesuaian->coa ?? '',
                     'invoice_nobukti' => $piutang->invoice_nobukti,
                     'keteranganpenyesuaian' => $keteranganpenyesuaianppd[$i] ?? '',
-                    'nominallebihbayar' => $nominallebih ?? '',
+                    'nominallebihbayar' => $request->nominallebihbayarppd[$i] ?? '',
                     'coalebihbayar' => $getNominalLebih->coa ?? '',
                     'modifiedby' => $pelunasanpiutangheader->modifiedby,
                     'created_at' => date('d-m-Y H:i:s', strtotime($pelunasanpiutangheader->created_at)),
@@ -296,21 +290,14 @@ class PelunasanPiutangHeaderController extends Controller
                 for($i = 0; $i < count($request->piutang_id); $i++){
                     $idpiutang = $request->piutang_id[$i];
                     $piutang = PiutangHeader::where('id',$idpiutang)->first();
-                    
-                    $bayar = str_replace('.00','',$request->bayarppd[$i]);
-                    $bayars = str_replace(',','',$bayar);
-                    
+
                     //get coa penyesuaian
-                    $penyesuaian = str_replace('.00','',$request->penyesuaianppd[$i]);
-                    $penyesuaian = str_replace(',','',$penyesuaian);
-                    if($penyesuaian > 0) {
+                    if($request->penyesuaianppd[$i] > 0) {
                         $getCoaPenyesuaian = AkunPusat::where('id', '143')->first();
                     }
 
                     //get coa nominal lebih bayar
-                    $nominallebih = str_replace('.00','',$request->nominallebihbayarppd[$i]);
-                    $nominallebih = str_replace(',','',$nominallebih);
-                    if($nominallebih > 0) {
+                    if($request->nominallebihbayarppd[$i] > 0) {
                         $getNominalLebih = AkunPusat::where('id', '138')->first();
                     }
                     
@@ -319,17 +306,17 @@ class PelunasanPiutangHeaderController extends Controller
                         'nobukti' => $pelunasanpiutangheader->nobukti,
                         'pelanggan_id' => $request->pelanggan_id,
                         'agen_id' => $request->agendetail_id,
-                        'nominal' => $bayars,
+                        'nominal' => $request->bayarppd[$i],
                         'piutang_nobukti' => $piutang->nobukti,
                         'cicilan' => '',
                         'tglcair' => $piutang->tglbukti,
                         'keterangan' => $request->keterangandetailppd[$i] ?? '',
                         'tgljt' => $piutang->tglbukti,
-                        'penyesuaian' => $penyesuaian ?? '',
+                        'penyesuaian' => $request->penyesuaianppd[$i] ?? '',
                         'coapenyesuaian' => $getCoaPenyesuaian->coa ?? '',
                         'invoice_nobukti' => $piutang->invoice_nobukti,
                         'keteranganpenyesuaian' => $request->keteranganpenyesuaianppd[$i] ?? '',
-                        'nominallebihbayar' => $nominallebih ?? '',
+                        'nominallebihbayar' => $request->nominallebihbayarppd[$i] ?? '',
                         'coalebihbayar' => $getNominalLebih->coa ?? '',
                         'modifiedby' => $pelunasanpiutangheader->modifiedby,
                     ];
@@ -352,17 +339,17 @@ class PelunasanPiutangHeaderController extends Controller
                         'nobukti' => $pelunasanpiutangheader->nobukti,
                         'pelanggan_id' => $request->pelanggan_id,
                         'agen_id' => $request->agendetail_id,
-                        'nominal' => $bayars,
+                        'nominal' => $request->bayarppd[$i],
                         'piutang_nobukti' => $piutang->nobukti,
                         'cicilan' => '',
                         'tglcair' => $piutang->tglbukti,
                         'keterangan' => $request->keterangandetailppd[$i] ?? '',
                         'tgljt' => $piutang->tglbukti,
-                        'penyesuaian' => $penyesuaian ?? '',
+                        'penyesuaian' => $request->penyesuaianppd[$i] ?? '',
                         'coapenyesuaian' => $getCoaPenyesuaian->coa ?? '',
                         'invoice_nobukti' => $piutang->invoice_nobukti,
                         'keteranganpenyesuaian' => $request->keteranganpenyesuaianppd[$i] ?? '',
-                        'nominallebihbayar' => $nominallebih ?? '',
+                        'nominallebihbayar' => $request->nominallebihbayarppd[$i] ?? '',
                         'coalebihbayar' => $getNominalLebih->coa ?? '',
                         'modifiedby' => $pelunasanpiutangheader->modifiedby,
                         'created_at' => date('d-m-Y H:i:s', strtotime($pelunasanpiutangheader->created_at)),
