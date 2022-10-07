@@ -91,7 +91,6 @@ class ServiceInDetailController extends Controller
         }
         try {
             $serviceInDetail = new serviceInDetail();
-
             $serviceInDetail->servicein_id = $request->servicein_id;
             $serviceInDetail->nobukti = $request->nobukti;
             $serviceInDetail->mekanik_id =  $request->mekanik_id;
