@@ -100,7 +100,7 @@ class Supplier extends MyModel
             $table->string('web', 50)->default('');
             $table->string('namapemilik', 150)->default('');
             $table->string('jenisusaha', 150)->default('');
-            $table->integer('top')->length(11)->default('0');
+            $table->string('top')->length(11)->default('');
             $table->string('bank', 150)->default('');
             $table->string('rekeningbank', 150)->default('');
             $table->string('namarekening', 150)->default('');

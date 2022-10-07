@@ -85,90 +85,72 @@ class HutangHeaderController extends Controller
         DB::beginTransaction();
 
         try {
-
             $hutangHeader = HutangHeader::findOrFail($id);
 
             $hutangHeader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $hutangHeader->keterangan = $request->keterangan ?? '';
-            $hutangHeader->coa = $request->akunpusat ?? '';
+            $hutangHeader->coa = $request->akunpusat;
             $hutangHeader->pelanggan_id = $request->pelanggan_id;
-            // $hutangHeader->total = $request->total ?? '';
             $hutangHeader->postingdari = $request->postingdari ?? 'HUTANG HEADER';
             $hutangHeader->modifiedby = auth('api')->user()->name;
-
-            // $sum = 0;
-            // for($i=0; $i < count($request->nominal_detail); $i++){
-            //     $nominal = str_replace('.00','',$request->nominal_detail[$i]);
-            //     $nominal = str_replace(',','',$nominal);
-            //     $sum += $nominal;
-            // }
-            // $hutangHeader->nominal = $sum;
 
             if ($hutangHeader->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($hutangHeader->getTable()),
-                    'postingdari' => 'EDIT HUTANG HEADER',
+                    'postingdari' => 'ENTRY HUTANG HEADER',
                     'idtrans' => $hutangHeader->id,
                     'nobuktitrans' => $hutangHeader->nobukti,
                     'aksi' => 'ENTRY',
                     'datajson' => $hutangHeader->toArray(),
                     'modifiedby' => $hutangHeader->modifiedby
                 ];
+
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
                 HutangDetail::where('hutang_id', $id)->delete();
-
                 /* Store detail */
-
                 $detaillog = [];
-                //    for ($i = 0; $i < count($request->nominal_detail); $i++) {
-                $total = str_replace('.00', '', $request->total_detail);
-                $cicilan = str_replace('.00', '', $request->cicilan_detail);
-                $totalbayar = str_replace('.00', '', $request->totalbayar_detail);
+                for ($i = 0; $i < count($request->total_detail); $i++) {
+                    $datadetail = [
+                        'hutang_id' => $hutangHeader->id,
+                        'nobukti' => $hutangHeader->nobukti,
+                        'supplier_id' => $request->supplier[$i],
+                        'tgljatuhtempo' => date('Y-m-d', strtotime($request->tgljatuhtempo[$i])),
+                        'total' => $request->total_detail[$i],
+                        'cicilan' => $request->cicilan_detail[$i],
+                        'totalbayar' => $request->totalbayar_detail[$i],
+                        'keterangan' => $request->keterangan_detail[$i],
+                        'modifiedby' => $hutangHeader->modifiedby,
+                    ];
 
-                $datadetail = [
-                    'hutang_id' => $hutangHeader->id,
-                    'nobukti' => $hutangHeader->nobukti,
-                    'supplier_id' => $request->supplier_id,
-                    'tgljatuhtempo' => date('Y-m-d', strtotime($request->tgljatuhtempo)),
-                    'total' => str_replace(',', '', $total),
-                    'cicilan' => str_replace(',', '', $cicilan),
-                    'totalbayar' => str_replace(',', '', $totalbayar),
-                    'keterangan' => $request->keterangan_detail,
-                    'modifiedby' => $hutangHeader->modifiedby,
-                ];
+                    $data = new StoreHutangDetailRequest($datadetail);
+                    $datadetails = app(HutangDetailController::class)->store($data);
 
+                    if ($datadetails['error']) {
+                        return response($datadetails, 422);
+                    } else {
+                        $iddetail = $datadetails['id'];
+                        $tabeldetail = $datadetails['tabel'];
+                    }
 
-                //STORE
+                    $datadetaillog = [
+                        'id' => $iddetail,
+                        'hutang_id' => $hutangHeader->id,
+                        'nobukti' => $hutangHeader->nobukti,
+                        'supplier_id' => $request->supplier[$i],
+                        'tgljatuhtempo' => date('Y-m-d', strtotime($request->tgljatuhtempo[$i])),
+                        'total' => $request->total_detail[$i],
+                        'cicilan' => $request->cicilan_detail[$i],
+                        'totalbayar' => $request->totalbayar_detail[$i],
+                        'keterangan' => $request->keterangan_detail[$i],
+                        'modifiedby' => $hutangHeader->modifiedby,
+                        'created_at' => date('d-m-Y H:i:s', strtotime($hutangHeader->created_at)),
+                        'updated_at' => date('d-m-Y H:i:s', strtotime($hutangHeader->updated_at)),
 
-                $data = new StoreHutangDetailRequest($datadetail);
-                $datadetails = app(HutangDetailController::class)->store($data);
-
-                if ($datadetails['error']) {
-                    return response($datadetails, 422);
-                } else {
-                    $iddetail = $datadetails['id'];
-                    $tabeldetail = $datadetails['tabel'];
+                    ];
+                    $detaillog[] = $datadetaillog;
                 }
-
-                $datadetaillog = [
-                    'id' => $iddetail,
-                    'hutang_id' => $hutangHeader->id,
-                    'nobukti' => $hutangHeader->nobukti,
-                    'supplier_id' => $request->supplier_id,
-                    'tgljatuhtempo' => $request->tgljatuhtempo,
-                    'total' => str_replace(',', '', $total),
-                    'cicilan' => str_replace(',', '', $cicilan),
-                    'totalbayar' => str_replace(',', '', $totalbayar),
-                    'keterangan' => $request->keterangan_detail,
-                    'modifiedby' => $hutangHeader->modifiedby,
-                    'created_at' => date('d-m-Y H:i:s', strtotime($hutangHeader->created_at)),
-                    'updated_at' => date('d-m-Y H:i:s', strtotime($hutangHeader->updated_at)),
-
-                ];
-
-                $detaillog[] = $datadetaillog;
 
                 $datalogtrail = [
                     'namatabel' => $tabeldetail,
@@ -181,85 +163,12 @@ class HutangHeaderController extends Controller
                 ];
 
                 $data = new StoreLogTrailRequest($datalogtrail);
-
                 app(LogTrailController::class)->store($data);
-                //  }
             }
-
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
-            //  JurnalUmumHeader::where('nobukti', $hutangHeader->nobukti)->delete();
-            //  JurnalUmumDetail::where('nobukti', $hutangHeader->nobukti)->delete();
-
-            $parameterController = new ParameterController;
-            $statusApp = $parameterController->getparameterid('STATUS APPROVAL', 'STATUS APPROVAL', 'NON APPROVAL');
-
-            $coahutang = DB::table('parameter')
-                ->where('grp', 'COA HUTANG MANUAL')->get();
-
-            //     $jurnalHeader = [
-            //         'tanpaprosesnobukti' => 1,
-            //         'nobukti' => $hutangHeader->nobukti,
-            //         'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
-            //         'keterangan' => $request->keterangan,
-            //         'postingdari' => "ENTRY HUTANG",
-            //         'statusapproval' => $statusApp->id,
-            //         'userapproval' => "",
-            //         'tglapproval' => "",
-            //         'modifiedby' => auth('api')->user()->name,
-            //         'statusformat' => "0",
-            //     ];
-
-            // $jurnaldetail = [];
-
-            //   for ($i = 0; $i < count($request->nominal_detail); $i++) {
-            $detail = [];
-
-            // foreach ($coahutang as $key => $coa) {
-            //     $a = 0;
-            //     $getcoa = DB::table('akunpusat')
-            //         ->where('id', $coa->text)->first();
-
-
-            //         // $total = str_replace('.00','', $request->total_detail);
-            //         // $cicilan = str_replace('.00','', $request->cicilan_detail);
-            //         // $totalbayar = str_replace('.00','', $request->totalbayar_detail);
-
-
-            //         $jurnalDetail = [ 
-            //             [
-            //             'nobukti' => $hutangHeader->nobukti,
-            //             'tglbukti' => date('Y-m-d', strtotime($hutangHeader->tglbukti)),
-            //             'coa' =>  $getcoa->coa,
-            //             'keterangan' => $request->keterangan_detail,
-            //             'modifiedby' => auth('api')->user()->name,
-            //             'baris' => '',
-            //             ]
-            //         ];
-            //         if($coa->subgrp == 'KREDIT'){
-            //             $jurnalDetail[$a]['total'] = str_replace(',', '',$total);
-            //             $jurnalDetail[$a]['cicilan'] = str_replace(',', '',$cicilan);
-            //             $jurnalDetail[$a]['totalbayar'] = str_replace(',', '',$totalbayar);
-
-            //         }else{
-            //             $jurnalDetail[$a]['total'] = str_replace(',', '',$total);
-            //             $jurnalDetail[$a]['cicilan'] = str_replace(',', '',$cicilan);
-            //             $jurnalDetail[$a]['totalbayar'] = str_replace(',', '',$totalbayar);
-
-            //         }
-            //     $detail = array_merge($detail, $jurnalDetail);
-            //     $a++;
-            // }
-            // $jurnaldetail = array_merge($jurnaldetail, $detail);
-            // }
-
-            // $jurnal = $this->storeJurnal($jurnalHeader, $jurnaldetail);
-
-            // if (!$jurnal['status']) {
-            //     throw new \Throwable($jurnal['message']);
-            // }
-
             DB::commit();
+
 
             /* Set position and page */
             $selected = $this->getPosition($hutangHeader, $hutangHeader->getTable());
@@ -316,23 +225,25 @@ class HutangHeaderController extends Controller
     /**
      * @ClassName destroy
      */
-    public function destroy($id, $hutangHeader, Request $request)
+    public function destroy($id,  Request $request)
     {
+
         DB::beginTransaction();
-        $hutangheader = new HutangHeader();
+        $hutangHeader = new HutangHeader();
+
         try {
             $delete = HutangDetail::where('hutang_id', $id)->delete();
             $delete = HutangHeader::destroy($id);
 
             if ($delete) {
                 $logTrail = [
-                    'namatabel' => strtoupper($hutangheader->getTable()),
-                    'postingdari' => 'DELETE HUTANG HEADER',
+                    'namatabel' => strtoupper($hutangHeader->getTable()),
+                    'postingdari' => 'DELETE hutanghe$hutangHeader',
                     'idtrans' => $id,
                     'nobuktitrans' => '',
                     'aksi' => 'DELETE',
-                    'datajson' => $hutangheader->toArray(),
-                    'modifiedby' => $hutangheader->modifiedby
+                    'datajson' => $hutangHeader->toArray(),
+                    'modifiedby' => $hutangHeader->modifiedby
                 ];
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
@@ -341,15 +252,15 @@ class HutangHeaderController extends Controller
                 DB::commit();
 
                 /* Set position and page */
-                $selected = $this->getPosition($hutangheader, $hutangheader->getTable(), true);
-                $hutangheader->position = $selected->position;
-                $hutangheader->id = $selected->id;
-                $hutangheader->page = ceil($hutangheader->position / ($request->limit ?? 10));
+                $selected = $this->getPosition($hutangHeader, $hutangHeader->getTable(), true);
+                $hutangHeader->position = $selected->position;
+                $hutangHeader->id = $selected->id;
+                $hutangHeader->page = ceil($hutangHeader->position / ($request->limit ?? 10));
 
                 return response([
                     'status' => true,
                     'message' => 'Berhasil dihapus',
-                    'data' => $hutangheader
+                    'data' => $hutangHeader
                 ]);
             } else {
                 DB::rollBack();
@@ -398,7 +309,7 @@ class HutangHeaderController extends Controller
             $hutangHeader->postingdari = $request->postingdari ?? 'HUTANG HEADER';
             $hutangHeader->statusformat = $format->id;
             $hutangHeader->modifiedby = auth('api')->user()->name;
-           
+
             TOP:
             $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
 
@@ -423,162 +334,162 @@ class HutangHeaderController extends Controller
                 'datajson' => $hutangHeader->toArray(),
                 'modifiedby' => $hutangHeader->modifiedby
             ];
-            dd($logTrail);
-
             $validatedLogTrail = new StoreLogTrailRequest($logTrail);
             $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
             /* Store detail */
             $detaillog = [];
-
             // $detaillog = [];
-            //   for ($i = 0; $i < count($request->nominal_detail); $i++) {
+            for ($i = 0; $i < count($request->total_detail); $i++) {
 
-            $total = str_replace('.00', '', $request->total_detail);
-            $cicilan = str_replace('.00', '', $request->cicilan_detail);
-            $totalbayar = str_replace('.00', '', $request->totalbayar_detail);
-
-
-            $datadetail = [
-                'hutang_id' => $hutangHeader->id,
-                'nobukti' => $hutangHeader->nobukti,
-                'supplier_id' => $request->supplier_id,
-                'tgljatuhtempo' => date('Y-m-d', strtotime($request->tgljatuhtempo)),
-                'total' => str_replace(',', '', $total),
-                'cicilan' => str_replace(',', '', $cicilan),
-                'totalbayar' => str_replace(',', '', $totalbayar),
-                'keterangan' => $request->keterangan_detail,
-                'modifiedby' => $hutangHeader->modifiedby,
-            ];
-
-            $data = new StoreHutangDetailRequest($datadetail);
-            $datadetails = app(HutangDetailController::class)->store($data);
-
-            if ($datadetails['error']) {
-                return response($datadetails, 422);
-            } else {
-                $iddetail = $datadetails['id'];
-                $tabeldetail = $datadetails['tabel'];
-            }
-
-            $datadetaillog = [
-                'id' => $iddetail,
-                'hutang_id' => $hutangHeader->id,
-                'nobukti' => $hutangHeader->nobukti,
-                'supplier_id' => $request->supplier_id,
-                'tgljatuhtempo' => $request->tgljatuhtempo,
-                'total' => str_replace(',', '', $total),
-                'cicilan' => str_replace(',', '', $cicilan),
-                'totalbayar' => str_replace(',', '', $totalbayar),
-                'keterangan' => $request->keterangan_detail,
-                'modifiedby' => $hutangHeader->modifiedby,
-                'created_at' => date('d-m-Y H:i:s', strtotime($hutangHeader->created_at)),
-                'updated_at' => date('d-m-Y H:i:s', strtotime($hutangHeader->updated_at)),
-
-            ];
-            $detaillog[] = $datadetaillog;
-
-            $datalogtrail = [
-                'namatabel' => $tabeldetail,
-                'postingdari' => 'ENTRY HUTANG DETAIL',
-                'idtrans' =>  $iddetail,
-                'nobuktitrans' => $hutangHeader->nobukti,
-                'aksi' => 'ENTRY',
-                'datajson' => $detaillog,
-                'modifiedby' => $hutangHeader->modifiedby,
-            ];
-
-            $data = new StoreLogTrailRequest($datalogtrail);
-            app(LogTrailController::class)->store($data);
-
-            // }
-
-            $request->sortname = $request->sortname ?? 'id';
-            $request->sortorder = $request->sortorder ?? 'asc';
-
-
-            $parameterController = new ParameterController;
-            $statusApp = $parameterController->getparameterid('STATUS APPROVAL', 'STATUS APPROVAL', 'NON APPROVAL');
-
-            $coahutang = DB::table('parameter')
-                ->where('grp', 'COA HUTANG MANUAL')->get();
-
-            $jurnalHeader = [
-                'tanpaprosesnobukti' => 1,
-                'nobukti' => $hutangHeader->nobukti,
-                'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
-                'keterangan' => $request->keterangan,
-                'postingdari' => "ENTRY HUTANG",
-                'statusapproval' => $statusApp->id,
-                'userapproval' => "",
-                'tglapproval' => "",
-                'modifiedby' => auth('api')->user()->name,
-                'statusformat' => "0",
-            ];
-
-            $jurnaldetail = [];
-
-            //  for ($i = 0; $i < count($request->total_detail); $i++) {
-            $detail = [];
-
-            foreach ($coahutang as $key => $coa) {
-                $a = 0;
-                $getcoa = DB::table('akunpusat')
-                    ->where('id', $coa->text)->first();
-
-                $total = str_replace('.00', '', $request->total_detail);
-                $cicilan = str_replace('.00', '', $request->cicilan_detail);
-                $totalbayar = str_replace('.00', '', $request->totalbayar_detail);
-
-
-                $jurnalDetail = [
-                    [
-                        'nobukti' => $hutangHeader->nobukti,
-                        'tglbukti' => date('Y-m-d', strtotime($hutangHeader->tglbukti)),
-                        'coa' =>  $getcoa->coa,
-                        'keterangan' => $request->keterangan_detail,
-                        'modifiedby' => auth('api')->user()->name,
-                        'baris' => '',
-                    ]
+                $datadetail = [
+                    'hutang_id' => $hutangHeader->id,
+                    'nobukti' => $hutangHeader->nobukti,
+                    'supplier_id' => $request->supplier[$i],
+                    'tgljatuhtempo' => date('Y-m-d', strtotime($request->tgljatuhtempo[$i])),
+                    'total' => $request->total_detail[$i],
+                    'cicilan' => $request->cicilan_detail[$i],
+                    'totalbayar' => $request->totalbayar_detail[$i],
+                    'keterangan' => $request->keterangan_detail[$i],
+                    'modifiedby' => $hutangHeader->modifiedby,
                 ];
-                if ($coa->subgrp == 'KREDIT') {
-                    $jurnalDetail[$a]['total'] = str_replace(',', '', $total);
-                    $jurnalDetail[$a]['cicilan'] = str_replace(',', '', $cicilan);
-                    $jurnalDetail[$a]['totalbayar'] = str_replace(',', '', $totalbayar);
+                $data = new StoreHutangDetailRequest($datadetail);
+                $datadetails = app(HutangDetailController::class)->store($data);
+
+                if ($datadetails['error']) {
+                    return response($datadetails, 422);
                 } else {
-                    $jurnalDetail[$a]['total'] = str_replace(',', '', $total);
-                    $jurnalDetail[$a]['cicilan'] = str_replace(',', '', $cicilan);
-                    $jurnalDetail[$a]['totalbayar'] = str_replace(',', '', $totalbayar);
+                    $iddetail = $datadetails['id'];
+                    $tabeldetail = $datadetails['tabel'];
                 }
 
-                $detail = array_merge($detail, $jurnalDetail);
-                $a++;
+                $datadetaillog = [
+                    'id' => $iddetail,
+                    'hutang_id' => $hutangHeader->id,
+                    'nobukti' => $hutangHeader->nobukti,
+                    'supplier_id' => $request->supplier[$i],
+                    'tgljatuhtempo' => date('Y-m-d', strtotime($request->tgljatuhtempo[$i])),
+                    'total' => $request->total_detail[$i],
+                    'cicilan' => $request->cicilan_detail[$i],
+                    'totalbayar' => $request->totalbayar_detail[$i],
+                    'keterangan' => $request->keterangan_detail[$i],
+                    'modifiedby' => $hutangHeader->modifiedby,
+                    'created_at' => date('d-m-Y H:i:s', strtotime($hutangHeader->created_at)),
+                    'updated_at' => date('d-m-Y H:i:s', strtotime($hutangHeader->updated_at)),
+
+                ];
+
+
+                $detaillog[] = $datadetaillog;
+
+                $datalogtrail = [
+                    'namatabel' => $tabeldetail,
+                    'postingdari' => 'ENTRY HUTANG DETAIL',
+                    'idtrans' =>  $iddetail,
+                    'nobuktitrans' => $hutangHeader->nobukti,
+                    'aksi' => 'ENTRY',
+                    'datajson' => $detaillog,
+                    'modifiedby' => $hutangHeader->modifiedby,
+                ];
+
+                $data = new StoreLogTrailRequest($datalogtrail);
+                app(LogTrailController::class)->store($data);
             }
-            $jurnaldetail = array_merge($jurnaldetail, $detail);
-            //  }
-
-            ///
-
-            $dataid = LogTrail::select('id')
-                ->where('nobuktitrans', '=', $hutangHeader->nobukti)
-                ->where('namatabel', '=', $hutangHeader->getTable())
-                ->orderBy('id', 'DESC')
-                ->first();
-
-            $datalogtrail = [
-                'namatabel' => $tabeldetail,
-                'postingdari' => 'ENTRY HUTANG',
-                'idtrans' =>  $dataid->id,
-                'nobuktitrans' => $hutangHeader->nobukti,
-                'aksi' => 'ENTRY',
-                'datajson' => $detaillog,
-                'modifiedby' => auth('api')->user()->name,
-            ];
-            $data = new StoreLogTrailRequest($datalogtrail);
-            app(LogTrailController::class)->store($data);
 
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
+
+
+            // $parameterController = new ParameterController;
+            // $statusApp = $parameterController->getparameterid('STATUS APPROVAL', 'STATUS APPROVAL', 'NON APPROVAL');
+
+            // $coahutang = DB::table('parameter')
+            //     ->where('grp', 'COA HUTANG MANUAL')->get();
+
+            // $jurnalHeader = [
+            //     'tanpaprosesnobukti' => 1,
+            //     'nobukti' => $hutangHeader->nobukti,
+            //     'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
+            //     'keterangan' => $request->keterangan,
+            //     'postingdari' => "ENTRY HUTANG",
+            //     'statusapproval' => $statusApp->id,
+            //     'userapproval' => "",
+            //     'tglapproval' => "",
+            //     'modifiedby' => auth('api')->user()->name,
+            //     'statusformat' => "0",
+            // ];
+
+            // $jurnaldetail = [];
+
+            // for ($i = 0; $i < count($request->total_detail); $i++) {
+            //     $detail = [];
+
+            //     foreach ($coahutang as $key => $coa) {
+            //         $a = 0;
+            //         $getcoa = DB::table('akunpusat')
+            //             ->where('id', $coa->text)->first();
+
+            //         $total = str_replace('.00', '', $request->total_detail);
+            //         $cicilan = str_replace('.00', '', $request->cicilan_detail);
+            //         $totalbayar = str_replace('.00', '', $request->totalbayar_detail);
+
+
+            //         $jurnalDetail = [
+            //             [
+            //                 'nobukti' => $hutangHeader->nobukti,
+            //                 'tglbukti' => date('Y-m-d', strtotime($hutangHeader->tglbukti)),
+            //                 'coa' =>  $getcoa->coa,
+            //                 'keterangan' => $request->keterangan_detail[$i],
+            //                 'modifiedby' => auth('api')->user()->name,
+            //                 'baris' => '',
+            //             ]
+            //         ];
+            //         if ($coa->subgrp == 'KREDIT') {
+            //             $jurnalDetail[$a]['total'] = str_replace(',', '', $request->total_detail[$i]);
+            //             $jurnalDetail[$a]['cicilan'] = str_replace(',', '', $request->cicilan_detail[$i]);
+            //             $jurnalDetail[$a]['totalbayar'] = str_replace(',', '', $request->totalbayar[$i]);
+            //         } else {
+            //             $jurnalDetail[$a]['total'] = str_replace(',', '', $total);
+            //             $jurnalDetail[$a]['cicilan'] = str_replace(',', '', $request->cicilan_detail[$i]);
+            //             $jurnalDetail[$a]['totalbayar'] = str_replace(',', '', $request->totalbayar[$i]);
+            //         }
+
+            //         $detail = array_merge($detail, $jurnalDetail);
+            //         $a++;
+            //     }
+            //     $jurnaldetail = array_merge($jurnaldetail, $detail);
+            // }
+
+            // ///
+            // $jurnal = $this->storeJurnal($jurnalHeader, $jurnaldetail);
+
+            // if (!$jurnal['status']) {
+            //     throw new \Throwable($jurnal['message']);
+            // }
+
+
+            // DB::commit();
+
+            // $dataid = LogTrail::select('id')
+            //     ->where('nobuktitrans', '=', $hutangHeader->nobukti)
+            //     ->where('namatabel', '=', $hutangHeader->getTable())
+            //     ->orderBy('id', 'DESC')
+            //     ->first();
+
+            // $datalogtrail = [
+            //     'namatabel' => $tabeldetail,
+            //     'postingdari' => 'ENTRY HUTANG',
+            //     'idtrans' =>  $dataid->id,
+            //     'nobuktitrans' => $hutangHeader->nobukti,
+            //     'aksi' => 'ENTRY',
+            //     'datajson' => $detaillog,
+            //     'modifiedby' => auth('api')->user()->name,
+            // ];
+            // $data = new StoreLogTrailRequest($datalogtrail);
+            // app(LogTrailController::class)->store($data);
+
+            // $request->sortname = $request->sortname ?? 'id';
+            // $request->sortorder = $request->sortorder ?? 'asc';
 
             DB::commit();
 
@@ -586,7 +497,6 @@ class HutangHeaderController extends Controller
             $selected = $this->getPosition($hutangHeader, $hutangHeader->getTable());
             $hutangHeader->position = $selected->position;
             $hutangHeader->page = ceil($hutangHeader->position / ($request->limit ?? 10));
-
 
             return response([
                 'status' => true,
@@ -596,8 +506,45 @@ class HutangHeaderController extends Controller
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
+            return response($th->getMessage());
         }
 
         return response($hutangHeader->hutangdetail());
+    }
+
+    private function storeJurnal($header, $detail)
+    {
+        DB::beginTransaction();
+
+        try {
+
+            $jurnal = new StoreJurnalUmumHeaderRequest($header);
+            $jurnals = app(JurnalUmumHeaderController::class)->store($jurnal);
+
+
+            $nobukti = $header['nobukti'];
+            $fetchId = JurnalUmumHeader::select('id')
+                ->where('nobukti', '=', $nobukti)
+                ->first();
+            $id = $fetchId->id;
+            $details = [];
+
+            foreach ($detail as $value) {
+                $value['jurnalumum_id'] = $id;
+                $detail = new StoreJurnalUmumDetailRequest($value);
+                app(JurnalUmumDetailController::class)->store($detail);
+                $details = $detail;
+            }
+            // die;
+            DB::commit();
+            return [
+                'status' => true,
+                'head' => $jurnals,
+                'det' => $details,
+            ];
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return response($th->getMessage());
+        }
     }
 }

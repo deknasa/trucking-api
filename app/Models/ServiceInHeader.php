@@ -6,9 +6,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-
-
-
 class ServiceInHeader extends MyModel
 {
     use HasFactory;
@@ -49,8 +46,6 @@ class ServiceInHeader extends MyModel
         )
         ->leftJoin('trado', 'serviceinheader.trado_id', 'trado.id');
 
-        // ->join('trado', 'trado.id', '=', 'serviceinheader.trado_id');
-
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
@@ -83,7 +78,6 @@ class ServiceInHeader extends MyModel
         )
         ->leftJoin('trado', 'serviceinheader.trado_id', 'trado.id')
         ->where('serviceinheader.id', $id);
-
 
         $data = $query->first();
 

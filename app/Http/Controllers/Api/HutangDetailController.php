@@ -321,7 +321,6 @@ class HutangDetailController extends Controller
         }
         try {
             $hutangdetail = new HutangDetail();
-            
             $hutangdetail->hutang_id = $request->hutang_id;
             $hutangdetail->supplier_id = $request->supplier_id;
             $hutangdetail->tgljatuhtempo = $request->tgljatuhtempo;
@@ -331,7 +330,7 @@ class HutangDetailController extends Controller
             $hutangdetail->nobukti = $request->nobukti;
             $hutangdetail->keterangan = $request->keterangan;
             $hutangdetail->modifiedby = auth('api')->user()->name;
-            
+           
             $hutangdetail->save();
            
             DB::commit();
@@ -343,8 +342,8 @@ class HutangDetailController extends Controller
                 ];
             }
         } catch (\Throwable $th) {
-            throw $th;
             DB::rollBack();
+            throw $th;
         }        
     }
 

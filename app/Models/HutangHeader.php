@@ -34,7 +34,7 @@ class HutangHeader extends MyModel
             'hutangheader.tglbukti',
             'hutangheader.keterangan',
 
-            'akunpusat.coa as coa',
+            'akunpusat.coa as akunpusat',
             'pelanggan.namapelanggan as pelanggan_id',
 
             // 'hutangheader.coa',
@@ -65,8 +65,8 @@ class HutangHeader extends MyModel
             'hutangheader.nobukti',
             'hutangheader.tglbukti',
             'hutangheader.keterangan',
-
             'akunpusat.coa as akunpusat',
+            // 'akunpusat.coa as coa',
             'pelanggan.namapelanggan as pelanggan',
             'pelanggan.id as pelanggan_id',
 
@@ -96,7 +96,7 @@ class HutangHeader extends MyModel
                  $this->table.nobukti,
                  $this->table.tglbukti,
                  $this->table.keterangan,
-                 'akunpusat.coa as coa',
+                 'akunpusat.coa as akunpusat',
                  'pelanggan.namapelanggan as pelanggan_id',
                  $this->table.total,
 

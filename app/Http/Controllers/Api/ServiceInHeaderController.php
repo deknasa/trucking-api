@@ -83,58 +83,56 @@ class ServiceInHeaderController extends Controller
                 'datajson' => $servicein->toArray(),
                 'modifiedby' => $servicein->modifiedby
             ];
-            
+
             $validatedLogTrail = new StoreLogTrailRequest($logTrail);
             $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-            // dd(count($request->mekanik_id));
-
             /* Store detail */
             $detaillog = [];
-            // for ($i = 0; $i < count($request->mekanik_id); $i++) {
-            $datadetail = [
-                'servicein_id' => $servicein->id,
-                'nobukti' => $servicein->nobukti,
-                'mekanik_id' => $request->mekanik_id,
-                'keterangan' => $request->keterangan_detail,
-                'modifiedby' => $servicein->modifiedby,
-            ];
-            $data = new StoreServiceInDetailRequest($datadetail);
-            $datadetails = app(ServiceInDetailController::class)->store($data);
-            
-            if ($datadetails['error']) {
-                return response($datadetails, 422);
-            } else {
-                $iddetail = $datadetails['id'];
-                $tabeldetail = $datadetails['tabel'];
+            for ($i = 0; $i < count($request->keterangan_detail); $i++) {
+                $datadetail = [
+                    'servicein_id' => $servicein->id,
+                    'nobukti' => $servicein->nobukti,
+                    'mekanik_id' => $request->mekanik[$i],
+                    'keterangan' => $request->keterangan_detail[$i],
+                    'modifiedby' => $servicein->modifiedby,
+                ];
+                $data = new StoreServiceInDetailRequest($datadetail);
+                $datadetails = app(ServiceInDetailController::class)->store($data);
+
+                if ($datadetails['error']) {
+                    return response($datadetails, 422);
+                } else {
+                    $iddetail = $datadetails['id'];
+                    $tabeldetail = $datadetails['tabel'];
+                }
+
+                $datadetaillog = [
+                    'id' => $iddetail,
+                    'servicein_id' => $servicein->id,
+                    'nobukti' => $servicein->nobukti,
+                    'mekanik_id' => $request->mekanik[$i],
+                    'keterangan' => $request->keterangan_detail[$i],
+                    'modifiedby' => $servicein->modifiedby,
+                    'created_at' => date('d-m-Y H:i:s', strtotime($servicein->created_at)),
+                    'updated_at' => date('d-m-Y H:i:s', strtotime($servicein->updated_at)),
+                ];
+                $detaillog[] = $datadetaillog;
+                // }
+
+                $datalogtrail = [
+                    'namatabel' => $tabeldetail,
+                    'postingdari' => 'ENTRY SERVICE IN',
+                    'idtrans' =>  $iddetail,
+                    'nobuktitrans' => $servicein->nobukti,
+                    'aksi' => 'ENTRY',
+                    'datajson' => $detaillog,
+                    'modifiedby' => $servicein->modifiedby,
+                ];
+
+                $data = new StoreLogTrailRequest($datalogtrail);
+                app(LogTrailController::class)->store($data);
             }
-            
-            $datadetaillog = [
-                'id' => $iddetail,
-                'servicein_id' => $servicein->id,
-                'nobukti' => $servicein->nobukti,
-                'mekanik_id' => $request->mekanik,
-                'keterangan' => $request->keterangan_detail,
-                'modifiedby' => $servicein->modifiedby,
-                'created_at' => date('d-m-Y H:i:s', strtotime($servicein->created_at)),
-                'updated_at' => date('d-m-Y H:i:s', strtotime($servicein->updated_at)),
-            ];
-            $detaillog[] = $datadetaillog;
-            //}
-
-            $datalogtrail = [
-                'namatabel' => $tabeldetail,
-                'postingdari' => 'ENTRY SERVICE IN',
-                'idtrans' =>  $iddetail,
-                'nobuktitrans' => $servicein->nobukti,
-                'aksi' => 'ENTRY',
-                'datajson' => $detaillog,
-                'modifiedby' => $servicein->modifiedby,
-            ];
-
-            $data = new StoreLogTrailRequest($datalogtrail);
-            app(LogTrailController::class)->store($data);
-
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
             DB::commit();
@@ -152,6 +150,7 @@ class ServiceInHeaderController extends Controller
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
+            return response($th->getMessage());
         }
 
         return response($servicein->serviceindetail());
@@ -163,7 +162,7 @@ class ServiceInHeaderController extends Controller
      */
     public function show($id)
     {
-        
+
         $data = ServiceInHeader::find($id);
         $detail = ServiceInDetail::getAll($id);
 
@@ -187,14 +186,14 @@ class ServiceInHeaderController extends Controller
             $servicein->tglmasuk = date('Y-m-d', strtotime($request->tglmasuk));
             $servicein->keterangan = $request->keterangan;
             $servicein->modifiedby = auth('api')->user()->name;
-            
+
             if ($servicein->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($servicein->getTable()),
-                    'postingdari' => 'ENTRY SERVICE IN',
+                    'postingdari' => 'UPDATE SERVICE IN HEADER',
                     'idtrans' => $servicein->id,
-                    'nobuktitrans' => '',
-                    'aksi' => 'ENTRY',
+                    'nobuktitrans' => $servicein->nobukti,
+                    'aksi' => 'UPDATE',
                     'datajson' => $servicein->toArray(),
                     'modifiedby' => $servicein->modifiedby
                 ];
@@ -203,15 +202,14 @@ class ServiceInHeaderController extends Controller
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
                 ServiceInDetail::where('servicein_id', $id)->delete();
-
                 /* Store detail */
                 $detaillog = [];
-               // for ($i = 0; $i < count($request->mekanik_id); $i++) {
+                for ($i = 0; $i < count($request->keterangan_detail); $i++) {
                     $datadetail = [
                         'servicein_id' => $servicein->id,
                         'nobukti' => $servicein->nobukti,
-                        'mekanik_id' => $request->mekanik_id,
-                        'keterangan' => $request->keterangan_detail,
+                        'mekanik_id' => $request->mekanik[$i],
+                        'keterangan' => $request->keterangan_detail[$i],
                         'modifiedby' => $servicein->modifiedby,
                     ];
 
@@ -229,33 +227,31 @@ class ServiceInHeaderController extends Controller
                         'id' => $iddetail,
                         'servicein_id' => $servicein->id,
                         'nobukti' => $servicein->nobukti,
-                        'mekanik_id' => $request->mekanik_id,
-                        'keterangan' => $request->keterangan_detail,
+                        'mekanik_id' => $request->mekanik[$i],
+                        'keterangan' => $request->keterangan_detail[$i],
                         'modifiedby' => $servicein->modifiedby,
                         'created_at' => date('d-m-Y H:i:s', strtotime($servicein->created_at)),
                         'updated_at' => date('d-m-Y H:i:s', strtotime($servicein->updated_at)),
                     ];
                     $detaillog[] = $datadetaillog;
-               // }
+                }
 
                 $datalogtrail = [
                     'namatabel' => $tabeldetail,
-                    'postingdari' => 'EDIT SERVICE IN',
+                    'postingdari' => 'ENTRY SERVICE IN',
                     'idtrans' =>  $iddetail,
                     'nobuktitrans' => $servicein->nobukti,
-                    'aksi' => 'EDIT',
+                    'aksi' => 'ENTRY',
                     'datajson' => $detaillog,
-                    'modifiedby' => $request->modifiedby,
+                    'modifiedby' => $servicein->modifiedby,
                 ];
 
                 $data = new StoreLogTrailRequest($datalogtrail);
                 app(LogTrailController::class)->store($data);
-
-                $request->sortname = $request->sortname ?? 'id';
-                $request->sortorder = $request->sortorder ?? 'asc';
             }
+            $request->sortname = $request->sortname ?? 'id';
+            $request->sortorder = $request->sortorder ?? 'asc';
             DB::commit();
-
 
             /* Set position and page */
             $selected = $this->getPosition($servicein, $servicein->getTable());
