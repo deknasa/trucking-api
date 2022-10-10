@@ -39,7 +39,7 @@ class PenerimaanTruckingController extends Controller
                 'penerimaantrucking.kodepenerimaan',
                 'penerimaantrucking.keterangan',
                 'penerimaantrucking.coa',
-                'penerimaantrucking.formatbukti',
+                'penerimaantrucking.statusformat',
                 'penerimaantrucking.modifiedby',
                 'penerimaantrucking.created_at',
                 'penerimaantrucking.updated_at'
@@ -51,7 +51,7 @@ class PenerimaanTruckingController extends Controller
                     'penerimaantrucking.kodepenerimaan',
                     'penerimaantrucking.keterangan',
                     'penerimaantrucking.coa',
-                    'penerimaantrucking.formatbukti',
+                    'penerimaantrucking.statusformat',
                     'penerimaantrucking.modifiedby',
                     'penerimaantrucking.created_at',
                     'penerimaantrucking.updated_at'
@@ -64,7 +64,7 @@ class PenerimaanTruckingController extends Controller
                     'penerimaantrucking.kodepenerimaan',
                     'penerimaantrucking.keterangan',
                     'penerimaantrucking.coa',
-                    'penerimaantrucking.formatbukti',
+                    'penerimaantrucking.statusformat',
                     'penerimaantrucking.modifiedby',
                     'penerimaantrucking.created_at',
                     'penerimaantrucking.updated_at'
@@ -134,7 +134,7 @@ class PenerimaanTruckingController extends Controller
     //         $penerimaanTrucking->kodepenerimaan = $request->kodepenerimaan;
     //         $penerimaanTrucking->keterangan = $request->keterangan;
     //         $penerimaanTrucking->coa = $request->coa;
-    //         $penerimaanTrucking->formatbukti = $request->formatbukti;
+    //         $penerimaanTrucking->statusformat = $request->statusformat;
     //         $penerimaanTrucking->modifiedby = auth('api')->user()->name;
     //         $request->sortname = $request->sortname ?? 'id';
     //         $request->sortorder = $request->sortorder ?? 'asc';
@@ -193,7 +193,7 @@ class PenerimaanTruckingController extends Controller
             $penerimaanTrucking->kodepenerimaan = $request->kodepenerimaan;
             $penerimaanTrucking->keterangan = $request->keterangan;
             $penerimaanTrucking->coa = $request->coa;
-            $penerimaanTrucking->formatbukti = $request->formatbukti;
+            $penerimaanTrucking->statusformat = $request->statusformat;
             $penerimaanTrucking->modifiedby = auth('api')->user()->name;
 
             if ($penerimaanTrucking->save()) {
@@ -303,7 +303,7 @@ class PenerimaanTruckingController extends Controller
             ],
             [
                 'label' => 'Format Bukti',
-                'index' => 'formatbukti',
+                'index' => 'statusformat',
             ],
         ];
 
@@ -340,7 +340,7 @@ class PenerimaanTruckingController extends Controller
             $table->string('kodepenerimaan', 300)->default('');
             $table->string('keterangan', 300)->default('');
             $table->string('coa', 300)->default('');
-            $table->string('formatbukti', 300)->default('');
+            $table->string('statusformat', 300)->default('');
             $table->string('modifiedby', 30)->default('');
             $table->dateTime('created_at')->default('1900/1/1');
             $table->dateTime('updated_at')->default('1900/1/1');
@@ -354,7 +354,7 @@ class PenerimaanTruckingController extends Controller
                 'penerimaantrucking.kodepenerimaan',
                 'penerimaantrucking.keterangan',
                 'penerimaantrucking.coa',
-                'penerimaantrucking.formatbukti',
+                'penerimaantrucking.statusformat',
                 'penerimaantrucking.modifiedby',
                 'penerimaantrucking.created_at',
                 'penerimaantrucking.updated_at'
@@ -367,7 +367,7 @@ class PenerimaanTruckingController extends Controller
                     'penerimaantrucking.kodepenerimaan',
                     'penerimaantrucking.keterangan',
                     'penerimaantrucking.coa',
-                    'penerimaantrucking.formatbukti',
+                    'penerimaantrucking.statusformat',
                     'penerimaantrucking.modifiedby',
                     'penerimaantrucking.created_at',
                     'penerimaantrucking.updated_at'
@@ -380,7 +380,7 @@ class PenerimaanTruckingController extends Controller
                     'penerimaantrucking.kodepenerimaan',
                     'penerimaantrucking.keterangan',
                     'penerimaantrucking.coa',
-                    'penerimaantrucking.formatbukti',
+                    'penerimaantrucking.statusformat',
                     'penerimaantrucking.modifiedby',
                     'penerimaantrucking.created_at',
                     'penerimaantrucking.updated_at'
@@ -397,7 +397,7 @@ class PenerimaanTruckingController extends Controller
             'kodepenerimaan',
             'keterangan',
             'coa',
-            'formatbukti',
+            'statusformat',
             'modifiedby',
             'created_at',
             'updated_at'

@@ -31,7 +31,7 @@ class Kota extends MyModel
             'kota.id',
             'kota.kodekota',
             'kota.keterangan',
-            'zona.zona',
+            'zona.zona as zona_id',
             'parameter.text as statusaktif',
             'kota.modifiedby',
             'kota.created_at',
@@ -122,6 +122,8 @@ class Kota extends MyModel
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statusaktif') {
                             $query = $query->where('parameter.text', '=', "$filters[data]");
+                        } else if ($filters['field'] == 'zona_id') {
+                            $query = $query->where('zona.zona', 'LIKE', "%$filters[data]%");
                         } else {
                             $query = $query->where('kota.'.$filters['field'], 'LIKE', "%$filters[data]%");
                         }
@@ -132,6 +134,8 @@ class Kota extends MyModel
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statusaktif') {
                             $query = $query->orWhere('parameter.text', '=', "$filters[data]");
+                        } else if ($filters['field'] == 'zona_id') {
+                            $query = $query->orWhere('zona.zona', 'LIKE', "%$filters[data]%");
                         } else {
                             $query = $query->orWhere('kota.'.$filters['field'], 'LIKE', "%$filters[data]%");
                         }

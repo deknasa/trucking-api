@@ -331,6 +331,7 @@
 
         Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
         Route::get('hutangheader/no_bukti', [HutangHeaderController::class, 'getNoBukti']);
+        Route::get('hutangheader/combo', [HutangHeaderController::class, 'combo']);
         Route::get('hutangheader/grid', [HutangHeaderController::class, 'grid']);
         Route::resource('hutangheader', HutangHeaderController::class);
         Route::resource('hutangdetail', HutangDetailController::class);
@@ -339,8 +340,8 @@
         Route::get('pelunasanpiutangheader/no_bukti', [PelunasanPiutangHeaderController::class, 'getNoBukti']);
         Route::get('pelunasanpiutangheader/combo', [PelunasanPiutangHeaderController::class, 'combo']);
         Route::get('pelunasanpiutangheader/{id}/getpiutang', [PelunasanPiutangHeaderController::class, 'getpiutang'])->name('pelunasanpiutangheader.getpiutang');
-        Route::get('pelunasanpiutangheader/{id}/{agenid}/getpelunasanpiutang', [PelunasanPiutangHeaderController::class, 'getpelunasanpiutang']);
-        Route::get('pelunasanpiutangheader/{id}/getDeletePelunasanPiutang', [PelunasanPiutangHeaderController::class, 'getDeletePelunasanPiutang']);
+        Route::get('pelunasanpiutangheader/{id}/{agenid}/getPelunasanPiutang', [PelunasanPiutangHeaderController::class, 'getPelunasanPiutang']);
+        Route::get('pelunasanpiutangheader/{id}/{agenid}/getDeletePelunasanPiutang', [PelunasanPiutangHeaderController::class, 'getDeletePelunasanPiutang']);
         Route::get('pelunasanpiutangheader/grid', [PelunasanPiutangHeaderController::class, 'grid']);
         Route::resource('pelunasanpiutangheader', PelunasanPiutangHeaderController::class);
         Route::resource('pelunasanpiutangdetail', PelunasanPiutangDetailController::class);
@@ -359,6 +360,14 @@
         Route::resource('servicein', ServiceInHeaderController::class);
         Route::resource('serviceindetail', ServiceInDetailController::class);
 
+        Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
+        Route::get('kasgantung/no_bukti', [KasGantungHeaderController::class, 'getNoBukti']);
+        Route::get('kasgantung/combo', [KasGantungHeaderController::class, 'combo']);
+        Route::get('kasgantung/grid', [KasGantungHeaderController::class, 'grid']);
+        Route::get('kasgantung/field_length', [KasGantungHeaderController::class, 'fieldLength']);
+        Route::resource('kasgantung', KasGantungHeaderController::class);
+
+        Route::resource('kasgantung_detail', KasGantungDetailController::class);
     });
 
     Route::get('gudang/combo', [GudangController::class, 'combo']);
@@ -461,14 +470,7 @@
 
     // Route::resource('penerimaantruckingdetail', PenerimaanTruckingDetailController::class);
 
-    Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
-    Route::get('kasgantung/no_bukti', [KasGantungHeaderController::class, 'getNoBukti']);
-    Route::get('kasgantung/combo', [KasGantungHeaderController::class, 'combo']);
-    Route::get('kasgantung/grid', [KasGantungHeaderController::class, 'grid']);
-    Route::get('kasgantung/field_length', [KasGantungHeaderController::class, 'fieldLength']);
-    Route::resource('kasgantung', KasGantungHeaderController::class);
-
-    Route::resource('kasgantung_detail', KasGantungDetailController::class);
+    
 
     Route::get('gudang/combo', [GudangController::class, 'combo']);
     Route::get('gudang/field_length', [GudangController::class, 'fieldLength']);
@@ -536,10 +538,6 @@
     Route::get('ritasi/combo', [RitasiController::class, 'combo']);
     Route::get('ritasi/field_length', [RitasiController::class, 'fieldLength']);
     Route::resource('ritasi', RitasiController::class);
-
-    Route::get('serviceout/combo', [ServiceOutHeaderController::class, 'combo']);
-    Route::resource('serviceout', ServiceOutHeaderController::class);
-    Route::resource('serviceoutdetail', ServiceOutDetailController::class);
 
     Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
     Route::post('penerimaan/{id}/approval', [PenerimaanHeaderController::class, 'approval'])->name('penerimaan.approval');

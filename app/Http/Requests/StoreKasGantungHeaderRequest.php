@@ -24,17 +24,16 @@ class StoreKasGantungHeaderRequest extends FormRequest
     public function rules()
     {
         return [
-            'nobukti' => 'required',
             'tglbukti' => 'required',
             'penerima_id' => 'required',
-            'nominal' => 'required',
-            'keterangan_detail' => 'required',
+            'keterangan' => 'required',
+            'bank_id' => 'required',
+            'tglkaskeluar' => 'required',
         ];
     }
 
     public function attributes() {
         return [
-            'nobukti' => 'No Bukti',
             'tgl' => 'Tanggal',
             'penerima_id' => 'Penerima',
         ];

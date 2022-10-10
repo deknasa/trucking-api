@@ -131,7 +131,7 @@ class OrderanTruckingController extends Controller
         }
     }
 
-    public function show(OrderanTrucking $orderanTrucking,$id)
+    public function show($id)
     {
         $data = OrderanTrucking::find($id);
 

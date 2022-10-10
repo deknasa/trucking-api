@@ -24,7 +24,8 @@ class StoreKasGantungDetailRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'nominal' => 'required',
+            'keterangan_detail' => 'required',
         ];
     }
 }
