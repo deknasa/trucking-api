@@ -59,6 +59,13 @@ class DatabaseSeeder extends Seeder
             AbsensiSupirApprovalHeaderSeeder::class,
             AbsensiSupirApprovalDetailSeeder::class,
             SuratPengantarSeeder::class,
+            PenerimaanStokSeeder::class,
+            PengeluaranStokSeeder::class,
+            PenerimaanStokHeaderSeeder::class,
+            PenerimaanStokDetailSeeder::class,
+            PengeluaranStokHeaderSeeder::class,
+            PengeluaranStokDetailSeeder::class,
+            PengeluaranStokDetailRincianSeeder::class,
 
 
 

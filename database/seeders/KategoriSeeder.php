@@ -24,5 +24,7 @@ class KategoriSeeder extends Seeder
         Kategori::create(['kodekategori' => 'MUR RODA', 'keterangan' => 'UNTUK MUR RODA', 'subkelompok_id' => '2', 'statusaktif' => '1', 'modifiedby' => 'ADMIN',]);
         Kategori::create(['kodekategori' => 'BAUT', 'keterangan' => 'BAUT', 'subkelompok_id' => '1', 'statusaktif' => '1', 'modifiedby' => 'ADMIN',]);
         Kategori::create(['kodekategori' => 'RADIATOR', 'keterangan' => 'RADIATOR', 'subkelompok_id' => '3', 'statusaktif' => '1', 'modifiedby' => 'ADMIN',]);
+        Kategori::create(['kodekategori' => 'SPAREPART', 'keterangan' => 'SPAREPART', 'subkelompok_id' => '4', 'statusaktif' => '1', 'modifiedby' => 'ADMIN',]);
+        Kategori::create(['kodekategori' => 'BAN', 'keterangan' => 'BAN', 'subkelompok_id' => '5', 'statusaktif' => '1', 'modifiedby' => 'ADMIN',]);
     }
 }

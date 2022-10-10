@@ -18,39 +18,14 @@ class PengeluaranStokDetailSeeder extends Seeder
 
 
         DB::statement("delete PengeluaranStokDetail");
-        DB::statement("DBCC CHECKIDENT ('PengeluaranStokDetail', RESEED, 0);");
+        DB::statement("DBCC CHECKIDENT ('PengeluaranStokDetail', RESEED, 1);");
 
-        PengeluaranStokDetail::create([
-            'pengeluaranstokheader_id' => 1,
-            'nobukti' => 'SPK 0001/VIII/2022',
-            'stok_id' => 1,
-            'conv1' => 1,
-            'conv2' => 1,
-            'qty' => 2,
-            'harga' => 500,
-            'persentasediscount' => 0,
-            'nominaldiscount' => 0,
-            'total' => 10000,
-            'keterangan' => 'PEMAKAIAN BARANG',
-            'vulkanisirke' => '',
-            'modifiedby' => 'ADMIN',
-        ]);
-
-        PengeluaranStokDetail::create([
-            'pengeluaranstokheader_id' => 2,
-            'nobukti' => 'RBT 0001/VII/2022',
-            'stok_id' => 1,
-            'conv1' => 1,
-            'conv2' => 1,
-            'qty' => 1,
-            'harga' => 500,
-            'persentasediscount' => 0,
-            'nominaldiscount' => 0,
-            'total' => 500,
-            'keterangan' => 'RETUR PEMBELIAN BAUT',
-            'vulkanisirke' => '',
-            'modifiedby' => 'ADMIN',
-        ]);
+        PengeluaranStokDetail::create(['pengeluaranstokheader_id' => '1', 'nobukti' => 'SPK 0001/VIII/2022', 'stok_id' => '1', 'qty' => '2', 'harga' => '500', 'persentasediscount' => '0', 'nominaldiscount' => '0', 'total' => '10000', 'keterangan' => 'PEMAKAIAN BARANG', 'vulkanisirke' => '0', 'modifiedby' => 'ADMIN',]);
+        PengeluaranStokDetail::create(['pengeluaranstokheader_id' => '2', 'nobukti' => 'RBT 0001/VII/2022', 'stok_id' => '1', 'qty' => '1', 'harga' => '500', 'persentasediscount' => '0', 'nominaldiscount' => '0', 'total' => '500', 'keterangan' => 'RETUR PEMBELIAN BAUT', 'vulkanisirke' => '0', 'modifiedby' => 'ADMIN',]);
+        PengeluaranStokDetail::create(['pengeluaranstokheader_id' => '3', 'nobukti' => 'SPK 0001/X/2022', 'stok_id' => 432, 'qty' => 1, 'harga' => 0, 'persentasediscount' => '0', 'nominaldiscount' => '0', 'total' => 0, 'keterangan' => 'GANTI SARINGAN', 'vulkanisirke' => '0', 'modifiedby' => 'ADMIN',]);
+        PengeluaranStokDetail::create(['pengeluaranstokheader_id' => '4', 'nobukti' => 'SPK 0002/X/2022', 'stok_id' => 432, 'qty' => 2, 'harga' => 0, 'persentasediscount' => '0', 'nominaldiscount' => '0', 'total' => 0, 'keterangan' => 'GANTI SARINGAN', 'vulkanisirke' => '0', 'modifiedby' => 'ADMIN',]);
+        PengeluaranStokDetail::create(['pengeluaranstokheader_id' => '5', 'nobukti' => 'SPK 0003/X/2022', 'stok_id' => 432, 'qty' => 1, 'harga' => 0, 'persentasediscount' => '0', 'nominaldiscount' => '0', 'total' => 0, 'keterangan' => 'GANTI SARINGAN', 'vulkanisirke' => '0', 'modifiedby' => 'ADMIN',]);
+        PengeluaranStokDetail::create(['pengeluaranstokheader_id' => '6', 'nobukti' => 'SPK 0004/X/2022', 'stok_id' => 432, 'qty' => 5, 'harga' => 0, 'persentasediscount' => '0', 'nominaldiscount' => '0', 'total' => 0, 'keterangan' => 'GANTI SARINGAN', 'vulkanisirke' => '0', 'modifiedby' => 'ADMIN',]);
 
     }
 }
