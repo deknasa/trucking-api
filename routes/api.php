@@ -364,10 +364,10 @@
         Route::resource('hutangbayardetail', HutangBayarDetailController::class);
 
         Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
-        Route::get('servicein/no_bukti', [ServiceInHeaderController::class, 'getNoBukti']);
-        Route::get('servicein/combo', [ServiceInHeaderController::class, 'combo']);
-        Route::get('servicein/grid', [ServiceInHeaderController::class, 'grid']);
-        Route::resource('servicein', ServiceInHeaderController::class);
+        Route::get('serviceinheader/no_bukti', [ServiceInHeaderController::class, 'getNoBukti']);
+        Route::get('serviceinheader/combo', [ServiceInHeaderController::class, 'combo']);
+        Route::get('serviceinheader/grid', [ServiceInHeaderController::class, 'grid']);
+        Route::resource('serviceinheader', ServiceInHeaderController::class);
         Route::resource('serviceindetail', ServiceInDetailController::class);
 
         Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');

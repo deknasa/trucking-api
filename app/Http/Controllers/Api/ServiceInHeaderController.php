@@ -23,7 +23,6 @@ class ServiceInHeaderController extends Controller
     public function index()
     {
         $servicein = new ServiceInHeader();
-
         return response([
             'data' => $servicein->get(),
             'attributes' => [
@@ -33,6 +32,9 @@ class ServiceInHeaderController extends Controller
         ]);
     }
 
+    /**
+     * @ClassName
+     */
     public function store(StoreServiceInHeaderRequest $request)
     {
         DB::beginTransaction();
@@ -86,10 +88,10 @@ class ServiceInHeaderController extends Controller
 
             $validatedLogTrail = new StoreLogTrailRequest($logTrail);
             $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-            
+
             /* Store detail */
             $detaillog = [];
-            
+
             for ($i = 0; $i < count($request->keterangan_detail); $i++) {
                 $datadetail = [
                     'servicein_id' => $servicein->id,
@@ -159,9 +161,7 @@ class ServiceInHeaderController extends Controller
     }
 
 
-    /**
-     * @ClassName
-     */
+
     public function show($id)
     {
 
@@ -175,7 +175,9 @@ class ServiceInHeaderController extends Controller
         ]);
     }
 
-
+    /**
+     * @ClassName
+     */
     public function update(StoreServiceInHeaderRequest $request, $id)
     {
         DB::beginTransaction();
