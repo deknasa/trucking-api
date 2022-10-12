@@ -57,9 +57,11 @@ class UpahSupirController extends Controller
             $upahsupir->zona_id = $request->zona_id;
             $upahsupir->statusaktif = $request->statusaktif;
             $upahsupir->tglmulaiberlaku = date('Y-m-d', strtotime($request->tglmulaiberlaku));
+            $upahsupir->tglakhirberlaku = date('Y-m-d', strtotime($request->tglakhirberlaku));
+
             $upahsupir->statusluarkota = $request->statusluarkota;
             $upahsupir->modifiedby = auth('api')->user()->name;
-
+          
             if ($upahsupir->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($upahsupir->getTable()),
@@ -73,7 +75,6 @@ class UpahSupirController extends Controller
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
                 /* Store detail */
                 $detaillog = [];
                 for ($i = 0; $i < count($request->nominalsupir); $i++) {
@@ -94,7 +95,6 @@ class UpahSupirController extends Controller
                         'liter' => $liter,
                         'modifiedby' => $request->modifiedby,
                     ];
-
                     $data = new StoreUpahSupirRincianRequest($datadetail);
                     $datadetails = app(UpahSupirRincianController::class)->store($data);
 
@@ -119,6 +119,7 @@ class UpahSupirController extends Controller
                         'created_at' => date('d-m-Y H:i:s', strtotime($upahsupir->created_at)),
                         'updated_at' => date('d-m-Y H:i:s', strtotime($upahsupir->updated_at)),
                     ];
+
                     $detaillog[] = $datadetaillog;
                 }
 
@@ -177,14 +178,26 @@ class UpahSupirController extends Controller
 
     public function show($id)
     {
-        $data = UpahSupir::with(
-            'upahsupirRincian',
-        )->find($id);
+
+        $data = UpahSupir::find($id);
+        $detail = UpahSupirRincian::getAll($id);
+
+        // dd($details);
+        // $datas = array_merge($data, $detail);
 
         return response([
             'status' => true,
-            'data' => $data
+            'data' => $data,
+            'detail' => $detail
         ]);
+        // $data = UpahSupir::with(
+        //     'upahsupirRincian',
+        // )->find($id);
+
+        // return response([
+        //     'status' => true,
+        //     'data' => $data
+        // ]);
     }
 
 
@@ -326,45 +339,46 @@ class UpahSupirController extends Controller
         return response($upahsupir->kasgantungDetail);
     }
 
-    /**
-     * @ClassName 
-     */
-    public function destroy($id,$upahsupir, Request $request)
+    public function destroy($id,  Request $request)
     {
+
         DB::beginTransaction();
+        $upahsupir = new UpahSupir();
 
         try {
-            $get = UpahSupir::find($id);
             $delete = UpahSupirRincian::where('upahsupir_id', $id)->delete();
             $delete = UpahSupir::destroy($id);
 
-            $datalogtrail = [
-                'namatabel' => $get->getTable(),
-                'postingdari' => 'DELETE UPAH SUPIR',
-                'idtrans' => $id,
-                'nobuktitrans' => '',
-                'aksi' => 'HAPUS',
-                'datajson' => '',
-                'modifiedby' => $get->modifiedby,
-            ];
-
-            $data = new StoreLogTrailRequest($datalogtrail);
-            app(LogTrailController::class)->store($data);
-
             if ($delete) {
+                $logTrail = [
+                    'namatabel' => strtoupper($upahsupir->getTable()),
+                    'postingdari' => 'DELETE UPAHSUPIR',
+                    'idtrans' => $id,
+                    'nobuktitrans' => '',
+                    'aksi' => 'DELETE',
+                    'datajson' => $upahsupir->toArray(),
+                    'modifiedby' => $upahsupir->modifiedby
+                ];
+
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                app(LogTrailController::class)->store($validatedLogTrail);
+
                 DB::commit();
 
-                $selected = $this->getPosition($$upahsupir, $$upahsupir->getTable(), true);
-                $$upahsupir->position = $selected->position;
-                $$upahsupir->id = $selected->id;
-                $$upahsupir->page = ceil($$upahsupir->position / ($request->limit ?? 10));
+                /* Set position and page */
+                $selected = $this->getPosition($upahsupir, $upahsupir->getTable(), true);
+                $upahsupir->position = $selected->position;
+                $upahsupir->id = $selected->id;
+                $upahsupir->page = ceil($upahsupir->position / ($request->limit ?? 10));
 
                 return response([
                     'status' => true,
-                    'message' => 'Berhasil dihapus'
+                    'message' => 'Berhasil dihapus',
+                    'data' => $upahsupir
                 ]);
             } else {
                 DB::rollBack();
+
                 return response([
                     'status' => false,
                     'message' => 'Gagal dihapus'
@@ -375,6 +389,55 @@ class UpahSupirController extends Controller
             return response($th->getMessage());
         }
     }
+    /**
+     * @ClassName 
+     */
+    // public function destroy($id,$upahsupir, Request $request)
+    // {
+    //     DB::beginTransaction();
+
+    //     try {
+    //         $get = UpahSupir::find($id);
+    //         $delete = UpahSupirRincian::where('upahsupir_id', $id)->delete();
+    //         $delete = UpahSupir::destroy($id);
+
+    //         $datalogtrail = [
+    //             'namatabel' => $get->getTable(),
+    //             'postingdari' => 'DELETE UPAH SUPIR',
+    //             'idtrans' => $id,
+    //             'nobuktitrans' => '',
+    //             'aksi' => 'HAPUS',
+    //             'datajson' => '',
+    //             'modifiedby' => $get->modifiedby,
+    //         ];
+
+    //         $data = new StoreLogTrailRequest($datalogtrail);
+    //         app(LogTrailController::class)->store($data);
+
+    //         if ($delete) {
+    //             DB::commit();
+
+    //             $selected = $this->getPosition($upahsupir, $upahsupir->getTable(), true);
+    //             $upahsupir->position = $selected->position;
+    //             $upahsupir->id = $selected->id;
+    //             $upahsupir->page = ceil($upahsupir->position / ($request->limit ?? 10));
+
+    //             return response([
+    //                 'status' => true,
+    //                 'message' => 'Berhasil dihapus'
+    //             ]);
+    //         } else {
+    //             DB::rollBack();
+    //             return response([
+    //                 'status' => false,
+    //                 'message' => 'Gagal dihapus'
+    //             ]);
+    //         }
+    //     } catch (\Throwable $th) {
+    //         DB::rollBack();
+    //         return response($th->getMessage());
+    //     }
+    // }
 
     public function combo(Request $request)
     {

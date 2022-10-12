@@ -14,6 +14,11 @@ class Supplier extends MyModel
 
     protected $table = 'supplier';
 
+    protected $casts = [
+        'created_at' => 'date:d-m-Y H:i:s',
+        'updated_at' => 'date:d-m-Y H:i:s'
+    ];
+
     protected $guarded = [
         'id',
         'created_at',
@@ -25,12 +30,37 @@ class Supplier extends MyModel
         $this->setRequestParameters();
 
         $query = DB::table($this->table)->select(
-            "$this->table.*",
-            "parameter_statusaktif.text as statusaktif",
-            "parameter_statusdaftarharga.text as statusdaftarharga"
+            // "$this->table.*",
+            'supplier.id',
+            'supplier.namasupplier',
+            'supplier.namasupplier',
+            'supplier.namakontak',
+            'supplier.alamat',
+            'supplier.kota',
+            'supplier.kodepos',
+            'supplier.notelp1',
+            'supplier.notelp2',
+            'supplier.email',
+
+            'parameter_statusaktif.text as statusaktif',
+            'supplier.web',
+            'supplier.namapemilik',
+            'supplier.jenisusaha',
+            'supplier.bank',
+            'supplier.rekeningbank',
+            'supplier.namarekening',
+            'supplier.jabatan',
+
+            'parameter_statusdaftarharga.text as statusdaftarharga',
+            'supplier.kategoriusaha',
+
+            'supplier.modifiedby',
+            'supplier.created_at',
+            'supplier.updated_at'
+
         )
-            ->leftJoin('parameter as parameter_statusaktif', "$this->table.statusaktif", '=', 'parameter_statusaktif.id')
-            ->leftJoin('parameter as parameter_statusdaftarharga', "$this->table.statusdaftarharga", '=', 'parameter_statusdaftarharga.id');
+            ->leftJoin('parameter as parameter_statusaktif', "supplier.statusaktif", '=', 'parameter_statusaktif.id')
+            ->leftJoin('parameter as parameter_statusdaftarharga', "supplier.statusdaftarharga", '=', 'parameter_statusdaftarharga.id');
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -40,6 +70,46 @@ class Supplier extends MyModel
         $this->paginate($query);
 
         $data = $query->get();
+
+        return $data;
+    }
+
+    public function find($id)
+    {
+        $query = DB::table('supplier')->select(
+            'supplier.id',
+            'supplier.namasupplier',
+            'supplier.namasupplier',
+            'supplier.namakontak',
+            'supplier.alamat',
+            'supplier.kota',
+            'supplier.kodepos',
+            'supplier.notelp1',
+            'supplier.notelp2',
+            'supplier.email',
+
+            'parameter_statusaktif.text as statusaktif',
+            'supplier.web',
+            'supplier.namapemilik',
+            'supplier.jenisusaha',
+            'supplier.bank',
+            'supplier.rekeningbank',
+            'supplier.namarekening',
+            'supplier.jabatan',
+
+            'parameter_statusdaftarharga.text as statusdaftarharga',
+            'supplier.kategoriusaha',
+
+            'supplier.modifiedby',
+            'supplier.created_at',
+            'supplier.updated_at'
+
+        )
+            ->leftJoin('parameter as parameter_statusaktif', "supplier.statusaktif", '=', 'parameter_statusaktif.id')
+            ->leftJoin('parameter as parameter_statusdaftarharga', "supplier.statusdaftarharga", '=', 'parameter_statusdaftarharga.id')
+        ->where('supplier.id', $id);
+
+        $data = $query->first();
 
         return $data;
     }
@@ -59,28 +129,26 @@ class Supplier extends MyModel
             $this->table.notelp2,
             $this->table.email,
             
-            'parameter_statusaktif.text as statusaktif',
+            parameter_statusaktif.text as statusaktif,
             $this->table.web,
             $this->table.namapemilik,
             $this->table.jenisusaha,
-            $this->table.top,
             $this->table.bank,
             $this->table.rekeningbank,
             $this->table.namarekening,
             $this->table.jabatan,
 
-            'parameter_statusdaftarharga.text as statusdaftarharga'
+            parameter_statusdaftarharga.text as statusdaftarharga,
             $this->table.kategoriusaha,
 
             $this->table.modifiedby,
             $this->table.created_at,
-            $this->table.updated_at,
-            $this->table.statusformat"
+            $this->table.updated_at"
             )
 
         )
-            ->leftJoin('parameter as parameter_statusaktif', "$this->table.statusaktif", '=', 'parameter_statusaktif.id')
-            ->leftJoin('parameter as parameter_statusdaftarharga', "$this->table.statusdaftarharga", '=', 'parameter_statusdaftarharga.id');
+            ->leftJoin('parameter as parameter_statusaktif', "supplier.statusaktif", '=', 'parameter_statusaktif.id')
+            ->leftJoin('parameter as parameter_statusdaftarharga', "supplier.statusdaftarharga", '=', 'parameter_statusdaftarharga.id');
     }
 
     public function createTemp(string $modelTable)
@@ -96,31 +164,27 @@ class Supplier extends MyModel
             $table->string('notelp1', 50)->default('');
             $table->string('notelp2', 50)->default('');
             $table->string('email', 50)->default('');
-            $table->integer('statusaktif')->length(11)->default('0');
+            $table->string('statusaktif')->length(11)->default('0');
             $table->string('web', 50)->default('');
             $table->string('namapemilik', 150)->default('');
             $table->string('jenisusaha', 150)->default('');
-            $table->string('top')->length(11)->default('');
             $table->string('bank', 150)->default('');
             $table->string('rekeningbank', 150)->default('');
             $table->string('namarekening', 150)->default('');
             $table->string('jabatan', 150)->default('');
-            $table->integer('statusdaftarharga')->length(11)->default('0');
+            $table->string('statusdaftarharga')->length(11)->default('0');
             $table->string('kategoriusaha', 150)->default('');
             $table->string('modifiedby', 50)->default('');
             $table->dateTime('created_at')->default('1900/1/1');
             $table->dateTime('updated_at')->default('1900/1/1');
-            $table->bigInteger('statusformat')->default('');
             $table->increments('position');
         });
-
         $this->setRequestParameters();
         $query = DB::table($modelTable);
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id', 'namasupplier', 'namakontak', 'alamat', 'kota', 'kodepos', 'notelp1', 'notelp2', 'email', 'statusaktif', 'web', 'namapemilik', 'jenisusaha', 'top', 'bank', 'rekeningbank', 'namarekening', 'jabatan', 'statusdaftarharga', 'kategoriusaha', 'modifiedby', 'created_at', 'updated_at', 'statusformat'], $models);
-
+        DB::table($temp)->insertUsing(['id', 'namasupplier', 'namakontak',  'alamat', 'kota', 'kodepos', 'notelp1', 'notelp2', 'email',  'statusaktif', 'web', 'namapemilik', 'jenisusaha', 'bank', 'rekeningbank',  'namarekening', 'jabatan', 'statusdaftarharga', 'kategoriusaha', 'modifiedby', 'created_at', 'updated_at'], $models);
 
         return  $temp;
     }

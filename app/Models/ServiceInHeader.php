@@ -98,8 +98,7 @@ class ServiceInHeader extends MyModel
 
             $this->table.modifiedby,
             $this->table.created_at,
-            $this->table.updated_at,
-            $this->table.statusformat"
+            $this->table.updated_at"
             )
             
         )
@@ -121,7 +120,6 @@ class ServiceInHeader extends MyModel
             $table->string('modifiedby', 50)->default('');
             $table->dateTime('created_at')->default('1900/1/1');
             $table->dateTime('updated_at')->default('1900/1/1');
-            $table->bigInteger('statusformat')->default('');
             $table->increments('position');
         });
 
@@ -130,7 +128,7 @@ class ServiceInHeader extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti',  'trado_id', 'tglmasuk', 'keterangan', 'modifiedby', 'created_at', 'updated_at', 'statusformat'], $models);
+        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti',  'trado_id', 'tglmasuk', 'keterangan', 'modifiedby', 'created_at', 'updated_at'], $models);
 
 
         return  $temp;

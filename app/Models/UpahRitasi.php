@@ -81,18 +81,17 @@ class UpahRitasi extends MyModel
         return $query->select(
             DB::raw(
             "$this->table.id,
-            'kotadari.keterangan as kotadari_id',
-            'kotasampai.keterangan as kotasampai_id',
+            kotadari.keterangan as kotadari_id,
+            kotasampai.keterangan as kotasampai_id,
             $this->table.jarak
-            'zona.zona as zona_id',
-            'parameter.text as statusaktif',
+            zona.zona as zona_id,
+            parameter.text as statusaktif,
             $this->table.tglmulaiberlaku,
-            'param.text as statusluarkota',
+            param.text as statusluarkota,
 
             $this->table.modifiedby,
             $this->table.created_at,
-            $this->table.updated_at,
-            $this->table.statusformat"
+            $this->table.updated_at"
             )
 
         )

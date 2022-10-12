@@ -36,7 +36,7 @@ class StoreSupplierRequest extends FormRequest
             'web' => 'required',
             'namapemilik' => 'required',
             'jenisusaha' => 'required',
-            'top' => 'required|numeric',
+            // 'top' => 'required|numeric',
             'bank' => 'required',
             'rekeningbank' => 'required',
             'namarekening' => 'required',
