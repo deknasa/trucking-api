@@ -448,8 +448,8 @@
     Route::get('ritasi/field_length', [RitasiController::class, 'fieldLength']);
     Route::resource('ritasi', RitasiController::class);
 
-    Route::get('serviceout/combo', [ServiceOutHeaderController::class, 'combo']);
-    Route::resource('serviceout', ServiceOutHeaderController::class);
+    Route::get('serviceoutheader/combo', [ServiceOutHeaderController::class, 'combo']);
+    Route::resource('serviceoutheader', ServiceOutHeaderController::class);
     Route::resource('serviceoutdetail', ServiceOutDetailController::class);
 
     Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
