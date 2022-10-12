@@ -86,17 +86,19 @@ class ServiceInHeaderController extends Controller
 
             $validatedLogTrail = new StoreLogTrailRequest($logTrail);
             $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
+            
             /* Store detail */
             $detaillog = [];
+            
             for ($i = 0; $i < count($request->keterangan_detail); $i++) {
                 $datadetail = [
                     'servicein_id' => $servicein->id,
                     'nobukti' => $servicein->nobukti,
-                    'mekanik_id' => $request->mekanik[$i],
+                    'mekanik_id' => $request->mekanik_id[$i],
                     'keterangan' => $request->keterangan_detail[$i],
                     'modifiedby' => $servicein->modifiedby,
                 ];
+
                 $data = new StoreServiceInDetailRequest($datadetail);
                 $datadetails = app(ServiceInDetailController::class)->store($data);
 
@@ -111,7 +113,7 @@ class ServiceInHeaderController extends Controller
                     'id' => $iddetail,
                     'servicein_id' => $servicein->id,
                     'nobukti' => $servicein->nobukti,
-                    'mekanik_id' => $request->mekanik[$i],
+                    'mekanik_id' => $request->mekanik_id[$i],
                     'keterangan' => $request->keterangan_detail[$i],
                     'modifiedby' => $servicein->modifiedby,
                     'created_at' => date('d-m-Y H:i:s', strtotime($servicein->created_at)),
@@ -208,7 +210,7 @@ class ServiceInHeaderController extends Controller
                     $datadetail = [
                         'servicein_id' => $servicein->id,
                         'nobukti' => $servicein->nobukti,
-                        'mekanik_id' => $request->mekanik[$i],
+                        'mekanik_id' => $request->mekanik_id[$i],
                         'keterangan' => $request->keterangan_detail[$i],
                         'modifiedby' => $servicein->modifiedby,
                     ];
@@ -227,7 +229,7 @@ class ServiceInHeaderController extends Controller
                         'id' => $iddetail,
                         'servicein_id' => $servicein->id,
                         'nobukti' => $servicein->nobukti,
-                        'mekanik_id' => $request->mekanik[$i],
+                        'mekanik_id' => $request->mekanik_id[$i],
                         'keterangan' => $request->keterangan_detail[$i],
                         'modifiedby' => $servicein->modifiedby,
                         'created_at' => date('d-m-Y H:i:s', strtotime($servicein->created_at)),
