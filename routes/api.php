@@ -326,8 +326,9 @@
         Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
         Route::get('piutangheader/no_bukti', [PiutangHeaderController::class, 'getNoBukti']);
         Route::get('piutangheader/grid', [PiutangHeaderController::class, 'grid']);
-        Route::resource('piutangheader', PiutangHeaderController::class);
-        Route::resource('piutangdetail', PiutangDetailController::class);
+        Route::get('piutangheader/field_length', [PiutangHeaderController::class, 'fieldLength']);
+        Route::apiResource('piutangheader', PiutangHeaderController::class)->parameters(['piutangheader' => 'piutangHeader']);
+        Route::apiResource('piutangdetail', PiutangDetailController::class);
 
         Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
         Route::get('hutangheader/no_bukti', [HutangHeaderController::class, 'getNoBukti']);
