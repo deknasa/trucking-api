@@ -23,7 +23,6 @@ class ServiceInHeaderController extends Controller
     public function index()
     {
         $servicein = new ServiceInHeader();
-
         return response([
             'data' => $servicein->get(),
             'attributes' => [
@@ -33,6 +32,9 @@ class ServiceInHeaderController extends Controller
         ]);
     }
 
+    /**
+     * @ClassName
+     */
     public function store(StoreServiceInHeaderRequest $request)
     {
         DB::beginTransaction();
@@ -89,14 +91,16 @@ class ServiceInHeaderController extends Controller
 
             /* Store detail */
             $detaillog = [];
+
             for ($i = 0; $i < count($request->keterangan_detail); $i++) {
                 $datadetail = [
                     'servicein_id' => $servicein->id,
                     'nobukti' => $servicein->nobukti,
-                    'mekanik_id' => $request->mekanik[$i],
+                    'mekanik_id' => $request->mekanik_id[$i],
                     'keterangan' => $request->keterangan_detail[$i],
                     'modifiedby' => $servicein->modifiedby,
                 ];
+
                 $data = new StoreServiceInDetailRequest($datadetail);
                 $datadetails = app(ServiceInDetailController::class)->store($data);
 
@@ -111,7 +115,7 @@ class ServiceInHeaderController extends Controller
                     'id' => $iddetail,
                     'servicein_id' => $servicein->id,
                     'nobukti' => $servicein->nobukti,
-                    'mekanik_id' => $request->mekanik[$i],
+                    'mekanik_id' => $request->mekanik_id[$i],
                     'keterangan' => $request->keterangan_detail[$i],
                     'modifiedby' => $servicein->modifiedby,
                     'created_at' => date('d-m-Y H:i:s', strtotime($servicein->created_at)),
@@ -157,9 +161,7 @@ class ServiceInHeaderController extends Controller
     }
 
 
-    /**
-     * @ClassName
-     */
+
     public function show($id)
     {
 
@@ -173,7 +175,9 @@ class ServiceInHeaderController extends Controller
         ]);
     }
 
-
+    /**
+     * @ClassName
+     */
     public function update(StoreServiceInHeaderRequest $request, $id)
     {
         DB::beginTransaction();
@@ -208,7 +212,7 @@ class ServiceInHeaderController extends Controller
                     $datadetail = [
                         'servicein_id' => $servicein->id,
                         'nobukti' => $servicein->nobukti,
-                        'mekanik_id' => $request->mekanik[$i],
+                        'mekanik_id' => $request->mekanik_id[$i],
                         'keterangan' => $request->keterangan_detail[$i],
                         'modifiedby' => $servicein->modifiedby,
                     ];
@@ -227,7 +231,7 @@ class ServiceInHeaderController extends Controller
                         'id' => $iddetail,
                         'servicein_id' => $servicein->id,
                         'nobukti' => $servicein->nobukti,
-                        'mekanik_id' => $request->mekanik[$i],
+                        'mekanik_id' => $request->mekanik_id[$i],
                         'keterangan' => $request->keterangan_detail[$i],
                         'modifiedby' => $servicein->modifiedby,
                         'created_at' => date('d-m-Y H:i:s', strtotime($servicein->created_at)),

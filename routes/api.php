@@ -364,10 +364,10 @@
         Route::resource('hutangbayardetail', HutangBayarDetailController::class);
 
         Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
-        Route::get('servicein/no_bukti', [ServiceInHeaderController::class, 'getNoBukti']);
-        Route::get('servicein/combo', [ServiceInHeaderController::class, 'combo']);
-        Route::get('servicein/grid', [ServiceInHeaderController::class, 'grid']);
-        Route::resource('servicein', ServiceInHeaderController::class);
+        Route::get('serviceinheader/no_bukti', [ServiceInHeaderController::class, 'getNoBukti']);
+        Route::get('serviceinheader/combo', [ServiceInHeaderController::class, 'combo']);
+        Route::get('serviceinheader/grid', [ServiceInHeaderController::class, 'grid']);
+        Route::resource('serviceinheader', ServiceInHeaderController::class);
         Route::resource('serviceindetail', ServiceInDetailController::class);
 
         Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
@@ -448,8 +448,8 @@
     Route::get('ritasi/field_length', [RitasiController::class, 'fieldLength']);
     Route::resource('ritasi', RitasiController::class);
 
-    Route::get('serviceout/combo', [ServiceOutHeaderController::class, 'combo']);
-    Route::resource('serviceout', ServiceOutHeaderController::class);
+    Route::get('serviceoutheader/combo', [ServiceOutHeaderController::class, 'combo']);
+    Route::resource('serviceoutheader', ServiceOutHeaderController::class);
     Route::resource('serviceoutdetail', ServiceOutDetailController::class);
 
     Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
