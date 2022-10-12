@@ -41,6 +41,7 @@
     use App\Http\Controllers\Api\KerusakanController;
     use App\Http\Controllers\Api\SubKelompokController;
     use App\Http\Controllers\Api\SupplierController;
+    use App\Http\Controllers\Api\StokController;
     use App\Http\Controllers\Api\KotaController;
     use App\Http\Controllers\Api\MandorController;
     use App\Http\Controllers\Api\MerkController;
@@ -70,7 +71,9 @@
     use App\Http\Controllers\Api\PenerimaanTruckingDetailController;
     use App\Http\Controllers\Api\PenerimaanStokController;
     use App\Http\Controllers\Api\PenerimaanStokHeaderController;
+    use App\Http\Controllers\Api\PenerimaanStokDetailController;
     use App\Http\Controllers\Api\PengeluaranStokController;
+    use App\Http\Controllers\Api\PengeluaranStokHeaderController;
     use App\Http\Controllers\Api\JurnalUmumHeaderController;
     use App\Http\Controllers\Api\JurnalUmumDetailController;
     use App\Http\Controllers\Api\PengeluaranTruckingHeaderController;
@@ -269,6 +272,10 @@
         Route::get('supplier/export', [SupplierController::class, 'export']);
         Route::get('supplier/field_length', [SupplierController::class, 'fieldLength']);
         Route::resource('supplier', SupplierController::class);
+        
+        // Route::get('supplier/export', [SupplierController::class, 'export']);
+        // Route::get('supplier/field_length', [SupplierController::class, 'fieldLength']);
+        Route::apiResource('stok', StokController::class);
 
         Route::get('penerima/export', [PenerimaController::class, 'export']);
         Route::get('penerima/field_length', [PenerimaController::class, 'fieldLength']);
@@ -318,10 +325,12 @@
         Route::get('penerimaanstok/export', [PenerimaanStokController::class,'export']);
         Route::apiResource('penerimaanstok', PenerimaanStokController::class);
         Route::apiResource('penerimaanstokheader', PenerimaanStokHeaderController::class);
+        Route::apiResource('penerimaanstokdetail', PenerimaanStokDetailController::class);
 
         Route::get('pengeluaranstok/field_length', [PengeluaranStokController::class,'fieldLength']);
         // Route::get('pengeluaranstok/export', [PengeluaranStokController::class,'export']);
         Route::apiResource('pengeluaranstok', PengeluaranStokController::class);
+        Route::apiResource('pengeluaranstokheader', PengeluaranStokHeaderController::class);
 
         Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
         Route::get('piutangheader/no_bukti', [PiutangHeaderController::class, 'getNoBukti']);

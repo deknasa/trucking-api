@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class PenerimaanStokHeader extends MyModel
 {
@@ -65,9 +66,16 @@ class PenerimaanStokHeader extends MyModel
             "$this->table.hutang_nobukti",
             "dari.gudang as gudangdari",
             "ke.gudang as gudangke",
+            "$this->table.statusformat",
             "$this->table.coa",
             "$this->table.keterangan",
             "$this->table.modifiedby",
+            "penerimaanstokheader.gudang_id",
+            "penerimaanstokheader.gudangdari_id",
+            "penerimaanstokheader.gudangke_id",
+            "penerimaanstokheader.penerimaanstok_id",
+            "penerimaanstokheader.trado_id",
+            "penerimaanstokheader.supplier_id",
         );
     }
 
@@ -96,22 +104,49 @@ class PenerimaanStokHeader extends MyModel
             $table->unsignedBigInteger('statusformat')->default(0);   
             $table->string('modifiedby',50)->default('');
             $table->increments('position');
+            $table->dateTime('created_at')->default('1900/1/1');
+            $table->dateTime('updated_at')->default('1900/1/1');
         });
 
         $query = DB::table($modelTable);
-        $query = $this->selectColumns($query);
+        $query = $this->select('id',
+        'nobukti',
+        'tglbukti',
+        'penerimaanstok_id',
+        'penerimaanstok_nobukti',
+        'pengeluaranstok_nobukti',
+        'supplier_id',
+        'nobon',
+        'hutang_nobukti',
+        'trado_id',
+        'gudang_id',
+        'gudangdari_id',
+        'gudangke_id',
+        'coa',
+        'keterangan',
+        'statusformat',
+        'modifiedby');
         $query = $this->sort($query);
         $models = $this->filter($query);
         
         DB::table($temp)->insertUsing([
             'id',
-            'grp',
-            'subgrp',
-            'text',
-            'memo',
-            'created_at',
-            'updated_at',
-            'modifiedby'
+            'nobukti',
+            'tglbukti',
+            'penerimaanstok_id',
+            'penerimaanstok_nobukti',
+            'pengeluaranstok_nobukti',
+            'supplier_id',
+            'nobon',
+            'hutang_nobukti',
+            'trado_id',
+            'gudang_id',
+            'gudangdari_id',
+            'gudangke_id',
+            'coa',
+            'keterangan',
+            'statusformat',
+            'modifiedby',
         ], $models);
 
         return  $temp;
@@ -175,7 +210,7 @@ class PenerimaanStokHeader extends MyModel
                             case 'penerimaanstok':
                                 $query = $query->where('penerimaanstok.kodepenerimaan', 'LIKE', "%$filters[data]%");
                                 break;
-                            case 'gudang':
+                            case 'gudangs':
                                 $query = $query->orWhere('gudangs.gudang', 'LIKE', "%$filters[data]%");
                                 break;
                             case 'trado':

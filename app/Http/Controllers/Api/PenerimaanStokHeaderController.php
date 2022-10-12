@@ -4,10 +4,14 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\PenerimaanStokHeader;
+use App\Models\PenerimaanStokDetail;
 
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Http\Requests\StorePenerimaanStokHeaderRequest;
 use App\Http\Requests\UpdatePenerimaanStokHeaderRequest;
+use App\Models\Parameter;
+
+use App\Http\Requests\StorePenerimaanStokDetailRequest;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -50,9 +54,149 @@ class PenerimaanStokHeaderController extends Controller
      */
     public function store(StorePenerimaanStokHeaderRequest $request)
     {
-        //
-    }
+        DB::beginTransaction();
 
+        try {
+            
+            $idpenerimaan = $request->penerimaanstok_id;
+            $fetchFormat =  DB::table('penerimaanstok')
+                ->where('id', $idpenerimaan)
+                ->first();
+            // dd($fetchFormat);
+            $statusformat = $fetchFormat->statusformat;
+
+            $fetchGrp = Parameter::where('id', $statusformat)->first();
+
+            $format = DB::table('parameter')
+                ->where('grp', $fetchGrp->grp)
+                ->where('subgrp', $fetchGrp->subgrp)
+                ->first();
+            $content = new Request();
+            $content['group'] = $fetchGrp->grp;
+            $content['subgroup'] = $fetchGrp->subgrp;
+            $content['table'] = 'penerimaanstokheader';
+            $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
+
+            /* Store header */
+            $penerimaanStokHeader = new PenerimaanStokHeader();
+
+            $penerimaanStokHeader->tglbukti          = date('Y-m-d', strtotime($request->tglbukti));
+            $penerimaanStokHeader->penerimaanstok_nobukti  = ($request->penerimaanstok_nobukti == null) ?"" :$request->penerimaanstok_nobukti;
+            $penerimaanStokHeader->pengeluaranstok_nobukti = ($request->pengeluaranstok_nobukti == null) ?"" :$request->pengeluaranstok_nobukti;
+            $penerimaanStokHeader->nobon             = ($request->nobon == null) ?"" :$request->nobon;
+            $penerimaanStokHeader->hutang_nobukti    = ($request->hutang_nobukti == null) ?"" :$request->hutang_nobukti;
+            $penerimaanStokHeader->keterangan        = ($request->keterangan == null) ?"" :$request->keterangan;
+            $penerimaanStokHeader->coa               = ($request->coa == null) ?"" :$request->coa;
+            $penerimaanStokHeader->statusformat      = ($request->statusformat == null) ?"" :$request->statusformat;
+            $penerimaanStokHeader->penerimaanstok_id = ($request->penerimaanstok_id == null) ?"" :$request->penerimaanstok_id;
+            $penerimaanStokHeader->gudang_id         = ($request->gudang_id == null) ?"" :$request->gudang_id;
+            $penerimaanStokHeader->trado_id          = ($request->trado_id == null) ?"" :$request->trado_id;
+            $penerimaanStokHeader->supplier_id         = ($request->supplier_id == null) ?"" :$request->supplier_id;
+            $penerimaanStokHeader->gudangdari_id     = ($request->gudangdari_id == null) ?"" :$request->gudangdari_id;
+            $penerimaanStokHeader->gudangke_id       = ($request->gudangke_id == null) ?"" :$request->gudangke_id;
+            $penerimaanStokHeader->modifiedby        = auth('api')->user()->name;
+            $request->sortname                 = $request->sortname ?? 'id';
+            $request->sortorder                = $request->sortorder ?? 'asc';
+            TOP:
+            $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
+            $penerimaanStokHeader->nobukti = $nobukti;
+
+            if ($penerimaanStokHeader->save()) {
+                $logTrail = [
+                    'namatabel' => strtoupper($penerimaanStokHeader->getTable()),
+                    'postingdari' => 'ENTRY PENERIMAAN STOK HEADER',
+                    'idtrans' => $penerimaanStokHeader->id,
+                    'nobuktitrans' => $penerimaanStokHeader->id,
+                    'aksi' => 'ENTRY',
+                    'datajson' => $penerimaanStokHeader->toArray(),
+                    'modifiedby' => $penerimaanStokHeader->modifiedby
+                ];
+
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+                
+                /* Delete existing detail */
+                // $penerimaanStokHeader->pengeluaranDetail()->delete();
+                // JurnalUmumDetail::where('nobukti', $penerimaanStokHeader->nobukti)->delete();
+                // JurnalUmumHeader::where('nobukti', $penerimaanStokHeader->nobukti)->delete();
+                
+                /* Store detail */
+                $detaillog = [];
+    
+                for ($i=0; $i <count($request->detail_harga) ; $i++) { 
+                    $datadetail = [
+                        "penerimaanstokheader_id" =>$penerimaanStokHeader->id,
+                        "nobukti" => $penerimaanStokHeader->nobukti,
+                        "stok_id" => $request->detail_stok_id[$i],
+                        "qty" => $request->detail_qty[$i],
+                        "harga" => $request->detail_harga[$i],
+                        "persentasediscount" => $request->detail_persentasediscount[$i],
+                        "vulkanisirke" => $request->detail_vulkanisirke[$i],
+                        "detail_keterangan" => $request->detail_keterangan[$i],
+                    ];
+
+                    $data = new StorePenerimaanStokDetailRequest($datadetail);
+                    $penerimaanStokDetail = app(PenerimaanStokDetailController::class)->store($data);
+                    
+                    if ($penerimaanStokDetail['error']) {
+                        return response($penerimaanStokDetail, 422);
+                    } else {
+                        $iddetail = $penerimaanStokDetail['id'];
+                        $tabeldetail = $penerimaanStokDetail['tabel'];
+                    }
+
+                    $datadetaillog = [
+                        "penerimaanstokheader_id" =>$penerimaanStokHeader->id,
+                        "nobukti" => $penerimaanStokHeader->nobukti,
+                        "stok" => $request->detail_stok[$i],
+                        "qty" => $request->detail_qty[$i],
+                        "harga" => $request->detail_harga[$i],
+                        "persentasediscount" => $request->detail_persentasediscount[$i],
+                        "vulkanisirke" => $request->detail_vulkanisirke[$i],
+                        "keterangan" => $request->detail_keterangan[$i],
+                        'modifiedby' => auth('api')->user()->name,
+                        'created_at' => date('d-m-Y H:i:s', strtotime($penerimaanStokHeader->created_at)),
+                        'updated_at' => date('d-m-Y H:i:s', strtotime($penerimaanStokHeader->updated_at)),
+                    ];
+                    $detaillog[] = $datadetaillog;
+    
+                }
+                $datalogtrail = [
+                    'namatabel' => $tabeldetail,
+                    'postingdari' => 'ENTRY PENERIMAAN STOK HEADER',
+                    'idtrans' =>  $iddetail,
+                    'nobuktitrans' => $penerimaanStokHeader->nobukti,
+                    'aksi' => 'ENTRY',
+                    'datajson' => $detaillog,
+                    'modifiedby' => auth('api')->user()->name,
+                ];
+    
+                $data = new StoreLogTrailRequest($datalogtrail);
+                app(LogTrailController::class)->store($data);
+                
+                DB::commit();
+            }
+
+            /* Set position and page */
+            $selected = $this->getPosition($penerimaanStokHeader, $penerimaanStokHeader->getTable());
+            $penerimaanStokHeader->position = $selected->position;
+            $penerimaanStokHeader->page = ceil($penerimaanStokHeader->position / ($request->limit ?? 10));
+
+            if (isset($request->limit)) {
+                $penerimaanStokHeader->page = ceil($penerimaanStokHeader->position / $request->limit);
+            }
+
+            return response([
+                'message' => 'Berhasil disimpan',
+                'data' => $penerimaanStokHeader
+            ], 201);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+
+            throw $th;
+        } 
+    }
+    
     /**
      * Display the specified resource.
      *
@@ -64,18 +208,8 @@ class PenerimaanStokHeaderController extends Controller
         return response([
             'status' => true,
             'data' => $penerimaanStokHeader->find($id),
+            'detail' => PenerimaanStokDetail::getAll($id),
         ]);
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\PenerimaanStokHeader  $penerimaanStokHeader
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(PenerimaanStokHeader $penerimaanStokHeader)
-    {
-        //
     }
 
     /**
@@ -85,9 +219,124 @@ class PenerimaanStokHeaderController extends Controller
      * @param  \App\Models\PenerimaanStokHeader  $penerimaanStokHeader
      * @return \Illuminate\Http\Response
      */
-    public function update(UpdatePenerimaanStokHeaderRequest $request, PenerimaanStokHeader $penerimaanStokHeader)
+    public function update(UpdatePenerimaanStokHeaderRequest $request, PenerimaanStokHeader $penerimaanStokHeader,$id)
     {
-        //
+        try {
+
+            // $penerimaantruckingheader = PenerimaanTruckingHeader::findOrFail($id);
+
+            /* Store header */
+            $penerimaanStokHeader = PenerimaanStokHeader::findOrFail($id);
+            
+            $penerimaanStokHeader->tglbukti          = date('Y-m-d', strtotime($request->tglbukti));
+            $penerimaanStokHeader->penerimaanstok_nobukti  = ($request->penerimaanstok_nobukti == null) ?"" :$request->penerimaanstok_nobukti;
+            $penerimaanStokHeader->pengeluaranstok_nobukti = ($request->pengeluaranstok_nobukti == null) ?"" :$request->pengeluaranstok_nobukti;
+            $penerimaanStokHeader->nobon             = ($request->nobon == null) ?"" :$request->nobon;
+            $penerimaanStokHeader->hutang_nobukti    = ($request->hutang_nobukti == null) ?"" :$request->hutang_nobukti;
+            $penerimaanStokHeader->keterangan        = ($request->keterangan == null) ?"" :$request->keterangan;
+            $penerimaanStokHeader->coa               = ($request->coa == null) ?"" :$request->coa;
+            $penerimaanStokHeader->statusformat      = ($request->statusformat == null) ?"" :$request->statusformat;
+            $penerimaanStokHeader->penerimaanstok_id = ($request->penerimaanstok_id == null) ?"" :$request->penerimaanstok_id;
+            $penerimaanStokHeader->gudang_id         = ($request->gudang_id == null) ?"" :$request->gudang_id;
+            $penerimaanStokHeader->trado_id          = ($request->trado_id == null) ?"" :$request->trado_id;
+            $penerimaanStokHeader->supplier_id         = ($request->supplier_id == null) ?"" :$request->supplier_id;
+            $penerimaanStokHeader->gudangdari_id     = ($request->gudangdari_id == null) ?"" :$request->gudangdari_id;
+            $penerimaanStokHeader->gudangke_id       = ($request->gudangke_id == null) ?"" :$request->gudangke_id;
+            $penerimaanStokHeader->modifiedby        = auth('api')->user()->name;
+            $request->sortname                 = $request->sortname ?? 'id';
+            $request->sortorder                = $request->sortorder ?? 'asc';
+            // return json_encode($request);
+            if ($penerimaanStokHeader->save()) {
+                $logTrail = [
+                    'namatabel' => strtoupper($penerimaanStokHeader->getTable()),
+                    'postingdari' => 'ENTRY PENERIMAAN STOK HEADER',
+                    'idtrans' => $penerimaanStokHeader->id,
+                    'nobuktitrans' => $penerimaanStokHeader->id,
+                    'aksi' => 'ENTRY',
+                    'datajson' => $penerimaanStokHeader->toArray(),
+                    'modifiedby' => $penerimaanStokHeader->modifiedby
+                ];
+
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+                
+                /* Delete existing detail */
+                $penerimaanStokDetail = PenerimaanStokDetail::where('penerimaanstokheader_id',$id)->delete();
+                /* Store detail */
+                $detaillog = [];
+    
+                for ($i=0; $i <count($request->detail_harga) ; $i++) { 
+                    $datadetail = [
+                        "penerimaanstokheader_id" =>$penerimaanStokHeader->id,
+                        "nobukti" => $penerimaanStokHeader->nobukti,
+                        "stok_id" => $request->detail_stok_id[$i],
+                        "qty" => $request->detail_qty[$i],
+                        "harga" => $request->detail_harga[$i],
+                        "persentasediscount" => $request->detail_persentasediscount[$i],
+                        "vulkanisirke" => $request->detail_vulkanisirke[$i],
+                        "detail_keterangan" => $request->detail_keterangan[$i],
+                    ];
+
+                    $data = new StorePenerimaanStokDetailRequest($datadetail);
+                    $penerimaanStokDetail = app(PenerimaanStokDetailController::class)->store($data);
+                    
+                    if ($penerimaanStokDetail['error']) {
+                        return response($penerimaanStokDetail, 422);
+                    } else {
+                        $iddetail = $penerimaanStokDetail['id'];
+                        $tabeldetail = $penerimaanStokDetail['tabel'];
+                    }
+
+                    $datadetaillog = [
+                        "penerimaanstokheader_id" =>$penerimaanStokHeader->id,
+                        "nobukti" => $penerimaanStokHeader->nobukti,
+                        "stok" => $request->detail_stok[$i],
+                        "qty" => $request->detail_qty[$i],
+                        "harga" => $request->detail_harga[$i],
+                        "persentasediscount" => $request->detail_persentasediscount[$i],
+                        "vulkanisirke" => $request->detail_vulkanisirke[$i],
+                        "keterangan" => $request->detail_keterangan[$i],
+                        'modifiedby' => auth('api')->user()->name,
+                        'created_at' => date('d-m-Y H:i:s', strtotime($penerimaanStokHeader->created_at)),
+                        'updated_at' => date('d-m-Y H:i:s', strtotime($penerimaanStokHeader->updated_at)),
+                    ];
+                    $detaillog[] = $datadetaillog;
+    
+                }
+                $datalogtrail = [
+                    'namatabel' => $tabeldetail,
+                    'postingdari' => 'ENTRY PENERIMAAN STOK HEADER',
+                    'idtrans' =>  $iddetail,
+                    'nobuktitrans' => $penerimaanStokHeader->nobukti,
+                    'aksi' => 'ENTRY',
+                    'datajson' => $detaillog,
+                    'modifiedby' => auth('api')->user()->name,
+                ];
+    
+                $data = new StoreLogTrailRequest($datalogtrail);
+                app(LogTrailController::class)->store($data);
+                
+                DB::commit();
+            }
+
+            /* Set position and page */
+            $selected = $this->getPosition($penerimaanStokHeader, $penerimaanStokHeader->getTable());
+            $penerimaanStokHeader->position = $selected->position;
+            $penerimaanStokHeader->page = ceil($penerimaanStokHeader->position / ($request->limit ?? 10));
+
+            if (isset($request->limit)) {
+                $penerimaanStokHeader->page = ceil($penerimaanStokHeader->position / $request->limit);
+            }
+
+            return response([
+                'message' => 'Berhasil disimpan',
+                'data' => $penerimaanStokHeader
+            ], 201);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+
+            throw $th;
+        } 
     }
 
     /**
@@ -96,8 +345,46 @@ class PenerimaanStokHeaderController extends Controller
      * @param  \App\Models\PenerimaanStokHeader  $penerimaanStokHeader
      * @return \Illuminate\Http\Response
      */
-    public function destroy(PenerimaanStokHeader $penerimaanStokHeader)
+    public function destroy(PenerimaanStokHeader $penerimaanStokHeader,$id)
     {
-        //
+        DB::beginTransaction();
+
+        $penerimaanStokHeader = PenerimaanStokHeader::where('id',$id)->first();
+        $delete = $penerimaanStokHeader->delete();
+
+        if ($delete) {
+            $logTrail = [
+                'namatabel' => strtoupper($penerimaanStokHeader->getTable()),
+                'postingdari' => 'DELETE PENERIMAAN STOK',
+                'idtrans' => $penerimaanStokHeader->id,
+                'nobuktitrans' => $penerimaanStokHeader->id,
+                'aksi' => 'DELETE',
+                'datajson' => $penerimaanStokHeader->toArray(),
+                'modifiedby' => $penerimaanStokHeader->modifiedby
+            ];
+
+            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+            app(LogTrailController::class)->store($validatedLogTrail);
+
+            DB::commit();
+
+            $selected = $this->getPosition($penerimaanStokHeader, $penerimaanStokHeader->getTable(), true);
+            $penerimaanStokHeader->position = $selected->position;
+            $penerimaanStokHeader->id = $selected->id;
+            $penerimaanStokHeader->page = ceil($penerimaanStokHeader->position / ($request->limit ?? 10));
+
+            return response([
+                'status' => true,
+                'message' => 'Berhasil dihapus',
+                'data' => $penerimaanStokHeader
+            ]);
+        } else {
+            DB::rollBack();
+
+            return response([
+                'status' => false,
+                'message' => 'Gagal dihapus'
+            ]);
+        }
     }
 }

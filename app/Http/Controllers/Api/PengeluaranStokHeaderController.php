@@ -1,10 +1,16 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
 use App\Models\PengeluaranStokHeader;
+
 use App\Http\Requests\StorePengeluaranStokHeaderRequest;
 use App\Http\Requests\UpdatePengeluaranStokHeaderRequest;
+
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class PengeluaranStokHeaderController extends Controller
 {
@@ -15,7 +21,14 @@ class PengeluaranStokHeaderController extends Controller
      */
     public function index()
     {
-        //
+        $pengeluaranStokHeader = new PengeluaranStokHeader();
+        return response([
+            'data' => $pengeluaranStokHeader->get(),
+            'attributes' => [
+                'totalRows' => $pengeluaranStokHeader->totalRows,
+                'totalPages' => $pengeluaranStokHeader->totalPages
+            ]
+        ]);
     }
 
     /**
