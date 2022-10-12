@@ -24,6 +24,7 @@ class DatabaseSeeder extends Seeder
             AclSeeder::class,
             UserAclSeeder::class,
             UserRoleSeeder::class,
+            AgenSeeder::class,
             ZonaSeeder::class,
             BankSeeder::class,
             ErrorSeeder::class,
@@ -31,7 +32,6 @@ class DatabaseSeeder extends Seeder
             TradoSeeder::class,
             ContainerSeeder::class,
             JenisEmklSeeder::class,
-
             JenisTradoSeeder::class,
             JenisOrderSeeder::class,
             KelompokSeeder::class,
@@ -59,10 +59,13 @@ class DatabaseSeeder extends Seeder
             AbsensiSupirApprovalHeaderSeeder::class,
             AbsensiSupirApprovalDetailSeeder::class,
             SuratPengantarSeeder::class,
-
-
-
-            
+            PenerimaanStokSeeder::class,
+            PengeluaranStokSeeder::class,
+            PenerimaanStokHeaderSeeder::class,
+            PenerimaanStokDetailSeeder::class,
+            PengeluaranStokHeaderSeeder::class,
+            PengeluaranStokDetailSeeder::class,
+            PengeluaranStokDetailRincianSeeder::class,
         ]);
     }
 }

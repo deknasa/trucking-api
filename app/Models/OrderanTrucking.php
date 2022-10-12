@@ -230,6 +230,8 @@ class OrderanTrucking extends MyModel
                             $query = $query->where('container.keterangan', 'LIKE', "%$filters[data]%");
                         } elseif($filters['field'] == 'tarif_id') {
                             $query = $query->where('tarif.tujuan', 'LIKE', "%$filters[data]%");
+                        } elseif($filters['field'] == 'jenisorder_id') {
+                            $query = $query->where('jenisorder.keterangan', 'LIKE', "%$filters[data]%");
                         } else {
                             $query = $query->where($this->table . '.' .$filters['field'], 'LIKE', "%$filters[data]%");
                         }
@@ -250,6 +252,8 @@ class OrderanTrucking extends MyModel
                             $query = $query->orWhere('container.keterangan', 'LIKE', "%$filters[data]%");
                         } elseif($filters['field'] == 'tarif_id') {
                             $query = $query->orWhere('tarif.tujuan', 'LIKE', "%$filters[data]%");
+                        } elseif($filters['field'] == 'jenisorder_id') {
+                            $query = $query->orWhere('jenisorder.keterangan', 'LIKE', "%$filters[data]%");
                         } else {
                             $query = $query->orWhere($this->table . '.' .$filters['field'], 'LIKE', "%$filters[data]%");
                         }

@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
 use App\Models\Stok;
 use App\Http\Requests\StoreStokRequest;
 use App\Http\Requests\UpdateStokRequest;
@@ -15,7 +16,15 @@ class StokController extends Controller
      */
     public function index()
     {
-        //
+        $stok = new stok();
+
+        return response([
+            'data' => $stok->get(),
+            'attributes' => [
+                'totalRows' => $stok->totalRows,
+                'totalPages' => $stok->totalPages
+            ]
+        ]);
     }
 
     /**

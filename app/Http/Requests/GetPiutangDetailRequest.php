@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class StorePenerimaanStokDetailRequest extends FormRequest
+class GetPiutangDetailRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,7 +24,7 @@ class StorePenerimaanStokDetailRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'piutang_id' => 'required|exists:piutangheader,id'
         ];
     }
 }

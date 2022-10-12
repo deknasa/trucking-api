@@ -28,7 +28,7 @@ class CreatePengeluaranstokheaderTable extends Migration
             $table->unsignedBigInteger('supplier_id')->default('0');
             $table->string('pengeluaranstok_nobukti',50)->default('');
             $table->string('penerimaanstok_nobukti',50)->default('');
-            $table->string('servicein_nobukti',50)->unique();
+            $table->string('servicein_nobukti',50)->default('');
             $table->unsignedBigInteger('kerusakan_id')->default('0');
             $table->unsignedBigInteger('statusformat')->default(0);  
             $table->string('modifiedby',50)->default('');

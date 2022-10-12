@@ -133,9 +133,9 @@ class Bank extends MyModel
                         if ($filters['field'] == 'statusaktif') {
                             $query = $query->where('parameter.text', '=', $filters['data']);
                         } else if ($filters['field'] == 'statusformatpenerimaan') {
-                            $query = $query->where('statusformatpenerimaan.text', '=', $filters['data']);
+                            $query = $query->where('statusformatpenerimaan.text', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'statusformatpengeluaran') {
-                            $query = $query->where('statusformatpengeluaran.text', '=', $filters['data']);
+                            $query = $query->where('statusformatpengeluaran.text', 'LIKE', "%$filters[data]%");
                         } else {
                             $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
@@ -147,9 +147,9 @@ class Bank extends MyModel
                         if ($filters['field'] == 'statusaktif') {
                             $query = $query->orWhere('parameter.text', '=', $filters['data']);
                         } else if ($filters['field'] == 'statusformatpenerimaan') {
-                            $query = $query->orWhere('statusformatpenerimaan.text', '=', $filters['data']);
+                            $query = $query->orWhere('statusformatpenerimaan.text', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'statusformatpengeluaran') {
-                            $query = $query->orWhere('statusformatpengeluaran.text', '=', $filters['data']);
+                            $query = $query->orWhere('statusformatpengeluaran.text', 'LIKE', "%$filters[data]%");
                         } else {
                             $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }

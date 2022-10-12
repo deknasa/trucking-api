@@ -19,5 +19,6 @@ class KerusakanSeeder extends Seeder
 
         kerusakan::create([ 'keterangan' => 'RUSAK PARAH', 'statusaktif' => '1', 'modifiedby' => 'ADMIN',]);
         kerusakan::create([ 'keterangan' => 'OPNAME', 'statusaktif' => '1', 'modifiedby' => 'ADMIN',]);
+        kerusakan::create([ 'keterangan' => 'SERVICE RUTIN', 'statusaktif' => '1', 'modifiedby' => 'ADMIN',]);
     }
 }

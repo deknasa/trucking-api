@@ -28,6 +28,7 @@ class StorePenerimaanStokRequest extends FormRequest
             "keterangan" => "required",
             "coa"=>"required",
             "statusformat" => "required",
+            "penerimaanstok_id"=>'id',
             "statushitungstok" => "required"
         ];
     }

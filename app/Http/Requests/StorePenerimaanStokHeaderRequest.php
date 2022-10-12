@@ -13,7 +13,7 @@ class StorePenerimaanStokHeaderRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +24,12 @@ class StorePenerimaanStokHeaderRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            "tglbukti"=> "required", 
+            "keterangan"=> "required", 
+            "statusformat" => "required",
+            "penerimaanstok" => "required",
+            "penerimaanstok_id" => "required",
+            "modifiedby"=> "string", 
         ];
     }
 }

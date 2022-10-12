@@ -23,6 +23,8 @@ class CreatePenerimaanstokheaderTable extends Migration
             $table->unsignedBigInteger('penerimaanstok_id')->default(0);
             $table->string('penerimaanstok_nobukti',50)->default('');
             $table->string('pengeluaranstok_nobukti',50)->default('');
+            $table->string('nobuktisaldo',50)->default('');
+            $table->date('tglbuktisaldo')->default('1900/1/1');            
             $table->unsignedBigInteger('supplier_id')->default(0);            
             $table->string('nobon', 50)->default('');
             $table->string('hutang_nobukti', 50)->default('');
