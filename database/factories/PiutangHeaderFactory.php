@@ -17,12 +17,12 @@ class PiutangHeaderFactory extends Factory
     public function definition()
     {
         return [
-            'nobukti' => 'TST 002',
+            'nobukti' => $this->faker->word(),
             'tglbukti' => $this->faker->date(),
             'keterangan' => $this->faker->sentence(),
             'postingdari' => $this->faker->randomElement(Bank::all()),
             'agen_id' => $this->faker->randomElement(Agen::all()),
-            'invoice_nobukti' => 'INV TST 002',
+            'invoice_nobukti' => $this->faker->word(),
             'statusformat' => $this->faker->randomElement(Parameter::where('grp', 'PIUTANG BUKTI')->get())
         ];
     }

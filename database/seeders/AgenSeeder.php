@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Agen;
-
+use App\Models\Parameter;
 use Illuminate\Database\Seeder;
 
 class AgenSeeder extends Seeder
@@ -19,7 +19,8 @@ class AgenSeeder extends Seeder
             'kodeagen' => 'BSL',
             'namaagen' => 'PT. BERDIKARI SBU LOGISTIC',
             'keterangan' => '',
-            'statusaktif' => 1,
+            'statusaktif' => Parameter::where('grp', 'STATUS AKTIF')->where('text', 'AKTIF')->first()->id,
+            'statustas' => Parameter::where('grp', 'STATUS TAS')->first()->id,
             'namaperusahaan' => 'PT.BERDIKARI SBU LOGISTIC',
             'alamat' => 'JL.DELI NO.2 MEDAN',
             'notelp' => '061-694253',
@@ -37,7 +38,8 @@ class AgenSeeder extends Seeder
             'kodeagen' => 'TAS',
             'namaagen' => 'TRANSPORINDO',
             'keterangan' => '',
-            'statusaktif' => 1,
+            'statusaktif' => Parameter::where('grp', 'STATUS AKTIF')->where('text', 'AKTIF')->first()->id,
+            'statustas' => Parameter::where('grp', 'STATUS TAS')->first()->id,
             'namaperusahaan' => 'PT. TRANSPORINDO AGUNG SEJAHTERA',
             'alamat' => 'JL. PULAU MENJANGAN NO 2',
             'notelp' => '061-6618850',

@@ -26,6 +26,10 @@ class AbsensiSupirTest extends TestCase
 
         $this->user = User::factory()->create();
         $this->existingAbsensiSupir = AbsensiSupirHeader::factory()->create();
+
+        Trado::factory()->count(3)->create();
+        Supir::factory()->count(3)->create();
+        AbsenTrado::factory()->count(3)->create();
     }
 
     public function test_authenticate_get()

@@ -22,6 +22,8 @@ class PiutangDetailTest extends TestCase
         parent::setUp();
 
         $this->user = User::factory()->create();
+
+        PiutangHeader::factory()->count(3)->create();
     }
 
     public function test_authenticate_get()

@@ -34,7 +34,7 @@ class CreateSupirTable extends Migration
             $table->string('noktp', 30)->default('');
             $table->string('nokk', 30)->default('');
             $table->integer('statusadaupdategambar')->length(11)->default(0);
-            $table->integer('statuslluarkota')->length(11)->default(0);
+            $table->integer('statusluarkota')->length(11)->default(0);
             $table->integer('statuszonatertentu')->length(11)->default(0);
             $table->unsignedBigInteger('zona_id')->default(0);
             $table->double('angsuranpinjaman', 15,2)->default(0);
