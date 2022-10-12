@@ -65,13 +65,12 @@ class ServiceOutHeaderController extends Controller
             $serviceout->keterangan = $request->keterangan;
             $serviceout->statusformat =  $format->id;
             $serviceout->modifiedby = auth('api')->user()->name;
+
             TOP:
             $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
             $serviceout->nobukti = $nobukti;
-
             try {
                 $serviceout->save();
-                DB::commit();
             } catch (\Exception $e) {
                 dd($e->getMessage());
                 $errorCode = @$e->errorInfo[1];
@@ -95,52 +94,50 @@ class ServiceOutHeaderController extends Controller
 
             /* Store detail */
             $detaillog = [];
-            // for ($i = 0; $i < count($request->serviceout_nobukti); $i++) {
-            $datadetail = [
-                'serviceout_id' => $serviceout->id,
-                'nobukti' => $serviceout->nobukti,
-                'servicein_nobukti' => $request->servicein_nobukti,
-                'keterangan' => $request->keterangan_detail,
-                'modifiedby' => $serviceout->modifiedby,
-            ];
+            for ($i = 0; $i < count($request->keterangan_detail); $i++) {
+                $datadetail = [
+                    'serviceout_id' => $serviceout->id,
+                    'nobukti' => $serviceout->nobukti,
+                    'servicein_nobukti' => $request->servicein_nobukti[$i],
+                    'keterangan' => $request->keterangan_detail[$i],
+                    'modifiedby' => $serviceout->modifiedby,
+                ];
+                $data = new StoreServiceOutDetailRequest($datadetail);
+                $datadetails = app(ServiceOutDetailController::class)->store($data);
 
-            $data = new StoreServiceOutDetailRequest($datadetail);
+                if ($datadetails['error']) {
+                    return response($datadetails, 422);
+                } else {
+                    $iddetail = $datadetails['id'];
+                    $tabeldetail = $datadetails['tabel'];
+                }
 
-            $datadetails = app(ServiceOutDetailController::class)->store($data);
+                $datadetaillog = [
+                    'id' => $iddetail,
+                    'serviceout_id' => $serviceout->id,
+                    'nobukti' => $serviceout->nobukti,
+                    'servicein_nobukti' => $request->servicein_nobukti[$i],
+                    'keterangan' => $request->keterangan_detail[$i],
+                    'modifiedby' => $serviceout->modifiedby,
+                    'created_at' => date('d-m-Y H:i:s', strtotime($serviceout->created_at)),
+                    'updated_at' => date('d-m-Y H:i:s', strtotime($serviceout->updated_at)),
+                ];
+                $detaillog[] = $datadetaillog;
+                // }
 
-            if ($datadetails['error']) {
-                return response($datadetails, 422);
-            } else {
-                $iddetail = $datadetails['id'];
-                $tabeldetail = $datadetails['tabel'];
+                $datalogtrail = [
+                    'namatabel' => $tabeldetail,
+                    'postingdari' => 'ENTRY SERVICE OUT',
+                    'idtrans' =>  $iddetail,
+                    'nobuktitrans' => $serviceout->nobukti,
+                    'aksi' => 'ENTRY',
+                    'datajson' => $detaillog,
+                    'modifiedby' => $serviceout->modifiedby,
+                ];
+
+                $data = new StoreLogTrailRequest($datalogtrail);
+                app(LogTrailController::class)->store($data);
             }
-
-            $datadetaillog = [
-                'id' => $iddetail,
-                'serviceout_id' => $serviceout->id,
-                'nobukti' => $serviceout->nobukti,
-                'servicein_nobukti' => $request->servicein_nobukti,
-                'keterangan' => $request->keterangan_detail,
-                'modifiedby' => $serviceout->modifiedby,
-                'created_at' => date('d-m-Y H:i:s', strtotime($serviceout->created_at)),
-                'updated_at' => date('d-m-Y H:i:s', strtotime($serviceout->updated_at)),
-            ];
-            $detaillog[] = $datadetaillog;
-            // }
-
-            $datalogtrail = [
-                'namatabel' => $tabeldetail,
-                'postingdari' => 'ENTRY SERVICE OUT',
-                'idtrans' =>  $iddetail,
-                'nobuktitrans' => $serviceout->nobukti,
-                'aksi' => 'ENTRY',
-                'datajson' => $detaillog,
-                'modifiedby' => $request->modifiedby,
-            ];
-
-            $data = new StoreLogTrailRequest($datalogtrail);
-            app(LogTrailController::class)->store($data);
-
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
             DB::commit();
@@ -158,7 +155,9 @@ class ServiceOutHeaderController extends Controller
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
+            return response($th->getMessage());
         }
+
         return response($serviceout->serviceoutdetail());
     }
 
@@ -188,16 +187,18 @@ class ServiceOutHeaderController extends Controller
 
         try {
             $serviceout = ServiceOutHeader::findOrFail($id);
+
             $serviceout->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $serviceout->trado_id = $request->trado_id;
             $serviceout->tglkeluar = date('Y-m-d', strtotime($request->tglkeluar));
             $serviceout->keterangan = $request->keterangan;
             $serviceout->modifiedby = auth('api')->user()->name;
 
+
             if ($serviceout->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($serviceout->getTable()),
-                    'postingdari' => 'EDIT SERVICE OUT HEADER',
+                    'postingdari' => 'UPDATE SERVICE OUT HEADER',
                     'idtrans' => $serviceout->id,
                     'nobuktitrans' => $serviceout->nobukti,
                     'aksi' => 'ENTRY',
@@ -205,67 +206,60 @@ class ServiceOutHeaderController extends Controller
                     'modifiedby' => $serviceout->modifiedby
                 ];
 
-
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
                 ServiceOutDetail::where('serviceout_id', $id)->delete();
-
                 /* Store detail */
                 $detaillog = [];
-                // for ($i = 0; $i < count($request->servicein_nobukti); $i++) {
-                $datadetail = [
-                    'serviceout_id' => $serviceout->id,
-                    'nobukti' => $serviceout->nobukti,
-                    'servicein_nobukti' => $request->servicein_nobukti,
-                    'keterangan' => $request->keterangan_detail,
-                    'modifiedby' => $serviceout->modifiedby,
-                ];
+                for ($i = 0; $i < count($request->keterangan_detail); $i++) {
+                    $datadetail = [
+                        'serviceout_id' => $serviceout->id,
+                        'nobukti' => $serviceout->nobukti,
+                        'servicein_nobukti' => $request->servicein_nobukti[$i],
+                        'keterangan' => $request->keterangan_detail[$i],
+                        'modifiedby' => $serviceout->modifiedby,
+                    ];
 
+                    $data = new StoreServiceOutDetailRequest($datadetail);
+                    $datadetails = app(ServiceOutDetailController::class)->store($data);
 
-                $data = new StoreServiceOutDetailRequest($datadetail);
-                $datadetails = app(ServiceOutDetailController::class)->store($data);
+                    if ($datadetails['error']) {
+                        return response($datadetails, 422);
+                    } else {
+                        $iddetail = $datadetails['id'];
+                        $tabeldetail = $datadetails['tabel'];
+                    }
 
-                if ($datadetails['error']) {
-                    return response($datadetails, 422);
-                } else {
-                    $iddetail = $datadetails['id'];
-                    $tabeldetail = $datadetails['tabel'];
+                    $datadetaillog = [
+                        'id' => $iddetail,
+                        'serviceout_id' => $serviceout->id,
+                        'nobukti' => $serviceout->nobukti,
+                        'servicein_nobukti' => $request->servicein_nobukti[$i],
+                        'keterangan' => $request->keterangan_detail[$i],
+                        'modifiedby' => $serviceout->modifiedby,
+                        'created_at' => date('d-m-Y H:i:s', strtotime($serviceout->created_at)),
+                        'updated_at' => date('d-m-Y H:i:s', strtotime($serviceout->updated_at)),
+                    ];
+                    $detaillog[] = $datadetaillog;
                 }
-
-                $datadetaillog = [
-                    'id' => $iddetail,
-                    'serviceout_id' => $serviceout->id,
-                    'nobukti' => $serviceout->nobukti,
-                    'servicein_nobukti' => $request->servicein_nobukti,
-                    'keterangan' => $request->keterangan_detail,
-                    'modifiedby' => $serviceout->modifiedby,
-                    'created_at' => date('d-m-Y H:i:s', strtotime($serviceout->created_at)),
-                    'updated_at' => date('d-m-Y H:i:s', strtotime($serviceout->updated_at)),
-                ];
-    
-                $detaillog[] = $datadetaillog;
-                // }
 
                 $datalogtrail = [
                     'namatabel' => $tabeldetail,
-                    'postingdari' => '  EDIT SERVICE OUT',
+                    'postingdari' => 'ENTRY SERVICE OUT',
                     'idtrans' =>  $iddetail,
                     'nobuktitrans' => $serviceout->nobukti,
-                    'aksi' => 'EDIT',
+                    'aksi' => 'ENTRY',
                     'datajson' => $detaillog,
-                    'modifiedby' => $request->modifiedby,
+                    'modifiedby' => $serviceout->modifiedby,
                 ];
-    
 
                 $data = new StoreLogTrailRequest($datalogtrail);
                 app(LogTrailController::class)->store($data);
-
-                $request->sortname = $request->sortname ?? 'id';
-                $request->sortorder = $request->sortorder ?? 'asc';
             }
+            $request->sortname = $request->sortname ?? 'id';
+            $request->sortorder = $request->sortorder ?? 'asc';
             DB::commit();
-
 
             /* Set position and page */
             $selected = $this->getPosition($serviceout, $serviceout->getTable());
@@ -279,6 +273,7 @@ class ServiceOutHeaderController extends Controller
             ]);
         } catch (\Throwable $th) {
             DB::rollBack();
+            throw $th;
             return response($th->getMessage());
         }
     }

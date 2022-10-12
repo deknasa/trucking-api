@@ -54,7 +54,7 @@ class TarifController extends Controller
             $tarif->nominal = $request->nominal;
             $tarif->statusaktif = $request->statusaktif;
             $tarif->tujuanasal = $request->tujuanasal;
-            $tarif->sistemton = $request->sistemton;
+            $tarif->statussistemton = $request->sistemton;
             $tarif->kota_id = $request->kota_id;
             $tarif->zona_id = $request->zona_id;
             $tarif->nominalton = $request->nominalton;
@@ -130,7 +130,7 @@ class TarifController extends Controller
             $tarif->nominal = $request->nominal;
             $tarif->statusaktif = $request->statusaktif;
             $tarif->tujuanasal = $request->tujuanasal;
-            $tarif->sistemton = $request->sistemton;
+            $tarif->statussistemton = $request->sistemton;
             $tarif->kota_id = $request->kota_id;
             $tarif->zona_id = $request->zona_id;
             $tarif->nominalton = $request->nominalton;
@@ -214,7 +214,7 @@ class TarifController extends Controller
             $tarif->position = $selected->position;
             $tarif->id = $selected->id;
             $tarif->page = ceil($tarif->position / ($request->limit ?? 10));
-            
+
             return response([
                 'status' => true,
                 'message' => 'Berhasil dihapus',

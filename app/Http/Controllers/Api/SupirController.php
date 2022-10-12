@@ -187,11 +187,29 @@ class SupirController extends Controller
             $supir->tglterbitsim = date('Y-m-d', strtotime($request->tglterbitsim));
             $supir->modifiedby = strtoupper(auth('api')->user()->name);
             // dd($supir->getAttributes());
-            $supir->save();
+            // $supir->save();
+            // DB::commit();
 
-            $upload = $this->upload_image($request, $supir->id, 'ADD');
+            if ($supir->save()) {
 
-            DB::commit();
+                $logTrail = [
+                    'namatabel' => strtoupper($supir->getTable()),
+                    'postingdari' => 'ENTRY SUPIR',
+                    'idtrans' => $supir->id,
+                    'nobuktitrans' => $supir->id,
+                    'aksi' => 'ENTRY',
+                    'datajson' => $supir->toArray(),
+                    'modifiedby' => $supir->modifiedby
+                ];
+
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+
+                DB::commit();
+                $upload = $this->upload_image($request, $supir->id, 'ADD');
+            }
+
+
             /* Set position and page */
             // $del = 0;
             // $data = $this->getid($supir->id, $request, $del);
@@ -212,10 +230,10 @@ class SupirController extends Controller
             //     $supir->page = ceil($supir->position / $request->limit);
             // }
 
-               /* Set position and page */
-               $selected = $this->getPosition($supir, $supir->getTable());
-               $supir->position = $selected->position;
-               $supir->page = ceil($supir->position / ($request->limit ?? 10));
+            /* Set position and page */
+            $selected = $this->getPosition($supir, $supir->getTable());
+            $supir->position = $selected->position;
+            $supir->page = ceil($supir->position / ($request->limit ?? 10));
 
             return response([
                 'status' => true,
@@ -303,10 +321,10 @@ class SupirController extends Controller
             //     $supir->page = ceil($supir->position / ($request->limit ?? 10));
             // }
 
-               /* Set position and page */
-               $selected = $this->getPosition($supir, $supir->getTable());
-               $supir->position = $selected->position;
-               $supir->page = ceil($supir->position / ($request->limit ?? 10));
+            /* Set position and page */
+            $selected = $this->getPosition($supir, $supir->getTable());
+            $supir->position = $selected->position;
+            $supir->page = ceil($supir->position / ($request->limit ?? 10));
 
             return response([
                 'status' => true,

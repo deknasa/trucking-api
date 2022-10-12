@@ -26,7 +26,6 @@ class HutangBayarHeader extends MyModel
 
     public function get()
     {
-    dd('0');
 
         $this->setRequestParameters();
 
@@ -61,8 +60,6 @@ class HutangBayarHeader extends MyModel
 
     public function find($id)
     {
-
-        dd('1');
 
         $query = DB::table('hutangbayarheader')->select(
             'hutangbayarheader.id',
@@ -99,7 +96,6 @@ class HutangBayarHeader extends MyModel
 
     public function selectColumns($query)
     {//sesuaikan dengan createtemp
-    dd('2');
         return $query->select(
             DB::raw(
                 "$this->table.id,
@@ -130,8 +126,8 @@ class HutangBayarHeader extends MyModel
             $table->string('nobukti', 1000)->default('');
             $table->date('tglbukti')->default('1900/1/1');            
             $table->longText('keterangan')->default('');            
-            $table->unsignedBigInteger('bank_id')->default('0');            
-            $table->unsignedBigInteger('supplier_id')->default('0');            
+            $table->string('bank_id')->default('0');            
+            $table->string('supplier_id')->default('0');            
             $table->string('coa',50)->default('');  
 
             $table->string('modifiedby', 50)->default('');

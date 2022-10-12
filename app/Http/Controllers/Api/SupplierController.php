@@ -37,12 +37,22 @@ class SupplierController extends Controller
         ]);
     }
 
-    public function show(Supplier $supplier)
+    public function show($id)
     {
+
+        $data = Supplier::find($id);
+        // $detail = ServiceInDetail::getAll($id);
+
         return response([
             'status' => true,
-            'data' => $supplier
+            'data' => $data,
+            // 'detail' => $detail
         ]);
+
+        // return response([
+        //     'status' => true,
+        //     'data' => $supplier
+        // ]);
     }
 
     /**
@@ -66,7 +76,7 @@ class SupplierController extends Controller
             $supplier->web = $request->web;
             $supplier->namapemilik = $request->namapemilik;
             $supplier->jenisusaha = $request->jenisusaha;
-            $supplier->top = $request->top;
+            // $supplier->top = $request->top;
             $supplier->bank = $request->bank;
             $supplier->rekeningbank = $request->rekeningbank;
             $supplier->namarekening = $request->namarekening;
@@ -130,7 +140,7 @@ class SupplierController extends Controller
             $supplier->web = $request->web;
             $supplier->namapemilik = $request->namapemilik;
             $supplier->jenisusaha = $request->jenisusaha;
-            $supplier->top = $request->top;
+            // $supplier->top = $request->top;
             $supplier->bank = $request->bank;
             $supplier->rekeningbank = $request->rekeningbank;
             $supplier->namarekening = $request->namarekening;
@@ -205,7 +215,7 @@ class SupplierController extends Controller
             DB::commit();
 
             /* Set position and page */
-           $selected = $this->getPosition($supplier, $supplier->getTable(), true);
+            $selected = $this->getPosition($supplier, $supplier->getTable(), true);
             $supplier->position = $selected->position;
             $supplier->id = $selected->id;
             $supplier->page = ceil($supplier->position / ($request->limit ?? 10));
@@ -301,10 +311,10 @@ class SupplierController extends Controller
                 'label' => 'Jenis Usaha',
                 'index' => 'jenisusaha',
             ],
-            [
-                'label' => 'TOP',
-                'index' => 'top',
-            ],
+            // [
+            //     'label' => 'TOP',
+            //     'index' => 'top',
+            // ],
             [
                 'label' => 'Bank',
                 'index' => 'bank',

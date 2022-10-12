@@ -157,48 +157,5 @@ class UpahSupirRincianController extends Controller
         }        
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\UpahSupirRincian  $upahSupirRincian
-     * @return \Illuminate\Http\Response
-     */
-    public function show(UpahSupirRincian $upahSupirRincian)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\UpahSupirRincian  $upahSupirRincian
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(UpahSupirRincian $upahSupirRincian)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \App\Http\Requests\UpdateUpahSupirRincianRequest  $request
-     * @param  \App\Models\UpahSupirRincian  $upahSupirRincian
-     * @return \Illuminate\Http\Response
-     */
-    public function update(UpdateUpahSupirRincianRequest $request, UpahSupirRincian $upahSupirRincian)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\UpahSupirRincian  $upahSupirRincian
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(UpahSupirRincian $upahSupirRincian)
-    {
-        //
-    }
+  
 }

@@ -88,12 +88,11 @@ class HutangBayarDetailController extends Controller
     {
         DB::beginTransaction();
         $validator = Validator::make($request->all(), [
-            'nominal' => 'required',
+            'keterangan' => 'required'
         ], [
-            'nominal.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
-        ], [
-            'alatbayar_id' => 'hutangbayardetail',
+            'keterangan.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan
         ]);
+
         if (!$validator->passes()) {
             return [
                 'error' => true,
@@ -102,19 +101,18 @@ class HutangBayarDetailController extends Controller
         }
         try {
             $hutangbayarDetail = new HutangBayarDetail();
-            
             $hutangbayarDetail->hutangbayar_id = $request->hutangbayar_id;
             $hutangbayarDetail->nobukti = $request->nobukti;
             $hutangbayarDetail->nominal = $request->nominal;
             $hutangbayarDetail->hutang_nobukti = $request->hutang_nobukti;
             $hutangbayarDetail->cicilan = $request->cicilan;
             $hutangbayarDetail->alatbayar_id = $request->alatbayar_id;
+            $hutangbayarDetail->tglcair = date('Y-m-d', strtotime($request->tglcair));
             $hutangbayarDetail->potongan = $request->potongan;
             $hutangbayarDetail->keterangan = $request->keterangan;
             $hutangbayarDetail->modifiedby = auth('api')->user()->name;
-            
             $hutangbayarDetail->save();
-           
+
             DB::commit();
             if ($validator->passes()) {
                 return [
@@ -126,6 +124,6 @@ class HutangBayarDetailController extends Controller
         } catch (\Throwable $th) {
             throw $th;
             DB::rollBack();
-        }        
+        }
     }
 }

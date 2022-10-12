@@ -323,7 +323,7 @@ class HutangDetailController extends Controller
             $hutangdetail = new HutangDetail();
             $hutangdetail->hutang_id = $request->hutang_id;
             $hutangdetail->supplier_id = $request->supplier_id;
-            $hutangdetail->tgljatuhtempo = $request->tgljatuhtempo;
+            $hutangdetail->tgljatuhtempo = date('Y-m-d', strtotime($request->tgljatuhtempo));
             $hutangdetail->total = $request->total;
             $hutangdetail->cicilan = $request->cicilan;
             $hutangdetail->totalbayar = $request->totalbayar;

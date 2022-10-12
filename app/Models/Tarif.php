@@ -70,17 +70,17 @@ class Tarif extends MyModel
         return $query->select(
             DB::raw(
                 "$this->table.id,
-            $this->table.tujuan,
-            'container.keterangan as container_id',
-            $this->table.nominal,
-            'parameter.text as statusaktif',
+             $this->table.tujuan,
+             container.keterangan as container_id,
+             $this->table.nominal,
+             parameter.text as statusaktif,
              $this->table.tujuanasal,
              $this->table.statussistemton,
-            'kota.kodekota as kota_id',
-           'zona.zona as zona_id',
+             kota.kodekota as kota_id,
+             zona.zona as zona_id,
              $this->table.nominalton,
              $this->table.tglmulaiberlaku,
-            'p.text as statuspenyesuaianharga',
+             p.text as statuspenyesuaianharga,
              $this->table.modifiedby,
              $this->table.created_at,
              $this->table.updated_at"
@@ -101,16 +101,16 @@ class Tarif extends MyModel
         Schema::create($temp, function ($table) {
             $table->bigInteger('id')->default('0');
             $table->string('tujuan', 200)->default('');
-            $table->unsignedBigInteger('container_id')->default('0');
+            $table->string('container_id')->default('0');
             $table->double('nominal', 15, 2)->default('0');
-            $table->integer('statusaktif')->length(11)->default('0');
+            $table->string('statusaktif')->default('0');
             $table->string('tujuanasal', 300)->default('');
             $table->integer('statussistemton')->length(11)->default('0');
-            $table->unsignedBigInteger('kota_id')->default('0');
-            $table->unsignedBigInteger('zona_id')->default('0');
+            $table->string('kota_id')->default('0');
+            $table->string('zona_id')->default('0');
             $table->double('nominalton', 15, 2)->default('0');
             $table->date('tglmulaiberlaku')->default('1900/1/1');
-            $table->integer('statuspenyesuaianharga')->length(11)->default('0');
+            $table->string('statuspenyesuaianharga')->default('0');
 
             $table->string('modifiedby', 50)->default('');
             $table->dateTime('created_at')->default('1900/1/1');

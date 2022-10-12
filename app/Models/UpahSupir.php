@@ -14,7 +14,7 @@ class UpahSupir extends MyModel
     protected $table = 'upahsupir';
 
     protected $casts = [
-        'tglmulaiberlaku' => 'date:d-m-Y',
+        // 'tglmulaiberlaku' => 'date:d-m-Y',
         'created_at' => 'date:d-m-Y H:i:s',
         'updated_at' => 'date:d-m-Y H:i:s'
     ];
@@ -52,15 +52,16 @@ class UpahSupir extends MyModel
             'zona.zona as zona_id',
             'parameter.text as statusaktif',
             'upahsupir.tglmulaiberlaku',
+            'upahsupir.tglakhirberlaku',
             'param.text as statusluarkota',
             'upahsupir.modifiedby',
             'upahsupir.created_at',
-            'upahsupir.updated_at'
+            'upahsupir.updated_at',
         )
             ->join('kota as kotadari', 'kotadari.id', '=', 'upahsupir.kotadari_id')
             ->join('kota as kotasampai', 'kotasampai.id', '=', 'upahsupir.kotasampai_id')
             ->join('zona', 'zona.id', '=', 'upahsupir.zona_id')
-            ->leftJoin('parameter', 'upahsupir.statusaktif', '=', 'parameter.id')
+            ->leftJoin('parameter', 'upahsupir.statusaktif', 'parameter.id')
             ->leftJoin('parameter as param', 'upahsupir.statusluarkota', '=', 'param.id');
 
         $this->totalRows = $query->count();
@@ -75,32 +76,56 @@ class UpahSupir extends MyModel
         return $data;
     }
 
-    public function selectColumns($query)
-    { //sesuaikan dengan createtemp
-
-        return $query->select(
-            DB::raw(
-                "$this->table.id,
+    public function find($id)
+    {
+        $query = DB::table('upahsupir')->select(
+            'upahsupir.id',
             'kotadari.keterangan as kotadari_id',
             'kotasampai.keterangan as kotasampai_id',
-             $this->table.jarak
+            'upahsupir.jarak',
             'zona.zona as zona_id',
             'parameter.text as statusaktif',
-             $this->table.tglmulaiberlaku
+            'upahsupir.tglmulaiberlaku',
+            'upahsupir.tglakhirberlaku',
             'param.text as statusluarkota',
-                
-            $this->table.modifiedby,
-            $this->table.created_at,
-            $this->table.updated_at,
-            $this->table.statusformat"
-            )
-
+            'upahsupir.modifiedby',
+            'upahsupir.created_at',
+            'upahsupir.updated_at',
         )
-
             ->join('kota as kotadari', 'kotadari.id', '=', 'upahsupir.kotadari_id')
             ->join('kota as kotasampai', 'kotasampai.id', '=', 'upahsupir.kotasampai_id')
             ->join('zona', 'zona.id', '=', 'upahsupir.zona_id')
-            ->leftJoin('parameter', 'upahsupir.statusaktif', '=', 'parameter.id')
+            ->leftJoin('parameter', 'upahsupir.statusaktif', 'parameter.id')
+            ->leftJoin('parameter as param', 'upahsupir.statusluarkota', '=', 'param.id');
+
+        $data = $query->first();
+        return $data;
+    }
+
+    public function selectColumns($query)
+    { //sesuaikan dengan createtemp
+        return $query->select(
+            DB::raw(
+                "$this->table.id,
+            kotadari.keterangan as kotadari_id,
+            kotasampai.keterangan as kotasampai_id,
+             $this->table.jarak,
+            zona.zona as zona_id,
+            parameter.text as statusaktif,
+             $this->table.tglmulaiberlaku,
+             $this->table.tglakhirberlaku,
+            param.text as statusluarkota,
+                
+            $this->table.modifiedby,
+            $this->table.created_at,
+            $this->table.updated_at"
+            )
+
+        )
+            ->join('kota as kotadari', 'kotadari.id', '=', 'upahsupir.kotadari_id')
+            ->join('kota as kotasampai', 'kotasampai.id', '=', 'upahsupir.kotasampai_id')
+            ->join('zona', 'zona.id', '=', 'upahsupir.zona_id')
+            ->leftJoin('parameter', 'upahsupir.statusaktif', 'parameter.id')
             ->leftJoin('parameter as param', 'upahsupir.statusluarkota', '=', 'param.id');
     }
 
@@ -109,27 +134,26 @@ class UpahSupir extends MyModel
         $temp = '##temp' . rand(1, 10000);
         Schema::create($temp, function ($table) {
             $table->bigInteger('id')->default('0');
-            $table->unsignedBigInteger('kotadari_id')->default('0');
-            $table->unsignedBigInteger('kotasampai_id')->default('0');
+            $table->string('kotadari_id')->default('0');
+            $table->string('kotasampai_id')->default('0');
             $table->double('jarak', 15, 2)->default('0');
-            $table->unsignedBigInteger('zona_id')->default('0');
-            $table->string('statusaktif', 500)->default('');
+            $table->string('zona_id')->default('0');
+            $table->string('statusaktif')->default('0');
             $table->date('tglmulaiberlaku')->default('1900/1/1');
-            $table->integer('statusluarkota')->length(11)->default('0');
+            $table->date('tglakhirberlaku')->default('1900/1/1');
+            $table->string('statusluarkota')->default('0');
 
-            $table->string('modifiedby', 50)->default('');
+            $table->string('modifiedby', 50)->Default('');
             $table->dateTime('created_at')->default('1900/1/1');
             $table->dateTime('updated_at')->default('1900/1/1');
-            $table->bigInteger('statusformat')->default('');
             $table->increments('position');
         });
-
         $this->setRequestParameters();
         $query = DB::table($modelTable);
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id', 'kotadari_id', 'kotasampai_id', 'jarak', 'zona_id', 'statusaktif', 'tglmulaiberlaku', 'statusluarkota', 'modifiedby', 'created_at', 'updated_at', 'statusformat'], $models);
+        DB::table($temp)->insertUsing(['id', 'kotadari_id', 'kotasampai_id', 'jarak', 'zona_id', 'statusaktif', 'tglmulaiberlaku', 'tglakhirberlaku', 'statusluarkota', 'modifiedby', 'created_at', 'updated_at'], $models);
 
 
         return  $temp;
