@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
-use Symfony\Component\VarDumper\VarDumper;
 
 class PiutangHeader extends MyModel
 {
@@ -16,7 +15,7 @@ class PiutangHeader extends MyModel
 
     protected $casts = [
         'created_at' => 'date:d-m-Y H:i:s',
-        'updated_at' => 'date:d-m-Y H:i:s'
+        'updated_at' => 'date:d-m-Y H:i:s',
     ];
 
     protected $guarded = [
@@ -41,8 +40,8 @@ class PiutangHeader extends MyModel
             'piutangheader.updated_at',
 
             'agen.namaagen as agen_id'
-        )->leftJoin('agen','piutangheader.agen_id','agen.id');
-            
+        )->leftJoin('agen', 'piutangheader.agen_id', 'agen.id');
+
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
@@ -61,14 +60,14 @@ class PiutangHeader extends MyModel
 
         $temp = $this->createTempPiutang($id);
         $query = DB::table('piutangheader')
-        ->select(DB::raw("piutangheader.id as id,piutangheader.nobukti as nobukti,piutangheader.tglbukti, piutangheader.keterangan, piutangheader.invoice_nobukti, piutangheader.nominal, piutangheader.agen_id,".$temp.".sisa"))
-        ->leftJoin($temp,'piutangheader.agen_id',$temp.".agen_id")
-        ->whereRaw("piutangheader.agen_id = $id")
-        ->whereRaw("piutangheader.nobukti = $temp.nobukti")
-        ->where(function ($query) use ($temp) {
-            $query->whereRaw("$temp.sisa != 0")
-                  ->orWhereRaw("$temp.sisa is null");
-        });
+            ->select(DB::raw("piutangheader.id as id,piutangheader.nobukti as nobukti,piutangheader.tglbukti, piutangheader.keterangan, piutangheader.invoice_nobukti, piutangheader.nominal, piutangheader.agen_id," . $temp . ".sisa"))
+            ->leftJoin($temp, 'piutangheader.agen_id', $temp . ".agen_id")
+            ->whereRaw("piutangheader.agen_id = $id")
+            ->whereRaw("piutangheader.nobukti = $temp.nobukti")
+            ->where(function ($query) use ($temp) {
+                $query->whereRaw("$temp.sisa != 0")
+                    ->orWhereRaw("$temp.sisa is null");
+            });
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -82,46 +81,50 @@ class PiutangHeader extends MyModel
         return $data;
     }
 
-    public function createTempPiutang($id) {
+    public function createTempPiutang($id)
+    {
         $temp = '##temp' . rand(1, 10000);
 
 
         $fetch = DB::table('piutangheader')
-        ->select(DB::raw("piutangheader.nobukti,piutangheader.agen_id, sum(pelunasanpiutangdetail.nominal) as nominalbayar, (SELECT (piutangheader.nominal - coalesce(SUM(pelunasanpiutangdetail.nominal),0)) FROM pelunasanpiutangdetail WHERE pelunasanpiutangdetail.piutang_nobukti= piutangheader.nobukti) AS sisa"))
-        ->leftJoin('pelunasanpiutangdetail','pelunasanpiutangdetail.piutang_nobukti','piutangheader.nobukti')
-        ->whereRaw("piutangheader.agen_id = $id")
-        ->groupBy('piutangheader.nobukti','piutangheader.agen_id','piutangheader.nominal');
+            ->select(DB::raw("piutangheader.nobukti,piutangheader.agen_id, sum(pelunasanpiutangdetail.nominal) as nominalbayar, (SELECT (piutangheader.nominal - coalesce(SUM(pelunasanpiutangdetail.nominal),0)) FROM pelunasanpiutangdetail WHERE pelunasanpiutangdetail.piutang_nobukti= piutangheader.nobukti) AS sisa"))
+            ->leftJoin('pelunasanpiutangdetail', 'pelunasanpiutangdetail.piutang_nobukti', 'piutangheader.nobukti')
+            ->whereRaw("piutangheader.agen_id = $id")
+            ->groupBy('piutangheader.nobukti', 'piutangheader.agen_id', 'piutangheader.nominal');
         // ->get();
-        
+
         Schema::create($temp, function ($table) {
             $table->string('nobukti');
             $table->bigInteger('agen_id')->default('0');
             $table->bigInteger('nominalbayar')->nullable();
             $table->bigInteger('sisa')->nullable();
         });
-    
-        $tes = DB::table($temp)->insertUsing(['nobukti','agen_id','nominalbayar','sisa'], $fetch);
-        
+
+        $tes = DB::table($temp)->insertUsing(['nobukti', 'agen_id', 'nominalbayar', 'sisa'], $fetch);
+
         // $data = DB::table($temp)->get();
         return $temp;
     }
 
-    public function findUpdate($id) {
+    public function findUpdate($id)
+    {
         $data = DB::table('piutangheader')->select(
             'piutangheader.id',
             'piutangheader.nobukti',
             'piutangheader.tglbukti',
             'piutangheader.keterangan',
+            'piutangheader.postingdari',
+            'piutangheader.nominal',
+            'piutangheader.invoice_nobukti',
             'piutangheader.agen_id',
+            'piutangheader.modifiedby',
+            'piutangheader.updated_at',
             'agen.namaagen as agen'
-        )->leftJoin('agen','piutangheader.agen_id','agen.id')
-        ->where('piutangheader.id', $id)->first();
+        )->leftJoin('agen', 'piutangheader.agen_id', 'agen.id')
+            ->where('piutangheader.id', $id)->first();
 
         return $data;
     }
-    // public function piutangdetail() {
-    //     return $this->hasMany(PiutangDetail::class, 'piutang_id');
-    // }
 
     public function selectColumns($query)
     {
@@ -139,13 +142,13 @@ class PiutangHeader extends MyModel
                  $this->table.updated_at"
             )
         )
-        ->leftJoin('agen','piutangheader.agen_id','agen.id');
+            ->leftJoin('agen', 'piutangheader.agen_id', 'agen.id');
     }
 
     public function createTemp(string $modelTable)
     {
         $temp = '##temp' . rand(1, 10000);
-        Schema::create($temp, function ($table){
+        Schema::create($temp, function ($table) {
             $table->bigInteger('id')->default('0');
             $table->string('nobukti', 1000)->default('');
             $table->date('tglbukti')->default('');
@@ -164,7 +167,7 @@ class PiutangHeader extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id','nobukti','tglbukti','keterangan','postingdari','nominal','invoice_nobukti','agen_id','modifiedby','updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'keterangan', 'postingdari', 'nominal', 'invoice_nobukti', 'agen_id', 'modifiedby', 'updated_at'], $models);
 
         return $temp;
     }
@@ -192,7 +195,7 @@ class PiutangHeader extends MyModel
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'agen_id') {
                             $query = $query->orWhere('agen.namaagen', 'LIKE', "%$filters[data]%");
-                        }else {
+                        } else {
                             $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
                     }
@@ -213,5 +216,15 @@ class PiutangHeader extends MyModel
     public function paginate($query)
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
+    }
+
+    public function agen()
+    {
+        return $this->belongsTo(Agen::class);
+    }
+
+    public function piutangDetails()
+    {
+        return $this->hasMany(PiutangDetail::class, 'piutang_id');
     }
 }

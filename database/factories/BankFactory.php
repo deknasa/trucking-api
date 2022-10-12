@@ -2,6 +2,8 @@
 
 namespace Database\Factories;
 
+use App\Models\AkunPusat;
+use App\Models\Parameter;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class BankFactory extends Factory
@@ -13,7 +15,14 @@ class BankFactory extends Factory
      */
     public function definition()
     {
-  
-       
+        return [
+            'kodebank' => $this->faker->word(),
+            'namabank' => $this->faker->word(),
+            'coa' => $this->faker->randomElement(AkunPusat::all()->pluck('coa')),
+            'tipe' => $this->faker->word(),
+            'statusaktif' => $this->faker->randomElement(Parameter::where('grp', 'STATUS AKTIF')->get()),
+            'statusformatpenerimaan' => $this->faker->randomElement(Parameter::where('grp', 'PENERIMAAN KAS')->get()),
+            'statusformatpengeluaran' => $this->faker->randomElement(Parameter::where('grp', 'PENGELUARAN KAS')->get()),
+        ];
     }
 }
