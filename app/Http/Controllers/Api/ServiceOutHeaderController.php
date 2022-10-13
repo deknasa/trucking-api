@@ -161,9 +161,7 @@ class ServiceOutHeaderController extends Controller
         return response($serviceout->serviceoutdetail());
     }
 
-    /**
-     * @ClassName
-     */
+  
     public function show($id)
     {
 

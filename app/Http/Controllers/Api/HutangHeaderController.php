@@ -26,7 +26,7 @@ use PhpParser\Builder\Param;
 class HutangHeaderController extends Controller
 {
     /**
-     * @ClassName index
+     * @ClassName
      */
     public function index()
     {
@@ -78,7 +78,7 @@ class HutangHeaderController extends Controller
 
 
     /**
-     * @ClassName update
+     * @ClassName
      */
     public function update(StoreHutangHeaderRequest $request, $id)
     {
@@ -115,7 +115,7 @@ class HutangHeaderController extends Controller
                     $datadetail = [
                         'hutang_id' => $hutangHeader->id,
                         'nobukti' => $hutangHeader->nobukti,
-                        'supplier_id' => $request->supplier[$i],
+                        'supplier_id' => $request->supplier_id[$i],
                         'tgljatuhtempo' => date('Y-m-d', strtotime($request->tgljatuhtempo[$i])),
                         'total' => $request->total_detail[$i],
                         'cicilan' => $request->cicilan_detail[$i],
@@ -138,7 +138,7 @@ class HutangHeaderController extends Controller
                         'id' => $iddetail,
                         'hutang_id' => $hutangHeader->id,
                         'nobukti' => $hutangHeader->nobukti,
-                        'supplier_id' => $request->supplier[$i],
+                        'supplier_id' => $request->supplier_id[$i],
                         'tgljatuhtempo' => date('Y-m-d', strtotime($request->tgljatuhtempo[$i])),
                         'total' => $request->total_detail[$i],
                         'cicilan' => $request->cicilan_detail[$i],
@@ -223,7 +223,7 @@ class HutangHeaderController extends Controller
 
 
     /**
-     * @ClassName destroy
+     * @ClassName
      */
     public function destroy($id,  Request $request)
     {
@@ -277,7 +277,7 @@ class HutangHeaderController extends Controller
     }
 
     /**
-     * @ClassName store
+     * @ClassName
      */
     public function store(StoreHutangHeaderRequest $request)
     {
@@ -345,7 +345,7 @@ class HutangHeaderController extends Controller
                 $datadetail = [
                     'hutang_id' => $hutangHeader->id,
                     'nobukti' => $hutangHeader->nobukti,
-                    'supplier_id' => $request->supplier[$i],
+                    'supplier_id' => $request->supplier_id[$i],
                     'tgljatuhtempo' => date('Y-m-d', strtotime($request->tgljatuhtempo[$i])),
                     'total' => $request->total_detail[$i],
                     'cicilan' => $request->cicilan_detail[$i],
@@ -367,7 +367,7 @@ class HutangHeaderController extends Controller
                     'id' => $iddetail,
                     'hutang_id' => $hutangHeader->id,
                     'nobukti' => $hutangHeader->nobukti,
-                    'supplier_id' => $request->supplier[$i],
+                    'supplier_id' => $request->supplier_id[$i],
                     'tgljatuhtempo' => date('Y-m-d', strtotime($request->tgljatuhtempo[$i])),
                     'total' => $request->total_detail[$i],
                     'cicilan' => $request->cicilan_detail[$i],
