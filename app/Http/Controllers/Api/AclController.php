@@ -20,6 +20,7 @@ use App\Models\Acos;
 
 use App\Http\Controllers\Api\ParameterController;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Log;
 
 class AclController extends Controller
 {
@@ -46,7 +47,7 @@ class AclController extends Controller
         ]);
     }
 
-    public function detail()
+    public function detail($roleId)
     {
         $params = [
             'offset' => request()->offset ?? ((request()->page - 1) * request()->limit),
@@ -72,7 +73,7 @@ class AclController extends Controller
             )
                 ->Join('acos', 'acl.aco_id', '=', 'acos.id')
                 ->Join('role', 'acl.role_id', '=', 'role.id')
-                ->where('acl.role_id', '=', request()->role_id)
+                ->where('acl.role_id', '=', $roleId)
                 ->orderBy('acl.id', $params['sortOrder']);
         } else {
             if ($params['sortOrder'] == 'asc') {
@@ -88,7 +89,7 @@ class AclController extends Controller
                     ->Join('acos', 'acl.aco_id', '=', 'acos.id')
                     ->Join('role', 'acl.role_id', '=', 'role.id')
                     ->orderBy($params['sortIndex'], $params['sortOrder'])
-                    ->where('acl.role_id', '=', request()->role_id)
+                    ->where('acl.role_id', '=', $roleId)
                     ->orderBy('acl.id', $params['sortOrder']);
             } else {
                 $query = Acl::select(
@@ -102,7 +103,7 @@ class AclController extends Controller
                 )
                     ->Join('acos', 'acl.aco_id', '=', 'acos.id')
                     ->Join('role', 'acl.role_id', '=', 'role.id')
-                    ->where('acl.role_id', '=', request()->role_id)
+                    ->where('acl.role_id', '=', $roleId)
                     ->orderBy($params['sortIndex'], $params['sortOrder'])
                     ->orderBy('acl.id', 'asc');
             }
@@ -193,45 +194,46 @@ class AclController extends Controller
     {
         DB::beginTransaction();
         try {
-            $controller = new ParameterController;
-            $dataaktif = $controller->getparameterid('STATUS AKTIF', 'STATUS AKTIF', 'AKTIF');
-            $aktif = $dataaktif->id;
 
-            $acl = new Acl();
+            
 
             for ($i = 0; $i < count($request->aco_id); $i++) {
-                if ($request->status[$i] == $aktif) {
+
+                if ($request->status[$i] == 1) {
+                    $acl = new Acl();
                     $acl->role_id = $request->role_id;
                     $acl->modifiedby = auth('api')->user()->name;
                     $acl->aco_id = $request->aco_id[$i]  ?? 0;
-                    if ($request->status[$i] == $aktif) {
-                        if ($acl->save()) {
-                            $logTrail = [
-                                'namatabel' => strtoupper($acl->getTable()),
-                                'postingdari' => 'ENTRY ACL',
-                                'idtrans' => $acl->id,
-                                'nobuktitrans' => $acl->id,
-                                'aksi' => 'ENTRY',
-                                'datajson' => $acl->toArray(),
-                                'modifiedby' => $acl->modifiedby
-                            ];
+                    $acl->save();
 
-                            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                            $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+                    $logTrail = [
+                        'namatabel' => strtoupper($acl->getTable()),
+                        'postingdari' => 'ENTRY ACL',
+                        'idtrans' => $acl->id,
+                        'nobuktitrans' => $acl->id,
+                        'aksi' => 'ENTRY',
+                        'datajson' => $acl->toArray(),
+                        'modifiedby' => $acl->modifiedby
+                    ];
 
-                            DB::commit();
-                        }
-                    }
+                    $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                    $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+                    DB::commit();
+                                                             
                 }
             }
+
             $selected = $this->getPosition($acl, $acl->getTable());
             $acl->position = $selected->position;
             $acl->page = ceil($acl->position / ($request->limit ?? 10));
-
+            // Log::info('selected', [
+            //     'position' => $acl->position
+            // ]);
 
             return response([
                 'status' => true,
                 'message' => 'Berhasil disimpan',
+                'data' => $acl
             ]);
         } catch (\Throwable $th) {
             DB::rollBack();
@@ -245,17 +247,17 @@ class AclController extends Controller
      * @param  \App\Models\acl  $acl
      * @return \Illuminate\Http\Response
      */
-    public function show(Acl $acl)
+    public function show($id)
     {
-        $data = Role::select('rolename')
-            ->where('id', '=',  $acl['role_id'])
+        $data = Role::select('id as role_id','rolename')
+            ->where('id', '=',  $id)
             ->first();
-        $acl['rolename'] = $data['rolename'];
+        // $acl['rolename'] = $data['rolename'];
 
         // dd($acl);
         return response([
             'status' => true,
-            'data' => $acl
+            'data' => $data
         ]);
     }
 
@@ -280,41 +282,39 @@ class AclController extends Controller
         /**
      * @ClassName 
      */
-    public function update(UpdateAclRequest $request, acl $acl)
+    public function update(UpdateAclRequest $request, $id)
     {
         DB::beginTransaction();
         try {
-            Acl::where('role_id', $request->role_id)->delete();
-
+            Acl::where('role_id', $id)->delete();
             for ($i = 0; $i < count($request->aco_id); $i++) {
                 if ($request->status[$i] == 1) {
                     $acl = new Acl();
+                    
                     $acl->role_id = $request->role_id;
                     $acl->modifiedby = auth('api')->user()->name;
                     $acl->aco_id = $request->aco_id[$i]  ?? 0;
 
-                    if ($request->status[$i] == 1) {
-                        if ($acl->save()) {
-                            $logTrail = [
-                                'namatabel' => strtoupper($acl->getTable()),
-                                'postingdari' => 'EDIT ACL',
-                                'idtrans' => $acl->id,
-                                'nobuktitrans' => $acl->id,
-                                'aksi' => 'EDIT',
-                                'datajson' => $acl->toArray(),
-                                'modifiedby' => $acl->modifiedby
-                            ];
+                    $acl->save();
+                    $logTrail = [
+                        'namatabel' => strtoupper($acl->getTable()),
+                        'postingdari' => 'EDIT ACL',
+                        'idtrans' => $acl->id,
+                        'nobuktitrans' => $acl->id,
+                        'aksi' => 'EDIT',
+                        'datajson' => $acl->toArray(),
+                        'modifiedby' => $acl->modifiedby
+                    ];
 
-                            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                            $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+                    $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                    $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-                            DB::commit();
-                        }
-                    }
                 }
             }
 
+            DB::commit();
             /* Set position and page */
+
             $selected = $this->getPosition($acl, $acl->getTable());
             $acl->position = $selected->position;
             $acl->page = ceil($acl->position / ($request->limit ?? 10));
@@ -339,32 +339,31 @@ class AclController extends Controller
         /**
      * @ClassName 
      */
-    public function destroy(Acl $acl, Request $request)
+    public function destroy($id, Request $request)
     {
         DB::beginTransaction();
 
-        try {
-            $delete = Acl::where('role_id', $request->role_id)->delete();
+        try {            
+            $acl = new Acl();
+            $get = Acl::select('id')->where('role_id',$id)->get();
 
-            if ($delete > 0) {
-                if ($acl->save()) {
-                    $logTrail = [
-                        'namatabel' => strtoupper($acl->getTable()),
-                        'postingdari' => 'DELETE ACL',
-                        'idtrans' => $acl->id,
-                        'nobuktitrans' => $acl->id,
-                        'aksi' => 'DELETE',
-                        'datajson' => $acl->toArray(),
-                        'modifiedby' => $acl->modifiedby
-                    ];
-
-                    $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                    $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
-                    DB::commit();
-                }
+            for($i = 0; $i < count($get); $i++) {
+               $aclId = $get[$i]->id;
+               $delete = Acl::destroy($aclId);
+               $logTrail = [
+                    'namatabel' => strtoupper($acl->getTable()),
+                    'postingdari' => 'DELETE ACL',
+                    'idtrans' => $aclId,
+                    'nobuktitrans' => $aclId,
+                    'aksi' => 'DELETE',
+                    'datajson' => $acl->toArray(),
+                    'modifiedby' => $acl->modifiedby
+                ];
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
             }
-
+            
+            DB::commit();
             $selected = $this->getPosition($acl, $acl->getTable(), true);
             $acl->position = $selected->position;
             $acl->id = $selected->id;

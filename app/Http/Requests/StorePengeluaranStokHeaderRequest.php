@@ -13,7 +13,7 @@ class StorePengeluaranStokHeaderRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +24,12 @@ class StorePengeluaranStokHeaderRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            "tglbukti"=> "required", 
+            "keterangan"=> "required", 
+            "statusformat" => "required",
+            "pengeluaranstok" => "required",
+            "pengeluaranstok_id" => "required",
+            "modifiedby"=> "string", 
         ];
     }
 }

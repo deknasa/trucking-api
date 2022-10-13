@@ -73,6 +73,7 @@
     use App\Http\Controllers\Api\PenerimaanStokHeaderController;
     use App\Http\Controllers\Api\PenerimaanStokDetailController;
     use App\Http\Controllers\Api\PengeluaranStokController;
+    use App\Http\Controllers\Api\PengeluaranStokDetailController;
     use App\Http\Controllers\Api\PengeluaranStokHeaderController;
     use App\Http\Controllers\Api\JurnalUmumHeaderController;
     use App\Http\Controllers\Api\JurnalUmumDetailController;
@@ -217,7 +218,7 @@
         Route::resource('userrole', UserRoleController::class);
 
         Route::get('acl/field_length', [AclController::class, 'fieldLength']);
-        Route::get('acl/detail', [AclController::class, 'detail']);
+        Route::get('acl/detail/{roleId}', [AclController::class, 'detail']);
         Route::get('acl/detaillist', [AclController::class, 'detaillist']);
         Route::get('acl/combostatus', [AclController::class, 'combostatus']);
         Route::get('acl/export', [AclController::class, 'export'])->name('acl.export');
@@ -304,6 +305,7 @@
         Route::get('jurnalumumheader/combo', [JurnalUmumHeaderController::class, 'combo']);
         Route::post('jurnalumumheader/{id}/cekapproval', [JurnalUmumHeaderController::class, 'cekapproval'])->name('jurnalumumheader.cekapproval');
         Route::get('jurnalumumheader/grid', [JurnalUmumHeaderController::class, 'grid']);
+        Route::get('jurnalumumheader/field_length', [JurnalUmumHeaderController::class, 'fieldLength']);
         Route::resource('jurnalumumheader', JurnalUmumHeaderController::class);
         Route::resource('jurnalumumdetail', JurnalUmumDetailController::class);
 
@@ -331,6 +333,7 @@
         // Route::get('pengeluaranstok/export', [PengeluaranStokController::class,'export']);
         Route::apiResource('pengeluaranstok', PengeluaranStokController::class);
         Route::apiResource('pengeluaranstokheader', PengeluaranStokHeaderController::class);
+        Route::apiResource('pengeluaranstokdetail', PengeluaranStokDetailController::class);
 
         Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
         Route::get('piutangheader/no_bukti', [PiutangHeaderController::class, 'getNoBukti']);
@@ -353,6 +356,7 @@
         Route::get('pelunasanpiutangheader/{id}/{agenid}/getPelunasanPiutang', [PelunasanPiutangHeaderController::class, 'getPelunasanPiutang']);
         Route::get('pelunasanpiutangheader/{id}/{agenid}/getDeletePelunasanPiutang', [PelunasanPiutangHeaderController::class, 'getDeletePelunasanPiutang']);
         Route::get('pelunasanpiutangheader/grid', [PelunasanPiutangHeaderController::class, 'grid']);
+        Route::get('pelunasanpiutangheader/field_length', [PelunasanPiutangHeaderController::class, 'fieldLength']);
         Route::resource('pelunasanpiutangheader', PelunasanPiutangHeaderController::class);
         Route::resource('pelunasanpiutangdetail', PelunasanPiutangDetailController::class);
 

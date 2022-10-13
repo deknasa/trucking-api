@@ -5,8 +5,9 @@ namespace App\Models;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
-class AbsensiSupirDetail extends Model
+class AbsensiSupirDetail extends MyModel
 {
     use HasFactory;
 
@@ -42,5 +43,28 @@ class AbsensiSupirDetail extends Model
     protected function serializeDate(DateTimeInterface $date)
     {
         return $date->format('d-m-Y H:i:s');
+    }
+
+    public function find($id) 
+    {
+        $query = DB::table('absensisupirdetail')
+            ->select(
+                'absensisupirdetail.trado_id',
+                'trado.keterangan as trado',
+                'absensisupirdetail.supir_id',
+                'supir.namasupir as supir',
+                'absensisupirdetail.keterangan',
+                'absensisupirdetail.absen_id',
+                'absentrado.keterangan as absen',
+                'absensisupirdetail.jam',
+                'absensisupirdetail.uangjalan'
+            )
+            ->join('trado','absensisupirdetail.trado_id','trado.id')
+            ->join('supir','absensisupirdetail.supir_id','supir.id')
+            ->join('absentrado','absensisupirdetail.absen_id','absentrado.id')
+            ->where('absensisupirdetail.absensi_id',$id);
+
+        $detail = $query->get();
+        return $detail;
     }
 }

@@ -14,6 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
@@ -211,13 +212,14 @@ class Controller extends BaseController
                 ->where('position', '=', $position)
                 ->orderBy('position');
         } else {
-            $query = DB::table($temporaryTable)->select('position')->where('id', $model->id)->orderBy('position');
-        // dd($query->toSql());
-            
+            if($modelTable == 'acl') {
+                $query = DB::table($temporaryTable)->select('position')->where('id', $model->role_id)->orderBy('position');
+            } else {
+                $query = DB::table($temporaryTable)->select('position')->where('id', $model->id)->orderBy('position');
+            }            
         }
         
         $data = $query->first();
-        // var_dump($data);
         return $data;
     }
 }

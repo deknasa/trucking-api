@@ -72,59 +72,76 @@ class RitasiController extends Controller
             $ritasi->trado_id = $request->trado_id;
             $ritasi->dari_id = $request->dari_id;
             $ritasi->sampai_id = $request->sampai_id;
-            $upahRitasi = UpahDB::table((new Ritasi())->getTable())->where('kotadari_id',$request->dari_id)->where('kotasampai_id',$request->sampai_id)->first();
+            // $upahRitasi = UpahDB::table((new Ritasi())->getTable())->where('kotadari_id',$request->dari_id)->where('kotasampai_id',$request->sampai_id)->first();
+
+            $upahRitasi = DB::table('upahritasi')->where('kotadari_id',$request->dari_id)->where('kotasampai_id',$request->sampai_id)->first();
+
             if ($upahRitasi == '') {
                 return response([
                     'status' => false,
+                    'errors' => [
+                        'dari' => 'Kota Dari belum terdaftar di master Upah Ritasi',
+                        'sampai' => 'Kota Sampai belum terdaftar di master Upah Ritasi'
+                    ],
                     'message' => 'Kota Dari dan Sampai Belum terdaftar di master Upah Ritasi'
+                ], 422);
+            } else {
+                $upahRitasiId = $upahRitasi->id;
+                $upahRitasiRincian = DB::table('upahritasirincian')->where('upahritasi_id', $upahRitasiId)->first();
+                // $ritasi->jarak = $upahRitasi->upahritasiRincian()->first()->liter;
+                // $ritasi->gaji = $upahRitasi->upahritasiRincian()->first()->nominalsupir;
+                
+                $ritasi->jarak = $upahRitasiRincian->liter;
+                $ritasi->gaji = $upahRitasiRincian->nominalsupir;
+                $ritasi->modifiedby = auth('api')->user()->name;
+                $ritasi->statusformat = $format->id;
+    
+                $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
+                $ritasi->nobukti = $nobukti;
+    
+                if ($ritasi->save()) {
+                    $logTrail = [
+                        'namatabel' => strtoupper($ritasi->getTable()),
+                        'postingdari' => 'ENTRY RITASI',
+                        'idtrans' => $ritasi->id,
+                        'nobuktitrans' => $ritasi->id,
+                        'aksi' => 'ENTRY',
+                        'datajson' => $ritasi->toArray(),
+                        'modifiedby' => $ritasi->modifiedby
+                    ];
+    
+                    $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                    $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+    
+                    DB::commit();
+                }
+    
+                /* Set position and page */
+                $selected = $this->getPosition($ritasi, $ritasi->getTable());
+                $ritasi->position = $selected->position;
+                $ritasi->page = ceil($ritasi->position / ($request->limit ?? 10));
+    
+                return response([
+                    'status' => true,
+                    'message' => 'Berhasil disimpan',
+                    'data' => $ritasi
                 ]);
             }
-            $ritasi->jarak = $upahRitasi->upahritasiRincian()->first()->liter;
-            $ritasi->gaji = $upahRitasi->upahritasiRincian()->first()->nominalsupir;
-            $ritasi->modifiedby = auth('api')->user()->name;
-            $ritasi->statusformat = $format->id;
-
-            $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
-            $ritasi->nobukti = $nobukti;
-
-            if ($ritasi->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($ritasi->getTable()),
-                    'postingdari' => 'ENTRY RITASI',
-                    'idtrans' => $ritasi->id,
-                    'nobuktitrans' => $ritasi->id,
-                    'aksi' => 'ENTRY',
-                    'datajson' => $ritasi->toArray(),
-                    'modifiedby' => $ritasi->modifiedby
-                ];
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
-                DB::commit();
-            }
-
-            /* Set position and page */
-            $selected = $this->getPosition($ritasi, $ritasi->getTable());
-            $ritasi->position = $selected->position;
-            $ritasi->page = ceil($ritasi->position / ($request->limit ?? 10));
-
-            return response([
-                'status' => true,
-                'message' => 'Berhasil disimpan',
-                'data' => $ritasi
-            ]);
+            
+            
+           
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
         }
     }
 
-    public function show(Ritasi $ritasi)
+    public function show($id)
     {
+        $data = Ritasi::find($id);
         return response([
             'status' => true,
-            'data' => $ritasi
+            'data' => $data
         ]);
     }
 
@@ -143,15 +160,25 @@ class RitasiController extends Controller
             $ritasi->suratpengantar_nobukti = $request->suratpengantar_nobukti;
             $ritasi->supir_id = $request->supir_id;
             $ritasi->trado_id = $request->trado_id;
-            $upahRitasi = UpahDB::table((new Ritasi())->getTable())->where('kotadari_id',$request->dari_id)->where('kotasampai_id',$request->sampai_id)->first();
+            // $upahRitasi = UpahDB::table((new Ritasi())->getTable())->where('kotadari_id',$request->dari_id)->where('kotasampai_id',$request->sampai_id)->first();
+
+            $upahRitasi = DB::table('upahritasi')->where('kotadari_id',$request->dari_id)->where('kotasampai_id',$request->sampai_id)->first();
+
             if ($upahRitasi == '') {
+                header("HTTP/1.1 400 Bad Request");
                 return response([
                     'status' => false,
+                    'errors' => 'Kota belum terdaftar',
                     'message' => 'Kota Dari dan Sampai Belum terdaftar di master Upah Ritasi'
-                ]);
+                ], 422);
             }
-            $ritasi->jarak = $upahRitasi->upahritasiRincian()->first()->liter;
-            $ritasi->gaji = $upahRitasi->upahritasiRincian()->first()->nominalsupir;
+            $upahRitasiId = $upahRitasi->id;
+            $upahRitasiRincian = DB::table('upahritasirincian')->where('upahritasi_id', $upahRitasiId)->first();
+            // $ritasi->jarak = $upahRitasi->upahritasiRincian()->first()->liter;
+            // $ritasi->gaji = $upahRitasi->upahritasiRincian()->first()->nominalsupir;
+            
+            $ritasi->jarak = $upahRitasiRincian->liter;
+            $ritasi->gaji = $upahRitasiRincian->nominalsupir;
             $ritasi->dari_id = $request->dari_id;
             $ritasi->sampai_id = $request->sampai_id;
             $ritasi->modifiedby = auth('api')->user()->name;

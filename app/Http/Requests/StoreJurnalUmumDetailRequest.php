@@ -24,11 +24,14 @@ class StoreJurnalUmumDetailRequest extends FormRequest
     public function rules()
     {
         return [
-            'coadebet_detail' => 'required',
-            'coakredit_detail' => 'required',
-            'nominal_detail' => 'required',
-            // 'nominal_detail.*' => 'numeric',
-            'keterangan_detail' => 'required',
+            'coadebet_detail' => 'required|array',
+            'coadebet_detail.*' => 'required',
+            'coakredit_detail' => 'required|array',
+            'coakredit_detail.*' => 'required',
+            'nominal_detail' => 'required|array',
+            'nominal_detail.*' => 'required',
+            'keterangan_detail' => 'required|array',
+            'keterangan_detail.*' => 'required'
         ];
     }
 }

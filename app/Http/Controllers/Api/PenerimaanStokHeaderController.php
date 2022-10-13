@@ -115,11 +115,6 @@ class PenerimaanStokHeaderController extends Controller
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
                 
-                /* Delete existing detail */
-                // $penerimaanStokHeader->pengeluaranDetail()->delete();
-                // JurnalUmumDetail::where('nobukti', $penerimaanStokHeader->nobukti)->delete();
-                // JurnalUmumHeader::where('nobukti', $penerimaanStokHeader->nobukti)->delete();
-                
                 /* Store detail */
                 $detaillog = [];
     
@@ -222,9 +217,6 @@ class PenerimaanStokHeaderController extends Controller
     public function update(UpdatePenerimaanStokHeaderRequest $request, PenerimaanStokHeader $penerimaanStokHeader,$id)
     {
         try {
-
-            // $penerimaantruckingheader = PenerimaanTruckingHeader::findOrFail($id);
-
             /* Store header */
             $penerimaanStokHeader = PenerimaanStokHeader::findOrFail($id);
             
@@ -245,14 +237,13 @@ class PenerimaanStokHeaderController extends Controller
             $penerimaanStokHeader->modifiedby        = auth('api')->user()->name;
             $request->sortname                 = $request->sortname ?? 'id';
             $request->sortorder                = $request->sortorder ?? 'asc';
-            // return json_encode($request);
             if ($penerimaanStokHeader->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($penerimaanStokHeader->getTable()),
-                    'postingdari' => 'ENTRY PENERIMAAN STOK HEADER',
+                    'postingdari' => 'EDIT PENERIMAAN STOK HEADER',
                     'idtrans' => $penerimaanStokHeader->id,
                     'nobuktitrans' => $penerimaanStokHeader->id,
-                    'aksi' => 'ENTRY',
+                    'aksi' => 'EDIT',
                     'datajson' => $penerimaanStokHeader->toArray(),
                     'modifiedby' => $penerimaanStokHeader->modifiedby
                 ];

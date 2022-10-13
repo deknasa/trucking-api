@@ -5,8 +5,9 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\KasGantungDetail;
 use App\Http\Requests\StoreKasGantungDetailRequest;
+use App\Http\Requests\StorePengeluaranDetailRequest;
 use App\Http\Requests\UpdateKasGantungDetailRequest;
-
+use App\Models\PengeluaranHeader;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -37,9 +38,9 @@ class KasGantungDetailController extends Controller
                 $query->where('detail.kasgantung_id', $params['kasgantung_id']);
             }
 
-            if ($params['withHeader']) {
-                $query->join('kasgantungheader', 'kasgantungheader.id', 'detail.kasgantung_id');
-            }
+            // if ($params['withHeader']) {
+            //     $query->join('kasgantungheader', 'kasgantungheader.id', 'detail.kasgantung_id');
+            // }
 
             if (count($params['whereIn']) > 0) {
                 $query->whereIn('kasgantung_id', $params['whereIn']);
@@ -75,9 +76,9 @@ class KasGantungDetailController extends Controller
                 $query->select(
                     'detail.keterangan',
                     'detail.nominal',
-                    'detail.modifiedby',
-                    'detail.updated_at',
-                );
+                    'detail.nobukti',
+                    'akunpusat.keterangancoa as coa',
+                )->join('akunpusat','detail.coa','akunpusat.coa');
                 $kasgantungDetail = $query->get();
             }
 
@@ -116,17 +117,42 @@ class KasGantungDetailController extends Controller
 
         try {
             $kasgantungDetail = new KasGantungDetail();
+            $entriluar = $request->entriluar ?? 0;
 
             $kasgantungDetail->kasgantung_id = $request->kasgantung_id;
             $kasgantungDetail->nobukti = $request->nobukti;
             $kasgantungDetail->nominal = $request->nominal;
-            $kasgantungDetail->coa = $request->coa;
+            $kasgantungDetail->coa = $request->coa ?? '';
             $kasgantungDetail->keterangan = $request->keterangan ?? '';
             $kasgantungDetail->modifiedby = $request->modifiedby;
-            
             $kasgantungDetail->save();
-            
-           
+
+            // insert ke pengeluaran
+            // if($entriluar == 1) {
+            //     $nobukti = $request->pengeluaran_nobukti;
+            //     $fetchId = PengeluaranHeader::select('id')
+            //     ->where('nobukti','=',$nobukti)
+            //     ->first();
+            //     $id = $fetchId->id;
+            //     $pengeluaranDetail = [
+            //         'pengeluaran_id' => $id,
+            //         'entriluar' => 1,
+            //         'nobukti' => $nobukti,
+            //         'alatbayar_id' => '',
+            //         'nowarkat' => '',
+            //         'tgljatuhtempo' => '',
+            //         'nominal' => $request->nominal,
+            //         'coadebet' => '',
+            //         'coakredit' => '',
+            //         'keterangan' => $request->keterangan_detail,
+            //         'bulanbeban' => '',
+            //         'modifiedby' => $request->modifiedby
+            //     ];
+
+            //     $detail = new StorePengeluaranDetailRequest($pengeluaranDetail);
+            //     $tes = app(PengeluaranDetailController::class)->store($detail);
+            // }
+
             DB::commit();
             if ($validator->passes()) {
                 return [
