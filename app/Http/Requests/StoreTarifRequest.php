@@ -29,11 +29,12 @@ class StoreTarifRequest extends FormRequest
             'nominal' => 'required|numeric',
             'statusaktif' => 'required',
             'tujuanasal' => 'required',
-            'sistemton' => 'required',
+            'statussistemton' => 'required',
             'zona_id' => 'required',
             'kota_id' => 'required',
             'nominalton' => 'required|numeric',
-            'tglberlaku' => 'required',
+            'tglmulaiberlaku' => 'required',
+            'tglakhirberlaku' => 'required',
             'statuspenyesuaianharga' => 'required',
         ];
     }

@@ -13,11 +13,11 @@ class Tarif extends MyModel
 
     protected $table = 'tarif';
 
-    // protected $casts = [
-    //     'tglberlaku' => 'date:d-m-Y',
-    //     'created_at' => 'date:d-m-Y H:i:s',
-    //     'updated_at' => 'date:d-m-Y H:i:s'
-    // ];
+    protected $casts = [
+        'tglberlaku' => 'date:d-m-Y',
+        'created_at' => 'date:d-m-Y H:i:s',
+        'updated_at' => 'date:d-m-Y H:i:s'
+    ];
 
     protected $guarded = [
         'id',
@@ -41,6 +41,7 @@ class Tarif extends MyModel
             'zona.zona as zona_id',
             'tarif.nominalton',
             'tarif.tglmulaiberlaku',
+            'tarif.tglakhirberlaku',
             'p.text as statuspenyesuaianharga',
             'tarif.modifiedby',
             'tarif.created_at',
@@ -80,6 +81,7 @@ class Tarif extends MyModel
              zona.zona as zona_id,
              $this->table.nominalton,
              $this->table.tglmulaiberlaku,
+             $this->table.tglakhirberlaku,
              p.text as statuspenyesuaianharga,
              $this->table.modifiedby,
              $this->table.created_at,
@@ -110,6 +112,7 @@ class Tarif extends MyModel
             $table->string('zona_id')->default('0');
             $table->double('nominalton', 15, 2)->default('0');
             $table->date('tglmulaiberlaku')->default('1900/1/1');
+            $table->date('tglakhirberlaku')->default('1900/1/1');
             $table->string('statuspenyesuaianharga')->default('0');
 
             $table->string('modifiedby', 50)->default('');
@@ -123,7 +126,7 @@ class Tarif extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id', 'tujuan', 'container_id', 'nominal', 'statusaktif', 'tujuanasal', 'statussistemton', 'kota_id', 'zona_id', 'nominalton', 'tglmulaiberlaku', 'statuspenyesuaianharga', 'modifiedby', 'created_at', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'tujuan', 'container_id', 'nominal', 'statusaktif', 'tujuanasal', 'statussistemton', 'kota_id', 'zona_id', 'nominalton', 'tglmulaiberlaku', 'tglakhirberlaku', 'statuspenyesuaianharga', 'modifiedby', 'created_at', 'updated_at'], $models);
 
 
         return  $temp;
@@ -148,6 +151,7 @@ class Tarif extends MyModel
             
             'tarif.nominalton',
             'tarif.tglmulaiberlaku',
+            'tarif.tglakhirberlaku',
             'tarif.statuspenyesuaianharga',
             'tarif.modifiedby',
             'tarif.updated_at'

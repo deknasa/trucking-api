@@ -54,16 +54,17 @@ class TarifController extends Controller
             $tarif->nominal = $request->nominal;
             $tarif->statusaktif = $request->statusaktif;
             $tarif->tujuanasal = $request->tujuanasal;
-            $tarif->statussistemton = $request->sistemton;
+            $tarif->statussistemton = $request->statussistemton;
             $tarif->kota_id = $request->kota_id;
             $tarif->zona_id = $request->zona_id;
             $tarif->nominalton = $request->nominalton;
             $tarif->tglmulaiberlaku = date('Y-m-d', strtotime($request->tglmulaiberlaku));
+            $tarif->tglakhirberlaku = date('Y-m-d', strtotime($request->tglakhirberlaku));
             $tarif->statuspenyesuaianharga = $request->statuspenyesuaianharga;
             $tarif->modifiedby = auth('api')->user()->name;
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
-
+            // dd(date('Y-m-d', strtotime($request->tglberlaku)));
             if ($tarif->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($tarif->getTable()),
@@ -115,12 +116,11 @@ class TarifController extends Controller
             'status' => true,
             'data' => $data,
         ]);
-
     }
 
     // public function show(Tarif $tarif)
     // {
-        
+
     //     return response([
     //         'status' => true,
     //         'data' => $tarif
@@ -143,7 +143,7 @@ class TarifController extends Controller
             $tarif->nominal = $request->nominal;
             $tarif->statusaktif = $request->statusaktif;
             $tarif->tujuanasal = $request->tujuanasal;
-            $tarif->statussistemton = $request->sistemton;
+            $tarif->statussistemton = $request->statussistemton;
             $tarif->kota_id = $request->kota_id;
             $tarif->zona_id = $request->zona_id;
             $tarif->nominalton = $request->nominalton;
@@ -241,7 +241,7 @@ class TarifController extends Controller
     //     }
     // }
 
-     /**
+    /**
      * @ClassName
      */
     public function destroy($id,  Request $request)
@@ -317,7 +317,7 @@ class TarifController extends Controller
             'zona' => Zona::all(),
             'statusaktif' => Parameter::where(['grp' => 'status aktif'])->get(),
             'statuspenyesuaianharga' => Parameter::where(['grp' => 'status penyesuaian harga'])->get(),
-            'sistemton' => Parameter::where(['grp' => 'sistem ton'])->get(),
+            'statussistemton' => Parameter::where(['grp' => 'sistem ton'])->get(),
         ];
 
         return response([
@@ -325,156 +325,156 @@ class TarifController extends Controller
         ]);
     }
 
-    public function getid($id, $request, $del)
-    {
-        $params = [
-            'indexRow' => $request->indexRow ?? 1,
-            'limit' => $request->limit ?? 100,
-            'page' => $request->page ?? 1,
-            'sortname' => $request->sortname ?? 'id',
-            'sortorder' => $request->sortorder ?? 'asc',
-        ];
+    // public function getid($id, $request, $del)
+    // {
+    //     $params = [
+    //         'indexRow' => $request->indexRow ?? 1,
+    //         'limit' => $request->limit ?? 100,
+    //         'page' => $request->page ?? 1,
+    //         'sortname' => $request->sortname ?? 'id',
+    //         'sortorder' => $request->sortorder ?? 'asc',
+    //     ];
 
-        $temp = '##temp' . rand(1, 10000);
-        Schema::create($temp, function ($table) {
-            $table->id();
-            $table->bigInteger('id_')->default('0');
-            $table->string('tujuan', 50)->default('');
-            $table->string('container_id', 50)->default('');
-            $table->string('nominal', 50)->default('0');
-            $table->string('statusaktif', 50)->default('');
-            $table->string('tujuanasal', 50)->default('');
-            $table->string('sistemton', 50)->default('');
-            $table->string('kota_id', 50)->default('');
-            $table->string('zona_id', 50)->default('');
-            $table->string('nominalton', 50)->default('0');
-            $table->date('tglmulaiberlaku', 50)->default('1900/1/1');
-            $table->string('statuspenyesuaianharga', 50)->default('');
-            $table->string('modifiedby', 30)->default('');
-            $table->dateTime('created_at')->default('1900/1/1');
-            $table->dateTime('updated_at')->default('1900/1/1');
+    //     $temp = '##temp' . rand(1, 10000);
+    //     Schema::create($temp, function ($table) {
+    //         $table->id();
+    //         $table->bigInteger('id_')->default('0');
+    //         $table->string('tujuan', 50)->default('');
+    //         $table->string('container_id', 50)->default('');
+    //         $table->string('nominal', 50)->default('0');
+    //         $table->string('statusaktif', 50)->default('');
+    //         $table->string('tujuanasal', 50)->default('');
+    //         $table->string('sistemton', 50)->default('');
+    //         $table->string('kota_id', 50)->default('');
+    //         $table->string('zona_id', 50)->default('');
+    //         $table->string('nominalton', 50)->default('0');
+    //         $table->date('tglmulaiberlaku', 50)->default('1900/1/1');
+    //         $table->string('statuspenyesuaianharga', 50)->default('');
+    //         $table->string('modifiedby', 30)->default('');
+    //         $table->dateTime('created_at')->default('1900/1/1');
+    //         $table->dateTime('updated_at')->default('1900/1/1');
 
-            $table->index('id_');
-        });
+    //         $table->index('id_');
+    //     });
 
-        if ($params['sortname'] == 'id') {
-            $query = DB::table((new Tarif())->getTable())->select(
-                'tarif.id as id_',
-                'tarif.tujuan',
-                'tarif.container_id',
-                'tarif.nominal',
-                'tarif.statusaktif',
-                'tarif.tujuanasal',
-                'tarif.sistemton',
-                'tarif.kota_id',
-                'tarif.zona_id',
-                'tarif.nominalton',
-                'tarif.tglmulaiberlaku',
-                'tarif.statuspenyesuaianharga',
-                'tarif.modifiedby',
-                'tarif.created_at',
-                'tarif.updated_at'
-            )
-                ->orderBy('tarif.id', $params['sortorder']);
-        } else if ($params['sortname'] == 'tujuan' or $params['sortname'] == 'container_id') {
-            $query = DB::table((new Tarif())->getTable())->select(
-                'tarif.id as id_',
-                'tarif.tujuan',
-                'tarif.container_id',
-                'tarif.nominal',
-                'tarif.statusaktif',
-                'tarif.tujuanasal',
-                'tarif.sistemton',
-                'tarif.kota_id',
-                'tarif.zona_id',
-                'tarif.nominalton',
-                'tarif.tglmulaiberlaku',
-                'tarif.statuspenyesuaianharga',
-                'tarif.modifiedby',
-                'tarif.created_at',
-                'tarif.updated_at'
-            )
-                ->orderBy($params['sortname'], $params['sortorder'])
-                ->orderBy('tarif.id', $params['sortorder']);
-        } else {
-            if ($params['sortorder'] == 'asc') {
-                $query = DB::table((new Tarif())->getTable())->select(
-                    'tarif.id as id_',
-                    'tarif.tujuan',
-                    'tarif.container_id',
-                    'tarif.nominal',
-                    'tarif.statusaktif',
-                    'tarif.tujuanasal',
-                    'tarif.sistemton',
-                    'tarif.kota_id',
-                    'tarif.zona_id',
-                    'tarif.nominalton',
-                    'tarif.tglmulaiberlaku',
-                    'tarif.statuspenyesuaianharga',
-                    'tarif.modifiedby',
-                    'tarif.created_at',
-                    'tarif.updated_at'
-                )
-                    ->orderBy($params['sortname'], $params['sortorder'])
-                    ->orderBy('tarif.id', $params['sortorder']);
-            } else {
-                $query = DB::table((new Tarif())->getTable())->select(
-                    'tarif.id as id_',
-                    'tarif.tujuan',
-                    'tarif.container_id',
-                    'tarif.nominal',
-                    'tarif.statusaktif',
-                    'tarif.tujuanasal',
-                    'tarif.sistemton',
-                    'tarif.kota_id',
-                    'tarif.zona_id',
-                    'tarif.nominalton',
-                    'tarif.tglmulaiberlaku',
-                    'tarif.statuspenyesuaianharga',
-                    'tarif.modifiedby',
-                    'tarif.created_at',
-                    'tarif.updated_at'
-                )
-                    ->orderBy($params['sortname'], $params['sortorder'])
-                    ->orderBy('tarif.id', 'asc');
-            }
-        }
+    //     if ($params['sortname'] == 'id') {
+    //         $query = DB::table((new Tarif())->getTable())->select(
+    //             'tarif.id as id_',
+    //             'tarif.tujuan',
+    //             'tarif.container_id',
+    //             'tarif.nominal',
+    //             'tarif.statusaktif',
+    //             'tarif.tujuanasal',
+    //             'tarif.sistemton',
+    //             'tarif.kota_id',
+    //             'tarif.zona_id',
+    //             'tarif.nominalton',
+    //             'tarif.tglmulaiberlaku',
+    //             'tarif.statuspenyesuaianharga',
+    //             'tarif.modifiedby',
+    //             'tarif.created_at',
+    //             'tarif.updated_at'
+    //         )
+    //             ->orderBy('tarif.id', $params['sortorder']);
+    //     } else if ($params['sortname'] == 'tujuan' or $params['sortname'] == 'container_id') {
+    //         $query = DB::table((new Tarif())->getTable())->select(
+    //             'tarif.id as id_',
+    //             'tarif.tujuan',
+    //             'tarif.container_id',
+    //             'tarif.nominal',
+    //             'tarif.statusaktif',
+    //             'tarif.tujuanasal',
+    //             'tarif.sistemton',
+    //             'tarif.kota_id',
+    //             'tarif.zona_id',
+    //             'tarif.nominalton',
+    //             'tarif.tglmulaiberlaku',
+    //             'tarif.statuspenyesuaianharga',
+    //             'tarif.modifiedby',
+    //             'tarif.created_at',
+    //             'tarif.updated_at'
+    //         )
+    //             ->orderBy($params['sortname'], $params['sortorder'])
+    //             ->orderBy('tarif.id', $params['sortorder']);
+    //     } else {
+    //         if ($params['sortorder'] == 'asc') {
+    //             $query = DB::table((new Tarif())->getTable())->select(
+    //                 'tarif.id as id_',
+    //                 'tarif.tujuan',
+    //                 'tarif.container_id',
+    //                 'tarif.nominal',
+    //                 'tarif.statusaktif',
+    //                 'tarif.tujuanasal',
+    //                 'tarif.sistemton',
+    //                 'tarif.kota_id',
+    //                 'tarif.zona_id',
+    //                 'tarif.nominalton',
+    //                 'tarif.tglmulaiberlaku',
+    //                 'tarif.statuspenyesuaianharga',
+    //                 'tarif.modifiedby',
+    //                 'tarif.created_at',
+    //                 'tarif.updated_at'
+    //             )
+    //                 ->orderBy($params['sortname'], $params['sortorder'])
+    //                 ->orderBy('tarif.id', $params['sortorder']);
+    //         } else {
+    //             $query = DB::table((new Tarif())->getTable())->select(
+    //                 'tarif.id as id_',
+    //                 'tarif.tujuan',
+    //                 'tarif.container_id',
+    //                 'tarif.nominal',
+    //                 'tarif.statusaktif',
+    //                 'tarif.tujuanasal',
+    //                 'tarif.sistemton',
+    //                 'tarif.kota_id',
+    //                 'tarif.zona_id',
+    //                 'tarif.nominalton',
+    //                 'tarif.tglmulaiberlaku',
+    //                 'tarif.statuspenyesuaianharga',
+    //                 'tarif.modifiedby',
+    //                 'tarif.created_at',
+    //                 'tarif.updated_at'
+    //             )
+    //                 ->orderBy($params['sortname'], $params['sortorder'])
+    //                 ->orderBy('tarif.id', 'asc');
+    //         }
+    //     }
 
-        DB::table($temp)->insertUsing(['id_', 'tujuan', 'container_id', 'nominal', 'statusaktif', 'tujuanasal', 'sistemton', 'kota_id', 'zona_id', 'nominalton', 'tglmulaiberlaku', 'statuspenyesuaianharga', 'modifiedby', 'created_at', 'updated_at'], $query);
-
-
-        if ($del == 1) {
-            if ($params['page'] == 1) {
-                $baris = $params['indexRow'] + 1;
-            } else {
-                $hal = $params['page'] - 1;
-                $bar = $hal * $params['limit'];
-                $baris = $params['indexRow'] + $bar + 1;
-            }
+    //     DB::table($temp)->insertUsing(['id_', 'tujuan', 'container_id', 'nominal', 'statusaktif', 'tujuanasal', 'sistemton', 'kota_id', 'zona_id', 'nominalton', 'tglmulaiberlaku', 'statuspenyesuaianharga', 'modifiedby', 'created_at', 'updated_at'], $query);
 
 
-            if (DB::table($temp)
-                ->where('id', '=', $baris)->exists()
-            ) {
-                $querydata = DB::table($temp)
-                    ->select('id as row', 'id_ as id')
-                    ->where('id', '=', $baris)
-                    ->orderBy('id');
-            } else {
-                $querydata = DB::table($temp)
-                    ->select('id as row', 'id_ as id')
-                    ->where('id', '=', ($baris - 1))
-                    ->orderBy('id');
-            }
-        } else {
-            $querydata = DB::table($temp)
-                ->select('id as row')
-                ->where('id_', '=',  $id)
-                ->orderBy('id');
-        }
+    //     if ($del == 1) {
+    //         if ($params['page'] == 1) {
+    //             $baris = $params['indexRow'] + 1;
+    //         } else {
+    //             $hal = $params['page'] - 1;
+    //             $bar = $hal * $params['limit'];
+    //             $baris = $params['indexRow'] + $bar + 1;
+    //         }
 
 
-        $data = $querydata->first();
-        return $data;
-    }
+    //         if (DB::table($temp)
+    //             ->where('id', '=', $baris)->exists()
+    //         ) {
+    //             $querydata = DB::table($temp)
+    //                 ->select('id as row', 'id_ as id')
+    //                 ->where('id', '=', $baris)
+    //                 ->orderBy('id');
+    //         } else {
+    //             $querydata = DB::table($temp)
+    //                 ->select('id as row', 'id_ as id')
+    //                 ->where('id', '=', ($baris - 1))
+    //                 ->orderBy('id');
+    //         }
+    //     } else {
+    //         $querydata = DB::table($temp)
+    //             ->select('id as row')
+    //             ->where('id_', '=',  $id)
+    //             ->orderBy('id');
+    //     }
+
+
+    //     $data = $querydata->first();
+    //     return $data;
+    // }
 }

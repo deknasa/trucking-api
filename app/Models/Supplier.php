@@ -88,7 +88,7 @@ class Supplier extends MyModel
             'supplier.notelp2',
             'supplier.email',
 
-            'parameter_statusaktif.text as statusaktif',
+            'supplier.statusaktif',
             'supplier.web',
             'supplier.namapemilik',
             'supplier.jenisusaha',
@@ -97,7 +97,7 @@ class Supplier extends MyModel
             'supplier.namarekening',
             'supplier.jabatan',
 
-            'parameter_statusdaftarharga.text as statusdaftarharga',
+            'supplier.statusdaftarharga',
             'supplier.kategoriusaha',
 
             'supplier.modifiedby',
@@ -105,8 +105,6 @@ class Supplier extends MyModel
             'supplier.updated_at'
 
         )
-            ->leftJoin('parameter as parameter_statusaktif', "supplier.statusaktif", '=', 'parameter_statusaktif.id')
-            ->leftJoin('parameter as parameter_statusdaftarharga', "supplier.statusdaftarharga", '=', 'parameter_statusdaftarharga.id')
         ->where('supplier.id', $id);
 
         $data = $query->first();
@@ -128,8 +126,8 @@ class Supplier extends MyModel
             $this->table.notelp1,
             $this->table.notelp2,
             $this->table.email,
-            
-            parameter_statusaktif.text as statusaktif,
+            $this->table.statusaktif,
+
             $this->table.web,
             $this->table.namapemilik,
             $this->table.jenisusaha,
@@ -137,8 +135,7 @@ class Supplier extends MyModel
             $this->table.rekeningbank,
             $this->table.namarekening,
             $this->table.jabatan,
-
-            parameter_statusdaftarharga.text as statusdaftarharga,
+            $this->table.statusdaftarharga,
             $this->table.kategoriusaha,
 
             $this->table.modifiedby,
@@ -146,9 +143,7 @@ class Supplier extends MyModel
             $this->table.updated_at"
             )
 
-        )
-            ->leftJoin('parameter as parameter_statusaktif', "supplier.statusaktif", '=', 'parameter_statusaktif.id')
-            ->leftJoin('parameter as parameter_statusdaftarharga', "supplier.statusdaftarharga", '=', 'parameter_statusdaftarharga.id');
+            );
     }
 
     public function createTemp(string $modelTable)

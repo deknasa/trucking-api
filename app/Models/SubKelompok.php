@@ -80,7 +80,7 @@ class SubKelompok extends MyModel
             $table->bigInteger('id')->default('0');
             $table->string('kodesubkelompok',50)->default('');
             $table->longText('keterangan')->default('');
-            $table->unsignedBigInteger('kelompok_id')->default('');
+            $table->string('kelompok_id')->default('');
             $table->string('statusaktif', 500)->default('');
 
 
