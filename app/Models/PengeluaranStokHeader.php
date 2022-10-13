@@ -138,6 +138,75 @@ class PengeluaranStokHeader extends MyModel
         return $query;
     }
 
+    public function createTemp(string $modelTable)
+    {
+        $this->setRequestParameters();
+
+        $temp = '##temp' . rand(1, 10000);
+
+        Schema::create($temp, function ($table) {
+            $table->bigInteger('id')->default('0');
+            $table->string('nobukti',50)->unique();
+            $table->date('tglbukti',50)->default('1900/1/1');
+            $table->longText('keterangan')->default('');
+            $table->unsignedBigInteger('pengeluaranstok_id')->default(0);            
+            $table->unsignedBigInteger('trado_id')->default('0');
+            $table->unsignedBigInteger('gudang_id')->default('0');
+            $table->unsignedBigInteger('supir_id')->default('0');
+            $table->unsignedBigInteger('supplier_id')->default('0');
+            $table->string('pengeluaranstok_nobukti',50)->default('');
+            $table->string('penerimaanstok_nobukti',50)->default('');
+            $table->string('servicein_nobukti',50)->default('');
+            $table->unsignedBigInteger('kerusakan_id')->default('0');
+            $table->unsignedBigInteger('statusformat')->default(0);  
+            $table->string('modifiedby',50)->default('');
+            $table->increments('position');
+            $table->dateTime('created_at')->default('1900/1/1');
+            $table->dateTime('updated_at')->default('1900/1/1');
+        });
+
+        $query = DB::table($modelTable);
+        $query = $this->select(
+            "id",
+            "nobukti",
+            "tglbukti",
+            "keterangan",
+            "pengeluaranstok_id",
+            "trado_id",
+            "gudang_id",
+            "supir_id",
+            "supplier_id",
+            "pengeluaranstok_nobukti",
+            "penerimaanstok_nobukti",
+            "servicein_nobukti",
+            "kerusakan_id",
+            "statusformat",
+            "modifiedby",
+        );
+        $query = $this->sort($query);
+        $models = $this->filter($query);
+        
+        DB::table($temp)->insertUsing([
+            "id",
+            "nobukti",
+            "tglbukti",
+            "keterangan",
+            "pengeluaranstok_id",
+            "trado_id",
+            "gudang_id",
+            "supir_id",
+            "supplier_id",
+            "pengeluaranstok_nobukti",
+            "penerimaanstok_nobukti",
+            "servicein_nobukti",
+            "kerusakan_id",
+            "statusformat",
+            "modifiedby",
+        ], $models);
+
+        return  $temp;
+    }
+
     public function selectColumns($query)
     {
         return $query->select(
@@ -157,7 +226,7 @@ class PengeluaranStokHeader extends MyModel
             "$this->table.statusformat",
             "$this->table.modifiedby",
             "kerusakan.keterangan as kerusakan",
-            "pengeluaranstok.kodepengeluaran",
+            "pengeluaranstok.kodepengeluaran as pengeluaranstok",
             "trado.keterangan as trado",
             "gudang.gudang as gudang",
             "supir.namasupir as supir",
@@ -165,6 +234,25 @@ class PengeluaranStokHeader extends MyModel
         );
     }
 
+    public function find($id)
+    {
+        $this->setRequestParameters();
+
+        $query = DB::table($this->table);
+        $query = $this->selectColumns($query)
+        ->leftJoin('gudang','pengeluaranstokheader.gudang_id','gudang.id')
+        ->leftJoin('pengeluaranstok','pengeluaranstokheader.pengeluaranstok_id','pengeluaranstok.id')
+        ->leftJoin('trado','pengeluaranstokheader.trado_id','trado.id')
+        ->leftJoin('supplier','pengeluaranstokheader.supplier_id','supplier.id')
+        ->leftJoin('kerusakan','pengeluaranstokheader.kerusakan_id','kerusakan.id')
+        ->leftJoin('penerimaanstokheader as penerimaan' ,'pengeluaranstokheader.penerimaanstok_nobukti','penerimaan.nobukti')
+        ->leftJoin('pengeluaranstokheader as pengeluaran' ,'pengeluaranstokheader.pengeluaranstok_nobukti','pengeluaran.nobukti')
+        // ->leftJoin('servicein','pengeluaranstokheader.servicein_nobukti','servicein.nobukti')
+        ->leftJoin('supir','pengeluaranstokheader.supir_id','supir.id');
+
+        $data = $query->where("$this->table.id",$id)->first();
+        return $data;
+    }
     public function paginate($query)
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);

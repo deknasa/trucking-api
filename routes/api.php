@@ -73,6 +73,7 @@
     use App\Http\Controllers\Api\PenerimaanStokHeaderController;
     use App\Http\Controllers\Api\PenerimaanStokDetailController;
     use App\Http\Controllers\Api\PengeluaranStokController;
+    use App\Http\Controllers\Api\PengeluaranStokDetailController;
     use App\Http\Controllers\Api\PengeluaranStokHeaderController;
     use App\Http\Controllers\Api\JurnalUmumHeaderController;
     use App\Http\Controllers\Api\JurnalUmumDetailController;
@@ -332,6 +333,7 @@
         // Route::get('pengeluaranstok/export', [PengeluaranStokController::class,'export']);
         Route::apiResource('pengeluaranstok', PengeluaranStokController::class);
         Route::apiResource('pengeluaranstokheader', PengeluaranStokHeaderController::class);
+        Route::apiResource('pengeluaranstokdetail', PengeluaranStokDetailController::class);
 
         Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
         Route::get('piutangheader/no_bukti', [PiutangHeaderController::class, 'getNoBukti']);
