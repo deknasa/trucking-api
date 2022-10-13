@@ -51,17 +51,18 @@ class UpahSupirController extends Controller
 
         try {
             $upahsupir = new UpahSupir();
+
             $upahsupir->kotadari_id = $request->kotadari_id;
             $upahsupir->kotasampai_id = $request->kotasampai_id;
-            $upahsupir->jarak = $request->jarak;
+            $upahsupir->jarak = str_replace(',', '', str_replace('.', '', $request->jarak));
             $upahsupir->zona_id = $request->zona_id;
             $upahsupir->statusaktif = $request->statusaktif;
             $upahsupir->tglmulaiberlaku = date('Y-m-d', strtotime($request->tglmulaiberlaku));
             $upahsupir->tglakhirberlaku = date('Y-m-d', strtotime($request->tglakhirberlaku));
-
             $upahsupir->statusluarkota = $request->statusluarkota;
+
             $upahsupir->modifiedby = auth('api')->user()->name;
-          
+
             if ($upahsupir->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($upahsupir->getTable()),
@@ -72,32 +73,30 @@ class UpahSupirController extends Controller
                     'datajson' => $upahsupir->toArray(),
                     'modifiedby' => $upahsupir->modifiedby
                 ];
-
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
                 /* Store detail */
                 $detaillog = [];
                 for ($i = 0; $i < count($request->nominalsupir); $i++) {
-                    $nominalsupir = str_replace(',', '', str_replace('.', '', $request->nominalsupir[$i]));
-                    $nominalkenek = str_replace(',', '', str_replace('.', '', $request->nominalkenek[$i]));
-                    $nominalkomisi = str_replace(',', '', str_replace('.', '', $request->nominalkomisi[$i]));
-                    $nominaltol = str_replace(',', '', str_replace('.', '', $request->nominaltol[$i]));
-                    $liter = str_replace(',', '', str_replace('.', '', $request->liter[$i]));
+                    // $nominalsupir = str_replace(',', '', str_replace('.', '', $request->nominalsupir[$i]));
+                    // $nominalkenek = str_replace(',', '', str_replace('.', '', $request->nominalkenek[$i]));
+                    // $nominalkomisi = str_replace(',', '', str_replace('.', '', $request->nominalkomisi[$i]));
+                    // $nominaltol = str_replace(',', '', str_replace('.', '', $request->nominaltol[$i]));
+                    // $liter = str_replace(',', '', str_replace('.', '', $request->liter[$i]));
 
                     $datadetail = [
                         'upahsupir_id' => $upahsupir->id,
                         'container_id' => $request->container_id[$i],
                         'statuscontainer_id' => $request->statuscontainer_id[$i],
-                        'nominalsupir' => $nominalsupir,
-                        'nominalkenek' => $nominalkenek,
-                        'nominalkomisi' => $nominalkomisi,
-                        'nominaltol' => $nominaltol,
-                        'liter' => $liter,
+                        'nominalsupir' => $request->nominalsupir[$i],
+                        'nominalkenek' => $request->nominalkenek[$i],
+                        'nominalkomisi' => $request->nominalkomisi[$i],
+                        'nominaltol' =>  $request->nominaltol[$i],
+                        'liter' => $request->liter[$i],
                         'modifiedby' => $request->modifiedby,
                     ];
                     $data = new StoreUpahSupirRincianRequest($datadetail);
                     $datadetails = app(UpahSupirRincianController::class)->store($data);
-
                     if ($datadetails['error']) {
                         return response($datadetails, 422);
                     } else {
@@ -110,11 +109,11 @@ class UpahSupirController extends Controller
                         'upahsupir_id' => $upahsupir->id,
                         'container_id' => $request->container_id[$i],
                         'statuscontainer_id' => $request->statuscontainer_id[$i],
-                        'nominalsupir' => $nominalsupir,
-                        'nominalkenek' => $nominalkenek,
-                        'nominalkomisi' => $nominalkomisi,
-                        'nominaltol' => $nominaltol,
-                        'liter' => $liter,
+                        'nominalsupir' => $request->nominalsupir[$i],
+                        'nominalkenek' => $request->nominalkenek[$i],
+                        'nominalkomisi' => $request->nominalkomisi[$i],
+                        'nominaltol' =>  $request->nominaltol[$i],
+                        'liter' => $request->liter[$i],
                         'modifiedby' => $request->modifiedby,
                         'created_at' => date('d-m-Y H:i:s', strtotime($upahsupir->created_at)),
                         'updated_at' => date('d-m-Y H:i:s', strtotime($upahsupir->updated_at)),
@@ -172,14 +171,14 @@ class UpahSupirController extends Controller
             return response($th->getMessage());
         }
 
-        // return response($upahsupir->upahsupirRincian);
+        return response($upahsupir->upahsupirRincian());
     }
 
 
     public function show($id)
     {
 
-        $data = UpahSupir::find($id);
+        $data = upahsupir::find($id);
         $detail = UpahSupirRincian::getAll($id);
 
         // dd($details);
@@ -200,11 +199,6 @@ class UpahSupirController extends Controller
         // ]);
     }
 
-
-    public function edit(UpahSupir $upahSupir)
-    {
-        //
-    }
     /**
      * @ClassName 
      */
@@ -216,49 +210,44 @@ class UpahSupirController extends Controller
             $upahsupir = UpahSupir::findOrFail($id);
             $upahsupir->kotadari_id = $request->kotadari_id;
             $upahsupir->kotasampai_id = $request->kotasampai_id;
-            $upahsupir->jarak = $request->jarak;
+            $upahsupir->jarak = str_replace(',', '', str_replace('.', '', $request->jarak));
             $upahsupir->zona_id = $request->zona_id;
             $upahsupir->statusaktif = $request->statusaktif;
             $upahsupir->tglmulaiberlaku = date('Y-m-d', strtotime($request->tglmulaiberlaku));
+            $upahsupir->tglakhirberlaku = date('Y-m-d', strtotime($request->tglakhirberlaku));
             $upahsupir->statusluarkota = $request->statusluarkota;
+
             $upahsupir->modifiedby = auth('api')->user()->name;
 
             if ($upahsupir->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($upahsupir->getTable()),
-                    'postingdari' => 'EDIT UPAH SUPIR',
+                    'postingdari' => 'ENTRY UPAH SUPIR',
                     'idtrans' => $upahsupir->id,
                     'nobuktitrans' => '',
-                    'aksi' => 'EDIT',
+                    'aksi' => 'ENTRY',
                     'datajson' => $upahsupir->toArray(),
                     'modifiedby' => $upahsupir->modifiedby
                 ];
-
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-                $upahsupir->upahsupirRincian()->delete();
-
+                UpahSupirRincian::where('upahsupir_id', $id)->delete();
                 /* Store detail */
                 $detaillog = [];
                 for ($i = 0; $i < count($request->nominalsupir); $i++) {
-                    $nominalsupir = str_replace(',', '', str_replace('.', '', $request->nominalsupir[$i]));
-                    $nominalkenek = str_replace(',', '', str_replace('.', '', $request->nominalkenek[$i]));
-                    $nominalkomisi = str_replace(',', '', str_replace('.', '', $request->nominalkomisi[$i]));
-                    $nominaltol = str_replace(',', '', str_replace('.', '', $request->nominaltol[$i]));
-                    $liter = str_replace(',', '', str_replace('.', '', $request->liter[$i]));
-
                     $datadetail = [
                         'upahsupir_id' => $upahsupir->id,
                         'container_id' => $request->container_id[$i],
                         'statuscontainer_id' => $request->statuscontainer_id[$i],
-                        'nominalsupir' => $nominalsupir,
-                        'nominalkenek' => $nominalkenek,
-                        'nominalkomisi' => $nominalkomisi,
-                        'nominaltol' => $nominaltol,
-                        'liter' => $liter,
+                        'nominalsupir' => $request->nominalsupir[$i],
+                        'nominalkenek' => $request->nominalkenek[$i],
+                        'nominalkomisi' => $request->nominalkomisi[$i],
+                        'nominaltol' =>  $request->nominaltol[$i],
+                        'liter' => $request->liter[$i],
                         'modifiedby' => $request->modifiedby,
                     ];
+
                     $data = new StoreUpahSupirRincianRequest($datadetail);
                     $datadetails = app(UpahSupirRincianController::class)->store($data);
 
@@ -277,7 +266,7 @@ class UpahSupirController extends Controller
                         'nominalsupir' => $request->nominalsupir[$i],
                         'nominalkenek' => $request->nominalkenek[$i],
                         'nominalkomisi' => $request->nominalkomisi[$i],
-                        'nominaltol' => $request->nominaltol[$i],
+                        'nominaltol' =>  $request->nominaltol[$i],
                         'liter' => $request->liter[$i],
                         'modifiedby' => $request->modifiedby,
                         'created_at' => date('d-m-Y H:i:s', strtotime($upahsupir->created_at)),
@@ -286,45 +275,28 @@ class UpahSupirController extends Controller
                     $detaillog[] = $datadetaillog;
                 }
 
-                $dataid = LogTrail::select('id')
-                    ->where('idtrans', '=', $upahsupir->id)
-                    ->where('namatabel', '=', $upahsupir->getTable())
-                    ->orderBy('id', 'DESC')
-                    ->first();
-
                 $datalogtrail = [
                     'namatabel' => $tabeldetail,
-                    'postingdari' => 'EDIT UPAH SUPIR',
-                    'idtrans' =>  $dataid->id,
+                    'postingdari' => 'ENTRY HUTANG DETAIL',
+                    'idtrans' =>  $iddetail,
                     'nobuktitrans' => '',
-                    'aksi' => 'EDIT',
+                    'aksi' => 'ENTRY',
                     'datajson' => $detaillog,
-                    'modifiedby' => $request->modifiedby,
+                    'modifiedby' => $upahsupir->modifiedby,
                 ];
 
                 $data = new StoreLogTrailRequest($datalogtrail);
                 app(LogTrailController::class)->store($data);
-
-                $request->sortname = $request->sortname ?? 'id';
-                $request->sortorder = $request->sortorder ?? 'asc';
-
-                DB::commit();
             }
-            /* Set position and page */
-            // $upahsupir->position = DB::table((new UpahSupir())->getTable())->orderBy($request->sortname, $request->sortorder)
-            //     ->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $upahsupir->{$request->sortname})
-            //     ->where('id', '<=', $upahsupir->id)
-            //     ->count();
+            $request->sortname = $request->sortname ?? 'id';
+            $request->sortorder = $request->sortorder ?? 'asc';
+            DB::commit();
 
-            // if (isset($request->limit)) {
-            //     $upahsupir->page = ceil($upahsupir->position / $request->limit);
-            // }
 
             /* Set position and page */
             $selected = $this->getPosition($upahsupir, $upahsupir->getTable());
             $upahsupir->position = $selected->position;
             $upahsupir->page = ceil($upahsupir->position / ($request->limit ?? 10));
-
 
             return response([
                 'status' => true,
@@ -333,12 +305,145 @@ class UpahSupirController extends Controller
             ]);
         } catch (\Throwable $th) {
             DB::rollBack();
-            return response($th->getMessage());
+            throw $th;
         }
-
-        return response($upahsupir->kasgantungDetail);
     }
 
+    // public function update(StoreUpahSupirRequest $request, $id)
+    // {
+    //     DB::beginTransaction();
+
+    //     try {
+    //         $upahsupir = UpahSupir::findOrFail($id);
+    //         $upahsupir->kotadari_id = $request->kotadari_id;
+    //         $upahsupir->kotasampai_id = $request->kotasampai_id;
+    //         $upahsupir->jarak = $request->jarak;
+    //         $upahsupir->zona_id = $request->zona_id;
+    //         $upahsupir->statusaktif = $request->statusaktif;
+    //         $upahsupir->tglmulaiberlaku = date('Y-m-d', strtotime($request->tglmulaiberlaku));
+    //         $upahsupir->tglakhirberlaku = date('Y-m-d', strtotime($request->tglakhirberlaku));
+    //         $upahsupir->statusluarkota = $request->statusluarkota;
+    //         $upahsupir->modifiedby = auth('api')->user()->name;
+
+    //         if ($upahsupir->save()) {
+    //             $logTrail = [
+    //                 'namatabel' => strtoupper($upahsupir->getTable()),
+    //                 'postingdari' => 'EDIT UPAH SUPIR',
+    //                 'idtrans' => $upahsupir->id,
+    //                 'nobuktitrans' => '',
+    //                 'aksi' => 'EDIT',
+    //                 'datajson' => $upahsupir->toArray(),
+    //                 'modifiedby' => $upahsupir->modifiedby
+    //             ];
+
+    //             $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+    //             $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+
+    //             $upahsupir->upahsupirRincian()->delete();
+
+    //             /* Store detail */
+    //             $detaillog = [];
+    //             for ($i = 0; $i < count($request->nominalsupir); $i++) {
+    //                 // $nominalsupir = str_replace(',', '', str_replace('.', '', $request->nominalsupir[$i]));
+    //                 // $nominalkenek = str_replace(',', '', str_replace('.', '', $request->nominalkenek[$i]));
+    //                 // $nominalkomisi = str_replace(',', '', str_replace('.', '', $request->nominalkomisi[$i]));
+    //                 // $nominaltol = str_replace(',', '', str_replace('.', '', $request->nominaltol[$i]));
+    //                 // $liter = str_replace(',', '', str_replace('.', '', $request->liter[$i]));
+
+    //                 $datadetail = [
+    //                     'upahsupir_id' => $upahsupir->id,
+    //                     'container_id' => $request->container_id[$i],
+    //                     'statuscontainer_id' => $request->statuscontainer_id[$i],
+    //                     'nominalsupir' => $request->nominalsupir[$i],
+    //                     'nominalkenek' => $request->nominalkenek[$i],
+    //                     'nominalkomisi' => $request->nominalkomisi[$i],
+    //                     'nominaltol' =>  $request->nominaltol[$i],
+    //                     'liter' => $request->liter[$i],
+    //                     'modifiedby' => $request->modifiedby,
+    //                 ];
+    //                 $data = new StoreUpahSupirRincianRequest($datadetail);
+    //                 $datadetails = app(UpahSupirRincianController::class)->store($data);
+
+    //                 if ($datadetails['error']) {
+    //                     return response($datadetails, 422);
+    //                 } else {
+    //                     $iddetail = $datadetails['id'];
+    //                     $tabeldetail = $datadetails['tabel'];
+    //                 }
+
+    //                 $datadetaillog = [
+    //                     'id' => $iddetail,
+    //                     'upahsupir_id' => $upahsupir->id,
+    //                     'container_id' => $request->container_id[$i],
+    //                     'statuscontainer_id' => $request->statuscontainer_id[$i],
+    //                     'nominalsupir' => $request->nominalsupir[$i],
+    //                     'nominalkenek' => $request->nominalkenek[$i],
+    //                     'nominalkomisi' => $request->nominalkomisi[$i],
+    //                     'nominaltol' =>  $request->nominaltol[$i],
+    //                     'liter' => $request->liter[$i],
+    //                     'modifiedby' => $request->modifiedby,
+    //                     'created_at' => date('d-m-Y H:i:s', strtotime($upahsupir->created_at)),
+    //                     'updated_at' => date('d-m-Y H:i:s', strtotime($upahsupir->updated_at)),
+    //                 ];
+    //                 $detaillog[] = $datadetaillog;
+    //             }
+
+    //             $dataid = LogTrail::select('id')
+    //                 ->where('idtrans', '=', $upahsupir->id)
+    //                 ->where('namatabel', '=', $upahsupir->getTable())
+    //                 ->orderBy('id', 'DESC')
+    //                 ->first();
+
+    //             $datalogtrail = [
+    //                 'namatabel' => $tabeldetail,
+    //                 'postingdari' => 'EDIT UPAH SUPIR',
+    //                 'idtrans' =>  $dataid->id,
+    //                 'nobuktitrans' => '',
+    //                 'aksi' => 'EDIT',
+    //                 'datajson' => $detaillog,
+    //                 'modifiedby' => $request->modifiedby,
+    //             ];
+
+    //             $data = new StoreLogTrailRequest($datalogtrail);
+    //             app(LogTrailController::class)->store($data);
+
+    //             $request->sortname = $request->sortname ?? 'id';
+    //             $request->sortorder = $request->sortorder ?? 'asc';
+
+    //             DB::commit();
+    //         }
+    //         /* Set position and page */
+    //         // $upahsupir->position = DB::table((new UpahSupir())->getTable())->orderBy($request->sortname, $request->sortorder)
+    //         //     ->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $upahsupir->{$request->sortname})
+    //         //     ->where('id', '<=', $upahsupir->id)
+    //         //     ->count();
+
+    //         // if (isset($request->limit)) {
+    //         //     $upahsupir->page = ceil($upahsupir->position / $request->limit);
+    //         // }
+
+    //         /* Set position and page */
+    //         $selected = $this->getPosition($upahsupir, $upahsupir->getTable());
+    //         $upahsupir->position = $selected->position;
+    //         $upahsupir->page = ceil($upahsupir->position / ($request->limit ?? 10));
+
+
+    //         return response([
+    //             'status' => true,
+    //             'message' => 'Berhasil disimpan',
+    //             'data' => $upahsupir
+    //         ]);
+    //     } catch (\Throwable $th) {
+    //         DB::rollBack();
+    //         return response($th->getMessage());
+    //     }
+
+    //     return response($upahsupir->kasgantungDetail);
+    // }
+
+    /**
+     * @ClassName 
+     */
     public function destroy($id,  Request $request)
     {
 
@@ -392,12 +497,12 @@ class UpahSupirController extends Controller
     /**
      * @ClassName 
      */
-    // public function destroy($id,$upahsupir, Request $request)
+    // public function destroy($id, Request $request)
     // {
     //     DB::beginTransaction();
-
     //     try {
     //         $get = UpahSupir::find($id);
+    //         dd('dad');
     //         $delete = UpahSupirRincian::where('upahsupir_id', $id)->delete();
     //         $delete = UpahSupir::destroy($id);
 

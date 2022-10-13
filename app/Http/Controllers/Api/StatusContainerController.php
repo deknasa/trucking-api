@@ -111,12 +111,12 @@ class StatusContainerController extends Controller
                 ];
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
-                
+
                 /* Set position and page */
                 $selected = $this->getPosition($statusContainer, $statusContainer->getTable());
                 $statusContainer->position = $selected->position;
                 $statusContainer->page = ceil($statusContainer->position / ($request->limit ?? 10));
-                
+
                 return response([
                     'status' => true,
                     'message' => 'Berhasil diubah',
@@ -136,47 +136,101 @@ class StatusContainerController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(StatusContainer $statusContainer, Request $request)
+    // public function destroy(StatusContainer $statusContainer, Request $request)
+    // {
+
+    //     $delete = StatusContainer::destroy($statusContainer->id);
+    //     $del = 1;
+    //     if ($delete) {
+    //         $logTrail = [
+    //             'namatabel' => strtoupper($statusContainer->getTable()),
+    //             'postingdari' => 'DELETE STATUS CONTAINER',
+    //             'idtrans' => $statusContainer->id,
+    //             'nobuktitrans' => $statusContainer->id,
+    //             'aksi' => 'DELETE',
+    //             'datajson' => $statusContainer->toArray(),
+    //             'modifiedby' => $statusContainer->modifiedby
+    //         ];
+
+    //         $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+    //         app(LogTrailController::class)->store($validatedLogTrail);
+
+    //         DB::commit();
+
+    //         $validatedLogTrail = $this->getid($statusContainer->id, $request, $del);
+
+    //         /* Set position and page */
+    //         $selected = $this->getPosition($statusContainer, $statusContainer->getTable(), true);
+    //         $statusContainer->position = $selected->position;
+    //         $statusContainer->id = $selected->id;
+    //         $statusContainer->page = ceil($statusContainer->position / ($request->limit ?? 10));
+
+    //         return response([
+    //             'status' => true,
+    //             'message' => 'Berhasil dihapus',
+    //             'data' => $statusContainer
+    //         ]);
+    //     } else {
+    //         DB::rollBack();
+
+    //         return response([
+    //             'status' => false,
+    //             'message' => 'Gagal dihapus'
+    //         ]);
+    //     }
+    // }
+
+    public function destroy($id,  Request $request)
     {
 
-        $delete = StatusContainer::destroy($statusContainer->id);
-        $del = 1;
-        if ($delete) {
-            $logTrail = [
-                'namatabel' => strtoupper($statusContainer->getTable()),
-                'postingdari' => 'DELETE STATUS CONTAINER',
-                'idtrans' => $statusContainer->id,
-                'nobuktitrans' => $statusContainer->id,
-                'aksi' => 'DELETE',
-                'datajson' => $statusContainer->toArray(),
-                'modifiedby' => $statusContainer->modifiedby
-            ];
+        DB::beginTransaction();
+        $statusContainer = new StatusContainer();
 
-            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-            app(LogTrailController::class)->store($validatedLogTrail);
+        try {
 
-            DB::commit();
+            $delete = StatusContainer::destroy($id);
 
-            /* Set position and page */
-            $selected = $this->getPosition($statusContainer, $statusContainer->getTable(), true);
-            $statusContainer->position = $selected->position;
-            $statusContainer->id = $selected->id;
-            $statusContainer->page = ceil($statusContainer->position / ($request->limit ?? 10));
+            if ($delete) {
+                $logTrail = [
+                    'namatabel' => strtoupper($statusContainer->getTable()),
+                    'postingdari' => 'DELETE STSTUS CONTAINER',
+                    'idtrans' => $id,
+                    'nobuktitrans' => '',
+                    'aksi' => 'DELETE',
+                    'datajson' => $statusContainer->toArray(),
+                    'modifiedby' => $statusContainer->modifiedby
+                ];
 
-            return response([
-                'status' => true,
-                'message' => 'Berhasil dihapus',
-                'data' => $statusContainer
-            ]);
-        } else {
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                app(LogTrailController::class)->store($validatedLogTrail);
+
+                DB::commit();
+
+                /* Set position and page */
+                $selected = $this->getPosition($statusContainer, $statusContainer->getTable(), true);
+                $statusContainer->position = $selected->position;
+                $statusContainer->id = $selected->id;
+                $statusContainer->page = ceil($statusContainer->position / ($request->limit ?? 10));
+
+                return response([
+                    'status' => true,
+                    'message' => 'Berhasil dihapus',
+                    'data' => $statusContainer
+                ]);
+            } else {
+                DB::rollBack();
+
+                return response([
+                    'status' => false,
+                    'message' => 'Gagal dihapus'
+                ]);
+            }
+        } catch (\Throwable $th) {
             DB::rollBack();
-
-            return response([
-                'status' => false,
-                'message' => 'Gagal dihapus'
-            ]);
+            return response($th->getMessage());
         }
     }
+
 
     public function fieldLength()
     {

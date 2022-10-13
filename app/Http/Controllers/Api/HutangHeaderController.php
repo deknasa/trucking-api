@@ -238,7 +238,7 @@ class HutangHeaderController extends Controller
             if ($delete) {
                 $logTrail = [
                     'namatabel' => strtoupper($hutangHeader->getTable()),
-                    'postingdari' => 'DELETE hutanghe$hutangHeader',
+                    'postingdari' => 'DELETE HUTANGHEADER',
                     'idtrans' => $id,
                     'nobuktitrans' => '',
                     'aksi' => 'DELETE',

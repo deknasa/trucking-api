@@ -51,10 +51,12 @@ class UpahRitasiController extends Controller
         DB::beginTransaction();
 
         try {
+            $jarak = str_replace(',', '', str_replace('.', '', $request->jarak));
+
             $upahritasi = new UpahRitasi();
             $upahritasi->kotadari_id = $request->kotadari_id;
             $upahritasi->kotasampai_id = $request->kotasampai_id;
-            $upahritasi->jarak = $request->jarak;
+            $upahritasi->jarak = $jarak;
             $upahritasi->zona_id = $request->zona_id;
             $upahritasi->statusaktif = $request->statusaktif;
             $upahritasi->tglmulaiberlaku = date('Y-m-d', strtotime($request->tglmulaiberlaku));
@@ -204,10 +206,12 @@ class UpahRitasiController extends Controller
         DB::beginTransaction();
 
         try {
+            $jarak = str_replace(',', '', str_replace('.', '', $request->jarak));
+
             $upahritasi = UpahRitasi::findOrFail($id);
             $upahritasi->kotadari_id = $request->kotadari_id;
             $upahritasi->kotasampai_id = $request->kotasampai_id;
-            $upahritasi->jarak = $request->jarak;
+            $upahritasi->jarak = $jarak;
             $upahritasi->zona_id = $request->zona_id;
             $upahritasi->statusaktif = $request->statusaktif;
             $upahritasi->tglmulaiberlaku = date('Y-m-d', strtotime($request->tglmulaiberlaku));

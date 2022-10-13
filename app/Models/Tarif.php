@@ -129,6 +129,38 @@ class Tarif extends MyModel
         return  $temp;
     }
 
+    public function find($id)
+    {
+        $query = DB::table('tarif')->select(
+            'tarif.id',
+            'tarif.tujuan',
+            'tarif.container_id',
+            'tarif.nominal',
+            'tarif.statusaktif',
+            'tarif.tujuanasal',
+            'tarif.statussistemton',
+            
+            'kota.keterangan as kota',
+            'kota.id as kota_id',
+
+            'zona.keterangan as zona',
+            'zona.id as zona_id',
+            
+            'tarif.nominalton',
+            'tarif.tglmulaiberlaku',
+            'tarif.statuspenyesuaianharga',
+            'tarif.modifiedby',
+            'tarif.updated_at'
+        )
+            ->leftJoin('kota', 'tarif.kota_id', '=', 'kota.id')
+            ->leftJoin('zona', 'tarif.zona_id', '=', 'zona.id')
+
+            ->where('tarif.id', $id);
+
+        $data = $query->first();
+        return $data;
+    }
+
 
     public function sort($query)
     {

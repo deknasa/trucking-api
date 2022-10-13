@@ -176,12 +176,11 @@ class SatuanController extends Controller
                 'modifiedby' => $satuan->modifiedby
             ];
 
-            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-            app(LogTrailController::class)->store($validatedLogTrail);
-
+            $data = new StoreLogTrailRequest($logTrail);
+            app(LogTrailController::class)->store($data);
             DB::commit();
 
-            // $data = $this->getid($satuan->id, $request, $del);
+            $data = $this->getid($satuan->id, $request, $del);
             // $satuan->position = $data->row ?? 0;
             // $satuan->id = $data->id  ?? 0;
             // if (isset($request->limit)) {
@@ -189,10 +188,10 @@ class SatuanController extends Controller
             // }
 
             /* Set position and page */
-			  $selected = $this->getPosition($satuan, $satuan->getTable(), true);
-              $satuan->position = $selected->position;
-              $satuan->id = $selected->id;
-              $satuan->page = ceil($satuan->position / ($request->limit ?? 10));
+            $selected = $this->getPosition($satuan, $satuan->getTable(), true);
+            $satuan->position = $selected->position;
+            $satuan->id = $selected->id;
+            $satuan->page = ceil($satuan->position / ($request->limit ?? 10));
 
             return response([
                 'status' => true,

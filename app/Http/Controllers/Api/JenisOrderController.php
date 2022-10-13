@@ -187,48 +187,42 @@ class JenisOrderController extends Controller
     public function destroy(JenisOrder $jenisorder, Request $request)
     {
         DB::beginTransaction();
-        $delete = JenisOrder::destroy($jenisorder->id);
-        $del = 1;
-        if ($delete) {
-            $logTrail = [
-                'namatabel' => strtoupper($jenisorder->getTable()),
-                'postingdari' => 'DELETE JENIS ORDER',
-                'idtrans' => $jenisorder->id,
-                'nobuktitrans' => $jenisorder->id,
-                'aksi' => 'DELETE',
-                'datajson' => $jenisorder->toArray(),
-                'modifiedby' => $jenisorder->modifiedby
-            ];
+        try {
 
-            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-            app(LogTrailController::class)->store($validatedLogTrail);
+            $delete = JenisOrder::destroy($jenisorder->id);
+            $del = 1;
+            if ($delete) {
+                $logTrail = [
+                    'namatabel' => strtoupper($jenisorder->getTable()),
+                    'postingdari' => 'DELETE JENIS ORDER',
+                    'idtrans' => $jenisorder->id,
+                    'nobuktitrans' => $jenisorder->id,
+                    'aksi' => 'DELETE',
+                    'datajson' => $jenisorder->toArray(),
+                    'modifiedby' => $jenisorder->modifiedby
+                ];
 
-            DB::commit();
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                app(LogTrailController::class)->store($validatedLogTrail);
 
-            // $data = $this->getid($jenisorder->id, $request, $del);
-            // $jenisorder->position = $data->row  ?? 0;
-            // $jenisorder->id = $data->id  ?? 0;
-            // if (isset($request->limit)) {
-            //     $jenisorder->page = ceil($jenisorder->position / $request->limit);
-            // }
+                DB::commit();
+                $data = $this->getid($jenisorder->id, $request, $del);
 
-            /* Set position and page */
-            $selected = $this->getPosition($jenisorder, $jenisorder->getTable(), true);
-            $jenisorder->position = $selected->position;
-            $jenisorder->id = $selected->id;
-            $jenisorder->page = ceil($jenisorder->position / ($request->limit ?? 10));
-            
-            return response([
-                'status' => true,
-                'message' => 'Berhasil dihapus',
-                'data' => $jenisorder
-            ]);
-        } else {
+                /* Set position and page */
+                $selected = $this->getPosition($jenisorder, $jenisorder->getTable(), true);
+                $jenisorder->position = $selected->position;
+                $jenisorder->id = $selected->id;
+                $jenisorder->page = ceil($jenisorder->position / ($request->limit ?? 10));
+
+                return response([
+                    'status' => true,
+                    'message' => 'Berhasil dihapus',
+                    'data' => $jenisorder
+                ]);
+            }
+        } catch (\Throwable $th) {
             DB::rollBack();
-            return response([
-                'status' => false,
-                'message' => 'Gagal dihapus'
-            ]);
+            return response($th->getMessage());
         }
     }
 

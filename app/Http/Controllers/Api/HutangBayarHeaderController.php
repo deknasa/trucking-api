@@ -132,7 +132,7 @@ class HutangBayarHeaderController extends Controller
                     'hutang_nobukti' => $request->hutang_nobukti[$i],
                     'nominal' => $request->nominal_detail[$i],
                     'cicilan' => $request->cicilan_detail[$i],
-                    'alatbayar_id' => $request->alatbayar[$i],
+                    'alatbayar_id' => $request->alatbayar_id[$i],
                     'tglcair' => $request->tglcair[$i],
                     'potongan' => $request->potongan_detail[$i],
                     'keterangan' => $request->keterangan_detail[$i],

@@ -106,13 +106,26 @@ class TarifController extends Controller
         }
     }
 
-    public function show(Tarif $tarif)
+
+    public function show($id)
     {
+
+        $data = Tarif::find($id);
         return response([
             'status' => true,
-            'data' => $tarif
+            'data' => $data,
         ]);
+
     }
+
+    // public function show(Tarif $tarif)
+    // {
+        
+    //     return response([
+    //         'status' => true,
+    //         'data' => $tarif
+    //     ]);
+    // }
 
     public function edit(Tarif $tarif)
     {
@@ -183,48 +196,102 @@ class TarifController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Tarif $tarif, Request $request)
+    // public function destroy(Tarif $tarif, Request $request)
+    // {
+    //     $delete = Tarif::destroy($tarif->id);
+    //     $del = 1;
+    //     if ($delete) {
+    //         $logTrail = [
+    //             'namatabel' => strtoupper($tarif->getTable()),
+    //             'postingdari' => 'DELETE TARIF',
+    //             'idtrans' => $tarif->id,
+    //             'nobuktitrans' => $tarif->id,
+    //             'aksi' => 'DELETE',
+    //             'datajson' => $tarif->toArray(),
+    //             'modifiedby' => $tarif->modifiedby
+    //         ];
+
+    //         $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+    //         app(LogTrailController::class)->store($validatedLogTrail);
+
+    //         DB::commit();
+
+    //         // $data = $this->getid($tarif->id, $request, $del);
+    //         // $tarif->position = $data->row  ?? 0;
+    //         // $tarif->id = $data->id  ?? 0;
+    //         // if (isset($request->limit)) {
+    //         //     $tarif->page = ceil($tarif->position / $request->limit);
+    //         // }
+
+    //         $selected = $this->getPosition($tarif, $tarif->getTable(), true);
+    //         $tarif->position = $selected->position;
+    //         $tarif->id = $selected->id;
+    //         $tarif->page = ceil($tarif->position / ($request->limit ?? 10));
+
+    //         return response([
+    //             'status' => true,
+    //             'message' => 'Berhasil dihapus',
+    //             'data' => $tarif
+    //         ]);
+    //     } else {
+    //         return response([
+    //             'status' => false,
+    //             'message' => 'Gagal dihapus'
+    //         ]);
+    //     }
+    // }
+
+     /**
+     * @ClassName
+     */
+    public function destroy($id,  Request $request)
     {
-        $delete = Tarif::destroy($tarif->id);
-        $del = 1;
-        if ($delete) {
-            $logTrail = [
-                'namatabel' => strtoupper($tarif->getTable()),
-                'postingdari' => 'DELETE TARIF',
-                'idtrans' => $tarif->id,
-                'nobuktitrans' => $tarif->id,
-                'aksi' => 'DELETE',
-                'datajson' => $tarif->toArray(),
-                'modifiedby' => $tarif->modifiedby
-            ];
 
-            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-            app(LogTrailController::class)->store($validatedLogTrail);
+        DB::beginTransaction();
+        $tarif = new Tarif();
 
-            DB::commit();
+        try {
+            // $delete = $servicein->delete();
+            $delete = Tarif::destroy($id);
 
-            // $data = $this->getid($tarif->id, $request, $del);
-            // $tarif->position = $data->row  ?? 0;
-            // $tarif->id = $data->id  ?? 0;
-            // if (isset($request->limit)) {
-            //     $tarif->page = ceil($tarif->position / $request->limit);
-            // }
+            if ($delete) {
+                $logTrail = [
+                    'namatabel' => strtoupper($tarif->getTable()),
+                    'postingdari' => 'DELETE TARIF',
+                    'idtrans' => $id,
+                    'nobuktitrans' => '',
+                    'aksi' => 'DELETE',
+                    'datajson' => $tarif->toArray(),
+                    'modifiedby' => $tarif->modifiedby
+                ];
 
-            $selected = $this->getPosition($tarif, $tarif->getTable(), true);
-            $tarif->position = $selected->position;
-            $tarif->id = $selected->id;
-            $tarif->page = ceil($tarif->position / ($request->limit ?? 10));
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                app(LogTrailController::class)->store($validatedLogTrail);
 
-            return response([
-                'status' => true,
-                'message' => 'Berhasil dihapus',
-                'data' => $tarif
-            ]);
-        } else {
-            return response([
-                'status' => false,
-                'message' => 'Gagal dihapus'
-            ]);
+                DB::commit();
+
+                /* Set position and page */
+                $selected = $this->getPosition($tarif, $tarif->getTable(), true);
+                $tarif->position = $selected->position;
+                $tarif->id = $selected->id;
+                $tarif->page = ceil($tarif->position / ($request->limit ?? 10));
+
+                return response([
+                    'status' => true,
+                    'message' => 'Berhasil dihapus',
+                    'data' => $tarif
+                ]);
+            } else {
+                DB::rollBack();
+
+                return response([
+                    'status' => false,
+                    'message' => 'Gagal dihapus'
+                ]);
+            }
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return response($th->getMessage());
         }
     }
 

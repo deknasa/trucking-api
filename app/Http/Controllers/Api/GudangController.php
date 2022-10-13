@@ -270,6 +270,8 @@ class GudangController extends Controller
      */
     public function destroy(Gudang $gudang, Request $request)
     {
+        DB::beginTransaction();
+        try {
         $delete = Gudang::destroy($gudang->id);
         $del = 1;
         if ($delete) {
@@ -295,23 +297,25 @@ class GudangController extends Controller
             //     $gudang->page = ceil($gudang->position / $request->limit);
             // }
 
+            $data = $this->getid($gudang->id, $request, $del);
              /* Set position and page */
-            $selected = $this->getPosition($gudang, $gudang->getTable(), true);
-            $gudang->position = $selected->position;
-            $gudang->id = $selected->id;
-            $gudang->page = ceil($gudang->position / ($request->limit ?? 10));
-            
+             $gudang->position = $data->row ?? 0;
+             $gudang->id = $data->id ?? 0;
+             if (isset($request->limit)) {
+                 $gudang->page = ceil($gudang->position / $request->limit);
+             }
+            // dd($cabang);
             return response([
                 'status' => true,
                 'message' => 'Berhasil dihapus',
                 'data' => $gudang
             ]);
-        } else {
-            return response([
-                'status' => false,
-                'message' => 'Gagal dihapus'
-            ]);
         }
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return response($th->getMessage());
+        }
+    
     }
 
     public function fieldLength()
