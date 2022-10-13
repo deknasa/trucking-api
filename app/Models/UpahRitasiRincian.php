@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
+
 
 class UpahRitasiRincian extends MyModel
 {
@@ -21,4 +23,25 @@ class UpahRitasiRincian extends MyModel
         'created_at',
         'updated_at',
     ];
+
+    public function getAll($id)
+    {
+        $query = DB::table('upahritasirincian')->select(
+            'upahritasirincian.container_id',
+            'upahritasirincian.statuscontainer_id',
+            'upahritasirincian.nominalsupir',
+            'upahritasirincian.nominalkenek',
+            'upahritasirincian.nominalkomisi',
+            'upahritasirincian.nominaltol',
+            'upahritasirincian.liter',
+        )
+            ->leftJoin('container', 'container.id', 'upahritasirincian.container_id')
+            ->leftJoin('statuscontainer', 'statuscontainer.id', 'upahritasirincian.statuscontainer_id')
+            ->where('upahritasi_id', '=', $id);
+
+
+        $data = $query->get();
+
+        return $data;
+    }
 }
