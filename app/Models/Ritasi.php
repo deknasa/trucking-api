@@ -65,6 +65,33 @@ class Ritasi extends MyModel
 
         return $data;
     }
+
+    public function find($id)
+    {
+        $query = DB::table('ritasi')->select(
+            'ritasi.id',
+            'ritasi.nobukti',
+            'ritasi.tglbukti',
+            'ritasi.statusritasi',
+            'ritasi.suratpengantar_nobukti',
+            'ritasi.dari_id',
+            'dari.keterangan as dari',
+            'ritasi.sampai_id',
+            'sampai.keterangan as sampai',
+            'ritasi.trado_id',
+            'trado.keterangan as trado',
+            'ritasi.supir_id',
+            'supir.namasupir as supir'
+        )
+        ->leftJoin('supir', 'ritasi.supir_id', '=', 'supir.id')
+        ->leftJoin('trado', 'ritasi.trado_id', '=', 'trado.id')
+        ->leftJoin('kota as dari', 'ritasi.dari_id', '=', 'dari.id')
+        ->leftJoin('kota as sampai', 'ritasi.sampai_id', '=', 'sampai.id')
+        ->where('ritasi.id',$id);
+
+        $data = $query->first();
+        return $data;
+    }
     public function selectColumns($query)
     {
         return $query->select(

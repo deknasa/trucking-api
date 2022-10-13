@@ -51,6 +51,7 @@ class KasGantungHeader extends MyModel
             'kasgantungheader.pengeluaran_nobukti',
             'kasgantungheader.coakaskeluar',
             'kasgantungheader.tglkaskeluar',
+            'kasgantungheader.postingdari',
             'kasgantungheader.modifiedby',
             'kasgantungheader.created_at',
             'kasgantungheader.updated_at'

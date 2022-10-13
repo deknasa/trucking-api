@@ -11,6 +11,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
+use function PHPUnit\Framework\isNull;
+
 class PengeluaranDetailController extends Controller
 {
     /**
@@ -122,56 +124,60 @@ class PengeluaranDetailController extends Controller
 
             $pengeluaranDetail->pengeluaran_id = $request->pengeluaran_id;
             $pengeluaranDetail->nobukti = $request->nobukti;
-            $pengeluaranDetail->alatbayar_id = $request->alatbayar_id;
-            $pengeluaranDetail->nowarkat = $request->nowarkat;
-            $pengeluaranDetail->tgljatuhtempo = $request->tgljatuhtempo;
-            $pengeluaranDetail->nominal = $request->nominal;
-            $pengeluaranDetail->coadebet = $request->coadebet;
-            $pengeluaranDetail->coakredit = $request->coakredit;
+            $pengeluaranDetail->alatbayar_id = $request->alatbayar_id ?? '';
+            $pengeluaranDetail->nowarkat = $request->nowarkat ?? '';
+            $pengeluaranDetail->tgljatuhtempo = $request->tgljatuhtempo ?? '';
+            $pengeluaranDetail->nominal = $request->nominal ?? '';
+            $pengeluaranDetail->coadebet = $request->coadebet ?? '';
+            $pengeluaranDetail->coakredit = $request->coakredit ?? '';
             $pengeluaranDetail->keterangan = $request->keterangan ?? '';
-            $pengeluaranDetail->bulanbeban = $request->bulanbeban;
+            $pengeluaranDetail->bulanbeban = $request->bulanbeban ?? '';
             $pengeluaranDetail->modifiedby = $request->modifiedby;
             $pengeluaranDetail->save();
 
             if($entriLuar == 1) {
                 $nobukti = $pengeluaranDetail['nobukti'];
-                $fetchId = JurnalUmumHeader::select('id')
+                $fetchId = JurnalUmumHeader::select('id','tglbukti')
                 ->where('nobukti','=',$nobukti)
                 ->first();
                 $id = $fetchId->id;
-                $baris = DB::table('jurnalumumdetail')->select('baris')->where('nobukti',$nobukti)->count();
 
-
-                $jurnalDetail = [
-                    [
-                        'nobukti' => $pengeluaranDetail->nobukti,
-                        'tglbukti' => $request->tglbukti,
-                        'coa' =>  $pengeluaranDetail->coadebet,
-                        'nominal' => $pengeluaranDetail->nominal,
-                        'keterangan' => $pengeluaranDetail->keterangan,
-                        'modifiedby' => auth('api')->user()->name,
-                        'baris' => $baris+1,
-                    ],
-                    [
-                        'nobukti' => $pengeluaranDetail->nobukti,
-                        'tglbukti' => $request->tglbukti,
-                        'coa' =>  $pengeluaranDetail->coakredit,
-                        'nominal' => -$pengeluaranDetail->nominal,
-                        'keterangan' => $pengeluaranDetail->keterangan,
-                        'modifiedby' => auth('api')->user()->name,
-                        'baris' => $baris+1,
-                    ]
-                ];
-                foreach ($jurnalDetail as $value) {
-                    $value['jurnalumum_id'] = $id;
-
-                    $jurnalDetail = new StoreJurnalUmumDetailRequest($value);
-                    
-                    app(JurnalUmumDetailController::class)->store($jurnalDetail);
-
+                $getBaris = DB::table('jurnalumumdetail')->select('baris')->where('nobukti', $nobukti)->orderByDesc('baris')->first();
+                if(is_null($getBaris)) {
+                    $baris = 0;
+                }else{
+                    $baris = $getBaris->baris;
                 }
                 
+                for ($x = 0; $x <= 1; $x++) {
+                    if ($x == 1) {
+                        $datadetail = [
+                            'jurnalumum_id' => $id,
+                            'nobukti' => $pengeluaranDetail->nobukti,
+                            'tglbukti' => $fetchId->tglbukti,
+                            'coa' =>  $pengeluaranDetail->coakredit,
+                            'nominal' => -$pengeluaranDetail->nominal,
+                            'keterangan' => $pengeluaranDetail->keterangan,
+                            'modifiedby' => auth('api')->user()->name,
+                            'baris' => $baris,
+                        ];
+                    } else {
+                        $datadetail = [
+                            'jurnalumum_id' => $id,
+                            'nobukti' => $pengeluaranDetail->nobukti,
+                            'tglbukti' => $fetchId->tglbukti,
+                            'coa' =>  $pengeluaranDetail->coadebet,
+                            'nominal' => $pengeluaranDetail->nominal,
+                            'keterangan' => $pengeluaranDetail->keterangan,
+                            'modifiedby' => auth('api')->user()->name,
+                            'baris' => $baris,
+                        ];
+                    }
+                    $detail = new StoreJurnalUmumDetailRequest($datadetail);
+                    $tes = app(JurnalUmumDetailController::class)->store($detail); 
+                }
             }
+
             DB::commit();
             if ($validator->passes()) {
                 return [

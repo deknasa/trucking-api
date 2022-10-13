@@ -98,7 +98,7 @@ class SuratPengantarController extends Controller
                 'suratpengantar.statustrip',
                 'suratpengantar.notripasal',
                 'suratpengantar.tgldoor',
-                'suratpengantar.upahritasi_id',
+                // 'suratpengantar.upahritasi_id',
                 'suratpengantar.statusdisc',
                 'suratpengantar.gajisupir',
                 'suratpengantar.gajikenek',

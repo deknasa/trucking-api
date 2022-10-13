@@ -217,7 +217,7 @@
         Route::resource('userrole', UserRoleController::class);
 
         Route::get('acl/field_length', [AclController::class, 'fieldLength']);
-        Route::get('acl/detail', [AclController::class, 'detail']);
+        Route::get('acl/detail/{roleId}', [AclController::class, 'detail']);
         Route::get('acl/detaillist', [AclController::class, 'detaillist']);
         Route::get('acl/combostatus', [AclController::class, 'combostatus']);
         Route::get('acl/export', [AclController::class, 'export'])->name('acl.export');
@@ -304,6 +304,7 @@
         Route::get('jurnalumumheader/combo', [JurnalUmumHeaderController::class, 'combo']);
         Route::post('jurnalumumheader/{id}/cekapproval', [JurnalUmumHeaderController::class, 'cekapproval'])->name('jurnalumumheader.cekapproval');
         Route::get('jurnalumumheader/grid', [JurnalUmumHeaderController::class, 'grid']);
+        Route::get('jurnalumumheader/field_length', [JurnalUmumHeaderController::class, 'fieldLength']);
         Route::resource('jurnalumumheader', JurnalUmumHeaderController::class);
         Route::resource('jurnalumumdetail', JurnalUmumDetailController::class);
 
@@ -353,6 +354,7 @@
         Route::get('pelunasanpiutangheader/{id}/{agenid}/getPelunasanPiutang', [PelunasanPiutangHeaderController::class, 'getPelunasanPiutang']);
         Route::get('pelunasanpiutangheader/{id}/{agenid}/getDeletePelunasanPiutang', [PelunasanPiutangHeaderController::class, 'getDeletePelunasanPiutang']);
         Route::get('pelunasanpiutangheader/grid', [PelunasanPiutangHeaderController::class, 'grid']);
+        Route::get('pelunasanpiutangheader/field_length', [PelunasanPiutangHeaderController::class, 'fieldLength']);
         Route::resource('pelunasanpiutangheader', PelunasanPiutangHeaderController::class);
         Route::resource('pelunasanpiutangdetail', PelunasanPiutangDetailController::class);
 

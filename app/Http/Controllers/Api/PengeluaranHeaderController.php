@@ -94,7 +94,7 @@ class PengeluaranHeaderController extends Controller
             $pengeluaranHeader->pelanggan_id = $request->pelanggan_id;
             $pengeluaranHeader->keterangan = $request->keterangan ?? '';
             $pengeluaranHeader->statusjenistransaksi = $request->statusjenistransaksi ?? 0;
-            $pengeluaranHeader->postingdari = $request->postingdari ?? 'PENGELUARAN';
+            $pengeluaranHeader->postingdari = $request->postingdari ?? 'ENTRY PENGELUARAN';
             $pengeluaranHeader->statusapproval = $statusApproval->id ?? $request->statusapproval;
             $pengeluaranHeader->dibayarke = $request->dibayarke ?? '';
             $pengeluaranHeader->cabang_id = $request->cabang_id ?? 0;

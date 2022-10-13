@@ -591,4 +591,18 @@ class JurnalUmumHeaderController extends Controller
             return response($data);
         }
     }
+
+    public function fieldLength()
+    {
+        $data = [];
+        $columns = DB::connection()->getDoctrineSchemaManager()->listTableDetails('piutangheader')->getColumns();
+
+        foreach ($columns as $index => $column) {
+            $data[$index] = $column->getLength();
+        }
+
+        return response([
+            'data' => $data
+        ]);
+    }
 }

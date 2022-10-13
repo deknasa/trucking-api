@@ -58,6 +58,16 @@ class AbsensiSupirHeader extends MyModel
         return $data;
     }
 
+    public function find($id) 
+    {
+        $query = DB::table('absensisupirheader')
+            ->select('id','nobukti','kasgantung_nobukti','tglbukti','keterangan')
+            ->where('id',$id);
+        $data = $query->first();
+
+        return $data;
+    }
+
     public function selectColumns($query)
     {
         return $query->select(
