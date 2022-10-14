@@ -148,9 +148,9 @@ class PiutangHeaderTest extends TestCase
     {
         $piutangHeader = PiutangHeader::factory()->make([
             'nominal_detail' => [
-                $this->faker()->randomFloat(),
-                $this->faker()->randomFloat(),
-                $this->faker()->randomFloat(),
+                $this->faker()->randomFloat(null, 1),
+                $this->faker()->randomFloat(null, 1),
+                $this->faker()->randomFloat(null, 1),
             ],
             'keterangan_detail' => [
                 $this->faker()->sentence(),
@@ -215,9 +215,9 @@ class PiutangHeaderTest extends TestCase
     {
         $piutangHeader = PiutangHeader::factory()->make([
             'nominal_detail' => [
-                $this->faker()->randomFloat(),
-                $this->faker()->randomFloat(),
-                $this->faker()->randomFloat(),
+                $this->faker()->randomFloat(null, 1),
+                $this->faker()->randomFloat(null, 1),
+                $this->faker()->randomFloat(null, 1),
             ],
             'keterangan_detail' => [
                 $this->faker()->sentence(),

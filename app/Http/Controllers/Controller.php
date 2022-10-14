@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use stdClass;
 
 class Controller extends BaseController
 {
@@ -98,25 +99,23 @@ class Controller extends BaseController
         $runningNumber = $this->appHelper->runningNumber($text, $lastRow, $bulan);
         // dd($runningNumber);
         $nilai = 0;
-        $nomor=$lastRow;
-        while ($nilai < 1) { 
+        $nomor = $lastRow;
+        while ($nilai < 1) {
             $cekbukti = DB::table($request->table)
                 ->where(DB::raw('nobukti'), '=', $runningNumber)
                 ->first();
-                if (!isset($cekbukti)) {
-                    $nilai++;
-                    break;
-                }
-                $nomor++;
-                $runningNumber = $this->appHelper->runningNumber($text, $nomor, $bulan);
-
-
+            if (!isset($cekbukti)) {
+                $nilai++;
+                break;
+            }
+            $nomor++;
+            $runningNumber = $this->appHelper->runningNumber($text, $nomor, $bulan);
         }
 
 
 
 
-     
+
         return response([
             'status' => true,
             'data' => $runningNumber
@@ -188,12 +187,14 @@ class Controller extends BaseController
      */
     function getPosition(Model $model, string $modelTable, bool $isDeleting = false)
     {
+        $data = new stdClass();
+        
         $indexRow = request()->indexRow ?? 1;
         $limit = request()->limit ?? 10;
         $page = request()->page ?? 1;
 
         $temporaryTable = $model->createTemp($modelTable);
-        
+
         if ($isDeleting) {
             if ($page == 1) {
                 $position = $indexRow + 1;
@@ -211,15 +212,21 @@ class Controller extends BaseController
                 ->select('position', 'id')
                 ->where('position', '=', $position)
                 ->orderBy('position');
+
         } else {
-            if($modelTable == 'acl') {
+            if ($modelTable == 'acl') {
                 $query = DB::table($temporaryTable)->select('position')->where('id', $model->role_id)->orderBy('position');
             } else {
                 $query = DB::table($temporaryTable)->select('position')->where('id', $model->id)->orderBy('position');
-            }            
+            }
         }
-        
-        $data = $query->first();
+
+        if ($query->first() == null) {
+            $data->position = 0;
+            $data->id = 0;
+        } else {
+            $data = $query->first();
+        }
         return $data;
     }
 }
