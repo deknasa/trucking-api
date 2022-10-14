@@ -69,7 +69,18 @@ class AbsensiSupirDetailController extends Controller
 
                 $absensiSupirDetail = $query->get();
             } else {
-                $query->with('trado', 'supir', 'absenTrado');
+                $query->select(
+                    'trado.keterangan as trado',
+                    'supir.namasupir as supir',
+                    'absentrado.kodeabsen as status',
+                    'detail.keterangan as keterangan_detail',
+                    'detail.jam',
+                    'detail.uangjalan',
+                    'detail.absensi_id'
+                )
+                    ->join('trado', 'trado.id', '=', 'detail.trado_id')
+                    ->join('supir', 'supir.id', '=', 'detail.supir_id')
+                    ->join('absentrado', 'absentrado.id', '=', 'detail.absen_id');
                 $absensiSupirDetail = $query->get();
             }
 
