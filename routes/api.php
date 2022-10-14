@@ -117,6 +117,8 @@
         Route::get('absensisupirheader/grid', [AbsensiSupirHeaderController::class, 'grid']);
         Route::get('absensisupirheader/field_length', [AbsensiSupirHeaderController::class, 'fieldLength']);
         Route::apiResource('absensisupirheader', AbsensiSupirHeaderController::class)->parameter('absensisupirheader', 'absensiSupirHeader');
+        
+        Route::resource('absensisupirdetail', AbsensiSupirDetailController::class);
 
         Route::get('absen_trado/field_length', [AbsenTradoController::class, 'fieldLength']);
         Route::resource('absen_trado', AbsenTradoController::class);
