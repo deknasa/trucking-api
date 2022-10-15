@@ -115,7 +115,10 @@
         Route::get('absensisupirheader/no_bukti', [AbsensiSupirHeaderController::class, 'getNoBukti']);
         Route::get('absensisupirheader/running_number', [AbsensiSupirHeaderController::class, 'getRunningNumber']);
         Route::get('absensisupirheader/grid', [AbsensiSupirHeaderController::class, 'grid']);
+        Route::get('absensisupirheader/field_length', [AbsensiSupirHeaderController::class, 'fieldLength']);
         Route::apiResource('absensisupirheader', AbsensiSupirHeaderController::class)->parameter('absensisupirheader', 'absensiSupirHeader');
+        
+        Route::resource('absensisupirdetail', AbsensiSupirDetailController::class);
 
         Route::get('absen_trado/field_length', [AbsenTradoController::class, 'fieldLength']);
         Route::resource('absen_trado', AbsenTradoController::class);
@@ -375,13 +378,13 @@
         Route::resource('serviceindetail', ServiceInDetailController::class);
 
         Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
-        Route::get('kasgantung/no_bukti', [KasGantungHeaderController::class, 'getNoBukti']);
-        Route::get('kasgantung/combo', [KasGantungHeaderController::class, 'combo']);
-        Route::get('kasgantung/grid', [KasGantungHeaderController::class, 'grid']);
-        Route::get('kasgantung/field_length', [KasGantungHeaderController::class, 'fieldLength']);
-        Route::resource('kasgantung', KasGantungHeaderController::class);
+        Route::get('kasgantungheader/no_bukti', [KasGantungHeaderController::class, 'getNoBukti']);
+        Route::get('kasgantungheader/combo', [KasGantungHeaderController::class, 'combo']);
+        Route::get('kasgantungheader/grid', [KasGantungHeaderController::class, 'grid']);
+        Route::get('kasgantungheader/field_length', [KasGantungHeaderController::class, 'fieldLength']);
+        Route::resource('kasgantungheader', KasGantungHeaderController::class);
 
-        Route::resource('kasgantung_detail', KasGantungDetailController::class);
+        Route::resource('kasgantungdetail', KasGantungDetailController::class);
     });
 
     Route::get('gudang/combo', [GudangController::class, 'combo']);

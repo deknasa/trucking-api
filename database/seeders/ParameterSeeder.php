@@ -163,6 +163,8 @@ class ParameterSeeder extends Seeder
         Parameter::create(['grp' => 'SERVICE OUT BUKTI',  'subgrp' => 'SERVICE OUT BUKTI',  'text' => '#SOU #9999#/#R#/#Y',  'type' => '118',  'memo' => 'SERVICE OUT BUKTI',  'modifiedby' => 'ADMIN',]);
         Parameter::create(['grp' => 'ABSENSI SUPIR APPROVAL BUKTI',  'subgrp' => 'ABSENSI SUPIR APPROVAL BUKTI',  'text' => '#ASA #9999#/#R#/#Y',  'type' => '118',  'memo' => 'SERVICE OUT BUKTI',  'modifiedby' => 'ADMIN',]);
         Parameter::create(['grp' => 'PENERIMAAN STOK',  'subgrp' => 'SALDO STOK BUKTI',  'text' => '#SST #9999#/#R#/#Y',  'type' => '118',  'memo' => 'SALDO STOK BUKTI',  'modifiedby' => 'ADMIN',]);
+        Parameter::create(['grp' => 'RINCIAN GAJI SUPIR BUKTI',  'subgrp' => 'RINCIAN GAJI SUPIR BUKTI',  'text' => '#RIC #9999#/#R#/#Y',  'type' => '118',  'memo' => 'RINCIAN GAJI SUPIR BUKTI',  'modifiedby' => 'ADMIN',]);
+        Parameter::create(['grp' => 'PENGEMBALIAN KAS GANTUNG BUKTI',  'subgrp' => 'PENGEMBALIAN KAS GANTUNG BUKTI',  'text' => '#PKG #9999#/#R#/#Y',  'type' => '118',  'memo' => 'PENGEMBALIAN KAS GANTUNG BUKTI',  'modifiedby' => 'ADMIN',]);
        
 
 
