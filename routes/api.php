@@ -27,6 +27,8 @@
     use App\Http\Controllers\Api\BankController;
     use App\Http\Controllers\Api\AlatBayarController;
     use App\Http\Controllers\Api\BankPelangganController;
+    use App\Http\Controllers\Api\GajiSupirDetailController;
+    use App\Http\Controllers\Api\GajiSupirHeaderController;
     use App\Http\Controllers\Api\JenisEmklController;
     use App\Http\Controllers\Api\JenisOrderController;
     use App\Http\Controllers\Api\JenisTradoController;
@@ -385,6 +387,17 @@
         Route::resource('kasgantungheader', KasGantungHeaderController::class);
 
         Route::resource('kasgantungdetail', KasGantungDetailController::class);
+
+        Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
+        Route::get('gajisupirheader/no_bukti', [GajiSupirHeaderController::class, 'getNoBukti']);
+        Route::get('gajisupirheader/{id}/getpiutang', [GajiSupirHeaderController::class, 'getpiutang'])->name('gajisupirheader.getpiutang');
+        Route::get('gajisupirheader/grid', [GajiSupirHeaderController::class, 'grid']);
+        Route::get('gajisupirheader/field_length', [GajiSupirHeaderController::class, 'fieldLength']);
+        Route::get('gajisupirheader/getTrip', [GajiSupirHeaderController::class, 'getTrip']);
+        Route::post('gajisupirheader/noEdit', [GajiSupirHeaderController::class, 'noEdit']);
+        Route::get('gajisupirheader/{gajiId}/getEditTrip', [GajiSupirHeaderController::class, 'getEditTrip']);
+        Route::resource('gajisupirheader', GajiSupirHeaderController::class);
+        Route::resource('gajisupirdetail', GajiSupirDetailController::class);
     });
 
     Route::get('gudang/combo', [GudangController::class, 'combo']);

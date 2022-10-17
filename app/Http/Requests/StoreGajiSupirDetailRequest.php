@@ -13,7 +13,7 @@ class StoreGajiSupirDetailRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +24,12 @@ class StoreGajiSupirDetailRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'sp_id' => 'required',
+        ];
+    }
+    public function attributes() {
+        return [
+            'sp_id' => 'SP',
         ];
     }
 }
