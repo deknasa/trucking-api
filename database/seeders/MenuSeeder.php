@@ -18,8 +18,8 @@ class MenuSeeder extends Seeder
         DB::statement("delete Menu");
         DB::statement("DBCC CHECKIDENT ('Menu', RESEED, 1);");
 
-        menu::create([ 'menuname' => 'DASHBOARD', 'menuseq' => '0', 'menuparent' => '0', 'menuicon' => 'FAS FA-HOME', 'aco_id' => '0', 'link' => '/dashboard', 'menuexe' => '', 'menukode' => '0', 'modifiedby' => '',]);
-        menu::create([ 'menuname' => 'LOGOUT', 'menuseq' => '7', 'menuparent' => '0', 'menuicon' => 'FAS FA-SIGN-OUT-ALT', 'aco_id' => '0', 'link' => '/LOGOUT', 'menuexe' => '', 'menukode' => '6', 'modifiedby' => '',]);
+        menu::create([ 'menuname' => 'DASHBOARD', 'menuseq' => '0', 'menuparent' => '0', 'menuicon' => 'FAS FA-HOME', 'aco_id' => '0', 'link' => 'dashboard', 'menuexe' => '', 'menukode' => '0', 'modifiedby' => '',]);
+        menu::create([ 'menuname' => 'LOGOUT', 'menuseq' => '7', 'menuparent' => '0', 'menuicon' => 'FAS FA-SIGN-OUT-ALT', 'aco_id' => '0', 'link' => 'logout', 'menuexe' => '', 'menukode' => '6', 'modifiedby' => '',]);
         menu::create([ 'menuname' => 'MASTER', 'menuseq' => '1', 'menuparent' => '0', 'menuicon' => 'FAS FA-USER-TAG', 'aco_id' => '0', 'link' => '', 'menuexe' => '', 'menukode' => '1', 'modifiedby' => '',]);
         menu::create([ 'menuname' => 'SYSTEM', 'menuseq' => '11', 'menuparent' => '3', 'menuicon' => 'FAB FA-UBUNTU', 'aco_id' => '0', 'link' => '', 'menuexe' => '', 'menukode' => '11', 'modifiedby' => '',]);
         menu::create([ 'menuname' => 'PARAMETER', 'menuseq' => '111', 'menuparent' => '4', 'menuicon' => 'FAS FA-EXCLAMATION', 'aco_id' => '1', 'link' => '', 'menuexe' => '', 'menukode' => '111', 'modifiedby' => 'ADMIN',]);
