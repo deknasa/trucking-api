@@ -107,7 +107,7 @@
 
     Route::post('token', [AuthController::class, 'token']);
 
-    route::middleware('auth:api')->group(function () {
+    route::middleware(['auth:api'])->group(function () {
         Route::get('parameter/export', [ParameterController::class, 'export']);
         Route::get('parameter/field_length', [ParameterController::class, 'fieldLength']);
         Route::get('parameter/combo', [ParameterController::class, 'combo']);
