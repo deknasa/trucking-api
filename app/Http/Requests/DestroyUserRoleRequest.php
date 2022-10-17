@@ -27,7 +27,7 @@ class DestroyUserRoleRequest extends FormRequest
         return [
             'user_id' => 'required',
             'role_id' => 'required',
-            'modifiedby' => 'required'
+            // 'modifiedby' => 'required'
 
         ];
     }
@@ -37,7 +37,7 @@ class DestroyUserRoleRequest extends FormRequest
         return [
             'user_id' => 'user id',
             'role_id' => 'role id',
-            'modifiedby' => 'modified by'
+            // 'modifiedby' => 'modified by'
         ];
     }
 
@@ -47,7 +47,7 @@ class DestroyUserRoleRequest extends FormRequest
         return [
             'user_id.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
             'role_id.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
-            'modifiedby.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
+            // 'modifiedby.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
 
 
         ];

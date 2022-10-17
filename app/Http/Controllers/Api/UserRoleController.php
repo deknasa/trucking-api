@@ -28,7 +28,7 @@ class UserRoleController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-     /**
+    /**
      * @ClassName 
      */
     public function index()
@@ -276,14 +276,7 @@ class UserRoleController extends Controller
         ]);
     }
 
-
     /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \App\Http\Requests\StoreUserRoleRequest  $request
-     * @return \Illuminate\Http\Response
-     */
-     /**
      * @ClassName 
      */
     public function store(StoreUserRoleRequest $request)
@@ -300,7 +293,7 @@ class UserRoleController extends Controller
                 $userrole->user_id = $request->user_id;
                 $userrole->role_id = $request->role_id[$i]  ?? 0;
                 $userrole->modifiedby = auth('api')->user()->name;
-                
+
                 if ($request->status[$i] == $aktif) {
                     if ($userrole->save()) {
                         $logTrail = [
@@ -347,12 +340,6 @@ class UserRoleController extends Controller
         }
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\UserRole  $userRole
-     * @return \Illuminate\Http\Response
-     */
     public function show(UserRole $userrole)
     {
         $data = User::select('user')
@@ -367,13 +354,6 @@ class UserRoleController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
-     *
-     * @param  \App\Http\Requests\UpdateUserRoleRequest  $request
-     * @param  \App\Models\UserRole  $userRole
-     * @return \Illuminate\Http\Response
-     */
-     /**
      * @ClassName 
      */
     public function update(UpdateUserRoleRequest $request, UserRole $userrole)
@@ -409,18 +389,9 @@ class UserRoleController extends Controller
             }
 
             /* Set position and page */
-            // $del = 0;
-            // $data = $this->getid($request->user_id, $request, $del);
-            // $userrole->position = $data->id;
-            // $userrole->id = $data->row;
-            // if (isset($request->limit)) {
-            //     $userrole->page = ceil($userrole->position / $request->limit);
-            // }
-
-             /* Set position and page */
-             $selected = $this->getPosition($userrole, $userrole->getTable());
-             $userrole->position = $selected->position;
-             $userrole->page = ceil($userrole->position / ($request->limit ?? 10));
+            $selected = $this->getPosition($userrole, $userrole->getTable());
+            $userrole->position = $selected->position;
+            $userrole->page = ceil($userrole->position / ($request->limit ?? 10));
 
             return response([
                 'status' => true,
@@ -429,67 +400,112 @@ class UserRoleController extends Controller
             ]);
         } catch (\Throwable $th) {
             DB::rollBack();
-            return response($th->getMessage());
+            
+            throw $th;
         }
     }
 
     /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\UserRole  $userRole
-     * @return \Illuminate\Http\Response
-     */
-     /**
      * @ClassName 
      */
-    public function destroy(UserRole $userrole, DestroyUserRoleRequest $request)
+    public function destroy($id,  Request $request)
     {
         DB::beginTransaction();
 
         try {
-            $delete = UserRole::where('user_id', $request->user_id)->delete();
+            $userRole = UserRole::where('id', $id)->first();
+            $delete = UserRole::where('id', $id)->delete();
 
             if ($delete > 0) {
                 $logTrail = [
-                    'namatabel' => strtoupper($userrole->getTable()),
-                    'postingdari' => 'DELETE USER ROLE',
-                    'idtrans' => $userrole->id,
-                    'nobuktitrans' => $userrole->id,
+                    'namatabel' => strtoupper($userRole->getTable()),
+                    'postingdari' => 'DELETE USERROLE',
+                    'idtrans' => $id,
+                    'nobuktitrans' => '',
                     'aksi' => 'DELETE',
-                    'datajson' => $userrole->toArray(),
-                    'modifiedby' => $userrole->modifiedby
+                    'datajson' => $userRole->toArray(),
+                    'modifiedby' => $userRole->modifiedby
                 ];
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+                app(LogTrailController::class)->store($validatedLogTrail);
 
                 DB::commit();
+
+                /* Set position and page */
+                $selected = $this->getPosition($userRole, $userRole->getTable(), true);
+                $userRole->position = $selected->position;
+                $userRole->id = $selected->id;
+                $userRole->page = ceil($userRole->position / ($request->limit ?? 10));
+
+                return response([
+                    'status' => true,
+                    'message' => 'Berhasil dihapus',
+                    'data' => $userRole
+                ]);
+            } else {
+                dd($delete);
+                DB::rollBack();
+
+                return response([
+                    'status' => false,
+                    'message' => 'Gagal dihapus'
+                ]);
             }
-
-            // $del = 1;
-
-            // $data = $this->getid($request->user_id, $request, $del);
-
-            // $userrole->position = $data->row;
-            // $userrole->id = $data->id;
-            // if (isset($request->limit)) {
-            //     $userrole->page = ceil($userrole->position / $request->limit);
-            // }
-
-            $selected = $this->getPosition($userrole, $userrole->getTable(), true);
-            $userrole->position = $selected->position;
-            $userrole->id = $selected->id;
-            $userrole->page = ceil($userrole->position / ($request->limit ?? 10));
-            
-            return response([
-                'status' => true,
-                'message' => 'Berhasil dihapus',
-                'data' => $userrole
-            ]);
         } catch (\Throwable $th) {
+            DB::rollBack();
+            
             throw $th;
         }
     }
+    // public function destroy(UserRole $userrole, DestroyUserRoleRequest $request)
+    // {
+    //     DB::beginTransaction();
+
+    //     try {
+    //         $delete = UserRole::where('user_id', $request->user_id)->delete();
+
+    //         if ($delete > 0) {
+    //             $logTrail = [
+    //                 'namatabel' => strtoupper($userrole->getTable()),
+    //                 'postingdari' => 'DELETE USER ROLE',
+    //                 'idtrans' => $userrole->id,
+    //                 'nobuktitrans' => $userrole->id,
+    //                 'aksi' => 'DELETE',
+    //                 'datajson' => $userrole->toArray(),
+    //                 'modifiedby' => $userrole->modifiedby
+    //             ];
+
+    //             $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+    //             $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+
+    //             DB::commit();
+    //         }
+
+
+    //         // $userrole->position = $data->row;
+    //         // $userrole->id = $data->id;
+    //         // if (isset($request->limit)) {
+    //         //     $userrole->page = ceil($userrole->position / $request->limit);
+    //         // }
+
+    //         $del = 1;
+
+    //         $data = $this->getid($request->user_id, $request, $del);
+    //         $selected = $this->getPosition($userrole, $userrole->getTable(), true);
+    //         $userrole->position = $selected->position;
+    //         $userrole->id = $selected->id;
+    //         $userrole->page = ceil($userrole->position / ($request->limit ?? 10));
+
+    //         return response([
+    //             'status' => true,
+    //             'message' => 'Berhasil dihapus',
+    //             'data' => $userrole
+    //         ]);
+    //     } catch (\Throwable $th) {
+    //         throw $th;
+    //     }
+    // }
 
     public function fieldLength()
     {
