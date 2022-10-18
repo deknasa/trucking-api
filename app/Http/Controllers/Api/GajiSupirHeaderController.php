@@ -446,11 +446,10 @@ class GajiSupirHeaderController extends Controller
         }
     }
 
-    public function getTrip(Request $request) {
+    public function getTrip($supir_id,$dari,$sampai) {
         $gajisupir = new GajiSupirHeader();
-        $supir_id = $request->supir_id;
-        $tglDari = date('Y-m-d', strtotime($request->tgldari));
-        $tglSampai =date('Y-m-d', strtotime($request->tglsampai));
+        $tglDari = date('Y-m-d', strtotime($dari));
+        $tglSampai = date('Y-m-d', strtotime($sampai));
 
 
         $cekSP = DB::table('suratpengantar')->where('tglbukti',$tglDari)->where('supir_id',$supir_id)->first();

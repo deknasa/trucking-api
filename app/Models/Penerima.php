@@ -29,7 +29,12 @@ class Penerima extends MyModel
         $this->setRequestParameters();
 
         $query = DB::table($this->table)->select(
-            'penerima.*',
+            'penerima.id',
+            'penerima.namapenerima',
+            'penerima.npwp',
+            'penerima.noktp',
+            'penerima.modifiedby',
+            'penerima.updated_at',
             'parameter_statusaktif.text as statusaktif',
             'parameter_statuskaryawan.text as statuskaryawan',
         )
@@ -109,9 +114,9 @@ class Penerima extends MyModel
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statusaktif') {
                             $query = $query->where('parameter_statusaktif.text', '=', $filters['data']);
-                        } else if ($filters['field'] == 'statuskaryawan'){
-                            $query = $query->where('parameter_statuskaryawan.text', '=', $filters['data']);
-                        }   else {
+                        } else if ($filters['field'] == 'statuskaryawan') {
+                            $query = $query->where('parameter_statuskaryawan.text', 'LIKE', "%$filters[data]%");
+                        } else {
                             $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
                     }
@@ -120,9 +125,9 @@ class Penerima extends MyModel
                 case "OR":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statusaktif') {
-                            $query = $query->orWhere('parameter_statusaktif.text', '=', $filters['data']);
-                        } else if ($filters['field'] == 'statuskaryawan'){
-                            $query = $query->orWhere('parameter_statuskaryawan.text', '=', $filters['data']);
+                            $query = $query->where('parameter_statusaktif.text', '=', $filters['data']);
+                        } else if ($filters['field'] == 'statuskaryawan') {
+                            $query = $query->where('parameter_statuskaryawan.text', 'LIKE', "%$filters[data]%");
                         } else {
                             $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }

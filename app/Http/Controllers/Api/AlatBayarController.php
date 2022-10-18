@@ -46,7 +46,7 @@ class AlatBayarController extends Controller
             $alatbayar->kodealatbayar = $request->kodealatbayar;
             $alatbayar->namaalatbayar = $request->namaalatbayar;
             $alatbayar->keterangan = $request->keterangan;
-            $alatbayar->statuslangsunggcair = $request->statuslangsungcair;
+            $alatbayar->statuslangsunggcair = $request->statuslangsunggcair;
             $alatbayar->statusdefault = $request->statusdefault;
             $alatbayar->bank_id = $request->bank_id;
             $alatbayar->modifiedby = auth('api')->user()->name;
@@ -110,7 +110,7 @@ class AlatBayarController extends Controller
             $alatbayar->kodealatbayar = $request->kodealatbayar;
             $alatbayar->namaalatbayar = $request->namaalatbayar;
             $alatbayar->keterangan = $request->keterangan;
-            $alatbayar->statuslangsunggcair = $request->statuslangsungcair;
+            $alatbayar->statuslangsunggcair = $request->statuslangsunggcair;
             $alatbayar->statusdefault = $request->statusdefault;
             $alatbayar->bank_id = $request->bank_id;
             $alatbayar->modifiedby = auth('api')->user()->name;

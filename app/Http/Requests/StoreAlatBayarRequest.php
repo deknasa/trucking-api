@@ -27,7 +27,7 @@ class StoreAlatBayarRequest extends FormRequest
             'kodealatbayar' => 'required',
             'namaalatbayar' => 'required',
             'keterangan' => 'required',
-            'statuslangsungcair' => 'required',
+            'statuslangsunggcair' => 'required',
             'statusdefault' => 'required',
             'bank_id' => 'required',
         ];

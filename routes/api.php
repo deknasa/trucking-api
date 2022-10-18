@@ -89,6 +89,8 @@
     use App\Http\Controllers\Api\PelunasanPiutangDetailController;
     use App\Http\Controllers\Api\HutangBayarHeaderController;
     use App\Http\Controllers\Api\HutangBayarDetailController;
+use App\Http\Controllers\Api\ProsesGajiSupirHeaderController;
+use App\Http\Controllers\ProsesGajiSupirDetailController;
 
     /*
     |--------------------------------------------------------------------------
@@ -390,14 +392,23 @@
 
         Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
         Route::get('gajisupirheader/no_bukti', [GajiSupirHeaderController::class, 'getNoBukti']);
-        Route::get('gajisupirheader/{id}/getpiutang', [GajiSupirHeaderController::class, 'getpiutang'])->name('gajisupirheader.getpiutang');
         Route::get('gajisupirheader/grid', [GajiSupirHeaderController::class, 'grid']);
         Route::get('gajisupirheader/field_length', [GajiSupirHeaderController::class, 'fieldLength']);
-        Route::get('gajisupirheader/getTrip', [GajiSupirHeaderController::class, 'getTrip']);
+        Route::get('gajisupirheader/getTrip/{supirId}/{dari}/{sampai}', [GajiSupirHeaderController::class, 'getTrip']);
         Route::post('gajisupirheader/noEdit', [GajiSupirHeaderController::class, 'noEdit']);
         Route::get('gajisupirheader/{gajiId}/getEditTrip', [GajiSupirHeaderController::class, 'getEditTrip']);
         Route::resource('gajisupirheader', GajiSupirHeaderController::class);
         Route::resource('gajisupirdetail', GajiSupirDetailController::class);
+
+        Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
+        Route::get('prosesgajisupirheader/no_bukti', [ProsesGajiSupirHeaderController::class, 'getNoBukti']);
+        Route::get('prosesgajisupirheader/grid', [ProsesGajiSupirHeaderController::class, 'grid']);
+        Route::get('prosesgajisupirheader/field_length', [ProsesGajiSupirHeaderController::class, 'fieldLength']);
+        Route::get('prosesgajisupirheader/getRic/{dari}/{sampai}', [ProsesGajiSupirHeaderController::class, 'getRic']);
+        Route::post('prosesgajisupirheader/noEdit', [ProsesGajiSupirHeaderController::class, 'noEdit']);
+        Route::get('prosesgajisupirheader/{id}/getEdit', [ProsesGajiSupirHeaderController::class, 'getEdit']);
+        Route::resource('prosesgajisupirheader', ProsesGajiSupirHeaderController::class);
+        Route::resource('prosesgajisupirdetail', ProsesGajiSupirDetailController::class);
     });
 
     Route::get('gudang/combo', [GudangController::class, 'combo']);

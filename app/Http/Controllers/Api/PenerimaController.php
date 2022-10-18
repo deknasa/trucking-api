@@ -7,6 +7,7 @@ use App\Http\Requests\StoreLogTrailRequest;
 use App\Models\Penerima;
 use App\Http\Requests\StorePenerimaRequest;
 use App\Http\Requests\UpdatePenerimaRequest;
+use App\Models\Parameter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -191,6 +192,16 @@ class PenerimaController extends Controller
         }
     }
 
+    public function combo(Request $request)
+    {
+        $data = [
+            'statusaktif' => Parameter::where(['grp' => 'status aktif'])->get(),
+        ];
+
+        return response([
+            'data' => $data
+        ]);
+    }
     public function fieldLength()
     {
         $data = [];
