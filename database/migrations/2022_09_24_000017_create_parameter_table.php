@@ -20,6 +20,7 @@ class CreateParameterTable extends Migration
             $table->id();
             $table->string('grp', 255)->default('');
             $table->string('subgrp', 255)->default('');
+            $table->string('kelompok', 255)->default('');
             $table->string('text', 255)->default('');
             $table->mediumText('memo')->default('');
             $table->integer('type')->length(11)->default(0);

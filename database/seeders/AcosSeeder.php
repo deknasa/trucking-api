@@ -53,10 +53,10 @@ class AcosSeeder extends Seeder
         acos::create([ 'class' => 'cabang', 'method' => 'store', 'nama' => 'store CabangController', 'modifiedby' => 'ADMIN',]);
         acos::create([ 'class' => 'cabang', 'method' => 'update', 'nama' => 'update CabangController', 'modifiedby' => 'ADMIN',]);
         acos::create([ 'class' => 'cabang', 'method' => 'destroy', 'nama' => 'destroy CabangController', 'modifiedby' => 'ADMIN',]);
-        acos::create([ 'class' => 'absensisupir', 'method' => 'index', 'nama' => 'index AbsensiSupirHeaderController', 'modifiedby' => 'ADMIN',]);
-        acos::create([ 'class' => 'absensisupir', 'method' => 'store', 'nama' => 'store AbsensiSupirHeaderController', 'modifiedby' => 'ADMIN',]);
-        acos::create([ 'class' => 'absensisupir', 'method' => 'update', 'nama' => 'update AbsensiSupirHeaderController', 'modifiedby' => 'ADMIN',]);
-        acos::create([ 'class' => 'absensisupir', 'method' => 'destroy', 'nama' => 'destroy AbsensiSupirHeaderController', 'modifiedby' => 'ADMIN',]);
+        acos::create([ 'class' => 'absensisupirheader', 'method' => 'index', 'nama' => 'index AbsensiSupirHeaderController', 'modifiedby' => 'ADMIN',]);
+        acos::create([ 'class' => 'absensisupirheader', 'method' => 'store', 'nama' => 'store AbsensiSupirHeaderController', 'modifiedby' => 'ADMIN',]);
+        acos::create([ 'class' => 'absensisupirheader', 'method' => 'update', 'nama' => 'update AbsensiSupirHeaderController', 'modifiedby' => 'ADMIN',]);
+        acos::create([ 'class' => 'absensisupirheader', 'method' => 'destroy', 'nama' => 'destroy AbsensiSupirHeaderController', 'modifiedby' => 'ADMIN',]);
         acos::create([ 'class' => 'agen', 'method' => 'index', 'nama' => 'index AgenController', 'modifiedby' => 'ADMIN',]);
         acos::create([ 'class' => 'agen', 'method' => 'store', 'nama' => 'store AgenController', 'modifiedby' => 'ADMIN',]);
         acos::create([ 'class' => 'agen', 'method' => 'update', 'nama' => 'update AgenController', 'modifiedby' => 'ADMIN',]);
