@@ -21,6 +21,11 @@ class Supir extends MyModel
         'updated_at',
     ];
 
+    public function zona()
+    {
+        return $this->belongsTo(Zona::class, 'zona_id');
+    }
+
     public function get()
     {
         $this->setRequestParameters();
@@ -42,10 +47,10 @@ class Supir extends MyModel
             'supir.keterangan',
             'supir.noktp',
             'supir.nokk',
-            'statusadaupdategambar.text as statusadaupdategambar',
-            'statusluarkota.text as statuslluarkota',
-            'statuszonatertentu.text as statuszonatertentu',
-            'zona.zona as zona_id',
+            'supir.statusadaupdategambar',
+            'supir.statuslluarkota',
+            'supir.statuszonatertentu',
+            'zona.keterangan as zona_id',
             'supir.photosupir',
             'supir.photoktp',
             'supir.photosim',
@@ -59,7 +64,7 @@ class Supir extends MyModel
             'supir.created_at',
             'supir.updated_at'
         )
-            ->leftJoin('zona', 'zona.id', '=', 'supir.zona_id')
+            ->leftJoin('zona', 'supir.zona_id', 'zona.id')
             ->leftJoin('parameter', 'supir.statusaktif', '=', 'parameter.id')
             ->leftJoin('parameter as statusadaupdategambar', 'supir.statusadaupdategambar', '=', 'statusadaupdategambar.id')
             ->leftJoin('parameter as statusluarkota', 'supir.statuslluarkota', '=', 'statusluarkota.id')
@@ -79,9 +84,51 @@ class Supir extends MyModel
         return $data;
     }
 
+    public function find($id)
+    {
+        $query = DB::table('supir')->select(
+            'supir.id',
+            'supir.namasupir',
+            'supir.tgllahir',
+            'supir.alamat',
+            'supir.kota',
+            'supir.telp',
+            'supir.statusaktif',
+            'supir.nominaldepositsa',
+            // 'supir.tglmasuk',
+            'supir.supirold_id',
+            'supir.nosim',
+            'supir.tglterbitsim',
+            'supir.tglexpsim',
+            'supir.keterangan',
+            'supir.noktp',
+            'supir.nokk',
+            'supir.statusadaupdategambar',
+            'supir.statuslluarkota',
+            'supir.statuszonatertentu',
+            'supir.zona_id',
+            'supir.photosupir',
+            'supir.photoktp',
+            'supir.photosim',
+            'supir.photokk',
+            'supir.photoskck',
+            'supir.photodomisili',
+            'supir.keteranganresign',
+            'supir.statusblacklist',
+            'supir.tglberhentisupir',
+            'supir.modifiedby',
+            'supir.created_at',
+            'supir.updated_at'
+        )
+
+            ->where('supir.id', $id);
+
+        $data = $query->first();
+        return $data;
+    }
+
     public function selectColumns($query)
     { //sesuaikan dengan createtemp
-
         return $query->select(
             DB::raw(
                 "$this->table.id,
@@ -89,7 +136,7 @@ class Supir extends MyModel
                 $this->table.alamat,
                 $this->table.kota,
                 $this->table.telp,
-                parameter.text as statusaktif,
+                $this->table.statusaktif,
                 supir.nominaldepositsa,
                 $this->table.depositke,
                 $this->table.tglmasuk,
@@ -97,23 +144,23 @@ class Supir extends MyModel
                 supir.namasupir as supirold_id,
                 $this->table.tglexpsim,
                 $this->table.nosim,
-                $this->table.keteran,
+                $this->table.keterangan,
                 $this->table.noktp,
                 $this->table.nokk,
-                statusadaupdategambar.text as statusadaupdategambar,
-                statusluarkota.text as statuslluarkota,
-                statuszonatertentu.text as statuszonatertentu,
-                zona.zona as zona_id,
+                $this->table.statusadaupdategambar,
+                $this->table.statuslluarkota,
+                $this->table.statuszonatertentu,
+                $this->table.zona_id,
                 $this->table.angsuranpinjaman,
                 $this->table.plafondeposito,
-                $this->table.photosupir, 
+                $this->table.photosupir,
                 $this->table.photoktp, 
                 $this->table.photosim, 
                 $this->table.photokk, 
                 $this->table.photoskck, 
                 $this->table.photodomisili, 
-                $this->table.keteranganres,
-                statusblacklist.text as statusblacklist,
+                $this->table.keteranganresign,
+                $this->table.statusblacklist,
                 $this->table.tglberhentisupir,
                 $this->table.tgllahir,
                 $this->table.tglterbitsim,
@@ -122,16 +169,16 @@ class Supir extends MyModel
             $this->table.created_at,
             $this->table.updated_at"
             )
+            
+            )
 
-        )
-
-            ->leftJoin('zona', 'zona.id', '=', 'supir.zona_id')
-            ->leftJoin('parameter', 'supir.statusaktif', '=', 'parameter.id')
+            ->leftJoin('zona', 'supir.zona_id', 'zona.id')
             ->leftJoin('parameter as statusadaupdategambar', 'supir.statusadaupdategambar', '=', 'statusadaupdategambar.id')
             ->leftJoin('parameter as statusluarkota', 'supir.statuslluarkota', '=', 'statusluarkota.id')
             ->leftJoin('parameter as statuszonatertentu', 'supir.statuszonatertentu', '=', 'statuszonatertentu.id')
             ->leftJoin('parameter as statusblacklist', 'supir.statusblacklist', '=', 'statusblacklist.id')
             ->leftJoin('supir as supirlama', 'supir.supirold_id', '=', 'supirlama.id');
+            
     }
 
     public function createTemp(string $modelTable)
@@ -143,23 +190,23 @@ class Supir extends MyModel
             $table->string('alamat', 100)->default('');
             $table->string('kota', 100)->default('');
             $table->string('telp', 30)->default('');
-            $table->string('statusaktif')->default(0);
-            $table->string('nominaldepositsa')->default(0);
-            $table->string('depositke')->default(0);
+            $table->integer('statusaktif')->length(11)->default('0');
+            $table->double('nominaldepositsa', 15, 2)->default(0);
+            $table->double('depositke', 15, 2)->default(0);
             $table->date('tglmasuk')->default('1900/1/1');
-            $table->string('nominalpinjamansaldoawal')->default(0);
+            $table->double('nominalpinjamansaldoawal', 15, 2)->default(0);
             $table->string('supirold_id')->default(0);
             $table->date('tglexpsim')->default('1900/1/1');
             $table->string('nosim', 30)->default('');
             $table->longText('keterangan')->default('');
             $table->string('noktp', 30)->default('');
             $table->string('nokk', 30)->default('');
-            $table->string('statusadaupdategambar')->default(0);
-            $table->string('statuslluarkota')->default(0);
-            $table->string('statuszonatertentu')->default(0);
-            $table->string('zona_id')->default(0);
-            $table->string('angsuranpinjaman')->default(0);
-            $table->string('plafondeposito')->default(0);
+            $table->string('statusadaupdategambar', 300)->default('')->nullable();
+            $table->string('statuslluarkota', 300)->default('')->nullable();
+            $table->string('statuszonatertentu', 300)->default('')->nullable();
+            $table->unsignedBigInteger('zona_id')->default(0);
+            $table->double('angsuranpinjaman', 15, 2)->default(0);
+            $table->double('plafondeposito', 15, 2)->default(0);
             $table->string('photosupir', 4000)->default('');
             $table->string('photoktp', 4000)->default('');
             $table->string('photosim', 4000)->default('');
@@ -184,9 +231,42 @@ class Supir extends MyModel
         $this->sort($query);
         $models = $this->filter($query);
         DB::table($temp)->insertUsing([
-            'id', 'namasupir', 'alamat', 'kota', 'telp', 'statusaktif', 'nominaldepositsa', 'depositke', 'tglmasuk', 'nominalpinjamansaldoawal', 'supirold_id', 'tglexpsim', 'nosim', 'keterangan', 'noktp', 'nokk', 'statusadaupdategambar', 'statuslluarkota', 'statuszonatertentu', 'zona_id', 'angsuranpinjaman', 'plafondeposito', '
-        photosupir', 'photoktp', 'photosim', 'photokk', 'photoskck', 'photodomisili',
-            'keteranganresign', 'statusblacklist', 'tglberhentisupir', 'tgllahir', 'tglterbitsim', 'modifiedby', 'created_at', 'updated_at'
+            'id',
+            'namasupir',
+            'alamat',
+            'kota',
+            'telp',
+            'statusaktif',
+            'nominaldepositsa',
+            'depositke',
+            'tglmasuk',
+            'nominalpinjamansaldoawal',
+            'supirold_id',
+            'tglexpsim',
+            'nosim',
+            'keterangan',
+            'noktp',
+            'nokk',
+            'statusadaupdategambar',
+            'statuslluarkota',
+            'statuszonatertentu',
+            'zona_id',
+            'angsuranpinjaman',
+            'plafondeposito',
+            'photosupir',
+            'photoktp',
+            'photosim',
+            'photokk',
+            'photoskck',
+            'photodomisili',
+            'keteranganresign',
+            'statusblacklist',
+            'tglberhentisupir',
+            'tgllahir',
+            'tglterbitsim',
+            'modifiedby',
+            'created_at',
+            'updated_at'
         ], $models);
 
 

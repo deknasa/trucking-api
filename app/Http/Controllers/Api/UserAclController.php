@@ -340,10 +340,10 @@ class UserAclController extends Controller
                 }
             }
 
-              /* Set position and page */
-              $selected = $this->getPosition($useracl, $useracl->getTable());
-              $useracl->position = $selected->position;
-              $useracl->page = ceil($useracl->position / ($request->limit ?? 10));
+            /* Set position and page */
+            $selected = $this->getPosition($useracl, $useracl->getTable());
+            $useracl->position = $selected->position;
+            $useracl->page = ceil($useracl->position / ($request->limit ?? 10));
 
 
             return response([
@@ -439,10 +439,10 @@ class UserAclController extends Controller
             //     $useracl->page = ceil($useracl->position / $request->limit);
             // }
 
-             /* Set position and page */
-             $selected = $this->getPosition($useracl, $useracl->getTable());
-             $useracl->position = $selected->position;
-             $useracl->page = ceil($useracl->position / ($request->limit ?? 10));
+            /* Set position and page */
+            $selected = $this->getPosition($useracl, $useracl->getTable());
+            $useracl->position = $selected->position;
+            $useracl->page = ceil($useracl->position / ($request->limit ?? 10));
 
 
             return response([
@@ -489,16 +489,14 @@ class UserAclController extends Controller
                 DB::commit();
             }
 
-            // $del = 1;
-
-            // $data = $this->getid($request->user_id, $request, $del);
-
             // $useracl->position = $data->row;
             // $useracl->id = $data->id;
             // if (isset($request->limit)) {
             //     $useracl->page = ceil($useracl->position / $request->limit);
             // }
 
+            $del = 1;
+            $data = $this->getid($request->user_id, $request, $del);
             /* Set position and page */
             $selected = $this->getPosition($useracl, $useracl->getTable(), true);
             $useracl->position = $selected->position;

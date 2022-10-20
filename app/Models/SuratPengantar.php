@@ -30,6 +30,151 @@ class SuratPengantar extends MyModel
         return $this->hasMany(SuratPengantarBiayaTambahan::class, 'suratpengantar_id');
     }
 
+    public function get()
+    {
+        $this->setRequestParameters();
+
+        $query = DB::table($this->table)->select(
+            'suratpengantar.id',
+            'suratpengantar.nobukti',
+            'suratpengantar.tglbukti',
+            'pelanggan.namapelanggan as pelanggan_id',
+            'suratpengantar.keterangan',
+            'suratpengantar.nourutorder',
+            'kotadari.keterangan as dari_id',
+            'kotasampai.keterangan as sampai_id',
+            'container.keterangan as container_id',
+            'suratpengantar.nocont',
+            'suratpengantar.nocont2',
+            'statuscontainer.keterangan as statuscontainer_id',
+            'trado.keterangan as trado_id',
+            'supir.namasupir as supir_id',
+            'suratpengantar.nojob',
+            'suratpengantar.nojob2',
+            'statuslongtrip.text as statuslongtrip',
+            'agen.namaagen as agen_id',
+            'jenisorder.keterangan as jenisorder_id',
+            'statusperalihan.text as statusperalihan',
+            'tarif.tujuan as tarif_id',
+            'suratpengantar.nominalperalihan',
+            'suratpengantar.persentaseperalihan',
+            'suratpengantar.nosp',
+            'suratpengantar.tglsp',
+            'suratpengantar.statusritasiomset',
+            'suratpengantar.cabang_id',
+            'suratpengantar.komisisupir',
+            'suratpengantar.tolsupir',
+            'suratpengantar.jarak',
+            'suratpengantar.nosptagihlain',
+            'suratpengantar.nilaitagihlain',
+            'suratpengantar.tujuantagih',
+            'suratpengantar.liter',
+            'suratpengantar.nominalstafle',
+            'suratpengantar.statusnotif',
+            'suratpengantar.statusoneway',
+            'suratpengantar.statusedittujuan',
+            'suratpengantar.upahbongkardepo',
+            'suratpengantar.upahmuatdepo',
+            'suratpengantar.hargatol',
+            'suratpengantar.qtyton',
+            'suratpengantar.totalton',
+            'suratpengantar.mandorsupir_id',
+            'suratpengantar.mandortrado_id',
+            'suratpengantar.statustrip',
+            'suratpengantar.notripasal',
+            'suratpengantar.tgldoor',
+            'suratpengantar.statusdisc',
+            'suratpengantar.gajisupir',
+            'suratpengantar.gajikenek',
+            'suratpengantar.modifiedby',
+            'suratpengantar.created_at',
+            'suratpengantar.updated_at'
+
+        )
+        ->leftJoin('pelanggan', 'suratpengantar.pelanggan_id', 'pelanggan.id')
+        ->leftJoin('upahsupir', 'suratpengantar.upahsupir_id', 'upahsupir.id');
+
+        $this->totalRows = $query->count();
+        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+
+        $this->sort($query);
+        $this->filter($query);
+        $this->paginate($query);
+
+        $data = $query->get();
+
+        return $data;
+    }
+
+    public function find($id)
+    {
+        $query = DB::table('suratpengantar')->select(
+            'suratpengantar.id',
+            'suratpengantar.nobukti',
+            'suratpengantar.tglbukti',
+            'pelanggan.namapelanggan as pelanggan_id',
+            'suratpengantar.keterangan',
+            'suratpengantar.nourutorder',
+            'kotadari.keterangan as dari_id',
+            'kotasampai.keterangan as sampai_id',
+            'container.keterangan as container_id',
+            'suratpengantar.nocont',
+            'suratpengantar.nocont2',
+            'statuscontainer.keterangan as statuscontainer_id',
+            'trado.keterangan as trado_id',
+            'supir.namasupir as supir_id',
+            'suratpengantar.nojob',
+            'suratpengantar.nojob2',
+            'statuslongtrip.text as statuslongtrip',
+            'agen.namaagen as agen_id',
+            'jenisorder.keterangan as jenisorder_id',
+            'statusperalihan.text as statusperalihan',
+            'tarif.tujuan as tarif_id',
+            'suratpengantar.nominalperalihan',
+            'suratpengantar.persentaseperalihan',
+            'suratpengantar.nosp',
+            'suratpengantar.tglsp',
+            'suratpengantar.statusritasiomset',
+            'suratpengantar.cabang_id',
+            'suratpengantar.komisisupir',
+            'suratpengantar.tolsupir',
+            'suratpengantar.jarak',
+            'suratpengantar.nosptagihlain',
+            'suratpengantar.nilaitagihlain',
+            'suratpengantar.tujuantagih',
+            'suratpengantar.liter',
+            'suratpengantar.nominalstafle',
+            'suratpengantar.statusnotif',
+            'suratpengantar.statusoneway',
+            'suratpengantar.statusedittujuan',
+            'suratpengantar.upahbongkardepo',
+            'suratpengantar.upahmuatdepo',
+            'suratpengantar.hargatol',
+            'suratpengantar.qtyton',
+            'suratpengantar.totalton',
+            'suratpengantar.mandorsupir_id',
+            'suratpengantar.mandortrado_id',
+            'suratpengantar.statustrip',
+            'suratpengantar.notripasal',
+            'suratpengantar.tgldoor',
+            'suratpengantar.statusdisc',
+            'suratpengantar.gajisupir',
+            'suratpengantar.gajikenek',
+            'suratpengantar.modifiedby',
+            'suratpengantar.created_at',
+            'suratpengantar.updated_at'
+
+        )
+            ->leftJoin('pelanggan', 'suratpengantar.pelanggan_id', 'pelanggan.id')
+            ->leftJoin('upahsupir', 'suratpengantar.upahsupir_id', 'upahsupir.id')
+
+            ->where('suratpengantar.id', $id);
+
+        $data = $query->first();
+
+        return $data;
+    }
+
     public function selectColumns($query)
     { //sesuaikan dengan createtemp
 
@@ -104,10 +249,10 @@ class SuratPengantar extends MyModel
         )
 
             ->leftJoin('pelanggan', 'suratpengantar.pelanggan_id', 'pelanggan.id')
-             ->leftJoin('upahsupir', 'suratpengantar.upahsupir_id', 'upahsupir.id')
+            ->leftJoin('upahsupir', 'suratpengantar.upahsupir_id', 'upahsupir.id')
 
             // ->leftJoin('akunpusat', 'hutangbayarheader.coa', 'akunpusat.coa')
-            ;
+        ;
     }
 
     public function createTemp(string $modelTable)
@@ -185,13 +330,15 @@ class SuratPengantar extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id', 'nobukti','jobtrucking','tglbukti','pelanggan_id','keterangan','nourutorder','upah_id',
-        'dari_id','sampai_id','container_id','nocont','nocont2','statuscontainer_id','trado_id','supir_id',
-        'nojob','nojob2','statuslongtrip','omset','discount','totalomset','gajisupir','gajikenek','agen_id',
-        'jenisorder_id','statusperalihan','tarif_id','nominalperalihan','persentaseperalihan','biayatambahan_id',
-        'nosp','tglsp','statusritasiomset','cabang_id','komisisupir','tolsupir','jarak','nosptagihlain','nilaitagihlain',
-        'tujuantagih','liter','nominalstafle','statusnotif','statusoneway','statusedittujuan','upahbongkardepo','upahmuatdepo','hargatol',
-        'qtyton','totalton','mandorsupir_id','mandortrado_id','statustrip','notripasal','tgldoor','statusdisc','statusformat', 'modifiedby', 'created_at', 'updated_at', 'statusformat'], $models);
+        DB::table($temp)->insertUsing([
+            'id', 'nobukti', 'jobtrucking', 'tglbukti', 'pelanggan_id', 'keterangan', 'nourutorder', 'upah_id',
+            'dari_id', 'sampai_id', 'container_id', 'nocont', 'nocont2', 'statuscontainer_id', 'trado_id', 'supir_id',
+            'nojob', 'nojob2', 'statuslongtrip', 'omset', 'discount', 'totalomset', 'gajisupir', 'gajikenek', 'agen_id',
+            'jenisorder_id', 'statusperalihan', 'tarif_id', 'nominalperalihan', 'persentaseperalihan', 'biayatambahan_id',
+            'nosp', 'tglsp', 'statusritasiomset', 'cabang_id', 'komisisupir', 'tolsupir', 'jarak', 'nosptagihlain', 'nilaitagihlain',
+            'tujuantagih', 'liter', 'nominalstafle', 'statusnotif', 'statusoneway', 'statusedittujuan', 'upahbongkardepo', 'upahmuatdepo', 'hargatol',
+            'qtyton', 'totalton', 'mandorsupir_id', 'mandortrado_id', 'statustrip', 'notripasal', 'tgldoor', 'statusdisc', 'statusformat', 'modifiedby', 'created_at', 'updated_at', 'statusformat'
+        ], $models);
 
 
         return  $temp;

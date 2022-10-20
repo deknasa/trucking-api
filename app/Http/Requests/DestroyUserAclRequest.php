@@ -29,7 +29,7 @@ class DestroyUserAclRequest extends FormRequest
         return [
             'aco_id' => 'required',
             'user_id' => 'required',
-            'modifiedby' => 'required'
+            // 'modifiedby' => 'required'
         ];
     }
 
@@ -38,7 +38,7 @@ class DestroyUserAclRequest extends FormRequest
         return [
             'aco_id' => 'aco id',
             'user_id' => 'user id',
-            'modifiedby' => 'modified by',
+            // 'modifiedby' => 'modified by',
         ];
     }
     public function messages()
@@ -47,7 +47,7 @@ class DestroyUserAclRequest extends FormRequest
         return [
             'aco_id.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
             'user_id.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
-            'modifiedby.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
+            // 'modifiedby.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
 
         ];
     }   
