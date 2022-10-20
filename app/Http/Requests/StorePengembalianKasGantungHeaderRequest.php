@@ -13,7 +13,7 @@ class StorePengembalianKasGantungHeaderRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +24,14 @@ class StorePengembalianKasGantungHeaderRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            "pelanggan_id" => "required",
+            "pelanggan" => "required",
+            "bank_id" => "required",
+            "bank" => "required",
+            "keterangan" => "required",
+            "penerimaan_nobukti"=>"required",
+            // "statusformat" => "required",
+            // "statushitungstok" => "required"
         ];
     }
 }
