@@ -21,7 +21,9 @@ class Parameter extends MyModel
     public function get()
     {
         $this->setRequestParameters();
-        $query = DB::table($this->table);
+        $query = DB::table('parameter')
+        ->select('parameter.id','parameter.grp','parameter.subgrp','parameter.kelompok','parameter.text','parameter.memo','parameter.modifiedby','parameter.updated_at', DB::raw("case when parameter.type = 0 then '' else B.grp end as type"),)
+        ->leftJoin('parameter as B','parameter.type','B.id');
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -35,6 +37,17 @@ class Parameter extends MyModel
         return $data;
     }
 
+    public function findAll($id)
+    {
+        $query = DB::table('parameter as A')
+        ->select('A.id','A.grp','A.subgrp','A.kelompok','A.text','A.memo','A.type','B.grp as grup')
+        ->leftJoin('parameter as B','A.type','B.id')
+        ->where('A.id',$id);
+
+        $data = $query->first();
+        return $data;
+    }
+
     public function selectColumns($query)
     {
         return $query->select(
@@ -43,10 +56,12 @@ class Parameter extends MyModel
             "$this->table.subgrp",
             "$this->table.text",
             "$this->table.memo",
+            "$this->table.kelompok",
+            DB::raw("case when parameter.type = 0 then '' else B.grp end as type"),
             "$this->table.created_at",
             "$this->table.updated_at",
             "$this->table.modifiedby"
-        );
+        )->leftJoin('parameter as B','parameter.type','B.id');
     }
 
     public function createTemp(string $modelTable)
@@ -61,6 +76,8 @@ class Parameter extends MyModel
             $table->string('subgrp', 250)->default('');
             $table->string('text', 500)->default('');
             $table->string('memo', 1000)->default('');
+            $table->string('kelompok', 1000)->default('');
+            $table->string('type', 1000)->default('');
             $table->dateTime('created_at')->default('1900/1/1');
             $table->dateTime('updated_at')->default('1900/1/1');
             $table->string('modifiedby', 50)->default('');
@@ -78,6 +95,8 @@ class Parameter extends MyModel
             'subgrp',
             'text',
             'memo',
+            'kelompok',
+            'type',
             'created_at',
             'updated_at',
             'modifiedby'
@@ -111,13 +130,21 @@ class Parameter extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                        if ($filters['field'] == 'type') {
+                            $query = $query->where('B.grp', 'LIKE', "%$filters[data]%");
+                        } else{
+                            $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                        }
                     }
 
                     break;
                 case "OR":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                        if ($filters['field'] == 'type') {
+                            $query = $query->orWhere('B.grp', 'LIKE', "%$filters[data]%");
+                        } else{
+                            $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                        }
                     }
 
                     break;

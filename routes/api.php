@@ -27,11 +27,17 @@
     use App\Http\Controllers\Api\BankController;
     use App\Http\Controllers\Api\AlatBayarController;
     use App\Http\Controllers\Api\BankPelangganController;
+    use App\Http\Controllers\Api\GajiSupirDetailController;
+    use App\Http\Controllers\Api\GajiSupirHeaderController;
     use App\Http\Controllers\Api\JenisEmklController;
     use App\Http\Controllers\Api\JenisOrderController;
     use App\Http\Controllers\Api\JenisTradoController;
     use App\Http\Controllers\Api\KasGantungDetailController;
     use App\Http\Controllers\Api\KasGantungHeaderController;
+    
+    use App\Http\Controllers\Api\PengembalianKasGantungHeaderController;
+    use App\Http\Controllers\Api\PengembalianKasGantungDetailController;
+    
     use App\Http\Controllers\Api\GudangController;
     use App\Http\Controllers\Api\PelangganController;
     use App\Http\Controllers\Api\PenerimaController;
@@ -87,6 +93,8 @@
     use App\Http\Controllers\Api\PelunasanPiutangDetailController;
     use App\Http\Controllers\Api\HutangBayarHeaderController;
     use App\Http\Controllers\Api\HutangBayarDetailController;
+use App\Http\Controllers\Api\ProsesGajiSupirHeaderController;
+use App\Http\Controllers\ProsesGajiSupirDetailController;
 
     /*
     |--------------------------------------------------------------------------
@@ -105,7 +113,7 @@
 
     Route::post('token', [AuthController::class, 'token']);
 
-    route::middleware('auth:api')->group(function () {
+    route::middleware(['auth:api'])->group(function () {
         Route::get('parameter/export', [ParameterController::class, 'export']);
         Route::get('parameter/field_length', [ParameterController::class, 'fieldLength']);
         Route::get('parameter/combo', [ParameterController::class, 'combo']);
@@ -385,6 +393,33 @@
         Route::resource('kasgantungheader', KasGantungHeaderController::class);
 
         Route::resource('kasgantungdetail', KasGantungDetailController::class);
+
+        Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
+        Route::get('gajisupirheader/no_bukti', [GajiSupirHeaderController::class, 'getNoBukti']);
+        Route::get('gajisupirheader/grid', [GajiSupirHeaderController::class, 'grid']);
+        Route::get('gajisupirheader/field_length', [GajiSupirHeaderController::class, 'fieldLength']);
+        Route::get('gajisupirheader/getTrip/{supirId}/{dari}/{sampai}', [GajiSupirHeaderController::class, 'getTrip']);
+        Route::post('gajisupirheader/noEdit', [GajiSupirHeaderController::class, 'noEdit']);
+        Route::get('gajisupirheader/{gajiId}/getEditTrip', [GajiSupirHeaderController::class, 'getEditTrip']);
+        Route::resource('gajisupirheader', GajiSupirHeaderController::class);
+        Route::resource('gajisupirdetail', GajiSupirDetailController::class);
+
+        Route::get('pengembaliankasgantungheader/field_length', [PengembalianKasGantungHeaderController::class,'fieldLength']);
+        Route::get('pengembaliankasgantungheader/getkasgantung', [PengembalianKasGantungHeaderController::class,'getKasGantung']);
+        Route::get('pengembaliankasgantungheader/getpengembalian/{id}', [PengembalianKasGantungHeaderController::class,'getPengembalian']);
+        Route::resource('pengembaliankasgantungheader', PengembalianKasGantungHeaderController::class);
+        
+        Route::resource('pengembaliankasgantung_detail', PengembalianKasGantungDetailController::class);
+
+        Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
+        Route::get('prosesgajisupirheader/no_bukti', [ProsesGajiSupirHeaderController::class, 'getNoBukti']);
+        Route::get('prosesgajisupirheader/grid', [ProsesGajiSupirHeaderController::class, 'grid']);
+        Route::get('prosesgajisupirheader/field_length', [ProsesGajiSupirHeaderController::class, 'fieldLength']);
+        Route::get('prosesgajisupirheader/getRic/{dari}/{sampai}', [ProsesGajiSupirHeaderController::class, 'getRic']);
+        Route::post('prosesgajisupirheader/noEdit', [ProsesGajiSupirHeaderController::class, 'noEdit']);
+        Route::get('prosesgajisupirheader/{id}/getEdit', [ProsesGajiSupirHeaderController::class, 'getEdit']);
+        Route::resource('prosesgajisupirheader', ProsesGajiSupirHeaderController::class);
+        Route::resource('prosesgajisupirdetail', ProsesGajiSupirDetailController::class);
     });
 
     Route::get('gudang/combo', [GudangController::class, 'combo']);

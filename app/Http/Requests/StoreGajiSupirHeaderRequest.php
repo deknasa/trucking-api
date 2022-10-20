@@ -13,7 +13,7 @@ class StoreGajiSupirHeaderRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -25,6 +25,22 @@ class StoreGajiSupirHeaderRequest extends FormRequest
     {
         return [
             //
+            'supir_id' => 'required',
+            'tgldari' => 'required',
+            'tglsampai' => 'required',
+            'keterangan' => 'required',
+            'tglbukti' => 'required',
         ];
     }
+
+    public function attributes() {
+        return [
+            'supir_id' => 'Supir',
+            'tgldari' => 'Tanggal Dari',
+            'tglsampai' => 'Tanggal Sampai',
+            'keterangan' => 'Keterangan',
+            'tglbukti' => 'Tanggal Bukti'
+        ];
+    }
+    
 }

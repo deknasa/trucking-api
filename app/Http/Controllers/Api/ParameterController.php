@@ -47,7 +47,9 @@ class ParameterController extends Controller
             $parameter->grp = $request->grp;
             $parameter->subgrp = $request->subgrp;
             $parameter->text = $request->text;
+            $parameter->kelompok = $request->kelompok ?? '';
             $parameter->memo = $request->memo;
+            $parameter->type = $request->type ?? 0;
             $parameter->modifiedby = auth('api')->user()->name;
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
@@ -89,11 +91,12 @@ class ParameterController extends Controller
         }
     }
 
-    public function show(Parameter $parameter)
+    public function show($id)
     {
+        $parameter = new Parameter();
         return response([
             'status' => true,
-            'data' => $parameter
+            'data' => $parameter->findAll($id)
         ]);
     }
 
@@ -109,6 +112,8 @@ class ParameterController extends Controller
             $parameter->subgrp = $request->subgrp;
             $parameter->text = $request->text;
             $parameter->memo = $request->memo;
+            $parameter->kelompok = $request->kelompok ?? '';
+            $parameter->type = $request->type ?? 0;
             $parameter->modifiedby = auth('api')->user()->name;
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';

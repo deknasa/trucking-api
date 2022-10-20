@@ -154,6 +154,31 @@ class KasGantungHeader extends MyModel
     }
 
 
+    public function getKasGantung()
+    {
+        $this->setRequestParameters();
+        $query = DB::table('kasgantungdetail')
+        ->select(DB::raw("kasgantungdetail.id as detail_id,kasgantungdetail.*,kasgantungheader.id,kasgantungheader.tglbukti"))
+        ->whereRaw(" NOT EXISTS (
+            SELECT pengembaliankasgantungdetail.kasgantung_nobukti 
+            FROM pengembaliankasgantungdetail 
+            WHERE pengembaliankasgantungdetail.kasgantung_nobukti = kasgantungdetail.nobukti
+            and pengembaliankasgantungdetail.nominal=kasgantungdetail.nominal
+          )")->leftJoin('kasgantungheader', 'kasgantungdetail.kasgantung_id', 'kasgantungheader.id');
+
+        $this->totalRows = $query->count();
+        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+
+        $this->sort($query);
+        $this->filter($query);
+        $this->paginate($query);
+
+        $data = $query->get();
+
+        return $data;
+    
+    }
+
     public function sort($query)
     {
         return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);

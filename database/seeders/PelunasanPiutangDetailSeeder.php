@@ -16,7 +16,7 @@ class PelunasanPiutangDetailSeeder extends Seeder
     {
         PelunasanPiutangDetail::create([
             'nobukti' => 'PPT 0001/V/2022',
-            'tgl'=> '2022/5/17',
+            // 'tgl'=> '2022/5/17',
             'pelunasanpiutang_id'=> 1,
             'pelanggan_id'=> 1,
             'agen_id'=> 1,
@@ -28,14 +28,14 @@ class PelunasanPiutangDetailSeeder extends Seeder
             'tgljt' => '2022/5/17',
             'penyesuaian'=> 0,
             'coapenyesuaian' => '',
-            'invoice_bukti' => 'INV 0001/IV/2022',
+            'invoice_nobukti' => 'INV 0001/IV/2022',
             'keteranganpenyesuaian' => '',
             'modifiedby' => 'ADMIN',
         ]);
 
         PelunasanPiutangDetail::create([
             'nobukti' => 'PPT 0002/V/2022',
-            'tgl'=> '2022/5/20',
+            // 'tgl'=> '2022/5/20',
             'pelunasanpiutang_id'=> 2,
             'pelanggan_id'=> 1,
             'agen_id'=> 1,
@@ -49,14 +49,14 @@ class PelunasanPiutangDetailSeeder extends Seeder
             'coapenyesuaian' => '06.03.01.01',
             'nominallebihbayar'=> 0,
             'coalebihbayar' => '',
-            'invoice_bukti' => 'INE 0001/IV/2022',
+            'invoice_nobukti' => 'INE 0001/IV/2022',
             'keteranganpenyesuaian' => '',
             'modifiedby' => 'ADMIN',
         ]);
 
         PelunasanPiutangDetail::create([
             'nobukti' => 'PPT 0003/V/2022',
-            'tgl'=> '2022/5/20',
+            // 'tgl'=> '2022/5/20',
             'pelunasanpiutang_id'=> 3,
             'pelanggan_id'=> 1,
             'agen_id'=> 1,
@@ -70,7 +70,7 @@ class PelunasanPiutangDetailSeeder extends Seeder
             'coapenyesuaian' => '',
             'nominallebihbayar'=> 5000,
             'coalebihbayar' => '06.02.01.01',
-            'invoice_bukti' => '',
+            'invoice_nobukti' => '',
             'keteranganpenyesuaian' => '',
             'modifiedby' => 'ADMIN',
         ]);

@@ -47,10 +47,17 @@ class Supir extends MyModel
             'supir.keterangan',
             'supir.noktp',
             'supir.nokk',
+<<<<<<< HEAD
             'supir.statusadaupdategambar',
             'supir.statuslluarkota',
             'supir.statuszonatertentu',
             'zona.keterangan as zona_id',
+=======
+            'statusadaupdategambar.text as statusadaupdategambar',
+            'statusluarkota.text as statusluarkota',
+            'statuszonatertentu.text as statuszonatertentu',
+            'zona.zona as zona_id',
+>>>>>>> 5746e89549a20512ba94d85b339c6db4aad5c59e
             'supir.photosupir',
             'supir.photoktp',
             'supir.photosim',
@@ -67,7 +74,7 @@ class Supir extends MyModel
             ->leftJoin('zona', 'supir.zona_id', 'zona.id')
             ->leftJoin('parameter', 'supir.statusaktif', '=', 'parameter.id')
             ->leftJoin('parameter as statusadaupdategambar', 'supir.statusadaupdategambar', '=', 'statusadaupdategambar.id')
-            ->leftJoin('parameter as statusluarkota', 'supir.statuslluarkota', '=', 'statusluarkota.id')
+            ->leftJoin('parameter as statusluarkota', 'supir.statusluarkota', '=', 'statusluarkota.id')
             ->leftJoin('parameter as statuszonatertentu', 'supir.statuszonatertentu', '=', 'statuszonatertentu.id')
             ->leftJoin('parameter as statusblacklist', 'supir.statusblacklist', '=', 'statusblacklist.id')
             ->leftJoin('supir as supirlama', 'supir.supirold_id', '=', 'supirlama.id');

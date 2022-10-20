@@ -13,7 +13,7 @@ class StoreProsesGajiSupirDetailRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +24,12 @@ class StoreProsesGajiSupirDetailRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'ric_id' => 'require'
+        ];
+    }
+    public function attributes() {
+        return [
+            'ric_id' => 'RIC',
         ];
     }
 }

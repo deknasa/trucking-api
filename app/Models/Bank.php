@@ -51,13 +51,9 @@ class Bank extends MyModel
             'bank.tipe',
             'bank.statusaktif',
             'bank.statusformatpenerimaan',
-            'penerimaan.text as kodepenerimaan',
             'bank.statusformatpengeluaran',
-            'pengeluaran.text as kodepengeluaran'
             
         )
-        ->join('parameter as penerimaan','bank.statusformatpenerimaan','penerimaan.id')
-        ->join('parameter as pengeluaran','bank.statusformatpengeluaran','pengeluaran.id')
         ->where('bank.id',$id);
 
         $data = $query->first();

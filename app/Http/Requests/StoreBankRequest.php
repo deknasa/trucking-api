@@ -29,8 +29,8 @@ class StoreBankRequest extends FormRequest
             'coa' => 'required',
             'tipe' => 'required',
             'statusaktif' => 'required',
-            'kodepenerimaan' => 'required',
-            'kodepengeluaran' => 'required',
+            'statusformatpenerimaan' => 'required',
+            'statusformatpengeluaran' => 'required',
         ];
     }
 }
