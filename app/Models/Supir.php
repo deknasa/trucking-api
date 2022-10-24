@@ -29,7 +29,6 @@ class Supir extends MyModel
     public function get()
     {
         $this->setRequestParameters();
-
         $query = DB::table($this->table)->select(
             'supir.id',
             'supir.namasupir',
@@ -41,23 +40,18 @@ class Supir extends MyModel
             'supir.nominaldepositsa',
             // 'supir.tglmasuk',
             'supirlama.namasupir as supirold_id',
+            // 'supir.supirold_id',
+
             'supir.nosim',
             'supir.tglterbitsim',
             'supir.tglexpsim',
             'supir.keterangan',
             'supir.noktp',
             'supir.nokk',
-<<<<<<< HEAD
             'supir.statusadaupdategambar',
-            'supir.statuslluarkota',
+            'supir.statusluarkota',
             'supir.statuszonatertentu',
             'zona.keterangan as zona_id',
-=======
-            'statusadaupdategambar.text as statusadaupdategambar',
-            'statusluarkota.text as statusluarkota',
-            'statuszonatertentu.text as statuszonatertentu',
-            'zona.zona as zona_id',
->>>>>>> 5746e89549a20512ba94d85b339c6db4aad5c59e
             'supir.photosupir',
             'supir.photoktp',
             'supir.photosim',
@@ -93,27 +87,29 @@ class Supir extends MyModel
 
     public function find($id)
     {
-        $query = DB::table('supir')->select(
+        $data = DB::table('supir')->select(
             'supir.id',
             'supir.namasupir',
-            'supir.tgllahir',
             'supir.alamat',
             'supir.kota',
             'supir.telp',
             'supir.statusaktif',
             'supir.nominaldepositsa',
-            // 'supir.tglmasuk',
+            'supir.depositke',
+            'supir.tglmasuk',
+            'supir.nominalpinjamansaldoawal',
             'supir.supirold_id',
-            'supir.nosim',
-            'supir.tglterbitsim',
             'supir.tglexpsim',
+            'supir.nosim',
             'supir.keterangan',
             'supir.noktp',
             'supir.nokk',
             'supir.statusadaupdategambar',
-            'supir.statuslluarkota',
+            'supir.statusluarkota',
             'supir.statuszonatertentu',
             'supir.zona_id',
+            'supir.angsuranpinjaman',
+            'supir.plafondeposito',
             'supir.photosupir',
             'supir.photoktp',
             'supir.photosim',
@@ -123,19 +119,30 @@ class Supir extends MyModel
             'supir.keteranganresign',
             'supir.statusblacklist',
             'supir.tglberhentisupir',
+            'supir.tgllahir',
+            'supir.tglterbitsim',
+
             'supir.modifiedby',
             'supir.created_at',
             'supir.updated_at'
         )
 
-            ->where('supir.id', $id);
+            ->leftJoin('zona', 'supir.zona_id', 'zona.id')
+            ->leftJoin('parameter', 'supir.statusaktif', '=', 'parameter.id')
+            ->leftJoin('parameter as statusadaupdategambar', 'supir.statusadaupdategambar', '=', 'statusadaupdategambar.id')
+            ->leftJoin('parameter as statusluarkota', 'supir.statusluarkota', '=', 'statusluarkota.id')
+            ->leftJoin('parameter as statuszonatertentu', 'supir.statuszonatertentu', '=', 'statuszonatertentu.id')
+            ->leftJoin('parameter as statusblacklist', 'supir.statusblacklist', '=', 'statusblacklist.id')
+            ->leftJoin('supir as supirlama', 'supir.supirold_id', '=', 'supirlama.id')
 
-        $data = $query->first();
+            ->where('supir.id', $id)->first();
+
         return $data;
     }
 
     public function selectColumns($query)
     { //sesuaikan dengan createtemp
+
         return $query->select(
             DB::raw(
                 "$this->table.id,
@@ -155,7 +162,7 @@ class Supir extends MyModel
                 $this->table.noktp,
                 $this->table.nokk,
                 $this->table.statusadaupdategambar,
-                $this->table.statuslluarkota,
+                $this->table.statusluarkota,
                 $this->table.statuszonatertentu,
                 $this->table.zona_id,
                 $this->table.angsuranpinjaman,
@@ -176,20 +183,19 @@ class Supir extends MyModel
             $this->table.created_at,
             $this->table.updated_at"
             )
-            
-            )
 
+        )
             ->leftJoin('zona', 'supir.zona_id', 'zona.id')
             ->leftJoin('parameter as statusadaupdategambar', 'supir.statusadaupdategambar', '=', 'statusadaupdategambar.id')
-            ->leftJoin('parameter as statusluarkota', 'supir.statuslluarkota', '=', 'statusluarkota.id')
+            ->leftJoin('parameter as statusluarkota', 'supir.statusluarkota', '=', 'statusluarkota.id')
             ->leftJoin('parameter as statuszonatertentu', 'supir.statuszonatertentu', '=', 'statuszonatertentu.id')
             ->leftJoin('parameter as statusblacklist', 'supir.statusblacklist', '=', 'statusblacklist.id')
             ->leftJoin('supir as supirlama', 'supir.supirold_id', '=', 'supirlama.id');
-            
     }
 
     public function createTemp(string $modelTable)
     { //sesuaikan dengan column index
+
         $temp = '##temp' . rand(1, 10000);
         Schema::create($temp, function ($table) {
             $table->bigInteger('id')->default('0');
@@ -209,7 +215,7 @@ class Supir extends MyModel
             $table->string('noktp', 30)->default('');
             $table->string('nokk', 30)->default('');
             $table->string('statusadaupdategambar', 300)->default('')->nullable();
-            $table->string('statuslluarkota', 300)->default('')->nullable();
+            $table->string('statusluarkota', 300)->default('')->nullable();
             $table->string('statuszonatertentu', 300)->default('')->nullable();
             $table->unsignedBigInteger('zona_id')->default(0);
             $table->double('angsuranpinjaman', 15, 2)->default(0);
@@ -255,7 +261,7 @@ class Supir extends MyModel
             'noktp',
             'nokk',
             'statusadaupdategambar',
-            'statuslluarkota',
+            'statusluarkota',
             'statuszonatertentu',
             'zona_id',
             'angsuranpinjaman',
@@ -291,41 +297,21 @@ class Supir extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'statusaktif') {
-                            $query = $query->where('parameter.text', '=', $filters['data']);
-                        } elseif ($filters['field'] == 'zona_id') {
-                            $query = $query->where('zona.zona', 'LIKE', "%$filters[data]%");
-                        } elseif ($filters['field'] == 'statusluarkota') {
-                            $query = $query->where('statusluarkota.text', 'LIKE', "%$filters[data]%");
+                        if ($filters['field'] == 'supir_id') {
+                            $query = $query->where('supir.id', 'LIKE', "%$filters[data]%");
                         } else {
                             $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
-
-                        // else if ($filters['field'] == 'statusapproval') {
-                        //     $query = $query->where('parameter_statusapproval.text', '=', $filters['data']);
-                        // } else if ($filters['field'] == 'statustas') {
-                        //     $query = $query->where('parameter_statustas.text', '=', $filters['data']);
-                        // } 
                     }
 
                     break;
                 case "OR":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'statusaktif') {
-                            $query = $query->orWhere('parameter.text', '=', $filters['data']);
-                        } elseif ($filters['field'] == 'zona_id') {
-                            $query = $query->orWhere('zona.zona', 'LIKE', "%$filters[data]%");
-                        } elseif ($filters['field'] == 'statusluarkota') {
-                            $query = $query->orWhere('statusluarkota.text', 'LIKE', "%$filters[data]%");
+                        if ($filters['field'] == 'supir_id') {
+                            $query = $query->orWhere('supir.id', 'LIKE', "%$filters[data]%");
                         } else {
                             $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
-
-                        // else if ($filters['field'] == 'statusapproval') {
-                        //     $query = $query->orWhere('parameter_statusapproval.text', '=', $filters['data']);
-                        // } else if ($filters['field'] == 'statustas') {
-                        //     $query = $query->orWhere('parameter_statustas.text', '=', $filters['data']);
-                        // } 
                     }
 
                     break;
@@ -340,6 +326,62 @@ class Supir extends MyModel
 
         return $query;
     }
+
+    // public function filter($query, $relationFields = [])
+    // {
+    //     if (count($this->params['filters']) > 0 && @$this->params['filters']['rules'][0]['data'] != '') {
+    //         switch ($this->params['filters']['groupOp']) {
+    //             case "AND":
+    //                 foreach ($this->params['filters']['rules'] as $index => $filters) {
+    //                     if ($filters['field'] == 'statusaktif') {
+    //                         $query = $query->where('parameter.text', '=', $filters['data']);
+    //                     } elseif ($filters['field'] == 'zona_id') {
+    //                         $query = $query->where('zona.zona', 'LIKE', "%$filters[data]%");
+    //                     } elseif ($filters['field'] == 'statusluarkota') {
+    //                         $query = $query->where('statusluarkota.text', 'LIKE', "%$filters[data]%");
+    //                     } else {
+    //                         $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+    //                     }
+
+    //                     // else if ($filters['field'] == 'statusapproval') {
+    //                     //     $query = $query->where('parameter_statusapproval.text', '=', $filters['data']);
+    //                     // } else if ($filters['field'] == 'statustas') {
+    //                     //     $query = $query->where('parameter_statustas.text', '=', $filters['data']);
+    //                     // } 
+    //                 }
+
+    //                 break;
+    //             case "OR":
+    //                 foreach ($this->params['filters']['rules'] as $index => $filters) {
+    //                     if ($filters['field'] == 'statusaktif') {
+    //                         $query = $query->orWhere('parameter.text', '=', $filters['data']);
+    //                     } elseif ($filters['field'] == 'zona_id') {
+    //                         $query = $query->orWhere('zona.zona', 'LIKE', "%$filters[data]%");
+    //                     } elseif ($filters['field'] == 'statusluarkota') {
+    //                         $query = $query->orWhere('statusluarkota.text', 'LIKE', "%$filters[data]%");
+    //                     } else {
+    //                         $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+    //                     }
+
+    //                     // else if ($filters['field'] == 'statusapproval') {
+    //                     //     $query = $query->orWhere('parameter_statusapproval.text', '=', $filters['data']);
+    //                     // } else if ($filters['field'] == 'statustas') {
+    //                     //     $query = $query->orWhere('parameter_statustas.text', '=', $filters['data']);
+    //                     // } 
+    //                 }
+
+    //                 break;
+    //             default:
+
+    //                 break;
+    //         }
+
+    //         $this->totalRows = $query->count();
+    //         $this->totalPages = $this->params['limit'] > 0 ? ceil($this->totalRows / $this->params['limit']) : 1;
+    //     }
+
+    //     return $query;
+    // }
 
     public function paginate($query)
     {
