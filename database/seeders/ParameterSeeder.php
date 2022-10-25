@@ -166,6 +166,8 @@ class ParameterSeeder extends Seeder
         parameter::create([ 'grp' => 'RINCIAN GAJI SUPIR BUKTI', 'subgrp' => 'RINCIAN GAJI SUPIR BUKTI', 'text' => '#RIC #9999#/#R#/#Y', 'memo' => 'RINCIAN GAJI SUPIR BUKTI', 'type' => '118', 'modifiedby' => 'ADMIN', 'kelompok' => '',]);
         parameter::create([ 'grp' => 'PENGEMBALIAN KAS GANTUNG BUKTI', 'subgrp' => 'PENGEMBALIAN KAS GANTUNG BUKTI', 'text' => '#PKG #9999#/#R#/#Y', 'memo' => 'PENGEMBALIAN KAS GANTUNG BUKTI', 'type' => '118', 'modifiedby' => 'ADMIN', 'kelompok' => '',]);
         parameter::create([ 'grp' => 'PROSES GAJI SUPIR BUKTI', 'subgrp' => 'PROSES GAJI SUPIR BUKTI', 'text' => '#EBS #9999#/#R#/#Y', 'memo' => 'PROSES GAJI SUPIR BUKTI', 'type' => '118', 'modifiedby' => 'ADMIN', 'kelompok' => '',]);       
+        parameter::create([ 'grp' => 'NOTA KREDIT BUKTI', 'subgrp' => 'NOTA KREDIT BUKTI', 'text' => '#EBS #9999#/#R#/#Y', 'memo' => 'NOTA KREDIT BUKTI', 'type' => '118', 'modifiedby' => 'ADMIN', 'kelompok' => '',]);       
+        parameter::create([ 'grp' => 'NOTA DEBET BUKTI', 'subgrp' => 'NOTA DEBET BUKTI', 'text' => '#EBS #9999#/#R#/#Y', 'memo' => 'NOTA DEBET BUKTI', 'type' => '118', 'modifiedby' => 'ADMIN', 'kelompok' => '',]);       
 
 
     }
