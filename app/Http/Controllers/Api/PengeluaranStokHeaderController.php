@@ -17,9 +17,7 @@ use App\Http\Requests\StorePengeluaranStokDetailRequest;
 class PengeluaranStokHeaderController extends Controller
 {
     /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
+     * @ClassName 
      */
     public function index()
     {
@@ -32,7 +30,9 @@ class PengeluaranStokHeaderController extends Controller
             ]
         ]);
     }
-
+    /**
+     * @ClassName 
+     */
     public function store(StorePengeluaranStokHeaderRequest $request)
     {
         DB::beginTransaction();
@@ -174,10 +174,7 @@ class PengeluaranStokHeaderController extends Controller
     }
 
     /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\PengeluaranStokHeader  $pengeluaranStokHeader
-     * @return \Illuminate\Http\Response
+     * @ClassName 
      */
     public function show(PengeluaranStokHeader $pengeluaranStokHeader,$id)
     {
@@ -187,7 +184,9 @@ class PengeluaranStokHeaderController extends Controller
             'detail' => PengeluaranStokDetail::getAll($id),
         ]);
     }
-
+    /**
+     * @ClassName 
+     */
     public function update(UpdatePengeluaranStokHeaderRequest $request, PengeluaranStokHeader $pengeluaranStokHeader,$id)
     {
         try {
@@ -306,10 +305,7 @@ class PengeluaranStokHeaderController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\PengeluaranStokHeader  $pengeluaranStokHeader
-     * @return \Illuminate\Http\Response
+     * @ClassName 
      */
     public function destroy(PengeluaranStokHeader $pengeluaranStokHeader,$id)
     {

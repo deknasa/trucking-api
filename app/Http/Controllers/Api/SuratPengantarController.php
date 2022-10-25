@@ -169,7 +169,7 @@ class SuratPengantarController extends Controller
                 'suratpengantar.statustrip',
                 'suratpengantar.notripasal',
                 'suratpengantar.tgldoor',
-                'suratpengantar.upahritasi_id',
+                // 'suratpengantar.upahritasi_id',
                 'suratpengantar.statusdisc',
                 'suratpengantar.gajisupir',
                 'suratpengantar.gajikenek',
@@ -242,7 +242,7 @@ class SuratPengantarController extends Controller
                     'suratpengantar.statustrip',
                     'suratpengantar.notripasal',
                     'suratpengantar.tgldoor',
-                    'suratpengantar.upahritasi_id',
+                    // 'suratpengantar.upahritasi_id',
                     'suratpengantar.statusdisc',
                     'suratpengantar.gajisupir',
                     'suratpengantar.gajikenek',
@@ -314,7 +314,7 @@ class SuratPengantarController extends Controller
                     'suratpengantar.statustrip',
                     'suratpengantar.notripasal',
                     'suratpengantar.tgldoor',
-                    'suratpengantar.upahritasi_id',
+                    // 'suratpengantar.upahritasi_id',
                     'suratpengantar.statusdisc',
                     'suratpengantar.gajisupir',
                     'suratpengantar.gajikenek',
@@ -427,10 +427,6 @@ class SuratPengantarController extends Controller
         ]);
     }
 
-    public function create()
-    {
-        //
-    }
     /**
      * @ClassName 
      */
@@ -612,22 +608,34 @@ class SuratPengantarController extends Controller
         }
     }
 
+    // public function show($id)
+    // {
+    //     $data = DB::table((new SuratPengantar())->getTable())->with(
+    //         'suratpengantarBiaya',
+    //     )->find($id);
+
+    //     return response([
+    //         'status' => true,
+    //         'data' => $data
+    //     ]);
+    // }
+
     public function show($id)
     {
-        $data = DB::table((new SuratPengantar())->getTable())->with(
-            'suratpengantarBiaya',
-        )->find($id);
+
+        $data = SuratPengantar::find($id);
+        // $detail = ServiceInDetail::getAll($id);
 
         return response([
             'status' => true,
-            'data' => $data
+            'data' => $data,
+            // 'detail' => $detail
         ]);
-    }
 
-
-    public function edit(suratpengantar $suratpengantar)
-    {
-        //
+        // return response([
+        //     'status' => true,
+        //     'data' => $supplier
+        // ]);
     }
 
     /**
@@ -854,114 +862,114 @@ class SuratPengantarController extends Controller
         ]);
     }
 
-    public function getid($id, $request, $del)
-    {
-        $params = [
-            'indexRow' => $request->indexRow ?? 1,
-            'limit' => $request->limit ?? 100,
-            'page' => $request->page ?? 1,
-            'sortname' => $request->sortname ?? 'id',
-            'sortorder' => $request->sortorder ?? 'asc',
-        ];
-        $temp = '##temp' . rand(1, 10000);
-        Schema::create($temp, function ($table) {
-            $table->id();
-            $table->bigInteger('id_')->default('0');
-            $table->string('nobukti', 50)->default('');
-            $table->string('keterangan', 50)->default('');
-            $table->string('modifiedby', 30)->default('');
-            $table->dateTime('created_at')->default('1900/1/1');
-            $table->dateTime('updated_at')->default('1900/1/1');
+    // public function getid($id, $request, $del)
+    // {
+    //     $params = [
+    //         'indexRow' => $request->indexRow ?? 1,
+    //         'limit' => $request->limit ?? 100,
+    //         'page' => $request->page ?? 1,
+    //         'sortname' => $request->sortname ?? 'id',
+    //         'sortorder' => $request->sortorder ?? 'asc',
+    //     ];
+    //     $temp = '##temp' . rand(1, 10000);
+    //     Schema::create($temp, function ($table) {
+    //         $table->id();
+    //         $table->bigInteger('id_')->default('0');
+    //         $table->string('nobukti', 50)->default('');
+    //         $table->string('keterangan', 50)->default('');
+    //         $table->string('modifiedby', 30)->default('');
+    //         $table->dateTime('created_at')->default('1900/1/1');
+    //         $table->dateTime('updated_at')->default('1900/1/1');
 
-            $table->index('id_');
-        });
+    //         $table->index('id_');
+    //     });
 
-        if ($params['sortname'] == 'id') {
-            $query = DB::table((new SuratPengantar())->getTable())->select(
-                'suratpengantar.id as id_',
-                'suratpengantar.nobukti',
-                'suratpengantar.keterangan',
-                'suratpengantar.modifiedby',
-                'suratpengantar.created_at',
-                'suratpengantar.updated_at'
-            )
-                ->orderBy('suratpengantar.id', $params['sortorder']);
-        } else if ($params['sortname'] == 'kodesuratpengantar' or $params['sortname'] == 'keterangan') {
-            $query = DB::table((new SuratPengantar())->getTable())->select(
-                'suratpengantar.id as id_',
-                'suratpengantar.nobukti',
-                'suratpengantar.keterangan',
-                'suratpengantar.modifiedby',
-                'suratpengantar.created_at',
-                'suratpengantar.updated_at'
-            )
-                ->orderBy($params['sortname'], $params['sortorder'])
-                ->orderBy('suratpengantar.id', $params['sortorder']);
-        } else {
-            if ($params['sortorder'] == 'asc') {
-                $query = DB::table((new SuratPengantar())->getTable())->select(
-                    'suratpengantar.id as id_',
-                    'suratpengantar.nobukti',
-                    'suratpengantar.keterangan',
-                    'suratpengantar.modifiedby',
-                    'suratpengantar.created_at',
-                    'suratpengantar.updated_at'
-                )
-                    ->orderBy($params['sortname'], $params['sortorder'])
-                    ->orderBy('suratpengantar.id', $params['sortorder']);
-            } else {
-                $query = DB::table((new SuratPengantar())->getTable())->select(
-                    'suratpengantar.id as id_',
-                    'suratpengantar.nobukti',
-                    'suratpengantar.keterangan',
-                    'suratpengantar.modifiedby',
-                    'suratpengantar.created_at',
-                    'suratpengantar.updated_at'
-                )
-                    ->orderBy($params['sortname'], $params['sortorder'])
-                    ->orderBy('suratpengantar.id', 'asc');
-            }
-        }
-
-
-
-        DB::table($temp)->insertUsing(['id_', 'nobukti', 'keterangan', 'modifiedby', 'created_at', 'updated_at'], $query);
+    //     if ($params['sortname'] == 'id') {
+    //         $query = DB::table((new SuratPengantar())->getTable())->select(
+    //             'suratpengantar.id as id_',
+    //             'suratpengantar.nobukti',
+    //             'suratpengantar.keterangan',
+    //             'suratpengantar.modifiedby',
+    //             'suratpengantar.created_at',
+    //             'suratpengantar.updated_at'
+    //         )
+    //             ->orderBy('suratpengantar.id', $params['sortorder']);
+    //     } else if ($params['sortname'] == 'kodesuratpengantar' or $params['sortname'] == 'keterangan') {
+    //         $query = DB::table((new SuratPengantar())->getTable())->select(
+    //             'suratpengantar.id as id_',
+    //             'suratpengantar.nobukti',
+    //             'suratpengantar.keterangan',
+    //             'suratpengantar.modifiedby',
+    //             'suratpengantar.created_at',
+    //             'suratpengantar.updated_at'
+    //         )
+    //             ->orderBy($params['sortname'], $params['sortorder'])
+    //             ->orderBy('suratpengantar.id', $params['sortorder']);
+    //     } else {
+    //         if ($params['sortorder'] == 'asc') {
+    //             $query = DB::table((new SuratPengantar())->getTable())->select(
+    //                 'suratpengantar.id as id_',
+    //                 'suratpengantar.nobukti',
+    //                 'suratpengantar.keterangan',
+    //                 'suratpengantar.modifiedby',
+    //                 'suratpengantar.created_at',
+    //                 'suratpengantar.updated_at'
+    //             )
+    //                 ->orderBy($params['sortname'], $params['sortorder'])
+    //                 ->orderBy('suratpengantar.id', $params['sortorder']);
+    //         } else {
+    //             $query = DB::table((new SuratPengantar())->getTable())->select(
+    //                 'suratpengantar.id as id_',
+    //                 'suratpengantar.nobukti',
+    //                 'suratpengantar.keterangan',
+    //                 'suratpengantar.modifiedby',
+    //                 'suratpengantar.created_at',
+    //                 'suratpengantar.updated_at'
+    //             )
+    //                 ->orderBy($params['sortname'], $params['sortorder'])
+    //                 ->orderBy('suratpengantar.id', 'asc');
+    //         }
+    //     }
 
 
-        if ($del == 1) {
-            if ($params['page'] == 1) {
-                $baris = $params['indexRow'] + 1;
-            } else {
-                $hal = $params['page'] - 1;
-                $bar = $hal * $params['limit'];
-                $baris = $params['indexRow'] + $bar + 1;
-            }
+
+    //     DB::table($temp)->insertUsing(['id_', 'nobukti', 'keterangan', 'modifiedby', 'created_at', 'updated_at'], $query);
 
 
-            if (DB::table($temp)
-                ->where('id', '=', $baris)->exists()
-            ) {
-                $querydata = DB::table($temp)
-                    ->select('id as row', 'id_ as id')
-                    ->where('id', '=', $baris)
-                    ->orderBy('id');
-            } else {
-                $querydata = DB::table($temp)
-                    ->select('id as row', 'id_ as id')
-                    ->where('id', '=', ($baris - 1))
-                    ->orderBy('id');
-            }
-        } else {
-            $querydata = DB::table($temp)
-                ->select('id as row')
-                ->where('id_', '=',  $id)
-                ->orderBy('id');
-        }
+    //     if ($del == 1) {
+    //         if ($params['page'] == 1) {
+    //             $baris = $params['indexRow'] + 1;
+    //         } else {
+    //             $hal = $params['page'] - 1;
+    //             $bar = $hal * $params['limit'];
+    //             $baris = $params['indexRow'] + $bar + 1;
+    //         }
 
 
-        $data = $querydata->first();
-        return $data;
-    }
+    //         if (DB::table($temp)
+    //             ->where('id', '=', $baris)->exists()
+    //         ) {
+    //             $querydata = DB::table($temp)
+    //                 ->select('id as row', 'id_ as id')
+    //                 ->where('id', '=', $baris)
+    //                 ->orderBy('id');
+    //         } else {
+    //             $querydata = DB::table($temp)
+    //                 ->select('id as row', 'id_ as id')
+    //                 ->where('id', '=', ($baris - 1))
+    //                 ->orderBy('id');
+    //         }
+    //     } else {
+    //         $querydata = DB::table($temp)
+    //             ->select('id as row')
+    //             ->where('id_', '=',  $id)
+    //             ->orderBy('id');
+    //     }
+
+
+    //     $data = $querydata->first();
+    //     return $data;
+    // }
 
     public function combo(Request $request)
     {

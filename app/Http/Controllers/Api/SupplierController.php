@@ -185,7 +185,6 @@ class SupplierController extends Controller
             }
         } catch (\Throwable $th) {
             DB::rollBack();
-
             throw $th;
         }
     }

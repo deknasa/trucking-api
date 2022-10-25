@@ -14,9 +14,7 @@ use Illuminate\Support\Facades\Schema;
 class PengeluaranStokController extends Controller
 {
     /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
+     * @ClassName 
      */
     public function index()
     {
@@ -31,10 +29,7 @@ class PengeluaranStokController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \App\Http\Requests\StorePengeluaranStokRequest  $request
-     * @return \Illuminate\Http\Response
+     * @ClassName 
      */
     public function store(StorePengeluaranStokRequest $request)
     {
@@ -89,10 +84,7 @@ class PengeluaranStokController extends Controller
     }
 
     /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\PengeluaranStok  $pengeluaranStok
-     * @return \Illuminate\Http\Response
+     * @ClassName 
      */
     public function show(PengeluaranStok $pengeluaranStok,$id)
     {
@@ -107,11 +99,7 @@ class PengeluaranStokController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
-     *
-     * @param  \App\Http\Requests\UpdatePengeluaranStokRequest  $request
-     * @param  \App\Models\PengeluaranStok  $pengeluaranStok
-     * @return \Illuminate\Http\Response
+     * @ClassName 
      */
     public function update(UpdatePengeluaranStokRequest $request, PengeluaranStok $pengeluaranStok,$id)
     {
@@ -177,7 +165,9 @@ class PengeluaranStokController extends Controller
             'data' => $data
         ]);
     }
-
+    /**
+     * @ClassName 
+     */
     public function destroy(PengeluaranStok $pengeluaranStok,$id)
     {
         DB::beginTransaction();

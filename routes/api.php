@@ -34,6 +34,10 @@
     use App\Http\Controllers\Api\JenisTradoController;
     use App\Http\Controllers\Api\KasGantungDetailController;
     use App\Http\Controllers\Api\KasGantungHeaderController;
+    
+    use App\Http\Controllers\Api\PengembalianKasGantungHeaderController;
+    use App\Http\Controllers\Api\PengembalianKasGantungDetailController;
+    
     use App\Http\Controllers\Api\GudangController;
     use App\Http\Controllers\Api\PelangganController;
     use App\Http\Controllers\Api\PenerimaController;
@@ -399,6 +403,13 @@
         Route::get('gajisupirheader/{gajiId}/getEditTrip', [GajiSupirHeaderController::class, 'getEditTrip']);
         Route::resource('gajisupirheader', GajiSupirHeaderController::class);
         Route::resource('gajisupirdetail', GajiSupirDetailController::class);
+
+        Route::get('pengembaliankasgantungheader/field_length', [PengembalianKasGantungHeaderController::class,'fieldLength']);
+        Route::get('pengembaliankasgantungheader/getkasgantung', [PengembalianKasGantungHeaderController::class,'getKasGantung']);
+        Route::get('pengembaliankasgantungheader/getpengembalian/{id}', [PengembalianKasGantungHeaderController::class,'getPengembalian']);
+        Route::resource('pengembaliankasgantungheader', PengembalianKasGantungHeaderController::class);
+        
+        Route::resource('pengembaliankasgantung_detail', PengembalianKasGantungDetailController::class);
 
         Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
         Route::get('prosesgajisupirheader/no_bukti', [ProsesGajiSupirHeaderController::class, 'getNoBukti']);

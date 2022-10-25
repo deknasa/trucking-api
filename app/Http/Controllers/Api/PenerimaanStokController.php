@@ -14,9 +14,7 @@ use Illuminate\Support\Facades\Schema;
 class PenerimaanStokController extends Controller
 {
     /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
+     * @ClassName 
      */
     public function index()
     {
@@ -31,10 +29,7 @@ class PenerimaanStokController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \App\Http\Requests\StorePenerimaanStokRequest  $request
-     * @return \Illuminate\Http\Response
+     * @ClassName 
      */
     public function store(StorePenerimaanStokRequest $request)
     {
@@ -89,10 +84,7 @@ class PenerimaanStokController extends Controller
     }
 
     /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\PenerimaanStok  $penerimaanStok
-     * @return \Illuminate\Http\Response
+     * @ClassName 
      */
     public function show(PenerimaanStok $penerimaanStok,$id)
     {
@@ -107,11 +99,7 @@ class PenerimaanStokController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
-     *
-     * @param  \App\Http\Requests\UpdatePenerimaanStokRequest  $request
-     * @param  \App\Models\PenerimaanStok  $penerimaanStok
-     * @return \Illuminate\Http\Response
+     * @ClassName 
      */
     public function update(UpdatePenerimaanStokRequest $request, PenerimaanStok $penerimaanStok,$id)
     {
@@ -177,7 +165,9 @@ class PenerimaanStokController extends Controller
             'data' => $data
         ]);
     }
-
+    /**
+     * @ClassName 
+     */
     public function destroy(PenerimaanStok $penerimaanStok,$id)
     {
         DB::beginTransaction();

@@ -17,9 +17,7 @@ use Illuminate\Validation\Rule;
 class PengeluaranStokDetailController extends Controller
 {
     /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
+     * @ClassName 
      */
     public function index(Request $request)
     {
@@ -97,7 +95,9 @@ class PengeluaranStokDetailController extends Controller
             ]);
         }
     }
-
+    /**
+     * @ClassName 
+     */
     public function store(StorePengeluaranStokDetailRequest $request)
     {
         DB::beginTransaction();
