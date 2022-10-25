@@ -172,7 +172,7 @@ class SupirController extends Controller
             $supir->noktp = $request->noktp ?? '';
             $supir->nokk = $request->nokk ?? '';
             $supir->statusadaupdategambar = $request->statusadaupdategambar ?? 0;
-            $supir->statuslluarkota = $request->statusluarkota ?? 0;
+            $supir->statusluarkota = $request->statusluarkota ?? 0;
             $supir->statuszonatertentu = $request->statuszonatertentu ?? 0;
             $supir->zona_id = $request->zona_id;
             $supir->angsuranpinjaman = $request->angsuranpinjaman ?? 0;
@@ -240,11 +240,11 @@ class SupirController extends Controller
     /**
      * @ClassName 
      */
-    public function update(StoreSupirRequest $request, Supir $supir)
+    public function update(StoreSupirRequest $request,Supir $supir)
     {
         DB::beginTransaction();
+
         try {
-            // $supir = Supir::find($id);
             $supir->namasupir = strtoupper($request->namasupir);
             $supir->alamat = strtoupper($request->alamat);
             $supir->kota = strtoupper($request->kota);
@@ -258,7 +258,7 @@ class SupirController extends Controller
             $supir->noktp = $request->noktp ?? '';
             $supir->nokk = $request->nokk ?? '';
             $supir->statusadaupdategambar = $request->statusadaupdategambar ?? 0;
-            $supir->statuslluarkota = $request->statusluarkota ?? 0;
+            $supir->statusluarkota = $request->statusluarkota ?? 0;
             $supir->statuszonatertentu = $request->statuszonatertentu ?? 0;
             $supir->zona_id = $request->zona_id;
             $supir->angsuranpinjaman = $request->angsuranpinjaman ?? 0;
@@ -271,10 +271,9 @@ class SupirController extends Controller
             $supir->modifiedby = strtoupper(auth('api')->user()->name);
             $supir->nominalpinjamansaldoawal = $request->nominalpinjamansaldoawal ?? 0;
             $supir->nominaldepositsa = $request->nominaldepositsa ?? 0;
-
             $upload = $this->upload_image($request, $supir->id, 'EDIT');
-
             $supir->save();
+
             $logTrail = [
                 'namatabel' => strtoupper($supir->getTable()),
                 'postingdari' => 'EDIT SUPIR',
@@ -301,6 +300,7 @@ class SupirController extends Controller
                 'data' => $supir
             ]);
         } catch (\Throwable $th) {
+            dd('te');
             DB::rollBack();
             throw $th;
         }
@@ -323,7 +323,7 @@ class SupirController extends Controller
     //         $supir->noktp = $request->noktp ?? '';
     //         $supir->nokk = $request->nokk ?? '';
     //         $supir->statusadaupdategambar = $request->statusadaupdategambar ?? 0;
-    //         $supir->statuslluarkota = $request->statusluarkota ?? 0;
+    //         $supir->statusluarkota = $request->statusluarkota ?? 0;
     //         $supir->statuszonatertentu = $request->statuszonatertentu ?? 0;
     //         $supir->zona_id = $request->zona_id;
     //         $supir->angsuranpinjaman = $request->angsuranpinjaman ?? 0;
@@ -682,12 +682,12 @@ class SupirController extends Controller
                 $photoskck      = json_decode(strtolower($get->photoskck), true);
                 $photodomisili  = json_decode(strtolower($get->photodomisili), true);
 
-                $supir      = (array)$imageOld->supir;
-                $ktp        = (array)$imageOld->ktp;
-                $sim        = (array)$imageOld->sim;
-                $kk         = (array)$imageOld->kk;
-                $skck       = (array)$imageOld->skck;
-                $domisili   = (array)$imageOld->domisili;
+                $supir      = (array)@$imageOld['supir'] ?? [];
+                $ktp        = (array)@$imageOld['ktp'] ?? [];
+                $sim        = (array)@$imageOld['sim'] ?? [];
+                $kk         = (array)@$imageOld['kk'] ?? [];
+                $skck       = (array)@$imageOld['skck'] ?? [];
+                $domisili   = (array)@$imageOld['domisili'] ?? [];
 
                 if (!empty($supir)) {
                     foreach ($supir as $item) {
@@ -973,7 +973,7 @@ class SupirController extends Controller
                     $data['domisili'][] = $imageResizes[1];
                 }
             }
-            $supir = Supir::find($id);
+            $supir = Supir::findOrFail($id);
             $supir->photosupir = json_encode($data['supir'] ?? []);
             $supir->photoktp = json_encode($data['ktp'] ?? []);
             $supir->photosim = json_encode($data['sim'] ?? []);
@@ -981,7 +981,6 @@ class SupirController extends Controller
             $supir->photoskck = json_encode($data['skck'] ?? []);
             $supir->photodomisili = json_encode($data['domisili'] ?? []);
             $supir->save();
-
             return [
                 'status' => true,
                 'message' => 'Berhasil disimpan',
@@ -1368,7 +1367,7 @@ class SupirController extends Controller
             $table->string('noktp', 30)->default('');
             $table->string('nokk', 30)->default('');
             $table->integer('statusadaupdategambar')->length(11)->default(0);
-            $table->integer('statuslluarkota')->length(11)->default(0);
+            $table->integer('statusluarkota')->length(11)->default(0);
             $table->integer('statuszonatertentu')->length(11)->default(0);
             $table->unsignedBigInteger('zona_id')->default(0);
             $table->double('angsuranpinjaman', 15, 2)->default(0);
@@ -1411,7 +1410,7 @@ class SupirController extends Controller
                 'supir.noktp',
                 'supir.nokk',
                 'supir.statusadaupdategambar',
-                'supir.statuslluarkota',
+                'supir.statusluarkota',
                 'supir.statuszonatertentu',
                 'supir.zona_id',
                 'supir.angsuranpinjaman',
@@ -1452,7 +1451,7 @@ class SupirController extends Controller
                 'supir.noktp',
                 'supir.nokk',
                 'supir.statusadaupdategambar',
-                'supir.statuslluarkota',
+                'supir.statusluarkota',
                 'supir.statuszonatertentu',
                 'supir.zona_id',
                 'supir.angsuranpinjaman',
@@ -1496,7 +1495,7 @@ class SupirController extends Controller
                     'supir.noktp',
                     'supir.nokk',
                     'supir.statusadaupdategambar',
-                    'supir.statuslluarkota',
+                    'supir.statusluarkota',
                     'supir.statuszonatertentu',
                     'supir.zona_id',
                     'supir.angsuranpinjaman',
@@ -1538,7 +1537,7 @@ class SupirController extends Controller
                     'supir.noktp',
                     'supir.nokk',
                     'supir.statusadaupdategambar',
-                    'supir.statuslluarkota',
+                    'supir.statusluarkota',
                     'supir.statuszonatertentu',
                     'supir.zona_id',
                     'supir.angsuranpinjaman',
@@ -1566,7 +1565,7 @@ class SupirController extends Controller
         }
 
 
-        DB::table($temp)->insertUsing(['id_', 'namasupir', 'alamat', 'kota', 'telp', 'statusaktif', 'nominaldepositsa', 'depositke', 'nominalpinjamansaldoawal', 'supirold_id', 'tglexpsim', 'nosim', 'keterangan', 'noktp', 'nokk', 'statusadaupdategambar', 'statuslluarkota', 'statuszonatertentu', 'zona_id', 'angsuranpinjaman', 'plafondeposito', 'photosupir', 'photoktp', 'photosim', 'photokk', 'photoskck', 'photodomisili', 'keteranganresign', 'statusblacklist', 'tglberhentisupir', 'tgllahir', 'tglterbitsim', 'modifiedby', 'created_at', 'updated_at'], $query);
+        DB::table($temp)->insertUsing(['id_', 'namasupir', 'alamat', 'kota', 'telp', 'statusaktif', 'nominaldepositsa', 'depositke', 'nominalpinjamansaldoawal', 'supirold_id', 'tglexpsim', 'nosim', 'keterangan', 'noktp', 'nokk', 'statusadaupdategambar', 'statusluarkota', 'statuszonatertentu', 'zona_id', 'angsuranpinjaman', 'plafondeposito', 'photosupir', 'photoktp', 'photosim', 'photokk', 'photoskck', 'photodomisili', 'keteranganresign', 'statusblacklist', 'tglberhentisupir', 'tgllahir', 'tglterbitsim', 'modifiedby', 'created_at', 'updated_at'], $query);
 
 
         if ($del == 1) {

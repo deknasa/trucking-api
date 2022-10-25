@@ -462,6 +462,7 @@ class SuratPengantarController extends Controller
             $suratpengantar->nourutorder = $request->nourutorder ?? 0;
             $suratpengantar->dari_id = $request->dari_id;
             $suratpengantar->sampai_id = $request->sampai_id;
+            
             $upahsupir = UpahSupir::where('kotadari_id', $request->dari_id)->where('kotasampai_id', $request->sampai_id)->first();
             if ($upahsupir == '') {
                 return response([
@@ -483,7 +484,7 @@ class SuratPengantarController extends Controller
             $suratpengantar->statuslongtrip = $request->statuslongtrip ?? 0;
             $suratpengantar->gajisupir = $request->gajisupir ?? 0;
             $suratpengantar->gajikenek = $request->gajikenek ?? 0;
-            $suratpengantar->gajiritasi = $request->gajiritasi ?? 0;
+            // $suratpengantar->gajiritasi = $request->gajiritasi ?? 0;
             $suratpengantar->agen_id = $request->agen_id;
             $suratpengantar->jenisorder_id = $request->jenisorder_id;
             $suratpengantar->statusperalihan = $request->statusperalihan ?? 0;
@@ -502,7 +503,7 @@ class SuratPengantarController extends Controller
             $suratpengantar->tglsp = date('Y-m-d', strtotime($request->tglsp));
             $suratpengantar->statusritasiomset = $request->statusritasiomset ?? 0;
             $suratpengantar->cabang_id = $request->cabang_id ?? 0;
-            $suratpengantar->komisisupir = $request->komisisupir;
+            // $suratpengantar->komisisupir = $request->komisisupir;
             $suratpengantar->tolsupir = $request->tolsupir ?? 0;
             $suratpengantar->nosptagihlain = $request->nosptagihlain ?? 0;
             $suratpengantar->nilaitagihlain = $request->nilaitagihlain ?? 0;
@@ -525,7 +526,7 @@ class SuratPengantarController extends Controller
             $suratpengantar->statustrip = $request->statustrip ?? 0;
             $suratpengantar->notripasal = $request->notripasal ?? '';
             $suratpengantar->tgldoor = date('Y-m-d', strtotime($request->tgldoor));
-            $suratpengantar->upahritasi_id = $request->upahritasi_id ?? 0;
+            // $suratpengantar->upahritasi_id = $request->upahritasi_id ?? 0;
             $suratpengantar->statusdisc = $request->statusdisc ?? 0;
             $suratpengantar->modifiedby = auth('api')->user()->name;;
             $request->sortname = $request->sortname ?? 'id';
@@ -557,7 +558,7 @@ class SuratPengantarController extends Controller
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
+            
                 foreach ($request->keteranganbiaya as $key => $value) {
                     $nominal = $request->nominal[$key];
                     $nominal = str_replace('.', '', $nominal);
@@ -778,33 +779,30 @@ class SuratPengantarController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\suratpengantar  $suratpengantar
-     * @return \Illuminate\Http\Response
-     */
-    /**
      * @ClassName 
      */
     public function destroy(SuratPengantar $suratpengantar, Request $request)
     {
         DB::beginTransaction();
-        $d = SuratPengantarBiayaTambahan::where('suratpengantar_id', $suratpengantar->id)->delete();
-        $delete = SuratPengantar::destroy($suratpengantar->id);
-        $del = 1;
-        if ($delete) {
-            $logTrail = [
-                'namatabel' => strtoupper($suratpengantar->getTable()),
-                'postingdari' => 'DELETE SURAT PENGANTAR',
-                'idtrans' => $suratpengantar->id,
-                'nobuktitrans' => $suratpengantar->id,
-                'aksi' => 'DELETE',
-                'datajson' => $suratpengantar->toArray(),
-                'modifiedby' => $suratpengantar->modifiedby
-            ];
+        try {
+            $d = SuratPengantarBiayaTambahan::where('suratpengantar_id', $suratpengantar->id)->delete();
+            // $delete = SuratPengantar::destroy($suratpengantar->id);
+            $delete = $suratpengantar->delete();
 
-            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-            app(LogTrailController::class)->store($validatedLogTrail);
+            if ($delete) {
+                $logTrail = [
+                    'namatabel' => strtoupper($suratpengantar->getTable()),
+                    'postingdari' => 'DELETE SURAT PENGANTAR',
+                    'idtrans' => $suratpengantar->id,
+                    'nobuktitrans' => $suratpengantar->id,
+                    'aksi' => 'DELETE',
+                    'datajson' => $suratpengantar->toArray(),
+                    'modifiedby' => $suratpengantar->modifiedby
+                ];
+
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                app(LogTrailController::class)->store($validatedLogTrail);
+            }
 
             DB::commit();
 
@@ -824,14 +822,57 @@ class SuratPengantarController extends Controller
                 'message' => 'Berhasil dihapus',
                 'data' => $suratpengantar
             ]);
-        } else {
+        } catch (\Throwable $th) {
             DB::rollBack();
-            return response([
-                'status' => false,
-                'message' => 'Gagal dihapus'
-            ]);
+            return response($th->getMessage());
         }
     }
+    // public function destroy(SuratPengantar $suratpengantar, Request $request)
+    // {
+    //     DB::beginTransaction();
+    //     $d = SuratPengantarBiayaTambahan::where('suratpengantar_id', $suratpengantar->id)->delete();
+    //     $delete = SuratPengantar::destroy($suratpengantar->id);
+    //     $del = 1;
+    //     if ($delete) {
+    //         $logTrail = [
+    //             'namatabel' => strtoupper($suratpengantar->getTable()),
+    //             'postingdari' => 'DELETE SURAT PENGANTAR',
+    //             'idtrans' => $suratpengantar->id,
+    //             'nobuktitrans' => $suratpengantar->id,
+    //             'aksi' => 'DELETE',
+    //             'datajson' => $suratpengantar->toArray(),
+    //             'modifiedby' => $suratpengantar->modifiedby
+    //         ];
+
+    //         $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+    //         app(LogTrailController::class)->store($validatedLogTrail);
+
+    //         DB::commit();
+
+    //         $selected = $this->getPosition($suratpengantar, $suratpengantar->getTable(), true);
+    //         $suratpengantar->position = $selected->position;
+    //         $suratpengantar->id = $selected->id;
+    //         $suratpengantar->page = ceil($suratpengantar->position / ($request->limit ?? 10));
+
+    //         // $data = $this->getid($suratpengantar->id, $request, $del);
+    //         // $suratpengantar->position = @$data->row  ?? 0;
+    //         // $suratpengantar->id = @$data->id  ?? 0;
+    //         // if (isset($request->limit)) {
+    //         //     $suratpengantar->page = ceil($suratpengantar->position / $request->limit);
+    //         // }
+    //         return response([
+    //             'status' => true,
+    //             'message' => 'Berhasil dihapus',
+    //             'data' => $suratpengantar
+    //         ]);
+    //     } else {
+    //         DB::rollBack();
+    //         return response([
+    //             'status' => false,
+    //             'message' => 'Gagal dihapus'
+    //         ]);
+    //     }
+    // }
 
     public function fieldLength()
     {
@@ -862,114 +903,114 @@ class SuratPengantarController extends Controller
         ]);
     }
 
-    // public function getid($id, $request, $del)
-    // {
-    //     $params = [
-    //         'indexRow' => $request->indexRow ?? 1,
-    //         'limit' => $request->limit ?? 100,
-    //         'page' => $request->page ?? 1,
-    //         'sortname' => $request->sortname ?? 'id',
-    //         'sortorder' => $request->sortorder ?? 'asc',
-    //     ];
-    //     $temp = '##temp' . rand(1, 10000);
-    //     Schema::create($temp, function ($table) {
-    //         $table->id();
-    //         $table->bigInteger('id_')->default('0');
-    //         $table->string('nobukti', 50)->default('');
-    //         $table->string('keterangan', 50)->default('');
-    //         $table->string('modifiedby', 30)->default('');
-    //         $table->dateTime('created_at')->default('1900/1/1');
-    //         $table->dateTime('updated_at')->default('1900/1/1');
+    public function getid($id, $request, $del)
+    {
+        $params = [
+            'indexRow' => $request->indexRow ?? 1,
+            'limit' => $request->limit ?? 100,
+            'page' => $request->page ?? 1,
+            'sortname' => $request->sortname ?? 'id',
+            'sortorder' => $request->sortorder ?? 'asc',
+        ];
+        $temp = '##temp' . rand(1, 10000);
+        Schema::create($temp, function ($table) {
+            $table->id();
+            $table->bigInteger('id_')->default('0');
+            $table->string('nobukti', 50)->default('');
+            $table->string('keterangan', 50)->default('');
+            $table->string('modifiedby', 30)->default('');
+            $table->dateTime('created_at')->default('1900/1/1');
+            $table->dateTime('updated_at')->default('1900/1/1');
 
-    //         $table->index('id_');
-    //     });
+            $table->index('id_');
+        });
 
-    //     if ($params['sortname'] == 'id') {
-    //         $query = DB::table((new SuratPengantar())->getTable())->select(
-    //             'suratpengantar.id as id_',
-    //             'suratpengantar.nobukti',
-    //             'suratpengantar.keterangan',
-    //             'suratpengantar.modifiedby',
-    //             'suratpengantar.created_at',
-    //             'suratpengantar.updated_at'
-    //         )
-    //             ->orderBy('suratpengantar.id', $params['sortorder']);
-    //     } else if ($params['sortname'] == 'kodesuratpengantar' or $params['sortname'] == 'keterangan') {
-    //         $query = DB::table((new SuratPengantar())->getTable())->select(
-    //             'suratpengantar.id as id_',
-    //             'suratpengantar.nobukti',
-    //             'suratpengantar.keterangan',
-    //             'suratpengantar.modifiedby',
-    //             'suratpengantar.created_at',
-    //             'suratpengantar.updated_at'
-    //         )
-    //             ->orderBy($params['sortname'], $params['sortorder'])
-    //             ->orderBy('suratpengantar.id', $params['sortorder']);
-    //     } else {
-    //         if ($params['sortorder'] == 'asc') {
-    //             $query = DB::table((new SuratPengantar())->getTable())->select(
-    //                 'suratpengantar.id as id_',
-    //                 'suratpengantar.nobukti',
-    //                 'suratpengantar.keterangan',
-    //                 'suratpengantar.modifiedby',
-    //                 'suratpengantar.created_at',
-    //                 'suratpengantar.updated_at'
-    //             )
-    //                 ->orderBy($params['sortname'], $params['sortorder'])
-    //                 ->orderBy('suratpengantar.id', $params['sortorder']);
-    //         } else {
-    //             $query = DB::table((new SuratPengantar())->getTable())->select(
-    //                 'suratpengantar.id as id_',
-    //                 'suratpengantar.nobukti',
-    //                 'suratpengantar.keterangan',
-    //                 'suratpengantar.modifiedby',
-    //                 'suratpengantar.created_at',
-    //                 'suratpengantar.updated_at'
-    //             )
-    //                 ->orderBy($params['sortname'], $params['sortorder'])
-    //                 ->orderBy('suratpengantar.id', 'asc');
-    //         }
-    //     }
-
-
-
-    //     DB::table($temp)->insertUsing(['id_', 'nobukti', 'keterangan', 'modifiedby', 'created_at', 'updated_at'], $query);
+        if ($params['sortname'] == 'id') {
+            $query = DB::table((new SuratPengantar())->getTable())->select(
+                'suratpengantar.id as id_',
+                'suratpengantar.nobukti',
+                'suratpengantar.keterangan',
+                'suratpengantar.modifiedby',
+                'suratpengantar.created_at',
+                'suratpengantar.updated_at'
+            )
+                ->orderBy('suratpengantar.id', $params['sortorder']);
+        } else if ($params['sortname'] == 'kodesuratpengantar' or $params['sortname'] == 'keterangan') {
+            $query = DB::table((new SuratPengantar())->getTable())->select(
+                'suratpengantar.id as id_',
+                'suratpengantar.nobukti',
+                'suratpengantar.keterangan',
+                'suratpengantar.modifiedby',
+                'suratpengantar.created_at',
+                'suratpengantar.updated_at'
+            )
+                ->orderBy($params['sortname'], $params['sortorder'])
+                ->orderBy('suratpengantar.id', $params['sortorder']);
+        } else {
+            if ($params['sortorder'] == 'asc') {
+                $query = DB::table((new SuratPengantar())->getTable())->select(
+                    'suratpengantar.id as id_',
+                    'suratpengantar.nobukti',
+                    'suratpengantar.keterangan',
+                    'suratpengantar.modifiedby',
+                    'suratpengantar.created_at',
+                    'suratpengantar.updated_at'
+                )
+                    ->orderBy($params['sortname'], $params['sortorder'])
+                    ->orderBy('suratpengantar.id', $params['sortorder']);
+            } else {
+                $query = DB::table((new SuratPengantar())->getTable())->select(
+                    'suratpengantar.id as id_',
+                    'suratpengantar.nobukti',
+                    'suratpengantar.keterangan',
+                    'suratpengantar.modifiedby',
+                    'suratpengantar.created_at',
+                    'suratpengantar.updated_at'
+                )
+                    ->orderBy($params['sortname'], $params['sortorder'])
+                    ->orderBy('suratpengantar.id', 'asc');
+            }
+        }
 
 
-    //     if ($del == 1) {
-    //         if ($params['page'] == 1) {
-    //             $baris = $params['indexRow'] + 1;
-    //         } else {
-    //             $hal = $params['page'] - 1;
-    //             $bar = $hal * $params['limit'];
-    //             $baris = $params['indexRow'] + $bar + 1;
-    //         }
+
+        DB::table($temp)->insertUsing(['id_', 'nobukti', 'keterangan', 'modifiedby', 'created_at', 'updated_at'], $query);
 
 
-    //         if (DB::table($temp)
-    //             ->where('id', '=', $baris)->exists()
-    //         ) {
-    //             $querydata = DB::table($temp)
-    //                 ->select('id as row', 'id_ as id')
-    //                 ->where('id', '=', $baris)
-    //                 ->orderBy('id');
-    //         } else {
-    //             $querydata = DB::table($temp)
-    //                 ->select('id as row', 'id_ as id')
-    //                 ->where('id', '=', ($baris - 1))
-    //                 ->orderBy('id');
-    //         }
-    //     } else {
-    //         $querydata = DB::table($temp)
-    //             ->select('id as row')
-    //             ->where('id_', '=',  $id)
-    //             ->orderBy('id');
-    //     }
+        if ($del == 1) {
+            if ($params['page'] == 1) {
+                $baris = $params['indexRow'] + 1;
+            } else {
+                $hal = $params['page'] - 1;
+                $bar = $hal * $params['limit'];
+                $baris = $params['indexRow'] + $bar + 1;
+            }
 
 
-    //     $data = $querydata->first();
-    //     return $data;
-    // }
+            if (DB::table($temp)
+                ->where('id', '=', $baris)->exists()
+            ) {
+                $querydata = DB::table($temp)
+                    ->select('id as row', 'id_ as id')
+                    ->where('id', '=', $baris)
+                    ->orderBy('id');
+            } else {
+                $querydata = DB::table($temp)
+                    ->select('id as row', 'id_ as id')
+                    ->where('id', '=', ($baris - 1))
+                    ->orderBy('id');
+            }
+        } else {
+            $querydata = DB::table($temp)
+                ->select('id as row')
+                ->where('id_', '=',  $id)
+                ->orderBy('id');
+        }
+
+
+        $data = $querydata->first();
+        return $data;
+    }
 
     public function combo(Request $request)
     {

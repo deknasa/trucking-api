@@ -32,6 +32,7 @@ class SuratPengantar extends MyModel
 
     public function get()
     {
+        dd('get');
         $this->setRequestParameters();
 
         $query = DB::table($this->table)->select(
@@ -39,11 +40,14 @@ class SuratPengantar extends MyModel
             'suratpengantar.nobukti',
             'suratpengantar.tglbukti',
             'pelanggan.namapelanggan as pelanggan_id',
+            // 'upahsupir.id as upahsupir_id',
+            'suratpengantar.upah_id',
+
             'suratpengantar.keterangan',
             'suratpengantar.nourutorder',
             'kotadari.keterangan as dari_id',
             'kotasampai.keterangan as sampai_id',
-            'container.keterangan as container_id',
+            'suratpengantar.container_id',
             'suratpengantar.nocont',
             'suratpengantar.nocont2',
             'statuscontainer.keterangan as statuscontainer_id',
@@ -90,9 +94,11 @@ class SuratPengantar extends MyModel
             'suratpengantar.created_at',
             'suratpengantar.updated_at'
 
-        )
-        ->leftJoin('pelanggan', 'suratpengantar.pelanggan_id', 'pelanggan.id')
-        ->leftJoin('upahsupir', 'suratpengantar.upahsupir_id', 'upahsupir.id');
+        )->join('kota as kotadari', 'kotadari.id', '=', 'suratpengantar.dari_id')
+            ->join('kota as kotasampai', 'kotasampai.id', '=', 'suratpengantar.sampai_id')
+
+            ->leftJoin('pelanggan', 'suratpengantar.pelanggan_id', 'pelanggan.id')
+            ->leftJoin('upahsupir', 'suratpengantar.upahsupir_id', 'upahsupir.id');
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -108,28 +114,38 @@ class SuratPengantar extends MyModel
 
     public function find($id)
     {
-        $query = DB::table('suratpengantar')->select(
+
+        $data = DB::table('suratpengantar')->select(
             'suratpengantar.id',
             'suratpengantar.nobukti',
             'suratpengantar.tglbukti',
             'pelanggan.namapelanggan as pelanggan_id',
             'suratpengantar.keterangan',
             'suratpengantar.nourutorder',
-            'kotadari.keterangan as dari_id',
-            'kotasampai.keterangan as sampai_id',
-            'container.keterangan as container_id',
+
+            'kotadari.id as dari_id',
+            'kotadari.keterangan as dari',
+            'kotasampai.id as sampai_id',
+            'kotasampai.keterangan as sampai',
+
+            'suratpengantar.container_id',
             'suratpengantar.nocont',
             'suratpengantar.nocont2',
-            'statuscontainer.keterangan as statuscontainer_id',
-            'trado.keterangan as trado_id',
-            'supir.namasupir as supir_id',
+            'suratpengantar.statuscontainer_id',
+            'suratpengantar.trado_id',
+            'suratpengantar.supir_id',
             'suratpengantar.nojob',
             'suratpengantar.nojob2',
-            'statuslongtrip.text as statuslongtrip',
-            'agen.namaagen as agen_id',
-            'jenisorder.keterangan as jenisorder_id',
-            'statusperalihan.text as statusperalihan',
-            'tarif.tujuan as tarif_id',
+            'suratpengantar.statuslongtrip',
+            'suratpengantar.omset',
+            'suratpengantar.discount',
+            'suratpengantar.totalomset',
+            'suratpengantar.gajisupir',
+            'suratpengantar.gajikenek',
+            'suratpengantar.agen_id',
+            'suratpengantar.jenisorder_id',
+            'suratpengantar.statusperalihan',
+            'suratpengantar.tarif_id',
             'suratpengantar.nominalperalihan',
             'suratpengantar.persentaseperalihan',
             'suratpengantar.nosp',
@@ -158,19 +174,18 @@ class SuratPengantar extends MyModel
             'suratpengantar.notripasal',
             'suratpengantar.tgldoor',
             'suratpengantar.statusdisc',
-            'suratpengantar.gajisupir',
-            'suratpengantar.gajikenek',
+
             'suratpengantar.modifiedby',
             'suratpengantar.created_at',
             'suratpengantar.updated_at'
 
-        )
+        )->join('kota as kotadari', 'kotadari.id', '=', 'suratpengantar.dari_id')
+            ->join('kota as kotasampai', 'kotasampai.id', '=', 'suratpengantar.sampai_id')
+
             ->leftJoin('pelanggan', 'suratpengantar.pelanggan_id', 'pelanggan.id')
-            ->leftJoin('upahsupir', 'suratpengantar.upahsupir_id', 'upahsupir.id')
+            ->leftJoin('upahsupir', 'suratpengantar.upah_id', 'upahsupir.id')
 
-            ->where('suratpengantar.id', $id);
-
-        $data = $query->first();
+            ->where('suratpengantar.id', $id)->first();
 
         return $data;
     }
@@ -187,13 +202,12 @@ class SuratPengantar extends MyModel
                 pelanggan.namapelanggan as pelanggan_id,
                 $this->table.keterangan,
                 $this->table.nourutorder,
-                upahsupir.id as upahsupir_id,
-                upahsupir.kotadari_id as kotadari_id,
-                upahsupir.kotasampai_id as kotasampai_id,
-                container.kodecontainer as container_id,
+                upahsupir.id as upah_id,
+                kotadari.keterangan as dari_id,
+                kotasampai.keterangan as sampai_id,
+                $this->table.container_id,
                 $this->table.nocont,
                 $this->table.nocont2,
-                container.statusaktif as container_id,
                 $this->table.statuscontainer_id,
                 $this->table.trado_id,
                 $this->table.supir_id,
@@ -242,14 +256,15 @@ class SuratPengantar extends MyModel
 
             $this->table.modifiedby,
             $this->table.created_at,
-            $this->table.updated_at,
-            $this->table.statusformat"
+            $this->table.updated_at"
             )
 
         )
+            ->join('kota as kotadari', 'kotadari.id', '=', 'suratpengantar.dari_id')
+            ->join('kota as kotasampai', 'kotasampai.id', '=', 'suratpengantar.sampai_id')
 
             ->leftJoin('pelanggan', 'suratpengantar.pelanggan_id', 'pelanggan.id')
-            ->leftJoin('upahsupir', 'suratpengantar.upahsupir_id', 'upahsupir.id')
+            ->leftJoin('upahsupir', 'suratpengantar.upah_id', 'upahsupir.id')
 
             // ->leftJoin('akunpusat', 'hutangbayarheader.coa', 'akunpusat.coa')
         ;
@@ -257,6 +272,7 @@ class SuratPengantar extends MyModel
 
     public function createTemp(string $modelTable)
     { //sesuaikan dengan column index
+
         $temp = '##temp' . rand(1, 10000);
         Schema::create($temp, function ($table) {
             $table->bigInteger('id')->default('0');
@@ -321,7 +337,6 @@ class SuratPengantar extends MyModel
             $table->string('modifiedby', 50)->default('');
             $table->dateTime('created_at')->default('1900/1/1');
             $table->dateTime('updated_at')->default('1900/1/1');
-            $table->bigInteger('statusformat')->default('');
             $table->increments('position');
         });
 
@@ -337,10 +352,55 @@ class SuratPengantar extends MyModel
             'jenisorder_id', 'statusperalihan', 'tarif_id', 'nominalperalihan', 'persentaseperalihan', 'biayatambahan_id',
             'nosp', 'tglsp', 'statusritasiomset', 'cabang_id', 'komisisupir', 'tolsupir', 'jarak', 'nosptagihlain', 'nilaitagihlain',
             'tujuantagih', 'liter', 'nominalstafle', 'statusnotif', 'statusoneway', 'statusedittujuan', 'upahbongkardepo', 'upahmuatdepo', 'hargatol',
-            'qtyton', 'totalton', 'mandorsupir_id', 'mandortrado_id', 'statustrip', 'notripasal', 'tgldoor', 'statusdisc', 'statusformat', 'modifiedby', 'created_at', 'updated_at', 'statusformat'
+            'qtyton', 'totalton', 'mandorsupir_id', 'mandortrado_id', 'statustrip', 'notripasal', 'tgldoor', 'statusdisc', 'statusformat', 'modifiedby', 'created_at', 'updated_at'
         ], $models);
 
 
         return  $temp;
+    }
+
+    public function sort($query)
+    {
+        return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+    }
+
+    public function filter($query, $relationFields = [])
+    {
+        if (count($this->params['filters']) > 0 && @$this->params['filters']['rules'][0]['data'] != '') {
+            switch ($this->params['filters']['groupOp']) {
+                case "AND":
+                    foreach ($this->params['filters']['rules'] as $index => $filters) {
+                        if ($filters['field'] == 'suratpengantar_id') {
+                            $query = $query->where('suratpengantar.id', 'LIKE', "%$filters[data]%");
+                        } else {
+                            $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                        }
+                    }
+
+                    break;
+                case "OR":
+                    foreach ($this->params['filters']['rules'] as $index => $filters) {
+                        if ($filters['field'] == 'suratpengantar_id') {
+                            $query = $query->orWhere('suratpengantar.id', 'LIKE', "%$filters[data]%");
+                        } else {
+                            $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                        }
+                    }
+
+                    break;
+                default:
+
+                    break;
+            }
+
+            $this->totalRows = $query->count();
+            $this->totalPages = $this->params['limit'] > 0 ? ceil($this->totalRows / $this->params['limit']) : 1;
+        }
+
+        return $query;
+    }
+    public function paginate($query)
+    {
+        return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
 }

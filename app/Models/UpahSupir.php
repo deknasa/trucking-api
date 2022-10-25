@@ -72,6 +72,7 @@ class UpahSupir extends MyModel
     }
     public function find($id)
     {
+
         $query = DB::table('upahsupir')->select(
             'upahsupir.id',
             'kotadari.id as kotadari_id',
@@ -109,6 +110,7 @@ class UpahSupir extends MyModel
 
     public function selectColumns($query)
     {
+
         return $query->select(
             DB::raw(
                 "$this->table.id,
@@ -134,6 +136,7 @@ class UpahSupir extends MyModel
 
     public function createTemp(string $modelTable)
     {
+
         $temp = '##temp' . rand(1, 10000);
         Schema::create($temp, function ($table) {
             $table->bigInteger('id')->default('0');
