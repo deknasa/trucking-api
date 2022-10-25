@@ -59,13 +59,84 @@ class ProsesGajiSupirHeader extends MyModel
     public function getRic($dari, $sampai) 
     {
         $query = DB::table('gajisupirheader')
-                ->select('gajisupirheader.id','gajisupirheader.nobukti','gajisupirheader.tglbukti','supir.namasupir','gajisupirheader.keterangan','gajisupirheader.tgldari','gajisupirheader.tglsampai','gajisupirheader.total')
+                ->select('gajisupirheader.id','gajisupirheader.nobukti','gajisupirheader.tglbukti','supir.namasupir','gajisupirheader.keterangan','gajisupirheader.tgldari','gajisupirheader.tglsampai','gajisupirheader.nominal')
                 ->join('supir','gajisupirheader.supir_id','supir.id')
                 ->where('gajisupirheader.tgldari', $dari)
                 ->where('gajisupirheader.tglsampai', $sampai);
 
         $data = $query->get();
         return $data;
+    }
+
+    public function getEdit($gajiId) {
+        $query = DB::table('prosesgajisupirdetail')->select(
+            'gajisupirheader.id',
+            'prosesgajisupirdetail.gajisupir_nobukti as nobukti',
+            'gajisupirheader.tglbukti',
+            'supir.namasupir',
+            'prosesgajisupirdetail.keterangan',
+            'gajisupirheader.tgldari',
+            'gajisupirheader.tglsampai',
+            'gajisupirheader.nominal'
+        )
+        ->join('gajisupirheader','prosesgajisupirdetail.gajisupir_nobukti','gajisupirheader.nobukti')
+        ->join('supir','gajisupirheader.supir_id','supir.id')
+        ->where('prosesgajisupirdetail.prosesgajisupir_id',$gajiId);
+
+        $data = $query->get();
+        return $data;
+    }
+    public function selectColumns($query)
+    {
+        return $query->select(
+            DB::raw("
+            $this->table.id,
+            $this->table.nobukti,
+            $this->table.tglbukti,
+            $this->table.keterangan,
+            $this->table.tgldari,
+            $this->table.tglsampai,
+            'parameter.text as statusapproval',
+            $this->table.userapproval,
+            $this->table.tglapproval,
+            $this->table.periode,
+            $this->table.modifiedby,
+            $this->table.created_at,
+            $this->table.updated_at
+            ")
+        )
+        ->join('parameter','prosesgajisupirheader.statusapproval','parameter.id');
+            
+    }
+
+    public function createTemp(string $modelTable)
+    {
+        $temp = '##temp' . rand(1, 10000);
+        Schema::create($temp, function ($table){
+            $table->bigInteger('id')->default('0');
+            $table->string('nobukti', 1000)->default('');
+            $table->date('tglbukti')->default('');
+            $table->string('keterangan', 1000)->default('');
+            $table->date('tgldari')->default('');
+            $table->date('tglsampai')->default('');
+            $table->string('statusapproval', 1000)->default('');
+            $table->string('userapproval', 1000)->default('');
+            $table->date('tglapproval')->default('');
+            $table->date('periode')->default('');
+            $table->string('modifiedby')->default();
+            $table->dateTime('created_at')->default('1900/1/1');
+            $table->dateTime('updated_at')->default('1900/1/1');
+            $table->increments('position');
+        });
+
+        $this->setRequestParameters();
+        $query = DB::table($modelTable);
+        $query = $this->selectColumns($query);
+        $this->sort($query);
+        $models = $this->filter($query);
+        DB::table($temp)->insertUsing(['id','nobukti','tglbukti','keterangan','tgldari','tglsampai','statusapproval','userapproval','tglapproval','periode','modifiedby','created_at','updated_at'], $models);
+
+        return $temp;
     }
     public function sort($query)
     {

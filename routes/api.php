@@ -89,8 +89,8 @@
     use App\Http\Controllers\Api\PelunasanPiutangDetailController;
     use App\Http\Controllers\Api\HutangBayarHeaderController;
     use App\Http\Controllers\Api\HutangBayarDetailController;
-use App\Http\Controllers\Api\ProsesGajiSupirHeaderController;
-use App\Http\Controllers\ProsesGajiSupirDetailController;
+    use App\Http\Controllers\Api\ProsesGajiSupirHeaderController;
+    use App\Http\Controllers\Api\ProsesGajiSupirDetailController;
 
     /*
     |--------------------------------------------------------------------------

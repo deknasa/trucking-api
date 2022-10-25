@@ -98,23 +98,6 @@ class AbsensiSupirDetailController extends Controller
     {
         DB::beginTransaction();
 
-        $validator = Validator::make(
-            $request->all(),
-            [
-                'trado_id' => 'required',
-            ],
-            [
-                'trado_id' => 'Trado',
-            ]
-        );
-
-        if (!$validator->passes()) {
-            return response([
-                'message' => 'Validation error',
-                'errors' => $validator->messages()
-            ], 422);
-        }
-
         try {
             $AbsensiSupirDetail = new AbsensiSupirDetail();
 
@@ -132,13 +115,11 @@ class AbsensiSupirDetailController extends Controller
 
 
             DB::commit();
-            if ($validator->passes()) {
-                return response([
-                    'error' => false,
-                    'id' => $AbsensiSupirDetail->id,
-                    'tabel' => $AbsensiSupirDetail->getTable(),
-                ]);
-            }
+            return response([
+                'error' => false,
+                'id' => $AbsensiSupirDetail->id,
+                'tabel' => $AbsensiSupirDetail->getTable(),
+            ]);
         } catch (\Throwable $th) {
             DB::rollBack();
             return response($th->getMessage());

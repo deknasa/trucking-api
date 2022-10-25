@@ -1,16 +1,18 @@
 <?php
+namespace App\Http\Controllers\Api;
 
-namespace App\Http\Controllers;
-
-use App\Models\ProsesGajiSupirDetail;
+use App\Http\Controllers\Controller;
+use App\Models\GajiSupirDetail;
+use App\Http\Requests\StoreGajiSupirDetailRequest;
 use App\Http\Requests\StoreProsesGajiSupirDetailRequest;
-use App\Http\Requests\UpdateProsesGajiSupirDetailRequest;
-
+use App\Http\Requests\UpdateGajiSupirDetailRequest;
+use App\Models\ProsesGajiSupirDetail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
+
 class ProsesGajiSupirDetailController extends Controller
 {
-   
     public function index(Request $request)
     {
         $params = [
@@ -70,28 +72,27 @@ class ProsesGajiSupirDetailController extends Controller
     public function store(StoreProsesGajiSupirDetailRequest $request)
     {
         DB::beginTransaction();
-
-        
         try {
-            $prosesgajisupirdetail = new ProsesGajiSupirDetail();
+            $gajisupirdetail = new ProsesGajiSupirDetail();
             
-            $prosesgajisupirdetail->prosesgajisupir_id = $request->prosesgajisupir_id;
-            $prosesgajisupirdetail->nobukti = $request->nobukti;
-            $prosesgajisupirdetail->gajisupir_nobukti = $request->gajisupir_nobukti;
-            $prosesgajisupirdetail->supir_id = $request->supir_id;
-            $prosesgajisupirdetail->trado_id = $request->trado_id;
-            $prosesgajisupirdetail->nominal = $request->nominal;
-            $prosesgajisupirdetail->keterangan = $request->keterangan;
-            $prosesgajisupirdetail->modifiedby = auth('api')->user()->name;
+            $gajisupirdetail->prosesgajisupir_id = $request->prosesgajisupir_id;
+            $gajisupirdetail->nobukti = $request->nobukti;
+            $gajisupirdetail->gajisupir_nobukti = $request->gajisupir_nobukti;
+            $gajisupirdetail->supir_id = $request->supir_id;
+            $gajisupirdetail->trado_id = $request->trado_id;
+            $gajisupirdetail->nominal = $request->nominal;
+            $gajisupirdetail->keterangan = $request->keterangan;
             
-            $prosesgajisupirdetail->save();
+            $gajisupirdetail->modifiedby = auth('api')->user()->name;
+            
+            $gajisupirdetail->save();
            
             DB::commit();
            
             return [
                 'error' => false,
-                'id' => $prosesgajisupirdetail->id,
-                'tabel' => $prosesgajisupirdetail->getTable(),
+                'id' => $gajisupirdetail->id,
+                'tabel' => $gajisupirdetail->getTable(),
             ];
         } catch (\Throwable $th) {
             throw $th;
@@ -99,5 +100,6 @@ class ProsesGajiSupirDetailController extends Controller
         }        
     }
 
-    
+
+
 }

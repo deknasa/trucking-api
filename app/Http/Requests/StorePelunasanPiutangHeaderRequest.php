@@ -28,7 +28,9 @@ class StorePelunasanPiutangHeaderRequest extends FormRequest
             'keterangan' => 'required',
             'bank' => 'required',
             'agen' => 'required',
-            'cabang' => 'required'
+            'cabang' => 'required',
+            'pelanggan' => 'required',
+            'agendetail' => 'required',
         ];
 
         $relatedRequests = [
@@ -43,5 +45,40 @@ class StorePelunasanPiutangHeaderRequest extends FormRequest
         }
         
         return $rules;
+    }
+
+    public function attributes()
+    {
+        $attributes = [
+            'tglbukti' => 'Tanggal Bukti',
+            'keterangan' => 'Keterangan',
+            'bank' => 'Bank',
+            'agen' => 'Agen',
+            'cabang' => 'Cabang',
+            'pelanggan' => 'Pelanggan',
+            'agendetail' => 'Agen Detail',
+            'bayarppd.*' => 'Nominal Bayar',
+            'keterangandetailppd.*' => 'Keterangan',
+        ];
+
+        $relatedRequests = [
+            StoreJurnalUmumDetailRequest::class
+        ];
+
+        foreach ($relatedRequests as $relatedRequest) {
+            $attributes = array_merge(
+                $attributes,
+                (new $relatedRequest)->attributes()
+            );
+        }
+        
+        return $attributes;
+    }
+
+    public function messages() 
+    {
+        return [
+            'bayarppd.*.gt' => 'Nominal Tidak Boleh Kosong dan Harus Lebih Besar Dari 0'
+        ];
     }
 }

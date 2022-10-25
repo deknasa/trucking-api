@@ -29,9 +29,10 @@ class StoreJurnalUmumDetailRequest extends FormRequest
             'coakredit_detail' => 'required|array',
             'coakredit_detail.*' => 'required',
             'nominal_detail' => 'required|array',
-            'nominal_detail.*' => 'required',
+            'nominal_detail.*' => 'required|numeric|gt:0',
             'keterangan_detail' => 'required|array',
             'keterangan_detail.*' => 'required'
         ];
     }
+
 }

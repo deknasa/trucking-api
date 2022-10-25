@@ -24,12 +24,19 @@ class StorePelunasanPiutangDetailRequest extends FormRequest
     public function rules()
     {
         return [
-            'pelanggan' => 'required',
-            'agendetail' => 'required',
+            'bayarppd' => 'required|array',
+            'bayarppd.*' => 'required|numeric|gt:0',
             'keterangandetailppd' => 'required|array',
             'keterangandetailppd.*' => 'required',
-            'bayarppd' => 'required|array',
-            'bayarppd.*' => 'required'
         ];
     }
+
+    public function attributes()
+    {
+        return [
+            'bayarppd' => 'Nominal Bayar',
+            'keterangandetailppd' => 'Keterangan',
+        ];
+    }
+   
 }
