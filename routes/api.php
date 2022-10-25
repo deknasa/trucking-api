@@ -35,6 +35,9 @@
     use App\Http\Controllers\Api\KasGantungDetailController;
     use App\Http\Controllers\Api\KasGantungHeaderController;
     
+    use App\Http\Controllers\Api\NotaKreditHeaderController;
+    use App\Http\Controllers\Api\NotaKreditDetailController;
+
     use App\Http\Controllers\Api\PengembalianKasGantungHeaderController;
     use App\Http\Controllers\Api\PengembalianKasGantungDetailController;
     
@@ -404,6 +407,14 @@
         Route::resource('gajisupirheader', GajiSupirHeaderController::class);
         Route::resource('gajisupirdetail', GajiSupirDetailController::class);
 
+        
+        Route::get('notakreditheader/field_length', [NotaKreditHeaderController::class,'fieldLength']);
+        Route::get('notakreditheader/{id}/getpelunasan', [NotaKreditHeaderController::class,'getPelunasan']);
+        Route::get('notakreditheader/{id}/getnotakredit', [NotaKreditHeaderController::class,'getNotaKredit']);
+        Route::post('notakreditheader/{id}/approval', [NotaKreditHeaderController::class,'approval']);
+        Route::resource('notakreditheader', NotaKreditHeaderController::class);
+        Route::resource('notakredit_detail', NotaKreditDetailController::class);
+        
         Route::get('pengembaliankasgantungheader/field_length', [PengembalianKasGantungHeaderController::class,'fieldLength']);
         Route::get('pengembaliankasgantungheader/getkasgantung', [PengembalianKasGantungHeaderController::class,'getKasGantung']);
         Route::get('pengembaliankasgantungheader/getpengembalian/{id}', [PengembalianKasGantungHeaderController::class,'getPengembalian']);

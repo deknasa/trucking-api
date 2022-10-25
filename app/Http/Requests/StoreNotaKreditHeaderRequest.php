@@ -13,7 +13,7 @@ class StoreNotaKreditHeaderRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +24,13 @@ class StoreNotaKreditHeaderRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            "tglbukti"=>"required",
+            "tglapproval"=>"required",
+            "tgllunas"=>"required",
+            "pelunasanpiutang_nobukti"=>"required",
+            "keterangan"=>"required",
+            // "statusformat"=>"required",
+            "statusapproval"=>"required",
         ];
     }
 }
