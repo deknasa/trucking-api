@@ -26,7 +26,8 @@ class StorePiutangHeaderRequest extends FormRequest
         $rules = [
             'tglbukti' => 'required',
             'keterangan' => 'required',
-            'agen_id' => 'required'
+            'agen_id' => 'required',
+            'agen' => 'required',
         ];
 
         $relatedRequests = [
@@ -42,11 +43,23 @@ class StorePiutangHeaderRequest extends FormRequest
         
         return $rules;
     }
-    public function attributes() {
-        return [
+    public function attributes()
+    {
+        $attributes = [
             'tglbukti' => 'Tanggal',
             'keterangan' => 'Keterangan',
-            'agen_id' => 'Agen'
+            'agen_id' => 'Agen',
+            'nominal_detail.*' => 'Nominal',
+            'keterangan_detail.*' => 'Keterangan',
+        ];
+        
+        return $attributes;
+    }
+
+    public function messages() 
+    {
+        return [
+            'nominal_detail.*.gt' => 'Nominal Tidak Boleh Kosong dan Harus Lebih Besar Dari 0'
         ];
     }
 }

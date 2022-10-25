@@ -39,11 +39,5 @@ class StoreAbsensiSupirDetailRequest extends FormRequest
         ];
     }
 
-    public function attributes() {
-        return [
-            'trado_id' => 'Trado',
-            'supir_id' => 'Supir',
-            'absen_id' => 'Absen',
-        ];
-    }
+    
 }

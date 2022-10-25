@@ -69,7 +69,8 @@ class PelunasanPiutangHeader extends MyModel
             ->select(DB::raw("A.id as id,null as pelunasanpiutang_id,A.nobukti as piutang_nobukti, A.tglbukti as tglbukti, A.agen_id as agen_id, A.invoice_nobukti as invoice_nobukti,null as nominal, null as keterangan, null as penyesuaian, null as keteranganpenyesuaian, null as nominallebihbayar, A.nominalpiutang, A.sisa as sisa"))
             ->distinct("A.nobukti")
             ->leftJoin("$tempPelunasan as B","A.nobukti","B.piutang_nobukti")
-            ->whereRaw("isnull(b.piutang_nobukti,'') = ''");
+            ->whereRaw("isnull(b.piutang_nobukti,'') = ''")
+            ->whereRaw("a.sisa > 0");
            
 
         $pelunasan = DB::table($tempPelunasan)

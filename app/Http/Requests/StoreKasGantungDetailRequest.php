@@ -24,8 +24,10 @@ class StoreKasGantungDetailRequest extends FormRequest
     public function rules()
     {
         return [
-            'nominal' => 'required',
-            'keterangan_detail' => 'required',
+            'nominal' => 'required|array',
+            'nominal.*' => 'required|numeric|gt:0',
+            'keterangan_detail' => 'required|array',
+            'keterangan_detail.*' => 'required',
         ];
     }
 }
