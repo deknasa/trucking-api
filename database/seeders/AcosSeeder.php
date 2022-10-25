@@ -181,10 +181,10 @@ class AcosSeeder extends Seeder
         acos::create([ 'class' => 'subkelompok', 'method' => 'store', 'nama' => 'store SubKelompokController', 'modifiedby' => 'ADMIN',]);
         acos::create([ 'class' => 'subkelompok', 'method' => 'update', 'nama' => 'update SubKelompokController', 'modifiedby' => 'ADMIN',]);
         acos::create([ 'class' => 'subkelompok', 'method' => 'destroy', 'nama' => 'destroy SubKelompokController', 'modifiedby' => 'ADMIN',]);
-        acos::create([ 'class' => 'status_container', 'method' => 'index', 'nama' => 'index StatusContainerController', 'modifiedby' => 'ADMIN',]);
-        acos::create([ 'class' => 'status_container', 'method' => 'store', 'nama' => 'store StatusContainerController', 'modifiedby' => 'ADMIN',]);
-        acos::create([ 'class' => 'status_container', 'method' => 'update', 'nama' => 'update StatusContainerController', 'modifiedby' => 'ADMIN',]);
-        acos::create([ 'class' => 'status_container', 'method' => 'destroy', 'nama' => 'destroy StatusContainerController', 'modifiedby' => 'ADMIN',]);
+        acos::create([ 'class' => 'statuscontainer', 'method' => 'index', 'nama' => 'index StatusContainerController', 'modifiedby' => 'ADMIN',]);
+        acos::create([ 'class' => 'statuscontainer', 'method' => 'store', 'nama' => 'store StatusContainerController', 'modifiedby' => 'ADMIN',]);
+        acos::create([ 'class' => 'statuscontainer', 'method' => 'update', 'nama' => 'update StatusContainerController', 'modifiedby' => 'ADMIN',]);
+        acos::create([ 'class' => 'statuscontainer', 'method' => 'destroy', 'nama' => 'destroy StatusContainerController', 'modifiedby' => 'ADMIN',]);
         acos::create([ 'class' => 'tarif', 'method' => 'index', 'nama' => 'index TarifController', 'modifiedby' => 'ADMIN',]);
         acos::create([ 'class' => 'tarif', 'method' => 'store', 'nama' => 'store TarifController', 'modifiedby' => 'ADMIN',]);
         acos::create([ 'class' => 'tarif', 'method' => 'update', 'nama' => 'update TarifController', 'modifiedby' => 'ADMIN',]);
