@@ -89,4 +89,6 @@ class MenuSeeder extends Seeder
         Menu::create([ 'menuname' => 'PENERIMAAN STOK', 'menuseq' => '100', 'menuparent' => '34', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '218', 'link' => '', 'menuexe' => '', 'menukode' => '147', 'modifiedby' => 'ADMIN',]);
         Menu::create([ 'menuname' => 'PENGELUARAN STOK', 'menuseq' => '100', 'menuparent' => '34', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '222', 'link' => '', 'menuexe' => '', 'menukode' => '148', 'modifiedby' => 'ADMIN',]);
         Menu::create([ 'menuname' => 'RINCIAN GAJI SUPIR', 'menuseq' => '100', 'menuparent' => '15', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '226', 'link' => '', 'menuexe' => '', 'menukode' => '29', 'modifiedby' => 'ADMIN',]);
-        Menu::create([ 'menuname' => 'PROSES GAJI SUPIR', 'menuseq' => '1', 'menuparent' => '15', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '230', 'link' => '', 'menuexe' => '', 'menukode' => '30', 'modifiedby' => 'ADMIN',]);}
+        Menu::create([ 'menuname' => 'PROSES GAJI SUPIR', 'menuseq' => '1', 'menuparent' => '15', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '230', 'link' => '', 'menuexe' => '', 'menukode' => '30', 'modifiedby' => 'ADMIN',]);
+    }
+}
