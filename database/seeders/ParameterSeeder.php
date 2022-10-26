@@ -168,6 +168,10 @@ class ParameterSeeder extends Seeder
         parameter::create([ 'grp' => 'PROSES GAJI SUPIR BUKTI', 'subgrp' => 'PROSES GAJI SUPIR BUKTI', 'text' => '#EBS #9999#/#R#/#Y', 'memo' => 'PROSES GAJI SUPIR BUKTI', 'type' => '118', 'modifiedby' => 'ADMIN', 'kelompok' => '',]);       
         parameter::create([ 'grp' => 'NOTA KREDIT BUKTI', 'subgrp' => 'NOTA KREDIT BUKTI', 'text' => '#EBS #9999#/#R#/#Y', 'memo' => 'NOTA KREDIT BUKTI', 'type' => '118', 'modifiedby' => 'ADMIN', 'kelompok' => '',]);       
         parameter::create([ 'grp' => 'NOTA DEBET BUKTI', 'subgrp' => 'NOTA DEBET BUKTI', 'text' => '#EBS #9999#/#R#/#Y', 'memo' => 'NOTA DEBET BUKTI', 'type' => '118', 'modifiedby' => 'ADMIN', 'kelompok' => '',]);       
+        parameter::create([ 'grp' => 'INVOICE BUKTI', 'subgrp' => 'INVOICE BUKTI', 'text' => '#INV #9999#/#R#/#Y', 'memo' => 'INVOICE BUKTI', 'type' => '118', 'modifiedby' => 'ADMIN', 'kelompok' => '',]);       
+        parameter::create([ 'grp' => 'INVOICE EXTRA BUKTI', 'subgrp' => 'INVOICE EXTRA BUKTI', 'text' => '#EXT #9999#/#R#/#Y', 'memo' => 'INVOICE EXTRA BUKTI', 'type' => '118', 'modifiedby' => 'ADMIN', 'kelompok' => '',]);       
+        parameter::create([ 'grp' => 'COA INVOICE DEBET', 'subgrp' => 'COA INVOICE DEBET', 'text' => '01.03.01.02', 'memo' => 'COA INVOICE DEBET', 'type' => '', 'modifiedby' => 'ADMIN', 'kelompok' => 'COA INVOICE',]);       
+        parameter::create([ 'grp' => 'COA INVOICE KREDIT', 'subgrp' => 'COA INVOICE KREDIT', 'text' => '06.01.01.02', 'memo' => 'COA INVOICE KREDIT', 'type' => '', 'modifiedby' => 'ADMIN', 'kelompok' => 'COA INVOICE',]);       
 
 
     }
