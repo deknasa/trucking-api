@@ -32,7 +32,6 @@ class SuratPengantar extends MyModel
 
     public function get()
     {
-        dd('get');
         $this->setRequestParameters();
 
         $query = DB::table($this->table)->select(
@@ -40,6 +39,7 @@ class SuratPengantar extends MyModel
             'suratpengantar.nobukti',
             'suratpengantar.tglbukti',
             'pelanggan.namapelanggan as pelanggan_id',
+
             // 'upahsupir.id as upahsupir_id',
             'suratpengantar.upah_id',
 
@@ -114,12 +114,13 @@ class SuratPengantar extends MyModel
 
     public function find($id)
     {
-
+        // dd('find');
         $data = DB::table('suratpengantar')->select(
             'suratpengantar.id',
             'suratpengantar.nobukti',
             'suratpengantar.tglbukti',
-            'pelanggan.namapelanggan as pelanggan_id',
+            'pelanggan.namapelanggan as pelanggan',
+            'pelanggan.id as pelanggan_id',
             'suratpengantar.keterangan',
             'suratpengantar.nourutorder',
 
@@ -192,7 +193,6 @@ class SuratPengantar extends MyModel
 
     public function selectColumns($query)
     { //sesuaikan dengan createtemp
-
         return $query->select(
             DB::raw(
                 "$this->table.id,
@@ -272,25 +272,24 @@ class SuratPengantar extends MyModel
 
     public function createTemp(string $modelTable)
     { //sesuaikan dengan column index
-
         $temp = '##temp' . rand(1, 10000);
         Schema::create($temp, function ($table) {
             $table->bigInteger('id')->default('0');
             $table->string('nobukti', 50)->unique();
             $table->string('jobtrucking', 50)->default('');
             $table->date('tglbukti')->default('1900/1/1');
-            $table->unsignedBigInteger('pelanggan_id')->default('0');
+            $table->string('pelanggan_id')->default('0');
             $table->longText('keterangan')->default('');
             $table->bigInteger('nourutorder')->default('0');
-            $table->unsignedBigInteger('upah_id')->default('0');
-            $table->unsignedBigInteger('dari_id')->default('0');
-            $table->unsignedBigInteger('sampai_id')->default('0');
-            $table->unsignedBigInteger('container_id')->default('0');
+            $table->string('upah_id')->default('0');
+            $table->string('dari_id')->default('0');
+            $table->string('sampai_id')->default('0');
+            $table->string('container_id')->default('0');
             $table->string('nocont', 50)->default('');
             $table->string('nocont2', 50)->default('');
-            $table->unsignedBigInteger('statuscontainer_id')->default('0');
-            $table->unsignedBigInteger('trado_id')->default('0');
-            $table->unsignedBigInteger('supir_id')->default('0');
+            $table->string('statuscontainer_id')->default('0');
+            $table->string('trado_id')->default('0');
+            $table->string('supir_id')->default('0');
             $table->string('nojob', 50)->default('');
             $table->string('nojob2', 50)->default('');
             $table->integer('statuslongtrip')->length(11)->default('0');
@@ -299,17 +298,17 @@ class SuratPengantar extends MyModel
             $table->decimal('totalomset', 15, 2)->default('0');
             $table->decimal('gajisupir', 15, 2)->default('0');
             $table->decimal('gajikenek', 15, 2)->default('0');
-            $table->unsignedBigInteger('agen_id')->default('0');
-            $table->unsignedBigInteger('jenisorder_id')->default('0');
+            $table->string('agen_id')->default('0');
+            $table->string('jenisorder_id')->default('0');
             $table->integer('statusperalihan')->length(11)->default('0');
-            $table->unsignedBigInteger('tarif_id')->default('0');
+            $table->string('tarif_id')->default('0');
             $table->decimal('nominalperalihan', 15, 2)->default('0');
             $table->decimal('persentaseperalihan', 15, 2)->default('0');
-            $table->unsignedBigInteger('biayatambahan_id')->default('0');
+            $table->string('biayatambahan_id')->default('0');
             $table->string('nosp', 50)->default('');
             $table->date('tglsp')->default('1900/1/1');
             $table->integer('statusritasiomset')->length(11)->default('0');
-            $table->unsignedBigInteger('cabang_id')->default('0');
+            $table->string('cabang_id')->default('0');
             $table->decimal('komisisupir', 15, 2)->default('0');
             $table->decimal('tolsupir', 15, 2)->default('0');
             $table->decimal('jarak', 15, 2)->default('0');
@@ -326,8 +325,8 @@ class SuratPengantar extends MyModel
             $table->decimal('hargatol', 15, 2)->default('0');
             $table->decimal('qtyton', 15, 2)->default('0');
             $table->decimal('totalton', 15, 2)->default('0');
-            $table->unsignedBigInteger('mandorsupir_id')->default('0');
-            $table->unsignedBigInteger('mandortrado_id')->default('0');
+            $table->string('mandorsupir_id')->default('0');
+            $table->string('mandortrado_id')->default('0');
             $table->integer('statustrip')->length(11)->default('0');
             $table->string('notripasal', 50)->default('');
             $table->date('tgldoor')->default('1900/1/1');

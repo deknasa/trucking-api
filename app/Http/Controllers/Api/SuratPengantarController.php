@@ -454,7 +454,6 @@ class SuratPengantarController extends Controller
             $content['subgroup'] = $subgroup;
             $content['table'] = 'suratpengantar';
             $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
-
             $suratpengantar = new SuratPengantar();
             $suratpengantar->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $suratpengantar->pelanggan_id = $request->pelanggan_id;
@@ -544,7 +543,6 @@ class SuratPengantarController extends Controller
             //         goto TOP;
             //     }
             // }
-
             if ($suratpengantar->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($suratpengantar->getTable()),
@@ -555,17 +553,16 @@ class SuratPengantarController extends Controller
                     'datajson' => $suratpengantar->toArray(),
                     'modifiedby' => $suratpengantar->modifiedby
                 ];
-
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-            
-                foreach ($request->keteranganbiaya as $key => $value) {
+                $nom= $request->nominal;
+                foreach ($nom as $key => $value) {
                     $nominal = $request->nominal[$key];
                     $nominal = str_replace('.', '', $nominal);
                     $nominal = str_replace(',', '', $nominal);
                     if ($value != '' and $nominal > 0) {
                         $suratpengantarbiayatambahan = new SuratPengantarBiayaTambahan();
-
+                        
                         $suratpengantarbiayatambahan->suratpengantar_id = $suratpengantar->id;
                         $suratpengantarbiayatambahan->keteranganbiaya = $value;
                         $suratpengantarbiayatambahan->nominal = $nominal;
@@ -574,20 +571,20 @@ class SuratPengantarController extends Controller
                     }
                     // else {
                     //     return response([
-                    //         'status' => false,
-                    //         'message' => 'Harap Lengapin Informasi Biaya',
-                    //     ]);
-                    // }
+                        //         'status' => false,
+                        //         'message' => 'Harap Lengapin Informasi Biaya',
+                        //     ]);
+                        // }
+                    }
+                    
+                    
+                    DB::commit();
                 }
-
-
-                DB::commit();
-            }
-
-            /* Set position and page */
-            $selected = $this->getPosition($suratpengantar, $suratpengantar->getTable());
-            $suratpengantar->position = $selected->position;
-            $suratpengantar->page = ceil($suratpengantar->position / ($request->limit ?? 10));
+                
+                /* Set position and page */
+                $selected = $this->getPosition($suratpengantar, $suratpengantar->getTable());
+                $suratpengantar->position = $selected->position;
+                $suratpengantar->page = ceil($suratpengantar->position / ($request->limit ?? 10));
 
             // /* Set position and page */
             // $del = 0;
@@ -673,7 +670,7 @@ class SuratPengantarController extends Controller
             $suratpengantar->statuslongtrip = $request->statuslongtrip ?? 0;
             $suratpengantar->gajisupir = $request->gajisupir ?? 0;
             $suratpengantar->gajikenek = $request->gajikenek ?? 0;
-            $suratpengantar->gajiritasi = $request->gajiritasi ?? 0;
+            // $suratpengantar->gajiritasi = $request->gajiritasi ?? 0;
             $suratpengantar->agen_id = $request->agen_id;
             $suratpengantar->jenisorder_id = $request->jenisorder_id;
             $suratpengantar->statusperalihan = $request->statusperalihan ?? 0;
@@ -692,7 +689,7 @@ class SuratPengantarController extends Controller
             $suratpengantar->tglsp = date('Y-m-d', strtotime($request->tglsp));
             $suratpengantar->statusritasiomset = $request->statusritasiomset ?? 0;
             $suratpengantar->cabang_id = $request->cabang_id ?? 0;
-            $suratpengantar->komisisupir = $request->komisisupir;
+            // $suratpengantar->komisisupir = $request->komisisupir;
             $suratpengantar->tolsupir = $request->tolsupir ?? 0;
             $suratpengantar->nosptagihlain = $request->nosptagihlain ?? 0;
             $suratpengantar->nilaitagihlain = $request->nilaitagihlain ?? 0;
