@@ -21,7 +21,7 @@ class KasGantungDetailController extends Controller
             'id' => $request->id,
             'kasgantung_id' => $request->kasgantung_id,
             'withHeader' => $request->withHeader ?? false,
-            'whereIn' => $request->whereIn ?? [],
+            'whereIn' => $request->whereIn,
             'forReport' => $request->forReport ?? false,
             'sortIndex' => $request->sortOrder ?? 'id',
             'sortOrder' => $request->sortOrder ?? 'asc',
@@ -38,17 +38,17 @@ class KasGantungDetailController extends Controller
                 $query->where('detail.kasgantung_id', $params['kasgantung_id']);
             }
 
-            // if ($params['withHeader']) {
-            //     $query->join('kasgantungheader', 'kasgantungheader.id', 'detail.kasgantung_id');
-            // }
+            if ($params['withHeader']) {
+                $query->join('kasgantungheader', 'kasgantungheader.id', 'detail.kasgantung_id');
+            }
 
-            if (count($params['whereIn']) > 0) {
+            if ($params['whereIn'] > 0) {
                 $query->whereIn('kasgantung_id', $params['whereIn']);
             }
 
             if ($params['forReport']) {
                 $query->select(
-                    // 'header.id as id_header',
+                    'header.id as id',
                     // 'header.nobukti as nobukti_header',
                
                
@@ -61,14 +61,14 @@ class KasGantungDetailController extends Controller
                     // 'absentrado.kodeabsen as status',
                     'detail.keterangan as keterangan_detail',
                     'detail.nominal',
-                    'detail.uangjalan',
+                    'detail.coa',
                     'detail.kasgantung_id'
                 )
-                    ->join('kasgantungheader as header', 'header.id', 'detail.kasgantung_id')
+                    ->join('kasgantungheader as header', 'header.id', 'detail.kasgantung_id');
                     // ->join('trado', 'trado.id', '=', 'detail.trado_id', 'full outer')
                     // ->join('supir', 'supir.id', '=', 'detail.supir_id', 'full outer')
                     // ->join('absentrado', 'absentrado.id', '=', 'detail.absen_id', 'full outer')
-                    ->orderBy('header.nobukti', 'asc');
+                    // ->orderBy('header.nobukti', 'asc');
 
                 $kasgantungDetail = $query->get();
             } else {

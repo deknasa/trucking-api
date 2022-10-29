@@ -83,9 +83,6 @@ class PenerimaanStokController extends Controller
         }
     }
 
-    /**
-     * @ClassName 
-     */
     public function show(PenerimaanStok $penerimaanStok,$id)
     {
         $penerimaanStok = new PenerimaanStok();

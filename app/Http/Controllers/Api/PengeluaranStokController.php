@@ -83,9 +83,7 @@ class PengeluaranStokController extends Controller
         }
     }
 
-    /**
-     * @ClassName 
-     */
+    
     public function show(PengeluaranStok $pengeluaranStok,$id)
     {
         $pengeluaranStok = new PengeluaranStok();

@@ -170,6 +170,43 @@ class PelunasanPiutangHeader extends MyModel
         return $data;
     }
 
+    public function getPelunasanNotaKredit($id)
+    {
+        $this->setRequestParameters();
+
+        $query = DB::table('pelunasanpiutangdetail')
+        ->select(DB::raw('
+        pelunasanpiutangdetail.id as detail_id,
+        pelunasanpiutangdetail.nobukti,
+        pelunasanpiutangdetail.tglcair,
+        pelunasanpiutangdetail.nominal as nominalbayar,
+        pelunasanpiutangdetail.nominal as nominal,
+        pelunasanpiutangdetail.piutang_nobukti,
+        pelunasanpiutangdetail.invoice_nobukti,
+        pelunasanpiutangdetail.keterangan,
+        pelunasanpiutangdetail.coapenyesuaian,
+        COALESCE (pelunasanpiutangdetail.penyesuaian, 0) as penyesuaian '))
+
+        ->leftJoin('piutangheader','piutangheader.nobukti','pelunasanpiutangdetail.piutang_nobukti')
+        ->leftJoin('pelanggan', 'pelunasanpiutangdetail.pelanggan_id', 'pelanggan.id')
+        ->leftJoin('agen', 'pelunasanpiutangdetail.agen_id', 'agen.id')
+        ->whereRaw(" NOT EXISTS (
+            SELECT notakreditheader.pelunasanpiutang_nobukti
+            FROM notakreditdetail
+			left join notakreditheader on notakreditdetail.notakredit_id = notakreditheader.id
+            WHERE notakreditheader.pelunasanpiutang_nobukti = pelunasanpiutangdetail.nobukti   
+          )")
+        ->where('pelunasanpiutangdetail.penyesuaian', '>', 0)
+        ->where('pelunasanpiutangdetail.pelunasanpiutang_id' , $id);
+        
+            
+       
+
+        $data = $query->get();
+
+        return $data;
+    }
+
     public function findAll($id) {
       
         $query = DB::table('pelunasanpiutangheader')->select(

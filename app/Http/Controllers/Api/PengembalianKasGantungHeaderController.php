@@ -65,7 +65,7 @@ class PengembalianKasGantungHeaderController extends Controller
             $pengembalianKasGantungHeader->tglsampai = date('Y-m-d', strtotime($request->tglsampai));
             $pengembalianKasGantungHeader->penerimaan_nobukti = $request->penerimaan_nobukti;
             $pengembalianKasGantungHeader->coakasmasuk = $request->coa;
-            $pengembalianKasGantungHeader->postingdari = $request->postingdari ?? '';
+            $pengembalianKasGantungHeader->postingdari = "Pengembalian Kas Gantung";
             $pengembalianKasGantungHeader->tglkasmasuk = date('Y-m-d', strtotime($request->tglkasmasuk));
             $pengembalianKasGantungHeader->statusformat = $format->id;
             $pengembalianKasGantungHeader->modifiedby = auth('api')->user()->name;
@@ -115,7 +115,7 @@ class PengembalianKasGantungHeaderController extends Controller
                             $iddetail = $pengembalianKasGantungDetail['id'];
                             $tabeldetail = $pengembalianKasGantungDetail['tabel'];
                         }
-
+                    }
                         $datalogtrail = [
                             'namatabel' => $tabeldetail,
                             'postingdari' => 'EDIT PENGEMBALIAN KAS GANTUNG HEADER',
@@ -129,23 +129,21 @@ class PengembalianKasGantungHeaderController extends Controller
                         $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
                         
                         DB::commit();
-                    }
-                    /* Set position and page */
-                    $selected = $this->getPosition($pengembalianKasGantungHeader, $pengembalianKasGantungHeader->getTable());
-                    $pengembalianKasGantungHeader->position = $selected->position;
-                    $pengembalianKasGantungHeader->page = ceil($pengembalianKasGantungHeader->position / ($request->limit ?? 10));
-                    
-                    if (isset($request->limit)) {
-                        $pengembalianKasGantungHeader->page = ceil($pengembalianKasGantungHeader->position / $request->limit);
-                    }
-                    
-                    return response([
-                        'message' => 'Berhasil disimpan',
-                        'data' => $pengembalianKasGantungHeader
-                    ], 201);
-                } 
-            }
+                }
+                /* Set position and page */
+                $selected = $this->getPosition($pengembalianKasGantungHeader, $pengembalianKasGantungHeader->getTable());
+                $pengembalianKasGantungHeader->position = $selected->position;
+                $pengembalianKasGantungHeader->page = ceil($pengembalianKasGantungHeader->position / ($request->limit ?? 10));
                 
+                if (isset($request->limit)) {
+                    $pengembalianKasGantungHeader->page = ceil($pengembalianKasGantungHeader->position / $request->limit);
+                }
+                
+                return response([
+                    'message' => 'Berhasil disimpan',
+                    'data' => $pengembalianKasGantungHeader
+                ], 201);
+            } 
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;

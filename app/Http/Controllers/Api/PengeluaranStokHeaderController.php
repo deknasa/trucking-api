@@ -173,9 +173,6 @@ class PengeluaranStokHeaderController extends Controller
 
     }
 
-    /**
-     * @ClassName 
-     */
     public function show(PengeluaranStokHeader $pengeluaranStokHeader,$id)
     {
         return response([

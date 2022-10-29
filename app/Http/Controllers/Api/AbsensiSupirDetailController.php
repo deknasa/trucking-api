@@ -49,7 +49,7 @@ class AbsensiSupirDetailController extends Controller
                 $query->select(
                     'header.id as id_header',
                     'header.nobukti as nobukti_header',
-                    'header.tgl as tgl_header',
+                    'header.tglbukti as tgl_header',
                     'header.keterangan as keterangan_header',
                     'header.kasgantung_nobukti as kasgantung_nobukti_header',
                     'header.nominal as nominal_header',
@@ -62,9 +62,9 @@ class AbsensiSupirDetailController extends Controller
                     'detail.absensi_id'
                 )
                     ->join('absensisupirheader as header', 'header.id', 'detail.absensi_id')
-                    ->join('trado', 'trado.id', '=', 'detail.trado_id', 'full outer')
-                    ->join('supir', 'supir.id', '=', 'detail.supir_id', 'full outer')
-                    ->join('absentrado', 'absentrado.id', '=', 'detail.absen_id', 'full outer')
+                    ->join('trado', 'trado.id','detail.trado_id')
+                    ->join('supir', 'supir.id','detail.supir_id')
+                    ->join('absentrado', 'absentrado.id','detail.absen_id')
                     ->orderBy('header.nobukti', 'asc');
 
                 $absensiSupirDetail = $query->get();
