@@ -128,6 +128,7 @@ class NotaKreditDetailController extends Controller
                 return [
                     'error' => false,
                     'id' => $notaKreditDetail->id,
+                    'data' => $notaKreditDetail,
                     'tabel' => $notaKreditDetail->getTable(),
                 ];
             }
