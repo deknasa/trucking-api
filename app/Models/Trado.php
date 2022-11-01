@@ -59,8 +59,8 @@ class Trado extends MyModel
                 $this->table.kmawal,
                 $this->table.kmakhirgantioli,
                 $this->table.tglakhirgantioli1,
-                $this->table.tglstnkmati1,
-                $this->table.tglasuransimati1,
+                $this->table.tglstnkmati,
+                $this->table.tglasuransimati,
                 $this->table.tahun,
                 $this->table.akhirproduksi,
                 $this->table.merek,
@@ -69,7 +69,6 @@ class Trado extends MyModel
                 $this->table.nama,
                 $this->table.nostnk,
                 $this->table.alamatstnk,
-                $this->table.modifiedby,
                 $this->table.tglstandarisasi,
                 $this->table.tglserviceopname,
                 'parameter_statusstandarisasi.text as statusstandarisasi',
@@ -94,14 +93,14 @@ class Trado extends MyModel
                 $this->table.jumlahbanserap,
                 $this->table.statusappeditban,
                 $this->table.statuslewatvalidasi,
+
                 $this->table.photostnk,
                 $this->table.photobpkb,
                 $this->table.phototrado,
                 
                $this->table.modifiedby,
                $this->table.created_at,
-               $this->table.updated_at,
-               $this->table.statusformat"
+               $this->table.updated_at"
             )
 
         )
@@ -112,6 +111,7 @@ class Trado extends MyModel
             ->leftJoin('parameter as parameter_statusvalidasikendaraan', 'trado.statusvalidasikendaraan', 'parameter_statusvalidasikendaraan.id')
             ->leftJoin('mandor', 'trado.mandor_id', 'mandor.id');
     }
+
 
     public function createTemp(string $modelTable)
     { //sesuaikan dengan column index
@@ -133,7 +133,6 @@ class Trado extends MyModel
             $table->string('nama', 40)->default('');
             $table->string('nostnk', 30)->default('');
             $table->string('alamatstnk', 30)->default('');
-            $table->string('modifiedby', 30)->default('');
             $table->date('tglstandarisasi')->default('1900/1/1');
             $table->date('tglserviceopname')->default('1900/1/1');
             $table->integer('statusstandarisasi')->length(11)->default(0);
@@ -158,6 +157,7 @@ class Trado extends MyModel
             $table->integer('jumlahbanserap')->length(11)->default(0);
             $table->integer('statusappeditban')->length(11)->default(0);
             $table->integer('statuslewatvalidasi')->length(11)->default(0);
+
             $table->string('photostnk', 1500)->default('');
             $table->string('photobpkb', 1500)->default('');
             $table->string('phototrado', 1500)->default('');
@@ -165,7 +165,6 @@ class Trado extends MyModel
             $table->string('modifiedby', 50)->default('');
             $table->dateTime('created_at')->default('1900/1/1');
             $table->dateTime('updated_at')->default('1900/1/1');
-            $table->bigInteger('statusformat')->default('');
             $table->increments('position');
         });
 
@@ -174,13 +173,13 @@ class Trado extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id', 'keterangan', 'statusaktif', 'kmawal', 'kmakhirgantioli', 'tglakhirgantioli', 'tglstnkmati', 'tglasuransimati', 'tahun', 'akhirproduksi', 'merek', 'norangka', 'nomesin', 'nama', 'nostnk', 'alamatstnk', 'modifiedby', 'tglstandarisasi', 'tglserviceopname', 'statusstandarisasi', 'keteranganprogressstandarisasi', 'statusjenisplat', 'tglspeksimati', 'tglpajakstnk', 'tglgantiakiterakhir', 'statusmutasi', 'statusvalidasikendaraan', 'tipe', 'jenis', 'isisilinder', 'warna', 'jenisbahanbakar', 'jumlahsumbu', 'jumlahroda', 'model', 'nobpkb', 'statusmobilstoring', 'mandor_id', 'jumlahbanserap', 'statusappeditban', 'statuslewatvalidasi', 'photostnk', 'photobpkb', 'phototrado', 'modifiedby', 'created_at', 'updated_at', 'statusformat'], $models);
+        DB::table($temp)->insertUsing(['id', 'keterangan', 'statusaktif', 'kmawal', 'kmakhirgantioli', 'tglakhirgantioli',  'tglstnkmati', 'tglasuransimati', 'tahun', 'akhirproduksi', 'merek', 'norangka', 'nomesin', 'nama', 'nostnk', 'alamatstnk', 'tglstandarisasi', 'tglserviceopname', 'statusstandarisasi', 'keteranganprogressstandarisasi', 'statusjenisplat', 'tglspeksimati', 'tglpajakstnk', 'tglgantiakiterakhir', 'statusmutasi', 'statusvalidasikendaraan', 'tipe', 'jenis', 'isisilinder', 'warna', 'jenisbahanbakar', 'jumlahsumbu', 'jumlahroda', 'model', 'nobpkb', 'statusmobilstoring', 'mandor_id', 'jumlahbanserap', 'statusappeditban', 'statuslewatvalidasi', 'photostnk', 'photobpkb', 'phototrado', 'modifiedby', 'created_at', 'updated_at'], $models);
 
 
         return  $temp;
     }
 
-    
+
     public function sort($query)
     {
         return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
