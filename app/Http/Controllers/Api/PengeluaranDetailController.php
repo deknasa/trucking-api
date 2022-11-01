@@ -146,7 +146,7 @@ class PengeluaranDetailController extends Controller
                 if(is_null($getBaris)) {
                     $baris = 0;
                 }else{
-                    $baris = $getBaris->baris;
+                    $baris = $getBaris->baris+1;
                 }
                 
                 for ($x = 0; $x <= 1; $x++) {

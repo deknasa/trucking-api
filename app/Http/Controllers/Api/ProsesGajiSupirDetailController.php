@@ -7,6 +7,7 @@ use App\Http\Requests\StoreGajiSupirDetailRequest;
 use App\Http\Requests\StoreProsesGajiSupirDetailRequest;
 use App\Http\Requests\UpdateGajiSupirDetailRequest;
 use App\Models\ProsesGajiSupirDetail;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -40,11 +41,20 @@ class ProsesGajiSupirDetailController extends Controller
             }
             if ($params['forReport']) {
                 $query->select(
+                    'header.nobukti',
+                    'header.tglbukti',
+                    'header.keterangan',
+                    'supir.namasupir as supir_id',
+                    'trado.keterangan as trado_id',
+                    'detail.gajisupir_nobukti',
                     'detail.nominal',
-                    'detail.keterangan'
-                );
+                    'detail.keterangan as keterangan_detail'
+                )
+                ->join('prosesgajisupirheader as header','header.id','detail.prosesgajisupir_id')
+                ->join('supir','detail.supir_id','supir.id')
+                ->join('trado','detail.trado_id','trado.id');
 
-                $piutangDetail = $query->get();
+                $prosesgajisupirDetail = $query->get();
             } else {
                 $query->select(
                     'detail.gajisupir_nobukti',
@@ -55,11 +65,16 @@ class ProsesGajiSupirDetailController extends Controller
                 )
                 ->join('supir','detail.supir_id','supir.id')
                 ->join('trado','detail.trado_id','trado.id');
-                $piutangDetail = $query->get();
+                $prosesgajisupirDetail = $query->get();
             }
+            $idUser = auth('api')->user()->id;
+            $getuser = User::select('name','cabang.namacabang as cabang_id')
+            ->where('user.id',$idUser)->join('cabang','user.cabang_id','cabang.id')->first();
+           
 
             return response([
-                'data' => $piutangDetail
+                'data' => $prosesgajisupirDetail,
+                'user' => $getuser,
             ]);
         } catch (\Throwable $th) {
             return response([

@@ -8,7 +8,7 @@ use App\Models\JurnalUmumHeader;
 
 use App\Http\Requests\StoreJurnalUmumDetailRequest;
 use App\Http\Requests\UpdateJurnalUmumDetailRequest;
-
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -99,8 +99,14 @@ class JurnalUmumDetailController extends Controller
                     ->get();
             }
 
+            $idUser = auth('api')->user()->id;
+            $getuser = User::select('name','cabang.namacabang as cabang_id')
+            ->where('user.id',$idUser)->join('cabang','user.cabang_id','cabang.id')->first();
+           
+
             return response([
-                'data' => $jurnalUmumDetail
+                'data' => $jurnalUmumDetail,
+                'user' => $getuser,
             ]);
         } catch (\Throwable $th) {
             return response([

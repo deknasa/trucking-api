@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\PelunasanPiutangDetail;
 use App\Http\Requests\StorePelunasanPiutangDetailRequest;
 use App\Http\Requests\UpdatePelunasanPiutangDetailRequest;
-
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -41,9 +41,26 @@ class PelunasanPiutangDetailController extends Controller
             }
             if ($params['forReport']) {
                 $query->select(
+                    'header.nobukti',
+                    'header.tglbukti',
+                    'header.keterangan as keterangan_header',
+                    'bank.namabank as bank',
+                    'agen.namaagen as agen',
+                    'cabang.namacabang as cabang',
                     'detail.nominal',
-                    'detail.keterangan'
-                );
+                    'detail.keterangan as keterangan_detail',
+                    'detail.nominal',
+                    'detail.piutang_nobukti',
+                    'detail.tglcair',
+                    'detail.tgljt',
+                    'agen_detail.namaagen as agen_detail',
+                    'pelanggan.namapelanggan as pelanggan',
+                )->join('pelunasanpiutangheader as header','header.id','detail.pelunasanpiutang_id')
+                ->join('bank','header.bank_id','bank.id')
+                ->join('cabang','header.cabang_id','cabang.id')
+                ->join('agen','header.agen_id','agen.id')
+                ->join('agen as agen_detail','detail.agen_id','agen_detail.id')
+                ->join('pelanggan','detail.pelanggan_id','pelanggan.id');
 
                 $piutangDetail = $query->get();
             } else {
@@ -52,7 +69,7 @@ class PelunasanPiutangDetailController extends Controller
                     'detail.nominal',
                     'detail.keterangan',
                     'detail.piutang_nobukti',
-
+                    'detail.tgljt',
                     'pelanggan.namapelanggan as pelanggan_id',
                     'agen.namaagen as agen_id',
                 )
@@ -61,8 +78,14 @@ class PelunasanPiutangDetailController extends Controller
                 $piutangDetail = $query->get();
             }
 
+            $idUser = auth('api')->user()->id;
+            $getuser = User::select('name','cabang.namacabang as cabang_id')
+            ->where('user.id',$idUser)->join('cabang','user.cabang_id','cabang.id')->first();
+           
+
             return response([
-                'data' => $piutangDetail
+                'data' => $piutangDetail,
+                'user' => $getuser,
             ]);
         } catch (\Throwable $th) {
             return response([

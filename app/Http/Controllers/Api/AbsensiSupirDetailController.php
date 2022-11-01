@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreAbsensiSupirDetailRequest;
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Models\AbsensiSupirDetail;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -53,7 +54,7 @@ class AbsensiSupirDetailController extends Controller
                     'header.keterangan as keterangan_header',
                     'header.kasgantung_nobukti as kasgantung_nobukti_header',
                     'header.nominal as nominal_header',
-                    'trado.nama as trado',
+                    'trado.keterangan as trado',
                     'supir.namasupir as supir',
                     'absentrado.kodeabsen as status',
                     'detail.keterangan as keterangan_detail',
@@ -64,8 +65,7 @@ class AbsensiSupirDetailController extends Controller
                     ->join('absensisupirheader as header', 'header.id', 'detail.absensi_id')
                     ->join('trado', 'trado.id','detail.trado_id')
                     ->join('supir', 'supir.id','detail.supir_id')
-                    ->join('absentrado', 'absentrado.id','detail.absen_id')
-                    ->orderBy('header.nobukti', 'asc');
+                    ->join('absentrado', 'absentrado.id','detail.absen_id');
 
                 $absensiSupirDetail = $query->get();
             } else {
@@ -83,9 +83,14 @@ class AbsensiSupirDetailController extends Controller
                     ->join('absentrado', 'absentrado.id', '=', 'detail.absen_id');
                 $absensiSupirDetail = $query->get();
             }
+            $idUser = auth('api')->user()->id;
+            $getuser = User::select('name','cabang.namacabang as cabang_id')
+            ->where('user.id',$idUser)->join('cabang','user.cabang_id','cabang.id')->first();
+           
 
             return response([
-                'data' => $absensiSupirDetail
+                'data' => $absensiSupirDetail,
+                'user' => $getuser,
             ]);
         } catch (\Throwable $th) {
             return response([
