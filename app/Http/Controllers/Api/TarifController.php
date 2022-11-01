@@ -62,9 +62,7 @@ class TarifController extends Controller
             $tarif->tglakhirberlaku = date('Y-m-d', strtotime($request->tglakhirberlaku));
             $tarif->statuspenyesuaianharga = $request->statuspenyesuaianharga;
             $tarif->modifiedby = auth('api')->user()->name;
-            $request->sortname = $request->sortname ?? 'id';
-            $request->sortorder = $request->sortorder ?? 'asc';
-            // dd(date('Y-m-d', strtotime($request->tglberlaku)));
+
             if ($tarif->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($tarif->getTable()),
@@ -81,15 +79,6 @@ class TarifController extends Controller
 
                 DB::commit();
             }
-
-            // /* Set position and page */
-            // $del = 0;
-            // $data = $this->getid($tarif->id, $request, $del);
-            // $tarif->position = $data->row;
-
-            // if (isset($request->limit)) {
-            //     $tarif->page = ceil($tarif->position / $request->limit);
-            // }
 
             /* Set position and page */
             $selected = $this->getPosition($tarif, $tarif->getTable());

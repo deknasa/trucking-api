@@ -32,10 +32,6 @@ class JenisEmklController extends Controller
         ]);
     }
 
-    public function create()
-    {
-        //
-    }
     /**
      * @ClassName 
      */
@@ -70,25 +66,9 @@ class JenisEmklController extends Controller
             }
 
             /* Set position and page */
-            // $del = 0;
-            // $data = $this->getid($jenisemkl->id, $request, $del);
-            // $jenisemkl->position = $data->row;
-
-            // if (isset($request->limit)) {
-            //     $jenisemkl->page = ceil($jenisemkl->position / $request->limit);
-            // }
-
-              /* Set position and page */
-            // $selected = $this->getPosition($jenisemkl, $jenisemkl->getTable());
-            // $jenisemkl->position = $selected->position;
-            // $jenisemkl->page = ceil($jenisemkl->position / ($request->limit ?? 10));
-
-            /* Set position and page */
-			  $selected = $this->getPosition($jenisemkl, $jenisemkl->getTable(), true);
+            $selected = $this->getPosition($jenisemkl, $jenisemkl->getTable());
             $jenisemkl->position = $selected->position;
-            $jenisemkl->id = $selected->id;
             $jenisemkl->page = ceil($jenisemkl->position / ($request->limit ?? 10));
-
             return response([
                 'status' => true,
                 'message' => 'Berhasil disimpan',
@@ -108,24 +88,7 @@ class JenisEmklController extends Controller
         ]);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\JenisEmkl  $jenisEmkl
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(JenisEmkl $jenisEmkl)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \App\Http\Requests\UpdateJenisEmklRequest  $request
-     * @param  \App\Models\JenisEmkl  $jenisEmkl
-     * @return \Illuminate\Http\Response
-     */
+    
     /**
      * @ClassName 
      */
@@ -151,17 +114,11 @@ class JenisEmklController extends Controller
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
 
-                /* Set position and page */
-                // $jenisemkl->position = $this->getid($jenisemkl->id, $request, 0)->row;
-
-                // if (isset($request->limit)) {
-                //     $jenisemkl->page = ceil($jenisemkl->position / $request->limit);
-                // }
-
+                
                  /* Set position and page */
-            $selected = $this->getPosition($jenisemkl, $jenisemkl->getTable());
-            $jenisemkl->position = $selected->position;
-            $jenisemkl->page = ceil($jenisemkl->position / ($request->limit ?? 10));
+                $selected = $this->getPosition($jenisemkl, $jenisemkl->getTable());
+                $jenisemkl->position = $selected->position;
+                $jenisemkl->page = ceil($jenisemkl->position / ($request->limit ?? 10));
 
                 return response([
                     'status' => true,
@@ -208,12 +165,11 @@ class JenisEmklController extends Controller
 
             DB::commit();
 
-            $data = $this->getid($jenisemkl->id, $request, $del);
-            $jenisemkl->position = $data->row  ?? 0;
-            $jenisemkl->id = $data->id  ?? 0;
-            if (isset($request->limit)) {
-                $jenisemkl->page = ceil($jenisemkl->position / $request->limit);
-            }
+            $selected = $this->getPosition($jenisemkl, $jenisemkl->getTable(), true);
+            $jenisemkl->position = $selected->position;
+            $jenisemkl->id = $selected->id;
+            $jenisemkl->page = ceil($jenisemkl->position / ($request->limit ?? 10));
+
             return response([
                 'status' => true,
                 'message' => 'Berhasil dihapus',

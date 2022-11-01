@@ -61,8 +61,8 @@ class ProsesGajiSupirHeader extends MyModel
         $query = DB::table('gajisupirheader')
                 ->select('gajisupirheader.id','gajisupirheader.nobukti','gajisupirheader.tglbukti','supir.namasupir','gajisupirheader.keterangan','gajisupirheader.tgldari','gajisupirheader.tglsampai','gajisupirheader.nominal')
                 ->join('supir','gajisupirheader.supir_id','supir.id')
-                ->where('gajisupirheader.tgldari', $dari)
-                ->where('gajisupirheader.tglsampai', $sampai);
+                ->where('gajisupirheader.tgldari','>=', $dari)
+                ->where('gajisupirheader.tglsampai','<=', $sampai);
 
         $data = $query->get();
         return $data;

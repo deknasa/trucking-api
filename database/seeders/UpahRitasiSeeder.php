@@ -35,5 +35,38 @@ class UpahRitasiSeeder extends Seeder
             'statusluarkota' => 61,
             'modifiedby' => 'ADMIN',
         ]);
+
+        UpahRitasi::create([
+            'kotadari_id' => 2,
+            'kotasampai_id' => 3,
+            'jarak' => 50,
+            'zona_id' => 1,
+            'statusaktif' => 1,
+            'tglmulaiberlaku' => '2021-01-01',
+            'statusluarkota' => 61,
+            'modifiedby' => 'ADMIN',
+        ]);
+
+        UpahRitasi::create([
+            'kotadari_id' => 2,
+            'kotasampai_id' => 3,
+            'jarak' => 30,
+            'zona_id' => 1,
+            'statusaktif' => 1,
+            'tglmulaiberlaku' => '2021-01-01',
+            'statusluarkota' => 61,
+            'modifiedby' => 'ADMIN',
+        ]);
+
+        UpahRitasi::create([
+            'kotadari_id' => 4,
+            'kotasampai_id' => 1,
+            'jarak' => 30,
+            'zona_id' => 1,
+            'statusaktif' => 1,
+            'tglmulaiberlaku' => '2021-01-01',
+            'statusluarkota' => 61,
+            'modifiedby' => 'ADMIN',
+        ]);
     }
 }

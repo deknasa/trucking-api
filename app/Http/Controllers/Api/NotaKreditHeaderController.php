@@ -41,8 +41,8 @@ class NotaKreditHeaderController extends Controller
         DB::beginTransaction();
 
         try {
-            $group = 'NOTA KREDIT';
-            $subgroup = 'NOTA KREDIT';
+            $group = 'NOTA KREDIT BUKTI';
+            $subgroup = 'NOTA KREDIT BUKTI';
 
             $format = DB::table('parameter')
                 ->where('grp', $group )
@@ -173,12 +173,14 @@ class NotaKreditHeaderController extends Controller
         try {
             
             $notaKreditHeader = NotaKreditHeader::findOrFail($id);
-            $notaKreditHeader->pelunasanpiutang_nobukti = $request->pelunasanpiutang_nobukti;
             $notaKreditHeader->tglbukti = date('Y-m-d',strtotime($request->tglbukti));
-            $notaKreditHeader->keterangan = $request->keterangan;
+            $notaKreditHeader->tglapproval = date('Y-m-d',strtotime($request->tglapproval));
             $notaKreditHeader->statusapproval = $request->statusapproval;
             $notaKreditHeader->tgllunas = date('Y-m-d',strtotime($request->tgllunas));
-
+            $notaKreditHeader->pelunasanpiutang_nobukti = $request->pelunasanpiutang_nobukti;
+            $notaKreditHeader->keterangan = $request->keterangan;
+            $notaKreditHeader->postingdari = "NOTA KREDIT HEADER";
+            $notaKreditHeader->userapproval = auth('api')->user()->name;
             $notaKreditHeader->modifiedby = auth('api')->user()->name;
            
             if ($notaKreditHeader->save()) {
@@ -187,7 +189,7 @@ class NotaKreditHeaderController extends Controller
                     'postingdari' => 'EDIT NOTA KREDIT HEADER',
                     'idtrans' => $notaKreditHeader->id,
                     'nobuktitrans' => $notaKreditHeader->nobukti,
-                    'aksi' => 'ENTRY',
+                    'aksi' => 'EDII',
                     'datajson' => $notaKreditHeader->toArray(),
                     'modifiedby' => $notaKreditHeader->modifiedby
                 ];
@@ -213,7 +215,7 @@ class NotaKreditHeaderController extends Controller
                             "modifiedby" => $notaKreditHeader->modifiedby = auth('api')->user()->name
                         ];
                         
-                        $detaillog []=$datadetail;
+                        
                         $data = new StoreNotaKreditDetailRequest($datadetail);
                         $notaKreditDetail = app(NotaKreditDetailController::class)->store($data);
     
@@ -222,6 +224,7 @@ class NotaKreditHeaderController extends Controller
                         } else {
                             $iddetail = $notaKreditDetail['id'];
                             $tabeldetail = $notaKreditDetail['tabel'];
+                            $detaillog []=$notaKreditDetail['data'];
                         }
                     }
                     $datalogtrail = [
@@ -230,7 +233,7 @@ class NotaKreditHeaderController extends Controller
                         'idtrans' =>  $iddetail,
                         'nobuktitrans' => $notaKreditHeader->nobukti,
                         'aksi' => 'EDIT',
-                        'datajson' => $detaillog,
+                        'datajson' =>$detaillog,
                         'modifiedby' => auth('api')->user()->name,
                     ];
                     $validatedLogTrail = new StoreLogTrailRequest($logTrail);
@@ -398,6 +401,68 @@ class NotaKreditHeaderController extends Controller
             throw $th;
         }
     }
+
+    // public function export()
+    // {
+    //     header('Access-Control-Allow-Origin: *');
+
+    //     $response = $this->index();
+    //     $decodedResponse = json_decode($response->content(), true);
+    //     $parameters = $decodedResponse['data'];
+
+    //     $columns = [
+    //         [
+    //             'label' => 'No',
+    //         ],
+    //         [
+    //             'label'=>'nobukti',
+    //             'index'=>'nobukti'
+    //         ],
+    //         [
+    //             'label'=>'pelunasanpiutang_nobukti',
+    //             'index'=>'pelunasanpiutang_nobukti'
+    //         ],
+    //         [
+    //             'label'=>'tglbukti',
+    //             'index'=>'tglbukti'
+    //         ],
+    //         [
+    //             'label'=>'keterangan',
+    //             'index'=>'keterangan'
+    //         ],
+    //         [
+    //             'label'=>'postingdari',
+    //             'index'=>'postingdari'
+    //         ],
+    //         [
+    //             'label'=>'statusapproval',
+    //             'index'=>'statusapproval'
+    //         ],
+    //         [
+    //             'label'=>'tgllunas',
+    //             'index'=>'tgllunas'
+    //         ],
+    //         [
+    //             'label'=>'userapproval',
+    //             'index'=>'userapproval'
+    //         ],
+    //         [
+    //             'label'=>'tglapproval',
+    //             'index'=>'tglapproval'
+    //         ],
+    //         [
+    //             'label'=>'statusformat',
+    //             'index'=>'statusformat'
+    //         ],
+    //         [
+    //             'label'=>'modifiedby',
+    //             'index'=>'modifiedby'
+    //         ],
+            
+    //     ];
+
+    //     $this->toExcel('NotaKreditHeader', $parameters, $columns);
+    // }
 
 
 }

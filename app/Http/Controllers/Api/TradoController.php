@@ -112,8 +112,8 @@ class TradoController extends Controller
             $trado->keterangan = strtoupper($request->keterangan);
             $trado->statusaktif = $request->statusaktif;
             $trado->kmawal = $request->kmawal;
-            $trado->kmakhirgantioli = 0;
-            $trado->tglakhirgantioli = '';
+            $trado->kmakhirgantioli = $request->kmakhirgantioli;
+            $trado->tglakhirgantioli = date('Y-m-d', strtotime($request->tglakhirgantioli));
             $trado->tglstnkmati = date('Y-m-d', strtotime($request->tglstnkmati));
             $trado->tglasuransimati = date('Y-m-d', strtotime($request->tglasuransimati));
             $trado->tahun = $request->tahun;
@@ -124,13 +124,13 @@ class TradoController extends Controller
             $trado->nama = strtoupper($request->nama);
             $trado->nostnk = strtoupper($request->nostnk);
             $trado->alamatstnk = strtoupper($request->alamatstnk);
-            $trado->modifiedby = strtoupper(auth('api')->user()->name);
             $trado->tglstandarisasi = date('Y-m-d', strtotime($request->tglstandarisasi));
             $trado->tglserviceopname = date('Y-m-d', strtotime($request->tglserviceopname));
             $trado->statusstandarisasi = $request->statusstandarisasi;
             $trado->keteranganprogressstandarisasi = strtoupper($request->keteranganprogressstandarisasi);
-            // $trado->statusjenisplat = $request->statusjenisplat;
+            $trado->statusjenisplat = $request->jenisplat;
             $trado->tglspeksimati = date('Y-m-d', strtotime($request->tglspeksimati));
+            $trado->tglpajakstnk = date('Y-m-d', strtotime($request->tglpajakstnk));
             $trado->tglgantiakiterakhir = date('Y-m-d', strtotime($request->tglgantiakiterakhir));
             $trado->statusmutasi = $request->statusmutasi;
             $trado->statusvalidasikendaraan = $request->statusvalidasikendaraan;
@@ -148,6 +148,7 @@ class TradoController extends Controller
             $trado->jumlahbanserap = strtoupper($request->jumlahbanserap);
             $trado->statusappeditban = strtoupper($request->statusappeditban);
             $trado->statuslewatvalidasi = strtoupper($request->statuslewatvalidasi);
+            $trado->modifiedby = auth('api')->user()->name;
 
             $trado->save();
 

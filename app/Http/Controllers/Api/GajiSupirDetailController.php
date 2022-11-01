@@ -5,7 +5,7 @@ use App\Http\Controllers\Controller;
 use App\Models\GajiSupirDetail;
 use App\Http\Requests\StoreGajiSupirDetailRequest;
 use App\Http\Requests\UpdateGajiSupirDetailRequest;
-
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -39,11 +39,28 @@ class GajiSupirDetailController extends Controller
             }
             if ($params['forReport']) {
                 $query->select(
-                    'detail.nominal',
-                    'detail.keterangan'
-                );
+                    'header.id',
+                    'header.nobukti',
+                    'header.tglbukti',
+                    'header.keterangan as keterangan_header',
+                    'header.nominal',
+                    'supir.namasupir as supir',
+                    'detail.suratpengantar_nobukti',
+                    'suratpengantar.tglsp',
+                    'suratpengantar.nosp',
+                    'suratpengantar.nocont',
+                    'sampai.keterangan as sampai',
+                    'dari.keterangan as dari',
+                    'detail.gajisupir',
+                    'detail.gajikenek',
+                )
+                ->join('gajisupirheader as header','header.id','detail.gajisupir_id')
+                ->join('supir','header.supir_id','supir.id')
+                ->join('suratpengantar','detail.suratpengantar_nobukti','suratpengantar.nobukti')
+                ->join('kota as dari','suratpengantar.dari_id','dari.id')
+                ->join('kota as sampai','suratpengantar.sampai_id','sampai.id');
 
-                $piutangDetail = $query->get();
+                $gajisupirDetail = $query->get();
             } else {
                 $query->select(
                     'detail.nobukti',
@@ -59,11 +76,16 @@ class GajiSupirDetailController extends Controller
                 ->join('suratpengantar','detail.suratpengantar_nobukti','suratpengantar.nobukti')
                 ->join('kota as dari','suratpengantar.dari_id','dari.id')
                 ->join('kota as sampai','suratpengantar.sampai_id','sampai.id');
-                $piutangDetail = $query->get();
+                $gajisupirDetail = $query->get();
             }
+            $idUser = auth('api')->user()->id;
+            $getuser = User::select('name','cabang.namacabang as cabang_id')
+            ->where('user.id',$idUser)->join('cabang','user.cabang_id','cabang.id')->first();
+           
 
             return response([
-                'data' => $piutangDetail
+                'data' => $gajisupirDetail,
+                'user' => $getuser,
             ]);
         } catch (\Throwable $th) {
             return response([

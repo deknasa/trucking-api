@@ -8,6 +8,7 @@ use App\Http\Requests\StoreKasGantungDetailRequest;
 use App\Http\Requests\StorePengeluaranDetailRequest;
 use App\Http\Requests\UpdateKasGantungDetailRequest;
 use App\Models\PengeluaranHeader;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -21,7 +22,7 @@ class KasGantungDetailController extends Controller
             'id' => $request->id,
             'kasgantung_id' => $request->kasgantung_id,
             'withHeader' => $request->withHeader ?? false,
-            'whereIn' => $request->whereIn ?? [],
+            'whereIn' => $request->whereIn,
             'forReport' => $request->forReport ?? false,
             'sortIndex' => $request->sortOrder ?? 'id',
             'sortOrder' => $request->sortOrder ?? 'asc',
@@ -38,37 +39,33 @@ class KasGantungDetailController extends Controller
                 $query->where('detail.kasgantung_id', $params['kasgantung_id']);
             }
 
-            // if ($params['withHeader']) {
-            //     $query->join('kasgantungheader', 'kasgantungheader.id', 'detail.kasgantung_id');
-            // }
+            if ($params['withHeader']) {
+                $query->join('kasgantungheader', 'kasgantungheader.id', 'detail.kasgantung_id');
+            }
 
-            if (count($params['whereIn']) > 0) {
+            if ($params['whereIn'] > 0) {
                 $query->whereIn('kasgantung_id', $params['whereIn']);
             }
 
             if ($params['forReport']) {
                 $query->select(
-                    // 'header.id as id_header',
-                    // 'header.nobukti as nobukti_header',
-               
-               
-                    // 'header.tgl as tgl_header',
-                    // 'header.keterangan as keterangan_header',
-                    // 'header.kasgantung_nobukti as kasgantung_nobukti_header',
-                    // 'header.nominal as nominal_header',
-                    // 'trado.nama as trado',
-                    // 'supir.namasupir as supir',
-                    // 'absentrado.kodeabsen as status',
+                    'header.id as id',
+                    'header.nobukti as nobukti_header',               
+                    'header.tglbukti as tgl_header',
+                    'header.keterangan as keterangan_header',
+                    'penerima.namapenerima as penerima_id',
+                    'bank.namabank as bank_id',
+                    'header.pengeluaran_nobukti',
+                    'header.coakaskeluar',
+                    'header.tglkaskeluar',
                     'detail.keterangan as keterangan_detail',
                     'detail.nominal',
-                    'detail.uangjalan',
+                    'detail.coa',
                     'detail.kasgantung_id'
                 )
                     ->join('kasgantungheader as header', 'header.id', 'detail.kasgantung_id')
-                    // ->join('trado', 'trado.id', '=', 'detail.trado_id', 'full outer')
-                    // ->join('supir', 'supir.id', '=', 'detail.supir_id', 'full outer')
-                    // ->join('absentrado', 'absentrado.id', '=', 'detail.absen_id', 'full outer')
-                    ->orderBy('header.nobukti', 'asc');
+                    ->join('penerima','header.penerima_id','penerima.id')
+                    ->join('bank','header.bank_id','bank.id');
 
                 $kasgantungDetail = $query->get();
             } else {
@@ -81,9 +78,14 @@ class KasGantungDetailController extends Controller
                 )->join('akunpusat','detail.coa','akunpusat.coa');
                 $kasgantungDetail = $query->get();
             }
+            $idUser = auth('api')->user()->id;
+            $getuser = User::select('name','cabang.namacabang as cabang_id')
+            ->where('user.id',$idUser)->join('cabang','user.cabang_id','cabang.id')->first();
+           
 
             return response([
-                'data' => $kasgantungDetail
+                'data' => $kasgantungDetail,
+                'user' => $getuser,
             ]);
         } catch (\Throwable $th) {
             return response([

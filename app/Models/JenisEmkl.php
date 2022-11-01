@@ -51,8 +51,7 @@ class JenisEmkl extends MyModel
     }
 
     public function selectColumns($query)
-    {//sesuaikan dengan createtemp
-    
+    {    
         return $query->select(
             DB::raw(
                 "$this->table.id,

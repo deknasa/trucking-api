@@ -96,6 +96,8 @@
     use App\Http\Controllers\Api\PelunasanPiutangDetailController;
     use App\Http\Controllers\Api\HutangBayarHeaderController;
     use App\Http\Controllers\Api\HutangBayarDetailController;
+    use App\Http\Controllers\Api\InvoiceDetailController;
+    use App\Http\Controllers\Api\InvoiceHeaderController;
     use App\Http\Controllers\Api\ProsesGajiSupirHeaderController;
     use App\Http\Controllers\Api\ProsesGajiSupirDetailController;
 
@@ -412,6 +414,7 @@
         Route::get('notakreditheader/{id}/getpelunasan', [NotaKreditHeaderController::class,'getPelunasan']);
         Route::get('notakreditheader/{id}/getnotakredit', [NotaKreditHeaderController::class,'getNotaKredit']);
         Route::post('notakreditheader/{id}/approval', [NotaKreditHeaderController::class,'approval']);
+        Route::get('notakreditheader/export', [NotaKreditHeaderController::class, 'export']);
         Route::resource('notakreditheader', NotaKreditHeaderController::class);
         Route::resource('notakredit_detail', NotaKreditDetailController::class);
         
@@ -431,6 +434,18 @@
         Route::get('prosesgajisupirheader/{id}/getEdit', [ProsesGajiSupirHeaderController::class, 'getEdit']);
         Route::resource('prosesgajisupirheader', ProsesGajiSupirHeaderController::class);
         Route::resource('prosesgajisupirdetail', ProsesGajiSupirDetailController::class);
+
+        Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
+        Route::get('invoiceheader/no_bukti', [InvoiceHeaderController::class, 'getNoBukti']);
+        Route::get('invoiceheader/grid', [InvoiceHeaderController::class, 'grid']);
+        Route::get('invoiceheader/field_length', [InvoiceHeaderController::class, 'fieldLength']);
+        Route::get('invoiceheader/comboapproval', [InvoiceHeaderController::class, 'comboapproval']);
+        Route::get('invoiceheader/{id}/getEdit', [InvoiceHeaderController::class, 'getEdit']);
+        Route::get('invoiceheader/getSP', [InvoiceHeaderController::class, 'getSP']);
+        Route::post('invoiceheader/{id}/approval', [InvoiceHeaderController::class, 'approval'])->name('invoiceheader.approval');
+        Route::post('invoiceheader/{id}/cekapproval', [InvoiceHeaderController::class, 'cekapproval'])->name('invoiceheader.cekapproval');
+        Route::resource('invoiceheader', InvoiceHeaderController::class);
+        Route::resource('invoicedetail', InvoiceDetailController::class);
     });
 
     Route::get('gudang/combo', [GudangController::class, 'combo']);

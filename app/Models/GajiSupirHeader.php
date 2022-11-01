@@ -90,8 +90,8 @@ class GajiSupirHeader extends MyModel
         ->join('kota as kotaSampai','suratpengantar.sampai_id','kotaSampai.id')
         ->join('trado','suratpengantar.trado_id','trado.id')
         ->where('supir_id',$supirId)
-        ->where('tglbukti', $tglDari)
-        ->where('tglbukti', $tglSampai);
+        ->where('tglbukti','>=', $tglDari)
+        ->where('tglbukti','<=', $tglSampai);
 
         $data = $query->get();
         return $data;

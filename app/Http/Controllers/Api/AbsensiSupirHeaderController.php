@@ -56,7 +56,7 @@ class AbsensiSupirHeaderController extends Controller
      */
     public function store(StoreAbsensiSupirHeaderRequest $request)
     {
-        // DB::beginTransaction();
+        DB::beginTransaction();
 
         try {
 

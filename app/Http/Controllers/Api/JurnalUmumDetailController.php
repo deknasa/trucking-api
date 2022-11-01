@@ -8,7 +8,7 @@ use App\Models\JurnalUmumHeader;
 
 use App\Http\Requests\StoreJurnalUmumDetailRequest;
 use App\Http\Requests\UpdateJurnalUmumDetailRequest;
-
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -24,6 +24,7 @@ class JurnalUmumDetailController extends Controller
             'withHeader' => $request->withHeader ?? false,
             'whereIn' => $request->whereIn ?? [],
             'forReport' => $request->forReport ?? false,
+            'forExport' => $request->forExport ?? false,
             'sortIndex' => $request->sortOrder ?? 'id',
             'sortOrder' => $request->sortOrder ?? 'asc',
         ];
@@ -42,15 +43,42 @@ class JurnalUmumDetailController extends Controller
                 $query->whereIn('jurnalumum_id', $params['whereIn']);
             }
             if ($params['forReport']) {
-                $query->select(
-                    'detail.nobukti',
-                    'detail.tglbukti',
-                    'detail.coa',
-                    'detail.nominal',
-                    'detail.keterangan',
-                );
+                $id = $params['jurnalumum_id'];
+                $data = JurnalUmumHeader::find($id);
+                $nobukti = $data['nobukti'];
 
-                $jurnalUmumDetail = $query->get();
+                $jurnalUmumDetail = DB::table('jurnalumumdetail AS A')
+                    ->select(['A.coa as coadebet', 'b.coa as coakredit', 'A.nominal', 'A.keterangan as keterangandetail', 'header.nobukti', 'header.tglbukti','header.keterangan','A.jurnalumum_id'])
+                    ->join(
+                        DB::raw("(SELECT baris,coa FROM jurnalumumdetail WHERE nobukti='$nobukti' AND nominal<0) B"),
+                        function ($join) {
+                            $join->on('A.baris', '=', 'B.baris');
+                        }
+                    )
+                    ->join('jurnalumumheader as header','header.id','A.jurnalumum_id')
+                    ->where([
+                        ['A.nobukti', '=', $nobukti],
+                        ['A.nominal', '>=', '0']
+                    ])
+                    ->get();
+            } else if ($params['forExport']) {
+                $id = $params['jurnalumum_id'];
+                $data = JurnalUmumHeader::find($id);
+                $nobukti = $data['nobukti'];
+
+                $jurnalUmumDetail = DB::table('jurnalumumdetail AS A')
+                    ->select(['A.coa as coadebet', 'b.coa as coakredit', 'A.nominal', 'A.keterangan', 'A.nobukti', 'A.tglbukti'])
+                    ->join(
+                        DB::raw("(SELECT baris,coa FROM jurnalumumdetail WHERE nobukti='$nobukti' AND nominal<0) B"),
+                        function ($join) {
+                            $join->on('A.baris', '=', 'B.baris');
+                        }
+                    )
+                    ->where([
+                        ['A.nobukti', '=', $nobukti],
+                        ['A.nominal', '>=', '0']
+                    ])
+                    ->get();
             } else {
                 $id = $request->jurnalumum_id;
                 $data = JurnalUmumHeader::find($id);
@@ -71,8 +99,14 @@ class JurnalUmumDetailController extends Controller
                     ->get();
             }
 
+            $idUser = auth('api')->user()->id;
+            $getuser = User::select('name','cabang.namacabang as cabang_id')
+            ->where('user.id',$idUser)->join('cabang','user.cabang_id','cabang.id')->first();
+           
+
             return response([
-                'data' => $jurnalUmumDetail
+                'data' => $jurnalUmumDetail,
+                'user' => $getuser,
             ]);
         } catch (\Throwable $th) {
             return response([

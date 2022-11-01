@@ -45,6 +45,7 @@ class AbsensiSupirHeader extends MyModel
             'absensisupirheader.updated_at',
         );
 
+       
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
@@ -152,6 +153,8 @@ class AbsensiSupirHeader extends MyModel
             $this->totalRows = $query->count();
             $this->totalPages = $this->params['limit'] > 0 ? ceil($this->totalRows / $this->params['limit']) : 1;
         }
+
+        
 
         return $query;
     }
