@@ -414,6 +414,7 @@
         Route::get('notakreditheader/{id}/getpelunasan', [NotaKreditHeaderController::class,'getPelunasan']);
         Route::get('notakreditheader/{id}/getnotakredit', [NotaKreditHeaderController::class,'getNotaKredit']);
         Route::post('notakreditheader/{id}/approval', [NotaKreditHeaderController::class,'approval']);
+        Route::get('notakreditheader/export', [NotaKreditHeaderController::class, 'export']);
         Route::resource('notakreditheader', NotaKreditHeaderController::class);
         Route::resource('notakredit_detail', NotaKreditDetailController::class);
         
