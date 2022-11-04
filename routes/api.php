@@ -100,6 +100,7 @@
     use App\Http\Controllers\Api\InvoiceHeaderController;
     use App\Http\Controllers\Api\ProsesGajiSupirHeaderController;
     use App\Http\Controllers\Api\ProsesGajiSupirDetailController;
+    use App\Http\Controllers\Api\HariLiburController;
 
     /*
     |--------------------------------------------------------------------------
@@ -646,3 +647,4 @@
 
     // Route::resource('penerimaantruckingdetail', PenerimaanTruckingDetailController::class);
 
+    Route::get('harilibur', [HariLiburController::class, 'index']);

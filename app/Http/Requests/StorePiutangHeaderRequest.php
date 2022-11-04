@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\NotOffDay;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StorePiutangHeaderRequest extends FormRequest
@@ -24,7 +25,10 @@ class StorePiutangHeaderRequest extends FormRequest
     public function rules()
     {
         $rules = [
-            'tglbukti' => 'required',
+            'tglbukti' => [
+                'required',
+                new NotOffDay()
+            ],
             'keterangan' => 'required',
             'agen_id' => 'required',
             'agen' => 'required',
