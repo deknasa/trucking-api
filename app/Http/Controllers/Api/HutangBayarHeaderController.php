@@ -10,16 +10,21 @@ use App\Http\Requests\StoreHutangBayarHeaderRequest;
 use App\Http\Requests\StoreHutangBayarDetailRequest;
 
 use App\Http\Requests\StoreLogTrailRequest;
+use App\Http\Requests\StorePengeluaranDetailRequest;
+use App\Http\Requests\StorePengeluaranHeaderRequest;
 use App\Models\AlatBayar;
 use App\Models\Bank;
 use App\Models\AkunPusat;
 use App\Models\Supplier;
 use App\Models\HutangBayarHeader;
 use App\Models\HutangBayarDetail;
+use App\Models\HutangDetail;
 use App\Models\Parameter;
 use App\Models\HutangHeader;
 use App\Models\LogTrail;
+use App\Models\PengeluaranDetail;
 use App\Models\PengeluaranHeader;
+use Illuminate\Support\Facades\Schema;
 
 class HutangBayarHeaderController extends Controller
 {
@@ -62,12 +67,18 @@ class HutangBayarHeaderController extends Controller
             $content['table'] = 'hutangbayarheader';
             $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
 
+            $statusApproval = Parameter::where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
+
             $hutangbayarheader = new HutangBayarHeader();
             $hutangbayarheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
-            $hutangbayarheader->keterangan = $request->keterangan ?? '';
+            $hutangbayarheader->keterangan = $request->keterangan;
             $hutangbayarheader->bank_id = $request->bank_id;
             $hutangbayarheader->supplier_id = $request->supplier_id;
-            $hutangbayarheader->coa = $request->akunpusat;
+            $hutangbayarheader->coa = $request->coa;
+            $hutangbayarheader->pengeluaran_nobukti = '';
+            $hutangbayarheader->statusapproval = $statusApproval->id ?? $request->statusapproval;
+            $hutangbayarheader->userapproval = '';
+            $hutangbayarheader->tglapproval = '';
             $hutangbayarheader->statusformat = $format->id;
             $hutangbayarheader->modifiedby = auth('api')->user()->name;
 
@@ -99,19 +110,22 @@ class HutangBayarHeaderController extends Controller
             $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
             /* Store detail */
             $detaillog = [];
-            // $detaillog = [];
 
-            for ($i = 0; $i < count($request->nominal_detail); $i++) {
+            for ($i = 0; $i < count($request->hutang_id); $i++) {
+                $hutang = HutangHeader::where('id', $request->hutang_id[$i])->first();
+
                 $datadetail = [
                     'hutangbayar_id' => $hutangbayarheader->id,
                     'nobukti' => $hutangbayarheader->nobukti,
-                    'hutang_nobukti' => $request->hutang_nobukti[$i],
-                    'nominal' => $request->nominal_detail[$i],
-                    'cicilan' => $request->cicilan_detail[$i],
+                    'hutang_nobukti' => $hutang->nobukti,
+                    'nominal' => $request->bayar[$i],
+                    'cicilan' => '',
                     'alatbayar_id' => $request->alatbayar_id[$i],
                     'tglcair' => $request->tglcair[$i],
-                    'potongan' => $request->potongan_detail[$i],
-                    'keterangan' => $request->keterangan_detail[$i],
+                    'userid' => '',
+                    'coa_id' => '',
+                    'potongan' => $request->potongan[$i],
+                    'keterangan' => $request->keterangandetail[$i],
                     'modifiedby' => $hutangbayarheader->modifiedby,
                 ];
 
@@ -129,13 +143,16 @@ class HutangBayarHeaderController extends Controller
                     'id' => $iddetail,
                     'hutangbayar_id' => $hutangbayarheader->id,
                     'nobukti' => $hutangbayarheader->nobukti,
-                    'hutang_nobukti' => $request->hutang_nobukti[$i],
-                    'nominal' => $request->nominal_detail[$i],
-                    'cicilan' => $request->cicilan_detail[$i],
+                    'hutang_nobukti' => $hutang->nobukti,
+                    'nominal' => $request->bayar[$i],
+                    'cicilan' => '',
                     'alatbayar_id' => $request->alatbayar_id[$i],
                     'tglcair' => $request->tglcair[$i],
-                    'potongan' => $request->potongan_detail[$i],
-                    'keterangan' => $request->keterangan_detail[$i],
+                    'userid' => '',
+                    'coa_id' => '',
+                    'potongan' => $request->potongan[$i],
+                    'keterangan' => $request->keterangandetail[$i],
+                    'modifiedby' => $hutangbayarheader->modifiedby,
                     'created_at' => date('d-m-Y H:i:s', strtotime($hutangbayarheader->created_at)),
                     'updated_at' => date('d-m-Y H:i:s', strtotime($hutangbayarheader->updated_at)),
                 ];
@@ -158,6 +175,88 @@ class HutangBayarHeaderController extends Controller
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
 
+            //INSERT TO PENGELUARAN
+            $bank = Bank::select('statusformatpengeluaran','tipe')->where('id', $hutangbayarheader->bank_id)->first();
+            $parameter = Parameter::where('id',$bank->statusformatpengeluaran)->first();
+           
+            
+            if($bank->tipe == 'KAS'){
+                $jenisTransaksi = Parameter::where('grp','JENIS TRANSAKSI')->where('text','KAS')->first();
+            }
+            if($bank->tipe == 'BANK'){
+                $jenisTransaksi = Parameter::where('grp','JENIS TRANSAKSI')->where('text','BANK')->first();
+            }
+            $group = $parameter->grp;
+            $subgroup = $parameter->subgrp;
+            $format = DB::table('parameter')
+                ->where('grp', $group )
+                ->where('subgrp', $subgroup)
+                ->first();
+
+            $pengeluaranRequest = new Request();
+            $pengeluaranRequest['group'] = $group;
+            $pengeluaranRequest['subgroup'] = $subgroup;
+            $pengeluaranRequest['table'] = 'pengeluaranheader';
+            $pengeluaranRequest['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
+
+            $nobuktiPengeluaran= app(Controller::class)->getRunningNumber($pengeluaranRequest)->original['data'];
+                
+            $hutangbayarheader->pengeluaran_nobukti = $nobuktiPengeluaran;
+            $hutangbayarheader->save();
+
+            $pengeluaranHeader = [
+                'tanpaprosesnobukti' => 1,
+                'nobukti' => $nobuktiPengeluaran,
+                'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
+                'pelanggan_id' => '',
+                'keterangan' => $request->keterangan,
+                'statusjenistransaksi' => $jenisTransaksi->id,
+                'postingdari' => 'ENTRY HUTANG BAYAR',
+                'statusapproval' => $statusApproval->id, 
+                'dibayarke' => '',
+                'cabang_id' => '',
+                'bank_id' => $hutangbayarheader->bank_id,
+                'userapproval' => '',
+                'tglapproval' => '',
+                'transferkeac' => '',
+                'transferkean' => '',
+                'transferkebank' => '',
+                'statusformat' => $format->id,
+                'modifiedby' => auth('api')->user()->name
+            ];
+
+            $pengeluaranDetail = [];
+            for ($i = 0; $i < count($request->hutang_id); $i++) {
+                $hutang = HutangHeader::where('id', $request->hutang_id[$i])->first();
+                $hutangDetail = HutangDetail::where('nobukti',$hutang->nobukti)->first();
+                $detail = [];
+                
+                $detail = [
+                    'entriluar' => 1,
+                    'nobukti' => $nobuktiPengeluaran,
+                    'alatbayar' => $request->alatbayar_id[$i],
+                    'nowarkat' => '',
+                    'tgljatuhtempo' => $hutangDetail->tgljatuhtempo,
+                    'nominal' => $request->bayar[$i],
+                    'coadebet' => '',
+                    'coakredit' => '',
+                    'keterangan' => $request->keterangandetail[$i],
+                    'bulanbeban' => '',
+                    'modifiedby' =>  auth('api')->user()->name
+                ];
+                $pengeluaranDetail[] = $detail;
+            }
+            
+
+            $pengeluaran = $this->storePengeluaran($pengeluaranHeader,$pengeluaranDetail);
+            
+            
+            // if (!$pengeluaran['status'] AND @$pengeluaran['errorCode'] == 2601) {
+            //     goto ATAS;
+            // }
+            if (!$pengeluaran['status']) {
+                throw new \Throwable($pengeluaran['message']);
+            }
             DB::commit();
             /* Set position and page */
             $selected = $this->getPosition($hutangbayarheader, $hutangbayarheader->getTable());
@@ -206,36 +305,43 @@ class HutangBayarHeaderController extends Controller
             $hutangbayarheader->keterangan = $request->keterangan ?? '';
             $hutangbayarheader->bank_id = $request->bank_id;
             $hutangbayarheader->supplier_id = $request->supplier_id;
-            $hutangbayarheader->coa = $request->akunpusat;
+            $hutangbayarheader->coa = $request->coa;
             $hutangbayarheader->modifiedby = auth('api')->user()->name;
 
             if ($hutangbayarheader->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($hutangbayarheader->getTable()),
-                    'postingdari' => 'UPDATE HUTANG BAYAR HEADER',
+                    'postingdari' => 'EDIT HUTANG BAYAR HEADER',
                     'idtrans' => $hutangbayarheader->id,
                     'nobuktitrans' => $hutangbayarheader->nobukti,
-                    'aksi' => 'UPDATE',
+                    'aksi' => 'EDIT',
                     'datajson' => $hutangbayarheader->toArray(),
                     'modifiedby' => $hutangbayarheader->modifiedby
                 ];
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+                
+                PengeluaranDetail::where('nobukti',$request->pengeluaran_nobukti)->delete();
+                PengeluaranHeader::where('nobukti',$request->pengeluaran_nobukti)->delete();
                 HutangBayarDetail::where('hutangbayar_id', $id)->delete();
                 /* Store detail */
                 $detaillog = [];
-                for ($i = 0; $i < count($request->nominal_detail); $i++) {
+                for ($i = 0; $i < count($request->hutang_id); $i++) {
+                    $hutang = HutangHeader::where('id', $request->hutang_id[$i])->first();
+
                     $datadetail = [
                         'hutangbayar_id' => $hutangbayarheader->id,
                         'nobukti' => $hutangbayarheader->nobukti,
-                        'hutang_nobukti' => $request->hutang_nobukti[$i],
-                        'nominal' => $request->nominal_detail[$i],
-                        'cicilan' => $request->cicilan_detail[$i],
+                        'hutang_nobukti' => $hutang->nobukti,
+                        'nominal' => $request->bayar[$i],
+                        'cicilan' => '',
                         'alatbayar_id' => $request->alatbayar_id[$i],
                         'tglcair' => $request->tglcair[$i],
-                        'potongan' => $request->potongan_detail[$i],
-                        'keterangan' => $request->keterangan_detail[$i],
+                        'userid' => '',
+                        'coa_id' => '',
+                        'potongan' => $request->potongan[$i],
+                        'keterangan' => $request->keterangandetail[$i],
                         'modifiedby' => $hutangbayarheader->modifiedby,
                     ];
                     $data = new StoreHutangBayarDetailRequest($datadetail);
@@ -251,13 +357,16 @@ class HutangBayarHeaderController extends Controller
                         'id' => $iddetail,
                         'hutangbayar_id' => $hutangbayarheader->id,
                         'nobukti' => $hutangbayarheader->nobukti,
-                        'hutang_nobukti' => $request->hutang_nobukti[$i],
-                        'nominal' => $request->nominal_detail[$i],
-                        'cicilan' => $request->cicilan_detail[$i],
+                        'hutang_nobukti' => $hutang->nobukti,
+                        'nominal' => $request->bayar[$i],
+                        'cicilan' => '',
                         'alatbayar_id' => $request->alatbayar_id[$i],
                         'tglcair' => $request->tglcair[$i],
-                        'potongan' => $request->potongan_detail[$i],
-                        'keterangan' => $request->keterangan_detail[$i],
+                        'userid' => '',
+                        'coa_id' => '',
+                        'potongan' => $request->potongan[$i],
+                        'keterangan' => $request->keterangandetail[$i],
+                        'modifiedby' => $hutangbayarheader->modifiedby,
                         'created_at' => date('d-m-Y H:i:s', strtotime($hutangbayarheader->created_at)),
                         'updated_at' => date('d-m-Y H:i:s', strtotime($hutangbayarheader->updated_at)),
                     ];
@@ -278,6 +387,90 @@ class HutangBayarHeaderController extends Controller
             }
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
+
+            //INSERT TO PENGELUARAN
+            $bank = Bank::select('statusformatpengeluaran','tipe')->where('id', $hutangbayarheader->bank_id)->first();
+            $parameter = Parameter::where('id',$bank->statusformatpengeluaran)->first();
+        
+            $statusApproval = Parameter::where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
+            
+            if($bank->tipe == 'KAS'){
+                $jenisTransaksi = Parameter::where('grp','JENIS TRANSAKSI')->where('text','KAS')->first();
+            }
+            if($bank->tipe == 'BANK'){
+                $jenisTransaksi = Parameter::where('grp','JENIS TRANSAKSI')->where('text','BANK')->first();
+            }
+            $group = $parameter->grp;
+            $subgroup = $parameter->subgrp;
+            $format = DB::table('parameter')
+                ->where('grp', $group )
+                ->where('subgrp', $subgroup)
+                ->first();
+
+            $pengeluaranRequest = new Request();
+            $pengeluaranRequest['group'] = $group;
+            $pengeluaranRequest['subgroup'] = $subgroup;
+            $pengeluaranRequest['table'] = 'pengeluaranheader';
+            $pengeluaranRequest['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
+
+            $nobuktiPengeluaran= app(Controller::class)->getRunningNumber($pengeluaranRequest)->original['data'];
+                
+            $hutangbayarheader->pengeluaran_nobukti = $nobuktiPengeluaran;
+            $hutangbayarheader->save();
+
+            $pengeluaranHeader = [
+                'tanpaprosesnobukti' => 1,
+                'nobukti' => $nobuktiPengeluaran,
+                'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
+                'pelanggan_id' => '',
+                'keterangan' => $request->keterangan,
+                'statusjenistransaksi' => $jenisTransaksi->id,
+                'postingdari' => 'ENTRY HUTANG BAYAR',
+                'statusapproval' => $statusApproval->id, 
+                'dibayarke' => '',
+                'cabang_id' => '',
+                'bank_id' => $hutangbayarheader->bank_id,
+                'userapproval' => '',
+                'tglapproval' => '',
+                'transferkeac' => '',
+                'transferkean' => '',
+                'transferkebank' => '',
+                'statusformat' => $format->id,
+                'modifiedby' => auth('api')->user()->name
+            ];
+
+            $pengeluaranDetail = [];
+            for ($i = 0; $i < count($request->hutang_id); $i++) {
+                $hutang = HutangHeader::where('id', $request->hutang_id[$i])->first();
+                $hutangDetail = HutangDetail::where('nobukti',$hutang->nobukti)->first();
+                $detail = [];
+                
+                $detail = [
+                    'entriluar' => 1,
+                    'nobukti' => $nobuktiPengeluaran,
+                    'alatbayar' => $request->alatbayar_id[$i],
+                    'nowarkat' => '',
+                    'tgljatuhtempo' => $hutangDetail->tgljatuhtempo,
+                    'nominal' => $request->bayar[$i],
+                    'coadebet' => '',
+                    'coakredit' => '',
+                    'keterangan' => $request->keterangandetail[$i],
+                    'bulanbeban' => '',
+                    'modifiedby' =>  auth('api')->user()->name
+                ];
+                $pengeluaranDetail[] = $detail;
+            }
+            
+
+            $pengeluaran = $this->storePengeluaran($pengeluaranHeader,$pengeluaranDetail);
+            
+            
+            // if (!$pengeluaran['status'] AND @$pengeluaran['errorCode'] == 2601) {
+            //     goto ATAS;
+            // }
+            if (!$pengeluaran['status']) {
+                throw new \Throwable($pengeluaran['message']);
+            }
 
             DB::commit();
             /* Set position and page */
@@ -306,6 +499,9 @@ class HutangBayarHeaderController extends Controller
         $hutangbayarheader = new HutangBayarHeader();
         try {
 
+            $get = HutangBayarHeader::findOrFail($id);
+            $delete = PengeluaranDetail::where('nobukti',$get->pengeluaran_nobukti)->delete();
+            $delete = PengeluaranHeader::where('nobukti',$get->pengeluaran_nobukti)->delete();
             $delete = HutangBayarDetail::where('hutangbayar_id', $id)->delete();
             $delete = HutangBayarHeader::destroy($id);
 
@@ -362,6 +558,106 @@ class HutangBayarHeaderController extends Controller
             'hutangheader' => HutangHeader::all(),
 
         ];
+
+        return response([
+            'data' => $data
+        ]);
+    }
+
+    public function getHutang($id)
+    {
+        $hutang = new HutangHeader();
+        return response([
+            'data' => $hutang->getHutang($id),
+            'id' => $id,
+            'attributes' => [
+                'totalRows' => $hutang->totalRows,
+                'totalPages' => $hutang->totalPages
+            ]
+        ]);
+    }
+
+    public function getPembayaran($id, $supplierId)
+    {
+        $hutangBayar = new HutangBayarHeader();
+        return response([
+            'data' => $hutangBayar->getPembayaran($id, $supplierId),
+            'attributes' => [
+                'totalRows' => $hutangBayar->totalRows,
+                'totalPages' => $hutangBayar->totalPages
+            ]
+        ]);
+    }
+
+    public function storePengeluaran($pengeluaranHeader,$pengeluaranDertail)
+    {
+        try {
+
+            
+            $pengeluaran = new StorePengeluaranHeaderRequest($pengeluaranHeader);
+            $header = app(PengeluaranHeaderController::class)->store($pengeluaran);
+           
+            $nobukti = $pengeluaranHeader['nobukti'];
+            $fetchId = PengeluaranHeader::select('id')
+                ->whereRaw("nobukti = '$nobukti'")
+                ->first();
+            $id = $fetchId->id;
+            foreach ($pengeluaranDertail as $value) {
+                
+                $value['pengeluaran_id'] = $id;
+                $pengeluaranDertail = new StorePengeluaranDetailRequest($value);
+                $tes = app(PengeluaranDetailController::class)->store($pengeluaranDertail);
+                
+            }
+
+            
+            return [
+                'status' => true
+            ];
+
+        } catch (\Throwable $th) {
+            throw $th;
+            
+        }
+    }
+
+    public function comboapproval(Request $request)
+    {
+        
+        $params = [
+            'status' => $request->status ?? '',
+            'grp' => $request->grp ?? '',
+            'subgrp' => $request->subgrp ?? '',
+        ];
+        $temp = '##temp' . rand(1, 10000);
+        if ($params['status'] == 'entry') {
+            $query = Parameter::select('id', 'text as keterangan')
+                ->where('grp', "=", $params['grp'])
+                ->where('subgrp', "=", $params['subgrp']);
+        } else {
+            Schema::create($temp, function ($table) {
+                $table->integer('id')->length(11)->default(0);
+                $table->string('parameter', 50)->default(0);
+                $table->string('param', 50)->default(0);
+            });
+
+            DB::table($temp)->insert(
+                [
+                    'id' => '0',
+                    'parameter' => 'ALL',
+                    'param' => '',
+                ]
+            );
+
+            $queryall = Parameter::select('id', 'text as parameter', 'text as param')
+                ->where('grp', "=", $params['grp'])
+                ->where('subgrp', "=", $params['subgrp']);
+
+            $query = DB::table($temp)
+                ->unionAll($queryall);
+        }
+
+        $data = $query->get();
 
         return response([
             'data' => $data

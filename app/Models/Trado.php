@@ -58,7 +58,7 @@ class Trado extends MyModel
                 'parameter_statusaktif.text as statusaktif',
                 $this->table.kmawal,
                 $this->table.kmakhirgantioli,
-                $this->table.tglakhirgantioli1,
+                $this->table.tglakhirgantioli,
                 $this->table.tglstnkmati,
                 $this->table.tglasuransimati,
                 $this->table.tahun,
@@ -72,7 +72,7 @@ class Trado extends MyModel
                 $this->table.tglstandarisasi,
                 $this->table.tglserviceopname,
                 'parameter_statusstandarisasi.text as statusstandarisasi',
-                $this->table.keteranganprogressstandarisasi;
+                $this->table.keteranganprogressstandarisasi,
                 $this->table.statusjenisplat,
                 $this->table.tglspeksimati,
                 $this->table.tglpajakstnk,
@@ -119,7 +119,7 @@ class Trado extends MyModel
         Schema::create($temp, function ($table) {
             $table->bigInteger('id')->default('0');
             $table->longText('keterangan')->default('');
-            $table->integer('statusaktif')->length(11)->default(0);
+            $table->string('statusaktif')->default('');
             $table->double('kmawal', 15, 2)->default(0);
             $table->double('kmakhirgantioli', 15, 2)->default(0);
             $table->date('tglakhirgantioli')->default('1900/1/1');
@@ -135,14 +135,14 @@ class Trado extends MyModel
             $table->string('alamatstnk', 30)->default('');
             $table->date('tglstandarisasi')->default('1900/1/1');
             $table->date('tglserviceopname')->default('1900/1/1');
-            $table->integer('statusstandarisasi')->length(11)->default(0);
+            $table->string('statusstandarisasi')->default('');
             $table->string('keteranganprogressstandarisasi', 100)->default('');
             $table->integer('statusjenisplat')->length(11)->default(0);
             $table->date('tglspeksimati')->default('1900/1/1');
             $table->date('tglpajakstnk')->default('1900/1/1');
             $table->date('tglgantiakiterakhir')->default('1900/1/1');
-            $table->integer('statusmutasi')->length(11)->default(0);
-            $table->integer('statusvalidasikendaraan')->length(11)->default(0);
+            $table->string('statusmutasi')->default('');
+            $table->string('statusvalidasikendaraan')->default('');
             $table->string('tipe', 30)->default('');
             $table->string('jenis', 30)->default('');
             $table->integer('isisilinder')->length(11)->default(0);
@@ -153,7 +153,7 @@ class Trado extends MyModel
             $table->string('model', 50)->default('');
             $table->string('nobpkb', 50)->default('');
             $table->integer('statusmobilstoring')->length(11)->default(0);
-            $table->unsignedBigInteger('mandor_id')->default(0);
+            $table->string('mandor_id')->default('');
             $table->integer('jumlahbanserap')->length(11)->default(0);
             $table->integer('statusappeditban')->length(11)->default(0);
             $table->integer('statuslewatvalidasi')->length(11)->default(0);

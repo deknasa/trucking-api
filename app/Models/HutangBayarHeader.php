@@ -34,6 +34,11 @@ class HutangBayarHeader extends MyModel
             'hutangbayarheader.nobukti',
             'hutangbayarheader.tglbukti',
             'hutangbayarheader.keterangan',
+            'hutangbayarheader.pengeluaran_nobukti',
+            'hutangbayarheader.userapproval',
+            'parameter.text as statusapproval',
+            'hutangbayarheader.tglapproval',
+
             'hutangbayarheader.modifiedby',
             'hutangbayarheader.updated_at',
 
@@ -44,7 +49,8 @@ class HutangBayarHeader extends MyModel
         )
             ->leftJoin('bank', 'hutangbayarheader.bank_id', 'bank.id')
             ->leftJoin('akunpusat', 'hutangbayarheader.coa', 'akunpusat.coa')
-            ->leftJoin('supplier', 'hutangbayarheader.supplier_id', 'supplier.id');
+            ->leftJoin('supplier', 'hutangbayarheader.supplier_id', 'supplier.id')
+            ->join('parameter','hutangbayarheader.statusapproval','parameter.id');
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -68,13 +74,11 @@ class HutangBayarHeader extends MyModel
             'hutangbayarheader.keterangan',
             'hutangbayarheader.modifiedby',
             'hutangbayarheader.updated_at',
+            'hutangbayarheader.bank_id',
             'bank.namabank as bank',
-            'bank.id as bank_id',
-
-            
-            'akunpusat.coa as akunpusat',
+            'hutangbayarheader.coa',
+            'hutangbayarheader.supplier_id',
             'supplier.namasupplier as supplier',
-            'supplier.id as supplier_id',
 
         )
             ->leftJoin('bank', 'hutangbayarheader.bank_id', 'bank.id')
@@ -118,6 +122,92 @@ class HutangBayarHeader extends MyModel
             ->leftJoin('akunpusat', 'hutangbayarheader.coa', 'akunpusat.coa');
     }
 
+    public function getPembayaran($id,$supplierId){
+        $this->setRequestParameters();
+      
+        $tempHutang = $this->createTempHutang($supplierId);
+        $tempPembayaran = $this->createTempPembayaran($id);
+
+        
+        $hutang = DB::table("$tempHutang as A")
+            ->select(DB::raw("A.id as id,null as hutangbayar_id,A.nobukti as hutang_nobukti, A.tglbukti as tglbukti, null as bayar, null as keterangan, null as tglcair, null as potongan, null as alatbayar_id, null as alatbayar, A.nominalhutang, A.sisa as sisa"))
+            // ->distinct("A.nobukti")
+            ->leftJoin("$tempPembayaran as B","A.nobukti","B.hutang_nobukti")
+            ->whereRaw("isnull(b.hutang_nobukti,'') = ''")
+            ->whereRaw("a.sisa > 0");
+           
+
+        $pembayaran = DB::table($tempPembayaran)
+            ->select(DB::raw("id,hutangbayar_id,hutang_nobukti,tglbukti,bayar,keterangan,tglcair,potongan,alatbayar_id,alatbayar,nominalhutang,sisa"))
+            ->unionAll($hutang);
+        
+        // $this->totalRows = $pembayaran->count();
+        // $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+
+        // $this->sort($pembayaran);
+        // $this->filter($pembayaran);
+        // $this->paginate($pembayaran);
+       
+        $data = $pembayaran->get();
+
+        return $data;
+    }
+
+    public function createTempHutang($supplierId) {
+        $temp = '##tempHutang' . rand(1, 10000);
+
+
+        $fetch = DB::table('hutangheader')
+        ->select(DB::raw("hutangheader.id,hutangheader.nobukti,hutangheader.tglbukti,hutangdetail.supplier_id,hutangheader.total as nominalhutang, (SELECT (hutangheader.total - COALESCE(SUM(hutangbayardetail.nominal),0)) FROM hutangbayardetail WHERE hutangbayardetail.hutang_nobukti= hutangheader.nobukti) AS sisa"))
+        ->join('hutangdetail','hutangheader.id','hutangdetail.hutang_id')
+        ->leftJoin('hutangbayardetail','hutangheader.nobukti','hutangbayardetail.hutang_nobukti')
+        ->whereRaw("hutangdetail.supplier_id = $supplierId")
+        ->groupBy('hutangheader.id','hutangheader.nobukti','hutangdetail.supplier_id','hutangheader.total','hutangheader.tglbukti');
+               
+        Schema::create($temp, function ($table) {
+            $table->bigInteger('id');
+            $table->string('nobukti');
+            $table->date('tglbukti')->default('');
+            $table->bigInteger('supplier_id')->default('0');
+            $table->bigInteger('nominalhutang');
+            $table->bigInteger('sisa')->nullable();
+            
+        });
+    
+        $tes = DB::table($temp)->insertUsing(['id','nobukti','tglbukti','supplier_id','nominalhutang','sisa'], $fetch);
+       
+        return $temp;
+    }
+
+    public function createTempPembayaran($id) {
+        $tempo = '##tempPembayaran' . rand(1, 10000);
+        
+        $fetch = DB::table('hutangbayardetail as hbd')
+        ->select(DB::raw("hutangheader.id,hbd.hutangbayar_id,hbd.hutang_nobukti,hutangheader.tglbukti,hbd.nominal as bayar, hbd.keterangan,hbd.tglcair,hbd.potongan,hbd.alatbayar_id,alatbayar.namaalatbayar as alatbayar,hutangheader.total as nominalhutang, (SELECT (hutangheader.total - SUM(hutangbayardetail.nominal)) FROM hutangbayardetail WHERE hutangbayardetail.hutang_nobukti= hutangheader.nobukti) AS sisa"))
+        ->leftJoin('hutangheader','hbd.hutang_nobukti','hutangheader.nobukti')
+        ->join('alatbayar','hbd.alatbayar_id','alatbayar.id')
+        ->whereRaw("hbd.hutangbayar_id = $id");
+               
+        Schema::create($tempo, function ($table) {
+            $table->bigInteger('id')->default('0');
+            $table->bigInteger('hutangbayar_id')->default('0');
+            $table->string('hutang_nobukti');
+            $table->date('tglbukti')->default('');
+            $table->bigInteger('bayar')->nullable();
+            $table->string('keterangan');
+            $table->date('tglcair')->default('');
+            $table->bigInteger('potongan')->default('0');
+            $table->bigInteger('alatbayar_id')->default('0');
+            $table->string('alatbayar');
+            $table->bigInteger('nominalhutang');
+            $table->bigInteger('sisa')->nullable();
+        });
+    
+        $tes = DB::table($tempo)->insertUsing(['id','hutangbayar_id','hutang_nobukti','tglbukti','bayar','keterangan','tglcair','potongan','alatbayar_id','alatbayar','nominalhutang','sisa'], $fetch);
+        
+        return $tempo;
+    }
+
     public function createTemp(string $modelTable)
     {//sesuaikan dengan column index
         $temp = '##temp' . rand(1, 10000);
@@ -159,8 +249,10 @@ class HutangBayarHeader extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'hutangbayar_id') {
-                            $query = $query->where('hutangbayar.nobukti', 'LIKE', "%$filters[data]%");
+                        if ($filters['field'] == 'statusapproval') {
+                            $query = $query->where('parameter.text', '=', $filters['data']);
+                        } else if ($filters['field'] == 'supplier_id') {
+                            $query = $query->where('supplier.namasupplier', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'bank_id') {
                             $query = $query->where('bank.namabank', 'LIKE', "%$filters[data]%");
                         } else {
@@ -171,8 +263,10 @@ class HutangBayarHeader extends MyModel
                     break;
                 case "OR":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'hutangbayar_id') {
-                            $query = $query->orWhere('hutangbayar.nobukti', 'LIKE', "%$filters[data]%");
+                        if ($filters['field'] == 'statusapproval') {
+                            $query = $query->orWhere('parameter.text', '=', $filters['data']);
+                        } else if ($filters['field'] == 'supplier_id') {
+                            $query = $query->orWhere('supplier.namasupplier', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'bank_id') {
                             $query = $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");
                         } else {

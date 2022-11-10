@@ -34,17 +34,13 @@ class HutangHeader extends MyModel
             'hutangheader.tglbukti',
             'hutangheader.keterangan',
 
-            'akunpusat.coa as akunpusat',
+            'hutangheader.coa',
             'pelanggan.namapelanggan as pelanggan_id',
-
-            // 'hutangheader.coa',
-            //'hutangheader.pelanggan_id',
             'hutangheader.total',
 
             'hutangheader.modifiedby',
             'hutangheader.updated_at'
         )
-            ->leftJoin('akunpusat', 'hutangheader.coa', 'akunpusat.coa')
             ->leftJoin('pelanggan', 'hutangheader.pelanggan_id', 'pelanggan.id');
 
         $this->totalRows = $query->count();
@@ -82,6 +78,56 @@ class HutangHeader extends MyModel
 
         $data = $query->first();
         return $data;
+    }
+
+    public function getHutang($id)
+    {
+        $this->setRequestParameters();
+
+        $temp = $this->createTempHutang($id);
+        $query = DB::table('hutangheader')
+            ->select(DB::raw("hutangheader.id as id,hutangheader.nobukti as nobukti,hutangheader.tglbukti, hutangheader.total," . $temp . ".sisa"))
+            ->join($temp, 'hutangheader.id', $temp . ".id")
+            ->whereRaw("hutangheader.nobukti = $temp.nobukti")
+            ->where(function ($query) use ($temp) {
+                $query->whereRaw("$temp.sisa != 0")
+                    ->orWhereRaw("$temp.sisa is null");
+            });
+
+        $this->totalRows = $query->count();
+        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+
+        $this->sort($query);
+        $this->filter($query);
+        $this->paginate($query);
+
+        $data = $query->get();
+
+        return $data;
+    }
+
+    public function createTempHutang($id){
+        $temp = '##temp'.rand(1,10000);
+        
+        $fetch = DB::table('hutangheader')
+            ->select(DB::raw("hutangheader.id,hutangheader.nobukti,sum(hutangbayardetail.nominal) as terbayar, (SELECT (hutangheader.total - coalesce(SUM(hutangbayardetail.nominal),0)) FROM hutangbayardetail WHERE hutangbayardetail.hutang_nobukti= hutangheader.nobukti) AS sisa"))
+            ->join('hutangdetail','hutangheader.nobukti','hutangdetail.nobukti')
+            ->leftJoin('hutangbayardetail', 'hutangbayardetail.hutang_nobukti', 'hutangheader.nobukti')
+            ->whereRaw("hutangdetail.supplier_id = $id")
+            ->groupBy('hutangheader.id','hutangheader.nobukti', 'hutangheader.total');
+        // ->get();
+
+        Schema::create($temp, function ($table) {
+            $table->bigInteger('id')->default('0');
+            $table->string('nobukti');
+            $table->bigInteger('terbayar')->nullable();
+            $table->bigInteger('sisa')->nullable();
+        });
+
+        $tes = DB::table($temp)->insertUsing(['id','nobukti', 'terbayar', 'sisa'], $fetch);
+
+        // $data = DB::table($temp)->get();
+        return $temp;
     }
     public function hutangdetail()
     {
@@ -149,13 +195,21 @@ class HutangHeader extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                        if ($filters['field'] == 'pelanggan_id') {
+                            $query = $query->where('pelanggan.namapelanggan', 'LIKE', "%$filters[data]%");
+                        }else {
+                            $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                        }
                     }
 
                     break;
                 case "OR":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                        if ($filters['field'] == 'pelanggan_id') {
+                            $query = $query->where('pelanggan.namapelanggan', 'LIKE', "%$filters[data]%");
+                        } else {
+                            $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                        }
                     }
 
                     break;

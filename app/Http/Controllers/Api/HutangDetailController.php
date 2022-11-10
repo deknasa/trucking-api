@@ -307,40 +307,27 @@ class HutangDetailController extends Controller
     {
         DB::beginTransaction();
 
-        $validator = Validator::make($request->all(), [
-           'keterangan' => 'required'
-        ], [
-            'keterangan.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan
-        ]);
-
-        if (!$validator->passes()) {
-            return [
-                'error' => true,
-                'errors' => $validator->messages()
-            ];
-        }
+        
         try {
             $hutangdetail = new HutangDetail();
             $hutangdetail->hutang_id = $request->hutang_id;
+            $hutangdetail->nobukti = $request->nobukti;
             $hutangdetail->supplier_id = $request->supplier_id;
             $hutangdetail->tgljatuhtempo = date('Y-m-d', strtotime($request->tgljatuhtempo));
             $hutangdetail->total = $request->total;
             $hutangdetail->cicilan = $request->cicilan;
             $hutangdetail->totalbayar = $request->totalbayar;
-            $hutangdetail->nobukti = $request->nobukti;
             $hutangdetail->keterangan = $request->keterangan;
             $hutangdetail->modifiedby = auth('api')->user()->name;
            
             $hutangdetail->save();
            
             DB::commit();
-            if ($validator->passes()) {
-                return [
-                    'error' => false,
-                    'id' => $hutangdetail->id,
-                    'tabel' => $hutangdetail->getTable(),
-                ];
-            }
+            return [
+                'error' => false,
+                'id' => $hutangdetail->id,
+                'tabel' => $hutangdetail->getTable(),
+            ];
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;

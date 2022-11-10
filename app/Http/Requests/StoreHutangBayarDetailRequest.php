@@ -24,7 +24,7 @@ class StoreHutangBayarDetailRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'hutang_id' => 'required',
         ];
     }
 }

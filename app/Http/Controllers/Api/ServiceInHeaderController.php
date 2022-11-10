@@ -62,20 +62,19 @@ class ServiceInHeaderController extends Controller
             $servicein->keterangan = $request->keterangan;
             $servicein->statusformat =  $format->id;
             $servicein->modifiedby = auth('api')->user()->name;
-
+            
             TOP:
             $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
             $servicein->nobukti = $nobukti;
+
             try {
                 $servicein->save();
             } catch (\Exception $e) {
-                dd($e->getMessage());
                 $errorCode = @$e->errorInfo[1];
                 if ($errorCode == 2601) {
                     goto TOP;
                 }
             }
-
             $logTrail = [
                 'namatabel' => strtoupper($servicein->getTable()),
                 'postingdari' => 'ENTRY SERVICE IN HEADER',
@@ -335,6 +334,19 @@ class ServiceInHeaderController extends Controller
             'mekanik' => Mekanik::all(),
             'trado' => Trado::all(),
         ];
+
+        return response([
+            'data' => $data
+        ]);
+    }
+    public function fieldLength()
+    {
+        $data = [];
+        $columns = DB::connection()->getDoctrineSchemaManager()->listTableDetails('serviceinheader')->getColumns();
+
+        foreach ($columns as $index => $column) {
+            $data[$index] = $column->getLength();
+        }
 
         return response([
             'data' => $data

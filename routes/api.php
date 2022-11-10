@@ -257,6 +257,7 @@
 
         Route::get('trado/combo', [TradoController::class, 'combo']);
         Route::get('trado/field_length', [TradoController::class, 'fieldLength']);
+        Route::get('trado/getImage/{id}/{field}', [TradoController::class, 'getImage']);
         Route::post('trado/upload_image/{id}', [TradoController::class, 'uploadImage']);
         Route::resource('trado', TradoController::class);
 
@@ -271,6 +272,7 @@
 
         Route::get('supir/combo', [SupirController::class, 'combo']);
         Route::get('supir/field_length', [SupirController::class, 'fieldLength']);
+        Route::get('supir/getImage/{id}/{field}', [SupirController::class, 'getImage']);
         Route::post('supir/upload_image/{id}', [SupirController::class, 'uploadImage']);
         Route::resource('supir', SupirController::class);
 
@@ -366,6 +368,7 @@
         Route::get('hutangheader/no_bukti', [HutangHeaderController::class, 'getNoBukti']);
         Route::get('hutangheader/combo', [HutangHeaderController::class, 'combo']);
         Route::get('hutangheader/grid', [HutangHeaderController::class, 'grid']);
+        Route::get('hutangheader/field_length', [HutangHeaderController::class, 'fieldLength']);
         Route::resource('hutangheader', HutangHeaderController::class);
         Route::resource('hutangdetail', HutangDetailController::class);
 
@@ -383,6 +386,9 @@
         Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
         Route::get('hutangbayarheader/no_bukti', [HutangBayarHeaderController::class, 'getNoBukti']);
         Route::get('hutangbayarheader/combo', [HutangBayarHeaderController::class, 'combo']);
+        Route::get('hutangbayarheader/{id}/getHutang', [HutangBayarHeaderController::class, 'getHutang'])->name('hutangbayarheader.getHutang'); 
+        Route::get('hutangbayarheader/comboapproval', [HutangBayarHeaderController::class, 'comboapproval']);
+        Route::get('hutangbayarheader/{id}/{supplierid}/getPembayaran', [HutangBayarHeaderController::class, 'getPembayaran']);
         Route::get('hutangbayarheader/grid', [HutangBayarHeaderController::class, 'grid']);
         Route::resource('hutangbayarheader', HutangBayarHeaderController::class);
         Route::resource('hutangbayardetail', HutangBayarDetailController::class);
@@ -391,9 +397,16 @@
         Route::get('serviceinheader/no_bukti', [ServiceInHeaderController::class, 'getNoBukti']);
         Route::get('serviceinheader/combo', [ServiceInHeaderController::class, 'combo']);
         Route::get('serviceinheader/grid', [ServiceInHeaderController::class, 'grid']);
+        Route::get('serviceinheader/field_length', [ServiceInHeaderController::class, 'fieldLength']);
         Route::resource('serviceinheader', ServiceInHeaderController::class);
         Route::resource('serviceindetail', ServiceInDetailController::class);
 
+        
+        Route::get('serviceoutheader/combo', [ServiceOutHeaderController::class, 'combo']);
+        Route::get('serviceoutheader/field_length', [ServiceOutHeaderController::class, 'fieldLength']);
+        Route::resource('serviceoutheader', ServiceOutHeaderController::class);
+        Route::resource('serviceoutdetail', ServiceOutDetailController::class);
+        
         Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
         Route::get('kasgantungheader/no_bukti', [KasGantungHeaderController::class, 'getNoBukti']);
         Route::get('kasgantungheader/combo', [KasGantungHeaderController::class, 'combo']);
@@ -515,7 +528,7 @@
 
     Route::get('suratpengantar/combo', [SuratPengantarController::class, 'combo']);
     Route::get('suratpengantar/field_length', [SuratPengantarController::class, 'fieldLength']);
-    Route::get('suratpengantar/get_gaji', [SuratPengantarController::class, 'getGaji']);
+    Route::get('suratpengantar/getGaji', [SuratPengantarController::class, 'getGaji']);
     Route::resource('suratpengantar', SuratPengantarController::class);
 
     Route::get('upahsupir/combo', [UpahSupirController::class, 'combo']);
@@ -528,9 +541,6 @@
     Route::get('ritasi/field_length', [RitasiController::class, 'fieldLength']);
     Route::resource('ritasi', RitasiController::class);
 
-    Route::get('serviceoutheader/combo', [ServiceOutHeaderController::class, 'combo']);
-    Route::resource('serviceoutheader', ServiceOutHeaderController::class);
-    Route::resource('serviceoutdetail', ServiceOutDetailController::class);
 
     Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
     Route::post('penerimaan/{id}/approval', [PenerimaanHeaderController::class, 'approval'])->name('penerimaan.approval');
@@ -620,6 +630,8 @@
     Route::resource('suratpengantar', SuratPengantarController::class);
 
     Route::get('upahritasi/combo', [UpahRitasiController::class, 'combo']);
+    
+    Route::get('upahritasi/comboluarkota', [UpahRitasiController::class, 'comboluarkota']);
     Route::get('upahritasi/field_length', [UpahRitasiController::class, 'fieldLength']);
     Route::resource('upahritasi', UpahRitasiController::class);
 

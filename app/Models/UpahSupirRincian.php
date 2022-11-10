@@ -28,7 +28,9 @@ class UpahSupirRincian extends MyModel
     {
         $query = DB::table('upahsupirrincian')->select(
             'upahsupirrincian.container_id',
+            'container.keterangan as container',
             'upahsupirrincian.statuscontainer_id',
+            'statuscontainer.keterangan as statuscontainer',
             'upahsupirrincian.nominalsupir',
             'upahsupirrincian.nominalkenek',
             'upahsupirrincian.nominalkomisi',

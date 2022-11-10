@@ -36,7 +36,7 @@ class Tarif extends MyModel
             'tarif.nominal',
             'parameter.text as statusaktif',
             'tarif.tujuanasal',
-            'tarif.statussistemton',
+            'sistemton.text as statussistemton',
             'kota.kodekota as kota_id',
             'zona.zona as zona_id',
             'tarif.nominalton',
@@ -51,7 +51,8 @@ class Tarif extends MyModel
             ->leftJoin('container', 'tarif.container_id', '=', 'container.id')
             ->leftJoin('kota', 'tarif.kota_id', '=', 'kota.id')
             ->leftJoin('zona', 'tarif.zona_id', '=', 'zona.id')
-            ->leftJoin('parameter AS p', 'tarif.statuspenyesuaianharga', '=', 'p.id');
+            ->leftJoin('parameter AS p', 'tarif.statuspenyesuaianharga', '=', 'p.id')
+            ->leftJoin('parameter AS sistemton', 'tarif.statussistemton', '=', 'sistemton.id');
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -132,30 +133,29 @@ class Tarif extends MyModel
         return  $temp;
     }
 
-    public function find($id)
+    public function findAll($id)
     {
         $query = DB::table('tarif')->select(
             'tarif.id',
             'tarif.tujuan',
             'tarif.container_id',
+            'container.keterangan as container',
             'tarif.nominal',
             'tarif.statusaktif',
             'tarif.tujuanasal',
             'tarif.statussistemton',
             
+            'tarif.kota_id',
             'kota.keterangan as kota',
-            'kota.id as kota_id',
-
+            'tarif.zona_id',
             'zona.keterangan as zona',
-            'zona.id as zona_id',
             
             'tarif.nominalton',
             'tarif.tglmulaiberlaku',
             'tarif.tglakhirberlaku',
             'tarif.statuspenyesuaianharga',
-            'tarif.modifiedby',
-            'tarif.updated_at'
         )
+            ->leftJoin('container','tarif.container_id','container.id')
             ->leftJoin('kota', 'tarif.kota_id', '=', 'kota.id')
             ->leftJoin('zona', 'tarif.zona_id', '=', 'zona.id')
 
@@ -181,6 +181,14 @@ class Tarif extends MyModel
                             $query = $query->where('parameter.text', '=', "$filters[data]");
                         } elseif ($filters['field'] == 'container_id') {
                             $query = $query->where('container.keterangan', 'LIKE', "%$filters[data]%");
+                        } elseif ($filters['field'] == 'kota_id') {
+                            $query = $query->where('kota.keterangan', 'LIKE', "%$filters[data]%");
+                        } elseif ($filters['field'] == 'zona_id') {
+                            $query = $query->where('zona.keterangan', 'LIKE', "%$filters[data]%");
+                        } elseif ($filters['field'] == 'statuspenyesuaianharga') {
+                            $query = $query->where('p.text', 'LIKE', "%$filters[data]%");
+                        } elseif ($filters['field'] == 'statussistemton') {
+                            $query = $query->where('sistemton.text', 'LIKE', "%$filters[data]%");
                         } else {
                             $query = $query->where('tarif.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
@@ -193,6 +201,14 @@ class Tarif extends MyModel
                             $query = $query->orWhere('parameter.text', '=', "$filters[data]");
                         } elseif ($filters['field'] == 'container_id') {
                             $query = $query->orWhere('container.keterangan', 'LIKE', "%$filters[data]%");
+                        } elseif ($filters['field'] == 'kota_id') {
+                            $query = $query->orWhere('kota.keterangan', 'LIKE', "%$filters[data]%");
+                        } elseif ($filters['field'] == 'zona_id') {
+                            $query = $query->orWhere('zona.keterangan', 'LIKE', "%$filters[data]%");
+                        } elseif ($filters['field'] == 'statuspenyesuaianharga') {
+                            $query = $query->orWhere('p.text', 'LIKE', "%$filters[data]%");
+                        } elseif ($filters['field'] == 'statussistemton') {
+                            $query = $query->orWhere('sistemton.text', 'LIKE', "%$filters[data]%");
                         } else {
                             $query = $query->orWhere('tarif.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }

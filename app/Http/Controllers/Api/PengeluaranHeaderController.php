@@ -147,22 +147,22 @@ class PengeluaranHeaderController extends Controller
             $parameterController = new ParameterController;
             $statusApp = $parameterController->getparameterid('STATUS APPROVAL', 'STATUS APPROVAL', 'NON APPROVAL');
 
-            if($tanpaprosesnobukti == 1) {
-                $jurnalHeader = [
-                    'tanpaprosesnobukti' => 1,
-                    'nobukti' => $pengeluaranHeader->nobukti,
-                    'tglbukti' => $pengeluaranHeader->tglbukti,
-                    'keterangan' => $pengeluaranHeader->keterangan,
-                    'postingdari' => "ENTRY PENGELUARAN KAS DARI KAS GANTUNG",
-                    'statusapproval' => $statusApp->id,
-                    'userapproval' => "",
-                    'tglapproval' => "",
-                    'statusformat' => 0,
-                    'modifiedby' => auth('api')->user()->name,
-                ];
-                $jurnal = new StoreJurnalUmumHeaderRequest($jurnalHeader);
-                app(JurnalUmumHeaderController::class)->store($jurnal);
-            }
+            // if($tanpaprosesnobukti == 1) {
+            //     $jurnalHeader = [
+            //         'tanpaprosesnobukti' => 1,
+            //         'nobukti' => $pengeluaranHeader->nobukti,
+            //         'tglbukti' => $pengeluaranHeader->tglbukti,
+            //         'keterangan' => $pengeluaranHeader->keterangan,
+            //         'postingdari' => "ENTRY PENGELUARAN KAS DARI KAS GANTUNG",
+            //         'statusapproval' => $statusApp->id,
+            //         'userapproval' => "",
+            //         'tglapproval' => "",
+            //         'statusformat' => 0,
+            //         'modifiedby' => auth('api')->user()->name,
+            //     ];
+            //     $jurnal = new StoreJurnalUmumHeaderRequest($jurnalHeader);
+            //     app(JurnalUmumHeaderController::class)->store($jurnal);
+            // }
 
             if($tanpaprosesnobukti == 0) {
                 $detaillog = [];

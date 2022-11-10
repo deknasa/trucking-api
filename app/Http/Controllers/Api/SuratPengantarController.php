@@ -621,19 +621,13 @@ class SuratPengantarController extends Controller
     public function show($id)
     {
 
-        $data = SuratPengantar::find($id);
-        // $detail = ServiceInDetail::getAll($id);
+        $data = SuratPengantar::findAll($id);
 
         return response([
             'status' => true,
             'data' => $data,
             // 'detail' => $detail
         ]);
-
-        // return response([
-        //     'status' => true,
-        //     'data' => $supplier
-        // ]);
     }
 
     /**
@@ -888,12 +882,15 @@ class SuratPengantarController extends Controller
     public function getGaji(Request $request)
     {
         $data = DB::table('upahsupir')
+            ->select('upahsupirrincian.nominalsupir', 'upahsupirrincian.nominalkenek', 'upahsupirrincian.nominalkomisi')
             ->join('upahsupirrincian', 'upahsupir.id', 'upahsupirrincian.upahsupir_id')
-            ->select('nominalsupir', 'nominalkenek', 'nominalkomisi')
-            ->where('kotadari_id', $request->dari)
-            ->where('kotasampai_id', $request->sampai)
-            ->where('container_id', $request->container)
-            ->where('statuscontainer_id', $request->statuscontainer)->first();
+            ->where('upahsupir.kotadari_id', $request->dari_id)
+            ->where('upahsupir.kotasampai_id', $request->sampai_id)
+            ->where('upahsupirrincian.container_id', $request->container_id)
+            ->where('upahsupirrincian.statuscontainer_id', $request->statuscontainer_id);
+
+            dd($data->toSql());
+            // ->first();
 
         return response([
             'data' => $data
@@ -1012,16 +1009,6 @@ class SuratPengantarController extends Controller
     public function combo(Request $request)
     {
         $data = [
-            'pelanggan' => Pelanggan::all(),
-            'upahsupir' => UpahSupir::all(),
-            'container' => Container::all(),
-            'statuscontainer' => StatusContainer::all(),
-            'trado' => Trado::all(),
-            'supir' => Supir::all(),
-            'agen' => Agen::all(),
-            'jenisorder' => JenisOrder::all(),
-            'tarif' => Tarif::all(),
-            'kota' => Kota::all(),
             'statuslongtrip' => Parameter::where('grp', 'STATUS LONGTRIP')->get(),
             'statusperalihan' => Parameter::where('grp', 'STATUS PERALIHAN')->get(),
             'statusritasiomset' => Parameter::where('grp', 'STATUS RITASIOMSET')->get(),

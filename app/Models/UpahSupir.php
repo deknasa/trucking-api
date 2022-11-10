@@ -48,7 +48,7 @@ class UpahSupir extends MyModel
             'parameter.text as statusaktif',
             'upahsupir.tglmulaiberlaku',
             'upahsupir.tglakhirberlaku',
-            'upahsupir.statusluarkota',
+            'statusluarkota.text as statusluarkota',
 
             'upahsupir.modifiedby',
             'upahsupir.updated_at'
@@ -56,7 +56,7 @@ class UpahSupir extends MyModel
             ->join('kota as kotadari', 'kotadari.id', '=', 'upahsupir.kotadari_id')
             ->join('kota as kotasampai', 'kotasampai.id', '=', 'upahsupir.kotasampai_id')
             ->leftJoin('parameter', 'upahsupir.statusaktif', 'parameter.id')
-
+            ->leftJoin('parameter as statusluarkota', 'upahsupir.statusluarkota', 'statusluarkota.id')
             ->leftJoin('zona', 'upahsupir.zona_id', 'zona.id');
 
         $this->totalRows = $query->count();
@@ -75,15 +75,14 @@ class UpahSupir extends MyModel
 
         $query = DB::table('upahsupir')->select(
             'upahsupir.id',
-            'kotadari.id as kotadari_id',
+            'upahsupir.kotadari_id',
             'kotadari.keterangan as kotadari',
 
-            'kotasampai.id as kotasampai_id',
+            'upahsupir.kotasampai_id',
             'kotasampai.keterangan as kotasampai',
-
             'upahsupir.jarak',
+            'upahsupir.zona_id',
             'zona.keterangan as zona',
-            'zona.id as zona_id',
 
             'upahsupir.statusaktif',
 
@@ -175,13 +174,37 @@ class UpahSupir extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                        if ($filters['field'] == 'statusaktif') {
+                            $query = $query->where('parameter.text', '=', $filters['data']);
+                        } elseif ($filters['field'] == 'statusluarkota') {
+                            $query = $query->where('statusluarkota.text', '=', $filters['data']);
+                        } else if ($filters['field'] == 'kotadari_id') {
+                            $query = $query->where('kotadari.keterangan', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'kotasampai_id') {
+                            $query = $query->where('kotasampai.keterangan', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'zona_id') {
+                            $query = $query->where('zona.keterangan', 'LIKE', "%$filters[data]%");
+                        } else {
+                            $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                        }
                     }
 
                     break;
                 case "OR":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                        if ($filters['field'] == 'statusaktif') {
+                            $query = $query->orWhere('parameter.text', '=', $filters['data']);
+                        } elseif ($filters['field'] == 'statusluarkota') {
+                            $query = $query->orWhere('statusluarkota.text', '=', $filters['data']);
+                        } else if ($filters['field'] == 'kotadari_id') {
+                            $query = $query->orWhere('kotadari.keterangan', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'kotasampai_id') {
+                            $query = $query->orWhere('kotasampai.keterangan', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'zona_id') {
+                            $query = $query->orWhere('zona.keterangan', 'LIKE', "%$filters[data]%");
+                        } else {
+                            $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                        }
                     }
 
                     break;

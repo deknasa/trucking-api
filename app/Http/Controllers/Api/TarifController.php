@@ -100,7 +100,7 @@ class TarifController extends Controller
     public function show($id)
     {
 
-        $data = Tarif::find($id);
+        $data = Tarif::findAll($id);
         return response([
             'status' => true,
             'data' => $data,

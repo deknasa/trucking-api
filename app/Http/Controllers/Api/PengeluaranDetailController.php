@@ -104,19 +104,7 @@ class PengeluaranDetailController extends Controller
     public function store(StorePengeluaranDetailRequest $request)
     {
         DB::beginTransaction();
-        $validator = Validator::make($request->all(), [
-            'nominal' => 'required',
-        ], [
-            'nominal.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
-        ], [
-            'nominal' => 'Nominal',
-        ]);
-        if (!$validator->passes()) {
-            return [
-                'error' => true,
-                'errors' => $validator->messages()
-            ];
-        }
+      
 
         try {
             $pengeluaranDetail = new PengeluaranDetail();
@@ -135,57 +123,55 @@ class PengeluaranDetailController extends Controller
             $pengeluaranDetail->modifiedby = $request->modifiedby;
             $pengeluaranDetail->save();
 
-            if($entriLuar == 1) {
-                $nobukti = $pengeluaranDetail['nobukti'];
-                $fetchId = JurnalUmumHeader::select('id','tglbukti')
-                ->where('nobukti','=',$nobukti)
-                ->first();
-                $id = $fetchId->id;
+            // if($entriLuar == 1) {
+            //     $nobukti = $pengeluaranDetail['nobukti'];
+            //     $fetchId = JurnalUmumHeader::select('id','tglbukti')
+            //     ->where('nobukti','=',$nobukti)
+            //     ->first();
+            //     $id = $fetchId->id;
 
-                $getBaris = DB::table('jurnalumumdetail')->select('baris')->where('nobukti', $nobukti)->orderByDesc('baris')->first();
-                if(is_null($getBaris)) {
-                    $baris = 0;
-                }else{
-                    $baris = $getBaris->baris+1;
-                }
+            //     $getBaris = DB::table('jurnalumumdetail')->select('baris')->where('nobukti', $nobukti)->orderByDesc('baris')->first();
+            //     if(is_null($getBaris)) {
+            //         $baris = 0;
+            //     }else{
+            //         $baris = $getBaris->baris+1;
+            //     }
                 
-                for ($x = 0; $x <= 1; $x++) {
-                    if ($x == 1) {
-                        $datadetail = [
-                            'jurnalumum_id' => $id,
-                            'nobukti' => $pengeluaranDetail->nobukti,
-                            'tglbukti' => $fetchId->tglbukti,
-                            'coa' =>  $pengeluaranDetail->coakredit,
-                            'nominal' => -$pengeluaranDetail->nominal,
-                            'keterangan' => $pengeluaranDetail->keterangan,
-                            'modifiedby' => auth('api')->user()->name,
-                            'baris' => $baris,
-                        ];
-                    } else {
-                        $datadetail = [
-                            'jurnalumum_id' => $id,
-                            'nobukti' => $pengeluaranDetail->nobukti,
-                            'tglbukti' => $fetchId->tglbukti,
-                            'coa' =>  $pengeluaranDetail->coadebet,
-                            'nominal' => $pengeluaranDetail->nominal,
-                            'keterangan' => $pengeluaranDetail->keterangan,
-                            'modifiedby' => auth('api')->user()->name,
-                            'baris' => $baris,
-                        ];
-                    }
-                    $detail = new StoreJurnalUmumDetailRequest($datadetail);
-                    $tes = app(JurnalUmumDetailController::class)->store($detail); 
-                }
-            }
+            //     for ($x = 0; $x <= 1; $x++) {
+            //         if ($x == 1) {
+            //             $datadetail = [
+            //                 'jurnalumum_id' => $id,
+            //                 'nobukti' => $pengeluaranDetail->nobukti,
+            //                 'tglbukti' => $fetchId->tglbukti,
+            //                 'coa' =>  $pengeluaranDetail->coakredit,
+            //                 'nominal' => -$pengeluaranDetail->nominal,
+            //                 'keterangan' => $pengeluaranDetail->keterangan,
+            //                 'modifiedby' => auth('api')->user()->name,
+            //                 'baris' => $baris,
+            //             ];
+            //         } else {
+            //             $datadetail = [
+            //                 'jurnalumum_id' => $id,
+            //                 'nobukti' => $pengeluaranDetail->nobukti,
+            //                 'tglbukti' => $fetchId->tglbukti,
+            //                 'coa' =>  $pengeluaranDetail->coadebet,
+            //                 'nominal' => $pengeluaranDetail->nominal,
+            //                 'keterangan' => $pengeluaranDetail->keterangan,
+            //                 'modifiedby' => auth('api')->user()->name,
+            //                 'baris' => $baris,
+            //             ];
+            //         }
+            //         $detail = new StoreJurnalUmumDetailRequest($datadetail);
+            //         $tes = app(JurnalUmumDetailController::class)->store($detail); 
+            //     }
+            // }
 
             DB::commit();
-            if ($validator->passes()) {
-                return [
-                    'error' => false,
-                    'id' => $pengeluaranDetail->id,
-                    'tabel' => $pengeluaranDetail->getTable(),
-                ];
-            }
+            return [
+                'error' => false,
+                'id' => $pengeluaranDetail->id,
+                'tabel' => $pengeluaranDetail->getTable(),
+            ];
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
