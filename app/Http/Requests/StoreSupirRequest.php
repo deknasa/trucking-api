@@ -25,22 +25,45 @@ class StoreSupirRequest extends FormRequest
     {
         return [
             'namasupir' => 'required',
-            'tgllahir' => 'required',
-            'kota' => 'required',
             'alamat' => 'required',
+            'kota' => 'required',
+            'telp' => 'required',
             'statusaktif' => 'required',
+            'tglmasuk' => 'required',
+            'tglexpsim' => 'required',
+            'nosim' => 'required|min:12|max:12',
+            'keterangan' => 'required',
+            'noktp' => 'required|min:16|max:16',
+            'nokk' => 'required|min:16|max:16',
+            'statusluarkota' => 'required',
+            'statuszonatertentu' => 'required',
             'zona_id' => 'required',
-            // 'tglstnkmati' => 'required',
-            // 'tglasuransimati' => 'required',
-            // 'tahun' => 'required',
-            // 'akhirproduksi' => 'required',
-            // 'tglstandarisasi' => 'required',
-            // 'tglserviceopname' => 'required',
-            // 'statusstandarisasi' => 'required',
-            // 'tglspeksimati' => 'required',
-            // 'statusmutasi' => 'required',
-            // 'statusvalidasikendaraan' => 'required',
-            // 'mandor_id' => 'required',
+            'statusblacklist' => 'required',
+            'tgllahir' => 'required',
+            'tglterbitsim' => 'required',
+        ];
+    }
+
+    public function attributes()
+    {
+        return [
+            'namasupir' => 'Nama Supir',
+            'alamat' => 'Alamat',
+            'kota' => 'Kota',
+            'telp' => 'Telp',
+            'statusaktif' => 'Status Aktif',
+            'tglmasuk' => 'Tanggal Masuk',
+            'tglexpsim' => 'Tanggal Exp SIM',
+            'nosim' => 'No SIM',
+            'keterangan' => 'Keterangan',
+            'noktp' => 'No KTP',
+            'nokk' => 'No KK',
+            'statusluarkota' => 'Status Luar Kota',
+            'statuszonatertentu' => 'Status Zona Tertentu',
+            'zona_id' => 'Zona',
+            'statusblacklist' => 'Status Blacklist',
+            'tgllahir' => 'Tanggal Lahir',
+            'tglterbitsim' => 'Tanggal Terbit SIM',
         ];
     }
 }

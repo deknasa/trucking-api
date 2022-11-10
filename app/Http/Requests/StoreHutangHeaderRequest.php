@@ -23,8 +23,44 @@ class StoreHutangHeaderRequest extends FormRequest
      */
     public function rules()
     {
+        $rules = [
+            'tglbukti' => 'required',
+            'keterangan' => 'required',
+            'akunpusat' => 'required',
+            'pelanggan_id' => 'required'
+        ];
+        $relatedRequests = [
+            StoreHutangDetailRequest::class
+        ];
+
+        foreach ($relatedRequests as $relatedRequest) {
+            $rules = array_merge(
+                $rules,
+                (new $relatedRequest)->rules()
+            );
+        }
+        
+        return $rules;
+    }
+    public function attributes()
+    {
+        $attributes = [
+            'tglbukti' => 'Tanggal Bukti',
+            'keterangan' => 'Keterangan',
+            'akunpusat' => 'Coa',
+            'pelanggan_id' => 'Pelanggan',
+            'supplier.*' => 'Supplier',
+            'tgljatuhtempo.*' => 'Tanggal Jatuh Tempo',
+            'total_detail.*' => 'Total',
+            'keterangan_detail.*' => 'Keterangan'
+        ];
+
+        return $attributes;
+    }
+    public function messages() 
+    {
         return [
-            //
+            'total_detail.*.gt' => 'Total Tidak Boleh Kosong dan Harus Lebih Besar Dari 0'
         ];
     }
 }

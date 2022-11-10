@@ -112,7 +112,7 @@ class SuratPengantar extends MyModel
         return $data;
     }
 
-    public function find($id)
+    public function findAll($id)
     {
         // dd('find');
         $data = DB::table('suratpengantar')->select(

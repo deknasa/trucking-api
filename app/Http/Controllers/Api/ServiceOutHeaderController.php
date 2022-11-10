@@ -344,4 +344,18 @@ class ServiceOutHeaderController extends Controller
             'data' => $data
         ]);
     }
+    
+    public function fieldLength()
+    {
+        $data = [];
+        $columns = DB::connection()->getDoctrineSchemaManager()->listTableDetails('serviceoutheader')->getColumns();
+
+        foreach ($columns as $index => $column) {
+            $data[$index] = $column->getLength();
+        }
+
+        return response([
+            'data' => $data
+        ]);
+    }
 }

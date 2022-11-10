@@ -16,7 +16,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Intervention\Image\ImageManagerStatic as Image;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
 
 class SupirController extends Controller
 {
@@ -32,7 +34,8 @@ class SupirController extends Controller
         $baseUrl = asset('');
 
         foreach ($rows as $key => $item) {
-            $arrSupir       = json_decode($item->photosupir);
+            
+            $arrSupir       = json_decode($item->photosupir, true);
             $arrKtp         = json_decode($item->photoktp);
             $arrSim         = json_decode($item->photosim);
             $arrKk          = json_decode($item->photokk);
@@ -40,107 +43,56 @@ class SupirController extends Controller
             $arrDomisili    = json_decode($item->photodomisili);
 
             $imgSupir = '';
+            
             if (!empty($arrSupir)) {
-                $count = count($arrSupir);
-                if ($count > 0) {
-                    $total = $count / 3;
-                    $idx = 2;
-                    for ($i = 0; $i < $total; $i++) {
-                        if ($i > 0) {
-                            $idx += 3;
-                        }
-
-                        $imgSupir .= "<img src='" . $baseUrl . 'uploads/supir/' . $arrSupir[$idx] . "' class='mr-2'>";
-                    }
+                foreach($arrSupir as $index => $file){
+                    $imgSupir .= "<img src='" . $baseUrl . "uploads/". $file . "' class='mr-2' style='width:50px; height:50px'>"; 
                 }
             }
-
+            
             $imgKtp = '';
             if (!empty($arrKtp)) {
-                $count = count($arrKtp);
-                if ($count > 0) {
-                    $total = $count / 3;
-                    $idx = 2;
-                    for ($i = 0; $i < $total; $i++) {
-                        if ($i > 0) {
-                            $idx += 3;
-                        }
-
-                        $imgKtp .= "<img src='" . $baseUrl . 'uploads/ktp/' . $arrKtp[$idx] . "' class='mr-2'>";
-                    }
+                foreach($arrKtp as $index => $file){
+                    $imgKtp .= "<img src='" . $baseUrl . 'uploads/' . $file . "' class='mr-2' style='width:50px; height:50px'>";
                 }
             }
 
             $imgsim = '';
             if (!empty($arrSim)) {
-                $count = count($arrSim);
-                if ($count > 0) {
-                    $total = $count / 3;
-                    $idx = 2;
-                    for ($i = 0; $i < $total; $i++) {
-                        if ($i > 0) {
-                            $idx += 3;
-                        }
-
-                        $imgsim .= "<img src='" . $baseUrl . 'uploads/sim/' . $arrSim[$idx] . "' class='mr-2'>";
-                    }
+                foreach($arrSim as $index => $file){
+                    $imgsim .= "<img src='" . $baseUrl . 'uploads/' . $file . "' class='mr-2' style='width:50px; height:50px'>";
                 }
             }
 
             $imgkk = '';
             if (!empty($arrKk)) {
-                $count = count($arrKk);
-                if ($count > 0) {
-                    $total = $count / 3;
-                    $idx = 2;
-                    for ($i = 0; $i < $total; $i++) {
-                        if ($i > 0) {
-                            $idx += 3;
-                        }
-
-                        $imgkk .= "<img src='" . $baseUrl . 'uploads/kk/' . $arrKk[$idx] . "' class='mr-2'>";
-                    }
+                foreach($arrKk as $index => $file){
+                    $imgkk .= "<img src='" . $baseUrl . 'uploads/' . $file . "' class='mr-2' style='width:50px; height:50px'>";
                 }
             }
 
             $imgskck = '';
             if (!empty($arrSkck)) {
-                $count = count($arrSkck);
-                if ($count > 0) {
-                    $total = $count / 3;
-                    $idx = 2;
-                    for ($i = 0; $i < $total; $i++) {
-                        if ($i > 0) {
-                            $idx += 3;
-                        }
-
-                        $imgskck .= "<img src='" . $baseUrl . 'uploads/skck/' . $arrSkck[$idx] . "' class='mr-2'>";
-                    }
+                foreach($arrSkck as $index => $file){
+                    $imgskck .= "<img src='" . $baseUrl . 'uploads/' . $file . "' class='mr-2' style='width:50px; height:50px'>";
                 }
             }
 
             $imgdomisili = '';
             if (!empty($arrDomisili)) {
-                $count = count($arrDomisili);
-                if ($count > 0) {
-                    $total = $count / 3;
-                    $idx = 2;
-                    for ($i = 0; $i < $total; $i++) {
-                        if ($i > 0) {
-                            $idx += 3;
-                        }
-
-                        $imgdomisili .= "<img src='" . $baseUrl . 'uploads/domisili/' . $arrDomisili[$idx] . "' class='mr-2'>";
-                    }
+                foreach($arrDomisili as $index => $file){
+                    $imgdomisili .= "<img src='" . $baseUrl . 'uploads/' . $file . "' class='mr-2' style='width:50px; height:50px'>";
                 }
             }
-
+            // $rpl = ['photosupir' => $imgSupir];
+            // array_replace($rows[$key]->photosupir, $rpl);
             $rows[$key]->photosupir       = $imgSupir;
             $rows[$key]->photoktp         = $imgKtp;
             $rows[$key]->photosim         = $imgsim;
             $rows[$key]->photokk          = $imgkk;
             $rows[$key]->photoskck        = $imgskck;
             $rows[$key]->photodomisili    = $imgdomisili;
+            
         }
 
         return response([
@@ -159,35 +111,41 @@ class SupirController extends Controller
         DB::beginTransaction();
         try {
             $supir = new Supir();
-            $supir->namasupir = strtoupper($request->namasupir);
-            $supir->alamat = strtoupper($request->alamat);
-            $supir->kota = strtoupper($request->kota);
-            $supir->telp = strtoupper($request->telp);
+            $supir->namasupir = $request->namasupir;
+            $supir->alamat = $request->alamat;
+            $supir->kota = $request->kota;
+            $supir->telp = $request->telp;
             $supir->statusaktif = $request->statusaktif;
+            $supir->nominaldepositsa = $request->nominaldepositsa ?? 0;
             $supir->depositke = $request->depositke ?? 0;
+            $supir->tglmasuk = date('Y-m-d', strtotime($request->tglmasuk));
+            $supir->nominalpinjamansaldoawal = $request->nominalpinjamansaldoawal ?? 0;
             $supir->supirold_id = $request->supirold_id ?? 0;
             $supir->tglexpsim = date('Y-m-d', strtotime($request->tglexpsim));
-            $supir->nosim = $request->nosim ?? '';
-            $supir->keterangan = strtoupper($request->keterangan);
-            $supir->noktp = $request->noktp ?? '';
-            $supir->nokk = $request->nokk ?? '';
+            $supir->nosim = $request->nosim;
+            $supir->keterangan = $request->keterangan;
+            $supir->noktp = $request->noktp;
+            $supir->nokk = $request->nokk;
             $supir->statusadaupdategambar = $request->statusadaupdategambar ?? 0;
-            $supir->statusluarkota = $request->statusluarkota ?? 0;
-            $supir->statuszonatertentu = $request->statuszonatertentu ?? 0;
+            $supir->statusluarkota = $request->statusluarkota;
+            $supir->statuszonatertentu = $request->statuszonatertentu;
             $supir->zona_id = $request->zona_id;
             $supir->angsuranpinjaman = $request->angsuranpinjaman ?? 0;
             $supir->plafondeposito = $request->plafondeposito ?? 0;
-            $supir->keteranganresign = strtoupper($request->keteranganresign ?? '');
-            $supir->statusblacklist = $request->statusblacklist ?? 0;
-            $supir->tglberhentisupir = date('Y-m-d', strtotime($request->tglberhentisupir));
+            $supir->keteranganresign = $request->keteranganresign ?? '';
+            $supir->statusblacklist = $request->statusblacklist;
+            $supir->tglberhentisupir = date('Y-m-d', strtotime($request->tglberhentisupir)) ?? '';
             $supir->tgllahir = date('Y-m-d', strtotime($request->tgllahir));
             $supir->tglterbitsim = date('Y-m-d', strtotime($request->tglterbitsim));
-            $supir->modifiedby = strtoupper(auth('api')->user()->name);
-            $supir->nominalpinjamansaldoawal = $request->nominalpinjamansaldoawal ?? 0;
-            $supir->nominaldepositsa = $request->nominaldepositsa ?? 0;
+            $supir->modifiedby = auth('api')->user()->name;
+            // $supir->photosupir = '';
+            // $supir->photoktp = '';
+            // $supir->photosim = '';
+            // $supir->photokk = '';
+            // $supir->photoskck = '';
+            // $supir->photodomisili = '';
 
-            if ($supir->save()) {
-
+            $supir->save();
                 $logTrail = [
                     'namatabel' => strtoupper($supir->getTable()),
                     'postingdari' => 'ENTRY SUPIR',
@@ -199,34 +157,20 @@ class SupirController extends Controller
                 ];
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-                DB::commit();
-                $upload = $this->upload_image($request, $supir->id, 'ADD');
+
+            // Storage::put('/supir', $request->photosupir[0]);
+            $upload = $this->upload_image($request, $supir->id, 'ADD', $supir);
+            
+            if (!$upload['status']) {
+                throw new \Throwable($upload['message']);
             }
-
-
+            DB::commit();
+            
             /* Set position and page */
-            // $del = 0;
-            // $data = $this->getid($supir->id, $request, $del);
-            // $supir->position = @$data->row;
-            // // dd($cabang->position);
-
-            // if (isset($request->limit)) {
-            //     $supir->page = ceil((int)$supir->position / ($request->limit ?? 10));
-            // }
-
-            /* Set position and page */
-            // $supir->position = DB::table((new Supir())->getTable())->orderBy($request->sortname, $request->sortorder)
-            //     ->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $supir->{$request->sortname})
-            //     ->where('id', '<=', $supir->id)
-            //     ->count();
-
-            // if (isset($request->limit)) {
-            //     $supir->page = ceil($supir->position / $request->limit);
-            // }
-            /* Set position and page */
-            $selected = $this->getPosition($supir, $supir->getTable());
-            $supir->position = $selected->position;
-            $supir->page = ceil($supir->position / ($request->limit ?? 10));
+            // $selected = $this->getPosition($supir, $supir->getTable());
+            // dd('tes');
+            // $supir->position = $selected->position;
+            // $supir->page = ceil($supir->position / ($request->limit ?? 10));
             return response([
                 'status' => true,
                 'message' => 'Berhasil disimpan',
@@ -234,65 +178,81 @@ class SupirController extends Controller
             ]);
         } catch (\Throwable $th) {
             DB::rollBack();
-            return response($th->getMessage());
+            
+            throw $th;
         }
     }
+
     /**
      * @ClassName 
      */
-    public function update(StoreSupirRequest $request,Supir $supir)
+    public function update(StoreSupirRequest $request, Supir $supir)
     {
         DB::beginTransaction();
 
         try {
-            $supir->namasupir = strtoupper($request->namasupir);
-            $supir->alamat = strtoupper($request->alamat);
-            $supir->kota = strtoupper($request->kota);
-            $supir->telp = strtoupper($request->telp);
+
+            $supir = Supir::findOrFail($supir->id);
+            $supir->namasupir = $request->namasupir;
+            $supir->alamat = $request->alamat;
+            $supir->kota = $request->kota;
+            $supir->telp = $request->telp;
             $supir->statusaktif = $request->statusaktif;
+            $supir->nominaldepositsa = $request->nominaldepositsa ?? 0;
             $supir->depositke = $request->depositke ?? 0;
+            $supir->tglmasuk = date('Y-m-d', strtotime($request->tglmasuk));
+            $supir->nominalpinjamansaldoawal = $request->nominalpinjamansaldoawal ?? 0;
             $supir->supirold_id = $request->supirold_id ?? 0;
             $supir->tglexpsim = date('Y-m-d', strtotime($request->tglexpsim));
-            $supir->nosim = $request->nosim ?? '';
-            $supir->keterangan = strtoupper($request->keterangan);
-            $supir->noktp = $request->noktp ?? '';
-            $supir->nokk = $request->nokk ?? '';
+            $supir->nosim = $request->nosim;
+            $supir->keterangan = $request->keterangan;
+            $supir->noktp = $request->noktp;
+            $supir->nokk = $request->nokk;
             $supir->statusadaupdategambar = $request->statusadaupdategambar ?? 0;
-            $supir->statusluarkota = $request->statusluarkota ?? 0;
-            $supir->statuszonatertentu = $request->statuszonatertentu ?? 0;
+            $supir->statusluarkota = $request->statusluarkota;
+            $supir->statuszonatertentu = $request->statuszonatertentu;
             $supir->zona_id = $request->zona_id;
             $supir->angsuranpinjaman = $request->angsuranpinjaman ?? 0;
             $supir->plafondeposito = $request->plafondeposito ?? 0;
-            $supir->keteranganresign = strtoupper($request->keteranganresign ?? '');
-            $supir->statusblacklist = $request->statusblacklist ?? 0;
-            $supir->tglberhentisupir = date('Y-m-d', strtotime($request->tglberhentisupir));
+            $supir->keteranganresign = $request->keteranganresign ?? '';
+            $supir->statusblacklist = $request->statusblacklist;
+            $supir->tglberhentisupir = date('Y-m-d', strtotime($request->tglberhentisupir)) ?? '';
             $supir->tgllahir = date('Y-m-d', strtotime($request->tgllahir));
             $supir->tglterbitsim = date('Y-m-d', strtotime($request->tglterbitsim));
-            $supir->modifiedby = strtoupper(auth('api')->user()->name);
-            $supir->nominalpinjamansaldoawal = $request->nominalpinjamansaldoawal ?? 0;
-            $supir->nominaldepositsa = $request->nominaldepositsa ?? 0;
-            $upload = $this->upload_image($request, $supir->id, 'EDIT');
-            $supir->save();
+            $supir->modifiedby = auth('api')->user()->name;
+            
+            if($supir->save()) {
+                $logTrail = [
+                    'namatabel' => strtoupper($supir->getTable()),
+                    'postingdari' => 'EDIT SUPIR',
+                    'idtrans' => $supir->id,
+                    'nobuktitrans' => $supir->id,
+                    'aksi' => 'EDIT',
+                    'datajson' => $supir->toArray(),
+                    'modifiedby' => $supir->modifiedby
+                ];
+                
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                app(LogTrailController::class)->store($validatedLogTrail);
+    
+                $upload = $this->upload_image($request, $supir->id, 'EDIT', $supir);
+                
+                // if (!$upload['status']) {
+                //     throw new \Throwable($upload['message']);
+                // }
+            }
 
-            $logTrail = [
-                'namatabel' => strtoupper($supir->getTable()),
-                'postingdari' => 'EDIT SUPIR',
-                'idtrans' => $supir->id,
-                'nobuktitrans' => $supir->id,
-                'aksi' => 'EDIT',
-                'datajson' => $supir->toArray(),
-                'modifiedby' => $supir->modifiedby
-            ];
-
-            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-            app(LogTrailController::class)->store($validatedLogTrail);
-
+            
             DB::commit();
 
+            // Log::info('supir', [
+            //     'data' => $supir
+            // ]);
+
             /* Set position and page */
-            $selected = $this->getPosition($supir, $supir->getTable());
-            $supir->position = $selected->position;
-            $supir->page = ceil($supir->position / ($request->limit ?? 10));
+            // $selected = $this->getPosition($supir, $supir->getTable());
+            // $supir->position = $selected->position;
+            // $supir->page = ceil($supir->position / ($request->limit ?? 10));
 
             return response([
                 'status' => true,
@@ -300,111 +260,15 @@ class SupirController extends Controller
                 'data' => $supir
             ]);
         } catch (\Throwable $th) {
-            dd('te');
             DB::rollBack();
             throw $th;
         }
     }
-    // public function update(StoreSupirRequest $request, $id)
-    // {
-    //     DB::beginTransaction();
-    //     try {
-    //         $supir = Supir::find($id);
-    //         $supir->namasupir = strtoupper($request->namasupir);
-    //         $supir->alamat = strtoupper($request->alamat);
-    //         $supir->kota = strtoupper($request->kota);
-    //         $supir->telp = strtoupper($request->telp);
-    //         $supir->statusaktif = $request->statusaktif;
-    //         $supir->depositke = $request->depositke ?? 0;
-    //         $supir->supirold_id = $request->supirold_id ?? 0;
-    //         $supir->tglexpsim = date('Y-m-d', strtotime($request->tglexpsim));
-    //         $supir->nosim = $request->nosim ?? '';
-    //         $supir->keterangan = strtoupper($request->keterangan);
-    //         $supir->noktp = $request->noktp ?? '';
-    //         $supir->nokk = $request->nokk ?? '';
-    //         $supir->statusadaupdategambar = $request->statusadaupdategambar ?? 0;
-    //         $supir->statusluarkota = $request->statusluarkota ?? 0;
-    //         $supir->statuszonatertentu = $request->statuszonatertentu ?? 0;
-    //         $supir->zona_id = $request->zona_id;
-    //         $supir->angsuranpinjaman = $request->angsuranpinjaman ?? 0;
-    //         $supir->plafondeposito = $request->plafondeposito ?? 0;
-    //         $supir->keteranganresign = strtoupper($request->keteranganresign ?? '');
-    //         $supir->statusblacklist = $request->statusblacklist ?? 0;
-    //         $supir->tglberhentisupir = date('Y-m-d', strtotime($request->tglberhentisupir));
-    //         $supir->tgllahir = date('Y-m-d', strtotime($request->tgllahir));
-    //         $supir->tglterbitsim = date('Y-m-d', strtotime($request->tglterbitsim));
-    //         $supir->modifiedby = strtoupper(auth('api')->user()->name);
-    //         $supir->nominalpinjamansaldoawal = $request->nominalpinjamansaldoawal ?? 0;
-    //         $supir->nominaldepositsa = $request->nominaldepositsa ?? 0;
-
-    //         $upload = $this->upload_image($request, $supir->id, 'EDIT');
-
-    //         $supir->save();
-    //         // $datajson = [
-    //         //     'id' => $supir->id,
-    //         //     'kodecabang' => strtoupper($request->kodecabang),
-    //         //     'namacabang' => strtoupper($request->namacabang),
-    //         //     'statusaktif' => $request->statusaktif,
-    //         // ];
-
-    //         // $logtrail = new LogTrail();
-    //         // $logtrail->namatabel = 'CABANG';
-    //         // $logtrail->postingdari = 'EDIT CABANG';
-    //         // $logtrail->idtrans = $cabang->id;
-    //         // $logtrail->nobuktitrans = $cabang->id;
-    //         // $logtrail->aksi = 'EDIT';
-    //         // $logtrail->datajson = json_encode($datajson);
-
-    //         // $logtrail->save();
-    //         DB::commit();
-
-    //         /* Set position and page */
-    //         // $supir->position = DB::table((new Supir())->getTable())->orderBy($request->sortIndex ?? 'id', $request->sortOrder ?? 'asc')
-    //         //     ->where($request->sortIndex, $request->sortOrder == 'desc' ? '>=' : '<=', $supir->{$request->sortIndex})
-    //         //     ->where('id', '<=', $supir->id)
-    //         //     ->count();
-
-    //         // $supir->position = DB::table((new Supir())->getTable())->orderBy($request->sortname, $request->sortorder)
-    //         //     ->where($request->sortname, $request->sortorder == 'desc' ? '>=' : '<=', $supir->{$request->sortname})
-    //         //     ->where('id', '<=', $supir->id)
-    //         //     ->count();
-
-    //         // if (isset($request->limit)) {
-    //         //     $supir->page = ceil($supir->position / $request->limit);
-    //         // }
-
-    //         // if (isset($request->limit)) {
-    //         //     $supir->page = ceil($supir->position / ($request->limit ?? 10));
-    //         // }
-    //         /* Set position and page */
-    //         $selected = $this->getPosition($supir, $supir->getTable());
-    //         $supir->position = $selected->position;
-    //         $supir->page = ceil($supir->position / ($request->limit ?? 10));
-
-    //         return response([
-    //             'status' => true,
-    //             'message' => 'Berhasil diubah',
-    //             'data' => $supir
-    //         ]);
-    //     } catch (\Throwable $th) {
-    //         DB::rollBack();
-    //         return response($th->getMessage());
-    //     }
-    // }
-
-    // public function show(supir $supir)
-    // {
-
-    //     return response([
-    //         'status' => true,
-    //         'data' => $supir
-    //     ]);
-    // }
 
     public function show($id)
     {
 
-        $data = Supir::find($id);
+        $data = Supir::findAll($id);
         return response([
             'status' => true,
             'data' => $data,
@@ -426,7 +290,7 @@ class SupirController extends Controller
 
             if (!empty($photosupir)) {
                 foreach ($photosupir as $item) {
-                    $path = public_path() . '/uploads/supir/' . $item;
+                    $path = public_path() . '/uploads/' . $item;
                     if (File::exists($path)) {
                         File::delete($path);
                     }
@@ -435,7 +299,7 @@ class SupirController extends Controller
 
             if (!empty($photoktp)) {
                 foreach ($photoktp as $item) {
-                    $path = public_path() . '/uploads/ktp/' . $item;
+                    $path = public_path() . '/uploads/' . $item;
                     if (File::exists($path)) {
                         File::delete($path);
                     }
@@ -444,7 +308,7 @@ class SupirController extends Controller
 
             if (!empty($photosim)) {
                 foreach ($photosim as $item) {
-                    $path = public_path() . '/uploads/sim/' . $item;
+                    $path = public_path() . '/uploads/' . $item;
                     if (File::exists($path)) {
                         File::delete($path);
                     }
@@ -453,7 +317,7 @@ class SupirController extends Controller
 
             if (!empty($photokk)) {
                 foreach ($photokk as $item) {
-                    $path = public_path() . '/uploads/kk/' . $item;
+                    $path = public_path() . '/uploads/' . $item;
                     if (File::exists($path)) {
                         File::delete($path);
                     }
@@ -462,7 +326,7 @@ class SupirController extends Controller
 
             if (!empty($photoskck)) {
                 foreach ($photoskck as $item) {
-                    $path = public_path() . '/uploads/skck/' . $item;
+                    $path = public_path() . '/uploads/' . $item;
                     if (File::exists($path)) {
                         File::delete($path);
                     }
@@ -471,7 +335,7 @@ class SupirController extends Controller
 
             if (!empty($photodomisili)) {
                 foreach ($photodomisili as $item) {
-                    $path = public_path() . '/uploads/domisili/' . $item;
+                    $path = public_path() . '/uploads/' . $item;
                     if (File::exists($path)) {
                         File::delete($path);
                     }
@@ -514,6 +378,32 @@ class SupirController extends Controller
         }
     }
 
+    public function getImage($id,$field) {  
+        $supir = Supir::select($field)->where('id',$id)->first();
+        $kategori = substr($field,5);
+        $length = strlen($kategori)+1;
+        $arrSupir = json_decode($supir->$field, true);
+        $files = [];
+        foreach($arrSupir as $index => $value){
+            // $substr = substr($file)
+            // dd();
+            $name = substr($value,$length);
+            $ext = pathinfo($name, PATHINFO_EXTENSION);
+            $file = [[
+                'name' => $name,
+                'size' => Storage::disk('local')->size($value),
+                'ext' => 'image/'.strtolower($ext)
+            ]];
+            
+            $files = array_merge($files, $file);
+        }
+
+        return response([
+            'file' => $files,
+            'base' => asset('').'uploads/'.strtoupper($kategori)
+        ]);
+
+    }
     // public function destroy(Supir $supir, Request $request)
     // {
     //     DB::beginTransaction();
@@ -649,13 +539,13 @@ class SupirController extends Controller
     {
         $data = [
             'status' => Parameter::where(['grp' => 'status aktif'])->get(),
-            'supir' => DB::table((new Supir())->getTable())->get(),
+            // 'supir' => DB::table((new Supir())->getTable())->get(),
             'updategambar' => Parameter::where(['grp' => 'status ada update gambar'])->get(),
             'luarkota' => Parameter::where(['grp' => 'status luar kota'])->get(),
             'zonatertentu' => Parameter::where(['grp' => 'status zona tertentu'])->get(),
             'pameran' => Parameter::where(['grp' => 'status pameran'])->get(),
             'blacklist' => Parameter::where(['grp' => 'status blacklist'])->get(),
-            'zona' => Zona::all(),
+            // 'zona' => Zona::all(),
             // 'mobilstoring' => Parameter::where(['grp'=>'status mobil storing'])->get(),
             // 'appeditban' => Parameter::where(['grp'=>'status app edit ban'])->get(),
             // 'lewatvalidasi' => Parameter::where(['grp'=>'status lewat validasi'])->get(),
@@ -667,326 +557,111 @@ class SupirController extends Controller
         ]);
     }
 
-    public function upload_image(Request $request, $id, $aksi)
+    public function upload_image(Request $request, $id, $aksi, Supir $supir)
     {
         try {
-            if ($aksi == 'EDIT') {
-                $imageOld = json_decode($request->g_all);
-
-                $get = DB::table((new Supir())->getTable())->where('id', $id)->first();
-
-                $photosupir     = json_decode(strtolower($get->photosupir), true);
-                $photoktp       = json_decode(strtolower($get->photoktp), true);
-                $photosim       = json_decode(strtolower($get->photosim), true);
-                $photokk        = json_decode(strtolower($get->photokk), true);
-                $photoskck      = json_decode(strtolower($get->photoskck), true);
-                $photodomisili  = json_decode(strtolower($get->photodomisili), true);
-
-                $supir      = (array)@$imageOld['supir'] ?? [];
-                $ktp        = (array)@$imageOld['ktp'] ?? [];
-                $sim        = (array)@$imageOld['sim'] ?? [];
-                $kk         = (array)@$imageOld['kk'] ?? [];
-                $skck       = (array)@$imageOld['skck'] ?? [];
-                $domisili   = (array)@$imageOld['domisili'] ?? [];
-
-                if (!empty($supir)) {
-                    foreach ($supir as $item) {
-                        $item = strtolower($item);
-                        $ori    = $item;
-                        $medium = substr_replace($item, "medium", 0, 3);
-                        $small  = substr_replace($item, "small", 0, 3);
-
-                        $data['supir'][] = $ori;
-                        $data['supir'][] = $medium;
-                        $data['supir'][] = $small;
-                    }
-
-                    $diff = array_diff($photosupir, $data['supir']);
-
-                    foreach ($diff as $val) {
-                        $path = public_path() . '/uploads/supir/' . $val;
-                        if (File::exists($path)) {
-                            File::delete($path);
-                        }
-                    }
-                } else {
-                    if (!empty($photosupir)) {
-                        foreach ($photosupir as $item) {
-                            $path = public_path() . '/uploads/supir/' . $item;
-                            if (File::exists($path)) {
-                                File::delete($path);
-                            }
-                        }
-                    }
-                }
-
-                if (!empty($ktp)) {
-                    foreach ($ktp as $item) {
-                        $item = strtolower($item);
-                        $ori = $item;
-                        $medium = substr_replace($item, "medium", 0, 3);
-                        $small = substr_replace($item, "small", 0, 3);
-
-                        $data['ktp'][] = $ori;
-                        $data['ktp'][] = $medium;
-                        $data['ktp'][] = $small;
-                    }
-
-                    $diff = array_diff($photoktp, $data['ktp']);
-
-                    foreach ($diff as $val) {
-                        $path = public_path() . '/uploads/ktp/' . $val;
-                        if (File::exists($path)) {
-                            File::delete($path);
-                        }
-                    }
-                } else {
-                    if (!empty($photoktp)) {
-                        foreach ($photoktp as $item) {
-                            $path = public_path() . '/uploads/ktp/' . $item;
-                            if (File::exists($path)) {
-                                File::delete($path);
-                            }
-                        }
-                    }
-                }
-
-                if (!empty($sim)) {
-                    foreach ($sim as $item) {
-                        $item = strtolower($item);
-                        $ori = $item;
-                        $medium = substr_replace($item, "medium", 0, 3);
-                        $small = substr_replace($item, "small", 0, 3);
-
-                        $data['sim'][] = $ori;
-                        $data['sim'][] = $medium;
-                        $data['sim'][] = $small;
-                    }
-
-                    $diff = array_diff($photosim, $data['sim']);
-
-                    foreach ($diff as $val) {
-                        $path = public_path() . '/uploads/sim/' . $val;
-                        if (File::exists($path)) {
-                            File::delete($path);
-                        }
-                    }
-                } else {
-                    if (!empty($photosim)) {
-                        foreach ($photosim as $item) {
-                            $path = public_path() . '/uploads/sim/' . $item;
-                            if (File::exists($path)) {
-                                File::delete($path);
-                            }
-                        }
-                    }
-                }
-
-                if (!empty($kk)) {
-                    foreach ($kk as $item) {
-                        $item = strtolower($item);
-                        $ori = $item;
-                        $medium = substr_replace($item, "medium", 0, 3);
-                        $small = substr_replace($item, "small", 0, 3);
-
-                        $data['kk'][] = $ori;
-                        $data['kk'][] = $medium;
-                        $data['kk'][] = $small;
-                    }
-
-                    $diff = array_diff($photokk, $data['kk']);
-
-                    foreach ($diff as $val) {
-                        $path = public_path() . '/uploads/kk/' . $val;
-                        if (File::exists($path)) {
-                            File::delete($path);
-                        }
-                    }
-                } else {
-                    if (!empty($photokk)) {
-                        foreach ($photokk as $item) {
-                            $path = public_path() . '/uploads/kk/' . $item;
-                            if (File::exists($path)) {
-                                File::delete($path);
-                            }
-                        }
-                    }
-                }
-
-
-                if (!empty($skck)) {
-                    foreach ($skck as $item) {
-                        $item = strtolower($item);
-                        $ori = $item;
-                        $medium = substr_replace($item, "medium", 0, 3);
-                        $small = substr_replace($item, "small", 0, 3);
-
-                        $data['skck'][] = $ori;
-                        $data['skck'][] = $medium;
-                        $data['skck'][] = $small;
-                    }
-
-                    $diff = array_diff($photoskck, $data['skck']);
-
-                    foreach ($diff as $val) {
-                        $path = public_path() . '/uploads/skck/' . $val;
-                        if (File::exists($path)) {
-                            File::delete($path);
-                        }
-                    }
-                } else {
-                    if (!empty($photoskck)) {
-                        foreach ($photoskck as $item) {
-                            $path = public_path() . '/uploads/skck/' . $item;
-                            if (File::exists($path)) {
-                                File::delete($path);
-                            }
-                        }
-                    }
-                }
-
-
-                if (!empty($domisili)) {
-                    foreach ($domisili as $item) {
-                        $item = strtolower($item);
-                        $ori = $item;
-                        $medium = substr_replace($item, "medium", 0, 3);
-                        $small = substr_replace($item, "small", 0, 3);
-
-                        $data['domisili'][] = $ori;
-                        $data['domisili'][] = $medium;
-                        $data['domisili'][] = $small;
-                    }
-
-                    $diff = array_diff($photodomisili, $data['domisili']);
-
-                    foreach ($diff as $val) {
-                        $path = public_path() . '/uploads/domisili/' . $val;
-                        if (File::exists($path)) {
-                            File::delete($path);
-                        }
-                    }
-                } else {
-                    if (!empty($photodomisili)) {
-                        foreach ($photodomisili as $item) {
-                            $path = public_path() . '/uploads/domisili/' . $item;
-                            if (File::exists($path)) {
-                                File::delete($path);
-                            }
-                        }
-                    }
-                }
-            }
-
             // UPLOAD SUPIR
-            if ($request->file('g_supir')) {
-                foreach ($request->file('g_supir') as $image) {
-                    $basePath = public_path() . '/uploads/supir/';
-                    $uniqueName = time() . rand() . rand(10, 100) . '.' . $image->getClientOriginalName();
-                    $name = "ori-" . $uniqueName;
-                    $image->move($basePath, $name);
+            if ($request->photosupir) {
+                foreach ($request->photosupir as $index => $file) {
+                    Log::info('file on upload image', [
+                        'file' => $file,
+                        'fileOriginalName' => $file->getClientOriginalName()
+                    ]);
 
-                    $path = $basePath . $name;
+                    $basePath = public_path().'/uploads/SUPIR/';
+                    $uniqueName = time().rand().rand(10,100).'.'.$file->getClientOriginalName();
+                    $name = "ori-".$uniqueName;
+                    $move = $file->move($basePath,$name);
+
+                    Log::info('after move', [
+                        'move' => $move
+                    ]);
+    
+                    $path = $basePath.$name;
                     $data['supir'][] = $name;
-                    $imageResizes = App::imageResize($basePath, $path, $uniqueName);
+                    $imageResizes = App::imageResize($basePath,$path,$uniqueName);
                     $data['supir'][] = $imageResizes[0];
                     $data['supir'][] = $imageResizes[1];
+                    
+                // dd($file->imageFile);
+                    // $data['supir']['file'.($index+1)] = Storage::disk('local')->put('supir', $file);
                 }
+
             }
 
+            
             // UPLOAD KTP
-            if ($request->file('g_ktp')) {
-                foreach ($request->file('g_ktp') as $image) {
-                    $basePath = public_path() . '/uploads/ktp/';
-                    $uniqueName = time() . rand() . rand(10, 100) . '.' . $image->getClientOriginalName();
-                    $name = "ori-" . $uniqueName;
-                    $image->move($basePath, $name);
-
-                    $path = $basePath . $name;
-                    $data['ktp'][] = $name;
-                    $imageResizes = App::imageResize($basePath, $path, $uniqueName);
-                    $data['ktp'][] = $imageResizes[0];
-                    $data['ktp'][] = $imageResizes[1];
+            if ($request->ktp) {
+                foreach ($request->ktp as $index => $file) {
+                    $data['ktp']['file'.($index+1)] = Storage::disk('local')->put('ktp', $file);
                 }
             }
 
             // UPLOAD SIM
-            if ($request->file('g_sim')) {
-                foreach ($request->file('g_sim') as $image) {
-                    $basePath = public_path() . '/uploads/sim/';
-                    $uniqueName = time() . rand() . rand(10, 100) . '.' . $image->getClientOriginalName();
-                    $name = "ori-" . $uniqueName;
-                    $image->move($basePath, $name);
-
-                    $path = $basePath . $name;
-                    $data['sim'][] = $name;
-                    $imageResizes = App::imageResize($basePath, $path, $uniqueName);
-                    $data['sim'][] = $imageResizes[0];
-                    $data['sim'][] = $imageResizes[1];
+            if ($request->sim) {
+                foreach ($request->sim as $index => $file) {
+                    $data['sim']['file'.($index+1)] = Storage::disk('local')->put('sim', $file);
                 }
             }
 
             // UPLOAD KK
-            if ($request->file('g_kk')) {
-                foreach ($request->file('g_kk') as $image) {
-                    $basePath = public_path() . '/uploads/kk/';
-                    $uniqueName = time() . rand() . rand(10, 100) . '.' . $image->getClientOriginalName();
-                    $name = "ori-" . $uniqueName;
-                    $image->move($basePath, $name);
-
-                    $path = $basePath . $name;
-                    $data['kk'][] = $name;
-                    $imageResizes = App::imageResize($basePath, $path, $uniqueName);
-                    $data['kk'][] = $imageResizes[0];
-                    $data['kk'][] = $imageResizes[1];
+            if ($request->kk) {
+                foreach ($request->kk as $index => $file) {
+                    $data['kk']['file'.($index+1)]= Storage::disk('local')->put('kk', $file);
                 }
             }
 
             // UPLOAD SKCK
-            if ($request->file('g_skck')) {
-                foreach ($request->file('g_skck') as $image) {
-                    $basePath = public_path() . '/uploads/skck/';
-                    $uniqueName = time() . rand() . rand(10, 100) . '.' . $image->getClientOriginalName();
-                    $name = "ori-" . $uniqueName;
-                    $image->move($basePath, $name);
-
-                    $path = $basePath . $name;
-                    $data['skck'][] = $name;
-                    $imageResizes = App::imageResize($basePath, $path, $uniqueName);
-                    $data['skck'][] = $imageResizes[0];
-                    $data['skck'][] = $imageResizes[1];
+            if ($request->skck) {
+                foreach ($request->skck as $index => $file) {
+                    $data['skck']['file'.($index+1)] = Storage::disk('local')->put('skck', $file);
+                
                 }
             }
 
             // UPLOAD DOMISILI
-            if ($request->file('g_domisili')) {
-                foreach ($request->file('g_domisili') as $image) {
-                    $basePath = public_path() . '/uploads/domisili/';
-                    $uniqueName = time() . rand() . rand(10, 100) . '.' . $image->getClientOriginalName();
-                    $name = "ori-" . $uniqueName;
-                    $image->move($basePath, $name);
+            if ($request->domisili) {
+                foreach ($request->domisili as $index => $file) {
+                    $data['domisili']['file'.($index+1)] = Storage::disk('local')->put('domisili', $file);
+                    // $data['domisili'][] = Storage::put('domisili', $file);
+                    // $basePath = public_path() . '/uploads/domisili/';
+                    // $uniqueName = time() . rand() . rand(10, 100) . '.' . $image->getClientOriginalName();
+                    // $name = "ori-" . $uniqueName;
+                    // $image->move($basePath, $name);
 
-                    $path = $basePath . $name;
-                    $data['domisili'][] = $name;
-                    $imageResizes = App::imageResize($basePath, $path, $uniqueName);
-                    $data['domisili'][] = $imageResizes[0];
-                    $data['domisili'][] = $imageResizes[1];
+                    // $path = $basePath . $name;
+                    // $data['domisili'][] = $name;
+                    // $imageResizes = App::imageResize($basePath, $path, $uniqueName);
+                    // $data['domisili'][] = $imageResizes[0];
+                    // $data['domisili'][] = $imageResizes[1];
                 }
             }
-            $supir = Supir::findOrFail($id);
+
+            
+            Log::info('data supir', [
+                'data' => $data,
+                'supir' => $supir
+            ]);
+           
             $supir->photosupir = json_encode($data['supir'] ?? []);
             $supir->photoktp = json_encode($data['ktp'] ?? []);
             $supir->photosim = json_encode($data['sim'] ?? []);
             $supir->photokk = json_encode($data['kk'] ?? []);
             $supir->photoskck = json_encode($data['skck'] ?? []);
             $supir->photodomisili = json_encode($data['domisili'] ?? []);
+        
             $supir->save();
+            
+
             return [
                 'status' => true,
                 'message' => 'Berhasil disimpan',
             ];
         } catch (\Throwable $th) {
-            dd($th->getMessage());
+            // dd('here');
+            // throw $th;
+            
+            // dd($th->getMessage());
             return response($th->getMessage());
         }
     }
@@ -1345,261 +1020,261 @@ class SupirController extends Controller
         }
     }
 
-    public function getid($id, $request, $del)
-    {
-        $temp = '##temp' . rand(1, 10000);
-        Schema::create($temp, function ($table) {
-            $table->id();
-            $table->bigInteger('id_')->default('0');
-            $table->string('namasupir', 100)->default('');
-            $table->string('alamat', 100)->default('');
-            $table->string('kota', 100)->default('');
-            $table->string('telp', 30)->default('');
-            $table->string('statusaktif', 300)->default('')->nullable();
-            $table->double('nominaldepositsa', 15, 2)->default(0);
-            $table->BigInteger('depositke')->default(0);
-            // $table->date('tgl')->default('1900/1/1');
-            $table->double('nominalpinjamansaldoawal', 15, 2)->default(0);
-            $table->unsignedBigInteger('supirold_id')->default(0);
-            $table->date('tglexpsim')->default('1900/1/1');
-            $table->string('nosim', 30)->default('');
-            $table->longText('keterangan')->default('');
-            $table->string('noktp', 30)->default('');
-            $table->string('nokk', 30)->default('');
-            $table->integer('statusadaupdategambar')->length(11)->default(0);
-            $table->integer('statusluarkota')->length(11)->default(0);
-            $table->integer('statuszonatertentu')->length(11)->default(0);
-            $table->unsignedBigInteger('zona_id')->default(0);
-            $table->double('angsuranpinjaman', 15, 2)->default(0);
-            $table->double('plafondeposito', 15, 2)->default(0);
-            $table->string('photosupir', 4000)->default('');
-            $table->string('photoktp', 4000)->default('');
-            $table->string('photosim', 4000)->default('');
-            $table->string('photokk', 4000)->default('');
-            $table->string('photoskck', 4000)->default('');
-            $table->string('photodomisili', 4000)->default('');
-            $table->longText('keteranganresign')->default('');
-            $table->integer('statusblacklist')->length(11)->default(0);
-            $table->date('tglberhentisupir')->default('1900/1/1');
-            $table->date('tgllahir')->default('1900/1/1');
-            $table->date('tglterbitsim')->default('1900/1/1');
-            $table->string('modifiedby', 30)->default('');
-            $table->dateTime('created_at')->default('1900/1/1');
-            $table->dateTime('updated_at')->default('1900/1/1');
+    // public function getid($id, $request, $del)
+    // {
+    //     $temp = '##temp' . rand(1, 10000);
+    //     Schema::create($temp, function ($table) {
+    //         $table->id();
+    //         $table->bigInteger('id_')->default('0');
+    //         $table->string('namasupir', 100)->default('');
+    //         $table->string('alamat', 100)->default('');
+    //         $table->string('kota', 100)->default('');
+    //         $table->string('telp', 30)->default('');
+    //         $table->string('statusaktif', 300)->default('')->nullable();
+    //         $table->double('nominaldepositsa', 15, 2)->default(0);
+    //         $table->BigInteger('depositke')->default(0);
+    //         // $table->date('tgl')->default('1900/1/1');
+    //         $table->double('nominalpinjamansaldoawal', 15, 2)->default(0);
+    //         $table->unsignedBigInteger('supirold_id')->default(0);
+    //         $table->date('tglexpsim')->default('1900/1/1');
+    //         $table->string('nosim', 30)->default('');
+    //         $table->longText('keterangan')->default('');
+    //         $table->string('noktp', 30)->default('');
+    //         $table->string('nokk', 30)->default('');
+    //         $table->integer('statusadaupdategambar')->length(11)->default(0);
+    //         $table->integer('statusluarkota')->length(11)->default(0);
+    //         $table->integer('statuszonatertentu')->length(11)->default(0);
+    //         $table->unsignedBigInteger('zona_id')->default(0);
+    //         $table->double('angsuranpinjaman', 15, 2)->default(0);
+    //         $table->double('plafondeposito', 15, 2)->default(0);
+    //         $table->string('photosupir', 4000)->default('');
+    //         $table->string('photoktp', 4000)->default('');
+    //         $table->string('photosim', 4000)->default('');
+    //         $table->string('photokk', 4000)->default('');
+    //         $table->string('photoskck', 4000)->default('');
+    //         $table->string('photodomisili', 4000)->default('');
+    //         $table->longText('keteranganresign')->default('');
+    //         $table->integer('statusblacklist')->length(11)->default(0);
+    //         $table->date('tglberhentisupir')->default('1900/1/1');
+    //         $table->date('tgllahir')->default('1900/1/1');
+    //         $table->date('tglterbitsim')->default('1900/1/1');
+    //         $table->string('modifiedby', 30)->default('');
+    //         $table->dateTime('created_at')->default('1900/1/1');
+    //         $table->dateTime('updated_at')->default('1900/1/1');
 
-            $table->index('id_');
-        });
-
-
-        if ($request->sortIndex == 'id') {
-            $query = DB::table((new Supir())->getTable())->select(
-                'supir.id as id_',
-                'supir.namasupir',
-                'supir.alamat',
-                'supir.kota',
-                'supir.telp',
-                'parameter.text as statusaktif',
-                'supir.nominaldepositsa',
-                'supir.depositke',
-                // 'supir.tgl',
-                'supir.nominalpinjamansaldoawal',
-                'supir.supirold_id',
-                'supir.tglexpsim',
-                'supir.nosim',
-                'supir.keterangan',
-                'supir.noktp',
-                'supir.nokk',
-                'supir.statusadaupdategambar',
-                'supir.statusluarkota',
-                'supir.statuszonatertentu',
-                'supir.zona_id',
-                'supir.angsuranpinjaman',
-                'supir.plafondeposito',
-                'supir.photosupir',
-                'supir.photoktp',
-                'supir.photosim',
-                'supir.photokk',
-                'supir.photoskck',
-                'supir.photodomisili',
-                'supir.keteranganresign',
-                'supir.statusblacklist',
-                'supir.tglberhentisupir',
-                'supir.tgllahir',
-                'supir.tglterbitsim',
-                'supir.modifiedby',
-                'supir.created_at',
-                'supir.updated_at'
-            )
-                ->leftJoin('parameter', 'supir.statusaktif', '=', 'parameter.id')
-                ->orderBy('supir.id', $request->sortOrder);
-        } else if ($request->sortIndex == 'keterangan') {
-            $query = DB::table((new Supir())->getTable())->select(
-                'supir.id as id_',
-                'supir.namasupir',
-                'supir.alamat',
-                'supir.kota',
-                'supir.telp',
-                'parameter.text as statusaktif',
-                'supir.nominaldepositsa',
-                'supir.depositke',
-                // 'supir.tgl',
-                'supir.nominalpinjamansaldoawal',
-                'supir.supirold_id',
-                'supir.tglexpsim',
-                'supir.nosim',
-                'supir.keterangan',
-                'supir.noktp',
-                'supir.nokk',
-                'supir.statusadaupdategambar',
-                'supir.statusluarkota',
-                'supir.statuszonatertentu',
-                'supir.zona_id',
-                'supir.angsuranpinjaman',
-                'supir.plafondeposito',
-                'supir.photosupir',
-                'supir.photoktp',
-                'supir.photosim',
-                'supir.photokk',
-                'supir.photoskck',
-                'supir.photodomisili',
-                'supir.keteranganresign',
-                'supir.statusblacklist',
-                'supir.tglberhentisupir',
-                'supir.tgllahir',
-                'supir.tglterbitsim',
-                'supir.modifiedby',
-                'supir.created_at',
-                'supir.updated_at'
-            )
-                ->leftJoin('parameter', 'supir.statusaktif', '=', 'parameter.id')
-                ->orderBy($request->sortIndex, $request->sortOrder)
-                // ->orderBy('supir.keterangan', $request->sortOrder)
-                ->orderBy('supir.id', $request->sortOrder);
-        } else {
-            if ($request->sortOrder == 'asc') {
-                $query = DB::table((new Supir())->getTable())->select(
-                    'supir.id as id_',
-                    'supir.namasupir',
-                    'supir.alamat',
-                    'supir.kota',
-                    'supir.telp',
-                    'parameter.text as statusaktif',
-                    'supir.nominaldepositsa',
-                    'supir.depositke',
-                    // 'supir.tgl',
-                    'supir.nominalpinjamansaldoawal',
-                    'supir.supirold_id',
-                    'supir.tglexpsim',
-                    'supir.nosim',
-                    'supir.keterangan',
-                    'supir.noktp',
-                    'supir.nokk',
-                    'supir.statusadaupdategambar',
-                    'supir.statusluarkota',
-                    'supir.statuszonatertentu',
-                    'supir.zona_id',
-                    'supir.angsuranpinjaman',
-                    'supir.plafondeposito',
-                    'supir.photosupir',
-                    'supir.photoktp',
-                    'supir.photosim',
-                    'supir.photokk',
-                    'supir.photoskck',
-                    'supir.photodomisili',
-                    'supir.keteranganresign',
-                    'supir.statusblacklist',
-                    'supir.tglberhentisupir',
-                    'supir.tgllahir',
-                    'supir.tglterbitsim',
-                    'supir.modifiedby',
-                    'supir.created_at',
-                    'supir.updated_at'
-                )
-                    ->leftJoin('parameter', 'supir.statusaktif', '=', 'parameter.id')
-                    ->orderBy($request->sortIndex, $request->sortOrder)
-                    ->orderBy('supir.id', $request->sortOrder);
-            } else {
-                $query = DB::table((new Supir())->getTable())->select(
-                    'supir.id as id_',
-                    'supir.namasupir',
-                    'supir.alamat',
-                    'supir.kota',
-                    'supir.telp',
-                    'parameter.text as statusaktif',
-                    'supir.nominaldepositsa',
-                    'supir.depositke',
-                    // 'supir.tgl',
-                    'supir.nominalpinjamansaldoawal',
-                    'supir.supirold_id',
-                    'supir.tglexpsim',
-                    'supir.nosim',
-                    'supir.keterangan',
-                    'supir.noktp',
-                    'supir.nokk',
-                    'supir.statusadaupdategambar',
-                    'supir.statusluarkota',
-                    'supir.statuszonatertentu',
-                    'supir.zona_id',
-                    'supir.angsuranpinjaman',
-                    'supir.plafondeposito',
-                    'supir.photosupir',
-                    'supir.photoktp',
-                    'supir.photosim',
-                    'supir.photokk',
-                    'supir.photoskck',
-                    'supir.photodomisili',
-                    'supir.keteranganresign',
-                    'supir.statusblacklist',
-                    'supir.tglberhentisupir',
-                    'supir.tgllahir',
-                    'supir.tglterbitsim',
-                    'supir.modifiedby',
-                    'supir.created_at',
-                    'supir.updated_at'
-                )
-                    ->leftJoin('parameter', 'supir.statusaktif', '=', 'parameter.id')
-                    ->orderBy($request->sortIndex, $request->sortOrder)
-
-                    ->orderBy('supir.id', 'asc');
-            }
-        }
+    //         $table->index('id_');
+    //     });
 
 
-        DB::table($temp)->insertUsing(['id_', 'namasupir', 'alamat', 'kota', 'telp', 'statusaktif', 'nominaldepositsa', 'depositke', 'nominalpinjamansaldoawal', 'supirold_id', 'tglexpsim', 'nosim', 'keterangan', 'noktp', 'nokk', 'statusadaupdategambar', 'statusluarkota', 'statuszonatertentu', 'zona_id', 'angsuranpinjaman', 'plafondeposito', 'photosupir', 'photoktp', 'photosim', 'photokk', 'photoskck', 'photodomisili', 'keteranganresign', 'statusblacklist', 'tglberhentisupir', 'tgllahir', 'tglterbitsim', 'modifiedby', 'created_at', 'updated_at'], $query);
+    //     if ($request->sortIndex == 'id') {
+    //         $query = DB::table((new Supir())->getTable())->select(
+    //             'supir.id as id_',
+    //             'supir.namasupir',
+    //             'supir.alamat',
+    //             'supir.kota',
+    //             'supir.telp',
+    //             'parameter.text as statusaktif',
+    //             'supir.nominaldepositsa',
+    //             'supir.depositke',
+    //             // 'supir.tgl',
+    //             'supir.nominalpinjamansaldoawal',
+    //             'supir.supirold_id',
+    //             'supir.tglexpsim',
+    //             'supir.nosim',
+    //             'supir.keterangan',
+    //             'supir.noktp',
+    //             'supir.nokk',
+    //             'supir.statusadaupdategambar',
+    //             'supir.statusluarkota',
+    //             'supir.statuszonatertentu',
+    //             'supir.zona_id',
+    //             'supir.angsuranpinjaman',
+    //             'supir.plafondeposito',
+    //             'supir.photosupir',
+    //             'supir.photoktp',
+    //             'supir.photosim',
+    //             'supir.photokk',
+    //             'supir.photoskck',
+    //             'supir.photodomisili',
+    //             'supir.keteranganresign',
+    //             'supir.statusblacklist',
+    //             'supir.tglberhentisupir',
+    //             'supir.tgllahir',
+    //             'supir.tglterbitsim',
+    //             'supir.modifiedby',
+    //             'supir.created_at',
+    //             'supir.updated_at'
+    //         )
+    //             ->leftJoin('parameter', 'supir.statusaktif', '=', 'parameter.id')
+    //             ->orderBy('supir.id', $request->sortOrder);
+    //     } else if ($request->sortIndex == 'keterangan') {
+    //         $query = DB::table((new Supir())->getTable())->select(
+    //             'supir.id as id_',
+    //             'supir.namasupir',
+    //             'supir.alamat',
+    //             'supir.kota',
+    //             'supir.telp',
+    //             'parameter.text as statusaktif',
+    //             'supir.nominaldepositsa',
+    //             'supir.depositke',
+    //             // 'supir.tgl',
+    //             'supir.nominalpinjamansaldoawal',
+    //             'supir.supirold_id',
+    //             'supir.tglexpsim',
+    //             'supir.nosim',
+    //             'supir.keterangan',
+    //             'supir.noktp',
+    //             'supir.nokk',
+    //             'supir.statusadaupdategambar',
+    //             'supir.statusluarkota',
+    //             'supir.statuszonatertentu',
+    //             'supir.zona_id',
+    //             'supir.angsuranpinjaman',
+    //             'supir.plafondeposito',
+    //             'supir.photosupir',
+    //             'supir.photoktp',
+    //             'supir.photosim',
+    //             'supir.photokk',
+    //             'supir.photoskck',
+    //             'supir.photodomisili',
+    //             'supir.keteranganresign',
+    //             'supir.statusblacklist',
+    //             'supir.tglberhentisupir',
+    //             'supir.tgllahir',
+    //             'supir.tglterbitsim',
+    //             'supir.modifiedby',
+    //             'supir.created_at',
+    //             'supir.updated_at'
+    //         )
+    //             ->leftJoin('parameter', 'supir.statusaktif', '=', 'parameter.id')
+    //             ->orderBy($request->sortIndex, $request->sortOrder)
+    //             // ->orderBy('supir.keterangan', $request->sortOrder)
+    //             ->orderBy('supir.id', $request->sortOrder);
+    //     } else {
+    //         if ($request->sortOrder == 'asc') {
+    //             $query = DB::table((new Supir())->getTable())->select(
+    //                 'supir.id as id_',
+    //                 'supir.namasupir',
+    //                 'supir.alamat',
+    //                 'supir.kota',
+    //                 'supir.telp',
+    //                 'parameter.text as statusaktif',
+    //                 'supir.nominaldepositsa',
+    //                 'supir.depositke',
+    //                 // 'supir.tgl',
+    //                 'supir.nominalpinjamansaldoawal',
+    //                 'supir.supirold_id',
+    //                 'supir.tglexpsim',
+    //                 'supir.nosim',
+    //                 'supir.keterangan',
+    //                 'supir.noktp',
+    //                 'supir.nokk',
+    //                 'supir.statusadaupdategambar',
+    //                 'supir.statusluarkota',
+    //                 'supir.statuszonatertentu',
+    //                 'supir.zona_id',
+    //                 'supir.angsuranpinjaman',
+    //                 'supir.plafondeposito',
+    //                 'supir.photosupir',
+    //                 'supir.photoktp',
+    //                 'supir.photosim',
+    //                 'supir.photokk',
+    //                 'supir.photoskck',
+    //                 'supir.photodomisili',
+    //                 'supir.keteranganresign',
+    //                 'supir.statusblacklist',
+    //                 'supir.tglberhentisupir',
+    //                 'supir.tgllahir',
+    //                 'supir.tglterbitsim',
+    //                 'supir.modifiedby',
+    //                 'supir.created_at',
+    //                 'supir.updated_at'
+    //             )
+    //                 ->leftJoin('parameter', 'supir.statusaktif', '=', 'parameter.id')
+    //                 ->orderBy($request->sortIndex, $request->sortOrder)
+    //                 ->orderBy('supir.id', $request->sortOrder);
+    //         } else {
+    //             $query = DB::table((new Supir())->getTable())->select(
+    //                 'supir.id as id_',
+    //                 'supir.namasupir',
+    //                 'supir.alamat',
+    //                 'supir.kota',
+    //                 'supir.telp',
+    //                 'parameter.text as statusaktif',
+    //                 'supir.nominaldepositsa',
+    //                 'supir.depositke',
+    //                 // 'supir.tgl',
+    //                 'supir.nominalpinjamansaldoawal',
+    //                 'supir.supirold_id',
+    //                 'supir.tglexpsim',
+    //                 'supir.nosim',
+    //                 'supir.keterangan',
+    //                 'supir.noktp',
+    //                 'supir.nokk',
+    //                 'supir.statusadaupdategambar',
+    //                 'supir.statusluarkota',
+    //                 'supir.statuszonatertentu',
+    //                 'supir.zona_id',
+    //                 'supir.angsuranpinjaman',
+    //                 'supir.plafondeposito',
+    //                 'supir.photosupir',
+    //                 'supir.photoktp',
+    //                 'supir.photosim',
+    //                 'supir.photokk',
+    //                 'supir.photoskck',
+    //                 'supir.photodomisili',
+    //                 'supir.keteranganresign',
+    //                 'supir.statusblacklist',
+    //                 'supir.tglberhentisupir',
+    //                 'supir.tgllahir',
+    //                 'supir.tglterbitsim',
+    //                 'supir.modifiedby',
+    //                 'supir.created_at',
+    //                 'supir.updated_at'
+    //             )
+    //                 ->leftJoin('parameter', 'supir.statusaktif', '=', 'parameter.id')
+    //                 ->orderBy($request->sortIndex, $request->sortOrder)
+
+    //                 ->orderBy('supir.id', 'asc');
+    //         }
+    //     }
 
 
-        if ($del == 1) {
-            if ($request->page == 1) {
-                $baris = $request->indexRow + 1;
-            } else {
-                $hal = $request->page - 1;
-                $bar = $hal * $request->limit;
-                $baris = $request->indexRow + $bar + 1;
-            }
+    //     DB::table($temp)->insertUsing(['id_', 'namasupir', 'alamat', 'kota', 'telp', 'statusaktif', 'nominaldepositsa', 'depositke', 'nominalpinjamansaldoawal', 'supirold_id', 'tglexpsim', 'nosim', 'keterangan', 'noktp', 'nokk', 'statusadaupdategambar', 'statusluarkota', 'statuszonatertentu', 'zona_id', 'angsuranpinjaman', 'plafondeposito', 'photosupir', 'photoktp', 'photosim', 'photokk', 'photoskck', 'photodomisili', 'keteranganresign', 'statusblacklist', 'tglberhentisupir', 'tgllahir', 'tglterbitsim', 'modifiedby', 'created_at', 'updated_at'], $query);
 
 
-            if (DB::table($temp)
-                ->where('id', '=', $baris)->exists()
-            ) {
-                $querydata = DB::table($temp)
-                    ->select('id as row', 'id_ as id')
-                    ->where('id', '=', $baris)
-                    ->orderBy('id');
-            } else {
-                $querydata = DB::table($temp)
-                    ->select('id as row', 'id_ as id')
-                    ->where('id', '=', ($baris - 1))
-                    ->orderBy('id');
-            }
-        } else {
-            $querydata = DB::table($temp)
-                ->select('id as row')
-                ->where('id_', '=',  $id)
-                ->orderBy('id');
-        }
+    //     if ($del == 1) {
+    //         if ($request->page == 1) {
+    //             $baris = $request->indexRow + 1;
+    //         } else {
+    //             $hal = $request->page - 1;
+    //             $bar = $hal * $request->limit;
+    //             $baris = $request->indexRow + $bar + 1;
+    //         }
 
 
-        $data = $querydata->first();
-        return $data;
-    }
+    //         if (DB::table($temp)
+    //             ->where('id', '=', $baris)->exists()
+    //         ) {
+    //             $querydata = DB::table($temp)
+    //                 ->select('id as row', 'id_ as id')
+    //                 ->where('id', '=', $baris)
+    //                 ->orderBy('id');
+    //         } else {
+    //             $querydata = DB::table($temp)
+    //                 ->select('id as row', 'id_ as id')
+    //                 ->where('id', '=', ($baris - 1))
+    //                 ->orderBy('id');
+    //         }
+    //     } else {
+    //         $querydata = DB::table($temp)
+    //             ->select('id as row')
+    //             ->where('id_', '=',  $id)
+    //             ->orderBy('id');
+    //     }
+
+
+    //     $data = $querydata->first();
+    //     return $data;
+    // }
 }

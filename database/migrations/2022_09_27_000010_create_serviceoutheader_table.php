@@ -24,7 +24,7 @@ class CreateServiceoutheaderTable extends Migration
             $table->date('tglkeluar')->default('1900/1/1');
             $table->longText('keterangan')->default('');
             $table->unsignedBigInteger('statusformat')->default(0);  
-            $table->string('modifiedby',50)->unique();
+            $table->string('modifiedby',50)->default('');
             $table->timestamps();
 
             

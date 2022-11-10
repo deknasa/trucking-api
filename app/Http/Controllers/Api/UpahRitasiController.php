@@ -19,6 +19,7 @@ use App\Models\LogTrail;
 use App\Models\Parameter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class UpahRitasiController extends Controller
 {
@@ -160,7 +161,7 @@ class UpahRitasiController extends Controller
     public function show($id)
     {
 
-        $data = UpahRitasi::find($id);
+        $data = UpahRitasi::findAll($id);
         $detail = UpahRitasiRincian::getAll($id);
 
         return response([
@@ -350,6 +351,48 @@ class UpahRitasiController extends Controller
         ]);
     }
 
+    public function comboLuarKota(Request $request)
+    {
+
+        $params = [
+            'status' => $request->status ?? '',
+            'grp' => $request->grp ?? '',
+            'subgrp' => $request->subgrp ?? '',
+        ];
+        $temp = '##temp' . rand(1, 10000);
+        if ($params['status'] == 'entry') {
+            $query = Parameter::select('id', 'text as keterangan')
+                ->where('grp', "=", $params['grp'])
+                ->where('subgrp', "=", $params['subgrp']);
+        } else {
+            Schema::create($temp, function ($table) {
+                $table->integer('id')->length(11)->default(0);
+                $table->string('parameter', 50)->default(0);
+                $table->string('param', 50)->default(0);
+            });
+
+            DB::table($temp)->insert(
+                [
+                    'id' => '0',
+                    'parameter' => 'ALL',
+                    'param' => '',
+                ]
+            );
+
+            $queryall = Parameter::select('id', 'text as parameter', 'text as param')
+                ->where('grp', "=", $params['grp'])
+                ->where('subgrp', "=", $params['subgrp']);
+
+            $query = DB::table($temp)
+                ->unionAll($queryall);
+        }
+
+        $data = $query->get();
+
+        return response([
+            'data' => $data
+        ]);
+    }
     public function fieldLength()
     {
         $data = [];

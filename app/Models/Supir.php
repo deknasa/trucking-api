@@ -85,7 +85,7 @@ class Supir extends MyModel
         return $data;
     }
 
-    public function find($id)
+    public function findAll($id)
     {
         $data = DB::table('supir')->select(
             'supir.id',
@@ -99,6 +99,7 @@ class Supir extends MyModel
             'supir.tglmasuk',
             'supir.nominalpinjamansaldoawal',
             'supir.supirold_id',
+            'supirlama.namasupir as supirold',
             'supir.tglexpsim',
             'supir.nosim',
             'supir.keterangan',
@@ -108,6 +109,7 @@ class Supir extends MyModel
             'supir.statusluarkota',
             'supir.statuszonatertentu',
             'supir.zona_id',
+            'zona.keterangan as zona',
             'supir.angsuranpinjaman',
             'supir.plafondeposito',
             'supir.photosupir',
@@ -128,11 +130,6 @@ class Supir extends MyModel
         )
 
             ->leftJoin('zona', 'supir.zona_id', 'zona.id')
-            ->leftJoin('parameter', 'supir.statusaktif', '=', 'parameter.id')
-            ->leftJoin('parameter as statusadaupdategambar', 'supir.statusadaupdategambar', '=', 'statusadaupdategambar.id')
-            ->leftJoin('parameter as statusluarkota', 'supir.statusluarkota', '=', 'statusluarkota.id')
-            ->leftJoin('parameter as statuszonatertentu', 'supir.statuszonatertentu', '=', 'statuszonatertentu.id')
-            ->leftJoin('parameter as statusblacklist', 'supir.statusblacklist', '=', 'statusblacklist.id')
             ->leftJoin('supir as supirlama', 'supir.supirold_id', '=', 'supirlama.id')
 
             ->where('supir.id', $id)->first();
