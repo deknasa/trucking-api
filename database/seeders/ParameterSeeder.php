@@ -120,7 +120,7 @@ class ParameterSeeder extends Seeder
         parameter::create([ 'grp' => 'STATUS GUDANG', 'subgrp' => 'STATUS GUDANG', 'text' => 'KANTOR', 'memo' => '', 'type' => '0', 'modifiedby' => '1', 'kelompok' => '',]);
         parameter::create([ 'grp' => 'STATUS GUDANG', 'subgrp' => 'STATUS GUDANG', 'text' => 'SEMENTARA', 'memo' => '', 'type' => '0', 'modifiedby' => '1', 'kelompok' => '',]);
         parameter::create([ 'grp' => 'STATUS PENYESUAIAN HARGA', 'subgrp' => 'STATUS PENYESUAIAN HARGA', 'text' => 'OK', 'memo' => '', 'type' => '0', 'modifiedby' => '1', 'kelompok' => '',]);
-        parameter::create([ 'grp' => 'ORDERANTRUCKING', 'subgrp' => 'ORDERANTRUCKING', 'text' => '#JOB #9999#/#R#/#Y', 'memo' => '', 'type' => '0', 'modifiedby' => '1', 'kelompok' => '',]);
+        parameter::create([ 'grp' => 'ORDERANTRUCKING', 'subgrp' => 'ORDERANTRUCKING', 'text' => '9999#/#R#/#Y', 'memo' => '', 'type' => '0', 'modifiedby' => '1', 'kelompok' => '',]);
         parameter::create([ 'grp' => 'STATUS LANGSIR', 'subgrp' => 'STATUS LANGSIR', 'text' => 'A', 'memo' => '', 'type' => '0', 'modifiedby' => '1', 'kelompok' => '',]);
         parameter::create([ 'grp' => 'STATUS PERALIHAN', 'subgrp' => 'STATUS PERALIHAN', 'text' => 'A', 'memo' => '', 'type' => '0', 'modifiedby' => '1', 'kelompok' => '',]);
         parameter::create([ 'grp' => 'PROSESABSENSISUPIR', 'subgrp' => 'PROSESABSENSISUPIR', 'text' => '#PAS #9999#/#R#/#Y', 'memo' => '', 'type' => '0', 'modifiedby' => '1', 'kelompok' => '',]);
@@ -172,6 +172,8 @@ class ParameterSeeder extends Seeder
         parameter::create([ 'grp' => 'INVOICE EXTRA BUKTI', 'subgrp' => 'INVOICE EXTRA BUKTI', 'text' => '#EXT #9999#/#R#/#Y', 'memo' => 'INVOICE EXTRA BUKTI', 'type' => '118', 'modifiedby' => 'ADMIN', 'kelompok' => '',]);       
         parameter::create([ 'grp' => 'COA INVOICE DEBET', 'subgrp' => 'COA INVOICE DEBET', 'text' => '01.03.01.02', 'memo' => 'COA INVOICE DEBET', 'type' => '', 'modifiedby' => 'ADMIN', 'kelompok' => 'COA INVOICE',]);       
         parameter::create([ 'grp' => 'COA INVOICE KREDIT', 'subgrp' => 'COA INVOICE KREDIT', 'text' => '06.01.01.02', 'memo' => 'COA INVOICE KREDIT', 'type' => '', 'modifiedby' => 'ADMIN', 'kelompok' => 'COA INVOICE',]);       
+        parameter::create([ 'grp' => 'COA APPROVAL ABSENSI SUPIR KREDIT', 'subgrp' => 'COA APPROVAL ABSENSI SUPIR KREDIT', 'text' => '01.01.01.02', 'memo' => 'COA APPROVAL ABSENSI SUPIR KREDIT', 'type' => '', 'modifiedby' => 'ADMIN', 'kelompok' => 'COA APPROVAL ABSENSI SUPIR',]);       
+        parameter::create([ 'grp' => 'COA PEMBAYARAN HUTANG DEBET', 'subgrp' => 'COA PEMBAYARAN HUTANG DEBET', 'text' => '03.02.02.01', 'memo' => 'COA PEMBAYARAN HUTANG DEBET', 'type' => '', 'modifiedby' => 'ADMIN', 'kelompok' => 'COA PEMBAYARAN HUTANG',]);       
 
 
     }
