@@ -35,6 +35,9 @@
     use App\Http\Controllers\Api\KasGantungDetailController;
     use App\Http\Controllers\Api\KasGantungHeaderController;
     
+    use App\Http\Controllers\Api\NotaDebetDetailController;
+    use App\Http\Controllers\Api\NotaDebetHeaderController;
+    
     use App\Http\Controllers\Api\NotaKreditHeaderController;
     use App\Http\Controllers\Api\NotaKreditDetailController;
 
@@ -100,6 +103,7 @@
     use App\Http\Controllers\Api\InvoiceHeaderController;
     use App\Http\Controllers\Api\ProsesGajiSupirHeaderController;
     use App\Http\Controllers\Api\ProsesGajiSupirDetailController;
+    use App\Http\Controllers\Api\HariLiburController;
 
     /*
     |--------------------------------------------------------------------------
@@ -431,6 +435,14 @@
         Route::resource('notakreditheader', NotaKreditHeaderController::class);
         Route::resource('notakredit_detail', NotaKreditDetailController::class);
         
+        Route::get('notadebetheader/field_length', [NotaDebetHeaderController::class,'fieldLength']);
+        Route::get('notadebetheader/{id}/getpelunasan', [NotaDebetHeaderController::class,'getPelunasan']);
+        Route::get('notadebetheader/{id}/getnotadebet', [NotaDebetHeaderController::class,'getNotaDebet']);
+        Route::post('notadebetheader/{id}/approval', [NotaDebetHeaderController::class,'approval']);
+        Route::get('notadebetheader/export', [NotaDebetHeaderController::class, 'export']);
+        Route::resource('notadebetheader',NotaDebetHeaderController::class);
+        Route::resource('notadebet_detail', NotaDebetDetailController::class);
+        
         Route::get('pengembaliankasgantungheader/field_length', [PengembalianKasGantungHeaderController::class,'fieldLength']);
         Route::get('pengembaliankasgantungheader/getkasgantung', [PengembalianKasGantungHeaderController::class,'getKasGantung']);
         Route::get('pengembaliankasgantungheader/getpengembalian/{id}', [PengembalianKasGantungHeaderController::class,'getPengembalian']);
@@ -658,3 +670,4 @@
 
     // Route::resource('penerimaantruckingdetail', PenerimaanTruckingDetailController::class);
 
+    Route::get('harilibur', [HariLiburController::class, 'index']);
