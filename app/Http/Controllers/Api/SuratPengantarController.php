@@ -454,40 +454,41 @@ class SuratPengantarController extends Controller
             $content['subgroup'] = $subgroup;
             $content['table'] = 'suratpengantar';
             $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
+
+            $upahsupir = UpahSupir::where('kotadari_id', $request->dari_id)->where('kotasampai_id', $request->sampai_id)->first();
+            
+            $trado = Trado::find($request->trado_id);
+            $upahsupirRincian = UpahSupirRincian::where('upahsupir_id', $upahsupir->id)->where('container_id', $request->container_id)->where('statuscontainer_id', $request->statuscontainer_id)->first();
+
             $suratpengantar = new SuratPengantar();
+
+            $suratpengantar->jobtrucking = $request->jobtrucking;
             $suratpengantar->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $suratpengantar->pelanggan_id = $request->pelanggan_id;
             $suratpengantar->keterangan = $request->keterangan;
-            $suratpengantar->nourutorder = $request->nourutorder ?? 0;
+            $suratpengantar->nourutorder = $request->nourutorder ?? 1;
+            $suratpengantar->upah_id = $upahsupir->id;
             $suratpengantar->dari_id = $request->dari_id;
             $suratpengantar->sampai_id = $request->sampai_id;
-            
-            $upahsupir = UpahSupir::where('kotadari_id', $request->dari_id)->where('kotasampai_id', $request->sampai_id)->first();
-            if ($upahsupir == '') {
-                return response([
-                    'status' => false,
-                    'message' => 'Kota Dari dan Sampai Belum terdaftar di master Upah Ritasi'
-                ]);
-            }
-            $upahsupirRincian = UpahSupirRincian::where('upahsupir_id', $upahsupir->id)->where('container_id', $request->container_id)->where('statuscontainer_id', $request->statuscontainer_id)->first();
-            $suratpengantar->upah_id = $upahsupir->id;
-            $suratpengantar->jarak = $upahsupirRincian->jarak ?? 0;
             $suratpengantar->container_id = $request->container_id;
-            $suratpengantar->nocont = $request->nocont ?? '';
+            $suratpengantar->nocont = $request->nocont;
             $suratpengantar->nocont2 = $request->nocont2 ?? '';
             $suratpengantar->statuscontainer_id = $request->statuscontainer_id;
             $suratpengantar->trado_id = $request->trado_id;
             $suratpengantar->supir_id = $request->supir_id;
-            $suratpengantar->nojob = $request->nojob ?? '';
+            $suratpengantar->nojob = $request->nojob;
             $suratpengantar->nojob2 = $request->nojob2 ?? '';
             $suratpengantar->statuslongtrip = $request->statuslongtrip ?? 0;
-            $suratpengantar->gajisupir = $request->gajisupir ?? 0;
-            $suratpengantar->gajikenek = $request->gajikenek ?? 0;
-            // $suratpengantar->gajiritasi = $request->gajiritasi ?? 0;
+            $suratpengantar->omset = $request->omset;
+            $suratpengantar->discount = $request->discount ?? 0;
+            $suratpengantar->totalomset = $request->omset - ($request->omset * ($request->discount / 100));
+            $suratpengantar->gajisupir = $upahsupirRincian->nominalsupir;
+            $suratpengantar->gajikenek = $upahsupirRincian->nominalkenek;
             $suratpengantar->agen_id = $request->agen_id;
             $suratpengantar->jenisorder_id = $request->jenisorder_id;
             $suratpengantar->statusperalihan = $request->statusperalihan ?? 0;
             $suratpengantar->tarif_id = $request->tarif_id;
+            // $suratpengantar->gajiritasi = $request->gajiritasi ?? 0;
             $tarif = Tarif::find($request->tarif_id);
             $persentaseperalihan = $request->persentaseperalihan ?? 0;
             $nominalperalihan = $request->nominalperalihan ?? 0;
@@ -496,19 +497,18 @@ class SuratPengantarController extends Controller
             }
 
             $suratpengantar->nominalperalihan = $nominalperalihan;
-            $suratpengantar->persentaseperalihan = $persentaseperalihan;
             $suratpengantar->biayatambahan_id = $request->biayatambahan_id ?? 0;
             $suratpengantar->nosp = $request->nosp;
             $suratpengantar->tglsp = date('Y-m-d', strtotime($request->tglsp));
-            $suratpengantar->statusritasiomset = $request->statusritasiomset ?? 0;
-            $suratpengantar->cabang_id = $request->cabang_id ?? 0;
-            // $suratpengantar->komisisupir = $request->komisisupir;
-            $suratpengantar->tolsupir = $request->tolsupir ?? 0;
+            $suratpengantar->statusritasiomset = $request->statusritasiomset;
+            $suratpengantar->cabang_id = $request->cabang_id;
+            $suratpengantar->komisisupir = $upahsupirRincian->nominalkomisi;
+            $suratpengantar->tolsupir = $upahsupirRincian->nominaltol ?? 0;
+            $suratpengantar->jarak = $upahsupir->jarak ?? 0;
             $suratpengantar->nosptagihlain = $request->nosptagihlain ?? 0;
             $suratpengantar->nilaitagihlain = $request->nilaitagihlain ?? 0;
             $suratpengantar->tujuantagih = $request->tujuantagih ?? '';
-
-            $suratpengantar->liter = $upahsupir->liter ?? 0;
+            $suratpengantar->liter = $upahsupirRincian->liter ?? 0;
             $suratpengantar->nominalstafle = $request->nominalstafle ?? 0;
             $suratpengantar->statusnotif = $request->statusnotif ?? 0;
             $suratpengantar->statusoneway = $request->statusoneway ?? 0;
@@ -518,18 +518,14 @@ class SuratPengantarController extends Controller
             $suratpengantar->hargatol = $upahsupirRincian->hargatol ?? 0;
             $suratpengantar->qtyton = $request->qtyton ?? 0;
             $suratpengantar->totalton = $request->totalton ?? 0;
-            // $supir = Supir::find($request->supir_id);
-            // $trado = Trado::find($request->trado_id);
             $suratpengantar->mandorsupir_id = $request->mandorsupir_id ?? 0;
-            $suratpengantar->mandortrado_id = $request->mandortrado_id ?? 0;
+            $suratpengantar->mandortrado_id = $trado->mandor_id ?? 0;
             $suratpengantar->statustrip = $request->statustrip ?? 0;
             $suratpengantar->notripasal = $request->notripasal ?? '';
             $suratpengantar->tgldoor = date('Y-m-d', strtotime($request->tgldoor));
-            // $suratpengantar->upahritasi_id = $request->upahritasi_id ?? 0;
             $suratpengantar->statusdisc = $request->statusdisc ?? 0;
-            $suratpengantar->modifiedby = auth('api')->user()->name;;
-            $request->sortname = $request->sortname ?? 'id';
-            $request->sortorder = $request->sortorder ?? 'asc';
+            $suratpengantar->modifiedby = auth('api')->user()->name;
+            $suratpengantar->statusformat = $format->id;
 
             TOP:
             $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
@@ -555,27 +551,23 @@ class SuratPengantarController extends Controller
                 ];
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-                $nom= $request->nominal;
-                foreach ($nom as $key => $value) {
-                    $nominal = $request->nominal[$key];
-                    $nominal = str_replace('.', '', $nominal);
-                    $nominal = str_replace(',', '', $nominal);
-                    if ($value != '' and $nominal > 0) {
+                
+                if($request->nominal[0] != 0){
+                    for ($i = 0; $i < count($request->nominal); $i++) {
                         $suratpengantarbiayatambahan = new SuratPengantarBiayaTambahan();
-                        
+                            
                         $suratpengantarbiayatambahan->suratpengantar_id = $suratpengantar->id;
-                        $suratpengantarbiayatambahan->keteranganbiaya = $value;
-                        $suratpengantarbiayatambahan->nominal = $nominal;
+                        $suratpengantarbiayatambahan->keteranganbiaya = $request->keterangan_detail[$i];
+                        $suratpengantarbiayatambahan->nominal = $request->nominal[$i];
+                        $suratpengantarbiayatambahan->nominaltagih = $request->nominalTagih[$i];
                         $suratpengantarbiayatambahan->modifiedby = auth('api')->user()->name;;
                         $suratpengantarbiayatambahan->save();
+
+                        $suratpengantar->biayatambahan_id = $suratpengantarbiayatambahan->id;
+                        $suratpengantar->save();
                     }
-                    // else {
-                    //     return response([
-                        //         'status' => false,
-                        //         'message' => 'Harap Lengapin Informasi Biaya',
-                        //     ]);
-                        // }
-                    }
+                }
+                    
                     
                     
                     DB::commit();
@@ -586,15 +578,7 @@ class SuratPengantarController extends Controller
                 $suratpengantar->position = $selected->position;
                 $suratpengantar->page = ceil($suratpengantar->position / ($request->limit ?? 10));
 
-            // /* Set position and page */
-            // $del = 0;
-            // $data = $this->getid($suratpengantar->id, $request, $del);
-            // $suratpengantar->position = $data->row;
-
-            // if (isset($request->limit)) {
-            //     $suratpengantar->page = ceil($suratpengantar->position / $request->limit);
-            // }
-
+            
             return response([
                 'status' => true,
                 'message' => 'Berhasil disimpan',
@@ -622,11 +606,11 @@ class SuratPengantarController extends Controller
     {
 
         $data = SuratPengantar::findAll($id);
-
+        $detail = SuratPengantarBiayaTambahan::where('suratpengantar_id', $id)->get();
         return response([
             'status' => true,
             'data' => $data,
-            // 'detail' => $detail
+            'detail' => $detail
         ]);
     }
 
@@ -635,61 +619,62 @@ class SuratPengantarController extends Controller
      */
     public function update(StoreSuratPengantarRequest $request, SuratPengantar $suratpengantar)
     {
+        
+        DB::beginTransaction();
         try {
             // $suratpengantar = DB::table((new SuratPengantar())->getTable())->findOrFail($suratpengantar->id);
+            $upahsupir = UpahSupir::where('kotadari_id', $request->dari_id)->where('kotasampai_id', $request->sampai_id)->first();
+            
+            $trado = Trado::find($request->trado_id);
+            $upahsupirRincian = UpahSupirRincian::where('upahsupir_id', $upahsupir->id)->where('container_id', $request->container_id)->where('statuscontainer_id', $request->statuscontainer_id)->first();
+
+            $suratpengantar->jobtrucking = $request->jobtrucking;
             $suratpengantar->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $suratpengantar->pelanggan_id = $request->pelanggan_id;
             $suratpengantar->keterangan = $request->keterangan;
-            $suratpengantar->nourutorder = $request->nourutorder ?? 0;
+            $suratpengantar->nourutorder = $request->nourutorder ?? 1;
+            $suratpengantar->upah_id = $upahsupir->id;
             $suratpengantar->dari_id = $request->dari_id;
             $suratpengantar->sampai_id = $request->sampai_id;
-            $upahsupir = UpahSupir::where('kotadari_id', $request->dari_id)->where('kotasampai_id', $request->sampai_id)->first();
-            if ($upahsupir == '') {
-                return response([
-                    'status' => false,
-                    'message' => 'Kota Dari dan Sampai Belum terdaftar di master Upah Ritasi'
-                ]);
-            }
-            $upahsupirRincian = UpahSupirRincian::where('upahsupir_id', $upahsupir->id)->where('container_id', $request->container_id)->where('statuscontainer_id', $request->statuscontainer_id)->first();
-            $suratpengantar->upah_id = $upahsupir->id;
-            $suratpengantar->jarak = $upahsupirRincian->jarak ?? 0;
             $suratpengantar->container_id = $request->container_id;
-            $suratpengantar->nocont = $request->nocont ?? '';
+            $suratpengantar->nocont = $request->nocont;
             $suratpengantar->nocont2 = $request->nocont2 ?? '';
             $suratpengantar->statuscontainer_id = $request->statuscontainer_id;
             $suratpengantar->trado_id = $request->trado_id;
             $suratpengantar->supir_id = $request->supir_id;
-            $suratpengantar->nojob = $request->nojob ?? '';
+            $suratpengantar->nojob = $request->nojob;
             $suratpengantar->nojob2 = $request->nojob2 ?? '';
             $suratpengantar->statuslongtrip = $request->statuslongtrip ?? 0;
-            $suratpengantar->gajisupir = $request->gajisupir ?? 0;
-            $suratpengantar->gajikenek = $request->gajikenek ?? 0;
-            // $suratpengantar->gajiritasi = $request->gajiritasi ?? 0;
+            $suratpengantar->omset = $request->omset;
+            $suratpengantar->discount = $request->discount ?? 0;
+            $suratpengantar->totalomset = $request->omset - ($request->omset * ($request->discount / 100));
+            $suratpengantar->gajisupir = $upahsupirRincian->nominalsupir;
+            $suratpengantar->gajikenek = $upahsupirRincian->nominalkenek;
             $suratpengantar->agen_id = $request->agen_id;
             $suratpengantar->jenisorder_id = $request->jenisorder_id;
             $suratpengantar->statusperalihan = $request->statusperalihan ?? 0;
             $suratpengantar->tarif_id = $request->tarif_id;
+            // $suratpengantar->gajiritasi = $request->gajiritasi ?? 0;
             $tarif = Tarif::find($request->tarif_id);
             $persentaseperalihan = $request->persentaseperalihan ?? 0;
             $nominalperalihan = $request->nominalperalihan ?? 0;
             if ($persentaseperalihan != 0) {
                 $nominalperalihan = $tarif->nominal * ($persentaseperalihan / 100);
             }
-
+            $suratpengantar->persentaseperalihan = $request->persentaseperalihan ?? 0;
             $suratpengantar->nominalperalihan = $nominalperalihan;
-            $suratpengantar->persentaseperalihan = $persentaseperalihan;
             $suratpengantar->biayatambahan_id = $request->biayatambahan_id ?? 0;
             $suratpengantar->nosp = $request->nosp;
             $suratpengantar->tglsp = date('Y-m-d', strtotime($request->tglsp));
-            $suratpengantar->statusritasiomset = $request->statusritasiomset ?? 0;
-            $suratpengantar->cabang_id = $request->cabang_id ?? 0;
-            // $suratpengantar->komisisupir = $request->komisisupir;
-            $suratpengantar->tolsupir = $request->tolsupir ?? 0;
+            $suratpengantar->statusritasiomset = $request->statusritasiomset;
+            $suratpengantar->cabang_id = $request->cabang_id;
+            $suratpengantar->komisisupir = $upahsupirRincian->nominalkomisi;
+            $suratpengantar->tolsupir = $upahsupirRincian->nominaltol ?? 0;
+            $suratpengantar->jarak = $upahsupir->jarak ?? 0;
             $suratpengantar->nosptagihlain = $request->nosptagihlain ?? 0;
             $suratpengantar->nilaitagihlain = $request->nilaitagihlain ?? 0;
             $suratpengantar->tujuantagih = $request->tujuantagih ?? '';
-
-            $suratpengantar->liter = $upahsupir->liter ?? 0;
+            $suratpengantar->liter = $upahsupirRincian->liter ?? 0;
             $suratpengantar->nominalstafle = $request->nominalstafle ?? 0;
             $suratpengantar->statusnotif = $request->statusnotif ?? 0;
             $suratpengantar->statusoneway = $request->statusoneway ?? 0;
@@ -699,21 +684,19 @@ class SuratPengantarController extends Controller
             $suratpengantar->hargatol = $upahsupirRincian->hargatol ?? 0;
             $suratpengantar->qtyton = $request->qtyton ?? 0;
             $suratpengantar->totalton = $request->totalton ?? 0;
-            // $supir = Supir::find($request->supir_id);
-            // $trado = Trado::find($request->trado_id);
             $suratpengantar->mandorsupir_id = $request->mandorsupir_id ?? 0;
-            $suratpengantar->mandortrado_id = $request->mandortrado_id ?? 0;
+            $suratpengantar->mandortrado_id = $trado->mandor_id ?? 0;
             $suratpengantar->statustrip = $request->statustrip ?? 0;
             $suratpengantar->notripasal = $request->notripasal ?? '';
             $suratpengantar->tgldoor = date('Y-m-d', strtotime($request->tgldoor));
-            $suratpengantar->upahritasi_id = $request->upahritasi_id ?? 0;
             $suratpengantar->statusdisc = $request->statusdisc ?? 0;
-            $suratpengantar->modifiedby = auth('api')->user()->name;;
+            $suratpengantar->modifiedby = auth('api')->user()->name;
+
 
             if ($suratpengantar->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($suratpengantar->getTable()),
-                    'postingdari' => 'EDIT suratpengantar',
+                    'postingdari' => 'EDIT SURAT PENGANTAR',
                     'idtrans' => $suratpengantar->id,
                     'nobuktitrans' => $suratpengantar->id,
                     'aksi' => 'EDIT',
@@ -724,35 +707,29 @@ class SuratPengantarController extends Controller
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
 
-                $suratpengantar->suratpengantarBiaya()->delete();
-
-                foreach ($request->keteranganbiaya as $key => $value) {
-                    $nominal = $request->nominal[$key];
-                    $nominal = str_replace('.', '', $nominal);
-                    $nominal = str_replace(',', '', $nominal);
-                    if ($value != '' and $nominal > 0) {
+                if($request->nominal[0] != 0){
+                    
+                    SuratPengantarBiayaTambahan::where('suratpengantar_id',$suratpengantar->id)->delete();
+                    for ($i = 0; $i < count($request->nominal); $i++) {
                         $suratpengantarbiayatambahan = new SuratPengantarBiayaTambahan();
-
+                            
                         $suratpengantarbiayatambahan->suratpengantar_id = $suratpengantar->id;
-                        $suratpengantarbiayatambahan->keteranganbiaya = $value;
-                        $suratpengantarbiayatambahan->nominal = $nominal;
+                        $suratpengantarbiayatambahan->keteranganbiaya = $request->keterangan_detail[$i];
+                        $suratpengantarbiayatambahan->nominal = $request->nominal[$i];
+                        $suratpengantarbiayatambahan->nominaltagih = $request->nominalTagih[$i];
                         $suratpengantarbiayatambahan->modifiedby = auth('api')->user()->name;;
                         $suratpengantarbiayatambahan->save();
+
+                        $suratpengantar->biayatambahan_id = $suratpengantarbiayatambahan->id;
+                        $suratpengantar->save();
                     }
                 }
 
+                DB::commit();
                 /* Set position and page */
                 $selected = $this->getPosition($suratpengantar, $suratpengantar->getTable());
                 $suratpengantar->position = $selected->position;
                 $suratpengantar->page = ceil($suratpengantar->position / ($request->limit ?? 10));
-
-                // /* Set position and page */
-                // $suratpengantar->position = $this->getid($suratpengantar->id, $request, 0)->row;
-
-                // if (isset($request->limit)) {
-                //     $suratpengantar->page = ceil($suratpengantar->position / $request->limit);
-                // }
-
                 return response([
                     'status' => true,
                     'message' => 'Berhasil diubah',
@@ -765,6 +742,8 @@ class SuratPengantarController extends Controller
                 ]);
             }
         } catch (\Throwable $th) {
+           
+            DB::rollBack();
             throw $th;
         }
     }
@@ -776,7 +755,7 @@ class SuratPengantarController extends Controller
     {
         DB::beginTransaction();
         try {
-            $d = SuratPengantarBiayaTambahan::where('suratpengantar_id', $suratpengantar->id)->delete();
+            $del = SuratPengantarBiayaTambahan::where('suratpengantar_id', $suratpengantar->id)->delete();
             // $delete = SuratPengantar::destroy($suratpengantar->id);
             $delete = $suratpengantar->delete();
 
@@ -802,12 +781,6 @@ class SuratPengantarController extends Controller
             $suratpengantar->id = $selected->id;
             $suratpengantar->page = ceil($suratpengantar->position / ($request->limit ?? 10));
 
-            // $data = $this->getid($suratpengantar->id, $request, $del);
-            // $suratpengantar->position = @$data->row  ?? 0;
-            // $suratpengantar->id = @$data->id  ?? 0;
-            // if (isset($request->limit)) {
-            //     $suratpengantar->page = ceil($suratpengantar->position / $request->limit);
-            // }
             return response([
                 'status' => true,
                 'message' => 'Berhasil dihapus',
@@ -879,18 +852,51 @@ class SuratPengantarController extends Controller
         ]);
     }
 
-    public function getGaji(Request $request)
+    public function cekUpahSupir(Request $request) {
+        $upahSupir =  DB::table('upahsupir')
+                    ->select('upahsupirrincian.nominalsupir', 'upahsupirrincian.nominalkenek', 'upahsupirrincian.nominalkomisi')
+                    ->join('upahsupirrincian', 'upahsupir.id', 'upahsupirrincian.upahsupir_id')
+                    ->where('upahsupir.kotadari_id', $request->dari_id)
+                    ->where('upahsupir.kotasampai_id', $request->sampai_id)
+                    ->where('upahsupirrincian.container_id', $request->container_id)
+                    ->where('upahsupirrincian.statuscontainer_id', $request->statuscontainer_id)
+                    ->first();
+        if($upahSupir != null) {
+            $data = [
+                'message' => '',
+                'errors' => 'belum approve',
+                'kodestatus' => '1',
+            ];
+
+            return response($data);
+        }else{
+            $query = DB::table('error')
+            ->select('keterangan')
+            ->where('kodeerror', '=', 'USBA')
+            ->get();
+            $keterangan = $query['0'];
+            $data = [
+                'message' => $keterangan,
+                'errors' => 'upahsupirbelumada',
+                'kodestatus' => '0',
+            ];
+
+            return response($data);
+        }
+    }
+
+    public function getGaji($dari, $sampai, $container, $statuscontainer)
     {
         $data = DB::table('upahsupir')
             ->select('upahsupirrincian.nominalsupir', 'upahsupirrincian.nominalkenek', 'upahsupirrincian.nominalkomisi')
             ->join('upahsupirrincian', 'upahsupir.id', 'upahsupirrincian.upahsupir_id')
-            ->where('upahsupir.kotadari_id', $request->dari_id)
-            ->where('upahsupir.kotasampai_id', $request->sampai_id)
-            ->where('upahsupirrincian.container_id', $request->container_id)
-            ->where('upahsupirrincian.statuscontainer_id', $request->statuscontainer_id);
+            ->where('upahsupir.kotadari_id', $dari)
+            ->where('upahsupir.kotasampai_id', $sampai)
+            ->where('upahsupirrincian.container_id', $container)
+            ->where('upahsupirrincian.statuscontainer_id', $statuscontainer)
 
-            dd($data->toSql());
-            // ->first();
+            // dd($data->toSql());
+            ->first();
 
         return response([
             'data' => $data
@@ -1011,7 +1017,7 @@ class SuratPengantarController extends Controller
         $data = [
             'statuslongtrip' => Parameter::where('grp', 'STATUS LONGTRIP')->get(),
             'statusperalihan' => Parameter::where('grp', 'STATUS PERALIHAN')->get(),
-            'statusritasiomset' => Parameter::where('grp', 'STATUS RITASIOMSET')->get(),
+            'statusritasiomset' => Parameter::where('grp', 'STATUS RITASI OMSET')->get(),
         ];
 
         return response([

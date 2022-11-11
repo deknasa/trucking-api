@@ -471,6 +471,12 @@
         Route::post('invoiceheader/{id}/cekapproval', [InvoiceHeaderController::class, 'cekapproval'])->name('invoiceheader.cekapproval');
         Route::resource('invoiceheader', InvoiceHeaderController::class);
         Route::resource('invoicedetail', InvoiceDetailController::class);
+
+        Route::get('suratpengantar/combo', [SuratPengantarController::class, 'combo']);
+        Route::get('suratpengantar/field_length', [SuratPengantarController::class, 'fieldLength']);
+        Route::post('suratpengantar/cekUpahSupir', [SuratPengantarController::class, 'cekUpahSupir']);
+        Route::get('suratpengantar/getGaji/{dari}/{sampai}/{container}/{statuscontainer}', [SuratPengantarController::class, 'getGaji']);
+        Route::resource('suratpengantar', SuratPengantarController::class);
     });
 
     Route::get('gudang/combo', [GudangController::class, 'combo']);
@@ -525,11 +531,6 @@
     Route::get('mekanik/combo', [MekanikController::class, 'combo']);
     Route::get('mekanik/field_length', [MekanikController::class, 'fieldLength']);
     Route::resource('mekanik', MekanikController::class);
-
-    Route::get('suratpengantar/combo', [SuratPengantarController::class, 'combo']);
-    Route::get('suratpengantar/field_length', [SuratPengantarController::class, 'fieldLength']);
-    Route::get('suratpengantar/getGaji', [SuratPengantarController::class, 'getGaji']);
-    Route::resource('suratpengantar', SuratPengantarController::class);
 
     Route::get('upahsupir/combo', [UpahSupirController::class, 'combo']);
     Route::get('upahsupir/field_length', [UpahSupirController::class, 'fieldLength']);
