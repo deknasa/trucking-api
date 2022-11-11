@@ -174,6 +174,7 @@ class ParameterSeeder extends Seeder
         parameter::create([ 'grp' => 'COA INVOICE KREDIT', 'subgrp' => 'COA INVOICE KREDIT', 'text' => '06.01.01.02', 'memo' => 'COA INVOICE KREDIT', 'type' => '', 'modifiedby' => 'ADMIN', 'kelompok' => 'COA INVOICE',]);       
         parameter::create([ 'grp' => 'COA APPROVAL ABSENSI SUPIR KREDIT', 'subgrp' => 'COA APPROVAL ABSENSI SUPIR KREDIT', 'text' => '01.01.01.02', 'memo' => 'COA APPROVAL ABSENSI SUPIR KREDIT', 'type' => '', 'modifiedby' => 'ADMIN', 'kelompok' => 'COA APPROVAL ABSENSI SUPIR',]);       
         parameter::create([ 'grp' => 'COA PEMBAYARAN HUTANG DEBET', 'subgrp' => 'COA PEMBAYARAN HUTANG DEBET', 'text' => '03.02.02.01', 'memo' => 'COA PEMBAYARAN HUTANG DEBET', 'type' => '', 'modifiedby' => 'ADMIN', 'kelompok' => 'COA PEMBAYARAN HUTANG',]);       
+        parameter::create([ 'grp' => 'COA APPROVAL ABSENSI SUPIR DEBET', 'subgrp' => 'COA APPROVAL ABSENSI SUPIR DEBET', 'text' => '01.01.02.02', 'memo' => 'COA APPROVAL ABSENSI SUPIR DEBET', 'type' => '', 'modifiedby' => 'ADMIN', 'kelompok' => 'COA APPROVAL ABSENSI SUPIR',]);       
 
 
     }
