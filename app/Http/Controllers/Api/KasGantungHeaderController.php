@@ -560,7 +560,7 @@ class KasGantungHeaderController extends Controller
                     // if (!$pengeluaran['status'] AND @$pengeluaran['errorCode'] == 2601) {
                     //     goto ATAS;
                     // }
-                    dd($pengeluaran);
+                    // dd($pengeluaran);
 
                     if (!$pengeluaran['status']) {
                         throw new \Throwable($pengeluaran['message']);
