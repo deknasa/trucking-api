@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class PengeluaranDetail extends MyModel
 {
@@ -21,4 +22,24 @@ class PengeluaranDetail extends MyModel
         'created_at',
         'updated_at',
     ];
+
+    public function findAll($id)
+    {
+        $query =  DB::table('pengeluarandetail')->select(
+            'pengeluarandetail.alatbayar_id',
+            'alatbayar.namaalatbayar as alatbayar',
+            'pengeluarandetail.nowarkat',
+            'pengeluarandetail.tgljatuhtempo',
+            'pengeluarandetail.keterangan',
+            'pengeluarandetail.nominal',
+            'pengeluarandetail.coadebet',
+            'pengeluarandetail.bulanbeban'
+        )
+        ->leftJoin('alatbayar', 'pengeluarandetail.alatbayar_id', 'alatbayar.id')
+        ->where('pengeluarandetail.pengeluaran_id',$id);
+
+        $data = $query->get();
+
+        return $data;
+    }
 }

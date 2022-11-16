@@ -25,12 +25,13 @@ class StorePenerimaanDetailRequest extends FormRequest
     {
         return [
             'nowarkat' => 'required|array',
-            'tgljatuhtempo' => 'required|array',
-            'nominal' => 'required|array',
-            'keterangan_detail' => 'required|array',
-            'coakredit' => 'required|array',
-            'bankpelanggan_id' => 'required|array',
-            'jenisbiaya' => 'required|array',
+            'nowarkat.*' => 'required'
+            // 'tgljatuhtempo' => 'required|array',
+            // 'nominal' => 'required|array',
+            // 'keterangan_detail' => 'required|array',
+            // 'coakredit' => 'required|array',
+            // 'bankpelanggan_id' => 'required|array',
+            // 'jenisbiaya' => 'required|array',
         ];
     }
 }

@@ -46,42 +46,42 @@ class SupirController extends Controller
             
             if (!empty($arrSupir)) {
                 foreach($arrSupir as $index => $file){
-                    $imgSupir .= "<img src='" . $baseUrl . "uploads/". $file . "' class='mr-2' style='width:50px; height:50px'>"; 
+                    $imgSupir .= "<img src='" . $baseUrl . "uploads/supir/". $file . "' class='mr-2' style='width:50px; height:50px'>"; 
                 }
             }
             
             $imgKtp = '';
             if (!empty($arrKtp)) {
                 foreach($arrKtp as $index => $file){
-                    $imgKtp .= "<img src='" . $baseUrl . 'uploads/' . $file . "' class='mr-2' style='width:50px; height:50px'>";
+                    $imgKtp .= "<img src='" . $baseUrl . 'uploads/ktp/' . $file . "' class='mr-2' style='width:50px; height:50px'>";
                 }
             }
 
             $imgsim = '';
             if (!empty($arrSim)) {
                 foreach($arrSim as $index => $file){
-                    $imgsim .= "<img src='" . $baseUrl . 'uploads/' . $file . "' class='mr-2' style='width:50px; height:50px'>";
+                    $imgsim .= "<img src='" . $baseUrl . 'uploads/sim/' . $file . "' class='mr-2' style='width:50px; height:50px'>";
                 }
             }
 
             $imgkk = '';
             if (!empty($arrKk)) {
                 foreach($arrKk as $index => $file){
-                    $imgkk .= "<img src='" . $baseUrl . 'uploads/' . $file . "' class='mr-2' style='width:50px; height:50px'>";
+                    $imgkk .= "<img src='" . $baseUrl . 'uploads/kk/' . $file . "' class='mr-2' style='width:50px; height:50px'>";
                 }
             }
 
             $imgskck = '';
             if (!empty($arrSkck)) {
                 foreach($arrSkck as $index => $file){
-                    $imgskck .= "<img src='" . $baseUrl . 'uploads/' . $file . "' class='mr-2' style='width:50px; height:50px'>";
+                    $imgskck .= "<img src='" . $baseUrl . 'uploads/skck/' . $file . "' class='mr-2' style='width:50px; height:50px'>";
                 }
             }
 
             $imgdomisili = '';
             if (!empty($arrDomisili)) {
                 foreach($arrDomisili as $index => $file){
-                    $imgdomisili .= "<img src='" . $baseUrl . 'uploads/' . $file . "' class='mr-2' style='width:50px; height:50px'>";
+                    $imgdomisili .= "<img src='" . $baseUrl . 'uploads/domisili/' . $file . "' class='mr-2' style='width:50px; height:50px'>";
                 }
             }
             // $rpl = ['photosupir' => $imgSupir];
@@ -237,9 +237,9 @@ class SupirController extends Controller
     
                 $upload = $this->upload_image($request, $supir->id, 'EDIT', $supir);
                 
-                // if (!$upload['status']) {
-                //     throw new \Throwable($upload['message']);
-                // }
+                if (!$upload['status']) {
+                    throw new \Throwable($upload['message']);
+                }
             }
 
             
@@ -383,24 +383,28 @@ class SupirController extends Controller
         $kategori = substr($field,5);
         $length = strlen($kategori)+1;
         $arrSupir = json_decode($supir->$field, true);
+
         $files = [];
         foreach($arrSupir as $index => $value){
             // $substr = substr($file)
-            // dd();
-            $name = substr($value,$length);
-            $ext = pathinfo($name, PATHINFO_EXTENSION);
-            $file = [[
-                'name' => $name,
-                'size' => Storage::disk('local')->size($value),
-                'ext' => 'image/'.strtolower($ext)
-            ]];
-            
+            // dd($kategori);
+            // $name = substr($value,$length);
+            // $ext = pathinfo($name, PATHINFO_EXTENSION);
+            // dd(mime_content_type(public_path('uploads/'.$kategori.'/'.$value)));
+            $file = [
+                [
+                    'name' => $value,
+                    'size' => filesize(public_path('uploads/'.$kategori.'/'.$value)),
+                    'type' => mime_content_type(public_path('uploads/'.$kategori.'/'.$value))
+                ]
+            ];
+                
             $files = array_merge($files, $file);
         }
 
         return response([
             'file' => $files,
-            'base' => asset('').'uploads/'.strtoupper($kategori)
+            'base' => asset('').'uploads/'
         ]);
 
     }
@@ -561,30 +565,22 @@ class SupirController extends Controller
     {
         try {
             // UPLOAD SUPIR
-            if ($request->photosupir) {
-                foreach ($request->photosupir as $index => $file) {
-                    Log::info('file on upload image', [
-                        'file' => $file,
-                        'fileOriginalName' => $file->getClientOriginalName()
-                    ]);
+            if ($request->file('photosupir')) {
+                foreach ($request->file('photosupir') as $index => $file) {
+                   
+                    // $image = Image::make($file);
+                    // Log::info('file on upload image', [
+                    //     'file' => $file,
+                    //     'fileOriginalName' => $file->getClientOriginalName()
+                    // ]);
 
                     $basePath = public_path().'/uploads/SUPIR/';
-                    $uniqueName = time().rand().rand(10,100).'.'.$file->getClientOriginalName();
-                    $name = "ori-".$uniqueName;
+                    $uniqueName = $file->getClientOriginalName();
+                    $name = $uniqueName;
                     $move = $file->move($basePath,$name);
 
-                    Log::info('after move', [
-                        'move' => $move
-                    ]);
-    
-                    $path = $basePath.$name;
-                    $data['supir'][] = $name;
-                    $imageResizes = App::imageResize($basePath,$path,$uniqueName);
-                    $data['supir'][] = $imageResizes[0];
-                    $data['supir'][] = $imageResizes[1];
-                    
-                // dd($file->imageFile);
                     // $data['supir']['file'.($index+1)] = Storage::disk('local')->put('supir', $file);
+                    $data['supir']['file'.($index+1)] = $name;
                 }
 
             }
@@ -593,28 +589,48 @@ class SupirController extends Controller
             // UPLOAD KTP
             if ($request->ktp) {
                 foreach ($request->ktp as $index => $file) {
-                    $data['ktp']['file'.($index+1)] = Storage::disk('local')->put('ktp', $file);
+                    $basePath = public_path().'/uploads/KTP/';
+                    $uniqueName = $file->getClientOriginalName();
+                    $name = "ori-".$uniqueName;
+                    $move = $file->move($basePath,$name);
+                    $data['ktp']['file'.($index+1)] = $name;
+                    // $data['ktp']['file'.($index+1)] = Storage::disk('local')->put('ktp', $file);
                 }
             }
 
             // UPLOAD SIM
             if ($request->sim) {
                 foreach ($request->sim as $index => $file) {
-                    $data['sim']['file'.($index+1)] = Storage::disk('local')->put('sim', $file);
+                    $basePath = public_path().'/uploads/SIM/';
+                    $uniqueName = $file->getClientOriginalName();
+                    $name = "ori-".$uniqueName;
+                    $move = $file->move($basePath,$name);
+                    $data['sim']['file'.($index+1)] = $name;
+                    // $data['sim']['file'.($index+1)] = Storage::disk('local')->put('sim', $file);
                 }
             }
 
             // UPLOAD KK
             if ($request->kk) {
                 foreach ($request->kk as $index => $file) {
-                    $data['kk']['file'.($index+1)]= Storage::disk('local')->put('kk', $file);
+                    $basePath = public_path().'/uploads/KK/';
+                    $uniqueName = $file->getClientOriginalName();
+                    $name = "ori-".$uniqueName;
+                    $move = $file->move($basePath,$name);
+                    $data['kk']['file'.($index+1)] = $name;
+                    // $data['kk']['file'.($index+1)]= Storage::disk('local')->put('kk', $file);
                 }
             }
 
             // UPLOAD SKCK
             if ($request->skck) {
                 foreach ($request->skck as $index => $file) {
-                    $data['skck']['file'.($index+1)] = Storage::disk('local')->put('skck', $file);
+                    $basePath = public_path().'/uploads/SKCK/';
+                    $uniqueName = $file->getClientOriginalName();
+                    $name = "ori-".$uniqueName;
+                    $move = $file->move($basePath,$name);
+                    $data['skck']['file'.($index+1)] = $name;
+                    // $data['skck']['file'.($index+1)] = Storage::disk('local')->put('skck', $file);
                 
                 }
             }
@@ -622,7 +638,12 @@ class SupirController extends Controller
             // UPLOAD DOMISILI
             if ($request->domisili) {
                 foreach ($request->domisili as $index => $file) {
-                    $data['domisili']['file'.($index+1)] = Storage::disk('local')->put('domisili', $file);
+                    $basePath = public_path().'/uploads/DOMISILI/';
+                    $uniqueName = $file->getClientOriginalName();
+                    $name = "ori-".$uniqueName;
+                    $move = $file->move($basePath,$name);
+                    $data['domisili']['file'.($index+1)] = $name;
+                    // $data['domisili']['file'.($index+1)] = Storage::disk('local')->put('domisili', $file);
                     // $data['domisili'][] = Storage::put('domisili', $file);
                     // $basePath = public_path() . '/uploads/domisili/';
                     // $uniqueName = time() . rand() . rand(10, 100) . '.' . $image->getClientOriginalName();
@@ -638,10 +659,10 @@ class SupirController extends Controller
             }
 
             
-            Log::info('data supir', [
-                'data' => $data,
-                'supir' => $supir
-            ]);
+            // Log::info('data supir', [
+            //     'data' => $data,
+            //     'supir' => $supir
+            // ]);
            
             $supir->photosupir = json_encode($data['supir'] ?? []);
             $supir->photoktp = json_encode($data['ktp'] ?? []);

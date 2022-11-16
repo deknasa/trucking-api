@@ -21,4 +21,14 @@ class PenerimaanDetail extends MyModel
         'created_at',
         'updated_at',
     ];
+
+    public function findAll($id)
+    {
+        $detail = PenerimaanDetail::select('penerimaandetail.coadebet','penerimaandetail.tgljatuhtempo','penerimaandetail.nowarkat','penerimaandetail.bankpelanggan_id', 'bankpelanggan.namabank as bankpelanggan', 'penerimaandetail.keterangan', 'penerimaandetail.nominal','penerimaandetail.invoice_nobukti','penerimaandetail.jenisbiaya','penerimaandetail.pelunasanpiutang_nobukti')
+        ->join('bankpelanggan','penerimaandetail.bankpelanggan_id','bankpelanggan.id')
+        ->where('penerimaandetail.penerimaan_id',$id)
+        ->get();
+
+        return $detail;
+    }
 }

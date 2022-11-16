@@ -81,7 +81,7 @@ class PengeluaranTruckingHeaderController extends Controller
             $pengeluarantruckingheader->keterangan = $request->keterangan;
             $pengeluarantruckingheader->bank_id = $request->bank_id;
             $pengeluarantruckingheader->statusposting = $statusPosting->id ?? 0;
-            $pengeluarantruckingheader->coa = $request->akunpusat;
+            $pengeluarantruckingheader->coa = $request->coa;
             $pengeluarantruckingheader->pengeluaran_nobukti = $request->pengeluaran_nobukti;
             $pengeluarantruckingheader->statusformat = $format->id;
             $pengeluarantruckingheader->modifiedby = auth('api')->user()->name;
@@ -119,14 +119,14 @@ class PengeluaranTruckingHeaderController extends Controller
                       
             $detaillog = [];
 
-            // for ($i = 0; $i < count($request->nominal); $i++) {
+            for ($i = 0; $i < count($request->nominal); $i++) {
                     
                 $datadetail = [
                     'pengeluarantruckingheader_id' => $pengeluarantruckingheader->id,
                     'nobukti' => $pengeluarantruckingheader->nobukti,
-                    'supir_id' => $request->supir_id,
-                    'penerimaantruckingheader_nobukti' => $request->penerimaantruckingheader_nobukti,
-                    'nominal' => $request->nominal,
+                    'supir_id' => $request->supir_id[$i],
+                    'penerimaantruckingheader_nobukti' => $request->penerimaantruckingheader_nobukti[$i] ?? '',
+                    'nominal' => $request->nominal[$i],
                     'modifiedby' => $pengeluarantruckingheader->modifiedby,
                 ];
 
@@ -149,9 +149,9 @@ class PengeluaranTruckingHeaderController extends Controller
                     'id' => $iddetail,
                     'pengeluarantruckingheader_id' => $pengeluarantruckingheader->id,
                     'nobukti' => $pengeluarantruckingheader->nobukti,
-                    'supir_id' => $request->supir_id,
-                    'penerimaantruckingheader_nobukti' => $request->penerimaantruckingheader_nobukti,
-                    'nominal' => $request->nominal,
+                    'supir_id' => $request->supir_id[$i],
+                    'penerimaantruckingheader_nobukti' => $request->penerimaantruckingheader_nobukti[$i] ?? '',
+                    'nominal' => $request->nominal[$i],
                     'modifiedby' => $pengeluarantruckingheader->modifiedby,
                     'created_at' => date('d-m-Y H:i:s', strtotime($pengeluarantruckingheader->created_at)),
                     'updated_at' => date('d-m-Y H:i:s', strtotime($pengeluarantruckingheader->updated_at)),
@@ -180,7 +180,7 @@ class PengeluaranTruckingHeaderController extends Controller
                 $data = new StoreLogTrailRequest($datalogtrail);
                 app(LogTrailController::class)->store($data);
                 
-            // }
+            }
      
            
             $request->sortname = $request->sortname ?? 'id';
@@ -212,7 +212,7 @@ class PengeluaranTruckingHeaderController extends Controller
     public function show($id)
     {
         
-        $data = PengeluaranTruckingHeader::find($id);
+        $data = PengeluaranTruckingHeader::findAll($id);
         $detail = PengeluaranTruckingDetail::getAll($id);
         
         // dd($details);
@@ -264,7 +264,7 @@ class PengeluaranTruckingHeaderController extends Controller
             $pengeluarantruckingheader->pengeluarantrucking_id = $idpengeluaran;
             $pengeluarantruckingheader->keterangan = $request->keterangan;
             $pengeluarantruckingheader->bank_id = $request->bank_id;
-            $pengeluarantruckingheader->coa = $request->akunpusat;
+            $pengeluarantruckingheader->coa = $request->coa;
             $pengeluarantruckingheader->pengeluaran_nobukti = $request->pengeluaran_nobukti;
             $pengeluarantruckingheader->statusformat =  $format->id;
             $pengeluarantruckingheader->modifiedby = auth('api')->user()->name;
@@ -301,7 +301,7 @@ class PengeluaranTruckingHeaderController extends Controller
                         'pengeluarantruckingheader_id' => $pengeluarantruckingheader->id,
                         'nobukti' => $pengeluarantruckingheader->nobukti,
                         'supir_id' => $request->supir_id[$i],
-                        'penerimaantruckingheader_nobukti' => $request->penerimaantruckingheader_nobukti[$i],
+                        'penerimaantruckingheader_nobukti' => $request->penerimaantruckingheader_nobukti[$i] ?? '',
                         'nominal' => $request->nominal[$i],
                         'modifiedby' => $pengeluarantruckingheader->modifiedby,
                     ];
@@ -326,7 +326,7 @@ class PengeluaranTruckingHeaderController extends Controller
                         'pengeluarantruckingheader_id' => $pengeluarantruckingheader->id,
                         'nobukti' => $pengeluarantruckingheader->nobukti,
                         'supir_id' => $request->supir_id[$i],
-                        'penerimaantruckingheader_nobukti' => $request->penerimaantruckingheader_nobukti[$i],
+                        'penerimaantruckingheader_nobukti' => $request->penerimaantruckingheader_nobukti[$i] ?? '',
                         'nominal' => $request->nominal[$i],
                         'modifiedby' => $pengeluarantruckingheader->modifiedby,
                         'created_at' => date('d-m-Y H:i:s', strtotime($pengeluarantruckingheader->created_at)),
@@ -433,5 +433,18 @@ class PengeluaranTruckingHeaderController extends Controller
     }
 
    
+    public function fieldLength()
+    {
+        $data = [];
+        $columns = DB::connection()->getDoctrineSchemaManager()->listTableDetails('pengeluarantruckingheader')->getColumns();
+
+        foreach ($columns as $index => $column) {
+            $data[$index] = $column->getLength();
+        }
+
+        return response([
+            'data' => $data
+        ]);
+    }
 }
 

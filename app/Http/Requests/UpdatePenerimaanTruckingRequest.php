@@ -27,7 +27,7 @@ class UpdatePenerimaanTruckingRequest extends FormRequest
             'kodepenerimaan' => 'required',
             'keterangan' => 'required',
             'coa' => 'required',
-            'formatbukti' => 'required',
+            'statusformat' => 'required',
         ];
     }
 
@@ -37,7 +37,7 @@ class UpdatePenerimaanTruckingRequest extends FormRequest
             'kodepenerimaan' => 'kode penerimaan',
             'keterangan' => 'keterangan',
             'coa' => 'coa',
-            'formatbukti' => 'format bukti',
+            'statusformat' => 'format bukti',
         ];
     }
 }

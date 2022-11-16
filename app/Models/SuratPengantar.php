@@ -172,16 +172,16 @@ class SuratPengantar extends MyModel
             'suratpengantar.gajikenek',
             'suratpengantar.komisisupir',
         )
-        ->join('kota as kotadari', 'kotadari.id', '=', 'suratpengantar.dari_id')
-        ->join('kota as kotasampai', 'kotasampai.id', '=', 'suratpengantar.sampai_id')
-        ->join('agen', 'suratpengantar.agen_id', 'agen.id')
-        ->join('container', 'suratpengantar.container_id','container.id')
-        ->join('statuscontainer', 'suratpengantar.statuscontainer_id','statuscontainer.id')
-        ->join('trado', 'suratpengantar.trado_id', 'trado.id')
-        ->join('supir', 'suratpengantar.supir_id', 'supir.id')
-        ->join('jenisorder', 'suratpengantar.jenisorder_id','jenisorder.id')
-        ->join('tarif', 'suratpengantar.tarif_id', 'tarif.id')
-        ->join('cabang', 'suratpengantar.cabang_id', 'cabang.id')
+        ->leftJoin('kota as kotadari', 'kotadari.id', '=', 'suratpengantar.dari_id')
+        ->leftJoin('kota as kotasampai', 'kotasampai.id', '=', 'suratpengantar.sampai_id')
+        ->leftJoin('agen', 'suratpengantar.agen_id', 'agen.id')
+        ->leftJoin('container', 'suratpengantar.container_id','container.id')
+        ->leftJoin('statuscontainer', 'suratpengantar.statuscontainer_id','statuscontainer.id')
+        ->leftJoin('trado', 'suratpengantar.trado_id', 'trado.id')
+        ->leftJoin('supir', 'suratpengantar.supir_id', 'supir.id')
+        ->leftJoin('jenisorder', 'suratpengantar.jenisorder_id','jenisorder.id')
+        ->leftJoin('tarif', 'suratpengantar.tarif_id', 'tarif.id')
+        ->leftJoin('cabang', 'suratpengantar.cabang_id', 'cabang.id')
         ->leftJoin('pelanggan', 'suratpengantar.pelanggan_id', 'pelanggan.id')
 
         ->where('suratpengantar.id', $id)->first();

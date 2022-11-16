@@ -24,7 +24,10 @@ class StorePenerimaanTruckingDetailRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'supir' => 'required|array',
+            'supir.*' => 'required',
+            'nominal' => 'required|array',
+            'nominal.*' => 'required'
         ];
     }
 }

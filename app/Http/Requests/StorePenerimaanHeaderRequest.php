@@ -30,7 +30,7 @@ class StorePenerimaanHeaderRequest extends FormRequest
             'cabang_id' => 'required',
             'statuskas' => 'required',
             'bank_id'   => 'required',
-            'noresi' => 'required'
+            // 'noresi' => 'required'
         ];
         $relatedRequests = [
             StorePenerimaanDetailRequest::class

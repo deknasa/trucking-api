@@ -18,109 +18,16 @@ class PengeluaranTruckingController extends Controller
      */
     public function index()
     {
-        $params = [
-            'offset' => request()->offset ?? ((request()->page - 1) * request()->limit),
-            'limit' => request()->limit ?? 10,
-            'filters' => json_decode(request()->filters, true) ?? [],
-            'sortIndex' => request()->sortIndex ?? 'id',
-            'sortOrder' => request()->sortOrder ?? 'asc',
-        ];
-
-        /* Sorting */
-        $query = DB::table((new PengeluaranTrucking())->getTable())->orderBy($params['sortIndex'], $params['sortOrder']);
-
-        $totalRows = $query->count();
-        $totalPages = $params['limit'] > 0 ? ceil($totalRows / $params['limit']) : 1;
-
-        if ($params['sortIndex'] == 'id') {
-            $query = DB::table((new PengeluaranTrucking())->getTable())->select(
-                'pengeluarantrucking.id',
-                'pengeluarantrucking.kodepengeluaran',
-                'pengeluarantrucking.keterangan',
-                'pengeluarantrucking.coa',
-                'pengeluarantrucking.statusformat',
-                'pengeluarantrucking.modifiedby',
-                'pengeluarantrucking.created_at',
-                'pengeluarantrucking.updated_at'
-            )->orderBy('pengeluarantrucking.id', $params['sortOrder']);
-        } else {
-            if ($params['sortOrder'] == 'asc') {
-                $query = DB::table((new PengeluaranTrucking())->getTable())->select(
-                    'pengeluarantrucking.id',
-                    'pengeluarantrucking.kodepengeluaran',
-                    'pengeluarantrucking.keterangan',
-                    'pengeluarantrucking.coa',
-                    'pengeluarantrucking.statusformat',
-                    'pengeluarantrucking.modifiedby',
-                    'pengeluarantrucking.created_at',
-                    'pengeluarantrucking.updated_at'
-                )
-                    ->orderBy($params['sortIndex'], $params['sortOrder'])
-                    ->orderBy('pengeluarantrucking.id', $params['sortOrder']);
-            } else {
-                $query = DB::table((new PengeluaranTrucking())->getTable())->select(
-                    'pengeluarantrucking.id',
-                    'pengeluarantrucking.kodepengeluaran',
-                    'pengeluarantrucking.keterangan',
-                    'pengeluarantrucking.coa',
-                    'pengeluarantrucking.statusformat',
-                    'pengeluarantrucking.modifiedby',
-                    'pengeluarantrucking.created_at',
-                    'pengeluarantrucking.updated_at'
-                )
-                    ->orderBy($params['sortIndex'], $params['sortOrder'])
-                    ->orderBy('pengeluarantrucking.id', 'asc');
-            }
-        }
-
-        /* Searching */
-        if (count($params['filters']) > 0 && @$params['filters']['rules'][0]['data'] != '') {
-            switch ($params['filters']['groupOp']) {
-                case "AND":
-                    foreach ($params['filters']['rules'] as $index => $filters) {
-                        $query = $query->where($filters['field'], 'LIKE', "%$filters[data]%");
-                    }
-
-                    break;
-                case "OR":
-                    foreach ($params['filters']['rules'] as $index => $filters) {
-                        $query = $query->orWhere($filters['field'], 'LIKE', "%$filters[data]%");
-                    }
-
-                    break;
-                default:
-
-                    break;
-            }
-
-            $totalRows = $query->count();
-            $totalPages = $params['limit'] > 0 ? ceil($totalRows / $params['limit']) : 1;
-        }
-
-        /* Paging */
-        $query = $query->skip($params['offset'])
-            ->take($params['limit']);
-
-        $pengeluaranTruckings = $query->get();
-
-        /* Set attributes */
-        $attributes = [
-            'totalRows' => $totalRows ?? 0,
-            'totalPages' => $totalPages ?? 0
-        ];
-
+        $pengeluaranTrucking = new PengeluaranTrucking();
         return response([
-            'status' => true,
-            'data' => $pengeluaranTruckings,
-            'attributes' => $attributes,
-            'params' => $params
+            'data' => $pengeluaranTrucking->get(),
+            'attributes' => [
+                'totalRows' => $pengeluaranTrucking->totalRows,
+                'totalPages' => $pengeluaranTrucking->totalPages
+            ]
         ]);
     }
 
-    public function create()
-    {
-        //
-    }
    /**
      * @ClassName 
      */
@@ -135,8 +42,6 @@ class PengeluaranTruckingController extends Controller
             $pengeluaranTrucking->coa = $request->coa;
             $pengeluaranTrucking->statusformat = $request->statusformat;
             $pengeluaranTrucking->modifiedby = auth('api')->user()->name;
-            $request->sortname = $request->sortname ?? 'id';
-            $request->sortorder = $request->sortorder ?? 'asc';
 
             if ($pengeluaranTrucking->save()) {
                 $logTrail = [
@@ -152,17 +57,17 @@ class PengeluaranTruckingController extends Controller
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-                DB::commit();
             }
+            
+            $request->sortname = $request->sortname ?? 'id';
+            $request->sortorder = $request->sortorder ?? 'asc';
+            DB::commit();
 
             /* Set position and page */
-            $del = 0;
-            $data = $this->getid($pengeluaranTrucking->id, $request, $del);
-            $pengeluaranTrucking->position = $data->row;
-
-            if (isset($request->limit)) {
-                $pengeluaranTrucking->page = ceil($pengeluaranTrucking->position / $request->limit);
-            }
+            $selected = $this->getPosition($pengeluaranTrucking, $pengeluaranTrucking->getTable());
+            $pengeluaranTrucking->position = $selected->position;
+            $pengeluaranTrucking->page = ceil($pengeluaranTrucking->position / ($request->limit ?? 10));
+            
 
             return response([
                 'status' => true,
@@ -172,6 +77,7 @@ class PengeluaranTruckingController extends Controller
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
+            return response($th->getMessage());
         }
     }
 
@@ -183,15 +89,12 @@ class PengeluaranTruckingController extends Controller
         ]);
     }
 
-    public function edit(PengeluaranTrucking $pengeluaranTrucking)
-    {
-        //
-    }
    /**
      * @ClassName 
      */
     public function update(StorePengeluaranTruckingRequest $request, PengeluaranTrucking $pengeluaranTrucking)
     {
+        DB::beginTransaction();
         try {
             $pengeluaranTrucking->kodepengeluaran = $request->kodepengeluaran;
             $pengeluaranTrucking->keterangan = $request->keterangan;
@@ -213,26 +116,25 @@ class PengeluaranTruckingController extends Controller
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
 
-                /* Set position and page */
-                $pengeluaranTrucking->position = $this->getid($pengeluaranTrucking->id, $request, 0)->row;
+            } 
+            $request->sortname = $request->sortname ?? 'id';
+            $request->sortorder = $request->sortorder ?? 'asc';
 
-                if (isset($request->limit)) {
-                    $pengeluaranTrucking->page = ceil($pengeluaranTrucking->position / $request->limit);
-                }
-
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil diubah',
-                    'data' => $pengeluaranTrucking
-                ]);
-            } else {
-                return response([
-                    'status' => false,
-                    'message' => 'Gagal diubah'
-                ]);
-            }
+            DB::commit();
+            /* Set position and page */
+            $selected = $this->getPosition($pengeluaranTrucking, $pengeluaranTrucking->getTable());
+            $pengeluaranTrucking->position = $selected->position;
+            $pengeluaranTrucking->page = ceil($pengeluaranTrucking->position / ($request->limit ?? 10));
+        
+            return response([
+                'status' => true,
+                'message' => 'Berhasil diubah',
+                'data' => $pengeluaranTrucking
+            ]);
         } catch (\Throwable $th) {
+            DB::rollBack();  
             throw $th;
+            return response($th->getMessage());
         }
     }
    /**
@@ -240,40 +142,46 @@ class PengeluaranTruckingController extends Controller
      */
     public function destroy(PengeluaranTrucking $pengeluaranTrucking, Request $request)
     {
-        $delete = PengeluaranTrucking::destroy($pengeluaranTrucking->id);
-        $del = 1;
-        if ($delete) {
-            $logTrail = [
-                'namatabel' => strtoupper($pengeluaranTrucking->getTable()),
-                'postingdari' => 'DELETE PENGELUARAN TRUCKING',
-                'idtrans' => $pengeluaranTrucking->id,
-                'nobuktitrans' => $pengeluaranTrucking->id,
-                'aksi' => 'DELETE',
-                'datajson' => $pengeluaranTrucking->toArray(),
-                'modifiedby' => $pengeluaranTrucking->modifiedby
-            ];
+        DB::beginTransaction();
+        try {
+            $delete = PengeluaranTrucking::destroy($pengeluaranTrucking->id);
+            $del = 1;
+            if ($delete) {
+                $logTrail = [
+                    'namatabel' => strtoupper($pengeluaranTrucking->getTable()),
+                    'postingdari' => 'DELETE PENGELUARAN TRUCKING',
+                    'idtrans' => $pengeluaranTrucking->id,
+                    'nobuktitrans' => $pengeluaranTrucking->id,
+                    'aksi' => 'DELETE',
+                    'datajson' => $pengeluaranTrucking->toArray(),
+                    'modifiedby' => $pengeluaranTrucking->modifiedby
+                ];
 
-            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-            app(LogTrailController::class)->store($validatedLogTrail);
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                app(LogTrailController::class)->store($validatedLogTrail);
 
-            DB::commit();
+                DB::commit();
 
-            $data = $this->getid($pengeluaranTrucking->id, $request, $del);
-            $pengeluaranTrucking->position = @$data->row  ?? 0;
-            $pengeluaranTrucking->id = @$data->id  ?? 0;
-            if (isset($request->limit)) {
-                $pengeluaranTrucking->page = ceil($pengeluaranTrucking->position / $request->limit);
+                $selected = $this->getPosition($pengeluaranTrucking, $pengeluaranTrucking->getTable(), true);
+                $pengeluaranTrucking->position = $selected->position;
+                $pengeluaranTrucking->id = $selected->id;
+                $pengeluaranTrucking->page = ceil($pengeluaranTrucking->position / ($request->limit ?? 10));
+
+                return response([
+                    'status' => true,
+                    'message' => 'Berhasil dihapus',
+                    'data' => $pengeluaranTrucking
+                ]);
+            } else {
+                DB::rollBack();  
+                return response([
+                    'status' => false,
+                    'message' => 'Gagal dihapus'
+                ]);
             }
-            return response([
-                'status' => true,
-                'message' => 'Berhasil dihapus',
-                'data' => $pengeluaranTrucking
-            ]);
-        } else {
-            return response([
-                'status' => false,
-                'message' => 'Gagal dihapus'
-            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();         
+            return response($th->getMessage());   
         }
     }
 

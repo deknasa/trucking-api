@@ -24,13 +24,20 @@ class StorePengeluaranDetailRequest extends FormRequest
     public function rules()
     {
         return [
-            'alatbayar_id' => 'required|array',         
+            'alatbayar_id' => 'required|array',    
+            'alatbayar_id.*' => 'required',
             'nowarkat' => 'required|array',
+            'nowarkat.*' => 'required',
             'tgljatuhtempo' => 'required|array',
-            'nominal' => 'required|array',
+            'tgljatuhtempo.*' => 'required',
+            'nominal_detail' => 'required|array',
+            'nominal_detail.*' => 'required|numeric|gt:0',
             'coadebet' => 'required|array',
+            'coadebet.*' => 'required',
             'keterangan_detail' => 'required|array',
+            'keterangan_detail.*' => 'required',
             'bulanbeban' => 'required|array',
+            'bulanbeban.*' => 'required'
         ];
     }
 }

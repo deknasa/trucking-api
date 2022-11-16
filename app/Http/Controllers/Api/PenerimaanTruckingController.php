@@ -19,162 +19,69 @@ class PenerimaanTruckingController extends Controller
      */
     public function index()
     {
-        $params = [
-            'offset' => request()->offset ?? ((request()->page - 1) * request()->limit),
-            'limit' => request()->limit ?? 10,
-            'filters' => json_decode(request()->filters, true) ?? [],
-            'sortIndex' => request()->sortIndex ?? 'id',
-            'sortOrder' => request()->sortOrder ?? 'asc',
-        ];
-
-        /* Sorting */
-        $query = DB::table((new PenerimaanTrucking())->getTable())->orderBy($params['sortIndex'], $params['sortOrder']);
-
-        $totalRows = $query->count();
-        $totalPages = $params['limit'] > 0 ? ceil($totalRows / $params['limit']) : 1;
-
-        if ($params['sortIndex'] == 'id') {
-            $query = DB::table((new PenerimaanTrucking())->getTable())->select(
-                'penerimaantrucking.id',
-                'penerimaantrucking.kodepenerimaan',
-                'penerimaantrucking.keterangan',
-                'penerimaantrucking.coa',
-                'penerimaantrucking.statusformat',
-                'penerimaantrucking.modifiedby',
-                'penerimaantrucking.created_at',
-                'penerimaantrucking.updated_at'
-            )->orderBy('penerimaantrucking.id', $params['sortOrder']);
-        } else {
-            if ($params['sortOrder'] == 'asc') {
-                $query = DB::table((new PenerimaanTrucking())->getTable())->select(
-                    'penerimaantrucking.id',
-                    'penerimaantrucking.kodepenerimaan',
-                    'penerimaantrucking.keterangan',
-                    'penerimaantrucking.coa',
-                    'penerimaantrucking.statusformat',
-                    'penerimaantrucking.modifiedby',
-                    'penerimaantrucking.created_at',
-                    'penerimaantrucking.updated_at'
-                )
-                    ->orderBy($params['sortIndex'], $params['sortOrder'])
-                    ->orderBy('penerimaantrucking.id', $params['sortOrder']);
-            } else {
-                $query = DB::table((new PenerimaanTrucking())->getTable())->select(
-                    'penerimaantrucking.id',
-                    'penerimaantrucking.kodepenerimaan',
-                    'penerimaantrucking.keterangan',
-                    'penerimaantrucking.coa',
-                    'penerimaantrucking.statusformat',
-                    'penerimaantrucking.modifiedby',
-                    'penerimaantrucking.created_at',
-                    'penerimaantrucking.updated_at'
-                )
-                    ->orderBy($params['sortIndex'], $params['sortOrder'])
-                    ->orderBy('penerimaantrucking.id', 'asc');
-            }
-        }
-
-        /* Searching */
-        if (count($params['filters']) > 0 && @$params['filters']['rules'][0]['data'] != '') {
-            switch ($params['filters']['groupOp']) {
-                case "AND":
-                    foreach ($params['filters']['rules'] as $index => $filters) {
-                        $query = $query->where($filters['field'], 'LIKE', "%$filters[data]%");
-                    }
-
-                    break;
-                case "OR":
-                    foreach ($params['filters']['rules'] as $index => $filters) {
-                        $query = $query->orWhere($filters['field'], 'LIKE', "%$filters[data]%");
-                    }
-
-                    break;
-                default:
-
-                    break;
-            }
-
-            $totalRows = $query->count();
-            $totalPages = $params['limit'] > 0 ? ceil($totalRows / $params['limit']) : 1;
-        }
-
-        /* Paging */
-        $query = $query->skip($params['offset'])
-            ->take($params['limit']);
-
-        $penerimaanTruckings = $query->get();
-
-        /* Set attributes */
-        $attributes = [
-            'totalRows' => $totalRows ?? 0,
-            'totalPages' => $totalPages ?? 0
-        ];
-
+        
+        $penerimaanTrucking = new PenerimaanTrucking();
         return response([
-            'status' => true,
-            'data' => $penerimaanTruckings,
-            'attributes' => $attributes,
-            'params' => $params
+            'data' => $penerimaanTrucking->get(),
+            'attributes' => [
+                'totalRows' => $penerimaanTrucking->totalRows,
+                'totalPages' => $penerimaanTrucking->totalPages
+            ]
         ]);
     }
 
-    public function create()
-    {
-        //
-    }
    /**
      * @ClassName 
      */
-    // public function store(StorePenerimaanTruckingRequest $request)
-    // {
-    //     DB::beginTransaction();
+    public function store(StorePenerimaanTruckingRequest $request)
+    {
+        DB::beginTransaction();
 
-    //     try {
-    //         $penerimaanTrucking = new PenerimaanTrucking();
-    //         $penerimaanTrucking->kodepenerimaan = $request->kodepenerimaan;
-    //         $penerimaanTrucking->keterangan = $request->keterangan;
-    //         $penerimaanTrucking->coa = $request->coa;
-    //         $penerimaanTrucking->statusformat = $request->statusformat;
-    //         $penerimaanTrucking->modifiedby = auth('api')->user()->name;
-    //         $request->sortname = $request->sortname ?? 'id';
-    //         $request->sortorder = $request->sortorder ?? 'asc';
+        try {
+            $penerimaanTrucking = new PenerimaanTrucking();
+            $penerimaanTrucking->kodepenerimaan = $request->kodepenerimaan;
+            $penerimaanTrucking->keterangan = $request->keterangan;
+            $penerimaanTrucking->coa = $request->coa;
+            $penerimaanTrucking->statusformat = $request->statusformat;
+            $penerimaanTrucking->modifiedby = auth('api')->user()->name;
 
-    //         if ($penerimaanTrucking->save()) {
-    //             $logTrail = [
-    //                 'namatabel' => strtoupper($penerimaanTrucking->getTable()),
-    //                 'postingdari' => 'ENTRY PEnerimaan TRUCKING',
-    //                 'idtrans' => $penerimaanTrucking->id,
-    //                 'nobuktitrans' => $penerimaanTrucking->id,
-    //                 'aksi' => 'ENTRY',
-    //                 'datajson' => $penerimaanTrucking->toArray(),
-    //                 'modifiedby' => $penerimaanTrucking->modifiedby
-    //             ];
+            if ($penerimaanTrucking->save()) {
+                $logTrail = [
+                    'namatabel' => strtoupper($penerimaanTrucking->getTable()),
+                    'postingdari' => 'ENTRY PEnerimaan TRUCKING',
+                    'idtrans' => $penerimaanTrucking->id,
+                    'nobuktitrans' => $penerimaanTrucking->id,
+                    'aksi' => 'ENTRY',
+                    'datajson' => $penerimaanTrucking->toArray(),
+                    'modifiedby' => $penerimaanTrucking->modifiedby
+                ];
 
-    //             $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-    //             $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-    //             DB::commit();
-    //         }
+                
+            }
 
-    //         /* Set position and page */
-    //         $del = 0;
-    //         $data = $this->getid($penerimaanTrucking->id, $request, $del);
-    //         $penerimaanTrucking->position = $data->row;
+            $request->sortname = $request->sortname ?? 'id';
+            $request->sortorder = $request->sortorder ?? 'asc';
+            DB::commit();
+            /* Set position and page */
+           
+            $selected = $this->getPosition($penerimaanTrucking, $penerimaanTrucking->getTable());
+            $penerimaanTrucking->position = $selected->position;
+            $penerimaanTrucking->page = ceil($penerimaanTrucking->position / ($request->limit ?? 10));
 
-    //         if (isset($request->limit)) {
-    //             $penerimaanTrucking->page = ceil($penerimaanTrucking->position / $request->limit);
-    //         }
-
-    //         return response([
-    //             'status' => true,
-    //             'message' => 'Berhasil disimpan',
-    //             'data' => $penerimaanTrucking
-    //         ]);
-    //     } catch (\Throwable $th) {
-    //         DB::rollBack();
-    //         throw $th;
-    //     }
-    // }
+            return response([
+                'status' => true,
+                'message' => 'Berhasil disimpan',
+                'data' => $penerimaanTrucking
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+            return response($th->getMessage());
+        }
+    }
 
     public function show(PenerimaanTrucking $penerimaanTrucking)
     {
@@ -188,7 +95,9 @@ class PenerimaanTruckingController extends Controller
      * @ClassName 
      */
     public function update(UpdatePenerimaanTruckingRequest $request, PenerimaanTrucking $penerimaanTrucking)
-    {
+    { 
+        DB::beginTransaction();
+
         try {
             $penerimaanTrucking->kodepenerimaan = $request->kodepenerimaan;
             $penerimaanTrucking->keterangan = $request->keterangan;
@@ -209,27 +118,27 @@ class PenerimaanTruckingController extends Controller
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
+               
+            } 
 
-                /* Set position and page */
-                $penerimaanTrucking->position = $this->getid($penerimaanTrucking->id, $request, 0)->row;
+            $request->sortname = $request->sortname ?? 'id';
+            $request->sortorder = $request->sortorder ?? 'asc';
 
-                if (isset($request->limit)) {
-                    $penerimaanTrucking->page = ceil($penerimaanTrucking->position / $request->limit);
-                }
+            DB::commit();
+            /* Set position and page */
+            $selected = $this->getPosition($penerimaanTrucking, $penerimaanTrucking->getTable());
+            $penerimaanTrucking->position = $selected->position;
+            $penerimaanTrucking->page = ceil($penerimaanTrucking->position / ($request->limit ?? 10));
 
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil diubah',
-                    'data' => $penerimaanTrucking
-                ]);
-            } else {
-                return response([
-                    'status' => false,
-                    'message' => 'Gagal diubah'
-                ]);
-            }
+            return response([
+                'status' => true,
+                'message' => 'Berhasil diubah',
+                'data' => $penerimaanTrucking
+            ]);
         } catch (\Throwable $th) {
+            DB::rollBack();
             throw $th;
+            return response($th->getMessage());
         }
     }
 
@@ -238,40 +147,47 @@ class PenerimaanTruckingController extends Controller
      */
     public function destroy(PenerimaanTrucking $penerimaanTrucking, Request $request)
     {
-        $delete = PenerimaanTrucking::destroy($penerimaanTrucking->id);
-        $del = 1;
-        if ($delete) {
-            $logTrail = [
-                'namatabel' => strtoupper($penerimaanTrucking->getTable()),
-                'postingdari' => 'DELETE PENERIMAAN TRUCKING',
-                'idtrans' => $penerimaanTrucking->id,
-                'nobuktitrans' => $penerimaanTrucking->id,
-                'aksi' => 'DELETE',
-                'datajson' => $penerimaanTrucking->toArray(),
-                'modifiedby' => $penerimaanTrucking->modifiedby
-            ];
+        
+        DB::beginTransaction();
+        try {
+            $delete = PenerimaanTrucking::destroy($penerimaanTrucking->id);
+            $del = 1;
+            if ($delete) {
+                $logTrail = [
+                    'namatabel' => strtoupper($penerimaanTrucking->getTable()),
+                    'postingdari' => 'DELETE PENERIMAAN TRUCKING',
+                    'idtrans' => $penerimaanTrucking->id,
+                    'nobuktitrans' => $penerimaanTrucking->id,
+                    'aksi' => 'DELETE',
+                    'datajson' => $penerimaanTrucking->toArray(),
+                    'modifiedby' => $penerimaanTrucking->modifiedby
+                ];
 
-            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-            app(LogTrailController::class)->store($validatedLogTrail);
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                app(LogTrailController::class)->store($validatedLogTrail);
 
-            DB::commit();
+                DB::commit();
 
-            $data = $this->getid($penerimaanTrucking->id, $request, $del);
-            $penerimaanTrucking->position = @$data->row  ?? 0;
-            $penerimaanTrucking->id = @$data->id  ?? 0;
-            if (isset($request->limit)) {
-                $penerimaanTrucking->page = ceil($penerimaanTrucking->position / $request->limit);
+                $selected = $this->getPosition($penerimaanTrucking, $penerimaanTrucking->getTable(), true);
+                $penerimaanTrucking->position = $selected->position;
+                $penerimaanTrucking->id = $selected->id;
+                $penerimaanTrucking->page = ceil($penerimaanTrucking->position / ($request->limit ?? 10));
+                return response([
+                    'status' => true,
+                    'message' => 'Berhasil dihapus',
+                    'data' => $penerimaanTrucking
+                ]);
+            } else {
+                
+                DB::rollBack();
+                return response([
+                    'status' => false,
+                    'message' => 'Gagal dihapus'
+                ]);
             }
-            return response([
-                'status' => true,
-                'message' => 'Berhasil dihapus',
-                'data' => $penerimaanTrucking
-            ]);
-        } else {
-            return response([
-                'status' => false,
-                'message' => 'Gagal dihapus'
-            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();         
+            return response($th->getMessage());   
         }
     }
 

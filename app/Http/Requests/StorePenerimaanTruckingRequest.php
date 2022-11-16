@@ -27,17 +27,17 @@ class StorePenerimaanTruckingRequest extends FormRequest
             'kodepenerimaan' => 'required',
             'keterangan' => 'required',
             'coa' => 'required',
-            'formatbukti' => 'required',
+            'statusformat' => 'required',
         ];
     }
 
     public function attributes()
     {
         return [
-            'kodepenerimaan' => 'kode penerimaan',
-            'keterangan' => 'keterangan',
-            'coa' => 'coa',
-            'formatbukti' => 'format bukti',
+            'kodepenerimaan' => 'Kode Penerimaan',
+            'keterangan' => 'Keterangan',
+            'coa' => 'COA',
+            'statusformat' => 'Format Bukti',
         ];
     }
 }

@@ -37,15 +37,15 @@ class PengeluaranTruckingHeader extends MyModel
             'pengeluarantruckingheader.updated_at',
             'pengeluarantruckingheader.pengeluaran_nobukti',
 
-            'pengeluarantrucking.kodepengeluaran as pengeluarantrucking_id',
+            'pengeluarantrucking.keterangan as pengeluarantrucking_id',
             'bank.namabank as bank_id',
             
-            'akunpusat.coa as coa',
+            'pengeluarantruckingheader.coa',
             'statusposting.text as statusposting'
         )
             ->leftJoin('pengeluarantrucking', 'pengeluarantruckingheader.pengeluarantrucking_id','pengeluarantrucking.id')
+            ->leftJoin('parameter','pengeluarantrucking.statusformat','parameter.id')
             ->leftJoin('bank', 'pengeluarantruckingheader.bank_id', 'bank.id')
-            ->leftJoin('akunpusat', 'pengeluarantruckingheader.coa', 'akunpusat.coa')
             ->leftJoin('parameter as statusposting' , 'pengeluarantruckingheader.statusposting', 'statusposting.id');
             
 
@@ -62,26 +62,23 @@ class PengeluaranTruckingHeader extends MyModel
         return $data;
     }
 
-    public function find($id)
+    public function findAll($id)
     {
         $query = DB::table('pengeluarantruckingheader')->select(
             'pengeluarantruckingheader.id',
             'pengeluarantruckingheader.nobukti',
             'pengeluarantruckingheader.tglbukti',
+            'pengeluarantruckingheader.pengeluarantrucking_id',
+            'pengeluarantrucking.keterangan as pengeluarantrucking',
             'pengeluarantruckingheader.keterangan',
-            'pengeluarantruckingheader.pengeluaran_nobukti',
-
-            'pengeluarantrucking.kodepengeluaran as pengeluarantrucking',
-            'pengeluarantrucking.id as pengeluarantrucking_id',
-
+            'pengeluarantruckingheader.bank_id',
             'bank.namabank as bank',
-            'bank.id as bank_id',
-            
-            'akunpusat.coa as akunpusat'
+            'pengeluarantruckingheader.statusposting',
+            'pengeluarantruckingheader.coa',
+            'pengeluarantruckingheader.pengeluaran_nobukti'            
         )
             ->leftJoin('pengeluarantrucking', 'pengeluarantruckingheader.pengeluarantrucking_id','pengeluarantrucking.id')
             ->leftJoin('bank', 'pengeluarantruckingheader.bank_id', 'bank.id')
-            ->leftJoin('akunpusat', 'pengeluarantruckingheader.coa', 'akunpusat.coa')
             ->where('pengeluarantruckingheader.id', '=', $id);
             
 
@@ -100,11 +97,11 @@ class PengeluaranTruckingHeader extends MyModel
             "$this->table.id,
             $this->table.nobukti,
             $this->table.tglbukti,
-            'pengeluarantrucking.kodepengeluaran as pengeluarantrucking_id',
+            'pengeluarantrucking.keterangan as pengeluarantrucking_id',
             $this->table.keterangan,
             'bank.namabank as bank_id',
             'statusposting.text as statusposting',
-            'akunpusat.coa as coa',
+            $this->table.coa,
             $this->table.pengeluaran_nobukti,
             $this->table.modifiedby,
             $this->table.updated_at"
@@ -112,7 +109,6 @@ class PengeluaranTruckingHeader extends MyModel
         )
         ->leftJoin('pengeluarantrucking', 'pengeluarantruckingheader.pengeluarantrucking_id', 'pengeluarantrucking.id')
         ->leftJoin('bank', 'pengeluarantruckingheader.bank_id', 'bank.id')
-        ->leftJoin('akunpusat', 'pengeluarantruckingheader.coa', 'akunpusat.coa')
         ->leftJoin('parameter as statusposting' , 'pengeluarantruckingheader.statusposting', 'statusposting.id');
 
     }
@@ -159,11 +155,11 @@ class PengeluaranTruckingHeader extends MyModel
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                          if ($filters['field'] == 'pengeluarantrucking_id') {
-                            $query = $query->where('pengeluarantrucking.kodepengeluaran', 'LIKE', "%$filters[data]%");
+                            $query = $query->where('pengeluarantrucking.keterangan', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'bank_id') {
                             $query = $query->where('bank.namabank', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'statusposting') {
-                            $query = $query->where('statusposting.text', 'LIKE', "%$filters[data]%");
+                            $query = $query->where('statusposting.text', '=', "$filters[data]");
                         } else {
                             $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
@@ -173,11 +169,11 @@ class PengeluaranTruckingHeader extends MyModel
                 case "OR":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                          if ($filters['field'] == 'pengeluarantrucking_id') {
-                            $query = $query->orWhere('pengeluarantrucking.kodepengeluaran', 'LIKE', "%$filters[data]%");
+                            $query = $query->orWhere('pengeluarantrucking.keterangan', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'bank_id') {
                             $query = $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'statusposting') {
-                            $query = $query->orWhere('statusposting.text', 'LIKE', "%$filters[data]%");
+                            $query = $query->orWhere('statusposting.text', '=', "$filters[data]");
                         } else {
                             $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
