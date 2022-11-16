@@ -13,7 +13,7 @@ class StoreAbsensiSupirApprovalHeaderRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +24,9 @@ class StoreAbsensiSupirApprovalHeaderRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            "keterangan"=>"required",
+            "absensisupir_nobukti"=>"required",
+            "tglbukti"=>"required",
         ];
     }
 }

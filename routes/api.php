@@ -3,6 +3,10 @@
     use App\Http\Controllers\Api\AkunPusatController;
     use App\Http\Controllers\Api\AbsensiSupirDetailController;
     use App\Http\Controllers\Api\AbsensiSupirHeaderController;
+
+    use App\Http\Controllers\Api\AbsensiSupirApprovalHeaderController;
+    use App\Http\Controllers\Api\AbsensiSupirApprovalDetailController;
+    
     use App\Http\Controllers\Api\AbsenTradoController;
     use App\Http\Controllers\Api\CabangController;
     use App\Http\Controllers\Api\ParameterController;
@@ -136,6 +140,16 @@
         Route::apiResource('absensisupirheader', AbsensiSupirHeaderController::class)->parameter('absensisupirheader', 'absensiSupirHeader');
         
         Route::resource('absensisupirdetail', AbsensiSupirDetailController::class);
+        
+        Route::get('absensisupirapprovalheader/running_number', [AbsensiSupirApprovalHeaderController::class, 'getRunningNumber']);
+        Route::get('absensisupirapprovalheader/grid', [AbsensiSupirApprovalHeaderController::class, 'grid']);
+        Route::get('absensisupirapprovalheader/field_length', [AbsensiSupirApprovalHeaderController::class, 'fieldLength']);
+        
+        Route::get('absensisupirapprovalheader/{absensi}/getabsensi', [AbsensiSupirApprovalHeaderController::class, 'getAbsensi']);
+        Route::get('absensisupirapprovalheader/{absensi}/getapproval', [AbsensiSupirApprovalHeaderController::class, 'getApproval']);
+        Route::post('absensisupirapprovalheader/{id}/approval', [AbsensiSupirApprovalHeaderController::class,'approval']);
+        Route::apiResource('absensisupirapprovalheader', AbsensiSupirApprovalHeaderController::class);
+        Route::apiResource('absensisupirapprovaldetail', AbsensiSupirApprovalDetailController::class);
 
         Route::get('absen_trado/field_length', [AbsenTradoController::class, 'fieldLength']);
         Route::resource('absen_trado', AbsenTradoController::class);
