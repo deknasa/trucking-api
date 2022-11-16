@@ -163,7 +163,7 @@ class App
         return false;
     }
 
-    function imageResize(string $path,string $from,string $uniqueName): array
+    static function imageResize(string $path,string $from,string $uniqueName): array
     {
         $destinationMedium = $path."medium-".$uniqueName;
         $destinationSmall = $path."small-".$uniqueName;
@@ -174,6 +174,7 @@ class App
             $constraint->aspectRatio();
         });
         $image_resize->save($destinationMedium);
+        
         $image_resize->reset();
         $image_resize->resize(40, 30, function ($constraint) {
             $constraint->aspectRatio();

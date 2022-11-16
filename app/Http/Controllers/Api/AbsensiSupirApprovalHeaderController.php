@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
 use App\Models\AbsensiSupirApprovalHeader;
 use App\Http\Requests\StoreAbsensiSupirApprovalHeaderRequest;
 use App\Http\Requests\UpdateAbsensiSupirApprovalHeaderRequest;

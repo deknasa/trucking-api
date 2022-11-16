@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
 use App\Models\RekapPengeluaranHeader;
 use App\Http\Requests\StoreRekapPengeluaranHeaderRequest;
 use App\Http\Requests\UpdateRekapPengeluaranHeaderRequest;

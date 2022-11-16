@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
 use App\Models\RekapPengeluaranDetail;
 use App\Http\Requests\StoreRekapPengeluaranDetailRequest;
 use App\Http\Requests\UpdateRekapPengeluaranDetailRequest;
