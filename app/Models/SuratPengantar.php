@@ -40,8 +40,6 @@ class SuratPengantar extends MyModel
             'suratpengantar.tglbukti',
             'pelanggan.namapelanggan as pelanggan_id',
 
-            // 'upahsupir.id as upahsupir_id',
-            'suratpengantar.upah_id',
 
             'suratpengantar.keterangan',
             'suratpengantar.nourutorder',
@@ -119,74 +117,74 @@ class SuratPengantar extends MyModel
             'suratpengantar.id',
             'suratpengantar.nobukti',
             'suratpengantar.tglbukti',
-            'pelanggan.namapelanggan as pelanggan',
-            'pelanggan.id as pelanggan_id',
-            'suratpengantar.keterangan',
-            'suratpengantar.nourutorder',
-
-            'kotadari.id as dari_id',
+            'suratpengantar.nosp',
+            'suratpengantar.tglsp',
+            'suratpengantar.jobtrucking',
+            'suratpengantar.statuslongtrip',
+            'suratpengantar.dari_id',
             'kotadari.keterangan as dari',
-            'kotasampai.id as sampai_id',
+            'suratpengantar.sampai_id',
             'kotasampai.keterangan as sampai',
-
+            'suratpengantar.statusperalihan',
+            'suratpengantar.persentaseperalihan',
+            'suratpengantar.omset',
+            'suratpengantar.discount',
+            'suratpengantar.pelanggan_id',
+            'pelanggan.namapelanggan as pelanggan',
+            'suratpengantar.keterangan',
             'suratpengantar.container_id',
+            'container.keterangan as container',
             'suratpengantar.nocont',
             'suratpengantar.nocont2',
             'suratpengantar.statuscontainer_id',
+            'statuscontainer.keterangan as statuscontainer',
             'suratpengantar.trado_id',
+            'trado.keterangan as trado',
             'suratpengantar.supir_id',
+            'supir.namasupir as supir',
+            'suratpengantar.agen_id',
+            'agen.namaagen as agen',
+            'suratpengantar.jenisorder_id',
+            'jenisorder.keterangan as jenisorder',
             'suratpengantar.nojob',
             'suratpengantar.nojob2',
-            'suratpengantar.statuslongtrip',
-            'suratpengantar.omset',
-            'suratpengantar.discount',
-            'suratpengantar.totalomset',
-            'suratpengantar.gajisupir',
-            'suratpengantar.gajikenek',
-            'suratpengantar.agen_id',
-            'suratpengantar.jenisorder_id',
-            'suratpengantar.statusperalihan',
-            'suratpengantar.tarif_id',
-            'suratpengantar.nominalperalihan',
-            'suratpengantar.persentaseperalihan',
-            'suratpengantar.nosp',
-            'suratpengantar.tglsp',
-            'suratpengantar.statusritasiomset',
-            'suratpengantar.cabang_id',
-            'suratpengantar.komisisupir',
-            'suratpengantar.tolsupir',
-            'suratpengantar.jarak',
             'suratpengantar.nosptagihlain',
             'suratpengantar.nilaitagihlain',
             'suratpengantar.tujuantagih',
-            'suratpengantar.liter',
-            'suratpengantar.nominalstafle',
+            'suratpengantar.tarif_id',
+            'tarif.tujuan as tarif',
+            'suratpengantar.qtyton',
+            'suratpengantar.totalton',
+            'suratpengantar.statusritasiomset',
             'suratpengantar.statusnotif',
             'suratpengantar.statusoneway',
             'suratpengantar.statusedittujuan',
-            'suratpengantar.upahbongkardepo',
-            'suratpengantar.upahmuatdepo',
-            'suratpengantar.hargatol',
-            'suratpengantar.qtyton',
-            'suratpengantar.totalton',
-            'suratpengantar.mandorsupir_id',
-            'suratpengantar.mandortrado_id',
+            'suratpengantar.nominalstafle',
             'suratpengantar.statustrip',
             'suratpengantar.notripasal',
             'suratpengantar.tgldoor',
+            'suratpengantar.upahbongkardepo',
+            'suratpengantar.upahmuatdepo',
             'suratpengantar.statusdisc',
+            'suratpengantar.cabang_id',
+            'cabang.namacabang as cabang',
+            'suratpengantar.gajisupir',
+            'suratpengantar.gajikenek',
+            'suratpengantar.komisisupir',
+        )
+        ->leftJoin('kota as kotadari', 'kotadari.id', '=', 'suratpengantar.dari_id')
+        ->leftJoin('kota as kotasampai', 'kotasampai.id', '=', 'suratpengantar.sampai_id')
+        ->leftJoin('agen', 'suratpengantar.agen_id', 'agen.id')
+        ->leftJoin('container', 'suratpengantar.container_id','container.id')
+        ->leftJoin('statuscontainer', 'suratpengantar.statuscontainer_id','statuscontainer.id')
+        ->leftJoin('trado', 'suratpengantar.trado_id', 'trado.id')
+        ->leftJoin('supir', 'suratpengantar.supir_id', 'supir.id')
+        ->leftJoin('jenisorder', 'suratpengantar.jenisorder_id','jenisorder.id')
+        ->leftJoin('tarif', 'suratpengantar.tarif_id', 'tarif.id')
+        ->leftJoin('cabang', 'suratpengantar.cabang_id', 'cabang.id')
+        ->leftJoin('pelanggan', 'suratpengantar.pelanggan_id', 'pelanggan.id')
 
-            'suratpengantar.modifiedby',
-            'suratpengantar.created_at',
-            'suratpengantar.updated_at'
-
-        )->join('kota as kotadari', 'kotadari.id', '=', 'suratpengantar.dari_id')
-            ->join('kota as kotasampai', 'kotasampai.id', '=', 'suratpengantar.sampai_id')
-
-            ->leftJoin('pelanggan', 'suratpengantar.pelanggan_id', 'pelanggan.id')
-            ->leftJoin('upahsupir', 'suratpengantar.upah_id', 'upahsupir.id')
-
-            ->where('suratpengantar.id', $id)->first();
+        ->where('suratpengantar.id', $id)->first();
 
         return $data;
     }

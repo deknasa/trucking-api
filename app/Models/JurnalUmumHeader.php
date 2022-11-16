@@ -130,7 +130,7 @@ class JurnalUmumHeader extends MyModel
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statusapproval') {
-                            $query = $query->where('statusapproval.text', 'LIKE', "%$filters[data]%");
+                            $query = $query->where('statusapproval.text', '=', $filters['data']);
                         } else{
                             $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
@@ -140,7 +140,7 @@ class JurnalUmumHeader extends MyModel
                 case "OR":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statusapproval') {
-                            $query = $query->orWhere('statusapproval.text', 'LIKE', "%$filters[data]%");
+                            $query = $query->orWhere('statusapproval.text', '=', $filters['data']);
                         } else {
                             $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }

@@ -77,23 +77,7 @@ class PenerimaanTruckingDetailController extends Controller
     public function store(StorePenerimaanTruckingDetailRequest $request)
     {
         DB::beginTransaction();
-        $validator = Validator::make($request->all(), [
-           'supir_id' => 'required',
-           'pengeluarantruckingheader_nobukti' => 'required',
-            'nominal' => 'required',
-        ], [
-            'supir_id.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
-            'pengeluarantruckingheader_nobukti.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
-            'nominal.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
-        ], [
-            'supir_id' => 'pengeluarantruckingdetail',
-        ]);
-        if (!$validator->passes()) {
-            return [
-                'error' => true,
-                'errors' => $validator->messages()
-            ];
-        }
+        
         try {
             $penerimaantruckingDetail = new PenerimaanTruckingDetail();
             
@@ -107,13 +91,11 @@ class PenerimaanTruckingDetailController extends Controller
             $penerimaantruckingDetail->save();
            
             DB::commit();
-            if ($validator->passes()) {
-                return [
-                    'error' => false,
-                    'id' => $penerimaantruckingDetail->id,
-                    'tabel' => $penerimaantruckingDetail->getTable(),
-                ];
-            }
+            return [
+                'error' => false,
+                'id' => $penerimaantruckingDetail->id,
+                'tabel' => $penerimaantruckingDetail->getTable(),
+            ];
         } catch (\Throwable $th) {
             throw $th;
             DB::rollBack();

@@ -30,4 +30,14 @@ class StorePengeluaranTruckingRequest extends FormRequest
             'statusformat' => 'required'
         ];
     }
+    
+    public function attributes()
+    {
+        return [
+            'kodepengeluaran' => 'Kode Pengeluaran',
+            'keterangan' => 'Keterangan',
+            'coa' => 'COA',
+            'statusformat' => 'Format Bukti',
+        ];
+    }
 }

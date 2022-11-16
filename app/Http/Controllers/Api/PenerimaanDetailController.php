@@ -80,17 +80,17 @@ class PenerimaanDetailController extends Controller
                     'bankpelanggan.namabank as bankpelanggan_id', ///
                     'detail.jenisbiaya',
 
-                    'detail.penerimaanpiutang_nobukti',
+                    'detail.pelunasanpiutang_nobukti',
                     'detail.bulanbeban',
                     'akunpusat.keterangancoa as coakredit',
-                    'akunpusat.keterangancoa as coadebet',
+                    'coadebet.keterangancoa as coadebet',
 
                 )
                     ->leftJoin('bank', 'bank.id', '=', 'detail.bank_id')
                     ->leftJoin('pelanggan', 'pelanggan.id', '=', 'detail.pelanggan_id')
                     ->leftJoin('bankpelanggan', 'bankpelanggan.id', '=', 'detail.bankpelanggan_id')
                     ->leftJoin('akunpusat', 'detail.coakredit', '=', 'akunpusat.coa')
-                    ->leftJoin('akunpusat as coadebet', 'detail.coadebet', '=', 'akunpusat.coa');
+                    ->leftJoin('akunpusat as coadebet', 'detail.coadebet', '=', 'coadebet.coa');
 
 
                 $penerimaanDetail = $query->get();
@@ -133,6 +133,9 @@ class PenerimaanDetailController extends Controller
             $penerimaanDetail->coakredit = $request->coakredit;
             $penerimaanDetail->keterangan = $request->keterangan ?? '';
             $penerimaanDetail->bank_id = $request->bank_id;
+            $penerimaanDetail->bankpelanggan_id = $request->bankpelanggan_id;
+            $penerimaanDetail->invoice_nobukti = $request->invoice_nobukti;
+            $penerimaanDetail->pelunasanpiutang_nobukti = $request->pelunasanpiutang_nobukti;
             $penerimaanDetail->bankpelanggan_id = $request->bankpelanggan_id;
             $penerimaanDetail->pelanggan_id = $request->pelanggan_id;
             $penerimaanDetail->jenisbiaya = $request->jenisbiaya;

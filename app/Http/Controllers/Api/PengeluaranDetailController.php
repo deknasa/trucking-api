@@ -77,16 +77,12 @@ class PengeluaranDetailController extends Controller
                     'detail.nominal',
                     'detail.keterangan',
                     'detail.bulanbeban',
+                    'detail.coadebet',
+                    'detail.coakredit',
                     'alatbayar.namaalatbayar as alatbayar_id',
-                    // 'coakredit.keterangancoa as coakredit',
-                    // 'akunpusat.keterangancoa as coadebet',
-                    'akunpusat.keterangancoa as coadebet',
-                    'akunpusat.keterangancoa as coakredit',
 
                 )
                     ->leftJoin('alatbayar', 'alatbayar.id', '=', 'detail.alatbayar_id')
-                    // ->leftJoin('akunpusat', 'detail.coadebet', '=', 'akunpusat.id')
-                    // ->leftJoin('akunpusat as coakredit', 'detail.coakredit', '=', 'coakredit.id');
                     ->leftJoin('akunpusat', 'detail.coadebet', '=', 'akunpusat.coa')
                     ->leftJoin('akunpusat as coakredit', 'detail.coakredit', '=', 'akunpusat.coa');
 

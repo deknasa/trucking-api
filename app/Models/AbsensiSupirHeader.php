@@ -123,6 +123,36 @@ class AbsensiSupirHeader extends MyModel
         return $temp;
     }
 
+    public function getAbsensi($id)
+    {
+        $query = DB::table('absensisupirdetail')
+        ->select(
+            'absensisupirdetail.keterangan as keterangan_detail',
+            'absensisupirdetail.jam',
+            'absensisupirdetail.uangjalan',
+            'absensisupirdetail.absensi_id',
+            'absensisupirdetail.id',
+            'trado.keterangan as trado',
+            'supirutama.namasupir as supir',
+            'trado.id as trado_id',
+            'supirutama.id as supir_id',
+            'absensisupirheader.kasgantung_nobukti',
+         )
+        ->leftJoin('absensisupirheader','absensisupirdetail.absensi_id','absensisupirheader.id')
+        ->leftJoin('trado', 'absensisupirdetail.trado_id', 'trado.id')
+        ->leftJoin('supir as supirutama', 'absensisupirdetail.supir_id', 'supirutama.id')
+        ->whereRaw("not EXISTS (
+            SELECT absensisupirapprovalheader.absensisupir_nobukti
+    FROM absensisupirdetail          
+    left join absensisupirapprovalheader on absensisupirapprovalheader.absensisupir_nobukti= absensisupirdetail.nobukti
+    WHERE absensisupirapprovalheader.absensisupir_nobukti = absensisupirheader.nobukti 
+          )")
+        ->where('absensi_id',$id);
+        $data = $query->get();
+    
+        return $data;
+    }
+
 
     public function sort($query)
     {

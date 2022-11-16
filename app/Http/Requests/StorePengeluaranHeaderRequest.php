@@ -30,9 +30,6 @@ class StorePengeluaranHeaderRequest extends FormRequest
             'statusjenistransaksi' => 'required',
             'dibayarke' => 'required',
             'bank_id' => 'required',
-            'transferkeac' => 'required',
-            'transferkean' => 'required',
-            'transferkebank' => 'required',
         ];
         $relatedRequests = [
             StorePengeluaranDetailRequest::class
@@ -47,5 +44,45 @@ class StorePengeluaranHeaderRequest extends FormRequest
 
         return $rules;
 
+    }
+
+    public function attributes()
+    {
+        $attributes = [
+            'pelanggan_id' => 'Pelanggan',
+            'keterangan' => 'Keterangan',
+            'cabang_id' => 'Cabang',
+            'statusjenistransaksi' => 'Status Jenis Transaksi',
+            'dibayarke' => 'Dibayar Ke',
+            'bank_id' => 'Bank',
+            'transferkeac' => 'Transfer Ke Account',
+            'transferkean' => 'Transfer Ke An.',
+            'transferkebank' => 'Transfer Ke Bank',
+            'alatbayar_id.*' => 'Alat Bayar',
+            'nowarkat.*' => 'No Warkat',
+            'tgljatuhtempo.*' => 'Tanggal Jatuh Tempo',
+            'nominal_detail.*' => 'Nominal',
+            'keterangan_detail.*' => 'Keterangan',
+            'coadebet.*' => 'Coa Debet',
+            'bulanbeban.*' => 'Bulan Beban'
+        ];
+        $relatedRequests = [
+            StorePengeluaranDetailRequest::class
+        ];
+
+        foreach ($relatedRequests as $relatedRequest) {
+            $attributes = array_merge(
+                $attributes,
+                (new $relatedRequest)->attributes()
+            );
+        }
+        return $attributes;
+    }
+
+    public function messages() 
+    {
+        return [
+            'nominal_detail.*.gt' => 'Nominal Tidak Boleh Kosong dan Harus Lebih Besar Dari 0'
+        ];
     }
 }
