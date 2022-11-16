@@ -82,9 +82,7 @@ class PengeluaranDetailController extends Controller
                     'alatbayar.namaalatbayar as alatbayar_id',
 
                 )
-                    ->leftJoin('alatbayar', 'alatbayar.id', '=', 'detail.alatbayar_id')
-                    ->leftJoin('akunpusat', 'detail.coadebet', '=', 'akunpusat.coa')
-                    ->leftJoin('akunpusat as coakredit', 'detail.coakredit', '=', 'akunpusat.coa');
+                    ->leftJoin('alatbayar', 'alatbayar.id', '=', 'detail.alatbayar_id');
 
                 $pengeluaranDetail = $query->get();
                 // dd{$pengeluaranDetail};

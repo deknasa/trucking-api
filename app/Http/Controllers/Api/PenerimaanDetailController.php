@@ -82,15 +82,13 @@ class PenerimaanDetailController extends Controller
 
                     'detail.pelunasanpiutang_nobukti',
                     'detail.bulanbeban',
-                    'akunpusat.keterangancoa as coakredit',
-                    'coadebet.keterangancoa as coadebet',
+                    'detail.coakredit',
+                    'detail.coadebet',
 
                 )
                     ->leftJoin('bank', 'bank.id', '=', 'detail.bank_id')
                     ->leftJoin('pelanggan', 'pelanggan.id', '=', 'detail.pelanggan_id')
-                    ->leftJoin('bankpelanggan', 'bankpelanggan.id', '=', 'detail.bankpelanggan_id')
-                    ->leftJoin('akunpusat', 'detail.coakredit', '=', 'akunpusat.coa')
-                    ->leftJoin('akunpusat as coadebet', 'detail.coadebet', '=', 'coadebet.coa');
+                    ->leftJoin('bankpelanggan', 'bankpelanggan.id', '=', 'detail.bankpelanggan_id');
 
 
                 $penerimaanDetail = $query->get();

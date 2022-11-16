@@ -483,9 +483,14 @@ class PenerimaanHeaderController extends Controller
 
             for ($i = 0; $i < count($request->nominal_detail); $i++) {
 
-                if($request->pelunasan_id[0] != 0) {
+                $invoice = '';
+                $pelunasanpiutang = '';
+                if(isset($request->pelunasan_id[$i])) {
                     $getLunas = DB::table('pelunasanpiutangdetail')->select('invoice_nobukti','nobukti')->where('id',$request->pelunasan_id[$i])->first();
+                    $invoice = $getLunas->invoice_nobukti;
+                    $pelunasanpiutang = $getLunas->nobukti;
                 }
+
 
                 $datadetail = [
                     'penerimaan_id' => $penerimaanHeader->id,
@@ -498,10 +503,10 @@ class PenerimaanHeaderController extends Controller
                     'keterangan' => $request->keterangan_detail[$i],
                     'bank_id' => $request->bank_id,
                     'pelanggan_id' => $request->pelanggan_id,
-                    'invoice_nobukti' => $getLunas->invoice_nobukti ?? '',
+                    'invoice_nobukti' => $invoice,
                     'bankpelanggan_id' => $request->bankpelanggan_id[$i],
                     'jenisbiaya' => $request->jenisbiaya[$i],
-                    'pelunasanpiutang_nobukti' => $getLunas->nobukti ?? '',
+                    'pelunasanpiutang_nobukti' => $pelunasanpiutang,
                     'bulanbeban' => $request->bulanbeban ?? '',
                     'modifiedby' => auth('api')->user()->name,
                 ];
@@ -527,10 +532,10 @@ class PenerimaanHeaderController extends Controller
                     'keterangan' => $request->keterangan_detail[$i],
                     'bank_id' => $request->bank_id,
                     'pelanggan_id' => $request->pelanggan_id,
-                    'invoice_nobukti' => $getLunas->invoice_nobukti ?? '',
+                    'invoice_nobukti' => $invoice,
                     'bankpelanggan_id' => $request->bankpelanggan_id[$i],
                     'jenisbiaya' => $request->jenisbiaya[$i],
-                    'pelunasanpiutang_nobukti' => $getLunas->nobukti ?? '',
+                    'pelunasanpiutang_nobukti' => $pelunasanpiutang,
                     'bulanbeban' => $request->bulanbeban ?? '',
                     'modifiedby' => auth('api')->user()->name,
                     'created_at' => date('d-m-Y H:i:s', strtotime($penerimaanHeader->created_at)),
