@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
 use App\Models\ReturBeliStokDetail;
 use App\Http\Requests\StoreReturBeliStokDetailRequest;
 use App\Http\Requests\UpdateReturBeliStokDetailRequest;

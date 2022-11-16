@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
 use App\Models\InvoiceExtraDetail;
 use App\Http\Requests\StoreInvoiceExtraDetailRequest;
 use App\Http\Requests\UpdateInvoiceExtraDetailRequest;

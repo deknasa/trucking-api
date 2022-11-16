@@ -1,4 +1,4 @@
- <?php
+<?php
 
     use App\Http\Controllers\Api\AkunPusatController;
     use App\Http\Controllers\Api\AbsensiSupirDetailController;
@@ -125,6 +125,8 @@
     });
 
     Route::post('token', [AuthController::class, 'token']);
+
+    Route::get('supir/image/{field}/{filename}/{type}', [SupirController::class, 'getImage']);
 
     route::middleware(['auth:api'])->group(function () {
         Route::get('parameter/export', [ParameterController::class, 'export']);

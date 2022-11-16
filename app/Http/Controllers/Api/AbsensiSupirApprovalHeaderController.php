@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
 use App\Models\AbsensiSupirApprovalHeader;
 use App\Models\AbsensiSupirHeader;
 use App\Models\AbsensiSupirApprovalDetail;

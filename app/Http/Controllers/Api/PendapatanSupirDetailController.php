@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
 use App\Models\PendapatanSupirDetail;
 use App\Http\Requests\StorePendapatanSupirDetailRequest;
 use App\Http\Requests\UpdatePendapatanSupirDetailRequest;

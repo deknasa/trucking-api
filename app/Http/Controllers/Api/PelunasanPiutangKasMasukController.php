@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
 use App\Models\PelunasanPiutangKasMasuk;
 use App\Http\Requests\StorePelunasanPiutangKasMasukRequest;
 use App\Http\Requests\UpdatePelunasanPiutangKasMasukRequest;

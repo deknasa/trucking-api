@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
 use App\Models\PenerimaanGiroPelunasan;
 use App\Http\Requests\StorePenerimaanGiroPelunasanRequest;
 use App\Http\Requests\UpdatePenerimaanGiroPelunasanRequest;
