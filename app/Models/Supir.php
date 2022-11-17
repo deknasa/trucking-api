@@ -38,19 +38,17 @@ class Supir extends MyModel
             'supir.telp',
             'parameter.text as statusaktif',
             'supir.nominaldepositsa',
-            // 'supir.tglmasuk',
+            'supir.nominalpinjamansaldoawal',
             'supirlama.namasupir as supirold_id',
-            // 'supir.supirold_id',
-
             'supir.nosim',
             'supir.tglterbitsim',
             'supir.tglexpsim',
             'supir.keterangan',
             'supir.noktp',
             'supir.nokk',
-            'supir.statusadaupdategambar',
-            'supir.statusluarkota',
-            'supir.statuszonatertentu',
+            'statusadaupdategambar.text as statusadaupdategambar',
+            'statusluarkota.text as statusluarkota',
+            'statuszonatertentu.text as statuszonatertentu',
             'zona.keterangan as zona_id',
             'supir.photosupir',
             'supir.photoktp',
@@ -288,25 +286,47 @@ class Supir extends MyModel
         return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
     }
 
+
     public function filter($query, $relationFields = [])
     {
         if (count($this->params['filters']) > 0 && @$this->params['filters']['rules'][0]['data'] != '') {
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'supir_id') {
-                            $query = $query->where('supir.id', 'LIKE', "%$filters[data]%");
-                        } else {
+                        if ($filters['field'] == 'statusaktif') {
+                            $query = $query->where('parameter.text', '=', $filters['data']);
+                        } else if ($filters['field'] == 'statusadaupdategambar') {
+                            $query = $query->where('statusadaupdategambar.text', '=', $filters['data']);
+                        } else if ($filters['field'] == 'statusluarkota') {
+                            $query = $query->where('statusluarkota.text', '=', $filters['data']);
+                        } else if ($filters['field'] == 'statuszonatertentu') {
+                            $query = $query->where('statuszonatertentu.text', '=', $filters['data']);
+                        } else if ($filters['field'] == 'statusblacklist') {
+                            $query = $query->where('statusblacklist.text', '=', $filters['data']);
+                        } else if ($filters['field'] == 'zona_id') {
+                            $query = $query->where('zona.zona', 'LIKE', "%$filters[data]%");
+                        }  else {
                             $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
+
                     }
 
                     break;
                 case "OR":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'supir_id') {
-                            $query = $query->orWhere('supir.id', 'LIKE', "%$filters[data]%");
-                        } else {
+                        if ($filters['field'] == 'statusaktif') {
+                            $query = $query->orWhere('parameter.text', '=', $filters['data']);
+                        } else if ($filters['field'] == 'statusadaupdategambar') {
+                            $query = $query->orWhere('statusadaupdategambar.text', '=', $filters['data']);
+                        } else if ($filters['field'] == 'statusluarkota') {
+                            $query = $query->orWhere('statusluarkota.text', '=', $filters['data']);
+                        } else if ($filters['field'] == 'statuszonatertentu') {
+                            $query = $query->orWhere('statuszonatertentu.text', '=', $filters['data']);
+                        } else if ($filters['field'] == 'statusblacklist') {
+                            $query = $query->orWhere('statusblacklist.text', '=', $filters['data']);
+                        } else if ($filters['field'] == 'zona_id') {
+                            $query = $query->orWhere('zona.zona', 'LIKE', "%$filters[data]%");
+                        }  else {
                             $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
                     }
@@ -323,62 +343,6 @@ class Supir extends MyModel
 
         return $query;
     }
-
-    // public function filter($query, $relationFields = [])
-    // {
-    //     if (count($this->params['filters']) > 0 && @$this->params['filters']['rules'][0]['data'] != '') {
-    //         switch ($this->params['filters']['groupOp']) {
-    //             case "AND":
-    //                 foreach ($this->params['filters']['rules'] as $index => $filters) {
-    //                     if ($filters['field'] == 'statusaktif') {
-    //                         $query = $query->where('parameter.text', '=', $filters['data']);
-    //                     } elseif ($filters['field'] == 'zona_id') {
-    //                         $query = $query->where('zona.zona', 'LIKE', "%$filters[data]%");
-    //                     } elseif ($filters['field'] == 'statusluarkota') {
-    //                         $query = $query->where('statusluarkota.text', 'LIKE', "%$filters[data]%");
-    //                     } else {
-    //                         $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-    //                     }
-
-    //                     // else if ($filters['field'] == 'statusapproval') {
-    //                     //     $query = $query->where('parameter_statusapproval.text', '=', $filters['data']);
-    //                     // } else if ($filters['field'] == 'statustas') {
-    //                     //     $query = $query->where('parameter_statustas.text', '=', $filters['data']);
-    //                     // } 
-    //                 }
-
-    //                 break;
-    //             case "OR":
-    //                 foreach ($this->params['filters']['rules'] as $index => $filters) {
-    //                     if ($filters['field'] == 'statusaktif') {
-    //                         $query = $query->orWhere('parameter.text', '=', $filters['data']);
-    //                     } elseif ($filters['field'] == 'zona_id') {
-    //                         $query = $query->orWhere('zona.zona', 'LIKE', "%$filters[data]%");
-    //                     } elseif ($filters['field'] == 'statusluarkota') {
-    //                         $query = $query->orWhere('statusluarkota.text', 'LIKE', "%$filters[data]%");
-    //                     } else {
-    //                         $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-    //                     }
-
-    //                     // else if ($filters['field'] == 'statusapproval') {
-    //                     //     $query = $query->orWhere('parameter_statusapproval.text', '=', $filters['data']);
-    //                     // } else if ($filters['field'] == 'statustas') {
-    //                     //     $query = $query->orWhere('parameter_statustas.text', '=', $filters['data']);
-    //                     // } 
-    //                 }
-
-    //                 break;
-    //             default:
-
-    //                 break;
-    //         }
-
-    //         $this->totalRows = $query->count();
-    //         $this->totalPages = $this->params['limit'] > 0 ? ceil($this->totalRows / $this->params['limit']) : 1;
-    //     }
-
-    //     return $query;
-    // }
 
     public function paginate($query)
     {

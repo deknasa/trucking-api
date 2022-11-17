@@ -23,17 +23,54 @@ class Trado extends MyModel
         $this->setRequestParameters();
 
         $query = DB::table($this->table)->select(
-            'trado.*',
+            'trado.id',
+            'trado.keterangan',
+            'trado.kmawal',
+            'trado.kmakhirgantioli',
+            'trado.tglasuransimati',
+            'trado.merek',
+            'trado.norangka',
+            'trado.nomesin',
+            'trado.nama',
+            'trado.nostnk',
+            'trado.alamatstnk',
+            'trado.modifiedby',
+            'trado.updated_at',
+            'trado.tglserviceopname',
+            'trado.keteranganprogressstandarisasi',
+            'trado.tglpajakstnk',
+            'trado.tglgantiakiterakhir',
+            'trado.tipe',
+            'trado.jenis',
+            'trado.isisilinder',
+            'trado.warna',
+            'trado.jenisbahanbakar',
+            'trado.jumlahsumbu',
+            'trado.jumlahroda',
+            'trado.model',
+            'trado.nobpkb',
+            'trado.jumlahbanserap',
+            'trado.photostnk',
+            'trado.photobpkb',
+            'trado.phototrado',
             'parameter_statusaktif.text as statusaktif',
             'parameter_statusstandarisasi.text as statusstandarisasi',
+            'parameter_statusjenisplat.text as statusjenisplat',
             'parameter_statusmutasi.text as statusmutasi',
             'parameter_statusvalidasikendaraan.text as statusvalidasikendaraan',
+            'parameter_statusmobilstoring.text as statusmobilstoring',
+            'parameter_statusappeditban.text as statusappeditban',
+            'parameter_statuslewatvalidasi.text as statuslewatvalidasi',
             'mandor.namamandor as mandor_id',
         )
             ->leftJoin('parameter as parameter_statusaktif', 'trado.statusaktif', 'parameter_statusaktif.id')
+            ->leftJoin('parameter as parameter_statusjenisplat', 'trado.statusjenisplat', 'parameter_statusjenisplat.id')
             ->leftJoin('parameter as parameter_statusstandarisasi', 'trado.statusstandarisasi', 'parameter_statusstandarisasi.id')
             ->leftJoin('parameter as parameter_statusmutasi', 'trado.statusmutasi', 'parameter_statusmutasi.id')
             ->leftJoin('parameter as parameter_statusvalidasikendaraan', 'trado.statusvalidasikendaraan', 'parameter_statusvalidasikendaraan.id')
+            ->leftJoin('parameter as parameter_statusmobilstoring', 'trado.statusmobilstoring', 'parameter_statusmobilstoring.id')
+            ->leftJoin('parameter as parameter_statusappeditban', 'trado.statusappeditban', 'parameter_statusappeditban.id')
+            ->leftJoin('parameter as parameter_statuslewatvalidasi', 'trado.statuslewatvalidasi', 'parameter_statuslewatvalidasi.id')
             ->leftJoin('mandor', 'trado.mandor_id', 'mandor.id');
 
         $this->totalRows = $query->count();
@@ -44,6 +81,19 @@ class Trado extends MyModel
         $this->paginate($query);
 
         $data = $query->get();
+
+        return $data;
+    }
+
+    public function findAll($id)
+    {
+        $data = DB::table('trado')->select(
+            'trado.*',
+            'mandor.namamandor as mandor'
+        )
+        ->join('mandor','trado.mandor_id','mandor.id')
+        ->where('trado.id',$id)
+        ->first();
 
         return $data;
     }
@@ -195,8 +245,16 @@ class Trado extends MyModel
                             $query = $query->where('parameter_statusaktif.text', '=', $filters['data']);
                         } else if ($filters['field'] == 'statusstandarisasi') {
                             $query = $query->where('parameter_statusstandarisasi.text', '=', $filters['data']);
+                        } else if ($filters['field'] == 'statusjenisplat') {
+                            $query = $query->where('parameter_statusjenisplat.text', '=', $filters['data']);
                         } else if ($filters['field'] == 'statusmutasi') {
                             $query = $query->where('parameter_statusmutasi.text', '=', $filters['data']);
+                        } else if ($filters['field'] == 'statusmobilstoring') {
+                            $query = $query->where('parameter_statusmobilstoring.text', '=', $filters['data']);
+                        } else if ($filters['field'] == 'statusappeditban') {
+                            $query = $query->where('parameter_statusappeditban.text', '=', $filters['data']);
+                        } else if ($filters['field'] == 'statuslewatvalidasi') {
+                            $query = $query->where('parameter_statuslewatvalidasi.text', '=', $filters['data']);
                         } else if ($filters['field'] == 'statusvalidasikendaraan') {
                             $query = $query->where('parameter_statusvalidasikendaraan.text', '=', $filters['data']);
                         } else if ($filters['field'] == 'mandor_id') {
@@ -213,8 +271,16 @@ class Trado extends MyModel
                             $query = $query->orWhere('parameter_statusaktif.text', '=', $filters['data']);
                         } else if ($filters['field'] == 'statusstandarisasi') {
                             $query = $query->orWhere('parameter_statusstandarisasi.text', '=', $filters['data']);
+                        } else if ($filters['field'] == 'statusjenisplat') {
+                            $query = $query->orWhere('parameter_statusjenisplat.text', '=', $filters['data']);
                         } else if ($filters['field'] == 'statusmutasi') {
                             $query = $query->orWhere('parameter_statusmutasi.text', '=', $filters['data']);
+                        } else if ($filters['field'] == 'statusmobilstoring') {
+                            $query = $query->orWhere('parameter_statusmobilstoring.text', '=', $filters['data']);
+                        } else if ($filters['field'] == 'statusappeditban') {
+                            $query = $query->orWhere('parameter_statusappeditban.text', '=', $filters['data']);
+                        } else if ($filters['field'] == 'statuslewatvalidasi') {
+                            $query = $query->orWhere('parameter_statuslewatvalidasi.text', '=', $filters['data']);
                         } else if ($filters['field'] == 'statusvalidasikendaraan') {
                             $query = $query->orWhere('parameter_statusvalidasikendaraan.text', '=', $filters['data']);
                         } else if ($filters['field'] == 'mandor_id') {

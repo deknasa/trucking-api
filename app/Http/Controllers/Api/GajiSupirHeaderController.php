@@ -462,12 +462,15 @@ class GajiSupirHeaderController extends Controller
         $tglSampai = date('Y-m-d', strtotime($sampai));
 
 
-        $cekSP = DB::table('suratpengantar')->where('tglbukti',$tglDari)->where('supir_id',$supir_id)->first();
-        
+        $cekSP = DB::table('suratpengantar')
+            ->where('tglbukti','>=',$tglDari)
+            ->where('tglbukti','<=',$tglSampai)
+            ->where('supir_id',$supir_id)->first();
+
         if($cekSP){
             $nobukti = $cekSP->nobukti;
             $cekTrip = DB::table('gajisupirdetail')->where('suratpengantar_nobukti',$nobukti)->first();
-
+            
             if($cekTrip) {
                 $query = DB::table('error')
                 ->select('keterangan')

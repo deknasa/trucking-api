@@ -127,6 +127,7 @@
     Route::post('token', [AuthController::class, 'token']);
 
     Route::get('supir/image/{field}/{filename}/{type}', [SupirController::class, 'getImage']);
+    Route::get('trado/image/{field}/{filename}/{type}', [TradoController::class, 'getImage']);
 
     route::middleware(['auth:api'])->group(function () {
         Route::get('parameter/export', [ParameterController::class, 'export']);

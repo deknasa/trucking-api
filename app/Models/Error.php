@@ -46,46 +46,40 @@ class Error extends MyModel
     public function selectColumns($query)
     {
         return $query->select(
-            "$this->table.id",
-            "$this->table.kodeerror",
-            "$this->table.keterangan",
-            "$this->table.modifiedby",
-            "$this->table.created_at",
-            "$this->table.updated_at",
+            DB::raw(
+                "$this->table.id,
+                $this->table.kodeerror,
+                $this->table.keterangan,
+                $this->table.modifiedby,
+                $this->table.created_at,
+                $this->table.updated_at",
+            )
         );
     }
 
     public function createTemp(string $modelTable)
     {
-        $this->setRequestParameters();
-
         $temp = '##temp' . rand(1, 10000);
-
         Schema::create($temp, function ($table) {
             $table->bigInteger('id')->default('0');
-            $table->string('kodeerror', 500)->default('');
-            $table->string('keterangan', 50)->default('');
+            $table->string('kodeerror', 1000)->default('');
+            $table->string('keterangan', 1000)->default('');
             $table->string('modifiedby', 50)->default('');
             $table->dateTime('created_at')->default('1900/1/1');
             $table->dateTime('updated_at')->default('1900/1/1');
             $table->increments('position');
         });
 
+        $this->setRequestParameters();
         $query = DB::table($modelTable);
         $query = $this->selectColumns($query);
-        $query = $this->sort($query);
+        $this->sort($query);
         $models = $this->filter($query);
+        DB::table($temp)->insertUsing(['id','kodeerror','keterangan','modifiedby','created_at','updated_at'],$models);
 
-        DB::table($temp)->insertUsing([
-            'id',
-            'kodeerror',
-            'keterangan',
-            'modifiedby',
-            'created_at',
-            'updated_at',
-        ], $models);
 
-        return  $temp;
+        return  $temp;         
+
     }
 
     public function sort($query)

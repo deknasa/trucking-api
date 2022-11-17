@@ -86,13 +86,12 @@ class GajiSupirHeader extends MyModel
             'suratpengantar.gajisupir',
             'suratpengantar.gajikenek',
         )
-        ->join('kota as kotaDari','suratpengantar.dari_id','kotaDari.id')
-        ->join('kota as kotaSampai','suratpengantar.sampai_id','kotaSampai.id')
-        ->join('trado','suratpengantar.trado_id','trado.id')
+        ->leftJoin('kota as kotaDari','suratpengantar.dari_id','kotaDari.id')
+        ->leftJoin('kota as kotaSampai','suratpengantar.sampai_id','kotaSampai.id')
+        ->leftJoin('trado','suratpengantar.trado_id','trado.id')
         ->where('supir_id',$supirId)
         ->where('tglbukti','>=', $tglDari)
         ->where('tglbukti','<=', $tglSampai);
-
         $data = $query->get();
         return $data;
     }
