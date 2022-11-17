@@ -9,7 +9,7 @@ class RekapPengeluaranDetail extends MyModel
 {
     use HasFactory;
 
-    protected $table = 'rekappengeluaranDetail';
+    protected $table = 'rekappengeluarandetail';
 
     protected $casts = [
         'created_at' => 'date:d-m-Y H:i:s',

@@ -230,6 +230,30 @@ class PengeluaranHeader extends MyModel
         {
             return $query->skip($this->params['offset'])->take($this->params['limit']);
         }
+
+        public function getRekapPengeluaranHeader($bank,$tglbukti)
+        {
+            $this->setRequestParameters();
+    
+            $query = DB::table($this->table)->select(
+                'pengeluaranheader.nobukti',
+                'pengeluaranheader.keterangan as keterangan_detail',
+                'pengeluaranheader.tglbukti',
+                DB::raw('SUM(pengeluarandetail.nominal) AS nominal')
+            )
+            ->where('pengeluaranheader.bank_id',$bank)
+            ->where('pengeluaranheader.tglbukti',$tglbukti)
+            ->whereRaw(" NOT EXISTS (
+                SELECT pengeluaran_nobukti
+                FROM rekappengeluarandetail
+                WHERE pengeluaran_nobukti = pengeluaranheader.nobukti   
+              )")
+            ->leftJoin('pengeluarandetail', 'pengeluaranheader.id', 'pengeluarandetail.pengeluaran_id')
+            ->groupBy('pengeluaranheader.nobukti','pengeluaranheader.keterangan' ,'pengeluaranheader.tglbukti');
+            $data = $query->get();
+                
+            return $data;
+        }
     
     
 }

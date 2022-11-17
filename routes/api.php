@@ -48,6 +48,9 @@
     use App\Http\Controllers\Api\PengembalianKasGantungHeaderController;
     use App\Http\Controllers\Api\PengembalianKasGantungDetailController;
     
+    use App\Http\Controllers\Api\RekapPengeluaranHeaderController;
+    use App\Http\Controllers\Api\RekapPengeluaranDetailController;
+    
     use App\Http\Controllers\Api\GudangController;
     use App\Http\Controllers\Api\PelangganController;
     use App\Http\Controllers\Api\PenerimaController;
@@ -147,7 +150,7 @@
         Route::get('absensisupirapprovalheader/running_number', [AbsensiSupirApprovalHeaderController::class, 'getRunningNumber']);
         Route::get('absensisupirapprovalheader/grid', [AbsensiSupirApprovalHeaderController::class, 'grid']);
         Route::get('absensisupirapprovalheader/field_length', [AbsensiSupirApprovalHeaderController::class, 'fieldLength']);
-        
+        Route::get('absensisupirapprovalheader/export', [AbsensiSupirApprovalHeaderController::class, 'export']);
         Route::get('absensisupirapprovalheader/{absensi}/getabsensi', [AbsensiSupirApprovalHeaderController::class, 'getAbsensi']);
         Route::get('absensisupirapprovalheader/{absensi}/getapproval', [AbsensiSupirApprovalHeaderController::class, 'getApproval']);
         Route::post('absensisupirapprovalheader/{id}/approval', [AbsensiSupirApprovalHeaderController::class,'approval']);
@@ -461,6 +464,14 @@
         Route::get('notadebetheader/export', [NotaDebetHeaderController::class, 'export']);
         Route::resource('notadebetheader',NotaDebetHeaderController::class);
         Route::resource('notadebet_detail', NotaDebetDetailController::class);
+        
+        Route::get('rekappengeluaranheader/field_length', [RekapPengeluaranHeaderController::class,'fieldLength']);
+        Route::get('rekappengeluaranheader/getpengeluaran', [RekapPengeluaranHeaderController::class,'getPengeluaran']);
+        Route::get('rekappengeluaranheader/export', [RekapPengeluaranHeaderController::class, 'export']);
+        Route::get('rekappengeluaranheader/{id}/getrekappengeluaran', [RekapPengeluaranHeaderController::class,'getRekapPengeluaran']);
+        Route::post('rekappengeluaranheader/{id}/approval', [RekapPengeluaranHeaderController::class,'approval']);
+        Route::resource('rekappengeluaranheader',RekapPengeluaranHeaderController::class);
+        Route::resource('rekappengeluarandetail', RekapPengeluaranDetailController::class);
         
         Route::get('pengembaliankasgantungheader/field_length', [PengembalianKasGantungHeaderController::class,'fieldLength']);
         Route::get('pengembaliankasgantungheader/getkasgantung', [PengembalianKasGantungHeaderController::class,'getKasGantung']);

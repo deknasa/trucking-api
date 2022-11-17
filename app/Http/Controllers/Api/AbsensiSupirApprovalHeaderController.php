@@ -32,9 +32,7 @@ use Exception;
 class AbsensiSupirApprovalHeaderController extends Controller
 {
     /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
+     * @ClassName 
      */
     public function index()
     {
@@ -48,7 +46,9 @@ class AbsensiSupirApprovalHeaderController extends Controller
             ]
         ]);
     }
-
+    /**
+     * @ClassName 
+     */
     public function store(StoreAbsensiSupirApprovalHeaderRequest $request)
     {
         DB::beginTransaction();
@@ -250,12 +250,6 @@ class AbsensiSupirApprovalHeaderController extends Controller
         }
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\AbsensiSupirApprovalHeader  $absensiSupirApprovalHeader
-     * @return \Illuminate\Http\Response
-     */
     public function show(AbsensiSupirApprovalHeader $absensiSupirApprovalHeader,$id)
     {
         $data = $absensiSupirApprovalHeader->find($id);
@@ -267,7 +261,9 @@ class AbsensiSupirApprovalHeaderController extends Controller
             // 'detail' => $detail
         ]);
     }
-
+    /**
+     * @ClassName 
+     */
     public function update(UpdateAbsensiSupirApprovalHeaderRequest $request, AbsensiSupirApprovalHeader $absensiSupirApprovalHeader,$id)
     {
         DB::beginTransaction();
@@ -430,8 +426,9 @@ class AbsensiSupirApprovalHeaderController extends Controller
          
         return response($request->all(), 442); 
     }
-
-   
+    /**
+     * @ClassName 
+     */
     public function destroy(AbsensiSupirApprovalHeader $absensiSupirApprovalHeader,$id)
     {
         DB::beginTransaction();
@@ -495,7 +492,9 @@ class AbsensiSupirApprovalHeaderController extends Controller
             return response($th->getMessage());
         }
     }
-
+    /**
+     * @ClassName 
+     */
     public function approval($id)
     {
         DB::beginTransaction();
