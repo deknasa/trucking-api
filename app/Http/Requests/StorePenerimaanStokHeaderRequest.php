@@ -26,7 +26,6 @@ class StorePenerimaanStokHeaderRequest extends FormRequest
         return [
             "tglbukti"=> "required", 
             "keterangan"=> "required", 
-            "statusformat" => "required",
             "penerimaanstok" => "required",
             "penerimaanstok_id" => "required",
             "modifiedby"=> "string", 

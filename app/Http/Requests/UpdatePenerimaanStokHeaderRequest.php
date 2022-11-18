@@ -26,7 +26,6 @@ class UpdatePenerimaanStokHeaderRequest extends FormRequest
         return [
             "tglbukti"=> "required", 
             "keterangan"=> "required", 
-            "statusformat" => "required",
             "modifiedby"=> "string", 
         ];
     }

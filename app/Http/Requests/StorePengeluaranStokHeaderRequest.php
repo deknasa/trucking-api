@@ -26,7 +26,6 @@ class StorePengeluaranStokHeaderRequest extends FormRequest
         return [
             "tglbukti"=> "required", 
             "keterangan"=> "required", 
-            "statusformat" => "required",
             "pengeluaranstok" => "required",
             "pengeluaranstok_id" => "required",
             "modifiedby"=> "string", 

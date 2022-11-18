@@ -74,7 +74,7 @@ class PenerimaanStokHeaderController extends Controller
             $penerimaanStokHeader->hutang_nobukti    = ($request->hutang_nobukti == null) ?"" :$request->hutang_nobukti;
             $penerimaanStokHeader->keterangan        = ($request->keterangan == null) ?"" :$request->keterangan;
             $penerimaanStokHeader->coa               = ($request->coa == null) ?"" :$request->coa;
-            $penerimaanStokHeader->statusformat      = ($request->statusformat == null) ?"" :$request->statusformat;
+            $penerimaanStokHeader->statusformat      = ($request->statusformat_id == null) ?"" :$request->statusformat_id;
             $penerimaanStokHeader->penerimaanstok_id = ($request->penerimaanstok_id == null) ?"" :$request->penerimaanstok_id;
             $penerimaanStokHeader->gudang_id         = ($request->gudang_id == null) ?"" :$request->gudang_id;
             $penerimaanStokHeader->trado_id          = ($request->trado_id == null) ?"" :$request->trado_id;
@@ -204,7 +204,7 @@ class PenerimaanStokHeaderController extends Controller
             $penerimaanStokHeader->hutang_nobukti    = ($request->hutang_nobukti == null) ?"" :$request->hutang_nobukti;
             $penerimaanStokHeader->keterangan        = ($request->keterangan == null) ?"" :$request->keterangan;
             $penerimaanStokHeader->coa               = ($request->coa == null) ?"" :$request->coa;
-            $penerimaanStokHeader->statusformat      = ($request->statusformat == null) ?"" :$request->statusformat;
+            $penerimaanStokHeader->statusformat      = ($request->statusformat_id == null) ?"" :$request->statusformat_id;
             $penerimaanStokHeader->penerimaanstok_id = ($request->penerimaanstok_id == null) ?"" :$request->penerimaanstok_id;
             $penerimaanStokHeader->gudang_id         = ($request->gudang_id == null) ?"" :$request->gudang_id;
             $penerimaanStokHeader->trado_id          = ($request->trado_id == null) ?"" :$request->trado_id;
