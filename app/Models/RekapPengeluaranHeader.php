@@ -44,7 +44,6 @@ class RekapPengeluaranHeader extends MyModel
 
         return $data;
     }
-
     
     public function sort($query)
     {

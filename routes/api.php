@@ -51,6 +51,12 @@
     use App\Http\Controllers\Api\RekapPengeluaranHeaderController;
     use App\Http\Controllers\Api\RekapPengeluaranDetailController;
     
+<<<<<<< Updated upstream
+    use App\Http\Controllers\Api\RekapPenerimaanHeaderController;
+    use App\Http\Controllers\Api\RekapPenerimaanDetailController;
+    
+=======
+>>>>>>> Stashed changes
     use App\Http\Controllers\Api\GudangController;
     use App\Http\Controllers\Api\PelangganController;
     use App\Http\Controllers\Api\PenerimaController;
@@ -257,7 +263,6 @@
         Route::get('userrole/export', [UserRoleController::class, 'export'])->name('userrole.export');
         Route::resource('userrole', UserRoleController::class);
 
-        
         Route::get('acl/field_length', [AclController::class, 'fieldLength']);
         Route::get('acl/detail/{roleId}', [AclController::class, 'detail']);
         Route::get('acl/detaillist', [AclController::class, 'detaillist']);
@@ -473,6 +478,14 @@
         Route::post('rekappengeluaranheader/{id}/approval', [RekapPengeluaranHeaderController::class,'approval']);
         Route::resource('rekappengeluaranheader',RekapPengeluaranHeaderController::class);
         Route::resource('rekappengeluarandetail', RekapPengeluaranDetailController::class);
+        
+        Route::get('rekappenerimaanheader/field_length', [RekapPenerimaanHeaderController::class,'fieldLength']);
+        Route::get('rekappenerimaanheader/getpenerimaan', [RekapPenerimaanHeaderController::class,'getPenerimaan']);
+        Route::get('rekappenerimaanheader/export', [RekapPenerimaanHeaderController::class, 'export']);
+        Route::get('rekappenerimaanheader/{id}/getrekappenerimaan', [RekapPenerimaanHeaderController::class,'getRekapPenerimaan']);
+        Route::post('rekappenerimaanheader/{id}/approval', [RekapPenerimaanHeaderController::class,'approval']);
+        Route::resource('rekappenerimaanheader',RekapPenerimaanHeaderController::class);
+        Route::resource('rekappenerimaandetail', RekapPenerimaanDetailController::class);
         
         Route::get('pengembaliankasgantungheader/field_length', [PengembalianKasGantungHeaderController::class,'fieldLength']);
         Route::get('pengembaliankasgantungheader/getkasgantung', [PengembalianKasGantungHeaderController::class,'getKasGantung']);

@@ -13,7 +13,7 @@ class StoreRekapPenerimaanHeaderRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +24,10 @@ class StoreRekapPenerimaanHeaderRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            "tglbukti"=>"required",
+            "keterangan"=>"required",
+            "tgltransaksi"=>"required",
+            "bank_id"=>"required",
         ];
     }
 }

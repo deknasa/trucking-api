@@ -151,9 +151,7 @@ class RekapPengeluaranHeaderController extends Controller
             'data' => $notaKreditHeader
         ], 422);
     }
-    /**
-     * @ClassName 
-     */
+
     public function show(RekapPengeluaranHeader $rekapPengeluaranHeader,$id)
     {
         $data = $rekapPengeluaranHeader->find($id);

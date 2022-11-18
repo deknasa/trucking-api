@@ -261,4 +261,28 @@ class PenerimaanHeader extends MyModel
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
+
+    public function getRekapPenerimaanHeader($bank,$tglbukti)
+        {
+            $this->setRequestParameters();
+    
+            $query = DB::table($this->table)->select(
+                'penerimaanheader.nobukti',
+                'penerimaanheader.keterangan as keterangan_detail',
+                'penerimaanheader.tglbukti',
+                DB::raw('SUM(penerimaandetail.nominal) AS nominal')
+            )
+            ->where('penerimaanheader.bank_id',$bank)
+            ->where('penerimaanheader.tglbukti',$tglbukti)
+            ->whereRaw(" NOT EXISTS (
+                SELECT penerimaan_nobukti
+                FROM rekappenerimaandetail
+                WHERE penerimaan_nobukti = penerimaanheader.nobukti   
+              )")
+            ->leftJoin('penerimaandetail', 'penerimaanheader.id', 'penerimaandetail.penerimaan_id')
+            ->groupBy('penerimaanheader.nobukti','penerimaanheader.keterangan' ,'penerimaanheader.tglbukti');
+            $data = $query->get();
+                
+            return $data;
+        }
 }
