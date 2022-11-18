@@ -254,6 +254,7 @@
         Route::get('userrole/export', [UserRoleController::class, 'export'])->name('userrole.export');
         Route::resource('userrole', UserRoleController::class);
 
+        
         Route::get('acl/field_length', [AclController::class, 'fieldLength']);
         Route::get('acl/detail/{roleId}', [AclController::class, 'detail']);
         Route::get('acl/detaillist', [AclController::class, 'detaillist']);

@@ -55,6 +55,7 @@ class CreateTradoTable extends Migration
             $table->string('nobpkb', 50)->default('');
             $table->integer('statusmobilstoring')->length(11)->default(0);
             $table->unsignedBigInteger('mandor_id')->default(0);
+            $table->unsignedBigInteger('supir_id')->default(0);
             $table->integer('jumlahbanserap')->length(11)->default(0);
             $table->integer('statusappeditban')->length(11)->default(0);
             $table->integer('statuslewatvalidasi')->length(11)->default(0);
@@ -65,6 +66,7 @@ class CreateTradoTable extends Migration
 
 
             $table->foreign('mandor_id', 'trado_mandor_mandor_id_foreign')->references('id')->on('mandor');
+            $table->foreign('supir_id', 'trado_supir_supir_id_foreign')->references('id')->on('supir');
         });
 
         DB::statement("ALTER TABLE trado NOCHECK CONSTRAINT trado_mandor_mandor_id_foreign");

@@ -284,6 +284,7 @@ class AclController extends Controller
      */
     public function update(UpdateAclRequest $request, $id)
     {
+        // dd('test');
         DB::beginTransaction();
         try {
             Acl::where('role_id', $id)->delete();

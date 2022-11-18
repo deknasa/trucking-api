@@ -66,12 +66,12 @@ class MenuController extends Controller
                     }
                 }
 
+
                 $list = Acos::select('id')
                     ->where('class', '=', $namaclass)
                     ->where('method', '=', 'index')
                     ->orderBy('id', 'asc')
                     ->first();
-
                 $menuacoid = $list->id;
             } else {
                 $menuacoid = 0;
@@ -91,44 +91,75 @@ class MenuController extends Controller
                 ->where('menuparent', '=', $request->menuparent)
                 ->exists()
             ) {
+
                 if ($request->menuparent == 0) {
                     $list = Menu::select('menukode')
                         ->where('menuparent', '=', '0')
-                        ->where('menukode', '<>', '9')
+                        ->where(DB::raw('right(menukode,1)'), '<>', '9')
                         ->orderBy('menukode', 'desc')
                         ->first();
+                    // dd('test1');
                     $menukode = $list->menukode + 1;
                 } else {
+
+
                     if (Menu::select('menukode')
                         ->where('menuparent', '=', $request->menuparent)
-                        ->where('menukode', '<>', '9')
+                        ->where(DB::raw('right(menukode,1)'), '<>', '9')
                         ->exists()
                     ) {
                         $list = Menu::select('menukode')
                             ->where('menuparent', '=', $request->menuparent)
-                            ->where('menukode', '<>', '9')
+                            ->where(DB::raw('right(menukode,1)'), '<>', '9')
                             ->orderBy('menukode', 'desc')
                             ->first();
 
-                        $menukode = $list->menukode + 1;
+                        $kodeakhir = substr($list->menukode, -1);
+                        $arrayangka = array('1', '2', '3', '4', '5', '6', '7', '8');
+                        if (in_array($kodeakhir, $arrayangka)) {
+
+                            $menukode = $list->menukode + 1;
+                        } else {
+                            $kodeawal = substr($list->menukode, 0, strlen($list->menukode) - 1);
+                            $menukode = $kodeawal . chr((ord($kodeakhir) + 1));
+                        }
                     } else {
                         $list = Menu::select('menukode')
                             ->where('id', '=', $request->menuparent)
-                            ->where('menukode', '<>', '9')
+                            ->where(DB::raw('right(menukode,1)'), '<>', '9')
                             ->orderBy('menukode', 'desc')
                             ->first();
+                        // dd('test3');
                         $menukode = $list->menukode . '1';
                     }
                 }
             } else {
                 if ($request->menuparent == 0) {
                     $menukode = 0;
+                    $list = Menu::select('menukode')
+                        ->where('menuparent', '=', '0')
+                        ->where(DB::raw('right(menukode,1)'), '<>', '9')
+                        ->orderBy('menukode', 'desc')
+                        ->first();
+                    // dd('test1');
+                    $menukode = $list->menukode + 1;
+                    $kodeakhir = substr($list->menukode, -1);
+                    $arrayangka = array('1', '2', '3', '4', '5', '6', '7', '8');
+                    if (in_array($kodeakhir, $arrayangka)) {
+
+                        $menukode = $list->menukode + 1;
+                    } else if ($kodeakhir == '9') {
+                        $menukode = 'A';
+                    } else {
+                        $menukode = chr((ord($kodeakhir) + 1));
+                    }
                 } else {
                     $list = Menu::select('menukode')
                         ->where('id', '=', $request->menuparent)
-                        ->where('menukode', '<>', '9')
+                        ->where(DB::raw('right(menukode,1)'), '<>', '9')
                         ->orderBy('menukode', 'desc')
                         ->first();
+                    // dd('test4');
                     $menukode = $list->menukode . '1';
                 }
             }
