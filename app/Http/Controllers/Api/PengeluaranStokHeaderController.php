@@ -71,7 +71,7 @@ class PengeluaranStokHeaderController extends Controller
             $pengeluaranStokHeader->penerimaanstok_nobukti  = ($request->penerimaanstok_nobukti == null) ?"" :$request->penerimaanstok_nobukti;
             $pengeluaranStokHeader->servicein_nobukti    = ($request->servicein_nobukti == null) ?"" :$request->servicein_nobukti;
             $pengeluaranStokHeader->kerusakan_id         = ($request->kerusakan_id == null) ?"" :$request->supir_id;
-            $pengeluaranStokHeader->statusformat      = ($request->statusformat == null) ?"" :$request->statusformat;
+            $pengeluaranStokHeader->statusformat      = ($request->statusformat_id == null) ?"" :$request->statusformat_id;
             $pengeluaranStokHeader->modifiedby        = auth('api')->user()->name;
             $request->sortname                 = $request->sortname ?? 'id';
             $request->sortorder                = $request->sortorder ?? 'asc';
@@ -202,7 +202,7 @@ class PengeluaranStokHeaderController extends Controller
             $pengeluaranStokHeader->penerimaanstok_nobukti  = ($request->penerimaanstok_nobukti == null) ?"" :$request->penerimaanstok_nobukti;
             $pengeluaranStokHeader->servicein_nobukti    = ($request->servicein_nobukti == null) ?"" :$request->servicein_nobukti;
             $pengeluaranStokHeader->kerusakan_id         = ($request->kerusakan_id == null) ?"" :$request->supir_id;
-            $pengeluaranStokHeader->statusformat      = ($request->statusformat == null) ?"" :$request->statusformat;
+            $pengeluaranStokHeader->statusformat      = ($request->statusformat_id == null) ?"" :$request->statusformat_id;
             $pengeluaranStokHeader->modifiedby        = auth('api')->user()->name;
             $request->sortname                 = $request->sortname ?? 'id';
             $request->sortorder                = $request->sortorder ?? 'asc';
