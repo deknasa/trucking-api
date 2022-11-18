@@ -17,7 +17,6 @@ class AcosSeeder extends Seeder
     {
         DB::statement("delete Acos");
         DB::statement("DBCC CHECKIDENT ('Acos', RESEED, 1);");
-
         Acos::create(['class' => 'parameter', 'method' => 'index', 'nama' => 'index ParameterController', 'modifiedby' => 'ADMIN',]);
         Acos::create(['class' => 'parameter', 'method' => 'store', 'nama' => 'store ParameterController', 'modifiedby' => 'ADMIN',]);
         Acos::create(['class' => 'parameter', 'method' => 'update', 'nama' => 'update ParameterController', 'modifiedby' => 'ADMIN',]);
@@ -251,5 +250,59 @@ class AcosSeeder extends Seeder
         Acos::create(['class' => 'prosesgajisupirheader', 'method' => 'store', 'nama' => 'store ProsesGajiSupirHeaderController', 'modifiedby' => 'ADMIN',]);
         Acos::create(['class' => 'prosesgajisupirheader', 'method' => 'update', 'nama' => 'update ProsesGajiSupirHeaderController', 'modifiedby' => 'ADMIN',]);
         Acos::create(['class' => 'prosesgajisupirheader', 'method' => 'destroy', 'nama' => 'destroy ProsesGajiSupirHeaderController', 'modifiedby' => 'ADMIN',]);
+        Acos::create(['class' => 'absensisupirapprovalheader', 'method' => 'index', 'nama' => 'index AbsensiSupirApprovalHeaderController', 'modifiedby' => 'ADMIN',]);
+        Acos::create(['class' => 'absensisupirapprovalheader', 'method' => 'store', 'nama' => 'store AbsensiSupirApprovalHeaderController', 'modifiedby' => 'ADMIN',]);
+        Acos::create(['class' => 'absensisupirapprovalheader', 'method' => 'update', 'nama' => 'update AbsensiSupirApprovalHeaderController', 'modifiedby' => 'ADMIN',]);
+        Acos::create(['class' => 'absensisupirapprovalheader', 'method' => 'destroy', 'nama' => 'destroy AbsensiSupirApprovalHeaderController', 'modifiedby' => 'ADMIN',]);
+        Acos::create(['class' => 'hutangheader', 'method' => 'index', 'nama' => 'index HutangHeaderController', 'modifiedby' => 'ADMIN',]);
+        Acos::create(['class' => 'hutangheader', 'method' => 'update', 'nama' => 'update HutangHeaderController', 'modifiedby' => 'ADMIN',]);
+        Acos::create(['class' => 'hutangheader', 'method' => 'destroy', 'nama' => 'destroy HutangHeaderController', 'modifiedby' => 'ADMIN',]);
+        Acos::create(['class' => 'hutangheader', 'method' => 'store', 'nama' => 'store HutangHeaderController', 'modifiedby' => 'ADMIN',]);
+        Acos::create(['class' => 'hutangbayarheader', 'method' => 'index', 'nama' => 'index HutangBayarHeaderController', 'modifiedby' => 'ADMIN',]);
+        Acos::create(['class' => 'hutangbayarheader', 'method' => 'store', 'nama' => 'store HutangBayarHeaderController', 'modifiedby' => 'ADMIN',]);
+        Acos::create(['class' => 'hutangbayarheader', 'method' => 'update', 'nama' => 'update HutangBayarHeaderController', 'modifiedby' => 'ADMIN',]);
+        Acos::create(['class' => 'hutangbayarheader', 'method' => 'destroy', 'nama' => 'destroy HutangBayarHeaderController', 'modifiedby' => 'ADMIN',]);
+        Acos::create(['class' => 'invoiceheader', 'method' => 'index', 'nama' => 'index InvoiceHeaderController', 'modifiedby' => 'ADMIN',]);
+        Acos::create(['class' => 'invoiceheader', 'method' => 'store', 'nama' => 'store InvoiceHeaderController', 'modifiedby' => 'ADMIN',]);
+        Acos::create(['class' => 'invoiceheader', 'method' => 'update', 'nama' => 'update InvoiceHeaderController', 'modifiedby' => 'ADMIN',]);
+        Acos::create(['class' => 'invoiceheader', 'method' => 'destroy', 'nama' => 'destroy InvoiceHeaderController', 'modifiedby' => 'ADMIN',]);
+        Acos::create(['class' => 'notadebetheader', 'method' => 'index', 'nama' => 'index NotaDebetHeaderController', 'modifiedby' => 'ADMIN',]);
+        Acos::create(['class' => 'notadebetheader', 'method' => 'store', 'nama' => 'store NotaDebetHeaderController', 'modifiedby' => 'ADMIN',]);
+        Acos::create(['class' => 'notadebetheader', 'method' => 'update', 'nama' => 'update NotaDebetHeaderController', 'modifiedby' => 'ADMIN',]);
+        Acos::create(['class' => 'notadebetheader', 'method' => 'destroy', 'nama' => 'destroy NotaDebetHeaderController', 'modifiedby' => 'ADMIN',]);
+        Acos::create(['class' => 'notakreditheader', 'method' => 'index', 'nama' => 'index NotaKreditHeaderController', 'modifiedby' => 'ADMIN',]);
+        Acos::create(['class' => 'notakreditheader', 'method' => 'store', 'nama' => 'store NotaKreditHeaderController', 'modifiedby' => 'ADMIN',]);
+        Acos::create(['class' => 'notakreditheader', 'method' => 'update', 'nama' => 'update NotaKreditHeaderController', 'modifiedby' => 'ADMIN',]);
+        Acos::create(['class' => 'notakreditheader', 'method' => 'destroy', 'nama' => 'destroy NotaKreditHeaderController', 'modifiedby' => 'ADMIN',]);
+        Acos::create(['class' => 'notakreditheader', 'method' => 'approval', 'nama' => 'approval NotaKreditHeaderController', 'modifiedby' => 'ADMIN',]);
+        Acos::create(['class' => 'penerimaantrucking', 'method' => 'index', 'nama' => 'index PenerimaanTruckingController', 'modifiedby' => 'ADMIN',]);
+        Acos::create(['class' => 'penerimaantrucking', 'method' => 'store', 'nama' => 'store PenerimaanTruckingController', 'modifiedby' => 'ADMIN',]);
+        Acos::create(['class' => 'penerimaantrucking', 'method' => 'update', 'nama' => 'update PenerimaanTruckingController', 'modifiedby' => 'ADMIN',]);
+        Acos::create(['class' => 'penerimaantrucking', 'method' => 'destroy', 'nama' => 'destroy PenerimaanTruckingController', 'modifiedby' => 'ADMIN',]);
+        Acos::create(['class' => 'penerimaantruckingheader', 'method' => 'index', 'nama' => 'index PenerimaanTruckingHeaderController', 'modifiedby' => 'ADMIN',]);
+        Acos::create(['class' => 'penerimaantruckingheader', 'method' => 'store', 'nama' => 'store PenerimaanTruckingHeaderController', 'modifiedby' => 'ADMIN',]);
+        Acos::create(['class' => 'penerimaantruckingheader', 'method' => 'update', 'nama' => 'update PenerimaanTruckingHeaderController', 'modifiedby' => 'ADMIN',]);
+        Acos::create(['class' => 'penerimaantruckingheader', 'method' => 'destroy', 'nama' => 'destroy PenerimaanTruckingHeaderController', 'modifiedby' => 'ADMIN',]);
+        Acos::create(['class' => 'penerimaanstokheader', 'method' => 'index', 'nama' => 'index PenerimaanStokHeaderController', 'modifiedby' => 'ADMIN',]);
+        Acos::create(['class' => 'penerimaanstokheader', 'method' => 'store', 'nama' => 'store PenerimaanStokHeaderController', 'modifiedby' => 'ADMIN',]);
+        Acos::create(['class' => 'penerimaanstokheader', 'method' => 'update', 'nama' => 'update PenerimaanStokHeaderController', 'modifiedby' => 'ADMIN',]);
+        Acos::create(['class' => 'penerimaanstokheader', 'method' => 'destroy', 'nama' => 'destroy PenerimaanStokHeaderController', 'modifiedby' => 'ADMIN',]);
+        Acos::create(['class' => 'pengeluaranstokheader', 'method' => 'index', 'nama' => 'index PengeluaranStokHeaderController', 'modifiedby' => 'ADMIN',]);
+        Acos::create(['class' => 'pengeluaranstokheader', 'method' => 'store', 'nama' => 'store PengeluaranStokHeaderController', 'modifiedby' => 'ADMIN',]);
+        Acos::create(['class' => 'pengeluaranstokheader', 'method' => 'update', 'nama' => 'update PengeluaranStokHeaderController', 'modifiedby' => 'ADMIN',]);
+        Acos::create(['class' => 'pengeluaranstokheader', 'method' => 'destroy', 'nama' => 'destroy PengeluaranStokHeaderController', 'modifiedby' => 'ADMIN',]);
+        Acos::create(['class' => 'pengeluaranheader', 'method' => 'index', 'nama' => 'index PengeluaranHeaderController', 'modifiedby' => 'ADMIN',]);
+        Acos::create(['class' => 'pengeluaranheader', 'method' => 'store', 'nama' => 'store PengeluaranHeaderController', 'modifiedby' => 'ADMIN',]);
+        Acos::create(['class' => 'pengeluaranheader', 'method' => 'update', 'nama' => 'update PengeluaranHeaderController', 'modifiedby' => 'ADMIN',]);
+        Acos::create(['class' => 'pengeluaranheader', 'method' => 'destroy', 'nama' => 'destroy PengeluaranHeaderController', 'modifiedby' => 'ADMIN',]);
+        Acos::create(['class' => 'pengembaliankasgantungheader', 'method' => 'index', 'nama' => 'index PengembalianKasGantungHeaderController', 'modifiedby' => 'ADMIN',]);
+        Acos::create(['class' => 'pengembaliankasgantungheader', 'method' => 'store', 'nama' => 'store PengembalianKasGantungHeaderController', 'modifiedby' => 'ADMIN',]);
+        Acos::create(['class' => 'pengembaliankasgantungheader', 'method' => 'update', 'nama' => 'update PengembalianKasGantungHeaderController', 'modifiedby' => 'ADMIN',]);
+        Acos::create(['class' => 'pengembaliankasgantungheader', 'method' => 'destroy', 'nama' => 'destroy PengembalianKasGantungHeaderController', 'modifiedby' => 'ADMIN',]);
+        Acos::create(['class' => 'rekappengeluaranheader', 'method' => 'index', 'nama' => 'index RekapPengeluaranHeaderController', 'modifiedby' => 'ADMIN',]);
+        Acos::create(['class' => 'rekappengeluaranheader', 'method' => 'store', 'nama' => 'store RekapPengeluaranHeaderController', 'modifiedby' => 'ADMIN',]);
+        Acos::create(['class' => 'rekappengeluaranheader', 'method' => 'update', 'nama' => 'update RekapPengeluaranHeaderController', 'modifiedby' => 'ADMIN',]);
+        Acos::create(['class' => 'rekappengeluaranheader', 'method' => 'destroy', 'nama' => 'destroy RekapPengeluaranHeaderController', 'modifiedby' => 'ADMIN',]);
+        Acos::create(['class' => 'rekappengeluaranheader', 'method' => 'approval', 'nama' => 'approval RekapPengeluaranHeaderController', 'modifiedby' => 'ADMIN',]);
     }
 }

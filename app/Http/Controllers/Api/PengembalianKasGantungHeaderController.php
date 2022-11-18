@@ -150,9 +150,7 @@ class PengembalianKasGantungHeaderController extends Controller
             return response($th->getMessage());
         }   
     }
-    /**
-     * @ClassName 
-     */
+    
     public function show(PengembalianKasGantungHeader $pengembalianKasGantungHeader,$id)
     {
         return response([

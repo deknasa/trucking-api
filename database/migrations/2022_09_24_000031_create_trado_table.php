@@ -70,6 +70,7 @@ class CreateTradoTable extends Migration
         });
 
         DB::statement("ALTER TABLE trado NOCHECK CONSTRAINT trado_mandor_mandor_id_foreign");
+        DB::statement("ALTER TABLE trado NOCHECK CONSTRAINT trado_supir_supir_id_foreign");
     }
 
     /**
