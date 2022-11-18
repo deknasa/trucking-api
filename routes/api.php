@@ -111,6 +111,8 @@
     use App\Http\Controllers\Api\HutangBayarDetailController;
     use App\Http\Controllers\Api\InvoiceDetailController;
     use App\Http\Controllers\Api\InvoiceHeaderController;
+    use App\Http\Controllers\Api\InvoiceExtraDetailController;
+    use App\Http\Controllers\Api\InvoiceExtraHeaderController;
     use App\Http\Controllers\Api\ProsesGajiSupirHeaderController;
     use App\Http\Controllers\Api\ProsesGajiSupirDetailController;
     use App\Http\Controllers\Api\HariLiburController;
@@ -381,6 +383,12 @@
         Route::apiResource('pengeluaranstok', PengeluaranStokController::class);
         Route::apiResource('pengeluaranstokheader', PengeluaranStokHeaderController::class);
         Route::apiResource('pengeluaranstokdetail', PengeluaranStokDetailController::class);
+
+                
+        Route::get('pengeluaranstok/field_length', [PengeluaranStokController::class,'fieldLength']);
+        // Route::get('pengeluaranstok/export', [PengeluaranStokController::class,'export']);
+        Route::resource('invoiceextraheader', InvoiceExtraHeaderController::class);
+        Route::resource('invoiceextradetail', InvoiceExtraDetailController::class);
 
         Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
         Route::get('piutangheader/no_bukti', [PiutangHeaderController::class, 'getNoBukti']);

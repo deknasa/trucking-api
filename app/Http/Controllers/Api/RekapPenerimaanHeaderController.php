@@ -63,6 +63,7 @@ class RekapPenerimaanHeaderController extends Controller
             $rekapPenerimaanHeader->tgltransaksi  = date('Y-m-d',strtotime($request->tgltransaksi ));
             $rekapPenerimaanHeader->bank_id = $request->bank_id;
             $rekapPenerimaanHeader->statusapproval = $statusNonApproval->id;
+            $rekapPenerimaanHeader->userapproval = auth('api')->user()->name;
             $rekapPenerimaanHeader->statusformat = $format->id;
             $rekapPenerimaanHeader->modifiedby = auth('api')->user()->name;
             TOP:
@@ -112,10 +113,10 @@ class RekapPenerimaanHeaderController extends Controller
                     }
                     $datalogtrail = [
                         'namatabel' => $tabeldetail,
-                        'postingdari' => 'ENTRY NOTA KREDIT DETAIL',
+                        'postingdari' => 'ENTRY REKAP PENERIMAAN DETAIL',
                         'idtrans' =>  $iddetail,
                         'nobuktitrans' => $rekapPenerimaanHeader->nobukti,
-                        'aksi' => 'EDIT',
+                        'aksi' => 'ENTRY',
                         'datajson' => $detaillog,
                         'modifiedby' => auth('api')->user()->name,
                     ];
@@ -146,10 +147,6 @@ class RekapPenerimaanHeaderController extends Controller
             throw $th;
             return response($th->getMessage());
         }
-        return response([
-            'message' => 'Berhasil gagal disimpan',
-            'data' => $notaKreditHeader
-        ], 422);
     }
 
     public function show(RekapPenerimaanHeader $rekapPenerimaanHeader,$id)
@@ -176,15 +173,17 @@ class RekapPenerimaanHeaderController extends Controller
             $rekapPenerimaanHeader->keterangan = $request->keterangan;
             $rekapPenerimaanHeader->tgltransaksi  = date('Y-m-d',strtotime($request->tgltransaksi ));
             $rekapPenerimaanHeader->bank_id = $request->bank_id;
+            $rekapPenerimaanHeader->statusapproval = $statusNonApproval->id;
+            $rekapPenerimaanHeader->userapproval = auth('api')->user()->name;
             $rekapPenerimaanHeader->modifiedby = auth('api')->user()->name;
 
             if ($rekapPenerimaanHeader->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($rekapPenerimaanHeader->getTable()),
-                    'postingdari' => 'ENTRY REKAP PENGELUARAN HEADER',
+                    'postingdari' => 'EDIR REKAP PENERIMAAN HEADER',
                     'idtrans' => $rekapPenerimaanHeader->id,
                     'nobuktitrans' => $rekapPenerimaanHeader->nobukti,
-                    'aksi' => 'ENTRY',
+                    'aksi' => 'EDIT',
                     'datajson' => $rekapPenerimaanHeader->toArray(),
                     'modifiedby' => $rekapPenerimaanHeader->modifiedby
                 ];
@@ -221,7 +220,7 @@ class RekapPenerimaanHeaderController extends Controller
                     }
                     $datalogtrail = [
                         'namatabel' => $tabeldetail,
-                        'postingdari' => 'EDIT NOTA KREDIT DETAIL',
+                        'postingdari' => 'EDIT REKAP PENERIMAAN DETAIL',
                         'idtrans' =>  $iddetail,
                         'nobuktitrans' => $rekapPenerimaanHeader->nobukti,
                         'aksi' => 'EDIT',
@@ -255,10 +254,6 @@ class RekapPenerimaanHeaderController extends Controller
             throw $th;
             return response($th->getMessage());
         }
-        return response([
-            'message' => 'Berhasil gagal disimpan',
-            'data' => $notaKreditHeader
-        ], 422);
     }
     /**
      * @ClassName 
@@ -336,7 +331,7 @@ class RekapPenerimaanHeaderController extends Controller
             if ($rekapPenerimaanHeader->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($rekapPenerimaanHeader->getTable()),
-                    'postingdari' => 'UN/APPROVE ABSENSI SUPIR APPROVAL',
+                    'postingdari' => 'UN/APPROVE REKAP PENERIMAAN HEADER',
                     'idtrans' => $rekapPenerimaanHeader->id,
                     'nobuktitrans' => $rekapPenerimaanHeader->id,
                     'aksi' => 'UN/APPROVE',

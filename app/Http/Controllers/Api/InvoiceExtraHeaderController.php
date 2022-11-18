@@ -2,10 +2,19 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Models\Parameter;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+
 use App\Http\Controllers\Controller;
 use App\Models\InvoiceExtraHeader;
 use App\Http\Requests\StoreInvoiceExtraHeaderRequest;
 use App\Http\Requests\UpdateInvoiceExtraHeaderRequest;
+
+use App\Models\InvoiceExtraDetail;
+use Illuminate\Support\Facades\Schema;
+use App\Http\Requests\StoreInvoiceExtraDetailRequest;
+use App\Http\Requests\StoreLogTrailRequest;
 
 class InvoiceExtraHeaderController extends Controller
 {
@@ -16,7 +25,15 @@ class InvoiceExtraHeaderController extends Controller
      */
     public function index()
     {
-        //
+        $invoice = new InvoiceExtraHeader();
+
+        return response([
+            "data" => $invoice->get(),
+            "attributes" => [
+                'totalRows' => $invoice->totalRows,
+                'totalPages' => $invoice->totalPages
+            ]
+        ]);
     }
 
     /**
