@@ -89,7 +89,7 @@ class AbsensiSupirApprovalHeaderController extends Controller
             $absensiSupirApprovalHeader->keterangan =  $request->keterangan;
             $absensiSupirApprovalHeader->statusapproval=  4;
             $absensiSupirApprovalHeader->statusformat =  $format->id;
-            $absensiSupirApprovalHeader->pengeluaran_nobukti= $kasgantung->pengeluaran_nobukti ?? '0';
+            $absensiSupirApprovalHeader->pengeluaran_nobukti= $request->pengeluaran_nobukti ?? '0';
             $absensiSupirApprovalHeader->coakaskeluar= $coakaskeluar;
             $absensiSupirApprovalHeader->postingdari =  "ABSENSI SUPIR APPROVAL";
             $absensiSupirApprovalHeader->modifiedby =  auth('api')->user()->name;
@@ -471,7 +471,7 @@ class AbsensiSupirApprovalHeaderController extends Controller
                 $selected = $this->getPosition($absensiSupirApprovalHeader, $absensiSupirApprovalHeader->getTable(), true);
                 $absensiSupirApprovalHeader->position = $selected->position;
                 $absensiSupirApprovalHeader->id = $selected->id;
-                $absensiSupirApprovalHeader->page = ceil($absensiSupirApprovalHeader->position / ($request->limit ?? 10));
+                $absensiSupirApprovalHeader->page = ceil($absensiSupirApprovalHeader->position / ($selected->limit ?? 10));
     
                 return response([
                     'status' => true,
