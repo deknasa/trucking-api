@@ -58,7 +58,7 @@ class Supir extends MyModel
             'supir.photodomisili',
             'supir.keteranganresign',
             'statusblacklist.text as statusblacklist',
-            'supir.tglberhentisupir',
+            DB::raw("(case when year(isnull(supir.tglberhentisupir,'1900/1/1'))=1900 then null else supir.tglberhentisupir  end) as tglberhentisupir"),
             'supir.modifiedby',
             'supir.created_at',
             'supir.updated_at'

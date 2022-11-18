@@ -19,6 +19,7 @@ class CreateInvoiceextradetailTable extends Migration
             $table->id();
             $table->unsignedBigInteger('invoiceextra_id')->default(0);
             $table->string('nobukti', 50)->default('');
+            $table->double('nominal', 15,2)->default(0);
             $table->longText('keterangan')->default('');
             $table->string('modifiedby', 50)->default('');
             $table->timestamps();

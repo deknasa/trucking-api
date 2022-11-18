@@ -65,7 +65,7 @@ class AbsensiSupirDetailController extends Controller
                     ->join('absensisupirheader as header', 'header.id', 'detail.absensi_id')
                     ->join('trado', 'trado.id','detail.trado_id')
                     ->join('supir', 'supir.id','detail.supir_id')
-                    ->join('absentrado', 'absentrado.id','detail.absen_id');
+                    ->leftjoin('absentrado', 'absentrado.id','detail.absen_id');
 
                 $absensiSupirDetail = $query->get();
             } else {
@@ -80,7 +80,7 @@ class AbsensiSupirDetailController extends Controller
                 )
                     ->join('trado', 'trado.id', '=', 'detail.trado_id')
                     ->join('supir', 'supir.id', '=', 'detail.supir_id')
-                    ->join('absentrado', 'absentrado.id', '=', 'detail.absen_id');
+                    ->leftjoin('absentrado', 'absentrado.id', '=', 'detail.absen_id');
                 $absensiSupirDetail = $query->get();
             }
             $idUser = auth('api')->user()->id;

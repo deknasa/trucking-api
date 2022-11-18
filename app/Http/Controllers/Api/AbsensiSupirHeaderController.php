@@ -111,7 +111,7 @@ class AbsensiSupirHeaderController extends Controller
                         'supir_id' => $request->supir_id[$i],
                         'keterangan' => $request->keterangan_detail[$i],
                         'uangjalan' => $request->uangjalan[$i],
-                        'absen_id' => $request->absen_id[$i],
+                        'absen_id' => $request->absen_id[$i] ?? '',
                         'jam' => $request->jam[$i],
                         'modifiedby' => $absensiSupirHeader->modifiedby,
                     ]);

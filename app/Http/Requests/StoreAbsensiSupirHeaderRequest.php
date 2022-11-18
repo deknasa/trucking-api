@@ -51,8 +51,8 @@ class StoreAbsensiSupirHeaderRequest extends FormRequest
             'uangjalan.*' => 'Uang Jalan',
             'supir_id.*' => 'Supir',
             'supir' => 'Supir',
-            'absen_id.*' => 'Absen',
-            'absen' => 'Absen',
+            // 'absen_id.*' => 'Absen',
+            // 'absen' => 'Absen',
             'jam.*' => 'Jam',
             'keterangan_detail.*' => 'Keterangan Detail'
         ];

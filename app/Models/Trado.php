@@ -36,6 +36,7 @@ class Trado extends MyModel
             'trado.alamatstnk',
             'trado.modifiedby',
             'trado.updated_at',
+            'trado.created_at',
             'trado.tglserviceopname',
             'trado.keteranganprogressstandarisasi',
             'trado.tglpajakstnk',
