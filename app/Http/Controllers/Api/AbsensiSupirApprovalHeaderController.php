@@ -47,7 +47,10 @@ class AbsensiSupirApprovalHeaderController extends Controller
             ]
         ]);
     }
+<<<<<<< HEAD
 
+=======
+>>>>>>> 54d883dd00d3bb84cd6301a3bcf7b7b6abf676b2
     /**
      * @ClassName 
      */
@@ -250,6 +253,7 @@ class AbsensiSupirApprovalHeaderController extends Controller
         }
     }
 
+<<<<<<< HEAD
     /**
      * Display the specified resource.
      *
@@ -257,6 +261,9 @@ class AbsensiSupirApprovalHeaderController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function show(AbsensiSupirApprovalHeader $absensiSupirApprovalHeader, $id)
+=======
+    public function show(AbsensiSupirApprovalHeader $absensiSupirApprovalHeader,$id)
+>>>>>>> 54d883dd00d3bb84cd6301a3bcf7b7b6abf676b2
     {
         $data = $absensiSupirApprovalHeader->find($id);
         // $detail = NotaDebetHeaderDetail::findAll($id);
@@ -270,7 +277,11 @@ class AbsensiSupirApprovalHeaderController extends Controller
     /**
      * @ClassName 
      */
+<<<<<<< HEAD
     public function update(UpdateAbsensiSupirApprovalHeaderRequest $request, AbsensiSupirApprovalHeader $absensiSupirApprovalHeader, $id)
+=======
+    public function update(UpdateAbsensiSupirApprovalHeaderRequest $request, AbsensiSupirApprovalHeader $absensiSupirApprovalHeader,$id)
+>>>>>>> 54d883dd00d3bb84cd6301a3bcf7b7b6abf676b2
     {
         DB::beginTransaction();
 
@@ -432,11 +443,18 @@ class AbsensiSupirApprovalHeaderController extends Controller
 
         return response($request->all(), 442);
     }
+<<<<<<< HEAD
 
     /**
      * @ClassName 
      */
     public function destroy(AbsensiSupirApprovalHeader $absensiSupirApprovalHeader, $id)
+=======
+    /**
+     * @ClassName 
+     */
+    public function destroy(AbsensiSupirApprovalHeader $absensiSupirApprovalHeader,$id)
+>>>>>>> 54d883dd00d3bb84cd6301a3bcf7b7b6abf676b2
     {
         DB::beginTransaction();
         $absensiSupirApprovalHeader = new AbsensiSupirApprovalHeader();
@@ -498,7 +516,9 @@ class AbsensiSupirApprovalHeaderController extends Controller
             return response($th->getMessage());
         }
     }
-
+    /**
+     * @ClassName 
+     */
     public function approval($id)
     {
         DB::beginTransaction();

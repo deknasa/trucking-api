@@ -13,7 +13,7 @@ class UpdateRekapPengeluaranHeaderRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
