@@ -67,14 +67,15 @@ class Agen extends MyModel
             "$this->table.userapproval",
             "$this->table.tglapproval",
             "parameter_statustas.text as statustas",
-            "$this->table.jenisemkl",
+            "jenisemkl.keterangan as jenisemkl",
             "$this->table.created_at",
             "$this->table.updated_at",
             "$this->table.modifiedby",
         )
             ->leftJoin("parameter as parameter_statusaktif", "agen.statusaktif", "parameter_statusaktif.id")
             ->leftJoin("parameter as parameter_statusapproval", "agen.statusapproval", "parameter_statusapproval.id")
-            ->leftJoin("parameter as parameter_statustas", "agen.statustas", "parameter_statustas.id");
+            ->leftJoin("parameter as parameter_statustas", "agen.statustas", "parameter_statustas.id")
+            ->leftJoin("jenisemkl", "agen.jenisemkl", "jenisemkl.id");
     }
 
     public function createTemp(string $modelTable)

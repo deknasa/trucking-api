@@ -197,6 +197,17 @@ class JenisEmklController extends Controller
         ]);
     }
 
+    public function combo()
+    {
+        $jenisemkls = JenisEmkl::where('statusaktif', '=', 1)
+            ->get();
+
+            dd($jenisemkls);
+        return response([
+            'data' => $jenisemkls
+        ]);
+    }
+
     public function getid($id, $request, $del)
     {
         $params = [

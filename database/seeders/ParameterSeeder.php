@@ -22,7 +22,7 @@ class ParameterSeeder extends Seeder
         parameter::create([ 'grp' => 'STATUS AKTIF', 'subgrp' => 'STATUS AKTIF', 'text' => 'NON AKTIF', 'memo' => 'UNTUK STATUS NON AKTIF', 'type' => '0', 'modifiedby' => 'ADMIN', 'kelompok' => '',]);
         parameter::create([ 'grp' => 'STATUS APPROVAL', 'subgrp' => 'STATUS APPROVAL', 'text' => 'APPROVAL', 'memo' => 'APPROVAL', 'type' => '0', 'modifiedby' => 'ADMIN', 'kelompok' => '',]);
         parameter::create([ 'grp' => 'STATUS APPROVAL', 'subgrp' => 'STATUS APPROVAL', 'text' => 'NON APPROVAL', 'memo' => 'NON APPROVAL', 'type' => '0', 'modifiedby' => 'ADMIN', 'kelompok' => '',]);
-        parameter::create([ 'grp' => 'ABSENSI', 'subgrp' => 'ABSENSI', 'text' => '#ABS # 9999#/#R#/#Y', 'memo' => 'UNTUK PENOMORAN ABSENSI', 'type' => '0', 'modifiedby' => 'ADMIN', 'kelompok' => '',]);
+        parameter::create([ 'grp' => 'ABSENSI', 'subgrp' => 'ABSENSI', 'text' => '#ABS #9999#/#R#/#Y', 'memo' => 'UNTUK PENOMORAN ABSENSI', 'type' => '118', 'modifiedby' => 'ADMIN', 'kelompok' => '',]);
         parameter::create([ 'grp' => 'STATUS KARYAWAN', 'subgrp' => 'STATUS KARYAWAN', 'text' => 'KARYAWAN', 'memo' => 'KARYAWAN', 'type' => '0', 'modifiedby' => 'ADMIN', 'kelompok' => '',]);
         parameter::create([ 'grp' => 'STATUS KARYAWAN', 'subgrp' => 'STATUS KARYAWAN', 'text' => 'NON KARYAWAN', 'memo' => 'NON KARYAWAN', 'type' => '0', 'modifiedby' => 'ADMIN', 'kelompok' => '',]);
         parameter::create([ 'grp' => 'COA', 'subgrp' => 'AP', 'text' => 'AP', 'memo' => 'AP', 'type' => '0', 'modifiedby' => 'ADMIN', 'kelompok' => '',]);
@@ -49,8 +49,8 @@ class ParameterSeeder extends Seeder
         parameter::create([ 'grp' => 'STATUS APPROVAL EDIT BAN', 'subgrp' => 'STATUS APPROVAL EDIT BAN', 'text' => 'UNAPPROVAL EDIT BAN', 'memo' => 'UNAPPROVAL EDIT BAN', 'type' => '0', 'modifiedby' => 'ADMIN', 'kelompok' => '',]);
         parameter::create([ 'grp' => 'STATUS LEWAT VALIDASI', 'subgrp' => 'STATUS LEWAT VALIDASI', 'text' => 'APPROVAL LEWAT VALIDASI', 'memo' => 'APPROVAL LEWAT VALIDASI', 'type' => '0', 'modifiedby' => 'ADMIN', 'kelompok' => '',]);
         parameter::create([ 'grp' => 'STATUS LEWAT VALIDASI', 'subgrp' => 'STATUS LEWAT VALIDASI', 'text' => 'UNAPPROVAL LEWAT VALIDASI', 'memo' => 'UNAPPROVAL LEWAT VALIDASI', 'type' => '0', 'modifiedby' => 'ADMIN', 'kelompok' => '',]);
-        parameter::create([ 'grp' => 'PENERIMAAN KAS', 'subgrp' => 'NOMOR PENERIMAAN KAS', 'text' => '#|KMT |# 9999#/#R#/#Y', 'memo' => 'NOMOR PENERIMAAN KAS', 'type' => '0', 'modifiedby' => 'ADMIN', 'kelompok' => 'PENERIMAAN BANK',]);
-        parameter::create([ 'grp' => 'PENGELUARAN KAS', 'subgrp' => 'NOMOR  PENGELUARAN KAS', 'text' => '#|KBT |# 9999#/#R#/#Y', 'memo' => 'NOMOR PENGELUARAN KAS', 'type' => '0', 'modifiedby' => 'ADMIN', 'kelompok' => 'PENGELUARAN BANK',]);
+        parameter::create([ 'grp' => 'PENERIMAAN KAS', 'subgrp' => 'NOMOR PENERIMAAN KAS', 'text' => '#KMT #9999#/#R#/#Y', 'memo' => 'NOMOR PENERIMAAN KAS', 'type' => '118', 'modifiedby' => 'ADMIN', 'kelompok' => 'PENERIMAAN BANK',]);
+        parameter::create([ 'grp' => 'PENGELUARAN KAS', 'subgrp' => 'NOMOR  PENGELUARAN KAS', 'text' => '#KBT #9999#/#R#/#Y', 'memo' => 'NOMOR PENGELUARAN KAS', 'type' => '118', 'modifiedby' => 'ADMIN', 'kelompok' => 'PENGELUARAN BANK',]);
         parameter::create([ 'grp' => 'STATUS ACCOUNT PAYABLE', 'subgrp' => 'STATUS ACCOUNT PAYABLE', 'text' => 'STATUS AKTIF ACCOUNT PAYABLE', 'memo' => 'STATUS AKTIF ACCOUNT PAYABLE', 'type' => '0', 'modifiedby' => 'ADMIN', 'kelompok' => '',]);
         parameter::create([ 'grp' => 'STATUS ACCOUNT PAYABLE', 'subgrp' => 'STATUS ACCOUNT PAYABLE', 'text' => 'STATUS NON AKTIF ACCOUNT PAYABLE', 'memo' => 'STATUS NON AKTIF ACCOUNT PAYABLE', 'type' => '0', 'modifiedby' => 'ADMIN', 'kelompok' => '',]);
         parameter::create([ 'grp' => 'STATUS NERACA', 'subgrp' => 'STATUS NERACA', 'text' => 'STATUS AKTIF NERACA', 'memo' => 'STATUS AKTIF NERACA', 'type' => '0', 'modifiedby' => 'ADMIN', 'kelompok' => '',]);
@@ -69,8 +69,8 @@ class ParameterSeeder extends Seeder
         parameter::create([ 'grp' => 'ZONA TERTENTU', 'subgrp' => 'ZONA TERTENTU', 'text' => 'TIDAK HARUS KE ZONA TERTENTU', 'memo' => 'TIDAK HARUS KE ZONA TERTENTU', 'type' => '0', 'modifiedby' => 'ADMIN', 'kelompok' => '',]);
         parameter::create([ 'grp' => 'BLACKLIST SUPIR', 'subgrp' => 'BLACKLIST SUPIR', 'text' => 'SUPIR BLACKLIST', 'memo' => 'SUPIR BLACKLIST', 'type' => '0', 'modifiedby' => 'ADMIN', 'kelompok' => '',]);
         parameter::create([ 'grp' => 'BLACKLIST SUPIR', 'subgrp' => 'BLACKLIST SUPIR', 'text' => 'BUKAN SUPIR BLACKLIST', 'memo' => 'BUKAN SUPIR BLACKLIST', 'type' => '0', 'modifiedby' => 'ADMIN', 'kelompok' => '',]);
-        parameter::create([ 'grp' => 'KAS GANTUNG', 'subgrp' => 'NOMOR KAS GANTUNG', 'text' => '#KGT# 9999#/#R#/#Y', 'memo' => 'FORMAT NOMOR KAS GANTUNG', 'type' => '0', 'modifiedby' => 'ADMIN', 'kelompok' => '',]);
-        parameter::create([ 'grp' => 'PROSES ABSENSI', 'subgrp' => 'NOMOR PROSES ABSENSI', 'text' => '#PAB# 9999#/#R#/#Y', 'memo' => 'FORMAT NOMOR PROSES ABSENSI', 'type' => '0', 'modifiedby' => 'ADMIN', 'kelompok' => '',]);
+        parameter::create([ 'grp' => 'KAS GANTUNG', 'subgrp' => 'NOMOR KAS GANTUNG', 'text' => '#KGT #9999#/#R#/#Y', 'memo' => 'FORMAT NOMOR KAS GANTUNG', 'type' => '118', 'modifiedby' => 'ADMIN', 'kelompok' => '',]);
+        parameter::create([ 'grp' => 'PROSES ABSENSI', 'subgrp' => 'NOMOR PROSES ABSENSI', 'text' => '#PAB #9999#/#R#/#Y', 'memo' => 'FORMAT NOMOR PROSES ABSENSI', 'type' => '118', 'modifiedby' => 'ADMIN', 'kelompok' => '',]);
         parameter::create([ 'grp' => 'JENIS TRANSAKSI', 'subgrp' => 'JENIS TRANSAKSI', 'text' => 'KAS', 'memo' => 'JENIS TRANSAKSI KAS', 'type' => '0', 'modifiedby' => 'ADMIN', 'kelompok' => '',]);
         parameter::create([ 'grp' => 'JENIS TRANSAKSI', 'subgrp' => 'JENIS TRANSAKSI', 'text' => 'BANK', 'memo' => 'JENIS TRANSAKSI BANK', 'type' => '0', 'modifiedby' => 'ADMIN', 'kelompok' => '',]);
         parameter::create([ 'grp' => 'STATUS LANGSUNG CAIR', 'subgrp' => 'STATUS LANGSUNG CAIR', 'text' => 'LANGSUNG CAIR', 'memo' => 'LANGSUNG CAIR', 'type' => '0', 'modifiedby' => 'ADMIN', 'kelompok' => '',]);
@@ -81,7 +81,7 @@ class ParameterSeeder extends Seeder
         parameter::create([ 'grp' => 'DALAM KOTA', 'subgrp' => 'DALAM KOTA', 'text' => 'DALAM KOTA', 'memo' => 'DALAM KOTA', 'type' => '0', 'modifiedby' => 'ADMIN', 'kelompok' => '',]);
         parameter::create([ 'grp' => 'STATUS COA', 'subgrp' => 'STATUS COA', 'text' => 'BANK', 'memo' => 'STATUS COA LINK KE MASTER BANK', 'type' => '0', 'modifiedby' => 'ADMIN', 'kelompok' => '',]);
         parameter::create([ 'grp' => 'STATUS COA', 'subgrp' => 'STATUS COA', 'text' => 'ALL', 'memo' => 'UNTUK SEMUA', 'type' => '0', 'modifiedby' => 'ADMIN', 'kelompok' => '',]);
-        parameter::create([ 'grp' => 'SURAT PENGANTAR', 'subgrp' => 'SURAT PENGANTAR', 'text' => '#TRP # 9999#/#R#/#Y', 'memo' => 'SURAT PENGANTAR', 'type' => '0', 'modifiedby' => 'ADMIN', 'kelompok' => '',]);
+        parameter::create([ 'grp' => 'SURAT PENGANTAR', 'subgrp' => 'SURAT PENGANTAR', 'text' => '#TRP #9999#/#R#/#Y', 'memo' => 'SURAT PENGANTAR', 'type' => '118', 'modifiedby' => 'ADMIN', 'kelompok' => '',]);
         parameter::create([ 'grp' => 'STATUS LONGTRIP', 'subgrp' => 'STATUS LONGTRIP', 'text' => 'LONGTRIP', 'memo' => 'LONGTRIP', 'type' => '0', 'modifiedby' => 'ADMIN', 'kelompok' => '',]);
         parameter::create([ 'grp' => 'STATUS LONGTRIP', 'subgrp' => 'STATUS LONGTRIP', 'text' => 'BUKAN LONGTRIP', 'memo' => 'BUKAN LONGTRIP', 'type' => '0', 'modifiedby' => 'ADMIN', 'kelompok' => '',]);
         parameter::create([ 'grp' => 'STATUS PERALIHAN', 'subgrp' => 'STATUS PERALIHAN', 'text' => 'PERALIHAN', 'memo' => 'PERALIHAN', 'type' => '0', 'modifiedby' => 'ADMIN', 'kelompok' => '',]);
@@ -123,7 +123,7 @@ class ParameterSeeder extends Seeder
         parameter::create([ 'grp' => 'ORDERANTRUCKING', 'subgrp' => 'ORDERANTRUCKING', 'text' => '9999#/#R#/#Y', 'memo' => '', 'type' => '0', 'modifiedby' => '1', 'kelompok' => '',]);
         parameter::create([ 'grp' => 'STATUS LANGSIR', 'subgrp' => 'STATUS LANGSIR', 'text' => 'A', 'memo' => '', 'type' => '0', 'modifiedby' => '1', 'kelompok' => '',]);
         parameter::create([ 'grp' => 'STATUS PERALIHAN', 'subgrp' => 'STATUS PERALIHAN', 'text' => 'A', 'memo' => '', 'type' => '0', 'modifiedby' => '1', 'kelompok' => '',]);
-        parameter::create([ 'grp' => 'PROSESABSENSISUPIR', 'subgrp' => 'PROSESABSENSISUPIR', 'text' => '#PAS #9999#/#R#/#Y', 'memo' => '', 'type' => '0', 'modifiedby' => '1', 'kelompok' => '',]);
+        parameter::create([ 'grp' => 'PROSESABSENSISUPIR', 'subgrp' => 'PROSESABSENSISUPIR', 'text' => '#PAS #9999#/#R#/#Y', 'memo' => '', 'type' => '118', 'modifiedby' => '1', 'kelompok' => '',]);
         parameter::create([ 'grp' => 'STATUS LONGTRIP', 'subgrp' => 'STATUS LONGTRIP', 'text' => 'YA', 'memo' => '', 'type' => '0', 'modifiedby' => '1', 'kelompok' => '',]);
         parameter::create([ 'grp' => 'STATUS PERALIHAN', 'subgrp' => 'STATUS PERALIHAN', 'text' => 'YA', 'memo' => '', 'type' => '0', 'modifiedby' => '1', 'kelompok' => '',]);
         parameter::create([ 'grp' => 'STATUS RITASIOMSET', 'subgrp' => 'STATUS RITASIOMSET', 'text' => 'YA', 'memo' => '', 'type' => '0', 'modifiedby' => '1', 'kelompok' => '',]);

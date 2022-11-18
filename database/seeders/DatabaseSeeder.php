@@ -48,6 +48,7 @@ class DatabaseSeeder extends Seeder
             SupplierSeeder::class,
             TarifSeeder::class,
             StokSeeder::class,
+            AbsenTradoSeeder::class,
             StatusContainerSeeder::class,
             GudangSeeder::class,
             ServiceInHeaderSeeder::class,
