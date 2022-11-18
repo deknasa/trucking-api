@@ -255,7 +255,6 @@ class RekapPengeluaranHeaderController extends Controller
         }
         return response([
             'message' => 'Berhasil gagal disimpan',
-            'data' => $notaKreditHeader
         ], 422);
     }
     /**
@@ -290,7 +289,7 @@ class RekapPengeluaranHeaderController extends Controller
                 $selected = $this->getPosition($rekapPengeluaranHeader, $rekapPengeluaranHeader->getTable(), true);
                 $rekapPengeluaranHeader->position = $selected->position;
                 $rekapPengeluaranHeader->id = $selected->id;
-                $rekapPengeluaranHeader->page = ceil($rekapPengeluaranHeader->position / ($request->limit ?? 10));
+                $rekapPengeluaranHeader->page = ceil($rekapPengeluaranHeader->position / ($selected->limit ?? 10));
 
                 return response([
                     'status' => true,
