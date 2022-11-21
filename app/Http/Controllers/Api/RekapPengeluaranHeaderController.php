@@ -63,6 +63,7 @@ class RekapPengeluaranHeaderController extends Controller
             $rekapPengeluaranHeader->tgltransaksi  = date('Y-m-d',strtotime($request->tgltransaksi ));
             $rekapPengeluaranHeader->bank_id = $request->bank_id;
             $rekapPengeluaranHeader->statusapproval = $statusNonApproval->id;
+            $rekapPengeluaranHeader->userapproval = auth('api')->user()->name;
             $rekapPengeluaranHeader->statusformat = $format->id;
             $rekapPengeluaranHeader->modifiedby = auth('api')->user()->name;
             TOP:
@@ -112,10 +113,10 @@ class RekapPengeluaranHeaderController extends Controller
                     }
                     $datalogtrail = [
                         'namatabel' => $tabeldetail,
-                        'postingdari' => 'ENTRY NOTA KREDIT DETAIL',
+                        'postingdari' => 'ENTRY REKAP PENGELUARAN DETAIL',
                         'idtrans' =>  $iddetail,
                         'nobuktitrans' => $rekapPengeluaranHeader->nobukti,
-                        'aksi' => 'EDIT',
+                        'aksi' => 'ENTRY',
                         'datajson' => $detaillog,
                         'modifiedby' => auth('api')->user()->name,
                     ];
@@ -146,11 +147,7 @@ class RekapPengeluaranHeaderController extends Controller
             throw $th;
             return response($th->getMessage());
         }
-        return response([
-            'message' => 'Berhasil gagal disimpan',
-        ], 422);
     }
- 
     public function show(RekapPengeluaranHeader $rekapPengeluaranHeader,$id)
     {
         $data = $rekapPengeluaranHeader->find($id);
@@ -174,16 +171,18 @@ class RekapPengeluaranHeaderController extends Controller
             $rekapPengeluaranHeader->tglbukti = date('Y-m-d',strtotime($request->tglbukti));
             $rekapPengeluaranHeader->keterangan = $request->keterangan;
             $rekapPengeluaranHeader->tgltransaksi  = date('Y-m-d',strtotime($request->tgltransaksi ));
+            $rekapPengeluaranHeader->statusapproval = $statusNonApproval->id;
+            $rekapPengeluaranHeader->userapproval = auth('api')->user()->name;
             $rekapPengeluaranHeader->bank_id = $request->bank_id;
             $rekapPengeluaranHeader->modifiedby = auth('api')->user()->name;
 
             if ($rekapPengeluaranHeader->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($rekapPengeluaranHeader->getTable()),
-                    'postingdari' => 'ENTRY REKAP PENGELUARAN HEADER',
+                    'postingdari' => 'EDIT REKAP PENGELUARAN HEADER',
                     'idtrans' => $rekapPengeluaranHeader->id,
                     'nobuktitrans' => $rekapPengeluaranHeader->nobukti,
-                    'aksi' => 'ENTRY',
+                    'aksi' => 'EDIT',
                     'datajson' => $rekapPengeluaranHeader->toArray(),
                     'modifiedby' => $rekapPengeluaranHeader->modifiedby
                 ];
@@ -220,7 +219,7 @@ class RekapPengeluaranHeaderController extends Controller
                     }
                     $datalogtrail = [
                         'namatabel' => $tabeldetail,
-                        'postingdari' => 'EDIT NOTA KREDIT DETAIL',
+                        'postingdari' => 'EDIT REKAP PENGELUARAN DETAIL',
                         'idtrans' =>  $iddetail,
                         'nobuktitrans' => $rekapPengeluaranHeader->nobukti,
                         'aksi' => 'EDIT',
@@ -333,9 +332,9 @@ class RekapPengeluaranHeaderController extends Controller
             if ($rekapPengeluaranHeader->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($rekapPengeluaranHeader->getTable()),
-                    'postingdari' => 'UN/APPROVE ABSENSI SUPIR APPROVAL',
+                    'postingdari' => 'UN/APPROVE REKAP PENGELUARAN HEADER',
                     'idtrans' => $rekapPengeluaranHeader->id,
-                    'nobuktitrans' => $rekapPengeluaranHeader->id,
+                    'nobuktitrans' => $rekapPengeluaranHeader->nobukti,
                     'aksi' => 'UN/APPROVE',
                     'datajson' => $rekapPengeluaranHeader->toArray(),
                     'modifiedby' => $rekapPengeluaranHeader->modifiedby
