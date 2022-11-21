@@ -35,6 +35,9 @@ class SubKelompok extends MyModel
             'subkelompok.keterangan',
             'kelompok.keterangan as kelompok_id',
             'parameter.text as statusaktif',
+            'subkelompok.modifiedby',
+            'subkelompok.created_at',
+            'subkelompok.updated_at'
         )
             ->leftJoin('kelompok', 'subkelompok.kelompok_id', '=', 'kelompok.id')
             ->leftJoin('parameter', 'subkelompok.statusaktif', '=', 'parameter.id');

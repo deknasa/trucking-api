@@ -28,8 +28,23 @@ class PenerimaanStok extends MyModel
     {
         $this->setRequestParameters();
 
-        $query = DB::table($this->table); 
-        $query = $this->selectColumns($query);
+        // $query = DB::table($this->table); 
+
+        $query = DB::table($this->table)->select(
+            'penerimaanstok.id',
+            'penerimaanstok.kodepenerimaan',
+            'penerimaanstok.keterangan',
+            'penerimaanstok.coa',
+            'parameterstatusformat.text as statusformat',
+            'parameterstatushitungstok.text as statushitungstok',
+            'penerimaanstok.modifiedby',
+            'penerimaanstok.created_at',
+            'penerimaanstok.updated_at'
+        )
+        ->leftJoin('parameter as parameterstatusformat', 'penerimaanstok.statusformat', '=', 'parameterstatusformat.id')
+        ->leftJoin('parameter as parameterstatushitungstok', 'penerimaanstok.statushitungstok', '=', 'parameterstatushitungstok.id');
+
+        // $query = $this->selectColumns($query);
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;

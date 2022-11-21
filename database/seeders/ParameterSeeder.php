@@ -175,7 +175,10 @@ class ParameterSeeder extends Seeder
         parameter::create([ 'grp' => 'COA APPROVAL ABSENSI SUPIR KREDIT', 'subgrp' => 'COA APPROVAL ABSENSI SUPIR KREDIT', 'text' => '01.01.01.02', 'memo' => 'COA APPROVAL ABSENSI SUPIR KREDIT', 'type' => '', 'modifiedby' => 'ADMIN', 'kelompok' => 'COA APPROVAL ABSENSI SUPIR',]);       
         parameter::create([ 'grp' => 'COA PEMBAYARAN HUTANG DEBET', 'subgrp' => 'COA PEMBAYARAN HUTANG DEBET', 'text' => '03.02.02.01', 'memo' => 'COA PEMBAYARAN HUTANG DEBET', 'type' => '', 'modifiedby' => 'ADMIN', 'kelompok' => 'COA PEMBAYARAN HUTANG',]);       
         parameter::create([ 'grp' => 'COA APPROVAL ABSENSI SUPIR DEBET', 'subgrp' => 'COA APPROVAL ABSENSI SUPIR DEBET', 'text' => '01.01.02.02', 'memo' => 'COA APPROVAL ABSENSI SUPIR DEBET', 'type' => '', 'modifiedby' => 'ADMIN', 'kelompok' => 'COA APPROVAL ABSENSI SUPIR',]);       
-
+        parameter::create([ 'grp' => 'PENERIMAAN GIRO BUKTI', 'subgrp' => 'PENERIMAAN GIRO BUKTI', 'text' => '#BPGT-M BCA #9999#/#R#/#Y', 'memo' => 'PENERIMAAN GIRO BUKTI', 'type' => '118', 'modifiedby' => 'ADMIN', 'kelompok' => '',]);       
+        parameter::create([ 'grp' => 'COA PENERIMAAN GIRO DEBET', 'subgrp' => 'COA PENERIMAAN GIRO DEBET', 'text' => '01.03.03.00', 'memo' => 'COA PENERIMAAN GIRO DEBET', 'type' => '', 'modifiedby' => 'ADMIN', 'kelompok' => 'COA PENERIMAAN GIRO',]);       
+        parameter::create([ 'grp' => 'COA PENERIMAAN GIRO KREDIT', 'subgrp' => 'COA PENERIMAAN GIRO KREDIT', 'text' => '01.03.02.02', 'memo' => 'COA PENERIMAAN GIRO KREDIT', 'type' => '', 'modifiedby' => 'ADMIN', 'kelompok' => 'COA PENERIMAAN GIRO',]);       
+        
 
     }
 }
