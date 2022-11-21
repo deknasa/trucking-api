@@ -28,8 +28,22 @@ class PengeluaranStok extends MyModel
     {
         $this->setRequestParameters();
 
-        $query = DB::table($this->table); 
-        $query = $this->selectColumns($query);
+        // $query = DB::table($this->table); 
+        // $query = $this->selectColumns($query);
+
+        $query = DB::table($this->table)->select(
+            'pengeluaranstok.id',
+            'pengeluaranstok.kodepengeluaran',
+            'pengeluaranstok.keterangan',
+            'pengeluaranstok.coa',
+            'parameterstatusformat.text as statusformat',
+            'parameterstatushitungstok.text as statushitungstok',
+            'pengeluaranstok.modifiedby',
+            'pengeluaranstok.created_at',
+            'pengeluaranstok.updated_at'
+        )
+        ->leftJoin('parameter as parameterstatusformat', 'pengeluaranstok.statusformat', '=', 'parameterstatusformat.id')
+        ->leftJoin('parameter as parameterstatushitungstok', 'pengeluaranstok.statushitungstok', '=', 'parameterstatushitungstok.id');
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
