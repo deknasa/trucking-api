@@ -63,6 +63,7 @@ class Trado extends MyModel
             'parameter_statusappeditban.text as statusappeditban',
             'parameter_statuslewatvalidasi.text as statuslewatvalidasi',
             'mandor.namamandor as mandor_id',
+            'supir.namasupir as supir_id',
         )
             ->leftJoin('parameter as parameter_statusaktif', 'trado.statusaktif', 'parameter_statusaktif.id')
             ->leftJoin('parameter as parameter_statusjenisplat', 'trado.statusjenisplat', 'parameter_statusjenisplat.id')
@@ -72,7 +73,8 @@ class Trado extends MyModel
             ->leftJoin('parameter as parameter_statusmobilstoring', 'trado.statusmobilstoring', 'parameter_statusmobilstoring.id')
             ->leftJoin('parameter as parameter_statusappeditban', 'trado.statusappeditban', 'parameter_statusappeditban.id')
             ->leftJoin('parameter as parameter_statuslewatvalidasi', 'trado.statuslewatvalidasi', 'parameter_statuslewatvalidasi.id')
-            ->leftJoin('mandor', 'trado.mandor_id', 'mandor.id');
+            ->leftJoin('mandor', 'trado.mandor_id', 'mandor.id')
+            ->leftJoin('supir', 'trado.supir_id', 'supir.id');
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -90,9 +92,11 @@ class Trado extends MyModel
     {
         $data = DB::table('trado')->select(
             'trado.*',
-            'mandor.namamandor as mandor'
+            'mandor.namamandor as mandor',
+            'supir.namasupir as supir'
         )
         ->join('mandor','trado.mandor_id','mandor.id')
+        ->join('supir','trado.supir_id','supir.id')
         ->where('trado.id',$id)
         ->first();
 

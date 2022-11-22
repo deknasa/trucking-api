@@ -116,6 +116,8 @@
     use App\Http\Controllers\Api\ProsesGajiSupirHeaderController;
     use App\Http\Controllers\Api\ProsesGajiSupirDetailController;
     use App\Http\Controllers\Api\HariLiburController;
+use App\Http\Controllers\Api\PenerimaanGiroDetailController;
+use App\Http\Controllers\Api\PenerimaanGiroHeaderController;
 
     /*
     |--------------------------------------------------------------------------
@@ -548,6 +550,21 @@
         Route::resource('pengeluaranheader', PengeluaranHeaderController::class);
 
         Route::resource('pengeluarandetail', PengeluaranDetailController::class);
+        
+        Route::post('penerimaangiroheader/{id}/approval', [PenerimaanGiroHeaderController::class, 'approval'])->name('penerimaangiroheader.approval');
+        Route::get('penerimaangiroheader/no_bukti', [PenerimaanGiroHeaderController::class, 'getNoBukti']);
+        Route::get('penerimaangiroheader/field_length', [PenerimaanGiroHeaderController::class, 'fieldLength']);
+        Route::get('penerimaangiroheader/combo', [PenerimaanGiroHeaderController::class, 'combo']);
+        Route::get('penerimaangiroheader/grid', [PenerimaanGiroHeaderController::class, 'grid']);
+        Route::get('penerimaangiroheader/{id}/tarikPelunasan', [PenerimaanGiroHeaderController::class, 'tarikPelunasan']);
+        Route::get('penerimaangiroheader/{id}/getPelunasan', [PenerimaanGiroHeaderController::class, 'getPelunasan']);
+        Route::resource('penerimaangiroheader', PenerimaanGiroHeaderController::class);
+
+        Route::resource('penerimaangirodetail', PenerimaanGiroDetailController::class);
+
+        
+        Route::get('harilibur/field_length', [HariLiburController::class, 'fieldLength']);
+        Route::resource('harilibur', HariLiburController::class);
     });
 
     Route::get('gudang/combo', [GudangController::class, 'combo']);
@@ -723,5 +740,3 @@
     // Route::resource('penerimaantrucking', PenerimaanTruckingHeaderController::class);
 
     // Route::resource('penerimaantruckingdetail', PenerimaanTruckingDetailController::class);
-
-    Route::get('harilibur', [HariLiburController::class, 'index']);

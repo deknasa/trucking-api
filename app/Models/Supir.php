@@ -38,6 +38,7 @@ class Supir extends MyModel
             'supir.telp',
             'parameter.text as statusaktif',
             'supir.nominaldepositsa',
+            'supir.depositke',
             'supir.nominalpinjamansaldoawal',
             'supirlama.namasupir as supirold_id',
             'supir.nosim',

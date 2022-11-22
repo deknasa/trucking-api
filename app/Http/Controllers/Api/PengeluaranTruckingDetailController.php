@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\PengeluaranTruckingDetail;
 use App\Http\Requests\StorePengeluaranTruckingDetailRequest;
 use App\Http\Requests\UpdatePengeluaranTruckingDetailRequest;
-
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -41,11 +41,21 @@ class PengeluaranTruckingDetailController extends Controller
             }
             if ($params['forReport']) {
                 $query->select(
-                    'detail.nobukti',
-                    'detail.supir_id',
+                    'header.nobukti',
+                    'header.tglbukti',
+                    'header.coa',
+                    'header.pengeluaran_nobukti',
+                    'header.keterangan',
+                    'bank.namabank as bank',
+                    'pengeluarantrucking.keterangan as pengeluarantrucking',
+                    'supir.namasupir as supir_id',
                     'detail.penerimaantruckingheader_nobukti',
                     'detail.nominal'
-                );
+                ) 
+                ->leftJoin('pengeluarantruckingheader as header','header.id','detail.pengeluarantruckingheader_id')
+                ->leftJoin('pengeluarantrucking', 'header.pengeluarantrucking_id','pengeluarantrucking.id')
+                ->leftJoin('bank', 'header.bank_id', 'bank.id')
+                ->leftJoin('supir', 'detail.supir_id', 'supir.id');
 
                 $pengeluaranTruckingDetail = $query->get();
             } else {
@@ -54,16 +64,20 @@ class PengeluaranTruckingDetailController extends Controller
                     'detail.nominal',
 
                     'supir.namasupir as supir_id',
-                    'penerimaantruckingheader.nobukti as penerimaantruckingheader_nobukti',
+                    'detail.penerimaantruckingheader_nobukti',
                 )
-                ->leftJoin('supir', 'detail.supir_id', 'supir.id')
-                ->leftJoin('penerimaantruckingheader', 'detail.penerimaantruckingheader_nobukti', 'penerimaantruckingheader.nobukti');       
-                 
+                ->leftJoin('supir', 'detail.supir_id', 'supir.id');
+                
                 $pengeluaranTruckingDetail = $query->get();
             }
-
+            $idUser = auth('api')->user()->id;
+            $getuser = User::select('name','cabang.namacabang as cabang_id')
+            ->where('user.id',$idUser)->join('cabang','user.cabang_id','cabang.id')->first();
+           
             return response([
-                'data' => $pengeluaranTruckingDetail
+                'data' => $pengeluaranTruckingDetail,
+                'user' => $getuser,
+                
             ]);
         } catch (\Throwable $th) {
             return response([

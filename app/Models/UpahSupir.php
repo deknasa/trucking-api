@@ -70,7 +70,7 @@ class UpahSupir extends MyModel
 
         return $data;
     }
-    public function find($id)
+    public function findAll($id)
     {
 
         $query = DB::table('upahsupir')->select(
@@ -89,6 +89,7 @@ class UpahSupir extends MyModel
             'upahsupir.tglmulaiberlaku',
             'upahsupir.tglakhirberlaku',
             'upahsupir.statusluarkota',
+            'statusluarkota.text as statusluarkotas',
 
             'upahsupir.modifiedby',
             'upahsupir.updated_at'
@@ -96,6 +97,7 @@ class UpahSupir extends MyModel
             ->join('kota as kotadari', 'kotadari.id', '=', 'upahsupir.kotadari_id')
             ->join('kota as kotasampai', 'kotasampai.id', '=', 'upahsupir.kotasampai_id')
             ->leftJoin('zona', 'upahsupir.zona_id', 'zona.id')
+            ->leftJoin('parameter as statusluarkota', 'upahsupir.statusluarkota', 'statusluarkota.id')
 
             ->where('upahsupir.id', $id);
 

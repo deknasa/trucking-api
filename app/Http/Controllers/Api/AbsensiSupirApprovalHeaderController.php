@@ -246,10 +246,8 @@ class AbsensiSupirApprovalHeaderController extends Controller
             return response($th->getMessage());
         }
     }
-    /**
-     * @ClassName 
-     */
-    public function show(AbsensiSupirApprovalHeader $absensiSupirApprovalHeader, $id)
+
+    public function show(AbsensiSupirApprovalHeader $absensiSupirApprovalHeader,$id)
     {
         $data = $absensiSupirApprovalHeader->find($id);
         // $detail = NotaDebetHeaderDetail::findAll($id);
@@ -263,7 +261,7 @@ class AbsensiSupirApprovalHeaderController extends Controller
     /**
      * @ClassName 
      */
-    public function update(UpdateAbsensiSupirApprovalHeaderRequest $request, AbsensiSupirApprovalHeader $absensiSupirApprovalHeader, $id)
+    public function update(UpdateAbsensiSupirApprovalHeaderRequest $request, AbsensiSupirApprovalHeader $absensiSupirApprovalHeader,$id)
     {
         DB::beginTransaction();
 
@@ -425,11 +423,10 @@ class AbsensiSupirApprovalHeaderController extends Controller
          
         return response($request->all(), 442); 
     }
-
     /**
      * @ClassName 
      */
-    public function destroy(AbsensiSupirApprovalHeader $absensiSupirApprovalHeader, $id)
+    public function destroy(AbsensiSupirApprovalHeader $absensiSupirApprovalHeader,$id)
     {
         DB::beginTransaction();
         $absensiSupirApprovalHeader = new AbsensiSupirApprovalHeader();

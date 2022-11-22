@@ -286,7 +286,7 @@ class HutangBayarHeaderController extends Controller
     public function show($id)
     {
 
-        $data = HutangBayarHeader::find($id);
+        $data = HutangBayarHeader::findAll($id);
         $detail = HutangBayarDetail::getAll($id);
 
         return response([

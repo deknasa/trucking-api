@@ -59,13 +59,14 @@ class SupirController extends Controller
 
         try {
             $supir = new Supir();
+            $depositke = str_replace(',','',$request->depositke);
             $supir->namasupir = $request->namasupir;
             $supir->alamat = $request->alamat;
             $supir->kota = $request->kota;
             $supir->telp = $request->telp;
             $supir->statusaktif = $request->statusaktif;
             $supir->nominaldepositsa = str_replace(',','',$request->nominaldepositsa) ?? 0;
-            $supir->depositke = str_replace(',','',$request->depositke) ?? 0;
+            $supir->depositke = str_replace('.','',$depositke) ?? 0;
             $supir->tglmasuk = date('Y-m-d', strtotime($request->tglmasuk));
             $supir->nominalpinjamansaldoawal = str_replace(',','',$request->nominalpinjamansaldoawal) ?? 0;
             $supir->supirold_id = $request->supirold_id ?? 0;
@@ -135,13 +136,15 @@ class SupirController extends Controller
         DB::beginTransaction();
 
         try {
+            
+            $depositke = str_replace(',','',$request->depositke);
             $supir->namasupir = $request->namasupir;
             $supir->alamat = $request->alamat;
             $supir->kota = $request->kota;
             $supir->telp = $request->telp;
             $supir->statusaktif = $request->statusaktif;
             $supir->nominaldepositsa = str_replace(',','',$request->nominaldepositsa) ?? 0;
-            $supir->depositke = str_replace(',','',$request->depositke) ?? 0;
+            $supir->depositke = str_replace('.00','',$depositke) ?? 0;
             $supir->tglmasuk = date('Y-m-d', strtotime($request->tglmasuk));
             $supir->nominalpinjamansaldoawal = str_replace(',','',$request->nominalpinjamansaldoawal) ?? 0;
             $supir->supirold_id = $request->supirold_id ?? 0;

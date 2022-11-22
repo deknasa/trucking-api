@@ -54,7 +54,7 @@ class HutangHeader extends MyModel
 
         return $data;
     }
-    public function find($id)
+    public function findAll($id)
     {
         $query = DB::table('hutangheader')->select(
             'hutangheader.id',

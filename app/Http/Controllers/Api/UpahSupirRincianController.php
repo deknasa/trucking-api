@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\UpahSupirRincian;
 use App\Http\Requests\StoreUpahSupirRincianRequest;
 use App\Http\Requests\UpdateUpahSupirRincianRequest;
-
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -47,6 +47,13 @@ class UpahSupirRincianController extends Controller
 
             if ($params['forReport']) {
                 $query->select(
+                    'kotadari.keterangan as kotadari',
+                    'kotasampai.keterangan as kotasampai',
+                    'header.jarak',
+                    'zona.keterangan as zona',
+                    'header.tglmulaiberlaku',
+                    'header.tglakhirberlaku',
+                    'statusluarkota.text as statusluarkota',
                     'container.keterangan as container_id',
                     'statuscontainer.keterangan as statuscontainer_id',
                     'detail.nominalsupir',
@@ -55,10 +62,13 @@ class UpahSupirRincianController extends Controller
                     'detail.nominaltol',
                     'detail.liter',
                 )
-                    ->join('upahsupir as header', 'header.id', 'detail.upahsupir_id')
+                    ->join('upahsupir as header', 'header.id', 'detail.upahsupir_id') 
+                    ->join('kota as kotadari', 'kotadari.id', '=', 'header.kotadari_id')
+                    ->join('kota as kotasampai', 'kotasampai.id', '=', 'header.kotasampai_id')
+                    ->leftJoin('zona', 'header.zona_id', 'zona.id')
+                    ->leftJoin('parameter as statusluarkota', 'header.statusluarkota', 'statusluarkota.id')
                     ->leftJoin('container', 'container.id', 'detail.container_id')
-                    ->leftJoin('statuscontainer', 'statuscontainer.id', 'detail.statuscontainer_id')
-                    ->orderBy('header.id', 'asc');
+                    ->leftJoin('statuscontainer', 'statuscontainer.id', 'detail.statuscontainer_id');
 
                 $upahsupir = $query->get();
             } else {
@@ -73,14 +83,19 @@ class UpahSupirRincianController extends Controller
                 )
                     ->join('upahsupir as header', 'header.id', 'detail.upahsupir_id')
                     ->leftJoin('container', 'container.id', 'detail.container_id')
-                    ->leftJoin('statuscontainer', 'statuscontainer.id', 'detail.statuscontainer_id')
-                    ->orderBy('header.id', 'asc');
-
+                    ->leftJoin('statuscontainer', 'statuscontainer.id', 'detail.statuscontainer_id');
                 $upahsupir = $query->get();
             }
 
+
+            $idUser = auth('api')->user()->id;
+            $getuser = User::select('name','cabang.namacabang as cabang_id')
+            ->where('user.id',$idUser)->join('cabang','user.cabang_id','cabang.id')->first();
+           
             return response([
-                'data' => $upahsupir
+                'data' => $upahsupir,
+                'user' => $getuser,
+                
             ]);
         } catch (\Throwable $th) {
             return response([

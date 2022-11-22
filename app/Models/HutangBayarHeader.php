@@ -64,7 +64,7 @@ class HutangBayarHeader extends MyModel
         return $data;
     }
 
-    public function find($id)
+    public function findAll($id)
     {
 
         $query = DB::table('hutangbayarheader')->select(
@@ -79,6 +79,8 @@ class HutangBayarHeader extends MyModel
             'hutangbayarheader.coa',
             'hutangbayarheader.supplier_id',
             'supplier.namasupplier as supplier',
+            'hutangbayarheader.pengeluaran_nobukti',
+
 
         )
             ->leftJoin('bank', 'hutangbayarheader.bank_id', 'bank.id')

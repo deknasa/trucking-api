@@ -60,6 +60,7 @@ class StoreTradoRequest extends FormRequest
             'nobpkb' => 'required',
             'statusmobilstoring' => 'required',
             'mandor_id' => 'required|int|exists:mandor,id',
+            'supir_id' => 'required',
             'jumlahbanserap' => 'required',
             'statusappeditban' => 'required',
             'statuslewatvalidasi' => 'required',
@@ -111,6 +112,7 @@ class StoreTradoRequest extends FormRequest
             'nobpkb' => 'No BPKB',
             'statusmobilstoring' => 'Status Mobil Storing',
             'mandor_id' => 'Mandor',
+            'supir_id' => 'Supir',
             'jumlahbanserap' => 'Jumlah Ban Serap',
             'statusappeditban' => 'Status App. Edit Ban',
             'statuslewatvalidasi' => 'Status Lewat Validasi'

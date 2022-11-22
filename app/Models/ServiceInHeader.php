@@ -58,7 +58,7 @@ class ServiceInHeader extends MyModel
         return $data;
     }
 
-    public function find($id)
+    public function findAll($id)
     {
 
         $query = DB::table('serviceinheader')->select(

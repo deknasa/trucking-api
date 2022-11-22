@@ -31,7 +31,35 @@ class StorePenerimaanTruckingHeaderRequest extends FormRequest
             'coa' => 'required',
             'penerimaan_nobukti' => 'required',
         ];
-        
+        $relatedRequests = [
+            StorePenerimaanTruckingDetailRequest::class
+        ];
+
+        foreach ($relatedRequests as $relatedRequest) {
+            $rules = array_merge(
+                $rules,
+                (new $relatedRequest)->rules()
+            );
+        }
         return $rules;
+    }
+
+    public function attributes()
+    {
+        return [
+            
+            'tglbukti' => 'Tgl Bukti',
+            'penerimaantrucking_id' => 'Kode Penerimaan',
+            'bank_id' => 'Bank',
+            'penerimaan_nobukti' => 'Nobukti Penerimaan',
+            'supir_id.*' => 'Supir'
+        ];
+    }
+    
+    public function messages() 
+    {
+        return [
+            'nominal.*.gt' => 'Nominal Tidak Boleh Kosong dan Harus Lebih Besar Dari 0'
+        ];
     }
 }

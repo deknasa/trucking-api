@@ -165,7 +165,7 @@ class ServiceOutHeaderController extends Controller
     public function show($id)
     {
 
-        $data = ServiceOutHeader::find($id);
+        $data = ServiceOutHeader::findAll($id);
         $detail = ServiceOutDetail::getAll($id);
 
         return response([

@@ -84,9 +84,8 @@ class PenerimaanHeader extends MyModel
              ->join('pelunasanpiutangdetail','pelunasanpiutangheader.id','pelunasanpiutangdetail.pelunasanpiutang_id')
              ->join('agen','pelunasanpiutangheader.agen_id','agen.id')
              ->join('cabang','pelunasanpiutangheader.cabang_id','cabang.id')
-     
-            //  ->whereNotIn('pelunasanpiutangheader.nobukti',$values)
             ->whereRaw("pelunasanpiutangheader.nobukti not in (select pelunasanpiutang_nobukti from penerimaandetail)")
+            ->whereRaw("pelunasanpiutangheader.nobukti not in (select pelunasanpiutang_nobukti from penerimaangirodetail)")
              ->get();
      
         }

@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\HutangBayarDetail;
 use App\Http\Requests\StoreHutangBayarDetailRequest;
-
+use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
@@ -42,16 +42,26 @@ class HutangBayarDetailController extends Controller
             }
             if ($params['forReport']) {
                 $query->select(
-                    'detail.nobukti',
+                    'header.nobukti',
+                    'header.tglbukti',
+                    'header.keterangan as keteranganheader',
+                    'header.pengeluaran_nobukti',
+                    'header.coa',
+                    'bank.namabank as bank',
+                    'supplier.namasupplier as supplier',
                     'detail.nominal',
                     'detail.keterangan',
-                    // 'detail.hutang_nobukti',
-                    // 'detail.cicilan',
-                    // 'detail.alatbayar_id',
-                    // 'detail.potongan',
-                    // 'detail.tglcair',
+                    'detail.tglcair',
+                    'detail.potongan',
+                    'detail.hutang_nobukti',
+                    'alatbayar.namaalatbayar as alatbayar_id',
 
-                );
+                )
+                ->join('hutangbayarheader as header','header.id','detail.hutangbayar_id')
+                ->leftJoin('bank', 'header.bank_id', 'bank.id')
+                ->leftJoin('supplier', 'header.supplier_id', 'supplier.id')
+                ->leftJoin('alatbayar', 'detail.alatbayar_id', 'alatbayar.id');
+
 
                 $hutangbayarDetail = $query->get();
             } else {
@@ -59,23 +69,24 @@ class HutangBayarDetailController extends Controller
                     'detail.nobukti',
                     'detail.nominal',
                     'detail.keterangan',
-                    'detail.cicilan',
                     'detail.tglcair',
                     'detail.potongan',
                     'detail.hutang_nobukti',
 
                     'alatbayar.namaalatbayar as alatbayar_id',
-
-                    'hutangheader.nobukti as hutang_nobukti',
                 )
-                    ->leftJoin('alatbayar', 'detail.alatbayar_id', 'alatbayar.id')
-                    ->leftJoin('hutangheader', 'detail.hutang_nobukti', 'hutangheader.nobukti');
+                    ->leftJoin('alatbayar', 'detail.alatbayar_id', 'alatbayar.id');
 
                 $hutangbayarDetail = $query->get();
             }
-
+            $idUser = auth('api')->user()->id;
+            $getuser = User::select('name','cabang.namacabang as cabang_id')
+            ->where('user.id',$idUser)->join('cabang','user.cabang_id','cabang.id')->first();
+           
             return response([
-                'data' => $hutangbayarDetail
+                'data' => $hutangbayarDetail,
+                'user' => $getuser,
+                
             ]);
         } catch (\Throwable $th) {
             return response([

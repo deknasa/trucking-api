@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\ServiceInDetail;
 use App\Http\Requests\StoreServiceInDetailRequest;
-
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -46,22 +46,41 @@ class ServiceInDetailController extends Controller
 
             if ($params['forReport']) {
                 $query->select(
-                    'detail.mekanik_id',
+                    'header.id as id_header',
+                    'header.nobukti as nobukti_header',
+                    'header.tglbukti as tgl_header',
+                    'header.keterangan as keterangan_header',
+                    'header.tglmasuk as tglmasuk',
+                    'trado.keterangan as trado_id',
+                    'mekanik.namamekanik as mekanik_id',
                     'detail.keterangan',
+                    'detail.nobukti'
+                )
+                    ->join('serviceinheader as header', 'header.id', 'detail.servicein_id')
+                    ->leftJoin('trado', 'header.trado_id','trado.id')
+                    ->leftJoin('mekanik', 'detail.mekanik_id', 'mekanik.id');
 
-                );
                 $serviceInDetail = $query->get();
             } else {
                 $query->select(
                     'mekanik.namamekanik as mekanik_id',
                     'detail.keterangan',
+                    'detail.nobukti'
 
                 )
-                ->leftJoin('mekanik', 'detail.mekanik_id', 'mekanik.id')
-                ;
+                ->leftJoin('mekanik', 'detail.mekanik_id', 'mekanik.id');
 
                 $serviceInDetail = $query->get();
             }
+            $idUser = auth('api')->user()->id;
+            $getuser = User::select('name','cabang.namacabang as cabang_id')
+            ->where('user.id',$idUser)->join('cabang','user.cabang_id','cabang.id')->first();
+           
+
+            return response([
+                'data' => $serviceInDetail,
+                'user' => $getuser,
+            ]);
 
             return response([
                 'data' => $serviceInDetail

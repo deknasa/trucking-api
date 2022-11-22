@@ -81,6 +81,7 @@ class TradoController extends Controller
             $trado->nobpkb = $request->nobpkb;
             $trado->statusmobilstoring = $request->statusmobilstoring;
             $trado->mandor_id = $request->mandor_id;
+            $trado->supir_id = $request->supir_id;
             $trado->jumlahbanserap = $request->jumlahbanserap;
             $trado->statusappeditban = $request->statusappeditban;
             $trado->statuslewatvalidasi = $request->statuslewatvalidasi;
@@ -165,6 +166,7 @@ class TradoController extends Controller
             $trado->nobpkb = $request->nobpkb;
             $trado->statusmobilstoring = $request->statusmobilstoring;
             $trado->mandor_id = $request->mandor_id;
+            $trado->supir_id = $request->supir_id;
             $trado->jumlahbanserap = $request->jumlahbanserap;
             $trado->statusappeditban = $request->statusappeditban;
             $trado->statuslewatvalidasi = $request->statuslewatvalidasi;

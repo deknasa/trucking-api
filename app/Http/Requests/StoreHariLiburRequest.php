@@ -13,7 +13,7 @@ class StoreHariLiburRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +24,18 @@ class StoreHariLiburRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'tgl' => 'required',
+            'keterangan' => 'required',
+            'statusaktif' => 'required'
+        ];
+    }
+
+    public function attributes()
+    {
+        return [
+            'tgl' => 'Tanggal Libur',
+            'keterangan' => 'Keterangan',
+            'statusaktif' => 'Status Aktif'
         ];
     }
 }

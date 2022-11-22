@@ -17,6 +17,7 @@ use App\Models\Bank;
 use App\Models\JurnalUmumDetail;
 use App\Models\JurnalUmumHeader;
 use App\Models\Parameter;
+use App\Models\User;
 use Illuminate\Support\Facades\Validator;
 
 
@@ -53,14 +54,19 @@ class HutangDetailController extends Controller
             }
             if ($params['forReport']) {
                 $query->select(
-                    'detail.nobukti',
-                    'detail.supplier_id',
+                    'header.nobukti',
+                    'header.tglbukti',
+                    'pelanggan.namapelanggan as pelanggan_id',
+                    'header.coa',
+                    'header.keterangan as keteranganheader',
+                    'header.total as totalheader',
+                    'supplier.namasupplier as supplier_id',
                     'detail.tgljatuhtempo',
                     'detail.total',
-                    'detail.cicilan',
-                    'detail.totalbayar',
                     'detail.keterangan'
-                );
+                )->join('hutangheader as header','header.id','detail.hutang_id')
+                ->leftJoin('pelanggan', 'header.pelanggan_id', 'pelanggan.id')
+                ->leftJoin('supplier', 'detail.supplier_id', 'supplier.id');
 
                 $hutangDetail = $query->get();
             } else {
@@ -68,21 +74,23 @@ class HutangDetailController extends Controller
                     'detail.nobukti',
                     'detail.tgljatuhtempo',
                     'detail.total',
-                    'detail.cicilan',
-                    'detail.totalbayar',
                     'detail.keterangan',
 
                     'supplier.namasupplier as supplier_id',
 
                 )
-                ->leftJoin('supplier', 'detail.supplier_id', 'supplier.id')
-                ;
+                ->leftJoin('supplier', 'detail.supplier_id', 'supplier.id');
 
                 $hutangDetail = $query->get();
             }
-
+            $idUser = auth('api')->user()->id;
+            $getuser = User::select('name','cabang.namacabang as cabang_id')
+            ->where('user.id',$idUser)->join('cabang','user.cabang_id','cabang.id')->first();
+           
             return response([
-                'data' => $hutangDetail
+                'data' => $hutangDetail,
+                'user' => $getuser,
+                
             ]);
         } catch (\Throwable $th) {
             return response([

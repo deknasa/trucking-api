@@ -164,7 +164,7 @@ class ServiceInHeaderController extends Controller
     public function show($id)
     {
 
-        $data = ServiceInHeader::find($id);
+        $data = ServiceInHeader::findAll($id);
         $detail = ServiceInDetail::getAll($id);
 
         return response([

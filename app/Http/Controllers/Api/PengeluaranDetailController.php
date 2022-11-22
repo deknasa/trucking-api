@@ -7,6 +7,7 @@ use App\Http\Requests\StoreJurnalUmumDetailRequest;
 use App\Models\PengeluaranDetail;
 use App\Http\Requests\StorePengeluaranDetailRequest;
 use App\Models\JurnalUmumHeader;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -50,24 +51,31 @@ class PengeluaranDetailController extends Controller
 
             if ($params['forReport']) {
                 $query->select(
-                    'detail.alatbayar_id',
-                    'detail.nobukti',
+                    'header.nobukti',
+                    'header.tglbukti',
+                    'header.dibayarke',
+                    'header.keterangan as keteranganheader',
+                    'header.transferkeac',
+                    'header.transferkean',
+                    'header.transferkebank',
+                    'pelanggan.namapelanggan as pelanggan',
+                    'bank.namabank as bank',
                     'detail.nowarkat',
                     'detail.tgljatuhtempo',
                     'detail.nominal',
                     'detail.keterangan',
                     'detail.bulanbeban',
-                    'alatbayar.namaalatbayar as alatbayar_id',
-                    'bank.namabank as bank_id',
-                    'akunpusat.keterangancoa as coadebet',
-                    'bank.coa as coakredit',
+                    'detail.coadebet',
+                    'detail.coakredit',
+                    'alatbayar.namaalatbayar as alatbayar_id'
 
                 )
-                    ->leftJoin('alatbayar', 'alatbayar.id', '=', 'detail.alatbayar_id')
-                    ->leftJoin('bank', 'bank.id', '=', 'detail.bank_id')
-                    ->leftJoin('akunpusat', 'pengeluarandetail.coadebet', '=', 'akunpusat.coa')
-                    ->leftjoin('bank', 'pengeluarandetail.coakredit', '=', 'bank.namabank');
-                $pengeluaranDetail = $query->get();
+                    ->join('pengeluaranheader as header','header.id','detail.pengeluaran_id')
+                    ->leftJoin('bank', 'bank.id', '=', 'header.bank_id')
+                    ->leftJoin('pelanggan', 'pelanggan.id', '=', 'header.pelanggan_id')
+                    ->leftJoin('alatbayar', 'alatbayar.id', '=', 'detail.alatbayar_id');
+
+                    $pengeluaranDetail = $query->get();
             } else {
                 $query->select(
                     'detail.pengeluaran_id',
@@ -87,8 +95,15 @@ class PengeluaranDetailController extends Controller
                 $pengeluaranDetail = $query->get();
                 // dd{$pengeluaranDetail};
             }
+            
+            $idUser = auth('api')->user()->id;
+            $getuser = User::select('name','cabang.namacabang as cabang_id')
+            ->where('user.id',$idUser)->join('cabang','user.cabang_id','cabang.id')->first();
+           
             return response([
-                'data' => $pengeluaranDetail
+                'data' => $pengeluaranDetail,
+                'user' => $getuser,
+                
             ]);
         } catch (\Throwable $th) {
             throw $th;

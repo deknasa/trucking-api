@@ -39,7 +39,7 @@ class StoreSupirRequest extends FormRequest
             'nokk' => 'required|min:16|max:16',
             'statusluarkota' => 'required|int|exists:parameter,id',
             'statuszonatertentu' => 'required|int|exists:parameter,id',
-            'zona_id' => 'required|int|exists:zona,id',
+            'zona_id' => 'required',
             'statusblacklist' => 'required|int|exists:parameter,id',
             'tgllahir' => 'required',
             'tglterbitsim' => 'required',

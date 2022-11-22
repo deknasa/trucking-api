@@ -39,10 +39,7 @@ class SuratPengantar extends MyModel
             'suratpengantar.nobukti',
             'suratpengantar.tglbukti',
             'pelanggan.namapelanggan as pelanggan_id',
-
-
             'suratpengantar.keterangan',
-            'suratpengantar.nourutorder',
             'kotadari.keterangan as dari_id',
             'kotasampai.keterangan as sampai_id',
             'suratpengantar.container_id',
@@ -54,49 +51,34 @@ class SuratPengantar extends MyModel
             'suratpengantar.nojob',
             'suratpengantar.nojob2',
             'statuslongtrip.text as statuslongtrip',
+            'suratpengantar.gajisupir',
+            'suratpengantar.gajikenek',
             'agen.namaagen as agen_id',
             'jenisorder.keterangan as jenisorder_id',
             'statusperalihan.text as statusperalihan',
             'tarif.tujuan as tarif_id',
+           
             'suratpengantar.nominalperalihan',
-            'suratpengantar.persentaseperalihan',
             'suratpengantar.nosp',
             'suratpengantar.tglsp',
-            'suratpengantar.statusritasiomset',
-            'suratpengantar.cabang_id',
-            'suratpengantar.komisisupir',
-            'suratpengantar.tolsupir',
-            'suratpengantar.jarak',
-            'suratpengantar.nosptagihlain',
-            'suratpengantar.nilaitagihlain',
-            'suratpengantar.tujuantagih',
-            'suratpengantar.liter',
-            'suratpengantar.nominalstafle',
-            'suratpengantar.statusnotif',
-            'suratpengantar.statusoneway',
-            'suratpengantar.statusedittujuan',
-            'suratpengantar.upahbongkardepo',
-            'suratpengantar.upahmuatdepo',
-            'suratpengantar.hargatol',
-            'suratpengantar.qtyton',
-            'suratpengantar.totalton',
-            'suratpengantar.mandorsupir_id',
-            'suratpengantar.mandortrado_id',
-            'suratpengantar.statustrip',
-            'suratpengantar.notripasal',
-            'suratpengantar.tgldoor',
-            'suratpengantar.statusdisc',
-            'suratpengantar.gajisupir',
-            'suratpengantar.gajikenek',
             'suratpengantar.modifiedby',
             'suratpengantar.created_at',
             'suratpengantar.updated_at'
 
-        )->join('kota as kotadari', 'kotadari.id', '=', 'suratpengantar.dari_id')
-            ->join('kota as kotasampai', 'kotasampai.id', '=', 'suratpengantar.sampai_id')
-
-            ->leftJoin('pelanggan', 'suratpengantar.pelanggan_id', 'pelanggan.id')
-            ->leftJoin('upahsupir', 'suratpengantar.upahsupir_id', 'upahsupir.id');
+        )
+        
+        ->leftJoin('pelanggan', 'suratpengantar.pelanggan_id', 'pelanggan.id')
+        ->leftJoin('kota as kotadari', 'kotadari.id', '=', 'suratpengantar.dari_id')
+            ->leftJoin('kota as kotasampai', 'kotasampai.id', '=', 'suratpengantar.sampai_id')
+            ->leftJoin('statuscontainer', 'suratpengantar.statuscontainer_id','statuscontainer.id')
+            ->leftJoin('trado', 'suratpengantar.trado_id', 'trado.id')
+            ->leftJoin('supir', 'suratpengantar.supir_id', 'supir.id')
+            ->leftJoin('agen', 'suratpengantar.agen_id', 'agen.id')
+            ->leftJoin('container', 'suratpengantar.container_id','container.id')
+            ->leftJoin('jenisorder', 'suratpengantar.jenisorder_id','jenisorder.id')
+            ->leftJoin('parameter as statuslongtrip','suratpengantar.statuslongtrip','statuslongtrip.id')
+            ->leftJoin('parameter as statusperalihan','suratpengantar.statusperalihan','statusperalihan.id')
+            ->leftJoin('tarif', 'suratpengantar.tarif_id', 'tarif.id');
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -367,8 +349,26 @@ class SuratPengantar extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'suratpengantar_id') {
-                            $query = $query->where('suratpengantar.id', 'LIKE', "%$filters[data]%");
+                        if ($filters['field'] == 'pelanggan_id') {
+                            $query = $query->where('pelanggan.namapelanggan', 'LIKE', "%$filters[data]%");
+                        } elseif ($filters['field'] == 'dari_id') {
+                            $query = $query->where('kotadari.keterangan', 'LIKE', "%$filters[data]%");
+                        } elseif ($filters['field'] == 'sampai_id') {
+                            $query = $query->where('kotasampai.keterangan', 'LIKE', "%$filters[data]%");
+                        } elseif ($filters['field'] == 'statuscontainer_id') {
+                            $query = $query->where('statuscontainer.keterangan', 'LIKE', "%$filters[data]%");
+                        } elseif ($filters['field'] == 'container_id') {
+                            $query = $query->where('container.keterangan', 'LIKE', "%$filters[data]%");
+                        } elseif ($filters['field'] == 'trado_id') {
+                            $query = $query->where('trado.keterangan', 'LIKE', "%$filters[data]%");
+                        } elseif ($filters['field'] == 'supir_id') {
+                            $query = $query->where('supir.namasupir', 'LIKE', "%$filters[data]%");
+                        } elseif ($filters['field'] == 'agen_id') {
+                            $query = $query->where('agen.namaagen', 'LIKE', "%$filters[data]%");
+                        } elseif ($filters['field'] == 'jenisorder_id') {
+                            $query = $query->where('jenisorder.keterangan', 'LIKE', "%$filters[data]%");
+                        } elseif ($filters['field'] == 'tarif_id') {
+                            $query = $query->where('tarif.tujuan', 'LIKE', "%$filters[data]%");
                         } else {
                             $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
@@ -377,8 +377,26 @@ class SuratPengantar extends MyModel
                     break;
                 case "OR":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'suratpengantar_id') {
-                            $query = $query->orWhere('suratpengantar.id', 'LIKE', "%$filters[data]%");
+                        if ($filters['field'] == 'pelanggan_id') {
+                            $query = $query->orWhere('pelanggan.namapelanggan', 'LIKE', "%$filters[data]%");
+                        } elseif ($filters['field'] == 'dari_id') {
+                            $query = $query->orWhere('kotadari.keterangan', 'LIKE', "%$filters[data]%");
+                        } elseif ($filters['field'] == 'sampai_id') {
+                            $query = $query->orWhere('kotasampai.keterangan', 'LIKE', "%$filters[data]%");
+                        } elseif ($filters['field'] == 'statuscontainer_id') {
+                            $query = $query->orWhere('statuscontainer.keterangan', 'LIKE', "%$filters[data]%");
+                        } elseif ($filters['field'] == 'container_id') {
+                            $query = $query->orWhere('container.keterangan', 'LIKE', "%$filters[data]%");
+                        } elseif ($filters['field'] == 'trado_id') {
+                            $query = $query->orWhere('trado.keterangan', 'LIKE', "%$filters[data]%");
+                        } elseif ($filters['field'] == 'supir_id') {
+                            $query = $query->orWhere('supir.namasupir', 'LIKE', "%$filters[data]%");
+                        } elseif ($filters['field'] == 'agen_id') {
+                            $query = $query->orWhere('agen.namaagen', 'LIKE', "%$filters[data]%");
+                        } elseif ($filters['field'] == 'jenisorder_id') {
+                            $query = $query->orWhere('jenisorder.keterangan', 'LIKE', "%$filters[data]%");
+                        } elseif ($filters['field'] == 'tarif_id') {
+                            $query = $query->orWhere('tarif.tujuan', 'LIKE', "%$filters[data]%");
                         } else {
                             $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }

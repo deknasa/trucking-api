@@ -27,7 +27,7 @@ class StorePengeluaranTruckingDetailRequest extends FormRequest
             'supir_id' => 'required|array',
             'supir_id.*' => 'required',
             'nominal' => 'required|array',
-            'nominal.*' => 'required'
+            'nominal.*' => 'required|numeric|gt:0'
         ];
     }
 }

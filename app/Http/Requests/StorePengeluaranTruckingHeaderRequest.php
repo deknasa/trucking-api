@@ -31,7 +31,36 @@ class StorePengeluaranTruckingHeaderRequest extends FormRequest
             'coa' => 'required',
             'pengeluaran_nobukti' => 'required',
         ];
+        $relatedRequests = [
+            StorePengeluaranTruckingDetailRequest::class
+        ];
+
+        foreach ($relatedRequests as $relatedRequest) {
+            $rules = array_merge(
+                $rules,
+                (new $relatedRequest)->rules()
+            );
+        }
         
         return $rules;
+    }
+
+    public function attributes()
+    {
+        return [
+            
+            'tglbukti' => 'Tgl Bukti',
+            'pengeluarantrucking_id' => 'Kode Pengeluaran',
+            'bank_id' => 'Bank',
+            'pengeluaran_nobukti' => 'Nobukti Pengeluaran',
+            'supir_id.*' => 'Supir'
+        ];
+    }
+    
+    public function messages() 
+    {
+        return [
+            'nominal.*.gt' => 'Nominal Tidak Boleh Kosong dan Harus Lebih Besar Dari 0'
+        ];
     }
 }

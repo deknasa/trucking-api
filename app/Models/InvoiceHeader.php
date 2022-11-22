@@ -162,12 +162,12 @@ class InvoiceHeader extends MyModel
         $temp = '##temp' . rand(1, 10000);
 
         $fetch = DB::table('suratpengantar')
-            ->select(DB::raw("max(id) as id, jobtrucking"))
+            ->select(DB::raw("id, jobtrucking"))
             ->where('agen_id',$request->agen_id)
             ->where('jenisorder_id',$request->jenisorder_id)
             ->where('tglbukti','>=',date('Y-m-d', strtotime($request->tgldari)))
             ->where('tglbukti','<=',date('Y-m-d', strtotime($request->tglsampai)))
-            ->groupBy('jobtrucking');
+            ->groupBy('id','jobtrucking');
         // ->get();
 
         Schema::create($temp, function ($table) {

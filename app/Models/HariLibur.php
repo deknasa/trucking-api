@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class HariLibur extends MyModel
 {
@@ -32,11 +33,11 @@ class HariLibur extends MyModel
                 "$this->table.id",
                 "$this->table.tgl",
                 "$this->table.keterangan",
-                "$this->table.statusaktif",
+                "parameter.text as statusaktif",
                 "$this->table.modifiedby",
                 "$this->table.created_at",
                 "$this->table.updated_at",
-            );
+            )->leftJoin('parameter','harilibur.statusaktif','parameter.id');
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -50,22 +51,48 @@ class HariLibur extends MyModel
         return $data;
     }
 
+
+    public function selectColumns($query)
+    {
+        return $query->select(
+            DB::raw("
+            $this->table.id,
+            $this->table.tgl,
+            $this->table.keterangan,
+            parameter.text as statusaktif,
+            $this->table.modifiedby,
+            $this->table.created_at,
+            $this->table.updated_at
+            ")
+        )->leftJoin('parameter','harilibur.statusaktif','parameter.id');
+    }
+
+    public function createTemp(string $modelTable)
+    {
+        $temp = '##temp' . rand(1, 10000);
+        Schema::create($temp, function ($table) {
+            $table->bigInteger('id')->default('0');
+            $table->date('tgl')->default('');
+            $table->string('keterangan', 1000)->default('');
+            $table->string('statusaktif', 1000)->default('');
+            $table->string('modifiedby')->default();
+            $table->dateTime('created_at')->default('1900/1/1');
+            $table->dateTime('updated_at')->default('1900/1/1');
+            $table->increments('position');
+        });
+
+        $this->setRequestParameters();
+        $query = DB::table($modelTable);
+        $query = $this->selectColumns($query);
+        $this->sort($query);
+        $models = $this->filter($query);
+        DB::table($temp)->insertUsing(['id', 'tgl', 'keterangan', 'statusaktif','modifiedby', 'created_at', 'updated_at'], $models);
+
+        return $temp;
+    }
+
     public function sort($query)
     {
-        if ($this->params['sortIndex'] == 'grp') {
-            return $query
-                ->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder'])
-                ->orderBy($this->table . '.subgrp', $this->params['sortOrder'])
-                ->orderBy($this->table . '.id', $this->params['sortOrder']);
-        }
-
-        if ($this->params['sortIndex'] == 'subgrp') {
-            return $query
-                ->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder'])
-                ->orderBy($this->table . '.grp', $this->params['sortOrder'])
-                ->orderBy($this->table . '.id', $this->params['sortOrder']);
-        }
-
         return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
     }
 
@@ -75,8 +102,8 @@ class HariLibur extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'type') {
-                            $query = $query->where('B.grp', 'LIKE', "%$filters[data]%");
+                        if ($filters['field'] == 'statusaktif') {
+                            $query = $query->where('parameter.text', '=', "$filters[data]");
                         } else {
                             $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
@@ -85,8 +112,8 @@ class HariLibur extends MyModel
                     break;
                 case "OR":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'type') {
-                            $query = $query->orWhere('B.grp', 'LIKE', "%$filters[data]%");
+                        if ($filters['field'] == 'statusaktif') {
+                            $query = $query->orWhere('parameter.text', '=', "$filters[data]");
                         } else {
                             $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }

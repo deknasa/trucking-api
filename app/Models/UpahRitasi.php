@@ -90,6 +90,7 @@ class UpahRitasi extends MyModel
             'upahritasi.tglmulaiberlaku',
             'upahritasi.tglakhirberlaku',
             'upahritasi.statusluarkota',
+            'statusluarkota.text as statusluarkotas',
 
             'upahritasi.modifiedby',
             'upahritasi.updated_at'
@@ -97,7 +98,7 @@ class UpahRitasi extends MyModel
             ->join('kota as kotadari', 'kotadari.id', '=', 'upahritasi.kotadari_id')
             ->join('kota as kotasampai', 'kotasampai.id', '=', 'upahritasi.kotasampai_id')
             ->leftJoin('zona', 'upahritasi.zona_id', 'zona.id')
-
+            ->leftJoin('parameter as statusluarkota', 'upahritasi.statusluarkota', 'statusluarkota.id')
             ->where('upahritasi.id', $id);
 
         $data = $query->first();

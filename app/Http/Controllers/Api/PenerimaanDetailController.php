@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\PenerimaanDetail;
 use App\Http\Requests\StorePenerimaanDetailRequest;
-
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -47,26 +47,32 @@ class PenerimaanDetailController extends Controller
 
             if ($params['forReport']) {
                 $query->select(
+                    'header.nobukti',
+                    'header.tglbukti',
+                    'header.tgllunas',
+                    'header.keterangan',
+                    'bank.namabank as bank',
+                    'pelanggan.namapelanggan as pelanggan',
                     'detail.nowarkat',
                     'detail.tgljatuhtempo',
                     'detail.nominal',
-                    'detail.keterangan',
-                    'bank.namabank as bank_id',
-                    'pelanggan.namapelanggan as pelanggan_id',
+                    'detail.keterangan as keterangan_detail',
+                    'bd.namabank as bank_detail',
+                    'pd.namapelanggan as pelanggan_detail',
                     'detail.invoice_nobukti',
-                    'bankpelanggan.namabank as bankpelanggan_id',
+                    'bpd.namabank as bankpelanggan_detail',
                     'detail.jenisbiaya',
-                    'detail.penerimaanpiutang_nobukti',
                     'detail.bulanbeban',
-                    'akunpusat.keterangancoa as coakredit',
-                    'bank.coa as coadebet',
+                    'detail.coakredit',
+                    'detail.coadebet',
 
                 )
-                    ->leftJoin('bank', 'bank.id', '=', 'detail.bank_id')
-                    ->leftJoin('pelanggan', 'pelanggan.id', '=', 'detail.pelanggan_id')
-                    ->leftJoin('bankpelanggan', 'bankpelanggan.id', '=', 'detail.bankpelanggan_id')
-                    ->leftJoin('akunpusat', 'penerimaandetail.coakredit', '=', 'akunpusat.coa')
-                    ->leftjoin('bank', 'penerimaandetail.coadebet', '=', 'bank.namabank');
+                ->leftJoin('penerimaanheader as header','header.id','detail.penerimaan_id')
+                ->leftJoin('bank','bank.id','header.bank_id')
+                ->leftJoin('pelanggan','pelanggan.id','header.pelanggan_id')
+                    ->leftJoin('bank as bd', 'bd.id', '=', 'detail.bank_id')
+                    ->leftJoin('pelanggan as pd', 'pd.id', '=', 'detail.pelanggan_id')
+                    ->leftJoin('bankpelanggan as bpd', 'bpd.id', '=', 'detail.bankpelanggan_id');
                 $penerimaanDetail = $query->get();
             } else {
                 $query->select(
@@ -93,10 +99,17 @@ class PenerimaanDetailController extends Controller
 
                 $penerimaanDetail = $query->get();
             }
-
+            
+            $idUser = auth('api')->user()->id;
+            $getuser = User::select('name','cabang.namacabang as cabang_id')
+            ->where('user.id',$idUser)->join('cabang','user.cabang_id','cabang.id')->first();
+           
             return response([
-                'data' => $penerimaanDetail
+                'data' => $penerimaanDetail,
+                'user' => $getuser,
+                
             ]);
+
         } catch (\Throwable $th) {
             throw $th;
         }

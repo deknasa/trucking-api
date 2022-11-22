@@ -109,6 +109,7 @@ class BankController extends Controller
      */
     public function update(StoreBankRequest $request, Bank $bank)
     {
+        DB::beginTransaction();
         try {
             $bank = Bank::findOrFail($bank->id);
             $bank->kodebank = $request->kodebank;
@@ -136,6 +137,7 @@ class BankController extends Controller
 
                 /* Set position and page */
                 
+                DB::commit();
                 $selected = $this->getPosition($bank, $bank->getTable());
                 $bank->position = $selected->position;
                 $bank->page = ceil($bank->position / ($request->limit ?? 10));
@@ -152,6 +154,7 @@ class BankController extends Controller
                 ]);
             }
         } catch (\Throwable $th) {
+            DB::rollBack();
             return response($th->getMessage());
         }
     }
@@ -160,39 +163,45 @@ class BankController extends Controller
      */
     public function destroy(Bank $bank, Request $request)
     {
-        $delete = Bank::destroy($bank->id);
-        $del = 1;
-        if ($delete) {
-            $logTrail = [
-                'namatabel' => strtoupper($bank->getTable()),
-                'postingdari' => 'DELETE BANK',
-                'idtrans' => $bank->id,
-                'nobuktitrans' => $bank->id,
-                'aksi' => 'DELETE',
-                'datajson' => $bank->toArray(),
-                'modifiedby' => $bank->modifiedby
-            ];
+        DB::beginTransaction();
+        try {
+            $delete = Bank::destroy($bank->id);
+            $del = 1;
+            if ($delete) {
+                $logTrail = [
+                    'namatabel' => strtoupper($bank->getTable()),
+                    'postingdari' => 'DELETE BANK',
+                    'idtrans' => $bank->id,
+                    'nobuktitrans' => $bank->id,
+                    'aksi' => 'DELETE',
+                    'datajson' => $bank->toArray(),
+                    'modifiedby' => $bank->modifiedby
+                ];
 
-            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-            app(LogTrailController::class)->store($validatedLogTrail);
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                app(LogTrailController::class)->store($validatedLogTrail);
 
-            DB::commit();
+                DB::commit();
 
-            $selected = $this->getPosition($bank, $bank->getTable(), true);
-            $bank->position = $selected->position;
-            $bank->id = $selected->id;
-            $bank->page = ceil($bank->position / ($request->limit ?? 10));
+                $selected = $this->getPosition($bank, $bank->getTable(), true);
+                $bank->position = $selected->position;
+                $bank->id = $selected->id;
+                $bank->page = ceil($bank->position / ($request->limit ?? 10));
 
-            return response([
-                'status' => true,
-                'message' => 'Berhasil dihapus',
-                'data' => $bank
-            ]);
-        } else {
-            return response([
-                'status' => false,
-                'message' => 'Gagal dihapus'
-            ]);
+                return response([
+                    'status' => true,
+                    'message' => 'Berhasil dihapus',
+                    'data' => $bank
+                ]);
+            } else {
+                return response([
+                    'status' => false,
+                    'message' => 'Gagal dihapus'
+                ]);
+            }
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return response($th->getMessage());
         }
     }
 

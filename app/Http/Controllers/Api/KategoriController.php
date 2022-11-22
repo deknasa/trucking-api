@@ -159,42 +159,49 @@ class KategoriController extends Controller
      */
     public function destroy(Kategori $kategori, Request $request)
     {
-        $delete = Kategori::destroy($kategori->id);
-        $del = 1;
-        if ($delete) {
-            $logTrail = [
-                'namatabel' => strtoupper($kategori->getTable()),
-                'postingdari' => 'DELETE KATEGORI',
-                'idtrans' => $kategori->id,
-                'nobuktitrans' => $kategori->id,
-                'aksi' => 'DELETE',
-                'datajson' => $kategori->toArray(),
-                'modifiedby' => $kategori->modifiedby
-            ];
+        DB::beginTransaction();
+        
+        try {
+            $delete = Kategori::destroy($kategori->id);
+            $del = 1;
+            if ($delete) {
+                $logTrail = [
+                    'namatabel' => strtoupper($kategori->getTable()),
+                    'postingdari' => 'DELETE KATEGORI',
+                    'idtrans' => $kategori->id,
+                    'nobuktitrans' => $kategori->id,
+                    'aksi' => 'DELETE',
+                    'datajson' => $kategori->toArray(),
+                    'modifiedby' => $kategori->modifiedby
+                ];
 
-            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-            app(LogTrailController::class)->store($validatedLogTrail);
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                app(LogTrailController::class)->store($validatedLogTrail);
 
-            DB::commit();
-            /* Set position and page */
+                DB::commit();
+                /* Set position and page */
 
-            $selected = $this->getPosition($kategori, $kategori->getTable(), true);
-            
-            $kategori->position = $selected->position;
-            $kategori->id = $selected->id;
-            $kategori->page = ceil($kategori->position / ($request->limit ?? 10));
-            
-            return response([
-                'status' => true,
-                'message' => 'Berhasil dihapus',
-                'data' => $kategori
-            ]);
-        } else {
-            return response([
-                'status' => false,
-                'message' => 'Gagal dihapus'
-            ]);
-        }
+                $selected = $this->getPosition($kategori, $kategori->getTable(), true);
+                
+                $kategori->position = $selected->position;
+                $kategori->id = $selected->id;
+                $kategori->page = ceil($kategori->position / ($request->limit ?? 10));
+                
+                return response([
+                    'status' => true,
+                    'message' => 'Berhasil dihapus',
+                    'data' => $kategori
+                ]);
+            } else {
+                return response([
+                    'status' => false,
+                    'message' => 'Gagal dihapus'
+                ]);
+            }
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        } 
     }
 
     public function fieldLength()

@@ -274,7 +274,7 @@ class PenerimaanHeaderController extends Controller
                     
                     $jurnaldetail = array_merge($jurnaldetail, $jurnalDetail);
                 }
-                $jurnal = $this->storeJurnal($jurnalHeader, $jurnalDetail);
+                $jurnal = $this->storeJurnal($jurnalHeader, $jurnaldetail);
 
 
                 // if (!$jurnal['status'] AND @$jurnal['errorCode'] == 2601) {
@@ -483,8 +483,8 @@ class PenerimaanHeaderController extends Controller
 
             for ($i = 0; $i < count($request->nominal_detail); $i++) {
 
-                $invoice = '';
-                $pelunasanpiutang = '';
+                $invoice = '-';
+                $pelunasanpiutang = '-';
                 if(isset($request->pelunasan_id[$i])) {
                     $getLunas = DB::table('pelunasanpiutangdetail')->select('invoice_nobukti','nobukti')->where('id',$request->pelunasan_id[$i])->first();
                     $invoice = $getLunas->invoice_nobukti;
@@ -544,6 +544,8 @@ class PenerimaanHeaderController extends Controller
                 $detaillog[] = $datadetaillog;
 
             }
+
+
             $dataid = LogTrail::select('id')
                 ->where('nobuktitrans', '=', $penerimaanHeader->nobukti)
                 ->where('namatabel', '=', $penerimaanHeader->getTable())
@@ -613,7 +615,7 @@ class PenerimaanHeaderController extends Controller
                
 
 
-                $jurnal = $this->storeJurnal($jurnalHeader, $jurnalDetail);
+                $jurnal = $this->storeJurnal($jurnalHeader, $jurnaldetail);
 
 
                 // if (!$jurnal['status'] AND @$jurnal['errorCode'] == 2601) {
@@ -624,19 +626,20 @@ class PenerimaanHeaderController extends Controller
                     throw new Exception($jurnal['message']);
                 }
 
-                DB::commit();
-
-                /* Set position and page */
-                $selected = $this->getPosition($penerimaanHeader, $penerimaanHeader->getTable());
-                $penerimaanHeader->position = $selected->position;
-                $penerimaanHeader->page = ceil($penerimaanHeader->position / ($request->limit ?? 10));
-
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil disimpan',
-                    'data' => $penerimaanHeader
-                ]);
             }
+            
+            DB::commit();
+
+            /* Set position and page */
+            $selected = $this->getPosition($penerimaanHeader, $penerimaanHeader->getTable());
+            $penerimaanHeader->position = $selected->position;
+            $penerimaanHeader->page = ceil($penerimaanHeader->position / ($request->limit ?? 10));
+
+            return response([
+                'status' => true,
+                'message' => 'Berhasil disimpan',
+                'data' => $penerimaanHeader
+            ]);
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;

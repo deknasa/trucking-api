@@ -160,7 +160,7 @@ class UpahSupirController extends Controller
     public function show($id)
     {
 
-        $data = upahsupir::find($id);
+        $data = upahSupir::findAll($id);
         $detail = UpahSupirRincian::getAll($id);
 
      

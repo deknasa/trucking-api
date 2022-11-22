@@ -44,7 +44,7 @@ class HutangHeaderController extends Controller
     public function show($id)
     {
 
-        $data = HutangHeader::find($id);
+        $data = HutangHeader::findAll($id);
         $detail = HutangDetail::getAll($id);
 
         // dd($details);
