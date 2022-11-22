@@ -7,6 +7,12 @@ use App\Models\InvoiceExtraDetail;
 use App\Http\Requests\StoreInvoiceExtraDetailRequest;
 use App\Http\Requests\UpdateInvoiceExtraDetailRequest;
 
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
+
 class InvoiceExtraDetailController extends Controller
 {
     /**
@@ -14,30 +20,110 @@ class InvoiceExtraDetailController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        $params = [
+            'id' => $request->id,
+            'invoiceextra_id' => $request->invoiceextra_id,
+            'withHeader' => $request->withHeader ?? false,
+            'whereIn' => $request->whereIn ?? [],
+            'forReport' => $request->forReport ?? false,
+            'sortIndex' => $request->sortOrder ?? 'id',
+            'sortOrder' => $request->sortOrder ?? 'asc',
+        ];
+        try {
+            $query = InvoiceExtraDetail::from('invoiceextradetail as detail');
+
+            if (isset($params['id'])) {
+                $query->where('detail.id', $params['id']);
+            }
+
+            if (isset($params['invoiceextra_id'])) {
+                $query->where('detail.invoiceextra_id', $params['invoiceextra_id']);
+            }
+
+            if (count($params['whereIn']) > 0) {
+                $query->whereIn('invoiceextra_id', $params['whereIn']);
+            }
+
+            if ($params['forReport']) {
+                $query->select(
+                    'detail.invoiceextra_id',
+                    'detail.nobukti',
+                    'detail.nominal',
+                    'detail.keterangan',
+                    'detail.modifiedby'
+
+                )
+
+                ->leftJoin('invoiceextraheader', 'detail.invoiceextra_id', 'invoiceextraheader.id');
+                $penerimaanStokDetail = $query->get();
+            } else {
+                $query->select(
+                    'detail.invoiceextra_id',
+                    'detail.nobukti',
+                    'detail.nominal',
+                    'detail.keterangan',
+                    'detail.modifiedby'
+
+                )
+
+                ->leftJoin('invoiceextraheader', 'detail.invoiceextra_id', 'invoiceextraheader.id');
+                 
+                $penerimaanStokDetail = $query->get();
+            }
+
+            return response([
+                'data' => $penerimaanStokDetail
+            ]);
+        } catch (\Throwable $th) {
+            return response([
+                'message' => $th->getMessage()
+            ]);
+        }
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \App\Http\Requests\StoreInvoiceExtraDetailRequest  $request
-     * @return \Illuminate\Http\Response
-     */
     public function store(StoreInvoiceExtraDetailRequest $request)
     {
-        //
+        DB::beginTransaction();
+        $validator = Validator::make($request->all(), [
+            'nominal_detail' => 'required',
+            'keterangan_detail' => 'required',
+        ], [
+            'nominal_detail.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
+            'keterangan_detail.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
+        ], [
+            'nominal_detail' => 'Nominal',
+            'keterangan_detail' => 'Keterangan',
+        ]);
+        if (!$validator->passes()) {
+            return [
+                'error' => true,
+                'errors' => $validator->messages()
+            ];
+        }
+        
+        try {
+            $invoiceExtraDetail = new InvoiceExtraDetail();
+
+            $invoiceExtraDetail->invoiceextra_id = $request->invoiceextra_id;
+            $invoiceExtraDetail->nobukti = $request->nobukti;
+            $invoiceExtraDetail->nominal = $request->nominal_detail;
+            $invoiceExtraDetail->keterangan = $request->keterangan_detail;
+            $invoiceExtraDetail->save();
+            DB::commit();
+            if ($validator->passes()) {
+                return [
+                    'error' => false,
+                    'id' => $invoiceExtraDetail->id,
+                    'tabel' => $invoiceExtraDetail->getTable(),
+                ];
+            }
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return response($th->getMessage());
+        }        
+
     }
 
     /**

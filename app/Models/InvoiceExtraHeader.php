@@ -149,9 +149,11 @@ class InvoiceExtraHeader extends MyModel
     {
         $this->setRequestParameters();
 
-        $query = DB::table($this->table);
+        $query = DB::table($this->table); 
         $query = $this->selectColumns($query)
-        ->leftJoin('parameter as statusformat','absensisupirapprovalheader.statusformat','statusformat.id');
+        ->leftJoin('pelanggan','invoiceextraheader.pelanggan_id','pelanggan.id')
+        ->leftJoin('agen','invoiceextraheader.agen_id','agen.id')
+        ->leftJoin('parameter as statusformat','invoiceextraheader.statusformat','statusformat.id');
         $data = $query->where("$this->table.id",$id)->first();
         return $data;
     }
