@@ -23,15 +23,32 @@ class StoreServiceInHeaderRequest extends FormRequest
      */
     public function rules()
     {
-        return [
+        $rules = [
             'tglbukti' => 'required',
             'trado' => 'required',
             'tglmasuk' => 'required',
             'keterangan' => 'required',
         ];
+        $relatedRequests = [
+            StoreServiceInDetailRequest::class
+        ];
+
+        foreach ($relatedRequests as $relatedRequest) {
+            $rules = array_merge(
+                $rules,
+                (new $relatedRequest)->rules()
+            );
+        }
+        
+        return $rules;
     }
 
     public function attributes() {
-        return [];
+        return [
+            'tglbukti' => 'tanggal bukti',
+            'tglmasuk' => 'tanggal masuk',
+            'mekanik.*' => 'mekanik',
+            'keterangan_detail.*' => 'keterangan detail'
+        ];
     }
 }

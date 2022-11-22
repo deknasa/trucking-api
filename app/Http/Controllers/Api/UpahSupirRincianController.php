@@ -123,26 +123,7 @@ class UpahSupirRincianController extends Controller
     public function store(StoreUpahSupirRincianRequest $request)
     {
         DB::beginTransaction();
-        $validator = Validator::make($request->all(), [
-            'container_id' => 'required',
-            'statuscontainer_id' => 'required',
-            'nominalsupir' => 'required',
-            'nominalkenek' => 'required',
-            'nominalkomisi' => 'required',
-            'nominaltol' => 'required',
-            'liter' => 'required',
-        ], [
-            'container_id.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
-        ], [
-            'container_id' => 'Container',
-        ]);
-        if (!$validator->passes()) {
-            return [
-                'error' => true,
-                'errors' => $validator->messages()
-            ];
-        }
-
+       
         try {
             $upahSupirRincian = new UpahSupirRincian();
 
@@ -159,13 +140,12 @@ class UpahSupirRincianController extends Controller
             $upahSupirRincian->save();
             
             DB::commit();
-            if ($validator->passes()) {
+           
                 return [
                     'error' => false,
                     'id' => $upahSupirRincian->id,
                     'tabel' => $upahSupirRincian->getTable(),
                 ];
-            }
         } catch (\Throwable $th) {
             DB::rollBack();
             return response($th->getMessage());

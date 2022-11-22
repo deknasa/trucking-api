@@ -369,7 +369,7 @@ class KasGantungHeaderController extends Controller
       /**
      * @ClassName 
      */
-    public function update(Request $request, $id)
+    public function update(StoreKasGantungHeaderRequest $request, $id)
     {
         DB::beginTransaction();
 

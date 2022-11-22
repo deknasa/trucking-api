@@ -104,45 +104,10 @@ class UpahRitasiRincianController extends Controller
         }
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \App\Http\Requests\StoreupahritasirincianRequest  $request
-     * @return \Illuminate\Http\Response
-     */
     public function store(StoreUpahRitasiRincianRequest $request)
     {
         DB::beginTransaction();
-        $validator = Validator::make($request->all(), [
-            'container_id' => 'required',
-            'statuscontainer_id' => 'required',
-            'nominalsupir' => 'required',
-            'nominalkenek' => 'required',
-            'nominalkomisi' => 'required',
-            'nominaltol' => 'required',
-            'liter' => 'required',
-        ], [
-            'container_id.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
-        ], [
-            'container_id' => 'Container',
-        ]);
-        if (!$validator->passes()) {
-            return [
-                'error' => true,
-                'errors' => $validator->messages()
-            ];
-        }
-
+       
         try {
             $upahritasirincian = new UpahRitasiRincian();
 
@@ -159,61 +124,16 @@ class UpahRitasiRincianController extends Controller
             $upahritasirincian->save();
             
             DB::commit();
-            if ($validator->passes()) {
-                return [
-                    'error' => false,
-                    'id' => $upahritasirincian->id,
-                    'tabel' => $upahritasirincian->getTable(),
-                ];
-            }
+           
+            return [
+                'error' => false,
+                'id' => $upahritasirincian->id,
+                'tabel' => $upahritasirincian->getTable(),
+            ];
         } catch (\Throwable $th) {
             DB::rollBack();
             return response($th->getMessage());
         }        
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\upahritasirincian  $upahritasirincian
-     * @return \Illuminate\Http\Response
-     */
-    public function show(upahritasirincian $upahritasirincian)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\upahritasirincian  $upahritasirincian
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(upahritasirincian $upahritasirincian)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \App\Http\Requests\UpdateupahritasirincianRequest  $request
-     * @param  \App\Models\upahritasirincian  $upahritasirincian
-     * @return \Illuminate\Http\Response
-     */
-    public function update(UpdateupahritasirincianRequest $request, upahritasirincian $upahritasirincian)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\upahritasirincian  $upahritasirincian
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(upahritasirincian $upahritasirincian)
-    {
-        //
-    }
 }

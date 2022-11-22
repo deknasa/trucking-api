@@ -30,10 +30,10 @@ class StorePenerimaanGiroDetailRequest extends FormRequest
             'nominal.*' => 'required|numeric|gt:0',
             'keterangan_detail' => 'required|array',
             'keterangan_detail.*' => 'required',
-            'bank_id' => 'required|array',
-            'bank_id.*' => 'required',
-            'bankpelanggan_id' => 'required|array',
-            'bankpelanggan_id.*' => 'required',
+            'bank' => 'required|array',
+            'bank.*' => 'required',
+            'bankpelanggan' => 'required|array',
+            'bankpelanggan.*' => 'required',
             'jenisbiaya' => 'required|array',
             'jenisbiaya.*' => 'required'
         ];

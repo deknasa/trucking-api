@@ -58,19 +58,8 @@ class StorePelunasanPiutangHeaderRequest extends FormRequest
             'pelanggan' => 'Pelanggan',
             'agendetail' => 'Agen Detail',
             'bayarppd.*' => 'Nominal Bayar',
-            'keterangandetailppd.*' => 'Keterangan',
+            'keterangandetailppd.*' => 'Keterangan Detail',
         ];
-
-        $relatedRequests = [
-            StoreJurnalUmumDetailRequest::class
-        ];
-
-        foreach ($relatedRequests as $relatedRequest) {
-            $attributes = array_merge(
-                $attributes,
-                (new $relatedRequest)->attributes()
-            );
-        }
         
         return $attributes;
     }
