@@ -59,7 +59,8 @@ class StorePenerimaanHeaderRequest extends FormRequest
             'keterangan_detail.*' => 'keterangan detail',
             'coadebet.*' => 'coa debet',
             'bankpelanggan.*' => 'bank pelanggan',
-            'jenisbiaya.*' => 'jenis biaya'
+            'jenisbiaya.*' => 'jenis biaya',
+            'bulanbeban.*' => 'bulan beban'
         ];
     }
     public function messages()

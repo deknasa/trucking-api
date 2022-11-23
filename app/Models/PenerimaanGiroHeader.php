@@ -81,20 +81,20 @@ class PenerimaanGiroHeader extends MyModel
     {
         if($id != 'null'){
             $penerimaan = DB::table('penerimaangirodetail')->select('pelunasanpiutang_nobukti')->where('penerimaangiro_id',$id)->first();
-            $data = DB::table('pelunasanpiutangheader')->select(DB::raw("pelunasanpiutangdetail.id,pelunasanpiutangheader.nobukti,pelunasanpiutangheader.tglbukti, agen.namaagen as agen_id, cabang.namacabang as cabang_id, (SELECT (SUM(pelunasanpiutangdetail.nominal)) FROM pelunasanpiutangdetail WHERE pelunasanpiutangdetail.nobukti= pelunasanpiutangheader.nobukti) AS nominal"))
+            $data = DB::table('pelunasanpiutangheader')->select(DB::raw("pelunasanpiutangheader.id,pelunasanpiutangheader.nobukti,pelunasanpiutangheader.tglbukti, pelanggan.namapelanggan as pelanggan, (SELECT (SUM(pelunasanpiutangdetail.nominal)) FROM pelunasanpiutangdetail WHERE pelunasanpiutangdetail.nobukti= pelunasanpiutangheader.nobukti) AS nominal"))
+            ->distinct("pelunasanpiutangheader.nobukti")
              ->join('pelunasanpiutangdetail','pelunasanpiutangheader.id','pelunasanpiutangdetail.pelunasanpiutang_id')
-             ->join('agen','pelunasanpiutangheader.agen_id','agen.id')
-             ->join('cabang','pelunasanpiutangheader.cabang_id','cabang.id')
+             ->join('pelanggan','pelunasanpiutangdetail.pelanggan_id','pelanggan.id')
      
              ->where('pelunasanpiutangheader.nobukti',$penerimaan->pelunasanpiutang_nobukti)
              ->get();
 
         }else{
             
-            $data = DB::table('pelunasanpiutangheader')->select(DB::raw("pelunasanpiutangdetail.id,pelunasanpiutangheader.nobukti,pelunasanpiutangheader.tglbukti, agen.namaagen as agen_id, cabang.namacabang as cabang_id, (SELECT (SUM(pelunasanpiutangdetail.nominal)) FROM pelunasanpiutangdetail WHERE pelunasanpiutangdetail.nobukti= pelunasanpiutangheader.nobukti) AS nominal"))
-             ->join('pelunasanpiutangdetail','pelunasanpiutangheader.id','pelunasanpiutangdetail.pelunasanpiutang_id')
-             ->join('agen','pelunasanpiutangheader.agen_id','agen.id')
-             ->join('cabang','pelunasanpiutangheader.cabang_id','cabang.id')
+            $data = DB::table('pelunasanpiutangheader')->select(DB::raw("pelunasanpiutangheader.id,pelunasanpiutangheader.nobukti,pelunasanpiutangheader.tglbukti, pelanggan.namapelanggan as pelanggan, (SELECT (SUM(pelunasanpiutangdetail.nominal)) FROM pelunasanpiutangdetail WHERE pelunasanpiutangdetail.nobukti= pelunasanpiutangheader.nobukti) AS nominal"))
+            ->distinct("pelunasanpiutangheader.nobukti")
+            ->join('pelunasanpiutangdetail','pelunasanpiutangheader.id','pelunasanpiutangdetail.pelunasanpiutang_id')
+             ->join('pelanggan','pelunasanpiutangdetail.pelanggan_id','pelanggan.id')
             ->whereRaw("pelunasanpiutangheader.nobukti not in (select pelunasanpiutang_nobukti from penerimaangirodetail)")
             ->whereRaw("pelunasanpiutangheader.nobukti not in (select pelunasanpiutang_nobukti from penerimaandetail)")
              ->get();

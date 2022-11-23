@@ -24,7 +24,7 @@ class PenerimaanDetail extends MyModel
 
     public function findAll($id)
     {
-        $detail = PenerimaanDetail::select('penerimaandetail.coadebet','penerimaandetail.tgljatuhtempo','penerimaandetail.nowarkat','penerimaandetail.bankpelanggan_id', 'bankpelanggan.namabank as bankpelanggan', 'penerimaandetail.keterangan', 'penerimaandetail.nominal','penerimaandetail.invoice_nobukti','penerimaandetail.jenisbiaya','penerimaandetail.pelunasanpiutang_nobukti')
+        $detail = PenerimaanDetail::select('penerimaandetail.coadebet','penerimaandetail.tgljatuhtempo','penerimaandetail.nowarkat','penerimaandetail.bankpelanggan_id', 'bankpelanggan.namabank as bankpelanggan', 'penerimaandetail.keterangan', 'penerimaandetail.nominal','penerimaandetail.invoice_nobukti','penerimaandetail.jenisbiaya','penerimaandetail.pelunasanpiutang_nobukti','penerimaandetail.bulanbeban')
         ->join('bankpelanggan','penerimaandetail.bankpelanggan_id','bankpelanggan.id')
         ->where('penerimaandetail.penerimaan_id',$id)
         ->get();

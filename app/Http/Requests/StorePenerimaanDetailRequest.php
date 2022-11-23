@@ -24,20 +24,22 @@ class StorePenerimaanDetailRequest extends FormRequest
     public function rules()
     {
         return [
-            'nowarkat' => 'required|array',
-            'nowarkat.*' => 'required',
+            'coadebet' => 'required|array',
+            'coadebet.*' => 'required',
             'tgljatuhtempo' => 'required|array',
             'tgljatuhtempo.*' => 'required',
+            'nowarkat' => 'required|array',
+            'nowarkat.*' => 'required',
+            'bankpelanggan' => 'required|array',
+            'bankpelanggan.*' => 'required',
             'nominal_detail' => 'required|array',
             'nominal_detail.*' => 'required|numeric|gt:0',
             'keterangan_detail' => 'required|array',
             'keterangan_detail.*' => 'required',
-            'coadebet' => 'required|array',
-            'coadebet.*' => 'required',
-            'bankpelanggan' => 'required|array',
-            'bankpelanggan.*' => 'required',
             'jenisbiaya' => 'required|array',
-            'jenisbiaya.*' => 'required'
+            'jenisbiaya.*' => 'required',
+            'bulanbeban' => 'required|array',
+            'bulanbeban.*' => 'required'
         ];
     }
 }
