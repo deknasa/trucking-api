@@ -81,10 +81,10 @@ class PengeluaranStokHeaderController extends Controller
             if ($pengeluaranStokHeader->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($pengeluaranStokHeader->getTable()),
-                    'postingdari' => 'EDIT PENGELUARAN STOK HEADER',
+                    'postingdari' => 'ENTRY PENGELUARAN STOK HEADER',
                     'idtrans' => $pengeluaranStokHeader->id,
                     'nobuktitrans' => $pengeluaranStokHeader->id,
-                    'aksi' => 'EDIT',
+                    'aksi' => 'ENTRY',
                     'datajson' => $pengeluaranStokHeader->toArray(),
                     'modifiedby' => $pengeluaranStokHeader->modifiedby
                 ];
@@ -137,7 +137,7 @@ class PengeluaranStokHeaderController extends Controller
                     }
                     $datalogtrail = [
                         'namatabel' => $tabeldetail,
-                        'postingdari' => 'ENTRY PENGELUARAN STOK HEADER',
+                        'postingdari' => 'ENTRY PENGELUARAN STOK DETAIL',
                         'idtrans' =>  $iddetail,
                         'nobuktitrans' => $pengeluaranStokHeader->nobukti,
                         'aksi' => 'ENTRY',

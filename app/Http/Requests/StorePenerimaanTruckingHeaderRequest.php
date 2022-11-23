@@ -26,8 +26,8 @@ class StorePenerimaanTruckingHeaderRequest extends FormRequest
         $rules = [
             'tglbukti' => 'required',
             'keterangan' => 'required',
-            'penerimaantrucking_id' => 'required',
-            'bank_id' => 'required',
+            'penerimaantrucking' => 'required',
+            'bank' => 'required',
             'coa' => 'required',
             'penerimaan_nobukti' => 'required',
         ];
@@ -49,10 +49,9 @@ class StorePenerimaanTruckingHeaderRequest extends FormRequest
         return [
             
             'tglbukti' => 'Tgl Bukti',
-            'penerimaantrucking_id' => 'Kode Penerimaan',
-            'bank_id' => 'Bank',
+            'penerimaantrucking' => 'Kode Penerimaan',
             'penerimaan_nobukti' => 'Nobukti Penerimaan',
-            'supir_id.*' => 'Supir'
+            'supir.*' => 'Supir'
         ];
     }
     

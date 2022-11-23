@@ -25,7 +25,7 @@ class StorePenerimaanGiroHeaderRequest extends FormRequest
     {
         $rules = [
             'tglbukti' => 'required',
-            'pelanggan_id' => 'required',
+            'pelanggan' => 'required',
             'keterangan' => 'required',
             'diterimadari' => 'required',
             'tgllunas' => 'required'
@@ -49,13 +49,12 @@ class StorePenerimaanGiroHeaderRequest extends FormRequest
     {
         return [
             'tglbukti' => 'Tanggal Bukti',
-            'pelanggan_id' => 'Pelanggan',
             'diterimadari' => 'Diterima Dari',
             'tgllunas' => 'Tanggal Lunas',
             'tgljatuhtempo.*' => 'Tanggal jatuh tempo',
             'keterangan_detail.*' => 'Keterangan',
-            'bank_id.*' => 'bank',
-            'bankpelanggan_id.*' => 'bank pelanggan',
+            'bank.*' => 'bank',
+            'bankpelanggan.*' => 'bank pelanggan',
             'jenisbiaya.*' => 'jenis biaya'
         ];
     }

@@ -26,8 +26,8 @@ class StorePengeluaranTruckingHeaderRequest extends FormRequest
         $rules = [
             'tglbukti' => 'required',
             'keterangan' => 'required',
-            'pengeluarantrucking_id' => 'required',
-            'bank_id' => 'required',
+            'pengeluarantrucking' => 'required',
+            'bank' => 'required',
             'coa' => 'required',
             'pengeluaran_nobukti' => 'required',
         ];
@@ -50,10 +50,9 @@ class StorePengeluaranTruckingHeaderRequest extends FormRequest
         return [
             
             'tglbukti' => 'Tgl Bukti',
-            'pengeluarantrucking_id' => 'Kode Pengeluaran',
-            'bank_id' => 'Bank',
+            'pengeluarantrucking' => 'Kode Pengeluaran',
             'pengeluaran_nobukti' => 'Nobukti Pengeluaran',
-            'supir_id.*' => 'Supir'
+            'supir.*' => 'Supir'
         ];
     }
     

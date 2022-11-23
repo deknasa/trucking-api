@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Validator;
 
 class ServiceOutDetailController extends Controller
 {
-     /**
+    /**
      * @ClassName
      */
     public function index(Request $request)
@@ -51,8 +51,8 @@ class ServiceOutDetailController extends Controller
                     'detail.servicein_nobukti',
                     'detail.keterangan',
                 )
-                ->join('serviceoutheader as header','header.id','detail.serviceout_id')
-                ->leftJoin('trado', 'header.trado_id','trado.id');
+                    ->join('serviceoutheader as header', 'header.id', 'detail.serviceout_id')
+                    ->leftJoin('trado', 'header.trado_id', 'trado.id');
 
                 $serviceOutDetail = $query->get();
             } else {
@@ -64,9 +64,9 @@ class ServiceOutDetailController extends Controller
             }
 
             $idUser = auth('api')->user()->id;
-            $getuser = User::select('name','cabang.namacabang as cabang_id')
-            ->where('user.id',$idUser)->join('cabang','user.cabang_id','cabang.id')->first();
-           
+            $getuser = User::select('name', 'cabang.namacabang as cabang_id')
+                ->where('user.id', $idUser)->join('cabang', 'user.cabang_id', 'cabang.id')->first();
+
             return response([
                 'data' => $serviceOutDetail,
                 'user' => $getuser,
@@ -78,25 +78,13 @@ class ServiceOutDetailController extends Controller
         }
     }
 
-   /**
+    /**
      * @ClassName
      */
     public function store(StoreServiceOutDetailRequest $request)
     {
         DB::beginTransaction();
-        $validator = Validator::make($request->all(), [
-            'keterangan' => 'required',
-        ], [
-            'keterangan.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
-        ], [
-            'keterangan' => 'keterangan',
-        ]);
-        if (!$validator->passes()) {
-            return [
-                'error' => true,
-                'errors' => $validator->messages()
-            ];
-        }
+
         try {
             $serviceoutdetail = new ServiceOutDetail();
             $serviceoutdetail->serviceout_id = $request->serviceout_id;
@@ -107,18 +95,15 @@ class ServiceOutDetailController extends Controller
             $serviceoutdetail->save();
 
             DB::commit();
-            if ($validator->passes()) {
-                return [
-                    'error' => false,
-                    'id' => $serviceoutdetail->id,
-                    'tabel' => $serviceoutdetail->getTable(),
-                ];
-            }
+
+            return [
+                'error' => false,
+                'id' => $serviceoutdetail->id,
+                'tabel' => $serviceoutdetail->getTable(),
+            ];
         } catch (\Throwable $th) {
             DB::rollBack();
             return response($th->getMessage());
         }
     }
-
-    
 }

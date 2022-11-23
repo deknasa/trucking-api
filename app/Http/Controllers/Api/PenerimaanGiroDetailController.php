@@ -41,20 +41,30 @@ class PenerimaanGiroDetailController extends Controller
                 $query->select(
                     'header.nobukti',
                     'header.tglbukti',
-                    'header.coa',
-                    'header.pengeluaran_nobukti',
-                    'header.keterangan',
-                    'bank.namabank as bank',
-                    'pengeluarantrucking.keterangan as pengeluarantrucking',
-                    'supir.namasupir as supir_id',
-                    'detail.penerimaantruckingheader_nobukti',
+                    'ph.namapelanggan as pelangganheader',
+                    'header.tgllunas',
+                    'header.diterimadari',
+                    'header.keterangan as keteranganheader',
+                    'detail.nowarkat',
+                    'detail.tgljatuhtempo',
+                    'detail.coadebet',
+                    'detail.coakredit',
+                    'bank.namabank as bank_id',
+                    'pelanggan.namapelanggan as pelanggan_id',
+                    'bankpelanggan.namabank as bankpelanggan_id',
+                    'detail.invoice_nobukti',
+                    'detail.pelunasanpiutang_nobukti',
+                    'detail.jenisbiaya',
+                    'detail.bulanbeban',
+                    'detail.keterangan',
                     'detail.nominal'
                 ) 
-                ->leftJoin('penerimaangiro as header','header.id','detail.penerimaangiro_id')
-                ->leftJoin('pengeluarantrucking', 'header.pengeluarantrucking_id','pengeluarantrucking.id')
-                ->leftJoin('bank', 'header.bank_id', 'bank.id')
-                ->leftJoin('supir', 'detail.supir_id', 'supir.id');
-
+                ->leftJoin('penerimaangiroheader as header','header.id','detail.penerimaangiro_id')
+                ->leftJoin('pelanggan as ph', 'header.pelanggan_id', 'ph.id')
+                ->leftJoin('bank', 'detail.bank_id', 'bank.id')
+                ->leftJoin('pelanggan', 'detail.pelanggan_id', 'pelanggan.id')
+                ->leftJoin('bankpelanggan', 'detail.bankpelanggan_id', 'bankpelanggan.id');
+                
                 $pengeluaranTruckingDetail = $query->get();
             } else {
                 $query->select(

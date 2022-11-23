@@ -77,7 +77,7 @@ class PiutangHeaderController extends Controller
 
             $piutang->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $piutang->keterangan = $request->keterangan;
-            $piutang->postingdari = $request->postingdari ?? '';
+            $piutang->postingdari = $request->postingdari ?? 'ENTRY PIUTANG';
             $piutang->invoice_nobukti = $request->invoice_nobukti ?? '';
             $piutang->modifiedby = auth('api')->user()->name;
             $piutang->statusformat = $format->id ?? $request->statusformat;
@@ -292,7 +292,7 @@ class PiutangHeaderController extends Controller
 
             $piutang->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $piutang->keterangan = $request->keterangan;
-            $piutang->postingdari = $request->postingdari ?? '';
+            $piutang->postingdari = $request->postingdari ?? 'ENTRY PIUTANG';
             $piutang->invoice_nobukti = $request->invoice_nobukti ?? '';
             $piutang->modifiedby = auth('api')->user()->name;
             $piutang->agen_id = $request->agen_id;

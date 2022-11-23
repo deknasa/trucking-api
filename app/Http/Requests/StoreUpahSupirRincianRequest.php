@@ -24,13 +24,20 @@ class StoreUpahSupirRincianRequest extends FormRequest
     public function rules()
     {
         return [
-            'container_id' => 'required',
-            'statuscontainer_id' => 'required',
-            'nominalsupir' => 'required',
-            'nominalkenek' => 'required',
-            'nominalkomisi' => 'required',
-            'nominaltol' => 'required',
-            'liter' => 'required',
+            'container' => 'required|array',
+            'container.*' => 'required',
+            'statuscontainer' => 'required|array',
+            'statuscontainer.*' => 'required',
+            'nominalsupir' => 'required|array',
+            'nominalsupir.*' => 'required|numeric|gt:0',
+            'nominalkenek' => 'required|array',
+            'nominalkenek.*' => 'required|numeric|gt:0',
+            'nominalkomisi' => 'required|array',
+            'nominalkomisi.*' => 'required|numeric|gt:0',
+            'nominaltol' => 'required|array',
+            'nominaltol.*' => 'required|numeric|gt:0',
+            'liter' => 'required|array',
+            'liter.*' => 'required|numeric|gt:0',
         ];
     }
 }

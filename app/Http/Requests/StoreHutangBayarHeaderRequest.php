@@ -26,9 +26,9 @@ class StoreHutangBayarHeaderRequest extends FormRequest
         $rules = [
             'tglbukti' => 'required',
             'keterangan' => 'required',
-            'bank_id' => 'required',
+            'bank' => 'required',
             'coa' => 'required',
-            'supplier_id' => 'required'
+            'supplier' => 'required'
         ];
         $relatedRequests = [
             StoreHutangBayarDetailRequest::class
@@ -47,6 +47,17 @@ class StoreHutangBayarHeaderRequest extends FormRequest
     public function attributes() {
         return [
             'hutang_id' => 'Pilih Hutang',
+            'keterangandetail.*' => 'keterangan detail',
+            'bayar.*' => 'bayar',
+            'alatbayar.*' => 'alat bayar',
+            'tglcair.*' => 'tanggal cair'
+        ];
+    }
+    
+    public function messages()
+    {
+        return [
+            'bayar.*.gt' => 'bayar wajib di isi',
         ];
     }
 }

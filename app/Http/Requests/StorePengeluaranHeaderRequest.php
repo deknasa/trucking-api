@@ -24,12 +24,12 @@ class StorePengeluaranHeaderRequest extends FormRequest
     public function rules()
     {
         $rules = [
-            'pelanggan_id' => 'required',
+            'pelanggan' => 'required',
             'keterangan' => 'required',
-            'cabang_id' => 'required',
+            'cabang' => 'required',
             'statusjenistransaksi' => 'required',
             'dibayarke' => 'required',
-            'bank_id' => 'required',
+            'bank' => 'required',
         ];
         $relatedRequests = [
             StorePengeluaranDetailRequest::class
@@ -49,16 +49,12 @@ class StorePengeluaranHeaderRequest extends FormRequest
     public function attributes()
     {
         $attributes = [
-            'pelanggan_id' => 'Pelanggan',
-            'keterangan' => 'Keterangan',
-            'cabang_id' => 'Cabang',
             'statusjenistransaksi' => 'Status Jenis Transaksi',
             'dibayarke' => 'Dibayar Ke',
-            'bank_id' => 'Bank',
             'transferkeac' => 'Transfer Ke Account',
             'transferkean' => 'Transfer Ke An.',
             'transferkebank' => 'Transfer Ke Bank',
-            'alatbayar_id.*' => 'Alat Bayar',
+            'alatbayar.*' => 'Alat Bayar',
             'nowarkat.*' => 'No Warkat',
             'tgljatuhtempo.*' => 'Tanggal Jatuh Tempo',
             'nominal_detail.*' => 'Nominal',

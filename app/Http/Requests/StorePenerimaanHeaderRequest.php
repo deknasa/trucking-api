@@ -24,12 +24,14 @@ class StorePenerimaanHeaderRequest extends FormRequest
     public function rules()
     {
         $rules = [
-            'pelanggan_id' => 'required',
+            'tglbukti' => 'required',
+            'diterimadari' => 'required',
+            'pelanggan' => 'required',
             'keterangan' => 'required',
             'tgllunas'  => 'required',
-            'cabang_id' => 'required',
+            'cabang' => 'required',
             'statuskas' => 'required',
-            'bank_id'   => 'required',
+            'bank'   => 'required',
             // 'noresi' => 'required'
         ];
         $relatedRequests = [
@@ -48,6 +50,22 @@ class StorePenerimaanHeaderRequest extends FormRequest
     }
     public function attributes()
     {
-        return [];
+        return [
+            'tgllunas' => 'tanggal lunas',
+            'statuskas' => 'status kas',
+            'nowarkat.*' => 'no warkat',
+            'tgljatuhtempo.*' => 'tanggal jatuh tempo',
+            'nominal_detail.*' => 'nominal',
+            'keterangan_detail.*' => 'keterangan detail',
+            'coadebet.*' => 'coa debet',
+            'bankpelanggan.*' => 'bank pelanggan',
+            'jenisbiaya.*' => 'jenis biaya'
+        ];
+    }
+    public function messages()
+    {
+        return [
+            'nominal_detail.*.gt' => 'nominal wajib di isi'
+        ];
     }
 }

@@ -27,7 +27,7 @@ class StoreHutangHeaderRequest extends FormRequest
             'tglbukti' => 'required',
             'keterangan' => 'required',
             'akunpusat' => 'required',
-            'pelanggan_id' => 'required'
+            'pelanggan' => 'required'
         ];
         $relatedRequests = [
             StoreHutangDetailRequest::class
@@ -48,7 +48,6 @@ class StoreHutangHeaderRequest extends FormRequest
             'tglbukti' => 'Tanggal Bukti',
             'keterangan' => 'Keterangan',
             'akunpusat' => 'Coa',
-            'pelanggan_id' => 'Pelanggan',
             'supplier.*' => 'Supplier',
             'tgljatuhtempo.*' => 'Tanggal Jatuh Tempo',
             'total_detail.*' => 'Total',

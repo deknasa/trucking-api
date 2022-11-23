@@ -25,6 +25,14 @@ class StoreHutangBayarDetailRequest extends FormRequest
     {
         return [
             'hutang_id' => 'required',
+            'keterangandetail' => 'required|array',
+            'keterangandetail.*' => 'required',
+            'bayar' => 'required|array',
+            'bayar.*' => 'required|numeric|gt:0',
+            'alatbayar' => 'required|array',
+            'alatbayar.*' => 'required',
+            'tglcair' => 'required|array',
+            'tglcair.*' =>'required'
         ];
     }
 }

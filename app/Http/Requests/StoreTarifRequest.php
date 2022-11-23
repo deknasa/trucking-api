@@ -25,13 +25,13 @@ class StoreTarifRequest extends FormRequest
     {
         return [
             'tujuan' => 'required',
-            'container_id' => 'required',
+            'container' => 'required',
             'nominal' => 'required|numeric|gt:0',
             'statusaktif' => 'required',
             'tujuanasal' => 'required',
             'statussistemton' => 'required',
-            'zona_id' => 'required',
-            'kota_id' => 'required',
+            'zona' => 'required',
+            'kota' => 'required',
             'nominalton' => 'required|numeric|gt:0',
             'tglmulaiberlaku' => 'required',
             'tglakhirberlaku' => 'required',
@@ -42,11 +42,8 @@ class StoreTarifRequest extends FormRequest
     public function attributes()
     {
         return [
-            'container_id' => 'Container',
             'tujuanasal' => 'Tujuan Asal',
             'statussistemton' => 'Status Sistem Ton',
-            'zona_id' => 'Zona',
-            'kota_id' => 'Kota',
             'nominalton' => 'Nominal Ton',
             'tglmulaiberlaku' => 'Tanggal Mulai Berlaku',
             'tglakhirberlaku' => 'Tanggal Akhir Berlaku',

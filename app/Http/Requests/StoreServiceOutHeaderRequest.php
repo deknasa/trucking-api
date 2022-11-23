@@ -23,11 +23,33 @@ class StoreServiceOutHeaderRequest extends FormRequest
      */
     public function rules()
     {
-        return [
+        $rules = [
             'tglbukti' => 'required',
-            'trado_id' => 'required',
+            'trado' => 'required',
             'tglkeluar' => 'required',
             'keterangan' => 'required',
+        ];
+        $relatedRequests = [
+            StoreServiceOutDetailRequest::class
+        ];
+
+        foreach ($relatedRequests as $relatedRequest) {
+            $rules = array_merge(
+                $rules,
+                (new $relatedRequest)->rules()
+            );
+        }
+        
+        return $rules;
+    }
+
+    public function attributes()
+    {
+        return [
+            'tglbukti' => 'tanggal bukti',
+            'tglkeluar' => 'tanggal keluar',
+            'servicein_nobukti.*' => 'no bukti service in',
+            'keterangan_detail.*' => 'keterangan detail'
         ];
     }
 }
