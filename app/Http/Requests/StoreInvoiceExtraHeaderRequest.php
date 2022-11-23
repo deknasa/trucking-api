@@ -13,7 +13,7 @@ class StoreInvoiceExtraHeaderRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +24,10 @@ class StoreInvoiceExtraHeaderRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            "agen"=>"required",
+            "pelanggan"=>"required",
+            "keterangan"=>"required",
+            "tglbukti"=>"required",
         ];
     }
 }
