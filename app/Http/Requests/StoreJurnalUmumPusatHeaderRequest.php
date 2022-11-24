@@ -23,8 +23,17 @@ class StoreJurnalUmumPusatHeaderRequest extends FormRequest
      */
     public function rules()
     {
-        $rules = [
-            //
+        return [
+            'periode' => 'required',
+            'approve' => 'required'
         ];
+
+    }
+
+    public function attributes()
+    {
+        return [
+            'approve' => 'Proses Data'
+        ]
     }
 }
