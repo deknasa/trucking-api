@@ -74,8 +74,9 @@ class HariLiburController extends Controller
         } 
     }
     
-    public function show(HariLibur $hariLibur)
+    public function show($id)
     {
+        $hariLibur = HariLibur::where('id',$id)->first();
         return response([
             'status' => true,
             'data' => $hariLibur
@@ -85,11 +86,12 @@ class HariLiburController extends Controller
     /**
      * @ClassName 
      */
-    public function update(StoreHariLiburRequest $request, HariLibur $hariLibur)
+    public function update(StoreHariLiburRequest $request,$id)
     {
         DB::beginTransaction();
 
         try {
+            $hariLibur = HariLibur::findOrFail($id);
             $hariLibur->tgl = date('Y-m-d', strtotime($request->tgl));
             $hariLibur->keterangan = $request->keterangan;
             $hariLibur->statusaktif = $request->statusaktif;
@@ -130,12 +132,13 @@ class HariLiburController extends Controller
      /**
      * @ClassName 
      */
-    public function destroy(HariLibur $hariLibur, Request $request)
+    public function destroy($id, Request $request)
     {
         DB::beginTransaction();
         
         try {
-            $delete = HariLibur::destroy($hariLibur->id);
+            $hariLibur = HariLibur::findOrFail($id);
+            $delete = HariLibur::destroy($id);
             $del = 1;
             if ($delete) {
                 $logTrail = [

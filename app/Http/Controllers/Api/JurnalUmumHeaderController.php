@@ -75,7 +75,7 @@ class JurnalUmumHeaderController extends Controller
             
             $jurnalumum->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $jurnalumum->keterangan = $request->keterangan;
-            $jurnalumum->postingdari = $request->postingdari ?? '';
+            $jurnalumum->postingdari = $request->postingdari ?? 'ENTRY JURNAL UMUM';
             $jurnalumum->statusapproval = $statusApproval->id ?? $request->statusapproval;
             $jurnalumum->userapproval = '';
             $jurnalumum->tglapproval = '';

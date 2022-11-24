@@ -1,7 +1,7 @@
 <?php
 
-namespace App\Http\Controllers;
-
+namespace App\Http\Controllers\Api;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreJurnalUmumPusatDetailRequest;
 use App\Models\JurnalUmumPusatHeader;
 use App\Http\Requests\StoreJurnalUmumPusatHeaderRequest;
@@ -39,19 +39,18 @@ class JurnalUmumPusatHeaderController extends Controller
         DB::BeginTransaction();
         try {
 
-            $jurnalUmumPusat = new JurnalUmumPusatHeader();
+            for ($i = 0; $i < count($request->jurnalId); $i++) {
+                $jurnalUmumPusat = new JurnalUmumPusatHeader();
+                $get = JurnalUmumHeader::where('id', $request->jurnalId[$i])->first();
 
-            for ($i = 0; $i < count($request->jurnalumumId); $i++) {
-                $jurnalUmum = JurnalUmumHeader::where('id', $request->jurnalumumId[$i])->first();
-
-                $jurnalUmumPusat->nobukti = $jurnalUmum->nobukti;
-                $jurnalUmumPusat->tglbukti = $jurnalUmum->tglbukti;
-                $jurnalUmumPusat->keterangan = $jurnalUmum->keterangan;
-                $jurnalUmumPusat->postingdari = $jurnalUmum->postingdari;
-                $jurnalUmumPusat->statusapproval = $jurnalUmum->statusapproval;
-                $jurnalUmumPusat->userapproval = $jurnalUmum->userapproval;
-                $jurnalUmumPusat->tglapproval = $jurnalUmum->tglapproval;
-                $jurnalUmumPusat->statusformat = $jurnalUmum->statusformat;
+                $jurnalUmumPusat->nobukti = $get->nobukti;
+                $jurnalUmumPusat->tglbukti = $get->tglbukti;
+                $jurnalUmumPusat->keterangan = $get->keterangan;
+                $jurnalUmumPusat->postingdari = $get->postingdari;
+                $jurnalUmumPusat->statusapproval = $request->approve;
+                $jurnalUmumPusat->userapproval = auth('api')->user()->name;
+                $jurnalUmumPusat->tglapproval = date('Y-m-d h:i:s');
+                $jurnalUmumPusat->statusformat = $get->statusformat;
                 $jurnalUmumPusat->modifiedby = auth('api')->user()->name;
 
                 $jurnalUmumPusat->save();
@@ -69,11 +68,16 @@ class JurnalUmumPusatHeaderController extends Controller
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
+                $jurnalApprove = JurnalUmumHeader::findOrFail($request->jurnalId[$i]);
+                $jurnalUmumPusat->statusapproval = $request->approve;
+                $jurnalUmumPusat->userapproval = auth('api')->user()->name;
+                $jurnalUmumPusat->tglapproval = date('Y-m-d h:i:s');
+
                 /* Store detail */
-                // $detaillog = [];
+                $detaillog = [];
 
-                $jurnalDetail = JurnalUmumDetail::where('jurnalumum_id', $request->jurnalumumId[$i])->get();
-
+                $jurnalDetail = JurnalUmumDetail::where('jurnalumum_id', $request->jurnalId[$i])->get();
+                
                 foreach ($jurnalDetail as $index => $value) {
                     $datadetail = [
                         'jurnalumumpusat_id' => $jurnalUmumPusat->id,
@@ -128,16 +132,9 @@ class JurnalUmumPusatHeaderController extends Controller
                     app(LogTrailController::class)->store($data);
                 }
             }
-
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
             DB::commit();
-
-            /* Set position and page */
-
-            $selected = $this->getPosition($jurnalUmumPusat, $jurnalUmumPusat->getTable());
-            $jurnalUmumPusat->position = $selected->position;
-            $jurnalUmumPusat->page = ceil($jurnalUmumPusat->position / ($request->limit ?? 10));
 
             return response([
                 'status' => true,

@@ -6,12 +6,14 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Http\Request;
 
 class JurnalUmumPusatHeader extends MyModel
 {
     use HasFactory;
 
     protected $table = 'jurnalumumpusatheader';
+    protected $anothertable = 'jurnalumumheader';
 
     protected $casts = [
         'created_at' => 'date:d-m-Y H:i:s',
@@ -27,25 +29,33 @@ class JurnalUmumPusatHeader extends MyModel
     public function get()
     {
         $this->setRequestParameters();
-
-        $query = DB::table($this->table)
+        $periode = request()->periode;
+        $approve = request()->approve;
+        $month = substr($periode,0,2);
+        $year = substr($periode,3);
+        $query = DB::table('jurnalumumheader')
             ->select(
 
-                'jurnalumumpusatheader.id',
-                'jurnalumumpusatheader.nobukti',
-                'jurnalumumpusatheader.tglbukti',
-                'jurnalumumpusatheader.keterangan',
-                'jurnalumumpusatheader.postingdari',
-                'jurnalumumpusatheader.userapproval',
+                'jurnalumumheader.id',
+                'jurnalumumheader.nobukti',
+                'jurnalumumheader.tglbukti',
+                'jurnalumumheader.keterangan',
+                'jurnalumumheader.postingdari',
+                'jurnalumumheader.userapproval',
                 'statusapproval.text as statusapproval',
-                DB::raw('(case when (year(jurnalumumpusatheader.tglapproval) <= 2000) then null else jurnalumumpusatheader.tglapproval end ) as tglapproval'),
-                'jurnalumumpusatheader.modifiedby',
-                'jurnalumumpusatheader.created_at',
-                'jurnalumumpusatheader.updated_at'
+                'jurnalumumheader.tglapproval',
+                'jurnalumumheader.modifiedby',
+                'jurnalumumheader.created_at',
+                'jurnalumumheader.updated_at'
             )
-            ->leftJoin('parameter as statusapproval', 'jurnalumumpusatheader.statusapproval', 'statusapproval.id');
+            ->leftJoin('parameter as statusapproval', 'jurnalumumheader.statusapproval', 'statusapproval.id')
+            ->where('jurnalumumheader.statusapproval',$approve)
+            ->whereRaw("jurnalumumheader.nobukti not in (select nobukti from jurnalumumpusatheader)")
+            ->whereRaw("MONTH(jurnalumumheader.tglbukti) = $month")
+            ->whereRaw("YEAR(jurnalumumheader.tglbukti) = $year");
+        
 
-       
+        
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
@@ -64,20 +74,20 @@ class JurnalUmumPusatHeader extends MyModel
     {
         return $query->select(
             DB::raw(
-            "$this->table.id,
-            $this->table.nobukti,
-            $this->table.tglbukti,
-            $this->table.keterangan,
-            $this->table.postingdari,
+            "$this->anothertable.id,
+            $this->anothertable.nobukti,
+            $this->anothertable.tglbukti,
+            $this->anothertable.keterangan,
+            $this->anothertable.postingdari,
             'statusapproval.text as statusapproval',
-            $this->table.userapproval,
-            $this->table.tglapproval,
-            $this->table.modifiedby,
-            $this->table.created_at,
-            $this->table.updated_at"
+            $this->anothertable.userapproval,
+            $this->anothertable.tglapproval,
+            $this->anothertable.modifiedby,
+            $this->anothertable.created_at,
+            $this->anothertable.updated_at"
             )
         )
-        ->leftJoin('parameter as statusapproval', 'jurnalumumheader.statusapproval', 'statusapproval.id');
+        ->leftJoin('parameter as statusapproval', 'jurnalumumpusatheader.statusapproval', 'statusapproval.id');
 
     }
 
@@ -113,7 +123,7 @@ class JurnalUmumPusatHeader extends MyModel
 
     public function sort($query)
     {
-        return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        return $query->orderBy($this->anothertable . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
     }
 
     public function filter($query, $relationFields = [])
@@ -125,7 +135,7 @@ class JurnalUmumPusatHeader extends MyModel
                         if ($filters['field'] == 'statusapproval') {
                             $query = $query->where('statusapproval.text', '=', $filters['data']);
                         } else{
-                            $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            $query = $query->where($this->anothertable . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
                     }
 
@@ -135,7 +145,7 @@ class JurnalUmumPusatHeader extends MyModel
                         if ($filters['field'] == 'statusapproval') {
                             $query = $query->orWhere('statusapproval.text', '=', $filters['data']);
                         } else {
-                            $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            $query = $query->orWhere($this->anothertable . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
                     }
 

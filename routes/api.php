@@ -116,10 +116,10 @@
     use App\Http\Controllers\Api\ProsesGajiSupirHeaderController;
     use App\Http\Controllers\Api\ProsesGajiSupirDetailController;
     use App\Http\Controllers\Api\HariLiburController;
-use App\Http\Controllers\Api\PenerimaanGiroDetailController;
-use App\Http\Controllers\Api\PenerimaanGiroHeaderController;
-use App\Http\Controllers\JurnalUmumPusatDetailController;
-use App\Http\Controllers\JurnalUmumPusatHeaderController;
+    use App\Http\Controllers\Api\PenerimaanGiroDetailController;
+    use App\Http\Controllers\Api\PenerimaanGiroHeaderController;
+    use App\Http\Controllers\Api\JurnalUmumPusatDetailController;
+    use App\Http\Controllers\Api\JurnalUmumPusatHeaderController;
 
     /*
     |--------------------------------------------------------------------------
