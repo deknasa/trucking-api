@@ -23,6 +23,7 @@ class CreatePengembaliankasbankheaderTable extends Migration
             $table->date('tglbukti')->default('1900/1/1');
             $table->longText('keterangan')->default('');
             $table->integer('statusjenistransaksi')->Length(11)->default('0');
+            $table->string('pengeluaran_nobukti',50)->default('');
             $table->string('postingdari',50)->default('');
             $table->integer('statusapproval')->Length(11)->default('0');
             $table->string('dibayarke',250)->default('');
@@ -39,10 +40,12 @@ class CreatePengembaliankasbankheaderTable extends Migration
 
             $table->foreign('cabang_id', 'pengembaliankasbankheader_cabang_cabang_id_foreign')->references('id')->on('cabang');
             $table->foreign('bank_id', 'pengembaliankasbankheader_bank_bank_id_foreign')->references('id')->on('bank');            
+            $table->foreign('pengeluaran_nobukti', 'pengembaliankasbankheader_pengeluaranheader_pengeluaran_nobukti_foreign')->references('nobukti')->on('pengeluaranheader');            
         });
 
         DB::statement("ALTER TABLE pengembaliankasbankheader NOCHECK CONSTRAINT pengembaliankasbankheader_cabang_cabang_id_foreign");
         DB::statement("ALTER TABLE pengembaliankasbankheader NOCHECK CONSTRAINT pengembaliankasbankheader_bank_bank_id_foreign");        
+        DB::statement("ALTER TABLE pengembaliankasbankheader NOCHECK CONSTRAINT pengembaliankasbankheader_pengeluaranheader_pengeluaran_nobukti_foreign");        
     }
 
     /**

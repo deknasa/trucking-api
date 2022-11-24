@@ -14,7 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
-
+use Illuminate\Database\QueryException;
 class JenisOrderController extends Controller
 {
     /**
@@ -48,6 +48,7 @@ class JenisOrderController extends Controller
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
 
+            TOP:
             if ($jenisorder->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($jenisorder->getTable()),
@@ -83,7 +84,16 @@ class JenisOrderController extends Controller
                 'status' => true,
                 'message' => 'Berhasil disimpan',
                 'data' => $jenisorder
-            ]);
+            ], 201);
+        } catch (QueryException $queryException) {
+            if (isset($queryException->errorInfo[1]) && is_array($queryException->errorInfo)) {
+                // Check if deadlock
+                if ($queryException->errorInfo[1] === 1205) {
+                    goto TOP;
+                }
+            }
+
+            throw $queryException;
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;

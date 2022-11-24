@@ -15,7 +15,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
-
+use Illuminate\Database\QueryException;
 class KotaController extends Controller
 {
      /**
@@ -56,6 +56,7 @@ class KotaController extends Controller
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
 
+            TOP:
             if ($kota->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($kota->getTable()),
@@ -82,7 +83,16 @@ class KotaController extends Controller
                 'status' => true,
                 'message' => 'Berhasil disimpan',
                 'data' => $kota
-            ]);
+            ], 201);
+        } catch (QueryException $queryException) {
+            if (isset($queryException->errorInfo[1]) && is_array($queryException->errorInfo)) {
+                // Check if deadlock
+                if ($queryException->errorInfo[1] === 1205) {
+                    goto TOP;
+                }
+            }
+
+            throw $queryException;
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
@@ -154,9 +164,8 @@ class KotaController extends Controller
      */
     public function destroy(Kota $kota, Request $request)
     {
-        $delete = $kota->delete();
+        $delete = Kota::destroy($kota->id);
 
-        $del = 1;
         if ($delete) {
             $logTrail = [
                 'namatabel' => strtoupper($kota->getTable()),

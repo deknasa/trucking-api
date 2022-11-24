@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Database\QueryException;
 
 class ContainerController extends Controller
 {
@@ -70,7 +71,7 @@ class ContainerController extends Controller
             $container->keterangan = strtoupper($request->keterangan);
             $container->statusaktif = $request->statusaktif;
             $container->modifiedby = auth('api')->user()->name;
-
+            TOP:
             $container->save();
 
             $datajson = [
@@ -115,7 +116,16 @@ class ContainerController extends Controller
                 'status' => true,
                 'message' => 'Berhasil disimpan',
                 'data' => $container
-            ]);
+            ], 201);
+        } catch (QueryException $queryException) {
+            if (isset($queryException->errorInfo[1]) && is_array($queryException->errorInfo)) {
+                // Check if deadlock
+                if ($queryException->errorInfo[1] === 1205) {
+                    goto TOP;
+                }
+            }
+
+            throw $queryException;
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
