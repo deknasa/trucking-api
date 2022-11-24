@@ -55,7 +55,7 @@ class AgenController extends Controller
             $agen->statusapproval = $statusNonApproval->id;
             $agen->statustas = $request->statustas;
             $agen->jenisemkl = $request->jenisemkl;
-            $agen->tglapproval = date('Y-m-d');
+            $agen->tglapproval = '';
             $agen->modifiedby = auth('api')->user()->name;
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
@@ -103,8 +103,9 @@ class AgenController extends Controller
         }
     }
 
-    public function show(Agen $agen)
+    public function show($id)
     {
+        $agen = Agen::select('agen.*','jenisemkl.keterangan as keteranganjenisemkl')->join('jenisemkl','agen.jenisemkl','jenisemkl.id')->where('agen.id',$id)->first();
         return response([
             'status' => true,
             'data' => $agen

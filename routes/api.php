@@ -118,6 +118,8 @@
     use App\Http\Controllers\Api\HariLiburController;
 use App\Http\Controllers\Api\PenerimaanGiroDetailController;
 use App\Http\Controllers\Api\PenerimaanGiroHeaderController;
+use App\Http\Controllers\JurnalUmumPusatDetailController;
+use App\Http\Controllers\JurnalUmumPusatHeaderController;
 
     /*
     |--------------------------------------------------------------------------
@@ -565,6 +567,11 @@ use App\Http\Controllers\Api\PenerimaanGiroHeaderController;
         
         Route::get('harilibur/field_length', [HariLiburController::class, 'fieldLength']);
         Route::resource('harilibur', HariLiburController::class);
+
+        Route::get('jurnalumumpusatheader/grid', [JurnalUmumPusatHeaderController::class, 'grid']);
+        Route::get('jurnalumumpusatheader/field_length', [JurnalUmumPusatHeaderController::class, 'fieldLength']);
+        Route::resource('jurnalumumpusatheader', JurnalUmumPusatHeaderController::class);
+        Route::resource('jurnalumumpusatdetail', JurnalUmumPusatDetailController::class);
     });
 
     Route::get('gudang/combo', [GudangController::class, 'combo']);

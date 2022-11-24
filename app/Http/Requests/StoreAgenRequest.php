@@ -36,7 +36,7 @@ class StoreAgenRequest extends FormRequest
             "contactperson" => "required",
             "top" => "required|numeric",
             "statustas" => "required",
-            "jenisemkl" => "required",
+            "keteranganjenisemkl" => "required",
         ];
     }
 
@@ -51,7 +51,7 @@ class StoreAgenRequest extends FormRequest
             "nohp" => "no hp",
             "contactperson" => "contact person",
             "statustas" => "status tas",
-            "jenisemkl" => "jenis emkl",
+            "keteranganjenisemkl" => "jenis emkl",
         ];
     }
 }

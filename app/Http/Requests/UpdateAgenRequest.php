@@ -35,7 +35,7 @@ class UpdateAgenRequest extends FormRequest
             "contactperson" => "required",
             "top" => "required",
             "statustas" => "required",
-            "jenisemkl" => "required",
+            "keteranganjenisemkl" => "required",
         ];
     }
 
@@ -50,7 +50,7 @@ class UpdateAgenRequest extends FormRequest
             "nohp" => "no hp",
             "contactperson" => "contact person",
             "statustas" => "status tas",
-            "jenisemkl" => "jenis emkl",
+            "keteranganjenisemkl" => "jenis emkl",
         ];
     }
 }

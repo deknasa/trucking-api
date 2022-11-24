@@ -109,7 +109,7 @@ class JurnalUmumHeaderController extends Controller
                 'namatabel' => strtoupper($jurnalumum->getTable()),
                 'postingdari' => 'ENTRY JURNAL UMUM',
                 'idtrans' => $jurnalumum->id,
-                'nobuktitrans' => $jurnalumum->id,
+                'nobuktitrans' => $jurnalumum->nobukti,
                 'aksi' => 'ENTRY',
                 'datajson' => $jurnalumum->toArray(),
                 'modifiedby' => $jurnalumum->modifiedby
