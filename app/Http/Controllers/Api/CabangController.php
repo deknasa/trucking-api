@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 use App\Http\Controllers\Controller;
-
+use Illuminate\Database\QueryException;
 
 class CabangController extends Controller
 {
@@ -172,6 +172,7 @@ class CabangController extends Controller
             $cabang->statusaktif = $request->statusaktif;
             $cabang->modifiedby = auth('api')->user()->name;
 
+            TOP:
             if ($cabang->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($cabang->getTable()),
@@ -204,6 +205,15 @@ class CabangController extends Controller
                 'message' => 'Berhasil disimpan',
                 'data' => $cabang
             ], 201);
+        } catch (QueryException $queryException) {
+            if (isset($queryException->errorInfo[1]) && is_array($queryException->errorInfo)) {
+                // Check if deadlock
+                if ($queryException->errorInfo[1] === 1205) {
+                    goto TOP;
+                }
+            }
+
+            throw $queryException;            
         } catch (\Throwable $th) {
             DB::rollBack();
 
@@ -273,7 +283,9 @@ class CabangController extends Controller
         DB::beginTransaction();
 
         try {
-            if ($cabang->delete()) {
+            $delete = Cabang::destroy($cabang->id);
+
+            if ($delete) {
                 $logTrail = [
                     'namatabel' => strtoupper($cabang->getTable()),
                     'postingdari' => 'DELETE CABANG',

@@ -9,7 +9,7 @@ use App\Http\Requests\UpdateAbsenTradoRequest;
 use App\Models\AbsenTrado;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-
+use Illuminate\Database\QueryException;
 
 class AbsenTradoController extends Controller
 {
@@ -45,6 +45,7 @@ class AbsenTradoController extends Controller
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
 
+            TOP:
             if ($absenTrado->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($absenTrado->getTable()),
@@ -71,7 +72,16 @@ class AbsenTradoController extends Controller
                 'status' => true,
                 'message' => 'Berhasil disimpan',
                 'data' => $absenTrado
-            ]);
+            ], 201);
+        } catch (QueryException $queryException) {
+            if (isset($queryException->errorInfo[1]) && is_array($queryException->errorInfo)) {
+                // Check if deadlock
+                if ($queryException->errorInfo[1] === 1205) {
+                    goto TOP;
+                }
+            }
+
+            throw $queryException;
         } catch (\Throwable $th) {
             DB::rollBack();
             return response($th->getMessage());
@@ -147,8 +157,7 @@ class AbsenTradoController extends Controller
     public function destroy(AbsenTrado $absenTrado, Request $request)
     {
         DB::beginTransaction();
-
-        $delete = $absenTrado->delete();
+        $delete = AbsenTrado::destroy($absenTrado->id);
 
         if ($delete) {
             $logTrail = [

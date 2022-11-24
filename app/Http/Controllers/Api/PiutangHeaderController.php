@@ -23,6 +23,7 @@ use App\Models\JurnalUmumDetail;
 use App\Models\JurnalUmumHeader;
 use App\Http\Requests\StoreJurnalUmumHeaderRequest;
 use App\Http\Requests\StoreJurnalUmumDetailRequest;
+use Illuminate\Database\QueryException;
 
 class PiutangHeaderController extends Controller
 {
@@ -90,15 +91,8 @@ class PiutangHeaderController extends Controller
                 $piutang->nobukti = $nobukti;
             }
 
-            try {
-                $piutang->save();
-                
-            } catch (\Exception $e) {
-                $errorCode = @$e->errorInfo[1];
-                if ($errorCode == 2601) {
-                    goto TOP;
-                }
-            }
+
+            if (  $piutang->save()) {
 
             $logTrail = [
                 'namatabel' => strtoupper($piutang->getTable()),
@@ -264,6 +258,18 @@ class PiutangHeaderController extends Controller
                 'message' => 'Berhasil disimpan',
                 'data' => $piutang
             ], 201);
+        }
+        } catch (QueryException $queryException) {
+            if (isset($queryException->errorInfo[1]) && is_array($queryException->errorInfo)) {
+                // Check if deadlock
+                if ($queryException->errorInfo[1] === 1205) {
+                    goto TOP;
+                }
+            }
+
+            throw $queryException;
+
+
         } catch (\Throwable $th) {
             DB::rollBack();
 
@@ -288,7 +294,7 @@ class PiutangHeaderController extends Controller
 
         try {
 
-            $piutang = PiutangHeader::findOrFail($id);
+            $piutang = PiutangHeader::lockForUpdate()->findOrFail($id);
 
             $piutang->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $piutang->keterangan = $request->keterangan;
@@ -319,7 +325,7 @@ class PiutangHeaderController extends Controller
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-                PiutangDetail::where('piutang_id', $id)->delete();
+                PiutangDetail::where('piutang_id', $id)->lockForUpdate()->delete();
 
                 /* Store detail */
 
@@ -381,8 +387,8 @@ class PiutangHeaderController extends Controller
 
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
-            JurnalUmumHeader::where('nobukti', $piutang->nobukti)->delete();
-            JurnalUmumDetail::where('nobukti', $piutang->nobukti)->delete();
+            JurnalUmumHeader::where('nobukti', $piutang->nobukti)->lockForUpdate()->delete();
+            JurnalUmumDetail::where('nobukti', $piutang->nobukti)->lockForUpdate()->delete();
 
             $parameterController = new ParameterController;
             $statusApp = $parameterController->getparameterid('STATUS APPROVAL', 'STATUS APPROVAL', 'NON APPROVAL');
@@ -468,16 +474,16 @@ class PiutangHeaderController extends Controller
     {
         DB::beginTransaction();
         $piutang = new PiutangHeader();
-        $piutangs = PiutangHeader::findOrFail($id);
+        $piutangs = PiutangHeader::lockForUpdate()->findOrFail($id);
 
         $nobukti = $piutangs->nobukti;
 
         try {
-            $delete = PiutangDetail::where('piutang_id', $id)->delete();
+            $delete = PiutangDetail::where('piutang_id', $id)->lockForUpdate()->delete();
             $delete = PiutangHeader::destroy($id);
 
-            JurnalUmumHeader::where('nobukti', $piutangs->nobukti)->delete();
-            JurnalUmumDetail::where('nobukti', $piutangs->nobukti)->delete();
+            JurnalUmumHeader::where('nobukti', $piutangs->nobukti)->lockForUpdate()->delete();
+            JurnalUmumDetail::where('nobukti', $piutangs->nobukti)->lockForUpdate()->delete();
 
             if ($delete) {
                 $logTrail = [

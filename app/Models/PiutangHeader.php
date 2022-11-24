@@ -38,6 +38,7 @@ class PiutangHeader extends MyModel
             'piutangheader.invoice_nobukti',
             'piutangheader.modifiedby',
             'piutangheader.updated_at',
+            'piutangheader.created_at',
 
             'agen.namaagen as agen_id'
         )->leftJoin('agen', 'piutangheader.agen_id', 'agen.id');

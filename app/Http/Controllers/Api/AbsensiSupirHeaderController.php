@@ -15,6 +15,8 @@ use App\Models\AbsensiSupirDetail;
 use App\Models\KasGantungDetail;
 use App\Models\KasGantungHeader;
 
+use Illuminate\Database\QueryException;
+
 class AbsensiSupirHeaderController extends Controller
 {
     /**
@@ -86,7 +88,8 @@ class AbsensiSupirHeaderController extends Controller
             $absensiSupirHeader->statusformat = $format->id;
             $absensiSupirHeader->modifiedby = auth('api')->user()->name;
 
-
+            TOP:
+            
             if ($absensiSupirHeader->save()) {
                 /* Store Header LogTrail */
                 $logTrail = [
@@ -206,6 +209,16 @@ class AbsensiSupirHeaderController extends Controller
                 'message' => 'Berhasil disimpan',
                 'data' => $absensiSupirHeader
             ], 201);
+        } catch (QueryException $queryException) {
+            if (isset($queryException->errorInfo[1]) && is_array($queryException->errorInfo)) {
+                // Check if deadlock
+                if ($queryException->errorInfo[1] === 1205) {
+                    goto TOP;
+                }
+            }
+
+            throw $queryException;
+
         } catch (\Throwable $th) {
             DB::rollBack();
 
@@ -231,7 +244,7 @@ class AbsensiSupirHeaderController extends Controller
                 ->first();
 
             /* Store header */
-            $absensiSupirHeader = AbsensiSupirHeader::findOrFail($id);
+            $absensiSupirHeader = AbsensiSupirHeader::lockForUpdate()->findOrFail($id);
             $absensiSupirHeader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $absensiSupirHeader->keterangan = $request->keterangan ?? '';
             $absensiSupirHeader->nominal = array_sum($request->uangjalan);
@@ -253,9 +266,9 @@ class AbsensiSupirHeaderController extends Controller
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-                KasGantungDetail::where('nobukti',$request->kasgantung_nobukti)->delete();
-                KasGantungHeader::where('nobukti',$request->kasgantung_nobukti)->delete();
-                AbsensiSupirDetail::where('absensi_id',$id)->delete();
+                KasGantungDetail::where('nobukti',$request->kasgantung_nobukti)->lockForUpdate()->delete();
+                KasGantungHeader::where('nobukti',$request->kasgantung_nobukti)->lockForUpdate()->delete();
+                AbsensiSupirDetail::where('absensi_id',$id)->lockForUpdate()->delete();
 
                 for ($i = 0; $i < count($request->trado_id); $i++) {
                     /* Store Detail */
@@ -376,10 +389,10 @@ class AbsensiSupirHeaderController extends Controller
         DB::beginTransaction();
         $absensiSupirHeader = new AbsensiSupirHeader();
         try{
-            $get = AbsensiSupirHeader::findOrFail($id);
-            $delete = AbsensiSupirDetail::where('absensi_id',$id)->delete();
-            $delete = KasGantungDetail::where('nobukti',$get->kasgantung_nobukti)->delete();
-            $delete = KasGantungHeader::where('nobukti',$get->kasgantung_nobukti)->delete();
+            $get = AbsensiSupirHeader::lockForUpdate()->findOrFail($id);
+            $delete = AbsensiSupirDetail::where('absensi_id',$id)->lockForUpdate()->delete();
+            $delete = KasGantungDetail::where('nobukti',$get->kasgantung_nobukti)->lockForUpdate()->delete();
+            $delete = KasGantungHeader::where('nobukti',$get->kasgantung_nobukti)->lockForUpdate()->delete();
             $delete = AbsensiSupirHeader::destroy($id);
             
             if ($delete) {
