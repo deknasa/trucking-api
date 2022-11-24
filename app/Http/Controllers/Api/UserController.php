@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-
+use Illuminate\Database\QueryException;
 class UserController extends Controller
 {
     /**
@@ -50,6 +50,7 @@ class UserController extends Controller
             $user->statusaktif = $request->statusaktif;
             $user->modifiedby = auth('api')->user()->name;
 
+            TOP:
             if ($user->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($user->getTable()),
@@ -81,6 +82,16 @@ class UserController extends Controller
                 'message' => 'Berhasil disimpan',
                 'data' => $user
             ], 201);
+        } catch (QueryException $queryException) {
+            if (isset($queryException->errorInfo[1]) && is_array($queryException->errorInfo)) {
+                // Check if deadlock
+                if ($queryException->errorInfo[1] === 1205) {
+                    goto TOP;
+                }
+            }
+
+            throw $queryException;
+
         } catch (\Throwable $th) {
             DB::rollBack();
 

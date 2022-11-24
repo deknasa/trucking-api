@@ -15,7 +15,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
-
+use Illuminate\Database\QueryException;
 class BankPelangganController extends Controller
 {
     
@@ -55,6 +55,7 @@ class BankPelangganController extends Controller
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
 
+            TOP:
             if ($bankpelanggan->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($bankpelanggan->getTable()),
@@ -81,7 +82,17 @@ class BankPelangganController extends Controller
                 'status' => true,
                 'message' => 'Berhasil disimpan',
                 'data' => $bankpelanggan
-            ]);
+            ], 201);
+        } catch (QueryException $queryException) {
+            if (isset($queryException->errorInfo[1]) && is_array($queryException->errorInfo)) {
+                // Check if deadlock
+                if ($queryException->errorInfo[1] === 1205) {
+                    goto TOP;
+                }
+            }
+
+            throw $queryException;
+
         } catch (\Throwable $th) {
             DB::rollBack();
             return response($th->getMessage());

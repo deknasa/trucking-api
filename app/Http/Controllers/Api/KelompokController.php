@@ -14,6 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\QueryException;
 
 class KelompokController extends Controller
 {
@@ -53,6 +54,7 @@ class KelompokController extends Controller
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
 
+            TOP:
             if ($kelompok->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($kelompok->getTable()),
@@ -79,7 +81,16 @@ class KelompokController extends Controller
                 'status' => true,
                 'message' => 'Berhasil disimpan',
                 'data' => $kelompok
-            ]);
+            ], 201);
+        } catch (QueryException $queryException) {
+            if (isset($queryException->errorInfo[1]) && is_array($queryException->errorInfo)) {
+                // Check if deadlock
+                if ($queryException->errorInfo[1] === 1205) {
+                    goto TOP;
+                }
+            }
+
+            throw $queryException;
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
@@ -104,7 +115,7 @@ class KelompokController extends Controller
     public function update(StoreKelompokRequest $request, Kelompok $kelompok)
     {
         try {
-            $kelompok = Kelompok::findOrFail($kelompok->id);
+            $kelompok = Kelompok::lockForUpdate()->findOrFail($kelompok->id);
             $kelompok->kodekelompok = $request->kodekelompok;
             $kelompok->keterangan = $request->keterangan;
             $kelompok->statusaktif = $request->statusaktif;

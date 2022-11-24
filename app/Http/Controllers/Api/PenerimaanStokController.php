@@ -10,6 +10,7 @@ use App\Http\Requests\UpdatePenerimaanStokRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\QueryException;
 
 class PenerimaanStokController extends Controller
 {
@@ -46,6 +47,7 @@ class PenerimaanStokController extends Controller
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
 
+            TOP:
             if ($penerimaanStok->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($penerimaanStok->getTable()),
@@ -76,6 +78,15 @@ class PenerimaanStokController extends Controller
                 'message' => 'Berhasil disimpan',
                 'data' => $penerimaanStok
             ], 201);
+        } catch (QueryException $queryException) {
+            if (isset($queryException->errorInfo[1]) && is_array($queryException->errorInfo)) {
+                // Check if deadlock
+                if ($queryException->errorInfo[1] === 1205) {
+                    goto TOP;
+                }
+            }
+
+            throw $queryException;
         } catch (\Throwable $th) {
             DB::rollBack();
 

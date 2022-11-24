@@ -123,7 +123,7 @@ class SatuanController extends Controller
     public function update(StoreSatuanRequest $request, Satuan $satuan)
     {
         try {
-            $satuan = Satuan::findOrFail($satuan->id);
+            $satuan = Satuan::lockForUpdate()->findOrFail($satuan->id);
             $satuan->satuan = $request->satuan;
             $satuan->statusaktif = $request->statusaktif;
             $satuan->modifiedby = auth('api')->user()->name;

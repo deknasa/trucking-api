@@ -10,6 +10,7 @@ use App\Http\Requests\UpdatePengeluaranStokRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\QueryException;
 
 class PengeluaranStokController extends Controller
 {
@@ -46,6 +47,7 @@ class PengeluaranStokController extends Controller
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
 
+            TOP:
             if ($pengeluaranStok->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($pengeluaranStok->getTable()),
@@ -76,6 +78,15 @@ class PengeluaranStokController extends Controller
                 'message' => 'Berhasil disimpan',
                 'data' => $pengeluaranStok
             ], 201);
+        } catch (QueryException $queryException) {
+            if (isset($queryException->errorInfo[1]) && is_array($queryException->errorInfo)) {
+                // Check if deadlock
+                if ($queryException->errorInfo[1] === 1205) {
+                    goto TOP;
+                }
+            }
+
+            throw $queryException;
         } catch (\Throwable $th) {
             DB::rollBack();
 
@@ -103,7 +114,7 @@ class PengeluaranStokController extends Controller
     {
         DB::beginTransaction();
         try {
-            $pengeluaranStok = PengeluaranStok::where('id',$id)->first();
+            $pengeluaranStok = PengeluaranStok::lockForUpdate()->where('id',$id)->first();
             $pengeluaranStok->kodepengeluaran = $request->kodepengeluaran;
             $pengeluaranStok->keterangan = $request->keterangan;
             $pengeluaranStok->coa = $request->coa;
