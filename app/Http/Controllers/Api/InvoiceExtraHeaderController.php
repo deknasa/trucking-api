@@ -271,11 +271,13 @@ class InvoiceExtraHeaderController extends Controller
                 
                 /* Delete existing detail */
                 $getPiutang = PiutangHeader::where('invoice_nobukti', $invoiceExtraHeader->nobukti)->first();
-
-                JurnalUmumHeader::where('nobukti',$getPiutang->nobukti)->delete();
-                JurnalUmumDetail::where('nobukti',$getPiutang->nobukti)->delete();
-                PiutangHeader::where('invoice_nobukti',$invoiceExtraHeader->nobukti)->delete();
-                PiutangDetail::where('invoice_nobukti',$invoiceExtraHeader->nobukti)->delete();
+                
+                if ($getPiutang) {
+                    JurnalUmumHeader::where('nobukti',$getPiutang->nobukti)->delete();
+                    JurnalUmumDetail::where('nobukti',$getPiutang->nobukti)->delete();
+                    PiutangHeader::where('invoice_nobukti',$invoiceExtraHeader->nobukti)->delete();
+                    PiutangDetail::where('invoice_nobukti',$invoiceExtraHeader->nobukti)->delete();
+                }
                 $penerimaanStokDetail = InvoiceExtraDetail::where('invoiceextra_id',$id)->delete();
                 if ($request->nominal_detail) {
     
