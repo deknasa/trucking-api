@@ -17,6 +17,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\QueryException;
 
 class TarifController extends Controller
 {
@@ -62,7 +63,7 @@ class TarifController extends Controller
             $tarif->tglakhirberlaku = date('Y-m-d', strtotime($request->tglakhirberlaku));
             $tarif->statuspenyesuaianharga = $request->statuspenyesuaianharga;
             $tarif->modifiedby = auth('api')->user()->name;
-
+            TOP:
             if ($tarif->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($tarif->getTable()),
@@ -89,7 +90,16 @@ class TarifController extends Controller
                 'status' => true,
                 'message' => 'Berhasil disimpan',
                 'data' => $tarif
-            ]);
+            ], 201);
+        } catch (QueryException $queryException) {
+            if (isset($queryException->errorInfo[1]) && is_array($queryException->errorInfo)) {
+                // Check if deadlock
+                if ($queryException->errorInfo[1] === 1205) {
+                    goto TOP;
+                }
+            }
+
+            throw $queryException;
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
