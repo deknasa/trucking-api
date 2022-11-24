@@ -52,67 +52,134 @@ class PenerimaanHeader extends MyModel
 
     public function tarikPelunasan($id)
     {
-        if($id != 'null'){
-            $penerimaan = DB::table('penerimaandetail')->select('pelunasanpiutang_nobukti')->where('penerimaan_id',$id)->first();
-            $data = DB::table('pelunasanpiutangheader')->select(DB::raw("pelunasanpiutangdetail.id,pelunasanpiutangheader.nobukti,pelunasanpiutangheader.tglbukti, agen.namaagen as agen_id, cabang.namacabang as cabang_id, (SELECT (SUM(pelunasanpiutangdetail.nominal)) FROM pelunasanpiutangdetail WHERE pelunasanpiutangdetail.nobukti= pelunasanpiutangheader.nobukti) AS nominal"))
-             ->join('pelunasanpiutangdetail','pelunasanpiutangheader.id','pelunasanpiutangdetail.pelunasanpiutang_id')
-             ->join('agen','pelunasanpiutangheader.agen_id','agen.id')
-             ->join('cabang','pelunasanpiutangheader.cabang_id','cabang.id')
-     
-             ->where('pelunasanpiutangheader.nobukti',$penerimaan->pelunasanpiutang_nobukti)
-             ->get();
+        if ($id != 'null') {
+            $penerimaan = DB::table('penerimaandetail')->select('pelunasanpiutang_nobukti')->distinct('pelunasanpiutang_nobukti')->where('penerimaan_id', $id)->get();
+            $data = [];
+            foreach ($penerimaan as $index => $value) {
+                $tbl = substr($value->pelunasanpiutang_nobukti, 0, 3);
+                if ($tbl == 'PPT') {
+                    $pelunasan = DB::table('pelunasanpiutangheader')->select(DB::raw("pelunasanpiutangheader.id,pelunasanpiutangheader.nobukti,pelunasanpiutangheader.tglbukti, pelanggan.namapelanggan as pelanggan, (SELECT (SUM(pelunasanpiutangdetail.nominal)) FROM pelunasanpiutangdetail WHERE pelunasanpiutangdetail.nobukti= pelunasanpiutangheader.nobukti) AS nominal"))
+                        ->distinct("pelunasanpiutangheader.nobukti")
+                        ->join('pelunasanpiutangdetail', 'pelunasanpiutangheader.id', 'pelunasanpiutangdetail.pelunasanpiutang_id')
+                        ->join('pelanggan', 'pelunasanpiutangdetail.pelanggan_id', 'pelanggan.id')
 
-        }else{
-            // $penerimaan =  DB::table('penerimaandetail')->select('pelunasanpiutang_nobukti')->whereRaw('pelunasanpiutang_nobukti IS NOT NULL')->get();
-            // $detail = [];
-            // foreach($penerimaan as $index => $value){
-            //     $tes = [];
-            //     foreach($value as $val){
-            //         $tes = [$val];
-            //         $detail = $tes;
-            //     }
+                        ->where('pelunasanpiutangheader.nobukti', $value->pelunasanpiutang_nobukti)
+                        ->get();
+                        foreach($pelunasan as $index => $value)
+                        {
+                            $data[] = $value;
+                        }
+                } else {
+                    $giro = DB::table('penerimaangiroheader')
+                        ->select(DB::raw("penerimaangiroheader.id,penerimaangiroheader.nobukti,penerimaangiroheader.tglbukti,pelanggan.namapelanggan as pelanggan,penerimaangirodetail.pelunasanpiutang_nobukti, (SELECT (SUM(penerimaangirodetail.nominal)) FROM penerimaangirodetail WHERE penerimaangirodetail.nobukti = penerimaangiroheader.nobukti) AS nominal"))
+                        ->leftJoin('penerimaangirodetail', 'penerimaangirodetail.nobukti', 'penerimaangiroheader.nobukti')
+                        ->leftJoin('pelanggan', 'penerimaangiroheader.pelanggan_id', 'pelanggan.id')
+                        ->where("penerimaangiroheader.nobukti", $value->pelunasanpiutang_nobukti)
+                        ->get();
+                        
+                        foreach($giro as $index => $value)
+                        {
+                            $data[] = $value;
+                        }
+                }
+            }
+            return $data;
 
-            // }
-            // $values = [];
-            // foreach($detail as $value)
-            // {
-            //     $tes = [];
-            //     $tes = [$value];
-            //     $values = $tes;
-            // }
-            $data = DB::table('pelunasanpiutangheader')->select(DB::raw("pelunasanpiutangdetail.id,pelunasanpiutangheader.nobukti,pelunasanpiutangheader.tglbukti, agen.namaagen as agen_id, cabang.namacabang as cabang_id, (SELECT (SUM(pelunasanpiutangdetail.nominal)) FROM pelunasanpiutangdetail WHERE pelunasanpiutangdetail.nobukti= pelunasanpiutangheader.nobukti) AS nominal"))
-             ->join('pelunasanpiutangdetail','pelunasanpiutangheader.id','pelunasanpiutangdetail.pelunasanpiutang_id')
-             ->join('agen','pelunasanpiutangheader.agen_id','agen.id')
-             ->join('cabang','pelunasanpiutangheader.cabang_id','cabang.id')
-            ->whereRaw("pelunasanpiutangheader.nobukti not in (select pelunasanpiutang_nobukti from penerimaandetail)")
-            ->whereRaw("pelunasanpiutangheader.nobukti not in (select pelunasanpiutang_nobukti from penerimaangirodetail)")
-             ->get();
-     
+        } else {
+            $tempPelunasan = $this->createTempPelunasan();
+            $tempGiro = $this->createTempGiro();
+
+            $pelunasan = DB::table("$tempPelunasan as a")
+                ->select(DB::raw("a.nobukti as nobukti, a.id as id,a.tglbukti as tglbukti, a.pelanggan as pelangggan, a.nominal as nominal,null as pelunasanpiutang_nobukti"))
+                ->distinct("a.nobukti")
+                ->join("$tempGiro as B", "a.nobukti", "=", "B.pelunasanpiutang_nobukti", "left outer");
+
+            $giro = DB::table($tempGiro)
+                ->select(DB::raw("nobukti,id,tglbukti,pelanggan,nominal,pelunasanpiutang_nobukti"))
+                
+                ->distinct("nobukti")
+                ->unionAll($pelunasan);
+            $data = $giro->get();
         }
-        
-        return $data;
-
-    }
-    
-    public function getPelunasan($id)
-    {
-        
-       $data = DB::table('pelunasanpiutangdetail')->select('id','nominal','tgljt','keterangan','invoice_nobukti','nobukti')
-        ->where('pelunasanpiutang_id',$id)
-        ->get();
 
         return $data;
+    }
+    public function createTempPelunasan()
+    {
+        $temp = '##tempPelunasan' . rand(1, 10000);
 
+
+        $fetch = DB::table('pelunasanpiutangheader')
+            ->select(DB::raw("pelunasanpiutangheader.id,pelunasanpiutangheader.nobukti,pelunasanpiutangheader.tglbukti,pelanggan.namapelanggan as pelanggan, (SELECT (SUM(pelunasanpiutangdetail.nominal)) FROM pelunasanpiutangdetail WHERE pelunasanpiutangdetail.nobukti = pelunasanpiutangheader.nobukti) AS nominal"))
+            ->join('pelunasanpiutangdetail', 'pelunasanpiutangheader.id', 'pelunasanpiutangdetail.pelunasanpiutang_id')
+            ->join('pelanggan', 'pelunasanpiutangdetail.pelanggan_id', 'pelanggan.id')
+            ->whereRaw("pelunasanpiutangheader.nobukti not in (select pelunasanpiutang_nobukti from penerimaandetail)")
+            ->whereRaw("pelunasanpiutangheader.nobukti not in (select pelunasanpiutang_nobukti from penerimaangirodetail)");
+
+        Schema::create($temp, function ($table) {
+            $table->bigInteger('id');
+            $table->string('nobukti');
+            $table->date('tglbukti')->default('');
+            $table->string('pelanggan');
+            $table->bigInteger('nominal')->default(0);
+        });
+
+        $tes = DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'pelanggan', 'nominal'], $fetch);
+
+        return $temp;
     }
 
-    public function findAll($id) 
+    public function createTempGiro()
     {
-        $data = PenerimaanHeader::select('penerimaanheader.id','penerimaanheader.nobukti','penerimaanheader.tglbukti','penerimaanheader.pelanggan_id','pelanggan.namapelanggan as pelanggan','penerimaanheader.keterangan','penerimaanheader.diterimadari','penerimaanheader.tgllunas','penerimaanheader.cabang_id','cabang.namacabang as cabang','penerimaanheader.statuskas','penerimaanheader.bank_id', 'bank.namabank as bank')
-        ->join('pelanggan','penerimaanheader.pelanggan_id','pelanggan.id')
-        ->join('bank','penerimaanheader.bank_id','bank.id')
-        ->join('cabang','penerimaanheader.cabang_id','cabang.id')
-        ->where('penerimaanheader.id',$id)
-        ->first();
+        $temp = '##tempGiro' . rand(1, 10000);
+
+
+        $fetch = DB::table('penerimaangiroheader')
+            ->select(DB::raw("penerimaangiroheader.id,penerimaangiroheader.nobukti,penerimaangiroheader.tglbukti,pelanggan.namapelanggan as pelanggan,penerimaangirodetail.pelunasanpiutang_nobukti, (SELECT (SUM(penerimaangirodetail.nominal)) FROM penerimaangirodetail WHERE penerimaangirodetail.nobukti = penerimaangiroheader.nobukti) AS nominal"))
+            ->leftJoin('penerimaangirodetail', 'penerimaangirodetail.nobukti', 'penerimaangiroheader.nobukti')
+            ->leftJoin('pelanggan', 'penerimaangiroheader.pelanggan_id', 'pelanggan.id')
+            ->whereRaw("penerimaangiroheader.nobukti not in (select pelunasanpiutang_nobukti from penerimaandetail)")
+            ->whereRaw("penerimaangirodetail.pelunasanpiutang_nobukti != '-'");
+
+        Schema::create($temp, function ($table) {
+            $table->bigInteger('id');
+            $table->string('nobukti');
+            $table->date('tglbukti')->default('');
+            $table->string('pelanggan');
+            $table->string('pelunasanpiutang_nobukti');
+            $table->bigInteger('nominal')->default(0);
+        });
+
+        $tes = DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'pelanggan', 'pelunasanpiutang_nobukti', 'nominal'], $fetch);
+
+        return $temp;
+    }
+
+    public function getPelunasan($id, $table)
+    {
+        if ($table == 'giro') {
+            $data = DB::table('penerimaangirodetail')->select('id', 'nominal', 'tgljatuhtempo as tgljt', 'keterangan', 'invoice_nobukti', 'nobukti')
+                ->where('penerimaangiro_id', $id)
+                ->get();
+        } else {
+            $data = DB::table('pelunasanpiutangdetail')->select('id', 'nominal', 'tgljt', 'keterangan', 'invoice_nobukti', 'nobukti')
+                ->where('pelunasanpiutang_id', $id)
+                ->get();
+        }
+
+
+
+        return $data;
+    }
+
+    public function findAll($id)
+    {
+        $data = PenerimaanHeader::select('penerimaanheader.id', 'penerimaanheader.nobukti', 'penerimaanheader.tglbukti', 'penerimaanheader.pelanggan_id', 'pelanggan.namapelanggan as pelanggan', 'penerimaanheader.keterangan', 'penerimaanheader.diterimadari', 'penerimaanheader.tgllunas', 'penerimaanheader.cabang_id', 'cabang.namacabang as cabang', 'penerimaanheader.statuskas', 'penerimaanheader.bank_id', 'bank.namabank as bank')
+            ->join('pelanggan', 'penerimaanheader.pelanggan_id', 'pelanggan.id')
+            ->join('bank', 'penerimaanheader.bank_id', 'bank.id')
+            ->join('cabang', 'penerimaanheader.cabang_id', 'cabang.id')
+            ->where('penerimaanheader.id', $id)
+            ->first();
 
         return $data;
     }
@@ -186,8 +253,8 @@ class PenerimaanHeader extends MyModel
         $this->sort($query);
         $models = $this->filter($query);
         DB::table($temp)->insertUsing([
-            'id', 'nobukti', 'tglbukti', 'pelanggan_id', 'bank_id','keterangan', 'postingdari', 
-            'diterimadari','tgllunas', 'cabang_id',  'statuskas', 'statusapproval', 'userapproval', 'tglapproval', 'noresi','statusberkas','userberkas', 'tglberkas', 'modifiedby', 'created_at', 'updated_at'
+            'id', 'nobukti', 'tglbukti', 'pelanggan_id', 'bank_id', 'keterangan', 'postingdari',
+            'diterimadari', 'tgllunas', 'cabang_id',  'statuskas', 'statusapproval', 'userapproval', 'tglapproval', 'noresi', 'statusberkas', 'userberkas', 'tglberkas', 'modifiedby', 'created_at', 'updated_at'
         ], $models);
 
 
@@ -238,7 +305,7 @@ class PenerimaanHeader extends MyModel
                             $query = $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'cabang_id') {
                             $query = $query->orWhere('cabang.namacabang', 'LIKE', "%$filters[data]%");
-                        }else {
+                        } else {
                             $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
                     }
@@ -261,27 +328,27 @@ class PenerimaanHeader extends MyModel
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
 
-    public function getRekapPenerimaanHeader($bank,$tglbukti)
-        {
-            $this->setRequestParameters();
-    
-            $query = DB::table($this->table)->select(
-                'penerimaanheader.nobukti',
-                'penerimaanheader.keterangan as keterangan_detail',
-                'penerimaanheader.tglbukti',
-                DB::raw('SUM(penerimaandetail.nominal) AS nominal')
-            )
-            ->where('penerimaanheader.bank_id',$bank)
-            ->where('penerimaanheader.tglbukti',$tglbukti)
+    public function getRekapPenerimaanHeader($bank, $tglbukti)
+    {
+        $this->setRequestParameters();
+
+        $query = DB::table($this->table)->select(
+            'penerimaanheader.nobukti',
+            'penerimaanheader.keterangan as keterangan_detail',
+            'penerimaanheader.tglbukti',
+            DB::raw('SUM(penerimaandetail.nominal) AS nominal')
+        )
+            ->where('penerimaanheader.bank_id', $bank)
+            ->where('penerimaanheader.tglbukti', $tglbukti)
             ->whereRaw(" NOT EXISTS (
                 SELECT penerimaan_nobukti
                 FROM rekappenerimaandetail
                 WHERE penerimaan_nobukti = penerimaanheader.nobukti   
               )")
             ->leftJoin('penerimaandetail', 'penerimaanheader.id', 'penerimaandetail.penerimaan_id')
-            ->groupBy('penerimaanheader.nobukti','penerimaanheader.keterangan' ,'penerimaanheader.tglbukti');
-            $data = $query->get();
-                
-            return $data;
-        }
+            ->groupBy('penerimaanheader.nobukti', 'penerimaanheader.keterangan', 'penerimaanheader.tglbukti');
+        $data = $query->get();
+
+        return $data;
+    }
 }

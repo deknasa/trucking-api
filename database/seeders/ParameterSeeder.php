@@ -178,6 +178,7 @@ class ParameterSeeder extends Seeder
         parameter::create([ 'grp' => 'PENERIMAAN GIRO BUKTI', 'subgrp' => 'PENERIMAAN GIRO BUKTI', 'text' => '#BPGT-M BCA #9999#/#R#/#Y', 'memo' => 'PENERIMAAN GIRO BUKTI', 'type' => '118', 'modifiedby' => 'ADMIN', 'kelompok' => '',]);       
         parameter::create([ 'grp' => 'COA PENERIMAAN GIRO DEBET', 'subgrp' => 'COA PENERIMAAN GIRO DEBET', 'text' => '01.03.03.00', 'memo' => 'COA PENERIMAAN GIRO DEBET', 'type' => '', 'modifiedby' => 'ADMIN', 'kelompok' => 'COA PENERIMAAN GIRO',]);       
         parameter::create([ 'grp' => 'COA PENERIMAAN GIRO KREDIT', 'subgrp' => 'COA PENERIMAAN GIRO KREDIT', 'text' => '01.03.02.02', 'memo' => 'COA PENERIMAAN GIRO KREDIT', 'type' => '', 'modifiedby' => 'ADMIN', 'kelompok' => 'COA PENERIMAAN GIRO',]);       
+        parameter::create([ 'grp' => 'PENGEMBALIAN KASBANK BUKTI', 'subgrp' => 'PENGEMBALIAN KASBANK BUKTI', 'text' => '#PKBT #9999#/#R#/#Y', 'memo' => 'PENGEMBALIAN KASBANK BUKTI', 'type' => '118', 'modifiedby' => 'ADMIN', 'kelompok' => '',]);       
         
 
     }

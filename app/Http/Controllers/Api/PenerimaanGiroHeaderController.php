@@ -109,13 +109,6 @@ class PenerimaanGiroHeaderController extends Controller
             for ($i = 0; $i < count($request->nominal); $i++) {
 
 
-                $invoice = '-';
-                $pelunasanpiutang = '-';
-                if (isset($request->pelunasan_id[$i])) {
-                    $getLunas = DB::table('pelunasanpiutangdetail')->select('invoice_nobukti', 'nobukti')->where('id', $request->pelunasan_id[$i])->first();
-                    $invoice = $getLunas->invoice_nobukti;
-                    $pelunasanpiutang = $getLunas->nobukti;
-                }
                 $datadetail = [
                     'penerimaangiro_id' => $penerimaanGiro->id,
                     'nobukti' => $penerimaanGiro->nobukti,
@@ -127,10 +120,10 @@ class PenerimaanGiroHeaderController extends Controller
                     'keterangan' => $request->keterangan_detail[$i],
                     'bank_id' => $request->bank_id[$i],
                     'pelanggan_id' => $penerimaanGiro->pelanggan_id,
-                    'invoice_nobukti' => $invoice,
+                    'invoice_nobukti' => $request->invoice_nobukti[$i] ?? '-',
                     'bankpelanggan_id' => $request->bankpelanggan_id[$i],
                     'jenisbiaya' => $request->jenisbiaya[$i],
-                    'pelunasanpiutang_nobukti' => $pelunasanpiutang,
+                    'pelunasanpiutang_nobukti' => $request->pelunasanpiutang_nobukti[$i] ?? '-',
                     'bulanbeban' => date('Y-m-d', strtotime($request->bulanbeban[$i])),
                     'modifiedby' => $penerimaanGiro->modifiedby,
                 ];
@@ -160,10 +153,10 @@ class PenerimaanGiroHeaderController extends Controller
                     'keterangan' => $request->keterangan_detail[$i],
                     'bank_id' => $request->bank_id[$i],
                     'pelanggan_id' => $penerimaanGiro->pelanggan_id,
-                    'invoice_nobukti' => $invoice,
+                    'invoice_nobukti' => $request->invoice_nobukti[$i] ?? '-',
                     'bankpelanggan_id' => $request->bankpelanggan_id[$i],
                     'jenisbiaya' => $request->jenisbiaya[$i],
-                    'pelunasanpiutang_nobukti' => $pelunasanpiutang,
+                    'pelunasanpiutang_nobukti' => $request->pelunasanpiutang_nobukti[$i] ?? '-',
                     'bulanbeban' => date('Y-m-d', strtotime($request->bulanbeban[$i])),
                     'modifiedby' => $penerimaanGiro->modifiedby,
                     'created_at' => date('d-m-Y H:i:s', strtotime($penerimaanGiro->created_at)),

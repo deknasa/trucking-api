@@ -67,9 +67,9 @@ class PenerimaanDetailController extends Controller
                     'detail.coadebet',
 
                 )
-                ->leftJoin('penerimaanheader as header','header.id','detail.penerimaan_id')
-                ->leftJoin('bank','bank.id','header.bank_id')
-                ->leftJoin('pelanggan','pelanggan.id','header.pelanggan_id')
+                    ->leftJoin('penerimaanheader as header', 'header.id', 'detail.penerimaan_id')
+                    ->leftJoin('bank', 'bank.id', 'header.bank_id')
+                    ->leftJoin('pelanggan', 'pelanggan.id', 'header.pelanggan_id')
                     ->leftJoin('bank as bd', 'bd.id', '=', 'detail.bank_id')
                     ->leftJoin('pelanggan as pd', 'pd.id', '=', 'detail.pelanggan_id')
                     ->leftJoin('bankpelanggan as bpd', 'bpd.id', '=', 'detail.bankpelanggan_id');
@@ -99,17 +99,16 @@ class PenerimaanDetailController extends Controller
 
                 $penerimaanDetail = $query->get();
             }
-            
+
             $idUser = auth('api')->user()->id;
-            $getuser = User::select('name','cabang.namacabang as cabang_id')
-            ->where('user.id',$idUser)->join('cabang','user.cabang_id','cabang.id')->first();
-           
+            $getuser = User::select('name', 'cabang.namacabang as cabang_id')
+                ->where('user.id', $idUser)->join('cabang', 'user.cabang_id', 'cabang.id')->first();
+
             return response([
                 'data' => $penerimaanDetail,
                 'user' => $getuser,
-                
-            ]);
 
+            ]);
         } catch (\Throwable $th) {
             throw $th;
         }
@@ -118,21 +117,9 @@ class PenerimaanDetailController extends Controller
     public function store(StorePenerimaanDetailRequest $request)
     {
         DB::beginTransaction();
-        $validator = Validator::make($request->all(), [
-            'nominal' => 'required',
-        ], [
-            'nominal.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
-        ], [
-            'nominal' => 'Nominal',
-        ]);
-        if (!$validator->passes()) {
-            return [
-                'error' => true,
-                'errors' => $validator->messages()
-            ];
-        }
 
         try {
+            
             $penerimaanDetail = new PenerimaanDetail();
 
             $penerimaanDetail->penerimaan_id = $request->penerimaan_id;
@@ -142,27 +129,26 @@ class PenerimaanDetailController extends Controller
             $penerimaanDetail->nominal = $request->nominal;
             $penerimaanDetail->coadebet = $request->coadebet;
             $penerimaanDetail->coakredit = $request->coakredit;
-            $penerimaanDetail->keterangan = $request->keterangan ?? '';
+            $penerimaanDetail->keterangan = $request->keterangan;
             $penerimaanDetail->bank_id = $request->bank_id;
-            $penerimaanDetail->bankpelanggan_id = $request->bankpelanggan_id;
-            $penerimaanDetail->invoice_nobukti = $request->invoice_nobukti;
-            $penerimaanDetail->pelunasanpiutang_nobukti = $request->pelunasanpiutang_nobukti;
-            $penerimaanDetail->bankpelanggan_id = $request->bankpelanggan_id;
             $penerimaanDetail->pelanggan_id = $request->pelanggan_id;
+            $penerimaanDetail->invoice_nobukti = $request->invoice_nobukti;
+            $penerimaanDetail->bankpelanggan_id = $request->bankpelanggan_id;
             $penerimaanDetail->jenisbiaya = $request->jenisbiaya;
-            $penerimaanDetail->modifiedby = $request->modifiedby;
-
+            $penerimaanDetail->pelunasanpiutang_nobukti = $request->pelunasanpiutang_nobukti;
+            $penerimaanDetail->bulanbeban = $request->bulanbeban;
+            $penerimaanDetail->modifiedby = auth('api')->user()->name;
+            
             $penerimaanDetail->save();
-
+            
 
             DB::commit();
-            if ($validator->passes()) {
-                return [
-                    'error' => false,
-                    'id' => $penerimaanDetail->id,
-                    'tabel' => $penerimaanDetail->getTable(),
-                ];
-            }
+
+            return [
+                'error' => false,
+                'id' => $penerimaanDetail->id,
+                'tabel' => $penerimaanDetail->getTable(),
+            ];
         } catch (\Throwable $th) {
             DB::rollBack();
             return response($th->getMessage());

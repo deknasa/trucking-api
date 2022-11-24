@@ -534,7 +534,7 @@ use App\Http\Controllers\Api\PenerimaanGiroHeaderController;
         Route::get('penerimaanheader/no_bukti', [PenerimaanHeaderController::class, 'getNoBukti']);
         Route::get('penerimaanheader/combo', [PenerimaanHeaderController::class, 'combo']);
         Route::get('penerimaanheader/{id}/tarikPelunasan', [PenerimaanHeaderController::class, 'tarikPelunasan']);
-        Route::get('penerimaanheader/{id}/getPelunasan', [PenerimaanHeaderController::class, 'getPelunasan']);
+        Route::get('penerimaanheader/{id}/{table}/getPelunasan', [PenerimaanHeaderController::class, 'getPelunasan']);
         Route::get('penerimaanheader/grid', [PenerimaanHeaderController::class, 'grid']);
         Route::resource('penerimaanheader', PenerimaanHeaderController::class);
 
