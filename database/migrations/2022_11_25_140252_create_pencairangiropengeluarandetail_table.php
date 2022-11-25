@@ -32,7 +32,7 @@ class CreatePencairangiropengeluarandetailTable extends Migration
             $table->string('modifiedby',50)->default('');            
             $table->timestamps();
 
-            $table->foreign('pencairangiroppengeluaran_id', 'pencairangiropengeluarandetail_pencairangiroppengeluaranheader_pengeluaran_id_foreign')->references('id')->on('pencairangiropengeluaranheader')->onDelete('cascade');       
+            $table->foreign('pencairangiropengeluaran_id', 'pencairangiropengeluarandetail_pencairangiroppengeluaranheader_pencairangiropengeluaran_id_foreign')->references('id')->on('pencairangiropengeluaranheader')->onDelete('cascade');       
             $table->foreign('alatbayar_id', 'pencairangiropengeluarandetail_alatbayar_id_alatbayar_id_foreign')->references('id')->on('alatbayar');
             $table->foreign('coadebet', 'pencairangiropengeluarandetail_akunpusat_coadebet_foreign')->references('coa')->on('akunpusat');
             $table->foreign('coakredit', 'pencairangiropengeluarandetail_akunpusat_coakredit_foreign')->references('coa')->on('akunpusat');

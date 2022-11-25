@@ -15,7 +15,7 @@ class CreatePencairangiropengeluaranheaderTable extends Migration
     public function up()
     {
 
-        Schema::dropIfExists('pengeluaranheader');
+        Schema::dropIfExists('pencairangiropengeluaranheader');
         
         Schema::create('pencairangiropengeluaranheader', function (Blueprint $table) {
             $table->id();
@@ -30,7 +30,7 @@ class CreatePencairangiropengeluaranheaderTable extends Migration
             $table->string('modifiedby',50)->default('');            
             $table->timestamps();
 
-            $table->foreign('pengeluaran_nobukti', 'pencairangiropengeluaranheader_pengeluaranheader_nobukti_foreign')->references('id')->on('pengeluaranheader');
+            $table->foreign('pengeluaran_nobukti', 'pencairangiropengeluaranheader_pengeluaranheader_nobukti_foreign')->references('nobukti')->on('pengeluaranheader');
         });
 
         DB::statement("ALTER TABLE pencairangiropengeluaranheader NOCHECK CONSTRAINT pencairangiropengeluaranheader_pengeluaranheader_nobukti_foreign");
