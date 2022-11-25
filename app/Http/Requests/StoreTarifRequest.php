@@ -28,11 +28,10 @@ class StoreTarifRequest extends FormRequest
             'container' => 'required',
             'nominal' => 'required|numeric|gt:0',
             'statusaktif' => 'required',
-            'tujuanasal' => 'required',
             'statussistemton' => 'required',
             'zona' => 'required',
             'kota' => 'required',
-            'nominalton' => 'required|numeric|gt:0',
+            'nominalton' => 'integer|min:0',
             'tglmulaiberlaku' => 'required',
             'tglakhirberlaku' => 'required',
             'statuspenyesuaianharga' => 'required',
@@ -42,9 +41,7 @@ class StoreTarifRequest extends FormRequest
     public function attributes()
     {
         return [
-            'tujuanasal' => 'Tujuan Asal',
             'statussistemton' => 'Status Sistem Ton',
-            'nominalton' => 'Nominal Ton',
             'tglmulaiberlaku' => 'Tanggal Mulai Berlaku',
             'tglakhirberlaku' => 'Tanggal Akhir Berlaku',
             'statuspenyesuaianharga' => 'Status Penyesuaian Harga'
@@ -55,7 +52,7 @@ class StoreTarifRequest extends FormRequest
     {
         return [
             'nominal.gt' => 'Nominal Tidak Boleh Kosong dan Harus Lebih Besar Dari 0',
-            'nominalton.gt' => 'Nominal Ton Tidak Boleh Kosong dan Harus Lebih Besar Dari 0'
+            'nominalton.min' => 'Tidak boleh minus. minimal 0',
         ];
     }
 }

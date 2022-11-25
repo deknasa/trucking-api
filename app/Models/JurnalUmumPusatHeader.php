@@ -29,8 +29,15 @@ class JurnalUmumPusatHeader extends MyModel
     public function get()
     {
         $this->setRequestParameters();
-        $periode = request()->periode;
-        $approve = request()->approve;
+        $periode = request()->periode ?? date('m-Y');
+        $approve = request()->approve ?? 0;
+        $approval = 0;
+        if($approve == 3) {
+            $approval = 4;
+        }
+        if($approve == 4){
+            $approval = 3;
+        }
         $month = substr($periode,0,2);
         $year = substr($periode,3);
         $query = DB::table('jurnalumumheader')
@@ -49,8 +56,7 @@ class JurnalUmumPusatHeader extends MyModel
                 'jurnalumumheader.updated_at'
             )
             ->leftJoin('parameter as statusapproval', 'jurnalumumheader.statusapproval', 'statusapproval.id')
-            ->where('jurnalumumheader.statusapproval',$approve)
-            ->whereRaw("jurnalumumheader.nobukti not in (select nobukti from jurnalumumpusatheader)")
+            ->where('jurnalumumheader.statusapproval',$approval)
             ->whereRaw("MONTH(jurnalumumheader.tglbukti) = $month")
             ->whereRaw("YEAR(jurnalumumheader.tglbukti) = $year");
         
