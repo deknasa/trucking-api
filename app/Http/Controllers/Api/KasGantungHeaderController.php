@@ -25,6 +25,7 @@ use App\Http\Requests\StoreJurnalUmumHeaderRequest;
 use App\Http\Requests\StoreJurnalUmumDetailRequest;
 use App\Http\Requests\StorePengeluaranHeaderRequest;
 use App\Http\Requests\StorePengeluaranDetailRequest;
+use Illuminate\Database\QueryException;
 
 class KasGantungHeaderController extends Controller
 {
@@ -81,14 +82,14 @@ class KasGantungHeaderController extends Controller
                 $kasgantungHeader->nobukti = $request->nobukti;
             }
 
-            $kasgantungHeader->tglbukti = date('Y-m-d', strtotime($request->tglbukti)) ?? '';
+            $kasgantungHeader->tglbukti = date('Y-m-d', strtotime($request->tglbukti)) ?? '1900/1/1';
             $kasgantungHeader->penerima_id = $request->penerima_id ?? '';
             $kasgantungHeader->keterangan = $request->keterangan ?? '';
             $kasgantungHeader->bank_id = $request->bank_id ?? 0;
             $kasgantungHeader->pengeluaran_nobukti = $request->pengeluaran_nobukti ?? '';
             $kasgantungHeader->coakaskeluar = $bank->coa ?? '';
             $kasgantungHeader->postingdari = $request->postingdari ?? 'ENTRY KAS GANTUNG';
-            $kasgantungHeader->tglkaskeluar = date('Y-m-d', strtotime($request->tglkaskeluar)) ?? '';
+            $kasgantungHeader->tglkaskeluar = date('Y-m-d', strtotime($request->tglkaskeluar)) ?? '1900/1/1';
             $kasgantungHeader->modifiedby = auth('api')->user()->name;
             $kasgantungHeader->statusformat = $format->id ?? $request->statusformat;
             
@@ -344,8 +345,17 @@ class KasGantungHeaderController extends Controller
                 'status' => true,
                 'message' => 'Berhasil disimpan',
                 'data' => $kasgantungHeader
-            ]);
+            ], 201);
             
+        } catch (QueryException $queryException) {
+            if (isset($queryException->errorInfo[1]) && is_array($queryException->errorInfo)) {
+                // Check if deadlock
+                if ($queryException->errorInfo[1] === 1205) {
+                    goto TOP;
+                }
+            }
+
+            throw $queryException;            
         } catch (\Throwable $th) {
             DB::rollBack();
             return response($th->getMessage());
@@ -375,10 +385,10 @@ class KasGantungHeaderController extends Controller
 
         try {
 
-            $bank = Bank::findOrFail($request->bank_id);
+            $bank = Bank::lockForUpdate()->findOrFail($request->bank_id);
 
             /* Store header */
-            $kasgantungHeader = KasGantungHeader::findOrFail($id);
+            $kasgantungHeader = KasGantungHeader::lockForUpdate()->findOrFail($id);
             $kasgantungHeader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $kasgantungHeader->penerima_id = $request->penerima_id;
             $kasgantungHeader->keterangan = $request->keterangan ?? '';
@@ -407,11 +417,11 @@ class KasGantungHeaderController extends Controller
             
             
             /* Delete existing detail */
-            $kasgantungHeader->kasgantungDetail()->delete();
-            PengeluaranDetail::where('nobukti',$request->pengeluaran_nobukti)->delete();
-            PengeluaranHeader::where('nobukti',$request->pengeluaran_nobukti)->delete();
-            JurnalUmumDetail::where('nobukti',$request->pengeluaran_nobukti)->delete();
-            JurnalUmumHeader::where('nobukti',$request->pengeluaran_nobukti)->delete();
+            $kasgantungHeader->kasgantungDetail()->lockForUpdate()->delete();
+            PengeluaranDetail::where('nobukti',$request->pengeluaran_nobukti)->lockForUpdate()->delete();
+            PengeluaranHeader::where('nobukti',$request->pengeluaran_nobukti)->lockForUpdate()->delete();
+            JurnalUmumDetail::where('nobukti',$request->pengeluaran_nobukti)->lockForUpdate()->delete();
+            JurnalUmumHeader::where('nobukti',$request->pengeluaran_nobukti)->lockForUpdate()->delete();
 
             /* Store detail */
             $detaillog=[];
@@ -597,13 +607,13 @@ class KasGantungHeaderController extends Controller
         DB::beginTransaction();
 
         try {
-            $get = KasGantungHeader::findOrFail($id);
+            $get = KasGantungHeader::lockForUpdate()->findOrFail($id);
 
-            $delete = PengeluaranDetail::where('nobukti',$get->pengeluaran_nobukti)->delete();
-            $delete = PengeluaranHeader::where('nobukti',$get->pengeluaran_nobukti)->delete();
-            $delete = JurnalUmumDetail::where('nobukti',$get->pengeluaran_nobukti)->delete();
-            $delete = JurnalUmumHeader::where('nobukti',$get->pengeluaran_nobukti)->delete();
-            $delete = KasGantungDetail::where('kasgantung_id',$id)->delete();
+            $delete = PengeluaranDetail::where('nobukti',$get->pengeluaran_nobukti)->lockForUpdate()->delete();
+            $delete = PengeluaranHeader::where('nobukti',$get->pengeluaran_nobukti)->lockForUpdate()->delete();
+            $delete = JurnalUmumDetail::where('nobukti',$get->pengeluaran_nobukti)->lockForUpdate()->delete();
+            $delete = JurnalUmumHeader::where('nobukti',$get->pengeluaran_nobukti)->lockForUpdate()->delete();
+            $delete = KasGantungDetail::where('kasgantung_id',$id)->lockForUpdate()->delete();
             $delete = KasGantungHeader::destroy($id);
             
             $datalogtrail = [

@@ -50,7 +50,7 @@ class KasGantungHeader extends MyModel
             'bank.namabank as bank_id',
             'kasgantungheader.pengeluaran_nobukti',
             'kasgantungheader.coakaskeluar',
-            'kasgantungheader.tglkaskeluar',
+            db::raw("(case when year(isnull(kasgantungheader.tglkaskeluar,'1900/1/1'))=1900 then null else kasgantungheader.tglkaskeluar end) as tglkaskeluar"),
             'kasgantungheader.postingdari',
             'kasgantungheader.modifiedby',
             'kasgantungheader.created_at',

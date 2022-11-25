@@ -63,9 +63,9 @@ class KasGantungDetailController extends Controller
                     'detail.coa',
                     'detail.kasgantung_id'
                 )
-                    ->join('kasgantungheader as header', 'header.id', 'detail.kasgantung_id')
-                    ->join('penerima','header.penerima_id','penerima.id')
-                    ->join('bank','header.bank_id','bank.id');
+                    ->leftjoin('kasgantungheader as header', 'header.id', 'detail.kasgantung_id')
+                    ->leftjoin('penerima','header.penerima_id','penerima.id')
+                    ->leftjoin('bank','header.bank_id','bank.id');
 
                 $kasgantungDetail = $query->get();
             } else {
@@ -75,7 +75,7 @@ class KasGantungDetailController extends Controller
                     'detail.nominal',
                     'detail.nobukti',
                     'akunpusat.keterangancoa as coa',
-                )->join('akunpusat','detail.coa','akunpusat.coa');
+                )->leftjoin('akunpusat','detail.coa','akunpusat.coa');
                 $kasgantungDetail = $query->get();
             }
             $idUser = auth('api')->user()->id;
@@ -116,7 +116,6 @@ class KasGantungDetailController extends Controller
                 'errors' => $validator->messages()
             ];
         }
-
         try {
             $kasgantungDetail = new KasGantungDetail();
             $entriluar = $request->entriluar ?? 0;
@@ -125,7 +124,7 @@ class KasGantungDetailController extends Controller
             $kasgantungDetail->nobukti = $request->nobukti;
             $kasgantungDetail->nominal = $request->nominal;
             $kasgantungDetail->coa = $request->coa ?? '';
-            $kasgantungDetail->keterangan = $request->keterangan ?? '';
+            $kasgantungDetail->keterangan = $request->keterangan_detail ?? '';
             $kasgantungDetail->modifiedby = $request->modifiedby;
             $kasgantungDetail->save();
 

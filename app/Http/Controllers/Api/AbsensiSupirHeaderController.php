@@ -165,7 +165,7 @@ class AbsensiSupirHeaderController extends Controller
                     'pengeluaran_nobukti' => '',
                     'coakaskeluar' => '',
                     'postingdari' => 'ENTRY ABSENSI SUPIR',
-                    'tglkaskeluar' => '',
+                    'tglkaskeluar' => '1900/1/1',
                     'statusformat' => $format->id,
                     'modifiedby' => auth('api')->user()->name
                 ];
@@ -185,7 +185,6 @@ class AbsensiSupirHeaderController extends Controller
                         $kasGantungDetail[] = $detail;
                     }
                     
-
                     $kasGantung = $this->storeKasGantung($kasGantungHeader,$kasGantungDetail);
                    
                    
@@ -330,7 +329,7 @@ class AbsensiSupirHeaderController extends Controller
                     'pengeluaran_nobukti' => '',
                     'coakaskeluar' => '',
                     'postingdari' => 'ENTRY ABSENSI SUPIR',
-                    'tglkaskeluar' => '',
+                    'tglkaskeluar' => '1900/1/1',
                     'statusformat' => $format->id,
                     'modifiedby' => auth('api')->user()->name
                 ];
@@ -349,7 +348,6 @@ class AbsensiSupirHeaderController extends Controller
                         ];
                         $kasGantungDetail[] = $detail;
                     }
-                    
 
                     $kasGantung = $this->storeKasGantung($kasGantungHeader,$kasGantungDetail);
                    
@@ -442,7 +440,7 @@ class AbsensiSupirHeaderController extends Controller
     {
         try {
 
-            
+          
             $kasGantung = new StoreKasGantungHeaderRequest($kasGantungHeader);
             $header = app(KasGantungHeaderController::class)->store($kasGantung);
            
