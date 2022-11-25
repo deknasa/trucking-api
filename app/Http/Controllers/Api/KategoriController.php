@@ -15,7 +15,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
-
+use Illuminate\Database\QueryException;
 class KategoriController extends Controller
 {
       /**
@@ -55,6 +55,7 @@ class KategoriController extends Controller
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
 
+            TOP:
             if ($kategori->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($kategori->getTable()),
@@ -86,7 +87,16 @@ class KategoriController extends Controller
                 'status' => true,
                 'message' => 'Berhasil disimpan',
                 'data' => $kategori
-            ]);
+            ], 201);
+        } catch (QueryException $queryException) {
+            if (isset($queryException->errorInfo[1]) && is_array($queryException->errorInfo)) {
+                // Check if deadlock
+                if ($queryException->errorInfo[1] === 1205) {
+                    goto TOP;
+                }
+            }
+
+            throw $queryException;
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
@@ -112,7 +122,7 @@ class KategoriController extends Controller
     public function update(StoreKategoriRequest $request, Kategori $kategori)
     {
         try {
-            $kategori = Kategori::findOrFail($kategori->id);
+            $kategori = Kategori::lockForUpdate()->findOrFail($kategori->id);
             $kategori->kodekategori = $request->kodekategori;
             $kategori->keterangan = $request->keterangan;
             $kategori->subkelompok_id = $request->subkelompok_id;

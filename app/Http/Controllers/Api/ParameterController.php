@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
-
+use Illuminate\Database\QueryException;
 class ParameterController extends Controller
 {
     /**
@@ -54,6 +54,7 @@ class ParameterController extends Controller
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
 
+            TOP:
             if ($parameter->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($parameter->getTable()),
@@ -84,6 +85,16 @@ class ParameterController extends Controller
                 'message' => 'Berhasil disimpan',
                 'data' => $parameter
             ], 201);
+        } catch (QueryException $queryException) {
+            if (isset($queryException->errorInfo[1]) && is_array($queryException->errorInfo)) {
+                // Check if deadlock
+                if ($queryException->errorInfo[1] === 1205) {
+                    goto TOP;
+                }
+            }
+
+            throw $queryException;
+
         } catch (\Throwable $th) {
             DB::rollBack();
 

@@ -24,7 +24,6 @@ class KasGantungDetail extends MyModel
     ]; 
 
     public function find($id) {
-      
         $query = DB::table('kasgantungdetail')->select(
             'keterangan',
             'nominal',

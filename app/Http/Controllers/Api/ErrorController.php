@@ -11,7 +11,7 @@ use App\Models\Error;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-
+use Illuminate\Database\QueryException;
 class ErrorController extends Controller
 {
     /**
@@ -42,6 +42,7 @@ class ErrorController extends Controller
             $error->keterangan = $request->keterangan;
             $error->modifiedby = auth('api')->user()->name;
 
+            TOP:
             if ($error->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($error->getTable()),
@@ -69,6 +70,15 @@ class ErrorController extends Controller
                 'message' => 'Berhasil disimpan',
                 'data' => $error
             ], 201);
+        } catch (QueryException $queryException) {
+            if (isset($queryException->errorInfo[1]) && is_array($queryException->errorInfo)) {
+                // Check if deadlock
+                if ($queryException->errorInfo[1] === 1205) {
+                    goto TOP;
+                }
+            }
+
+            throw $queryException;
         } catch (\Throwable $th) {
             DB::rollBack();
             return response($th->getMessage());

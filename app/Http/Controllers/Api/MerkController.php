@@ -14,6 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\QueryException;
 
 class MerkController extends Controller
 {
@@ -53,6 +54,7 @@ class MerkController extends Controller
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
 
+            TOP:
             if ($merk->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($merk->getTable()),
@@ -79,7 +81,16 @@ class MerkController extends Controller
                 'status' => true,
                 'message' => 'Berhasil disimpan',
                 'data' => $merk
-            ]);
+            ], 201);
+        } catch (QueryException $queryException) {
+            if (isset($queryException->errorInfo[1]) && is_array($queryException->errorInfo)) {
+                // Check if deadlock
+                if ($queryException->errorInfo[1] === 1205) {
+                    goto TOP;
+                }
+            }
+
+            throw $queryException;
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
@@ -104,7 +115,7 @@ class MerkController extends Controller
     public function update(StoreMerkRequest $request, Merk $merk)
     {
         try {
-            $merk = Merk::findOrFail($merk->id);
+            $merk = Merk::lockForUpdate()->findOrFail($merk->id);
             $merk->kodemerk = $request->kodemerk;
             $merk->keterangan = $request->keterangan;
             $merk->statusaktif = $request->statusaktif;

@@ -10,6 +10,8 @@ use App\Http\Requests\UpdateSubKelompokRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\QueryException;
+
 
 class SubKelompokController extends Controller
 {
@@ -55,6 +57,7 @@ class SubKelompokController extends Controller
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
 
+            TOP:
             if ($subKelompok->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($subKelompok->getTable()),
@@ -81,7 +84,16 @@ class SubKelompokController extends Controller
                 'status' => true,
                 'message' => 'Berhasil disimpan',
                 'data' => $subKelompok
-            ]);
+            ], 201);
+        } catch (QueryException $queryException) {
+            if (isset($queryException->errorInfo[1]) && is_array($queryException->errorInfo)) {
+                // Check if deadlock
+                if ($queryException->errorInfo[1] === 1205) {
+                    goto TOP;
+                }
+            }
+
+            throw $queryException;
         } catch (\Throwable $th) {
             DB::rollBack();
 

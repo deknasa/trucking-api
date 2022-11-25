@@ -14,6 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\QueryException;
 
 class GudangController extends Controller
 {
@@ -158,6 +159,7 @@ class GudangController extends Controller
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
 
+            TOP:
             if ($gudang->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($gudang->getTable()),
@@ -194,7 +196,16 @@ class GudangController extends Controller
                 'status' => true,
                 'message' => 'Berhasil disimpan',
                 'data' => $gudang
-            ]);
+            ], 201);
+        } catch (QueryException $queryException) {
+            if (isset($queryException->errorInfo[1]) && is_array($queryException->errorInfo)) {
+                // Check if deadlock
+                if ($queryException->errorInfo[1] === 1205) {
+                    goto TOP;
+                }
+            }
+
+            throw $queryException;
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
@@ -219,7 +230,7 @@ class GudangController extends Controller
     public function update(StoreGudangRequest $request, Gudang $gudang)
     {
         try {
-            $gudang = Gudang::findOrFail($gudang->id);
+            $gudang = Gudang::lockForUpdate()->findOrFail($gudang->id);
             $gudang->gudang = $request->gudang;
             $gudang->statusaktif = $request->statusaktif;
             $gudang->modifiedby = auth('api')->user()->name;
