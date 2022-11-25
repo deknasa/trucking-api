@@ -131,9 +131,9 @@ class Parameter extends MyModel
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'type') {
-                            $query = $query->where('B.grp', 'LIKE', "%$filters[data]%");
+                            $query = $query->where('B.grp', '=', "$filters[data]");
                         } else{
-                            $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            $query = $query->where($this->table . '.' . $filters['field'], '=', "$filters[data]");
                         }
                     }
 

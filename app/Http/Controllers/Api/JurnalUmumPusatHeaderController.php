@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers\Api;
+
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreJurnalUmumPusatDetailRequest;
 use App\Models\JurnalUmumPusatHeader;
@@ -39,97 +40,134 @@ class JurnalUmumPusatHeaderController extends Controller
         DB::BeginTransaction();
         try {
 
-            for ($i = 0; $i < count($request->jurnalId); $i++) {
-                $jurnalUmumPusat = new JurnalUmumPusatHeader();
-                $get = JurnalUmumHeader::where('id', $request->jurnalId[$i])->first();
+            if ($request->approve == 3) {
 
-                $jurnalUmumPusat->nobukti = $get->nobukti;
-                $jurnalUmumPusat->tglbukti = $get->tglbukti;
-                $jurnalUmumPusat->keterangan = $get->keterangan;
-                $jurnalUmumPusat->postingdari = $get->postingdari;
-                $jurnalUmumPusat->statusapproval = $request->approve;
-                $jurnalUmumPusat->userapproval = auth('api')->user()->name;
-                $jurnalUmumPusat->tglapproval = date('Y-m-d h:i:s');
-                $jurnalUmumPusat->statusformat = $get->statusformat;
-                $jurnalUmumPusat->modifiedby = auth('api')->user()->name;
+                for ($i = 0; $i < count($request->jurnalId); $i++) {
 
-                $jurnalUmumPusat->save();
+                    $jurnalUmumPusat = new JurnalUmumPusatHeader();
+                    $get = JurnalUmumHeader::where('id', $request->jurnalId[$i])->first();
 
-                $logTrail = [
-                    'namatabel' => strtoupper($jurnalUmumPusat->getTable()),
-                    'postingdari' => 'ENTRY JURNAL UMUM PUSAT HEADER',
-                    'idtrans' => $jurnalUmumPusat->id,
-                    'nobuktitrans' => $jurnalUmumPusat->nobukti,
-                    'aksi' => 'ENTRY',
-                    'datajson' => $jurnalUmumPusat->toArray(),
-                    'modifiedby' => $jurnalUmumPusat->modifiedby
-                ];
+                    $jurnalUmumPusat->nobukti = $get->nobukti;
+                    $jurnalUmumPusat->tglbukti = $get->tglbukti;
+                    $jurnalUmumPusat->keterangan = $get->keterangan;
+                    $jurnalUmumPusat->postingdari = $get->postingdari;
+                    $jurnalUmumPusat->statusapproval = $request->approve;
+                    $jurnalUmumPusat->userapproval = auth('api')->user()->name;
+                    $jurnalUmumPusat->tglapproval = date('Y-m-d h:i:s');
+                    $jurnalUmumPusat->statusformat = $get->statusformat;
+                    $jurnalUmumPusat->modifiedby = auth('api')->user()->name;
 
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+                    $jurnalUmumPusat->save();
 
-                $jurnalApprove = JurnalUmumHeader::findOrFail($request->jurnalId[$i]);
-                $jurnalUmumPusat->statusapproval = $request->approve;
-                $jurnalUmumPusat->userapproval = auth('api')->user()->name;
-                $jurnalUmumPusat->tglapproval = date('Y-m-d h:i:s');
-
-                /* Store detail */
-                $detaillog = [];
-
-                $jurnalDetail = JurnalUmumDetail::where('jurnalumum_id', $request->jurnalId[$i])->get();
-                
-                foreach ($jurnalDetail as $index => $value) {
-                    $datadetail = [
-                        'jurnalumumpusat_id' => $jurnalUmumPusat->id,
-                        'nobukti' => $jurnalUmumPusat->nobukti,
-                        'tglbukti' => $jurnalUmumPusat->tglbukti,
-                        'coa' => $value->coa,
-                        'nominal' => $value->nominal,
-                        'keterangan' => $value->keterangan,
-                        'modifiedby' => $jurnalUmumPusat->modifiedby,
-                        'baris' => $value->baris,
-                    ];
-
-                    //STORE 
-                    $data = new StoreJurnalUmumPusatDetailRequest($datadetail);
-
-                    $datadetails = app(JurnalUmumPusatDetailController::class)->store($data);
-
-                    if ($datadetails['error']) {
-                        return response($datadetails, 422);
-                    } else {
-                        $iddetail = $datadetails['id'];
-                        $tabeldetail = $datadetails['tabel'];
-                    }
-
-                    $datadetaillog = [
-                        'id' => $iddetail,
-                        'jurnalumumpusat_id' => $jurnalUmumPusat->id,
-                        'nobukti' => $jurnalUmumPusat->nobukti,
-                        'tglbukti' => $jurnalUmumPusat->tglbukti,
-                        'coa' => $value->coa,
-                        'nominal' => $value->nominal,
-                        'keterangan' => $value->keterangan,
-                        'modifiedby' => $jurnalUmumPusat->modifiedby,
-                        'created_at' => date('d-m-Y H:i:s', strtotime($jurnalUmumPusat->created_at)),
-                        'updated_at' => date('d-m-Y H:i:s', strtotime($jurnalUmumPusat->updated_at)),
-                        'baris' => $value->baris,
-                    ];
-
-                    $detaillog[] = $datadetaillog;
-
-                    $datalogtrail = [
-                        'namatabel' => $tabeldetail,
-                        'postingdari' => 'ENTRY JURNAL UMUM PUSAT DETAIL',
-                        'idtrans' =>  $iddetail,
+                    $logTrail = [
+                        'namatabel' => strtoupper($jurnalUmumPusat->getTable()),
+                        'postingdari' => 'ENTRY JURNAL UMUM PUSAT HEADER',
+                        'idtrans' => $jurnalUmumPusat->id,
                         'nobuktitrans' => $jurnalUmumPusat->nobukti,
                         'aksi' => 'ENTRY',
-                        'datajson' => $detaillog,
-                        'modifiedby' => $request->modifiedby,
+                        'datajson' => $jurnalUmumPusat->toArray(),
+                        'modifiedby' => $jurnalUmumPusat->modifiedby
                     ];
 
-                    $data = new StoreLogTrailRequest($datalogtrail);
-                    app(LogTrailController::class)->store($data);
+                    $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                    $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+
+                    $jurnalApprove = JurnalUmumHeader::findOrFail($request->jurnalId[$i]);
+                    $jurnalApprove->statusapproval = $request->approve;
+                    $jurnalApprove->userapproval = auth('api')->user()->name;
+                    $jurnalApprove->tglapproval = date('Y-m-d h:i:s');
+
+                    $jurnalApprove->save();
+                    /* Store detail */
+                    $detaillog = [];
+
+                    $jurnalDetail = JurnalUmumDetail::where('jurnalumum_id', $request->jurnalId[$i])->get();
+
+                    foreach ($jurnalDetail as $index => $value) {
+                        $datadetail = [
+                            'jurnalumumpusat_id' => $jurnalUmumPusat->id,
+                            'nobukti' => $jurnalUmumPusat->nobukti,
+                            'tglbukti' => $jurnalUmumPusat->tglbukti,
+                            'coa' => $value->coa,
+                            'nominal' => $value->nominal,
+                            'keterangan' => $value->keterangan,
+                            'modifiedby' => $jurnalUmumPusat->modifiedby,
+                            'baris' => $value->baris,
+                        ];
+
+                        //STORE 
+                        $data = new StoreJurnalUmumPusatDetailRequest($datadetail);
+
+                        $datadetails = app(JurnalUmumPusatDetailController::class)->store($data);
+
+                        if ($datadetails['error']) {
+                            return response($datadetails, 422);
+                        } else {
+                            $iddetail = $datadetails['id'];
+                            $tabeldetail = $datadetails['tabel'];
+                        }
+
+                        $datadetaillog = [
+                            'id' => $iddetail,
+                            'jurnalumumpusat_id' => $jurnalUmumPusat->id,
+                            'nobukti' => $jurnalUmumPusat->nobukti,
+                            'tglbukti' => $jurnalUmumPusat->tglbukti,
+                            'coa' => $value->coa,
+                            'nominal' => $value->nominal,
+                            'keterangan' => $value->keterangan,
+                            'modifiedby' => $jurnalUmumPusat->modifiedby,
+                            'created_at' => date('d-m-Y H:i:s', strtotime($jurnalUmumPusat->created_at)),
+                            'updated_at' => date('d-m-Y H:i:s', strtotime($jurnalUmumPusat->updated_at)),
+                            'baris' => $value->baris,
+                        ];
+
+                        $detaillog[] = $datadetaillog;
+
+                        $datalogtrail = [
+                            'namatabel' => $tabeldetail,
+                            'postingdari' => 'ENTRY JURNAL UMUM PUSAT DETAIL',
+                            'idtrans' =>  $iddetail,
+                            'nobuktitrans' => $jurnalUmumPusat->nobukti,
+                            'aksi' => 'ENTRY',
+                            'datajson' => $detaillog,
+                            'modifiedby' => $request->modifiedby,
+                        ];
+
+                        $data = new StoreLogTrailRequest($datalogtrail);
+                        app(LogTrailController::class)->store($data);
+                    }
+                }
+            } else {
+
+                for ($i = 0; $i < count($request->jurnalId); $i++) {
+
+                    $get = JurnalUmumHeader::where('id', $request->jurnalId[$i])->first();
+                    $jurnalUmumPusat = JurnalUmumPusatHeader::where('nobukti',$get->nobukti)->first();
+                    if($jurnalUmumPusat != null) {
+                        JurnalUmumPusatHeader::destroy($jurnalUmumPusat->id);
+                        JurnalUmumPusatDetail::where('jurnalumumpusat_id', $jurnalUmumPusat->id)->delete();
+
+                        $logTrail = [
+                            'namatabel' => strtoupper($jurnalUmumPusat->getTable()),
+                            'postingdari' => 'DELETE JURNAL UMUM PUSAT HEADER',
+                            'idtrans' => $jurnalUmumPusat->id,
+                            'nobuktitrans' => $jurnalUmumPusat->nobukti,
+                            'aksi' => 'DELETE',
+                            'datajson' => $jurnalUmumPusat->toArray(),
+                            'modifiedby' => $jurnalUmumPusat->modifiedby
+                        ];
+
+                        $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                        $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+                        
+                    }                    
+
+                    $jurnalApprove = JurnalUmumHeader::findOrFail($request->jurnalId[$i]);
+                    $jurnalApprove->statusapproval = $request->approve;
+                    $jurnalApprove->userapproval = auth('api')->user()->name;
+                    $jurnalApprove->tglapproval = date('Y-m-d h:i:s');
+
+                    $jurnalApprove->save();
                 }
             }
             $request->sortname = $request->sortname ?? 'id';
@@ -175,7 +213,7 @@ class JurnalUmumPusatHeaderController extends Controller
             'detail' => $query
         ]);
     }
- 
+
 
     /**
      * @ClassName
@@ -183,7 +221,7 @@ class JurnalUmumPusatHeaderController extends Controller
     public function destroy($id, Request $request)
     {
         DB::beginTransaction();
-        
+
         try {
             $jurnalUmumPusat = new JurnalUmumPusatHeader();
             JurnalUmumPusatDetail::where('jurnalumumpusat_id', $id)->delete();

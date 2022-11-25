@@ -25,7 +25,8 @@ class StoreJurnalUmumPusatHeaderRequest extends FormRequest
     {
         return [
             'periode' => 'required',
-            'approve' => 'required'
+            'approve' => 'required',
+            'jurnalId' => 'required'
         ];
 
     }
@@ -33,7 +34,8 @@ class StoreJurnalUmumPusatHeaderRequest extends FormRequest
     public function attributes()
     {
         return [
-            'approve' => 'Proses Data'
-        ]
+            'approve' => 'Proses Data',
+            'jurnalId' => 'Pilih jurnal'
+        ];
     }
 }
