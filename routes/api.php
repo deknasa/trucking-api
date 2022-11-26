@@ -120,6 +120,7 @@
     use App\Http\Controllers\Api\PenerimaanGiroHeaderController;
     use App\Http\Controllers\Api\JurnalUmumPusatDetailController;
     use App\Http\Controllers\Api\JurnalUmumPusatHeaderController;
+    use App\Http\Controllers\Api\ReportAllController;
 
     /*
     |--------------------------------------------------------------------------
@@ -572,6 +573,10 @@
         Route::get('jurnalumumpusatheader/field_length', [JurnalUmumPusatHeaderController::class, 'fieldLength']);
         Route::resource('jurnalumumpusatheader', JurnalUmumPusatHeaderController::class);
         Route::resource('jurnalumumpusatdetail', JurnalUmumPusatDetailController::class);
+        
+        Route::get('reportall/report', [ReportAllController::class, 'report'])->name('reportall.report');
+        Route::resource('reportall', ReportAllController::class);
+        
     });
 
     Route::get('gudang/combo', [GudangController::class, 'combo']);
