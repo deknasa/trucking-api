@@ -9,6 +9,18 @@ use Illuminate\Support\Facades\Route;
 
 class Authorized
 {
+    private $exceptions = [
+        'class' => [
+            'stok',
+            'penerimaanstok',
+            'supplier',
+            'hutangheader',
+            'penerimaanstokheader',
+            'hutangbayarheader'
+        ],
+        'method' => []
+    ];
+    
     /**
      * Handle an incoming request.
      *
@@ -22,13 +34,21 @@ class Authorized
         $class = $this->getClass(Route::current()->uri);
         $method = $this->convertMethod($request->method());
 
-        if ($this->hasPermission($userId, $class, $method)) {
+        if (
+            $this->hasPermission($userId, $class, $method) ||
+            $this->inException($class)
+        ) {
             return $next($request);
         }
 
         abort(403, 'Unauthorized');
     }
 
+    public function inException($class = null)
+    {   
+        return in_array($class, $this->exceptions['class']);
+    }
+    
     public function hasPermission(int $userId, string $class, string $method): bool
     {
         $permission = false;
