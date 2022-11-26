@@ -20,8 +20,8 @@ class ParameterSeeder extends Seeder
 
         Parameter::create(['grp' => 'STATUS AKTIF', 'subgrp' => 'STATUS AKTIF', 'kelompok' => '', 'text' => 'AKTIF', 'memo' => 'UNTUK STATUS AKTIF', 'type' => '0', 'singkatan' => '', 'warna' => '', 'modifiedby' => 'ADMIN',]);
         Parameter::create(['grp' => 'STATUS AKTIF', 'subgrp' => 'STATUS AKTIF', 'kelompok' => '', 'text' => 'NON AKTIF', 'memo' => 'UNTUK STATUS NON AKTIF', 'type' => '0', 'singkatan' => '', 'warna' => '', 'modifiedby' => 'ADMIN',]);
-        Parameter::create(['grp' => 'STATUS APPROVAL', 'subgrp' => 'STATUS APPROVAL', 'kelompok' => '', 'text' => 'DI SETUJUI', 'memo' => 'DI SETUJUI', 'type' => '0', 'singkatan' => 'S', 'warna' => '#28A745', 'modifiedby' => 'ADMIN',]);
-        Parameter::create(['grp' => 'STATUS APPROVAL', 'subgrp' => 'STATUS APPROVAL', 'kelompok' => '', 'text' => 'BELUM DI SETUJUI', 'memo' => 'BELUM DI SETUJUI', 'type' => '0', 'singkatan' => 'BS', 'warna' => '#6C757D', 'modifiedby' => 'ADMIN',]);
+        Parameter::create(['grp' => 'STATUS APPROVAL', 'subgrp' => 'STATUS APPROVAL', 'kelompok' => '', 'text' => 'APPROVAL', 'memo' => 'DI SETUJUI', 'type' => '0', 'singkatan' => 'S', 'warna' => '#28A745', 'modifiedby' => 'ADMIN',]);
+        Parameter::create(['grp' => 'STATUS APPROVAL', 'subgrp' => 'STATUS APPROVAL', 'kelompok' => '', 'text' => 'NON APPROVAL', 'memo' => 'BELUM DI SETUJUI', 'type' => '0', 'singkatan' => 'BS', 'warna' => '#6C757D', 'modifiedby' => 'ADMIN',]);
         Parameter::create(['grp' => 'ABSENSI', 'subgrp' => 'ABSENSI', 'kelompok' => '', 'text' => '#ABS #9999#/#R#/#Y', 'memo' => 'UNTUK PENOMORAN ABSENSI', 'type' => '118', 'singkatan' => '', 'warna' => '', 'modifiedby' => 'ADMIN',]);
         Parameter::create(['grp' => 'STATUS KARYAWAN', 'subgrp' => 'STATUS KARYAWAN', 'kelompok' => '', 'text' => 'KARYAWAN', 'memo' => 'KARYAWAN', 'type' => '0', 'singkatan' => '', 'warna' => '', 'modifiedby' => 'ADMIN',]);
         Parameter::create(['grp' => 'STATUS KARYAWAN', 'subgrp' => 'STATUS KARYAWAN', 'kelompok' => '', 'text' => 'NON KARYAWAN', 'memo' => 'NON KARYAWAN', 'type' => '0', 'singkatan' => '', 'warna' => '', 'modifiedby' => 'ADMIN',]);
