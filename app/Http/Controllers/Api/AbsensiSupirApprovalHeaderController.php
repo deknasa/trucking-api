@@ -92,6 +92,7 @@ class AbsensiSupirApprovalHeaderController extends Controller
             $absensiSupirApprovalHeader->statusformat =  $format->id;
             $absensiSupirApprovalHeader->pengeluaran_nobukti = $request->pengeluaran_nobukti ?? '0';
             $absensiSupirApprovalHeader->coakaskeluar = $coakaskeluar;
+            $absensiSupirApprovalHeader->tglkaskeluar = $request->tglkaskeluar ?? '1900/1/1';
             $absensiSupirApprovalHeader->postingdari =  "ABSENSI SUPIR APPROVAL";
             $absensiSupirApprovalHeader->modifiedby =  auth('api')->user()->name;
             TOP:
@@ -128,6 +129,7 @@ class AbsensiSupirApprovalHeaderController extends Controller
 
 
                 $absensiSupirApprovalHeader->pengeluaran_nobukti = $kasgantung->pengeluaran_nobukti;
+                $absensiSupirApprovalHeader->tglkaskeluar = $kasgantung->tglkaskeluar;
                 $absensiSupirApprovalHeader->save();
 
 
@@ -348,6 +350,8 @@ class AbsensiSupirApprovalHeaderController extends Controller
 
 
                 $absensiSupirApprovalHeader->pengeluaran_nobukti = $kasgantung->pengeluaran_nobukti;
+                $absensiSupirApprovalHeader->tglkaskeluar = $kasgantung->tglkaskeluar;
+
                 $absensiSupirApprovalHeader->save();
 
                 $logTrail = [

@@ -24,7 +24,7 @@ use App\Http\Requests\StoreJurnalUmumHeaderRequest;
 use App\Http\Requests\StoreJurnalUmumDetailRequest;
 use App\Http\Requests\StorePengeluaranHeaderRequest;
 use App\Http\Requests\StorePengeluaranDetailRequest;
-
+use Illuminate\Database\QueryException;
 class ProsesAbsensiSupirController extends Controller
 {
     /**
@@ -321,7 +321,16 @@ class ProsesAbsensiSupirController extends Controller
                 'status' => true,
                 'message' => 'Berhasil disimpan',
                 'data' => $prosesabsensisupir
-            ]);
+            ], 201);
+        } catch (QueryException $queryException) {
+            if (isset($queryException->errorInfo[1]) && is_array($queryException->errorInfo)) {
+                // Check if deadlock
+                if ($queryException->errorInfo[1] === 1205) {
+                    goto TOP;
+                }
+            }
+
+            throw $queryException;
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
@@ -368,10 +377,10 @@ class ProsesAbsensiSupirController extends Controller
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
                 /* Delete existing detail */
-                PengeluaranDetail::where('nobukti',$prosesabsensisupir->pengeluaran_nobukti)->delete();
-                PengeluaranHeader::where('nobukti',$prosesabsensisupir->pengeluaran_nobukti)->delete();
-                JurnalUmumDetail::where('nobukti',$prosesabsensisupir->pengeluaran_nobukti)->delete();
-                JurnalUmumHeader::where('nobukti',$prosesabsensisupir->pengeluaran_nobukti)->delete();
+                PengeluaranDetail::where('nobukti',$prosesabsensisupir->pengeluaran_nobukti)->lockForUpdate()->delete();
+                PengeluaranHeader::where('nobukti',$prosesabsensisupir->pengeluaran_nobukti)->lockForUpdate()->delete();
+                JurnalUmumDetail::where('nobukti',$prosesabsensisupir->pengeluaran_nobukti)->lockForUpdate()->delete();
+                JurnalUmumHeader::where('nobukti',$prosesabsensisupir->pengeluaran_nobukti)->lockForUpdate()->delete();
 
                 $parameterController = new ParameterController;
                     $statusApp = $parameterController->getparameterid('STATUS APPROVAL','STATUS APPROVAL','NON APPROVAL');
@@ -492,10 +501,10 @@ class ProsesAbsensiSupirController extends Controller
 
         try {
             $get = ProsesAbsensiSupir::find($id);
-            $delete = PengeluaranDetail::where('nobukti',$get->pengeluaran_nobukti)->delete();
-            $delete = PengeluaranHeader::where('nobukti',$get->pengeluaran_nobukti)->delete();
-            $delete = JurnalUmumDetail::where('nobukti',$get->pengeluaran_nobukti)->delete();
-            $delete = JurnalUmumHeader::where('nobukti',$get->pengeluaran_nobukti)->delete();
+            $delete = PengeluaranDetail::where('nobukti',$get->pengeluaran_nobukti)->lockForUpdate()->delete();
+            $delete = PengeluaranHeader::where('nobukti',$get->pengeluaran_nobukti)->lockForUpdate()->delete();
+            $delete = JurnalUmumDetail::where('nobukti',$get->pengeluaran_nobukti)->lockForUpdate()->delete();
+            $delete = JurnalUmumHeader::where('nobukti',$get->pengeluaran_nobukti)->lockForUpdate()->delete();
             $delete = ProsesAbsensiSupir::destroy($id);
             
             $datalogtrail = [
