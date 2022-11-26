@@ -45,7 +45,10 @@ class JurnalUmumHeader extends MyModel
                 DB::raw('(case when (year(jurnalumumheader.tglapproval) <= 2000) then null else jurnalumumheader.tglapproval end ) as tglapproval'),
                 'jurnalumumheader.modifiedby',
                 'jurnalumumheader.updated_at',
-                'statusapproval.text as statusapproval'
+                'statusapproval.text as statusapproval',
+                'statusapproval.singkatan as singkatanstatusapproval',
+                'statusapproval.warna as warnastatusapproval'
+
             )
             ->leftJoin('parameter as statusapproval', 'jurnalumumheader.statusapproval', 'statusapproval.id');
 

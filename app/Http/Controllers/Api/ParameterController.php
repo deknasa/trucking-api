@@ -50,6 +50,8 @@ class ParameterController extends Controller
             $parameter->kelompok = $request->kelompok ?? '';
             $parameter->memo = $request->memo;
             $parameter->type = $request->type ?? 0;
+            $parameter->singkatan = $request->singkatan ?? '';
+            $parameter->warna = $request->warna ?? '';
             $parameter->modifiedby = auth('api')->user()->name;
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
@@ -125,6 +127,8 @@ class ParameterController extends Controller
             $parameter->memo = $request->memo;
             $parameter->kelompok = $request->kelompok ?? '';
             $parameter->type = $request->type ?? 0;
+            $parameter->singkatan = $request->singkatan ?? '';
+            $parameter->warna = $request->warna ?? '';
             $parameter->modifiedby = auth('api')->user()->name;
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
@@ -273,6 +277,18 @@ class ParameterController extends Controller
             [
                 'label' => 'Text',
                 'index' => 'text',
+            ],
+            [
+                'label' => 'Type',
+                'index' => 'type',
+            ],
+            [
+                'label' => 'Singkatan',
+                'index' => 'singkatan',
+            ],
+            [
+                'label' => 'Warna',
+                'index' => 'warna',
             ],
             [
                 'label' => 'Memo',
