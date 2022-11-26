@@ -22,8 +22,20 @@ class Parameter extends MyModel
     {
         $this->setRequestParameters();
         $query = DB::table('parameter')
-        ->select('parameter.id','parameter.grp','parameter.subgrp','parameter.kelompok','parameter.text','parameter.memo','parameter.modifiedby','parameter.updated_at', DB::raw("case when parameter.type = 0 then '' else B.grp end as type"),)
-        ->leftJoin('parameter as B','parameter.type','B.id');
+            ->select('parameter.id', 
+            'parameter.grp', 
+            'parameter.subgrp', 
+            'parameter.kelompok', 
+            'parameter.text', 
+            'parameter.memo', 
+            'parameter.singkatan', 
+            'parameter.warna', 
+            'parameter.modifiedby', 
+            'parameter.created_at', 
+            'parameter.updated_at', 
+            DB::raw("case when parameter.type = 0 then '' else B.grp end as type"),
+            )
+            ->leftJoin('parameter as B', 'parameter.type', 'B.id');
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -40,9 +52,9 @@ class Parameter extends MyModel
     public function findAll($id)
     {
         $query = DB::table('parameter as A')
-        ->select('A.id','A.grp','A.subgrp','A.kelompok','A.text','A.memo','A.type','B.grp as grup')
-        ->leftJoin('parameter as B','A.type','B.id')
-        ->where('A.id',$id);
+            ->select('A.id', 'A.grp', 'A.subgrp', 'A.kelompok', 'A.text', 'A.memo', 'A.type','A.singkatan','A.warna', 'B.grp as grup')
+            ->leftJoin('parameter as B', 'A.type', 'B.id')
+            ->where('A.id', $id);
 
         $data = $query->first();
         return $data;
@@ -58,10 +70,12 @@ class Parameter extends MyModel
             "$this->table.memo",
             "$this->table.kelompok",
             DB::raw("case when parameter.type = 0 then '' else B.grp end as type"),
+            "$this->table.singkatan",
+            "$this->table.warna",
             "$this->table.created_at",
             "$this->table.updated_at",
             "$this->table.modifiedby"
-        )->leftJoin('parameter as B','parameter.type','B.id');
+        )->leftJoin('parameter as B', 'parameter.type', 'B.id');
     }
 
     public function createTemp(string $modelTable)
@@ -78,6 +92,8 @@ class Parameter extends MyModel
             $table->string('memo', 1000)->default('');
             $table->string('kelompok', 1000)->default('');
             $table->string('type', 1000)->default('');
+            $table->string('singkatan', 1000)->default('');
+            $table->string('warna', 1000)->default('');
             $table->dateTime('created_at')->default('1900/1/1');
             $table->dateTime('updated_at')->default('1900/1/1');
             $table->string('modifiedby', 50)->default('');
@@ -88,7 +104,7 @@ class Parameter extends MyModel
         $query = $this->selectColumns($query);
         $query = $this->sort($query);
         $models = $this->filter($query);
-        
+
         DB::table($temp)->insertUsing([
             'id',
             'grp',
@@ -97,6 +113,8 @@ class Parameter extends MyModel
             'memo',
             'kelompok',
             'type',
+            'singkatan',
+            'warna',
             'created_at',
             'updated_at',
             'modifiedby'
@@ -131,9 +149,9 @@ class Parameter extends MyModel
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'type') {
-                            $query = $query->where('B.grp', '=', "$filters[data]");
-                        } else{
-                            $query = $query->where($this->table . '.' . $filters['field'], '=', "$filters[data]");
+                            $query = $query->where('B.grp', 'like', "%$filters[data]%");
+                        } else {
+                            $query = $query->where($this->table . '.' . $filters['field'], 'like', "%$filters[data]%");
                         }
                     }
 
@@ -142,7 +160,7 @@ class Parameter extends MyModel
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'type') {
                             $query = $query->orWhere('B.grp', 'LIKE', "%$filters[data]%");
-                        } else{
+                        } else {
                             $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
                     }
