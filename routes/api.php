@@ -121,6 +121,7 @@
     use App\Http\Controllers\Api\JurnalUmumPusatDetailController;
     use App\Http\Controllers\Api\JurnalUmumPusatHeaderController;
     use App\Http\Controllers\Api\ReportAllController;
+    use App\Http\Controllers\Api\ReportNeracaController;
 
     /*
     |--------------------------------------------------------------------------
@@ -576,6 +577,9 @@
         
         Route::get('reportall/report', [ReportAllController::class, 'report'])->name('reportall.report');
         Route::resource('reportall', ReportAllController::class);
+
+        Route::get('reportneraca/report', [ReportNeracaController::class, 'report'])->name('reportneraca.report');
+        Route::resource('reportneraca', ReportNeracaController::class);
         
     });
 
