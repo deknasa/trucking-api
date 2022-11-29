@@ -13,7 +13,7 @@ class StorePencairanGiroPengeluaranHeaderRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +24,9 @@ class StorePencairanGiroPengeluaranHeaderRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'pengeluaranId' => 'required|array',
+            'pengeluaranId.*' => 'required',
+            'periode' => 'required'
         ];
     }
 }

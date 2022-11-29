@@ -1,86 +1,98 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
 use App\Models\PencairanGiroPengeluaranDetail;
 use App\Http\Requests\StorePencairanGiroPengeluaranDetailRequest;
 use App\Http\Requests\UpdatePencairanGiroPengeluaranDetailRequest;
+use App\Models\PengeluaranDetail;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class PencairanGiroPengeluaranDetailController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        $params = [
+            'id' => $request->id,
+            'pengeluaran_id' => $request->pengeluaran_id,
+            'withHeader' => $request->withHeader ?? false,
+            'whereIn' => $request->whereIn ?? [],
+            'forReport' => $request->forReport ?? false,
+            'forExport' => $request->forExport ?? false,
+            'sortIndex' => $request->sortOrder ?? 'id',
+            'sortOrder' => $request->sortOrder ?? 'asc',
+        ];
+        try {
+            $query = PengeluaranDetail::from('pengeluarandetail as detail');
+
+            if (isset($params['id'])) {
+                $query->where('detail.id', $params['id']);
+            }
+
+            if (isset($params['pengeluaran_id'])) {
+                $query->where('detail.pengeluaran_id', $params['pengeluaran_id']);
+            }
+
+            if (count($params['whereIn']) > 0) {
+                $query->whereIn('pengeluaran_id', $params['whereIn']);
+            }
+            if ($params['forReport']) {
+                
+            } else {
+                $query->select(
+                    'detail.nobukti','detail.nowarkat','alatbayar.keterangan as alatbayar_id', 'detail.tgljatuhtempo', 'detail.nominal','detail.coadebet','detail.coakredit','detail.keterangan','detail.bulanbeban'
+                )
+                ->leftJoin('alatbayar','detail.alatbayar_id','alatbayar.id');
+                
+                $pengeluaranDetail = $query->get();
+            }
+
+            return response([
+                'data' => $pengeluaranDetail
+            ]);
+        } catch (\Throwable $th) {
+            return response([
+                'message' => $th->getMessage()
+            ]);
+        }
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \App\Http\Requests\StorePencairanGiroPengeluaranDetailRequest  $request
-     * @return \Illuminate\Http\Response
-     */
+   
     public function store(StorePencairanGiroPengeluaranDetailRequest $request)
     {
-        //
+        DB::beginTransaction();
+
+        try {
+            $pencairanGiroDetail = new PencairanGiroPengeluaranDetail();
+            
+            $pencairanGiroDetail->pencairangiropengeluaran_id = $request->pencairangiropengeluaran_id;
+            $pencairanGiroDetail->nobukti = $request->nobukti;
+            $pencairanGiroDetail->alatbayar_id = $request->alatbayar_id;
+            $pencairanGiroDetail->nowarkat = $request->nowarkat;
+            $pencairanGiroDetail->tgljatuhtempo = $request->tgljatuhtempo;
+            $pencairanGiroDetail->nominal = $request->nominal;
+            $pencairanGiroDetail->coadebet = $request->coadebet;
+            $pencairanGiroDetail->coakredit = $request->coakredit;
+            $pencairanGiroDetail->keterangan = $request->keterangan;
+            $pencairanGiroDetail->bulanbeban = $request->bulanbeban;
+            $pencairanGiroDetail->modifiedby = auth('api')->user()->name;
+            $pencairanGiroDetail->save();
+
+            DB::commit();
+
+            return [
+                'error' => false,
+                'id' => $pencairanGiroDetail->id,
+                'tabel' => $pencairanGiroDetail->getTable(),
+            ];
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            
+            throw $th;
+        }
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\PencairanGiroPengeluaranDetail  $pencairanGiroPengeluaranDetail
-     * @return \Illuminate\Http\Response
-     */
-    public function show(PencairanGiroPengeluaranDetail $pencairanGiroPengeluaranDetail)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\PencairanGiroPengeluaranDetail  $pencairanGiroPengeluaranDetail
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(PencairanGiroPengeluaranDetail $pencairanGiroPengeluaranDetail)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \App\Http\Requests\UpdatePencairanGiroPengeluaranDetailRequest  $request
-     * @param  \App\Models\PencairanGiroPengeluaranDetail  $pencairanGiroPengeluaranDetail
-     * @return \Illuminate\Http\Response
-     */
-    public function update(UpdatePencairanGiroPengeluaranDetailRequest $request, PencairanGiroPengeluaranDetail $pencairanGiroPengeluaranDetail)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\PencairanGiroPengeluaranDetail  $pencairanGiroPengeluaranDetail
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(PencairanGiroPengeluaranDetail $pencairanGiroPengeluaranDetail)
-    {
-        //
-    }
+   
 }

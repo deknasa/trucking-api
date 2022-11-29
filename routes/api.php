@@ -121,6 +121,8 @@
     use App\Http\Controllers\Api\JurnalUmumPusatDetailController;
     use App\Http\Controllers\Api\JurnalUmumPusatHeaderController;
     use App\Http\Controllers\Api\ReportAllController;
+    use App\Http\Controllers\Api\PencairanGiroPengeluaranDetailController;
+    use App\Http\Controllers\Api\PencairanGiroPengeluaranHeaderController;
 
     /*
     |--------------------------------------------------------------------------
@@ -576,6 +578,12 @@
         
         Route::get('reportall/report', [ReportAllController::class, 'report'])->name('reportall.report');
         Route::resource('reportall', ReportAllController::class);
+        
+        Route::get('pencairangiropengeluaranheader/grid', [PencairanGiroPengeluaranHeaderController::class, 'grid']);
+        Route::get('pencairangiropengeluaranheader/field_length', [PencairanGiroPengeluaranHeaderController::class, 'fieldLength']);
+        Route::delete('pencairangiropengeluaranheader', [PencairanGiroPengeluaranHeaderController::class, 'destroy']);
+        Route::resource('pencairangiropengeluaranheader', PencairanGiroPengeluaranHeaderController::class);
+        Route::resource('pencairangiropengeluarandetail', PencairanGiroPengeluaranDetailController::class);
         
     });
 
