@@ -13,7 +13,7 @@ class UpdatePenerimaanGiroDetailRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +24,18 @@ class UpdatePenerimaanGiroDetailRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'tgljatuhtempo' => 'required|array',
+            'tgljatuhtempo.*' => 'required',
+            'nominal' => 'required|array',
+            'nominal.*' => 'required|numeric|gt:0',
+            'keterangan_detail' => 'required|array',
+            'keterangan_detail.*' => 'required',
+            'bank' => 'required|array',
+            'bank.*' => 'required',
+            'bankpelanggan' => 'required|array',
+            'bankpelanggan.*' => 'required',
+            'jenisbiaya' => 'required|array',
+            'jenisbiaya.*' => 'required'
         ];
     }
 }

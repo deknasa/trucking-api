@@ -13,7 +13,7 @@ class UpdateRitasiRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +24,22 @@ class UpdateRitasiRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'tglbukti' => 'required',
+            'statusritasi' => 'required',
+            'suratpengantar_nobukti' => 'required',
+            'dari' => 'required',
+            'sampai' => 'required',
+            'trado' => 'required',
+            'supir' => 'required',
+        ];
+    }
+
+    public function attributes()
+    {
+        return [
+            'tglbukti' => 'tanggal bukti',
+            'statusritasi' => 'status ritasi',
+            'suratpengantar_nobukti' => 'No bukti surat pengantar',
         ];
     }
 }

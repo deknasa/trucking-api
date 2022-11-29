@@ -7,6 +7,7 @@ use App\Http\Requests\StoreLogTrailRequest;
 use App\Models\StatusContainer;
 use App\Http\Requests\StoreStatusContainerRequest;
 use App\Http\Requests\UpdateStatusContainerRequest;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -67,9 +68,9 @@ class StatusContainerController extends Controller
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-                DB::commit();
             }
 
+            DB::commit();
             /* Set position and page */
             $selected = $this->getPosition($statusContainer, $statusContainer->getTable());
             $statusContainer->position = $selected->position;
@@ -79,7 +80,7 @@ class StatusContainerController extends Controller
                 'status' => true,
                 'message' => 'Berhasil disimpan',
                 'data' => $statusContainer
-            ]);
+            ], 201);
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
@@ -89,38 +90,37 @@ class StatusContainerController extends Controller
     /**
      * @ClassName 
      */
-    public function update(StoreStatusContainerRequest $request, StatusContainer $statusContainer)
+    public function update(UpdateStatusContainerRequest $request, StatusContainer $statuscontainer)
     {
 
         try {
-            $statusContainer = StatusContainer::findOrFail($statusContainer->id);
-            $statusContainer->kodestatuscontainer = $request->kodestatuscontainer;
-            $statusContainer->keterangan = $request->keterangan;
-            $statusContainer->statusaktif = $request->statusaktif;
-            $statusContainer->modifiedby = auth('api')->user()->name;
+            $statuscontainer->kodestatuscontainer = $request->kodestatuscontainer;
+            $statuscontainer->keterangan = $request->keterangan;
+            $statuscontainer->statusaktif = $request->statusaktif;
+            $statuscontainer->modifiedby = auth('api')->user()->name;
 
-            if ($statusContainer->save()) {
+            if ($statuscontainer->save()) {
                 $logTrail = [
-                    'namatabel' => strtoupper($statusContainer->getTable()),
+                    'namatabel' => strtoupper($statuscontainer->getTable()),
                     'postingdari' => 'EDIT STATUS CONTAINER',
-                    'idtrans' => $statusContainer->id,
-                    'nobuktitrans' => $statusContainer->id,
+                    'idtrans' => $statuscontainer->id,
+                    'nobuktitrans' => $statuscontainer->id,
                     'aksi' => 'EDIT',
-                    'datajson' => $statusContainer->toArray(),
-                    'modifiedby' => $statusContainer->modifiedby
+                    'datajson' => $statuscontainer->toArray(),
+                    'modifiedby' => $statuscontainer->modifiedby
                 ];
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
 
                 /* Set position and page */
-                $selected = $this->getPosition($statusContainer, $statusContainer->getTable());
-                $statusContainer->position = $selected->position;
-                $statusContainer->page = ceil($statusContainer->position / ($request->limit ?? 10));
+                $selected = $this->getPosition($statuscontainer, $statuscontainer->getTable());
+                $statuscontainer->position = $selected->position;
+                $statuscontainer->page = ceil($statuscontainer->position / ($request->limit ?? 10));
 
                 return response([
                     'status' => true,
                     'message' => 'Berhasil diubah',
-                    'data' => $statusContainer
+                    'data' => $statuscontainer
                 ]);
             } else {
                 return response([
@@ -136,25 +136,23 @@ class StatusContainerController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy($id,  Request $request)
+    public function destroy(StatusContainer $statuscontainer,  Request $request)
     {
 
         DB::beginTransaction();
-        $statusContainer = new StatusContainer();
-
         try {
 
-            $delete = StatusContainer::destroy($id);
+            $delete = StatusContainer::destroy($statuscontainer->id);
 
             if ($delete) {
                 $logTrail = [
-                    'namatabel' => strtoupper($statusContainer->getTable()),
+                    'namatabel' => strtoupper($statuscontainer->getTable()),
                     'postingdari' => 'DELETE STSTUS CONTAINER',
-                    'idtrans' => $id,
-                    'nobuktitrans' => '',
+                    'idtrans' => $statuscontainer->id,
+                    'nobuktitrans' => $statuscontainer->id,
                     'aksi' => 'DELETE',
-                    'datajson' => $statusContainer->toArray(),
-                    'modifiedby' => $statusContainer->modifiedby
+                    'datajson' => $statuscontainer->toArray(),
+                    'modifiedby' => $statuscontainer->modifiedby
                 ];
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
@@ -163,15 +161,15 @@ class StatusContainerController extends Controller
                 DB::commit();
 
                 /* Set position and page */
-                $selected = $this->getPosition($statusContainer, $statusContainer->getTable(), true);
-                $statusContainer->position = $selected->position;
-                $statusContainer->id = $selected->id;
-                $statusContainer->page = ceil($statusContainer->position / ($request->limit ?? 10));
+                $selected = $this->getPosition($statuscontainer, $statuscontainer->getTable(), true);
+                $statuscontainer->position = $selected->position;
+                $statuscontainer->id = $selected->id;
+                $statuscontainer->page = ceil($statuscontainer->position / ($request->limit ?? 10));
 
                 return response([
                     'status' => true,
                     'message' => 'Berhasil dihapus',
-                    'data' => $statusContainer
+                    'data' => $statuscontainer
                 ]);
             } else {
                 DB::rollBack();

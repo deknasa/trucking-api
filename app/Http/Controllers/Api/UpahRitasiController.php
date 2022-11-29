@@ -17,6 +17,7 @@ use App\Http\Requests\StoreLogTrailRequest;
 
 use App\Models\LogTrail;
 use App\Models\Parameter;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -148,7 +149,7 @@ class UpahRitasiController extends Controller
                 'status' => true,
                 'message' => 'Berhasil disimpan',
                 'data' => $upahritasi
-            ]);
+            ], 201);
         } catch (\Throwable $th) {
             DB::rollBack();
             return response($th->getMessage());
@@ -174,12 +175,11 @@ class UpahRitasiController extends Controller
     /**
      * @ClassName 
      */
-    public function update(StoreUpahRitasiRequest $request, $id)
+    public function update(UpdateUpahRitasiRequest $request,UpahRitasi $upahritasi)
     {
         DB::beginTransaction();
 
         try {
-            $upahritasi = UpahRitasi::findOrFail($id);
             $upahritasi->kotadari_id = $request->kotadari_id;
             $upahritasi->kotasampai_id = $request->kotasampai_id;
             $upahritasi->jarak = str_replace(',', '', str_replace('.', '', $request->jarak));
@@ -204,7 +204,7 @@ class UpahRitasiController extends Controller
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-                UpahrITASIRincian::where('upahritasi_id', $id)->delete();
+                UpahRitasiRincian::where('upahritasi_id', $upahritasi->id)->lockForUpdate()->delete();
                 /* Store detail */
                 $detaillog = [];
                 for ($i = 0; $i < count($request->nominalsupir); $i++) {
@@ -284,22 +284,20 @@ class UpahRitasiController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy($id,  Request $request)
+    public function destroy(UpahRitasi $upahritasi, Request $request)
     {
 
         DB::beginTransaction();
-        $upahritasi = new UpahRitasi();
-
         try {
-            $delete = UpahRitasiRincian::where('upahritasi_id', $id)->delete();
-            $delete = UpahRitasi::destroy($id);
+            $delete = UpahRitasiRincian::where('upahritasi_id', $upahritasi->id)->lockForUpdate()->delete();
+            $delete = UpahRitasi::destroy($upahritasi->id);
 
             if ($delete) {
                 $logTrail = [
                     'namatabel' => strtoupper($upahritasi->getTable()),
                     'postingdari' => 'DELETE UPAHRITASI',
-                    'idtrans' => $id,
-                    'nobuktitrans' => '',
+                    'idtrans' => $upahritasi->id,
+                    'nobuktitrans' => $upahritasi->nobukti,
                     'aksi' => 'DELETE',
                     'datajson' => $upahritasi->toArray(),
                     'modifiedby' => $upahritasi->modifiedby

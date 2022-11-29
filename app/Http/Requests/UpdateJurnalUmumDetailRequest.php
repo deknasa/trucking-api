@@ -13,7 +13,7 @@ class UpdateJurnalUmumDetailRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +24,14 @@ class UpdateJurnalUmumDetailRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'coadebet_detail' => 'required|array',
+            'coadebet_detail.*' => 'required',
+            'coakredit_detail' => 'required|array',
+            'coakredit_detail.*' => 'required',
+            'nominal_detail' => 'required|array',
+            'nominal_detail.*' => 'required|numeric|gt:0',
+            'keterangan_detail' => 'required|array',
+            'keterangan_detail.*' => 'required'
         ];
     }
 }

@@ -29,4 +29,12 @@ class StoreMerkRequest extends FormRequest
             'statusaktif' => 'required'
         ];
     }
+    
+    public function attributes()
+    {
+        return [
+            'kodemerk' => 'kode merk',
+            'statusaktif' => 'statusaktif'
+        ];
+    }
 }

@@ -10,6 +10,7 @@ use App\Http\Requests\StoreLogTrailRequest;
 use App\Http\Requests\UpdateGajiSupirHeaderRequest;
 use App\Models\GajiSupirDetail;
 use App\Models\LogTrail;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -216,7 +217,7 @@ class GajiSupirHeaderController extends Controller
                     'status' => true,
                     'message' => 'Berhasil disimpan',
                     'data' => $gajisupirheader 
-                ]);
+                ], 201);
             }else{
                 $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'WP')
                 ->first();
@@ -250,14 +251,12 @@ class GajiSupirHeaderController extends Controller
      /**
      * @ClassName 
      */
-    public function update(UpdateGajiSupirHeaderRequest $request, $id)
+    public function update(UpdateGajiSupirHeaderRequest $request, GajiSupirHeader $gajisupirheader)
     {
         DB::beginTransaction();
         
         try {
 
-            $gajisupirheader = GajiSupirHeader::findOrFail($id);
-            
             $gajisupirheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $gajisupirheader->supir_id = $request->supir_id;
             $gajisupirheader->nominal = '';
@@ -284,7 +283,7 @@ class GajiSupirHeaderController extends Controller
                 $logTrail = [
                     'namatabel' => strtoupper($gajisupirheader->getTable()),
                     'postingdari' => 'EDIT GAJI SUPIR HEADER',
-                    'idtrans' => $id,
+                    'idtrans' => $gajisupirheader->id,
                     'nobuktitrans' => $gajisupirheader->nobukti,
                     'aksi' => 'EDIT',
                     'datajson' => $gajisupirheader->toArray(),
@@ -293,7 +292,7 @@ class GajiSupirHeaderController extends Controller
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-                GajiSupirDetail::where('gajisupir_id', $id)->delete();
+                GajiSupirDetail::where('gajisupir_id', $gajisupirheader->id)->lockForUpdate()->delete();
 
                 /* Store detail */
                 
@@ -407,21 +406,20 @@ class GajiSupirHeaderController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy($id, Request $request)
+    public function destroy(GajiSupirHeader $gajisupirheader, Request $request)
     {
         DB::beginTransaction();
-        $gajisupirheader = new GajiSupirHeader();
         try {
             
-            $delete = GajiSupirDetail::where('gajisupir_id',$id)->delete();
-            $delete = GajiSupirHeader::destroy($id);
+            $delete = GajiSupirDetail::where('gajisupir_id',$gajisupirheader->id)->lockForUpdate()->delete();
+            $delete = GajiSupirHeader::destroy($gajisupirheader->id);
             
             if ($delete) {
                 $logTrail = [
                     'namatabel' => strtoupper($gajisupirheader->getTable()),
                     'postingdari' => 'DELETE GAJI SUPIR HEADER',
-                    'idtrans' => $id,
-                    'nobuktitrans' => '',
+                    'idtrans' => $gajisupirheader->id,
+                    'nobuktitrans' => $gajisupirheader->nobukti,
                     'aksi' => 'DELETE',
                     'datajson' => $gajisupirheader->toArray(),
                     'modifiedby' => $gajisupirheader->modifiedby

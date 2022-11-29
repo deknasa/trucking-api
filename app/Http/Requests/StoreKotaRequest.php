@@ -26,8 +26,16 @@ class StoreKotaRequest extends FormRequest
         return [
             'kodekota' => 'required',
             'keterangan' => 'required',
-            'zona_id' => 'required',
+            'zona' => 'required',
             'statusaktif' => 'required'
+        ];
+    }
+    
+    public function attributes()
+    {
+        return [
+            'kodekota' => 'kode kota',
+            'statusaktif' => 'statusaktif'
         ];
     }
 }

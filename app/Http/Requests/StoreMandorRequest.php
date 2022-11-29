@@ -29,4 +29,13 @@ class StoreMandorRequest extends FormRequest
             'statusaktif' => 'required',
         ];
     }
+
+    public function attributes()
+    {
+        return [
+            'namamandor' => 'nama mandor',
+            'statusaktif' => 'statusaktif',
+        ];
+        
+    }
 }

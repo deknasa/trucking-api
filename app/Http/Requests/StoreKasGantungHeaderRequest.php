@@ -25,9 +25,9 @@ class StoreKasGantungHeaderRequest extends FormRequest
     {
         $rules = [
             'tglbukti' => 'required',
-            'penerima_id' => 'required',
+            'penerima' => 'required',
             'keterangan' => 'required',
-            'bank_id' => 'required',
+            'bank' => 'required',
             'tglkaskeluar' => 'required',
         ];
         $relatedRequests = [
@@ -48,9 +48,6 @@ class StoreKasGantungHeaderRequest extends FormRequest
     {
         $attributes = [
             'tglbukti' => 'Tanggal Bukti',
-            'penerima_id' => 'Penerima',
-            'keterangan' => 'Keterangan',
-            'bank_id' => 'Bank',
             'tglkaskeluar' => 'Tanggal Kas Keluar',
             'nominal.*' => 'Nominal',
             'keterangan_detail.*' => 'Keterangan',

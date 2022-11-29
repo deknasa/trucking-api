@@ -24,6 +24,7 @@ use App\Models\Parameter;
 use App\Models\PiutangDetail;
 use App\Models\PiutangHeader;
 use App\Models\SuratPengantar;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Schema;
 
 class InvoiceHeaderController extends Controller
@@ -261,47 +262,45 @@ class InvoiceHeaderController extends Controller
     /**
      * @ClassName
      */
-    public function update(StoreInvoiceHeaderRequest $request, $id)
+    public function update(UpdateInvoiceHeaderRequest $request,InvoiceHeader $invoiceheader)
     {
         DB::beginTransaction();
 
-        try {
+        try { 
 
-            $invoice = InvoiceHeader::findOrFail($id);
-
-            $invoice->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
-            $invoice->keterangan = $request->keterangan;
-            $invoice->nominal = '';
-            $invoice->tglterima = date('Y-m-d', strtotime($request->tglterima));
-            $invoice->agen_id = $request->agen_id;
-            $invoice->jenisorder_id = $request->jenisorder_id;
-            $invoice->cabang_id = $request->cabang_id;
-            $invoice->piutang_nobukti = $request->piutang_nobukti ?? '';
-            $invoice->tgldari = date('Y-m-d', strtotime($request->tgldari));
-            $invoice->tglsampai = date('Y-m-d', strtotime($request->tglsampai));
-            $invoice->modifiedby = auth('api')->user()->name;
+            $invoiceheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
+            $invoiceheader->keterangan = $request->keterangan;
+            $invoiceheader->nominal = '';
+            $invoiceheader->tglterima = date('Y-m-d', strtotime($request->tglterima));
+            $invoiceheader->agen_id = $request->agen_id;
+            $invoiceheader->jenisorder_id = $request->jenisorder_id;
+            $invoiceheader->cabang_id = $request->cabang_id;
+            $invoiceheader->piutang_nobukti = $request->piutang_nobukti ?? '';
+            $invoiceheader->tgldari = date('Y-m-d', strtotime($request->tgldari));
+            $invoiceheader->tglsampai = date('Y-m-d', strtotime($request->tglsampai));
+            $invoiceheader->modifiedby = auth('api')->user()->name;
 
 
-            if ($invoice->save()) {
+            if ($invoiceheader->save()) {
                 $logTrail = [
-                    'namatabel' => strtoupper($invoice->getTable()),
+                    'namatabel' => strtoupper($invoiceheader->getTable()),
                     'postingdari' => 'EDIT INVOICE HEADER',
-                    'idtrans' => $id,
-                    'nobuktitrans' => $invoice->nobukti,
+                    'idtrans' => $invoiceheader->id,
+                    'nobuktitrans' => $invoiceheader->nobukti,
                     'aksi' => 'EDIT',
-                    'datajson' => $invoice->toArray(),
-                    'modifiedby' => $invoice->modifiedby
+                    'datajson' => $invoiceheader->toArray(),
+                    'modifiedby' => $invoiceheader->modifiedby
                 ];
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-                $getPiutang = PiutangHeader::where('invoice_nobukti', $invoice->nobukti)->first();
+                $getPiutang = PiutangHeader::where('invoice_nobukti', $invoiceheader->nobukti)->first();
 
-                JurnalUmumHeader::where('nobukti',$getPiutang->nobukti)->delete();
-                JurnalUmumDetail::where('nobukti',$getPiutang->nobukti)->delete();
-                PiutangHeader::where('invoice_nobukti',$invoice->nobukti)->delete();
-                PiutangDetail::where('invoice_nobukti',$invoice->nobukti)->delete();
-                InvoiceDetail::where('invoice_id', $id)->delete();
+                JurnalUmumHeader::where('nobukti',$getPiutang->nobukti)->lockForUpdate()->delete();
+                JurnalUmumDetail::where('nobukti',$getPiutang->nobukti)->lockForUpdate()->delete();
+                PiutangHeader::where('invoice_nobukti',$invoiceheader->nobukti)->lockForUpdate()->delete();
+                PiutangDetail::where('invoice_nobukti',$invoiceheader->nobukti)->lockForUpdate()->delete();
+                InvoiceDetail::where('invoice_id', $invoiceheader->id)->lockForUpdate()->delete();
 
                 /* Store detail */
 
@@ -312,13 +311,13 @@ class InvoiceHeaderController extends Controller
                     $SP = SuratPengantar::where('id',$request->sp_id[$i])->first();
                     $total = $total + $SP->omset;
                     $datadetail = [
-                        'invoice_id' => $invoice->id,
-                        'nobukti' => $invoice->nobukti,
+                        'invoice_id' => $invoiceheader->id,
+                        'nobukti' => $invoiceheader->nobukti,
                         'nominal' => $SP->omset,
                         'keterangan' => $SP->keterangan,
                         'orderantrucking_nobukti' => $SP->jobtrucking,
                         'suratpengantar_nobukti' => $SP->nobukti,
-                        'modifiedby' => $invoice->modifiedby,
+                        'modifiedby' => $invoiceheader->modifiedby,
                     ];
     
                     // STORE 
@@ -336,15 +335,15 @@ class InvoiceHeaderController extends Controller
     
                     $datadetaillog = [
                         'id' => $iddetail,
-                        'invoice_id' => $invoice->id,
-                        'nobukti' => $invoice->nobukti,
+                        'invoice_id' => $invoiceheader->id,
+                        'nobukti' => $invoiceheader->nobukti,
                         'nominal' => $SP->omset,
                         'keterangan' => $SP->keterangan,
                         'orderantrucking_nobukti' => $SP->jobtrucking,
                         'suratpengantar_nobukti' => $SP->nobukti,
-                        'modifiedby' => $invoice->modifiedby,
-                        'created_at' => date('d-m-Y H:i:s', strtotime($invoice->created_at)),
-                        'updated_at' => date('d-m-Y H:i:s', strtotime($invoice->updated_at)),
+                        'modifiedby' => $invoiceheader->modifiedby,
+                        'created_at' => date('d-m-Y H:i:s', strtotime($invoiceheader->created_at)),
+                        'updated_at' => date('d-m-Y H:i:s', strtotime($invoiceheader->updated_at)),
     
                     ];
     
@@ -355,10 +354,10 @@ class InvoiceHeaderController extends Controller
                         'namatabel' => $tabeldetail,
                         'postingdari' => 'EDIT INVOICE DETAIL',
                         'idtrans' =>  $iddetail,
-                        'nobuktitrans' => $invoice->nobukti,
+                        'nobuktitrans' => $invoiceheader->nobukti,
                         'aksi' => 'EDIT',
                         'datajson' => $detaillog,
-                        'modifiedby' => $invoice->modifiedby,
+                        'modifiedby' => $invoiceheader->modifiedby,
                     ];
     
                     $data = new StoreLogTrailRequest($datalogtrail);
@@ -380,21 +379,21 @@ class InvoiceHeaderController extends Controller
 
                 $piutang_nobukti = app(Controller::class)->getRunningNumber($nobuktiPiutang)->original['data'];
                     
-                $invoice->piutang_nobukti = $piutang_nobukti;
-                $invoice->nominal = $total;
-                $invoice->save();
+                $invoiceheader->piutang_nobukti = $piutang_nobukti;
+                $invoiceheader->nominal = $total;
+                $invoiceheader->save();
                 $request->sortname = $request->sortname ?? 'id';
                 $request->sortorder = $request->sortorder ?? 'asc';
 
                 $piutangHeader = [
                     'tanpaprosesnobukti' => 1,
                     'nobukti' => $piutang_nobukti,
-                    'tglbukti' => date('Y-m-d', strtotime($invoice->tglbukti)),
-                    'keterangan' => $invoice->keterangan,
+                    'tglbukti' => date('Y-m-d', strtotime($invoiceheader->tglbukti)),
+                    'keterangan' => $invoiceheader->keterangan,
                     'postingdari' => "ENTRY INVOICE",
-                    'nominal' => $invoice->nominal,
-                    'invoice_nobukti' => $invoice->nobukti,
-                    'agen_id' => $invoice->agen_id,
+                    'nominal' => $invoiceheader->nominal,
+                    'invoice_nobukti' => $invoiceheader->nobukti,
+                    'agen_id' => $invoiceheader->agen_id,
                     'modifiedby' => auth('api')->user()->name,
                     'statusformat' => 1,
                 ];
@@ -409,7 +408,7 @@ class InvoiceHeaderController extends Controller
                         'nobukti' => $piutang_nobukti,
                         'nominal' => $SP->omset,
                         'keterangan' => $SP->keterangan,
-                        'invoice_nobukti' => $invoice->nobukti,
+                        'invoice_nobukti' => $invoiceheader->nobukti,
                         'modifiedby' =>  auth('api')->user()->name
                     ];
 
@@ -430,14 +429,14 @@ class InvoiceHeaderController extends Controller
             DB::commit();
 
             /* Set position and page */
-            $selected = $this->getPosition($invoice, $invoice->getTable());
-            $invoice->position = $selected->position;
-            $invoice->page = ceil($invoice->position / ($request->limit ?? 10));
+            $selected = $this->getPosition($invoiceheader, $invoiceheader->getTable());
+            $invoiceheader->position = $selected->position;
+            $invoiceheader->page = ceil($invoiceheader->position / ($request->limit ?? 10));
 
             return response([
                 'status' => true,
                 'message' => 'Berhasil disimpan',
-                'data' => $invoice
+                'data' => $invoiceheader
             ]);
         } catch (\Throwable $th) {
             DB::rollBack();
@@ -449,33 +448,28 @@ class InvoiceHeaderController extends Controller
     /**
      * @ClassName
      */
-    public function destroy($id, Request $request)
+    public function destroy(InvoiceHeader $invoiceheader, Request $request)
     {
         DB::beginTransaction();
-        $invoice = new InvoiceHeader();
-        $invoices = InvoiceHeader::findOrFail($id);
-
-        $nobukti = $invoices->nobukti;
-
         try {
 
-            $getPiutang = PiutangHeader::where('invoice_nobukti', $nobukti)->first();
-            JurnalUmumHeader::where('nobukti', $getPiutang->nobukti)->delete();
-            JurnalUmumDetail::where('nobukti', $getPiutang->nobukti)->delete();
-            PiutangHeader::where('invoice_nobukti',$nobukti)->delete();
-            PiutangDetail::where('invoice_nobukti',$nobukti)->delete();
-            $delete = InvoiceDetail::where('invoice_id', $id)->delete();
-            $delete = InvoiceHeader::destroy($id);
+            $getPiutang = PiutangHeader::where('invoice_nobukti', $invoiceheader->nobukti)->first();
+            JurnalUmumHeader::where('nobukti', $getPiutang->nobukti)->lockForUpdate()->delete();
+            JurnalUmumDetail::where('nobukti', $getPiutang->nobukti)->lockForUpdate()->delete();
+            PiutangHeader::where('invoice_nobukti',$invoiceheader->nobukti)->lockForUpdate()->delete();
+            PiutangDetail::where('invoice_nobukti',$invoiceheader->nobukti)->lockForUpdate()->delete();
+            $delete = InvoiceDetail::where('invoice_id', $invoiceheader->id)->lockForUpdate()->delete();
+            $delete = InvoiceHeader::destroy($invoiceheader->id);
 
             if ($delete) {
                 $logTrail = [
-                    'namatabel' => strtoupper($invoice->getTable()),
+                    'namatabel' => strtoupper($invoiceheader->getTable()),
                     'postingdari' => 'DELETE INVOICE HEADER',
-                    'idtrans' => $id,
-                    'nobuktitrans' => $nobukti,
+                    'idtrans' => $invoiceheader->id,
+                    'nobuktitrans' => $invoiceheader->nobukti,
                     'aksi' => 'DELETE',
-                    'datajson' => $invoice->toArray(),
-                    'modifiedby' => $invoice->modifiedby
+                    'datajson' => $invoiceheader->toArray(),
+                    'modifiedby' => $invoiceheader->modifiedby
                 ];
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
@@ -483,15 +477,15 @@ class InvoiceHeaderController extends Controller
 
                 DB::commit();
 
-                $selected = $this->getPosition($invoice, $invoice->getTable(), true);
-                $invoice->position = $selected->position;
-                $invoice->id = $selected->id;
-                $invoice->page = ceil($invoice->position / ($request->limit ?? 10));
+                $selected = $this->getPosition($invoiceheader, $invoiceheader->getTable(), true);
+                $invoiceheader->position = $selected->position;
+                $invoiceheader->id = $selected->id;
+                $invoiceheader->page = ceil($invoiceheader->position / ($request->limit ?? 10));
 
                 return response([
                     'status' => true,
                     'message' => 'Berhasil dihapus',
-                    'data' => $invoice
+                    'data' => $invoiceheader
                 ]);
             }
         } catch (\Throwable $th) {

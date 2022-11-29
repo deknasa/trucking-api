@@ -181,7 +181,7 @@ class PenerimaanStokController extends Controller
         DB::beginTransaction();
 
         $penerimaanStok = PenerimaanStok::where('id',$id)->first();
-        $delete = $penerimaanStok->delete();
+        $delete = $penerimaanStok->lockForUpdate()->delete();
 
         if ($delete) {
             $logTrail = [

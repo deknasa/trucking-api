@@ -47,13 +47,12 @@ class BankController extends Controller
             $bank->coa = $request->coa;
             $bank->tipe = $request->tipe;
             $bank->statusaktif = $request->statusaktif;
-            $bank->statusformatpenerimaan = $request->statusformatpenerimaan ?? 0;
-            $bank->statusformatpengeluaran = $request->statusformatpengeluaran ?? 0;
+            $bank->statusformatpenerimaan = $request->statusformatpenerimaan;
+            $bank->statusformatpengeluaran = $request->statusformatpengeluaran;
             $bank->modifiedby = auth('api')->user()->name;
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
 
-            TOP:
             if ($bank->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($bank->getTable()),
@@ -88,15 +87,6 @@ class BankController extends Controller
                 'message' => 'Berhasil disimpan',
                 'data' => $bank,
             ], 201);
-        } catch (QueryException $queryException) {
-            if (isset($queryException->errorInfo[1]) && is_array($queryException->errorInfo)) {
-                // Check if deadlock
-                if ($queryException->errorInfo[1] === 1205) {
-                    goto TOP;
-                }
-            }
-
-            throw $queryException;
         } catch (\Throwable $th) {
             DB::rollBack();
             return response($th->getMessage());
@@ -111,10 +101,6 @@ class BankController extends Controller
         ]);
     }
 
-    public function edit(Bank $bank)
-    {
-        //
-    }
     /**
      * @ClassName 
      */
@@ -122,7 +108,7 @@ class BankController extends Controller
     {
         DB::beginTransaction();
         try {
-            $bank = Bank::findOrFail($bank->id);
+            $bank = Bank::lockForUpdate()->findOrFail($bank->id);
             $bank->kodebank = $request->kodebank;
             $bank->namabank = $request->namabank;
             $bank->coa = $request->coa;

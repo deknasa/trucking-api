@@ -42,7 +42,6 @@ class ErrorController extends Controller
             $error->keterangan = $request->keterangan;
             $error->modifiedby = auth('api')->user()->name;
 
-            TOP:
             if ($error->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($error->getTable()),
@@ -70,15 +69,6 @@ class ErrorController extends Controller
                 'message' => 'Berhasil disimpan',
                 'data' => $error
             ], 201);
-        } catch (QueryException $queryException) {
-            if (isset($queryException->errorInfo[1]) && is_array($queryException->errorInfo)) {
-                // Check if deadlock
-                if ($queryException->errorInfo[1] === 1205) {
-                    goto TOP;
-                }
-            }
-
-            throw $queryException;
         } catch (\Throwable $th) {
             DB::rollBack();
             return response($th->getMessage());
@@ -144,7 +134,7 @@ class ErrorController extends Controller
     {
         DB::beginTransaction();
         try {
-            if ($error->delete()) {
+            if ($error->lockForUpdate()->delete()) {
                 $logTrail = [
                     'namatabel' => strtoupper($error->getTable()),
                     'postingdari' => 'DELETE ERROR',

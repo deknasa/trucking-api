@@ -17,6 +17,7 @@ use App\Http\Requests\StoreLogTrailRequest;
 
 use App\Models\LogTrail;
 use App\Models\Parameter;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -147,7 +148,7 @@ class UpahSupirController extends Controller
                 'status' => true,
                 'message' => 'Berhasil disimpan',
                 'data' => $upahsupir
-            ]);
+            ], 201);
         } catch (\Throwable $th) {
             DB::rollBack();
             return response($th->getMessage());
@@ -176,12 +177,11 @@ class UpahSupirController extends Controller
     /**
      * @ClassName 
      */
-    public function update(StoreUpahSupirRequest $request, $id)
+    public function update(UpdateUpahSupirRequest $request,UpahSupir $upahsupir)
     {
         DB::beginTransaction();
 
         try {
-            $upahsupir = UpahSupir::findOrFail($id);
             $upahsupir->kotadari_id = $request->kotadari_id;
             $upahsupir->kotasampai_id = $request->kotasampai_id;
             $upahsupir->jarak = str_replace(',', '', str_replace('.', '', $request->jarak));
@@ -206,7 +206,7 @@ class UpahSupirController extends Controller
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-                UpahSupirRincian::where('upahsupir_id', $id)->delete();
+                UpahSupirRincian::where('upahsupir_id', $upahsupir->id)->lockForUpdate()->delete();
                 /* Store detail */
                 $detaillog = [];
                 for ($i = 0; $i < count($request->nominalsupir); $i++) {
@@ -287,22 +287,20 @@ class UpahSupirController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy($id,  Request $request)
+    public function destroy(UpahSupir $upahsupir, Request $request)
     {
 
         DB::beginTransaction();
-        $upahsupir = new UpahSupir();
-
         try {
-            $delete = UpahSupirRincian::where('upahsupir_id', $id)->delete();
-            $delete = UpahSupir::destroy($id);
+            $delete = UpahSupirRincian::where('upahsupir_id', $upahsupir->id)->lockForUpdate()->delete();
+            $delete = UpahSupir::destroy($upahsupir->id);
 
             if ($delete) {
                 $logTrail = [
                     'namatabel' => strtoupper($upahsupir->getTable()),
                     'postingdari' => 'DELETE UPAHSUPIR',
-                    'idtrans' => $id,
-                    'nobuktitrans' => '',
+                    'idtrans' => $upahsupir->id,
+                    'nobuktitrans' => $upahsupir->nobukti,
                     'aksi' => 'DELETE',
                     'datajson' => $upahsupir->toArray(),
                     'modifiedby' => $upahsupir->modifiedby

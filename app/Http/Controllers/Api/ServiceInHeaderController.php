@@ -11,8 +11,10 @@ use App\Http\Requests\StoreServiceInDetailRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Requests\StoreLogTrailRequest;
+use App\Http\Requests\UpdateServiceInHeaderRequest;
 use App\Models\LogTrail;
 use App\Models\ServiceInDetail;
+use Illuminate\Database\QueryException;
 
 class ServiceInHeaderController extends Controller
 {
@@ -125,7 +127,7 @@ class ServiceInHeaderController extends Controller
 
                 $datalogtrail = [
                     'namatabel' => $tabeldetail,
-                    'postingdari' => 'ENTRY SERVICE IN',
+                    'postingdari' => 'ENTRY SERVICE IN DETAIL',
                     'idtrans' =>  $iddetail,
                     'nobuktitrans' => $servicein->nobukti,
                     'aksi' => 'ENTRY',
@@ -149,7 +151,7 @@ class ServiceInHeaderController extends Controller
                 'status' => true,
                 'message' => 'Berhasil disimpan',
                 'data' => $servicein
-            ]);
+            ], 201);
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
@@ -177,43 +179,41 @@ class ServiceInHeaderController extends Controller
     /**
      * @ClassName
      */
-    public function update(StoreServiceInHeaderRequest $request, $id)
+    public function update(UpdateServiceInHeaderRequest $request,ServiceInHeader $serviceinheader)
     {
         DB::beginTransaction();
 
         try {
-            $servicein = ServiceInHeader::findOrFail($id);
+            $serviceinheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
+            $serviceinheader->trado_id = $request->trado_id;
+            $serviceinheader->tglmasuk = date('Y-m-d', strtotime($request->tglmasuk));
+            $serviceinheader->keterangan = $request->keterangan;
+            $serviceinheader->modifiedby = auth('api')->user()->name;
 
-            $servicein->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
-            $servicein->trado_id = $request->trado_id;
-            $servicein->tglmasuk = date('Y-m-d', strtotime($request->tglmasuk));
-            $servicein->keterangan = $request->keterangan;
-            $servicein->modifiedby = auth('api')->user()->name;
-
-            if ($servicein->save()) {
+            if ($serviceinheader->save()) {
                 $logTrail = [
-                    'namatabel' => strtoupper($servicein->getTable()),
-                    'postingdari' => 'UPDATE SERVICE IN HEADER',
-                    'idtrans' => $servicein->id,
-                    'nobuktitrans' => $servicein->nobukti,
-                    'aksi' => 'UPDATE',
-                    'datajson' => $servicein->toArray(),
-                    'modifiedby' => $servicein->modifiedby
+                    'namatabel' => strtoupper($serviceinheader->getTable()),
+                    'postingdari' => 'EDIT SERVICE IN HEADER',
+                    'idtrans' => $serviceinheader->id,
+                    'nobuktitrans' => $serviceinheader->nobukti,
+                    'aksi' => 'EDIT',
+                    'datajson' => $serviceinheader->toArray(),
+                    'modifiedby' => $serviceinheader->modifiedby
                 ];
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-                ServiceInDetail::where('servicein_id', $id)->delete();
+                ServiceInDetail::where('servicein_id', $serviceinheader->id)->lockForUpdate()->delete();
                 /* Store detail */
                 $detaillog = [];
                 for ($i = 0; $i < count($request->keterangan_detail); $i++) {
                     $datadetail = [
-                        'servicein_id' => $servicein->id,
-                        'nobukti' => $servicein->nobukti,
+                        'servicein_id' => $serviceinheader->id,
+                        'nobukti' => $serviceinheader->nobukti,
                         'mekanik_id' => $request->mekanik_id[$i],
                         'keterangan' => $request->keterangan_detail[$i],
-                        'modifiedby' => $servicein->modifiedby,
+                        'modifiedby' => $serviceinheader->modifiedby,
                     ];
 
                     $data = new StoreServiceInDetailRequest($datadetail);
@@ -228,25 +228,25 @@ class ServiceInHeaderController extends Controller
 
                     $datadetaillog = [
                         'id' => $iddetail,
-                        'servicein_id' => $servicein->id,
-                        'nobukti' => $servicein->nobukti,
+                        'servicein_id' => $serviceinheader->id,
+                        'nobukti' => $serviceinheader->nobukti,
                         'mekanik_id' => $request->mekanik_id[$i],
                         'keterangan' => $request->keterangan_detail[$i],
-                        'modifiedby' => $servicein->modifiedby,
-                        'created_at' => date('d-m-Y H:i:s', strtotime($servicein->created_at)),
-                        'updated_at' => date('d-m-Y H:i:s', strtotime($servicein->updated_at)),
+                        'modifiedby' => $serviceinheader->modifiedby,
+                        'created_at' => date('d-m-Y H:i:s', strtotime($serviceinheader->created_at)),
+                        'updated_at' => date('d-m-Y H:i:s', strtotime($serviceinheader->updated_at)),
                     ];
                     $detaillog[] = $datadetaillog;
                 }
 
                 $datalogtrail = [
                     'namatabel' => $tabeldetail,
-                    'postingdari' => 'ENTRY SERVICE IN',
+                    'postingdari' => 'EDIT SERVICE IN DETAIL',
                     'idtrans' =>  $iddetail,
-                    'nobuktitrans' => $servicein->nobukti,
-                    'aksi' => 'ENTRY',
+                    'nobuktitrans' => $serviceinheader->nobukti,
+                    'aksi' => 'EDIT',
                     'datajson' => $detaillog,
-                    'modifiedby' => $servicein->modifiedby,
+                    'modifiedby' => $serviceinheader->modifiedby,
                 ];
 
                 $data = new StoreLogTrailRequest($datalogtrail);
@@ -257,14 +257,14 @@ class ServiceInHeaderController extends Controller
             DB::commit();
 
             /* Set position and page */
-            $selected = $this->getPosition($servicein, $servicein->getTable());
-            $servicein->position = $selected->position;
-            $servicein->page = ceil($servicein->position / ($request->limit ?? 10));
+            $selected = $this->getPosition($serviceinheader, $serviceinheader->getTable());
+            $serviceinheader->position = $selected->position;
+            $serviceinheader->page = ceil($serviceinheader->position / ($request->limit ?? 10));
 
             return response([
                 'status' => true,
                 'message' => 'Berhasil disimpan',
-                'data' => $servicein
+                'data' => $serviceinheader
             ]);
         } catch (\Throwable $th) {
             DB::rollBack();
@@ -275,26 +275,23 @@ class ServiceInHeaderController extends Controller
     /**
      * @ClassName
      */
-    public function destroy($id,  Request $request)
+    public function destroy(ServiceInHeader $serviceinheader, Request $request)
     {
-
         DB::beginTransaction();
-        $servicein = new ServiceInHeader();
 
         try {
-            // $delete = $servicein->delete();
-            $delete = ServiceInDetail::where('Servicein_id', $id)->delete();
-            $delete = ServiceInHeader::destroy($id);
+            $delete = ServiceInDetail::where('servicein_id', $serviceinheader->id)->lockForUpdate()->delete();
+            $delete = ServiceInHeader::destroy($serviceinheader->id);
 
             if ($delete) {
                 $logTrail = [
-                    'namatabel' => strtoupper($servicein->getTable()),
-                    'postingdari' => 'DELETE SERVICEIN',
-                    'idtrans' => $id,
-                    'nobuktitrans' => '',
+                    'namatabel' => strtoupper($serviceinheader->getTable()),
+                    'postingdari' => 'DELETE SERVICE IN HEADER',
+                    'idtrans' => $serviceinheader->id,
+                    'nobuktitrans' => $serviceinheader->nobukti,
                     'aksi' => 'DELETE',
-                    'datajson' => $servicein->toArray(),
-                    'modifiedby' => $servicein->modifiedby
+                    'datajson' => $serviceinheader->toArray(),
+                    'modifiedby' => $serviceinheader->modifiedby
                 ];
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
@@ -303,15 +300,15 @@ class ServiceInHeaderController extends Controller
                 DB::commit();
 
                 /* Set position and page */
-                $selected = $this->getPosition($servicein, $servicein->getTable(), true);
-                $servicein->position = $selected->position;
-                $servicein->id = $selected->id;
-                $servicein->page = ceil($servicein->position / ($request->limit ?? 10));
+                $selected = $this->getPosition($serviceinheader, $serviceinheader->getTable(), true);
+                $serviceinheader->position = $selected->position;
+                $serviceinheader->id = $selected->id;
+                $serviceinheader->page = ceil($serviceinheader->position / ($request->limit ?? 10));
 
                 return response([
                     'status' => true,
                     'message' => 'Berhasil dihapus',
-                    'data' => $servicein
+                    'data' => $serviceinheader
                 ]);
             } else {
                 DB::rollBack();

@@ -13,7 +13,7 @@ class UpdateKategoriRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +24,19 @@ class UpdateKategoriRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'kodekategori' => 'required',
+            'keterangan' => 'required',
+            'subkelompok_id' => 'required',
+            'statusaktif' => 'required'
+        ];
+    }
+    
+    public function attributes()
+    {
+        return[
+            'kodekategori' => 'kode kategori',
+            'subkelompok' => 'sub kelompok',
+            'statusaktif' => 'status aktif'
         ];
     }
 }

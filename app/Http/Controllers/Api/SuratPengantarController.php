@@ -22,6 +22,7 @@ use App\Http\Requests\StoreLogTrailRequest;
 
 use App\Http\Controllers\Controller;
 use Carbon\Carbon;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -201,8 +202,8 @@ class SuratPengantarController extends Controller
                 'status' => true,
                 'message' => 'Berhasil disimpan',
                 'data' => $suratpengantar
-            ]);
-        } catch (\Throwable $th) {
+            ], 201);
+        }catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
         }
@@ -223,7 +224,7 @@ class SuratPengantarController extends Controller
     /**
      * @ClassName 
      */
-    public function update(StoreSuratPengantarRequest $request, SuratPengantar $suratpengantar)
+    public function update(UpdateSuratPengantarRequest $request, SuratPengantar $suratpengantar)
     {
         
         DB::beginTransaction();
@@ -315,7 +316,7 @@ class SuratPengantarController extends Controller
 
                 if($request->nominal[0] != 0){
                     
-                    SuratPengantarBiayaTambahan::where('suratpengantar_id',$suratpengantar->id)->delete();
+                    SuratPengantarBiayaTambahan::where('suratpengantar_id',$suratpengantar->id)->lockForUpdate()->delete();
                     for ($i = 0; $i < count($request->nominal); $i++) {
                         $suratpengantarbiayatambahan = new SuratPengantarBiayaTambahan();
                             
@@ -361,9 +362,9 @@ class SuratPengantarController extends Controller
     {
         DB::beginTransaction();
         try {
-            $del = SuratPengantarBiayaTambahan::where('suratpengantar_id', $suratpengantar->id)->delete();
+            $del = SuratPengantarBiayaTambahan::where('suratpengantar_id', $suratpengantar->id)->lockForUpdate()->delete();
             // $delete = SuratPengantar::destroy($suratpengantar->id);
-            $delete = $suratpengantar->delete();
+            $delete = $suratpengantar->lockForUpdate()->delete();
 
             if ($delete) {
                 $logTrail = [

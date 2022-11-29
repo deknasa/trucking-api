@@ -13,7 +13,7 @@ class UpdateHutangDetailRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +24,15 @@ class UpdateHutangDetailRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'supplier' => 'required|array',
+            'supplier.*' => 'required',
+            'tgljatuhtempo' => 'required|array',
+            'tgljatuhtempo.*' => 'required',
+            'total_detail' => 'required|array',
+            'total_detail.*' => 'required|numeric|gt:0',
+            'keterangan_detail' => 'required|array',
+            'keterangan_detail.*' => 'required',
+
         ];
     }
 }

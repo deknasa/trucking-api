@@ -88,8 +88,6 @@ class AbsensiSupirHeaderController extends Controller
             $absensiSupirHeader->statusformat = $format->id;
             $absensiSupirHeader->modifiedby = auth('api')->user()->name;
 
-            TOP:
-            
             if ($absensiSupirHeader->save()) {
                 /* Store Header LogTrail */
                 $logTrail = [
@@ -208,16 +206,6 @@ class AbsensiSupirHeaderController extends Controller
                 'message' => 'Berhasil disimpan',
                 'data' => $absensiSupirHeader
             ], 201);
-        } catch (QueryException $queryException) {
-            if (isset($queryException->errorInfo[1]) && is_array($queryException->errorInfo)) {
-                // Check if deadlock
-                if ($queryException->errorInfo[1] === 1205) {
-                    goto TOP;
-                }
-            }
-
-            throw $queryException;
-
         } catch (\Throwable $th) {
             DB::rollBack();
 
@@ -230,36 +218,27 @@ class AbsensiSupirHeaderController extends Controller
     /**
      * @ClassName 
      */
-    public function update(StoreAbsensiSupirHeaderRequest $request, $id)
+    public function update(UpdateAbsensiSupirHeaderRequest $request, AbsensiSupirHeader $absensisupirheader)
     {
         DB::beginTransaction();
 
         try {
-            $group = 'ABSENSI';
-            $subgroup = 'ABSENSI';
-            $format = DB::table('parameter')
-                ->where('grp', $group )
-                ->where('subgrp', $subgroup)
-                ->first();
-
             /* Store header */
-            $absensiSupirHeader = AbsensiSupirHeader::lockForUpdate()->findOrFail($id);
-            $absensiSupirHeader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
-            $absensiSupirHeader->keterangan = $request->keterangan ?? '';
-            $absensiSupirHeader->nominal = array_sum($request->uangjalan);
-            $absensiSupirHeader->modifiedby = auth('api')->user()->name;
-            $absensiSupirHeader->statusformat = $format->id;
+            $absensisupirheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
+            $absensisupirheader->keterangan = $request->keterangan ?? '';
+            $absensisupirheader->nominal = array_sum($request->uangjalan);
+            $absensisupirheader->modifiedby = auth('api')->user()->name;
 
-            if ($absensiSupirHeader->save()) {
+            if ($absensisupirheader->save()) {
                 /* Store Header LogTrail */
                 $logTrail = [
-                    'namatabel' => strtoupper($absensiSupirHeader->getTable()),
+                    'namatabel' => strtoupper($absensisupirheader->getTable()),
                     'postingdari' => 'EDIT ABSENSI SUPIR HEADER',
-                    'idtrans' => $absensiSupirHeader->id,
-                    'nobuktitrans' => $absensiSupirHeader->id,
+                    'idtrans' => $absensisupirheader->id,
+                    'nobuktitrans' => $absensisupirheader->id,
                     'aksi' => 'EDIT',
-                    'datajson' => $absensiSupirHeader->toArray(),
-                    'modifiedby' => $absensiSupirHeader->modifiedby
+                    'datajson' => $absensisupirheader->toArray(),
+                    'modifiedby' => $absensisupirheader->modifiedby
                 ];
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
@@ -267,20 +246,20 @@ class AbsensiSupirHeaderController extends Controller
 
                 KasGantungDetail::where('nobukti',$request->kasgantung_nobukti)->lockForUpdate()->delete();
                 KasGantungHeader::where('nobukti',$request->kasgantung_nobukti)->lockForUpdate()->delete();
-                AbsensiSupirDetail::where('absensi_id',$id)->lockForUpdate()->delete();
+                AbsensiSupirDetail::where('absensi_id',$absensisupirheader->id)->lockForUpdate()->delete();
 
                 for ($i = 0; $i < count($request->trado_id); $i++) {
                     /* Store Detail */
-                    $absensiSupirDetail = $absensiSupirHeader->absensiSupirDetail()->create([
-                        'absensi_id' => $absensiSupirHeader->id,
-                        'nobukti' => $absensiSupirHeader->nobukti,
+                    $absensiSupirDetail = $absensisupirheader->absensiSupirDetail()->create([
+                        'absensi_id' => $absensisupirheader->id,
+                        'nobukti' => $absensisupirheader->nobukti,
                         'trado_id' => $request->trado_id[$i],
                         'supir_id' => $request->supir_id[$i],
                         'keterangan' => $request->keterangan_detail[$i],
                         'uangjalan' => $request->uangjalan[$i],
                         'absen_id' => $request->absen_id[$i],
                         'jam' => $request->jam[$i],
-                        'modifiedby' => $absensiSupirHeader->modifiedby,
+                        'modifiedby' => $absensisupirheader->modifiedby,
                     ]);
 
                     if ($absensiSupirDetail) {
@@ -315,8 +294,8 @@ class AbsensiSupirHeaderController extends Controller
 
                 $nobuktiKasGantung= app(Controller::class)->getRunningNumber($noBuktiKasgantungRequest)->original['data'];
                     
-                $absensiSupirHeader->kasgantung_nobukti = $nobuktiKasGantung;
-                $absensiSupirHeader->save();
+                $absensisupirheader->kasgantung_nobukti = $nobuktiKasGantung;
+                $absensisupirheader->save();
 
 
                 $kasGantungHeader = [
@@ -363,13 +342,13 @@ class AbsensiSupirHeaderController extends Controller
             DB::commit();
 
             /* Set position and page */
-            $selected = $this->getPosition($absensiSupirHeader, $absensiSupirHeader->getTable());
-            $absensiSupirHeader->position = $selected->position;
-            $absensiSupirHeader->page = ceil($absensiSupirHeader->position / ($request->limit ?? 10));
+            $selected = $this->getPosition($absensisupirheader, $absensisupirheader->getTable());
+            $absensisupirheader->position = $selected->position;
+            $absensisupirheader->page = ceil($absensisupirheader->position / ($request->limit ?? 10));
 
             return response([
                 'message' => 'Berhasil diubah',
-                'data' => $absensiSupirHeader
+                'data' => $absensisupirheader
             ]);
         } catch (\Throwable $th) {
             DB::rollBack();
@@ -382,26 +361,24 @@ class AbsensiSupirHeaderController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy($id, Request $request)
+    public function destroy(AbsensiSupirHeader $absensisupirheader, Request $request)
     {
         DB::beginTransaction();
-        $absensiSupirHeader = new AbsensiSupirHeader();
         try{
-            $get = AbsensiSupirHeader::lockForUpdate()->findOrFail($id);
-            $delete = AbsensiSupirDetail::where('absensi_id',$id)->lockForUpdate()->delete();
-            $delete = KasGantungDetail::where('nobukti',$get->kasgantung_nobukti)->lockForUpdate()->delete();
-            $delete = KasGantungHeader::where('nobukti',$get->kasgantung_nobukti)->lockForUpdate()->delete();
-            $delete = AbsensiSupirHeader::destroy($id);
+            $delete = AbsensiSupirDetail::where('absensi_id',$absensisupirheader->id)->lockForUpdate()->delete();
+            $delete = KasGantungDetail::where('nobukti',$absensisupirheader->kasgantung_nobukti)->lockForUpdate()->delete();
+            $delete = KasGantungHeader::where('nobukti',$absensisupirheader->kasgantung_nobukti)->lockForUpdate()->delete();
+            $delete = AbsensiSupirHeader::destroy($absensisupirheader->id);
             
             if ($delete) {
                 $logTrail = [
-                    'namatabel' => strtoupper($absensiSupirHeader->getTable()),
-                    'postingdari' => 'DELETE ABSENSI SUPIR',
-                    'idtrans' => $id,
-                    'nobuktitrans' => $get->nobukti,
+                    'namatabel' => strtoupper($absensisupirheader->getTable()),
+                    'postingdari' => 'DELETE ABSENSI SUPIR HEADER',
+                    'idtrans' => $absensisupirheader->id,
+                    'nobuktitrans' => $absensisupirheader->nobukti,
                     'aksi' => 'DELETE',
-                    'datajson' => $absensiSupirHeader->toArray(),
-                    'modifiedby' => $absensiSupirHeader->modifiedby
+                    'datajson' => $absensisupirheader->toArray(),
+                    'modifiedby' => $absensisupirheader->modifiedby
                 ];
     
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
@@ -409,15 +386,15 @@ class AbsensiSupirHeaderController extends Controller
     
                 DB::commit();
                 
-                $selected = $this->getPosition($absensiSupirHeader, $absensiSupirHeader->getTable(), true);
-                $absensiSupirHeader->position = $selected->position;
-                $absensiSupirHeader->id = $selected->id;
-                $absensiSupirHeader->page = ceil($absensiSupirHeader->position / ($request->limit ?? 10));
+                $selected = $this->getPosition($absensisupirheader, $absensisupirheader->getTable(), true);
+                $absensisupirheader->position = $selected->position;
+                $absensisupirheader->id = $selected->id;
+                $absensisupirheader->page = ceil($absensisupirheader->position / ($request->limit ?? 10));
     
                 return response([
                     'status' => true,
                     'message' => 'Berhasil dihapus',
-                    'data' => $absensiSupirHeader
+                    'data' => $absensisupirheader
                 ]);
             } else {
                 DB::rollBack();

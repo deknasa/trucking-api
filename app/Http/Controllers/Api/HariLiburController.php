@@ -86,41 +86,40 @@ class HariLiburController extends Controller
     /**
      * @ClassName 
      */
-    public function update(StoreHariLiburRequest $request,$id)
+    public function update(StoreHariLiburRequest $request,HariLibur $harilibur)
     {
         DB::beginTransaction();
 
         try {
-            $hariLibur = HariLibur::findOrFail($id);
-            $hariLibur->tgl = date('Y-m-d', strtotime($request->tgl));
-            $hariLibur->keterangan = $request->keterangan;
-            $hariLibur->statusaktif = $request->statusaktif;
-            $hariLibur->modifiedby = auth('api')->user()->name;
+            $harilibur->tgl = date('Y-m-d', strtotime($request->tgl));
+            $harilibur->keterangan = $request->keterangan;
+            $harilibur->statusaktif = $request->statusaktif;
+            $harilibur->modifiedby = auth('api')->user()->name;
 
-            if ($hariLibur->save()) {
+            if ($harilibur->save()) {
                 $logTrail = [
-                    'namatabel' => strtoupper($hariLibur->getTable()),
+                    'namatabel' => strtoupper($harilibur->getTable()),
                     'postingdari' => 'EDIT HARI LIBUR',
-                    'idtrans' => $hariLibur->id,
-                    'nobuktitrans' => $hariLibur->id,
+                    'idtrans' => $harilibur->id,
+                    'nobuktitrans' => $harilibur->id,
                     'aksi' => 'EDIT',
-                    'datajson' => $hariLibur->toArray(),
-                    'modifiedby' => $hariLibur->modifiedby
+                    'datajson' => $harilibur->toArray(),
+                    'modifiedby' => $harilibur->modifiedby
                 ];
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
             }
             DB::commit();
-            $selected = $this->getPosition($hariLibur, $hariLibur->getTable());
-            $hariLibur->position = $selected->position;
-            $hariLibur->page = ceil($hariLibur->position / ($request->limit ?? 10));
+            $selected = $this->getPosition($harilibur, $harilibur->getTable());
+            $harilibur->position = $selected->position;
+            $harilibur->page = ceil($harilibur->position / ($request->limit ?? 10));
 
 
             return response([
                 'status' => true,
                 'message' => 'Berhasil disimpan',
-                'data' => $hariLibur
+                'data' => $harilibur
             ]);
 
         } catch (\Throwable $th) {
@@ -132,23 +131,22 @@ class HariLiburController extends Controller
      /**
      * @ClassName 
      */
-    public function destroy($id, Request $request)
+    public function destroy(HariLibur $harilibur, Request $request)
     {
         DB::beginTransaction();
         
         try {
-            $hariLibur = HariLibur::findOrFail($id);
-            $delete = HariLibur::destroy($id);
+            $delete = HariLibur::destroy($harilibur->id);
             $del = 1;
             if ($delete) {
                 $logTrail = [
-                    'namatabel' => strtoupper($hariLibur->getTable()),
+                    'namatabel' => strtoupper($harilibur->getTable()),
                     'postingdari' => 'DELETE HARI LIBUR',
-                    'idtrans' => $hariLibur->id,
-                    'nobuktitrans' => $hariLibur->id,
+                    'idtrans' => $harilibur->id,
+                    'nobuktitrans' => $harilibur->id,
                     'aksi' => 'DELETE',
-                    'datajson' => $hariLibur->toArray(),
-                    'modifiedby' => $hariLibur->modifiedby
+                    'datajson' => $harilibur->toArray(),
+                    'modifiedby' => $harilibur->modifiedby
                 ];
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
@@ -157,16 +155,16 @@ class HariLiburController extends Controller
                 DB::commit();
                 /* Set position and page */
 
-                $selected = $this->getPosition($hariLibur, $hariLibur->getTable(), true);
+                $selected = $this->getPosition($harilibur, $harilibur->getTable(), true);
                 
-                $hariLibur->position = $selected->position;
-                $hariLibur->id = $selected->id;
-                $hariLibur->page = ceil($hariLibur->position / ($request->limit ?? 10));
+                $harilibur->position = $selected->position;
+                $harilibur->id = $selected->id;
+                $harilibur->page = ceil($harilibur->position / ($request->limit ?? 10));
                 
                 return response([
                     'status' => true,
                     'message' => 'Berhasil dihapus',
-                    'data' => $hariLibur
+                    'data' => $harilibur
                 ]);
             } else {
                 return response([

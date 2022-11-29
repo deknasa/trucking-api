@@ -71,7 +71,7 @@ class KasGantungHeader extends MyModel
         return $data;
     }
 
-    public function find($id) 
+    public function findAll($id) 
     {
         $query = DB::table('kasgantungheader')
         ->select(

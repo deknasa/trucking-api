@@ -19,7 +19,7 @@ use Illuminate\Database\QueryException;
 
 class KotaController extends Controller
 {
-     /**
+    /**
      * @ClassName 
      */
     public function index()
@@ -36,11 +36,7 @@ class KotaController extends Controller
     }
 
 
-    public function create()
-    {
-        //
-    }
-     /**
+    /**
      * @ClassName 
      */
     public function store(StoreKotaRequest $request)
@@ -57,7 +53,6 @@ class KotaController extends Controller
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
 
-            TOP:
             if ($kota->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($kota->getTable()),
@@ -85,15 +80,6 @@ class KotaController extends Controller
                 'message' => 'Berhasil disimpan',
                 'data' => $kota
             ], 201);
-        } catch (QueryException $queryException) {
-            if (isset($queryException->errorInfo[1]) && is_array($queryException->errorInfo)) {
-                // Check if deadlock
-                if ($queryException->errorInfo[1] === 1205) {
-                    goto TOP;
-                }
-            }
-
-            throw $queryException;
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
@@ -109,17 +95,15 @@ class KotaController extends Controller
         ]);
     }
 
-    public function edit(Kota $kota)
-    {
-        //
-    }
-     /**
+    
+    /**
      * @ClassName 
      */
-    public function update(StoreKotaRequest $request, $id)
+    public function update(UpdateKotaRequest $request,Kota $kota)
     {
+        DB::beginTransaction();
+
         try {
-            $kota = Kota::findOrFail($id);
             $kota->kodekota = $request->kodekota;
             $kota->keterangan = $request->keterangan;
             $kota->zona_id = $request->zona_id;
@@ -140,6 +124,8 @@ class KotaController extends Controller
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
 
+                DB::commit();
+
                 /* Set position and page */
                 $selected = $this->getPosition($kota, $kota->getTable());
                 $kota->position = $selected->position;
@@ -157,46 +143,56 @@ class KotaController extends Controller
                 ]);
             }
         } catch (\Throwable $th) {
+            DB::rollBack();
+
             throw $th;
         }
     }
-     /**
+    /**
      * @ClassName 
      */
     public function destroy(Kota $kota, Request $request)
     {
-        $delete = Kota::destroy($kota->id);
+        DB::beginTransaction();
 
-        if ($delete) {
-            $logTrail = [
-                'namatabel' => strtoupper($kota->getTable()),
-                'postingdari' => 'DELETE KOTA',
-                'idtrans' => $kota->id,
-                'nobuktitrans' => $kota->id,
-                'aksi' => 'DELETE',
-                'datajson' => $kota->toArray(),
-                'modifiedby' => $kota->modifiedby
-            ];
+        try {
+            $delete = Kota::destroy($kota->id);
 
-            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-            app(LogTrailController::class)->store($validatedLogTrail);
+            if ($delete) {
+                $logTrail = [
+                    'namatabel' => strtoupper($kota->getTable()),
+                    'postingdari' => 'DELETE KOTA',
+                    'idtrans' => $kota->id,
+                    'nobuktitrans' => $kota->id,
+                    'aksi' => 'DELETE',
+                    'datajson' => $kota->toArray(),
+                    'modifiedby' => $kota->modifiedby
+                ];
 
-            DB::commit();
-            $selected = $this->getPosition($kota, $kota->getTable(), true);
-            $kota->position = $selected->position;
-            $kota->id = $selected->id;
-            $kota->page = ceil($kota->position / ($request->limit ?? 10));
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                app(LogTrailController::class)->store($validatedLogTrail);
 
-            return response([
-                'status' => true,
-                'message' => 'Berhasil dihapus',
-                'data' => $kota
-            ]);
-        } else {
-            return response([
-                'status' => false,
-                'message' => 'Gagal dihapus'
-            ]);
+                DB::commit();
+                $selected = $this->getPosition($kota, $kota->getTable(), true);
+                $kota->position = $selected->position;
+                $kota->id = $selected->id;
+                $kota->page = ceil($kota->position / ($request->limit ?? 10));
+
+                return response([
+                    'status' => true,
+                    'message' => 'Berhasil dihapus',
+                    'data' => $kota
+                ]);
+            } else {
+                return response([
+                    'status' => false,
+                    'message' => 'Gagal dihapus'
+                ]);
+            }
+        } catch (\Throwable $th) {
+            DB::rollBack();
+
+            throw $th;
         }
     }
 
@@ -217,7 +213,7 @@ class KotaController extends Controller
     public function combo(Request $request)
     {
         $data = [
-            'statusaktif' => Parameter::where(['grp'=>'status aktif'])->get(),
+            'statusaktif' => Parameter::where(['grp' => 'status aktif'])->get(),
             'zona' => Zona::all(),
         ];
 
@@ -226,122 +222,4 @@ class KotaController extends Controller
         ]);
     }
 
-    public function getid($id, $request, $del)
-    {
-        $params = [
-            'indexRow' => $request->indexRow ?? 1,
-            'limit' => $request->limit ?? 100,
-            'page' => $request->page ?? 1,
-            'sortname' => $request->sortname ?? 'id',
-            'sortorder' => $request->sortorder ?? 'asc',
-        ];
-        $temp = '##temp' . rand(1, 10000);
-        Schema::create($temp, function ($table) {
-            $table->id();
-            $table->bigInteger('id_')->default('0');
-            $table->string('kodekota', 50)->default('');
-            $table->string('keterangan', 50)->default('');
-            $table->string('zona_id', 50)->default('');
-            $table->string('statusaktif', 50)->default('');
-            $table->string('modifiedby', 30)->default('');
-            $table->dateTime('created_at')->default('1900/1/1');
-            $table->dateTime('updated_at')->default('1900/1/1');
-
-            $table->index('id_');
-        });
-
-        if ($params['sortname'] == 'id') {
-            $query = DB::table((new Kota)->getTable())->select(
-                'kota.id as id_',
-                'kota.kodekota',
-                'kota.keterangan',
-                'kota.zona_id',
-                'kota.statusaktif',
-                'kota.modifiedby',
-                'kota.created_at',
-                'kota.updated_at'
-            )
-                ->orderBy('kota.id', $params['sortorder']);
-        } else if ($params['sortname'] == 'keterangan') {
-            $query = DB::table((new Kota)->getTable())->select(
-                'kota.id as id_',
-                'kota.kodekota',
-                'kota.keterangan',
-                'kota.zona_id',
-                'kota.statusaktif',
-                'kota.modifiedby',
-                'kota.created_at',
-                'kota.updated_at'
-            )
-                ->orderBy($params['sortname'], $params['sortorder'])
-                ->orderBy('kota.id', $params['sortorder']);
-        } else {
-            if ($params['sortorder'] == 'asc') {
-                $query = DB::table((new Kota)->getTable())->select(
-                    'kota.id as id_',
-                    'kota.kodekota',
-                    'kota.keterangan',
-                    'kota.zona_id',
-                    'kota.statusaktif',
-                    'kota.modifiedby',
-                    'kota.created_at',
-                    'kota.updated_at'
-                )
-                    ->orderBy($params['sortname'], $params['sortorder'])
-                    ->orderBy('kota.id', $params['sortorder']);
-            } else {
-                $query = DB::table((new Kota)->getTable())->select(
-                    'kota.id as id_',
-                    'kota.kodekota',
-                    'kota.keterangan',
-                    'kota.zona_id',
-                    'kota.statusaktif',
-                    'kota.modifiedby',
-                    'kota.created_at',
-                    'kota.updated_at'
-                )
-                    ->orderBy($params['sortname'], $params['sortorder'])
-                    ->orderBy('kota.id', 'asc');
-            }
-        }
-
-
-
-        DB::table($temp)->insertUsing(['id_', 'kodekota', 'keterangan', 'zona_id', 'statusaktif', 'modifiedby', 'created_at', 'updated_at'], $query);
-
-
-        if ($del == 1) {
-            if ($params['page'] == 1) {
-                $baris = $params['indexRow'] + 1;
-            } else {
-                $hal = $params['page'] - 1;
-                $bar = $hal * $params['limit'];
-                $baris = $params['indexRow'] + $bar + 1;
-            }
-
-
-            if (DB::table($temp)
-                ->where('id', '=', $baris)->exists()
-            ) {
-                $querydata = DB::table($temp)
-                    ->select('id as row', 'id_ as id')
-                    ->where('id', '=', $baris)
-                    ->orderBy('id');
-            } else {
-                $querydata = DB::table($temp)
-                    ->select('id as row', 'id_ as id')
-                    ->where('id', '=', ($baris - 1))
-                    ->orderBy('id');
-            }
-        } else {
-            $querydata = DB::table($temp)
-                ->select('id as row')
-                ->where('id_', '=',  $id)
-                ->orderBy('id');
-        }
-
-
-        $data = $querydata->first();
-        return $data;
-    }
 }

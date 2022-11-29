@@ -13,7 +13,7 @@ class UpdatePenerimaanGiroHeaderRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -23,8 +23,46 @@ class UpdatePenerimaanGiroHeaderRequest extends FormRequest
      */
     public function rules()
     {
+        $rules = [
+            'tglbukti' => 'required',
+            'pelanggan' => 'required',
+            'keterangan' => 'required',
+            'diterimadari' => 'required',
+            'tgllunas' => 'required'
+        ];
+        $relatedRequests = [
+            UpdatePenerimaanGiroDetailRequest::class
+        ];
+
+        foreach ($relatedRequests as $relatedRequest) {
+            $rules = array_merge(
+                $rules,
+                (new $relatedRequest)->rules()
+            );
+        }
+
+        
+        return $rules;
+    }
+
+    public function attributes()
+    {
         return [
-            //
+            'tglbukti' => 'Tanggal Bukti',
+            'diterimadari' => 'Diterima Dari',
+            'tgllunas' => 'Tanggal Lunas',
+            'tgljatuhtempo.*' => 'Tanggal jatuh tempo',
+            'keterangan_detail.*' => 'Keterangan',
+            'bank.*' => 'bank',
+            'bankpelanggan.*' => 'bank pelanggan',
+            'jenisbiaya.*' => 'jenis biaya'
+        ];
+    }
+
+    public function messages()
+    {
+        return [
+            'nominal.*.gt' => 'Nominal Tidak Boleh Kosong dan Harus Lebih Besar Dari 0'
         ];
     }
 }

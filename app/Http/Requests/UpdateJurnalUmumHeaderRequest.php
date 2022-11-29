@@ -13,7 +13,7 @@ class UpdateJurnalUmumHeaderRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -23,8 +23,51 @@ class UpdateJurnalUmumHeaderRequest extends FormRequest
      */
     public function rules()
     {
+        $rules = [
+            'tglbukti' => 'required',
+            'keterangan' => 'required',
+        ];
+
+        $relatedRequests = [
+            UpdateJurnalUmumDetailRequest::class
+        ];
+
+        foreach ($relatedRequests as $relatedRequest) {
+            $rules = array_merge(
+                $rules,
+                (new $relatedRequest)->rules()
+            );
+        }
+        
+        return $rules;
+    }
+    public function attributes()
+    {
+        $attributes = [
+            'coadebet_detail.*' => 'Coa Debet',
+            'coakredit_detail.*' => 'Coa Kredit',
+            'nominal_detail.*' => 'Nominal',
+            'keterangan_detail.*' => 'Keterangan',
+        ];
+
+        $relatedRequests = [
+            UpdateJurnalUmumDetailRequest::class
+        ];
+
+        foreach ($relatedRequests as $relatedRequest) {
+            $attributes = array_merge(
+                $attributes,
+                (new $relatedRequest)->attributes()
+            );
+        }
+        
+        return $attributes;
+    }
+
+    public function messages() 
+    {
         return [
-            //
+            'nominal_detail.*.gt' => 'Nominal Tidak Boleh Kosong dan Harus Lebih Besar Dari 0'
         ];
     }
 }

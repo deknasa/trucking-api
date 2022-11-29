@@ -189,7 +189,7 @@ class PengeluaranStokHeaderController extends Controller
         try {
 
             /* Store header */
-            $pengeluaranStokHeader = PengeluaranStokHeader::findOrFail($id);
+            $pengeluaranStokHeader = PengeluaranStokHeader::lockForUpdate()->findOrFail($id);
             
             $pengeluaranStokHeader->tglbukti          = date('Y-m-d', strtotime($request->tglbukti));
             $pengeluaranStokHeader->keterangan        = ($request->keterangan == null) ?"" :$request->keterangan;
@@ -222,7 +222,7 @@ class PengeluaranStokHeaderController extends Controller
                 
                 if ($request->detail_harga) {
                     /* Delete existing detail */
-                    $pengeluaranStokDetail = PengeluaranStokDetail::where('pengeluaranstokheader_id',$id)->delete();
+                    $pengeluaranStokDetail = PengeluaranStokDetail::where('pengeluaranstokheader_id',$id)->lockForUpdate()->delete();
                     /* Store detail */
                     $detaillog = [];
         
@@ -309,7 +309,7 @@ class PengeluaranStokHeaderController extends Controller
         DB::beginTransaction();
 
         $pengeluaranStokHeader = PengeluaranStokHeader::where('id',$id)->first();
-        $delete = $pengeluaranStokHeader->delete();
+        $delete = $pengeluaranStokHeader->lockForUpdate()->delete();
 
         if ($delete) {
             $logTrail = [

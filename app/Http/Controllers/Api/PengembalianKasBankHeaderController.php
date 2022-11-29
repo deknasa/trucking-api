@@ -295,7 +295,7 @@ class PengembalianKasBankHeaderController extends Controller
             $content['subgroup'] = $subgroup ;
             $content['table'] = 'pengembaliankasbankheader';
             $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
-            $pengembalianKasBankHeader = PengembalianKasBankHeader::findOrFail($id);
+            $pengembalianKasBankHeader = PengembalianKasBankHeader::lockForUpdate()->findOrFail($id);
 
             $pengembalianKasBankHeader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $pengembalianKasBankHeader->pengeluaran_nobukti = $request->pengeluaran_nobukti;
@@ -329,11 +329,11 @@ class PengembalianKasBankHeaderController extends Controller
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
                 /* Delete existing detail */
-                PengembalianKasBankDetail::where('nobukti',$pengembalianKasBankHeader->nobukti)->delete();
-                PengeluaranDetail::where('nobukti', $pengembalianKasBankHeader->nobukti)->delete();
-                PengeluaranHeader::where('nobukti', $pengembalianKasBankHeader->nobukti)->delete();
-                JurnalUmumDetail::where('nobukti', $pengembalianKasBankHeader->nobukti)->delete();
-                JurnalUmumHeader::where('nobukti', $pengembalianKasBankHeader->nobukti)->delete();
+                PengembalianKasBankDetail::where('nobukti',$pengembalianKasBankHeader->nobukti)->lockForUpdate()->delete();
+                PengeluaranDetail::where('nobukti', $pengembalianKasBankHeader->nobukti)->lockForUpdate()->delete();
+                PengeluaranHeader::where('nobukti', $pengembalianKasBankHeader->nobukti)->lockForUpdate()->delete();
+                JurnalUmumDetail::where('nobukti', $pengembalianKasBankHeader->nobukti)->lockForUpdate()->delete();
+                JurnalUmumHeader::where('nobukti', $pengembalianKasBankHeader->nobukti)->lockForUpdate()->delete();
 
                 /* Store detail */
                 $detaillog = [];
@@ -507,13 +507,13 @@ class PengembalianKasBankHeaderController extends Controller
         DB::beginTransaction();
 
         $pengembalianKasBankHeader = PengembalianKasBankHeader::where('id', $id)->first();
-        PengembalianKasBankDetail::where('nobukti',$pengembalianKasBankHeader->nobukti)->delete();
-        PengeluaranDetail::where('nobukti', $pengembalianKasBankHeader->nobukti)->delete();
-        PengeluaranHeader::where('nobukti', $pengembalianKasBankHeader->nobukti)->delete();
-        JurnalUmumDetail::where('nobukti', $pengembalianKasBankHeader->nobukti)->delete();
-        JurnalUmumHeader::where('nobukti', $pengembalianKasBankHeader->nobukti)->delete();
+        PengembalianKasBankDetail::where('nobukti',$pengembalianKasBankHeader->nobukti)->lockForUpdate()->delete();
+        PengeluaranDetail::where('nobukti', $pengembalianKasBankHeader->nobukti)->lockForUpdate()->delete();
+        PengeluaranHeader::where('nobukti', $pengembalianKasBankHeader->nobukti)->lockForUpdate()->delete();
+        JurnalUmumDetail::where('nobukti', $pengembalianKasBankHeader->nobukti)->lockForUpdate()->delete();
+        JurnalUmumHeader::where('nobukti', $pengembalianKasBankHeader->nobukti)->lockForUpdate()->delete();
         
-        $delete = $pengembalianKasBankHeader->delete();
+        $delete = $pengembalianKasBankHeader->lockForUpdate()->delete();
 
         if ($delete) {
             $logTrail = [
@@ -619,7 +619,7 @@ class PengembalianKasBankHeaderController extends Controller
     public function approval($id)
     {
         DB::beginTransaction();
-        $pengembalianKasBankHeader = PengembalianKasBankHeader::findOrFail($id);
+        $pengembalianKasBankHeader = PengembalianKasBankHeader::lockForUpdate()->findOrFail($id);
         try {
             $statusApproval = Parameter::where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
             $statusNonApproval = Parameter::where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();

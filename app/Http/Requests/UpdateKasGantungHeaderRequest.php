@@ -13,7 +13,7 @@ class UpdateKasGantungHeaderRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -23,8 +23,43 @@ class UpdateKasGantungHeaderRequest extends FormRequest
      */
     public function rules()
     {
+        $rules = [
+            'tglbukti' => 'required',
+            'penerima' => 'required',
+            'keterangan' => 'required',
+            'bank' => 'required',
+            'tglkaskeluar' => 'required',
+        ];
+        $relatedRequests = [
+            UpdateKasGantungDetailRequest::class
+        ];
+
+        foreach ($relatedRequests as $relatedRequest) {
+            $rules = array_merge(
+                $rules,
+                (new $relatedRequest)->rules()
+            );
+        }
+        
+        return $rules;
+    }
+
+    public function attributes()
+    {
+        $attributes = [
+            'tglbukti' => 'Tanggal Bukti',
+            'tglkaskeluar' => 'Tanggal Kas Keluar',
+            'nominal.*' => 'Nominal',
+            'keterangan_detail.*' => 'Keterangan',
+        ];
+        
+        return $attributes;
+    }
+
+    public function messages() 
+    {
         return [
-            //
+            'nominal.*.gt' => 'Nominal Tidak Boleh Kosong dan Harus Lebih Besar Dari 0'
         ];
     }
 }

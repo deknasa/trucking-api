@@ -27,135 +27,12 @@ class CabangController extends Controller
     public function index()
     {
         $cabang = new Cabang();
-
         return response([
             'data' => $cabang->get(),
             'attributes' => [
                 'totalRows' => $cabang->totalRows,
                 'totalPages' => $cabang->totalPages
             ]
-        ]);
-
-        $params = [
-            'offset' => request()->offset ?? ((request()->page - 1) * request()->limit),
-            'limit' => request()->limit ?? 10,
-            'filters' => json_decode(request()->filters, true) ?? [],
-            'sortIndex' => request()->sortIndex ?? 'id',
-            'sortOrder' => request()->sortOrder ?? 'asc',
-        ];
-
-        $totalRows = DB::table((new Cabang)->getTable())->count();
-        $totalPages = ceil($totalRows / $params['limit']);
-
-        /* Sorting */
-        if ($params['sortIndex'] == 'id') {
-            $query = DB::table((new Cabang)->getTable())->select(
-                'cabang.id',
-                'cabang.kodecabang',
-                'cabang.namacabang',
-                'parameter.text as statusaktif',
-                'cabang.modifiedby',
-                'cabang.created_at',
-                'cabang.updated_at'
-            )
-                ->leftJoin('parameter', 'cabang.statusaktif', '=', 'parameter.id')
-                ->orderBy('cabang.id', $params['sortOrder']);
-        } else if ($params['sortIndex'] == 'kodecabang') {
-            $query = DB::table((new Cabang)->getTable())->select(
-                'cabang.id',
-                'cabang.kodecabang',
-                'cabang.namacabang',
-                'parameter.text as statusaktif',
-                'cabang.modifiedby',
-                'cabang.created_at',
-                'cabang.updated_at'
-            )
-                ->leftJoin('parameter', 'cabang.statusaktif', '=', 'parameter.id')
-                ->orderBy('cabang.' . $params['sortIndex'], $params['sortOrder'])
-                ->orderBy('cabang.namacabang', $params['sortOrder'])
-                ->orderBy('cabang.id', $params['sortOrder']);
-        } else {
-            if ($params['sortOrder'] == 'asc') {
-                $query = DB::table((new Cabang)->getTable())->select(
-                    'cabang.id',
-                    'cabang.kodecabang',
-                    'cabang.namacabang',
-                    'parameter.text as statusaktif',
-                    'cabang.modifiedby',
-                    'cabang.created_at',
-                    'cabang.updated_at'
-                )
-                    ->leftJoin('parameter', 'cabang.statusaktif', '=', 'parameter.id')
-                    ->orderBy('cabang.' . $params['sortIndex'], $params['sortOrder'])
-                    ->orderBy('cabang.id', $params['sortOrder']);
-            } else {
-                $query = DB::table((new Cabang)->getTable())->select(
-                    'cabang.id',
-                    'cabang.kodecabang',
-                    'cabang.namacabang',
-                    'parameter.text as statusaktif',
-                    'cabang.modifiedby',
-                    'cabang.created_at',
-                    'cabang.updated_at'
-                )
-                    ->leftJoin('parameter', 'cabang.statusaktif', '=', 'parameter.id')
-                    ->orderBy('cabang.' . $params['sortIndex'], $params['sortOrder'])
-                    ->orderBy('cabang.id', 'asc');
-            }
-        }
-
-
-        /* Searching */
-        if (count($params['filters']) > 0 && @$params['filters']['rules'][0]['data'] != '') {
-            switch ($params['filters']['groupOp']) {
-                case "AND":
-                    foreach ($params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'statusaktif') {
-                            $query = $query->where('parameter.text', '=', "$filters[data]");
-                        } else {
-                            $query = $query->where('cabang.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                        }
-                    }
-
-                    break;
-                case "OR":
-                    foreach ($params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'statusaktif') {
-                            $query = $query->orWhere('parameter.text', '=', "$filters[data]");
-                        } else {
-                            $query = $query->orWhere('cabang.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                        }
-                    }
-
-                    break;
-                default:
-
-                    break;
-            }
-
-
-            $totalRows = count($query->get());
-
-            $totalPages = ceil($totalRows / $params['limit']);
-        }
-
-        /* Paging */
-        $query = $query->skip($params['offset'])
-            ->take($params['limit']);
-
-        $cabangs = $query->get();
-
-        /* Set attributes */
-        $attributes = [
-            'totalRows' => $totalRows,
-            'totalPages' => $totalPages
-        ];
-
-        return response([
-            'status' => true,
-            'data' => $cabangs,
-            'attributes' => $attributes,
-            'params' => $params
         ]);
     }
 
@@ -172,7 +49,6 @@ class CabangController extends Controller
             $cabang->statusaktif = $request->statusaktif;
             $cabang->modifiedby = auth('api')->user()->name;
 
-            TOP:
             if ($cabang->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($cabang->getTable()),
@@ -190,11 +66,6 @@ class CabangController extends Controller
                 DB::commit();
             }
 
-            /* Set position and page */
-            // $selected = $this->getPosition($cabang, $cabang->getTable());
-            // $cabang->position = $selected->position;
-            // $cabang->page = ceil($cabang->position / ($request->limit ?? 10));
-
              /* Set position and page */
              $selected = $this->getPosition($cabang, $cabang->getTable());
              $cabang->position = $selected->position;
@@ -205,15 +76,6 @@ class CabangController extends Controller
                 'message' => 'Berhasil disimpan',
                 'data' => $cabang
             ], 201);
-        } catch (QueryException $queryException) {
-            if (isset($queryException->errorInfo[1]) && is_array($queryException->errorInfo)) {
-                // Check if deadlock
-                if ($queryException->errorInfo[1] === 1205) {
-                    goto TOP;
-                }
-            }
-
-            throw $queryException;            
         } catch (\Throwable $th) {
             DB::rollBack();
 

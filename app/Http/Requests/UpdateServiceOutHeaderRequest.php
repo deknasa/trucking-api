@@ -13,7 +13,7 @@ class UpdateServiceOutHeaderRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -23,8 +23,33 @@ class UpdateServiceOutHeaderRequest extends FormRequest
      */
     public function rules()
     {
+        $rules = [
+            'tglbukti' => 'required',
+            'trado' => 'required',
+            'tglkeluar' => 'required',
+            'keterangan' => 'required',
+        ];
+        $relatedRequests = [
+            UpdateServiceOutDetailRequest::class
+        ];
+
+        foreach ($relatedRequests as $relatedRequest) {
+            $rules = array_merge(
+                $rules,
+                (new $relatedRequest)->rules()
+            );
+        }
+        
+        return $rules;
+    }
+
+    public function attributes()
+    {
         return [
-            //
+            'tglbukti' => 'tanggal bukti',
+            'tglkeluar' => 'tanggal keluar',
+            'servicein_nobukti.*' => 'no bukti service in',
+            'keterangan_detail.*' => 'keterangan detail'
         ];
     }
 }

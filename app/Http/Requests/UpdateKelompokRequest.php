@@ -13,7 +13,7 @@ class UpdateKelompokRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +24,17 @@ class UpdateKelompokRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'kodekelompok' => 'required',
+            'keterangan' => 'required',
+            'statusaktif' => 'required'
+        ];
+    }
+    
+    public function attributes()
+    {
+        return[
+            'kodekelompok' => 'kode kelompok',
+            'statusaktif' => 'status aktif'
         ];
     }
 }

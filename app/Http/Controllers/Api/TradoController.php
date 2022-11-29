@@ -11,6 +11,7 @@ use App\Http\Requests\TradoRequest;
 use App\Models\Trado;
 use App\Models\LogTrail;
 use App\Models\Parameter;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 
 use Illuminate\Support\Facades\DB;
@@ -90,6 +91,7 @@ class TradoController extends Controller
             $trado->photostnk = $this->storeFiles($request->photostnk, 'stnk');
             $trado->photobpkb = $this->storeFiles($request->photobpkb, 'bpkb');
             $trado->phototrado = $this->storeFiles($request->phototrado, 'trado');
+
             $trado->save();
 
             $logTrail = [
@@ -115,7 +117,7 @@ class TradoController extends Controller
                 'status' => true,
                 'message' => 'Berhasil disimpan',
                 'data' => $trado
-            ]);
+            ], 201);
         } catch (\Throwable $th) {
             $this->deleteFiles($trado);
             DB::rollBack();
@@ -125,11 +127,10 @@ class TradoController extends Controller
     /**
      * @ClassName 
      */
-    public function update(StoreTradoRequest $request, $id)
+    public function update(StoreTradoRequest $request,Trado $trado)
     {
         DB::beginTransaction();
         try {
-            $trado = Trado::find($id);
             $trado->keterangan = $request->keterangan;
             $trado->statusaktif = $request->statusaktif;
             $trado->kmawal = str_replace(',','',$request->kmawal);
@@ -224,7 +225,7 @@ class TradoController extends Controller
     {
         DB::beginTransaction();
         try {
-            if ($trado->delete()) {
+            if ($trado->lockForUpdate()->delete()) {
                 $logTrail = [
                     'namatabel' => strtoupper($trado->getTable()),
                     'postingdari' => 'DELETE TRADO',

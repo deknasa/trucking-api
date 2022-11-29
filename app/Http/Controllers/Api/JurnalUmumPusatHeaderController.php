@@ -72,7 +72,7 @@ class JurnalUmumPusatHeaderController extends Controller
                     $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                     $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-                    $jurnalApprove = JurnalUmumHeader::findOrFail($request->jurnalId[$i]);
+                    $jurnalApprove = JurnalUmumHeader::lockForUpdate()->findOrFail($request->jurnalId[$i]);
                     $jurnalApprove->statusapproval = $request->approve;
                     $jurnalApprove->userapproval = auth('api')->user()->name;
                     $jurnalApprove->tglapproval = date('Y-m-d h:i:s');
@@ -162,7 +162,7 @@ class JurnalUmumPusatHeaderController extends Controller
                         
                     }                    
 
-                    $jurnalApprove = JurnalUmumHeader::findOrFail($request->jurnalId[$i]);
+                    $jurnalApprove = JurnalUmumHeader::lockForUpdate()->findOrFail($request->jurnalId[$i]);
                     $jurnalApprove->statusapproval = $request->approve;
                     $jurnalApprove->userapproval = auth('api')->user()->name;
                     $jurnalApprove->tglapproval = date('Y-m-d h:i:s');

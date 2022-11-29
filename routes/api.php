@@ -622,7 +622,7 @@
 
     Route::get('kota/combo', [KotaController::class, 'combo']);
     Route::get('kota/field_length', [KotaController::class, 'fieldLength']);
-    Route::resource('kota', KotaController::class)->parameters(['kota' => 'kota']);
+    Route::resource('kota', KotaController::class);
 
     Route::get('mandor/combo', [MandorController::class, 'combo']);
     Route::get('mandor/field_length', [MandorController::class, 'fieldLength']);
@@ -662,10 +662,6 @@
     Route::resource('upahsupir', UpahSupirController::class);
 
     Route::resource('upahsupirrincian', UpahSupirRincianController::class);
-
-    Route::get('ritasi/combo', [RitasiController::class, 'combo']);
-    Route::get('ritasi/field_length', [RitasiController::class, 'fieldLength']);
-    Route::resource('ritasi', RitasiController::class);
 
 
 

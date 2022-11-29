@@ -57,7 +57,6 @@ class SubKelompokController extends Controller
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
 
-            TOP:
             if ($subKelompok->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($subKelompok->getTable()),
@@ -85,15 +84,6 @@ class SubKelompokController extends Controller
                 'message' => 'Berhasil disimpan',
                 'data' => $subKelompok
             ], 201);
-        } catch (QueryException $queryException) {
-            if (isset($queryException->errorInfo[1]) && is_array($queryException->errorInfo)) {
-                // Check if deadlock
-                if ($queryException->errorInfo[1] === 1205) {
-                    goto TOP;
-                }
-            }
-
-            throw $queryException;
         } catch (\Throwable $th) {
             DB::rollBack();
 
@@ -157,7 +147,7 @@ class SubKelompokController extends Controller
     {
         DB::beginTransaction();
 
-        $delete = $subKelompok->delete();
+        $delete = $subKelompok->lockForUpdate()->delete();
 
         if ($delete) {
             $logTrail = [

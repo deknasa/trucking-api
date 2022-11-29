@@ -27,10 +27,18 @@ class StoreRitasiRequest extends FormRequest
             'tglbukti' => 'required',
             'statusritasi' => 'required',
             'suratpengantar_nobukti' => 'required',
-            'dari_id' => 'required',
-            'sampai_id' => 'required',
-            'trado_id' => 'required',
-            'supir_id' => 'required',
+            'dari' => 'required',
+            'sampai' => 'required',
+            'trado' => 'required',
+            'supir' => 'required',
+        ];
+    }
+    public function attributes()
+    {
+        return [
+            'tglbukti' => 'tanggal bukti',
+            'statusritasi' => 'status ritasi',
+            'suratpengantar_nobukti' => 'No bukti surat pengantar',
         ];
     }
 }

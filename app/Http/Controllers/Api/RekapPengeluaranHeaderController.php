@@ -86,7 +86,7 @@ class RekapPengeluaranHeaderController extends Controller
                 /* Store detail */
                 
                 if ($request->pengeluaran_nobukti) {
-                    $rekapPengeluaranDetail = RekapPengeluaranDetail::where('rekappengeluaran_id',$rekapPengeluaranHeader->id)->delete();
+                    $rekapPengeluaranDetail = RekapPengeluaranDetail::where('rekappengeluaran_id',$rekapPengeluaranHeader->id)->lockForUpdate()->delete();
 
                     $detaillog = [];
                     for ($i = 0; $i < count($request->pengeluaran_nobukti); $i++) {
@@ -166,7 +166,7 @@ class RekapPengeluaranHeaderController extends Controller
 
         try {
             
-            $rekapPengeluaranHeader = RekapPengeluaranHeader::findOrFail($id);
+            $rekapPengeluaranHeader = RekapPengeluaranHeader::lockForUpdate()->findOrFail($id);
 
             $rekapPengeluaranHeader->tglbukti = date('Y-m-d',strtotime($request->tglbukti));
             $rekapPengeluaranHeader->keterangan = $request->keterangan;
@@ -192,7 +192,7 @@ class RekapPengeluaranHeaderController extends Controller
                 /* Store detail */
                 
                 if ($request->pengeluaran_nobukti) {
-                    $rekapPengeluaranDetail = RekapPengeluaranDetail::where('rekappengeluaran_id',$rekapPengeluaranHeader->id)->delete();
+                    $rekapPengeluaranDetail = RekapPengeluaranDetail::where('rekappengeluaran_id',$rekapPengeluaranHeader->id)->lockForUpdate()->delete();
 
                     $detaillog = [];
                     for ($i = 0; $i < count($request->pengeluaran_nobukti); $i++) {
@@ -263,12 +263,12 @@ class RekapPengeluaranHeaderController extends Controller
     public function destroy(RekapPengeluaranHeader $rekapPengeluaranHeader,$id)
     {
         DB::beginTransaction();
-        $rekapPengeluaranHeader = RekapPengeluaranHeader::findOrFail($id);
+        $rekapPengeluaranHeader = RekapPengeluaranHeader::lockForUpdate()->findOrFail($id);
 
         try {
             
-            $delete = RekapPengeluaranDetail::where('rekappengeluaran_id',$id)->delete();
-            $delete = $rekapPengeluaranHeader->delete();
+            $delete = RekapPengeluaranDetail::where('rekappengeluaran_id',$id)->lockForUpdate()->delete();
+            $delete = $rekapPengeluaranHeader->lockForUpdate()->delete();
             if ($delete) {
                 $logTrail = [
                     'namatabel' => strtoupper($rekapPengeluaranHeader->getTable()),
@@ -315,7 +315,7 @@ class RekapPengeluaranHeaderController extends Controller
     public function approval($id)
     {
         DB::beginTransaction();
-        $rekapPengeluaranHeader = RekapPengeluaranHeader::findOrFail($id);
+        $rekapPengeluaranHeader = RekapPengeluaranHeader::lockForUpdate()->findOrFail($id);
         try {
             $statusApproval = Parameter::where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
             $statusNonApproval = Parameter::where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();

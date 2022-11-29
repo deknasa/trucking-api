@@ -13,7 +13,7 @@ class UpdateTarifRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -25,16 +25,34 @@ class UpdateTarifRequest extends FormRequest
     {
         return [
             'tujuan' => 'required',
-            'container_id' => 'required',
-            'nominal' => 'required|numeric',
+            'container' => 'required',
+            'nominal' => 'required|numeric|gt:0',
             'statusaktif' => 'required',
-            'tujuanasal' => 'required',
-            'sistemton' => 'required',
-            'zona_id' => 'required',
-            'kota_id' => 'required',
-            'nominalton' => 'required|numeric',
-            'tglberlaku' => 'required',
+            'statussistemton' => 'required',
+            'zona' => 'required',
+            'kota' => 'required',
+            'nominalton' => 'integer|min:0',
+            'tglmulaiberlaku' => 'required',
+            'tglakhirberlaku' => 'required',
             'statuspenyesuaianharga' => 'required',
+        ];
+    }
+
+    public function attributes()
+    {
+        return [
+            'statussistemton' => 'Status Sistem Ton',
+            'tglmulaiberlaku' => 'Tanggal Mulai Berlaku',
+            'tglakhirberlaku' => 'Tanggal Akhir Berlaku',
+            'statuspenyesuaianharga' => 'Status Penyesuaian Harga'
+        ];
+    }
+
+    public function messages() 
+    {
+        return [
+            'nominal.gt' => 'Nominal Tidak Boleh Kosong dan Harus Lebih Besar Dari 0',
+            'nominalton.min' => 'Tidak boleh minus. minimal 0',
         ];
     }
 }

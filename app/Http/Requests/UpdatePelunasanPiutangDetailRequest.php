@@ -13,7 +13,7 @@ class UpdatePelunasanPiutangDetailRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +24,10 @@ class UpdatePelunasanPiutangDetailRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'bayarppd' => 'required|array',
+            'bayarppd.*' => 'required|numeric|gt:0',
+            'keterangandetailppd' => 'required|array',
+            'keterangandetailppd.*' => 'required',
         ];
     }
 }

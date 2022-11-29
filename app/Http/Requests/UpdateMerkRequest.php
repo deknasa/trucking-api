@@ -13,7 +13,7 @@ class UpdateMerkRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +24,17 @@ class UpdateMerkRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'kodemerk' => 'required',
+            'keterangan' => 'required',
+            'statusaktif' => 'required'
+        ];
+    }
+
+    public function attributes()
+    {
+        return [
+            'kodemerk' => 'kode merk',
+            'statusaktif' => 'statusaktif'
         ];
     }
 }

@@ -347,15 +347,6 @@ class KasGantungHeaderController extends Controller
                 'data' => $kasgantungHeader
             ], 201);
             
-        } catch (QueryException $queryException) {
-            if (isset($queryException->errorInfo[1]) && is_array($queryException->errorInfo)) {
-                // Check if deadlock
-                if ($queryException->errorInfo[1] === 1205) {
-                    goto TOP;
-                }
-            }
-
-            throw $queryException;            
         } catch (\Throwable $th) {
             DB::rollBack();
             return response($th->getMessage());
@@ -366,8 +357,8 @@ class KasGantungHeaderController extends Controller
 
     public function show($id)
     {
-        $data = KasGantungHeader::find($id);
-        $detail = KasGantungDetail::find($id);
+        $data = KasGantungHeader::findAll($id);
+        $detail = KasGantungDetail::findAll($id);
         return response([
             'status' => true,
             'data' => $data,
@@ -379,7 +370,7 @@ class KasGantungHeaderController extends Controller
       /**
      * @ClassName 
      */
-    public function update(StoreKasGantungHeaderRequest $request, $id)
+    public function update(StoreKasGantungHeaderRequest $request, KasGantungHeader $kasgantungheader)
     {
         DB::beginTransaction();
 
@@ -388,27 +379,26 @@ class KasGantungHeaderController extends Controller
             $bank = Bank::lockForUpdate()->findOrFail($request->bank_id);
 
             /* Store header */
-            $kasgantungHeader = KasGantungHeader::lockForUpdate()->findOrFail($id);
-            $kasgantungHeader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
-            $kasgantungHeader->penerima_id = $request->penerima_id;
-            $kasgantungHeader->keterangan = $request->keterangan ?? '';
-            $kasgantungHeader->bank_id = $request->bank_id ?? 0;
-            $kasgantungHeader->pengeluaran_nobukti = $request->pengeluaran_nobukti ?? '';
-            $kasgantungHeader->coakaskeluar = $bank->coa ?? '';
-            $kasgantungHeader->postingdari = 'ENTRY KAS GANTUNG';
-            $kasgantungHeader->tglkaskeluar = date('Y-m-d', strtotime($request->tglkaskeluar));
-            $kasgantungHeader->modifiedby = auth('api')->user()->name;
+            $kasgantungheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
+            $kasgantungheader->penerima_id = $request->penerima_id;
+            $kasgantungheader->keterangan = $request->keterangan ?? '';
+            $kasgantungheader->bank_id = $request->bank_id ?? 0;
+            $kasgantungheader->pengeluaran_nobukti = $request->pengeluaran_nobukti ?? '';
+            $kasgantungheader->coakaskeluar = $bank->coa ?? '';
+            $kasgantungheader->postingdari = 'ENTRY KAS GANTUNG';
+            $kasgantungheader->tglkaskeluar = date('Y-m-d', strtotime($request->tglkaskeluar));
+            $kasgantungheader->modifiedby = auth('api')->user()->name;
             
-            if ($kasgantungHeader->save()) {
+            if ($kasgantungheader->save()) {
            
                 $logTrail = [
-                    'namatabel' => strtoupper($kasgantungHeader->getTable()),
-                    'postingdari' => 'EDIT KAS GANTUNG',
-                    'idtrans' => $kasgantungHeader->id,
-                    'nobuktitrans' => $kasgantungHeader->nobukti,
+                    'namatabel' => strtoupper($kasgantungheader->getTable()),
+                    'postingdari' => 'EDIT KAS GANTUNG HEADER',
+                    'idtrans' => $kasgantungheader->id,
+                    'nobuktitrans' => $kasgantungheader->nobukti,
                     'aksi' => 'EDIT',
-                    'datajson' => $kasgantungHeader->toArray(),
-                    'modifiedby' => $kasgantungHeader->modifiedby
+                    'datajson' => $kasgantungheader->toArray(),
+                    'modifiedby' => $kasgantungheader->modifiedby
                 ];
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
@@ -417,7 +407,7 @@ class KasGantungHeaderController extends Controller
             
             
             /* Delete existing detail */
-            $kasgantungHeader->kasgantungDetail()->lockForUpdate()->delete();
+            $kasgantungheader->kasgantungDetail()->lockForUpdate()->delete();
             PengeluaranDetail::where('nobukti',$request->pengeluaran_nobukti)->lockForUpdate()->delete();
             PengeluaranHeader::where('nobukti',$request->pengeluaran_nobukti)->lockForUpdate()->delete();
             JurnalUmumDetail::where('nobukti',$request->pengeluaran_nobukti)->lockForUpdate()->delete();
@@ -428,8 +418,8 @@ class KasGantungHeaderController extends Controller
             $total=0;
             for ($i = 0; $i < count($request->nominal); $i++) {
                 $datadetail = [
-                    'kasgantung_id' => $kasgantungHeader->id,
-                    'nobukti' => $kasgantungHeader->nobukti,
+                    'kasgantung_id' => $kasgantungheader->id,
+                    'nobukti' => $kasgantungheader->nobukti,
                     'nominal' => $request->nominal[$i],
                     'coa' => $bank->coa ?? '',
                     'keterangan' => $request->keterangan_detail[$i],
@@ -447,14 +437,14 @@ class KasGantungHeaderController extends Controller
 
                 $datadetaillog = [
                     'id' => $iddetail,
-                    'kasgantung_id' => $kasgantungHeader->id,
-                    'nobukti' => $kasgantungHeader->nobukti,
+                    'kasgantung_id' => $kasgantungheader->id,
+                    'nobukti' => $kasgantungheader->nobukti,
                     'nominal' => $request->nominal[$i],
                     'coa' => $bank->coa ?? '',
                     'keterangan' => $request->keterangan_detail[$i],
                     'modifiedby' => auth('api')->user()->name,
-                    'created_at' => date('d-m-Y H:i:s',strtotime($kasgantungHeader->created_at)),
-                    'updated_at' => date('d-m-Y H:i:s',strtotime($kasgantungHeader->updated_at)),
+                    'created_at' => date('d-m-Y H:i:s',strtotime($kasgantungheader->created_at)),
+                    'updated_at' => date('d-m-Y H:i:s',strtotime($kasgantungheader->updated_at)),
                     ];
                 $detaillog[]=$datadetaillog;
 
@@ -462,16 +452,16 @@ class KasGantungHeaderController extends Controller
             }
 
             $dataid = LogTrail::select('id')
-            ->where('nobuktitrans', '=', $kasgantungHeader->nobukti)
-            ->where('namatabel', '=', $kasgantungHeader->getTable())
+            ->where('nobuktitrans', '=', $kasgantungheader->nobukti)
+            ->where('namatabel', '=', $kasgantungheader->getTable())
             ->orderBy('id', 'DESC')
             ->first();
 
             $datalogtrail = [
                 'namatabel' => $tabeldetail,
-                'postingdari' => 'EDIT ENTRY KAS GANTUNG',
+                'postingdari' => 'EDIT KAS GANTUNG DETAIL',
                 'idtrans' =>  $dataid->id,
-                'nobuktitrans' => $kasgantungHeader->nobukti,
+                'nobuktitrans' => $kasgantungheader->nobukti,
                 'aksi' => 'EDIT',
                 'datajson' => $detaillog,
                 'modifiedby' => auth('api')->user()->name,
@@ -483,9 +473,9 @@ class KasGantungHeaderController extends Controller
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
 
-            if ($kasgantungHeader && $kasgantungHeader->kasgantungDetail) {
-                $kasgantungHeader->pengeluaran_nobukti = '-';
-                $kasgantungHeader->save();
+            if ($kasgantungheader && $kasgantungheader->kasgantungDetail) {
+                $kasgantungheader->pengeluaran_nobukti = '-';
+                $kasgantungheader->save();
 
                 if ($request->bank_id != '') {
                     
@@ -517,8 +507,8 @@ class KasGantungHeaderController extends Controller
                     $nobuktikaskeluar = app(Controller::class)->getRunningNumber($content)->original['data'];
                     
                     
-                    $kasgantungHeader->pengeluaran_nobukti = $nobuktikaskeluar;
-                    $kasgantungHeader->save();
+                    $kasgantungheader->pengeluaran_nobukti = $nobuktikaskeluar;
+                    $kasgantungheader->save();
 
 
                     $pengeluaranHeader = [
@@ -582,48 +572,44 @@ class KasGantungHeaderController extends Controller
                 DB::commit();
 
                 /* Set position and page */
-                $selected = $this->getPosition($kasgantungHeader, $kasgantungHeader->getTable());
-                $kasgantungHeader->position = $selected->position;
-                $kasgantungHeader->page = ceil($kasgantungHeader->position / ($request->limit ?? 10));
+                $selected = $this->getPosition($kasgantungheader, $kasgantungheader->getTable());
+                $kasgantungheader->position = $selected->position;
+                $kasgantungheader->page = ceil($kasgantungheader->position / ($request->limit ?? 10));
 
                 return response([
                     'status' => true,
                     'message' => 'Berhasil diubah',
-                    'data' => $kasgantungHeader
+                    'data' => $kasgantungheader
                 ]);
             }
         } catch (\Throwable $th) {
             DB::rollBack();
             return response($th->getMessage());
         }
-
-        return response($kasgantungHeader->kasgantungDetail);
     }
       /**
      * @ClassName 
      */
-    public function destroy(KasGantungHeader $kasGantungHeader, $id, Request $request)
+    public function destroy(KasGantungHeader $kasgantungheader, Request $request)
     {
         DB::beginTransaction();
 
         try {
-            $get = KasGantungHeader::lockForUpdate()->findOrFail($id);
-
-            $delete = PengeluaranDetail::where('nobukti',$get->pengeluaran_nobukti)->lockForUpdate()->delete();
-            $delete = PengeluaranHeader::where('nobukti',$get->pengeluaran_nobukti)->lockForUpdate()->delete();
-            $delete = JurnalUmumDetail::where('nobukti',$get->pengeluaran_nobukti)->lockForUpdate()->delete();
-            $delete = JurnalUmumHeader::where('nobukti',$get->pengeluaran_nobukti)->lockForUpdate()->delete();
-            $delete = KasGantungDetail::where('kasgantung_id',$id)->lockForUpdate()->delete();
-            $delete = KasGantungHeader::destroy($id);
+            $delete = PengeluaranDetail::where('nobukti',$kasgantungheader->pengeluaran_nobukti)->lockForUpdate()->delete();
+            $delete = PengeluaranHeader::where('nobukti',$kasgantungheader->pengeluaran_nobukti)->lockForUpdate()->delete();
+            $delete = JurnalUmumDetail::where('nobukti',$kasgantungheader->pengeluaran_nobukti)->lockForUpdate()->delete();
+            $delete = JurnalUmumHeader::where('nobukti',$kasgantungheader->pengeluaran_nobukti)->lockForUpdate()->delete();
+            $delete = KasGantungDetail::where('kasgantung_id',$kasgantungheader->id)->lockForUpdate()->delete();
+            $delete = KasGantungHeader::destroy($kasgantungheader->id);
             
             $datalogtrail = [
-                'namatabel' => $kasGantungHeader->getTable(),
-                'postingdari' => 'HAPUS KAS GANTUNG',
-                'idtrans' => $id,
-                'nobuktitrans' => $get->nobukti,
-                'aksi' => 'HAPUS',
-                'datajson' => '',
-                'modifiedby' => $get->modifiedby,
+                'namatabel' => $kasgantungheader->getTable(),
+                'postingdari' => 'DELETE KAS GANTUNG HEADER',
+                'idtrans' => $kasgantungheader->id,
+                'nobuktitrans' => $kasgantungheader->nobukti,
+                'aksi' => 'DELETE',
+                'datajson' => $kasgantungheader->toArray(),
+                'modifiedby' => $kasgantungheader->modifiedby,
             ];
 
             $data = new StoreLogTrailRequest($datalogtrail);
@@ -632,15 +618,15 @@ class KasGantungHeaderController extends Controller
             if ($delete) {
                 DB::commit();
 
-                $selected = $this->getPosition($kasGantungHeader, $kasGantungHeader->getTable(), true);
-                $kasGantungHeader->position = $selected->position;
-                $kasGantungHeader->id = $selected->id;
-                $kasGantungHeader->page = ceil($kasGantungHeader->position / ($request->limit ?? 10));
+                $selected = $this->getPosition($kasgantungheader, $kasgantungheader->getTable(), true);
+                $kasgantungheader->position = $selected->position;
+                $kasgantungheader->id = $selected->id;
+                $kasgantungheader->page = ceil($kasgantungheader->position / ($request->limit ?? 10));
 
                 return response([
                     'status' => true,
                     'message' => 'Berhasil dihapus',
-                    'data' => $kasGantungHeader
+                    'data' => $kasgantungheader
                 ]);
             } else {
                 DB::rollBack();

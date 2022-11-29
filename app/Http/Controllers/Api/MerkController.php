@@ -54,7 +54,6 @@ class MerkController extends Controller
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
 
-            TOP:
             if ($merk->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($merk->getTable()),
@@ -82,15 +81,6 @@ class MerkController extends Controller
                 'message' => 'Berhasil disimpan',
                 'data' => $merk
             ], 201);
-        } catch (QueryException $queryException) {
-            if (isset($queryException->errorInfo[1]) && is_array($queryException->errorInfo)) {
-                // Check if deadlock
-                if ($queryException->errorInfo[1] === 1205) {
-                    goto TOP;
-                }
-            }
-
-            throw $queryException;
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
@@ -105,14 +95,11 @@ class MerkController extends Controller
         ]);
     }
 
-    public function edit(Merk $merk)
-    {
-        //
-    }
+    
    /**
      * @ClassName 
      */
-    public function update(StoreMerkRequest $request, Merk $merk)
+    public function update(UpdateMerkRequest $request, Merk $merk)
     {
         try {
             $merk = Merk::lockForUpdate()->findOrFail($merk->id);
@@ -221,117 +208,4 @@ class MerkController extends Controller
         ]);
     }
 
-    public function getid($id, $request, $del)
-    {
-        $params = [
-            'indexRow' => $request->indexRow ?? 1,
-            'limit' => $request->limit ?? 100,
-            'page' => $request->page ?? 1,
-            'sortname' => $request->sortname ?? 'id',
-            'sortorder' => $request->sortorder ?? 'asc',
-        ];
-        $temp = '##temp' . rand(1, 10000);
-        Schema::create($temp, function ($table) {
-            $table->id();
-            $table->bigInteger('id_')->default('0');
-            $table->string('kodemerk', 50)->default('');
-            $table->string('keterangan', 50)->default('');
-            $table->string('statusaktif', 50)->default('');
-            $table->string('modifiedby', 30)->default('');
-            $table->dateTime('created_at')->default('1900/1/1');
-            $table->dateTime('updated_at')->default('1900/1/1');
-
-            $table->index('id_');
-        });
-
-        if ($params['sortname'] == 'id') {
-            $query = DB::table((new Merk)->getTable())->select(
-                'merk.id as id_',
-                'merk.kodemerk',
-                'merk.keterangan',
-                'merk.statusaktif',
-                'merk.modifiedby',
-                'merk.created_at',
-                'merk.updated_at'
-            )
-                ->orderBy('merk.id', $params['sortorder']);
-        } else if ($params['sortname'] == 'keterangan') {
-            $query = DB::table((new Merk)->getTable())->select(
-                'merk.id as id_',
-                'merk.kodemerk',
-                'merk.keterangan',
-                'merk.statusaktif',
-                'merk.modifiedby',
-                'merk.created_at',
-                'merk.updated_at'
-            )
-                ->orderBy($params['sortname'], $params['sortorder'])
-                ->orderBy('merk.id', $params['sortorder']);
-        } else {
-            if ($params['sortorder'] == 'asc') {
-                $query = DB::table((new Merk)->getTable())->select(
-                    'merk.id as id_',
-                    'merk.kodemerk',
-                    'merk.keterangan',
-                    'merk.statusaktif',
-                    'merk.modifiedby',
-                    'merk.created_at',
-                    'merk.updated_at'
-                )
-                    ->orderBy($params['sortname'], $params['sortorder'])
-                    ->orderBy('merk.id', $params['sortorder']);
-            } else {
-                $query = DB::table((new Merk)->getTable())->select(
-                    'merk.id as id_',
-                    'merk.kodemerk',
-                    'merk.keterangan',
-                    'merk.statusaktif',
-                    'merk.modifiedby',
-                    'merk.created_at',
-                    'merk.updated_at'
-                )
-                    ->orderBy($params['sortname'], $params['sortorder'])
-                    ->orderBy('merk.id', 'asc');
-            }
-        }
-
-
-
-        DB::table($temp)->insertUsing(['id_', 'kodemerk','keterangan', 'statusaktif', 'modifiedby', 'created_at', 'updated_at'], $query);
-
-
-        if ($del == 1) {
-            if ($params['page'] == 1) {
-                $baris = $params['indexRow'] + 1;
-            } else {
-                $hal = $params['page'] - 1;
-                $bar = $hal * $params['limit'];
-                $baris = $params['indexRow'] + $bar + 1;
-            }
-
-
-            if (DB::table($temp)
-                ->where('id', '=', $baris)->exists()
-            ) {
-                $querydata = DB::table($temp)
-                    ->select('id as row', 'id_ as id')
-                    ->where('id', '=', $baris)
-                    ->orderBy('id');
-            } else {
-                $querydata = DB::table($temp)
-                    ->select('id as row', 'id_ as id')
-                    ->where('id', '=', ($baris - 1))
-                    ->orderBy('id');
-            }
-        } else {
-            $querydata = DB::table($temp)
-                ->select('id as row')
-                ->where('id_', '=',  $id)
-                ->orderBy('id');
-        }
-
-
-        $data = $querydata->first();
-        return $data;
-    }
 }

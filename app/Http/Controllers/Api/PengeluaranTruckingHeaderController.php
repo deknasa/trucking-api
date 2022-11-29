@@ -24,7 +24,7 @@ use App\Models\PengeluaranHeader;
 use App\Models\PengeluaranTrucking;
 use App\Models\PengeluaranTruckingDetail;
 use App\Models\Supir;
-
+use Illuminate\Database\QueryException;
 
 class PengeluaranTruckingHeaderController extends Controller
 {
@@ -199,8 +199,17 @@ class PengeluaranTruckingHeaderController extends Controller
                 'status' => true,
                 'message' => 'Berhasil disimpan',
                 'data' => $pengeluarantruckingheader 
-            ]);
+            ], 201);
             
+        } catch (QueryException $queryException) {
+            if (isset($queryException->errorInfo[1]) && is_array($queryException->errorInfo)) {
+                // Check if deadlock
+                if ($queryException->errorInfo[1] === 1205) {
+                    goto TOP;
+                }
+            }
+
+            throw $queryException;
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
@@ -229,7 +238,7 @@ class PengeluaranTruckingHeaderController extends Controller
     /**
      * @ClassName
      */
-    public function update(StorePengeluaranTruckingHeaderRequest $request, $id)
+    public function update(UpdatePengeluaranTruckingHeaderRequest $request,PengeluaranTruckingHeader $pengeluarantruckingheader)
     {
         DB::beginTransaction();
 
@@ -255,9 +264,6 @@ class PengeluaranTruckingHeaderController extends Controller
             $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
                 
             
-
-            $pengeluarantruckingheader = PengeluaranTruckingHeader::findOrFail($id);
-
             $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
             $pengeluarantruckingheader->nobukti = $nobukti;
             $pengeluarantruckingheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
@@ -288,7 +294,7 @@ class PengeluaranTruckingHeaderController extends Controller
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
                 
-               PengeluaranTruckingDetail::where('pengeluarantruckingheader_id',$id)->delete();
+               PengeluaranTruckingDetail::where('pengeluarantruckingheader_id',$pengeluarantruckingheader->id)->lockForUpdate()->delete();
                
                 /* Store detail */
                 
@@ -383,21 +389,20 @@ class PengeluaranTruckingHeaderController extends Controller
     /**
      * @ClassName
      */
-    public function destroy($id, Request $request)
+    public function destroy(PengeluaranTruckingHeader $pengeluarantruckingheader, Request $request)
     {
         DB::beginTransaction();
-        $pengeluarantruckingheader = new PengeluaranTruckingHeader();
         try {
             
-            $delete = PengeluaranTruckingDetail::where('pengeluarantruckingheader_id',$id)->delete();
-            $delete = PengeluaranTruckingHeader::destroy($id);
+            $delete = PengeluaranTruckingDetail::where('pengeluarantruckingheader_id',$pengeluarantruckingheader->id)->lockForUpdate()->delete();
+            $delete = PengeluaranTruckingHeader::destroy($pengeluarantruckingheader->id);
             
             if ($delete) {
                 $logTrail = [
                     'namatabel' => strtoupper($pengeluarantruckingheader->getTable()),
                     'postingdari' => 'DELETE PENGELUARAN TRUCKING HEADER',
-                    'idtrans' => $id,
-                    'nobuktitrans' => '',
+                    'idtrans' => $pengeluarantruckingheader->id,
+                    'nobuktitrans' => $pengeluarantruckingheader->nobukti,
                     'aksi' => 'DELETE',
                     'datajson' => $pengeluarantruckingheader->toArray(),
                     'modifiedby' => $pengeluarantruckingheader->modifiedby

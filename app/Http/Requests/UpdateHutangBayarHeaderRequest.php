@@ -13,7 +13,7 @@ class UpdateHutangBayarHeaderRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -23,8 +23,41 @@ class UpdateHutangBayarHeaderRequest extends FormRequest
      */
     public function rules()
     {
+        $rules = [
+            'tglbukti' => 'required',
+            'keterangan' => 'required',
+            'bank' => 'required',
+            'coa' => 'required',
+            'supplier' => 'required'
+        ];
+        $relatedRequests = [
+            UpdateHutangBayarDetailRequest::class
+        ];
+
+        foreach ($relatedRequests as $relatedRequest) {
+            $rules = array_merge(
+                $rules,
+                (new $relatedRequest)->rules()
+            );
+        }
+        
+        return $rules;
+    }
+    
+    public function attributes() {
         return [
-            //
+            'hutang_id' => 'Pilih Hutang',
+            'keterangandetail.*' => 'keterangan detail',
+            'bayar.*' => 'bayar',
+            'alatbayar.*' => 'alat bayar',
+            'tglcair.*' => 'tanggal cair'
+        ];
+    }
+    
+    public function messages()
+    {
+        return [
+            'bayar.*.gt' => 'bayar wajib di isi',
         ];
     }
 }

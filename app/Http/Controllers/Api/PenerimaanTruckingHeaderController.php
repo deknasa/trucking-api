@@ -25,7 +25,7 @@ use App\Models\PenerimaanHeader;
 use App\Models\PenerimaanTrucking;
 use App\Models\PenerimaanTruckingDetail;
 use App\Models\Supir;
-
+use Illuminate\Database\QueryException;
 
 class PenerimaanTruckingHeaderController extends Controller
 {
@@ -96,7 +96,6 @@ class PenerimaanTruckingHeaderController extends Controller
 
                 DB::commit();
             } catch (\Exception $e) {
-                dd($e->getMessage());
                 $errorCode = @$e->errorInfo[1];
                 if ($errorCode == 2601) {
                     goto TOP;
@@ -197,7 +196,7 @@ class PenerimaanTruckingHeaderController extends Controller
                 'status' => true,
                 'message' => 'Berhasil disimpan',
                 'data' => $penerimaantruckingheader
-            ]);
+            ], 201);
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
@@ -223,12 +222,11 @@ class PenerimaanTruckingHeaderController extends Controller
     /**
      * @ClassName
      */
-    public function update(StorePenerimaanTruckingHeaderRequest $request, $id)
+    public function update(UpdatePenerimaanTruckingHeaderRequest $request,PenerimaanTruckingHeader $penerimaantruckingheader)
     {
         DB::beginTransaction();
 
         try {
-
 
             $idpenerimaan = $request->penerimaantrucking_id;
             $fetchFormat =  DB::table('penerimaantrucking')
@@ -243,8 +241,6 @@ class PenerimaanTruckingHeaderController extends Controller
                 ->where('grp', $fetchGrp->grp)
                 ->where('subgrp', $fetchGrp->subgrp)
                 ->first();
-
-            $penerimaantruckingheader = PenerimaanTruckingHeader::findOrFail($id);
 
             $penerimaantruckingheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $penerimaantruckingheader->penerimaantrucking_id = $idpenerimaan;
@@ -275,7 +271,7 @@ class PenerimaanTruckingHeaderController extends Controller
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
 
-                PenerimaanTruckingDetail::where('penerimaantruckingheader_id', $id)->delete();
+                PenerimaanTruckingDetail::where('penerimaantruckingheader_id', $penerimaantruckingheader->id)->lockForUpdate()->delete();
 
                 /* Store detail */
 
@@ -368,21 +364,20 @@ class PenerimaanTruckingHeaderController extends Controller
     /**
      * @ClassName
      */
-    public function destroy($id, Request $request)
+    public function destroy(PenerimaanTruckingHeader $penerimaantruckingheader, Request $request)
     {
         DB::beginTransaction();
-        $penerimaantruckingheader = new PenerimaanTruckingHeader();
         try {
 
-            $delete = PenerimaanTruckingDetail::where('penerimaantruckingheader_id', $id)->delete();
-            $delete = PenerimaanTruckingHeader::destroy($id);
+            $delete = PenerimaanTruckingDetail::where('penerimaantruckingheader_id', $penerimaantruckingheader->id)->lockForUpdate()->delete();
+            $delete = PenerimaanTruckingHeader::destroy($penerimaantruckingheader->id);
 
             if ($delete) {
                 $logTrail = [
                     'namatabel' => strtoupper($penerimaantruckingheader->getTable()),
                     'postingdari' => 'DELETE PENERIMAAN TRUCKING HEADER',
-                    'idtrans' => $id,
-                    'nobuktitrans' => '',
+                    'idtrans' => $penerimaantruckingheader->id,
+                    'nobuktitrans' => $penerimaantruckingheader->nobukti,
                     'aksi' => 'DELETE',
                     'datajson' => $penerimaantruckingheader->toArray(),
                     'modifiedby' => $penerimaantruckingheader->modifiedby

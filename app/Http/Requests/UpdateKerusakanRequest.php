@@ -13,7 +13,7 @@ class UpdateKerusakanRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +24,8 @@ class UpdateKerusakanRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'keterangan' => 'required',
+            'statusaktif' => 'required'
         ];
     }
 }

@@ -26,8 +26,17 @@ class StoreKategoriRequest extends FormRequest
         return [
             'kodekategori' => 'required',
             'keterangan' => 'required',
-            'subkelompok_id' => 'required',
+            'subkelompok' => 'required',
             'statusaktif' => 'required'
+        ];
+    }
+    
+    public function attributes()
+    {
+        return[
+            'kodekategori' => 'kode kategori',
+            'subkelompok' => 'sub kelompok',
+            'statusaktif' => 'status aktif'
         ];
     }
 }

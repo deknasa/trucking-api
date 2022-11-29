@@ -16,6 +16,7 @@ use App\Models\UpahRitasiRincian;
 
 use App\Http\Controllers\Controller;
 use Carbon\Carbon;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -38,10 +39,6 @@ class RitasiController extends Controller
         ]);
     }
 
-    public function create()
-    {
-        //
-    }
    /**
      * @ClassName 
      */
@@ -125,7 +122,7 @@ class RitasiController extends Controller
                     'status' => true,
                     'message' => 'Berhasil disimpan',
                     'data' => $ritasi
-                ]);
+                ], 201);
             }
             
             
@@ -145,14 +142,10 @@ class RitasiController extends Controller
         ]);
     }
 
-    public function edit(Ritasi $ritasi)
-    {
-        //
-    }
    /**
      * @ClassName 
      */
-    public function update(StoreRitasiRequest $request, Ritasi $ritasi)
+    public function update(StoreRitasiRequest $request,Ritasi $ritasi)
     {
         try {
             $ritasi->tglbukti = $request->tglbukti;
@@ -223,7 +216,7 @@ class RitasiController extends Controller
     public function destroy(Ritasi $ritasi, Request $request)
     {
         $del = 1;
-        if ($ritasi->delete()) {
+        if ($ritasi->lockForUpdate()->delete()) {
             $logTrail = [
                 'namatabel' => strtoupper($ritasi->getTable()),
                 'postingdari' => 'DELETE RITASI',
@@ -286,152 +279,4 @@ class RitasiController extends Controller
         ]);
     }
 
-    public function getid($id, $request, $del)
-    {
-        $params = [
-            'indexRow' => $request->indexRow ?? 1,
-            'limit' => $request->limit ?? 100,
-            'page' => $request->page ?? 1,
-            'sortname' => $request->sortname ?? 'id',
-            'sortorder' => $request->sortorder ?? 'asc',
-        ];
-        $temp = '##temp' . rand(1, 10000);
-        Schema::create($temp, function ($table) {
-            $table->id();
-            $table->bigInteger('id_')->default('0');
-            $table->string('nobukti', 50)->default('');
-            $table->string('tglbukti', 50)->default('');
-            $table->string('statusritasi', 50)->default('');
-            $table->string('suratpengantar_nobukti', 50)->default('');
-            $table->string('supir_id', 50)->default('');
-            $table->string('trado_id', 50)->default('');
-            $table->string('jarak', 50)->default('');
-            $table->string('gaji', 50)->default('');
-            $table->string('dari_id', 50)->default('');
-            $table->string('sampai_id', 50)->default('');
-            $table->string('modifiedby', 30)->default('');
-            $table->dateTime('created_at')->default('1900/1/1');
-            $table->dateTime('updated_at')->default('1900/1/1');
-
-            $table->index('id_');
-        });
-
-        if ($params['sortname'] == 'id') {
-            $query = DB::table((new Ritasi())->getTable())->select(
-                'ritasi.id as id_',
-                'ritasi.nobukti',
-                'ritasi.tglbukti',
-                'ritasi.statusritasi',
-                'ritasi.suratpengantar_nobukti',
-                'ritasi.supir_id',
-                'ritasi.trado_id',
-                'ritasi.jarak',
-                'ritasi.gaji',
-                'ritasi.dari_id',
-                'ritasi.sampai_id',
-                'ritasi.modifiedby',
-                'ritasi.created_at',
-                'ritasi.updated_at'
-            )
-                ->orderBy('ritasi.id', $params['sortorder']);
-        } else if ($params['sortname'] == 'nobukti' or $params['sortname'] == 'tglbukti') {
-            $query = DB::table((new Ritasi())->getTable())->select(
-                'ritasi.id as id_',
-                'ritasi.nobukti',
-                'ritasi.tglbukti',
-                'ritasi.statusritasi',
-                'ritasi.suratpengantar_nobukti',
-                'ritasi.supir_id',
-                'ritasi.trado_id',
-                'ritasi.jarak',
-                'ritasi.gaji',
-                'ritasi.dari_id',
-                'ritasi.sampai_id',
-                'ritasi.modifiedby',
-                'ritasi.created_at',
-                'ritasi.updated_at'
-            )
-                ->orderBy($params['sortname'], $params['sortorder'])
-                ->orderBy('ritasi.id', $params['sortorder']);
-        } else {
-            if ($params['sortorder'] == 'asc') {
-                $query = DB::table((new Ritasi())->getTable())->select(
-                    'ritasi.id as id_',
-                    'ritasi.nobukti',
-                    'ritasi.tglbukti',
-                    'ritasi.statusritasi',
-                    'ritasi.suratpengantar_nobukti',
-                    'ritasi.supir_id',
-                    'ritasi.trado_id',
-                    'ritasi.jarak',
-                    'ritasi.gaji',
-                    'ritasi.dari_id',
-                    'ritasi.sampai_id',
-                    'ritasi.modifiedby',
-                    'ritasi.created_at',
-                    'ritasi.updated_at'
-                )
-                    ->orderBy($params['sortname'], $params['sortorder'])
-                    ->orderBy('ritasi.id', $params['sortorder']);
-            } else {
-                $query = DB::table((new Ritasi())->getTable())->select(
-                    'ritasi.id as id_',
-                    'ritasi.nobukti',
-                    'ritasi.tglbukti',
-                    'ritasi.statusritasi',
-                    'ritasi.suratpengantar_nobukti',
-                    'ritasi.supir_id',
-                    'ritasi.trado_id',
-                    'ritasi.jarak',
-                    'ritasi.gaji',
-                    'ritasi.dari_id',
-                    'ritasi.sampai_id',
-                    'ritasi.modifiedby',
-                    'ritasi.created_at',
-                    'ritasi.updated_at'
-                )
-                    ->orderBy($params['sortname'], $params['sortorder'])
-                    ->orderBy('ritasi.id', 'asc');
-            }
-        }
-
-
-
-        DB::table($temp)->insertUsing(['id_', 'nobukti', 'tglbukti', 'statusritasi','suratpengantar_nobukti','supir_id','trado_id','jarak','gaji','dari_id','sampai_id', 'modifiedby', 'created_at', 'updated_at'], $query);
-
-
-        if ($del == 1) {
-            if ($params['page'] == 1) {
-                $baris = $params['indexRow'] + 1;
-            } else {
-                $hal = $params['page'] - 1;
-                $bar = $hal * $params['limit'];
-                $baris = $params['indexRow'] + $bar + 1;
-            }
-
-
-            if (DB::table($temp)
-                ->where('id', '=', $baris)->exists()
-            ) {
-                $querydata = DB::table($temp)
-                    ->select('id as row', 'id_ as id')
-                    ->where('id', '=', $baris)
-                    ->orderBy('id');
-            } else {
-                $querydata = DB::table($temp)
-                    ->select('id as row', 'id_ as id')
-                    ->where('id', '=', ($baris - 1))
-                    ->orderBy('id');
-            }
-        } else {
-            $querydata = DB::table($temp)
-                ->select('id as row')
-                ->where('id_', '=',  $id)
-                ->orderBy('id');
-        }
-
-
-        $data = $querydata->first();
-        return $data;
-    }
 }
