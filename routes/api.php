@@ -48,6 +48,9 @@
     use App\Http\Controllers\Api\PengembalianKasGantungHeaderController;
     use App\Http\Controllers\Api\PengembalianKasGantungDetailController;
     
+    use App\Http\Controllers\Api\PengembalianKasBankHeaderController;
+    use App\Http\Controllers\Api\PengembalianKasBankDetailController;
+    
     use App\Http\Controllers\Api\RekapPengeluaranHeaderController;
     use App\Http\Controllers\Api\RekapPengeluaranDetailController;
     
@@ -123,6 +126,7 @@
     use App\Http\Controllers\Api\ReportAllController;
     use App\Http\Controllers\Api\PencairanGiroPengeluaranDetailController;
     use App\Http\Controllers\Api\PencairanGiroPengeluaranHeaderController;
+    use App\Http\Controllers\Api\ReportNeracaController;
 
     /*
     |--------------------------------------------------------------------------
@@ -506,6 +510,16 @@
         
         Route::resource('pengembaliankasgantung_detail', PengembalianKasGantungDetailController::class);
 
+        Route::post('pengembaliankasbankheader/{id}/approval', [PengembalianKasBankHeaderController::class, 'approval'])->name('pengembaliankasbankheader.approval');
+        Route::get('pengembaliankasbankheader/no_bukti', [PengembalianKasBankHeaderController::class, 'getNoBukti']);
+        Route::get('pengembaliankasbankheader/field_length', [PengembalianKasBankHeaderController::class, 'fieldLength']);
+        Route::get('pengembaliankasbankheader/combo', [PengembalianKasBankHeaderController::class, 'combo']);
+        Route::post('pengembaliankasbankheader/{id}/approval', [PengembalianKasBankHeaderController::class,'approval']);
+        Route::get('pengembaliankasbankheader/grid', [PengembalianKasBankHeaderController::class, 'grid']);
+        Route::resource('pengembaliankasbankheader', PengembalianKasBankHeaderController::class);
+
+        Route::resource('pengembaliankasbankdetail', PengembalianKasBankDetailController::class);
+
         Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
         Route::get('prosesgajisupirheader/no_bukti', [ProsesGajiSupirHeaderController::class, 'getNoBukti']);
         Route::get('prosesgajisupirheader/grid', [ProsesGajiSupirHeaderController::class, 'grid']);
@@ -578,6 +592,9 @@
         
         Route::get('reportall/report', [ReportAllController::class, 'report'])->name('reportall.report');
         Route::resource('reportall', ReportAllController::class);
+
+        Route::get('reportneraca/report', [ReportNeracaController::class, 'report'])->name('reportneraca.report');
+        Route::resource('reportneraca', ReportNeracaController::class);
         
         Route::get('pencairangiropengeluaranheader/grid', [PencairanGiroPengeluaranHeaderController::class, 'grid']);
         Route::get('pencairangiropengeluaranheader/field_length', [PencairanGiroPengeluaranHeaderController::class, 'fieldLength']);

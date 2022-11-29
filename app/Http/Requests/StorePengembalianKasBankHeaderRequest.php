@@ -13,7 +13,7 @@ class StorePengembalianKasBankHeaderRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +24,12 @@ class StorePengembalianKasBankHeaderRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'pengeluaran_nobukti' => 'required',
+            'keterangan' => 'required',
+            'cabang' => 'required',
+            'statusjenistransaksi' => 'required',
+            'dibayarke' => 'required',
+            'bank' => 'required',
         ];
-    }
+        }
 }
