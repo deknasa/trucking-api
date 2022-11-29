@@ -363,16 +363,16 @@ class PengembalianKasGantungHeaderController extends Controller
     }
     public function getPengembalian($id)
     {
-        $Pengembalian = new PengembalianKasGantungHeader();
+        $pengembalian = new PengembalianKasGantungHeader();
         $currentURL = url()->current();
         $previousURL = url()->previous();
         return response([
-            'data' => $Pengembalian->getPengembalian($id),
+            'data' => $pengembalian->getPengembalian($id),
             'currentURL' => $currentURL,
             'previousURL' => $previousURL,
             'attributes' => [
-                'totalRows' => $Pengembalian->totalRows,
-                'totalPages' => $Pengembalian->totalPages
+                'totalRows' => $pengembalian->totalRows,
+                'totalPages' => $pengembalian->totalPages
             ]
         ]);
     }

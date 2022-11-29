@@ -67,7 +67,7 @@ class PengeluaranDetailSeeder extends Seeder
             'coadebet' => '01.01.02.02',
             'coakredit' => '01.01.01.02',
             'keterangan' => 'PINJAMAN SUPIR',
-            'bulanbeban' => '2022-0-08',
+            'bulanbeban' => '2022-05-08',
             'modifiedby' => 'ADMIN',
         ]);
     }
