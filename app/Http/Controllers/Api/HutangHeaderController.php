@@ -22,6 +22,7 @@ use App\Http\Requests\StoreJurnalUmumHeaderRequest;
 use App\Http\Requests\StoreJurnalUmumDetailRequest;
 use App\Models\Pelanggan;
 use PhpParser\Builder\Param;
+use Illuminate\Database\QueryException;
 
 class HutangHeaderController extends Controller
 {
@@ -85,7 +86,7 @@ class HutangHeaderController extends Controller
         DB::beginTransaction();
 
         try {
-            $hutangHeader = HutangHeader::findOrFail($id);
+            $hutangHeader = HutangHeader::lockForUpdate()->findOrFail($id);
 
             $hutangHeader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $hutangHeader->keterangan = $request->keterangan ?? '';
@@ -109,7 +110,7 @@ class HutangHeaderController extends Controller
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-                HutangDetail::where('hutang_id', $id)->delete();
+                HutangDetail::where('hutang_id', $id)->lockForUpdate()->delete();
                 /* Store detail */
                 $detaillog = [];
                 for ($i = 0; $i < count($request->total_detail); $i++) {
@@ -168,8 +169,8 @@ class HutangHeaderController extends Controller
             }
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
-            JurnalUmumHeader::where('nobukti', $hutangHeader->nobukti)->delete();
-            JurnalUmumDetail::where('nobukti', $hutangHeader->nobukti)->delete();
+            JurnalUmumHeader::where('nobukti', $hutangHeader->nobukti)->lockForUpdate()->delete();
+            JurnalUmumDetail::where('nobukti', $hutangHeader->nobukti)->lockForUpdate()->delete();
 
 
             $parameterController = new ParameterController;
@@ -258,7 +259,7 @@ class HutangHeaderController extends Controller
         $hutangHeader = new HutangHeader();
 
         try {
-            $delete = HutangDetail::where('hutang_id', $id)->delete();
+            $delete = HutangDetail::where('hutang_id', $id)->lockForUpdate()->delete();
             $delete = HutangHeader::destroy($id);
 
             if ($delete) {
@@ -495,7 +496,17 @@ class HutangHeaderController extends Controller
                 'status' => true,
                 'message' => 'Berhasil disimpan',
                 'data' => $hutangHeader
-            ]);
+            ],201);
+        } catch (QueryException $queryException) {
+            if (isset($queryException->errorInfo[1]) && is_array($queryException->errorInfo)) {
+                // Check if deadlock
+                if ($queryException->errorInfo[1] === 1205) {
+                    goto TOP;
+                }
+            }
+
+            throw $queryException;
+
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;

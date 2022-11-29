@@ -22,6 +22,7 @@ class ReportAllController extends Controller
     }
     public function report(Request $request)
     {
+        
         $tgl = $request->tanggal;
         $table = $request->data;
         $report = ReportAll::getReport($tgl, $table);

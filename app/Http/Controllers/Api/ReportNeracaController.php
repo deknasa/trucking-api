@@ -16,11 +16,12 @@ class ReportNeracaController extends Controller
      */
     public function index()
     {
-        $reportAll = new ReportNeraca();
+        $reportNeraca = new ReportNeraca();
    
     }
     public function report(Request $request)
     {
+        
         $tgldr = $request->tgldr;
         $tglsd = $request->tglsd;
         $coadr = $request->coadr;

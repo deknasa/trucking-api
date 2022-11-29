@@ -51,6 +51,7 @@ class ReportNeraca extends MyModel
                     ORDER BY A.coa,A.Urut
                 ");
 
+             
 
         return response([
             'data' => $query,
