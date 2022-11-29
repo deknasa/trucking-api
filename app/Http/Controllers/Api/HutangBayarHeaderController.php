@@ -87,20 +87,10 @@ class HutangBayarHeaderController extends Controller
             $hutangbayarheader->statusformat = $format->id;
             $hutangbayarheader->modifiedby = auth('api')->user()->name;
 
-            TOP:
             $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
 
             $hutangbayarheader->nobukti = $nobukti;
-
-            try {
-                $hutangbayarheader->save();
-            } catch (\Exception $e) {
-                dd($e->getMessage());
-                $errorCode = @$e->errorInfo[1];
-                if ($errorCode == 2601) {
-                    goto TOP;
-                }
-            }
+            $hutangbayarheader->save();
 
             $logTrail = [
                 'namatabel' => strtoupper($hutangbayarheader->getTable()),

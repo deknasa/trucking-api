@@ -106,7 +106,6 @@ class BankPelangganController extends Controller
     public function update(StoreBankPelangganRequest $request, BankPelanggan $bankpelanggan)
     {
         try {
-            $bankpelanggan = BankPelanggan::lockForUpdate()->findOrFail($bankpelanggan->id);
             $bankpelanggan->kodebank = $request->kodebank;
             $bankpelanggan->namabank = $request->namabank;
             $bankpelanggan->keterangan = $request->keterangan;

@@ -97,7 +97,6 @@ class GudangController extends Controller
     public function update(StoreGudangRequest $request, Gudang $gudang)
     {
         try {
-            $gudang = Gudang::lockForUpdate()->findOrFail($gudang->id);
             $gudang->gudang = $request->gudang;
             $gudang->statusaktif = $request->statusaktif;
             $gudang->modifiedby = auth('api')->user()->name;

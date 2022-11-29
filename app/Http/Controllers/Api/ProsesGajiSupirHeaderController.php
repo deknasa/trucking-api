@@ -75,20 +75,10 @@ class ProsesGajiSupirHeaderController extends Controller
                 $prosesgajisupirheader->statusformat = $format->id;
                 $prosesgajisupirheader->modifiedby = auth('api')->user()->name;
 
-                TOP:
                 $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
                 $prosesgajisupirheader->nobukti = $nobukti;
 
-
-                try {
-                    $prosesgajisupirheader->save();
-                    DB::commit();
-                } catch (\Exception $e) {
-                    $errorCode = @$e->errorInfo[1];
-                    if ($errorCode == 2601) {
-                        goto TOP;
-                    }
-                }
+                $prosesgajisupirheader->save();
 
                 $logTrail = [
                     'namatabel' => strtoupper($prosesgajisupirheader->getTable()),

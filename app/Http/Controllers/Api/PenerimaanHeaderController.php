@@ -45,7 +45,7 @@ class PenerimaanHeaderController extends Controller
         ]);
     }
 
-/**
+    /**
      * @ClassName
      */
     public function store(StorePenerimaanHeaderRequest $request)
@@ -58,16 +58,16 @@ class PenerimaanHeaderController extends Controller
             $content = new Request();
             $bankid = $request->bank_id;
             $querysubgrppenerimaan = DB::table('bank')
-            ->select(
-                'parameter.grp',
-                'parameter.subgrp',
-                'bank.statusformatpenerimaan',
-                'bank.coa',
-                'bank.tipe'
-            )
-            ->join('parameter', 'bank.statusformatpenerimaan', 'parameter.id')
-            ->whereRaw("bank.id = $bankid")
-            ->first();
+                ->select(
+                    'parameter.grp',
+                    'parameter.subgrp',
+                    'bank.statusformatpenerimaan',
+                    'bank.coa',
+                    'bank.tipe'
+                )
+                ->join('parameter', 'bank.statusformatpenerimaan', 'parameter.id')
+                ->whereRaw("bank.id = $bankid")
+                ->first();
 
             $content['group'] = $querysubgrppenerimaan->grp;
             $content['subgroup'] = $querysubgrppenerimaan->subgrp;
@@ -75,7 +75,7 @@ class PenerimaanHeaderController extends Controller
             $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
 
             // $content['nobukti'] = $querysubgrppenerimaan->formatbuktipenerimaan;
-            
+
             $statusApproval = Parameter::where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
             $statusBerkas = Parameter::where('grp', 'STATUS BERKAS')->where('text', 'TIDAK ADA BERKAS')->first();
             $penerimaanHeader = new PenerimaanHeader();
@@ -93,19 +93,12 @@ class PenerimaanHeaderController extends Controller
             $penerimaanHeader->statusberkas = $statusBerkas->id ?? 0;
             $penerimaanHeader->modifiedby = auth('api')->user()->name;
             $penerimaanHeader->statusformat = $querysubgrppenerimaan->statusformatpenerimaan;
-            TOP:
+
             $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
             $penerimaanHeader->nobukti = $nobukti;
 
+            $penerimaanHeader->save();
 
-            try {
-                $penerimaanHeader->save();
-            } catch (\Exception $e) {
-                $errorCode = @$e->errorInfo[1];
-                if ($errorCode == 2601) {
-                    goto TOP;
-                }
-            }
             $logTrail = [
                 'namatabel' => strtoupper($penerimaanHeader->getTable()),
                 'postingdari' => 'ENTRY PENERIMAAN KAS/BANK',
@@ -123,7 +116,7 @@ class PenerimaanHeaderController extends Controller
 
             for ($i = 0; $i < count($request->nominal_detail); $i++) {
 
-               
+
                 $datadetail = [
                     'penerimaan_id' => $penerimaanHeader->id,
                     'nobukti' => $penerimaanHeader->nobukti,
@@ -145,7 +138,7 @@ class PenerimaanHeaderController extends Controller
 
                 $data = new StorePenerimaanDetailRequest($datadetail);
                 $datadetails = app(PenerimaanDetailController::class)->store($data);
-                
+
                 if ($datadetails['error']) {
                     return response($datadetails, 422);
                 } else {
@@ -174,13 +167,13 @@ class PenerimaanHeaderController extends Controller
                     'updated_at' => date('d-m-Y H:i:s', strtotime($penerimaanHeader->updated_at)),
                 ];
                 $detaillog[] = $datadetaillog;
-                
+
 
                 $dataid = LogTrail::select('id')
-                ->where('nobuktitrans', '=', $penerimaanHeader->nobukti)
-                ->where('namatabel', '=', $penerimaanHeader->getTable())
-                ->orderBy('id', 'DESC')
-                ->first();
+                    ->where('nobuktitrans', '=', $penerimaanHeader->nobukti)
+                    ->where('namatabel', '=', $penerimaanHeader->getTable())
+                    ->orderBy('id', 'DESC')
+                    ->first();
 
                 $datalogtrail = [
                     'namatabel' => $tabeldetail,
@@ -191,8 +184,8 @@ class PenerimaanHeaderController extends Controller
                     'datajson' => $detaillog,
                     'modifiedby' => auth('api')->user()->name,
                 ];
-                
-                
+
+
                 $data = new StoreLogTrailRequest($datalogtrail);
                 app(LogTrailController::class)->store($data);
             }
@@ -243,10 +236,10 @@ class PenerimaanHeaderController extends Controller
                         ]
                     ];
 
-                    
+
                     $jurnaldetail = array_merge($jurnaldetail, $jurnalDetail);
                 }
-               
+
 
                 $jurnal = $this->storeJurnal($jurnalHeader, $jurnaldetail);
 
@@ -258,9 +251,8 @@ class PenerimaanHeaderController extends Controller
                 if (!$jurnal['status']) {
                     throw new Exception($jurnal['message']);
                 }
-
             }
-            
+
             DB::commit();
 
             /* Set position and page */
@@ -273,16 +265,7 @@ class PenerimaanHeaderController extends Controller
                 'message' => 'Berhasil disimpan',
                 'data' => $penerimaanHeader
             ], 201);
-        } catch (QueryException $queryException) {
-            if (isset($queryException->errorInfo[1]) && is_array($queryException->errorInfo)) {
-                // Check if deadlock
-                if ($queryException->errorInfo[1] === 1205) {
-                    goto TOP;
-                }
-            }
-
-            throw $queryException;
-        } catch (\Throwable $th) {
+        }catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
         }
@@ -336,20 +319,20 @@ class PenerimaanHeaderController extends Controller
             $content = new Request();
             $bankid = $request->bank_id;
             $querysubgrppenerimaan = DB::table('bank')
-            ->select(
-                'parameter.grp',
-                'parameter.subgrp',
-                'bank.statusformatpenerimaan',
-                'bank.coa',
-                'bank.tipe'
-            )
-            ->join('parameter', 'bank.statusformatpenerimaan', 'parameter.id')
-            ->whereRaw("bank.id = $bankid")
-            ->first();
+                ->select(
+                    'parameter.grp',
+                    'parameter.subgrp',
+                    'bank.statusformatpenerimaan',
+                    'bank.coa',
+                    'bank.tipe'
+                )
+                ->join('parameter', 'bank.statusformatpenerimaan', 'parameter.id')
+                ->whereRaw("bank.id = $bankid")
+                ->first();
 
             $statusApproval = Parameter::where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
             $statusBerkas = Parameter::where('grp', 'STATUS BERKAS')->where('text', 'TIDAK ADA BERKAS')->first();
-            
+
             $penerimaanheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $penerimaanheader->pelanggan_id = $request->pelanggan_id;
             $penerimaanheader->keterangan = $request->keterangan ?? '';
@@ -363,7 +346,7 @@ class PenerimaanHeaderController extends Controller
             $penerimaanheader->statusapproval = $statusApproval->id ?? 0;
             $penerimaanheader->statusberkas = $statusBerkas->id ?? 0;
             $penerimaanheader->modifiedby = auth('api')->user()->name;
-            
+
             if ($penerimaanheader->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($penerimaanheader->getTable()),
@@ -420,7 +403,7 @@ class PenerimaanHeaderController extends Controller
                 }
 
                 $datadetaillog = [
-                   'penerimaan_id' => $penerimaanheader->id,
+                    'penerimaan_id' => $penerimaanheader->id,
                     'nobukti' => $penerimaanheader->nobukti,
                     'nowarkat' => $request->nowarkat[$i],
                     'tgljatuhtempo' =>  date('Y-m-d', strtotime($request->tgljatuhtempo[$i])),
@@ -440,7 +423,6 @@ class PenerimaanHeaderController extends Controller
                     'updated_at' => date('d-m-Y H:i:s', strtotime($penerimaanheader->updated_at)),
                 ];
                 $detaillog[] = $datadetaillog;
-
             }
 
             $dataid = LogTrail::select('id')
@@ -507,7 +489,7 @@ class PenerimaanHeaderController extends Controller
                         ]
                     ];
 
-                    
+
                     $jurnaldetail = array_merge($jurnaldetail, $jurnalDetail);
                 }
                 $jurnal = $this->storeJurnal($jurnalHeader, $jurnaldetail);
@@ -638,7 +620,7 @@ class PenerimaanHeaderController extends Controller
         }
     }
 
-    
+
 
     public function tarikPelunasan($id)
     {
@@ -647,7 +629,6 @@ class PenerimaanHeaderController extends Controller
         return response([
             'data' => $penerimaan->tarikPelunasan($id),
         ]);
-        
     }
     public function getPelunasan($id, $table)
     {
@@ -655,7 +636,6 @@ class PenerimaanHeaderController extends Controller
         return response([
             'data' => $get->getPelunasan($id, $table),
         ]);
-        
     }
 
     private function storeJurnal($header, $detail)

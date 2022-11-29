@@ -68,18 +68,10 @@ class ServiceOutHeaderController extends Controller
             $serviceout->statusformat =  $format->id;
             $serviceout->modifiedby = auth('api')->user()->name;
 
-            TOP:
             $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
             $serviceout->nobukti = $nobukti;
-            try {
-                $serviceout->save();
-            } catch (\Exception $e) {
-                dd($e->getMessage());
-                $errorCode = @$e->errorInfo[1];
-                if ($errorCode == 2601) {
-                    goto TOP;
-                }
-            }
+
+            $serviceout->save();
 
             $logTrail = [
                 'namatabel' => strtoupper($serviceout->getTable()),
@@ -163,7 +155,7 @@ class ServiceOutHeaderController extends Controller
         return response($serviceout->serviceoutdetail());
     }
 
-  
+
     public function show($id)
     {
 
@@ -181,7 +173,7 @@ class ServiceOutHeaderController extends Controller
     /**
      * @ClassName
      */
-    public function update(UpdateServiceOutHeaderRequest $request,ServiceOutHeader $serviceoutheader)
+    public function update(UpdateServiceOutHeaderRequest $request, ServiceOutHeader $serviceoutheader)
     {
         DB::beginTransaction();
 
@@ -341,7 +333,7 @@ class ServiceOutHeaderController extends Controller
             'data' => $data
         ]);
     }
-    
+
     public function fieldLength()
     {
         $data = [];

@@ -108,7 +108,6 @@ class BankController extends Controller
     {
         DB::beginTransaction();
         try {
-            $bank = Bank::lockForUpdate()->findOrFail($bank->id);
             $bank->kodebank = $request->kodebank;
             $bank->namabank = $request->namabank;
             $bank->coa = $request->coa;

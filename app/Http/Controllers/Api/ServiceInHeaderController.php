@@ -64,19 +64,13 @@ class ServiceInHeaderController extends Controller
             $servicein->keterangan = $request->keterangan;
             $servicein->statusformat =  $format->id;
             $servicein->modifiedby = auth('api')->user()->name;
-            
-            TOP:
+
             $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
             $servicein->nobukti = $nobukti;
 
-            try {
-                $servicein->save();
-            } catch (\Exception $e) {
-                $errorCode = @$e->errorInfo[1];
-                if ($errorCode == 2601) {
-                    goto TOP;
-                }
-            }
+
+            $servicein->save();
+
             $logTrail = [
                 'namatabel' => strtoupper($servicein->getTable()),
                 'postingdari' => 'ENTRY SERVICE IN HEADER',
@@ -179,7 +173,7 @@ class ServiceInHeaderController extends Controller
     /**
      * @ClassName
      */
-    public function update(UpdateServiceInHeaderRequest $request,ServiceInHeader $serviceinheader)
+    public function update(UpdateServiceInHeaderRequest $request, ServiceInHeader $serviceinheader)
     {
         DB::beginTransaction();
 

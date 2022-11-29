@@ -78,20 +78,10 @@ class HutangHeaderController extends Controller
             $hutangHeader->total = array_sum($request->total_detail);
             $hutangHeader->modifiedby = auth('api')->user()->name;
 
-            TOP:
             $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
 
             $hutangHeader->nobukti = $nobukti;
-
-            try {
-                $hutangHeader->save();
-            } catch (\Exception $e) {
-                dd($e->getMessage());
-                $errorCode = @$e->errorInfo[1];
-                if ($errorCode == 2601) {
-                    goto TOP;
-                }
-            }
+            $hutangHeader->save();
 
             $logTrail = [
                 'namatabel' => strtoupper($hutangHeader->getTable()),

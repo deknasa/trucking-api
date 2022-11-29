@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\DB;
 
 class GajiSupirHeaderController extends Controller
 {
-     /**
+    /**
      * @ClassName 
      */
     public function index()
@@ -40,19 +40,19 @@ class GajiSupirHeaderController extends Controller
 
         try {
 
-            if($request->sp_id != ''){            
+            if ($request->sp_id != '') {
                 $group = 'RINCIAN GAJI SUPIR BUKTI';
                 $subgroup = 'RINCIAN GAJI SUPIR BUKTI';
 
 
                 $format = DB::table('parameter')
-                    ->where('grp', $group )
+                    ->where('grp', $group)
                     ->where('subgrp', $subgroup)
                     ->first();
 
                 $content = new Request();
-                $content['group'] = $group ;
-                $content['subgroup'] = $subgroup ;
+                $content['group'] = $group;
+                $content['subgroup'] = $subgroup;
                 $content['table'] = 'gajisupirheader';
                 $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
 
@@ -78,21 +78,12 @@ class GajiSupirHeaderController extends Controller
                 $gajisupirheader->uangJalantidakterhitung = $request->uangjalantidakterhitung ?? '';
                 $gajisupirheader->statusformat = $format->id;
                 $gajisupirheader->modifiedby = auth('api')->user()->name;
-            
-                TOP:
-                    $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
-                    $gajisupirheader->nobukti = $nobukti;
-    
 
-                try {
-                    $gajisupirheader->save();
-                    DB::commit();
-                } catch (\Exception $e) {
-                    $errorCode = @$e->errorInfo[1];
-                    if ($errorCode == 2601) {
-                        goto TOP;
-                    }
-                }
+                $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
+                $gajisupirheader->nobukti = $nobukti;
+
+
+                $gajisupirheader->save();
 
                 $logTrail = [
                     'namatabel' => strtoupper($gajisupirheader->getTable()),
@@ -106,17 +97,17 @@ class GajiSupirHeaderController extends Controller
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-                
+
                 /* Store detail */
-                        
+
                 $detaillog = [];
-                
+
                 $total = 0;
                 $urut = 1;
                 for ($i = 0; $i < count($request->sp_id); $i++) {
-                
-                    $sp = DB::table('suratpengantar')->where('id',$request->sp_id[$i])->first();
-                    
+
+                    $sp = DB::table('suratpengantar')->where('id', $request->sp_id[$i])->first();
+
                     $total = $total + $sp->gajisupir + $sp->gajikenek;
                     $datadetail = [
                         'gajisupir_id' => $gajisupirheader->id,
@@ -137,19 +128,19 @@ class GajiSupirHeaderController extends Controller
 
                     //STORE 
                     $data = new StoreGajiSupirDetailRequest($datadetail);
-                    
+
                     $datadetails = app(GajiSupirDetailController::class)->store($data);
-                    
-                    
-                    
+
+
+
                     if ($datadetails['error']) {
                         return response($datadetails, 422);
                     } else {
                         $iddetail = $datadetails['id'];
                         $tabeldetail = $datadetails['tabel'];
                     }
-                    
-                    
+
+
                     $datadetaillog = [
                         'id' => $iddetail,
                         'gajisupir_id' => $gajisupirheader->id,
@@ -168,17 +159,17 @@ class GajiSupirHeaderController extends Controller
                         'modifiedby' => $gajisupirheader->modifiedby,
                         'created_at' => date('d-m-Y H:i:s', strtotime($gajisupirheader->created_at)),
                         'updated_at' => date('d-m-Y H:i:s', strtotime($gajisupirheader->updated_at)),
-                        
+
                     ];
-                    
+
                     $detaillog[] = $datadetaillog;
 
-                    
+
                     $dataid = LogTrail::select('id')
-                    ->where('idtrans', '=', $gajisupirheader->id)
-                    ->where('namatabel', '=', $gajisupirheader->getTable())
-                    ->orderBy('id', 'DESC')
-                    ->first();
+                        ->where('idtrans', '=', $gajisupirheader->id)
+                        ->where('namatabel', '=', $gajisupirheader->getTable())
+                        ->orderBy('id', 'DESC')
+                        ->first();
 
                     $datalogtrail = [
                         'namatabel' => $tabeldetail,
@@ -192,35 +183,35 @@ class GajiSupirHeaderController extends Controller
 
                     $data = new StoreLogTrailRequest($datalogtrail);
                     app(LogTrailController::class)->store($data);
-                    
+
                     $urut++;
                 }
 
                 $gajisupirheader->nominal = $total;
                 $gajisupirheader->total = $total;
                 $gajisupirheader->save();
-        
-            
+
+
                 $request->sortname = $request->sortname ?? 'id';
                 $request->sortorder = $request->sortorder ?? 'asc';
                 DB::commit();
-                
+
                 /* Set position and page */
-            
+
 
                 $selected = $this->getPosition($gajisupirheader, $gajisupirheader->getTable());
                 $gajisupirheader->position = $selected->position;
                 $gajisupirheader->page = ceil($gajisupirheader->position / ($request->limit ?? 10));
-                
+
 
                 return response([
                     'status' => true,
                     'message' => 'Berhasil disimpan',
-                    'data' => $gajisupirheader 
+                    'data' => $gajisupirheader
                 ], 201);
-            }else{
+            } else {
                 $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'WP')
-                ->first();
+                    ->first();
                 return response([
                     'errors' => [
                         'sp' => "SP $query->keterangan"
@@ -232,15 +223,15 @@ class GajiSupirHeaderController extends Controller
             DB::rollBack();
             throw $th;
             return response($th->getMessage());
-        }   
+        }
     }
 
-   
+
     public function show($id)
     {
         $data = GajiSupirHeader::findAll($id);
         // $detail = GajiSupirDetail::findAll($id);
-        
+
         return response([
             'status' => true,
             'data' => $data,
@@ -248,13 +239,13 @@ class GajiSupirHeaderController extends Controller
         ]);
     }
 
-     /**
+    /**
      * @ClassName 
      */
     public function update(UpdateGajiSupirHeaderRequest $request, GajiSupirHeader $gajisupirheader)
     {
         DB::beginTransaction();
-        
+
         try {
 
             $gajisupirheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
@@ -278,8 +269,8 @@ class GajiSupirHeaderController extends Controller
             $gajisupirheader->uangJalantidakterhitung = $request->uangjalantidakterhitung ?? '';
             $gajisupirheader->modifiedby = auth('api')->user()->name;
 
-            
-            if($gajisupirheader->save()){
+
+            if ($gajisupirheader->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($gajisupirheader->getTable()),
                     'postingdari' => 'EDIT GAJI SUPIR HEADER',
@@ -295,15 +286,15 @@ class GajiSupirHeaderController extends Controller
                 GajiSupirDetail::where('gajisupir_id', $gajisupirheader->id)->lockForUpdate()->delete();
 
                 /* Store detail */
-                
-                
+
+
                 $detaillog = [];
                 $total = 0;
                 $urut = 1;
 
-                for($i = 0; $i < count($request->sp_id); $i++){
-                    $sp = DB::table('suratpengantar')->where('id',$request->sp_id[$i])->first();
-                
+                for ($i = 0; $i < count($request->sp_id); $i++) {
+                    $sp = DB::table('suratpengantar')->where('id', $request->sp_id[$i])->first();
+
                     $total = $total + $sp->gajisupir + $sp->gajikenek;
 
                     $datadetail = [
@@ -324,17 +315,17 @@ class GajiSupirHeaderController extends Controller
                     ];
 
                     //STORE
-                    
+
                     $data = new StoreGajiSupirDetailRequest($datadetail);
                     $datadetails = app(GajiSupirDetailController::class)->store($data);
-                    
-                    if($datadetails['error']){
+
+                    if ($datadetails['error']) {
                         return response($datadetails, 422);
-                    }else{
+                    } else {
                         $iddetail = $datadetails['id'];
                         $tabeldetail = $datadetails['tabel'];
                     }
-                    
+
                     $datadetaillog = [
                         'id' => $iddetail,
                         'gajisupir_id' => $gajisupirheader->id,
@@ -353,7 +344,7 @@ class GajiSupirHeaderController extends Controller
                         'modifiedby' => $gajisupirheader->modifiedby,
                         'created_at' => date('d-m-Y H:i:s', strtotime($gajisupirheader->created_at)),
                         'updated_at' => date('d-m-Y H:i:s', strtotime($gajisupirheader->updated_at)),
-                        
+
                     ];
 
                     $detaillog[] = $datadetaillog;
@@ -367,13 +358,12 @@ class GajiSupirHeaderController extends Controller
                         'datajson' => $detaillog,
                         'modifiedby' => $request->modifiedby,
                     ];
-                    
+
                     $data = new StoreLogTrailRequest($datalogtrail);
-                    
+
                     app(LogTrailController::class)->store($data);
                     $urut++;
                 }
-                
             }
 
             $gajisupirheader->nominal = $total;
@@ -382,22 +372,22 @@ class GajiSupirHeaderController extends Controller
 
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
-      
+
 
             DB::commit();
 
-             /* Set position and page */
+            /* Set position and page */
             $selected = $this->getPosition($gajisupirheader, $gajisupirheader->getTable());
             $gajisupirheader->position = $selected->position;
             $gajisupirheader->page = ceil($gajisupirheader->position / ($request->limit ?? 10));
 
-            
+
             return response([
                 'status' => true,
                 'message' => 'Berhasil disimpan',
                 'data' => $gajisupirheader
             ]);
-        }catch (\Throwable $th){
+        } catch (\Throwable $th) {
             DB::rollBack();
             return response($th->getMessage());
         }
@@ -410,10 +400,10 @@ class GajiSupirHeaderController extends Controller
     {
         DB::beginTransaction();
         try {
-            
-            $delete = GajiSupirDetail::where('gajisupir_id',$gajisupirheader->id)->lockForUpdate()->delete();
+
+            $delete = GajiSupirDetail::where('gajisupir_id', $gajisupirheader->id)->lockForUpdate()->delete();
             $delete = GajiSupirHeader::destroy($gajisupirheader->id);
-            
+
             if ($delete) {
                 $logTrail = [
                     'namatabel' => strtoupper($gajisupirheader->getTable()),
@@ -449,65 +439,64 @@ class GajiSupirHeaderController extends Controller
                 ]);
             }
         } catch (\Throwable $th) {
-            DB::rollBack();         
-            return response($th->getMessage());   
+            DB::rollBack();
+            return response($th->getMessage());
         }
     }
 
-    public function getTrip($supir_id,$dari,$sampai) {
+    public function getTrip($supir_id, $dari, $sampai)
+    {
         $gajisupir = new GajiSupirHeader();
         $tglDari = date('Y-m-d', strtotime($dari));
         $tglSampai = date('Y-m-d', strtotime($sampai));
 
 
         $cekSP = DB::table('suratpengantar')
-            ->where('tglbukti','>=',$tglDari)
-            ->where('tglbukti','<=',$tglSampai)
-            ->where('supir_id',$supir_id)->first();
+            ->where('tglbukti', '>=', $tglDari)
+            ->where('tglbukti', '<=', $tglSampai)
+            ->where('supir_id', $supir_id)->first();
 
-        if($cekSP){
+        if ($cekSP) {
             $nobukti = $cekSP->nobukti;
-            $cekTrip = DB::table('gajisupirdetail')->where('suratpengantar_nobukti',$nobukti)->first();
-            
-            if($cekTrip) {
+            $cekTrip = DB::table('gajisupirdetail')->where('suratpengantar_nobukti', $nobukti)->first();
+
+            if ($cekTrip) {
                 $query = DB::table('error')
-                ->select('keterangan')
-                ->where('kodeerror', '=', 'SPSD')
-                ->first();
+                    ->select('keterangan')
+                    ->where('kodeerror', '=', 'SPSD')
+                    ->first();
                 $data = [
                     'message' => $query->keterangan,
                     'errors' => true
                 ];
-    
+
                 return response($data);
-                
-            }else{
+            } else {
                 return response([
                     'errors' => false,
-                    'data' => $gajisupir->getTrip($supir_id,$tglDari,$tglSampai),
+                    'data' => $gajisupir->getTrip($supir_id, $tglDari, $tglSampai),
                     'attributes' => [
                         'totalRows' => $gajisupir->totalRows,
                         'totalPages' => $gajisupir->totalPages
                     ]
                 ]);
             }
-        }else{
+        } else {
             $query = DB::table('error')
-            ->select('keterangan')
-            ->where('kodeerror', '=', 'NT')
-            ->first();
+                ->select('keterangan')
+                ->where('kodeerror', '=', 'NT')
+                ->first();
             $data = [
                 'message' => $query->keterangan,
                 'errors' => true
             ];
 
             return response($data);
-            
         }
-        
     }
 
-    public function getEditTrip($gajiId) {
+    public function getEditTrip($gajiId)
+    {
         $gajisupir = new GajiSupirHeader();
 
         return response([
@@ -515,11 +504,12 @@ class GajiSupirHeaderController extends Controller
         ]);
     }
 
-    public function noEdit() {
+    public function noEdit()
+    {
         $query = DB::table('error')
-        ->select('keterangan')
-        ->where('kodeerror', '=', 'RICX')
-        ->first();
+            ->select('keterangan')
+            ->where('kodeerror', '=', 'RICX')
+            ->first();
         $data = [
             'message' => $query->keterangan,
             'errors' => 'noEdit'
@@ -541,5 +531,4 @@ class GajiSupirHeaderController extends Controller
             'data' => $data
         ]);
     }
-
 }

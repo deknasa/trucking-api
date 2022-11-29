@@ -146,18 +146,10 @@ class SuratPengantarController extends Controller
             $suratpengantar->modifiedby = auth('api')->user()->name;
             $suratpengantar->statusformat = $format->id;
 
-            TOP:
             $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
             $suratpengantar->nobukti = $nobukti;
 
-            // try {
-            //     $suratpengantar->save();
-            // } catch (\Exception $e) {
-            //     $errorCode = @$e->errorInfo[1];
-            //     if ($errorCode == 2601) {
-            //         goto TOP;
-            //     }
-            // }
+           
             if ($suratpengantar->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($suratpengantar->getTable()),

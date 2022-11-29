@@ -22,7 +22,7 @@ use Illuminate\Support\Facades\Http;
 
 class OrderanTruckingController extends Controller
 {
-   /**
+    /**
      * @ClassName 
      */
     public function index()
@@ -38,8 +38,8 @@ class OrderanTruckingController extends Controller
         ]);
     }
 
-    
-   /**
+
+    /**
      * @ClassName 
      */
     public function store(StoreOrderanTruckingRequest $request)
@@ -50,9 +50,9 @@ class OrderanTruckingController extends Controller
             $group = 'ORDERANTRUCKING';
             $subgroup = 'ORDERANTRUCKING';
             $format = DB::table('parameter')
-            ->where('grp', $group )
-            ->where('subgrp', $subgroup)
-            ->first();
+                ->where('grp', $group)
+                ->where('subgrp', $subgroup)
+                ->first();
 
             $content = new Request();
             $content['group'] = $group;
@@ -81,18 +81,11 @@ class OrderanTruckingController extends Controller
             $tarif = Tarif::find($request->tarif_id);
             $orderanTrucking->nominal = $tarif->nominal;
 
-            TOP:
             $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
             $orderanTrucking->nobukti = $nobukti;
 
-            try {
-                $orderanTrucking->save();
-            } catch (\Exception $e) {
-                $errorCode = @$e->errorInfo[1];
-                if ($errorCode == 2601) {
-                    goto TOP;
-                }
-            }
+            $orderanTrucking->save();
+
 
             $logTrail = [
                 'namatabel' => strtoupper($orderanTrucking->getTable()),
@@ -136,7 +129,7 @@ class OrderanTruckingController extends Controller
         ]);
     }
 
-   /**
+    /**
      * @ClassName 
      */
     public function update(StoreOrderanTruckingRequest $request, OrderanTrucking $orderantrucking)
@@ -195,14 +188,14 @@ class OrderanTruckingController extends Controller
             throw $th;
         }
     }
-   /**
+    /**
      * @ClassName 
      */
     public function destroy(OrderanTrucking $orderantrucking, Request $request)
     {
         DB::beginTransaction();
         $delete = Orderantrucking::destroy($orderantrucking->id);
-        
+
         if ($delete) {
             $logTrail = [
                 'namatabel' => strtoupper($orderantrucking->getTable()),
@@ -217,14 +210,14 @@ class OrderanTruckingController extends Controller
             $validatedLogTrail = new StoreLogTrailRequest($logTrail);
             app(LogTrailController::class)->store($validatedLogTrail);
 
-            
+
             DB::commit();
             $selected = $this->getPosition($orderantrucking, $orderantrucking->getTable(), true);
             $orderantrucking->position = $selected->position;
             $orderantrucking->id = $selected->id;
             $orderantrucking->page = ceil($orderantrucking->position / ($request->limit ?? 10));
 
-            
+
             return response([
                 'status' => true,
                 'message' => 'Berhasil dihapus',
@@ -259,16 +252,16 @@ class OrderanTruckingController extends Controller
             'Accept' => 'application/json',
             'Content-Type' => 'application/json'
         ])
-        ->get(config('app.api_url') . "jobemkl/combo");
-        
+            ->get(config('app.api_url') . "jobemkl/combo");
+
         $data = [
             'container' => Container::all(),
             'agen' => Agen::all(),
             'jenisorder' => JenisOrder::all(),
             'pelanggan' => Pelanggan::all(),
             'tarif' => Tarif::all(),
-            'statuslangsir' => Parameter::where(['grp'=>'status langsir'])->get(),
-            'statusperalihan' => Parameter::where(['grp'=>'status peralihan'])->get(),
+            'statuslangsir' => Parameter::where(['grp' => 'status langsir'])->get(),
+            'statusperalihan' => Parameter::where(['grp' => 'status peralihan'])->get(),
             'jobemkl' => $response['data']['jobemkl'],
         ];
 
@@ -276,5 +269,4 @@ class OrderanTruckingController extends Controller
             'data' => $data
         ]);
     }
-
 }

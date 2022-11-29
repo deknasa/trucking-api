@@ -30,7 +30,7 @@ use Illuminate\Database\QueryException;
 
 class PengeluaranHeaderController extends Controller
 {
-    
+
     /**
      * @ClassName
      */
@@ -58,29 +58,29 @@ class PengeluaranHeaderController extends Controller
             /* Store header */
 
             $tanpaprosesnobukti = $request->tanpaprosesnobukti ?? 0;
-           
+
 
             if ($tanpaprosesnobukti == 0) {
                 $content = new Request();
                 $bankid = $request->bank_id;
                 $querysubgrppengeluaran = DB::table('bank')
-                ->select(
-                    'parameter.grp',
-                    'parameter.subgrp',
-                    'bank.statusformatpengeluaran',
-                    'bank.coa',
-                    'bank.tipe'
-                )
-                ->join('parameter', 'bank.statusformatpengeluaran', 'parameter.id')
-                ->whereRaw("bank.id = $bankid")
-                ->first();
-               
+                    ->select(
+                        'parameter.grp',
+                        'parameter.subgrp',
+                        'bank.statusformatpengeluaran',
+                        'bank.coa',
+                        'bank.tipe'
+                    )
+                    ->join('parameter', 'bank.statusformatpengeluaran', 'parameter.id')
+                    ->whereRaw("bank.id = $bankid")
+                    ->first();
+
                 $content['group'] = $querysubgrppengeluaran->grp;
                 $content['subgroup'] = $querysubgrppengeluaran->subgrp;
                 $content['table'] = 'pengeluaranheader';
                 $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
-               
-                if($querysubgrppengeluaran->tipe == 'BANK') {
+
+                if ($querysubgrppengeluaran->tipe == 'BANK') {
                     $request->validate([
                         'transferkeac' => 'required',
                         'transferkean' => 'required',
@@ -93,7 +93,7 @@ class PengeluaranHeaderController extends Controller
             if ($tanpaprosesnobukti == 1) {
                 $pengeluaranHeader->nobukti = $request->nobukti;
             }
-            
+
 
             $statusApproval = Parameter::where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
 
@@ -114,28 +114,17 @@ class PengeluaranHeaderController extends Controller
             $pengeluaranHeader->statusformat = $querysubgrppengeluaran->statusformatpengeluaran ?? $request->statusformat;
             $pengeluaranHeader->modifiedby = auth('api')->user()->name;
 
-            TOP:
-            if($tanpaprosesnobukti == 0) {
+            if ($tanpaprosesnobukti == 0) {
                 $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
                 $pengeluaranHeader->nobukti = $nobukti;
             }
-            
 
-            try {
-                $pengeluaranHeader->save();
 
-                if($tanpaprosesnobukti == 1) {
-                    DB::commit();
-                    
-                }
-            } catch (\Exception $e) {
-                // dd($e->getMessage());
-                $errorCode = @$e->errorInfo[1];
-                if ($errorCode == 2601) {
-                    goto TOP;
-                }
+            $pengeluaranHeader->save();
+
+            if ($tanpaprosesnobukti == 1) {
+                DB::commit();
             }
-
             $logTrail = [
                 'namatabel' => strtoupper($pengeluaranHeader->getTable()),
                 'postingdari' => 'ENTRY PENGELUARAN KAS HEADER',
@@ -146,7 +135,7 @@ class PengeluaranHeaderController extends Controller
                 'modifiedby' => $pengeluaranHeader->modifiedby
             ];
 
-           
+
             $validatedLogTrail = new StoreLogTrailRequest($logTrail);
             $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
             /* Store detail */
@@ -171,7 +160,7 @@ class PengeluaranHeaderController extends Controller
             //     app(JurnalUmumHeaderController::class)->store($jurnal);
             // }
 
-            if($tanpaprosesnobukti == 0) {
+            if ($tanpaprosesnobukti == 0) {
                 $detaillog = [];
                 for ($i = 0; $i < count($request->nominal_detail); $i++) {
 
@@ -182,7 +171,7 @@ class PengeluaranHeaderController extends Controller
                     //     )
                     //     ->where('id', '=', $request->coadebet[$i])
                     //     ->first();
-                        
+
                     $datadetail = [
                         'pengeluaran_id' => $pengeluaranHeader->id,
                         'nobukti' => $pengeluaranHeader->nobukti,
@@ -224,7 +213,6 @@ class PengeluaranHeaderController extends Controller
                         'updated_at' => date('d-m-Y H:i:s', strtotime($pengeluaranHeader->updated_at)),
                     ];
                     $detaillog[] = $datadetaillog;
-
                 }
 
                 $dataid = LogTrail::select('id')
@@ -258,7 +246,7 @@ class PengeluaranHeaderController extends Controller
                     //     ->where('id', '=', $request->coadebet[0])
                     //     ->first();
 
-                    
+
                     $jurnalHeader = [
                         'tanpaprosesnobukti' => 1,
                         'nobukti' => $pengeluaranHeader->nobukti,
@@ -297,11 +285,11 @@ class PengeluaranHeaderController extends Controller
                                 'baris' => $i,
                             ]
                         ];
-    
-                        
+
+
                         $jurnaldetail = array_merge($jurnaldetail, $jurnalDetail);
                     }
-                   
+
                     $jurnal = $this->storeJurnal($jurnalHeader, $jurnaldetail);
 
 
@@ -314,15 +302,13 @@ class PengeluaranHeaderController extends Controller
 
 
                     DB::commit();
-                     /* Set position and page */
+                    /* Set position and page */
                     $selected = $this->getPosition($pengeluaranHeader, $pengeluaranHeader->getTable());
                     $pengeluaranHeader->position = $selected->position;
                     $pengeluaranHeader->page = ceil($pengeluaranHeader->position / ($request->limit ?? 10));
-
-                    
                 }
             }
-           
+
             return response([
                 'status' => true,
                 'message' => 'Berhasil disimpan',
@@ -332,7 +318,6 @@ class PengeluaranHeaderController extends Controller
             DB::rollBack();
             throw $th;
         }
-
     }
 
     private function storeJurnal($header, $detail)
@@ -341,7 +326,7 @@ class PengeluaranHeaderController extends Controller
         try {
             $jurnal = new StoreJurnalUmumHeaderRequest($header);
             $jurnals = app(JurnalUmumHeaderController::class)->store($jurnal);
-          
+
             foreach ($detail as $key => $value) {
                 $value['jurnalumum_id'] = $jurnals->original['data']['id'];
                 $jurnal = new StoreJurnalUmumDetailRequest($value);
@@ -371,18 +356,18 @@ class PengeluaranHeaderController extends Controller
             /* Store header */
             $bankid = $request->bank_id;
             $querysubgrppengeluaran = DB::table('bank')
-            ->select(
-                'parameter.grp',
-                'parameter.subgrp',
-                'bank.statusformatpengeluaran',
-                'bank.coa',
-                'bank.tipe'
-            )
-            ->join('parameter', 'bank.statusformatpengeluaran', 'parameter.id')
-            ->whereRaw("bank.id = $bankid")
-            ->first();
+                ->select(
+                    'parameter.grp',
+                    'parameter.subgrp',
+                    'bank.statusformatpengeluaran',
+                    'bank.coa',
+                    'bank.tipe'
+                )
+                ->join('parameter', 'bank.statusformatpengeluaran', 'parameter.id')
+                ->whereRaw("bank.id = $bankid")
+                ->first();
 
-            if($querysubgrppengeluaran->tipe == 'BANK') {
+            if ($querysubgrppengeluaran->tipe == 'BANK') {
                 $request->validate([
                     'transferkeac' => 'required',
                     'transferkean' => 'required',
@@ -415,14 +400,14 @@ class PengeluaranHeaderController extends Controller
                     'datajson' => $pengeluaranheader->toArray(),
                     'modifiedby' => $pengeluaranheader->modifiedby
                 ];
-        
+
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
             }
 
             /* Delete existing detail */
-            PengeluaranDetail::where('nobukti',$pengeluaranheader->nobukti)->lockForUpdate()->delete();
+            PengeluaranDetail::where('nobukti', $pengeluaranheader->nobukti)->lockForUpdate()->delete();
             JurnalUmumDetail::where('nobukti', $pengeluaranheader->nobukti)->lockForUpdate()->delete();
             JurnalUmumHeader::where('nobukti', $pengeluaranheader->nobukti)->lockForUpdate()->delete();
 
@@ -430,7 +415,7 @@ class PengeluaranHeaderController extends Controller
             $detaillog = [];
 
             for ($i = 0; $i < count($request->nominal_detail); $i++) {
-               
+
 
                 $datadetail = [
                     'pengeluaran_id' => $pengeluaranheader->id,
@@ -472,7 +457,6 @@ class PengeluaranHeaderController extends Controller
                     'updated_at' => date('d-m-Y H:i:s', strtotime($pengeluaranheader->updated_at)),
                 ];
                 $detaillog[] = $datadetaillog;
-
             }
 
             $dataid = LogTrail::select('id')
@@ -481,15 +465,15 @@ class PengeluaranHeaderController extends Controller
                 ->orderBy('id', 'DESC')
                 ->first();
 
-                $datalogtrail = [
-                    'namatabel' => $tabeldetail,
-                    'postingdari' => 'EDIT PENGELUARAN DETAIL',
-                    'idtrans' =>  $dataid->id,
-                    'nobuktitrans' => $pengeluaranheader->nobukti,
-                    'aksi' => 'EDIT',
-                    'datajson' => $detaillog,
-                    'modifiedby' => auth('api')->user()->name,
-                ];
+            $datalogtrail = [
+                'namatabel' => $tabeldetail,
+                'postingdari' => 'EDIT PENGELUARAN DETAIL',
+                'idtrans' =>  $dataid->id,
+                'nobuktitrans' => $pengeluaranheader->nobukti,
+                'aksi' => 'EDIT',
+                'datajson' => $detaillog,
+                'modifiedby' => auth('api')->user()->name,
+            ];
 
             $data = new StoreLogTrailRequest($datalogtrail);
             app(LogTrailController::class)->store($data);
@@ -540,10 +524,10 @@ class PengeluaranHeaderController extends Controller
                         ]
                     ];
 
-                    
+
                     $jurnaldetail = array_merge($jurnaldetail, $jurnalDetail);
                 }
-               
+
                 $jurnal = $this->storeJurnal($jurnalHeader, $jurnaldetail);
 
                 // if (!$jurnal['status'] AND @$jurnal['errorCode'] == 2601) {

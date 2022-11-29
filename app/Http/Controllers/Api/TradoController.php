@@ -8,6 +8,7 @@ use App\Http\Requests\StoreLogTrailRequest;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreTradoRequest;
 use App\Http\Requests\TradoRequest;
+use App\Http\Requests\UpdateTradoRequest;
 use App\Models\Trado;
 use App\Models\LogTrail;
 use App\Models\Parameter;
@@ -127,7 +128,7 @@ class TradoController extends Controller
     /**
      * @ClassName 
      */
-    public function update(StoreTradoRequest $request,Trado $trado)
+    public function update(UpdateTradoRequest $request,Trado $trado)
     {
         DB::beginTransaction();
         try {

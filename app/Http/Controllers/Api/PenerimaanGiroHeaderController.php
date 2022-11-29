@@ -75,20 +75,10 @@ class PenerimaanGiroHeaderController extends Controller
             $penerimaanGiro->statusformat = $format->id;
             $penerimaanGiro->modifiedby = auth('api')->user()->name;
 
-            TOP:
             $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
             $penerimaanGiro->nobukti = $nobukti;
 
-            try {
-                $penerimaanGiro->save();
-            } catch (\Exception $e) {
-                throw $e;
-                $errorCode = @$e->errorInfo[1];
-                if ($errorCode == 2601) {
-                    goto TOP;
-                }
-            }
-
+            $penerimaanGiro->save();
 
             $logTrail = [
                 'namatabel' => strtoupper($penerimaanGiro->getTable()),
@@ -248,21 +238,12 @@ class PenerimaanGiroHeaderController extends Controller
             $selected = $this->getPosition($penerimaanGiro, $penerimaanGiro->getTable());
             $penerimaanGiro->position = $selected->position;
             $penerimaanGiro->page = ceil($penerimaanGiro->position / ($request->limit ?? 10));
-            
+
             return response([
                 'status' => true,
                 'message' => 'Berhasil disimpan',
                 'data' => $penerimaanGiro
             ], 201);
-        } catch (QueryException $queryException) {
-            if (isset($queryException->errorInfo[1]) && is_array($queryException->errorInfo)) {
-                // Check if deadlock
-                if ($queryException->errorInfo[1] === 1205) {
-                    goto TOP;
-                }
-            }
-
-            throw $queryException;
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
@@ -313,7 +294,7 @@ class PenerimaanGiroHeaderController extends Controller
             }
 
             PenerimaanGiroDetail::where('penerimaangiro_id', $penerimaanGiroHeader->id)->lockForUpdate()->delete();
-            
+
             $coadebet = DB::table('parameter')->select('text')->where('grp', 'COA PENERIMAAN GIRO DEBET')->first();
             $coakredit = DB::table('parameter')->select('text')->where('grp', 'COA PENERIMAAN GIRO KREDIT')->first();
             $detaillog = [];
@@ -604,16 +585,13 @@ class PenerimaanGiroHeaderController extends Controller
         return response([
             'data' => $penerimaan->tarikPelunasan($id),
         ]);
-        
     }
-    
+
     public function getPelunasan($id)
     {
         $get = new PenerimaanGiroHeader();
         return response([
             'data' => $get->getPelunasan($id),
         ]);
-        
     }
-
 }

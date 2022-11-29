@@ -144,7 +144,6 @@ class ZonaController extends Controller
     public function destroy(Zona $zona, Request $request)
     {
         $delete = Zona::destroy($zona->id);
-        $del = 1;
         if ($delete) {
             $logTrail = [
                 'namatabel' => strtoupper($zona->getTable()),

@@ -77,20 +77,12 @@ class PelunasanPiutangHeaderController extends Controller
                 $pelunasanpiutangheader->statusformat = $format->id;
                 $pelunasanpiutangheader->modifiedby = auth('api')->user()->name;
 
-                TOP:
                 $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
                 $pelunasanpiutangheader->nobukti = $nobukti;
 
 
-                try {
-                    $pelunasanpiutangheader->save();
-                    DB::commit();
-                } catch (\Exception $e) {
-                    $errorCode = @$e->errorInfo[1];
-                    if ($errorCode == 2601) {
-                        goto TOP;
-                    }
-                }
+                $pelunasanpiutangheader->save();
+
 
                 $logTrail = [
                     'namatabel' => strtoupper($pelunasanpiutangheader->getTable()),
@@ -235,16 +227,7 @@ class PelunasanPiutangHeaderController extends Controller
                     'message' => "PIUTANG $query->keterangan",
                 ], 422);
             }
-        } catch (QueryException $queryException) {
-            if (isset($queryException->errorInfo[1]) && is_array($queryException->errorInfo)) {
-                // Check if deadlock
-                if ($queryException->errorInfo[1] === 1205) {
-                    goto TOP;
-                }
-            }
-
-            throw $queryException;
-        } catch (\Throwable $th) {
+        }catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
             return response($th->getMessage());
