@@ -26,6 +26,9 @@ use App\Http\Requests\StoreJurnalUmumDetailRequest;
 
 class PengembalianKasBankHeaderController extends Controller
 {
+    /**
+     * @ClassName 
+     */
     public function index()
     {
         $pengembalianKasBankHeader = new PengembalianKasBankHeader();
@@ -38,7 +41,9 @@ class PengembalianKasBankHeaderController extends Controller
             ]
         ]);
     }
-
+    /**
+     * @ClassName 
+     */
     public function store(StorePengembalianKasBankHeaderRequest $request)
     {
         DB::beginTransaction();
@@ -263,10 +268,7 @@ class PengembalianKasBankHeaderController extends Controller
     }
 
     /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * @ClassName 
      */
     public function show(PengembalianKasBankHeader $pengembalianKasBankHeader, $id)
     {
@@ -276,7 +278,9 @@ class PengembalianKasBankHeaderController extends Controller
             'detail' => PengembalianKasBankDetail::getAll($id),
         ]);
     }
-
+    /**
+     * @ClassName 
+     */
     public function update(Request $request, $id)
     {
         DB::beginTransaction();
@@ -501,7 +505,9 @@ class PengembalianKasBankHeaderController extends Controller
         }
     }
 
- 
+    /**
+     * @ClassName 
+     */
     public function destroy($id)
     {
         DB::beginTransaction();

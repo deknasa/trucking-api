@@ -76,6 +76,7 @@ class PenerimaanDetailController extends Controller
                 $penerimaanDetail = $query->get();
             } else {
                 $query->select(
+                    'detail.nobukti',
                     'detail.nowarkat',
                     'detail.tgljatuhtempo',
                     'detail.nominal',

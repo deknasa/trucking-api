@@ -35,7 +35,6 @@ class PenerimaanHeaderController extends Controller
     public function index()
     {
         $penerimaan = new PenerimaanHeader();
-
         return response([
             'data' => $penerimaan->get(),
             'attributes' => [

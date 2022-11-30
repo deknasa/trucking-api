@@ -63,7 +63,6 @@ class RekapPenerimaanHeaderController extends Controller
             $rekapPenerimaanHeader->tgltransaksi  = date('Y-m-d',strtotime($request->tgltransaksi ));
             $rekapPenerimaanHeader->bank_id = $request->bank_id;
             $rekapPenerimaanHeader->statusapproval = $statusNonApproval->id;
-            $rekapPenerimaanHeader->userapproval = auth('api')->user()->name;
             $rekapPenerimaanHeader->statusformat = $format->id;
             $rekapPenerimaanHeader->modifiedby = auth('api')->user()->name;
             TOP:
@@ -147,6 +146,10 @@ class RekapPenerimaanHeaderController extends Controller
             throw $th;
             return response($th->getMessage());
         }
+        return response([
+            'message' => 'Berhasil gagal disimpan',
+            'data' => $notaKreditHeader
+        ], 422);
     }
 
     public function show(RekapPenerimaanHeader $rekapPenerimaanHeader,$id)
@@ -254,6 +257,10 @@ class RekapPenerimaanHeaderController extends Controller
             throw $th;
             return response($th->getMessage());
         }
+        return response([
+            'message' => 'Berhasil gagal disimpan',
+            'data' => $notaKreditHeader
+        ], 422);
     }
     /**
      * @ClassName 
