@@ -319,7 +319,12 @@ class PenerimaanHeader extends MyModel
             $this->totalRows = $query->count();
             $this->totalPages = $this->params['limit'] > 0 ? ceil($this->totalRows / $this->params['limit']) : 1;
         }
-
+        if (request()->approve && request()->periode) {
+            $query->where('penerimaanheader.statusapproval','<>', request()->approve)
+                  ->whereYear('penerimaanheader.tglbukti','=', request()->year)
+                  ->whereMonth('penerimaanheader.tglbukti','=', request()->month);
+            return $query;
+        }
         return $query;
     }
 

@@ -7,6 +7,8 @@
     use App\Http\Controllers\Api\AbsensiSupirApprovalHeaderController;
     use App\Http\Controllers\Api\AbsensiSupirApprovalDetailController;
     
+    use App\Http\Controllers\Api\ApprovalTransaksiHeaderController;
+    
     use App\Http\Controllers\Api\AbsenTradoController;
     use App\Http\Controllers\Api\CabangController;
     use App\Http\Controllers\Api\ParameterController;
@@ -163,6 +165,11 @@ use App\Http\Controllers\Api\BankPelangganController;
         Route::apiResource('absensisupirheader', AbsensiSupirHeaderController::class)->parameter('absensisupirheader', 'absensiSupirHeader');
         
         Route::resource('absensisupirdetail', AbsensiSupirDetailController::class);
+        
+        Route::get('approvaltransaksiheader/combo', [ApprovalTransaksiHeaderController::class, 'combo']);
+        // Route::get('approvaltransaksiheader/get', [ApprovalTransaksiHeaderController::class, 'get']);
+        Route::apiResource('approvaltransaksiheader', ApprovalTransaksiHeaderController::class);
+
         
         Route::get('absensisupirapprovalheader/running_number', [AbsensiSupirApprovalHeaderController::class, 'getRunningNumber']);
         Route::get('absensisupirapprovalheader/grid', [AbsensiSupirApprovalHeaderController::class, 'grid']);
