@@ -30,7 +30,8 @@
     use App\Http\Controllers\Api\ContainerController;
     use App\Http\Controllers\Api\BankController;
     use App\Http\Controllers\Api\AlatBayarController;
-    use App\Http\Controllers\Api\BankPelangganController;
+use App\Http\Controllers\Api\ApprovalNotaHeaderController;
+use App\Http\Controllers\Api\BankPelangganController;
     use App\Http\Controllers\Api\GajiSupirDetailController;
     use App\Http\Controllers\Api\GajiSupirHeaderController;
     use App\Http\Controllers\Api\JenisEmklController;
@@ -601,6 +602,8 @@
         Route::delete('pencairangiropengeluaranheader', [PencairanGiroPengeluaranHeaderController::class, 'destroy']);
         Route::resource('pencairangiropengeluaranheader', PencairanGiroPengeluaranHeaderController::class);
         Route::resource('pencairangiropengeluarandetail', PencairanGiroPengeluaranDetailController::class);
+
+        Route::resource('approvalnotaheader', ApprovalNotaHeaderController::class);
         
     });
 
@@ -691,10 +694,6 @@
     Route::get('kerusakan/combo', [KerusakanController::class, 'combo']);
     Route::get('kerusakan/field_length', [KerusakanController::class, 'fieldLength']);
     Route::resource('kerusakan', KerusakanController::class);
-
-    Route::get('kota/combo', [KotaController::class, 'combo']);
-    Route::get('kota/field_length', [KotaController::class, 'fieldLength']);
-    Route::resource('kota', KotaController::class)->parameters(['kota' => 'kota']);
 
     Route::get('mandor/combo', [MandorController::class, 'combo']);
     Route::get('mandor/field_length', [MandorController::class, 'fieldLength']);

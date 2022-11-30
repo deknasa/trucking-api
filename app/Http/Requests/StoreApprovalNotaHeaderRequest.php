@@ -3,9 +3,8 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Http\Request;
 
-class StorePelunasanPiutangDetailRequest extends FormRequest
+class StoreApprovalNotaHeaderRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,15 +23,20 @@ class StorePelunasanPiutangDetailRequest extends FormRequest
      */
     public function rules()
     {
-        
-            return [
-                'bayarppd' => 'required|array',
-                'bayarppd.*' => 'required|numeric|gt:0',
-                'keterangandetailppd' => 'required|array',
-                'keterangandetailppd.*' => 'required',
-                
-            ];
-       
+        return [
+            'periode' => 'required',
+            'approve' => 'required',
+            'tabel' => 'required',
+            'notaId' => 'required'
+        ];
+
     }
-   
+
+    public function attributes()
+    {
+        return [
+            'approve' => 'Proses Data',
+            'notaId' => 'Pilih Nota'
+        ];
+    }
 }

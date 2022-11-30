@@ -106,6 +106,14 @@ class PelunasanPiutangHeaderController extends Controller
                     $idpiutang = $request->piutang_id[$i];
                     $piutang = PiutangHeader::where('id', $idpiutang)->first();
 
+                    if($request->bayarppd[$i] > $piutang->nominal) {
+                        
+                        $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'NB')
+                        ->first();
+                        return response([
+                            'message' => "$query->keterangan",
+                        ], 422);
+                    }
 
                     //get coa penyesuaian
                     if ($request->penyesuaianppd[$i] > 0) {
@@ -290,6 +298,13 @@ class PelunasanPiutangHeaderController extends Controller
                     $idpiutang = $request->piutang_id[$i];
                     $piutang = PiutangHeader::where('id', $idpiutang)->first();
 
+                    if($request->bayarppd[$i] > $piutang->nominal) {
+                        $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'NB')
+                        ->first();
+                        return response([
+                            'message' => "$query->keterangan",
+                        ], 422);
+                    }
                     //get coa penyesuaian
                     if ($request->penyesuaianppd[$i] > 0) {
                         $getCoaPenyesuaian = AkunPusat::where('id', '143')->first();
