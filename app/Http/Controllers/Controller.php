@@ -80,19 +80,19 @@ class Controller extends BaseController
                 ->where(DB::raw('month(tglbukti)'), '=', $bulan)
                 ->where(DB::raw('year(tglbukti)'), '=', $tahun)
                 ->where(DB::raw('statusformat'), '=', $statusformat)
-                ->count();
+                ->lockForUpdate()->count();
         }
 
         if ($type == 'RESET TAHUN') {
             $lastRow = DB::table($request->table)
                 ->where(DB::raw('year(tglbukti)'), '=', $tahun)
                 ->where(DB::raw('statusformat'), '=', $statusformat)
-                ->count();
+                ->lockForUpdate()->count();
         }
         if ($type == '') {
             $lastRow = DB::table($request->table)
                 ->where(DB::raw('statusformat'), '=', $statusformat)
-                ->count();
+                ->lockForUpdate()->count();
         }
 
 

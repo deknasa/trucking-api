@@ -21,6 +21,7 @@ class ReportNeracaController extends Controller
     }
     public function report(Request $request)
     {
+      
         
         $tgldr = $request->tgldr;
         $tglsd = $request->tglsd;
