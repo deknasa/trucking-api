@@ -37,6 +37,7 @@ class InvoiceHeader extends MyModel
             'invoiceheader.tglterima',
             'invoiceheader.tgljatuhtempo',
             'agen.namaagen as agen_id',
+            'agen.namaagen as agen',
             'jenisorder.keterangan as jenisorder_id',
             'cabang.namacabang as cabang_id',
             'invoiceheader.piutang_nobukti',
@@ -259,6 +260,12 @@ class InvoiceHeader extends MyModel
             $this->totalPages = $this->params['limit'] > 0 ? ceil($this->totalRows / $this->params['limit']) : 1;
         }
 
+        if (request()->approve && request()->periode) {
+            $query->where('invoiceheader.statusapproval','<>', request()->approve)
+                  ->whereYear('invoiceheader.tglbukti','=', request()->year)
+                  ->whereMonth('invoiceheader.tglbukti','=', request()->month);
+            return $query;
+        }
         return $query;
     }
 

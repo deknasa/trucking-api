@@ -8,6 +8,7 @@
     use App\Http\Controllers\Api\AbsensiSupirApprovalDetailController;
     
     use App\Http\Controllers\Api\ApprovalTransaksiHeaderController;
+    use App\Http\Controllers\Api\ApprovalInvoiceHeaderController;
     
     use App\Http\Controllers\Api\AbsenTradoController;
     use App\Http\Controllers\Api\CabangController;
@@ -168,8 +169,10 @@
         Route::resource('absensisupirdetail', AbsensiSupirDetailController::class);
         
         Route::get('approvaltransaksiheader/combo', [ApprovalTransaksiHeaderController::class, 'combo']);
-        // Route::get('approvaltransaksiheader/get', [ApprovalTransaksiHeaderController::class, 'get']);
         Route::apiResource('approvaltransaksiheader', ApprovalTransaksiHeaderController::class);
+        
+        Route::get('approvalinvoiceheader/combo', [ApprovalInvoiceHeaderController::class, 'combo']);
+        Route::apiResource('approvalinvoiceheader', ApprovalInvoiceHeaderController::class);
 
         
         Route::get('absensisupirapprovalheader/running_number', [AbsensiSupirApprovalHeaderController::class, 'getRunningNumber']);
@@ -407,6 +410,7 @@
                 
         Route::get('pengeluaranstok/field_length', [PengeluaranStokController::class,'fieldLength']);
         // Route::get('pengeluaranstok/export', [PengeluaranStokController::class,'export']);
+        Route::post('invoiceextraheader/{id}/approval', [InvoiceExtraHeaderController::class,'approval']);
         Route::resource('invoiceextraheader', InvoiceExtraHeaderController::class);
         Route::resource('invoiceextradetail', InvoiceExtraDetailController::class);
 
@@ -705,6 +709,10 @@
     Route::get('kerusakan/combo', [KerusakanController::class, 'combo']);
     Route::get('kerusakan/field_length', [KerusakanController::class, 'fieldLength']);
     Route::resource('kerusakan', KerusakanController::class);
+
+    Route::get('kota/combo', [KotaController::class, 'combo']);
+    Route::get('kota/field_length', [KotaController::class, 'fieldLength']);
+    Route::resource('kota', KotaController::class)->parameters(['kota' => 'kota']);
 
     Route::get('mandor/combo', [MandorController::class, 'combo']);
     Route::get('mandor/field_length', [MandorController::class, 'fieldLength']);
