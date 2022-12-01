@@ -32,8 +32,9 @@
     use App\Http\Controllers\Api\ContainerController;
     use App\Http\Controllers\Api\BankController;
     use App\Http\Controllers\Api\AlatBayarController;
-use App\Http\Controllers\Api\ApprovalNotaHeaderController;
-use App\Http\Controllers\Api\BankPelangganController;
+    use App\Http\Controllers\Api\ApprovalHutangBayarController;
+    use App\Http\Controllers\Api\ApprovalNotaHeaderController;
+    use App\Http\Controllers\Api\BankPelangganController;
     use App\Http\Controllers\Api\GajiSupirDetailController;
     use App\Http\Controllers\Api\GajiSupirHeaderController;
     use App\Http\Controllers\Api\JenisEmklController;
@@ -553,6 +554,8 @@ use App\Http\Controllers\Api\BankPelangganController;
         Route::get('suratpengantar/combo', [SuratPengantarController::class, 'combo']);
         Route::get('suratpengantar/field_length', [SuratPengantarController::class, 'fieldLength']);
         Route::post('suratpengantar/cekUpahSupir', [SuratPengantarController::class, 'cekUpahSupir']);
+        Route::get('suratpengantar/{id}/getTarifOmset', [SuratPengantarController::class, 'getTarifOmset']);
+        Route::get('suratpengantar/{id}/getOrderanTrucking', [SuratPengantarController::class, 'getOrderanTrucking']);
         Route::get('suratpengantar/getGaji/{dari}/{sampai}/{container}/{statuscontainer}', [SuratPengantarController::class, 'getGaji']);
         Route::resource('suratpengantar', SuratPengantarController::class);
         
@@ -611,6 +614,7 @@ use App\Http\Controllers\Api\BankPelangganController;
         Route::resource('pencairangiropengeluarandetail', PencairanGiroPengeluaranDetailController::class);
 
         Route::resource('approvalnotaheader', ApprovalNotaHeaderController::class);
+        Route::resource('approvalhutangbayar', ApprovalHutangBayarController::class);
         
     });
 

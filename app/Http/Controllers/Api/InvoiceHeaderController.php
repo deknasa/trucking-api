@@ -504,9 +504,28 @@ class InvoiceHeaderController extends Controller
     public function getSP(Request $request)
     {
         $invoice = new InvoiceHeader();
-        return response([
-            "data" => $invoice->getSP($request)
-        ]);
+        $dari = date('Y-m-d', strtotime($request->tgldari));
+        $sampai = date('Y-m-d', strtotime($request->tglsampai));
+
+        $cekSP = DB::table('suratpengantar')
+            ->whereRaw("agen_id = $request->agen_id")
+            ->whereRaw("jenisorder_id = $request->jenisorder_id")
+            ->whereRaw("tglbukti >= '$dari'")
+            ->whereRaw("tglbukti <= '$sampai'")
+            ->whereRaw("suratpengantar.nobukti not in(select suratpengantar_nobukti from invoicedetail)");
+ 
+        if ($cekSP->first()) {
+            return response([
+                "data" => $invoice->getSP($request)
+            ]);
+        } else {
+
+            $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'NSP')
+                ->first();
+            return response([
+                'message' => "$query->keterangan",
+            ], 422);
+        }
     }
 
     public function getEdit($id)

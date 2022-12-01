@@ -146,12 +146,15 @@ class InvoiceHeader extends MyModel
     public function getSP($request) 
     {
         $temp = $this->createTempSP($request);
+        // dd(DB::table($temp)->get());
         $query = DB::table('suratpengantar as sp')
-        ->select(DB::raw("$temp.id,$temp.jobtrucking,sp.nosp,sp.nocont,sp.tglsp,kota.keterangan as sampai,jenisorder.keterangan as jenisorder_id,agen.namaagen as agen_id,sp.statuslongtrip,sp.statusperalihan,sp.keterangan,sp.omset"))
+        ->select(DB::raw("$temp.id,$temp.jobtrucking,sp.tglsp, sp.keterangan,jenisorder.keterangan as jenisorder_id, agen.namaagen as agen_id, sp.statuslongtrip, ot.statusperalihan, ot.nocont, tarif.tujuan as tarif_id, ot.nominal as omset"))
+        ->Join($temp,'sp.id',"$temp.id")
+        ->leftJoin('orderantrucking as ot','sp.jobtrucking','ot.nobukti')
+        ->leftJoin('tarif','ot.tarif_id','tarif.id')
         ->leftJoin('jenisorder','sp.jenisorder_id','jenisorder.id')
-        ->leftJoin('kota','sp.sampai_id','kota.id')
         ->leftJoin('agen','sp.agen_id','agen.id')
-        ->Join($temp,'sp.id',"$temp.id");
+        ->whereRaw("sp.nobukti not in(select suratpengantar_nobukti from invoicedetail)");
 
         $data = $query->get();
         return $data;
@@ -162,12 +165,12 @@ class InvoiceHeader extends MyModel
         $temp = '##temp' . rand(1, 10000);
 
         $fetch = DB::table('suratpengantar')
-            ->select(DB::raw("id, jobtrucking"))
+            ->select(DB::raw("min(id) as id, jobtrucking"))
             ->where('agen_id',$request->agen_id)
             ->where('jenisorder_id',$request->jenisorder_id)
             ->where('tglbukti','>=',date('Y-m-d', strtotime($request->tgldari)))
             ->where('tglbukti','<=',date('Y-m-d', strtotime($request->tglsampai)))
-            ->groupBy('id','jobtrucking');
+            ->groupBy('jobtrucking');
         // ->get();
 
         Schema::create($temp, function ($table) {
@@ -186,23 +189,22 @@ class InvoiceHeader extends MyModel
         $query = DB::table('invoicedetail')->select(
             'suratpengantar.id',
             'suratpengantar.jobtrucking',
-            'suratpengantar.nosp',
-            'suratpengantar.nocont',
+            'orderantrucking.nocont',
             'suratpengantar.tglsp',
-            'kota.keterangan as sampai',
+            'tarif.tujuan as tarif_id',
             'jenisorder.keterangan as jenisorder_id',
             'agen.namaagen as agen_id',
             'suratpengantar.statuslongtrip',
-            'suratpengantar.statusperalihan',
+            'orderantrucking.statusperalihan',
             'invoicedetail.nominal as omset',
             'suratpengantar.keterangan'
         )
         ->leftJoin('suratpengantar','invoicedetail.suratpengantar_nobukti','suratpengantar.nobukti')
+        ->leftJoin('orderantrucking','suratpengantar.jobtrucking','orderantrucking.nobukti')
+        ->leftJoin('tarif','orderantrucking.tarif_id','tarif.id')
         ->leftJoin('jenisorder','suratpengantar.jenisorder_id','jenisorder.id')
-        ->leftJoin('kota','suratpengantar.sampai_id','kota.id')
         ->leftJoin('agen','suratpengantar.agen_id','agen.id')
         ->where('invoicedetail.invoice_id', $id);
-
         $data = $query->get();
         return $data;
     }

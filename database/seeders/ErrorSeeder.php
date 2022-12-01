@@ -25,12 +25,14 @@ class ErrorSeeder extends Seeder
         error::create([ 'kodeerror' => 'BADJ', 'keterangan' => 'BUKAN ENTRYAN JURNAL MANUAL', 'modifiedby' => 'ADMIN',]);
         error::create([ 'kodeerror' => 'USBA', 'keterangan' => 'UPAH SUPIR BELUM ADA', 'modifiedby' => 'ADMIN',]);
         error::create([ 'kodeerror' => 'NT', 'keterangan' => 'TIDAK ADA TRIP', 'modifiedby' => 'ADMIN',]);
-        error::create([ 'kodeerror' => 'SPSD', 'keterangan' => 'SP SUDAH DIBENTUK', 'modifiedby' => 'ADMIN',]);
-        error::create([ 'kodeerror' => 'RICX', 'keterangan' => 'RIC SUDAH DIBENTUK UNTUK EBS', 'modifiedby' => 'ADMIN',]);
-        error::create([ 'kodeerror' => 'EBSX', 'keterangan' => 'EBS TIDAK BOLEH DIEDIT', 'modifiedby' => 'ADMIN',]);
-        error::create([ 'kodeerror' => 'RICSD', 'keterangan' => 'RIC SUDAH DIBENTUK', 'modifiedby' => 'ADMIN',]);
+        error::create([ 'kodeerror' => 'SPSD', 'keterangan' => 'SURAT PENGANTAR SUDAH DIBENTUK', 'modifiedby' => 'ADMIN',]);
+        error::create([ 'kodeerror' => 'RICX', 'keterangan' => 'RIC TIDAK BISA DIEDIT', 'modifiedby' => 'ADMIN',]);
+        error::create([ 'kodeerror' => 'EBSX', 'keterangan' => 'EBS TIDAK BISA DIEDIT', 'modifiedby' => 'ADMIN',]);
+        error::create([ 'kodeerror' => 'RICSD', 'keterangan' => 'RIC UNTUK RENTANG WAKTU TERSEBUT SUDAH DIBENTUK', 'modifiedby' => 'ADMIN',]);
         error::create([ 'kodeerror' => 'NRIC', 'keterangan' => 'TIDAK ADA RIC', 'modifiedby' => 'ADMIN',]);
-        error::create([ 'kodeerror' => 'NB', 'keterangan' => 'NOMINAL BAYAR TIDAK BOLEH MELEBIHI NOMINAL PIUTANG', 'modifiedby' => 'ADMIN',]);
+        error::create([ 'kodeerror' => 'NBP', 'keterangan' => 'NOMINAL BAYAR TIDAK BOLEH MELEBIHI NOMINAL PIUTANG', 'modifiedby' => 'ADMIN',]);
+        error::create([ 'kodeerror' => 'NBH', 'keterangan' => 'NOMINAL BAYAR TIDAK BOLEH MELEBIHI NOMINAL HUTANG', 'modifiedby' => 'ADMIN',]);
+        error::create([ 'kodeerror' => 'NSP', 'keterangan' => 'TIDAK ADA SURAT PENGANTAR', 'modifiedby' => 'ADMIN',]);
 
     }
 }

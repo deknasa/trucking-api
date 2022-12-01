@@ -39,6 +39,7 @@ class HutangHeader extends MyModel
             'hutangheader.total',
 
             'hutangheader.modifiedby',
+            'hutangheader.created_at',
             'hutangheader.updated_at'
         )
             ->leftJoin('pelanggan', 'hutangheader.pelanggan_id', 'pelanggan.id');

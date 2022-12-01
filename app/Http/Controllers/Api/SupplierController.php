@@ -70,7 +70,7 @@ class SupplierController extends Controller
             $supplier->kota = $request->kota;
             $supplier->kodepos = $request->kodepos;
             $supplier->notelp1 = $request->notelp1;
-            $supplier->notelp2 = $request->notelp2;
+            $supplier->notelp2 = $request->notelp2 ?? '';
             $supplier->email = $request->email;
             $supplier->statusaktif = $request->statusaktif;
             $supplier->web = $request->web;
@@ -134,7 +134,7 @@ class SupplierController extends Controller
             $supplier->kota = $request->kota;
             $supplier->kodepos = $request->kodepos;
             $supplier->notelp1 = $request->notelp1;
-            $supplier->notelp2 = $request->notelp2;
+            $supplier->notelp2 = $request->notelp2 ?? '';
             $supplier->email = $request->email;
             $supplier->statusaktif = $request->statusaktif;
             $supplier->web = $request->web;

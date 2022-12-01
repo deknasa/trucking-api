@@ -86,7 +86,6 @@ class UpdateSuratPengantarRequest extends FormRequest
             'cabang_id' => 'Cabang',
             'statustrip' => 'Status Trip',
             'qtyton' => 'QTY Ton',
-            'totalton' => 'Total Ton',
             'statusnotif' => 'Status Notif',
             'statusoneway' => 'Status One Way',
             'statusedittujuan' => 'Status Edit Tujuan',
@@ -101,7 +100,6 @@ class UpdateSuratPengantarRequest extends FormRequest
     {
         return [
             'qtyton.gt' => 'QTY Ton tidak boleh kosong',
-            'totalton.gt' => 'Total Ton tidak boleh kosong',
             'upahbongkardepo.gt' => 'Upah Bongkar Depo tidak boleh kosong',
             'upahmuatdepo.gt' => 'Upah Muat Depo tidak boleh kosong',
         ];

@@ -57,10 +57,7 @@ class UpdatePenerimaanHeaderRequest extends FormRequest
             'tgljatuhtempo.*' => 'tanggal jatuh tempo',
             'nominal_detail.*' => 'nominal',
             'keterangan_detail.*' => 'keterangan detail',
-            'coadebet.*' => 'coa debet',
-            'bankpelanggan.*' => 'bank pelanggan',
-            'jenisbiaya.*' => 'jenis biaya',
-            'bulanbeban.*' => 'bulan beban'
+            'coadebet.*' => 'coa debet'
         ];
     }
     public function messages()

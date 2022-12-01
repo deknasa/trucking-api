@@ -35,9 +35,7 @@ class UpdatePengeluaranDetailRequest extends FormRequest
             'coadebet' => 'required|array',
             'coadebet.*' => 'required',
             'keterangan_detail' => 'required|array',
-            'keterangan_detail.*' => 'required',
-            'bulanbeban' => 'required|array',
-            'bulanbeban.*' => 'required'
+            'keterangan_detail.*' => 'required'
         ];
     }
 }

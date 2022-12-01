@@ -21,6 +21,7 @@ use App\Http\Requests\UpdateSuratPengantarRequest;
 use App\Http\Requests\StoreLogTrailRequest;
 
 use App\Http\Controllers\Controller;
+use App\Models\OrderanTrucking;
 use Carbon\Carbon;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
@@ -79,36 +80,37 @@ class SuratPengantarController extends Controller
             $trado = Trado::find($request->trado_id);
             $upahsupirRincian = UpahSupirRincian::where('upahsupir_id', $upahsupir->id)->where('container_id', $request->container_id)->where('statuscontainer_id', $request->statuscontainer_id)->first();
 
+            $orderanTrucking = OrderanTrucking::where('nobukti',$request->jobtrucking)->first();
             $suratpengantar = new SuratPengantar();
 
             $suratpengantar->jobtrucking = $request->jobtrucking;
             $suratpengantar->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
-            $suratpengantar->pelanggan_id = $request->pelanggan_id;
+            $suratpengantar->pelanggan_id = $orderanTrucking->pelanggan_id;
             $suratpengantar->keterangan = $request->keterangan;
             $suratpengantar->nourutorder = $request->nourutorder ?? 1;
             $suratpengantar->upah_id = $upahsupir->id;
             $suratpengantar->dari_id = $request->dari_id;
             $suratpengantar->sampai_id = $request->sampai_id;
-            $suratpengantar->container_id = $request->container_id;
-            $suratpengantar->nocont = $request->nocont;
-            $suratpengantar->nocont2 = $request->nocont2 ?? '';
+            $suratpengantar->container_id = $orderanTrucking->container_id;
+            $suratpengantar->nocont = $orderanTrucking->nocont;
+            $suratpengantar->nocont2 = $orderanTrucking->nocont2 ?? '';
             $suratpengantar->statuscontainer_id = $request->statuscontainer_id;
             $suratpengantar->trado_id = $request->trado_id;
             $suratpengantar->supir_id = $request->supir_id;
-            $suratpengantar->nojob = $request->nojob;
-            $suratpengantar->nojob2 = $request->nojob2 ?? '';
+            $suratpengantar->nojob = $orderanTrucking->nojobemkl;
+            $suratpengantar->nojob2 = $orderanTrucking->nojobemkl2 ?? '';
             $suratpengantar->statuslongtrip = $request->statuslongtrip ?? 0;
             $suratpengantar->omset = $request->omset;
             $suratpengantar->discount = $request->discount ?? 0;
             $suratpengantar->totalomset = $request->omset - ($request->omset * ($request->discount / 100));
             $suratpengantar->gajisupir = $upahsupirRincian->nominalsupir;
             $suratpengantar->gajikenek = $upahsupirRincian->nominalkenek;
-            $suratpengantar->agen_id = $request->agen_id;
-            $suratpengantar->jenisorder_id = $request->jenisorder_id;
+            $suratpengantar->agen_id = $orderanTrucking->agen_id;
+            $suratpengantar->jenisorder_id = $orderanTrucking->jenisorder_id;
             $suratpengantar->statusperalihan = $request->statusperalihan;
-            $suratpengantar->tarif_id = $request->tarif_id;
+            $suratpengantar->tarif_id = $orderanTrucking->tarif_id;
             // $suratpengantar->gajiritasi = $request->gajiritasi ?? 0;
-            $tarif = Tarif::find($request->tarif_id);
+            $tarif = Tarif::find($orderanTrucking->tarif_id);
             $persentaseperalihan = $request->persentaseperalihan ?? 0;
             $nominalperalihan = $request->nominalperalihan ?? 0;
             if ($persentaseperalihan != 0) {
@@ -135,9 +137,9 @@ class SuratPengantarController extends Controller
             $suratpengantar->upahbongkardepo = $request->upahbongkardepo ?? 0;
             $suratpengantar->upahmuatdepo = $request->upahmuatdepo ?? 0;
             $suratpengantar->hargatol = $upahsupirRincian->hargatol ?? 0;
-            $suratpengantar->qtyton = $request->qtyton ?? 0;
-            $suratpengantar->totalton = $request->totalton ?? 0;
-            $suratpengantar->mandorsupir_id = $trado->supir_id  ?? 0;
+            $suratpengantar->qtyton = $request->qtyton;
+            $suratpengantar->totalton = $request->omset * $request->qtyton;
+            $suratpengantar->mandorsupir_id = $trado->mandor_id ?? 0;
             $suratpengantar->mandortrado_id = $trado->mandor_id ?? 0;
             $suratpengantar->statustrip = $request->statustrip ?? 0;
             $suratpengantar->notripasal = $request->notripasal ?? '';
@@ -221,40 +223,43 @@ class SuratPengantarController extends Controller
         
         DB::beginTransaction();
         try {
-            // $suratpengantar = DB::table((new SuratPengantar())->getTable())->findOrFail($suratpengantar->id);
+            $suratpengantar = SuratPengantar::lockForUpdate()->findOrFail($suratpengantar->id);
             $upahsupir = UpahSupir::where('kotadari_id', $request->dari_id)->where('kotasampai_id', $request->sampai_id)->first();
             
             $trado = Trado::find($request->trado_id);
             $upahsupirRincian = UpahSupirRincian::where('upahsupir_id', $upahsupir->id)->where('container_id', $request->container_id)->where('statuscontainer_id', $request->statuscontainer_id)->first();
 
+            $orderanTrucking = OrderanTrucking::where('nobukti',$request->jobtrucking)->first();
+            
+
             $suratpengantar->jobtrucking = $request->jobtrucking;
             $suratpengantar->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
-            $suratpengantar->pelanggan_id = $request->pelanggan_id;
+            $suratpengantar->pelanggan_id = $orderanTrucking->pelanggan_id;
             $suratpengantar->keterangan = $request->keterangan;
             $suratpengantar->nourutorder = $request->nourutorder ?? 1;
             $suratpengantar->upah_id = $upahsupir->id;
             $suratpengantar->dari_id = $request->dari_id;
             $suratpengantar->sampai_id = $request->sampai_id;
-            $suratpengantar->container_id = $request->container_id;
-            $suratpengantar->nocont = $request->nocont;
-            $suratpengantar->nocont2 = $request->nocont2 ?? '';
+            $suratpengantar->container_id = $orderanTrucking->container_id;
+            $suratpengantar->nocont = $orderanTrucking->nocont;
+            $suratpengantar->nocont2 = $orderanTrucking->nocont2 ?? '';
             $suratpengantar->statuscontainer_id = $request->statuscontainer_id;
             $suratpengantar->trado_id = $request->trado_id;
             $suratpengantar->supir_id = $request->supir_id;
-            $suratpengantar->nojob = $request->nojob;
-            $suratpengantar->nojob2 = $request->nojob2 ?? '';
+            $suratpengantar->nojob = $orderanTrucking->nojobemkl;
+            $suratpengantar->nojob2 = $orderanTrucking->nojobemkl2 ?? '';
             $suratpengantar->statuslongtrip = $request->statuslongtrip ?? 0;
             $suratpengantar->omset = $request->omset;
             $suratpengantar->discount = $request->discount ?? 0;
             $suratpengantar->totalomset = $request->omset - ($request->omset * ($request->discount / 100));
             $suratpengantar->gajisupir = $upahsupirRincian->nominalsupir;
             $suratpengantar->gajikenek = $upahsupirRincian->nominalkenek;
-            $suratpengantar->agen_id = $request->agen_id;
-            $suratpengantar->jenisorder_id = $request->jenisorder_id;
+            $suratpengantar->agen_id = $orderanTrucking->agen_id;
+            $suratpengantar->jenisorder_id = $orderanTrucking->jenisorder_id;
             $suratpengantar->statusperalihan = $request->statusperalihan;
-            $suratpengantar->tarif_id = $request->tarif_id;
+            $suratpengantar->tarif_id = $orderanTrucking->tarif_id;
             // $suratpengantar->gajiritasi = $request->gajiritasi ?? 0;
-            $tarif = Tarif::find($request->tarif_id);
+            $tarif = Tarif::find($orderanTrucking->tarif_id);
             $persentaseperalihan = $request->persentaseperalihan ?? 0;
             $nominalperalihan = $request->nominalperalihan ?? 0;
             if ($persentaseperalihan != 0) {
@@ -281,9 +286,9 @@ class SuratPengantarController extends Controller
             $suratpengantar->upahbongkardepo = $request->upahbongkardepo ?? 0;
             $suratpengantar->upahmuatdepo = $request->upahmuatdepo ?? 0;
             $suratpengantar->hargatol = $upahsupirRincian->hargatol ?? 0;
-            $suratpengantar->qtyton = $request->qtyton ?? 0;
-            $suratpengantar->totalton = $request->totalton ?? 0;
-            $suratpengantar->mandorsupir_id = $trado->supir_id  ?? 0;
+            $suratpengantar->qtyton = $request->qtyton;
+            $suratpengantar->totalton = $request->omset * $request->qtyton;
+            $suratpengantar->mandorsupir_id = $trado->mandor_id ?? 0;
             $suratpengantar->mandortrado_id = $trado->mandor_id ?? 0;
             $suratpengantar->statustrip = $request->statustrip ?? 0;
             $suratpengantar->notripasal = $request->notripasal ?? '';
@@ -422,20 +427,30 @@ class SuratPengantarController extends Controller
 
             return response($data);
         }else{
-            $query = DB::table('error')
-            ->select('keterangan')
-            ->where('kodeerror', '=', 'USBA')
-            ->get();
-            $keterangan = $query['0'];
-            $data = [
-                'message' => $keterangan,
-                'errors' => 'upahsupirbelumada',
-                'kodestatus' => '0',
-            ];
-
-            return response($data);
+            $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'USBA')
+            ->first();
+            return response([
+                'message' => "$query->keterangan",
+            ], 422);
         }
     }
+    
+    public function getTarifOmset($id){
+
+        $omset = Tarif::select('nominal')->where('id',$id)->first();
+        return response([
+            "nominal" => $omset->nominal
+        ]);
+    }
+    
+    public function getOrderanTrucking($id){
+
+        $suratPengantar = new SuratPengantar();
+        return response([
+            "data" => $suratPengantar->getOrderanTrucking($id)
+        ]);
+    }
+
 
     public function getGaji($dari, $sampai, $container, $statuscontainer)
     {
@@ -449,10 +464,18 @@ class SuratPengantarController extends Controller
 
             // dd($data->toSql());
             ->first();
-
-        return response([
-            'data' => $data
-        ]);
+        if($data != null) {
+            return response([
+                'data' => $data
+            ]);
+        }else{
+            $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'USBA')
+            ->first();
+            return response([
+                'message' => "$query->keterangan",
+            ], 422);
+        }
+       
     }
 
 }

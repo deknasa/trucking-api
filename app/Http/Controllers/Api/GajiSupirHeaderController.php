@@ -456,21 +456,19 @@ class GajiSupirHeaderController extends Controller
             ->where('tglbukti', '<=', $tglSampai)
             ->where('supir_id', $supir_id)->first();
 
+        // CEK APAKAH ADA SP UNTUK DATA TERSEBUT
         if ($cekSP) {
             $nobukti = $cekSP->nobukti;
             $cekTrip = DB::table('gajisupirdetail')->where('suratpengantar_nobukti', $nobukti)->first();
 
+            //CEK APAKAH SP SUDAH DIBENTUK
             if ($cekTrip) {
-                $query = DB::table('error')
-                    ->select('keterangan')
-                    ->where('kodeerror', '=', 'SPSD')
-                    ->first();
-                $data = [
-                    'message' => $query->keterangan,
-                    'errors' => true
-                ];
-
-                return response($data);
+                
+                $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'SPSD')
+                ->first();
+                return response([
+                    'message' => "$query->keterangan",
+                ], 422);
             } else {
                 return response([
                     'errors' => false,
@@ -482,16 +480,13 @@ class GajiSupirHeaderController extends Controller
                 ]);
             }
         } else {
-            $query = DB::table('error')
-                ->select('keterangan')
-                ->where('kodeerror', '=', 'NT')
-                ->first();
-            $data = [
-                'message' => $query->keterangan,
-                'errors' => true
-            ];
+           
+            $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'NT')
+            ->first();
+            return response([
+                'message' => "$query->keterangan",
+            ], 422);
 
-            return response($data);
         }
     }
 
@@ -506,16 +501,11 @@ class GajiSupirHeaderController extends Controller
 
     public function noEdit()
     {
-        $query = DB::table('error')
-            ->select('keterangan')
-            ->where('kodeerror', '=', 'RICX')
-            ->first();
-        $data = [
-            'message' => $query->keterangan,
-            'errors' => 'noEdit'
-        ];
-
-        return response($data);
+        $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'RICX')
+        ->first();
+        return response([
+            'message' => "$query->keterangan",
+        ]);
     }
 
     public function fieldLength()

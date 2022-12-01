@@ -108,7 +108,14 @@ class HutangBayarHeaderController extends Controller
 
             for ($i = 0; $i < count($request->hutang_id); $i++) {
                 $hutang = HutangHeader::where('id', $request->hutang_id[$i])->first();
-
+                if($request->bayar[$i] > $hutang->total) {
+                        
+                    $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'NBH')
+                    ->first();
+                    return response([
+                        'message' => "$query->keterangan",
+                    ], 422);
+                }
                 $datadetail = [
                     'hutangbayar_id' => $hutangbayarheader->id,
                     'nobukti' => $hutangbayarheader->nobukti,
@@ -324,7 +331,14 @@ class HutangBayarHeaderController extends Controller
                 $detaillog = [];
                 for ($i = 0; $i < count($request->hutang_id); $i++) {
                     $hutang = HutangHeader::where('id', $request->hutang_id[$i])->first();
-
+                    if($request->bayar[$i] > $hutang->total) {
+                        
+                        $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'NBH')
+                        ->first();
+                        return response([
+                            'message' => "$query->keterangan",
+                        ], 422);
+                    }
                     $datadetail = [
                         'hutangbayar_id' => $hutangbayarheader->id,
                         'nobukti' => $hutangbayarheader->nobukti,
