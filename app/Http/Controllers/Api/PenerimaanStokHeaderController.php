@@ -195,7 +195,7 @@ class PenerimaanStokHeaderController extends Controller
     {
         try {
             /* Store header */
-            $penerimaanStokHeader = PenerimaanStokHeader::findOrFail($id);
+            $penerimaanStokHeader = PenerimaanStokHeader::lockForUpdate()->findOrFail($id);
             
             $penerimaanStokHeader->tglbukti          = date('Y-m-d', strtotime($request->tglbukti));
             $penerimaanStokHeader->penerimaanstok_nobukti  = ($request->penerimaanstok_nobukti == null) ?"" :$request->penerimaanstok_nobukti;
@@ -229,7 +229,7 @@ class PenerimaanStokHeaderController extends Controller
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
                 
                 /* Delete existing detail */
-                $penerimaanStokDetail = PenerimaanStokDetail::where('penerimaanstokheader_id',$id)->delete();
+                $penerimaanStokDetail = PenerimaanStokDetail::where('penerimaanstokheader_id',$id)->lockForUpdate()->delete();
                 /* Store detail */
                 $detaillog = [];
     
@@ -315,7 +315,7 @@ class PenerimaanStokHeaderController extends Controller
         DB::beginTransaction();
 
         $penerimaanStokHeader = PenerimaanStokHeader::where('id',$id)->first();
-        $delete = $penerimaanStokHeader->delete();
+        $delete = $penerimaanStokHeader->lockForUpdate()->delete();
 
         if ($delete) {
             $logTrail = [

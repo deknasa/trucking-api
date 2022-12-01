@@ -9,6 +9,7 @@ use App\Models\Role;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use Illuminate\Database\QueryException;
 
 class RoleController extends Controller
 {
@@ -40,6 +41,7 @@ class RoleController extends Controller
             $role->rolename = $request->rolename;
             $role->modifiedby = auth('api')->user()->name;
 
+            TOP:
             if ($role->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($role->getTable()),
@@ -67,6 +69,15 @@ class RoleController extends Controller
                 'message' => 'Berhasil disimpan',
                 'data' => $role
             ], 201);
+        } catch (QueryException $queryException) {
+            if (isset($queryException->errorInfo[1]) && is_array($queryException->errorInfo)) {
+                // Check if deadlock
+                if ($queryException->errorInfo[1] === 1205) {
+                    goto TOP;
+                }
+            }
+
+            throw $queryException;
         } catch (\Throwable $th) {
             DB::rollBack();
 
@@ -141,7 +152,7 @@ class RoleController extends Controller
         DB::beginTransaction();
 
         try {
-            if ($role->delete()) {
+            if ($role->lockForUpdate()->delete()) {
                 $logTrail = [
                     'namatabel' => strtoupper($role->getTable()),
                     'postingdari' => 'DELETE ROLE',

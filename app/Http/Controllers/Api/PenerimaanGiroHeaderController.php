@@ -15,6 +15,7 @@ use App\Models\JurnalUmumHeader;
 use App\Models\Parameter;
 use App\Models\PenerimaanGiroDetail;
 use Exception;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -74,20 +75,10 @@ class PenerimaanGiroHeaderController extends Controller
             $penerimaanGiro->statusformat = $format->id;
             $penerimaanGiro->modifiedby = auth('api')->user()->name;
 
-            TOP:
             $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
             $penerimaanGiro->nobukti = $nobukti;
 
-            try {
-                $penerimaanGiro->save();
-            } catch (\Exception $e) {
-                throw $e;
-                $errorCode = @$e->errorInfo[1];
-                if ($errorCode == 2601) {
-                    goto TOP;
-                }
-            }
-
+            $penerimaanGiro->save();
 
             $logTrail = [
                 'namatabel' => strtoupper($penerimaanGiro->getTable()),
@@ -247,12 +238,12 @@ class PenerimaanGiroHeaderController extends Controller
             $selected = $this->getPosition($penerimaanGiro, $penerimaanGiro->getTable());
             $penerimaanGiro->position = $selected->position;
             $penerimaanGiro->page = ceil($penerimaanGiro->position / ($request->limit ?? 10));
-            
+
             return response([
                 'status' => true,
                 'message' => 'Berhasil disimpan',
                 'data' => $penerimaanGiro
-            ]);
+            ], 201);
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
@@ -274,12 +265,12 @@ class PenerimaanGiroHeaderController extends Controller
     /**
      * @ClassName
      */
-    public function update(StorePenerimaanGiroHeaderRequest $request, $id)
+    public function update(UpdatePenerimaanGiroHeaderRequest $request, $id)
     {
         DB::beginTransaction();
 
         try {
-            $penerimaanGiroHeader = PenerimaanGiroHeader::findOrFail($id);
+            $penerimaanGiroHeader = PenerimaanGiroHeader::lockForUpdate()->findOrFail($id);
             $penerimaanGiroHeader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $penerimaanGiroHeader->pelanggan_id = $request->pelanggan_id;
             $penerimaanGiroHeader->keterangan = $request->keterangan;
@@ -302,8 +293,8 @@ class PenerimaanGiroHeaderController extends Controller
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
             }
 
-            PenerimaanGiroDetail::where('penerimaangiro_id', $penerimaanGiroHeader->id)->delete();
-            
+            PenerimaanGiroDetail::where('penerimaangiro_id', $penerimaanGiroHeader->id)->lockForUpdate()->delete();
+
             $coadebet = DB::table('parameter')->select('text')->where('grp', 'COA PENERIMAAN GIRO DEBET')->first();
             $coakredit = DB::table('parameter')->select('text')->where('grp', 'COA PENERIMAAN GIRO KREDIT')->first();
             $detaillog = [];
@@ -387,8 +378,8 @@ class PenerimaanGiroHeaderController extends Controller
                 app(LogTrailController::class)->store($data);
             }
 
-            JurnalUmumHeader::where('nobukti', $penerimaanGiroHeader->nobukti)->delete();
-            JurnalUmumDetail::where('nobukti', $penerimaanGiroHeader->nobukti)->delete();
+            JurnalUmumHeader::where('nobukti', $penerimaanGiroHeader->nobukti)->lockForUpdate()->delete();
+            JurnalUmumDetail::where('nobukti', $penerimaanGiroHeader->nobukti)->lockForUpdate()->delete();
 
             $parameterController = new ParameterController;
             $statusApp = $parameterController->getparameterid('STATUS APPROVAL', 'STATUS APPROVAL', 'NON APPROVAL');
@@ -474,11 +465,11 @@ class PenerimaanGiroHeaderController extends Controller
         DB::beginTransaction();
 
         try {
-            $get = PenerimaanGiroHeader::findOrFail($id);
+            $get = PenerimaanGiroHeader::lockForUpdate()->findOrFail($id);
 
-            $delete = PenerimaanGiroDetail::where('penerimaangiro_id', $id)->delete();
-            $delete = JurnalUmumHeader::where('nobukti', $get->nobukti)->delete();
-            $delete = JurnalUmumDetail::where('nobukti', $get->nobukti)->delete();
+            $delete = PenerimaanGiroDetail::where('penerimaangiro_id', $id)->lockForUpdate()->delete();
+            $delete = JurnalUmumHeader::where('nobukti', $get->nobukti)->lockForUpdate()->delete();
+            $delete = JurnalUmumDetail::where('nobukti', $get->nobukti)->lockForUpdate()->delete();
 
             $delete = PenerimaanGiroHeader::destroy($id);
             $datalogtrail = [
@@ -594,16 +585,13 @@ class PenerimaanGiroHeaderController extends Controller
         return response([
             'data' => $penerimaan->tarikPelunasan($id),
         ]);
-        
     }
-    
+
     public function getPelunasan($id)
     {
         $get = new PenerimaanGiroHeader();
         return response([
             'data' => $get->getPelunasan($id),
         ]);
-        
     }
-
 }

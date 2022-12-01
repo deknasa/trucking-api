@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class UpdateKategoriRequest extends FormRequest
+class StoreApprovalNotaHeaderRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,19 +24,19 @@ class UpdateKategoriRequest extends FormRequest
     public function rules()
     {
         return [
-            'kodekategori' => 'required',
-            'keterangan' => 'required',
-            'subkelompok_id' => 'required',
-            'statusaktif' => 'required'
+            'periode' => 'required',
+            'approve' => 'required',
+            'tabel' => 'required',
+            'notaId' => 'required'
         ];
+
     }
-    
+
     public function attributes()
     {
-        return[
-            'kodekategori' => 'kode kategori',
-            'subkelompok' => 'sub kelompok',
-            'statusaktif' => 'status aktif'
+        return [
+            'approve' => 'Proses Data',
+            'notaId' => 'Pilih Nota'
         ];
     }
 }

@@ -13,7 +13,7 @@ class UpdatePenerimaanDetailRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +24,22 @@ class UpdatePenerimaanDetailRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'coadebet' => 'required|array',
+            'coadebet.*' => 'required',
+            'tgljatuhtempo' => 'required|array',
+            'tgljatuhtempo.*' => 'required',
+            'nowarkat' => 'required|array',
+            'nowarkat.*' => 'required',
+            'bankpelanggan' => 'required|array',
+            'bankpelanggan.*' => 'required',
+            'nominal_detail' => 'required|array',
+            'nominal_detail.*' => 'required|numeric|gt:0',
+            'keterangan_detail' => 'required|array',
+            'keterangan_detail.*' => 'required',
+            'jenisbiaya' => 'required|array',
+            'jenisbiaya.*' => 'required',
+            'bulanbeban' => 'required|array',
+            'bulanbeban.*' => 'required'
         ];
     }
 }

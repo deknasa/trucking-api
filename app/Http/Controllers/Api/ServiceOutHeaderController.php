@@ -11,9 +11,11 @@ use App\Http\Requests\StoreServiceOutDetailRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Requests\StoreLogTrailRequest;
+use App\Http\Requests\UpdateServiceOutHeaderRequest;
 use App\Models\LogTrail;
 use App\Models\ServiceInHeader;
 use App\Models\ServiceOutDetail;
+use Illuminate\Database\QueryException;
 
 class ServiceOutHeaderController extends Controller
 {
@@ -66,18 +68,10 @@ class ServiceOutHeaderController extends Controller
             $serviceout->statusformat =  $format->id;
             $serviceout->modifiedby = auth('api')->user()->name;
 
-            TOP:
             $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
             $serviceout->nobukti = $nobukti;
-            try {
-                $serviceout->save();
-            } catch (\Exception $e) {
-                dd($e->getMessage());
-                $errorCode = @$e->errorInfo[1];
-                if ($errorCode == 2601) {
-                    goto TOP;
-                }
-            }
+
+            $serviceout->save();
 
             $logTrail = [
                 'namatabel' => strtoupper($serviceout->getTable()),
@@ -151,7 +145,7 @@ class ServiceOutHeaderController extends Controller
                 'status' => true,
                 'message' => 'Berhasil disimpan',
                 'data' => $serviceout
-            ]);
+            ], 201);
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
@@ -161,7 +155,7 @@ class ServiceOutHeaderController extends Controller
         return response($serviceout->serviceoutdetail());
     }
 
-  
+
     public function show($id)
     {
 
@@ -179,44 +173,42 @@ class ServiceOutHeaderController extends Controller
     /**
      * @ClassName
      */
-    public function update(StoreServiceOutHeaderRequest $request, $id)
+    public function update(UpdateServiceOutHeaderRequest $request, ServiceOutHeader $serviceoutheader)
     {
         DB::beginTransaction();
 
         try {
-            $serviceout = ServiceOutHeader::findOrFail($id);
-
-            $serviceout->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
-            $serviceout->trado_id = $request->trado_id;
-            $serviceout->tglkeluar = date('Y-m-d', strtotime($request->tglkeluar));
-            $serviceout->keterangan = $request->keterangan;
-            $serviceout->modifiedby = auth('api')->user()->name;
+            $serviceoutheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
+            $serviceoutheader->trado_id = $request->trado_id;
+            $serviceoutheader->tglkeluar = date('Y-m-d', strtotime($request->tglkeluar));
+            $serviceoutheader->keterangan = $request->keterangan;
+            $serviceoutheader->modifiedby = auth('api')->user()->name;
 
 
-            if ($serviceout->save()) {
+            if ($serviceoutheader->save()) {
                 $logTrail = [
-                    'namatabel' => strtoupper($serviceout->getTable()),
-                    'postingdari' => 'UPDATE SERVICE OUT HEADER',
-                    'idtrans' => $serviceout->id,
-                    'nobuktitrans' => $serviceout->nobukti,
-                    'aksi' => 'ENTRY',
-                    'datajson' => $serviceout->toArray(),
-                    'modifiedby' => $serviceout->modifiedby
+                    'namatabel' => strtoupper($serviceoutheader->getTable()),
+                    'postingdari' => 'EDIT SERVICE OUT HEADER',
+                    'idtrans' => $serviceoutheader->id,
+                    'nobuktitrans' => $serviceoutheader->nobukti,
+                    'aksi' => 'EDIT',
+                    'datajson' => $serviceoutheader->toArray(),
+                    'modifiedby' => $serviceoutheader->modifiedby
                 ];
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-                ServiceOutDetail::where('serviceout_id', $id)->delete();
+                ServiceOutDetail::where('serviceout_id', $serviceoutheader->id)->lockForUpdate()->delete();
                 /* Store detail */
                 $detaillog = [];
                 for ($i = 0; $i < count($request->keterangan_detail); $i++) {
                     $datadetail = [
-                        'serviceout_id' => $serviceout->id,
-                        'nobukti' => $serviceout->nobukti,
+                        'serviceout_id' => $serviceoutheader->id,
+                        'nobukti' => $serviceoutheader->nobukti,
                         'servicein_nobukti' => $request->servicein_nobukti[$i],
                         'keterangan' => $request->keterangan_detail[$i],
-                        'modifiedby' => $serviceout->modifiedby,
+                        'modifiedby' => $serviceoutheader->modifiedby,
                     ];
 
                     $data = new StoreServiceOutDetailRequest($datadetail);
@@ -231,25 +223,25 @@ class ServiceOutHeaderController extends Controller
 
                     $datadetaillog = [
                         'id' => $iddetail,
-                        'serviceout_id' => $serviceout->id,
-                        'nobukti' => $serviceout->nobukti,
+                        'serviceout_id' => $serviceoutheader->id,
+                        'nobukti' => $serviceoutheader->nobukti,
                         'servicein_nobukti' => $request->servicein_nobukti[$i],
                         'keterangan' => $request->keterangan_detail[$i],
-                        'modifiedby' => $serviceout->modifiedby,
-                        'created_at' => date('d-m-Y H:i:s', strtotime($serviceout->created_at)),
-                        'updated_at' => date('d-m-Y H:i:s', strtotime($serviceout->updated_at)),
+                        'modifiedby' => $serviceoutheader->modifiedby,
+                        'created_at' => date('d-m-Y H:i:s', strtotime($serviceoutheader->created_at)),
+                        'updated_at' => date('d-m-Y H:i:s', strtotime($serviceoutheader->updated_at)),
                     ];
                     $detaillog[] = $datadetaillog;
                 }
 
                 $datalogtrail = [
                     'namatabel' => $tabeldetail,
-                    'postingdari' => 'ENTRY SERVICE OUT',
+                    'postingdari' => 'EDIT SERVICE OUT DETAIL',
                     'idtrans' =>  $iddetail,
-                    'nobuktitrans' => $serviceout->nobukti,
-                    'aksi' => 'ENTRY',
+                    'nobuktitrans' => $serviceoutheader->nobukti,
+                    'aksi' => 'EDIT',
                     'datajson' => $detaillog,
-                    'modifiedby' => $serviceout->modifiedby,
+                    'modifiedby' => $serviceoutheader->modifiedby,
                 ];
 
                 $data = new StoreLogTrailRequest($datalogtrail);
@@ -260,14 +252,14 @@ class ServiceOutHeaderController extends Controller
             DB::commit();
 
             /* Set position and page */
-            $selected = $this->getPosition($serviceout, $serviceout->getTable());
-            $serviceout->position = $selected->position;
-            $serviceout->page = ceil($serviceout->position / ($request->limit ?? 10));
+            $selected = $this->getPosition($serviceoutheader, $serviceoutheader->getTable());
+            $serviceoutheader->position = $selected->position;
+            $serviceoutheader->page = ceil($serviceoutheader->position / ($request->limit ?? 10));
 
             return response([
                 'status' => true,
                 'message' => 'Berhasil disimpan',
-                'data' => $serviceout
+                'data' => $serviceoutheader
             ]);
         } catch (\Throwable $th) {
             DB::rollBack();
@@ -279,26 +271,23 @@ class ServiceOutHeaderController extends Controller
     /**
      * @ClassName
      */
-    public function destroy($id,  Request $request)
+    public function destroy(ServiceOutHeader $serviceoutheader, Request $request)
     {
 
         DB::beginTransaction();
-        $serviceout = new ServiceOutHeader();
-
         try {
-            // $delete = $ServiceOut->delete();
-            $delete = ServiceOutDetail::where('Serviceout_id', $id)->delete();
-            $delete = ServiceOutHeader::destroy($id);
+            $delete = ServiceOutDetail::where('Serviceout_id', $serviceoutheader->id)->lockForUpdate()->delete();
+            $delete = ServiceOutHeader::destroy($serviceoutheader->id);
 
             if ($delete) {
                 $logTrail = [
-                    'namatabel' => strtoupper($serviceout->getTable()),
-                    'postingdari' => 'DELETE SERVICEOUT',
-                    'idtrans' => $id,
-                    'nobuktitrans' => '',
+                    'namatabel' => strtoupper($serviceoutheader->getTable()),
+                    'postingdari' => 'DELETE SERVICEOUT HEADER',
+                    'idtrans' => $serviceoutheader->id,
+                    'nobuktitrans' => $serviceoutheader->nobukti,
                     'aksi' => 'DELETE',
-                    'datajson' => $serviceout->toArray(),
-                    'modifiedby' => $serviceout->modifiedby
+                    'datajson' => $serviceoutheader->toArray(),
+                    'modifiedby' => $serviceoutheader->modifiedby
                 ];
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
@@ -307,15 +296,15 @@ class ServiceOutHeaderController extends Controller
                 DB::commit();
 
                 /* Set position and page */
-                $selected = $this->getPosition($serviceout, $serviceout->getTable(), true);
-                $serviceout->position = $selected->position;
-                $serviceout->id = $selected->id;
-                $serviceout->page = ceil($serviceout->position / ($request->limit ?? 10));
+                $selected = $this->getPosition($serviceoutheader, $serviceoutheader->getTable(), true);
+                $serviceoutheader->position = $selected->position;
+                $serviceoutheader->id = $selected->id;
+                $serviceoutheader->page = ceil($serviceoutheader->position / ($request->limit ?? 10));
 
                 return response([
                     'status' => true,
                     'message' => 'Berhasil dihapus',
-                    'data' => $serviceout
+                    'data' => $serviceoutheader
                 ]);
             } else {
                 DB::rollBack();
@@ -344,7 +333,7 @@ class ServiceOutHeaderController extends Controller
             'data' => $data
         ]);
     }
-    
+
     public function fieldLength()
     {
         $data = [];

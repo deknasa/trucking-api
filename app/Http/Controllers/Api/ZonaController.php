@@ -10,6 +10,7 @@ use App\Models\Parameter;
 
 use App\Http\Controllers\Controller;
 use Carbon\Carbon;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -34,10 +35,6 @@ class ZonaController extends Controller
         ]);
     }
 
-    public function create()
-    {
-        //
-    }
     /**
      * @ClassName 
      */
@@ -72,15 +69,6 @@ class ZonaController extends Controller
             }
 
             /* Set position and page */
-            // $del = 0;
-            // $data = $this->getid($zona->id, $request, $del);
-            // $zona->position = $data->row;
-
-            // if (isset($request->limit)) {
-            //     $zona->page = ceil($zona->position / $request->limit);
-            // }
-
-            /* Set position and page */
             $selected = $this->getPosition($zona, $zona->getTable());
             $zona->position = $selected->position;
             $zona->page = ceil($zona->position / ($request->limit ?? 10));
@@ -89,7 +77,7 @@ class ZonaController extends Controller
                 'status' => true,
                 'message' => 'Berhasil disimpan',
                 'data' => $zona
-            ]);
+            ], 201);
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
@@ -104,17 +92,12 @@ class ZonaController extends Controller
         ]);
     }
 
-    public function edit(Zona $zona)
-    {
-        //
-    }
     /**
      * @ClassName 
      */
     public function update(StoreZonaRequest $request, Zona $zona)
     {
         try {
-            $zona = Zona::findOrFail($zona->id);
             $zona->zona = $request->zona;
             $zona->keterangan = $request->keterangan;
             $zona->statusaktif = $request->statusaktif;
@@ -134,12 +117,6 @@ class ZonaController extends Controller
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
 
-                // /* Set position and page */
-                // $zona->position = $this->getid($zona->id, $request, 0)->row;
-
-                // if (isset($request->limit)) {
-                //     $zona->page = ceil($zona->position / $request->limit);
-                // }
 
                 /* Set position and page */
                 $selected = $this->getPosition($zona, $zona->getTable());
@@ -167,7 +144,6 @@ class ZonaController extends Controller
     public function destroy(Zona $zona, Request $request)
     {
         $delete = Zona::destroy($zona->id);
-        $del = 1;
         if ($delete) {
             $logTrail = [
                 'namatabel' => strtoupper($zona->getTable()),
@@ -183,13 +159,6 @@ class ZonaController extends Controller
             app(LogTrailController::class)->store($validatedLogTrail);
 
             DB::commit();
-
-            // $data = $this->getid($zona->id, $request, $del);
-            // $zona->position = $data->row  ?? 0;
-            // $zona->id = $data->id  ?? 0;
-            // if (isset($request->limit)) {
-            //     $zona->page = ceil($zona->position / $request->limit);
-            // }
 
             $selected = $this->getPosition($zona, $zona->getTable(), true);
             $zona->position = $selected->position;
@@ -234,117 +203,4 @@ class ZonaController extends Controller
         ]);
     }
 
-    public function getid($id, $request, $del)
-    {
-        $params = [
-            'indexRow' => $request->indexRow ?? 1,
-            'limit' => $request->limit ?? 100,
-            'page' => $request->page ?? 1,
-            'sortname' => $request->sortname ?? 'id',
-            'sortorder' => $request->sortorder ?? 'asc',
-        ];
-        $temp = '##temp' . rand(1, 10000);
-        Schema::create($temp, function ($table) {
-            $table->id();
-            $table->bigInteger('id_')->default('0');
-            $table->string('zona', 50)->default('');
-            $table->string('keterangan', 50)->default('');
-            $table->string('statusaktif', 50)->default('');
-            $table->string('modifiedby', 30)->default('');
-            $table->dateTime('created_at')->default('1900/1/1');
-            $table->dateTime('updated_at')->default('1900/1/1');
-
-            $table->index('id_');
-        });
-
-        if ($params['sortname'] == 'id') {
-            $query = DB::table((new Zona())->getTable())->select(
-                'zona.id as id_',
-                'zona.zona',
-                'zona.keterangan',
-                'zona.statusaktif',
-                'zona.modifiedby',
-                'zona.created_at',
-                'zona.updated_at'
-            )
-                ->orderBy('zona.id', $params['sortorder']);
-        } else if ($params['sortname'] == 'zona' or $params['sortname'] == 'keterangan') {
-            $query = DB::table((new Zona())->getTable())->select(
-                'zona.id as id_',
-                'zona.zona',
-                'zona.keterangan',
-                'zona.statusaktif',
-                'zona.modifiedby',
-                'zona.created_at',
-                'zona.updated_at'
-            )
-                ->orderBy($params['sortname'], $params['sortorder'])
-                ->orderBy('zona.id', $params['sortorder']);
-        } else {
-            if ($params['sortorder'] == 'asc') {
-                $query = DB::table((new Zona())->getTable())->select(
-                    'zona.id as id_',
-                    'zona.zona',
-                    'zona.keterangan',
-                    'zona.statusaktif',
-                    'zona.modifiedby',
-                    'zona.created_at',
-                    'zona.updated_at'
-                )
-                    ->orderBy($params['sortname'], $params['sortorder'])
-                    ->orderBy('zona.id', $params['sortorder']);
-            } else {
-                $query = DB::table((new Zona())->getTable())->select(
-                    'zona.id as id_',
-                    'zona.zona',
-                    'zona.keterangan',
-                    'zona.statusaktif',
-                    'zona.modifiedby',
-                    'zona.created_at',
-                    'zona.updated_at'
-                )
-                    ->orderBy($params['sortname'], $params['sortorder'])
-                    ->orderBy('zona.id', 'asc');
-            }
-        }
-
-
-
-        DB::table($temp)->insertUsing(['id_', 'zona', 'keterangan', 'statusaktif', 'modifiedby', 'created_at', 'updated_at'], $query);
-
-
-        if ($del == 1) {
-            if ($params['page'] == 1) {
-                $baris = $params['indexRow'] + 1;
-            } else {
-                $hal = $params['page'] - 1;
-                $bar = $hal * $params['limit'];
-                $baris = $params['indexRow'] + $bar + 1;
-            }
-
-
-            if (DB::table($temp)
-                ->where('id', '=', $baris)->exists()
-            ) {
-                $querydata = DB::table($temp)
-                    ->select('id as row', 'id_ as id')
-                    ->where('id', '=', $baris)
-                    ->orderBy('id');
-            } else {
-                $querydata = DB::table($temp)
-                    ->select('id as row', 'id_ as id')
-                    ->where('id', '=', ($baris - 1))
-                    ->orderBy('id');
-            }
-        } else {
-            $querydata = DB::table($temp)
-                ->select('id as row')
-                ->where('id_', '=',  $id)
-                ->orderBy('id');
-        }
-
-
-        $data = $querydata->first();
-        return $data;
-    }
 }

@@ -78,15 +78,6 @@ class PengeluaranStokController extends Controller
                 'message' => 'Berhasil disimpan',
                 'data' => $pengeluaranStok
             ], 201);
-        } catch (QueryException $queryException) {
-            if (isset($queryException->errorInfo[1]) && is_array($queryException->errorInfo)) {
-                // Check if deadlock
-                if ($queryException->errorInfo[1] === 1205) {
-                    goto TOP;
-                }
-            }
-
-            throw $queryException;
         } catch (\Throwable $th) {
             DB::rollBack();
 
@@ -182,7 +173,7 @@ class PengeluaranStokController extends Controller
         DB::beginTransaction();
 
         $pengeluaranStok = PengeluaranStok::where('id',$id)->first();
-        $delete = $pengeluaranStok->delete();
+        $delete = $pengeluaranStok->lockForUpdate()->delete();
 
         if ($delete) {
             $logTrail = [

@@ -87,7 +87,6 @@ class SupplierController extends Controller
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
 
-            TOP:
             if ($supplier->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($supplier->getTable()),
@@ -115,16 +114,6 @@ class SupplierController extends Controller
                 'message' => 'Berhasil disimpan',
                 'data' => $supplier
             ], 201);
-        } catch (QueryException $queryException) {
-            if (isset($queryException->errorInfo[1]) && is_array($queryException->errorInfo)) {
-                // Check if deadlock
-                if ($queryException->errorInfo[1] === 1205) {
-                    goto TOP;
-                }
-            }
-
-            throw $queryException;
-
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
@@ -206,7 +195,7 @@ class SupplierController extends Controller
     {
         DB::beginTransaction();
 
-        $delete = $supplier->delete();
+        $delete = $supplier->lockForUpdate()->delete();
 
         if ($delete) {
             $logTrail = [

@@ -94,7 +94,7 @@ class SupirController extends Controller
             $supir->photokk = $this->storeFiles($request->photokk, 'kk');
             $supir->photoskck = $this->storeFiles($request->photoskck, 'skck');
             $supir->photodomisili = $this->storeFiles($request->photodomisili, 'domisili');
-            TOP:
+            
             $supir->save();
 
             $logTrail = [
@@ -121,15 +121,6 @@ class SupirController extends Controller
                 'message' => 'Berhasil disimpan',
                 'data' => $supir
             ], 201);
-        } catch (QueryException $queryException) {
-            if (isset($queryException->errorInfo[1]) && is_array($queryException->errorInfo)) {
-                // Check if deadlock
-                if ($queryException->errorInfo[1] === 1205) {
-                    goto TOP;
-                }
-            }
-
-            throw $queryException;
         } catch (\Throwable $th) {
             $this->deleteFiles($supir);
 

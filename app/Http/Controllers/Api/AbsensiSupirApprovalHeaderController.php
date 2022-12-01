@@ -256,8 +256,10 @@ class AbsensiSupirApprovalHeaderController extends Controller
             return response($th->getMessage());
         }
     }
-
-    public function show(AbsensiSupirApprovalHeader $absensiSupirApprovalHeader, $id)
+    /**
+     * @ClassName 
+     */
+    public function show(AbsensiSupirApprovalHeader $absensiSupirApprovalHeader,$id)
     {
         $data = $absensiSupirApprovalHeader->find($id);
         // $detail = NotaDebetHeaderDetail::findAll($id);

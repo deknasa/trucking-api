@@ -13,7 +13,7 @@ class UpdateHutangHeaderRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -23,8 +23,43 @@ class UpdateHutangHeaderRequest extends FormRequest
      */
     public function rules()
     {
+        $rules = [
+            'tglbukti' => 'required',
+            'keterangan' => 'required',
+            'akunpusat' => 'required',
+            'pelanggan' => 'required'
+        ];
+        $relatedRequests = [
+            UpdateHutangDetailRequest::class
+        ];
+
+        foreach ($relatedRequests as $relatedRequest) {
+            $rules = array_merge(
+                $rules,
+                (new $relatedRequest)->rules()
+            );
+        }
+        
+        return $rules;
+    }
+    public function attributes()
+    {
+        $attributes = [
+            'tglbukti' => 'Tanggal Bukti',
+            'keterangan' => 'Keterangan',
+            'akunpusat' => 'Coa',
+            'supplier.*' => 'Supplier',
+            'tgljatuhtempo.*' => 'Tanggal Jatuh Tempo',
+            'total_detail.*' => 'Total',
+            'keterangan_detail.*' => 'Keterangan'
+        ];
+
+        return $attributes;
+    }
+    public function messages() 
+    {
         return [
-            //
+            'total_detail.*.gt' => 'Total Tidak Boleh Kosong dan Harus Lebih Besar Dari 0'
         ];
     }
 }

@@ -20,11 +20,7 @@ use Illuminate\Database\QueryException;
 
 class ContainerController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
+  
 
            /**
      * @ClassName 
@@ -42,22 +38,6 @@ class ContainerController extends Controller
         ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \App\Http\Requests\StoreContainerRequest  $request
-     * @return \Illuminate\Http\Response
-     */
 
            /**
      * @ClassName 
@@ -71,7 +51,7 @@ class ContainerController extends Controller
             $container->keterangan = strtoupper($request->keterangan);
             $container->statusaktif = $request->statusaktif;
             $container->modifiedby = auth('api')->user()->name;
-            TOP:
+            
             $container->save();
 
             $datajson = [
@@ -98,15 +78,7 @@ class ContainerController extends Controller
             app(LogTrailController::class)->store($data);
 
             DB::commit();
-            // /* Set position and page */
-            // $del = 0;
-            // $data = $this->getid($container->id, $request, $del);
-            // $container->position = $data->row;
-            // // dd($container->position );
-            // if (isset($request->limit)) {
-            //     $container->page = ceil($container->position / $request->limit);
-            // }
-
+           
             /* Set position and page */
             $selected = $this->getPosition($container, $container->getTable());
             $container->position = $selected->position;
@@ -117,27 +89,13 @@ class ContainerController extends Controller
                 'message' => 'Berhasil disimpan',
                 'data' => $container
             ], 201);
-        } catch (QueryException $queryException) {
-            if (isset($queryException->errorInfo[1]) && is_array($queryException->errorInfo)) {
-                // Check if deadlock
-                if ($queryException->errorInfo[1] === 1205) {
-                    goto TOP;
-                }
-            }
-
-            throw $queryException;
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
         }
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\Container  $container
-     * @return \Illuminate\Http\Response
-     */
+    
     public function show(Container $container)
     {
         return response([
@@ -146,25 +104,7 @@ class ContainerController extends Controller
         ]);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\Container  $container
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Container $container)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \App\Http\Requests\UpdateContainerRequest  $request
-     * @param  \App\Models\Container  $container
-     * @return \Illuminate\Http\Response
-     */
-
+   
            /**
      * @ClassName 
      */
@@ -208,13 +148,6 @@ class ContainerController extends Controller
 
 
             DB::commit();
-
-            // /* Set position and page */
-            // $container->position = $this->getid($container->id, $request, 0)->row;
-
-            // if (isset($request->limit)) {
-            //     $container->page = ceil($container->position / $request->limit);
-            // }
 
               /* Set position and page */
               $selected = $this->getPosition($container, $container->getTable());
@@ -352,128 +285,6 @@ class ContainerController extends Controller
         ]);
     }
 
-    public function getid($id, $request, $del)
-    {
-
-        $params = [
-            'indexRow' => $request->indexRow ?? 1,
-            'limit' => $request->limit ?? 100,
-            'page' => $request->page ?? 1,
-            'sortname' => $request->sortname ?? 'id',
-            'sortorder' => $request->sortorder ?? 'asc',
-        ];
-
-        $temp = '##temp' . rand(1, 10000);
-        Schema::create($temp, function ($table) {
-            $table->id();
-            $table->bigInteger('id_')->default('0');
-            $table->string('kodecontainer', 50)->default('');
-            $table->string('keterangan', 300)->default('');
-            $table->string('statusaktif', 100)->default('');
-            $table->string('modifiedby', 30)->default('');
-            $table->dateTime('created_at')->default('1900/1/1');
-            $table->dateTime('updated_at')->default('1900/1/1');
-
-            $table->index('id_');
-        });
-
-
-
-        if ($params['sortname'] == 'id') {
-            $query = DB::table((new Container)->getTable())->select(
-                'container.id as id_',
-                'container.kodecontainer',
-                'container.keterangan',
-                'parameter.text as statusaktif',
-                'container.modifiedby',
-                'container.created_at',
-                'container.updated_at'
-            )
-                ->leftJoin('parameter', 'container.statusaktif', '=', 'parameter.id')
-                ->orderBy('container.id', $params['sortorder']);
-        } else if ($params['sortname'] == 'keterangan') {
-            $query = DB::table((new Container)->getTable())->select(
-                'container.id as id_',
-                'container.kodecontainer',
-                'container.keterangan',
-                'parameter.text as statusaktif',
-                'container.modifiedby',
-                'container.created_at',
-                'container.updated_at'
-            )
-                ->leftJoin('parameter', 'container.statusaktif', '=', 'parameter.id')
-                ->orderBy($params['sortname'], $params['sortorder'])
-                ->orderBy('container.keterangan', $params['sortorder'])
-                ->orderBy('container.id', $params['sortorder']);
-        } else {
-            if ($params['sortorder'] == 'asc') {
-                $query = DB::table((new Container)->getTable())->select(
-                    'container.id as id_',
-                    'container.kodecontainer',
-                    'container.keterangan',
-                    'parameter.text as statusaktif',
-                    'container.modifiedby',
-                    'container.created_at',
-                    'container.updated_at'
-                )
-                    ->leftJoin('parameter', 'container.statusaktif', '=', 'parameter.id')
-                    ->orderBy($params['sortname'], $params['sortorder'])
-                    ->orderBy('container.id', $params['sortorder']);
-            } else {
-                $query = DB::table((new Container)->getTable())->select(
-                    'container.id as id_',
-                    'container.kodecontainer',
-                    'container.keterangan',
-                    'parameter.text as statusaktif',
-                    'container.modifiedby',
-                    'container.created_at',
-                    'container.updated_at'
-                )
-                    ->leftJoin('parameter', 'container.statusaktif', '=', 'parameter.id')
-                    ->orderBy($params['sortname'], $params['sortorder'])
-
-                    ->orderBy('cabang.id', 'asc');
-            }
-        }
-
-
-
-        DB::table($temp)->insertUsing(['id_', 'kodecontainer','keterangan', 'statusaktif', 'modifiedby', 'created_at', 'updated_at'], $query);
-
-
-        if ($del == 1) {
-            if ($params['page'] == 1) {
-                $baris = $params['indexRow'] + 1;
-            } else {
-                $hal = $params['page'] - 1;
-                $bar = $hal * $params['limit'];
-                $baris = $params['indexRow'] + $bar + 1;
-            }
-
-
-            if (DB::table($temp)
-                ->where('id', '=', $baris)->exists()
-            ) {
-                $querydata = DB::table($temp)
-                    ->select('id as row', 'id_ as id')
-                    ->where('id', '=', $baris)
-                    ->orderBy('id');
-            } else {
-                $querydata = DB::table($temp)
-                    ->select('id as row', 'id_ as id')
-                    ->where('id', '=', ($baris - 1))
-                    ->orderBy('id');
-            }
-        } else {
-            $querydata = DB::table($temp)
-                ->select('id as row')
-                ->where('id_', '=',  $id)
-                ->orderBy('id');
-        }
-
-
-        $data = $querydata->first();
-        return $data;
-    }
+   
 
 }

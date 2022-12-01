@@ -105,7 +105,7 @@ class PengembalianKasGantungHeaderController extends Controller
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
                 /* Store detail */
                 if ($request->kasgantungdetail_id) {
-                    $pengeluaranStokDetail = PengembalianKasGantungDetail::where('pengembaliankasgantung_id', $pengembalianKasGantungHeader->id)->delete();
+                    $pengeluaranStokDetail = PengembalianKasGantungDetail::where('pengembaliankasgantung_id', $pengembalianKasGantungHeader->id)->lockForUpdate()->delete();
 
                     $detaillog = [];
                     for ($i = 0; $i < count($request->kasgantungdetail_id); $i++) {
@@ -190,7 +190,7 @@ class PengembalianKasGantungHeaderController extends Controller
     {
         try {
             /* Store header */
-            $pengembalianKasGantungHeader = PengembalianKasGantungHeader::findOrFail($id);
+            $pengembalianKasGantungHeader = PengembalianKasGantungHeader::lockForUpdate()->findOrFail($id);
             DB::beginTransaction();
 
             $pengembalianKasGantungHeader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
@@ -220,7 +220,7 @@ class PengembalianKasGantungHeaderController extends Controller
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
                 /* Store detail */
                 if ($request->kasgantungdetail_id) {
-                    $pengeluaranStokDetail = PengembalianKasGantungDetail::where('pengembaliankasgantung_id', $pengembalianKasGantungHeader->id)->delete();
+                    $pengeluaranStokDetail = PengembalianKasGantungDetail::where('pengembaliankasgantung_id', $pengembalianKasGantungHeader->id)->lockForUpdate()->delete();
 
                     $detaillog = [];
                     for ($i = 0; $i < count($request->kasgantungdetail_id); $i++) {
@@ -294,7 +294,7 @@ class PengembalianKasGantungHeaderController extends Controller
         DB::beginTransaction();
 
         $pengembalianKasGantungHeader = PengembalianKasGantungHeader::where('id', $id)->first();
-        $delete = $pengembalianKasGantungHeader->delete();
+        $delete = $pengembalianKasGantungHeader->lockForUpdate()->delete();
 
         if ($delete) {
             $logTrail = [

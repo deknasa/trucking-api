@@ -41,4 +41,25 @@ class UpdateAbsensiSupirHeaderRequest extends FormRequest
 
         return $rules;
     }
+
+    public function attributes() {
+        return [
+            'tglbukti' => 'Tanggal Bukti',
+            'keterangan' => 'Keterangan',
+            'trado.*' => 'Trado',
+            'uangjalan.*' => 'Uang Jalan',
+            'supir.*' => 'Supir',
+            // 'absen_id.*' => 'Absen',
+            // 'absen' => 'Absen',
+            'jam.*' => 'Jam',
+            'keterangan_detail.*' => 'Keterangan Detail'
+        ];
+    }
+
+    public function messages() 
+    {
+        return [
+            'uangjalan.*.gt' => 'Nominal Tidak Boleh Kosong dan Harus Lebih Besar Dari 0'
+        ];
+    }
 }

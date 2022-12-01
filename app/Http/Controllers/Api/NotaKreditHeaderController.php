@@ -83,7 +83,7 @@ class NotaKreditHeaderController extends Controller
                 
                 /* Store detail */
                 if ($request->pelunasanpiutangdetail_id) {
-                    $notaKreditDetail = NotaKreditDetail::where('notakredit_id',$notaKreditHeader->id)->delete();
+                    $notaKreditDetail = NotaKreditDetail::where('notakredit_id',$notaKreditHeader->id)->lockForUpdate()->delete();
 
                     $detaillog = [];
                     for ($i = 0; $i < count($request->pelunasanpiutangdetail_id); $i++) {
@@ -172,7 +172,7 @@ class NotaKreditHeaderController extends Controller
     {
         try {
             
-            $notaKreditHeader = NotaKreditHeader::findOrFail($id);
+            $notaKreditHeader = NotaKreditHeader::lockForUpdate()->findOrFail($id);
             $notaKreditHeader->tglbukti = date('Y-m-d',strtotime($request->tglbukti));
             $notaKreditHeader->tglapproval = date('Y-m-d',strtotime($request->tglapproval));
             $notaKreditHeader->statusapproval = $request->statusapproval;
@@ -198,7 +198,7 @@ class NotaKreditHeaderController extends Controller
                 
                 /* Store detail */
                 if ($request->pelunasanpiutangdetail_id) {
-                    $notaKreditDetail = NotaKreditDetail::where('notakredit_id',$notaKreditHeader->id)->delete();
+                    $notaKreditDetail = NotaKreditDetail::where('notakredit_id',$notaKreditHeader->id)->lockForUpdate()->delete();
 
                     $detaillog = [];
                     for ($i = 0; $i < count($request->pelunasanpiutangdetail_id); $i++) {
@@ -276,7 +276,7 @@ class NotaKreditHeaderController extends Controller
         DB::beginTransaction();
 
         $notaKreditHeader = NotaKreditHeader::where('id',$id)->first();
-        $delete = $notaKreditHeader->delete();
+        $delete = $notaKreditHeader->lockForUpdate()->delete();
 
         if ($delete) {
             $logTrail = [

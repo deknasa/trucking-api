@@ -72,7 +72,7 @@ class JurnalUmumPusatHeaderController extends Controller
                     $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                     $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-                    $jurnalApprove = JurnalUmumHeader::findOrFail($request->jurnalId[$i]);
+                    $jurnalApprove = JurnalUmumHeader::lockForUpdate()->findOrFail($request->jurnalId[$i]);
                     $jurnalApprove->statusapproval = $request->approve;
                     $jurnalApprove->userapproval = auth('api')->user()->name;
                     $jurnalApprove->tglapproval = date('Y-m-d h:i:s');
@@ -145,7 +145,7 @@ class JurnalUmumPusatHeaderController extends Controller
                     $jurnalUmumPusat = JurnalUmumPusatHeader::where('nobukti',$get->nobukti)->first();
                     if($jurnalUmumPusat != null) {
                         JurnalUmumPusatHeader::destroy($jurnalUmumPusat->id);
-                        JurnalUmumPusatDetail::where('jurnalumumpusat_id', $jurnalUmumPusat->id)->delete();
+                        JurnalUmumPusatDetail::where('jurnalumumpusat_id', $jurnalUmumPusat->id)->lockForUpdate()->delete();
 
                         $logTrail = [
                             'namatabel' => strtoupper($jurnalUmumPusat->getTable()),
@@ -162,7 +162,7 @@ class JurnalUmumPusatHeaderController extends Controller
                         
                     }                    
 
-                    $jurnalApprove = JurnalUmumHeader::findOrFail($request->jurnalId[$i]);
+                    $jurnalApprove = JurnalUmumHeader::lockForUpdate()->findOrFail($request->jurnalId[$i]);
                     $jurnalApprove->statusapproval = $request->approve;
                     $jurnalApprove->userapproval = auth('api')->user()->name;
                     $jurnalApprove->tglapproval = date('Y-m-d h:i:s');
@@ -224,7 +224,7 @@ class JurnalUmumPusatHeaderController extends Controller
 
         try {
             $jurnalUmumPusat = new JurnalUmumPusatHeader();
-            JurnalUmumPusatDetail::where('jurnalumumpusat_id', $id)->delete();
+            JurnalUmumPusatDetail::where('jurnalumumpusat_id', $id)->lockForUpdate()->delete();
             JurnalUmumPusatHeader::destroy($id);
 
             $logTrail = [

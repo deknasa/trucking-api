@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Http\Request;
 
 class StorePelunasanPiutangDetailRequest extends FormRequest
 {
@@ -23,20 +24,15 @@ class StorePelunasanPiutangDetailRequest extends FormRequest
      */
     public function rules()
     {
-        return [
-            'bayarppd' => 'required|array',
-            'bayarppd.*' => 'required|numeric|gt:0',
-            'keterangandetailppd' => 'required|array',
-            'keterangandetailppd.*' => 'required',
-        ];
-    }
-
-    public function attributes()
-    {
-        return [
-            'bayarppd' => 'Nominal Bayar',
-            'keterangandetailppd' => 'Keterangan',
-        ];
+        
+            return [
+                'bayarppd' => 'required|array',
+                'bayarppd.*' => 'required|numeric|gt:0',
+                'keterangandetailppd' => 'required|array',
+                'keterangandetailppd.*' => 'required',
+                
+            ];
+       
     }
    
 }

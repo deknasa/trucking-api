@@ -13,7 +13,7 @@ class UpdateInvoiceHeaderRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -23,8 +23,41 @@ class UpdateInvoiceHeaderRequest extends FormRequest
      */
     public function rules()
     {
-        return [
-            //
+        $rules = [
+            'tglterima' => 'required',
+            'agen_id' => 'required',
+            'jenisorder_id' => 'required',
+            'cabang_id' => 'required',
+            'tglbukti' => 'required',
+            'keterangan' => 'required',
         ];
+
+        $relatedRequests = [
+            UpdateInvoiceDetailRequest::class
+        ];
+
+        foreach ($relatedRequests as $relatedRequest) {
+            $rules = array_merge(
+                $rules,
+                (new $relatedRequest)->rules()
+            );
+        }
+        
+        return $rules;
+    }
+    
+    public function attributes()
+    {
+        $attributes = [
+            'tglbukti' => 'Tanggal Bukti',
+            'keterangan' => 'Keterangan',
+            'tglterima' => 'Tanggal Terima',
+            'agen_id' => 'Agen',
+            'jenisorder_id' => 'Jenis Order',
+            'cabang_id' => 'Cabang',
+            'sp_id' => 'SP'
+        ];
+
+        return $attributes;
     }
 }

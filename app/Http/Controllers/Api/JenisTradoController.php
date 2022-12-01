@@ -134,7 +134,7 @@ class JenisTradoController extends Controller
     public function update(StoreJenisTradoRequest $request, jenistrado $jenistrado)
     {
         try {
-            $jenistrado = JenisTrado::findOrFail($jenistrado->id);
+            $jenistrado = JenisTrado::lockForUpdate()->findOrFail($jenistrado->id);
             $jenistrado->kodejenistrado = $request->kodejenistrado;
             $jenistrado->keterangan = $request->keterangan;
             $jenistrado->statusaktif = $request->statusaktif;

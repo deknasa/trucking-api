@@ -13,7 +13,7 @@ class UpdatePiutangDetailRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +24,11 @@ class UpdatePiutangDetailRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'nominal_detail' => 'required|array',
+            'nominal_detail.*' => 'required|gt:0|numeric',
+            'keterangan_detail' => 'required|array',
+            'keterangan_detail.*' => 'required'
         ];
     }
+
 }

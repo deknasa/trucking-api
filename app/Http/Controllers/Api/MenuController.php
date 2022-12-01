@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Database\QueryException;
 
 class MenuController extends Controller
 {
@@ -169,6 +170,7 @@ class MenuController extends Controller
             }
             $menu->menukode = $menukode;
 
+            TOP:
             if ($menu->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($menu->getTable()),
@@ -196,6 +198,15 @@ class MenuController extends Controller
                 'message' => 'Berhasil disimpan',
                 'data' => $menu
             ]);
+        } catch (QueryException $queryException) {
+            if (isset($queryException->errorInfo[1]) && is_array($queryException->errorInfo)) {
+                // Check if deadlock
+                if ($queryException->errorInfo[1] === 1205) {
+                    goto TOP;
+                }
+            }
+
+            throw $queryException;
         } catch (\Throwable $th) {
             DB::rollBack();
 
@@ -219,7 +230,7 @@ class MenuController extends Controller
         DB::beginTransaction();
 
         $menu = new Menu();
-        $menu = Menu::find($request->id);
+        $menu = Menu::lockForUpdate()->findOrFail($request->id);
         $menu->menuname = ucwords(strtolower($request->menuname));
         $menu->menuseq = $request->menuseq;
         $menu->menuicon = strtolower($request->menuicon);
@@ -276,7 +287,7 @@ class MenuController extends Controller
             Acos::where('class', $list->class)->delete();
         }
 
-        if ($menu->delete()) {
+        if ($menu->lockForUpdate()->delete()) {
             $logTrail = [
                 'namatabel' => strtoupper($menu->getTable()),
                 'postingdari' => 'DELETE MENU',

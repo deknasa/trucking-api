@@ -13,7 +13,7 @@ class UpdatePengeluaranTruckingHeaderRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -23,8 +23,43 @@ class UpdatePengeluaranTruckingHeaderRequest extends FormRequest
      */
     public function rules()
     {
+        $rules = [
+            'tglbukti' => 'required',
+            'keterangan' => 'required',
+            'pengeluarantrucking' => 'required',
+            'bank' => 'required',
+            'coa' => 'required',
+            'pengeluaran_nobukti' => 'required',
+        ];
+        $relatedRequests = [
+            UpdatePengeluaranTruckingDetailRequest::class
+        ];
+
+        foreach ($relatedRequests as $relatedRequest) {
+            $rules = array_merge(
+                $rules,
+                (new $relatedRequest)->rules()
+            );
+        }
+        
+        return $rules;
+    }
+
+    public function attributes()
+    {
         return [
-            //
+            
+            'tglbukti' => 'Tgl Bukti',
+            'pengeluarantrucking' => 'Kode Pengeluaran',
+            'pengeluaran_nobukti' => 'Nobukti Pengeluaran',
+            'supir.*' => 'Supir'
+        ];
+    }
+    
+    public function messages() 
+    {
+        return [
+            'nominal.*.gt' => 'Nominal Tidak Boleh Kosong dan Harus Lebih Besar Dari 0'
         ];
     }
 }

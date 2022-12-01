@@ -60,7 +60,6 @@ class PelangganController extends Controller
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
 
-            TOP:
             if ($pelanggan->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($pelanggan->getTable()),
@@ -92,34 +91,13 @@ class PelangganController extends Controller
                 'message' => 'Berhasil disimpan',
                 'data' => $pelanggan
             ], 201);
-        } catch (QueryException $queryException) {
-            if (isset($queryException->errorInfo[1]) && is_array($queryException->errorInfo)) {
-                // Check if deadlock
-                if ($queryException->errorInfo[1] === 1205) {
-                    goto TOP;
-                }
-            }
-
-            throw $queryException;
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
         }
     }
 
-    public function fieldLength()
-    {
-        $data = [];
-        $columns = DB::connection()->getDoctrineSchemaManager()->listTableDetails('pelanggan')->getColumns();
-
-        foreach ($columns as $index => $column) {
-            $data[$index] = $column->getLength();
-        }
-
-        return response([
-            'data' => $data
-        ]);
-    }
+   
 
     /**
      * @ClassName 
@@ -186,7 +164,7 @@ class PelangganController extends Controller
     {
         DB::beginTransaction();
 
-        $delete = $pelanggan->delete();
+        $delete = $pelanggan->lockForUpdate()->delete();
 
         if ($delete) {
             $logTrail = [
@@ -223,6 +201,20 @@ class PelangganController extends Controller
                 'message' => 'Gagal dihapus'
             ]);
         }
+    }
+
+    public function fieldLength()
+    {
+        $data = [];
+        $columns = DB::connection()->getDoctrineSchemaManager()->listTableDetails('pelanggan')->getColumns();
+
+        foreach ($columns as $index => $column) {
+            $data[$index] = $column->getLength();
+        }
+
+        return response([
+            'data' => $data
+        ]);
     }
 
     public function export()

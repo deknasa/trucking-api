@@ -29,4 +29,12 @@ class StoreKelompokRequest extends FormRequest
             'statusaktif' => 'required'
         ];
     }
+    
+    public function attributes()
+    {
+        return[
+            'kodekelompok' => 'kode kelompok',
+            'statusaktif' => 'status aktif'
+        ];
+    }
 }

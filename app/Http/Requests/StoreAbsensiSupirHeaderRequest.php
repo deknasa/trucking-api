@@ -46,11 +46,9 @@ class StoreAbsensiSupirHeaderRequest extends FormRequest
         return [
             'tglbukti' => 'Tanggal Bukti',
             'keterangan' => 'Keterangan',
-            'trado_id.*' => 'Trado',
-            'trado' => 'Trado',
+            'trado.*' => 'Trado',
             'uangjalan.*' => 'Uang Jalan',
-            'supir_id.*' => 'Supir',
-            'supir' => 'Supir',
+            'supir.*' => 'Supir',
             // 'absen_id.*' => 'Absen',
             // 'absen' => 'Absen',
             'jam.*' => 'Jam',

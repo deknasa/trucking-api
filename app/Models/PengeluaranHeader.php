@@ -222,7 +222,14 @@ class PengeluaranHeader extends MyModel
                 $this->totalRows = $query->count();
                 $this->totalPages = $this->params['limit'] > 0 ? ceil($this->totalRows / $this->params['limit']) : 1;
             }
-    
+            
+            if (request()->approve && request()->periode) {
+                $query->where('pengeluaranheader.statusapproval','<>', request()->approve)
+                      ->whereYear('pengeluaranheader.tglbukti','=', request()->year)
+                      ->whereMonth('pengeluaranheader.tglbukti','=', request()->month);
+                return $query;
+            }
+
             return $query;
         }
     

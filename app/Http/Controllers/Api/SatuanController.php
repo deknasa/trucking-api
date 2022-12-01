@@ -34,10 +34,6 @@ class SatuanController extends Controller
         ]);
     }
 
-    public function create()
-    {
-        //
-    }
     /**
      * @ClassName 
      */
@@ -53,7 +49,6 @@ class SatuanController extends Controller
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
 
-            TOP:
             if ($satuan->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($satuan->getTable()),
@@ -72,15 +67,6 @@ class SatuanController extends Controller
             }
 
             /* Set position and page */
-            // $del = 0;
-            // $data = $this->getid($satuan->id, $request, $del);
-            // $satuan->position = $data->row;
-
-            // if (isset($request->limit)) {
-            //     $satuan->page = ceil($satuan->position / $request->limit);
-            // }
-
-            /* Set position and page */
             $selected = $this->getPosition($satuan, $satuan->getTable());
             $satuan->position = $selected->position;
             $satuan->page = ceil($satuan->position / ($request->limit ?? 10));
@@ -90,15 +76,6 @@ class SatuanController extends Controller
                 'message' => 'Berhasil disimpan',
                 'data' => $satuan
             ], 201);
-        } catch (QueryException $queryException) {
-            if (isset($queryException->errorInfo[1]) && is_array($queryException->errorInfo)) {
-                // Check if deadlock
-                if ($queryException->errorInfo[1] === 1205) {
-                    goto TOP;
-                }
-            }
-
-            throw $queryException;
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
@@ -113,17 +90,12 @@ class SatuanController extends Controller
         ]);
     }
 
-    public function edit(Satuan $satuan)
-    {
-        //
-    }
     /**
      * @ClassName 
      */
-    public function update(StoreSatuanRequest $request, Satuan $satuan)
+    public function update(UpdateSatuanRequest $request, Satuan $satuan)
     {
         try {
-            $satuan = Satuan::lockForUpdate()->findOrFail($satuan->id);
             $satuan->satuan = $request->satuan;
             $satuan->statusaktif = $request->statusaktif;
             $satuan->modifiedby = auth('api')->user()->name;
@@ -141,13 +113,6 @@ class SatuanController extends Controller
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
-
-                // /* Set position and page */
-                // $satuan->position = $this->getid($satuan->id, $request, 0)->row;
-
-                // if (isset($request->limit)) {
-                //     $satuan->page = ceil($satuan->position / $request->limit);
-                // }
 
                 /* Set position and page */
                 $selected = $this->getPosition($satuan, $satuan->getTable());
@@ -191,12 +156,6 @@ class SatuanController extends Controller
             app(LogTrailController::class)->store($data);
             DB::commit();
 
-            $data = $this->getid($satuan->id, $request, $del);
-            // $satuan->position = $data->row ?? 0;
-            // $satuan->id = $data->id  ?? 0;
-            // if (isset($request->limit)) {
-            //     $satuan->page = ceil($satuan->position / $request->limit);
-            // }
 
             /* Set position and page */
             $selected = $this->getPosition($satuan, $satuan->getTable(), true);

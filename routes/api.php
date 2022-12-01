@@ -7,6 +7,8 @@
     use App\Http\Controllers\Api\AbsensiSupirApprovalHeaderController;
     use App\Http\Controllers\Api\AbsensiSupirApprovalDetailController;
     
+    use App\Http\Controllers\Api\ApprovalTransaksiHeaderController;
+    
     use App\Http\Controllers\Api\AbsenTradoController;
     use App\Http\Controllers\Api\CabangController;
     use App\Http\Controllers\Api\ParameterController;
@@ -30,7 +32,8 @@
     use App\Http\Controllers\Api\ContainerController;
     use App\Http\Controllers\Api\BankController;
     use App\Http\Controllers\Api\AlatBayarController;
-    use App\Http\Controllers\Api\BankPelangganController;
+use App\Http\Controllers\Api\ApprovalNotaHeaderController;
+use App\Http\Controllers\Api\BankPelangganController;
     use App\Http\Controllers\Api\GajiSupirDetailController;
     use App\Http\Controllers\Api\GajiSupirHeaderController;
     use App\Http\Controllers\Api\JenisEmklController;
@@ -162,6 +165,11 @@
         Route::apiResource('absensisupirheader', AbsensiSupirHeaderController::class)->parameter('absensisupirheader', 'absensiSupirHeader');
         
         Route::resource('absensisupirdetail', AbsensiSupirDetailController::class);
+        
+        Route::get('approvaltransaksiheader/combo', [ApprovalTransaksiHeaderController::class, 'combo']);
+        // Route::get('approvaltransaksiheader/get', [ApprovalTransaksiHeaderController::class, 'get']);
+        Route::apiResource('approvaltransaksiheader', ApprovalTransaksiHeaderController::class);
+
         
         Route::get('absensisupirapprovalheader/running_number', [AbsensiSupirApprovalHeaderController::class, 'getRunningNumber']);
         Route::get('absensisupirapprovalheader/grid', [AbsensiSupirApprovalHeaderController::class, 'grid']);
@@ -601,6 +609,8 @@
         Route::delete('pencairangiropengeluaranheader', [PencairanGiroPengeluaranHeaderController::class, 'destroy']);
         Route::resource('pencairangiropengeluaranheader', PencairanGiroPengeluaranHeaderController::class);
         Route::resource('pencairangiropengeluarandetail', PencairanGiroPengeluaranDetailController::class);
+
+        Route::resource('approvalnotaheader', ApprovalNotaHeaderController::class);
         
     });
 
@@ -622,7 +632,7 @@
 
     Route::get('kota/combo', [KotaController::class, 'combo']);
     Route::get('kota/field_length', [KotaController::class, 'fieldLength']);
-    Route::resource('kota', KotaController::class)->parameters(['kota' => 'kota']);
+    Route::resource('kota', KotaController::class);
 
     Route::get('mandor/combo', [MandorController::class, 'combo']);
     Route::get('mandor/field_length', [MandorController::class, 'fieldLength']);
@@ -663,10 +673,6 @@
 
     Route::resource('upahsupirrincian', UpahSupirRincianController::class);
 
-    Route::get('ritasi/combo', [RitasiController::class, 'combo']);
-    Route::get('ritasi/field_length', [RitasiController::class, 'fieldLength']);
-    Route::resource('ritasi', RitasiController::class);
-
 
 
     //Penerimaan trucking
@@ -695,10 +701,6 @@
     Route::get('kerusakan/combo', [KerusakanController::class, 'combo']);
     Route::get('kerusakan/field_length', [KerusakanController::class, 'fieldLength']);
     Route::resource('kerusakan', KerusakanController::class);
-
-    Route::get('kota/combo', [KotaController::class, 'combo']);
-    Route::get('kota/field_length', [KotaController::class, 'fieldLength']);
-    Route::resource('kota', KotaController::class)->parameters(['kota' => 'kota']);
 
     Route::get('mandor/combo', [MandorController::class, 'combo']);
     Route::get('mandor/field_length', [MandorController::class, 'fieldLength']);

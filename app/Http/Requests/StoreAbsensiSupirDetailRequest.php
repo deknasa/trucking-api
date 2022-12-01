@@ -24,14 +24,14 @@ class StoreAbsensiSupirDetailRequest extends FormRequest
     public function rules()
     {
         return [
-            'trado_id' => 'required|array',
-            'trado_id.*' => 'required',
-            'supir_id' => 'required|array',
-            'supir_id.*' => 'required',
+            'trado' => 'required|array',
+            'trado.*' => 'required',
+            'supir' => 'required|array',
+            'supir.*' => 'required',
             'uangjalan' => 'required|array',
             'uangjalan.*' => 'required|numeric|gt:0',
-            // 'absen_id' => 'required|array',
-            // 'absen_id.*' => 'required',
+            // 'absen' => 'required|array',
+            // 'absen.*' => 'required',
             'jam' => 'required|array',
             'jam.*' => 'required',
             'keterangan_detail' => 'required|array',

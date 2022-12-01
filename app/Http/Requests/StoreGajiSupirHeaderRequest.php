@@ -25,7 +25,7 @@ class StoreGajiSupirHeaderRequest extends FormRequest
     {
         return [
             //
-            'supir_id' => 'required',
+            'supir' => 'required',
             'tgldari' => 'required',
             'tglsampai' => 'required',
             'keterangan' => 'required',
@@ -35,7 +35,6 @@ class StoreGajiSupirHeaderRequest extends FormRequest
 
     public function attributes() {
         return [
-            'supir_id' => 'Supir',
             'tgldari' => 'Tanggal Dari',
             'tglsampai' => 'Tanggal Sampai',
             'keterangan' => 'Keterangan',

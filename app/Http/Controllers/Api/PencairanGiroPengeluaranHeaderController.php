@@ -71,9 +71,9 @@ class PencairanGiroPengeluaranHeaderController extends Controller
 
                 if ($cekPencairan != null) {
                     
-                        PencairanGiroPengeluaranDetail::where('pencairangiropengeluaran_id', $cekPencairan->id)->delete();
-                        JurnalUmumHeader::where('nobukti', $cekPencairan->nobukti)->delete();
-                        JurnalUmumDetail::where('nobukti', $cekPencairan->nobukti)->delete();
+                        PencairanGiroPengeluaranDetail::where('pencairangiropengeluaran_id', $cekPencairan->id)->lockForUpdate()->delete();
+                        JurnalUmumHeader::where('nobukti', $cekPencairan->nobukti)->lockForUpdate()->delete();
+                        JurnalUmumDetail::where('nobukti', $cekPencairan->nobukti)->lockForUpdate()->delete();
                         PencairanGiroPengeluaranHeader::destroy($cekPencairan->id);
         
                         $logTrail = [
@@ -293,9 +293,9 @@ class PencairanGiroPengeluaranHeaderController extends Controller
                         'message' => 'NO BUKTI KAS/BANK BELUM DIPROSES'
                     ], 500);
                 }
-                PencairanGiroPengeluaranDetail::where('pencairangiropengeluaran_id', $get->id)->delete();
-                JurnalUmumHeader::where('nobukti', $get->nobukti)->delete();
-                JurnalUmumDetail::where('nobukti', $get->nobukti)->delete();
+                PencairanGiroPengeluaranDetail::where('pencairangiropengeluaran_id', $get->id)->lockForUpdate()->delete();
+                JurnalUmumHeader::where('nobukti', $get->nobukti)->lockForUpdate()->delete();
+                JurnalUmumDetail::where('nobukti', $get->nobukti)->lockForUpdate()->delete();
                 PencairanGiroPengeluaranHeader::destroy($get->id);
 
                 $logTrail = [

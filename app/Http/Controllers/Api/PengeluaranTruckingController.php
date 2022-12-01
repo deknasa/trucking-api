@@ -7,6 +7,7 @@ use App\Models\PengeluaranTrucking;
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Http\Requests\StorePengeluaranTruckingRequest;
 use App\Http\Requests\UpdatePengeluaranTruckingRequest;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -43,6 +44,7 @@ class PengeluaranTruckingController extends Controller
             $pengeluaranTrucking->statusformat = $request->statusformat;
             $pengeluaranTrucking->modifiedby = auth('api')->user()->name;
 
+            TOP:
             if ($pengeluaranTrucking->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($pengeluaranTrucking->getTable()),
@@ -73,7 +75,16 @@ class PengeluaranTruckingController extends Controller
                 'status' => true,
                 'message' => 'Berhasil disimpan',
                 'data' => $pengeluaranTrucking
-            ]);
+            ], 201);
+        } catch (QueryException $queryException) {
+            if (isset($queryException->errorInfo[1]) && is_array($queryException->errorInfo)) {
+                // Check if deadlock
+                if ($queryException->errorInfo[1] === 1205) {
+                    goto TOP;
+                }
+            }
+
+            throw $queryException;
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;

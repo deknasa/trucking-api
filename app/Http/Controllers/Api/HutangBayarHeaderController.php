@@ -13,6 +13,7 @@ use App\Http\Requests\StoreJurnalUmumHeaderRequest;
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Http\Requests\StorePengeluaranDetailRequest;
 use App\Http\Requests\StorePengeluaranHeaderRequest;
+use App\Http\Requests\UpdateHutangBayarHeaderRequest;
 use App\Models\AlatBayar;
 use App\Models\Bank;
 use App\Models\AkunPusat;
@@ -27,6 +28,7 @@ use App\Models\JurnalUmumHeader;
 use App\Models\LogTrail;
 use App\Models\PengeluaranDetail;
 use App\Models\PengeluaranHeader;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Schema;
 
 class HutangBayarHeaderController extends Controller
@@ -85,20 +87,10 @@ class HutangBayarHeaderController extends Controller
             $hutangbayarheader->statusformat = $format->id;
             $hutangbayarheader->modifiedby = auth('api')->user()->name;
 
-            TOP:
             $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
 
             $hutangbayarheader->nobukti = $nobukti;
-
-            try {
-                $hutangbayarheader->save();
-            } catch (\Exception $e) {
-                dd($e->getMessage());
-                $errorCode = @$e->errorInfo[1];
-                if ($errorCode == 2601) {
-                    goto TOP;
-                }
-            }
+            $hutangbayarheader->save();
 
             $logTrail = [
                 'namatabel' => strtoupper($hutangbayarheader->getTable()),
@@ -272,14 +264,12 @@ class HutangBayarHeaderController extends Controller
                 'status' => true,
                 'message' => 'Berhasil disimpan',
                 'data' => $hutangbayarheader
-            ]);
+            ], 201);
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
             return response($th->getMessage());
         }
-
-        return response($hutangbayarheader->hutangdetail());
     }
 
 
@@ -299,13 +289,11 @@ class HutangBayarHeaderController extends Controller
     /**
      * @ClassName update
      */
-    public function update(StoreHutangBayarHeaderRequest $request, $id)
+    public function update(UpdateHutangBayarHeaderRequest $request,HutangBayarHeader $hutangbayarheader)
     {
         DB::beginTransaction();
 
         try {
-            $hutangbayarheader = HutangBayarHeader::findOrFail($id);
-
             $hutangbayarheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $hutangbayarheader->keterangan = $request->keterangan ?? '';
             $hutangbayarheader->bank_id = $request->bank_id;
@@ -327,11 +315,11 @@ class HutangBayarHeaderController extends Controller
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
                 
-                PengeluaranDetail::where('nobukti',$hutangbayarheader->pengeluaran_nobukti)->delete();
-                PengeluaranHeader::where('nobukti',$hutangbayarheader->pengeluaran_nobukti)->delete();
-                JurnalUmumDetail::where('nobukti',$hutangbayarheader->pengeluaran_nobukti)->delete();
-                JurnalUmumHeader::where('nobukti',$hutangbayarheader->pengeluaran_nobukti)->delete();
-                HutangBayarDetail::where('hutangbayar_id', $id)->delete();
+                PengeluaranDetail::where('nobukti',$hutangbayarheader->pengeluaran_nobukti)->lockForUpdate()->delete();
+                PengeluaranHeader::where('nobukti',$hutangbayarheader->pengeluaran_nobukti)->lockForUpdate()->delete();
+                JurnalUmumDetail::where('nobukti',$hutangbayarheader->pengeluaran_nobukti)->lockForUpdate()->delete();
+                JurnalUmumHeader::where('nobukti',$hutangbayarheader->pengeluaran_nobukti)->lockForUpdate()->delete();
+                HutangBayarDetail::where('hutangbayar_id', $hutangbayarheader->id)->lockForUpdate()->delete();
                 /* Store detail */
                 $detaillog = [];
                 for ($i = 0; $i < count($request->hutang_id); $i++) {
@@ -501,26 +489,24 @@ class HutangBayarHeaderController extends Controller
     /**
      * @ClassName destroy
      */
-    public function destroy($id, Request $request)
+    public function destroy(HutangBayarHeader $hutangbayarheader, Request $request)
     {
         DB::beginTransaction();
-        $hutangbayarheader = new HutangBayarHeader();
         try {
 
-            $get = HutangBayarHeader::findOrFail($id);
-            $delete = PengeluaranDetail::where('nobukti',$get->pengeluaran_nobukti)->delete();
-            $delete = PengeluaranHeader::where('nobukti',$get->pengeluaran_nobukti)->delete();
-            $delete = JurnalUmumDetail::where('nobukti',$get->pengeluaran_nobukti)->delete();
-            $delete = JurnalUmumHeader::where('nobukti',$get->pengeluaran_nobukti)->delete();
-            $delete = HutangBayarDetail::where('hutangbayar_id', $id)->delete();
-            $delete = HutangBayarHeader::destroy($id);
+            $delete = PengeluaranDetail::where('nobukti',$hutangbayarheader->pengeluaran_nobukti)->lockForUpdate()->delete();
+            $delete = PengeluaranHeader::where('nobukti',$hutangbayarheader->pengeluaran_nobukti)->lockForUpdate()->delete();
+            $delete = JurnalUmumDetail::where('nobukti',$hutangbayarheader->pengeluaran_nobukti)->lockForUpdate()->delete();
+            $delete = JurnalUmumHeader::where('nobukti',$hutangbayarheader->pengeluaran_nobukti)->lockForUpdate()->delete();
+            $delete = HutangBayarDetail::where('hutangbayar_id', $hutangbayarheader->id)->lockForUpdate()->delete();
+            $delete = HutangBayarHeader::destroy($hutangbayarheader->id);
 
             if ($delete) {
                 $logTrail = [
                     'namatabel' => strtoupper($hutangbayarheader->getTable()),
                     'postingdari' => 'DELETE PEMBAYARAN HUTANG HEADER',
-                    'idtrans' => $id,
-                    'nobuktitrans' => '',
+                    'idtrans' => $hutangbayarheader->id,
+                    'nobuktitrans' => $hutangbayarheader->nobukti,
                     'aksi' => 'DELETE',
                     'datajson' => $hutangbayarheader->toArray(),
                     'modifiedby' => $hutangbayarheader->modifiedby

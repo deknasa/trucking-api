@@ -13,7 +13,7 @@ class UpdateKotaRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +24,18 @@ class UpdateKotaRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'kodekota' => 'required',
+            'keterangan' => 'required',
+            'zona' => 'required',
+            'statusaktif' => 'required'
+        ];
+    }
+
+    public function attributes()
+    {
+        return [
+            'kodekota' => 'kode kota',
+            'statusaktif' => 'statusaktif'
         ];
     }
 }

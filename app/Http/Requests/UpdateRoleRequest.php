@@ -32,7 +32,7 @@ class UpdateRoleRequest extends FormRequest
     public function attributes()
     {
         return [
-            'rolename' => 'rolename',
+            'rolename' => 'role name',
         ];
     }
 }

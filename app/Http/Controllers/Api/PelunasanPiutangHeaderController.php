@@ -19,7 +19,7 @@ use App\Models\AkunPusat;
 use App\Models\Cabang;
 use App\Models\Bank;
 use App\Models\Pelanggan;
-
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -77,20 +77,12 @@ class PelunasanPiutangHeaderController extends Controller
                 $pelunasanpiutangheader->statusformat = $format->id;
                 $pelunasanpiutangheader->modifiedby = auth('api')->user()->name;
 
-                TOP:
                 $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
                 $pelunasanpiutangheader->nobukti = $nobukti;
 
 
-                try {
-                    $pelunasanpiutangheader->save();
-                    DB::commit();
-                } catch (\Exception $e) {
-                    $errorCode = @$e->errorInfo[1];
-                    if ($errorCode == 2601) {
-                        goto TOP;
-                    }
-                }
+                $pelunasanpiutangheader->save();
+
 
                 $logTrail = [
                     'namatabel' => strtoupper($pelunasanpiutangheader->getTable()),
@@ -114,6 +106,14 @@ class PelunasanPiutangHeaderController extends Controller
                     $idpiutang = $request->piutang_id[$i];
                     $piutang = PiutangHeader::where('id', $idpiutang)->first();
 
+                    if($request->bayarppd[$i] > $piutang->nominal) {
+                        
+                        $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'NB')
+                        ->first();
+                        return response([
+                            'message' => "$query->keterangan",
+                        ], 422);
+                    }
 
                     //get coa penyesuaian
                     if ($request->penyesuaianppd[$i] > 0) {
@@ -224,7 +224,7 @@ class PelunasanPiutangHeaderController extends Controller
                     'status' => true,
                     'message' => 'Berhasil disimpan',
                     'data' => $pelunasanpiutangheader
-                ]);
+                ], 201);
             } else {
                 $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'WP')
                     ->first();
@@ -235,7 +235,7 @@ class PelunasanPiutangHeaderController extends Controller
                     'message' => "PIUTANG $query->keterangan",
                 ], 422);
             }
-        } catch (\Throwable $th) {
+        }catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
             return response($th->getMessage());
@@ -262,13 +262,11 @@ class PelunasanPiutangHeaderController extends Controller
     /**
      * @ClassName
      */
-    public function update(StorePelunasanPiutangHeaderRequest $request, $id)
+    public function update(UpdatePelunasanPiutangHeaderRequest $request, PelunasanPiutangHeader $pelunasanpiutangheader)
     {
         DB::beginTransaction();
 
         try {
-
-            $pelunasanpiutangheader = PelunasanPiutangHeader::findOrFail($id);
 
             $pelunasanpiutangheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $pelunasanpiutangheader->keterangan = $request->keterangan;
@@ -277,12 +275,11 @@ class PelunasanPiutangHeaderController extends Controller
             $pelunasanpiutangheader->cabang_id = $request->cabang_id;
             $pelunasanpiutangheader->modifiedby = auth('api')->user()->name;
 
-
             if ($pelunasanpiutangheader->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($pelunasanpiutangheader->getTable()),
                     'postingdari' => 'EDIT PELUNASAN PIUTANG HEADER',
-                    'idtrans' => $id,
+                    'idtrans' => $pelunasanpiutangheader->id,
                     'nobuktitrans' => $pelunasanpiutangheader->nobukti,
                     'aksi' => 'EDIT',
                     'datajson' => $pelunasanpiutangheader->toArray(),
@@ -291,7 +288,7 @@ class PelunasanPiutangHeaderController extends Controller
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-                PelunasanPiutangDetail::where('pelunasanpiutang_id', $id)->delete();
+                PelunasanPiutangDetail::where('pelunasanpiutang_id', $pelunasanpiutangheader->id)->lockForUpdate()->delete();
 
                 /* Store detail */
 
@@ -301,6 +298,13 @@ class PelunasanPiutangHeaderController extends Controller
                     $idpiutang = $request->piutang_id[$i];
                     $piutang = PiutangHeader::where('id', $idpiutang)->first();
 
+                    if($request->bayarppd[$i] > $piutang->nominal) {
+                        $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'NB')
+                        ->first();
+                        return response([
+                            'message' => "$query->keterangan",
+                        ], 422);
+                    }
                     //get coa penyesuaian
                     if ($request->penyesuaianppd[$i] > 0) {
                         $getCoaPenyesuaian = AkunPusat::where('id', '143')->first();
@@ -412,21 +416,20 @@ class PelunasanPiutangHeaderController extends Controller
     /**
      * @ClassName
      */
-    public function destroy($id, Request $request)
+    public function destroy(PelunasanPiutangHeader $pelunasanpiutangheader, Request $request)
     {
         DB::beginTransaction();
-        $pelunasanpiutangheader = new PelunasanPiutangHeader();
         try {
 
-            $delete = PelunasanPiutangDetail::where('pelunasanpiutang_id', $id)->delete();
-            $delete = PelunasanPiutangHeader::destroy($id);
+            $delete = PelunasanPiutangDetail::where('pelunasanpiutang_id', $pelunasanpiutangheader->id)->lockForUpdate()->delete();
+            $delete = PelunasanPiutangHeader::destroy($pelunasanpiutangheader->id);
 
             if ($delete) {
                 $logTrail = [
                     'namatabel' => strtoupper($pelunasanpiutangheader->getTable()),
                     'postingdari' => 'DELETE PELUNASAN PIUTANG HEADER',
-                    'idtrans' => $id,
-                    'nobuktitrans' => '',
+                    'idtrans' => $pelunasanpiutangheader->id,
+                    'nobuktitrans' => $pelunasanpiutangheader->nobukti,
                     'aksi' => 'DELETE',
                     'datajson' => $pelunasanpiutangheader->toArray(),
                     'modifiedby' => $pelunasanpiutangheader->modifiedby

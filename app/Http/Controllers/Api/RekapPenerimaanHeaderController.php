@@ -63,7 +63,6 @@ class RekapPenerimaanHeaderController extends Controller
             $rekapPenerimaanHeader->tgltransaksi  = date('Y-m-d',strtotime($request->tgltransaksi ));
             $rekapPenerimaanHeader->bank_id = $request->bank_id;
             $rekapPenerimaanHeader->statusapproval = $statusNonApproval->id;
-            $rekapPenerimaanHeader->userapproval = auth('api')->user()->name;
             $rekapPenerimaanHeader->statusformat = $format->id;
             $rekapPenerimaanHeader->modifiedby = auth('api')->user()->name;
             TOP:
@@ -86,7 +85,7 @@ class RekapPenerimaanHeaderController extends Controller
                 /* Store detail */
                 
                 if ($request->penerimaan_nobukti) {
-                    $rekapPenerimaanDetail = RekapPenerimaanDetail::where('rekappenerimaan_id',$rekapPenerimaanHeader->id)->delete();
+                    $rekapPenerimaanDetail = RekapPenerimaanDetail::where('rekappenerimaan_id',$rekapPenerimaanHeader->id)->lockForUpdate()->delete();
 
                     $detaillog = [];
                     for ($i = 0; $i < count($request->penerimaan_nobukti); $i++) {
@@ -147,6 +146,10 @@ class RekapPenerimaanHeaderController extends Controller
             throw $th;
             return response($th->getMessage());
         }
+        return response([
+            'message' => 'Berhasil gagal disimpan',
+            'data' => $notaKreditHeader
+        ], 422);
     }
 
     public function show(RekapPenerimaanHeader $rekapPenerimaanHeader,$id)
@@ -167,7 +170,7 @@ class RekapPenerimaanHeaderController extends Controller
 
         try {
             
-            $rekapPenerimaanHeader = RekapPenerimaanHeader::findOrFail($id);
+            $rekapPenerimaanHeader = RekapPenerimaanHeader::lockForUpdate()->findOrFail($id);
 
             $rekapPenerimaanHeader->tglbukti = date('Y-m-d',strtotime($request->tglbukti));
             $rekapPenerimaanHeader->keterangan = $request->keterangan;
@@ -193,7 +196,7 @@ class RekapPenerimaanHeaderController extends Controller
                 /* Store detail */
                 
                 if ($request->penerimaan_nobukti) {
-                    $rekapPenerimaanDetail = RekapPenerimaanDetail::where('rekappenerimaan_id',$rekapPenerimaanHeader->id)->delete();
+                    $rekapPenerimaanDetail = RekapPenerimaanDetail::where('rekappenerimaan_id',$rekapPenerimaanHeader->id)->lockForUpdate()->delete();
 
                     $detaillog = [];
                     for ($i = 0; $i < count($request->penerimaan_nobukti); $i++) {
@@ -254,6 +257,10 @@ class RekapPenerimaanHeaderController extends Controller
             throw $th;
             return response($th->getMessage());
         }
+        return response([
+            'message' => 'Berhasil gagal disimpan',
+            'data' => $notaKreditHeader
+        ], 422);
     }
     /**
      * @ClassName 
@@ -261,12 +268,12 @@ class RekapPenerimaanHeaderController extends Controller
     public function destroy(RekapPenerimaanHeader $rekapPenerimaanHeader,$id)
     {
         DB::beginTransaction();
-        $rekapPenerimaanHeader = RekapPenerimaanHeader::findOrFail($id);
+        $rekapPenerimaanHeader = RekapPenerimaanHeader::lockForUpdate()->findOrFail($id);
 
         try {
             
-            $delete = RekapPenerimaanDetail::where('rekappenerimaan_id',$id)->delete();
-            $delete = $rekapPenerimaanHeader->delete();
+            $delete = RekapPenerimaanDetail::where('rekappenerimaan_id',$id)->lockForUpdate()->delete();
+            $delete = $rekapPenerimaanHeader->lockForUpdate()->delete();
             if ($delete) {
                 $logTrail = [
                     'namatabel' => strtoupper($rekapPenerimaanHeader->getTable()),
@@ -314,7 +321,7 @@ class RekapPenerimaanHeaderController extends Controller
     public function approval($id)
     {
         DB::beginTransaction();
-        $rekapPenerimaanHeader = RekapPenerimaanHeader::findOrFail($id);
+        $rekapPenerimaanHeader = RekapPenerimaanHeader::lockForUpdate()->findOrFail($id);
         try {
             $statusApproval = Parameter::where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
             $statusNonApproval = Parameter::where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();

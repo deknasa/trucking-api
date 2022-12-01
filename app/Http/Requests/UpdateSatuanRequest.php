@@ -13,7 +13,7 @@ class UpdateSatuanRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +24,8 @@ class UpdateSatuanRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'satuan' => 'required',
+            'statusaktif' => 'required',
         ];
     }
 }

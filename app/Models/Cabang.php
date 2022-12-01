@@ -88,23 +88,9 @@ class Cabang extends MyModel
 
     public function sort($query)
     {
-        if ($this->params['sortIndex'] == 'grp') {
-            return $query
-                ->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder'])
-                ->orderBy($this->table . '.subgrp', $this->params['sortOrder'])
-                ->orderBy($this->table . '.id', $this->params['sortOrder']);
-        }
-
-        if ($this->params['sortIndex'] == 'subgrp') {
-            return $query
-                ->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder'])
-                ->orderBy($this->table . '.grp', $this->params['sortOrder'])
-                ->orderBy($this->table . '.id', $this->params['sortOrder']);
-        }
-
         return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
     }
-
+    
     public function filter($query, $relationFields = [])
     {
         if (count($this->params['filters']) > 0 && @$this->params['filters']['rules'][0]['data'] != '') {

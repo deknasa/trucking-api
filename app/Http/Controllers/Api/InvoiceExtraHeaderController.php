@@ -226,7 +226,7 @@ class InvoiceExtraHeaderController extends Controller
     /**
      * @ClassName 
      */
-    public function update(UpdateInvoiceExtraHeaderRequest $request, InvoiceExtraHeader $invoiceExtraHeader,$id)
+    public function update(UpdateInvoiceExtraHeaderRequest $request, InvoiceExtraHeader $invoiceextraheader)
     {
         DB::beginTransaction();
 
@@ -246,39 +246,38 @@ class InvoiceExtraHeaderController extends Controller
             $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
 
             /* Store header */
-            $invoiceExtraHeader = InvoiceExtraHeader::findOrFail($id);
             
-            $invoiceExtraHeader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
-            $invoiceExtraHeader->keterangan = $request->keterangan;
-            $invoiceExtraHeader->nominal    = $request->nominal;
-            $invoiceExtraHeader->agen_id    = $request->agen_id;
-            $invoiceExtraHeader->pelanggan_id = $request->pelanggan_id;
+            $invoiceextraheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
+            $invoiceextraheader->keterangan = $request->keterangan;
+            $invoiceextraheader->nominal    = $request->nominal;
+            $invoiceextraheader->agen_id    = $request->agen_id;
+            $invoiceextraheader->pelanggan_id = $request->pelanggan_id;
             
             
-            if ($invoiceExtraHeader->save()) {
+            if ($invoiceextraheader->save()) {
                 $logTrail = [
-                    'namatabel' => strtoupper($invoiceExtraHeader->getTable()),
+                    'namatabel' => strtoupper($invoiceextraheader->getTable()),
                     'postingdari' => 'EDIT INVOICE EXTRA HEADER',
-                    'idtrans' => $invoiceExtraHeader->id,
-                    'nobuktitrans' => $invoiceExtraHeader->id,
+                    'idtrans' => $invoiceextraheader->id,
+                    'nobuktitrans' => $invoiceextraheader->id,
                     'aksi' => 'EDIT',
-                    'datajson' => $invoiceExtraHeader->toArray(),
-                    'modifiedby' => $invoiceExtraHeader->modifiedby
+                    'datajson' => $invoiceextraheader->toArray(),
+                    'modifiedby' => $invoiceextraheader->modifiedby
                 ];
                 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
                 
                 /* Delete existing detail */
-                $getPiutang = PiutangHeader::where('invoice_nobukti', $invoiceExtraHeader->nobukti)->first();
+                $getPiutang = PiutangHeader::where('invoice_nobukti', $invoiceextraheader->nobukti)->first();
                 
                 if ($getPiutang) {
-                    JurnalUmumHeader::where('nobukti',$getPiutang->nobukti)->delete();
-                    JurnalUmumDetail::where('nobukti',$getPiutang->nobukti)->delete();
-                    PiutangHeader::where('invoice_nobukti',$invoiceExtraHeader->nobukti)->delete();
-                    PiutangDetail::where('invoice_nobukti',$invoiceExtraHeader->nobukti)->delete();
+                    JurnalUmumHeader::where('nobukti',$getPiutang->nobukti)->lockForUpdate()->delete();
+                    JurnalUmumDetail::where('nobukti',$getPiutang->nobukti)->lockForUpdate()->delete();
+                    PiutangHeader::where('invoice_nobukti',$invoiceextraheader->nobukti)->lockForUpdate()->delete();
+                    PiutangDetail::where('invoice_nobukti',$invoiceextraheader->nobukti)->lockForUpdate()->delete();
                 }
-                $penerimaanStokDetail = InvoiceExtraDetail::where('invoiceextra_id',$id)->delete();
+                $penerimaanStokDetail = InvoiceExtraDetail::where('invoiceextra_id',$invoiceextraheader->id)->lockForUpdate()->delete();
                 if ($request->nominal_detail) {
     
                     /* Store detail */
@@ -286,8 +285,8 @@ class InvoiceExtraHeaderController extends Controller
         
                     for ($i=0; $i <count($request->nominal_detail) ; $i++) { 
                         $datadetail = [
-                            "invoiceextra_id" =>$invoiceExtraHeader->id,
-                            "nobukti" => $invoiceExtraHeader->nobukti,
+                            "invoiceextra_id" =>$invoiceextraheader->id,
+                            "nobukti" => $invoiceextraheader->nobukti,
                             "nominal_detail" => $request->nominal_detail[$i],
                             "keterangan_detail" => $request->keterangan_detail[$i],
                         ];
@@ -303,13 +302,13 @@ class InvoiceExtraHeaderController extends Controller
                         }
     
                         $datadetaillog = [
-                            "invoiceextra_id" =>$invoiceExtraHeader->id,
-                            "nobukti" => $invoiceExtraHeader->nobukti,
+                            "invoiceextra_id" =>$invoiceextraheader->id,
+                            "nobukti" => $invoiceextraheader->nobukti,
                             "nominal" => $request->nominal_detail[$i],
                             "keterangan" => $request->keterangan_detail[$i],
                             'modifiedby' => auth('api')->user()->name,
-                            'created_at' => date('d-m-Y H:i:s', strtotime($invoiceExtraHeader->created_at)),
-                            'updated_at' => date('d-m-Y H:i:s', strtotime($invoiceExtraHeader->updated_at)),
+                            'created_at' => date('d-m-Y H:i:s', strtotime($invoiceextraheader->created_at)),
+                            'updated_at' => date('d-m-Y H:i:s', strtotime($invoiceextraheader->updated_at)),
                         ];
                         $detaillog[] = $datadetaillog;
         
@@ -318,7 +317,7 @@ class InvoiceExtraHeaderController extends Controller
                         'namatabel' => $tabeldetail,
                         'postingdari' => 'ENTRY INVOICE EXTRA DETAIL',
                         'idtrans' =>  $iddetail,
-                        'nobuktitrans' => $invoiceExtraHeader->nobukti,
+                        'nobuktitrans' => $invoiceextraheader->nobukti,
                         'aksi' => 'ENTRY',
                         'datajson' => $detaillog,
                         'modifiedby' => auth('api')->user()->name,
@@ -349,12 +348,12 @@ class InvoiceExtraHeaderController extends Controller
                 $piutangHeader = [
                     'tanpaprosesnobukti' => 1,
                     'nobukti' => $piutang_nobukti,
-                    'tglbukti' => date('Y-m-d', strtotime($invoiceExtraHeader->tglbukti)),
-                    'keterangan' => $invoiceExtraHeader->keterangan,
+                    'tglbukti' => date('Y-m-d', strtotime($invoiceextraheader->tglbukti)),
+                    'keterangan' => $invoiceextraheader->keterangan,
                     'postingdari' => "ENTRY INVOICE",
-                    'nominal' => $invoiceExtraHeader->nominal,
-                    'invoice_nobukti' => $invoiceExtraHeader->nobukti,
-                    'agen_id' => $invoiceExtraHeader->agen_id,
+                    'nominal' => $invoiceextraheader->nominal,
+                    'invoice_nobukti' => $invoiceextraheader->nobukti,
+                    'agen_id' => $invoiceextraheader->agen_id,
                     'modifiedby' => auth('api')->user()->name,
                     'statusformat' => 1,
                 ];
@@ -368,7 +367,7 @@ class InvoiceExtraHeaderController extends Controller
                         'nobukti' => $piutang_nobukti,
                         'nominal' => $request->nominal_detail[$i],
                         'keterangan' => $request->keterangan_detail[$i],
-                        'invoice_nobukti' => $invoiceExtraHeader->nobukti,
+                        'invoice_nobukti' => $invoiceextraheader->nobukti,
                         'modifiedby' =>  auth('api')->user()->name
                     ];
     
@@ -384,17 +383,17 @@ class InvoiceExtraHeaderController extends Controller
             }
 
             /* Set position and page */
-            $selected = $this->getPosition($invoiceExtraHeader, $invoiceExtraHeader->getTable());
-            $invoiceExtraHeader->position = $selected->position;
-            $invoiceExtraHeader->page = ceil($invoiceExtraHeader->position / ($request->limit ?? 10));
+            $selected = $this->getPosition($invoiceextraheader, $invoiceextraheader->getTable());
+            $invoiceextraheader->position = $selected->position;
+            $invoiceextraheader->page = ceil($invoiceextraheader->position / ($request->limit ?? 10));
 
             if (isset($request->limit)) {
-                $invoiceExtraHeader->page = ceil($invoiceExtraHeader->position / $request->limit);
+                $invoiceextraheader->page = ceil($invoiceextraheader->position / $request->limit);
             }
 
             return response([
                 'message' => 'Berhasil disimpan',
-                'data' => $invoiceExtraHeader
+                'data' => $invoiceextraheader
             ], 201);
         } catch (\Throwable $th) {
             DB::rollBack();
@@ -406,29 +405,25 @@ class InvoiceExtraHeaderController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(InvoiceExtraHeader $invoiceExtraHeader,$id)
+    public function destroy(InvoiceExtraHeader $invoiceextraheader,Request $request)
     {
         DB::beginTransaction();
-        $invoiceDetail = new InvoiceExtraHeader();
-        $invoiceDetails = InvoiceExtraHeader::findOrFail($id);
-
-        $nobukti = $invoiceDetails->nobukti;
 
         try {
 
             
-            $delete = InvoiceExtraDetail::where('invoiceextra_id', $id)->delete();
-            $delete = InvoiceExtraHeader::destroy($id);
+            $delete = InvoiceExtraDetail::where('invoiceextra_id', $invoiceextraheader->id)->lockForUpdate()->delete();
+            $delete = InvoiceExtraHeader::destroy($invoiceextraheader->id);
 
             if ($delete) {
                 $logTrail = [
-                    'namatabel' => strtoupper($invoiceDetail->getTable()),
+                    'namatabel' => strtoupper($invoiceextraheader->getTable()),
                     'postingdari' => 'DELETE INVOICE HEADER',
-                    'idtrans' => $id,
-                    'nobuktitrans' => $nobukti,
+                    'idtrans' => $invoiceextraheader->id,
+                    'nobuktitrans' => $invoiceextraheader->nobukti,
                     'aksi' => 'DELETE',
-                    'datajson' => $invoiceDetail->toArray(),
-                    'modifiedby' => $invoiceDetail->modifiedby
+                    'datajson' => $invoiceextraheader->toArray(),
+                    'modifiedby' => $invoiceextraheader->modifiedby
                 ];
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
@@ -436,15 +431,15 @@ class InvoiceExtraHeaderController extends Controller
 
                 DB::commit();
 
-                $selected = $this->getPosition($invoiceDetail, $invoiceDetail->getTable(), true);
-                $invoiceDetail->position = $selected->position;
-                $invoiceDetail->id = $selected->id;
-                $invoiceDetail->page = ceil($invoiceDetail->position / ($request->limit ?? 10));
+                $selected = $this->getPosition($invoiceextraheader, $invoiceextraheader->getTable(), true);
+                $invoiceextraheader->position = $selected->position;
+                $invoiceextraheader->id = $selected->id;
+                $invoiceextraheader->page = ceil($invoiceextraheader->position / ($request->limit ?? 10));
 
                 return response([
                     'status' => true,
                     'message' => 'Berhasil dihapus',
-                    'data' => $invoiceDetail
+                    'data' => $invoiceextraheader
                 ]);
             }
         } catch (\Throwable $th) {

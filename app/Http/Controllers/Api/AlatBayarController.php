@@ -53,7 +53,6 @@ class AlatBayarController extends Controller
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
 
-            TOP:
             if ($alatbayar->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($alatbayar->getTable()),
@@ -82,16 +81,6 @@ class AlatBayarController extends Controller
                 'message' => 'Berhasil disimpan',
                 'data' => $alatbayar
             ], 201);
-        } catch (QueryException $queryException) {
-            if (isset($queryException->errorInfo[1]) && is_array($queryException->errorInfo)) {
-                // Check if deadlock
-                if ($queryException->errorInfo[1] === 1205) {
-                    goto TOP;
-                }
-            }
-
-            throw $queryException;
-
         } catch (\Throwable $th) {
             DB::rollBack();
             return response($th->getMessage());
@@ -117,7 +106,6 @@ class AlatBayarController extends Controller
     public function update(StoreAlatBayarRequest $request, AlatBayar $alatbayar)
     {
         try {
-            $alatbayar = AlatBayar::findOrFail($alatbayar->id);
             $alatbayar->kodealatbayar = $request->kodealatbayar;
             $alatbayar->namaalatbayar = $request->namaalatbayar;
             $alatbayar->keterangan = $request->keterangan;

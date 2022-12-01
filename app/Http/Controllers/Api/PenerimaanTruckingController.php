@@ -8,6 +8,7 @@ use App\Models\PenerimaanTrucking;
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Http\Requests\StorePenerimaanTruckingRequest;
 use App\Http\Requests\UpdatePenerimaanTruckingRequest;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -48,7 +49,7 @@ class PenerimaanTruckingController extends Controller
             if ($penerimaanTrucking->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($penerimaanTrucking->getTable()),
-                    'postingdari' => 'ENTRY PEnerimaan TRUCKING',
+                    'postingdari' => 'ENTRY PENERIMAAN TRUCKING',
                     'idtrans' => $penerimaanTrucking->id,
                     'nobuktitrans' => $penerimaanTrucking->id,
                     'aksi' => 'ENTRY',
@@ -75,7 +76,7 @@ class PenerimaanTruckingController extends Controller
                 'status' => true,
                 'message' => 'Berhasil disimpan',
                 'data' => $penerimaanTrucking
-            ]);
+            ], 201);
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
@@ -108,7 +109,7 @@ class PenerimaanTruckingController extends Controller
             if ($penerimaanTrucking->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($penerimaanTrucking->getTable()),
-                    'postingdari' => 'EDIT PEnerimaan TRUCKING',
+                    'postingdari' => 'EDIT PENERIMAAN TRUCKING',
                     'idtrans' => $penerimaanTrucking->id,
                     'nobuktitrans' => $penerimaanTrucking->id,
                     'aksi' => 'EDIT',

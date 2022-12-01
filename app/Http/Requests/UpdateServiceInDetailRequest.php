@@ -13,7 +13,7 @@ class UpdateServiceInDetailRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +24,10 @@ class UpdateServiceInDetailRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'mekanik' => 'required|array',
+            'mekanik.*' => 'required',
+            'keterangan_detail' => 'required|array',
+            'keterangan_detail.*' => 'required'
         ];
     }
 }

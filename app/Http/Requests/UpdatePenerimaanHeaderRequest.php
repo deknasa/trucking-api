@@ -13,7 +13,7 @@ class UpdatePenerimaanHeaderRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -23,8 +23,50 @@ class UpdatePenerimaanHeaderRequest extends FormRequest
      */
     public function rules()
     {
+        $rules = [
+            'tglbukti' => 'required',
+            'diterimadari' => 'required',
+            'pelanggan' => 'required',
+            'keterangan' => 'required',
+            'tgllunas'  => 'required',
+            'cabang' => 'required',
+            'statuskas' => 'required',
+            'bank'   => 'required',
+            // 'noresi' => 'required'
+        ];
+        $relatedRequests = [
+            UpdatePenerimaanDetailRequest::class
+        ];
+        
+        foreach ($relatedRequests as $relatedRequest) {
+            $rules = array_merge(
+                $rules,
+                (new $relatedRequest)->rules()
+            );
+        }
+
+        return $rules;
+
+    }
+    public function attributes()
+    {
         return [
-            //
+            'tgllunas' => 'tanggal lunas',
+            'statuskas' => 'status kas',
+            'nowarkat.*' => 'no warkat',
+            'tgljatuhtempo.*' => 'tanggal jatuh tempo',
+            'nominal_detail.*' => 'nominal',
+            'keterangan_detail.*' => 'keterangan detail',
+            'coadebet.*' => 'coa debet',
+            'bankpelanggan.*' => 'bank pelanggan',
+            'jenisbiaya.*' => 'jenis biaya',
+            'bulanbeban.*' => 'bulan beban'
+        ];
+    }
+    public function messages()
+    {
+        return [
+            'nominal_detail.*.gt' => 'nominal wajib di isi'
         ];
     }
 }

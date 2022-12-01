@@ -23,8 +23,32 @@ class UpdateServiceInHeaderRequest extends FormRequest
      */
     public function rules()
     {
+        $rules = [
+            'tglbukti' => 'required',
+            'trado' => 'required',
+            'tglmasuk' => 'required',
+            'keterangan' => 'required',
+        ];
+        $relatedRequests = [
+            UpdateServiceInDetailRequest::class
+        ];
+
+        foreach ($relatedRequests as $relatedRequest) {
+            $rules = array_merge(
+                $rules,
+                (new $relatedRequest)->rules()
+            );
+        }
+        
+        return $rules;
+    }
+
+    public function attributes() {
         return [
-            //
+            'tglbukti' => 'tanggal bukti',
+            'tglmasuk' => 'tanggal masuk',
+            'mekanik.*' => 'mekanik',
+            'keterangan_detail.*' => 'keterangan detail'
         ];
     }
 }

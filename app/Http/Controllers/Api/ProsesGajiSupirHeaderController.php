@@ -15,6 +15,7 @@ use App\Models\LogTrail;
 use App\Models\Parameter;
 use App\Models\ProsesGajiSupirDetail;
 use Exception;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -74,20 +75,10 @@ class ProsesGajiSupirHeaderController extends Controller
                 $prosesgajisupirheader->statusformat = $format->id;
                 $prosesgajisupirheader->modifiedby = auth('api')->user()->name;
 
-                TOP:
                 $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
                 $prosesgajisupirheader->nobukti = $nobukti;
 
-
-                try {
-                    $prosesgajisupirheader->save();
-                    DB::commit();
-                } catch (\Exception $e) {
-                    $errorCode = @$e->errorInfo[1];
-                    if ($errorCode == 2601) {
-                        goto TOP;
-                    }
-                }
+                $prosesgajisupirheader->save();
 
                 $logTrail = [
                     'namatabel' => strtoupper($prosesgajisupirheader->getTable()),
@@ -195,7 +186,7 @@ class ProsesGajiSupirHeaderController extends Controller
                     'status' => true,
                     'message' => 'Berhasil disimpan',
                     'data' => $prosesgajisupirheader
-                ]);
+                ], 201);
             } else {
                 $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'WP')
                     ->first();
@@ -226,13 +217,11 @@ class ProsesGajiSupirHeaderController extends Controller
     /**
      * @ClassName 
      */
-    public function update(UpdateProsesGajiSupirHeaderRequest $request, $id)
+    public function update(UpdateProsesGajiSupirHeaderRequest $request,ProsesGajiSupirHeader $prosesgajisupirheader)
     {
         DB::beginTransaction();
 
         try {
-
-            $prosesgajisupirheader = ProsesGajiSupirHeader::findOrFail($id);
 
             $prosesgajisupirheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $prosesgajisupirheader->keterangan = $request->keterangan;
@@ -246,7 +235,7 @@ class ProsesGajiSupirHeaderController extends Controller
                 $logTrail = [
                     'namatabel' => strtoupper($prosesgajisupirheader->getTable()),
                     'postingdari' => 'EDIT PROSES GAJI SUPIR HEADER',
-                    'idtrans' => $id,
+                    'idtrans' => $prosesgajisupirheader->id,
                     'nobuktitrans' => $prosesgajisupirheader->nobukti,
                     'aksi' => 'EDIT',
                     'datajson' => $prosesgajisupirheader->toArray(),
@@ -255,7 +244,7 @@ class ProsesGajiSupirHeaderController extends Controller
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-                ProsesGajiSupirDetail::where('prosesgajisupir_id', $id)->delete();
+                ProsesGajiSupirDetail::where('prosesgajisupir_id', $prosesgajisupirheader->id)->lockForUpdate()->delete();
 
                 /* Store detail */
 
@@ -348,21 +337,20 @@ class ProsesGajiSupirHeaderController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy($id, Request $request)
+    public function destroy(ProsesGajiSupirHeader $prosesgajisupirheader, Request $request)
     {
         DB::beginTransaction();
-        $prosesgajisupirheader = new ProsesGajiSupirHeader();
         try {
 
-            $delete = ProsesGajiSupirDetail::where('prosesgajisupir_id', $id)->delete();
-            $delete = ProsesGajiSupirHeader::destroy($id);
+            $delete = ProsesGajiSupirDetail::where('prosesgajisupir_id', $prosesgajisupirheader->id)->lockForUpdate()->delete();
+            $delete = ProsesGajiSupirHeader::destroy($prosesgajisupirheader->id);
 
             if ($delete) {
                 $logTrail = [
                     'namatabel' => strtoupper($prosesgajisupirheader->getTable()),
                     'postingdari' => 'DELETE PROSES GAJI SUPIR HEADER',
-                    'idtrans' => $id,
-                    'nobuktitrans' => '',
+                    'idtrans' => $prosesgajisupirheader->id,
+                    'nobuktitrans' => $prosesgajisupirheader->nobukti,
                     'aksi' => 'DELETE',
                     'datajson' => $prosesgajisupirheader->toArray(),
                     'modifiedby' => $prosesgajisupirheader->modifiedby

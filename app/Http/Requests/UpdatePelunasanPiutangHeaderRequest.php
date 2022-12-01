@@ -13,7 +13,7 @@ class UpdatePelunasanPiutangHeaderRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -23,8 +23,51 @@ class UpdatePelunasanPiutangHeaderRequest extends FormRequest
      */
     public function rules()
     {
+        $rules = [
+            'tglbukti' => 'required',
+            'keterangan' => 'required',
+            'bank' => 'required',
+            'agen' => 'required',
+            'cabang' => 'required',
+            'pelanggan' => 'required',
+            'agendetail' => 'required',
+        ];
+
+        $relatedRequests = [
+            UpdatePelunasanPiutangDetailRequest::class
+        ];
+
+        foreach ($relatedRequests as $relatedRequest) {
+            $rules = array_merge(
+                $rules,
+                (new $relatedRequest)->rules()
+            );
+        }
+        
+        return $rules;
+    }
+
+    public function attributes()
+    {
+        $attributes = [
+            'tglbukti' => 'Tanggal Bukti',
+            'keterangan' => 'Keterangan',
+            'bank' => 'Bank',
+            'agen' => 'Agen',
+            'cabang' => 'Cabang',
+            'pelanggan' => 'Pelanggan',
+            'agendetail' => 'Agen Detail',
+            'bayarppd.*' => 'Nominal Bayar',
+            'keterangandetailppd.*' => 'Keterangan Detail',
+        ];
+        
+        return $attributes;
+    }
+
+    public function messages() 
+    {
         return [
-            //
+            'bayarppd.*.gt' => 'Nominal Tidak Boleh Kosong dan Harus Lebih Besar Dari 0'
         ];
     }
 }

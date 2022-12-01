@@ -60,7 +60,6 @@ class AgenController extends Controller
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
 
-            TOP:
             if ($agen->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($agen->getTable()),
@@ -88,15 +87,6 @@ class AgenController extends Controller
                 'message' => 'Berhasil disimpan',
                 'data' => $agen
             ], 201);
-        } catch (QueryException $queryException) {
-            if (isset($queryException->errorInfo[1]) && is_array($queryException->errorInfo)) {
-                // Check if deadlock
-                if ($queryException->errorInfo[1] === 1205) {
-                    goto TOP;
-                }
-            }
-
-            throw $queryException;                 
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;

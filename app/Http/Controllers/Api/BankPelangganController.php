@@ -55,7 +55,6 @@ class BankPelangganController extends Controller
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
 
-            TOP:
             if ($bankpelanggan->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($bankpelanggan->getTable()),
@@ -83,16 +82,6 @@ class BankPelangganController extends Controller
                 'message' => 'Berhasil disimpan',
                 'data' => $bankpelanggan
             ], 201);
-        } catch (QueryException $queryException) {
-            if (isset($queryException->errorInfo[1]) && is_array($queryException->errorInfo)) {
-                // Check if deadlock
-                if ($queryException->errorInfo[1] === 1205) {
-                    goto TOP;
-                }
-            }
-
-            throw $queryException;
-
         } catch (\Throwable $th) {
             DB::rollBack();
             return response($th->getMessage());
@@ -117,7 +106,6 @@ class BankPelangganController extends Controller
     public function update(StoreBankPelangganRequest $request, BankPelanggan $bankpelanggan)
     {
         try {
-            $bankpelanggan = BankPelanggan::findOrFail($bankpelanggan->id);
             $bankpelanggan->kodebank = $request->kodebank;
             $bankpelanggan->namabank = $request->namabank;
             $bankpelanggan->keterangan = $request->keterangan;

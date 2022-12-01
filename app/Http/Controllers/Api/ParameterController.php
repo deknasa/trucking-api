@@ -56,7 +56,6 @@ class ParameterController extends Controller
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
 
-            TOP:
             if ($parameter->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($parameter->getTable()),
@@ -87,16 +86,6 @@ class ParameterController extends Controller
                 'message' => 'Berhasil disimpan',
                 'data' => $parameter
             ], 201);
-        } catch (QueryException $queryException) {
-            if (isset($queryException->errorInfo[1]) && is_array($queryException->errorInfo)) {
-                // Check if deadlock
-                if ($queryException->errorInfo[1] === 1205) {
-                    goto TOP;
-                }
-            }
-
-            throw $queryException;
-
         } catch (\Throwable $th) {
             DB::rollBack();
 
@@ -181,7 +170,7 @@ class ParameterController extends Controller
     {
         DB::beginTransaction();
 
-        $delete = $parameter->delete();
+        $delete = $parameter->lockForUpdate()->delete();
 
         if ($delete) {
             $logTrail = [
