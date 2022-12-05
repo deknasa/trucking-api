@@ -31,7 +31,6 @@ class GudangController extends Controller
                 'totalPages' => $gudang->totalPages
             ]
         ]);
-
     }
 
     /**
@@ -77,7 +76,7 @@ class GudangController extends Controller
                 'message' => 'Berhasil disimpan',
                 'data' => $gudang
             ], 201);
-        }  catch (\Throwable $th) {
+        } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
         }
@@ -142,42 +141,40 @@ class GudangController extends Controller
     {
         DB::beginTransaction();
         try {
-        $delete = Gudang::destroy($gudang->id);
-        $del = 1;
-        if ($delete) {
-            $logTrail = [
-                'namatabel' => strtoupper($gudang->getTable()),
-                'postingdari' => 'DELETE GUDANG',
-                'idtrans' => $gudang->id,
-                'nobuktitrans' => $gudang->id,
-                'aksi' => 'DELETE',
-                'datajson' => $gudang->toArray(),
-                'modifiedby' => $gudang->modifiedby
-            ];
+            $delete = Gudang::destroy($gudang->id);
+            $del = 1;
+            if ($delete) {
+                $logTrail = [
+                    'namatabel' => strtoupper($gudang->getTable()),
+                    'postingdari' => 'DELETE GUDANG',
+                    'idtrans' => $gudang->id,
+                    'nobuktitrans' => $gudang->id,
+                    'aksi' => 'DELETE',
+                    'datajson' => $gudang->toArray(),
+                    'modifiedby' => $gudang->modifiedby
+                ];
 
-            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-            app(LogTrailController::class)->store($validatedLogTrail);
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                app(LogTrailController::class)->store($validatedLogTrail);
 
-            DB::commit();
+                DB::commit();
 
-             /* Set position and page */
-             $gudang->position = $data->row ?? 0;
-             $gudang->id = $data->id ?? 0;
-             if (isset($request->limit)) {
-                 $gudang->page = ceil($gudang->position / $request->limit);
-             }
-            // dd($cabang);
-            return response([
-                'status' => true,
-                'message' => 'Berhasil dihapus',
-                'data' => $gudang
-            ]);
-        }
+                /* Set position and page */
+                $selected = $this->getPosition($gudang, $gudang->getTable());
+                $gudang->position = $selected->position;
+                $gudang->id = $selected->id;
+                $gudang->page = ceil($gudang->position / ($request->limit ?? 10));
+
+                return response([
+                    'status' => true,
+                    'message' => 'Berhasil dihapus',
+                    'data' => $gudang
+                ]);
+            }
         } catch (\Throwable $th) {
             DB::rollBack();
             return response($th->getMessage());
         }
-    
     }
 
     public function fieldLength()
@@ -205,5 +202,4 @@ class GudangController extends Controller
             'data' => $data
         ]);
     }
-
 }

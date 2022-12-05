@@ -164,11 +164,6 @@ class CabangController extends Controller
                 DB::commit();
             }
 
-            // $selected = $this->getPosition($cabang, $cabang->getTable(), true);
-            // $cabang->position = $selected->position;
-            // $cabang->id = $selected->id;
-            // $cabang->page = ceil($cabang->position / ($request->limit ?? 10));
-
                /* Set position and page */
             $selected = $this->getPosition($cabang, $cabang->getTable(), true);
             $cabang->position = $selected->position;

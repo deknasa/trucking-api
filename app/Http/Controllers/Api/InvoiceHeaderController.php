@@ -112,13 +112,19 @@ class InvoiceHeaderController extends Controller
 
                 $SP = SuratPengantar::where('id', $request->sp_id[$i])->first();
                 $total = $total + $SP->omset;
+                $getSP = SuratPengantar::where('jobtrucking', $SP->jobtrucking)->get();
+
+                $allSP = "";
+                foreach($getSP as $value){
+                   $allSP = $allSP. $value->nobukti .', ';
+                }
                 $datadetail = [
                     'invoice_id' => $invoice->id,
                     'nobukti' => $invoice->nobukti,
                     'nominal' => $SP->omset,
                     'keterangan' => $SP->keterangan,
                     'orderantrucking_nobukti' => $SP->jobtrucking,
-                    'suratpengantar_nobukti' => $SP->nobukti,
+                    'suratpengantar_nobukti' => $allSP,
                     'modifiedby' => $invoice->modifiedby,
                 ];
 
@@ -142,7 +148,7 @@ class InvoiceHeaderController extends Controller
                     'nominal' => $SP->omset,
                     'keterangan' => $SP->keterangan,
                     'orderantrucking_nobukti' => $SP->jobtrucking,
-                    'suratpengantar_nobukti' => $SP->nobukti,
+                    'suratpengantar_nobukti' => $allSP,
                     'modifiedby' => $invoice->modifiedby,
                     'created_at' => date('d-m-Y H:i:s', strtotime($invoice->created_at)),
                     'updated_at' => date('d-m-Y H:i:s', strtotime($invoice->updated_at)),
@@ -302,17 +308,22 @@ class InvoiceHeaderController extends Controller
 
                     $SP = SuratPengantar::where('id', $request->sp_id[$i])->first();
                     $total = $total + $SP->omset;
+                    $getSP = SuratPengantar::where('jobtrucking', $SP->jobtrucking)->get();
+
+                    $allSP = "";
+                    foreach($getSP as $value){
+                       $allSP = $allSP. $value->nobukti .', ';
+                    }
+
                     $datadetail = [
                         'invoice_id' => $invoiceheader->id,
                         'nobukti' => $invoiceheader->nobukti,
                         'nominal' => $SP->omset,
                         'keterangan' => $SP->keterangan,
                         'orderantrucking_nobukti' => $SP->jobtrucking,
-                        'suratpengantar_nobukti' => $SP->nobukti,
+                        'suratpengantar_nobukti' => $allSP,
                         'modifiedby' => $invoiceheader->modifiedby,
                     ];
-
-                    // STORE 
                     $data = new StoreInvoiceDetailRequest($datadetail);
 
                     $datadetails = app(ApiInvoiceDetailController::class)->store($data);
@@ -324,21 +335,19 @@ class InvoiceHeaderController extends Controller
                         $tabeldetail = $datadetails['tabel'];
                     }
 
-
                     $datadetaillog = [
                         'id' => $iddetail,
                         'invoice_id' => $invoiceheader->id,
                         'nobukti' => $invoiceheader->nobukti,
-                        'nominal' => $SP->omset,
-                        'keterangan' => $SP->keterangan,
-                        'orderantrucking_nobukti' => $SP->jobtrucking,
-                        'suratpengantar_nobukti' => $SP->nobukti,
+                        'nominal' => $value->omset,
+                        'keterangan' => $value->keterangan,
+                        'orderantrucking_nobukti' => $value->jobtrucking,
+                        'suratpengantar_nobukti' => $allSP,
                         'modifiedby' => $invoiceheader->modifiedby,
                         'created_at' => date('d-m-Y H:i:s', strtotime($invoiceheader->created_at)),
                         'updated_at' => date('d-m-Y H:i:s', strtotime($invoiceheader->updated_at)),
 
                     ];
-
 
                     $detaillog[] = $datadetaillog;
 
@@ -354,6 +363,7 @@ class InvoiceHeaderController extends Controller
 
                     $data = new StoreLogTrailRequest($datalogtrail);
                     app(LogTrailController::class)->store($data);
+
                 }
 
                 $group = 'PIUTANG BUKTI';
@@ -395,15 +405,15 @@ class InvoiceHeaderController extends Controller
                     $detail = [];
 
                     $SP = SuratPengantar::where('id', $request->sp_id[$i])->first();
-                    $detail = [
-                        'entriluar' => 1,
-                        'nobukti' => $piutang_nobukti,
-                        'nominal' => $SP->omset,
-                        'keterangan' => $SP->keterangan,
-                        'invoice_nobukti' => $invoiceheader->nobukti,
-                        'modifiedby' =>  auth('api')->user()->name
-                    ];
-
+                        $detail = [
+                            'entriluar' => 1,
+                            'nobukti' => $piutang_nobukti,
+                            'nominal' => $SP->omset,
+                            'keterangan' => $SP->keterangan,
+                            'invoice_nobukti' => $invoiceheader->nobukti,
+                            'modifiedby' =>  auth('api')->user()->name
+                        ];
+    
                     $piutangDetail[] = $detail;
                 }
 
@@ -512,7 +522,7 @@ class InvoiceHeaderController extends Controller
             ->whereRaw("jenisorder_id = $request->jenisorder_id")
             ->whereRaw("tglbukti >= '$dari'")
             ->whereRaw("tglbukti <= '$sampai'")
-            ->whereRaw("suratpengantar.nobukti not in(select suratpengantar_nobukti from invoicedetail)");
+            ->whereRaw("suratpengantar.jobtrucking not in(select orderantrucking_nobukti from invoicedetail)");
  
         if ($cekSP->first()) {
             return response([

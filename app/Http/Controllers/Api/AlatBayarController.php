@@ -96,15 +96,12 @@ class AlatBayarController extends Controller
         ]);
     }
 
-    public function edit(AlatBayar $alatBayar)
-    {
-        //
-    }
     /**
      * @ClassName 
      */
-    public function update(StoreAlatBayarRequest $request, AlatBayar $alatbayar)
+    public function update(UpdateAlatBayarRequest $request, AlatBayar $alatbayar)
     {
+        DB::beginTransaction();
         try {
             $alatbayar->kodealatbayar = $request->kodealatbayar;
             $alatbayar->namaalatbayar = $request->namaalatbayar;
@@ -127,26 +124,22 @@ class AlatBayarController extends Controller
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
-
-                /* Set position and page */
-                $selected = $this->getPosition($alatbayar, $alatbayar->getTable());
-                $alatbayar->position = $selected->position;
-                $alatbayar->page = ceil($alatbayar->position / ($request->limit ?? 10));
-    
-
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil diubah',
-                    'data' => $alatbayar
-                ]);
-            } else {
-                return response([
-                    'status' => false,
-                    'message' => 'Gagal diubah'
-                ]);
             }
+            DB::commit();
+            /* Set position and page */
+            $selected = $this->getPosition($alatbayar, $alatbayar->getTable());
+            $alatbayar->position = $selected->position;
+            $alatbayar->page = ceil($alatbayar->position / ($request->limit ?? 10));
+
+
+            return response([
+                'status' => true,
+                'message' => 'Berhasil diubah',
+                'data' => $alatbayar
+            ]);
         } catch (\Throwable $th) {
-            return response($th->getMessage());
+            DB::rollBack();
+            throw $th;
         }
     }
     /**
@@ -154,22 +147,24 @@ class AlatBayarController extends Controller
      */
     public function destroy(AlatBayar $alatbayar, Request $request)
     {
-        $delete = AlatBayar::destroy($alatbayar->id);
-        $del = 1;
-        if ($delete) {
-            $logTrail = [
-                'namatabel' => strtoupper($alatbayar->getTable()),
-                'postingdari' => 'DELETE ALATBAYAR',
-                'idtrans' => $alatbayar->id,
-                'nobuktitrans' => $alatbayar->id,
-                'aksi' => 'DELETE',
-                'datajson' => $alatbayar->toArray(),
-                'modifiedby' => $alatbayar->modifiedby
-            ];
+        DB::beginTransaction();
+        try {
+            $delete = AlatBayar::destroy($alatbayar->id);
+            if ($delete) {
+                $logTrail = [
+                    'namatabel' => strtoupper($alatbayar->getTable()),
+                    'postingdari' => 'DELETE ALATBAYAR',
+                    'idtrans' => $alatbayar->id,
+                    'nobuktitrans' => $alatbayar->id,
+                    'aksi' => 'DELETE',
+                    'datajson' => $alatbayar->toArray(),
+                    'modifiedby' => $alatbayar->modifiedby
+                ];
 
-            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-            app(LogTrailController::class)->store($validatedLogTrail);
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                app(LogTrailController::class)->store($validatedLogTrail);
 
+            }
             DB::commit();
 
             $selected = $this->getPosition($alatbayar, $alatbayar->getTable(), true);
@@ -182,11 +177,9 @@ class AlatBayarController extends Controller
                 'message' => 'Berhasil dihapus',
                 'data' => $alatbayar
             ]);
-        } else {
-            return response([
-                'status' => false,
-                'message' => 'Gagal dihapus'
-            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
         }
     }
 
@@ -203,135 +196,6 @@ class AlatBayarController extends Controller
         ]);
     }
 
-    public function getid($id, $request, $del)
-    {
-        $params = [
-            'indexRow' => $request->indexRow ?? 1,
-            'limit' => $request->limit ?? 100,
-            'page' => $request->page ?? 1,
-            'sortname' => $request->sortname ?? 'id',
-            'sortorder' => $request->sortorder ?? 'asc',
-        ];
-
-        $temp = '##temp' . rand(1, 10000);
-        Schema::create($temp, function ($table) {
-            $table->id();
-            $table->bigInteger('id_')->default('0');
-            $table->string('kodealatbayar', 50)->default('');
-            $table->string('namaalatbayar', 50)->default('');
-            $table->longtext('keterangan')->default('');
-            $table->string('statuslangsunggcair', 300)->default('')->nullable();
-            $table->string('statusdefault', 300)->default('')->nullable();
-            $table->string('bank_id', 50)->default('');
-            $table->string('modifiedby', 30)->default('');
-            $table->dateTime('created_at')->default('1900/1/1');
-            $table->dateTime('updated_at')->default('1900/1/1');
-
-            $table->index('id_');
-        });
-
-        if ($params['sortname'] == 'id') {
-            $query = DB::table((new AlatBayar)->getTable())->select(
-                'alatbayar.id as id_',
-                'alatbayar.kodealatbayar',
-                'alatbayar.namaalatbayar',
-                'alatbayar.keterangan',
-                'alatbayar.statuslangsunggcair',
-                'alatbayar.statusdefault',
-                'alatbayar.bank_id',
-                'alatbayar.modifiedby',
-                'alatbayar.created_at',
-                'alatbayar.updated_at'
-            )
-                ->orderBy('alatbayar.id', $params['sortorder']);
-        } else if ($params['sortname'] == 'kodealatbayar' or $params['sortname'] == 'namabank') {
-            $query = DB::table((new AlatBayar)->getTable())->select(
-                'alatbayar.id as id_',
-                'alatbayar.kodealatbayar',
-                'alatbayar.namaalatbayar',
-                'alatbayar.keterangan',
-                'alatbayar.statuslangsunggcair',
-                'alatbayar.statusdefault',
-                'alatbayar.bank_id',
-                'alatbayar.modifiedby',
-                'alatbayar.created_at',
-                'alatbayar.updated_at'
-            )
-                ->orderBy($params['sortname'], $params['sortorder'])
-                ->orderBy('alatbayar.id', $params['sortorder']);
-        } else {
-            if ($params['sortorder'] == 'asc') {
-                $query = DB::table((new AlatBayar)->getTable())->select(
-                    'alatbayar.id as id_',
-                    'alatbayar.kodealatbayar',
-                    'alatbayar.namaalatbayar',
-                    'alatbayar.keterangan',
-                    'alatbayar.statuslangsunggcair',
-                    'alatbayar.statusdefault',
-                    'alatbayar.bank_id',
-                    'alatbayar.modifiedby',
-                    'alatbayar.created_at',
-                    'alatbayar.updated_at'
-                )
-                    ->orderBy($params['sortname'], $params['sortorder'])
-                    ->orderBy('alatbayar.id', $params['sortorder']);
-            } else {
-                $query = DB::table((new AlatBayar)->getTable())->select(
-                    'alatbayar.id as id_',
-                    'alatbayar.kodealatbayar',
-                    'alatbayar.namaalatbayar',
-                    'alatbayar.keterangan',
-                    'alatbayar.statuslangsunggcair',
-                    'alatbayar.statusdefault',
-                    'alatbayar.bank_id',
-                    'alatbayar.modifiedby',
-                    'alatbayar.created_at',
-                    'alatbayar.updated_at'
-                )
-                    ->orderBy($params['sortname'], $params['sortorder'])
-                    ->orderBy('alatbayar.id', 'asc');
-            }
-        }
-
-
-
-        DB::table($temp)->insertUsing(['id_', 'kodealatbayar', 'namaalatbayar', 'keterangan', 'statuslangsunggcair', 'statusdefault', 'bank_id', 'modifiedby', 'created_at', 'updated_at'], $query);
-
-
-        if ($del == 1) {
-            if ($params['page'] == 1) {
-                $baris = $params['indexRow'] + 1;
-            } else {
-                $hal = $params['page'] - 1;
-                $bar = $hal * $params['limit'];
-                $baris = $params['indexRow'] + $bar + 1;
-            }
-
-
-            if (DB::table($temp)
-                ->where('id', '=', $baris)->exists()
-            ) {
-                $querydata = DB::table($temp)
-                    ->select('id as row', 'id_ as id')
-                    ->where('id', '=', $baris)
-                    ->orderBy('id');
-            } else {
-                $querydata = DB::table($temp)
-                    ->select('id as row', 'id_ as id')
-                    ->where('id', '=', ($baris - 1))
-                    ->orderBy('id');
-            }
-        } else {
-            $querydata = DB::table($temp)
-                ->select('id as row')
-                ->where('id_', '=',  $id)
-                ->orderBy('id');
-        }
-
-
-        $data = $querydata->first();
-        return $data;
-    }
 
     public function fieldLength()
     {

@@ -89,12 +89,13 @@ class JenisEmklController extends Controller
         ]);
     }
 
-    
+
     /**
      * @ClassName 
      */
     public function update(StoreJenisEmklRequest $request, JenisEmkl $jenisemkl)
     {
+        DB::beginTransaction();
         try {
             $jenisemkl->kodejenisemkl = $request->kodejenisemkl;
             $jenisemkl->keterangan = $request->keterangan;
@@ -114,25 +115,20 @@ class JenisEmklController extends Controller
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
-
-                
-                 /* Set position and page */
-                $selected = $this->getPosition($jenisemkl, $jenisemkl->getTable());
-                $jenisemkl->position = $selected->position;
-                $jenisemkl->page = ceil($jenisemkl->position / ($request->limit ?? 10));
-
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil diubah',
-                    'data' => $jenisemkl
-                ]);
-            } else {
-                return response([
-                    'status' => false,
-                    'message' => 'Gagal diubah'
-                ]);
             }
+            DB::commit();
+            /* Set position and page */
+            $selected = $this->getPosition($jenisemkl, $jenisemkl->getTable());
+            $jenisemkl->position = $selected->position;
+            $jenisemkl->page = ceil($jenisemkl->position / ($request->limit ?? 10));
+
+            return response([
+                'status' => true,
+                'message' => 'Berhasil diubah',
+                'data' => $jenisemkl
+            ]);
         } catch (\Throwable $th) {
+            DB::rollBack();
             throw $th;
         }
     }
@@ -142,22 +138,25 @@ class JenisEmklController extends Controller
      */
     public function destroy(JenisEmkl $jenisemkl, Request $request)
     {
-        $delete = JenisEmkl::destroy($jenisemkl->id);
-        $del = 1;
-        if ($delete) {
-            $logTrail = [
-                'namatabel' => strtoupper($jenisemkl->getTable()),
-                'postingdari' => 'DELETE JENISEMKL',
-                'idtrans' => $jenisemkl->id,
-                'nobuktitrans' => $jenisemkl->id,
-                'aksi' => 'DELETE',
-                'datajson' => $jenisemkl->toArray(),
-                'modifiedby' => $jenisemkl->modifiedby
-            ];
+        DB::beginTransaction();
+        try {
+            $delete = JenisEmkl::destroy($jenisemkl->id);
+            if ($delete) {
+                $logTrail = [
+                    'namatabel' => strtoupper($jenisemkl->getTable()),
+                    'postingdari' => 'DELETE JENISEMKL',
+                    'idtrans' => $jenisemkl->id,
+                    'nobuktitrans' => $jenisemkl->id,
+                    'aksi' => 'DELETE',
+                    'datajson' => $jenisemkl->toArray(),
+                    'modifiedby' => $jenisemkl->modifiedby
+                ];
 
-            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-            app(LogTrailController::class)->store($validatedLogTrail);
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                app(LogTrailController::class)->store($validatedLogTrail);
 
+            }
+            
             DB::commit();
 
             $selected = $this->getPosition($jenisemkl, $jenisemkl->getTable(), true);
@@ -170,11 +169,9 @@ class JenisEmklController extends Controller
                 'message' => 'Berhasil dihapus',
                 'data' => $jenisemkl
             ]);
-        } else {
-            return response([
-                'status' => false,
-                'message' => 'Gagal dihapus'
-            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
         }
     }
 
@@ -197,11 +194,9 @@ class JenisEmklController extends Controller
         $jenisemkls = JenisEmkl::where('statusaktif', '=', 1)
             ->get();
 
-            dd($jenisemkls);
+        dd($jenisemkls);
         return response([
             'data' => $jenisemkls
         ]);
     }
-
-  
 }

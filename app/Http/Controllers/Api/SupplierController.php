@@ -14,6 +14,7 @@ use App\Models\Parameter;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\QueryException;
+
 class SupplierController extends Controller
 {
 
@@ -163,26 +164,20 @@ class SupplierController extends Controller
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
 
-                DB::commit();
+            } 
+            DB::commit();
 
-                /* Set position and page */
-                $selected = $this->getPosition($supplier, $supplier->getTable());
-                $supplier->position = $selected->position;
-                $supplier->page = ceil($supplier->position / ($request->limit ?? 10));
+            /* Set position and page */
+            $selected = $this->getPosition($supplier, $supplier->getTable());
+            $supplier->position = $selected->position;
+            $supplier->page = ceil($supplier->position / ($request->limit ?? 10));
 
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil diubah',
-                    'data' => $supplier
-                ]);
-            } else {
-                DB::rollBack();
+            return response([
+                'status' => true,
+                'message' => 'Berhasil diubah',
+                'data' => $supplier
+            ]);
 
-                return response([
-                    'status' => false,
-                    'message' => 'Gagal diubah'
-                ]);
-            }
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
@@ -195,22 +190,23 @@ class SupplierController extends Controller
     {
         DB::beginTransaction();
 
-        $delete = $supplier->lockForUpdate()->delete();
+        try {
+            $delete = $supplier->lockForUpdate()->delete();
 
-        if ($delete) {
-            $logTrail = [
-                'namatabel' => strtoupper($supplier->getTable()),
-                'postingdari' => 'DELETE SUPPLIER',
-                'idtrans' => $supplier->id,
-                'nobuktitrans' => $supplier->id,
-                'aksi' => 'DELETE',
-                'datajson' => $supplier->toArray(),
-                'modifiedby' => $supplier->modifiedby
-            ];
+            if ($delete) {
+                $logTrail = [
+                    'namatabel' => strtoupper($supplier->getTable()),
+                    'postingdari' => 'DELETE SUPPLIER',
+                    'idtrans' => $supplier->id,
+                    'nobuktitrans' => $supplier->id,
+                    'aksi' => 'DELETE',
+                    'datajson' => $supplier->toArray(),
+                    'modifiedby' => $supplier->modifiedby
+                ];
 
-            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-            app(LogTrailController::class)->store($validatedLogTrail);
-
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                app(LogTrailController::class)->store($validatedLogTrail);
+            }
             DB::commit();
 
             /* Set position and page */
@@ -224,13 +220,10 @@ class SupplierController extends Controller
                 'message' => 'Berhasil dihapus',
                 'data' => $supplier
             ]);
-        } else {
+        } catch (\Throwable $th) {
             DB::rollBack();
 
-            return response([
-                'status' => false,
-                'message' => 'Gagal dihapus'
-            ]);
+            throw $th;
         }
     }
 

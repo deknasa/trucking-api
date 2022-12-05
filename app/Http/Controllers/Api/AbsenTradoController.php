@@ -113,26 +113,19 @@ class AbsenTradoController extends Controller
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
 
-                DB::commit();
+            } 
+            DB::commit();
 
-                /* Set position and page */
-                $selected = $this->getPosition($absenTrado, $absenTrado->getTable());
-                $absenTrado->position = $selected->position;
-                $absenTrado->page = ceil($absenTrado->position / ($request->limit ?? 10));
+            /* Set position and page */
+            $selected = $this->getPosition($absenTrado, $absenTrado->getTable());
+            $absenTrado->position = $selected->position;
+            $absenTrado->page = ceil($absenTrado->position / ($request->limit ?? 10));
 
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil diubah',
-                    'data' => $absenTrado
-                ]);
-            } else {
-                DB::rollBack();
-
-                return response([
-                    'status' => false,
-                    'message' => 'Gagal diubah'
-                ]);
-            }
+            return response([
+                'status' => true,
+                'message' => 'Berhasil diubah',
+                'data' => $absenTrado
+            ]);
         } catch (\Throwable $th) {
             DB::rollBack();
 

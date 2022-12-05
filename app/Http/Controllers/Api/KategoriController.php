@@ -16,9 +16,10 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\QueryException;
+
 class KategoriController extends Controller
 {
-      /**
+    /**
      * @ClassName 
      */
     public function index()
@@ -34,11 +35,8 @@ class KategoriController extends Controller
         ]);
     }
 
-    public function create()
-    {
-        //
-    }
-      /**
+
+    /**
      * @ClassName 
      */
     public function store(StoreKategoriRequest $request)
@@ -102,11 +100,12 @@ class KategoriController extends Controller
         ]);
     }
 
-      /**
+    /**
      * @ClassName 
      */
     public function update(UpdateKategoriRequest $request, Kategori $kategori)
     {
+        DB::beginTransaction();
         try {
             $kategori->kodekategori = $request->kodekategori;
             $kategori->keterangan = $request->keterangan;
@@ -127,35 +126,32 @@ class KategoriController extends Controller
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
-
-               /* Set position and page */
-
-               $selected = $this->getPosition($kategori, $kategori->getTable());
-               $kategori->position = $selected->position;
-               $kategori->page = ceil($kategori->position / ($request->limit ?? 10));
-
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil diubah',
-                    'data' => $kategori
-                ]);
-            } else {
-                return response([
-                    'status' => false,
-                    'message' => 'Gagal diubah'
-                ]);
             }
+            DB::commit();
+
+            /* Set position and page */
+
+            $selected = $this->getPosition($kategori, $kategori->getTable());
+            $kategori->position = $selected->position;
+            $kategori->page = ceil($kategori->position / ($request->limit ?? 10));
+
+            return response([
+                'status' => true,
+                'message' => 'Berhasil diubah',
+                'data' => $kategori
+            ]);
         } catch (\Throwable $th) {
+            DB::rollBack();
             throw $th;
         }
     }
-      /**
+    /**
      * @ClassName 
      */
     public function destroy(Kategori $kategori, Request $request)
     {
         DB::beginTransaction();
-        
+
         try {
             $delete = Kategori::destroy($kategori->id);
             $del = 1;
@@ -173,30 +169,26 @@ class KategoriController extends Controller
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
 
-                DB::commit();
-                /* Set position and page */
-
-                $selected = $this->getPosition($kategori, $kategori->getTable(), true);
-                
-                $kategori->position = $selected->position;
-                $kategori->id = $selected->id;
-                $kategori->page = ceil($kategori->position / ($request->limit ?? 10));
-                
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil dihapus',
-                    'data' => $kategori
-                ]);
-            } else {
-                return response([
-                    'status' => false,
-                    'message' => 'Gagal dihapus'
-                ]);
             }
+            
+            DB::commit();
+            /* Set position and page */
+
+            $selected = $this->getPosition($kategori, $kategori->getTable(), true);
+
+            $kategori->position = $selected->position;
+            $kategori->id = $selected->id;
+            $kategori->page = ceil($kategori->position / ($request->limit ?? 10));
+
+            return response([
+                'status' => true,
+                'message' => 'Berhasil dihapus',
+                'data' => $kategori
+            ]);
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
-        } 
+        }
     }
 
     public function fieldLength()
@@ -216,7 +208,7 @@ class KategoriController extends Controller
     public function combo(Request $request)
     {
         $data = [
-            'statusaktif' => Parameter::where(['grp'=>'status aktif'])->get(),
+            'statusaktif' => Parameter::where(['grp' => 'status aktif'])->get(),
             'subkelompok' => SubKelompok::all(),
         ];
 
@@ -224,5 +216,4 @@ class KategoriController extends Controller
             'data' => $data
         ]);
     }
-
 }

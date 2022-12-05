@@ -39,14 +39,4 @@ class StoreAbsenTradoRequest extends FormRequest
         ];
     }
 
-    public function messages()
-    {
-        $controller = new ErrorController;
-        
-        return [
-            'kodeabsen.required' => ':attribute '. $controller->geterror('WI')->keterangan,
-            'keterangan.required' => ':attribute '. $controller->geterror('WI')->keterangan,
-            'statusaktif.required' => ':attribute '. $controller->geterror('WI')->keterangan,
-        ];
-    }
 }

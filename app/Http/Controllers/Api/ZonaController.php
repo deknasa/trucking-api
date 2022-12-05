@@ -97,6 +97,7 @@ class ZonaController extends Controller
      */
     public function update(StoreZonaRequest $request, Zona $zona)
     {
+        DB::beginTransaction();
         try {
             $zona->zona = $request->zona;
             $zona->keterangan = $request->keterangan;
@@ -116,25 +117,21 @@ class ZonaController extends Controller
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
-
-
-                /* Set position and page */
-                $selected = $this->getPosition($zona, $zona->getTable());
-                $zona->position = $selected->position;
-                $zona->page = ceil($zona->position / ($request->limit ?? 10));
-
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil diubah',
-                    'data' => $zona
-                ]);
-            } else {
-                return response([
-                    'status' => false,
-                    'message' => 'Gagal diubah'
-                ]);
             }
+
+            DB::commit();
+            /* Set position and page */
+            $selected = $this->getPosition($zona, $zona->getTable());
+            $zona->position = $selected->position;
+            $zona->page = ceil($zona->position / ($request->limit ?? 10));
+
+            return response([
+                'status' => true,
+                'message' => 'Berhasil diubah',
+                'data' => $zona
+            ]);
         } catch (\Throwable $th) {
+            DB::rollBack();
             throw $th;
         }
     }
@@ -143,21 +140,23 @@ class ZonaController extends Controller
      */
     public function destroy(Zona $zona, Request $request)
     {
-        $delete = Zona::destroy($zona->id);
-        if ($delete) {
-            $logTrail = [
-                'namatabel' => strtoupper($zona->getTable()),
-                'postingdari' => 'DELETE ZONA',
-                'idtrans' => $zona->id,
-                'nobuktitrans' => $zona->id,
-                'aksi' => 'DELETE',
-                'datajson' => $zona->toArray(),
-                'modifiedby' => $zona->modifiedby
-            ];
+        DB::beginTransaction();
+        try {
+            $delete = Zona::destroy($zona->id);
+            if ($delete) {
+                $logTrail = [
+                    'namatabel' => strtoupper($zona->getTable()),
+                    'postingdari' => 'DELETE ZONA',
+                    'idtrans' => $zona->id,
+                    'nobuktitrans' => $zona->id,
+                    'aksi' => 'DELETE',
+                    'datajson' => $zona->toArray(),
+                    'modifiedby' => $zona->modifiedby
+                ];
 
-            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-            app(LogTrailController::class)->store($validatedLogTrail);
-
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                app(LogTrailController::class)->store($validatedLogTrail);
+            }
             DB::commit();
 
             $selected = $this->getPosition($zona, $zona->getTable(), true);
@@ -170,11 +169,9 @@ class ZonaController extends Controller
                 'message' => 'Berhasil dihapus',
                 'data' => $zona
             ]);
-        } else {
-            return response([
-                'status' => false,
-                'message' => 'Gagal dihapus'
-            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
         }
     }
 
@@ -202,5 +199,4 @@ class ZonaController extends Controller
             'data' => $data
         ]);
     }
-
 }

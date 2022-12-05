@@ -140,26 +140,20 @@ class AgenController extends Controller
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
 
-                DB::commit();
+            } 
+            
+            DB::commit();
 
-                /* Set position and page */
-                $selected = $this->getPosition($agen, $agen->getTable());
-                $agen->position = $selected->position;
-                $agen->page = ceil($agen->position / ($request->limit ?? 10));
+            /* Set position and page */
+            $selected = $this->getPosition($agen, $agen->getTable());
+            $agen->position = $selected->position;
+            $agen->page = ceil($agen->position / ($request->limit ?? 10));
 
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil diubah',
-                    'data' => $agen
-                ]);
-            } else {
-                DB::rollBack();
-
-                return response([
-                    'status' => false,
-                    'message' => 'Gagal diubah'
-                ]);
-            }
+            return response([
+                'status' => true,
+                'message' => 'Berhasil diubah',
+                'data' => $agen
+            ]);
         } catch (\Throwable $th) {
             DB::rollBack();
 
@@ -191,26 +185,19 @@ class AgenController extends Controller
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
 
-                DB::commit();
+            } 
+            DB::commit();
 
-                $selected = $this->getPosition($agen, $agen->getTable(), true);
-                $agen->position = $selected->position;
-                $agen->id = $selected->id;
-                $agen->page = ceil($agen->position / ($request->limit ?? 10));
+            $selected = $this->getPosition($agen, $agen->getTable(), true);
+            $agen->position = $selected->position;
+            $agen->id = $selected->id;
+            $agen->page = ceil($agen->position / ($request->limit ?? 10));
 
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil dihapus',
-                    'data' => $agen
-                ]);
-            } else {
-                DB::rollBack();
-
-                return response([
-                    'status' => false,
-                    'message' => 'Gagal dihapus'
-                ]);
-            }
+            return response([
+                'status' => true,
+                'message' => 'Berhasil dihapus',
+                'data' => $agen
+            ]);
         } catch (NotDeletableModel $exception) {
             DB::rollBack();
 

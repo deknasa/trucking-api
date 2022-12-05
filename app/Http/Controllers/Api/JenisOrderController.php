@@ -94,6 +94,7 @@ class JenisOrderController extends Controller
      */
     public function update(StoreJenisOrderRequest $request, JenisOrder $jenisorder)
     {
+        DB::beginTransaction();
         try {
             $jenisorder->kodejenisorder = $request->kodejenisorder;
             $jenisorder->keterangan = $request->keterangan;
@@ -114,23 +115,20 @@ class JenisOrderController extends Controller
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
 
-                /* Set position and page */
-                $selected = $this->getPosition($jenisorder, $jenisorder->getTable());
-                $jenisorder->position = $selected->position;
-                $jenisorder->page = ceil($jenisorder->position / ($request->limit ?? 10));
+            } 
+            DB::commit();
+            /* Set position and page */
+            $selected = $this->getPosition($jenisorder, $jenisorder->getTable());
+            $jenisorder->position = $selected->position;
+            $jenisorder->page = ceil($jenisorder->position / ($request->limit ?? 10));
 
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil diubah',
-                    'data' => $jenisorder
-                ]);
-            } else {
-                return response([
-                    'status' => false,
-                    'message' => 'Gagal diubah'
-                ]);
-            }
+            return response([
+                'status' => true,
+                'message' => 'Berhasil diubah',
+                'data' => $jenisorder
+            ]);
         } catch (\Throwable $th) {
+            DB::rollBack();
             throw $th;
         }
     }
@@ -160,21 +158,21 @@ class JenisOrderController extends Controller
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
 
-                DB::commit();
-                $data = $this->getid($jenisorder->id, $request, $del);
-
-                /* Set position and page */
-                $selected = $this->getPosition($jenisorder, $jenisorder->getTable(), true);
-                $jenisorder->position = $selected->position;
-                $jenisorder->id = $selected->id;
-                $jenisorder->page = ceil($jenisorder->position / ($request->limit ?? 10));
-
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil dihapus',
-                    'data' => $jenisorder
-                ]);
             }
+            
+            DB::commit();
+
+            /* Set position and page */
+            $selected = $this->getPosition($jenisorder, $jenisorder->getTable(), true);
+            $jenisorder->position = $selected->position;
+            $jenisorder->id = $selected->id;
+            $jenisorder->page = ceil($jenisorder->position / ($request->limit ?? 10));
+
+            return response([
+                'status' => true,
+                'message' => 'Berhasil dihapus',
+                'data' => $jenisorder
+            ]);
         } catch (\Throwable $th) {
             DB::rollBack();
             return response($th->getMessage());

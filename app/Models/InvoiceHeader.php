@@ -155,7 +155,7 @@ class InvoiceHeader extends MyModel
         ->leftJoin('tarif','ot.tarif_id','tarif.id')
         ->leftJoin('jenisorder','sp.jenisorder_id','jenisorder.id')
         ->leftJoin('agen','sp.agen_id','agen.id')
-        ->whereRaw("sp.nobukti not in(select suratpengantar_nobukti from invoicedetail)");
+        ->whereRaw("sp.jobtrucking not in(select orderantrucking_nobukti from invoicedetail)");
 
         $data = $query->get();
         return $data;
