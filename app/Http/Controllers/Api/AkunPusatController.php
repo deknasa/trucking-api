@@ -88,12 +88,6 @@ class AkunPusatController extends Controller
         }
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\AkunPusat  $akunPusat
-     * @return \Illuminate\Http\Response
-     */
     public function show(AkunPusat $akunPusat)
     {
         return response([
@@ -148,13 +142,6 @@ class AkunPusatController extends Controller
                     'message' => 'Berhasil diubah',
                     'data' => $akunPusat
                 ]);
-            } else {
-                DB::rollBack();
-
-                return response([
-                    'status' => false,
-                    'message' => 'Gagal diubah'
-                ]);
             }
         } catch (\Throwable $th) {
             DB::rollBack();
@@ -170,42 +157,42 @@ class AkunPusatController extends Controller
     {
         DB::beginTransaction();
 
-        $delete = $akunPusat->delete();
+        try {
+            $delete = $akunPusat->lockForUpdate()->delete();
 
-        if ($delete) {
-            $logTrail = [
-                'namatabel' => strtoupper($akunPusat->getTable()),
-                'postingdari' => 'DELETE AKUN PUSAT',
-                'idtrans' => $akunPusat->id,
-                'nobuktitrans' => $akunPusat->id,
-                'aksi' => 'DELETE',
-                'datajson' => $akunPusat->toArray(),
-                'modifiedby' => $akunPusat->modifiedby
-            ];
+            if ($delete) {
+                $logTrail = [
+                    'namatabel' => strtoupper($akunPusat->getTable()),
+                    'postingdari' => 'DELETE AKUN PUSAT',
+                    'idtrans' => $akunPusat->id,
+                    'nobuktitrans' => $akunPusat->id,
+                    'aksi' => 'DELETE',
+                    'datajson' => $akunPusat->toArray(),
+                    'modifiedby' => $akunPusat->modifiedby
+                ];
 
-            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-            app(LogTrailController::class)->store($validatedLogTrail);
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                app(LogTrailController::class)->store($validatedLogTrail);
 
-            DB::commit();
 
-            /* Set position and page */
-            $selected = $this->getPosition($akunPusat, $akunPusat->getTable(), true);
-            $akunPusat->position = $selected->position;
-            $akunPusat->id = $selected->id;
-            $akunPusat->page = ceil($akunPusat->position / ($request->limit ?? 10));
+                DB::commit();
 
-            return response([
-                'status' => true,
-                'message' => 'Berhasil dihapus',
-                'data' => $akunPusat
-            ]);
-        } else {
+                /* Set position and page */
+                $selected = $this->getPosition($akunPusat, $akunPusat->getTable(), true);
+                $akunPusat->position = $selected->position;
+                $akunPusat->id = $selected->id;
+                $akunPusat->page = ceil($akunPusat->position / ($request->limit ?? 10));
+
+                return response([
+                    'status' => true,
+                    'message' => 'Berhasil dihapus',
+                    'data' => $akunPusat
+                ]);
+            }
+        } catch (\Throwable $th) {
             DB::rollBack();
 
-            return response([
-                'status' => false,
-                'message' => 'Gagal dihapus'
-            ]);
+            throw $th;
         }
     }
 

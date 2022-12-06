@@ -30,15 +30,6 @@ class PelangganController extends Controller
         ]);
     }
 
-
-    public function show(Pelanggan $pelanggan)
-    {
-        return response([
-            'status' => true,
-            'data' => $pelanggan
-        ]);
-    }
-
     /**
      * @ClassName 
      */
@@ -82,10 +73,6 @@ class PelangganController extends Controller
             $pelanggan->position = $selected->position;
             $pelanggan->page = ceil($pelanggan->position / ($request->limit ?? 10));
 
-            if (isset($request->limit)) {
-                $pelanggan->page = ceil($pelanggan->position / $request->limit);
-            }
-
             return response([
                 'status' => true,
                 'message' => 'Berhasil disimpan',
@@ -97,7 +84,14 @@ class PelangganController extends Controller
         }
     }
 
-   
+    public function show(Pelanggan $pelanggan)
+    {
+        return response([
+            'status' => true,
+            'data' => $pelanggan
+        ]);
+    }
+
 
     /**
      * @ClassName 
@@ -131,26 +125,19 @@ class PelangganController extends Controller
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
 
+
                 DB::commit();
-
-                /* Set position and page */
-                $selected = $this->getPosition($pelanggan, $pelanggan->getTable());
-                $pelanggan->position = $selected->position;
-                $pelanggan->page = ceil($pelanggan->position / ($request->limit ?? 10));
-
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil diubah',
-                    'data' => $pelanggan
-                ]);
-            } else {
-                DB::rollBack();
-
-                return response([
-                    'status' => false,
-                    'message' => 'Gagal diubah'
-                ]);
             }
+            /* Set position and page */
+            $selected = $this->getPosition($pelanggan, $pelanggan->getTable());
+            $pelanggan->position = $selected->position;
+            $pelanggan->page = ceil($pelanggan->position / ($request->limit ?? 10));
+
+            return response([
+                'status' => true,
+                'message' => 'Berhasil diubah',
+                'data' => $pelanggan
+            ]);
         } catch (\Throwable $th) {
             DB::rollBack();
 
@@ -163,25 +150,26 @@ class PelangganController extends Controller
     public function destroy(Pelanggan $pelanggan, Request $request)
     {
         DB::beginTransaction();
+        try {
+            $delete = $pelanggan->lockForUpdate()->delete();
 
-        $delete = $pelanggan->lockForUpdate()->delete();
+            if ($delete) {
+                $logTrail = [
+                    'namatabel' => strtoupper($pelanggan->getTable()),
+                    'postingdari' => 'DELETE PARAMETER',
+                    'idtrans' => $pelanggan->id,
+                    'nobuktitrans' => $pelanggan->id,
+                    'aksi' => 'DELETE',
+                    'datajson' => $pelanggan->toArray(),
+                    'modifiedby' => $pelanggan->modifiedby
+                ];
 
-        if ($delete) {
-            $logTrail = [
-                'namatabel' => strtoupper($pelanggan->getTable()),
-                'postingdari' => 'DELETE PARAMETER',
-                'idtrans' => $pelanggan->id,
-                'nobuktitrans' => $pelanggan->id,
-                'aksi' => 'DELETE',
-                'datajson' => $pelanggan->toArray(),
-                'modifiedby' => $pelanggan->modifiedby
-            ];
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                app(LogTrailController::class)->store($validatedLogTrail);
 
-            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-            app(LogTrailController::class)->store($validatedLogTrail);
 
-            DB::commit();
-
+                DB::commit();
+            }
             /* Set position and page */
             $selected = $this->getPosition($pelanggan, $pelanggan->getTable(), true);
             $pelanggan->position = $selected->position;
@@ -193,13 +181,10 @@ class PelangganController extends Controller
                 'message' => 'Berhasil dihapus',
                 'data' => $pelanggan
             ]);
-        } else {
+        } catch (\Throwable $th) {
             DB::rollBack();
 
-            return response([
-                'status' => false,
-                'message' => 'Gagal dihapus'
-            ]);
+            throw $th;
         }
     }
 

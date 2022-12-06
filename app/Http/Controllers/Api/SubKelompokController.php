@@ -33,7 +33,7 @@ class SubKelompokController extends Controller
 
     public function show($id)
     {
-        $subKelompok = SubKelompok::select('subkelompok.*','kelompok.keterangan as kelompok')->leftJoin('kelompok','subkelompok.kelompok_id','kelompok.id')->where('subkelompok.id',$id)->first();
+        $subKelompok = SubKelompok::select('subkelompok.*', 'kelompok.keterangan as kelompok')->leftJoin('kelompok', 'subkelompok.kelompok_id', 'kelompok.id')->where('subkelompok.id', $id)->first();
         return response([
             'status' => true,
             'data' => $subKelompok
@@ -96,6 +96,7 @@ class SubKelompokController extends Controller
      */
     public function update(UpdateSubKelompokRequest $request, SubKelompok $subKelompok)
     {
+        DB::beginTransaction();
         try {
             $subKelompok->kodesubkelompok = $request->kodesubkelompok;
             $subKelompok->keterangan = $request->keterangan;
@@ -116,23 +117,19 @@ class SubKelompokController extends Controller
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
-
-                /* Set position and page */
-                $selected = $this->getPosition($subKelompok, $subKelompok->getTable());
-                $subKelompok->position = $selected->position;
-                $subKelompok->page = ceil($subKelompok->position / ($request->limit ?? 10));
-
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil diubah',
-                    'data' => $subKelompok
-                ]);
-            } else {
-                return response([
-                    'status' => false,
-                    'message' => 'Gagal diubah'
-                ]);
+                DB::commit();
             }
+
+            /* Set position and page */
+            $selected = $this->getPosition($subKelompok, $subKelompok->getTable());
+            $subKelompok->position = $selected->position;
+            $subKelompok->page = ceil($subKelompok->position / ($request->limit ?? 10));
+
+            return response([
+                'status' => true,
+                'message' => 'Berhasil diubah',
+                'data' => $subKelompok
+            ]);
         } catch (\Throwable $th) {
             DB::rollBack();
 
@@ -147,24 +144,25 @@ class SubKelompokController extends Controller
     {
         DB::beginTransaction();
 
-        $delete = $subKelompok->lockForUpdate()->delete();
+        try {
+            $delete = $subKelompok->lockForUpdate()->delete();
 
-        if ($delete) {
-            $logTrail = [
-                'namatabel' => strtoupper($subKelompok->getTable()),
-                'postingdari' => 'DELETE PARAMETER',
-                'idtrans' => $subKelompok->id,
-                'nobuktitrans' => $subKelompok->id,
-                'aksi' => 'DELETE',
-                'datajson' => $subKelompok->toArray(),
-                'modifiedby' => $subKelompok->modifiedby
-            ];
+            if ($delete) {
+                $logTrail = [
+                    'namatabel' => strtoupper($subKelompok->getTable()),
+                    'postingdari' => 'DELETE PARAMETER',
+                    'idtrans' => $subKelompok->id,
+                    'nobuktitrans' => $subKelompok->id,
+                    'aksi' => 'DELETE',
+                    'datajson' => $subKelompok->toArray(),
+                    'modifiedby' => $subKelompok->modifiedby
+                ];
 
-            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-            app(LogTrailController::class)->store($validatedLogTrail);
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                app(LogTrailController::class)->store($validatedLogTrail);
 
-            DB::commit();
-
+                DB::commit();
+            }
             /* Set position and page */
             $selected = $this->getPosition($subKelompok, $subKelompok->getTable(), true);
             $subKelompok->position = $selected->position;
@@ -176,13 +174,10 @@ class SubKelompokController extends Controller
                 'message' => 'Berhasil dihapus',
                 'data' => $subKelompok
             ]);
-        } else {
+        } catch (\Throwable $th) {
             DB::rollBack();
 
-            return response([
-                'status' => false,
-                'message' => 'Gagal dihapus'
-            ]);
+            throw $th;
         }
     }
 

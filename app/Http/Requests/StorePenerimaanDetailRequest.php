@@ -30,16 +30,10 @@ class StorePenerimaanDetailRequest extends FormRequest
             'tgljatuhtempo.*' => 'required',
             'nowarkat' => 'required|array',
             'nowarkat.*' => 'required',
-            'bankpelanggan' => 'required|array',
-            'bankpelanggan.*' => 'required',
             'nominal_detail' => 'required|array',
             'nominal_detail.*' => 'required|numeric|gt:0',
             'keterangan_detail' => 'required|array',
-            'keterangan_detail.*' => 'required',
-            'jenisbiaya' => 'required|array',
-            'jenisbiaya.*' => 'required',
-            'bulanbeban' => 'required|array',
-            'bulanbeban.*' => 'required'
+            'keterangan_detail.*' => 'required'
         ];
     }
 }

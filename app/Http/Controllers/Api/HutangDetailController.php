@@ -64,7 +64,7 @@ class HutangDetailController extends Controller
                     'detail.tgljatuhtempo',
                     'detail.total',
                     'detail.keterangan'
-                )->join('hutangheader as header','header.id','detail.hutang_id')
+                )->leftJoin('hutangheader as header','header.id','detail.hutang_id')
                 ->leftJoin('pelanggan', 'header.pelanggan_id', 'pelanggan.id')
                 ->leftJoin('supplier', 'detail.supplier_id', 'supplier.id');
 

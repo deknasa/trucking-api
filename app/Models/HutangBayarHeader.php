@@ -40,6 +40,7 @@ class HutangBayarHeader extends MyModel
             'hutangbayarheader.tglapproval',
 
             'hutangbayarheader.modifiedby',
+            'hutangbayarheader.created_at',
             'hutangbayarheader.updated_at',
 
             'bank.namabank as bank_id',
@@ -187,9 +188,9 @@ class HutangBayarHeader extends MyModel
         $fetch = DB::table('hutangbayardetail as hbd')
         ->select(DB::raw("hutangheader.id,hbd.hutangbayar_id,hbd.hutang_nobukti,hutangheader.tglbukti,hbd.nominal as bayar, hbd.keterangan,hbd.tglcair,hbd.potongan,hbd.alatbayar_id,alatbayar.namaalatbayar as alatbayar,hutangheader.total as nominalhutang, (SELECT (hutangheader.total - SUM(hutangbayardetail.nominal)) FROM hutangbayardetail WHERE hutangbayardetail.hutang_nobukti= hutangheader.nobukti) AS sisa"))
         ->leftJoin('hutangheader','hbd.hutang_nobukti','hutangheader.nobukti')
-        ->join('alatbayar','hbd.alatbayar_id','alatbayar.id')
+        ->leftJoin('alatbayar','hbd.alatbayar_id','alatbayar.id')
         ->whereRaw("hbd.hutangbayar_id = $id");
-               
+        
         Schema::create($tempo, function ($table) {
             $table->bigInteger('id')->default('0');
             $table->bigInteger('hutangbayar_id')->default('0');

@@ -108,7 +108,14 @@ class HutangBayarHeaderController extends Controller
 
             for ($i = 0; $i < count($request->hutang_id); $i++) {
                 $hutang = HutangHeader::where('id', $request->hutang_id[$i])->first();
-
+                if($request->bayar[$i] > $hutang->total) {
+                        
+                    $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'NBH')
+                    ->first();
+                    return response([
+                        'message' => "$query->keterangan",
+                    ], 422);
+                }
                 $datadetail = [
                     'hutangbayar_id' => $hutangbayarheader->id,
                     'nobukti' => $hutangbayarheader->nobukti,
@@ -203,7 +210,7 @@ class HutangBayarHeaderController extends Controller
                 'tanpaprosesnobukti' => 1,
                 'nobukti' => $nobuktiPengeluaran,
                 'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
-                'pelanggan_id' => '',
+                'pelanggan_id' => $hutang->pelanggan_id,
                 'keterangan' => $request->keterangan,
                 'statusjenistransaksi' => $jenisTransaksi->id,
                 'postingdari' => 'ENTRY HUTANG BAYAR',
@@ -324,7 +331,14 @@ class HutangBayarHeaderController extends Controller
                 $detaillog = [];
                 for ($i = 0; $i < count($request->hutang_id); $i++) {
                     $hutang = HutangHeader::where('id', $request->hutang_id[$i])->first();
-
+                    if($request->bayar[$i] > $hutang->total) {
+                        
+                        $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'NBH')
+                        ->first();
+                        return response([
+                            'message' => "$query->keterangan",
+                        ], 422);
+                    }
                     $datadetail = [
                         'hutangbayar_id' => $hutangbayarheader->id,
                         'nobukti' => $hutangbayarheader->nobukti,
@@ -417,7 +431,7 @@ class HutangBayarHeaderController extends Controller
                 'tanpaprosesnobukti' => 1,
                 'nobukti' => $nobuktiPengeluaran,
                 'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
-                'pelanggan_id' => '',
+                'pelanggan_id' => $hutang->pelanggan_id,
                 'keterangan' => $request->keterangan,
                 'statusjenistransaksi' => $jenisTransaksi->id,
                 'postingdari' => 'ENTRY HUTANG BAYAR',
@@ -540,6 +554,20 @@ class HutangBayarHeaderController extends Controller
             DB::rollBack();
             return response($th->getMessage());
         }
+    }
+    
+    public function fieldLength()
+    {
+        $data = [];
+        $columns = DB::connection()->getDoctrineSchemaManager()->listTableDetails('hutangbayarheader')->getColumns();
+
+        foreach ($columns as $index => $column) {
+            $data[$index] = $column->getLength();
+        }
+
+        return response([
+            'data' => $data
+        ]);
     }
 
     public function combo(Request $request)

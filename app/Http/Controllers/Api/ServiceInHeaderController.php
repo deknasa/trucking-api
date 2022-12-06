@@ -304,14 +304,7 @@ class ServiceInHeaderController extends Controller
                     'message' => 'Berhasil dihapus',
                     'data' => $serviceinheader
                 ]);
-            } else {
-                DB::rollBack();
-
-                return response([
-                    'status' => false,
-                    'message' => 'Gagal dihapus'
-                ]);
-            }
+            } 
         } catch (\Throwable $th) {
             DB::rollBack();
             return response($th->getMessage());

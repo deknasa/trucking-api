@@ -67,7 +67,7 @@ class UpahRitasiController extends Controller
                     'namatabel' => strtoupper($upahritasi->getTable()),
                     'postingdari' => 'ENTRY UPAH RITASI',
                     'idtrans' => $upahritasi->id,
-                    'nobuktitrans' => '',
+                    'nobuktitrans' => $upahritasi->id,
                     'aksi' => 'ENTRY',
                     'datajson' => $upahritasi->toArray(),
                     'modifiedby' => $upahritasi->modifiedby
@@ -123,7 +123,7 @@ class UpahRitasiController extends Controller
 
                 $datalogtrail = [
                     'namatabel' => $tabeldetail,
-                    'postingdari' => 'ENTRY UPAH RITASI',
+                    'postingdari' => 'ENTRY UPAH RITASI RINCIAN',
                     'idtrans' =>  $dataid->id,
                     'nobuktitrans' => '',
                     'aksi' => 'ENTRY',
@@ -175,7 +175,7 @@ class UpahRitasiController extends Controller
     /**
      * @ClassName 
      */
-    public function update(UpdateUpahRitasiRequest $request,UpahRitasi $upahritasi)
+    public function update(UpdateUpahRitasiRequest $request, UpahRitasi $upahritasi)
     {
         DB::beginTransaction();
 
@@ -194,10 +194,10 @@ class UpahRitasiController extends Controller
             if ($upahritasi->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($upahritasi->getTable()),
-                    'postingdari' => 'ENTRY UPAH RITASI',
+                    'postingdari' => 'EDIT UPAH RITASI',
                     'idtrans' => $upahritasi->id,
-                    'nobuktitrans' => '',
-                    'aksi' => 'ENTRY',
+                    'nobuktitrans' => $upahritasi->id,
+                    'aksi' => 'EDIT',
                     'datajson' => $upahritasi->toArray(),
                     'modifiedby' => $upahritasi->modifiedby
                 ];
@@ -249,10 +249,10 @@ class UpahRitasiController extends Controller
 
                 $datalogtrail = [
                     'namatabel' => $tabeldetail,
-                    'postingdari' => 'ENTRY HUTANG DETAIL',
+                    'postingdari' => 'EDIT UPAH RITASI RINCIAN',
                     'idtrans' =>  $iddetail,
-                    'nobuktitrans' => '',
-                    'aksi' => 'ENTRY',
+                    'nobuktitrans' => $iddetail,
+                    'aksi' => 'EDIT',
                     'datajson' => $detaillog,
                     'modifiedby' => $upahritasi->modifiedby,
                 ];
@@ -297,7 +297,7 @@ class UpahRitasiController extends Controller
                     'namatabel' => strtoupper($upahritasi->getTable()),
                     'postingdari' => 'DELETE UPAHRITASI',
                     'idtrans' => $upahritasi->id,
-                    'nobuktitrans' => $upahritasi->nobukti,
+                    'nobuktitrans' => $upahritasi->id,
                     'aksi' => 'DELETE',
                     'datajson' => $upahritasi->toArray(),
                     'modifiedby' => $upahritasi->modifiedby
@@ -307,26 +307,18 @@ class UpahRitasiController extends Controller
                 app(LogTrailController::class)->store($validatedLogTrail);
 
                 DB::commit();
-
-                /* Set position and page */
-                $selected = $this->getPosition($upahritasi, $upahritasi->getTable(), true);
-                $upahritasi->position = $selected->position;
-                $upahritasi->id = $selected->id;
-                $upahritasi->page = ceil($upahritasi->position / ($request->limit ?? 10));
-
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil dihapus',
-                    'data' => $upahritasi
-                ]);
-            } else {
-                DB::rollBack();
-
-                return response([
-                    'status' => false,
-                    'message' => 'Gagal dihapus'
-                ]);
             }
+            /* Set position and page */
+            $selected = $this->getPosition($upahritasi, $upahritasi->getTable(), true);
+            $upahritasi->position = $selected->position;
+            $upahritasi->id = $selected->id;
+            $upahritasi->page = ceil($upahritasi->position / ($request->limit ?? 10));
+
+            return response([
+                'status' => true,
+                'message' => 'Berhasil dihapus',
+                'data' => $upahritasi
+            ]);
         } catch (\Throwable $th) {
             DB::rollBack();
             return response($th->getMessage());

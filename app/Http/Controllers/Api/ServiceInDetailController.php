@@ -56,7 +56,7 @@ class ServiceInDetailController extends Controller
                     'detail.keterangan',
                     'detail.nobukti'
                 )
-                    ->join('serviceinheader as header', 'header.id', 'detail.servicein_id')
+                    ->leftJoin('serviceinheader as header', 'header.id', 'detail.servicein_id')
                     ->leftJoin('trado', 'header.trado_id', 'trado.id')
                     ->leftJoin('mekanik', 'detail.mekanik_id', 'mekanik.id');
 

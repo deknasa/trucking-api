@@ -66,22 +66,18 @@ class BankController extends Controller
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
-                
+
                 DB::commit();
             }
 
             /* Set position and page */
-           
+
 
             $selected = $this->getPosition($bank, $bank->getTable());
             $bank->position = $selected->position;
             $bank->page = ceil($bank->position / ($request->limit ?? 10));
 
-            
-            if (isset($request->limit)) {
-                $bank->page = ceil($bank->position / $request->limit);
-            }
-            
+
             return response([
                 'status' => true,
                 'message' => 'Berhasil disimpan',
@@ -131,8 +127,6 @@ class BankController extends Controller
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
 
-                /* Set position and page */
-                
                 DB::commit();
                 $selected = $this->getPosition($bank, $bank->getTable());
                 $bank->position = $selected->position;
@@ -142,11 +136,6 @@ class BankController extends Controller
                     'status' => true,
                     'message' => 'Berhasil diubah',
                     'data' => $bank
-                ]);
-            } else {
-                return response([
-                    'status' => false,
-                    'message' => 'Gagal diubah'
                 ]);
             }
         } catch (\Throwable $th) {
@@ -162,7 +151,7 @@ class BankController extends Controller
         DB::beginTransaction();
         try {
             $delete = Bank::destroy($bank->id);
-            $del = 1;
+
             if ($delete) {
                 $logTrail = [
                     'namatabel' => strtoupper($bank->getTable()),
@@ -177,6 +166,7 @@ class BankController extends Controller
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
 
+
                 DB::commit();
 
                 $selected = $this->getPosition($bank, $bank->getTable(), true);
@@ -188,11 +178,6 @@ class BankController extends Controller
                     'status' => true,
                     'message' => 'Berhasil dihapus',
                     'data' => $bank
-                ]);
-            } else {
-                return response([
-                    'status' => false,
-                    'message' => 'Gagal dihapus'
                 ]);
             }
         } catch (\Throwable $th) {
@@ -215,7 +200,7 @@ class BankController extends Controller
         ]);
     }
 
-   
+
 
     public function fieldLength()
     {

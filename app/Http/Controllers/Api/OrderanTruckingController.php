@@ -121,7 +121,7 @@ class OrderanTruckingController extends Controller
 
     public function show($id)
     {
-        $data = OrderanTrucking::find($id);
+        $data = OrderanTrucking::findAll($id);
 
         return response([
             'status' => true,
@@ -134,6 +134,7 @@ class OrderanTruckingController extends Controller
      */
     public function update(StoreOrderanTruckingRequest $request, OrderanTrucking $orderantrucking)
     {
+        DB::beginTransaction();
         try {
             $orderantrucking->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $orderantrucking->container_id = $request->container_id;
@@ -167,24 +168,20 @@ class OrderanTruckingController extends Controller
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
-
-                /* Set position and page */
-                $selected = $this->getPosition($orderantrucking, $orderantrucking->getTable());
-                $orderantrucking->position = $selected->position;
-                $orderantrucking->page = ceil($orderantrucking->position / ($request->limit ?? 10));
-
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil diubah',
-                    'data' => $orderantrucking
-                ]);
-            } else {
-                return response([
-                    'status' => false,
-                    'message' => 'Gagal diubah'
-                ]);
+                DB::commit();
             }
+            /* Set position and page */
+            $selected = $this->getPosition($orderantrucking, $orderantrucking->getTable());
+            $orderantrucking->position = $selected->position;
+            $orderantrucking->page = ceil($orderantrucking->position / ($request->limit ?? 10));
+
+            return response([
+                'status' => true,
+                'message' => 'Berhasil diubah',
+                'data' => $orderantrucking
+            ]);
         } catch (\Throwable $th) {
+            DB::rollBack();
             throw $th;
         }
     }
@@ -194,41 +191,38 @@ class OrderanTruckingController extends Controller
     public function destroy(OrderanTrucking $orderantrucking, Request $request)
     {
         DB::beginTransaction();
-        $delete = Orderantrucking::destroy($orderantrucking->id);
+        try {
+            $delete = Orderantrucking::destroy($orderantrucking->id);
 
-        if ($delete) {
-            $logTrail = [
-                'namatabel' => strtoupper($orderantrucking->getTable()),
-                'postingdari' => 'DELETE ORDERAN TRUCKING',
-                'idtrans' => $orderantrucking->id,
-                'nobuktitrans' => $orderantrucking->id,
-                'aksi' => 'DELETE',
-                'datajson' => $orderantrucking->toArray(),
-                'modifiedby' => $orderantrucking->modifiedby
-            ];
+            if ($delete) {
+                $logTrail = [
+                    'namatabel' => strtoupper($orderantrucking->getTable()),
+                    'postingdari' => 'DELETE ORDERAN TRUCKING',
+                    'idtrans' => $orderantrucking->id,
+                    'nobuktitrans' => $orderantrucking->id,
+                    'aksi' => 'DELETE',
+                    'datajson' => $orderantrucking->toArray(),
+                    'modifiedby' => $orderantrucking->modifiedby
+                ];
 
-            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-            app(LogTrailController::class)->store($validatedLogTrail);
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                app(LogTrailController::class)->store($validatedLogTrail);
 
-
-            DB::commit();
+                DB::commit();
+            }
             $selected = $this->getPosition($orderantrucking, $orderantrucking->getTable(), true);
             $orderantrucking->position = $selected->position;
             $orderantrucking->id = $selected->id;
             $orderantrucking->page = ceil($orderantrucking->position / ($request->limit ?? 10));
-
 
             return response([
                 'status' => true,
                 'message' => 'Berhasil dihapus',
                 'data' => $orderantrucking
             ]);
-        } else {
+        } catch (\Throwable $th) {
             DB::rollBack();
-            return response([
-                'status' => false,
-                'message' => 'Gagal dihapus'
-            ]);
+            throw $th;
         }
     }
 

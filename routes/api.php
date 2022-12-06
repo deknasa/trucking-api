@@ -8,6 +8,7 @@
     use App\Http\Controllers\Api\AbsensiSupirApprovalDetailController;
     
     use App\Http\Controllers\Api\ApprovalTransaksiHeaderController;
+    use App\Http\Controllers\Api\ApprovalInvoiceHeaderController;
     
     use App\Http\Controllers\Api\AbsenTradoController;
     use App\Http\Controllers\Api\CabangController;
@@ -32,8 +33,9 @@
     use App\Http\Controllers\Api\ContainerController;
     use App\Http\Controllers\Api\BankController;
     use App\Http\Controllers\Api\AlatBayarController;
-use App\Http\Controllers\Api\ApprovalNotaHeaderController;
-use App\Http\Controllers\Api\BankPelangganController;
+    use App\Http\Controllers\Api\ApprovalHutangBayarController;
+    use App\Http\Controllers\Api\ApprovalNotaHeaderController;
+    use App\Http\Controllers\Api\BankPelangganController;
     use App\Http\Controllers\Api\GajiSupirDetailController;
     use App\Http\Controllers\Api\GajiSupirHeaderController;
     use App\Http\Controllers\Api\JenisEmklController;
@@ -167,8 +169,10 @@ use App\Http\Controllers\Api\BankPelangganController;
         Route::resource('absensisupirdetail', AbsensiSupirDetailController::class);
         
         Route::get('approvaltransaksiheader/combo', [ApprovalTransaksiHeaderController::class, 'combo']);
-        // Route::get('approvaltransaksiheader/get', [ApprovalTransaksiHeaderController::class, 'get']);
         Route::apiResource('approvaltransaksiheader', ApprovalTransaksiHeaderController::class);
+        
+        Route::get('approvalinvoiceheader/combo', [ApprovalInvoiceHeaderController::class, 'combo']);
+        Route::apiResource('approvalinvoiceheader', ApprovalInvoiceHeaderController::class);
 
         
         Route::get('absensisupirapprovalheader/running_number', [AbsensiSupirApprovalHeaderController::class, 'getRunningNumber']);
@@ -406,6 +410,7 @@ use App\Http\Controllers\Api\BankPelangganController;
                 
         Route::get('pengeluaranstok/field_length', [PengeluaranStokController::class,'fieldLength']);
         // Route::get('pengeluaranstok/export', [PengeluaranStokController::class,'export']);
+        Route::post('invoiceextraheader/{id}/approval', [InvoiceExtraHeaderController::class,'approval']);
         Route::resource('invoiceextraheader', InvoiceExtraHeaderController::class);
         Route::resource('invoiceextradetail', InvoiceExtraDetailController::class);
 
@@ -437,6 +442,7 @@ use App\Http\Controllers\Api\BankPelangganController;
 
         Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
         Route::get('hutangbayarheader/no_bukti', [HutangBayarHeaderController::class, 'getNoBukti']);
+        Route::get('hutangbayarheader/field_length', [HutangBayarHeaderController::class, 'fieldLength']);
         Route::get('hutangbayarheader/combo', [HutangBayarHeaderController::class, 'combo']);
         Route::get('hutangbayarheader/{id}/getHutang', [HutangBayarHeaderController::class, 'getHutang'])->name('hutangbayarheader.getHutang'); 
         Route::get('hutangbayarheader/comboapproval', [HutangBayarHeaderController::class, 'comboapproval']);
@@ -553,6 +559,8 @@ use App\Http\Controllers\Api\BankPelangganController;
         Route::get('suratpengantar/combo', [SuratPengantarController::class, 'combo']);
         Route::get('suratpengantar/field_length', [SuratPengantarController::class, 'fieldLength']);
         Route::post('suratpengantar/cekUpahSupir', [SuratPengantarController::class, 'cekUpahSupir']);
+        Route::get('suratpengantar/{id}/getTarifOmset', [SuratPengantarController::class, 'getTarifOmset']);
+        Route::get('suratpengantar/{id}/getOrderanTrucking', [SuratPengantarController::class, 'getOrderanTrucking']);
         Route::get('suratpengantar/getGaji/{dari}/{sampai}/{container}/{statuscontainer}', [SuratPengantarController::class, 'getGaji']);
         Route::resource('suratpengantar', SuratPengantarController::class);
         
@@ -611,6 +619,7 @@ use App\Http\Controllers\Api\BankPelangganController;
         Route::resource('pencairangiropengeluarandetail', PencairanGiroPengeluaranDetailController::class);
 
         Route::resource('approvalnotaheader', ApprovalNotaHeaderController::class);
+        Route::resource('approvalhutangbayar', ApprovalHutangBayarController::class);
         
     });
 
@@ -718,9 +727,6 @@ use App\Http\Controllers\Api\BankPelangganController;
     Route::get('zona/field_length', [ZonaController::class, 'fieldLength']);
     Route::resource('zona', ZonaController::class);
 
-    Route::get('tarif/combo', [TarifController::class, 'combo']);
-    Route::get('tarif/field_length', [TarifController::class, 'fieldLength']);
-    Route::resource('tarif', TarifController::class);
 
     Route::get('orderantrucking/combo', [OrderanTruckingController::class, 'combo']);
     Route::get('orderantrucking/field_length', [OrderanTruckingController::class, 'fieldLength']);

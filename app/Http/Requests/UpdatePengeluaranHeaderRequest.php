@@ -59,8 +59,7 @@ class UpdatePengeluaranHeaderRequest extends FormRequest
             'tgljatuhtempo.*' => 'Tanggal Jatuh Tempo',
             'nominal_detail.*' => 'Nominal',
             'keterangan_detail.*' => 'Keterangan',
-            'coadebet.*' => 'Coa Debet',
-            'bulanbeban.*' => 'Bulan Beban'
+            'coadebet.*' => 'Coa Debet'
         ];
         $relatedRequests = [
             UpdatePengeluaranDetailRequest::class

@@ -37,7 +37,7 @@ class TarifController extends Controller
         ]);
     }
 
-    
+
     /**
      * @ClassName 
      */
@@ -60,7 +60,7 @@ class TarifController extends Controller
             $tarif->tglakhirberlaku = date('Y-m-d', strtotime($request->tglakhirberlaku));
             $tarif->statuspenyesuaianharga = $request->statuspenyesuaianharga;
             $tarif->modifiedby = auth('api')->user()->name;
-           
+
             if ($tarif->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($tarif->getTable()),
@@ -110,6 +110,8 @@ class TarifController extends Controller
      */
     public function update(UpdateTarifRequest $request, Tarif $tarif)
     {
+        DB::beginTransaction();
+
         try {
             $tarif->tujuan = $request->tujuan;
             $tarif->container_id = $request->container_id;
@@ -139,28 +141,24 @@ class TarifController extends Controller
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
 
-
-                /* Set position and page */
-                $selected = $this->getPosition($tarif, $tarif->getTable());
-                $tarif->position = $selected->position;
-                $tarif->page = ceil($tarif->position / ($request->limit ?? 10));
-
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil diubah',
-                    'data' => $tarif
-                ]);
-            } else {
-                return response([
-                    'status' => false,
-                    'message' => 'Gagal diubah'
-                ]);
+                DB::commit();
             }
+            /* Set position and page */
+            $selected = $this->getPosition($tarif, $tarif->getTable());
+            $tarif->position = $selected->position;
+            $tarif->page = ceil($tarif->position / ($request->limit ?? 10));
+
+            return response([
+                'status' => true,
+                'message' => 'Berhasil diubah',
+                'data' => $tarif
+            ]);
         } catch (\Throwable $th) {
+            DB::rollBack();
             throw $th;
         }
     }
-   
+
 
     /**
      * @ClassName
@@ -169,7 +167,6 @@ class TarifController extends Controller
     {
 
         DB::beginTransaction();
-        $tarif = new Tarif();
 
         try {
             // $delete = $servicein->delete();
@@ -190,26 +187,18 @@ class TarifController extends Controller
                 app(LogTrailController::class)->store($validatedLogTrail);
 
                 DB::commit();
-
-                /* Set position and page */
-                $selected = $this->getPosition($tarif, $tarif->getTable(), true);
-                $tarif->position = $selected->position;
-                $tarif->id = $selected->id;
-                $tarif->page = ceil($tarif->position / ($request->limit ?? 10));
-
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil dihapus',
-                    'data' => $tarif
-                ]);
-            } else {
-                DB::rollBack();
-
-                return response([
-                    'status' => false,
-                    'message' => 'Gagal dihapus'
-                ]);
             }
+            /* Set position and page */
+            $selected = $this->getPosition($tarif, $tarif->getTable(), true);
+            $tarif->position = $selected->position;
+            $tarif->id = $selected->id;
+            $tarif->page = ceil($tarif->position / ($request->limit ?? 10));
+
+            return response([
+                'status' => true,
+                'message' => 'Berhasil dihapus',
+                'data' => $tarif
+            ]);
         } catch (\Throwable $th) {
             DB::rollBack();
             return response($th->getMessage());
@@ -245,6 +234,4 @@ class TarifController extends Controller
             'data' => $data
         ]);
     }
-
-   
 }

@@ -57,7 +57,7 @@ class HutangBayarDetailController extends Controller
                     'alatbayar.namaalatbayar as alatbayar_id',
 
                 )
-                ->join('hutangbayarheader as header','header.id','detail.hutangbayar_id')
+                ->leftJoin('hutangbayarheader as header','header.id','detail.hutangbayar_id')
                 ->leftJoin('bank', 'header.bank_id', 'bank.id')
                 ->leftJoin('supplier', 'header.supplier_id', 'supplier.id')
                 ->leftJoin('alatbayar', 'detail.alatbayar_id', 'alatbayar.id');

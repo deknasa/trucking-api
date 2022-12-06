@@ -55,12 +55,12 @@ class PelunasanPiutangDetailController extends Controller
                     'detail.tgljt',
                     'agen_detail.namaagen as agen_detail',
                     'pelanggan.namapelanggan as pelanggan',
-                )->join('pelunasanpiutangheader as header','header.id','detail.pelunasanpiutang_id')
-                ->join('bank','header.bank_id','bank.id')
-                ->join('cabang','header.cabang_id','cabang.id')
-                ->join('agen','header.agen_id','agen.id')
-                ->join('agen as agen_detail','detail.agen_id','agen_detail.id')
-                ->join('pelanggan','detail.pelanggan_id','pelanggan.id');
+                )->leftJoin('pelunasanpiutangheader as header','header.id','detail.pelunasanpiutang_id')
+                ->leftJoin('bank','header.bank_id','bank.id')
+                ->leftJoin('cabang','header.cabang_id','cabang.id')
+                ->leftJoin('agen','header.agen_id','agen.id')
+                ->leftJoin('agen as agen_detail','detail.agen_id','agen_detail.id')
+                ->leftJoin('pelanggan','detail.pelanggan_id','pelanggan.id');
 
                 $piutangDetail = $query->get();
             } else {
@@ -69,6 +69,9 @@ class PelunasanPiutangDetailController extends Controller
                     'detail.nominal',
                     'detail.keterangan',
                     'detail.piutang_nobukti',
+                    'detail.nominallebihbayar',
+                    'detail.penyesuaian',
+                    'detail.keteranganpenyesuaian',
                     'detail.tgljt',
                     'pelanggan.namapelanggan as pelanggan_id',
                     'agen.namaagen as agen_id',

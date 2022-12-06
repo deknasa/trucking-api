@@ -19,7 +19,7 @@ class InvoiceDetailSeeder extends Seeder
             'invoice_id' => 1,
             'nominal' => 1021000,
             'keterangan' => 'INVOICE TRUCKING',
-            'suratpengantar_id' => 1,
+            'suratpengantar_nobukti' => 'TRP 0001/III/2022',
             'orderantrucking_nobukti' => 'TRP 0001/III/2022',
             'modifiedby' => 'ADMIN',
         ]);

@@ -72,7 +72,7 @@ class OrderanTrucking extends MyModel
         return $data;
     }
 
-    public function find($id)
+    public function findAll($id)
     {
         $query = DB::table('orderantrucking')
             ->select(
@@ -106,7 +106,8 @@ class OrderanTrucking extends MyModel
             ->leftJoin('container', 'orderantrucking.container_id', '=', 'container.id')
             ->leftJoin('agen', 'orderantrucking.agen_id', '=', 'agen.id')
             ->leftJoin('jenisorder', 'orderantrucking.jenisorder_id', '=', 'jenisorder.id')
-            ->leftJoin('pelanggan', 'orderantrucking.pelanggan_id', '=', 'pelanggan.id');
+            ->leftJoin('pelanggan', 'orderantrucking.pelanggan_id', '=', 'pelanggan.id')
+            ->where('orderantrucking.id', $id);
 
             $data = $query->first();
 
@@ -219,9 +220,9 @@ class OrderanTrucking extends MyModel
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statuslangsir') {
-                            $query = $query->where('parameter.text', 'LIKE', "%$filters[data]%");
+                            $query = $query->where('parameter.text', '=', "$filters[data]");
                         } elseif($filters['field'] == 'statusperalihan') {
-                            $query = $query->where('param2.text', 'LIKE', "%$filters[data]%");
+                            $query = $query->where('param2.text', '=', "$filters[data]");
                         } elseif($filters['field'] == 'agen_id') {
                             $query = $query->where('agen.namaagen', 'LIKE', "%$filters[data]%");
                         } elseif($filters['field'] == 'pelanggan_id') {
@@ -241,9 +242,9 @@ class OrderanTrucking extends MyModel
                 case "OR":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statuslangsir') {
-                            $query = $query->orWhere('parameter.text', 'LIKE', "%$filters[data]%");
+                            $query = $query->orWhere('parameter.text', '', "$filters[data]");
                         } elseif($filters['field'] == 'statusperalihan') {
-                            $query = $query->orWhere('param2.text', 'LIKE', "%$filters[data]%");
+                            $query = $query->orWhere('param2.text', '', "$filters[data]");
                         } elseif($filters['field'] == 'agen_id') {
                             $query = $query->orWhere('agen.namaagen', 'LIKE', "%$filters[data]%");
                         } elseif($filters['field'] == 'pelanggan_id') {

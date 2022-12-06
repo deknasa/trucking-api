@@ -18,7 +18,7 @@ use Illuminate\Database\QueryException;
 
 class KelompokController extends Controller
 {
-          /**
+    /**
      * @ClassName 
      */
     public function index()
@@ -38,7 +38,7 @@ class KelompokController extends Controller
     {
         //
     }
-      /**
+    /**
      * @ClassName 
      */
     public function store(StoreKelompokRequest $request)
@@ -72,7 +72,7 @@ class KelompokController extends Controller
             }
 
             $selected = $this->getPosition($kelompok, $kelompok->getTable());
-           
+
             $kelompok->position = $selected->position;
             $kelompok->page = ceil($kelompok->position / ($request->limit ?? 10));
 
@@ -81,7 +81,7 @@ class KelompokController extends Controller
                 'message' => 'Berhasil disimpan',
                 'data' => $kelompok
             ], 201);
-        }  catch (\Throwable $th) {
+        } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
         }
@@ -95,11 +95,12 @@ class KelompokController extends Controller
         ]);
     }
 
-      /**
+    /**
      * @ClassName 
      */
     public function update(UpdateKelompokRequest $request, Kelompok $kelompok)
     {
+        DB::beginTransaction();
         try {
             $kelompok->kodekelompok = $request->kodekelompok;
             $kelompok->keterangan = $request->keterangan;
@@ -119,65 +120,63 @@ class KelompokController extends Controller
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
-
-                /* Set position and page */
-                $selected = $this->getPosition($kelompok, $kelompok->getTable());
-                $kelompok->position = $selected->position;
-                $kelompok->page = ceil($kelompok->position / ($request->limit ?? 10));
-
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil diubah',
-                    'data' => $kelompok
-                ]);
-            } else {
-                return response([
-                    'status' => false,
-                    'message' => 'Gagal diubah'
-                ]);
+                DB::commit();
             }
+            /* Set position and page */
+            $selected = $this->getPosition($kelompok, $kelompok->getTable());
+            $kelompok->position = $selected->position;
+            $kelompok->page = ceil($kelompok->position / ($request->limit ?? 10));
+
+            return response([
+                'status' => true,
+                'message' => 'Berhasil diubah',
+                'data' => $kelompok
+            ]);
         } catch (\Throwable $th) {
+            DB::rollBack();
             throw $th;
         }
     }
-      /**
+    /**
      * @ClassName 
      */
     public function destroy(Kelompok $kelompok, Request $request)
     {
-        $delete = Kelompok::destroy($kelompok->id);
-        $del = 1;
-        if ($delete) {
-            $logTrail = [
-                'namatabel' => strtoupper($kelompok->getTable()),
-                'postingdari' => 'DELETE KELOMPOK',
-                'idtrans' => $kelompok->id,
-                'nobuktitrans' => $kelompok->id,
-                'aksi' => 'DELETE',
-                'datajson' => $kelompok->toArray(),
-                'modifiedby' => $kelompok->modifiedby
-            ];
+        DB::beginTransaction();
+        try {
+            $delete = Kelompok::destroy($kelompok->id);
 
-            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-            app(LogTrailController::class)->store($validatedLogTrail);
+            if ($delete) {
+                $logTrail = [
+                    'namatabel' => strtoupper($kelompok->getTable()),
+                    'postingdari' => 'DELETE KELOMPOK',
+                    'idtrans' => $kelompok->id,
+                    'nobuktitrans' => $kelompok->id,
+                    'aksi' => 'DELETE',
+                    'datajson' => $kelompok->toArray(),
+                    'modifiedby' => $kelompok->modifiedby
+                ];
 
-            DB::commit();
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                app(LogTrailController::class)->store($validatedLogTrail);
+
+
+                DB::commit();
+            }
 
             $selected = $this->getPosition($kelompok, $kelompok->getTable(), true);
             $kelompok->position = $selected->position;
             $kelompok->id = $selected->id;
             $kelompok->page = ceil($kelompok->position / ($request->limit ?? 10));
-            
+
             return response([
                 'status' => true,
                 'message' => 'Berhasil dihapus',
                 'data' => $kelompok
             ]);
-        } else {
-            return response([
-                'status' => false,
-                'message' => 'Gagal dihapus'
-            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
         }
     }
 
@@ -198,13 +197,11 @@ class KelompokController extends Controller
     public function combo(Request $request)
     {
         $data = [
-            'statusaktif' => Parameter::where(['grp'=>'status aktif'])->get(),
+            'statusaktif' => Parameter::where(['grp' => 'status aktif'])->get(),
         ];
 
         return response([
             'data' => $data
         ]);
     }
-
-   
 }

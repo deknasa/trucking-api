@@ -108,7 +108,7 @@ class PelunasanPiutangHeaderController extends Controller
 
                     if($request->bayarppd[$i] > $piutang->nominal) {
                         
-                        $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'NB')
+                        $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'NBP')
                         ->first();
                         return response([
                             'message' => "$query->keterangan",
@@ -299,7 +299,7 @@ class PelunasanPiutangHeaderController extends Controller
                     $piutang = PiutangHeader::where('id', $idpiutang)->first();
 
                     if($request->bayarppd[$i] > $piutang->nominal) {
-                        $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'NB')
+                        $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'NBP')
                         ->first();
                         return response([
                             'message' => "$query->keterangan",

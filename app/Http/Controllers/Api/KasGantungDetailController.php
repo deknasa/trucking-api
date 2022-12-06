@@ -124,7 +124,7 @@ class KasGantungDetailController extends Controller
             $kasgantungDetail->nobukti = $request->nobukti;
             $kasgantungDetail->nominal = $request->nominal;
             $kasgantungDetail->coa = $request->coa ?? '';
-            $kasgantungDetail->keterangan = $request->keterangan_detail ?? '';
+            $kasgantungDetail->keterangan = $request->keterangan ?? '';
             $kasgantungDetail->modifiedby = $request->modifiedby;
             $kasgantungDetail->save();
 

@@ -59,7 +59,7 @@ class AbsensiSupirHeader extends MyModel
         return $data;
     }
 
-    public function find($id) 
+    public function findAll($id) 
     {
         $query = DB::table('absensisupirheader')
             ->select('id','nobukti','kasgantung_nobukti','tglbukti','keterangan')
@@ -86,8 +86,7 @@ class AbsensiSupirHeader extends MyModel
 
     public function createTemp(string $modelTable)
     {
-        $this->setRequestParameters();
-
+        
         $temp = '##temp' . rand(1, 10000);
 
         Schema::create($temp, function ($table) {
@@ -103,9 +102,10 @@ class AbsensiSupirHeader extends MyModel
             $table->increments('position');
         });
 
+        $this->setRequestParameters();
         $query = DB::table($modelTable);
         $query = $this->selectColumns($query);
-        $query = $this->sort($query);
+        $this->sort($query);
         $models = $this->filter($query);
 
         DB::table($temp)->insertUsing([

@@ -15,10 +15,11 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\QueryException;
+
 class KerusakanController extends Controller
 {
 
-          /**
+    /**
      * @ClassName 
      */
     public function index()
@@ -35,7 +36,7 @@ class KerusakanController extends Controller
     }
 
 
-      /**
+    /**
      * @ClassName 
      */
     public function store(StoreKerusakanRequest $request)
@@ -71,7 +72,7 @@ class KerusakanController extends Controller
             $selected = $this->getPosition($kerusakan, $kerusakan->getTable());
             $kerusakan->position = $selected->position;
             $kerusakan->page = ceil($kerusakan->position / ($request->limit ?? 10));
-            
+
             return response([
                 'status' => true,
                 'message' => 'Berhasil disimpan',
@@ -91,11 +92,12 @@ class KerusakanController extends Controller
         ]);
     }
 
-      /**
+    /**
      * @ClassName 
      */
     public function update(UpdateKerusakanRequest $request, Kerusakan $kerusakan)
     {
+        DB::beginTransaction();
         try {
             $kerusakan->keterangan = $request->keterangan;
             $kerusakan->statusaktif = $request->statusaktif;
@@ -115,48 +117,48 @@ class KerusakanController extends Controller
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
 
-                /* Set position and page */
-                $selected = $this->getPosition($kerusakan, $kerusakan->getTable());
-                $kerusakan->position = $selected->position;
-                $kerusakan->page = ceil($kerusakan->position / ($request->limit ?? 10));
-
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil diubah',
-                    'data' => $kerusakan
-                ]);
-            } else {
-                return response([
-                    'status' => false,
-                    'message' => 'Gagal diubah'
-                ]);
+                DB::commit();
             }
+            /* Set position and page */
+            $selected = $this->getPosition($kerusakan, $kerusakan->getTable());
+            $kerusakan->position = $selected->position;
+            $kerusakan->page = ceil($kerusakan->position / ($request->limit ?? 10));
+
+            return response([
+                'status' => true,
+                'message' => 'Berhasil diubah',
+                'data' => $kerusakan
+            ]);
         } catch (\Throwable $th) {
+            DB::rollBack();
             throw $th;
         }
     }
-      /**
+    /**
      * @ClassName 
      */
     public function destroy(Kerusakan $kerusakan, Request $request)
     {
-        $delete = Kerusakan::destroy($kerusakan->id);
-        $del = 1;
-        if ($delete) {
-            $logTrail = [
-                'namatabel' => strtoupper($kerusakan->getTable()),
-                'postingdari' => 'DELETE KERUSAKAN',
-                'idtrans' => $kerusakan->id,
-                'nobuktitrans' => $kerusakan->id,
-                'aksi' => 'DELETE',
-                'datajson' => $kerusakan->toArray(),
-                'modifiedby' => $kerusakan->modifiedby
-            ];
+        DB::beginTransaction();
+        try {
+            $delete = Kerusakan::destroy($kerusakan->id);
 
-            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-            app(LogTrailController::class)->store($validatedLogTrail);
+            if ($delete) {
+                $logTrail = [
+                    'namatabel' => strtoupper($kerusakan->getTable()),
+                    'postingdari' => 'DELETE KERUSAKAN',
+                    'idtrans' => $kerusakan->id,
+                    'nobuktitrans' => $kerusakan->id,
+                    'aksi' => 'DELETE',
+                    'datajson' => $kerusakan->toArray(),
+                    'modifiedby' => $kerusakan->modifiedby
+                ];
 
-            DB::commit();
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                app(LogTrailController::class)->store($validatedLogTrail);
+
+                DB::commit();
+            }
 
             $selected = $this->getPosition($kerusakan, $kerusakan->getTable(), true);
             $kerusakan->position = $selected->position;
@@ -168,11 +170,9 @@ class KerusakanController extends Controller
                 'message' => 'Berhasil dihapus',
                 'data' => $kerusakan
             ]);
-        } else {
-            return response([
-                'status' => false,
-                'message' => 'Gagal dihapus'
-            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
         }
     }
 
@@ -193,12 +193,11 @@ class KerusakanController extends Controller
     public function combo(Request $request)
     {
         $data = [
-            'statusaktif' => Parameter::where(['grp'=>'status aktif'])->get(),
+            'statusaktif' => Parameter::where(['grp' => 'status aktif'])->get(),
         ];
 
         return response([
             'data' => $data
         ]);
     }
-
 }

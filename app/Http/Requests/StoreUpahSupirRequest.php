@@ -58,11 +58,7 @@ class StoreUpahSupirRequest extends FormRequest
             'tglakhirberlaku' => 'tanggal akhir berlaku',
             'container.*' => 'container',
             'statuscontainer.*' => 'container',
-            'gajisupir.*' => 'gaji supir',
-            'gajikenek.*' => 'gaji kenek',
-            'gajikomisi.*' => 'gaji komisi',
-            'gajitol.*' => 'gaji tol',
-            'liter.*' => 'liter',
+            'nominalsupir.*' => 'nominal supir'
         ];
     }
 
@@ -71,10 +67,6 @@ class StoreUpahSupirRequest extends FormRequest
         return [
             'jarak.gt' => 'Jarak wajib di isi',
             'nominalsupir.*.gt' => 'nominal supir wajib di isi',
-            'nominalkenek.*.gt' => 'nominal kenek wajib di isi',
-            'nominalkomisi.*.gt' => 'nominal komisi wajib di isi',
-            'nominaltol.*.gt' => 'nominal tol wajib di isi',
-            'liter.*.gt' => 'liter wajib di isi',
         ];
     }
 }

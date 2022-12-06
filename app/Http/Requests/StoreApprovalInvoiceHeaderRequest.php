@@ -2,10 +2,9 @@
 
 namespace App\Http\Requests;
 
-use App\Http\Controllers\Api\ErrorController;
 use Illuminate\Foundation\Http\FormRequest;
 
-class StoreAbsenTradoRequest extends FormRequest
+class StoreApprovalInvoiceHeaderRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -22,21 +21,20 @@ class StoreAbsenTradoRequest extends FormRequest
      *
      * @return array
      */
-    public function rules()
+    Public function rules()
     {
         return [
-            'kodeabsen' => 'required',
-            'keterangan' => 'required',
-            'statusaktif' => 'required'
+            'periode' => 'required',
+            'approve' => 'required',
+            'invoiceId' => 'required',
+            'invoice' => 'required'
         ];
     }
-
     public function attributes()
     {
         return [
-            'kodeabsen' => 'kode absen',
-            'statusaktif' => 'status',
+            'approve' => 'Proses Data',
+            'invoiceId' => 'Pilih Invoice'
         ];
     }
-
 }

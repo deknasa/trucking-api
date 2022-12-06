@@ -25,11 +25,11 @@ class StoreOrderanTruckingRequest extends FormRequest
     {
         return [
             'tglbukti' => 'required',
-            'container_id' => 'required',
-            'agen_id' => 'required',
-            'jenisorder_id' => 'required',
-            'pelanggan_id' => 'required',
-            'tarif_id' => 'required',
+            'container' => 'required',
+            'agen' => 'required',
+            'jenisorder' => 'required',
+            'pelanggan' => 'required',
+            'tarif' => 'required',
             'nojobemkl' => 'required',
             'nocont' => 'required',
             'noseal' => 'required',

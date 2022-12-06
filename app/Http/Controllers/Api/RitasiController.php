@@ -24,7 +24,7 @@ use Illuminate\Support\Facades\Schema;
 
 class RitasiController extends Controller
 {
-   /**
+    /**
      * @ClassName 
      */
     public function index()
@@ -39,7 +39,7 @@ class RitasiController extends Controller
         ]);
     }
 
-   /**
+    /**
      * @ClassName 
      */
     public function store(StoreRitasiRequest $request)
@@ -47,13 +47,13 @@ class RitasiController extends Controller
         DB::beginTransaction();
 
         try {
-            
+
             $group = 'RITASI';
             $subgroup = 'RITASI';
             $format = DB::table('parameter')
-            ->where('grp', $group )
-            ->where('subgrp', $subgroup)
-            ->first();
+                ->where('grp', $group)
+                ->where('subgrp', $subgroup)
+                ->first();
 
             $content = new Request();
             $content['group'] = $group;
@@ -62,7 +62,7 @@ class RitasiController extends Controller
             $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
 
             $ritasi = new Ritasi();
-            $ritasi->tglbukti = date('Y-m-d',strtotime($request->tglbukti));
+            $ritasi->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $ritasi->statusritasi = $request->statusritasi;
             $ritasi->suratpengantar_nobukti = $request->suratpengantar_nobukti;
             $ritasi->supir_id = $request->supir_id;
@@ -71,7 +71,7 @@ class RitasiController extends Controller
             $ritasi->sampai_id = $request->sampai_id;
             // $upahRitasi = UpahDB::table((new Ritasi())->getTable())->where('kotadari_id',$request->dari_id)->where('kotasampai_id',$request->sampai_id)->first();
 
-            $upahRitasi = DB::table('upahritasi')->where('kotadari_id',$request->dari_id)->where('kotasampai_id',$request->sampai_id)->first();
+            $upahRitasi = DB::table('upahritasi')->where('kotadari_id', $request->dari_id)->where('kotasampai_id', $request->sampai_id)->first();
 
             if ($upahRitasi == '') {
                 return response([
@@ -87,15 +87,15 @@ class RitasiController extends Controller
                 $upahRitasiRincian = DB::table('upahritasirincian')->where('upahritasi_id', $upahRitasiId)->first();
                 // $ritasi->jarak = $upahRitasi->upahritasiRincian()->first()->liter;
                 // $ritasi->gaji = $upahRitasi->upahritasiRincian()->first()->nominalsupir;
-                
+
                 $ritasi->jarak = $upahRitasiRincian->liter;
                 $ritasi->gaji = $upahRitasiRincian->nominalsupir;
                 $ritasi->modifiedby = auth('api')->user()->name;
                 $ritasi->statusformat = $format->id;
-    
+
                 $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
                 $ritasi->nobukti = $nobukti;
-    
+
                 if ($ritasi->save()) {
                     $logTrail = [
                         'namatabel' => strtoupper($ritasi->getTable()),
@@ -106,27 +106,24 @@ class RitasiController extends Controller
                         'datajson' => $ritasi->toArray(),
                         'modifiedby' => $ritasi->modifiedby
                     ];
-    
+
                     $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                     $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-    
+
                     DB::commit();
                 }
-    
+
                 /* Set position and page */
                 $selected = $this->getPosition($ritasi, $ritasi->getTable());
                 $ritasi->position = $selected->position;
                 $ritasi->page = ceil($ritasi->position / ($request->limit ?? 10));
-    
+
                 return response([
                     'status' => true,
                     'message' => 'Berhasil disimpan',
                     'data' => $ritasi
                 ], 201);
             }
-            
-            
-           
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
@@ -142,11 +139,12 @@ class RitasiController extends Controller
         ]);
     }
 
-   /**
+    /**
      * @ClassName 
      */
-    public function update(StoreRitasiRequest $request,Ritasi $ritasi)
+    public function update(StoreRitasiRequest $request, Ritasi $ritasi)
     {
+        DB::beginTransaction();
         try {
             $ritasi->tglbukti = $request->tglbukti;
             $ritasi->statusritasi = $request->statusritasi;
@@ -155,7 +153,7 @@ class RitasiController extends Controller
             $ritasi->trado_id = $request->trado_id;
             // $upahRitasi = UpahDB::table((new Ritasi())->getTable())->where('kotadari_id',$request->dari_id)->where('kotasampai_id',$request->sampai_id)->first();
 
-            $upahRitasi = DB::table('upahritasi')->where('kotadari_id',$request->dari_id)->where('kotasampai_id',$request->sampai_id)->first();
+            $upahRitasi = DB::table('upahritasi')->where('kotadari_id', $request->dari_id)->where('kotasampai_id', $request->sampai_id)->first();
 
             if ($upahRitasi == '') {
                 header("HTTP/1.1 400 Bad Request");
@@ -169,7 +167,7 @@ class RitasiController extends Controller
             $upahRitasiRincian = DB::table('upahritasirincian')->where('upahritasi_id', $upahRitasiId)->first();
             // $ritasi->jarak = $upahRitasi->upahritasiRincian()->first()->liter;
             // $ritasi->gaji = $upahRitasi->upahritasiRincian()->first()->nominalsupir;
-            
+
             $ritasi->jarak = $upahRitasiRincian->liter;
             $ritasi->gaji = $upahRitasiRincian->nominalsupir;
             $ritasi->dari_id = $request->dari_id;
@@ -189,49 +187,48 @@ class RitasiController extends Controller
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
-
-                /* Set position and page */
-                $selected = $this->getPosition($ritasi, $ritasi->getTable());
-                $ritasi->position = $selected->position;
-                $ritasi->page = ceil($ritasi->position / ($request->limit ?? 10));
-
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil diubah',
-                    'data' => $ritasi
-                ]);
-            } else {
-                return response([
-                    'status' => false,
-                    'message' => 'Gagal diubah'
-                ]);
+                DB::commit();
             }
+
+            /* Set position and page */
+            $selected = $this->getPosition($ritasi, $ritasi->getTable());
+            $ritasi->position = $selected->position;
+            $ritasi->page = ceil($ritasi->position / ($request->limit ?? 10));
+
+            return response([
+                'status' => true,
+                'message' => 'Berhasil diubah',
+                'data' => $ritasi
+            ]);
         } catch (\Throwable $th) {
+            DB::rollBack();
             throw $th;
         }
     }
-   /**
+    /**
      * @ClassName 
      */
     public function destroy(Ritasi $ritasi, Request $request)
     {
-        $del = 1;
-        if ($ritasi->lockForUpdate()->delete()) {
-            $logTrail = [
-                'namatabel' => strtoupper($ritasi->getTable()),
-                'postingdari' => 'DELETE RITASI',
-                'idtrans' => $ritasi->id,
-                'nobuktitrans' => $ritasi->id,
-                'aksi' => 'DELETE',
-                'datajson' => $ritasi->toArray(),
-                'modifiedby' => $ritasi->modifiedby
-            ];
+        DB::beginTransaction();
+        try {
 
-            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-            app(LogTrailController::class)->store($validatedLogTrail);
+            if ($ritasi->lockForUpdate()->delete()) {
+                $logTrail = [
+                    'namatabel' => strtoupper($ritasi->getTable()),
+                    'postingdari' => 'DELETE RITASI',
+                    'idtrans' => $ritasi->id,
+                    'nobuktitrans' => $ritasi->id,
+                    'aksi' => 'DELETE',
+                    'datajson' => $ritasi->toArray(),
+                    'modifiedby' => $ritasi->modifiedby
+                ];
 
-            DB::commit();
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                app(LogTrailController::class)->store($validatedLogTrail);
 
+                DB::commit();
+            }
             $selected = $this->getPosition($ritasi, $ritasi->getTable(), true);
             $ritasi->position = $selected->position;
             $ritasi->id = $selected->id;
@@ -242,11 +239,9 @@ class RitasiController extends Controller
                 'message' => 'Berhasil dihapus',
                 'data' => $ritasi
             ]);
-        } else {
-            return response([
-                'status' => false,
-                'message' => 'Gagal dihapus'
-            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
         }
     }
 
@@ -267,7 +262,7 @@ class RitasiController extends Controller
     public function combo(Request $request)
     {
         $data = [
-            'statusritasi' => Parameter::where(['grp'=>'status ritasi'])->get(),
+            'statusritasi' => Parameter::where(['grp' => 'status ritasi'])->get(),
             'suratpengantar' => SuratPengantar::all(),
             'supir' => Supir::all(),
             'trado' => Trado::all(),
@@ -278,5 +273,4 @@ class RitasiController extends Controller
             'data' => $data
         ]);
     }
-
 }

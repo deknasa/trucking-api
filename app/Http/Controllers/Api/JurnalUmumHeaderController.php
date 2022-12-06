@@ -394,10 +394,6 @@ class JurnalUmumHeaderController extends Controller
             $request->sortorder = $request->sortorder ?? 'asc';
 
             DB::commit();
-
-
-
-
             $selected = $this->getPosition($jurnalumumheader, $jurnalumumheader->getTable());
             $jurnalumumheader->position = $selected->position;
             $jurnalumumheader->page = ceil($jurnalumumheader->position / ($request->limit ?? 10));

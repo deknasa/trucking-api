@@ -217,7 +217,7 @@ class ProsesGajiSupirHeaderController extends Controller
     /**
      * @ClassName 
      */
-    public function update(UpdateProsesGajiSupirHeaderRequest $request,ProsesGajiSupirHeader $prosesgajisupirheader)
+    public function update(UpdateProsesGajiSupirHeaderRequest $request, ProsesGajiSupirHeader $prosesgajisupirheader)
     {
         DB::beginTransaction();
 
@@ -392,23 +392,21 @@ class ProsesGajiSupirHeaderController extends Controller
         $sampai = date('Y-m-d', strtotime($sampai));
 
         $cekRic = DB::table('gajisupirheader')
-            ->where('tgldari','>=', $dari)
-            ->where('tglsampai','<=', $sampai)
+            ->where('tgldari', '>=', $dari)
+            ->where('tglsampai', '<=', $sampai)
             ->first();
+
+        //CEK APAKAH ADA RIC
         if ($cekRic) {
             $nobukti = $cekRic->nobukti;
             $cekEBS = DB::table('prosesgajisupirdetail')->where('gajisupir_nobukti', $nobukti)->first();
             if ($cekEBS) {
-                $query = DB::table('error')
-                    ->select('keterangan')
-                    ->where('kodeerror', '=', 'RICSD')
-                    ->first();
-                $data = [
-                    'message' => $query->keterangan,
-                    'errors' => true
-                ];
-
-                return response($data);
+                
+                $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'RICSD')
+                ->first();
+                return response([
+                    'message' => "$query->keterangan",
+                ], 422);
             } else {
                 return response([
                     'errors' => false,
@@ -416,16 +414,12 @@ class ProsesGajiSupirHeaderController extends Controller
                 ]);
             }
         } else {
-            $query = DB::table('error')
-                ->select('keterangan')
-                ->where('kodeerror', '=', 'NRIC')
-                ->first();
-            $data = [
-                'message' => $query->keterangan,
-                'errors' => true
-            ];
-
-            return response($data);
+            
+            $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'NRIC')
+            ->first();
+            return response([
+                'message' => "$query->keterangan",
+            ], 422);
         }
     }
     public function getEdit($gajiId)
@@ -443,12 +437,9 @@ class ProsesGajiSupirHeaderController extends Controller
             ->select('keterangan')
             ->where('kodeerror', '=', 'EBSX')
             ->first();
-        $data = [
-            'message' => $query->keterangan,
-            'errors' => 'noEdit'
-        ];
-
-        return response($data);
+        return response([
+            'message' => "$query->keterangan",
+        ]);
     }
 
     public function fieldLength()

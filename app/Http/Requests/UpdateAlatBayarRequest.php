@@ -13,7 +13,7 @@ class UpdateAlatBayarRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +24,22 @@ class UpdateAlatBayarRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'kodealatbayar' => 'required',
+            'namaalatbayar' => 'required',
+            'keterangan' => 'required',
+            'statuslangsunggcair' => 'required',
+            'statusdefault' => 'required',
+            'bank' => 'required',
+        ];
+    }
+
+    public function attributes()
+    {
+        return [
+            'kodealatbayar' => 'kode alat bayar',
+            'namaalatbayar' => 'nama alat bayar',
+            'statuslangsunggcair' => 'status langsung cair',
+            'statusdefault' => 'statusdefault',
         ];
     }
 }

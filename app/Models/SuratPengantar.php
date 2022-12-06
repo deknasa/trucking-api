@@ -42,7 +42,7 @@ class SuratPengantar extends MyModel
             'suratpengantar.keterangan',
             'kotadari.keterangan as dari_id',
             'kotasampai.keterangan as sampai_id',
-            'suratpengantar.container_id',
+            'container.keterangan as container_id',
             'suratpengantar.nocont',
             'suratpengantar.nocont2',
             'statuscontainer.keterangan as statuscontainer_id',
@@ -336,6 +336,20 @@ class SuratPengantar extends MyModel
 
 
         return  $temp;
+    }
+
+    public function getOrderanTrucking($id)
+    {
+        $data = DB::table('orderantrucking')->select('orderantrucking.*','container.keterangan as container','agen.namaagen as agen','jenisorder.keterangan as jenisorder','pelanggan.namapelanggan as pelanggan','tarif.tujuan as tarif')
+        ->join('container','orderantrucking.container_id','container.id')
+        ->join('agen','orderantrucking.agen_id','agen.id')
+        ->join('jenisorder','orderantrucking.jenisorder_id','jenisorder.id')
+        ->join('pelanggan','orderantrucking.pelanggan_id','pelanggan.id')
+        ->join('tarif','orderantrucking.tarif_id','tarif.id')
+        ->where('orderantrucking.id',$id)
+        ->first();
+
+        return $data;
     }
 
     public function sort($query)

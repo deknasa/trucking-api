@@ -88,18 +88,18 @@ class KotaController extends Controller
 
     public function show($id)
     {
-        $data = Kota::find($id);
+        $data = Kota::findAll($id);
         return response([
             'status' => true,
             'data' => $data
         ]);
     }
 
-    
+
     /**
      * @ClassName 
      */
-    public function update(UpdateKotaRequest $request,Kota $kota)
+    public function update(UpdateKotaRequest $request, Kota $kota)
     {
         DB::beginTransaction();
 
@@ -125,23 +125,18 @@ class KotaController extends Controller
                 app(LogTrailController::class)->store($validatedLogTrail);
 
                 DB::commit();
-
-                /* Set position and page */
-                $selected = $this->getPosition($kota, $kota->getTable());
-                $kota->position = $selected->position;
-                $kota->page = ceil($kota->position / ($request->limit ?? 10));
-
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil diubah',
-                    'data' => $kota
-                ]);
-            } else {
-                return response([
-                    'status' => false,
-                    'message' => 'Gagal diubah'
-                ]);
             }
+
+            /* Set position and page */
+            $selected = $this->getPosition($kota, $kota->getTable());
+            $kota->position = $selected->position;
+            $kota->page = ceil($kota->position / ($request->limit ?? 10));
+
+            return response([
+                'status' => true,
+                'message' => 'Berhasil diubah',
+                'data' => $kota
+            ]);
         } catch (\Throwable $th) {
             DB::rollBack();
 
@@ -173,22 +168,17 @@ class KotaController extends Controller
                 app(LogTrailController::class)->store($validatedLogTrail);
 
                 DB::commit();
-                $selected = $this->getPosition($kota, $kota->getTable(), true);
-                $kota->position = $selected->position;
-                $kota->id = $selected->id;
-                $kota->page = ceil($kota->position / ($request->limit ?? 10));
-
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil dihapus',
-                    'data' => $kota
-                ]);
-            } else {
-                return response([
-                    'status' => false,
-                    'message' => 'Gagal dihapus'
-                ]);
             }
+            $selected = $this->getPosition($kota, $kota->getTable(), true);
+            $kota->position = $selected->position;
+            $kota->id = $selected->id;
+            $kota->page = ceil($kota->position / ($request->limit ?? 10));
+
+            return response([
+                'status' => true,
+                'message' => 'Berhasil dihapus',
+                'data' => $kota
+            ]);
         } catch (\Throwable $th) {
             DB::rollBack();
 
@@ -221,5 +211,4 @@ class KotaController extends Controller
             'data' => $data
         ]);
     }
-
 }

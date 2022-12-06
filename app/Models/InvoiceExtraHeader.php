@@ -30,6 +30,7 @@ class InvoiceExtraHeader extends MyModel
 
         $query = DB::table($this->table); 
         $query = $this->selectColumns($query)
+        ->leftJoin('parameter','invoiceextraheader.statusapproval','parameter.id')
         ->leftJoin('pelanggan','invoiceextraheader.pelanggan_id','pelanggan.id')
         ->leftJoin('agen','invoiceextraheader.agen_id','agen.id')
         ->leftJoin('parameter as statusformat','invoiceextraheader.statusformat','statusformat.id');
@@ -60,6 +61,9 @@ class InvoiceExtraHeader extends MyModel
             $table->unsignedBigInteger('agen_id')->default('0');
             $table->double('nominal')->default('0');
             $table->longText('keterangan')->default('');
+            $table->bigInteger('statusapproval')->default('0');
+            $table->string('userapproval')->default();
+            $table->date('tglapproval')->default('');
             $table->unsignedBigInteger('statusformat')->default(0);
             $table->string('modifiedby', 50)->default('');
             $table->dateTime('created_at')->default('1900/1/1');
@@ -76,6 +80,9 @@ class InvoiceExtraHeader extends MyModel
             "$this->table.agen_id",
             "$this->table.nominal",
             "$this->table.keterangan",
+            "$this->table.statusapproval",
+            "$this->table.userapproval",
+            "$this->table.tglapproval",
             "$this->table.statusformat",
             "$this->table.modifiedby");
 
@@ -89,6 +96,9 @@ class InvoiceExtraHeader extends MyModel
             'pelanggan_id',
             'agen_id',
             'nominal',
+            'statusapproval',
+            'userapproval',
+            'tglapproval',
             'keterangan',
             'statusformat',
             'modifiedby'
@@ -107,6 +117,9 @@ class InvoiceExtraHeader extends MyModel
             "$this->table.agen_id",
             "$this->table.nominal",
             "$this->table.keterangan",
+            'parameter.text as statusapproval',
+            "$this->table.userapproval",
+            "$this->table.tglapproval",
             "$this->table.statusformat",
             "$this->table.modifiedby",
             "statusformat.memo as  statusformat_memo",
@@ -141,7 +154,12 @@ class InvoiceExtraHeader extends MyModel
             $this->totalRows = $query->count();
             $this->totalPages = $this->params['limit'] > 0 ? ceil($this->totalRows / $this->params['limit']) : 1;
         }
-
+        if (request()->approve && request()->periode) {
+            $query->where('invoiceextraheader.statusapproval','<>', request()->approve)
+                  ->whereYear('invoiceextraheader.tglbukti','=', request()->year)
+                  ->whereMonth('invoiceextraheader.tglbukti','=', request()->month);
+            return $query;
+        }
         return $query;
     }
 
@@ -151,6 +169,7 @@ class InvoiceExtraHeader extends MyModel
 
         $query = DB::table($this->table); 
         $query = $this->selectColumns($query)
+        ->leftJoin('parameter','invoiceextraheader.statusapproval','parameter.id')
         ->leftJoin('pelanggan','invoiceextraheader.pelanggan_id','pelanggan.id')
         ->leftJoin('agen','invoiceextraheader.agen_id','agen.id')
         ->leftJoin('parameter as statusformat','invoiceextraheader.statusformat','statusformat.id');

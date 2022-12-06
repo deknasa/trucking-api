@@ -29,7 +29,17 @@ class StoreAlatBayarRequest extends FormRequest
             'keterangan' => 'required',
             'statuslangsunggcair' => 'required',
             'statusdefault' => 'required',
-            'bank_id' => 'required',
+            'bank' => 'required',
+        ];
+    }
+
+    public function attributes()
+    {
+        return [
+            'kodealatbayar' => 'kode alat bayar',
+            'namaalatbayar' => 'nama alat bayar',
+            'statuslangsunggcair' => 'status langsung cair',
+            'statusdefault' => 'statusdefault',
         ];
     }
 }
