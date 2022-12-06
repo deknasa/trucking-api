@@ -31,13 +31,6 @@ class PenerimaController extends Controller
         ]);
     }
 
-    public function show(Penerima $penerima)
-    {
-        return response([
-            'status' => true,
-            'data' => $penerima
-        ]);
-    }
     /**
      * @ClassName 
      */
@@ -85,10 +78,19 @@ class PenerimaController extends Controller
             ], 201);
         } catch (\Throwable $th) {
             DB::rollBack();
-            
+
             throw $th;
         }
     }
+
+    public function show(Penerima $penerima)
+    {
+        return response([
+            'status' => true,
+            'data' => $penerima
+        ]);
+    }
+
     /**
      * @ClassName 
      */
@@ -118,30 +120,19 @@ class PenerimaController extends Controller
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
 
+
                 DB::commit();
-
-                /* Set position and page */
-                $selected = $this->getPosition($penerima, $penerima->getTable());
-                $penerima->position = $selected->position;
-                $penerima->page = ceil($penerima->position / ($request->limit ?? 10));
-
-                if (isset($request->limit)) {
-                    $penerima->page = ceil($penerima->position / $request->limit);
-                }
-
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil diubah',
-                    'data' => $penerima
-                ]);
-            } else {
-                DB::rollBack();
-
-                return response([
-                    'status' => false,
-                    'message' => 'Gagal diubah'
-                ]);
             }
+            /* Set position and page */
+            $selected = $this->getPosition($penerima, $penerima->getTable());
+            $penerima->position = $selected->position;
+            $penerima->page = ceil($penerima->position / ($request->limit ?? 10));
+
+            return response([
+                'status' => true,
+                'message' => 'Berhasil diubah',
+                'data' => $penerima
+            ]);
         } catch (\Throwable $th) {
             DB::rollBack();
 
@@ -154,25 +145,25 @@ class PenerimaController extends Controller
     public function destroy(Penerima $penerima, Request $request)
     {
         DB::beginTransaction();
+        try {
+            $delete = $penerima->lockForUpdate()->delete();
 
-        $delete = $penerima->lockForUpdate()->delete();
+            if ($delete) {
+                $logTrail = [
+                    'namatabel' => strtoupper($penerima->getTable()),
+                    'postingdari' => 'DELETE PENERIMA',
+                    'idtrans' => $penerima->id,
+                    'nobuktitrans' => $penerima->id,
+                    'aksi' => 'DELETE',
+                    'datajson' => $penerima->toArray(),
+                    'modifiedby' => $penerima->modifiedby
+                ];
 
-        if ($delete) {
-            $logTrail = [
-                'namatabel' => strtoupper($penerima->getTable()),
-                'postingdari' => 'DELETE PENERIMA',
-                'idtrans' => $penerima->id,
-                'nobuktitrans' => $penerima->id,
-                'aksi' => 'DELETE',
-                'datajson' => $penerima->toArray(),
-                'modifiedby' => $penerima->modifiedby
-            ];
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                app(LogTrailController::class)->store($validatedLogTrail);
 
-            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-            app(LogTrailController::class)->store($validatedLogTrail);
-
-            DB::commit();
-
+                DB::commit();
+            }
             $selected = $this->getPosition($penerima, $penerima->getTable(), true);
             $penerima->position = $selected->position;
             $penerima->id = $selected->id;
@@ -183,13 +174,10 @@ class PenerimaController extends Controller
                 'message' => 'Berhasil dihapus',
                 'data' => $penerima
             ]);
-        } else {
+        } catch (\Throwable $th) {
             DB::rollBack();
-            
-            return response([
-                'status' => false,
-                'message' => 'Gagal dihapus'
-            ]);
+
+            throw $th;
         }
     }
 

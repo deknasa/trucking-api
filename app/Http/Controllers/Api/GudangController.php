@@ -114,23 +114,20 @@ class GudangController extends Controller
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
 
-                /* Set position and page */
-                $selected = $this->getPosition($gudang, $gudang->getTable());
-                $gudang->position = $selected->position;
-                $gudang->page = ceil($gudang->position / ($request->limit ?? 10));
+                DB::commit();
+            } 
+            /* Set position and page */
+            $selected = $this->getPosition($gudang, $gudang->getTable());
+            $gudang->position = $selected->position;
+            $gudang->page = ceil($gudang->position / ($request->limit ?? 10));
 
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil diubah',
-                    'data' => $gudang
-                ]);
-            } else {
-                return response([
-                    'status' => false,
-                    'message' => 'Gagal diubah'
-                ]);
-            }
+            return response([
+                'status' => true,
+                'message' => 'Berhasil diubah',
+                'data' => $gudang
+            ]);
         } catch (\Throwable $th) {
+            DB::rollBack();
             throw $th;
         }
     }
@@ -158,19 +155,19 @@ class GudangController extends Controller
                 app(LogTrailController::class)->store($validatedLogTrail);
 
                 DB::commit();
-
-                /* Set position and page */
-                $selected = $this->getPosition($gudang, $gudang->getTable());
-                $gudang->position = $selected->position;
-                $gudang->id = $selected->id;
-                $gudang->page = ceil($gudang->position / ($request->limit ?? 10));
-
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil dihapus',
-                    'data' => $gudang
-                ]);
             }
+
+            /* Set position and page */
+            $selected = $this->getPosition($gudang, $gudang->getTable());
+            $gudang->position = $selected->position;
+            $gudang->id = $selected->id;
+            $gudang->page = ceil($gudang->position / ($request->limit ?? 10));
+
+            return response([
+                'status' => true,
+                'message' => 'Berhasil dihapus',
+                'data' => $gudang
+            ]);
         } catch (\Throwable $th) {
             DB::rollBack();
             return response($th->getMessage());

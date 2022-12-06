@@ -113,19 +113,19 @@ class AbsenTradoController extends Controller
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
 
-            } 
-            DB::commit();
+                DB::commit();
 
-            /* Set position and page */
-            $selected = $this->getPosition($absenTrado, $absenTrado->getTable());
-            $absenTrado->position = $selected->position;
-            $absenTrado->page = ceil($absenTrado->position / ($request->limit ?? 10));
+                /* Set position and page */
+                $selected = $this->getPosition($absenTrado, $absenTrado->getTable());
+                $absenTrado->position = $selected->position;
+                $absenTrado->page = ceil($absenTrado->position / ($request->limit ?? 10));
 
-            return response([
-                'status' => true,
-                'message' => 'Berhasil diubah',
-                'data' => $absenTrado
-            ]);
+                return response([
+                    'status' => true,
+                    'message' => 'Berhasil diubah',
+                    'data' => $absenTrado
+                ]);
+            }
         } catch (\Throwable $th) {
             DB::rollBack();
 
@@ -140,41 +140,40 @@ class AbsenTradoController extends Controller
     public function destroy(AbsenTrado $absenTrado, Request $request)
     {
         DB::beginTransaction();
-        $delete = AbsenTrado::destroy($absenTrado->id);
+        try {
+            $delete = AbsenTrado::destroy($absenTrado->id);
 
-        if ($delete) {
-            $logTrail = [
-                'namatabel' => strtoupper($absenTrado->getTable()),
-                'postingdari' => 'DELETE ABSEN TRADO',
-                'idtrans' => $absenTrado->id,
-                'nobuktitrans' => $absenTrado->id,
-                'aksi' => 'DELETE',
-                'datajson' => $absenTrado->toArray(),
-                'modifiedby' => $absenTrado->modifiedby
-            ];
+            if ($delete) {
+                $logTrail = [
+                    'namatabel' => strtoupper($absenTrado->getTable()),
+                    'postingdari' => 'DELETE ABSEN TRADO',
+                    'idtrans' => $absenTrado->id,
+                    'nobuktitrans' => $absenTrado->id,
+                    'aksi' => 'DELETE',
+                    'datajson' => $absenTrado->toArray(),
+                    'modifiedby' => $absenTrado->modifiedby
+                ];
 
-            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-            app(LogTrailController::class)->store($validatedLogTrail);
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                app(LogTrailController::class)->store($validatedLogTrail);
 
-            DB::commit();
+                DB::commit();
 
-            $selected = $this->getPosition($absenTrado, $absenTrado->getTable(), true);
-            $absenTrado->position = $selected->position;
-            $absenTrado->id = $selected->id;
-            $absenTrado->page = ceil($absenTrado->position / ($request->limit ?? 10));
+                $selected = $this->getPosition($absenTrado, $absenTrado->getTable(), true);
+                $absenTrado->position = $selected->position;
+                $absenTrado->id = $selected->id;
+                $absenTrado->page = ceil($absenTrado->position / ($request->limit ?? 10));
 
-            return response([
-                'status' => true,
-                'message' => 'Berhasil dihapus',
-                'data' => $absenTrado
-            ]);
-        } else {
+                return response([
+                    'status' => true,
+                    'message' => 'Berhasil dihapus',
+                    'data' => $absenTrado
+                ]);
+            } 
+        } catch (\Throwable $th) {
             DB::rollBack();
 
-            return response([
-                'status' => false,
-                'message' => 'Gagal dihapus'
-            ]);
+            throw $th;
         }
     }
 

@@ -17,7 +17,7 @@ use Illuminate\Database\QueryException;
 
 class MandorController extends Controller
 {
-     /**
+    /**
      * @ClassName 
      */
     public function index()
@@ -33,11 +33,7 @@ class MandorController extends Controller
         ]);
     }
 
-    public function create()
-    {
-        //
-    }
-     /**
+    /**
      * @ClassName 
      */
     public function store(StoreMandorRequest $request)
@@ -99,6 +95,7 @@ class MandorController extends Controller
      */
     public function update(StoreMandorRequest $request, Mandor $mandor)
     {
+        DB::beginTransaction();
         try {
             $mandor->namamandor = $request->namamandor;
             $mandor->keterangan = $request->keterangan;
@@ -119,48 +116,49 @@ class MandorController extends Controller
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
 
-                /* Set position and page */
-                $selected = $this->getPosition($mandor, $mandor->getTable());
-                $mandor->position = $selected->position;
-                $mandor->page = ceil($mandor->position / ($request->limit ?? 10));
 
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil diubah',
-                    'data' => $mandor
-                ]);
-            } else {
-                return response([
-                    'status' => false,
-                    'message' => 'Gagal diubah'
-                ]);
+                DB::commit();
             }
+            /* Set position and page */
+            $selected = $this->getPosition($mandor, $mandor->getTable());
+            $mandor->position = $selected->position;
+            $mandor->page = ceil($mandor->position / ($request->limit ?? 10));
+
+            return response([
+                'status' => true,
+                'message' => 'Berhasil diubah',
+                'data' => $mandor
+            ]);
         } catch (\Throwable $th) {
+            DB::rollBack();
             throw $th;
         }
     }
-     /**
+    /**
      * @ClassName 
      */
     public function destroy(Mandor $mandor, Request $request)
     {
-        $delete = Mandor::destroy($mandor->id);
-        $del = 1;
-        if ($delete) {
-            $logTrail = [
-                'namatabel' => strtoupper($mandor->getTable()),
-                'postingdari' => 'DELETE MANDOR',
-                'idtrans' => $mandor->id,
-                'nobuktitrans' => $mandor->id,
-                'aksi' => 'DELETE',
-                'datajson' => $mandor->toArray(),
-                'modifiedby' => $mandor->modifiedby
-            ];
+        DB::beginTransaction();
+        try {
+            $delete = Mandor::destroy($mandor->id);
+            if ($delete) {
+                $logTrail = [
+                    'namatabel' => strtoupper($mandor->getTable()),
+                    'postingdari' => 'DELETE MANDOR',
+                    'idtrans' => $mandor->id,
+                    'nobuktitrans' => $mandor->id,
+                    'aksi' => 'DELETE',
+                    'datajson' => $mandor->toArray(),
+                    'modifiedby' => $mandor->modifiedby
+                ];
 
-            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-            app(LogTrailController::class)->store($validatedLogTrail);
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                app(LogTrailController::class)->store($validatedLogTrail);
 
-            DB::commit();
+
+                DB::commit();
+            }
             $selected = $this->getPosition($mandor, $mandor->getTable(), true);
             $mandor->position = $selected->position;
             $mandor->id = $selected->id;
@@ -171,11 +169,9 @@ class MandorController extends Controller
                 'message' => 'Berhasil dihapus',
                 'data' => $mandor
             ]);
-        } else {
-            return response([
-                'status' => false,
-                'message' => 'Gagal dihapus'
-            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
         }
     }
 
@@ -195,13 +191,11 @@ class MandorController extends Controller
     public function combo(Request $request)
     {
         $data = [
-            'statusaktif' => Parameter::where(['grp'=>'status aktif'])->get(),
+            'statusaktif' => Parameter::where(['grp' => 'status aktif'])->get(),
         ];
 
         return response([
             'data' => $data
         ]);
     }
-
-    
 }

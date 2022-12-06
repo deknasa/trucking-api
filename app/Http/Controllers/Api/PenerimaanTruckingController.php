@@ -152,7 +152,7 @@ class PenerimaanTruckingController extends Controller
         DB::beginTransaction();
         try {
             $delete = PenerimaanTrucking::destroy($penerimaanTrucking->id);
-            $del = 1;
+            
             if ($delete) {
                 $logTrail = [
                     'namatabel' => strtoupper($penerimaanTrucking->getTable()),

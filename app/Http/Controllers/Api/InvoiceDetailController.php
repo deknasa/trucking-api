@@ -61,10 +61,10 @@ class InvoiceDetailController extends Controller
                     'detail.invoice_id'
                 )
                 
-                ->join('suratpengantar','detail.suratpengantar_nobukti','suratpengantar.nobukti')
-                ->join('invoiceheader as header','header.id','detail.invoice_id')
-                ->join('agen','header.agen_id','agen.id')
-                ->join('cabang','header.cabang_id','cabang.id')
+                ->leftJoin('suratpengantar','detail.orderantrucking_nobukti','suratpengantar.jobtrucking')
+                ->leftJoin('invoiceheader as header','header.id','detail.invoice_id')
+                ->leftJoin('agen','header.agen_id','agen.id')
+                ->leftJoin('cabang','header.cabang_id','cabang.id')
                 ->leftJoin('kota','suratpengantar.sampai_id','kota.id');
 
                 $invoiceDetail = $query->get();
@@ -78,8 +78,8 @@ class InvoiceDetailController extends Controller
                    'detail.keterangan as keterangan_detail' 
                 )
                 
-                ->join('suratpengantar','detail.suratpengantar_nobukti','suratpengantar.nobukti')
-                ->join('agen','suratpengantar.agen_id','agen.id')
+                ->leftJoin('suratpengantar','detail.suratpengantar_nobukti','suratpengantar.nobukti')
+                ->leftJoin('agen','suratpengantar.agen_id','agen.id')
                 ->leftJoin('kota','suratpengantar.sampai_id','kota.id');
 
                 $invoiceDetail = $query->get();

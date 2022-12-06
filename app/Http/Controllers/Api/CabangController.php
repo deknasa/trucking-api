@@ -66,10 +66,10 @@ class CabangController extends Controller
                 DB::commit();
             }
 
-             /* Set position and page */
-             $selected = $this->getPosition($cabang, $cabang->getTable());
-             $cabang->position = $selected->position;
-             $cabang->page = ceil($cabang->position / ($request->limit ?? 10));
+            /* Set position and page */
+            $selected = $this->getPosition($cabang, $cabang->getTable());
+            $cabang->position = $selected->position;
+            $cabang->page = ceil($cabang->position / ($request->limit ?? 10));
 
             return response([
                 'status' => true,
@@ -162,19 +162,20 @@ class CabangController extends Controller
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
                 DB::commit();
+
+
+                /* Set position and page */
+                $selected = $this->getPosition($cabang, $cabang->getTable(), true);
+                $cabang->position = $selected->position;
+                $cabang->id = $selected->id;
+                $cabang->page = ceil($cabang->position / ($request->limit ?? 10));
+
+                return response([
+                    'status' => true,
+                    'message' => 'Berhasil dihapus',
+                    'data' => $cabang
+                ]);
             }
-
-               /* Set position and page */
-            $selected = $this->getPosition($cabang, $cabang->getTable(), true);
-            $cabang->position = $selected->position;
-            $cabang->id = $selected->id;
-            $cabang->page = ceil($cabang->position / ($request->limit ?? 10));
-
-            return response([
-                'status' => true,
-                'message' => 'Berhasil dihapus',
-                'data' => $cabang
-            ]);
         } catch (\Throwable $th) {
             DB::rollBack();
 

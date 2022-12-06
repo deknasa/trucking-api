@@ -70,7 +70,7 @@ class PengeluaranDetailController extends Controller
                     'alatbayar.namaalatbayar as alatbayar_id'
 
                 )
-                    ->join('pengeluaranheader as header','header.id','detail.pengeluaran_id')
+                    ->leftJoin('pengeluaranheader as header','header.id','detail.pengeluaran_id')
                     ->leftJoin('bank', 'bank.id', '=', 'header.bank_id')
                     ->leftJoin('pelanggan', 'pelanggan.id', '=', 'header.pelanggan_id')
                     ->leftJoin('alatbayar', 'alatbayar.id', '=', 'detail.alatbayar_id');

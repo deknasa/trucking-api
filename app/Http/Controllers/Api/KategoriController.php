@@ -169,10 +169,10 @@ class KategoriController extends Controller
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
 
+
+                DB::commit();
+                /* Set position and page */
             }
-            
-            DB::commit();
-            /* Set position and page */
 
             $selected = $this->getPosition($kategori, $kategori->getTable(), true);
 

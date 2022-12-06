@@ -51,7 +51,7 @@ class ServiceOutDetailController extends Controller
                     'detail.servicein_nobukti',
                     'detail.keterangan',
                 )
-                    ->join('serviceoutheader as header', 'header.id', 'detail.serviceout_id')
+                    ->leftJoin('serviceoutheader as header', 'header.id', 'detail.serviceout_id')
                     ->leftJoin('trado', 'header.trado_id', 'trado.id');
 
                 $serviceOutDetail = $query->get();

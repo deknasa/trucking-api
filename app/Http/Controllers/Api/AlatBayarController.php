@@ -124,19 +124,20 @@ class AlatBayarController extends Controller
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
+
+                DB::commit();
+                /* Set position and page */
+                $selected = $this->getPosition($alatbayar, $alatbayar->getTable());
+                $alatbayar->position = $selected->position;
+                $alatbayar->page = ceil($alatbayar->position / ($request->limit ?? 10));
+
+
+                return response([
+                    'status' => true,
+                    'message' => 'Berhasil diubah',
+                    'data' => $alatbayar
+                ]);
             }
-            DB::commit();
-            /* Set position and page */
-            $selected = $this->getPosition($alatbayar, $alatbayar->getTable());
-            $alatbayar->position = $selected->position;
-            $alatbayar->page = ceil($alatbayar->position / ($request->limit ?? 10));
-
-
-            return response([
-                'status' => true,
-                'message' => 'Berhasil diubah',
-                'data' => $alatbayar
-            ]);
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
@@ -164,19 +165,19 @@ class AlatBayarController extends Controller
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
 
+                DB::commit();
+
+                $selected = $this->getPosition($alatbayar, $alatbayar->getTable(), true);
+                $alatbayar->position = $selected->position;
+                $alatbayar->id = $selected->id;
+                $alatbayar->page = ceil($alatbayar->position / ($request->limit ?? 10));
+
+                return response([
+                    'status' => true,
+                    'message' => 'Berhasil dihapus',
+                    'data' => $alatbayar
+                ]);
             }
-            DB::commit();
-
-            $selected = $this->getPosition($alatbayar, $alatbayar->getTable(), true);
-            $alatbayar->position = $selected->position;
-            $alatbayar->id = $selected->id;
-            $alatbayar->page = ceil($alatbayar->position / ($request->limit ?? 10));
-
-            return response([
-                'status' => true,
-                'message' => 'Berhasil dihapus',
-                'data' => $alatbayar
-            ]);
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;

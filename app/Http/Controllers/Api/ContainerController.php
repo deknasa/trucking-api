@@ -20,9 +20,9 @@ use Illuminate\Database\QueryException;
 
 class ContainerController extends Controller
 {
-  
 
-           /**
+
+    /**
      * @ClassName 
      */
     public function index()
@@ -39,7 +39,7 @@ class ContainerController extends Controller
     }
 
 
-           /**
+    /**
      * @ClassName 
      */
     public function store(StoreContainerRequest $request)
@@ -51,7 +51,7 @@ class ContainerController extends Controller
             $container->keterangan = strtoupper($request->keterangan);
             $container->statusaktif = $request->statusaktif;
             $container->modifiedby = auth('api')->user()->name;
-            
+
             if ($container->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($container->getTable()),
@@ -65,9 +65,8 @@ class ContainerController extends Controller
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
             }
-           
+
             DB::commit();
             /* Set position and page */
             $selected = $this->getPosition($container, $container->getTable());
@@ -85,7 +84,7 @@ class ContainerController extends Controller
         }
     }
 
-    
+
     public function show(Container $container)
     {
         return response([
@@ -94,8 +93,8 @@ class ContainerController extends Controller
         ]);
     }
 
-   
-           /**
+
+    /**
      * @ClassName 
      */
     public function update(UpdateContainerRequest $request, Container $container)
@@ -120,14 +119,14 @@ class ContainerController extends Controller
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+
+
+                DB::commit();
             }
-
-            DB::commit();
-
-              /* Set position and page */
-              $selected = $this->getPosition($container, $container->getTable());
-              $container->position = $selected->position;
-              $container->page = ceil($container->position / ($request->limit ?? 10));
+            /* Set position and page */
+            $selected = $this->getPosition($container, $container->getTable());
+            $container->position = $selected->position;
+            $container->page = ceil($container->position / ($request->limit ?? 10));
 
             return response([
                 'status' => true,
@@ -140,7 +139,7 @@ class ContainerController extends Controller
         }
     }
 
-          /**
+    /**
      * @ClassName 
      */
     public function destroy(Container $container, Request $request)
@@ -148,8 +147,8 @@ class ContainerController extends Controller
         DB::beginTransaction();
         try {
 
-            $delete =Container::destroy($container->id);
-           
+            $delete = Container::destroy($container->id);
+
             if ($delete) {
                 $logTrail = [
                     'namatabel' => strtoupper($container->getTable()),
@@ -166,7 +165,7 @@ class ContainerController extends Controller
 
                 DB::commit();
             }
-   
+
             $selected = $this->getPosition($container, $container->getTable(), true);
             $container->position = $selected->position;
             $container->id = $selected->id;
@@ -177,12 +176,10 @@ class ContainerController extends Controller
                 'message' => 'Berhasil dihapus',
                 'data' => $container
             ]);
-        
         } catch (\Throwable $th) {
             DB::rollBack();
             return response($th->getMessage());
         }
-    
     }
 
     public function fieldLength()
@@ -241,7 +238,4 @@ class ContainerController extends Controller
             'data' => $data
         ]);
     }
-
-   
-
 }

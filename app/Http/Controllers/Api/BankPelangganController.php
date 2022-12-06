@@ -49,8 +49,6 @@ class BankPelangganController extends Controller
             $bankpelanggan->keterangan = $request->keterangan;
             $bankpelanggan->statusaktif = $request->statusaktif;
             $bankpelanggan->modifiedby = auth('api')->user()->name;
-            $request->sortname = $request->sortname ?? 'id';
-            $request->sortorder = $request->sortorder ?? 'asc';
 
             if ($bankpelanggan->save()) {
                 $logTrail = [
@@ -119,20 +117,21 @@ class BankPelangganController extends Controller
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
+
+                DB::commit();
+
+                /* Set position and page */
+
+                $selected = $this->getPosition($bankpelanggan, $bankpelanggan->getTable());
+                $bankpelanggan->position = $selected->position;
+                $bankpelanggan->page = ceil($bankpelanggan->position / ($request->limit ?? 10));
+
+                return response([
+                    'status' => true,
+                    'message' => 'Berhasil diubah',
+                    'data' => $bankpelanggan
+                ]);
             }
-            DB::commit();
-
-            /* Set position and page */
-
-            $selected = $this->getPosition($bankpelanggan, $bankpelanggan->getTable());
-            $bankpelanggan->position = $selected->position;
-            $bankpelanggan->page = ceil($bankpelanggan->position / ($request->limit ?? 10));
-
-            return response([
-                'status' => true,
-                'message' => 'Berhasil diubah',
-                'data' => $bankpelanggan
-            ]);
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
@@ -160,18 +159,18 @@ class BankPelangganController extends Controller
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
 
+
+                DB::commit();
+                $selected = $this->getPosition($bankpelanggan, $bankpelanggan->getTable(), true);
+                $bankpelanggan->position = $selected->position;
+                $bankpelanggan->id = $selected->id;
+                $bankpelanggan->page = ceil($bankpelanggan->position / ($request->limit ?? 10));
+                return response([
+                    'status' => true,
+                    'message' => 'Berhasil dihapus',
+                    'data' => $bankpelanggan
+                ]);
             }
-            
-            DB::commit();
-            $selected = $this->getPosition($bankpelanggan, $bankpelanggan->getTable(), true);
-            $bankpelanggan->position = $selected->position;
-            $bankpelanggan->id = $selected->id;
-            $bankpelanggan->page = ceil($bankpelanggan->position / ($request->limit ?? 10));
-            return response([
-                'status' => true,
-                'message' => 'Berhasil dihapus',
-                'data' => $bankpelanggan
-            ]);
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;

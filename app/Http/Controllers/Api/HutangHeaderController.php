@@ -447,6 +447,8 @@ class HutangHeaderController extends Controller
 
         DB::beginTransaction();
         try {
+            JurnalUmumHeader::where('nobukti', $hutangheader->nobukti)->lockForUpdate()->delete();
+            JurnalUmumDetail::where('nobukti', $hutangheader->nobukti)->lockForUpdate()->delete();
             $delete = HutangDetail::where('hutang_id', $hutangheader->id)->lockForUpdate()->delete();
             $delete = HutangHeader::destroy($hutangheader->id);
 

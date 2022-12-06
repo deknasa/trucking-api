@@ -72,7 +72,7 @@ class OrderanTrucking extends MyModel
         return $data;
     }
 
-    public function find($id)
+    public function findAll($id)
     {
         $query = DB::table('orderantrucking')
             ->select(
@@ -106,7 +106,8 @@ class OrderanTrucking extends MyModel
             ->leftJoin('container', 'orderantrucking.container_id', '=', 'container.id')
             ->leftJoin('agen', 'orderantrucking.agen_id', '=', 'agen.id')
             ->leftJoin('jenisorder', 'orderantrucking.jenisorder_id', '=', 'jenisorder.id')
-            ->leftJoin('pelanggan', 'orderantrucking.pelanggan_id', '=', 'pelanggan.id');
+            ->leftJoin('pelanggan', 'orderantrucking.pelanggan_id', '=', 'pelanggan.id')
+            ->where('orderantrucking.id', $id);
 
             $data = $query->first();
 

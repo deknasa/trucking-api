@@ -264,6 +264,12 @@ class KasGantungHeaderController extends Controller
                         $kasgantungHeader->pengeluaran_nobukti = $nobuktikaskeluar;
                         $kasgantungHeader->save();
 
+                        if($bank->tipe == 'KAS'){
+                            $jenisTransaksi = Parameter::where('grp','JENIS TRANSAKSI')->where('text','KAS')->first();
+                        }
+                        if($bank->tipe == 'BANK'){
+                            $jenisTransaksi = Parameter::where('grp','JENIS TRANSAKSI')->where('text','BANK')->first();
+                        }
 
                         $pengeluaranHeader = [
                             'tanpaprosesnobukti' => 1,
@@ -271,7 +277,7 @@ class KasGantungHeaderController extends Controller
                             'tglbukti' => date('Y-m-d', strtotime($request->tglkaskeluar)),
                             'pelanggan_id' => 0,
                             'keterangan' => $request->keterangan,
-                            'statusjenistransaksi' => 0,
+                            'statusjenistransaksi' => $jenisTransaksi->id,
                             'postingdari' => 'ENTRY KAS GANTUNG',
                             'statusapproval' => $statusApp->id,
                             'dibayarke' => '',
@@ -498,13 +504,19 @@ class KasGantungHeaderController extends Controller
                     $kasgantungheader->save();
 
 
+                    if($bank->tipe == 'KAS'){
+                        $jenisTransaksi = Parameter::where('grp','JENIS TRANSAKSI')->where('text','KAS')->first();
+                    }
+                    if($bank->tipe == 'BANK'){
+                        $jenisTransaksi = Parameter::where('grp','JENIS TRANSAKSI')->where('text','BANK')->first();
+                    }
                     $pengeluaranHeader = [
                         'tanpaprosesnobukti' => 1,
                         'nobukti' => $nobuktikaskeluar,
                         'tglbukti' => date('Y-m-d', strtotime($request->tglkaskeluar)),
                         'pelanggan_id' => 0,
                         'keterangan' => $request->keterangan,
-                        'statusjenistransaksi' => 0,
+                        'statusjenistransaksi' => $jenisTransaksi->id,
                         'postingdari' => 'ENTRY KAS GANTUNG',
                         'statusapproval' => $statusApp->id,
                         'dibayarke' => '',
@@ -587,39 +599,33 @@ class KasGantungHeaderController extends Controller
             $delete = KasGantungDetail::where('kasgantung_id', $kasgantungheader->id)->lockForUpdate()->delete();
             $delete = KasGantungHeader::destroy($kasgantungheader->id);
 
-            $datalogtrail = [
-                'namatabel' => $kasgantungheader->getTable(),
-                'postingdari' => 'DELETE KAS GANTUNG HEADER',
-                'idtrans' => $kasgantungheader->id,
-                'nobuktitrans' => $kasgantungheader->nobukti,
-                'aksi' => 'DELETE',
-                'datajson' => $kasgantungheader->toArray(),
-                'modifiedby' => $kasgantungheader->modifiedby,
-            ];
-
-            $data = new StoreLogTrailRequest($datalogtrail);
-            app(LogTrailController::class)->store($data);
-
             if ($delete) {
+                $datalogtrail = [
+                    'namatabel' => $kasgantungheader->getTable(),
+                    'postingdari' => 'DELETE KAS GANTUNG HEADER',
+                    'idtrans' => $kasgantungheader->id,
+                    'nobuktitrans' => $kasgantungheader->nobukti,
+                    'aksi' => 'DELETE',
+                    'datajson' => $kasgantungheader->toArray(),
+                    'modifiedby' => $kasgantungheader->modifiedby,
+                ];
+
+                $data = new StoreLogTrailRequest($datalogtrail);
+                app(LogTrailController::class)->store($data);
+
                 DB::commit();
-
-                $selected = $this->getPosition($kasgantungheader, $kasgantungheader->getTable(), true);
-                $kasgantungheader->position = $selected->position;
-                $kasgantungheader->id = $selected->id;
-                $kasgantungheader->page = ceil($kasgantungheader->position / ($request->limit ?? 10));
-
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil dihapus',
-                    'data' => $kasgantungheader
-                ]);
-            } else {
-                DB::rollBack();
-                return response([
-                    'status' => false,
-                    'message' => 'Gagal dihapus'
-                ]);
             }
+
+            $selected = $this->getPosition($kasgantungheader, $kasgantungheader->getTable(), true);
+            $kasgantungheader->position = $selected->position;
+            $kasgantungheader->id = $selected->id;
+            $kasgantungheader->page = ceil($kasgantungheader->position / ($request->limit ?? 10));
+
+            return response([
+                'status' => true,
+                'message' => 'Berhasil dihapus',
+                'data' => $kasgantungheader
+            ]);
         } catch (\Throwable $th) {
             DB::rollBack();
             return response($th->getMessage());

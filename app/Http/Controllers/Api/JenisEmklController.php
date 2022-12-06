@@ -115,8 +115,8 @@ class JenisEmklController extends Controller
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
+                DB::commit();
             }
-            DB::commit();
             /* Set position and page */
             $selected = $this->getPosition($jenisemkl, $jenisemkl->getTable());
             $jenisemkl->position = $selected->position;
@@ -155,9 +155,8 @@ class JenisEmklController extends Controller
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
 
+                DB::commit();
             }
-            
-            DB::commit();
 
             $selected = $this->getPosition($jenisemkl, $jenisemkl->getTable(), true);
             $jenisemkl->position = $selected->position;

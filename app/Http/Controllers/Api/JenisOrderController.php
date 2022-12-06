@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\QueryException;
+
 class JenisOrderController extends Controller
 {
     /**
@@ -114,9 +115,8 @@ class JenisOrderController extends Controller
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
-
-            } 
-            DB::commit();
+                DB::commit();
+            }
             /* Set position and page */
             $selected = $this->getPosition($jenisorder, $jenisorder->getTable());
             $jenisorder->position = $selected->position;
@@ -133,7 +133,7 @@ class JenisOrderController extends Controller
         }
     }
 
-  
+
     /**
      * @ClassName 
      */
@@ -143,7 +143,7 @@ class JenisOrderController extends Controller
         try {
 
             $delete = JenisOrder::destroy($jenisorder->id);
-            $del = 1;
+
             if ($delete) {
                 $logTrail = [
                     'namatabel' => strtoupper($jenisorder->getTable()),
@@ -158,9 +158,9 @@ class JenisOrderController extends Controller
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
 
+
+                DB::commit();
             }
-            
-            DB::commit();
 
             /* Set position and page */
             $selected = $this->getPosition($jenisorder, $jenisorder->getTable(), true);
@@ -203,5 +203,4 @@ class JenisOrderController extends Controller
             'data' => $data
         ]);
     }
-
 }

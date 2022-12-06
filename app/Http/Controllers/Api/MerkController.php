@@ -18,7 +18,7 @@ use Illuminate\Database\QueryException;
 
 class MerkController extends Controller
 {
-   /**
+    /**
      * @ClassName 
      */
     public function index()
@@ -34,11 +34,7 @@ class MerkController extends Controller
         ]);
     }
 
-    public function create()
-    {
-        //
-    }
-   /**
+    /**
      * @ClassName 
      */
     public function store(StoreMerkRequest $request)
@@ -95,12 +91,13 @@ class MerkController extends Controller
         ]);
     }
 
-    
-   /**
+
+    /**
      * @ClassName 
      */
     public function update(UpdateMerkRequest $request, Merk $merk)
     {
+        DB::beginTransaction();
         try {
             $merk = Merk::lockForUpdate()->findOrFail($merk->id);
             $merk->kodemerk = $request->kodemerk;
@@ -122,49 +119,49 @@ class MerkController extends Controller
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
 
-                /* Set position and page */
-                $selected = $this->getPosition($merk, $merk->getTable());
-                $merk->position = $selected->position;
-                $merk->page = ceil($merk->position / ($request->limit ?? 10));
-
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil diubah',
-                    'data' => $merk
-                ]);
-            } else {
-                return response([
-                    'status' => false,
-                    'message' => 'Gagal diubah'
-                ]);
+                DB::commit();
             }
+            /* Set position and page */
+            $selected = $this->getPosition($merk, $merk->getTable());
+            $merk->position = $selected->position;
+            $merk->page = ceil($merk->position / ($request->limit ?? 10));
+
+            return response([
+                'status' => true,
+                'message' => 'Berhasil diubah',
+                'data' => $merk
+            ]);
         } catch (\Throwable $th) {
+            DB::rollBack();
             throw $th;
         }
     }
-   /**
+    /**
      * @ClassName 
      */
     public function destroy(Merk $merk, Request $request)
     {
-        $delete = Merk::destroy($merk->id);
-        $del = 1;
-        if ($delete) {
-            $logTrail = [
-                'namatabel' => strtoupper($merk->getTable()),
-                'postingdari' => 'DELETE MERK',
-                'idtrans' => $merk->id,
-                'nobuktitrans' => $merk->id,
-                'aksi' => 'DELETE',
-                'datajson' => $merk->toArray(),
-                'modifiedby' => $merk->modifiedby
-            ];
+        DB::beginTransaction();
+        try {
+            $delete = Merk::destroy($merk->id);
 
-            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-            app(LogTrailController::class)->store($validatedLogTrail);
+            if ($delete) {
+                $logTrail = [
+                    'namatabel' => strtoupper($merk->getTable()),
+                    'postingdari' => 'DELETE MERK',
+                    'idtrans' => $merk->id,
+                    'nobuktitrans' => $merk->id,
+                    'aksi' => 'DELETE',
+                    'datajson' => $merk->toArray(),
+                    'modifiedby' => $merk->modifiedby
+                ];
 
-            DB::commit();
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                app(LogTrailController::class)->store($validatedLogTrail);
 
+
+                DB::commit();
+            }
             $selected = $this->getPosition($merk, $merk->getTable(), true);
             $merk->position = $selected->position;
             $merk->id = $selected->id;
@@ -175,11 +172,9 @@ class MerkController extends Controller
                 'message' => 'Berhasil dihapus',
                 'data' => $merk
             ]);
-        } else {
-            return response([
-                'status' => false,
-                'message' => 'Gagal dihapus'
-            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
         }
     }
 
@@ -200,12 +195,11 @@ class MerkController extends Controller
     public function combo(Request $request)
     {
         $data = [
-            'statusaktif' => Parameter::where(['grp'=>'status aktif'])->get(),
+            'statusaktif' => Parameter::where(['grp' => 'status aktif'])->get(),
         ];
 
         return response([
             'data' => $data
         ]);
     }
-
 }

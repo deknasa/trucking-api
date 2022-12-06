@@ -91,12 +91,13 @@ class MekanikController extends Controller
         ]);
     }
 
-    
+
     /**
      * @ClassName 
      */
     public function update(UpdateMekanikRequest $request, Mekanik $mekanik)
     {
+        DB::beginTransaction();
         try {
             $mekanik->namamekanik = $request->namamekanik;
             $mekanik->keterangan = $request->keterangan;
@@ -117,23 +118,20 @@ class MekanikController extends Controller
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
 
-                /* Set position and page */
-                $selected = $this->getPosition($mekanik, $mekanik->getTable());
-                $mekanik->position = $selected->position;
-                $mekanik->page = ceil($mekanik->position / ($request->limit ?? 10));
-
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil diubah',
-                    'data' => $mekanik
-                ]);
-            } else {
-                return response([
-                    'status' => false,
-                    'message' => 'Gagal diubah'
-                ]);
+                DB::commit();
             }
+            /* Set position and page */
+            $selected = $this->getPosition($mekanik, $mekanik->getTable());
+            $mekanik->position = $selected->position;
+            $mekanik->page = ceil($mekanik->position / ($request->limit ?? 10));
+
+            return response([
+                'status' => true,
+                'message' => 'Berhasil diubah',
+                'data' => $mekanik
+            ]);
         } catch (\Throwable $th) {
+            DB::rollBack();
             return response($th->getMessage());
         }
     }
@@ -142,23 +140,27 @@ class MekanikController extends Controller
      */
     public function destroy(Mekanik $mekanik, Request $request)
     {
-        $delete = Mekanik::destroy($mekanik->id);
-        $del = 1;
-        if ($delete) {
-            $logTrail = [
-                'namatabel' => strtoupper($mekanik->getTable()),
-                'postingdari' => 'DELETE MEKANIK',
-                'idtrans' => $mekanik->id,
-                'nobuktitrans' => $mekanik->id,
-                'aksi' => 'DELETE',
-                'datajson' => $mekanik->toArray(),
-                'modifiedby' => $mekanik->modifiedby
-            ];
+        DB::beginTransaction();
+        try {
+            $delete = Mekanik::destroy($mekanik->id);
 
-            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-            app(LogTrailController::class)->store($validatedLogTrail);
+            if ($delete) {
+                $logTrail = [
+                    'namatabel' => strtoupper($mekanik->getTable()),
+                    'postingdari' => 'DELETE MEKANIK',
+                    'idtrans' => $mekanik->id,
+                    'nobuktitrans' => $mekanik->id,
+                    'aksi' => 'DELETE',
+                    'datajson' => $mekanik->toArray(),
+                    'modifiedby' => $mekanik->modifiedby
+                ];
 
-            DB::commit();
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                app(LogTrailController::class)->store($validatedLogTrail);
+
+
+                DB::commit();
+            }
             $selected = $this->getPosition($mekanik, $mekanik->getTable(), true);
             $mekanik->position = $selected->position;
             $mekanik->id = $selected->id;
@@ -169,18 +171,16 @@ class MekanikController extends Controller
                 'message' => 'Berhasil dihapus',
                 'data' => $mekanik
             ]);
-        } else {
-            return response([
-                'status' => false,
-                'message' => 'Gagal dihapus'
-            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return response($th->getMessage());
         }
     }
 
     public function combo(Request $request)
     {
         $data = [
-            'status' => Parameter::where(['grp'=>'status aktif'])->get(),
+            'status' => Parameter::where(['grp' => 'status aktif'])->get(),
         ];
 
         return response([

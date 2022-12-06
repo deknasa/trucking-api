@@ -115,9 +115,10 @@ class SatuanController extends Controller
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
-            }
 
-            DB::commit();
+
+                DB::commit();
+            }
             /* Set position and page */
             $selected = $this->getPosition($satuan, $satuan->getTable());
             $satuan->position = $selected->position;
@@ -142,7 +143,7 @@ class SatuanController extends Controller
 
         try {
             $delete = Satuan::destroy($satuan->id);
-            $del = 1;
+
             if ($delete) {
                 $logTrail = [
                     'namatabel' => strtoupper($satuan->getTable()),
@@ -156,9 +157,9 @@ class SatuanController extends Controller
 
                 $data = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($data);
-            }
-            DB::commit();
 
+                DB::commit();
+            }
             /* Set position and page */
             $selected = $this->getPosition($satuan, $satuan->getTable(), true);
             $satuan->position = $selected->position;
@@ -201,5 +202,4 @@ class SatuanController extends Controller
             'data' => $data
         ]);
     }
-
 }

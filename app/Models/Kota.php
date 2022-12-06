@@ -52,7 +52,7 @@ class Kota extends MyModel
         return $data;
     }
 
-    public function find($id)
+    public function findAll($id)
     {
     
         $query =  DB::table('kota')->select(DB::raw('kota.*, zona.zona as zona'))

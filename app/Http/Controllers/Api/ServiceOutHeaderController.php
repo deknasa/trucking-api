@@ -306,14 +306,7 @@ class ServiceOutHeaderController extends Controller
                     'message' => 'Berhasil dihapus',
                     'data' => $serviceoutheader
                 ]);
-            } else {
-                DB::rollBack();
-
-                return response([
-                    'status' => false,
-                    'message' => 'Gagal dihapus'
-                ]);
-            }
+            } 
         } catch (\Throwable $th) {
             DB::rollBack();
             return response($th->getMessage());

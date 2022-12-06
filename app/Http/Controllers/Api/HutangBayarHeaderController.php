@@ -210,7 +210,7 @@ class HutangBayarHeaderController extends Controller
                 'tanpaprosesnobukti' => 1,
                 'nobukti' => $nobuktiPengeluaran,
                 'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
-                'pelanggan_id' => '',
+                'pelanggan_id' => $hutang->pelanggan_id,
                 'keterangan' => $request->keterangan,
                 'statusjenistransaksi' => $jenisTransaksi->id,
                 'postingdari' => 'ENTRY HUTANG BAYAR',
@@ -431,7 +431,7 @@ class HutangBayarHeaderController extends Controller
                 'tanpaprosesnobukti' => 1,
                 'nobukti' => $nobuktiPengeluaran,
                 'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
-                'pelanggan_id' => '',
+                'pelanggan_id' => $hutang->pelanggan_id,
                 'keterangan' => $request->keterangan,
                 'statusjenistransaksi' => $jenisTransaksi->id,
                 'postingdari' => 'ENTRY HUTANG BAYAR',
@@ -554,6 +554,20 @@ class HutangBayarHeaderController extends Controller
             DB::rollBack();
             return response($th->getMessage());
         }
+    }
+    
+    public function fieldLength()
+    {
+        $data = [];
+        $columns = DB::connection()->getDoctrineSchemaManager()->listTableDetails('hutangbayarheader')->getColumns();
+
+        foreach ($columns as $index => $column) {
+            $data[$index] = $column->getLength();
+        }
+
+        return response([
+            'data' => $data
+        ]);
     }
 
     public function combo(Request $request)

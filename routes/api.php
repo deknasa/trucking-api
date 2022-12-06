@@ -442,6 +442,7 @@
 
         Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
         Route::get('hutangbayarheader/no_bukti', [HutangBayarHeaderController::class, 'getNoBukti']);
+        Route::get('hutangbayarheader/field_length', [HutangBayarHeaderController::class, 'fieldLength']);
         Route::get('hutangbayarheader/combo', [HutangBayarHeaderController::class, 'combo']);
         Route::get('hutangbayarheader/{id}/getHutang', [HutangBayarHeaderController::class, 'getHutang'])->name('hutangbayarheader.getHutang'); 
         Route::get('hutangbayarheader/comboapproval', [HutangBayarHeaderController::class, 'comboapproval']);
@@ -710,10 +711,6 @@
     Route::get('kerusakan/field_length', [KerusakanController::class, 'fieldLength']);
     Route::resource('kerusakan', KerusakanController::class);
 
-    Route::get('kota/combo', [KotaController::class, 'combo']);
-    Route::get('kota/field_length', [KotaController::class, 'fieldLength']);
-    Route::resource('kota', KotaController::class)->parameters(['kota' => 'kota']);
-
     Route::get('mandor/combo', [MandorController::class, 'combo']);
     Route::get('mandor/field_length', [MandorController::class, 'fieldLength']);
     Route::resource('mandor', MandorController::class);
@@ -730,9 +727,6 @@
     Route::get('zona/field_length', [ZonaController::class, 'fieldLength']);
     Route::resource('zona', ZonaController::class);
 
-    Route::get('tarif/combo', [TarifController::class, 'combo']);
-    Route::get('tarif/field_length', [TarifController::class, 'fieldLength']);
-    Route::resource('tarif', TarifController::class);
 
     Route::get('orderantrucking/combo', [OrderanTruckingController::class, 'combo']);
     Route::get('orderantrucking/field_length', [OrderanTruckingController::class, 'fieldLength']);

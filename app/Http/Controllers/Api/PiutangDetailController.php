@@ -48,8 +48,8 @@ class PiutangDetailController extends Controller
                     'detail.nominal',
                     'detail.invoice_nobukti as invoice_nobukti_detail'
                 )
-                    ->join('piutangheader as header', 'header.id', 'detail.piutang_id')
-                    ->join('agen', 'header.agen_id','agen.id');
+                    ->leftJoin('piutangheader as header', 'header.id', 'detail.piutang_id')
+                    ->leftJoin('agen', 'header.agen_id','agen.id');
 
                 $piutangDetail = $query->get();
             } else {

@@ -95,7 +95,7 @@ class AgenController extends Controller
 
     public function show($id)
     {
-        $agen = Agen::select('agen.*','jenisemkl.keterangan as keteranganjenisemkl')->join('jenisemkl','agen.jenisemkl','jenisemkl.id')->where('agen.id',$id)->first();
+        $agen = Agen::select('agen.*', 'jenisemkl.keterangan as keteranganjenisemkl')->join('jenisemkl', 'agen.jenisemkl', 'jenisemkl.id')->where('agen.id', $id)->first();
         return response([
             'status' => true,
             'data' => $agen
@@ -140,20 +140,20 @@ class AgenController extends Controller
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
 
-            } 
-            
-            DB::commit();
 
-            /* Set position and page */
-            $selected = $this->getPosition($agen, $agen->getTable());
-            $agen->position = $selected->position;
-            $agen->page = ceil($agen->position / ($request->limit ?? 10));
+                DB::commit();
 
-            return response([
-                'status' => true,
-                'message' => 'Berhasil diubah',
-                'data' => $agen
-            ]);
+                /* Set position and page */
+                $selected = $this->getPosition($agen, $agen->getTable());
+                $agen->position = $selected->position;
+                $agen->page = ceil($agen->position / ($request->limit ?? 10));
+
+                return response([
+                    'status' => true,
+                    'message' => 'Berhasil diubah',
+                    'data' => $agen
+                ]);
+            }
         } catch (\Throwable $th) {
             DB::rollBack();
 
@@ -184,8 +184,7 @@ class AgenController extends Controller
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
-
-            } 
+            }
             DB::commit();
 
             $selected = $this->getPosition($agen, $agen->getTable(), true);
