@@ -54,6 +54,10 @@ class PenerimaanHeaderController extends Controller
         try {
             /* Store header */
 
+            $tanpaprosesnobukti = $request->tanpaprosesnobukti ?? 0;
+
+            
+            
             $content = new Request();
             $bankid = $request->bank_id;
             $querysubgrppenerimaan = DB::table('bank')
@@ -75,6 +79,9 @@ class PenerimaanHeaderController extends Controller
 
             // $content['nobukti'] = $querysubgrppenerimaan->formatbuktipenerimaan;
 
+            // if ($tanpaprosesnobukti == 1) {
+            //     $pengeluaranHeader->nobukti = $request->nobukti;
+            // }
             $statusApproval = Parameter::where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
             $statusBerkas = Parameter::where('grp', 'STATUS BERKAS')->where('text', 'TIDAK ADA BERKAS')->first();
             $penerimaanHeader = new PenerimaanHeader();
@@ -98,6 +105,10 @@ class PenerimaanHeaderController extends Controller
 
             $penerimaanHeader->save();
 
+            if ($tanpaprosesnobukti == 1) {
+                DB::commit();
+            }
+
             $logTrail = [
                 'namatabel' => strtoupper($penerimaanHeader->getTable()),
                 'postingdari' => 'ENTRY PENERIMAAN KAS/BANK',
@@ -110,154 +121,156 @@ class PenerimaanHeaderController extends Controller
             $validatedLogTrail = new StoreLogTrailRequest($logTrail);
             $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-            /* Store detail */
-            $detaillog = [];
-
-            for ($i = 0; $i < count($request->nominal_detail); $i++) {
-
-
-                $datadetail = [
-                    'penerimaan_id' => $penerimaanHeader->id,
-                    'nobukti' => $penerimaanHeader->nobukti,
-                    'nowarkat' => $request->nowarkat[$i],
-                    'tgljatuhtempo' =>  date('Y-m-d', strtotime($request->tgljatuhtempo[$i])),
-                    'nominal' => $request->nominal_detail[$i],
-                    'coadebet' => $request->coadebet[$i],
-                    'coakredit' => $querysubgrppenerimaan->coa,
-                    'keterangan' => $request->keterangan_detail[$i],
-                    'bank_id' => $penerimaanHeader->bank_id,
-                    'pelanggan_id' => $penerimaanHeader->pelanggan_id,
-                    'invoice_nobukti' => $request->invoice_nobukti[$i] ?? '-',
-                    'bankpelanggan_id' => $request->bankpelanggan_id[$i],
-                    'jenisbiaya' => $request->jenisbiaya[$i],
-                    'pelunasanpiutang_nobukti' => $request->pelunasanpiutang_nobukti[$i] ?? '-',
-                    'bulanbeban' => date('Y-m-d', strtotime($request->bulanbeban[$i])),
-                    'modifiedby' => auth('api')->user()->name,
-                ];
-
-                $data = new StorePenerimaanDetailRequest($datadetail);
-                $datadetails = app(PenerimaanDetailController::class)->store($data);
-
-                if ($datadetails['error']) {
-                    return response($datadetails, 422);
-                } else {
-                    $iddetail = $datadetails['id'];
-                    $tabeldetail = $datadetails['tabel'];
-                }
-
-                $datadetaillog = [
-                    'penerimaan_id' => $penerimaanHeader->id,
-                    'nobukti' => $penerimaanHeader->nobukti,
-                    'nowarkat' => $request->nowarkat[$i],
-                    'tgljatuhtempo' =>  date('Y-m-d', strtotime($request->tgljatuhtempo[$i])),
-                    'nominal' => $request->nominal_detail[$i],
-                    'coadebet' => $request->coadebet[$i],
-                    'coakredit' => $querysubgrppenerimaan->coa,
-                    'keterangan' => $request->keterangan_detail[$i],
-                    'bank_id' => $penerimaanHeader->bank_id,
-                    'pelanggan_id' => $penerimaanHeader->pelanggan_id,
-                    'invoice_nobukti' => $request->invoice_nobukti[$i] ?? '-',
-                    'bankpelanggan_id' => $request->bankpelanggan_id[$i],
-                    'jenisbiaya' => $request->jenisbiaya[$i],
-                    'pelunasanpiutang_nobukti' => $request->pelunasanpiutang_nobukti[$i] ?? '-',
-                    'bulanbeban' => date('Y-m-d', strtotime($request->bulanbeban[$i])),
-                    'modifiedby' => auth('api')->user()->name,
-                    'created_at' => date('d-m-Y H:i:s', strtotime($penerimaanHeader->created_at)),
-                    'updated_at' => date('d-m-Y H:i:s', strtotime($penerimaanHeader->updated_at)),
-                ];
-                $detaillog[] = $datadetaillog;
-
-
-                $dataid = LogTrail::select('id')
-                    ->where('nobuktitrans', '=', $penerimaanHeader->nobukti)
-                    ->where('namatabel', '=', $penerimaanHeader->getTable())
-                    ->orderBy('id', 'DESC')
-                    ->first();
-
-                $datalogtrail = [
-                    'namatabel' => $tabeldetail,
-                    'postingdari' => 'ENTRY PENERIMAAN DETAIL KAS/BANK',
-                    'idtrans' =>  $dataid->id,
-                    'nobuktitrans' => $penerimaanHeader->nobukti,
-                    'aksi' => 'ENTRY',
-                    'datajson' => $detaillog,
-                    'modifiedby' => auth('api')->user()->name,
-                ];
-
-
-                $data = new StoreLogTrailRequest($datalogtrail);
-                app(LogTrailController::class)->store($data);
-            }
-
-
-            $request->sortname = $request->sortname ?? 'id';
-            $request->sortorder = $request->sortorder ?? 'asc';
-
-            if ($penerimaanHeader->save() && $penerimaanHeader->penerimaandetail) {
-                $parameterController = new ParameterController;
-                $statusApp = $parameterController->getparameterid('STATUS APPROVAL', 'STATUS APPROVAL', 'NON APPROVAL');
-
-                $jurnalHeader = [
-                    'tanpaprosesnobukti' => 1,
-                    'nobukti' => $penerimaanHeader->nobukti,
-                    'tgl' => date('Y-m-d', strtotime($request->tglbukti)),
-                    'keterangan' => $request->keterangan,
-                    'postingdari' => 'ENTRY PENERIMAAN KAS',
-                    'statusapproval' => $statusApp->id,
-                    'userapproval' => "",
-                    'tglapproval' => "",
-                    'modifiedby' => auth('api')->user()->name,
-                    'statusformat' => "0",
-                ];
-                $jurnaldetail = [];
-
+            if ($tanpaprosesnobukti == 0) {
+                /* Store detail */
+                $detaillog = [];
+                
                 for ($i = 0; $i < count($request->nominal_detail); $i++) {
-                    $detail = [];
-
-                    $jurnalDetail = [
-                        [
-                            'nobukti' => $penerimaanHeader->nobukti,
-                            'tglbukti' => date('Y-m-d', strtotime($penerimaanHeader->tglbukti)),
-                            'coa' =>  $request->coadebet[$i],
-                            'nominal' => $request->nominal_detail[$i],
-                            'keterangan' => $request->keterangan_detail[$i],
-                            'modifiedby' => auth('api')->user()->name,
-                            'baris' => $i,
-                        ],
-                        [
-                            'nobukti' => $penerimaanHeader->nobukti,
-                            'tglbukti' => date('Y-m-d', strtotime($penerimaanHeader->tglbukti)),
-                            'coa' =>  $querysubgrppenerimaan->coa,
-                            'nominal' => -$request->nominal_detail[$i],
-                            'keterangan' => $request->keterangan_detail[$i],
-                            'modifiedby' => auth('api')->user()->name,
-                            'baris' => $i,
-                        ]
+    
+    
+                    $datadetail = [
+                        'penerimaan_id' => $penerimaanHeader->id,
+                        'nobukti' => $penerimaanHeader->nobukti,
+                        'nowarkat' => $request->nowarkat[$i],
+                        'tgljatuhtempo' =>  date('Y-m-d', strtotime($request->tgljatuhtempo[$i])),
+                        'nominal' => $request->nominal_detail[$i],
+                        'coadebet' => $request->coadebet[$i],
+                        'coakredit' => $querysubgrppenerimaan->coa,
+                        'keterangan' => $request->keterangan_detail[$i],
+                        'bank_id' => $penerimaanHeader->bank_id,
+                        'pelanggan_id' => $penerimaanHeader->pelanggan_id,
+                        'invoice_nobukti' => $request->invoice_nobukti[$i] ?? '-',
+                        'bankpelanggan_id' => $request->bankpelanggan_id[$i],
+                        'jenisbiaya' => $request->jenisbiaya[$i],
+                        'pelunasanpiutang_nobukti' => $request->pelunasanpiutang_nobukti[$i] ?? '-',
+                        'bulanbeban' => date('Y-m-d', strtotime($request->bulanbeban[$i])),
+                        'modifiedby' => auth('api')->user()->name,
                     ];
-
-
-                    $jurnaldetail = array_merge($jurnaldetail, $jurnalDetail);
+    
+                    $data = new StorePenerimaanDetailRequest($datadetail);
+                    $datadetails = app(PenerimaanDetailController::class)->store($data);
+    
+                    if ($datadetails['error']) {
+                        return response($datadetails, 422);
+                    } else {
+                        $iddetail = $datadetails['id'];
+                        $tabeldetail = $datadetails['tabel'];
+                    }
+    
+                    $datadetaillog = [
+                        'penerimaan_id' => $penerimaanHeader->id,
+                        'nobukti' => $penerimaanHeader->nobukti,
+                        'nowarkat' => $request->nowarkat[$i],
+                        'tgljatuhtempo' =>  date('Y-m-d', strtotime($request->tgljatuhtempo[$i])),
+                        'nominal' => $request->nominal_detail[$i],
+                        'coadebet' => $request->coadebet[$i],
+                        'coakredit' => $querysubgrppenerimaan->coa,
+                        'keterangan' => $request->keterangan_detail[$i],
+                        'bank_id' => $penerimaanHeader->bank_id,
+                        'pelanggan_id' => $penerimaanHeader->pelanggan_id,
+                        'invoice_nobukti' => $request->invoice_nobukti[$i] ?? '-',
+                        'bankpelanggan_id' => $request->bankpelanggan_id[$i],
+                        'jenisbiaya' => $request->jenisbiaya[$i],
+                        'pelunasanpiutang_nobukti' => $request->pelunasanpiutang_nobukti[$i] ?? '-',
+                        'bulanbeban' => date('Y-m-d', strtotime($request->bulanbeban[$i])),
+                        'modifiedby' => auth('api')->user()->name,
+                        'created_at' => date('d-m-Y H:i:s', strtotime($penerimaanHeader->created_at)),
+                        'updated_at' => date('d-m-Y H:i:s', strtotime($penerimaanHeader->updated_at)),
+                    ];
+                    $detaillog[] = $datadetaillog;
+    
+    
+                    $dataid = LogTrail::select('id')
+                        ->where('nobuktitrans', '=', $penerimaanHeader->nobukti)
+                        ->where('namatabel', '=', $penerimaanHeader->getTable())
+                        ->orderBy('id', 'DESC')
+                        ->first();
+    
+                    $datalogtrail = [
+                        'namatabel' => $tabeldetail,
+                        'postingdari' => 'ENTRY PENERIMAAN DETAIL KAS/BANK',
+                        'idtrans' =>  $dataid->id,
+                        'nobuktitrans' => $penerimaanHeader->nobukti,
+                        'aksi' => 'ENTRY',
+                        'datajson' => $detaillog,
+                        'modifiedby' => auth('api')->user()->name,
+                    ];
+    
+    
+                    $data = new StoreLogTrailRequest($datalogtrail);
+                    app(LogTrailController::class)->store($data);
                 }
-
-
-                $jurnal = $this->storeJurnal($jurnalHeader, $jurnaldetail);
-
-
-                // if (!$jurnal['status'] AND @$jurnal['errorCode'] == 2601) {
-                //     goto ATAS;
-                // }
-
-                if (!$jurnal['status']) {
-                    throw new Exception($jurnal['message']);
+    
+    
+                $request->sortname = $request->sortname ?? 'id';
+                $request->sortorder = $request->sortorder ?? 'asc';
+    
+                if ($penerimaanHeader->save() && $penerimaanHeader->penerimaandetail) {
+                    $parameterController = new ParameterController;
+                    $statusApp = $parameterController->getparameterid('STATUS APPROVAL', 'STATUS APPROVAL', 'NON APPROVAL');
+    
+                    $jurnalHeader = [
+                        'tanpaprosesnobukti' => 1,
+                        'nobukti' => $penerimaanHeader->nobukti,
+                        'tgl' => date('Y-m-d', strtotime($request->tglbukti)),
+                        'keterangan' => $request->keterangan,
+                        'postingdari' => 'ENTRY PENERIMAAN KAS',
+                        'statusapproval' => $statusApp->id,
+                        'userapproval' => "",
+                        'tglapproval' => "",
+                        'modifiedby' => auth('api')->user()->name,
+                        'statusformat' => "0",
+                    ];
+                    $jurnaldetail = [];
+    
+                    for ($i = 0; $i < count($request->nominal_detail); $i++) {
+                        $detail = [];
+    
+                        $jurnalDetail = [
+                            [
+                                'nobukti' => $penerimaanHeader->nobukti,
+                                'tglbukti' => date('Y-m-d', strtotime($penerimaanHeader->tglbukti)),
+                                'coa' =>  $request->coadebet[$i],
+                                'nominal' => $request->nominal_detail[$i],
+                                'keterangan' => $request->keterangan_detail[$i],
+                                'modifiedby' => auth('api')->user()->name,
+                                'baris' => $i,
+                            ],
+                            [
+                                'nobukti' => $penerimaanHeader->nobukti,
+                                'tglbukti' => date('Y-m-d', strtotime($penerimaanHeader->tglbukti)),
+                                'coa' =>  $querysubgrppenerimaan->coa,
+                                'nominal' => -$request->nominal_detail[$i],
+                                'keterangan' => $request->keterangan_detail[$i],
+                                'modifiedby' => auth('api')->user()->name,
+                                'baris' => $i,
+                            ]
+                        ];
+    
+    
+                        $jurnaldetail = array_merge($jurnaldetail, $jurnalDetail);
+                    }
+    
+    
+                    $jurnal = $this->storeJurnal($jurnalHeader, $jurnaldetail);
+    
+    
+                    // if (!$jurnal['status'] AND @$jurnal['errorCode'] == 2601) {
+                    //     goto ATAS;
+                    // }
+    
+                    if (!$jurnal['status']) {
+                        throw new Exception($jurnal['message']);
+                    }
                 }
+    
+                DB::commit();
+    
+                /* Set position and page */
+                $selected = $this->getPosition($penerimaanHeader, $penerimaanHeader->getTable());
+                $penerimaanHeader->position = $selected->position;
+                $penerimaanHeader->page = ceil($penerimaanHeader->position / ($request->limit ?? 10));
             }
-
-            DB::commit();
-
-            /* Set position and page */
-            $selected = $this->getPosition($penerimaanHeader, $penerimaanHeader->getTable());
-            $penerimaanHeader->position = $selected->position;
-            $penerimaanHeader->page = ceil($penerimaanHeader->position / ($request->limit ?? 10));
 
             return response([
                 'status' => true,

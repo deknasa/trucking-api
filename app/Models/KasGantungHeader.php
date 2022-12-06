@@ -154,11 +154,12 @@ class KasGantungHeader extends MyModel
     }
 
 
-    public function getKasGantung()
+    public function getKasGantung($dari,$sampai)
     {
         $this->setRequestParameters();
         $query = DB::table('kasgantungdetail')
         ->select(DB::raw("kasgantungdetail.id as detail_id,kasgantungdetail.*,kasgantungheader.id,kasgantungheader.tglbukti"))
+        ->whereBetween('tglbukti', [$dari, $sampai])
         ->whereRaw(" NOT EXISTS (
             SELECT pengembaliankasgantungdetail.kasgantung_nobukti 
             FROM pengembaliankasgantungdetail 

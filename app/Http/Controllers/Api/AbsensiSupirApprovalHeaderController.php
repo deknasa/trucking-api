@@ -101,7 +101,8 @@ class AbsensiSupirApprovalHeaderController extends Controller
 
             if ($absensiSupirApprovalHeader->save()) {
                 $bank = DB::table('bank')->where('coa', $coakaskeluar)->first();
-                $kasgantung = DB::table('kasgantungheader')->where('nobukti', $request->kasgantung_nobukti)->first();
+                // $kasgantung = DB::table('kasgantungheader')->where('nobukti', $request->kasgantung_nobukti)->first();
+                $kasgantung = KasGantungHeader::where('nobukti', $request->kasgantung_nobukti)->first();
                 $kasgantungdetail = DB::table('kasgantungdetail')->where('nobukti', $request->kasgantung_nobukti)->get();
                 $details = [];
                 $total = 0;
@@ -124,7 +125,7 @@ class AbsensiSupirApprovalHeaderController extends Controller
                 ];
 
                 $data = new StoreKasGantungHeaderRequest($dataKasgantung);
-                $kasgantungStore = app(KasGantungHeaderController::class)->update($data, $kasgantung->id);
+                $kasgantungStore = app(KasGantungHeaderController::class)->update($data, $kasgantung);
                 $kasgantung = $kasgantungStore->original['data'];
 
 
@@ -323,7 +324,9 @@ class AbsensiSupirApprovalHeaderController extends Controller
             $absensiSupirApprovalHeader->modifiedby =  auth('api')->user()->name;
             if ($absensiSupirApprovalHeader->save()) {
                 $bank = DB::table('bank')->where('coa', $coakaskeluar)->first();
-                $kasgantung = DB::table('kasgantungheader')->where('nobukti', $request->kasgantung_nobukti)->first();
+
+                // $kasgantung = DB::table('kasgantungheader')->where('nobukti', $request->kasgantung_nobukti)->first();
+                $kasgantung = KasGantungHeader::where('nobukti', $request->kasgantung_nobukti)->first();
                 $kasgantungdetail = DB::table('kasgantungdetail')->where('nobukti', $request->kasgantung_nobukti)->get();
                 $details = [];
                 $total = 0;

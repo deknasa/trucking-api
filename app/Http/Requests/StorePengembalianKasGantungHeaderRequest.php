@@ -29,7 +29,7 @@ class StorePengembalianKasGantungHeaderRequest extends FormRequest
             "bank_id" => "required",
             "bank" => "required",
             "keterangan" => "required",
-            "penerimaan_nobukti"=>"required",
+            "coa" => "required",
             // "statusformat" => "required",
             // "statushitungstok" => "required"
         ];
