@@ -30,6 +30,9 @@ class CreatePengembaliankasgantungheaderTable extends Migration
             $table->string('postingdari',50)->default('');
             $table->date('tglkasmasuk')->default('1900/1/1');
             $table->unsignedBigInteger('statusformat')->default(0);
+            $table->integer('statuscetak')->Length(11)->default('0');
+            $table->string('userbukacetak',50)->default('');
+            $table->date('tglbukacetak')->default('1900/1/1');
             $table->string('modifiedby',50)->default('');
             $table->timestamps();
 

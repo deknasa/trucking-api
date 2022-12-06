@@ -27,6 +27,9 @@ class CreatePengeluarantruckingheaderTable extends Migration
             $table->string('coa',50)->default('');
             $table->string('pengeluaran_nobukti',50)->default('');
             $table->unsignedBigInteger('statusformat')->default(0);            
+            $table->integer('statuscetak')->Length(11)->default('0');
+            $table->string('userbukacetak',50)->default('');
+            $table->date('tglbukacetak')->default('1900/1/1');
             $table->string('modifiedby',50)->default('');
 
             $table->timestamps();

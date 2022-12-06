@@ -49,7 +49,7 @@ class UpahRitasi extends MyModel
             'upahritasi.tglmulaiberlaku',
             'upahritasi.tglakhirberlaku',
             'statusluarkota.text as statusluarkota',
-
+            'upahritasi.created_at',
             'upahritasi.modifiedby',
             'upahritasi.updated_at'
         )

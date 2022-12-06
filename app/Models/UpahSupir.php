@@ -49,7 +49,7 @@ class UpahSupir extends MyModel
             'upahsupir.tglmulaiberlaku',
             'upahsupir.tglakhirberlaku',
             'statusluarkota.text as statusluarkota',
-
+            'upahsupir.created_at',
             'upahsupir.modifiedby',
             'upahsupir.updated_at'
         )
