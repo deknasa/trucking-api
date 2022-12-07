@@ -60,7 +60,7 @@ class InvoiceDetailController extends Controller
                     'kota.keterangan as tujuan',
                     'detail.invoice_id'
                 )
-                
+                ->distinct('detail.orderantrucking_nobukti')
                 ->leftJoin('suratpengantar','detail.orderantrucking_nobukti','suratpengantar.jobtrucking')
                 ->leftJoin('invoiceheader as header','header.id','detail.invoice_id')
                 ->leftJoin('agen','header.agen_id','agen.id')

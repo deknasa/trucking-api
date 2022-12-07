@@ -81,10 +81,10 @@ class UpahSupirController extends Controller
                         'container_id' => $request->container_id[$i],
                         'statuscontainer_id' => $request->statuscontainer_id[$i],
                         'nominalsupir' => $request->nominalsupir[$i],
-                        'nominalkenek' => $request->nominalkenek[$i],
-                        'nominalkomisi' => $request->nominalkomisi[$i],
-                        'nominaltol' =>  $request->nominaltol[$i],
-                        'liter' => $request->liter[$i],
+                        'nominalkenek' => $request->nominalkenek[$i] ?? 0,
+                        'nominalkomisi' => $request->nominalkomisi[$i] ?? 0,
+                        'nominaltol' =>  $request->nominaltol[$i] ?? 0,
+                        'liter' => $request->liter[$i] ?? 0,
                         'modifiedby' => $request->modifiedby,
                     ];
                     $data = new StoreUpahSupirRincianRequest($datadetail);
@@ -102,30 +102,31 @@ class UpahSupirController extends Controller
                         'container_id' => $request->container_id[$i],
                         'statuscontainer_id' => $request->statuscontainer_id[$i],
                         'nominalsupir' => $request->nominalsupir[$i],
-                        'nominalkenek' => $request->nominalkenek[$i],
-                        'nominalkomisi' => $request->nominalkomisi[$i],
-                        'nominaltol' =>  $request->nominaltol[$i],
-                        'liter' => $request->liter[$i],
+                        'nominalkenek' => $request->nominalkenek[$i] ?? 0,
+                        'nominalkomisi' => $request->nominalkomisi[$i] ?? 0,
+                        'nominaltol' =>  $request->nominaltol[$i] ?? 0,
+                        'liter' => $request->liter[$i] ?? 0,
                         'modifiedby' => $request->modifiedby,
                         'created_at' => date('d-m-Y H:i:s', strtotime($upahsupir->created_at)),
                         'updated_at' => date('d-m-Y H:i:s', strtotime($upahsupir->updated_at)),
                     ];
 
                     $detaillog[] = $datadetaillog;
+
+                    $datalogtrail = [
+                        'namatabel' => $tabeldetail,
+                        'postingdari' => 'ENTRY UPAH SUPIR RINCIAN',
+                        'idtrans' =>  $iddetail,
+                        'nobuktitrans' => $iddetail,
+                        'aksi' => 'ENTRY',
+                        'datajson' => $detaillog,
+                        'modifiedby' => $request->modifiedby,
+                    ];
+
+                    $data = new StoreLogTrailRequest($datalogtrail);
+                    app(LogTrailController::class)->store($data);
                 }
 
-                $datalogtrail = [
-                    'namatabel' => $tabeldetail,
-                    'postingdari' => 'ENTRY UPAH SUPIR RINCIAN',
-                    'idtrans' =>  $iddetail->id,
-                    'nobuktitrans' => $iddetail->id,
-                    'aksi' => 'ENTRY',
-                    'datajson' => $detaillog,
-                    'modifiedby' => $request->modifiedby,
-                ];
-
-                $data = new StoreLogTrailRequest($datalogtrail);
-                app(LogTrailController::class)->store($data);
 
                 $request->sortname = $request->sortname ?? 'id';
                 $request->sortorder = $request->sortorder ?? 'asc';
@@ -208,10 +209,10 @@ class UpahSupirController extends Controller
                         'container_id' => $request->container_id[$i],
                         'statuscontainer_id' => $request->statuscontainer_id[$i],
                         'nominalsupir' => $request->nominalsupir[$i],
-                        'nominalkenek' => $request->nominalkenek[$i],
-                        'nominalkomisi' => $request->nominalkomisi[$i],
-                        'nominaltol' =>  $request->nominaltol[$i],
-                        'liter' => $request->liter[$i],
+                        'nominalkenek' => $request->nominalkenek[$i] ?? 0,
+                        'nominalkomisi' => $request->nominalkomisi[$i] ?? 0,
+                        'nominaltol' =>  $request->nominaltol[$i] ?? 0,
+                        'liter' => $request->liter[$i] ?? 0,
                         'modifiedby' => $request->modifiedby,
                     ];
 
@@ -231,29 +232,30 @@ class UpahSupirController extends Controller
                         'container_id' => $request->container_id[$i],
                         'statuscontainer_id' => $request->statuscontainer_id[$i],
                         'nominalsupir' => $request->nominalsupir[$i],
-                        'nominalkenek' => $request->nominalkenek[$i],
-                        'nominalkomisi' => $request->nominalkomisi[$i],
-                        'nominaltol' =>  $request->nominaltol[$i],
-                        'liter' => $request->liter[$i],
+                        'nominalkenek' => $request->nominalkenek[$i] ?? 0,
+                        'nominalkomisi' => $request->nominalkomisi[$i] ?? 0,
+                        'nominaltol' =>  $request->nominaltol[$i] ?? 0,
+                        'liter' => $request->liter[$i] ?? 0,
                         'modifiedby' => $request->modifiedby,
                         'created_at' => date('d-m-Y H:i:s', strtotime($upahsupir->created_at)),
                         'updated_at' => date('d-m-Y H:i:s', strtotime($upahsupir->updated_at)),
                     ];
                     $detaillog[] = $datadetaillog;
+
+
+                    $datalogtrail = [
+                        'namatabel' => $tabeldetail,
+                        'postingdari' => 'EDIT UPAH SUPIR RINCIAN',
+                        'idtrans' =>  $iddetail,
+                        'nobuktitrans' => $iddetail,
+                        'aksi' => 'EDIT',
+                        'datajson' => $detaillog,
+                        'modifiedby' => $upahsupir->modifiedby,
+                    ];
+
+                    $data = new StoreLogTrailRequest($datalogtrail);
+                    app(LogTrailController::class)->store($data);
                 }
-
-                $datalogtrail = [
-                    'namatabel' => $tabeldetail,
-                    'postingdari' => 'EDIT UPAH SUPIR RINCIAN',
-                    'idtrans' =>  $iddetail,
-                    'nobuktitrans' => $iddetail,
-                    'aksi' => 'EDIT',
-                    'datajson' => $detaillog,
-                    'modifiedby' => $upahsupir->modifiedby,
-                ];
-
-                $data = new StoreLogTrailRequest($datalogtrail);
-                app(LogTrailController::class)->store($data);
             }
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';

@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class UpdatePendapatanSupirDetailRequest extends FormRequest
+class StoreApprovalPendapatanSupirRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,12 +24,18 @@ class UpdatePendapatanSupirDetailRequest extends FormRequest
     public function rules()
     {
         return [
-            'supir' => 'required|array',
-            'supir.*' => 'required',
-            'nominal' => 'required|array',
-            'nominal.*' => 'required|numeric|gt:0',
-            'keterangan_detail' => 'required|array',
-            'keterangan_detail.*' => 'required'
+            'periode' => 'required',
+            'approve' => 'required',
+            'pendapatanId' => 'required'
+        ];
+
+    }
+
+    public function attributes()
+    {
+        return [
+            'approve' => 'Proses Data',
+            'pendapatanId' => 'Pilih no bukti pendapatan supir'
         ];
     }
 }

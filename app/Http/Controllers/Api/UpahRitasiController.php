@@ -82,10 +82,10 @@ class UpahRitasiController extends Controller
                         'container_id' => $request->container_id[$i],
                         'statuscontainer_id' => $request->statuscontainer_id[$i],
                         'nominalsupir' => $request->nominalsupir[$i],
-                        'nominalkenek' => $request->nominalkenek[$i],
-                        'nominalkomisi' => $request->nominalkomisi[$i],
-                        'nominaltol' =>  $request->nominaltol[$i],
-                        'liter' => $request->liter[$i],
+                        'nominalkenek' => $request->nominalkenek[$i] ?? 0,
+                        'nominalkomisi' => $request->nominalkomisi[$i] ?? 0,
+                        'nominaltol' =>  $request->nominaltol[$i] ?? 0,
+                        'liter' => $request->liter[$i] ?? 0,
                         'modifiedby' => $request->modifiedby,
                     ];
                     $data = new StoreUpahRitasiRincianRequest($datadetail);
@@ -103,10 +103,10 @@ class UpahRitasiController extends Controller
                         'container_id' => $request->container_id[$i],
                         'statuscontainer_id' => $request->statuscontainer_id[$i],
                         'nominalsupir' => $request->nominalsupir[$i],
-                        'nominalkenek' => $request->nominalkenek[$i],
-                        'nominalkomisi' => $request->nominalkomisi[$i],
-                        'nominaltol' =>  $request->nominaltol[$i],
-                        'liter' => $request->liter[$i],
+                        'nominalkenek' => $request->nominalkenek[$i] ?? 0,
+                        'nominalkomisi' => $request->nominalkomisi[$i] ?? 0,
+                        'nominaltol' =>  $request->nominaltol[$i] ?? 0,
+                        'liter' => $request->liter[$i] ?? 0,
                         'modifiedby' => $request->modifiedby,
                         'created_at' => date('d-m-Y H:i:s', strtotime($upahritasi->created_at)),
                         'updated_at' => date('d-m-Y H:i:s', strtotime($upahritasi->updated_at)),
@@ -115,17 +115,12 @@ class UpahRitasiController extends Controller
                     $detaillog[] = $datadetaillog;
                 }
 
-                $dataid = LogTrail::select('id')
-                    ->where('idtrans', '=', $upahritasi->id)
-                    ->where('namatabel', '=', $upahritasi->getTable())
-                    ->orderBy('id', 'DESC')
-                    ->first();
 
                 $datalogtrail = [
                     'namatabel' => $tabeldetail,
                     'postingdari' => 'ENTRY UPAH RITASI RINCIAN',
-                    'idtrans' =>  $dataid->id,
-                    'nobuktitrans' => '',
+                    'idtrans' =>  $iddetail,
+                    'nobuktitrans' => $iddetail,
                     'aksi' => 'ENTRY',
                     'datajson' => $detaillog,
                     'modifiedby' => $request->modifiedby,
@@ -213,10 +208,10 @@ class UpahRitasiController extends Controller
                         'container_id' => $request->container_id[$i],
                         'statuscontainer_id' => $request->statuscontainer_id[$i],
                         'nominalsupir' => $request->nominalsupir[$i],
-                        'nominalkenek' => $request->nominalkenek[$i],
-                        'nominalkomisi' => $request->nominalkomisi[$i],
-                        'nominaltol' =>  $request->nominaltol[$i],
-                        'liter' => $request->liter[$i],
+                        'nominalkenek' => $request->nominalkenek[$i] ?? 0,
+                        'nominalkomisi' => $request->nominalkomisi[$i] ?? 0,
+                        'nominaltol' =>  $request->nominaltol[$i] ?? 0,
+                        'liter' => $request->liter[$i] ?? 0,
                         'modifiedby' => $request->modifiedby,
                     ];
 
@@ -236,10 +231,10 @@ class UpahRitasiController extends Controller
                         'container_id' => $request->container_id[$i],
                         'statuscontainer_id' => $request->statuscontainer_id[$i],
                         'nominalsupir' => $request->nominalsupir[$i],
-                        'nominalkenek' => $request->nominalkenek[$i],
-                        'nominalkomisi' => $request->nominalkomisi[$i],
-                        'nominaltol' =>  $request->nominaltol[$i],
-                        'liter' => $request->liter[$i],
+                        'nominalkenek' => $request->nominalkenek[$i] ?? 0,
+                        'nominalkomisi' => $request->nominalkomisi[$i] ?? 0,
+                        'nominaltol' =>  $request->nominaltol[$i] ?? 0,
+                        'liter' => $request->liter[$i] ?? 0,
                         'modifiedby' => $request->modifiedby,
                         'created_at' => date('d-m-Y H:i:s', strtotime($upahritasi->created_at)),
                         'updated_at' => date('d-m-Y H:i:s', strtotime($upahritasi->updated_at)),

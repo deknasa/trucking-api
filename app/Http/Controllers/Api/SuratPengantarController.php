@@ -121,7 +121,7 @@ class SuratPengantarController extends Controller
             $suratpengantar->biayatambahan_id = $request->biayatambahan_id ?? 0;
             $suratpengantar->nosp = $request->nosp;
             $suratpengantar->tglsp = date('Y-m-d', strtotime($request->tglsp));
-            $suratpengantar->statusritasiomset = $request->statusritasiomset;
+            $suratpengantar->statusritasiomset = $request->statusritasiomset ?? 0;
             $suratpengantar->cabang_id = $request->cabang_id;
             $suratpengantar->komisisupir = $upahsupirRincian->nominalkomisi;
             $suratpengantar->tolsupir = $upahsupirRincian->nominaltol ?? 0;

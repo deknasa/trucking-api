@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class PendapatanSupirDetail extends Model
 {
@@ -21,4 +22,19 @@ class PendapatanSupirDetail extends Model
         'created_at',
         'updated_at',
     ];
+
+    public function findUpdate($id)
+    {
+        $query = DB::table('pendapatansupirdetail')->select(
+            'pendapatansupirdetail.supir_id',
+            'supir.namasupir as supir',
+            'pendapatansupirdetail.nominal',
+            'pendapatansupirdetail.keterangan'
+        )
+        ->leftJoin('supir','pendapatansupirdetail.supir_id','supir.id')
+        ->where('pendapatansupirdetail.pendapatansupir_id', $id)
+        ->get();
+
+        return $query;
+    }
 }

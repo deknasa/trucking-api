@@ -35,7 +35,8 @@
     use App\Http\Controllers\Api\AlatBayarController;
     use App\Http\Controllers\Api\ApprovalHutangBayarController;
     use App\Http\Controllers\Api\ApprovalNotaHeaderController;
-    use App\Http\Controllers\Api\BankPelangganController;
+use App\Http\Controllers\Api\ApprovalPendapatanSupirController;
+use App\Http\Controllers\Api\BankPelangganController;
     use App\Http\Controllers\Api\GajiSupirDetailController;
     use App\Http\Controllers\Api\GajiSupirHeaderController;
     use App\Http\Controllers\Api\JenisEmklController;
@@ -131,6 +132,8 @@
     use App\Http\Controllers\Api\ReportAllController;
     use App\Http\Controllers\Api\PencairanGiroPengeluaranDetailController;
     use App\Http\Controllers\Api\PencairanGiroPengeluaranHeaderController;
+    use App\Http\Controllers\Api\PendapatanSupirDetailController;
+    use App\Http\Controllers\Api\PendapatanSupirHeaderController;
     use App\Http\Controllers\Api\ReportNeracaController;
 
     /*
@@ -446,6 +449,7 @@
         Route::get('hutangbayarheader/combo', [HutangBayarHeaderController::class, 'combo']);
         Route::get('hutangbayarheader/{id}/getHutang', [HutangBayarHeaderController::class, 'getHutang'])->name('hutangbayarheader.getHutang'); 
         Route::get('hutangbayarheader/comboapproval', [HutangBayarHeaderController::class, 'comboapproval']);
+        Route::post('hutangbayarheader/{id}/cekapproval', [HutangBayarHeaderController::class, 'cekapproval'])->name('hutangbayarheader.cekapproval');
         Route::get('hutangbayarheader/{id}/{supplierid}/getPembayaran', [HutangBayarHeaderController::class, 'getPembayaran']);
         Route::get('hutangbayarheader/grid', [HutangBayarHeaderController::class, 'grid']);
         Route::resource('hutangbayarheader', HutangBayarHeaderController::class);
@@ -621,6 +625,13 @@
         Route::resource('approvalnotaheader', ApprovalNotaHeaderController::class);
         Route::resource('approvalhutangbayar', ApprovalHutangBayarController::class);
         
+        
+        Route::post('pendapatansupirheader/{id}/cekapproval', [PendapatanSupirHeaderController::class, 'cekapproval'])->name('pendapatansupirheader.cekapproval');
+        Route::resource('pendapatansupirheader', PendapatanSupirHeaderController::class)->parameters(['pendapatansupirheader' => 'pendapatanSupirHeader']);
+        Route::resource('pendapatansupirdetail', PendapatanSupirDetailController::class);
+        
+        Route::resource('approvalpendapatansupir', ApprovalPendapatanSupirController::class);
+
     });
 
     Route::get('gudang/combo', [GudangController::class, 'combo']);
@@ -695,50 +706,6 @@
 
     
 
-    Route::get('gudang/combo', [GudangController::class, 'combo']);
-    Route::get('gudang/field_length', [GudangController::class, 'fieldLength']);
-    Route::resource('gudang', GudangController::class);
-
-    Route::get('kategori/combo', [KategoriController::class, 'combo']);
-    Route::get('kategori/field_length', [KategoriController::class, 'fieldLength']);
-    Route::resource('kategori', KategoriController::class);
-
-    Route::get('kelompok/combo', [KelompokController::class, 'combo']);
-    Route::get('kelompok/field_length', [KelompokController::class, 'fieldLength']);
-    Route::resource('kelompok', KelompokController::class);
-
-    Route::get('kerusakan/combo', [KerusakanController::class, 'combo']);
-    Route::get('kerusakan/field_length', [KerusakanController::class, 'fieldLength']);
-    Route::resource('kerusakan', KerusakanController::class);
-
-    Route::get('mandor/combo', [MandorController::class, 'combo']);
-    Route::get('mandor/field_length', [MandorController::class, 'fieldLength']);
-    Route::resource('mandor', MandorController::class);
-
-    Route::get('merk/combo', [MerkController::class, 'combo']);
-    Route::get('merk/field_length', [MerkController::class, 'fieldLength']);
-    Route::resource('merk', MerkController::class);
-
-    Route::get('satuan/combo', [SatuanController::class, 'combo']);
-    Route::get('satuan/field_length', [SatuanController::class, 'fieldLength']);
-    Route::resource('satuan', SatuanController::class);
-
-    Route::get('zona/combo', [ZonaController::class, 'combo']);
-    Route::get('zona/field_length', [ZonaController::class, 'fieldLength']);
-    Route::resource('zona', ZonaController::class);
-
-
-    Route::get('orderantrucking/combo', [OrderanTruckingController::class, 'combo']);
-    Route::get('orderantrucking/field_length', [OrderanTruckingController::class, 'fieldLength']);
-    Route::resource('orderantrucking', OrderanTruckingController::class);
-
-    Route::get('prosesabsensisupir/combo', [ProsesAbsensiSupirController::class, 'combo']);
-    Route::get('prosesabsensisupir/field_length', [ProsesAbsensiSupirController::class, 'fieldLength']);
-    Route::resource('prosesabsensisupir', ProsesAbsensiSupirController::class);
-
-    Route::get('mekanik/combo', [MekanikController::class, 'combo']);
-    Route::get('mekanik/field_length', [MekanikController::class, 'fieldLength']);
-    Route::resource('mekanik', MekanikController::class);
 
     Route::get('suratpengantar/combo', [SuratPengantarController::class, 'combo']);
     Route::get('suratpengantar/field_length', [SuratPengantarController::class, 'fieldLength']);
