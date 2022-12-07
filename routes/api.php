@@ -414,6 +414,7 @@ use App\Http\Controllers\Api\BankPelangganController;
         Route::get('pengeluaranstok/field_length', [PengeluaranStokController::class,'fieldLength']);
         // Route::get('pengeluaranstok/export', [PengeluaranStokController::class,'export']);
         Route::post('invoiceextraheader/{id}/approval', [InvoiceExtraHeaderController::class,'approval']);
+        Route::get('invoiceextraheader/{id}/printreport', [InvoiceExtraHeaderController::class,'printReport']);
         Route::resource('invoiceextraheader', InvoiceExtraHeaderController::class);
         Route::resource('invoiceextradetail', InvoiceExtraDetailController::class);
 
