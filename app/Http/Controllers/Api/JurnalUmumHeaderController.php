@@ -475,7 +475,7 @@ class JurnalUmumHeaderController extends Controller
                 $jurnalumum->statusapproval = $statusApproval->id;
             }
 
-            $jurnalumum->tglapproval = date('Y-m-d h:i:s');
+            $jurnalumum->tglapproval = date('Y-m-d H:i:s');
             $jurnalumum->userapproval = auth('api')->user()->name;
 
             if ($jurnalumum->save()) {

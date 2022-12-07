@@ -48,7 +48,7 @@ class ApprovalNotaHeaderController extends Controller
                
                 $approveNota->statusapproval = $request->approve;
                 $approveNota->userapproval = auth('api')->user()->name;
-                $approveNota->tglapproval = date('Y-m-d h:i:s');
+                $approveNota->tglapproval = date('Y-m-d H:i:s');
 
                 $approveNota->save();
             }

@@ -525,7 +525,7 @@ class PenerimaanGiroHeaderController extends Controller
                 $penerimaanGiro->statusapproval = $statusApproval->id;
             }
 
-            $penerimaanGiro->tglapproval = date('Y-m-d h:i:s');
+            $penerimaanGiro->tglapproval = date('Y-m-d H:i:s');
             $penerimaanGiro->userapproval = auth('api')->user()->name;
 
             if ($penerimaanGiro->save()) {
