@@ -41,7 +41,7 @@ class ApprovalHutangBayarController extends Controller
 
                 $approveHutangBayar->statusapproval = $request->approve;
                 $approveHutangBayar->userapproval = auth('api')->user()->name;
-                $approveHutangBayar->tglapproval = date('Y-m-d h:i:s');
+                $approveHutangBayar->tglapproval = date('Y-m-d H:i:s');
 
                 $approveHutangBayar->save();
             }

@@ -53,7 +53,7 @@ class JurnalUmumPusatHeaderController extends Controller
                     $jurnalUmumPusat->postingdari = $get->postingdari;
                     $jurnalUmumPusat->statusapproval = $request->approve;
                     $jurnalUmumPusat->userapproval = auth('api')->user()->name;
-                    $jurnalUmumPusat->tglapproval = date('Y-m-d h:i:s');
+                    $jurnalUmumPusat->tglapproval = date('Y-m-d H:i:s');
                     $jurnalUmumPusat->statusformat = $get->statusformat;
                     $jurnalUmumPusat->modifiedby = auth('api')->user()->name;
 
@@ -75,7 +75,7 @@ class JurnalUmumPusatHeaderController extends Controller
                     $jurnalApprove = JurnalUmumHeader::lockForUpdate()->findOrFail($request->jurnalId[$i]);
                     $jurnalApprove->statusapproval = $request->approve;
                     $jurnalApprove->userapproval = auth('api')->user()->name;
-                    $jurnalApprove->tglapproval = date('Y-m-d h:i:s');
+                    $jurnalApprove->tglapproval = date('Y-m-d H:i:s');
 
                     $jurnalApprove->save();
                     /* Store detail */
@@ -165,7 +165,7 @@ class JurnalUmumPusatHeaderController extends Controller
                     $jurnalApprove = JurnalUmumHeader::lockForUpdate()->findOrFail($request->jurnalId[$i]);
                     $jurnalApprove->statusapproval = $request->approve;
                     $jurnalApprove->userapproval = auth('api')->user()->name;
-                    $jurnalApprove->tglapproval = date('Y-m-d h:i:s');
+                    $jurnalApprove->tglapproval = date('Y-m-d H:i:s');
 
                     $jurnalApprove->save();
                 }
