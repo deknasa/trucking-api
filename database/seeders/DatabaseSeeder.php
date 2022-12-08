@@ -30,6 +30,7 @@ class DatabaseSeeder extends Seeder
             ErrorSeeder::class,
             SupirSeeder::class,
             TradoSeeder::class,
+            AlatBayarSeeder::class,
             ContainerSeeder::class,
             JenisEmklSeeder::class,
             JenisTradoSeeder::class,

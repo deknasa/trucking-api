@@ -96,6 +96,7 @@ class PengeluaranHeaderController extends Controller
 
 
             $statusApproval = Parameter::where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
+            $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
 
             $pengeluaranHeader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $pengeluaranHeader->pelanggan_id = $request->pelanggan_id;
@@ -103,6 +104,7 @@ class PengeluaranHeaderController extends Controller
             $pengeluaranHeader->statusjenistransaksi = $request->statusjenistransaksi ?? 0;
             $pengeluaranHeader->postingdari = $request->postingdari ?? 'ENTRY PENGELUARAN';
             $pengeluaranHeader->statusapproval = $statusApproval->id ?? $request->statusapproval;
+            $pengeluaranHeader->statuscetak = $statusCetak->id ?? 0;
             $pengeluaranHeader->dibayarke = $request->dibayarke ?? '';
             $pengeluaranHeader->cabang_id = $request->cabang_id ?? 0;
             $pengeluaranHeader->bank_id = $request->bank_id ?? 0;

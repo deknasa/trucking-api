@@ -55,7 +55,6 @@ class StorePengeluaranHeaderRequest extends FormRequest
             'transferkean' => 'Transfer Ke An.',
             'transferkebank' => 'Transfer Ke Bank',
             'alatbayar.*' => 'Alat Bayar',
-            'nowarkat.*' => 'No Warkat',
             'tgljatuhtempo.*' => 'Tanggal Jatuh Tempo',
             'nominal_detail.*' => 'Nominal',
             'keterangan_detail.*' => 'Keterangan',

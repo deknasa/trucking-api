@@ -347,7 +347,52 @@ class ParameterController extends Controller
         ];
         $temp = '##temp' . rand(1, 10000);
         if ($params['status'] == 'entry') {
-            $query = Parameter::select('id', 'memo as keterangan')
+            $query = Parameter::select('id', 'text as keterangan')
+                ->where('grp', "=", $params['grp'])
+                ->where('subgrp', "=", $params['subgrp']);
+        } else {
+            Schema::create($temp, function ($table) {
+                $table->integer('id')->length(11)->default(0);
+                $table->string('parameter', 50)->default(0);
+                $table->string('param', 50)->default(0);
+            });
+
+ 
+            DB::table($temp)->insert(
+                [
+                    'id' => '0',
+                    'parameter' => 'ALL',
+                    'param' => '',
+                ]
+            );
+
+            $queryall = Parameter::select('id', 'text as parameter', 'text as param')
+                ->where('grp', "=", $params['grp'])
+                ->where('subgrp', "=", $params['subgrp']);
+
+            $query = DB::table($temp)
+                ->unionAll($queryall);
+        }
+
+        $data = $query->get();
+
+        // $datajson[$index]['updated_at']
+        return response([
+            'data' => $data
+        ]);
+    }
+
+    public function combolist(Request $request)
+    {
+
+        $params = [
+            'status' => $request->status ?? '',
+            'grp' => $request->grp ?? '',
+            'subgrp' => $request->subgrp ?? '',
+        ];
+        $temp = '##temp' . rand(1, 10000);
+        if ($params['status'] == 'entry') {
+            $query = Parameter::select('id', 'text as keterangan')
                 ->where('grp', "=", $params['grp'])
                 ->where('subgrp', "=", $params['subgrp']);
         } else {

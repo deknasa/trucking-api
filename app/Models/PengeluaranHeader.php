@@ -44,15 +44,17 @@ class PengeluaranHeader extends MyModel
             'pengeluaranheader.dibayarke',
             'cabang.namacabang as cabang_id',
             'bank.namabank as bank_id',
-            
             'statusjenistransaksi.text as statusjenistransaksi',
-            'statusapproval.text as statusapproval',
-            'pengeluaranheader.tglapproval',
+            'statusapproval.memo as statusapproval',
+            DB::raw('(case when (year(pengeluaranheader.tglapproval) <= 2000) then null else pengeluaranheader.tglapproval end ) as tglapproval'),
             'pengeluaranheader.userapproval',
             'pengeluaranheader.transferkeac',
             'pengeluaranheader.transferkean',
             'pengeluaranheader.transferkebank',
-
+            DB::raw('(case when (year(pengeluaranheader.tglbukacetak) <= 2000) then null else pengeluaranheader.tglbukacetak end ) as tglbukacetak'),
+            'statuscetak.memo as statuscetak',
+            'pengeluaranheader.userbukacetak',
+            'pengeluaranheader.jumlahcetak',
             'pengeluaranheader.modifiedby',
             'pengeluaranheader.created_at',
             'pengeluaranheader.updated_at'
@@ -62,6 +64,7 @@ class PengeluaranHeader extends MyModel
         ->leftJoin('cabang', 'pengeluaranheader.cabang_id', 'cabang.id')
         ->leftJoin('bank', 'pengeluaranheader.bank_id', 'bank.id')
         ->leftJoin('parameter as statusapproval' , 'pengeluaranheader.statusapproval', 'statusapproval.id')
+        ->leftJoin('parameter as statuscetak' , 'pengeluaranheader.statuscetak', 'statuscetak.id')
         ->leftJoin('parameter as statusjenistransaksi' , 'pengeluaranheader.statusjenistransaksi', 'statusjenistransaksi.id');
 
         $this->totalRows = $query->count();
@@ -123,6 +126,10 @@ class PengeluaranHeader extends MyModel
                  $this->table.transferkeac,
                  $this->table.transferkean,
                  $this->table.transferkebank,
+                 'statuscetak.text as statuscetak',
+                 $this->table.userbukacetak,
+                 $this->table.tglbukacetak,
+                 $this->table.jumlahcetak,
                  $this->table.modifiedby,
                  $this->table.created_at,
                  $this->table.updated_at"
@@ -132,6 +139,7 @@ class PengeluaranHeader extends MyModel
         ->leftJoin('cabang', 'pengeluaranheader.cabang_id', 'cabang.id')
         ->leftJoin('bank', 'pengeluaranheader.bank_id', 'bank.id')
         ->leftJoin('parameter as statusapproval' , 'pengeluaranheader.statusapproval', 'statusapproval.id')
+        ->leftJoin('parameter as statuscetak' , 'pengeluaranheader.statuscetak', 'statuscetak.id')
         ->leftJoin('parameter as statusjenistransaksi' , 'pengeluaranheader.statusjenistransaksi', 'statusjenistransaksi.id');
 
     }
@@ -154,6 +162,10 @@ class PengeluaranHeader extends MyModel
             $table->string('transferkeac')->default('');
             $table->string('transferkean')->default('');
             $table->string('transferkebank')->default('');
+            $table->string('statuscetak',1000)->default('');
+            $table->string('userbukacetak',50)->default('');
+            $table->date('tglbukacetak')->default('1900/1/1');
+            $table->integer('jumlahcetak')->Length(11)->default('0');
             $table->string('modifiedby')->default();
             $table->dateTime('created_at')->default('1900/1/1');
             $table->dateTime('updated_at')->default('1900/1/1');
@@ -165,7 +177,7 @@ class PengeluaranHeader extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti','pelanggan_id', 'keterangan', 'postingdari', 'dibayarke', 'cabang_id', 'bank_id','statusjenistransaksi','statusapproval','transferkeac','transferkean','transferkebank', 'modifiedby','created_at', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti','pelanggan_id', 'keterangan', 'postingdari', 'dibayarke', 'cabang_id', 'bank_id','statusjenistransaksi','statusapproval','transferkeac','transferkean','transferkebank','statuscetak','userbukacetak','tglbukacetak','jumlahcetak', 'modifiedby','created_at', 'updated_at'], $models);
 
         return $temp;
     }

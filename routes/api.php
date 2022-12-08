@@ -162,6 +162,7 @@ use App\Http\Controllers\Api\BankPelangganController;
         Route::get('parameter/field_length', [ParameterController::class, 'fieldLength']);
         Route::get('parameter/combo', [ParameterController::class, 'combo']);
         Route::get('parameter/comboapproval', [ParameterController::class, 'comboapproval']);
+        Route::get('parameter/combolist', [ParameterController::class, 'combolist']);
         Route::resource('parameter', ParameterController::class);
 
         Route::get('absensisupirheader/{id}/detail', [AbsensiSupirHeaderController::class, 'detail'])->name('absensi.detail');
