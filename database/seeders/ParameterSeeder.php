@@ -191,6 +191,8 @@ class ParameterSeeder extends Seeder
         Parameter::create(['grp' => 'CETAKULANG', 'subgrp' => 'CETAKULANG', 'kelompok' => '', 'text' => 'PENERIMAANSTOKHEADER', 'memo' => '{"memo":"DATA PENERIMAAN STOK","singkatan":"","warna":""}', 'type' => '0', 'modifiedby' => 'ADMIN',]);
         Parameter::create(['grp' => 'CETAKULANG', 'subgrp' => 'CETAKULANG', 'kelompok' => '', 'text' => 'PENGELUARANHEADER', 'memo' => '{"memo":"DATA PENGELUARAN STOK","singkatan":"","warna":""}', 'type' => '0', 'modifiedby' => 'ADMIN',]);
         Parameter::create(['grp' => 'CETAKULANG', 'subgrp' => 'CETAKULANG', 'kelompok' => '', 'text' => 'PENGEMBALIANKASBANKHEADER', 'memo' => '{"memo":"DATA PENGEMBALIAN KAS BANK","singkatan":"","warna":""}', 'type' => '0', 'modifiedby' => 'ADMIN',]);
+        Parameter::create(['grp' => 'STATUSCETAK', 'subgrp' => 'STATUSCETAK', 'kelompok' => '', 'text' => 'CETAK', 'memo' => '{"memo":"SUDAH CETAK","singkatan":"C","warna":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN',]);
+        Parameter::create(['grp' => 'STATUSCETAK', 'subgrp' => 'STATUSCETAK', 'kelompok' => '', 'text' => 'BELUM CETAK', 'memo' => '{"memo":"BELUM CETAK","singkatan":"BC","warna":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN',]);
 
     }
 }

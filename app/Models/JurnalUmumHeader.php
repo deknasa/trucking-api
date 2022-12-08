@@ -43,6 +43,7 @@ class JurnalUmumHeader extends MyModel
                 'jurnalumumheader.userapproval',
                 DB::raw('(case when (year(jurnalumumheader.tglapproval) <= 2000) then null else jurnalumumheader.tglapproval end ) as tglapproval'),
                 'jurnalumumheader.modifiedby',
+                'jurnalumumheader.created_at',
                 'jurnalumumheader.updated_at',
                 'statusapproval.memo as statusapproval',
             )

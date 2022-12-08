@@ -31,8 +31,6 @@ class AcosSeeder extends Seeder
         acos::create(['class' => 'menu', 'method' => 'store', 'nama' => 'store MenuController', 'modifiedby' => 'ADMIN',]);
         acos::create(['class' => 'menu', 'method' => 'update', 'nama' => 'update MenuController', 'modifiedby' => 'ADMIN',]);
         acos::create(['class' => 'menu', 'method' => 'destroy', 'nama' => 'destroy MenuController', 'modifiedby' => 'ADMIN',]);
-        acos::create(['class' => 'menu', 'method' => 'resequence', 'nama' => 'resequence MenuController', 'modifiedby' => 'ADMIN',]);
-        acos::create(['class' => 'menu', 'method' => 'storeresequence', 'nama' => 'store resequence MenuController', 'modifiedby' => 'ADMIN',]);
         acos::create(['class' => 'role', 'method' => 'index', 'nama' => 'index RoleController', 'modifiedby' => 'ADMIN',]);
         acos::create(['class' => 'role', 'method' => 'store', 'nama' => 'store RoleController', 'modifiedby' => 'ADMIN',]);
         acos::create(['class' => 'role', 'method' => 'update', 'nama' => 'update RoleController', 'modifiedby' => 'ADMIN',]);
@@ -214,10 +212,10 @@ class AcosSeeder extends Seeder
         acos::create(['class' => 'jurnalumumheader', 'method' => 'show', 'nama' => 'show JurnalUmumHeaderController', 'modifiedby' => 'ADMIN',]);
         acos::create(['class' => 'jurnalumumheader', 'method' => 'update', 'nama' => 'update JurnalUmumHeaderController', 'modifiedby' => 'ADMIN',]);
         acos::create(['class' => 'jurnalumumheader', 'method' => 'destroy', 'nama' => 'destroy JurnalUmumHeaderController', 'modifiedby' => 'ADMIN',]);
-        acos::create(['class' => 'penerimaan', 'method' => 'index', 'nama' => 'index PenerimaanKas', 'modifiedby' => 'ADMIN',]);
-        acos::create(['class' => 'penerimaan', 'method' => 'update', 'nama' => 'update PenerimaanKas', 'modifiedby' => 'ADMIN',]);
-        acos::create(['class' => 'penerimaan', 'method' => 'destroy', 'nama' => 'store PenerimaanKas', 'modifiedby' => 'ADMIN',]);
-        acos::create(['class' => 'penerimaan', 'method' => 'store', 'nama' => 'destroy PenerimaanKas', 'modifiedby' => 'ADMIN',]);
+        acos::create(['class' => 'penerimaanheader', 'method' => 'index', 'nama' => 'index PenerimaanKas', 'modifiedby' => 'ADMIN',]);
+        acos::create(['class' => 'penerimaanheader', 'method' => 'update', 'nama' => 'update PenerimaanKas', 'modifiedby' => 'ADMIN',]);
+        acos::create(['class' => 'penerimaanheader', 'method' => 'destroy', 'nama' => 'store PenerimaanKas', 'modifiedby' => 'ADMIN',]);
+        acos::create(['class' => 'penerimaanheader', 'method' => 'store', 'nama' => 'destroy PenerimaanKas', 'modifiedby' => 'ADMIN',]);
         acos::create(['class' => 'piutangheader', 'method' => 'index', 'nama' => 'index PiutangHeaderController', 'modifiedby' => 'ADMIN',]);
         acos::create(['class' => 'piutangheader', 'method' => 'store', 'nama' => 'store PiutangHeaderController', 'modifiedby' => 'ADMIN',]);
         acos::create(['class' => 'piutangheader', 'method' => 'update', 'nama' => 'update PiutangHeaderController', 'modifiedby' => 'ADMIN',]);
