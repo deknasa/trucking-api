@@ -40,30 +40,46 @@ class AbsensiSupirHeader extends MyModel
             'absensisupirheader.keterangan',
             'absensisupirheader.kasgantung_nobukti',
             'absensisupirheader.nominal',
+            DB::raw('(case when (year(absensisupirheader.tglbukacetak) <= 2000) then null else absensisupirheader.tglbukacetak end ) as tglbukacetak'),
+            'statuscetak.memo as statuscetak',
+            'absensisupirheader.userbukacetak',
+            'absensisupirheader.jumlahcetak',
             'absensisupirheader.modifiedby',
             'absensisupirheader.created_at',
-            'absensisupirheader.updated_at',
-        );
+            'absensisupirheader.updated_at'
+        )
+            ->leftJoin('parameter as statuscetak', 'absensisupirheader.statuscetak', 'statuscetak.id');
 
-       
+           
+
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
-        $this->selectColumns($query);
         $this->sort($query);
         $this->filter($query);
         $this->paginate($query);
-
+        // dd('test');
+        // dd($query);
         $data = $query->get();
-
         return $data;
     }
 
-    public function findAll($id) 
+    public function findAll($id)
     {
         $query = DB::table('absensisupirheader')
-            ->select('id','nobukti','kasgantung_nobukti','tglbukti','keterangan')
-            ->where('id',$id);
+            ->select(
+                'absensisupirheader.id',
+                'absensisupirheader.nobukti',
+                'absensisupirheader.kasgantung_nobukti',
+                'absensisupirheader.tglbukti',
+                'absensisupirheader.keterangan',
+                'absensisupirheader.tglbukacetak',
+                'absensisupirheader.statuscetak',
+                'absensisupirheader.userbukacetak',
+                'absensisupirheader.jumlahcetak',
+    
+            )
+            ->where('id', $id);
         $data = $query->first();
 
         return $data;
@@ -71,24 +87,32 @@ class AbsensiSupirHeader extends MyModel
 
     public function selectColumns($query)
     {
+        
         return $query->select(
-            "$this->table.id",
-            "$this->table.nobukti",
-            "$this->table.tglbukti",
-            "$this->table.keterangan",
-            "$this->table.kasgantung_nobukti",
-            "$this->table.nominal",
-            "$this->table.modifiedby",
-            "$this->table.created_at",
-            "$this->table.updated_at",
-        );
+            DB::raw(
+            "$this->table.id,
+            $this->table.nobukti,
+            $this->table.tglbukti,
+            $this->table.keterangan,
+            $this->table.kasgantung_nobukti,
+            $this->table.nominal,
+            'statuscetak.text as statuscetak',
+            $this->table.userbukacetak,
+            $this->table.tglbukacetak,
+            $this->table.jumlahcetak,
+            $this->table.modifiedby,
+            $this->table.created_at,
+            $this->table.updated_at"
+            )
+        )
+        ->leftJoin('parameter as statuscetak' , 'absensisupirheader.statuscetak', 'statuscetak.id');
     }
 
     public function createTemp(string $modelTable)
     {
-        
-        $temp = '##temp' . rand(1, 10000);
 
+        $temp = '##temp' . rand(1, 10000);
+        
         Schema::create($temp, function ($table) {
             $table->bigInteger('id')->default('0');
             $table->string('nobukti', 1000)->default('');
@@ -96,6 +120,10 @@ class AbsensiSupirHeader extends MyModel
             $table->string('keterangan', 1000)->default('');
             $table->string('kasgantung_nobukti', 1000)->default('');
             $table->string('nominal', 1000)->default('');
+            $table->string('statuscetak',1000)->default('');
+            $table->string('userbukacetak',50)->default('');
+            $table->date('tglbukacetak')->default('1900/1/1');
+            $table->integer('jumlahcetak')->Length(11)->default('0');
             $table->string('modifiedby', 1000)->default('');
             $table->dateTime('created_at')->default('1900/1/1');
             $table->dateTime('updated_at')->default('1900/1/1');
@@ -115,6 +143,10 @@ class AbsensiSupirHeader extends MyModel
             'keterangan',
             'kasgantung_nobukti',
             'nominal',
+            'statuscetak',
+            'userbukacetak',
+            'tglbukacetak',
+            'jumlahcetak',
             'modifiedby',
             'created_at',
             'updated_at',
@@ -126,30 +158,30 @@ class AbsensiSupirHeader extends MyModel
     public function getAbsensi($id)
     {
         $query = DB::table('absensisupirdetail')
-        ->select(
-            'absensisupirdetail.keterangan as keterangan_detail',
-            'absensisupirdetail.jam',
-            'absensisupirdetail.uangjalan',
-            'absensisupirdetail.absensi_id',
-            'absensisupirdetail.id',
-            'trado.keterangan as trado',
-            'supirutama.namasupir as supir',
-            'trado.id as trado_id',
-            'supirutama.id as supir_id',
-            'absensisupirheader.kasgantung_nobukti',
-         )
-        ->leftJoin('absensisupirheader','absensisupirdetail.absensi_id','absensisupirheader.id')
-        ->leftJoin('trado', 'absensisupirdetail.trado_id', 'trado.id')
-        ->leftJoin('supir as supirutama', 'absensisupirdetail.supir_id', 'supirutama.id')
-        ->whereRaw("not EXISTS (
+            ->select(
+                'absensisupirdetail.keterangan as keterangan_detail',
+                'absensisupirdetail.jam',
+                'absensisupirdetail.uangjalan',
+                'absensisupirdetail.absensi_id',
+                'absensisupirdetail.id',
+                'trado.keterangan as trado',
+                'supirutama.namasupir as supir',
+                'trado.id as trado_id',
+                'supirutama.id as supir_id',
+                'absensisupirheader.kasgantung_nobukti',
+            )
+            ->leftJoin('absensisupirheader', 'absensisupirdetail.absensi_id', 'absensisupirheader.id')
+            ->leftJoin('trado', 'absensisupirdetail.trado_id', 'trado.id')
+            ->leftJoin('supir as supirutama', 'absensisupirdetail.supir_id', 'supirutama.id')
+            ->whereRaw("not EXISTS (
             SELECT absensisupirapprovalheader.absensisupir_nobukti
     FROM absensisupirdetail          
     left join absensisupirapprovalheader on absensisupirapprovalheader.absensisupir_nobukti= absensisupirdetail.nobukti
     WHERE absensisupirapprovalheader.absensisupir_nobukti = absensisupirheader.nobukti 
           )")
-        ->where('absensi_id',$id);
+            ->where('absensi_id', $id);
         $data = $query->get();
-    
+
         return $data;
     }
 
@@ -171,7 +203,7 @@ class AbsensiSupirHeader extends MyModel
                     break;
                 case "OR":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                       $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                        $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                     }
 
                     break;
@@ -184,7 +216,7 @@ class AbsensiSupirHeader extends MyModel
             $this->totalPages = $this->params['limit'] > 0 ? ceil($this->totalRows / $this->params['limit']) : 1;
         }
 
-        
+
 
         return $query;
     }

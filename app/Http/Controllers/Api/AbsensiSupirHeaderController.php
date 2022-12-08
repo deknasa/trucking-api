@@ -14,6 +14,8 @@ use App\Http\Requests\UpdateAbsensiSupirHeaderRequest;
 use App\Models\AbsensiSupirDetail;
 use App\Models\KasGantungDetail;
 use App\Models\KasGantungHeader;
+use App\Models\Parameter;
+
 
 use Illuminate\Database\QueryException;
 
@@ -79,6 +81,7 @@ class AbsensiSupirHeaderController extends Controller
 
             /* Store header */
             $absensisupir = new AbsensiSupirHeader();
+            $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
 
 
             $absensisupir->nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
@@ -87,6 +90,7 @@ class AbsensiSupirHeaderController extends Controller
             $absensisupir->kasgantung_nobukti = $request->kasgantung_nobukti ?? '';
             $absensisupir->nominal = array_sum($request->uangjalan);
             $absensisupir->statusformat = $format->id;
+            $absensisupir->statuscetak = $statusCetak->id ?? 0;
             $absensisupir->modifiedby = auth('api')->user()->name;
 
             if ($absensisupir->save()) {
@@ -223,9 +227,12 @@ class AbsensiSupirHeaderController extends Controller
 
         try {
             /* Store header */
+            $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
+
             $absensiSupirHeader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $absensiSupirHeader->keterangan = $request->keterangan ?? '';
             $absensiSupirHeader->nominal = array_sum($request->uangjalan);
+            $absensiSupirHeader->statuscetak = $statusCetak->id ?? 0;
             $absensiSupirHeader->modifiedby = auth('api')->user()->name;
 
             if ($absensiSupirHeader->save()) {
@@ -382,9 +389,8 @@ class AbsensiSupirHeaderController extends Controller
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
+            }
 
-            } 
-            
             DB::commit();
 
             $selected = $this->getPosition($absensiSupirHeader, $absensiSupirHeader->getTable(), true);
@@ -431,6 +437,40 @@ class AbsensiSupirHeaderController extends Controller
             ];
         } catch (\Throwable $th) {
             throw $th;
+        }
+    }
+
+
+    public function cekvalidasi($id)
+    {
+        $absensisupir = AbsensiSupirHeader::find($id);
+        $statusdatacetak = $absensisupir->statuscetak;
+        $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
+
+        if ($statusdatacetak == $statusCetak->id) {
+            $query = DB::table('error')
+                ->select('keterangan')
+                ->where('kodeerror', '=', 'SDC')
+                ->get();
+            $keterangan = $query['0'];
+            $data = [
+                'message' => $keterangan,
+                'errors' => 'sudah cetak',
+                'kodestatus' => '1',
+                'kodenobukti' => '1'
+            ];
+
+            return response($data);
+        } else {
+
+            $data = [
+                'message' => '',
+                'errors' => 'belum approve',
+                'kodestatus' => '0',
+                'kodenobukti' => '1'
+            ];
+
+            return response($data);
         }
     }
 

@@ -25,6 +25,10 @@ class CreateabsensisupirheaderTable extends Migration
             $table->string('kasgantung_nobukti', 50)->unique();
             $table->double('nominal',15,2)->default(0);
             $table->unsignedBigInteger('statusformat')->default(0);
+            $table->integer('statuscetak')->Length(11)->default('0');
+            $table->string('userbukacetak',50)->default('');
+            $table->date('tglbukacetak')->default('1900/1/1');
+            $table->integer('jumlahcetak')->Length(11)->default('0');
             $table->string('modifiedby', 50)->default('');
             $table->timestamps();
 

@@ -91,6 +91,7 @@ class KasGantungHeader extends MyModel
             'kasgantungheader.pengeluaran_nobukti',
             'kasgantungheader.coakaskeluar',
             'kasgantungheader.tglkaskeluar',
+            'kasgantungheader.tglbukacetak',
             'kasgantungheader.statuscetak',
             'kasgantungheader.userbukacetak',
             'kasgantungheader.jumlahcetak',
