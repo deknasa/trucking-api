@@ -158,6 +158,7 @@ use App\Http\Controllers\Api\BankPelangganController;
 
     route::middleware(['auth:api'])->group(function () {
         Route::get('parameter/export', [ParameterController::class, 'export']);
+        Route::get('parameter/detail', [ParameterController::class, 'detail']);
         Route::get('parameter/field_length', [ParameterController::class, 'fieldLength']);
         Route::get('parameter/combo', [ParameterController::class, 'combo']);
         Route::resource('parameter', ParameterController::class);
@@ -549,8 +550,7 @@ use App\Http\Controllers\Api\BankPelangganController;
         Route::resource('prosesgajisupirheader', ProsesGajiSupirHeaderController::class);
         Route::resource('prosesgajisupirdetail', ProsesGajiSupirDetailController::class);
 
-        Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
-        Route::get('invoiceheader/no_bukti', [InvoiceHeaderController::class, 'getNoBukti']);
+        Route::get('invoiceheader/{id}/printreport', [InvoiceHeaderController::class,'printReport']);
         Route::get('invoiceheader/grid', [InvoiceHeaderController::class, 'grid']);
         Route::get('invoiceheader/field_length', [InvoiceHeaderController::class, 'fieldLength']);
         Route::get('invoiceheader/comboapproval', [InvoiceHeaderController::class, 'comboapproval']);

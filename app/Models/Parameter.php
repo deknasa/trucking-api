@@ -27,9 +27,6 @@ class Parameter extends MyModel
             'parameter.subgrp', 
             'parameter.kelompok', 
             'parameter.text', 
-            'parameter.memo', 
-            'parameter.singkatan', 
-            'parameter.warna', 
             'parameter.modifiedby', 
             'parameter.created_at', 
             'parameter.updated_at', 
@@ -52,7 +49,7 @@ class Parameter extends MyModel
     public function findAll($id)
     {
         $query = DB::table('parameter as A')
-            ->select('A.id', 'A.grp', 'A.subgrp', 'A.kelompok', 'A.text', 'A.memo', 'A.type','A.singkatan','A.warna', 'B.grp as grup')
+            ->select('A.id', 'A.grp', 'A.subgrp', 'A.kelompok', 'A.text', 'A.memo', 'A.type', 'B.grp as grup')
             ->leftJoin('parameter as B', 'A.type', 'B.id')
             ->where('A.id', $id);
 

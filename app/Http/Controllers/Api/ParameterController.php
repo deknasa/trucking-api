@@ -236,6 +236,28 @@ class ParameterController extends Controller
             'data' => $data
         ]);
     }
+    public function detail()
+    {
+        $query = Parameter::select('memo')->where('id', request()->id)->first();
+
+        $memo = json_decode($query->memo);
+
+        $array = [];
+        if ($memo != '') {
+
+            $i = 0;
+            foreach ($memo as $index => $value) {
+                $array[$i]['key'] = $index;
+                $array[$i]['value'] = $value;
+
+                $i++;
+            }
+        }
+
+        return response([
+            'data' => $array
+        ]);
+    }
 
     public function getparameterid($grp, $subgrp, $text)
     {
