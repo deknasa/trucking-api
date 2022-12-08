@@ -28,8 +28,6 @@ class Parameter extends MyModel
             'parameter.kelompok', 
             'parameter.text', 
             'parameter.memo', 
-            'parameter.singkatan', 
-            'parameter.warna', 
             'parameter.modifiedby', 
             'parameter.created_at', 
             'parameter.updated_at', 
@@ -52,7 +50,7 @@ class Parameter extends MyModel
     public function findAll($id)
     {
         $query = DB::table('parameter as A')
-            ->select('A.id', 'A.grp', 'A.subgrp', 'A.kelompok', 'A.text', 'A.memo', 'A.type','A.singkatan','A.warna', 'B.grp as grup')
+            ->select('A.id', 'A.grp', 'A.subgrp', 'A.kelompok', 'A.text', 'A.memo', 'A.type', 'B.grp as grup')
             ->leftJoin('parameter as B', 'A.type', 'B.id')
             ->where('A.id', $id);
 
@@ -70,8 +68,6 @@ class Parameter extends MyModel
             "$this->table.memo",
             "$this->table.kelompok",
             DB::raw("case when parameter.type = 0 then '' else B.grp end as type"),
-            "$this->table.singkatan",
-            "$this->table.warna",
             "$this->table.created_at",
             "$this->table.updated_at",
             "$this->table.modifiedby"
@@ -89,11 +85,9 @@ class Parameter extends MyModel
             $table->string('grp', 500)->default('');
             $table->string('subgrp', 250)->default('');
             $table->string('text', 500)->default('');
-            $table->string('memo', 1000)->default('');
+            $table->longText('memo')->default('');
             $table->string('kelompok', 1000)->default('');
             $table->string('type', 1000)->default('');
-            $table->string('singkatan', 1000)->default('');
-            $table->string('warna', 1000)->default('');
             $table->dateTime('created_at')->default('1900/1/1');
             $table->dateTime('updated_at')->default('1900/1/1');
             $table->string('modifiedby', 50)->default('');
@@ -113,8 +107,6 @@ class Parameter extends MyModel
             'memo',
             'kelompok',
             'type',
-            'singkatan',
-            'warna',
             'created_at',
             'updated_at',
             'modifiedby'
