@@ -28,9 +28,8 @@ class JurnalUmumHeaderController extends Controller
      */
     public function index()
     {
-
-
         $jurnalumum = new JurnalUmumHeader();
+        
         return response([
             'data' => $jurnalumum->get(),
             'attributes' => [

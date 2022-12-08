@@ -31,6 +31,8 @@ class AcosSeeder extends Seeder
         acos::create(['class' => 'menu', 'method' => 'store', 'nama' => 'store MenuController', 'modifiedby' => 'ADMIN',]);
         acos::create(['class' => 'menu', 'method' => 'update', 'nama' => 'update MenuController', 'modifiedby' => 'ADMIN',]);
         acos::create(['class' => 'menu', 'method' => 'destroy', 'nama' => 'destroy MenuController', 'modifiedby' => 'ADMIN',]);
+        acos::create(['class' => 'menu', 'method' => 'resequence', 'nama' => 'resequence MenuController', 'modifiedby' => 'ADMIN',]);
+        acos::create(['class' => 'menu', 'method' => 'storeresequence', 'nama' => 'store resequence MenuController', 'modifiedby' => 'ADMIN',]);
         acos::create(['class' => 'role', 'method' => 'index', 'nama' => 'index RoleController', 'modifiedby' => 'ADMIN',]);
         acos::create(['class' => 'role', 'method' => 'store', 'nama' => 'store RoleController', 'modifiedby' => 'ADMIN',]);
         acos::create(['class' => 'role', 'method' => 'update', 'nama' => 'update RoleController', 'modifiedby' => 'ADMIN',]);
