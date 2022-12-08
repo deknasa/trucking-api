@@ -2,10 +2,9 @@
 
 namespace App\Http\Requests;
 
-use App\Http\Controllers\Api\ErrorController;
 use Illuminate\Foundation\Http\FormRequest;
 
-class ParameterRequest extends FormRequest
+class StoreApprovalPendapatanSupirRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -25,24 +24,18 @@ class ParameterRequest extends FormRequest
     public function rules()
     {
         return [
-            'grp' => 'required',
-            'subgrp' => 'required',
-            'text' => 'required',
-            'key' => 'required|array',
-            'key.*' => 'required',
-            'value' => 'required|array',
-            'value.*' => 'required'
+            'periode' => 'required',
+            'approve' => 'required',
+            'pendapatanId' => 'required'
         ];
+
     }
 
     public function attributes()
     {
         return [
-            'grp' => 'group',
-            'subgrp' => 'subgroup',
-            'text' => 'name',
-            'key.*' => 'key',
-            'value.*' => 'value'
+            'approve' => 'Proses Data',
+            'pendapatanId' => 'Pilih no bukti pendapatan supir'
         ];
     }
 }

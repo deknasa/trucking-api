@@ -700,6 +700,26 @@ class HutangBayarHeaderController extends Controller
             
         }
     }
+    
+    public function cekapproval($id)
+    {
+        $hutangbayar = HutangBayarHeader::find($id);
+        $status = $hutangbayar->statusapproval;
+
+        if ($status == '3') {
+            $query = DB::table('error')
+                ->select('keterangan')
+                ->where('kodeerror', '=', 'SAP')
+                ->first();
+            return response([
+                'message' => "$query->keterangan",
+            ], 422);
+        } else {
+            return response([
+                'message' => "OK",
+            ]);
+        }
+    }
 
     public function comboapproval(Request $request)
     {

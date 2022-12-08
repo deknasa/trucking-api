@@ -61,10 +61,10 @@ class InvoiceExtraHeader extends MyModel
             $table->unsignedBigInteger('agen_id')->default('0');
             $table->double('nominal')->default('0');
             $table->longText('keterangan')->default('');
-            $table->bigInteger('statusapproval')->default('0');
+            $table->string('statusapproval',100)->default('0');
             $table->string('userapproval')->default();
             $table->date('tglapproval')->default('');
-            $table->unsignedBigInteger('statusformat')->default(0);
+            $table->dateTime('statusformat')->default(0);
             $table->string('modifiedby', 50)->default('');
             $table->dateTime('created_at')->default('1900/1/1');
             $table->dateTime('updated_at')->default('1900/1/1');
@@ -121,6 +121,7 @@ class InvoiceExtraHeader extends MyModel
             "$this->table.userapproval",
             "$this->table.tglapproval",
             "$this->table.statusformat",
+            "$this->table.statuscetak",
             "$this->table.modifiedby",
             "statusformat.memo as  statusformat_memo",
             "pelanggan.namapelanggan as  pelanggan",

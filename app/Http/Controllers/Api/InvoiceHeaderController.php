@@ -20,6 +20,7 @@ use App\Models\InvoiceDetail;
 use App\Models\JurnalUmumDetail;
 use App\Models\JurnalUmumHeader;
 use App\Models\LogTrail;
+use App\Models\OrderanTrucking;
 use App\Models\Parameter;
 use App\Models\PiutangDetail;
 use App\Models\PiutangHeader;
@@ -83,6 +84,9 @@ class InvoiceHeaderController extends Controller
             $invoice->statusapproval = $statusApproval->id;
             $invoice->userapproval = '';
             $invoice->tglapproval = '';
+            $invoice->statuscetak = 0;
+            $invoice->userbukacetak = '';
+            $invoice->tglbukacetak = '';
             $invoice->tgldari = date('Y-m-d', strtotime($request->tgldari));
             $invoice->tglsampai = date('Y-m-d', strtotime($request->tglsampai));
             $invoice->modifiedby = auth('api')->user()->name;
@@ -111,7 +115,8 @@ class InvoiceHeaderController extends Controller
             for ($i = 0; $i < count($request->sp_id); $i++) {
 
                 $SP = SuratPengantar::where('id', $request->sp_id[$i])->first();
-                $total = $total + $SP->omset;
+                $orderantrucking = OrderanTrucking::where('nobukti', $SP->jobtrucking)->first();
+                $total = $total + $orderantrucking->nominal;
                 $getSP = SuratPengantar::where('jobtrucking', $SP->jobtrucking)->get();
 
                 $allSP = "";
@@ -121,7 +126,7 @@ class InvoiceHeaderController extends Controller
                 $datadetail = [
                     'invoice_id' => $invoice->id,
                     'nobukti' => $invoice->nobukti,
-                    'nominal' => $SP->omset,
+                    'nominal' => $orderantrucking->nominal,
                     'keterangan' => $SP->keterangan,
                     'orderantrucking_nobukti' => $SP->jobtrucking,
                     'suratpengantar_nobukti' => $allSP,
@@ -145,7 +150,7 @@ class InvoiceHeaderController extends Controller
                     'id' => $iddetail,
                     'invoice_id' => $invoice->id,
                     'nobukti' => $invoice->nobukti,
-                    'nominal' => $SP->omset,
+                    'nominal' => $orderantrucking->nominal,
                     'keterangan' => $SP->keterangan,
                     'orderantrucking_nobukti' => $SP->jobtrucking,
                     'suratpengantar_nobukti' => $allSP,
@@ -211,10 +216,12 @@ class InvoiceHeaderController extends Controller
                 $detail = [];
 
                 $SP = SuratPengantar::where('id', $request->sp_id[$i])->first();
+                $orderantrucking = OrderanTrucking::where('nobukti', $SP->jobtrucking)->first();
+                
                 $detail = [
                     'entriluar' => 1,
                     'nobukti' => $piutang_nobukti,
-                    'nominal' => $SP->omset,
+                    'nominal' => $orderantrucking->nominal,
                     'keterangan' => $SP->keterangan,
                     'invoice_nobukti' => $invoice->nobukti,
                     'modifiedby' =>  auth('api')->user()->name
@@ -301,13 +308,14 @@ class InvoiceHeaderController extends Controller
                 InvoiceDetail::where('invoice_id', $invoiceheader->id)->lockForUpdate()->delete();
 
                 /* Store detail */
-
                 $detaillog = [];
                 $total = 0;
                 for ($i = 0; $i < count($request->sp_id); $i++) {
 
                     $SP = SuratPengantar::where('id', $request->sp_id[$i])->first();
-                    $total = $total + $SP->omset;
+
+                    $orderantrucking = OrderanTrucking::where('nobukti', $SP->jobtrucking)->first();
+                    $total = $total + $orderantrucking->nominal;
                     $getSP = SuratPengantar::where('jobtrucking', $SP->jobtrucking)->get();
 
                     $allSP = "";
@@ -318,7 +326,7 @@ class InvoiceHeaderController extends Controller
                     $datadetail = [
                         'invoice_id' => $invoiceheader->id,
                         'nobukti' => $invoiceheader->nobukti,
-                        'nominal' => $SP->omset,
+                        'nominal' => $orderantrucking->nominal,
                         'keterangan' => $SP->keterangan,
                         'orderantrucking_nobukti' => $SP->jobtrucking,
                         'suratpengantar_nobukti' => $allSP,
@@ -339,9 +347,9 @@ class InvoiceHeaderController extends Controller
                         'id' => $iddetail,
                         'invoice_id' => $invoiceheader->id,
                         'nobukti' => $invoiceheader->nobukti,
-                        'nominal' => $value->omset,
-                        'keterangan' => $value->keterangan,
-                        'orderantrucking_nobukti' => $value->jobtrucking,
+                        'nominal' => $orderantrucking->nominal,
+                        'keterangan' => $SP->keterangan,
+                        'orderantrucking_nobukti' => $SP->jobtrucking,
                         'suratpengantar_nobukti' => $allSP,
                         'modifiedby' => $invoiceheader->modifiedby,
                         'created_at' => date('d-m-Y H:i:s', strtotime($invoiceheader->created_at)),
@@ -366,62 +374,65 @@ class InvoiceHeaderController extends Controller
 
                 }
 
-                $group = 'PIUTANG BUKTI';
-                $subgroup = 'PIUTANG BUKTI';
-                $format = DB::table('parameter')
-                    ->where('grp', $group)
-                    ->where('subgrp', $subgroup)
-                    ->first();
+            }
+            
+            $group = 'PIUTANG BUKTI';
+            $subgroup = 'PIUTANG BUKTI';
+            $format = DB::table('parameter')
+                ->where('grp', $group)
+                ->where('subgrp', $subgroup)
+                ->first();
 
-                $nobuktiPiutang = new Request();
-                $nobuktiPiutang['group'] = 'PIUTANG BUKTI';
-                $nobuktiPiutang['subgroup'] = 'PIUTANG BUKTI';
-                $nobuktiPiutang['table'] = 'piutangheader';
-                $nobuktiPiutang['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
+            $nobuktiPiutang = new Request();
+            $nobuktiPiutang['group'] = 'PIUTANG BUKTI';
+            $nobuktiPiutang['subgroup'] = 'PIUTANG BUKTI';
+            $nobuktiPiutang['table'] = 'piutangheader';
+            $nobuktiPiutang['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
 
-                $piutang_nobukti = app(Controller::class)->getRunningNumber($nobuktiPiutang)->original['data'];
+            $piutang_nobukti = app(Controller::class)->getRunningNumber($nobuktiPiutang)->original['data'];
 
-                $invoiceheader->piutang_nobukti = $piutang_nobukti;
-                $invoiceheader->nominal = $total;
-                $invoiceheader->save();
-                $request->sortname = $request->sortname ?? 'id';
-                $request->sortorder = $request->sortorder ?? 'asc';
+            $invoiceheader->piutang_nobukti = $piutang_nobukti;
+            $invoiceheader->nominal = $total;
+            $invoiceheader->save();
+            $request->sortname = $request->sortname ?? 'id';
+            $request->sortorder = $request->sortorder ?? 'asc';
 
-                $piutangHeader = [
-                    'tanpaprosesnobukti' => 1,
+            $piutangHeader = [
+                'tanpaprosesnobukti' => 1,
+                'nobukti' => $piutang_nobukti,
+                'tglbukti' => date('Y-m-d', strtotime($invoiceheader->tglbukti)),
+                'keterangan' => $invoiceheader->keterangan,
+                'postingdari' => "ENTRY INVOICE",
+                'nominal' => $invoiceheader->nominal,
+                'invoice_nobukti' => $invoiceheader->nobukti,
+                'agen_id' => $invoiceheader->agen_id,
+                'modifiedby' => auth('api')->user()->name,
+                'statusformat' => 1,
+            ];
+
+            $piutangDetail = [];
+            for ($i = 0; $i < count($request->sp_id); $i++) {
+                $detail = [];
+
+                $SP = SuratPengantar::where('id', $request->sp_id[$i])->first();
+                $orderantrucking = OrderanTrucking::where('nobukti', $SP->jobtrucking)->first();
+                
+                $detail = [
+                    'entriluar' => 1,
                     'nobukti' => $piutang_nobukti,
-                    'tglbukti' => date('Y-m-d', strtotime($invoiceheader->tglbukti)),
-                    'keterangan' => $invoiceheader->keterangan,
-                    'postingdari' => "ENTRY INVOICE",
-                    'nominal' => $invoiceheader->nominal,
+                    'nominal' => $orderantrucking->nominal,
+                    'keterangan' => $SP->keterangan,
                     'invoice_nobukti' => $invoiceheader->nobukti,
-                    'agen_id' => $invoiceheader->agen_id,
-                    'modifiedby' => auth('api')->user()->name,
-                    'statusformat' => 1,
+                    'modifiedby' =>  auth('api')->user()->name
                 ];
 
-                $piutangDetail = [];
-                for ($i = 0; $i < count($request->sp_id); $i++) {
-                    $detail = [];
+                $piutangDetail[] = $detail;
+            }
 
-                    $SP = SuratPengantar::where('id', $request->sp_id[$i])->first();
-                        $detail = [
-                            'entriluar' => 1,
-                            'nobukti' => $piutang_nobukti,
-                            'nominal' => $SP->omset,
-                            'keterangan' => $SP->keterangan,
-                            'invoice_nobukti' => $invoiceheader->nobukti,
-                            'modifiedby' =>  auth('api')->user()->name
-                        ];
-    
-                    $piutangDetail[] = $detail;
-                }
+            $piutang = $this->storePiutang($piutangHeader, $piutangDetail);
 
-                $piutang = $this->storePiutang($piutangHeader, $piutangDetail);
-
-                if (!$piutang['status']) {
-                    throw new \Throwable($piutang['message']);
-                }
+            if (!$piutang['status']) {
+                throw new \Throwable($piutang['message']);
             }
 
             $request->sortname = $request->sortname ?? 'id';
@@ -538,11 +549,14 @@ class InvoiceHeaderController extends Controller
         }
     }
 
-    public function getEdit($id)
+    public function getEdit($id, Request $request)
     {
         $invoice = new InvoiceHeader();
+        $dari = date('Y-m-d', strtotime($request->tgldari));
+        $sampai = date('Y-m-d', strtotime($request->tglsampai));
+
         return response([
-            "data" => $invoice->getEdit($id)
+            "data" => $invoice->getEdit($id, $request)
         ]);
     }
 

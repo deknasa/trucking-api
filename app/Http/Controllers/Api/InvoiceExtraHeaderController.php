@@ -492,6 +492,48 @@ class InvoiceExtraHeaderController extends Controller
         }
     }
 
+    public function printReport($id)
+    {
+        DB::beginTransaction();
+
+        try {
+            $invoiceExtra = InvoiceExtraHeader::findOrFail($id);
+            $statusSudahCetak = Parameter::where('grp', '=', 'STATUS CETAK')->where('text', '=', 'SUDAH CETAK')->first();
+            $statusBelumCetak = Parameter::where('grp', '=', 'STATUS CETAK')->where('text', '=', 'BELUM CETAK')->first();
+
+            if ($invoiceExtra->statuscetak != $statusSudahCetak->id) {
+                $invoiceExtra->statuscetak = $statusSudahCetak->id;
+                $invoiceExtra->tglbukacetak = date('Y-m-d H:i:s');
+                $invoiceExtra->userbukacetak = auth('api')->user()->name;
+                $invoiceExtra->jumlahcetak = $invoiceExtra->jumlahcetak+1;
+                if ($invoiceExtra->save()) {
+                    $logTrail = [
+                        'namatabel' => strtoupper($invoiceExtra->getTable()),
+                        'postingdari' => 'PRINT INVOICE EXTRA',
+                        'idtrans' => $invoiceExtra->id,
+                        'nobuktitrans' => $invoiceExtra->id,
+                        'aksi' => 'PRINT',
+                        'datajson' => $invoiceExtra->toArray(),
+                        'modifiedby' => $invoiceExtra->modifiedby
+                    ];
+    
+                    $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                    $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+    
+                    DB::commit();
+                }
+            }
+
+
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+        
+    }
+
     public function storePiutang($piutangHeader,$piutangDetail)
     {
         try {

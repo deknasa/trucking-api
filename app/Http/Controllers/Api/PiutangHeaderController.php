@@ -83,6 +83,9 @@ class PiutangHeaderController extends Controller
             $piutang->modifiedby = auth('api')->user()->name;
             $piutang->statusformat = $format->id ?? $request->statusformat;
             $piutang->agen_id = $request->agen_id;
+            $piutang->statuscetak = 0;
+            $piutang->userbukacetak = '';
+            $piutang->tglbukacetak = '';            
             $piutang->nominal = ($tanpaprosesnobukti == 0) ? array_sum($request->nominal_detail) : $request->nominal;
 
             if ($tanpaprosesnobukti == 0) {
