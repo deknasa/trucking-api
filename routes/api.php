@@ -477,6 +477,7 @@ use App\Http\Controllers\Api\BankPelangganController;
         Route::get('kasgantungheader/no_bukti', [KasGantungHeaderController::class, 'getNoBukti']);
         Route::get('kasgantungheader/combo', [KasGantungHeaderController::class, 'combo']);
         Route::get('kasgantungheader/grid', [KasGantungHeaderController::class, 'grid']);
+        Route::post('kasgantungheader/{id}/cekvalidasi', [KasGantungHeaderController::class, 'cekvalidasi'])->name('kasgantungheader.cekvalidasi');
         Route::get('kasgantungheader/field_length', [KasGantungHeaderController::class, 'fieldLength']);
         Route::resource('kasgantungheader', KasGantungHeaderController::class);
 
@@ -528,6 +529,7 @@ use App\Http\Controllers\Api\BankPelangganController;
         Route::get('pengembaliankasgantungheader/field_length', [PengembalianKasGantungHeaderController::class,'fieldLength']);
         Route::get('pengembaliankasgantungheader/getkasgantung', [PengembalianKasGantungHeaderController::class,'getKasGantung']);
         Route::get('pengembaliankasgantungheader/getpengembalian/{id}', [PengembalianKasGantungHeaderController::class,'getPengembalian']);
+        Route::post('pengembaliankasgantungheader/{id}/cekvalidasi', [PengembalianKasGantungHeaderController::class, 'cekvalidasi'])->name('pengembaliankasgantungheader.cekvalidasi');
         Route::resource('pengembaliankasgantungheader', PengembalianKasGantungHeaderController::class);
         
         Route::resource('pengembaliankasgantung_detail', PengembalianKasGantungDetailController::class);

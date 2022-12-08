@@ -97,7 +97,11 @@ class PengeluaranHeader extends MyModel
             'pengeluaranheader.transferkeac',
             'pengeluaranheader.transferkean',
             'pengeluaranheader.transferkebank',
-        )
+            'pengeluaranheader.statuscetak',
+            'pengeluaranheader.userbukacetak',
+            'pengeluaranheader.jumlahcetak',
+            'pengeluaranheader.tglbukacetak',
+            )
         ->leftJoin('pelanggan', 'pengeluaranheader.pelanggan_id', 'pelanggan.id')
         ->leftJoin('cabang', 'pengeluaranheader.cabang_id', 'cabang.id')
         ->leftJoin('bank', 'pengeluaranheader.bank_id', 'bank.id')

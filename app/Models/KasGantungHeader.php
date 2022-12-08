@@ -52,11 +52,16 @@ class KasGantungHeader extends MyModel
             'kasgantungheader.coakaskeluar',
             db::raw("(case when year(isnull(kasgantungheader.tglkaskeluar,'1900/1/1'))=1900 then null else kasgantungheader.tglkaskeluar end) as tglkaskeluar"),
             'kasgantungheader.postingdari',
+            DB::raw('(case when (year(kasgantungheader.tglbukacetak) <= 2000) then null else kasgantungheader.tglbukacetak end ) as tglbukacetak'),
+            'statuscetak.memo as statuscetak',
+            'kasgantungheader.userbukacetak',
+            'kasgantungheader.jumlahcetak',
             'kasgantungheader.modifiedby',
             'kasgantungheader.created_at',
             'kasgantungheader.updated_at'
         )
             ->leftJoin('penerima', 'kasgantungheader.penerima_id', 'penerima.id')
+            ->leftJoin('parameter as statuscetak' , 'kasgantungheader.statuscetak', 'statuscetak.id')
             ->leftJoin('bank', 'kasgantungheader.bank_id', 'bank.id');
 
         $this->totalRows = $query->count();
@@ -86,6 +91,9 @@ class KasGantungHeader extends MyModel
             'kasgantungheader.pengeluaran_nobukti',
             'kasgantungheader.coakaskeluar',
             'kasgantungheader.tglkaskeluar',
+            'kasgantungheader.statuscetak',
+            'kasgantungheader.userbukacetak',
+            'kasgantungheader.jumlahcetak',
             'kasgantungheader.modifiedby',
             'kasgantungheader.created_at',
             'kasgantungheader.updated_at'
@@ -112,12 +120,17 @@ class KasGantungHeader extends MyModel
             $this->table.pengeluaran_nobukti,
             $this->table.coakaskeluar,
             $this->table.tglkaskeluar,
+            'statuscetak.text as statuscetak',
+            $this->table.userbukacetak,
+            $this->table.tglbukacetak,
+            $this->table.jumlahcetak,
             $this->table.modifiedby,
             $this->table.created_at,
             $this->table.updated_at"
             )
         )
         ->leftJoin('penerima', 'kasgantungheader.penerima_id', 'penerima.id')
+        ->leftJoin('parameter as statuscetak' , 'kasgantungheader.statuscetak', 'statuscetak.id')
         ->leftJoin('bank', 'kasgantungheader.bank_id', 'bank.id');
 
     }
@@ -134,7 +147,11 @@ class KasGantungHeader extends MyModel
             $table->string('bank_id', 1000)->default('');
             $table->string('pengeluaran_nobukti', 1000)->default('');
             $table->string('coakaskeluar', 1000)->default('');
-            $table->string('tglkaskeluar', 1000)->default('');
+            $table->date('tglkaskeluar')->default('1900/1/1');
+            $table->string('statuscetak',1000)->default('');
+            $table->string('userbukacetak',50)->default('');
+            $table->date('tglbukacetak')->default('1900/1/1');
+            $table->integer('jumlahcetak')->Length(11)->default('0');
             $table->string('modifiedby', 50)->default('');
             $table->dateTime('created_at')->default('1900/1/1');
             $table->dateTime('updated_at')->default('1900/1/1');
@@ -146,7 +163,7 @@ class KasGantungHeader extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id','nobukti','tglbukti','penerima_id','keterangan','bank_id','pengeluaran_nobukti','coakaskeluar','tglkaskeluar','modifiedby','created_at','updated_at'],$models);
+        DB::table($temp)->insertUsing(['id','nobukti','tglbukti','penerima_id','keterangan','bank_id','pengeluaran_nobukti','coakaskeluar','tglkaskeluar','statuscetak','userbukacetak','tglbukacetak','jumlahcetak','modifiedby','created_at','updated_at'],$models);
 
 
         return  $temp;         
