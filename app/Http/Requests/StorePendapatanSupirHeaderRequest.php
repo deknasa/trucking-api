@@ -13,7 +13,7 @@ class StorePendapatanSupirHeaderRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -23,8 +23,44 @@ class StorePendapatanSupirHeaderRequest extends FormRequest
      */
     public function rules()
     {
+        $rules = [
+            'tglbukti' => 'required',
+            'bank' => 'required',
+            'keterangan' => 'required',
+            'tgldari' => 'required',
+            'tglsampai' => 'required',
+            'periode' => 'required'
+        ];
+        $relatedRequests = [
+            StorePendapatanSupirDetailRequest::class
+        ];
+
+        foreach ($relatedRequests as $relatedRequest) {
+            $rules = array_merge(
+                $rules,
+                (new $relatedRequest)->rules()
+            );
+        }
+
+        return $rules;
+    }
+
+    public function attributes()
+    {
         return [
-            //
+            'tglbukti' => 'tanggal bukti',
+            'tgldari' => 'tanggal dari',
+            'tglsampai' => 'tanggal sampai',
+            'supir.*' => 'supir',
+            'nominal.*' => 'nominal',
+            'keterangan_detail.*' => 'keterangan'
+        ];
+    }
+
+    public function messages()
+    {
+        return [
+            'nominal.*.gt' => 'tidak boleh kosong'
         ];
     }
 }

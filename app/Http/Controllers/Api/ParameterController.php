@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Schema;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use Illuminate\Database\QueryException;
+
 class ParameterController extends Controller
 {
     /**
@@ -48,14 +49,20 @@ class ParameterController extends Controller
             $parameter->subgrp = $request->subgrp;
             $parameter->text = $request->text;
             $parameter->kelompok = $request->kelompok ?? '';
-            $parameter->memo = $request->memo;
             $parameter->type = $request->type ?? 0;
             $parameter->singkatan = $request->singkatan ?? '';
             $parameter->warna = $request->warna ?? '';
             $parameter->modifiedby = auth('api')->user()->name;
-            $request->sortname = $request->sortname ?? 'id';
-            $request->sortorder = $request->sortorder ?? 'asc';
 
+            $detaillog = [];
+            for ($i = 0; $i < count($request->key); $i++) {
+                $datadetaillog = [
+                    $request->key[$i] => $request->value[$i],
+                ];
+                $detaillog = array_merge($detaillog, $datadetaillog);
+            }
+
+            $parameter->memo = json_encode($detaillog);
             if ($parameter->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($parameter->getTable()),
@@ -113,7 +120,6 @@ class ParameterController extends Controller
             $parameter->grp = $request->grp;
             $parameter->subgrp = $request->subgrp;
             $parameter->text = $request->text;
-            $parameter->memo = $request->memo;
             $parameter->kelompok = $request->kelompok ?? '';
             $parameter->type = $request->type ?? 0;
             $parameter->singkatan = $request->singkatan ?? '';
@@ -122,6 +128,15 @@ class ParameterController extends Controller
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
 
+            $detaillog = [];
+            for ($i = 0; $i < count($request->key); $i++) {
+                $datadetaillog = [
+                    $request->key[$i] => $request->value[$i],
+                ];
+                $detaillog = array_merge($detaillog, $datadetaillog);
+            }
+
+            $parameter->memo = json_encode($detaillog);
             if ($parameter->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($parameter->getTable()),

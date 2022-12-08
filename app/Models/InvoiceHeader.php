@@ -185,27 +185,21 @@ class InvoiceHeader extends MyModel
         return $temp;
     }
 
-    public function getEdit($id) 
+    public function getEdit($id, $request) 
     {
-        $query = DB::table('invoicedetail')->select(
-            'suratpengantar.id',
-            'suratpengantar.jobtrucking',
-            'orderantrucking.nocont',
-            'suratpengantar.tglsp',
-            'tarif.tujuan as tarif_id',
-            'jenisorder.keterangan as jenisorder_id',
-            'agen.namaagen as agen_id',
-            'suratpengantar.statuslongtrip',
-            'orderantrucking.statusperalihan',
-            'invoicedetail.nominal as omset',
-            'suratpengantar.keterangan'
-        )
-        ->leftJoin('suratpengantar','invoicedetail.suratpengantar_nobukti','suratpengantar.nobukti')
-        ->leftJoin('orderantrucking','suratpengantar.jobtrucking','orderantrucking.nobukti')
-        ->leftJoin('tarif','orderantrucking.tarif_id','tarif.id')
-        ->leftJoin('jenisorder','suratpengantar.jenisorder_id','jenisorder.id')
-        ->leftJoin('agen','suratpengantar.agen_id','agen.id')
+        $temp = $this->createTempSP($request);
+
+        $query = DB::table('invoicedetail')
+        ->select(DB::raw("$temp.id,$temp.jobtrucking,sp.tglsp, sp.keterangan,jenisorder.keterangan as jenisorder_id, agen.namaagen as agen_id, sp.statuslongtrip, ot.statusperalihan, ot.nocont, tarif.tujuan as tarif_id, ot.nominal as omset"))
+        
+        ->leftJoin('suratpengantar as sp','invoicedetail.orderantrucking_nobukti','sp.jobtrucking')
+        ->Join($temp,'sp.id',"$temp.id")
+        ->leftJoin('orderantrucking as ot','sp.jobtrucking','ot.nobukti')
+        ->leftJoin('tarif','ot.tarif_id','tarif.id')
+        ->leftJoin('jenisorder','sp.jenisorder_id','jenisorder.id')
+        ->leftJoin('agen','sp.agen_id','agen.id')
         ->where('invoicedetail.invoice_id', $id);
+       
         $data = $query->get();
         return $data;
     }

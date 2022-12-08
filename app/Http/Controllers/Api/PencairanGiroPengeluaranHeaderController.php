@@ -46,7 +46,7 @@ class PencairanGiroPengeluaranHeaderController extends Controller
         try {
 
             $group = 'PENCAIRAN GIRO BUKTI';
-            $subgroup = 'PENCAIRAN GIRO KASBANK BUKTI';
+            $subgroup = 'PENCAIRAN GIRO BUKTI';
 
             $format = DB::table('parameter')
                 ->where('grp', $group)
@@ -267,69 +267,4 @@ class PencairanGiroPengeluaranHeaderController extends Controller
     }
 
 
-    public function show(PencairanGiroPengeluaranHeader $pencairanGiroPengeluaranHeader)
-    {
-        //
-    }
-
-    /**
-     * @ClassName
-     */
-    public function destroy(StorePencairanGiroPengeluaranHeaderRequest $request)
-    {
-        DB::BeginTransaction();
-        try {
-
-            $pencairanGiro = new PencairanGiroPengeluaranHeader();
-
-            for ($i = 0; $i < count($request->pengeluaranId); $i++) {
-                $pengeluaran = PengeluaranHeader::select('nobukti')->where('id', $request->pengeluaranId[$i])->first();
-                $get = PencairanGiroPengeluaranHeader::where('pengeluaran_nobukti', $pengeluaran->nobukti)->first();
-
-                if ($get == null) {
-                    DB::rollBack();
-                    return response([
-                        'status' => false,
-                        'message' => 'NO BUKTI KAS/BANK BELUM DIPROSES'
-                    ], 500);
-                }
-                PencairanGiroPengeluaranDetail::where('pencairangiropengeluaran_id', $get->id)->lockForUpdate()->delete();
-                JurnalUmumHeader::where('nobukti', $get->nobukti)->lockForUpdate()->delete();
-                JurnalUmumDetail::where('nobukti', $get->nobukti)->lockForUpdate()->delete();
-                PencairanGiroPengeluaranHeader::destroy($get->id);
-
-                $logTrail = [
-                    'namatabel' => strtoupper($pencairanGiro->getTable()),
-                    'postingdari' => 'DELETE PENCAIRAN GIRO PENGELUARAN HEADER',
-                    'idtrans' => $get->id,
-                    'nobuktitrans' => $get->nobukti,
-                    'aksi' => 'DELETE',
-                    'datajson' => $get->toArray(),
-                    'modifiedby' => $get->modifiedby
-                ];
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                app(LogTrailController::class)->store($validatedLogTrail);
-            }
-
-            DB::commit();
-
-            $selected = $this->getPosition($pencairanGiro, $pencairanGiro->getTable(), true);
-           
-            $pencairanGiro->position = $selected->position;
-            $pencairanGiro->id = $selected->id;
-            $pencairanGiro->page = ceil($pencairanGiro->position / ($request->limit ?? 10));
-
-            return response([
-                'status' => true,
-                'message' => 'Berhasil dihapus',
-                'data' => $pencairanGiro
-            ]);
-
-        } catch (\Throwable $th) {
-            DB::rollBack();
-            throw $th;
-            return response($th->getMessage());
-        }
-    }
 }
