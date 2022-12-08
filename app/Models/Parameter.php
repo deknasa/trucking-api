@@ -27,7 +27,6 @@ class Parameter extends MyModel
             'parameter.subgrp', 
             'parameter.kelompok', 
             'parameter.text', 
-            'parameter.memo', 
             'parameter.modifiedby', 
             'parameter.created_at', 
             'parameter.updated_at', 

@@ -71,6 +71,8 @@ class InvoiceHeaderController extends Controller
             date_default_timezone_set('Asia/Jakarta');
 
             $statusApproval = Parameter::where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
+            $statusCetak = Parameter::where('grp', 'STATUS CETAK')->where('text', 'BELUM CETAK')->first();
+
             $invoice = new InvoiceHeader();
             $invoice->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $invoice->keterangan = $request->keterangan;
@@ -84,7 +86,7 @@ class InvoiceHeaderController extends Controller
             $invoice->statusapproval = $statusApproval->id;
             $invoice->userapproval = '';
             $invoice->tglapproval = '';
-            $invoice->statuscetak = 0;
+            $invoice->statuscetak = $statusCetak->id;
             $invoice->userbukacetak = '';
             $invoice->tglbukacetak = '';
             $invoice->tgldari = date('Y-m-d', strtotime($request->tgldari));
@@ -632,41 +634,39 @@ class InvoiceHeaderController extends Controller
             throw $th;
         }
     }
-
-    public function approval($id)
+    
+    public function printReport($id)
     {
         DB::beginTransaction();
 
         try {
-            $invoice = InvoiceHeader::find($id);
-            $statusApproval = Parameter::where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
-            $statusNonApproval = Parameter::where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
+            $invoice = InvoiceHeader::lockForUpdate()->findOrFail($id);
+            $statusSudahCetak = Parameter::where('grp', '=', 'STATUS CETAK')->where('text', '=', 'SUDAH CETAK')->first();
+            $statusBelumCetak = Parameter::where('grp', '=', 'STATUS CETAK')->where('text', '=', 'BELUM CETAK')->first();
 
-            if ($invoice->statusapproval == $statusApproval->id) {
-                $invoice->statusapproval = $statusNonApproval->id;
-            } else {
-                $invoice->statusapproval = $statusApproval->id;
+            if ($invoice->statuscetak != $statusSudahCetak->id) {
+                $invoice->statuscetak = $statusSudahCetak->id;
+                $invoice->tglbukacetak = date('Y-m-d H:i:s');
+                $invoice->userbukacetak = auth('api')->user()->name;
+
+                if ($invoice->save()) {
+                    $logTrail = [
+                        'namatabel' => strtoupper($invoice->getTable()),
+                        'postingdari' => 'PRINT INVOICE HEADER',
+                        'idtrans' => $invoice->id,
+                        'nobuktitrans' => $invoice->id,
+                        'aksi' => 'PRINT',
+                        'datajson' => $invoice->toArray(),
+                        'modifiedby' => $invoice->modifiedby
+                    ];
+    
+                    $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                    $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+    
+                    DB::commit();
+                }
             }
 
-            $invoice->tglapproval = date('Y-m-d H:i:s');
-            $invoice->userapproval = auth('api')->user()->name;
-
-            if ($invoice->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($invoice->getTable()),
-                    'postingdari' => 'UN/APPROVE Invoice',
-                    'idtrans' => $invoice->id,
-                    'nobuktitrans' => $invoice->id,
-                    'aksi' => 'UN/APPROVE',
-                    'datajson' => $invoice->toArray(),
-                    'modifiedby' => $invoice->modifiedby
-                ];
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
-                DB::commit();
-            }
 
             return response([
                 'message' => 'Berhasil'
@@ -674,6 +674,7 @@ class InvoiceHeaderController extends Controller
         } catch (\Throwable $th) {
             throw $th;
         }
+        
     }
 
     public function cekapproval($id)
