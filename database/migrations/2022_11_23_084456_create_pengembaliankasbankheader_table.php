@@ -35,6 +35,10 @@ class CreatePengembaliankasbankheaderTable extends Migration
             $table->string('transferkean',100)->default('');
             $table->string('transferkebank',100)->default('');
             $table->unsignedBigInteger('statusformat')->default(0);
+            $table->integer('statuscetak')->Length(11)->default('0');
+            $table->string('userbukacetak',50)->default('');
+            $table->date('tglbukacetak')->default('1900/1/1');
+            $table->integer('jumlahcetak')->Length(11)->default('0');                
             $table->string('modifiedby',50)->default('');
             $table->timestamps();
 
