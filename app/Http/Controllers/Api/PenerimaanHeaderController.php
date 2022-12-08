@@ -82,8 +82,10 @@ class PenerimaanHeaderController extends Controller
             // if ($tanpaprosesnobukti == 1) {
             //     $pengeluaranHeader->nobukti = $request->nobukti;
             // }
+            
             $statusApproval = Parameter::where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
             $statusBerkas = Parameter::where('grp', 'STATUS BERKAS')->where('text', 'TIDAK ADA BERKAS')->first();
+            $statuscetak = Parameter::where('grp', 'STATUS CETAK')->where('text', 'BELUM CETAK')->first();
             $penerimaanHeader = new PenerimaanHeader();
             $penerimaanHeader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $penerimaanHeader->pelanggan_id = $request->pelanggan_id;
@@ -97,9 +99,9 @@ class PenerimaanHeaderController extends Controller
             $penerimaanHeader->noresi = $request->noresi ?? 0;
             $penerimaanHeader->statusapproval = $statusApproval->id ?? 0;
             $penerimaanHeader->statusberkas = $statusBerkas->id ?? 0;
+            $penerimaanHeader->statuscetak = $statuscetak->id ?? 0;
             $penerimaanHeader->modifiedby = auth('api')->user()->name;
             $penerimaanHeader->statusformat = $querysubgrppenerimaan->statusformatpenerimaan;
-
             $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
             $penerimaanHeader->nobukti = $nobukti;
 
@@ -179,7 +181,7 @@ class PenerimaanHeaderController extends Controller
                     ];
                     $detaillog[] = $datadetaillog;
     
-    
+                  
                     $dataid = LogTrail::select('id')
                         ->where('nobuktitrans', '=', $penerimaanHeader->nobukti)
                         ->where('namatabel', '=', $penerimaanHeader->getTable())
@@ -201,7 +203,8 @@ class PenerimaanHeaderController extends Controller
                     app(LogTrailController::class)->store($data);
                 }
     
-    
+          
+
                 $request->sortname = $request->sortname ?? 'id';
                 $request->sortorder = $request->sortorder ?? 'asc';
     

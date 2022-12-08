@@ -35,7 +35,45 @@ class PenerimaanHeader extends MyModel
     {
         $this->setRequestParameters();
 
-        $query = DB::table($this->table);
+
+        $query = DB::table($this->table)
+        ->select(
+            'penerimaanheader.id',
+            'penerimaanheader.nobukti',
+            'penerimaanheader.tglbukti',
+            'pelanggan.namapelanggan as pelanggan_id',
+            'bank.namabank as bank_id',
+            'penerimaanheader.keterangan',
+            'penerimaanheader.postingdari',
+            'penerimaanheader.diterimadari',
+            DB::raw('(case when (year(penerimaanheader.tgllunas) <= 2000) then null else penerimaanheader.tgllunas end ) as tgllunas'),
+            'bank.namacabang as cabang_id',
+            'statuskas.memo as statuskas',
+            'penerimaanheader.userapproval',
+            DB::raw('(case when (year(penerimaanheader.tglapproval) <= 2000) then null else penerimaanheader.tglapproval end ) as tglapproval'),
+            'penerimaanheader.noresi',
+            'statusberkas.memo as statusberkas',
+            'penerimaanheader.userberkas',
+            DB::raw('(case when (year(penerimaanheader.tglberkas) <= 2000) then null else penerimaanheader.tglberkas end ) as tglberkas'),
+            'statusformat.memo as statusformat',
+            'statuscetak.memo as statuscetak',
+            'penerimaanheader.userbukacetak',
+            DB::raw('(case when (year(penerimaanheader.tglbukacetak) <= 2000) then null else penerimaanheader.tglbukacetak end ) as tglberkas'),
+            'penerimaanheader.jumlahcetak',
+            'penerimaanheader.modifiedby',
+            'penerimaanheader.created_at',
+            'penerimaanheader.updated_at',
+            'statusapproval.memo as statusapproval',
+        )
+        ->leftJoin('parameter as statusapproval', 'penerimaanheader.statusapproval', 'statusapproval.id')
+        ->leftJoin('pelanggan', 'penerimaanheader.pelanggan_id', 'pelanggan.id')
+        ->leftJoin('bank', 'penerimaanheader.bank_id', 'bank.id')
+        ->leftJoin('parameter as statuskas', 'penerimaanheader.statuskas', 'statuskas.id')
+        ->leftJoin('parameter as statusberkas', 'penerimaanheader.statusberkas', 'statusberkas.id')
+        ->leftJoin('parameter as statusformat', 'penerimaanheader.statusformat', 'statusformat.id')
+        ->leftJoin('parameter as statuscetak', 'penerimaanheader.statuscetak', 'statuscetak.id')
+        ->leftJoin('cabang', 'penerimaanheader.cabang_id', 'cabang.id');
+
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
