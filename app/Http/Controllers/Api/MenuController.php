@@ -229,39 +229,72 @@ class MenuController extends Controller
     {
         DB::beginTransaction();
 
-        $menu = new Menu();
-        $menu = Menu::lockForUpdate()->findOrFail($request->id);
-        $menu->menuname = ucwords(strtolower($request->menuname));
-        $menu->menuseq = $request->menuseq;
-        $menu->menuicon = strtolower($request->menuicon);
+        try {
+            $class = $this->listFolderFiles($request['controller']);
 
-        if ($menu->save()) {
-            $logTrail = [
-                'namatabel' => strtoupper($menu->getTable()),
-                'postingdari' => 'EDIT MENU',
-                'idtrans' => $menu->id,
-                'nobuktitrans' => $menu->id,
-                'aksi' => 'EDIT',
-                'datajson' => $menu->toArray(),
-                'modifiedby' => $menu->modifiedby
-            ];
+            if ($class <> '') {
 
-            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-            $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+                foreach ($class as $value) {
+                    $namaclass = str_replace('controller', '', strtolower($value['class']));
+                    if (Acos::select('id')
+                        ->where('class', '=', $namaclass)
+                        ->exists()
+                    ) {
+                        $dataacos = [
+                            'class' => $namaclass,
+                            'method' => $value['method'],
+                            'nama' => $value['name'],
+                            'modifiedby' => auth('api')->user()->name,
+                        ];
 
-            DB::commit();
+                        $data = new StoreAcosRequest($dataacos);
+                        $dataaco = app(AcosController::class)->store($data);
+
+                        if ($dataaco['error']) {
+                            return response($dataaco, 422);
+                        }
+                    }
+                }
+            }
+
+            $menu = new Menu();
+            $menu = Menu::lockForUpdate()->findOrFail($request->id);
+            $menu->menuname = ucwords(strtolower($request->menuname));
+            $menu->menuseq = $request->menuseq;
+            $menu->menuicon = strtolower($request->menuicon);
+
+            if ($menu->save()) {
+                $logTrail = [
+                    'namatabel' => strtoupper($menu->getTable()),
+                    'postingdari' => 'EDIT MENU',
+                    'idtrans' => $menu->id,
+                    'nobuktitrans' => $menu->id,
+                    'aksi' => 'EDIT',
+                    'datajson' => $menu->toArray(),
+                    'modifiedby' => $menu->modifiedby
+                ];
+
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+
+                DB::commit();
+            }
+
+            /* Set position and page */
+            $selected = $this->getPosition($menu, $menu->getTable());
+            $menu->position = $selected->position;
+            $menu->page = ceil($menu->position / ($request->limit ?? 10));
+
+            return response([
+                'status' => true,
+                'message' => 'Berhasil diubah',
+                'data' => $menu
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+
+            throw $th;
         }
-
-        /* Set position and page */
-        $selected = $this->getPosition($menu, $menu->getTable());
-        $menu->position = $selected->position;
-        $menu->page = ceil($menu->position / ($request->limit ?? 10));
-
-        return response([
-            'status' => true,
-            'message' => 'Berhasil diubah',
-            'data' => $menu
-        ]);
     }
 
     /**

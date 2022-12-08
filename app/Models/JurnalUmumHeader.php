@@ -35,7 +35,6 @@ class JurnalUmumHeader extends MyModel
 
         $query = DB::table($this->table)
             ->select(
-
                 'jurnalumumheader.id',
                 'jurnalumumheader.nobukti',
                 'jurnalumumheader.tglbukti',
@@ -46,14 +45,8 @@ class JurnalUmumHeader extends MyModel
                 'jurnalumumheader.modifiedby',
                 'jurnalumumheader.updated_at',
                 'statusapproval.memo as statusapproval',
-                'statusapproval.singkatan as singkatanstatusapproval',
-                'statusapproval.warna as warnastatusapproval'
-
             )
             ->leftJoin('parameter as statusapproval', 'jurnalumumheader.statusapproval', 'statusapproval.id');
-
-        // ->where(DB::raw('LEFT(nobukti,'. $lennobukti.')'),  '=', 'KGT');
-
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;

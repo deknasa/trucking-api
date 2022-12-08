@@ -19,7 +19,7 @@ class MenuSeeder extends Seeder
         DB::statement("DBCC CHECKIDENT ('Menu', RESEED, 1);");
 
         menu::create(['menuname' => 'DASHBOARD', 'menuseq' => '0', 'menuparent' => '0', 'menuicon' => 'FAS FA-HOME', 'aco_id' => '0', 'link' => 'DASHBOARD', 'menuexe' => '', 'menukode' => '0', 'modifiedby' => '',]);
-        menu::create(['menuname' => 'LOGOUT', 'menuseq' => '7', 'menuparent' => '0', 'menuicon' => 'FAS FA-SIGN-OUT-ALT', 'aco_id' => '0', 'link' => 'LOGOUT', 'menuexe' => '', 'menukode' => '7', 'modifiedby' => '',]);
+        menu::create(['menuname' => 'LOGOUT', 'menuseq' => '7', 'menuparent' => '0', 'menuicon' => 'FAS FA-SIGN-OUT-ALT', 'aco_id' => '0', 'link' => 'LOGOUT', 'menuexe' => '', 'menukode' => '9', 'modifiedby' => '',]);
         menu::create(['menuname' => 'MASTER', 'menuseq' => '1', 'menuparent' => '0', 'menuicon' => 'FAS FA-USER-TAG', 'aco_id' => '0', 'link' => '', 'menuexe' => '', 'menukode' => '1', 'modifiedby' => '',]);
         menu::create(['menuname' => 'SYSTEM', 'menuseq' => '11', 'menuparent' => '3', 'menuicon' => 'FAB FA-UBUNTU', 'aco_id' => '0', 'link' => '', 'menuexe' => '', 'menukode' => '11', 'modifiedby' => '',]);
         menu::create(['menuname' => 'PARAMETER', 'menuseq' => '111', 'menuparent' => '4', 'menuicon' => 'FAS FA-EXCLAMATION', 'aco_id' => '1', 'link' => '', 'menuexe' => '', 'menukode' => '111', 'modifiedby' => 'ADMIN',]);
@@ -109,5 +109,14 @@ class MenuSeeder extends Seeder
         menu::create(['menuname' => 'PENERIMAAN GIRO', 'menuseq' => '100', 'menuparent' => '29', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '297', 'link' => '', 'menuexe' => '', 'menukode' => '37', 'modifiedby' => 'ADMIN',]);
         menu::create(['menuname' => 'LOG TRAIL', 'menuseq' => '100', 'menuparent' => '4', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '301', 'link' => '', 'menuexe' => '', 'menukode' => '119', 'modifiedby' => 'ADMIN',]);
         menu::create(['menuname' => 'INVOICE EXTRA', 'menuseq' => '100', 'menuparent' => '15', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '302', 'link' => '', 'menuexe' => '', 'menukode' => '2E', 'modifiedby' => 'ADMIN',]);
+        menu::create(['menuname' => 'APPROVED JURNAL', 'menuseq' => '100', 'menuparent' => '60', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '306', 'link' => '', 'menuexe' => '', 'menukode' => '52', 'modifiedby' => 'ADMIN',]);
+        menu::create(['menuname' => 'PAID & APPROVED', 'menuseq' => '100', 'menuparent' => '0', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '0', 'link' => '', 'menuexe' => '', 'menukode' => '7', 'modifiedby' => 'ADMIN',]);
+        menu::create(['menuname' => 'LAPORAN', 'menuseq' => '100', 'menuparent' => '0', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '0', 'link' => '', 'menuexe' => '', 'menukode' => '8', 'modifiedby' => 'ADMIN',]);
+        menu::create(['menuname' => 'APPROVED KAS/BANK', 'menuseq' => '100', 'menuparent' => '93', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '309', 'link' => '', 'menuexe' => '', 'menukode' => '71', 'modifiedby' => 'ADMIN',]);
+        menu::create(['menuname' => 'APPROVED HUTANG', 'menuseq' => '100', 'menuparent' => '93', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '311', 'link' => '', 'menuexe' => '', 'menukode' => '72', 'modifiedby' => 'ADMIN',]);
+        menu::create(['menuname' => 'APPROVED NOTA', 'menuseq' => '100', 'menuparent' => '93', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '313', 'link' => '', 'menuexe' => '', 'menukode' => '73', 'modifiedby' => 'ADMIN',]);
+        menu::create(['menuname' => 'APPROVED INVOICE', 'menuseq' => '100', 'menuparent' => '93', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '315', 'link' => '', 'menuexe' => '', 'menukode' => '74', 'modifiedby' => 'ADMIN',]);
+        menu::create(['menuname' => 'APPROVAL PENDAPATAN', 'menuseq' => '100', 'menuparent' => '93', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '317', 'link' => '', 'menuexe' => '', 'menukode' => '75', 'modifiedby' => 'ADMIN',]);
+        menu::create(['menuname' => 'PENDAPATAN SUPIR', 'menuseq' => '100', 'menuparent' => '93', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '319', 'link' => '', 'menuexe' => '', 'menukode' => '76', 'modifiedby' => 'ADMIN',]);
     }
 }

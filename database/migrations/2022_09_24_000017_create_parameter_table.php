@@ -22,7 +22,7 @@ class CreateParameterTable extends Migration
             $table->string('subgrp', 255)->default('');
             $table->string('kelompok', 255)->default('');
             $table->string('text', 255)->default('');
-            $table->mediumText('memo')->default('');
+            $table->longText('memo')->default('');
             $table->integer('type')->length(11)->default(0);
             $table->string('singkatan', 100)->default('');
             $table->string('warna', 255)->default('');

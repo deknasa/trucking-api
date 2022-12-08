@@ -67,8 +67,6 @@ class Parameter extends MyModel
             "$this->table.memo",
             "$this->table.kelompok",
             DB::raw("case when parameter.type = 0 then '' else B.grp end as type"),
-            "$this->table.singkatan",
-            "$this->table.warna",
             "$this->table.created_at",
             "$this->table.updated_at",
             "$this->table.modifiedby"
@@ -86,11 +84,9 @@ class Parameter extends MyModel
             $table->string('grp', 500)->default('');
             $table->string('subgrp', 250)->default('');
             $table->string('text', 500)->default('');
-            $table->string('memo', 1000)->default('');
+            $table->longText('memo')->default('');
             $table->string('kelompok', 1000)->default('');
             $table->string('type', 1000)->default('');
-            $table->string('singkatan', 1000)->default('');
-            $table->string('warna', 1000)->default('');
             $table->dateTime('created_at')->default('1900/1/1');
             $table->dateTime('updated_at')->default('1900/1/1');
             $table->string('modifiedby', 50)->default('');
@@ -110,8 +106,6 @@ class Parameter extends MyModel
             'memo',
             'kelompok',
             'type',
-            'singkatan',
-            'warna',
             'created_at',
             'updated_at',
             'modifiedby'
