@@ -145,6 +145,7 @@ class PengeluaranHeaderController extends Controller
             $parameterController = new ParameterController;
             $statusApp = $parameterController->getparameterid('STATUS APPROVAL', 'STATUS APPROVAL', 'NON APPROVAL');
 
+
             // if($tanpaprosesnobukti == 1) {
             //     $jurnalHeader = [
             //         'tanpaprosesnobukti' => 1,
@@ -377,6 +378,8 @@ class PengeluaranHeaderController extends Controller
                 ]);
             }
             $statusApproval = Parameter::where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
+            $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
+
 
             $pengeluaranheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $pengeluaranheader->pelanggan_id = $request->pelanggan_id;
@@ -384,6 +387,7 @@ class PengeluaranHeaderController extends Controller
             $pengeluaranheader->statusjenistransaksi = $request->statusjenistransaksi ?? 0;
             $pengeluaranheader->postingdari = $request->postingdari ?? 'ENTRY PENGELUARAN';
             $pengeluaranheader->statusapproval = $statusApproval->id ?? 0;
+            $pengeluaranheader->statuscetak = $statusCetak->id ?? 0;
             $pengeluaranheader->dibayarke = $request->dibayarke ?? '';
             $pengeluaranheader->cabang_id = $request->cabang_id ?? 0;
             $pengeluaranheader->bank_id = $request->bank_id ?? 0;
@@ -678,5 +682,55 @@ class PengeluaranHeaderController extends Controller
         return response([
             'data' => $data
         ]);
+    }
+
+
+    public function cekvalidasi($id)
+    {
+        $pengeluaran = PengeluaranHeader::find($id);
+        $status = $pengeluaran->statusapproval;
+        $statusApproval = Parameter::where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
+        $statusdatacetak = $pengeluaran->statuscetak;
+        $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
+
+        if ($status == $statusApproval->id) {
+            $query = DB::table('error')
+                ->select('keterangan')
+                ->where('kodeerror', '=', 'SAP')
+                ->get();
+            $keterangan = $query['0'];
+            $data = [
+                'message' => $keterangan,
+                'errors' => 'sudah approve',
+                'kodestatus' => '1',
+                'kodenobukti' => '1'
+            ];
+
+            return response($data);
+        } else if ($statusdatacetak == $statusCetak->id) {
+            $query = DB::table('error')
+                ->select('keterangan')
+                ->where('kodeerror', '=', 'SDC')
+                ->get();
+            $keterangan = $query['0'];
+            $data = [
+                'message' => $keterangan,
+                'errors' => 'sudah cetak',
+                'kodestatus' => '1',
+                'kodenobukti' => '1'
+            ];
+
+            return response($data);
+        } else {
+
+            $data = [
+                'message' => '',
+                'errors' => 'belum approve',
+                'kodestatus' => '0',
+                'kodenobukti' => '1'
+            ];
+
+            return response($data);
+        }
     }
 }

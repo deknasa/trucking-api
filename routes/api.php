@@ -513,7 +513,7 @@ use App\Http\Controllers\Api\BankPelangganController;
         Route::get('rekappengeluaranheader/getpengeluaran', [RekapPengeluaranHeaderController::class,'getPengeluaran']);
         Route::get('rekappengeluaranheader/export', [RekapPengeluaranHeaderController::class, 'export']);
         Route::get('rekappengeluaranheader/{id}/getrekappengeluaran', [RekapPengeluaranHeaderController::class,'getRekapPengeluaran']);
-        Route::post('rekappengeluaranheader/{id}/approval', [RekapPengeluaranHeaderController::class,'approval']);
+        Route::post('rekappengeluaranheader/{id}/approval', [RekapPengeluaranHeaderController::class,'approval']);      
         Route::resource('rekappengeluaranheader',RekapPengeluaranHeaderController::class);
         Route::resource('rekappengeluarandetail', RekapPengeluaranDetailController::class);
         
@@ -589,6 +589,7 @@ use App\Http\Controllers\Api\BankPelangganController;
         Route::get('pengeluaranheader/field_length', [PengeluaranHeaderController::class, 'fieldLength']);
         Route::get('pengeluaranheader/combo', [PengeluaranHeaderController::class, 'combo']);
         Route::get('pengeluaranheader/grid', [PengeluaranHeaderController::class, 'grid']);
+        Route::post('pengeluaranheader/{id}/cekvalidasi', [PengeluaranHeaderController::class, 'cekvalidasi'])->name('pengeluaranheader.cekvalidasi');
         Route::resource('pengeluaranheader', PengeluaranHeaderController::class);
 
         Route::resource('pengeluarandetail', PengeluaranDetailController::class);
