@@ -267,11 +267,11 @@ class KasGantungHeaderController extends Controller
                         $kasgantungHeader->pengeluaran_nobukti = $nobuktikaskeluar;
                         $kasgantungHeader->save();
 
-                        if($bank->tipe == 'KAS'){
-                            $jenisTransaksi = Parameter::where('grp','JENIS TRANSAKSI')->where('text','KAS')->first();
+                        if ($bank->tipe == 'KAS') {
+                            $jenisTransaksi = Parameter::where('grp', 'JENIS TRANSAKSI')->where('text', 'KAS')->first();
                         }
-                        if($bank->tipe == 'BANK'){
-                            $jenisTransaksi = Parameter::where('grp','JENIS TRANSAKSI')->where('text','BANK')->first();
+                        if ($bank->tipe == 'BANK') {
+                            $jenisTransaksi = Parameter::where('grp', 'JENIS TRANSAKSI')->where('text', 'BANK')->first();
                         }
 
                         $pengeluaranHeader = [
@@ -374,6 +374,8 @@ class KasGantungHeaderController extends Controller
 
             $bank = Bank::lockForUpdate()->findOrFail($request->bank_id);
 
+            $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
+
             /* Store header */
             $kasgantungheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $kasgantungheader->penerima_id = $request->penerima_id;
@@ -381,6 +383,7 @@ class KasGantungHeaderController extends Controller
             $kasgantungheader->bank_id = $request->bank_id ?? 0;
             $kasgantungheader->pengeluaran_nobukti = $request->pengeluaran_nobukti ?? '';
             $kasgantungheader->coakaskeluar = $bank->coa ?? '';
+            $kasgantungheader->statuscetak = $statusCetak->id ?? 0;
             $kasgantungheader->postingdari = 'ENTRY KAS GANTUNG';
             $kasgantungheader->tglkaskeluar = date('Y-m-d', strtotime($request->tglkaskeluar));
             $kasgantungheader->modifiedby = auth('api')->user()->name;
@@ -507,11 +510,11 @@ class KasGantungHeaderController extends Controller
                     $kasgantungheader->save();
 
 
-                    if($bank->tipe == 'KAS'){
-                        $jenisTransaksi = Parameter::where('grp','JENIS TRANSAKSI')->where('text','KAS')->first();
+                    if ($bank->tipe == 'KAS') {
+                        $jenisTransaksi = Parameter::where('grp', 'JENIS TRANSAKSI')->where('text', 'KAS')->first();
                     }
-                    if($bank->tipe == 'BANK'){
-                        $jenisTransaksi = Parameter::where('grp','JENIS TRANSAKSI')->where('text','BANK')->first();
+                    if ($bank->tipe == 'BANK') {
+                        $jenisTransaksi = Parameter::where('grp', 'JENIS TRANSAKSI')->where('text', 'BANK')->first();
                     }
                     $pengeluaranHeader = [
                         'tanpaprosesnobukti' => 1,
@@ -848,4 +851,6 @@ class KasGantungHeaderController extends Controller
             'data' => $data
         ]);
     }
+
+
 }

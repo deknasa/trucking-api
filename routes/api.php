@@ -170,6 +170,7 @@ use App\Http\Controllers\Api\BankPelangganController;
         Route::get('absensisupirheader/running_number', [AbsensiSupirHeaderController::class, 'getRunningNumber']);
         Route::get('absensisupirheader/grid', [AbsensiSupirHeaderController::class, 'grid']);
         Route::get('absensisupirheader/field_length', [AbsensiSupirHeaderController::class, 'fieldLength']);
+        Route::post('absensisupirheader/{id}/cekvalidasi', [AbsensiSupirHeaderController::class, 'cekvalidasi'])->name('absensisupirheader.cekvalidasi');
         Route::apiResource('absensisupirheader', AbsensiSupirHeaderController::class)->parameter('absensisupirheader', 'absensiSupirHeader');
         
         Route::resource('absensisupirdetail', AbsensiSupirDetailController::class);
@@ -482,6 +483,7 @@ use App\Http\Controllers\Api\BankPelangganController;
         Route::get('kasgantungheader/{id}/printreport', [KasGantungHeaderController::class,'printReport']);
         Route::get('kasgantungheader/combo', [KasGantungHeaderController::class, 'combo']);
         Route::get('kasgantungheader/grid', [KasGantungHeaderController::class, 'grid']);
+        Route::post('kasgantungheader/{id}/cekvalidasi', [KasGantungHeaderController::class, 'cekvalidasi'])->name('kasgantungheader.cekvalidasi');
         Route::get('kasgantungheader/field_length', [KasGantungHeaderController::class, 'fieldLength']);
         Route::resource('kasgantungheader', KasGantungHeaderController::class);
 
@@ -534,6 +536,7 @@ use App\Http\Controllers\Api\BankPelangganController;
         Route::get('pengembaliankasgantungheader/field_length', [PengembalianKasGantungHeaderController::class,'fieldLength']);
         Route::get('pengembaliankasgantungheader/getkasgantung', [PengembalianKasGantungHeaderController::class,'getKasGantung']);
         Route::get('pengembaliankasgantungheader/getpengembalian/{id}', [PengembalianKasGantungHeaderController::class,'getPengembalian']);
+        Route::post('pengembaliankasgantungheader/{id}/cekvalidasi', [PengembalianKasGantungHeaderController::class, 'cekvalidasi'])->name('pengembaliankasgantungheader.cekvalidasi');
         Route::resource('pengembaliankasgantungheader', PengembalianKasGantungHeaderController::class);
         
         Route::resource('pengembaliankasgantung_detail', PengembalianKasGantungDetailController::class);

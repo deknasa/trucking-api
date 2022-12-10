@@ -28,14 +28,36 @@ class PengembalianKasGantungHeader extends MyModel
     {
         $this->setRequestParameters();
 
-        $query = DB::table($this->table);
-        $query = $this->selectColumns($query)
-        
-        ->leftJoin('pelanggan','pengembaliankasgantungheader.pelanggan_id','pelanggan.id')
-        ->leftJoin('bank','pengembaliankasgantungheader.bank_id','bank.id')
-        ->leftJoin('penerimaanheader','pengembaliankasgantungheader.penerimaan_nobukti','penerimaanheader.nobukti')
-        ->leftJoin('akunpusat','pengembaliankasgantungheader.coakasmasuk','akunpusat.coa');
-        
+
+        $query = DB::table($this->table)->select(
+            'pengembaliankasgantungheader.id',
+            'pengembaliankasgantungheader.nobukti',
+            'pengembaliankasgantungheader.tglbukti',
+            'pelanggan.namapelanggan as pelanggan_id',
+            'pengembaliankasgantungheader.keterangan',
+            'bank.namabank as bank_id',
+            DB::raw('(case when (year(pengembaliankasgantungheader.tgldari) <= 2000) then null else pengembaliankasgantungheader.tgldari end ) as tgldari'),
+            DB::raw('(case when (year(pengembaliankasgantungheader.tglsampai) <= 2000) then null else pengembaliankasgantungheader.tglsampai end ) as tglsampai'),
+            'pengembaliankasgantungheader.penerimaan_nobukti',
+            'pengembaliankasgantungheader.coakasmasuk',
+            'pengembaliankasgantungheader.postingdari',
+            DB::raw('(case when (year(pengembaliankasgantungheader.tglkasmasuk) <= 2000) then null else pengembaliankasgantungheader.tglkasmasuk end ) as tglkasmasuk'),
+            'statusformat.memo as statusformat',
+            DB::raw('(case when (year(pengembaliankasgantungheader.tglbukacetak) <= 2000) then null else pengembaliankasgantungheader.tglbukacetak end ) as tglbukacetak'),
+            'statuscetak.memo as statuscetak',
+            'pengembaliankasgantungheader.userbukacetak',
+            'pengembaliankasgantungheader.jumlahcetak',
+            'pengembaliankasgantungheader.modifiedby',
+            'pengembaliankasgantungheader.created_at',
+            'pengembaliankasgantungheader.updated_at'
+
+        )
+        ->leftJoin('pelanggan', 'pengembaliankasgantungheader.pelanggan_id', 'pelanggan.id')
+        ->leftJoin('bank', 'pengembaliankasgantungheader.bank_id', 'bank.id')
+        ->leftJoin('parameter as statusformat' , 'pengembaliankasgantungheader.statusformat', 'statusformat.id')
+        ->leftJoin('parameter as statuscetak' , 'pengembaliankasgantungheader.statuscetak', 'statuscetak.id');
+
+
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -60,16 +82,20 @@ class PengembalianKasGantungHeader extends MyModel
             $table->bigInteger('id')->default('0');
             $table->string('nobukti',50)->unique();
             $table->date('tglbukti')->default('1900/1/1');
-            $table->unsignedBigInteger('pelanggan_id')->default('0');
+            $table->string('pelanggan_id',1000)->default('');
             $table->longText('keterangan')->default('');
-            $table->unsignedBigInteger('bank_id')->default('0');
+            $table->string('bank_id',1000)->default('');
             $table->date('tgldari')->default('1900/1/1');
             $table->date('tglsampai')->default('1900/1/1');
             $table->string('penerimaan_nobukti',50)->default('');
             $table->string('coakasmasuk',50)->default('');
             $table->string('postingdari',50)->default('');
             $table->date('tglkasmasuk')->default('1900/1/1');
-            $table->unsignedBigInteger('statusformat')->default(0);
+            $table->string('statusformat',1000)->default('');
+            $table->string('statuscetak',1000)->default('');
+            $table->string('userbukacetak',50)->default('');
+            $table->date('tglbukacetak')->default('1900/1/1');
+            $table->integer('jumlahcetak')->Length(11)->default('0');            
             $table->string('modifiedby',50)->default('');
             $table->increments('position');
             $table->dateTime('created_at')->default('1900/1/1');
@@ -91,6 +117,10 @@ class PengembalianKasGantungHeader extends MyModel
             "postingdari",
             "tglkasmasuk",
             "statusformat",
+            "statuscetak",
+            "userbukacetak",
+            "tglbukacetak",
+            "jumlahcetak",
             "modifiedby",
         );
         $query = $this->sort($query);
@@ -110,6 +140,10 @@ class PengembalianKasGantungHeader extends MyModel
             "postingdari",
             "tglkasmasuk",
             "statusformat",
+            "statuscetak",
+            "userbukacetak",
+            "tglbukacetak",
+            "jumlahcetak",
             "modifiedby",
         ], $models);
         return $temp;
@@ -131,6 +165,10 @@ class PengembalianKasGantungHeader extends MyModel
             "$this->table.postingdari",
             "$this->table.tglkasmasuk",
             "$this->table.statusformat",
+            "$this->table.statuscetak",
+            "$this->table.userbukacetak",
+            "$this->table.tglbukacetak",
+            "$this->table.jumlahcetak",
             "$this->table.modifiedby",
             "pelanggan.namapelanggan as pelanggan",
             "bank.namabank as bank",
@@ -260,7 +298,7 @@ class PengembalianKasGantungHeader extends MyModel
 
         return $query;
     }
-    public function find($id)
+    public function findAll($id)
     {
         $this->setRequestParameters();
 
