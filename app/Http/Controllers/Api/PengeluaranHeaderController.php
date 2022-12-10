@@ -104,7 +104,6 @@ class PengeluaranHeaderController extends Controller
             $pengeluaranHeader->statusjenistransaksi = $request->statusjenistransaksi ?? 0;
             $pengeluaranHeader->postingdari = $request->postingdari ?? 'ENTRY PENGELUARAN';
             $pengeluaranHeader->statusapproval = $statusApproval->id ?? $request->statusapproval;
-            $pengeluaranHeader->statuscetak = $statusCetak->id ?? 0;
             $pengeluaranHeader->dibayarke = $request->dibayarke ?? '';
             $pengeluaranHeader->cabang_id = $request->cabang_id ?? 0;
             $pengeluaranHeader->bank_id = $request->bank_id ?? 0;
@@ -114,6 +113,9 @@ class PengeluaranHeaderController extends Controller
             $pengeluaranHeader->transferkean = $request->transferkean ?? '';
             $pengeluaranHeader->transferkebank = $request->transferkebank ?? '';
             $pengeluaranHeader->statusformat = $querysubgrppengeluaran->statusformatpengeluaran ?? $request->statusformat;
+            $pengeluaranHeader->statuscetak = $statusCetak->id;
+            $pengeluaranHeader->userbukacetak = '';
+            $pengeluaranHeader->tglbukacetak = '';
             $pengeluaranHeader->modifiedby = auth('api')->user()->name;
 
             if ($tanpaprosesnobukti == 0) {
@@ -185,7 +187,7 @@ class PengeluaranHeaderController extends Controller
                         'coadebet' => $request->coadebet[$i],
                         'coakredit' => $querysubgrppengeluaran->coa,
                         'keterangan' => $request->keterangan_detail[$i],
-                        'bulanbeban' =>  date('Y-m-d', strtotime($request->bulanbeban[$i])),
+                        'bulanbeban' =>  date('Y-m-d', strtotime($request->bulanbeban[$i])) ?? '',
                         'modifiedby' => auth('api')->user()->name,
                     ];
 
@@ -210,7 +212,7 @@ class PengeluaranHeaderController extends Controller
                         'coadebet' =>  $request->coadebet[$i],
                         'coakredit' => $querysubgrppengeluaran->coa,
                         'keterangan' => $request->keterangan_detail[$i],
-                        'bulanbeban' =>  date('Y-m-d', strtotime($request->bulanbeban[$i])),
+                        'bulanbeban' =>  date('Y-m-d', strtotime($request->bulanbeban[$i])) ?? '',
                         'modifiedby' => auth('api')->user()->name,
                         'created_at' => date('d-m-Y H:i:s', strtotime($pengeluaranHeader->created_at)),
                         'updated_at' => date('d-m-Y H:i:s', strtotime($pengeluaranHeader->updated_at)),
@@ -433,7 +435,7 @@ class PengeluaranHeaderController extends Controller
                     'coadebet' => $request->coadebet[$i],
                     'coakredit' => $querysubgrppengeluaran->coa,
                     'keterangan' => $request->keterangan_detail[$i],
-                    'bulanbeban' =>  date('Y-m-d', strtotime($request->bulanbeban[$i])),
+                    'bulanbeban' =>  date('Y-m-d', strtotime($request->bulanbeban[$i])) ?? '',
                     'modifiedby' => auth('api')->user()->name,
                 ];
 
@@ -457,7 +459,7 @@ class PengeluaranHeaderController extends Controller
                     'coadebet' => $request->coadebet[$i],
                     'coakredit' => $querysubgrppengeluaran->coa,
                     'keterangan' => $request->keterangan_detail[$i],
-                    'bulanbeban' =>  date('Y-m-d', strtotime($request->bulanbeban[$i])),
+                    'bulanbeban' =>  date('Y-m-d', strtotime($request->bulanbeban[$i])) ?? '',
                     'modifiedby' => auth('api')->user()->name,
                     'created_at' => date('d-m-Y H:i:s', strtotime($pengeluaranheader->created_at)),
                     'updated_at' => date('d-m-Y H:i:s', strtotime($pengeluaranheader->updated_at)),
@@ -627,41 +629,39 @@ class PengeluaranHeaderController extends Controller
         ]);
     }
 
-
-    public function approval($id)
+    public function printReport($id)
     {
         DB::beginTransaction();
 
         try {
-            $pengeluaranHeader = PengeluaranHeader::find($id);
-            $statusApproval = Parameter::where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
-            $statusNonApproval = Parameter::where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
+            $pengeluaran = PengeluaranHeader::lockForUpdate()->findOrFail($id);
+            $statusSudahCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
+            $statusBelumCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
 
-            if ($pengeluaranHeader->statusapproval == $statusApproval->id) {
-                $pengeluaranHeader->statusapproval = $statusNonApproval->id;
-            } else {
-                $pengeluaranHeader->statusapproval = $statusApproval->id;
+            if ($pengeluaran->statuscetak != $statusSudahCetak->id) {
+                $pengeluaran->statuscetak = $statusSudahCetak->id;
+                $pengeluaran->tglbukacetak = date('Y-m-d H:i:s');
+                $pengeluaran->userbukacetak = auth('api')->user()->name;
+                $pengeluaran->jumlahcetak = $pengeluaran->jumlahcetak+1;
+
+                if ($pengeluaran->save()) {
+                    $logTrail = [
+                        'namatabel' => strtoupper($pengeluaran->getTable()),
+                        'postingdari' => 'PRINT PENGELUARAN HEADER',
+                        'idtrans' => $pengeluaran->id,
+                        'nobuktitrans' => $pengeluaran->nobukti,
+                        'aksi' => 'PRINT',
+                        'datajson' => $pengeluaran->toArray(),
+                        'modifiedby' => $pengeluaran->modifiedby
+                    ];
+    
+                    $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                    $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+    
+                    DB::commit();
+                }
             }
 
-            $pengeluaranHeader->tglapproval = date('Y-m-d', time());
-            $pengeluaranHeader->userapproval = auth('api')->user()->name;
-
-            if ($pengeluaranHeader->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($pengeluaranHeader->getTable()),
-                    'postingdari' => 'UN/APPROVE pengeluaranheader',
-                    'idtrans' => $pengeluaranHeader->id,
-                    'nobuktitrans' => $pengeluaranHeader->id,
-                    'aksi' => 'UN/APPROVE',
-                    'datajson' => $pengeluaranHeader->toArray(),
-                    'modifiedby' => $pengeluaranHeader->modifiedby
-                ];
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
-                DB::commit();
-            }
 
             return response([
                 'message' => 'Berhasil'
@@ -669,7 +669,9 @@ class PengeluaranHeaderController extends Controller
         } catch (\Throwable $th) {
             throw $th;
         }
+        
     }
+
     public function fieldLength()
     {
         $data = [];

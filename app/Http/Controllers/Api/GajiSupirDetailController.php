@@ -78,14 +78,8 @@ class GajiSupirDetailController extends Controller
                 ->join('kota as sampai','suratpengantar.sampai_id','sampai.id');
                 $gajisupirDetail = $query->get();
             }
-            $idUser = auth('api')->user()->id;
-            $getuser = User::select('name','cabang.namacabang as cabang_id')
-            ->where('user.id',$idUser)->join('cabang','user.cabang_id','cabang.id')->first();
-           
-
             return response([
-                'data' => $gajisupirDetail,
-                'user' => $getuser,
+                'data' => $gajisupirDetail
             ]);
         } catch (\Throwable $th) {
             return response([

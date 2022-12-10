@@ -41,14 +41,19 @@ class InvoiceHeader extends MyModel
             'jenisorder.keterangan as jenisorder_id',
             'cabang.namacabang as cabang_id',
             'invoiceheader.piutang_nobukti',
-            'parameter.text as statusapproval',
+            'statusapproval.memo as statusapproval',
+            'statuscetak.memo as statuscetak',
             'invoiceheader.userapproval',
-            'invoiceheader.tglapproval',
+            DB::raw('(case when (year(invoiceheader.tglapproval) <= 2000) then null else invoiceheader.tglapproval end ) as tglapproval'),
+            'invoiceheader.userbukacetak',
+            'invoiceheader.jumlahcetak',
+            DB::raw('(case when (year(invoiceheader.tglbukacetak) <= 2000) then null else invoiceheader.tglbukacetak end ) as tglbukacetak'),
             'invoiceheader.modifiedby',
             'invoiceheader.created_at',
             'invoiceheader.updated_at'
         )
-        ->leftJoin('parameter','invoiceheader.statusapproval','parameter.id')
+        ->leftJoin('parameter as statusapproval','invoiceheader.statusapproval','statusapproval.id')
+        ->leftJoin('parameter as statuscetak','invoiceheader.statuscetak','statuscetak.id')
         ->leftJoin('agen','invoiceheader.agen_id','agen.id')
         ->leftJoin('jenisorder','invoiceheader.jenisorder_id','jenisorder.id')
         ->leftJoin('cabang','invoiceheader.cabang_id','cabang.id');
@@ -96,9 +101,13 @@ class InvoiceHeader extends MyModel
                 'jenisorder.keterangan as jenisorder_id',
                 'cabang.namacabang as cabang_id',
                 $this->table.piutang_nobukti,
-                $this->table.statusapproval,
+                'statusapproval.text as statusapproval',
                 $this->table.userapproval,
                 $this->table.tglapproval,
+                'statuscetak.text as statuscetak',
+                $this->table.userbukacetak,
+                $this->table.tglbukacetak,
+                $this->table.jumlahcetak,
                 $this->table.modifiedby,
                 $this->table.created_at,
                 $this->table.updated_at
@@ -107,6 +116,8 @@ class InvoiceHeader extends MyModel
         )
         ->leftJoin('agen','invoiceheader.agen_id','agen.id')
         ->leftJoin('jenisorder','invoiceheader.jenisorder_id','jenisorder.id')
+        ->leftJoin('parameter as statusapproval' , 'invoiceheader.statusapproval', 'statusapproval.id')
+        ->leftJoin('parameter as statuscetak' , 'invoiceheader.statuscetak', 'statuscetak.id')
         ->leftJoin('cabang','invoiceheader.cabang_id','cabang.id');
     }
 
@@ -125,9 +136,13 @@ class InvoiceHeader extends MyModel
             $table->string('jenisorder_id')->default();
             $table->string('cabang_id')->default();
             $table->string('piutang_nobukti')->default();
-            $table->bigInteger('statusapproval')->default('0');
+            $table->string('statusapproval')->default('');
             $table->string('userapproval')->default();
             $table->date('tglapproval')->default('');
+            $table->string('statuscetak',1000)->default('');
+            $table->string('userbukacetak',50)->default('');
+            $table->date('tglbukacetak')->default('1900/1/1');
+            $table->integer('jumlahcetak')->Length(11)->default('0');
             $table->string('modifiedby')->default();
             $table->dateTime('created_at')->default('1900/1/1');
             $table->dateTime('updated_at')->default('1900/1/1');
@@ -139,7 +154,7 @@ class InvoiceHeader extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'keterangan', 'nominal', 'tglterima', 'tgljatuhtempo', 'agen_id','jenisorder_id','cabang_id','piutang_nobukti','statusapproval','userapproval','tglapproval', 'modifiedby','created_at', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'keterangan', 'nominal', 'tglterima', 'tgljatuhtempo', 'agen_id','jenisorder_id','cabang_id','piutang_nobukti','statusapproval','userapproval','tglapproval','statuscetak','userbukacetak','tglbukacetak','jumlahcetak', 'modifiedby','created_at', 'updated_at'], $models);
 
         return $temp;
     }
@@ -216,7 +231,9 @@ class InvoiceHeader extends MyModel
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statusapproval') {
-                            $query = $query->where('parameter.text', '=', $filters['data']);
+                            $query = $query->where('statusapproval.text', '=', $filters['data']);
+                        } else if ($filters['field'] == 'statuscetak') {
+                            $query = $query->where('statuscetak.text', '=', $filters['data']);
                         } else if ($filters['field'] == 'agen_id') {
                             $query = $query->where('agen.namaagen', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'jenisorder_id') {
@@ -232,7 +249,9 @@ class InvoiceHeader extends MyModel
                 case "OR":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statusapproval') {
-                            $query = $query->orWhere('parameter.text', '=', $filters['data']);
+                            $query = $query->orWhere('statusapproval.text', '=', $filters['data']);
+                        } else if ($filters['field'] == 'statuscetak') {
+                            $query = $query->orWhere('statuscetak.text', '=', $filters['data']);
                         } else if ($filters['field'] == 'agen_id') {
                             $query = $query->orWhere('agen.namaagen', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'jenisorder_id') {

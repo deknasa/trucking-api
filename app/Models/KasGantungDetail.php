@@ -23,7 +23,7 @@ class KasGantungDetail extends MyModel
         'updated_at' => 'date:d-m-Y H:i:s'
     ]; 
 
-    public function findAll($id) {
+    public function findUpdate($id) {
         $query = DB::table('kasgantungdetail')->select(
             'keterangan',
             'nominal',

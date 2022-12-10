@@ -35,16 +35,21 @@ class PendapatanSupirHeader extends MyModel
             'pendapatansupirheader.keterangan',
             'pendapatansupirheader.tgldari',
             'pendapatansupirheader.tglsampai',
-            'parameter.text as statusapproval',
+            'statusapproval.memo as statusapproval',
             'pendapatansupirheader.userapproval',
-            'pendapatansupirheader.tglapproval',
+            DB::raw('(case when (year(pendapatansupirheader.tglapproval) <= 2000) then null else pendapatansupirheader.tglapproval end ) as tglapproval'),
+            DB::raw('(case when (year(pendapatansupirheader.tglbukacetak) <= 2000) then null else pendapatansupirheader.tglbukacetak end ) as tglbukacetak'),
+            'statuscetak.memo as statuscetak',
+            'pendapatansupirheader.userbukacetak',
+            'pendapatansupirheader.jumlahcetak',
             'pendapatansupirheader.periode',
             'pendapatansupirheader.modifiedby',
             'pendapatansupirheader.created_at',
             'pendapatansupirheader.updated_at'
         )
             ->leftJoin('bank', 'pendapatansupirheader.bank_id', 'bank.id')
-            ->leftJoin('parameter', 'pendapatansupirheader.statusapproval', 'parameter.id');
+            ->leftJoin('parameter as statusapproval', 'pendapatansupirheader.statusapproval', 'statusapproval.id')
+            ->leftJoin('parameter as statuscetak', 'pendapatansupirheader.statuscetak', 'statuscetak.id');
           
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -70,6 +75,7 @@ class PendapatanSupirHeader extends MyModel
             'pendapatansupirheader.tgldari',
             'pendapatansupirheader.tglsampai',
             'pendapatansupirheader.periode',
+            'pendapatansupirheader.statuscetak',
         )
         ->leftJoin('bank','pendapatansupirheader.bank_id','bank.id')
         ->where('pendapatansupirheader.id', $id)
@@ -92,6 +98,10 @@ class PendapatanSupirHeader extends MyModel
                 'parameter.text as statusapproval',
                  $this->table.userapproval,
                  $this->table.tglapproval,
+                 'statuscetak.text as statuscetak',
+                 $this->table.userbukacetak,
+                 $this->table.tglbukacetak,
+                 $this->table.jumlahcetak,
                  $this->table.periode,
                  $this->table.modifiedby,
                  $this->table.created_at,
@@ -99,7 +109,8 @@ class PendapatanSupirHeader extends MyModel
             )
         )
             ->leftJoin('bank', 'pendapatansupirheader.bank_id', 'bank.id')
-            ->leftJoin('parameter', 'pendapatansupirheader.statusapproval', 'parameter.id');
+            ->leftJoin('parameter as statusapproval', 'pendapatansupirheader.statusapproval', 'statusapproval.id')
+            ->leftJoin('parameter as statuscetak', 'pendapatansupirheader.statuscetak', 'statuscetak.id');
     }
 
     public function createTemp(string $modelTable)
@@ -116,6 +127,10 @@ class PendapatanSupirHeader extends MyModel
             $table->string('statusapproval')->default('');
             $table->string('userapproval')->default('');
             $table->date('tglapproval')->default('');
+            $table->string('statuscetak',1000)->default('');
+            $table->string('userbukacetak',50)->default('');
+            $table->date('tglbukacetak')->default('1900/1/1');
+            $table->integer('jumlahcetak')->Length(11)->default('0');
             $table->date('periode')->default('');
             $table->string('modifiedby')->default();
             $table->dateTime('created_at')->default('1900/1/1');
@@ -128,7 +143,7 @@ class PendapatanSupirHeader extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti','bank_id', 'keterangan', 'tgldari', 'tglsampai', 'statusapproval', 'userapproval','tglapproval','periode', 'modifiedby','created_at', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti','bank_id', 'keterangan', 'tgldari', 'tglsampai', 'statusapproval', 'userapproval','tglapproval','statuscetak','userbukacetak','tglbukacetak','jumlahcetak','periode', 'modifiedby','created_at', 'updated_at'], $models);
 
         return $temp;
     }
@@ -147,7 +162,9 @@ class PendapatanSupirHeader extends MyModel
                         if ($filters['field'] == 'bank_id') {
                             $query = $query->where('bank.namabank', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'statusapproval') {
-                            $query = $query->where('parameter.text', '=', "$filters[data]");
+                            $query = $query->where('statusapproval.text', '=', "$filters[data]");
+                        } else if ($filters['field'] == 'statuscetak') {
+                            $query = $query->where('statuscetak.text', '=', "$filters[data]");
                         } else {
                             $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
@@ -159,7 +176,9 @@ class PendapatanSupirHeader extends MyModel
                         if ($filters['field'] == 'bank_id') {
                             $query = $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'statusapproval') {
-                            $query = $query->orWhere('parameter.text', '=', "$filters[data]");
+                            $query = $query->orWhere('statusapproval.text', '=', "$filters[data]");
+                        } else if ($filters['field'] == 'statuscetak') {
+                            $query = $query->orWhere('statuscetak.text', '=', "$filters[data]");
                         } else {
                             $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }

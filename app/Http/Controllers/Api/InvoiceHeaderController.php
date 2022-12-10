@@ -71,7 +71,7 @@ class InvoiceHeaderController extends Controller
             date_default_timezone_set('Asia/Jakarta');
 
             $statusApproval = Parameter::where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
-            $statusCetak = Parameter::where('grp', 'STATUS CETAK')->where('text', 'BELUM CETAK')->first();
+            $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
 
             $invoice = new InvoiceHeader();
             $invoice->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
@@ -87,8 +87,6 @@ class InvoiceHeaderController extends Controller
             $invoice->userapproval = '';
             $invoice->tglapproval = '';
             $invoice->statuscetak = $statusCetak->id;
-            $invoice->userbukacetak = '';
-            $invoice->tglbukacetak = '';
             $invoice->tgldari = date('Y-m-d', strtotime($request->tgldari));
             $invoice->tglsampai = date('Y-m-d', strtotime($request->tglsampai));
             $invoice->modifiedby = auth('api')->user()->name;
@@ -641,20 +639,21 @@ class InvoiceHeaderController extends Controller
 
         try {
             $invoice = InvoiceHeader::lockForUpdate()->findOrFail($id);
-            $statusSudahCetak = Parameter::where('grp', '=', 'STATUS CETAK')->where('text', '=', 'SUDAH CETAK')->first();
-            $statusBelumCetak = Parameter::where('grp', '=', 'STATUS CETAK')->where('text', '=', 'BELUM CETAK')->first();
+            $statusSudahCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
+            $statusBelumCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
 
             if ($invoice->statuscetak != $statusSudahCetak->id) {
                 $invoice->statuscetak = $statusSudahCetak->id;
                 $invoice->tglbukacetak = date('Y-m-d H:i:s');
                 $invoice->userbukacetak = auth('api')->user()->name;
+                $invoice->jumlahcetak = $invoice->jumlahcetak+1;
 
                 if ($invoice->save()) {
                     $logTrail = [
                         'namatabel' => strtoupper($invoice->getTable()),
                         'postingdari' => 'PRINT INVOICE HEADER',
                         'idtrans' => $invoice->id,
-                        'nobuktitrans' => $invoice->id,
+                        'nobuktitrans' => $invoice->nobukti,
                         'aksi' => 'PRINT',
                         'datajson' => $invoice->toArray(),
                         'modifiedby' => $invoice->modifiedby
@@ -677,12 +676,15 @@ class InvoiceHeaderController extends Controller
         
     }
 
-    public function cekapproval($id)
+    public function cekvalidasi($id)
     {
-        $invoice = InvoiceHeader::find($id);
-        $status = $invoice->statusapproval;
+        $pengeluaran = InvoiceHeader::find($id);
+        $status = $pengeluaran->statusapproval;
+        $statusApproval = Parameter::where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
+        $statusdatacetak = $pengeluaran->statuscetak;
+        $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
 
-        if ($status == '3') {
+        if ($status == $statusApproval->id) {
             $query = DB::table('error')
                 ->select('keterangan')
                 ->where('kodeerror', '=', 'SAP')
@@ -696,7 +698,22 @@ class InvoiceHeaderController extends Controller
             ];
 
             return response($data);
+        } else if ($statusdatacetak == $statusCetak->id) {
+            $query = DB::table('error')
+                ->select('keterangan')
+                ->where('kodeerror', '=', 'SDC')
+                ->get();
+            $keterangan = $query['0'];
+            $data = [
+                'message' => $keterangan,
+                'errors' => 'sudah cetak',
+                'kodestatus' => '1',
+                'kodenobukti' => '1'
+            ];
+
+            return response($data);
         } else {
+
             $data = [
                 'message' => '',
                 'errors' => 'belum approve',

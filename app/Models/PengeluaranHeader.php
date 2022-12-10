@@ -48,6 +48,7 @@ class PengeluaranHeader extends MyModel
             'statusapproval.memo as statusapproval',
             DB::raw('(case when (year(pengeluaranheader.tglapproval) <= 2000) then null else pengeluaranheader.tglapproval end ) as tglapproval'),
             'pengeluaranheader.userapproval',
+            'pengeluaranheader.userbukacetak',
             'pengeluaranheader.transferkeac',
             'pengeluaranheader.transferkean',
             'pengeluaranheader.transferkebank',
@@ -91,6 +92,7 @@ class PengeluaranHeader extends MyModel
             'pengeluaranheader.cabang_id',
             'cabang.namacabang as cabang',
             'pengeluaranheader.statusjenistransaksi',
+            'pengeluaranheader.statuscetak',
             'pengeluaranheader.dibayarke',
             'pengeluaranheader.bank_id',
             'bank.namabank as bank',
@@ -196,6 +198,8 @@ class PengeluaranHeader extends MyModel
                                 $query = $query->where('statusapproval.text', '=', "$filters[data]");
                             } else if ($filters['field'] == 'statusjenistransaksi') {
                                 $query = $query->where('statusjenistransaksi.text', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'statuscetak') {
+                                $query = $query->where('statuscetak.text', '=', "$filters[data]");
                             } else if ($filters['field'] == 'pelanggan_id') {
                                 $query = $query->where('pelanggan.namapelanggan', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'cabang_id') {
@@ -214,7 +218,9 @@ class PengeluaranHeader extends MyModel
                                 $query = $query->orWhere('statusapproval.text', '=', "$filters[data]");
                             } else if ($filters['field'] == 'statusjenistransaksi') {
                                 $query = $query->orWhere('statusjenistransaksi.text', '=', "$filters[data]");
-                            }else if ($filters['field'] == 'pelanggan_id') {
+                            } else if ($filters['field'] == 'statuscetak') {
+                                $query = $query->orWhere('statuscetak.text', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'pelanggan_id') {
                                 $query = $query->orWhere('pelanggan.namapelanggan', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'cabang_id') {
                                 $query = $query->orWhere('cabang.namacabang', 'LIKE', "%$filters[data]%");

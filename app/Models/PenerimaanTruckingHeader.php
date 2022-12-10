@@ -38,12 +38,16 @@ class PenerimaanTruckingHeader extends MyModel
             'penerimaantruckingheader.penerimaan_nobukti',
 
             'bank.namabank as bank_id',
-            
+            DB::raw('(case when (year(penerimaantruckingheader.tglbukacetak) <= 2000) then null else penerimaantruckingheader.tglbukacetak end ) as tglbukacetak'),
+            'parameter.memo as statuscetak',
+            'penerimaantruckingheader.userbukacetak',
+            'penerimaantruckingheader.jumlahcetak',
             'penerimaantruckingheader.coa',
             'penerimaantruckingheader.modifiedby',
             'penerimaantruckingheader.updated_at',
         )
             ->leftJoin('penerimaantrucking', 'penerimaantruckingheader.penerimaantrucking_id','penerimaantrucking.id')
+            ->leftJoin('parameter', 'penerimaantruckingheader.statuscetak','parameter.id')
             ->leftJoin('bank', 'penerimaantruckingheader.bank_id', 'bank.id');
             
 
@@ -71,6 +75,7 @@ class PenerimaanTruckingHeader extends MyModel
             'penerimaantrucking.keterangan as penerimaantrucking',
             'penerimaantruckingheader.keterangan',
             'penerimaantruckingheader.bank_id',
+            'penerimaantruckingheader.statuscetak',
             'bank.namabank as bank',
             'penerimaantruckingheader.coa',
             'penerimaantruckingheader.penerimaan_nobukti'
@@ -101,12 +106,17 @@ class PenerimaanTruckingHeader extends MyModel
             'bank.namabank as bank_id',
             $this->table.coa,
             $this->table.penerimaan_nobukti,
+            'parameter.text as statuscetak',
+            $this->table.userbukacetak,
+            $this->table.tglbukacetak,
+            $this->table.jumlahcetak,
             $this->table.modifiedby,
             $this->table.created_at,
             $this->table.updated_at"
             )
         )
         ->leftJoin('penerimaantrucking', 'penerimaantruckingheader.penerimaantrucking_id', 'penerimaantrucking.id')
+        ->leftJoin('parameter' , 'penerimaantruckingheader.statuscetak', 'parameter.id')
         ->leftJoin('bank', 'penerimaantruckingheader.bank_id', 'bank.id');
     }
 
@@ -122,6 +132,10 @@ class PenerimaanTruckingHeader extends MyModel
             $table->string('bank_id', 1000)->default('');
             $table->string('coa', 1000)->default('');
             $table->string('penerimaan_nobukti', 1000)->default('');
+            $table->string('statuscetak',1000)->default('');
+            $table->string('userbukacetak',50)->default('');
+            $table->date('tglbukacetak')->default('1900/1/1');
+            $table->integer('jumlahcetak')->Length(11)->default('0');
             $table->string('modifiedby', 50)->default('');
             $table->dateTime('created_at')->default('1900/1/1');
             $table->dateTime('updated_at')->default('1900/1/1');
@@ -133,7 +147,7 @@ class PenerimaanTruckingHeader extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id','nobukti','tglbukti','penerimaantrucking_id','keterangan','bank_id','coa','penerimaan_nobukti','modifiedby','created_at','updated_at'],$models);
+        DB::table($temp)->insertUsing(['id','nobukti','tglbukti','penerimaantrucking_id','keterangan','bank_id','coa','penerimaan_nobukti','statuscetak','userbukacetak','tglbukacetak','jumlahcetak', 'modifiedby','created_at','updated_at'],$models);
 
 
         return  $temp;         
@@ -151,7 +165,9 @@ class PenerimaanTruckingHeader extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                         if ($filters['field'] == 'penerimaantrucking_id') {
+                         if ($filters['field'] == 'statuscetak') {
+                            $query = $query->where('parameter.text', '=', "$filters[data]");
+                        } else if ($filters['field'] == 'penerimaantrucking_id') {
                             $query = $query->where('penerimaantrucking.keterangan', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'bank_id') {
                             $query = $query->where('bank.namabank', 'LIKE', "%$filters[data]%");
@@ -163,7 +179,9 @@ class PenerimaanTruckingHeader extends MyModel
                     break;
                 case "OR":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                         if ($filters['field'] == 'penerimaantrucking_id') {
+                         if ($filters['field'] == 'statuscetak') {
+                            $query = $query->orWhere('parameter.text', '=', "$filters[data]");
+                        } else if ($filters['field'] == 'penerimaantrucking_id') {
                             $query = $query->orWhere('penerimaantrucking.keterangan', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'bank_id') {
                             $query = $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");

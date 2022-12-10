@@ -23,9 +23,10 @@ class GajiSupirHeader extends MyModel
     protected $casts = [
         'created_at' => 'date:d-m-Y H:i:s',
         'updated_at' => 'date:d-m-Y H:i:s'
-    ];      
+    ];
 
-    public function get() {
+    public function get()
+    {
         $this->setRequestParameters();
 
         $query = DB::table($this->table)->select(
@@ -38,12 +39,17 @@ class GajiSupirHeader extends MyModel
             'gajisupirheader.tgldari',
             'gajisupirheader.tglsampai',
             'gajisupirheader.total',
+            'parameter.memo as statuscetak',
+            'gajisupirheader.userbukacetak',
+            'gajisupirheader.jumlahcetak',
+            DB::raw('(case when (year(gajisupirheader.tglbukacetak) <= 2000) then null else gajisupirheader.tglbukacetak end ) as tglbukacetak'),
             'gajisupirheader.modifiedby',
             'gajisupirheader.created_at',
             'gajisupirheader.updated_at',
         )
+            ->leftJoin('parameter', 'gajisupirheader.statuscetak', 'parameter.id')
             ->leftJoin('supir', 'gajisupirheader.supir_id', 'supir.id');
-            
+
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
@@ -55,8 +61,9 @@ class GajiSupirHeader extends MyModel
 
         return $data;
     }
-    public function findAll($id) {
-        
+    public function findAll($id)
+    {
+
         $query = DB::table('gajisupirheader')->select(
             'gajisupirheader.*',
             'supir.namasupir as supir',
@@ -64,13 +71,14 @@ class GajiSupirHeader extends MyModel
         )
             ->leftJoin('supir', 'gajisupirheader.supir_id', 'supir.id')
             ->where('gajisupirheader.id', $id);
-            
+
         $data = $query->first();
 
         return $data;
     }
 
-    public function getTrip($supirId, $tglDari, $tglSampai) {
+    public function getTrip($supirId, $tglDari, $tglSampai)
+    {
         $query = DB::table('suratpengantar')->select(
             'suratpengantar.id',
             'suratpengantar.nobukti',
@@ -86,17 +94,18 @@ class GajiSupirHeader extends MyModel
             'suratpengantar.gajisupir',
             'suratpengantar.gajikenek',
         )
-        ->leftJoin('kota as kotaDari','suratpengantar.dari_id','kotaDari.id')
-        ->leftJoin('kota as kotaSampai','suratpengantar.sampai_id','kotaSampai.id')
-        ->leftJoin('trado','suratpengantar.trado_id','trado.id')
-        ->where('suratpengantar.supir_id',$supirId)
-        ->where('suratpengantar.tglbukti','>=', $tglDari)
-        ->where('suratpengantar.tglbukti','<=', $tglSampai);
+            ->leftJoin('kota as kotaDari', 'suratpengantar.dari_id', 'kotaDari.id')
+            ->leftJoin('kota as kotaSampai', 'suratpengantar.sampai_id', 'kotaSampai.id')
+            ->leftJoin('trado', 'suratpengantar.trado_id', 'trado.id')
+            ->where('suratpengantar.supir_id', $supirId)
+            ->where('suratpengantar.tglbukti', '>=', $tglDari)
+            ->where('suratpengantar.tglbukti', '<=', $tglSampai);
         $data = $query->get();
         return $data;
     }
 
-    public function getEditTrip($gajiId) {
+    public function getEditTrip($gajiId)
+    {
         $query = DB::table('gajisupirdetail')->select(
             'suratpengantar.id',
             'gajisupirdetail.suratpengantar_nobukti as nobukti',
@@ -109,11 +118,11 @@ class GajiSupirHeader extends MyModel
             'gajisupirdetail.gajisupir',
             'gajisupirdetail.gajikenek',
         )
-        ->join('suratpengantar','gajisupirdetail.suratpengantar_nobukti','suratpengantar.nobukti')
-        ->join('kota as kotaDari','suratpengantar.dari_id','kotaDari.id')
-        ->join('kota as kotaSampai','suratpengantar.sampai_id','kotaSampai.id')
-        ->join('trado','suratpengantar.trado_id','trado.id')
-        ->where('gajisupirdetail.gajisupir_id',$gajiId);
+            ->join('suratpengantar', 'gajisupirdetail.suratpengantar_nobukti', 'suratpengantar.nobukti')
+            ->join('kota as kotaDari', 'suratpengantar.dari_id', 'kotaDari.id')
+            ->join('kota as kotaSampai', 'suratpengantar.sampai_id', 'kotaSampai.id')
+            ->join('trado', 'suratpengantar.trado_id', 'trado.id')
+            ->where('gajisupirdetail.gajisupir_id', $gajiId);
 
         $data = $query->get();
         return $data;
@@ -132,19 +141,23 @@ class GajiSupirHeader extends MyModel
             $this->table.tgldari,
             $this->table.tglsampai,
             $this->table.total,
+            'parameter.text as statuscetak',
+            $this->table.userbukacetak,
+            $this->table.tglbukacetak,
+            $this->table.jumlahcetak,
             $this->table.modifiedby,
             $this->table.created_at,
             $this->table.updated_at
             ")
         )
+            ->leftJoin('parameter', 'gajisupirheader.statuscetak', 'parameter.id')
             ->leftJoin('supir', 'gajisupirheader.supir_id', 'supir.id');
-            
     }
 
     public function createTemp(string $modelTable)
     {
         $temp = '##temp' . rand(1, 10000);
-        Schema::create($temp, function ($table){
+        Schema::create($temp, function ($table) {
             $table->bigInteger('id')->default('0');
             $table->string('nobukti', 1000)->default('');
             $table->date('tglbukti')->default('');
@@ -154,6 +167,10 @@ class GajiSupirHeader extends MyModel
             $table->date('tgldari')->default('');
             $table->date('tglsampai')->default('');
             $table->bigInteger('total')->default('0');
+            $table->string('statuscetak',1000)->default('');
+            $table->string('userbukacetak',50)->default('');
+            $table->date('tglbukacetak')->default('1900/1/1');
+            $table->integer('jumlahcetak')->Length(11)->default('0');
             $table->string('modifiedby')->default();
             $table->dateTime('created_at')->default('1900/1/1');
             $table->dateTime('updated_at')->default('1900/1/1');
@@ -165,7 +182,7 @@ class GajiSupirHeader extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id','nobukti','tglbukti','supir_id','keterangan','nominal','tgldari','tglsampai','total','modifiedby','created_at','updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'supir_id', 'keterangan', 'nominal', 'tgldari', 'tglsampai', 'total','statuscetak','userbukacetak','tglbukacetak','jumlahcetak', 'modifiedby', 'created_at', 'updated_at'], $models);
 
         return $temp;
     }
@@ -181,9 +198,11 @@ class GajiSupirHeader extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'supir_id') {
+                        if ($filters['field'] == 'statuscetak') {
+                            $query = $query->where('parameter.text', '=', "$filters[data]");
+                        } else if ($filters['field'] == 'supir_id') {
                             $query = $query->where('supir.namasupir', 'LIKE', "%$filters[data]%");
-                        }else {
+                        } else {
                             $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
                     }
@@ -191,9 +210,11 @@ class GajiSupirHeader extends MyModel
                     break;
                 case "OR":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'supir_id') {
+                        if ($filters['field'] == 'statuscetak') {
+                            $query = $query->orWhere('parameter.text', '=', "$filters[data]");
+                        } else if ($filters['field'] == 'supir_id') {
                             $query = $query->orWhere('supir.namasupir', 'LIKE', "%$filters[data]%");
-                        } else { 
+                        } else {
                             $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
                     }

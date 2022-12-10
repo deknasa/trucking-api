@@ -10,6 +10,7 @@ use App\Http\Requests\StoreLogTrailRequest;
 use App\Http\Requests\UpdateGajiSupirHeaderRequest;
 use App\Models\GajiSupirDetail;
 use App\Models\LogTrail;
+use App\Models\Parameter;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -56,6 +57,8 @@ class GajiSupirHeaderController extends Controller
                 $content['table'] = 'gajisupirheader';
                 $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
 
+                $statusCetak = Parameter::where('grp','STATUSCETAK')->where('text', 'BELUM CETAK')->first();
+
                 $gajisupirheader = new GajiSupirHeader();
                 $gajisupirheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
                 $gajisupirheader->supir_id = $request->supir_id;
@@ -77,6 +80,7 @@ class GajiSupirHeaderController extends Controller
                 $gajisupirheader->gajiminus = $request->gajiminus ?? '';
                 $gajisupirheader->uangJalantidakterhitung = $request->uangjalantidakterhitung ?? '';
                 $gajisupirheader->statusformat = $format->id;
+                $gajisupirheader->statuscetak = $statusCetak->id;
                 $gajisupirheader->modifiedby = auth('api')->user()->name;
 
                 $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
@@ -507,7 +511,82 @@ class GajiSupirHeaderController extends Controller
             'message' => "$query->keterangan",
         ]);
     }
+    
+    public function printReport($id)
+    {
+        DB::beginTransaction();
 
+        try {
+            $gajisupir = GajiSupirHeader::lockForUpdate()->findOrFail($id);
+            $statusSudahCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
+            $statusBelumCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
+
+            if ($gajisupir->statuscetak != $statusSudahCetak->id) {
+                $gajisupir->statuscetak = $statusSudahCetak->id;
+                $gajisupir->tglbukacetak = date('Y-m-d H:i:s');
+                $gajisupir->userbukacetak = auth('api')->user()->name;
+                $gajisupir->jumlahcetak = $gajisupir->jumlahcetak+1;
+
+                if ($gajisupir->save()) {
+                    $logTrail = [
+                        'namatabel' => strtoupper($gajisupir->getTable()),
+                        'postingdari' => 'PRINT GAJI SUPIR HEADER',
+                        'idtrans' => $gajisupir->id,
+                        'nobuktitrans' => $gajisupir->nobukti,
+                        'aksi' => 'PRINT',
+                        'datajson' => $gajisupir->toArray(),
+                        'modifiedby' => $gajisupir->modifiedby
+                    ];
+    
+                    $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                    $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+    
+                    DB::commit();
+                }
+            }
+
+
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+        
+    }
+    
+    public function cekvalidasi($id)
+    {
+        $gajisupir = GajiSupirHeader::find($id);
+        $statusdatacetak = $gajisupir->statuscetak;
+        $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
+        
+        if ($statusdatacetak == $statusCetak->id) {
+            $query = DB::table('error')
+                ->select('keterangan')
+                ->where('kodeerror', '=', 'SDC')
+                ->get();
+            $keterangan = $query['0'];
+            $data = [
+                'message' => $keterangan,
+                'errors' => 'sudah cetak',
+                'kodestatus' => '1',
+                'kodenobukti' => '1'
+            ];
+
+            return response($data);
+        } else {
+
+            $data = [
+                'message' => '',
+                'errors' => 'belum approve',
+                'kodestatus' => '0',
+                'kodenobukti' => '1'
+            ];
+
+            return response($data);
+        }
+    }
     public function fieldLength()
     {
         $data = [];

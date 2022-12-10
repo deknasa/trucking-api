@@ -72,7 +72,6 @@ class PendapatanSupirDetailController extends Controller
            
             return response([
                 'data' => $pendapatanSupirDetail,
-                'user' => $getuser,
                 
             ]);
         } catch (\Throwable $th) {

@@ -75,7 +75,7 @@ class PenerimaanTruckingHeaderController extends Controller
             $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
 
             $penerimaantruckingheader = new PenerimaanTruckingHeader();
-            $statusPosting = Parameter::where('grp', 'STATUS POSTING')->where('text', 'BUKAN POSTING')->first();
+            $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
 
             $penerimaantruckingheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $penerimaantruckingheader->penerimaantrucking_id = $idpenerimaan;
@@ -84,6 +84,7 @@ class PenerimaanTruckingHeaderController extends Controller
             $penerimaantruckingheader->coa = $request->coa;
             $penerimaantruckingheader->penerimaan_nobukti = $request->penerimaan_nobukti;
             $penerimaantruckingheader->statusformat =  $format->id;
+            $penerimaantruckingheader->statuscetak =  $statusCetak->id;
             $penerimaantruckingheader->modifiedby = auth('api')->user()->name;
 
             $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
@@ -399,6 +400,82 @@ class PenerimaanTruckingHeaderController extends Controller
         } catch (\Throwable $th) {
             DB::rollBack();
             return response($th->getMessage());
+        }
+    }
+
+    public function printReport($id)
+    {
+        DB::beginTransaction();
+
+        try {
+            $penerimaanTrucking = PenerimaanTruckingHeader::lockForUpdate()->findOrFail($id);
+            $statusSudahCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
+            $statusBelumCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
+
+            if ($penerimaanTrucking->statuscetak != $statusSudahCetak->id) {
+                $penerimaanTrucking->statuscetak = $statusSudahCetak->id;
+                $penerimaanTrucking->tglbukacetak = date('Y-m-d H:i:s');
+                $penerimaanTrucking->userbukacetak = auth('api')->user()->name;
+                $penerimaanTrucking->jumlahcetak = $penerimaanTrucking->jumlahcetak+1;
+
+                if ($penerimaanTrucking->save()) {
+                    $logTrail = [
+                        'namatabel' => strtoupper($penerimaanTrucking->getTable()),
+                        'postingdari' => 'PRINT PENERIMAAN TRUCKING HEADER',
+                        'idtrans' => $penerimaanTrucking->id,
+                        'nobuktitrans' => $penerimaanTrucking->nobukti,
+                        'aksi' => 'PRINT',
+                        'datajson' => $penerimaanTrucking->toArray(),
+                        'modifiedby' => $penerimaanTrucking->modifiedby
+                    ];
+    
+                    $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                    $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+    
+                    DB::commit();
+                }
+            }
+
+
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+        
+    }
+
+    public function cekvalidasi($id)
+    {
+        $penerimaanTrucking = PenerimaanTruckingHeader::find($id);
+        $statusdatacetak = $penerimaanTrucking->statuscetak;
+        $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
+
+        if ($statusdatacetak == $statusCetak->id) {
+            $query = DB::table('error')
+                ->select('keterangan')
+                ->where('kodeerror', '=', 'SDC')
+                ->get();
+            $keterangan = $query['0'];
+            $data = [
+                'message' => $keterangan,
+                'errors' => 'sudah cetak',
+                'kodestatus' => '1',
+                'kodenobukti' => '1'
+            ];
+
+            return response($data);
+        } else {
+
+            $data = [
+                'message' => '',
+                'errors' => 'belum approve',
+                'kodestatus' => '0',
+                'kodenobukti' => '1'
+            ];
+
+            return response($data);
         }
     }
 

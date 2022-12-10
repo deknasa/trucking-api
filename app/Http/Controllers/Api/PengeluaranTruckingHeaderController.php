@@ -75,6 +75,7 @@ class PengeluaranTruckingHeaderController extends Controller
 
             $pengeluarantruckingheader = new PengeluaranTruckingHeader();
             $statusPosting = Parameter::where('grp', 'STATUS POSTING')->where('text', 'BUKAN POSTING')->first();
+            $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
 
             $pengeluarantruckingheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $pengeluarantruckingheader->pengeluarantrucking_id = $request->pengeluarantrucking_id;
@@ -84,15 +85,13 @@ class PengeluaranTruckingHeaderController extends Controller
             $pengeluarantruckingheader->coa = $request->coa;
             $pengeluarantruckingheader->pengeluaran_nobukti = $request->pengeluaran_nobukti;
             $pengeluarantruckingheader->statusformat = $format->id;
+            $pengeluarantruckingheader->statuscetak = $statusCetak->id;
             $pengeluarantruckingheader->modifiedby = auth('api')->user()->name;
 
             $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
             $pengeluarantruckingheader->nobukti = $nobukti;
 
-
-
             $pengeluarantruckingheader->save();
-
 
             $logTrail = [
                 'namatabel' => strtoupper($pengeluarantruckingheader->getTable()),
@@ -416,6 +415,97 @@ class PengeluaranTruckingHeaderController extends Controller
         }
     }
 
+    public function printReport($id)
+    {
+        DB::beginTransaction();
+
+        try {
+            $pengeluaran = PengeluaranTruckingHeader::lockForUpdate()->findOrFail($id);
+            $statusSudahCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
+            $statusBelumCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
+
+            if ($pengeluaran->statuscetak != $statusSudahCetak->id) {
+                $pengeluaran->statuscetak = $statusSudahCetak->id;
+                $pengeluaran->tglbukacetak = date('Y-m-d H:i:s');
+                $pengeluaran->userbukacetak = auth('api')->user()->name;
+                $pengeluaran->jumlahcetak = $pengeluaran->jumlahcetak+1;
+
+                if ($pengeluaran->save()) {
+                    $logTrail = [
+                        'namatabel' => strtoupper($pengeluaran->getTable()),
+                        'postingdari' => 'PRINT PENGELUARAN TRUCKING HEADER',
+                        'idtrans' => $pengeluaran->id,
+                        'nobuktitrans' => $pengeluaran->nobukti,
+                        'aksi' => 'PRINT',
+                        'datajson' => $pengeluaran->toArray(),
+                        'modifiedby' => $pengeluaran->modifiedby
+                    ];
+    
+                    $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                    $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+    
+                    DB::commit();
+                }
+            }
+
+
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+        
+    }
+
+    public function cekvalidasi($id)
+    {
+        $pengeluaran = PengeluaranTruckingHeader::find($id);
+        $status = $pengeluaran->statusapproval;
+        $statusApproval = Parameter::where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
+        $statusdatacetak = $pengeluaran->statuscetak;
+        $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
+
+        if ($status == $statusApproval->id) {
+            $query = DB::table('error')
+                ->select('keterangan')
+                ->where('kodeerror', '=', 'SAP')
+                ->get();
+            $keterangan = $query['0'];
+            $data = [
+                'message' => $keterangan,
+                'errors' => 'sudah approve',
+                'kodestatus' => '1',
+                'kodenobukti' => '1'
+            ];
+
+            return response($data);
+        } else if ($statusdatacetak == $statusCetak->id) {
+            $query = DB::table('error')
+                ->select('keterangan')
+                ->where('kodeerror', '=', 'SDC')
+                ->get();
+            $keterangan = $query['0'];
+            $data = [
+                'message' => $keterangan,
+                'errors' => 'sudah cetak',
+                'kodestatus' => '1',
+                'kodenobukti' => '1'
+            ];
+
+            return response($data);
+        } else {
+
+            $data = [
+                'message' => '',
+                'errors' => 'belum approve',
+                'kodestatus' => '0',
+                'kodenobukti' => '1'
+            ];
+
+            return response($data);
+        }
+    }
 
     public function fieldLength()
     {

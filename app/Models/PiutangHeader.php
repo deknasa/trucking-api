@@ -39,9 +39,13 @@ class PiutangHeader extends MyModel
             'piutangheader.modifiedby',
             'piutangheader.updated_at',
             'piutangheader.created_at',
-
+            'parameter.memo as statuscetak',
+            DB::raw('(case when (year(piutangheader.tglbukacetak) <= 2000) then null else piutangheader.tglbukacetak end ) as tglbukacetak'),
+            'piutangheader.userbukacetak',
             'agen.namaagen as agen_id'
-        )->leftJoin('agen', 'piutangheader.agen_id', 'agen.id');
+        )
+        ->leftJoin('parameter', 'piutangheader.statuscetak', 'parameter.id')
+        ->leftJoin('agen', 'piutangheader.agen_id', 'agen.id');
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -118,6 +122,7 @@ class PiutangHeader extends MyModel
             'piutangheader.nominal',
             'piutangheader.invoice_nobukti',
             'piutangheader.agen_id',
+            'piutangheader.statuscetak',
             'piutangheader.modifiedby',
             'piutangheader.updated_at',
             'agen.namaagen as agen'
@@ -184,7 +189,9 @@ class PiutangHeader extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'agen_id') {
+                        if ($filters['field'] == 'statuscetak') {
+                            $query = $query->where('parameter.text', '=', "$filters[data]");
+                        } else if ($filters['field'] == 'agen_id') {
                             $query = $query->where('agen.namaagen', 'LIKE', "%$filters[data]%");
                         } else {
                             $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
@@ -194,7 +201,9 @@ class PiutangHeader extends MyModel
                     break;
                 case "OR":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'agen_id') {
+                        if ($filters['field'] == 'statuscetak') {
+                            $query = $query->orWhere('parameter.text', '=', "$filters[data]");
+                        } else if ($filters['field'] == 'agen_id') {
                             $query = $query->orWhere('agen.namaagen', 'LIKE', "%$filters[data]%");
                         } else {
                             $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");

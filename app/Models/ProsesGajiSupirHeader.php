@@ -34,15 +34,20 @@ class ProsesGajiSupirHeader extends MyModel
             'prosesgajisupirheader.keterangan',
             'prosesgajisupirheader.tgldari',
             'prosesgajisupirheader.tglsampai',
-            'parameter.text as statusapproval',
+            'statusapproval.memo as statusapproval',
             'prosesgajisupirheader.userapproval',
-            'prosesgajisupirheader.tglapproval',
+            DB::raw('(case when (year(prosesgajisupirheader.tglapproval) <= 2000) then null else prosesgajisupirheader.tglapproval end ) as tglapproval'),
+            DB::raw('(case when (year(prosesgajisupirheader.tglbukacetak) <= 2000) then null else prosesgajisupirheader.tglbukacetak end ) as tglbukacetak'),
+            'statuscetak.memo as statuscetak',
+            'prosesgajisupirheader.userbukacetak',
+            'prosesgajisupirheader.jumlahcetak',
             'prosesgajisupirheader.periode',
             'prosesgajisupirheader.modifiedby',
             'prosesgajisupirheader.created_at',
             'prosesgajisupirheader.updated_at',
         )
-        ->join('parameter','prosesgajisupirheader.statusapproval','parameter.id');
+        ->leftJoin('parameter as statuscetak','prosesgajisupirheader.statuscetak','statuscetak.id')
+        ->leftJoin('parameter as statusapproval','prosesgajisupirheader.statusapproval','statusapproval.id');
             
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -96,16 +101,21 @@ class ProsesGajiSupirHeader extends MyModel
             $this->table.keterangan,
             $this->table.tgldari,
             $this->table.tglsampai,
-            'parameter.text as statusapproval',
+            'statusapproval.text as statusapproval',
             $this->table.userapproval,
             $this->table.tglapproval,
+            'statuscetak.text as statuscetak',
+            $this->table.userbukacetak,
+            $this->table.tglbukacetak,
+            $this->table.jumlahcetak,
             $this->table.periode,
             $this->table.modifiedby,
             $this->table.created_at,
             $this->table.updated_at
             ")
         )
-        ->join('parameter','prosesgajisupirheader.statusapproval','parameter.id');
+        ->leftJoin('parameter as statuscetak','prosesgajisupirheader.statuscetak','statuscetak.id')
+        ->leftJoin('parameter as statusapproval','prosesgajisupirheader.statusapproval','statusapproval.id');
             
     }
 
@@ -122,6 +132,10 @@ class ProsesGajiSupirHeader extends MyModel
             $table->string('statusapproval', 1000)->default('');
             $table->string('userapproval', 1000)->default('');
             $table->date('tglapproval')->default('');
+            $table->string('statuscetak',1000)->default('');
+            $table->string('userbukacetak',50)->default('');
+            $table->date('tglbukacetak')->default('1900/1/1');
+            $table->integer('jumlahcetak')->Length(11)->default('0');
             $table->date('periode')->default('');
             $table->string('modifiedby')->default();
             $table->dateTime('created_at')->default('1900/1/1');
@@ -134,7 +148,7 @@ class ProsesGajiSupirHeader extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id','nobukti','tglbukti','keterangan','tgldari','tglsampai','statusapproval','userapproval','tglapproval','periode','modifiedby','created_at','updated_at'], $models);
+        DB::table($temp)->insertUsing(['id','nobukti','tglbukti','keterangan','tgldari','tglsampai','statusapproval','userapproval','tglapproval','statuscetak','userbukacetak','tglbukacetak','jumlahcetak','periode','modifiedby','created_at','updated_at'], $models);
 
         return $temp;
     }
@@ -150,7 +164,9 @@ class ProsesGajiSupirHeader extends MyModel
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statusapproval') {
-                            $query = $query->where('parameter.text', 'LIKE', "%$filters[data]%");
+                            $query = $query->where('statusapproval.text', '=', "$filters[data]");
+                        } else if ($filters['field'] == 'statuscetak') {
+                            $query = $query->where('statuscetak.text', '=', "$filters[data]");
                         }else {
                             $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
@@ -160,7 +176,9 @@ class ProsesGajiSupirHeader extends MyModel
                 case "OR":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statusapproval') {
-                            $query = $query->orWhere('parameter.text', 'LIKE', "%$filters[data]%");
+                            $query = $query->orWhere('statusapproval.text', '=', "$filters[data]");
+                        } else if ($filters['field'] == 'statuscetak') {
+                            $query = $query->orWhere('statuscetak.text', '=', "$filters[data]");
                         } else { 
                             $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }

@@ -36,16 +36,17 @@ class PengeluaranTruckingHeader extends MyModel
             'pengeluarantruckingheader.modifiedby',
             'pengeluarantruckingheader.updated_at',
             'pengeluarantruckingheader.pengeluaran_nobukti',
-
             'pengeluarantrucking.keterangan as pengeluarantrucking_id',
             'bank.namabank as bank_id',
-            
+            DB::raw('(case when (year(pengeluarantruckingheader.tglbukacetak) <= 2000) then null else pengeluarantruckingheader.tglbukacetak end ) as tglbukacetak'),
+            'statuscetak.memo as statuscetak',
+            'pengeluarantruckingheader.userbukacetak',
             'pengeluarantruckingheader.coa',
             'statusposting.text as statusposting'
         )
             ->leftJoin('pengeluarantrucking', 'pengeluarantruckingheader.pengeluarantrucking_id','pengeluarantrucking.id')
-            ->leftJoin('parameter','pengeluarantrucking.statusformat','parameter.id')
             ->leftJoin('bank', 'pengeluarantruckingheader.bank_id', 'bank.id')
+            ->leftJoin('parameter as statuscetak' , 'pengeluarantruckingheader.statuscetak', 'statuscetak.id')
             ->leftJoin('parameter as statusposting' , 'pengeluarantruckingheader.statusposting', 'statusposting.id');
             
 
@@ -71,6 +72,7 @@ class PengeluaranTruckingHeader extends MyModel
             'pengeluarantruckingheader.pengeluarantrucking_id',
             'pengeluarantrucking.keterangan as pengeluarantrucking',
             'pengeluarantruckingheader.keterangan',
+            'pengeluarantruckingheader.statuscetak',
             'pengeluarantruckingheader.bank_id',
             'bank.namabank as bank',
             'pengeluarantruckingheader.statusposting',
@@ -101,6 +103,9 @@ class PengeluaranTruckingHeader extends MyModel
             $this->table.keterangan,
             'bank.namabank as bank_id',
             'statusposting.text as statusposting',
+            'statuscetak.text as statuscetak',
+            $this->table.userbukacetak,
+            $this->table.tglbukacetak,
             $this->table.coa,
             $this->table.pengeluaran_nobukti,
             $this->table.modifiedby,
@@ -109,6 +114,7 @@ class PengeluaranTruckingHeader extends MyModel
         )
         ->leftJoin('pengeluarantrucking', 'pengeluarantruckingheader.pengeluarantrucking_id', 'pengeluarantrucking.id')
         ->leftJoin('bank', 'pengeluarantruckingheader.bank_id', 'bank.id')
+        ->leftJoin('parameter as statuscetak' , 'pengeluarantruckingheader.statuscetak', 'statuscetak.id')
         ->leftJoin('parameter as statusposting' , 'pengeluarantruckingheader.statusposting', 'statusposting.id');
 
     }
@@ -124,6 +130,9 @@ class PengeluaranTruckingHeader extends MyModel
             $table->string('keterangan', 1000)->default('');
             $table->string('bank_id', 1000)->default('');
             $table->string('statusposting', 1000)->default('');
+            $table->string('statuscetak',1000)->default('');
+            $table->string('userbukacetak',50)->default('');
+            $table->date('tglbukacetak')->default('1900/1/1');
             $table->string('coa', 1000)->default('');
             $table->string('pengeluaran_nobukti', 1000)->default('');
             $table->string('modifiedby', 50)->default('');
@@ -136,7 +145,7 @@ class PengeluaranTruckingHeader extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id','nobukti','tglbukti','pengeluarantrucking_id','keterangan','bank_id','statusposting','coa','pengeluaran_nobukti','modifiedby','updated_at'],$models);
+        DB::table($temp)->insertUsing(['id','nobukti','tglbukti','pengeluarantrucking_id','keterangan','bank_id','statusposting','statuscetak','userbukacetak','tglbukacetak','coa','pengeluaran_nobukti','modifiedby','updated_at'],$models);
 
 
         return  $temp;         
@@ -160,6 +169,8 @@ class PengeluaranTruckingHeader extends MyModel
                             $query = $query->where('bank.namabank', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'statusposting') {
                             $query = $query->where('statusposting.text', '=', "$filters[data]");
+                        } else if ($filters['field'] == 'statuscetak') {
+                            $query = $query->where('statuscetak.text', '=', "$filters[data]");
                         } else {
                             $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
@@ -174,6 +185,8 @@ class PengeluaranTruckingHeader extends MyModel
                             $query = $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'statusposting') {
                             $query = $query->orWhere('statusposting.text', '=', "$filters[data]");
+                        } else if ($filters['field'] == 'statuscetak') {
+                            $query = $query->orWhere('statuscetak.text', '=', "$filters[data]");
                         } else {
                             $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }

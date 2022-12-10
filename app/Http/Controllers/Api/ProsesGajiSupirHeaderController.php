@@ -63,6 +63,7 @@ class ProsesGajiSupirHeaderController extends Controller
 
                 $prosesgajisupirheader = new ProsesGajiSupirHeader();
                 $statusApproval = Parameter::where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
+                $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
 
                 $prosesgajisupirheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
                 $prosesgajisupirheader->keterangan = $request->keterangan;
@@ -73,6 +74,7 @@ class ProsesGajiSupirHeaderController extends Controller
                 $prosesgajisupirheader->tglapproval = '';
                 $prosesgajisupirheader->periode = date('Y-m-d', strtotime($request->periode));
                 $prosesgajisupirheader->statusformat = $format->id;
+                $prosesgajisupirheader->statuscetak = $statusCetak->id;
                 $prosesgajisupirheader->modifiedby = auth('api')->user()->name;
 
                 $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
@@ -440,6 +442,99 @@ class ProsesGajiSupirHeaderController extends Controller
         return response([
             'message' => "$query->keterangan",
         ]);
+    }
+
+    
+    public function printReport($id)
+    {
+        DB::beginTransaction();
+
+        try {
+            $prosesgaji = ProsesGajiSupirHeader::lockForUpdate()->findOrFail($id);
+            $statusSudahCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
+            $statusBelumCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
+
+            if ($prosesgaji->statuscetak != $statusSudahCetak->id) {
+                $prosesgaji->statuscetak = $statusSudahCetak->id;
+                $prosesgaji->tglbukacetak = date('Y-m-d H:i:s');
+                $prosesgaji->userbukacetak = auth('api')->user()->name;
+                $prosesgaji->jumlahcetak = $prosesgaji->jumlahcetak+1;
+
+                if ($prosesgaji->save()) {
+                    $logTrail = [
+                        'namatabel' => strtoupper($prosesgaji->getTable()),
+                        'postingdari' => 'PRINT PROSES GAJI SUPIR HEADER',
+                        'idtrans' => $prosesgaji->id,
+                        'nobuktitrans' => $prosesgaji->nobukti,
+                        'aksi' => 'PRINT',
+                        'datajson' => $prosesgaji->toArray(),
+                        'modifiedby' => $prosesgaji->modifiedby
+                    ];
+    
+                    $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                    $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+    
+                    DB::commit();
+                }
+            }
+
+
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+        
+    }
+
+    public function cekvalidasi($id)
+    {
+        $prosesgaji = ProsesGajiSupirHeader::find($id);
+        $status = $prosesgaji->statusapproval;
+        $statusApproval = Parameter::where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
+        $statusdatacetak = $prosesgaji->statuscetak;
+        $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
+
+        if ($status == $statusApproval->id) {
+            $query = DB::table('error')
+                ->select('keterangan')
+                ->where('kodeerror', '=', 'SAP')
+                ->get();
+            $keterangan = $query['0'];
+            $data = [
+                'message' => $keterangan,
+                'errors' => 'sudah approve',
+                'kodestatus' => '1',
+                'kodenobukti' => '1'
+            ];
+
+            return response($data);
+        } else if ($statusdatacetak == $statusCetak->id) {
+            $query = DB::table('error')
+                ->select('keterangan')
+                ->where('kodeerror', '=', 'SDC')
+                ->get();
+            $keterangan = $query['0'];
+            $data = [
+                'message' => $keterangan,
+                'errors' => 'sudah cetak',
+                'kodestatus' => '1',
+                'kodenobukti' => '1'
+            ];
+
+            return response($data);
+        } else {
+
+            $data = [
+                'message' => '',
+                'errors' => 'belum approve',
+                'kodestatus' => '0',
+                'kodenobukti' => '1'
+            ];
+
+            return response($data);
+        }
     }
 
     public function fieldLength()

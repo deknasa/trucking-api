@@ -45,9 +45,6 @@ class KasGantungHeaderController extends Controller
         ]);
     }
 
-    public function create()
-    {
-    }
     /**
      * @ClassName 
      */
@@ -81,6 +78,8 @@ class KasGantungHeaderController extends Controller
                 $kasgantungHeader->nobukti = $request->nobukti;
             }
 
+            $statusCetak = Parameter::where('grp','STATUSCETAK')->where('text','BELUM CETAK')->first();
+
             $kasgantungHeader->tglbukti = date('Y-m-d', strtotime($request->tglbukti)) ?? '1900/1/1';
             $kasgantungHeader->penerima_id = $request->penerima_id ?? '';
             $kasgantungHeader->keterangan = $request->keterangan ?? '';
@@ -91,6 +90,10 @@ class KasGantungHeaderController extends Controller
             $kasgantungHeader->tglkaskeluar = date('Y-m-d', strtotime($request->tglkaskeluar)) ?? '1900/1/1';
             $kasgantungHeader->modifiedby = auth('api')->user()->name;
             $kasgantungHeader->statusformat = $format->id ?? $request->statusformat;
+            $kasgantungHeader->statuscetak = $statusCetak->id;
+            $kasgantungHeader->userbukacetak = '';
+            $kasgantungHeader->tglbukacetak = '';
+
             TOP:
             if ($tanpaprosesnobukti == 0) {
                 $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
@@ -350,8 +353,8 @@ class KasGantungHeaderController extends Controller
 
     public function show($id)
     {
-        $data = KasGantungHeader::findAll($id);
-        $detail = KasGantungDetail::findAll($id);
+        $data = KasGantungHeader::findUpdate($id);
+        $detail = KasGantungDetail::findUpdate($id);
         return response([
             'status' => true,
             'data' => $data,
@@ -737,6 +740,98 @@ class KasGantungHeaderController extends Controller
         } catch (\Throwable $th) {
             DB::rollBack();
             return response($th->getMessage());
+        }
+    }
+    
+    public function printReport($id)
+    {
+        DB::beginTransaction();
+
+        try {
+            $kasgantung = KasGantungHeader::lockForUpdate()->findOrFail($id);
+            $statusSudahCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
+            $statusBelumCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
+
+            if ($kasgantung->statuscetak != $statusSudahCetak->id) {
+                $kasgantung->statuscetak = $statusSudahCetak->id;
+                $kasgantung->tglbukacetak = date('Y-m-d H:i:s');
+                $kasgantung->userbukacetak = auth('api')->user()->name;
+                $kasgantung->jumlahcetak = $kasgantung->jumlahcetak+1;
+
+                if ($kasgantung->save()) {
+                    $logTrail = [
+                        'namatabel' => strtoupper($kasgantung->getTable()),
+                        'postingdari' => 'PRINT KAS GANTUNG HEADER',
+                        'idtrans' => $kasgantung->id,
+                        'nobuktitrans' => $kasgantung->nobukti,
+                        'aksi' => 'PRINT',
+                        'datajson' => $kasgantung->toArray(),
+                        'modifiedby' => $kasgantung->modifiedby
+                    ];
+    
+                    $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                    $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+    
+                    DB::commit();
+                }
+            }
+
+
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+        
+    }
+    
+    public function cekvalidasi($id)
+    {
+        $kasgantung = KasGantungHeader::find($id);
+        $status = $kasgantung->statusapproval;
+        $statusApproval = Parameter::where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
+        $statusdatacetak = $kasgantung->statuscetak;
+        $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
+
+        if ($status == $statusApproval->id) {
+            $query = DB::table('error')
+                ->select('keterangan')
+                ->where('kodeerror', '=', 'SAP')
+                ->get();
+            $keterangan = $query['0'];
+            $data = [
+                'message' => $keterangan,
+                'errors' => 'sudah approve',
+                'kodestatus' => '1',
+                'kodenobukti' => '1'
+            ];
+
+            return response($data);
+        } else if ($statusdatacetak == $statusCetak->id) {
+            $query = DB::table('error')
+                ->select('keterangan')
+                ->where('kodeerror', '=', 'SDC')
+                ->get();
+            $keterangan = $query['0'];
+            $data = [
+                'message' => $keterangan,
+                'errors' => 'sudah cetak',
+                'kodestatus' => '1',
+                'kodenobukti' => '1'
+            ];
+
+            return response($data);
+        } else {
+
+            $data = [
+                'message' => '',
+                'errors' => 'belum approve',
+                'kodestatus' => '0',
+                'kodenobukti' => '1'
+            ];
+
+            return response($data);
         }
     }
 

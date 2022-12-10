@@ -56,6 +56,8 @@ class PendapatanSupirHeaderController extends Controller
             $pendapatanSupir = new PendapatanSupirHeader();
 
             $statusApp = Parameter::where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
+            $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
+
             $pendapatanSupir->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $pendapatanSupir->bank_id  = $request->bank_id;
             $pendapatanSupir->keterangan  = $request->keterangan;
@@ -66,6 +68,7 @@ class PendapatanSupirHeaderController extends Controller
             $pendapatanSupir->tglapproval  = '';
             $pendapatanSupir->periode  = date('Y-m-d', strtotime($request->periode));
             $pendapatanSupir->statusformat = $format->id;
+            $pendapatanSupir->statuscetak = $statusCetak->id;
             $pendapatanSupir->modifiedby = auth('api')->user()->name;
 
             $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
@@ -326,23 +329,96 @@ class PendapatanSupirHeaderController extends Controller
         }
     }
 
-    public function cekapproval($id)
+    public function printReport($id)
     {
-        $pendapatansupir = PendapatanSupirHeader::find($id);
-        $status = $pendapatansupir->statusapproval;
+        DB::beginTransaction();
 
-        if ($status == '3') {
+        try {
+            $pendapatan = PendapatanSupirHeader::lockForUpdate()->findOrFail($id);
+            $statusSudahCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
+            $statusBelumCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
+
+            if ($pendapatan->statuscetak != $statusSudahCetak->id) {
+                $pendapatan->statuscetak = $statusSudahCetak->id;
+                $pendapatan->tglbukacetak = date('Y-m-d H:i:s');
+                $pendapatan->userbukacetak = auth('api')->user()->name;
+                $pendapatan->jumlahcetak = $pendapatan->jumlahcetak+1;
+
+                if ($pendapatan->save()) {
+                    $logTrail = [
+                        'namatabel' => strtoupper($pendapatan->getTable()),
+                        'postingdari' => 'PRINT PENDAPATAN SUPIR HEADER',
+                        'idtrans' => $pendapatan->id,
+                        'nobuktitrans' => $pendapatan->nobukti,
+                        'aksi' => 'PRINT',
+                        'datajson' => $pendapatan->toArray(),
+                        'modifiedby' => $pendapatan->modifiedby
+                    ];
+    
+                    $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                    $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+    
+                    DB::commit();
+                }
+            }
+
+
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+        
+    }
+
+    public function cekvalidasi($id)
+    {
+        $pendapatan = PendapatanSupirHeader::find($id);
+        $status = $pendapatan->statusapproval;
+        $statusApproval = Parameter::where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
+        $statusdatacetak = $pendapatan->statuscetak;
+        $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
+
+        if ($status == $statusApproval->id) {
             $query = DB::table('error')
                 ->select('keterangan')
                 ->where('kodeerror', '=', 'SAP')
-                ->first();
-            return response([
-                'message' => "$query->keterangan",
-            ], 422);
+                ->get();
+            $keterangan = $query['0'];
+            $data = [
+                'message' => $keterangan,
+                'errors' => 'sudah approve',
+                'kodestatus' => '1',
+                'kodenobukti' => '1'
+            ];
+
+            return response($data);
+        } else if ($statusdatacetak == $statusCetak->id) {
+            $query = DB::table('error')
+                ->select('keterangan')
+                ->where('kodeerror', '=', 'SDC')
+                ->get();
+            $keterangan = $query['0'];
+            $data = [
+                'message' => $keterangan,
+                'errors' => 'sudah cetak',
+                'kodestatus' => '1',
+                'kodenobukti' => '1'
+            ];
+
+            return response($data);
         } else {
-            return response([
-                'message' => "OK",
-            ]);
+
+            $data = [
+                'message' => '',
+                'errors' => 'belum approve',
+                'kodestatus' => '0',
+                'kodenobukti' => '1'
+            ];
+
+            return response($data);
         }
     }
+
 }

@@ -70,14 +70,8 @@ class PenerimaanTruckingDetailController extends Controller
                 
                 $penerimaanTruckingDetail = $query->get();
             }
-            $idUser = auth('api')->user()->id;
-            $getuser = User::select('name','cabang.namacabang as cabang_id')
-            ->where('user.id',$idUser)->join('cabang','user.cabang_id','cabang.id')->first();
-           
             return response([
                 'data' => $penerimaanTruckingDetail,
-                'user' => $getuser,
-                
             ]);
         } catch (\Throwable $th) {
             return response([

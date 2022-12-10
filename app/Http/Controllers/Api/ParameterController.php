@@ -54,15 +54,15 @@ class ParameterController extends Controller
             $parameter->warna = $request->warna ?? '';
             $parameter->modifiedby = auth('api')->user()->name;
 
-            $detaillog = [];
+            $detailmemo = [];
             for ($i = 0; $i < count($request->key); $i++) {
-                $datadetaillog = [
+                $datadetailmemo = [
                     $request->key[$i] => $request->value[$i],
                 ];
-                $detaillog = array_merge($detaillog, $datadetaillog);
+                $detailmemo = array_merge($detailmemo, $datadetailmemo);
             }
 
-            $parameter->memo = json_encode($detaillog);
+            $parameter->memo = json_encode($detailmemo);
             if ($parameter->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($parameter->getTable()),
@@ -128,15 +128,15 @@ class ParameterController extends Controller
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
 
-            $detaillog = [];
+            $detailmemo = [];
             for ($i = 0; $i < count($request->key); $i++) {
-                $datadetaillog = [
+                $datadetailmemo = [
                     $request->key[$i] => $request->value[$i],
                 ];
-                $detaillog = array_merge($detaillog, $datadetaillog);
+                $detailmemo = array_merge($detailmemo, $datadetailmemo);
             }
 
-            $parameter->memo = json_encode($detaillog);
+            $parameter->memo = json_encode($detailmemo);
             if ($parameter->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($parameter->getTable()),
@@ -185,7 +185,7 @@ class ParameterController extends Controller
     {
         DB::beginTransaction();
 
-        $delete = $parameter->lockForUpdate()->delete();
+        $delete = Parameter::destroy($parameter->id);
 
         if ($delete) {
             $logTrail = [

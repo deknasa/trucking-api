@@ -385,7 +385,8 @@ use App\Http\Controllers\Api\BankPelangganController;
         Route::resource('jurnalumumheader', JurnalUmumHeaderController::class);
         Route::resource('jurnalumumdetail', JurnalUmumDetailController::class);
 
-        Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
+        Route::get('penerimaantruckingheader/{id}/printreport', [PenerimaanTruckingHeaderController::class,'printReport']);
+        Route::post('penerimaantruckingheader/{id}/cekvalidasi', [PenerimaanTruckingHeaderController::class, 'cekvalidasi'])->name('penerimaantruckingheader.cekvalidasi');     
         Route::get('penerimaantruckingheader/no_bukti', [PenerimaanTruckingHeaderController::class, 'getNoBukti']);
         Route::get('penerimaantruckingheader/combo', [PenerimaanTruckingHeaderController::class, 'combo']);
         Route::get('penerimaantruckingheader/grid', [PenerimaanTruckingHeaderController::class, 'grid']);
@@ -393,7 +394,8 @@ use App\Http\Controllers\Api\BankPelangganController;
         Route::resource('penerimaantruckingheader', PenerimaanTruckingHeaderController::class);
         Route::resource('penerimaantruckingdetail', PenerimaanTruckingDetailController::class);
 
-        Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
+        Route::get('pengeluarantruckingheader/{id}/printreport', [PengeluaranTruckingHeaderController::class,'printReport']);
+        Route::post('pengeluarantruckingheader/{id}/cekvalidasi', [PengeluaranTruckingHeaderController::class, 'cekvalidasi'])->name('pengeluarantruckingheader.cekvalidasi');     
         Route::get('pengeluarantruckingheader/no_bukti', [PengeluaranTruckingHeaderController::class, 'getNoBukti']);
         Route::get('pengeluarantruckingheader/combo', [PengeluaranTruckingHeaderController::class, 'combo']);
         Route::get('pengeluarantruckingheader/grid', [PengeluaranTruckingHeaderController::class, 'grid']);
@@ -421,14 +423,16 @@ use App\Http\Controllers\Api\BankPelangganController;
         Route::resource('invoiceextraheader', InvoiceExtraHeaderController::class);
         Route::resource('invoiceextradetail', InvoiceExtraDetailController::class);
 
-        Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
+        Route::get('piutangheader/{id}/printreport', [PiutangHeaderController::class,'printReport']);
+        Route::post('piutangheader/{id}/cekvalidasi', [PiutangHeaderController::class, 'cekvalidasi'])->name('piutangheader.cekvalidasi');
         Route::get('piutangheader/no_bukti', [PiutangHeaderController::class, 'getNoBukti']);
         Route::get('piutangheader/grid', [PiutangHeaderController::class, 'grid']);
         Route::get('piutangheader/field_length', [PiutangHeaderController::class, 'fieldLength']);
         Route::apiResource('piutangheader', PiutangHeaderController::class)->parameters(['piutangheader' => 'piutangHeader']);
         Route::apiResource('piutangdetail', PiutangDetailController::class);
 
-        Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
+        Route::get('hutangheader/{id}/printreport', [HutangHeaderController::class,'printReport']);
+        Route::post('hutangheader/{id}/cekvalidasi', [HutangHeaderController::class, 'cekvalidasi'])->name('hutangheader.cekvalidasi');
         Route::get('hutangheader/no_bukti', [HutangHeaderController::class, 'getNoBukti']);
         Route::get('hutangheader/combo', [HutangHeaderController::class, 'combo']);
         Route::get('hutangheader/grid', [HutangHeaderController::class, 'grid']);
@@ -447,7 +451,8 @@ use App\Http\Controllers\Api\BankPelangganController;
         Route::resource('pelunasanpiutangheader', PelunasanPiutangHeaderController::class);
         Route::resource('pelunasanpiutangdetail', PelunasanPiutangDetailController::class);
 
-        Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
+        Route::get('hutangbayarheader/{id}/printreport', [HutangBayarHeaderController::class,'printReport']);
+        Route::post('hutangbayarheader/{id}/cekvalidasi', [HutangBayarHeaderController::class, 'cekvalidasi'])->name('hutangbayarheader.cekvalidasi');
         Route::get('hutangbayarheader/no_bukti', [HutangBayarHeaderController::class, 'getNoBukti']);
         Route::get('hutangbayarheader/field_length', [HutangBayarHeaderController::class, 'fieldLength']);
         Route::get('hutangbayarheader/combo', [HutangBayarHeaderController::class, 'combo']);
@@ -473,8 +478,8 @@ use App\Http\Controllers\Api\BankPelangganController;
         Route::resource('serviceoutheader', ServiceOutHeaderController::class);
         Route::resource('serviceoutdetail', ServiceOutDetailController::class);
         
-        Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
-        Route::get('kasgantungheader/no_bukti', [KasGantungHeaderController::class, 'getNoBukti']);
+        Route::post('kasgantungheader/{id}/cekvalidasi', [KasGantungHeaderController::class, 'cekvalidasi'])->name('kasgantungheader.cekvalidasi');
+        Route::get('kasgantungheader/{id}/printreport', [KasGantungHeaderController::class,'printReport']);
         Route::get('kasgantungheader/combo', [KasGantungHeaderController::class, 'combo']);
         Route::get('kasgantungheader/grid', [KasGantungHeaderController::class, 'grid']);
         Route::get('kasgantungheader/field_length', [KasGantungHeaderController::class, 'fieldLength']);
@@ -482,7 +487,8 @@ use App\Http\Controllers\Api\BankPelangganController;
 
         Route::resource('kasgantungdetail', KasGantungDetailController::class);
 
-        Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
+        Route::get('gajisupirheader/{id}/printreport', [GajiSupirHeaderController::class,'printReport']);
+        Route::post('gajisupirheader/{id}/cekvalidasi', [GajiSupirHeaderController::class, 'cekvalidasi'])->name('gajisupirheader.cekvalidasi');     
         Route::get('gajisupirheader/no_bukti', [GajiSupirHeaderController::class, 'getNoBukti']);
         Route::get('gajisupirheader/grid', [GajiSupirHeaderController::class, 'grid']);
         Route::get('gajisupirheader/field_length', [GajiSupirHeaderController::class, 'fieldLength']);
@@ -542,7 +548,8 @@ use App\Http\Controllers\Api\BankPelangganController;
 
         Route::resource('pengembaliankasbankdetail', PengembalianKasBankDetailController::class);
 
-        Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
+        Route::get('prosesgajisupirheader/{id}/printreport', [ProsesGajiSupirHeaderController::class,'printReport']);
+        Route::post('prosesgajisupirheader/{id}/cekvalidasi', [ProsesGajiSupirHeaderController::class, 'cekvalidasi'])->name('prosesgajisupirheader.cekvalidasi');     
         Route::get('prosesgajisupirheader/no_bukti', [ProsesGajiSupirHeaderController::class, 'getNoBukti']);
         Route::get('prosesgajisupirheader/grid', [ProsesGajiSupirHeaderController::class, 'grid']);
         Route::get('prosesgajisupirheader/field_length', [ProsesGajiSupirHeaderController::class, 'fieldLength']);
@@ -558,8 +565,7 @@ use App\Http\Controllers\Api\BankPelangganController;
         Route::get('invoiceheader/comboapproval', [InvoiceHeaderController::class, 'comboapproval']);
         Route::get('invoiceheader/{id}/getEdit', [InvoiceHeaderController::class, 'getEdit']);
         Route::get('invoiceheader/getSP', [InvoiceHeaderController::class, 'getSP']);
-        Route::post('invoiceheader/{id}/approval', [InvoiceHeaderController::class, 'approval'])->name('invoiceheader.approval');
-        Route::post('invoiceheader/{id}/cekapproval', [InvoiceHeaderController::class, 'cekapproval'])->name('invoiceheader.cekapproval');
+        Route::post('invoiceheader/{id}/cekvalidasi', [InvoiceHeaderController::class, 'cekvalidasi'])->name('invoiceheader.cekvalidasi');
         Route::resource('invoiceheader', InvoiceHeaderController::class);
         Route::resource('invoicedetail', InvoiceDetailController::class);
 
@@ -571,8 +577,9 @@ use App\Http\Controllers\Api\BankPelangganController;
         Route::get('suratpengantar/getGaji/{dari}/{sampai}/{container}/{statuscontainer}', [SuratPengantarController::class, 'getGaji']);
         Route::resource('suratpengantar', SuratPengantarController::class);
         
-        Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
+        Route::get('penerimaanheader/{id}/printreport', [PenerimaanHeaderController::class,'printReport']);
         Route::post('penerimaanheader/{id}/approval', [PenerimaanHeaderController::class, 'approval'])->name('penerimaanheader.approval');
+        Route::post('penerimaanheader/{id}/cekvalidasi', [PenerimaanHeaderController::class, 'cekvalidasi'])->name('penerimaanheader.cekvalidasi');
         Route::get('penerimaanheader/no_bukti', [PenerimaanHeaderController::class, 'getNoBukti']);
         Route::get('penerimaanheader/combo', [PenerimaanHeaderController::class, 'combo']);
         Route::get('penerimaanheader/{id}/tarikPelunasan', [PenerimaanHeaderController::class, 'tarikPelunasan']);
@@ -583,7 +590,7 @@ use App\Http\Controllers\Api\BankPelangganController;
         Route::resource('penerimaandetail', PenerimaanDetailController::class);
 
         //pengeluaran
-        Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
+        Route::get('pengeluaranheader/{id}/printreport', [PengeluaranHeaderController::class,'printReport']);
         Route::post('pengeluaranheader/{id}/approval', [PengeluaranHeaderController::class, 'approval'])->name('pengeluaranheader.approval');
         Route::get('pengeluaranheader/no_bukti', [PengeluaranHeaderController::class, 'getNoBukti']);
         Route::get('pengeluaranheader/field_length', [PengeluaranHeaderController::class, 'fieldLength']);
@@ -630,7 +637,8 @@ use App\Http\Controllers\Api\BankPelangganController;
         Route::resource('approvalhutangbayar', ApprovalHutangBayarController::class);
         
         
-        Route::post('pendapatansupirheader/{id}/cekapproval', [PendapatanSupirHeaderController::class, 'cekapproval'])->name('pendapatansupirheader.cekapproval');
+        Route::get('pendapatansupirheader/{id}/printreport', [PendapatanSupirHeaderController::class,'printReport']);
+        Route::post('pendapatansupirheader/{id}/cekvalidasi', [PendapatanSupirHeaderController::class, 'cekvalidasi'])->name('pendapatansupirheader.cekvalidasi');     
         Route::resource('pendapatansupirheader', PendapatanSupirHeaderController::class)->parameters(['pendapatansupirheader' => 'pendapatanSupirHeader']);
         Route::resource('pendapatansupirdetail', PendapatanSupirDetailController::class);
         

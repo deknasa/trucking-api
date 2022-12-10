@@ -68,6 +68,8 @@ class HutangHeaderController extends Controller
             $content['table'] = 'hutangheader';
             $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
 
+            $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text','BELUM CETAK')->first();
+
             $hutangHeader = new HutangHeader();
             $hutangHeader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $hutangHeader->keterangan = $request->keterangan ?? '';
@@ -75,6 +77,7 @@ class HutangHeaderController extends Controller
             $hutangHeader->pelanggan_id = $request->pelanggan_id;
             $hutangHeader->postingdari = $request->postingdari ?? 'ENTRY HUTANG';
             $hutangHeader->statusformat = $format->id;
+            $hutangHeader->statuscetak = $statusCetak->id;
             $hutangHeader->total = array_sum($request->total_detail);
             $hutangHeader->modifiedby = auth('api')->user()->name;
 
@@ -527,6 +530,97 @@ class HutangHeaderController extends Controller
         } catch (\Throwable $th) {
             DB::rollBack();
             return response($th->getMessage());
+        }
+    }
+
+    public function printReport($id)
+    {
+        DB::beginTransaction();
+
+        try {
+            $hutang = HutangHeader::lockForUpdate()->findOrFail($id);
+            $statusSudahCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
+            $statusBelumCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
+
+            if ($hutang->statuscetak != $statusSudahCetak->id) {
+                $hutang->statuscetak = $statusSudahCetak->id;
+                $hutang->tglbukacetak = date('Y-m-d H:i:s');
+                $hutang->userbukacetak = auth('api')->user()->name;
+                $hutang->jumlahcetak = $hutang->jumlahcetak+1;
+
+                if ($hutang->save()) {
+                    $logTrail = [
+                        'namatabel' => strtoupper($hutang->getTable()),
+                        'postingdari' => 'PRINT HUTANG HEADER',
+                        'idtrans' => $hutang->id,
+                        'nobuktitrans' => $hutang->nobukti,
+                        'aksi' => 'PRINT',
+                        'datajson' => $hutang->toArray(),
+                        'modifiedby' => $hutang->modifiedby
+                    ];
+    
+                    $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                    $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+    
+                    DB::commit();
+                }
+            }
+
+
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            throw $th;
+        }        
+    }
+    
+    public function cekvalidasi($id)
+    {
+        $hutang = HutangHeader::find($id);
+        $status = $hutang->statusapproval;
+        $statusApproval = Parameter::where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
+        $statusdatacetak = $hutang->statuscetak;
+        $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
+
+        if ($status == $statusApproval->id) {
+            $query = DB::table('error')
+                ->select('keterangan')
+                ->where('kodeerror', '=', 'SAP')
+                ->get();
+            $keterangan = $query['0'];
+            $data = [
+                'message' => $keterangan,
+                'errors' => 'sudah approve',
+                'kodestatus' => '1',
+                'kodenobukti' => '1'
+            ];
+
+            return response($data);
+        } else if ($statusdatacetak == $statusCetak->id) {
+            $query = DB::table('error')
+                ->select('keterangan')
+                ->where('kodeerror', '=', 'SDC')
+                ->get();
+            $keterangan = $query['0'];
+            $data = [
+                'message' => $keterangan,
+                'errors' => 'sudah cetak',
+                'kodestatus' => '1',
+                'kodenobukti' => '1'
+            ];
+
+            return response($data);
+        } else {
+
+            $data = [
+                'message' => '',
+                'errors' => 'belum approve',
+                'kodestatus' => '0',
+                'kodenobukti' => '1'
+            ];
+
+            return response($data);
         }
     }
 

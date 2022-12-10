@@ -37,11 +37,16 @@ class HutangHeader extends MyModel
             'hutangheader.coa',
             'pelanggan.namapelanggan as pelanggan_id',
             'hutangheader.total',
-
+            'parameter.memo as statuscetak',
+            'hutangheader.userbukacetak',
+            'hutangheader.jumlahcetak',
+            DB::raw('(case when (year(hutangheader.tglbukacetak) <= 2000) then null else hutangheader.tglbukacetak end ) as tglbukacetak'),
+            
             'hutangheader.modifiedby',
             'hutangheader.created_at',
             'hutangheader.updated_at'
         )
+            ->leftJoin('parameter', 'hutangheader.statuscetak', 'parameter.id')
             ->leftJoin('pelanggan', 'hutangheader.pelanggan_id', 'pelanggan.id');
 
         $this->totalRows = $query->count();
@@ -66,7 +71,7 @@ class HutangHeader extends MyModel
             // 'akunpusat.coa as coa',
             'pelanggan.namapelanggan as pelanggan',
             'pelanggan.id as pelanggan_id',
-
+            'hutangheader.statuscetak',
             'hutangheader.total',
 
             'hutangheader.modifiedby',
@@ -146,7 +151,10 @@ class HutangHeader extends MyModel
                  'akunpusat.coa as akunpusat',
                  'pelanggan.namapelanggan as pelanggan_id',
                  $this->table.total,
-
+                 'parameter.text as statuscetak',
+                 $this->table.userbukacetak,
+                 $this->table.tglbukacetak,
+                 $this->table.jumlahcetak,
                  $this->table.modifiedby,
                  $this->table.created_at,
                  $this->table.updated_at,
@@ -154,6 +162,7 @@ class HutangHeader extends MyModel
             )
 
         )->leftJoin('akunpusat', 'hutangheader.coa', 'akunpusat.coa')
+        ->leftJoin('parameter', 'hutangheader.statuscetak', 'parameter.id')
         ->leftJoin('pelanggan', 'hutangheader.pelanggan_id', 'pelanggan.id');
     }
 
@@ -168,6 +177,10 @@ class HutangHeader extends MyModel
             $table->string('coa', 50)->default('');
             $table->string('pelanggan_id', 50)->default('');
             $table->double('total', 15, 2)->default(0);
+            $table->string('statuscetak',1000)->default('');
+            $table->string('userbukacetak',50)->default('');
+            $table->date('tglbukacetak')->default('1900/1/1');
+            $table->integer('jumlahcetak')->Length(11)->default('0');
             $table->string('modifiedby')->default();
             $table->dateTime('created_at')->default('1900/1/1');
             $table->dateTime('updated_at')->default('1900/1/1');
@@ -180,7 +193,7 @@ class HutangHeader extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'keterangan', 'coa', 'pelanggan_id', 'total', 'modifiedby', 'created_at', 'updated_at', 'statusformat'], $models);
+        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'keterangan', 'coa', 'pelanggan_id', 'total','statuscetak','userbukacetak','tglbukacetak','jumlahcetak', 'modifiedby', 'created_at', 'updated_at', 'statusformat'], $models);
 
         return $temp;
     }
@@ -196,7 +209,9 @@ class HutangHeader extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'pelanggan_id') {
+                        if ($filters['field'] == 'statuscetak') {
+                            $query = $query->where('parameter.text', '=', "$filters[data]");
+                        } else if ($filters['field'] == 'pelanggan_id') {
                             $query = $query->where('pelanggan.namapelanggan', 'LIKE', "%$filters[data]%");
                         }else {
                             $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
@@ -206,7 +221,9 @@ class HutangHeader extends MyModel
                     break;
                 case "OR":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'pelanggan_id') {
+                        if ($filters['field'] == 'statuscetak') {
+                            $query = $query->where('parameter.text', '=', "$filters[data]");
+                        } else if ($filters['field'] == 'pelanggan_id') {
                             $query = $query->where('pelanggan.namapelanggan', 'LIKE', "%$filters[data]%");
                         } else {
                             $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");

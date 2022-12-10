@@ -51,11 +51,16 @@ class KasGantungHeader extends MyModel
             'kasgantungheader.pengeluaran_nobukti',
             'kasgantungheader.coakaskeluar',
             db::raw("(case when year(isnull(kasgantungheader.tglkaskeluar,'1900/1/1'))=1900 then null else kasgantungheader.tglkaskeluar end) as tglkaskeluar"),
+            db::raw("(case when year(isnull(kasgantungheader.tglbukacetak,'1900/1/1'))=1900 then null else kasgantungheader.tglbukacetak end) as tglbukacetak"),
             'kasgantungheader.postingdari',
+            'kasgantungheader.userbukacetak',
+            'kasgantungheader.jumlahcetak',
+            'parameter.memo as statuscetak',
             'kasgantungheader.modifiedby',
             'kasgantungheader.created_at',
             'kasgantungheader.updated_at'
         )
+            ->leftJoin('parameter', 'kasgantungheader.statuscetak', 'parameter.id')
             ->leftJoin('penerima', 'kasgantungheader.penerima_id', 'penerima.id')
             ->leftJoin('bank', 'kasgantungheader.bank_id', 'bank.id');
 
@@ -71,7 +76,7 @@ class KasGantungHeader extends MyModel
         return $data;
     }
 
-    public function findAll($id) 
+    public function findUpdate($id) 
     {
         $query = DB::table('kasgantungheader')
         ->select(
@@ -84,6 +89,7 @@ class KasGantungHeader extends MyModel
             'kasgantungheader.bank_id',
             'bank.namabank as bank',
             'kasgantungheader.pengeluaran_nobukti',
+            'kasgantungheader.statuscetak',
             'kasgantungheader.coakaskeluar',
             'kasgantungheader.tglkaskeluar',
             'kasgantungheader.modifiedby',
@@ -112,12 +118,17 @@ class KasGantungHeader extends MyModel
             $this->table.pengeluaran_nobukti,
             $this->table.coakaskeluar,
             $this->table.tglkaskeluar,
+            'parameter.text as statuscetak',
+            $this->table.userbukacetak,
+            $this->table.tglbukacetak,
+            $this->table.jumlahcetak,
             $this->table.modifiedby,
             $this->table.created_at,
             $this->table.updated_at"
             )
         )
         ->leftJoin('penerima', 'kasgantungheader.penerima_id', 'penerima.id')
+        ->leftJoin('parameter', 'kasgantungheader.statuscetak', 'parameter.id')
         ->leftJoin('bank', 'kasgantungheader.bank_id', 'bank.id');
 
     }
@@ -135,6 +146,10 @@ class KasGantungHeader extends MyModel
             $table->string('pengeluaran_nobukti', 1000)->default('');
             $table->string('coakaskeluar', 1000)->default('');
             $table->string('tglkaskeluar', 1000)->default('');
+            $table->string('statuscetak',1000)->default('');
+            $table->string('userbukacetak',50)->default('');
+            $table->date('tglbukacetak')->default('1900/1/1');
+            $table->integer('jumlahcetak')->Length(11)->default('0');
             $table->string('modifiedby', 50)->default('');
             $table->dateTime('created_at')->default('1900/1/1');
             $table->dateTime('updated_at')->default('1900/1/1');
@@ -146,7 +161,7 @@ class KasGantungHeader extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id','nobukti','tglbukti','penerima_id','keterangan','bank_id','pengeluaran_nobukti','coakaskeluar','tglkaskeluar','modifiedby','created_at','updated_at'],$models);
+        DB::table($temp)->insertUsing(['id','nobukti','tglbukti','penerima_id','keterangan','bank_id','pengeluaran_nobukti','coakaskeluar','tglkaskeluar','statuscetak','userbukacetak','tglbukacetak','jumlahcetak','modifiedby','created_at','updated_at'],$models);
 
 
         return  $temp;         
@@ -191,7 +206,9 @@ class KasGantungHeader extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'penerima_id') {
+                        if ($filters['field'] == 'statuscetak') {
+                            $query = $query->where('parameter.text', '=', "$filters[data]");
+                        } else if ($filters['field'] == 'penerima_id') {
                             $query = $query->where('penerima.namapenerima', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'bank_id') {
                             $query = $query->where('bank.namabank', 'LIKE', "%$filters[data]%");
@@ -203,8 +220,10 @@ class KasGantungHeader extends MyModel
                     break;
                 case "OR":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'penerima_id') {
-                            $query = $query->orWhere('penerima.namapenerima', '=', "%$filters[data]%");
+                        if ($filters['field'] == 'statuscetak') {
+                            $query = $query->orWhere('parameter.text', '=', "$filters[data]");
+                        } else if ($filters['field'] == 'penerima_id') {
+                            $query = $query->orWhere('penerima.namapenerima', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'bank_id') {
                             $query = $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");
                         } else {

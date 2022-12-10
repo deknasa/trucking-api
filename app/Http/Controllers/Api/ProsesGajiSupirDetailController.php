@@ -73,8 +73,7 @@ class ProsesGajiSupirDetailController extends Controller
            
 
             return response([
-                'data' => $prosesgajisupirDetail,
-                'user' => $getuser,
+                'data' => $prosesgajisupirDetail
             ]);
         } catch (\Throwable $th) {
             return response([

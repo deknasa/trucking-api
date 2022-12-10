@@ -83,14 +83,8 @@ class HutangDetailController extends Controller
 
                 $hutangDetail = $query->get();
             }
-            $idUser = auth('api')->user()->id;
-            $getuser = User::select('name','cabang.namacabang as cabang_id')
-            ->where('user.id',$idUser)->join('cabang','user.cabang_id','cabang.id')->first();
-           
             return response([
-                'data' => $hutangDetail,
-                'user' => $getuser,
-                
+                'data' => $hutangDetail
             ]);
         } catch (\Throwable $th) {
             return response([

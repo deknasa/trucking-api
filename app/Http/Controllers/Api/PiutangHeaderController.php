@@ -23,6 +23,7 @@ use App\Models\JurnalUmumDetail;
 use App\Models\JurnalUmumHeader;
 use App\Http\Requests\StoreJurnalUmumHeaderRequest;
 use App\Http\Requests\StoreJurnalUmumDetailRequest;
+use App\Models\Parameter;
 use Illuminate\Database\QueryException;
 
 class PiutangHeaderController extends Controller
@@ -75,7 +76,8 @@ class PiutangHeaderController extends Controller
             if ($tanpaprosesnobukti == 1) {
                 $piutang->nobukti = $request->nobukti;
             }
-
+            
+            $statusCetak = Parameter::where('grp','STATUSCETAK')->where('text','BELUM CETAK')->first();
             $piutang->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $piutang->keterangan = $request->keterangan;
             $piutang->postingdari = $request->postingdari ?? 'ENTRY PIUTANG';
@@ -83,7 +85,7 @@ class PiutangHeaderController extends Controller
             $piutang->modifiedby = auth('api')->user()->name;
             $piutang->statusformat = $format->id ?? $request->statusformat;
             $piutang->agen_id = $request->agen_id;
-            $piutang->statuscetak = 0;
+            $piutang->statuscetak = $statusCetak->id;
             $piutang->userbukacetak = '';
             $piutang->tglbukacetak = '';            
             $piutang->nominal = ($tanpaprosesnobukti == 0) ? array_sum($request->nominal_detail) : $request->nominal;
@@ -530,6 +532,96 @@ class PiutangHeaderController extends Controller
         }
     }
 
+    public function printReport($id)
+    {
+        DB::beginTransaction();
+
+        try {
+            $piutang = PiutangHeader::lockForUpdate()->findOrFail($id);
+            $statusSudahCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
+            $statusBelumCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
+
+            if ($piutang->statuscetak != $statusSudahCetak->id) {
+                $piutang->statuscetak = $statusSudahCetak->id;
+                $piutang->tglbukacetak = date('Y-m-d H:i:s');
+                $piutang->userbukacetak = auth('api')->user()->name;
+
+                if ($piutang->save()) {
+                    $logTrail = [
+                        'namatabel' => strtoupper($piutang->getTable()),
+                        'postingdari' => 'PRINT PIUTANG HEADER',
+                        'idtrans' => $piutang->id,
+                        'nobuktitrans' => $piutang->nobukti,
+                        'aksi' => 'PRINT',
+                        'datajson' => $piutang->toArray(),
+                        'modifiedby' => $piutang->modifiedby
+                    ];
+    
+                    $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                    $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+    
+                    DB::commit();
+                }
+            }
+
+
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+        
+    }
+    
+    public function cekvalidasi($id)
+    {
+        $pengeluaran = PiutangHeader::find($id);
+        $status = $pengeluaran->statusapproval;
+        $statusApproval = Parameter::where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
+        $statusdatacetak = $pengeluaran->statuscetak;
+        $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
+
+        if ($status == $statusApproval->id) {
+            $query = DB::table('error')
+                ->select('keterangan')
+                ->where('kodeerror', '=', 'SAP')
+                ->get();
+            $keterangan = $query['0'];
+            $data = [
+                'message' => $keterangan,
+                'errors' => 'sudah approve',
+                'kodestatus' => '1',
+                'kodenobukti' => '1'
+            ];
+
+            return response($data);
+        } else if ($statusdatacetak == $statusCetak->id) {
+            $query = DB::table('error')
+                ->select('keterangan')
+                ->where('kodeerror', '=', 'SDC')
+                ->get();
+            $keterangan = $query['0'];
+            $data = [
+                'message' => $keterangan,
+                'errors' => 'sudah cetak',
+                'kodestatus' => '1',
+                'kodenobukti' => '1'
+            ];
+
+            return response($data);
+        } else {
+
+            $data = [
+                'message' => '',
+                'errors' => 'belum approve',
+                'kodestatus' => '0',
+                'kodenobukti' => '1'
+            ];
+
+            return response($data);
+        }
+    }
     public function fieldLength()
     {
         $data = [];
