@@ -29,7 +29,7 @@ class StatusContainer extends MyModel
             'statuscontainer.kodestatuscontainer',
             'statuscontainer.keterangan',
 
-            'parameter.text as statusaktif',
+            'parameter.memo as statusaktif',
 
             'statuscontainer.modifiedby',
             'statuscontainer.created_at',

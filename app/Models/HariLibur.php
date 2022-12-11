@@ -33,7 +33,7 @@ class HariLibur extends MyModel
                 "$this->table.id",
                 "$this->table.tgl",
                 "$this->table.keterangan",
-                "parameter.text as statusaktif",
+                "parameter.memo as statusaktif",
                 "$this->table.modifiedby",
                 "$this->table.created_at",
                 "$this->table.updated_at",

@@ -23,12 +23,23 @@ class Cabang extends MyModel
     public function get()
     {
         $this->setRequestParameters();
-        $query = DB::table($this->table);
+
+        $query = DB::table($this->table)->select(
+            'cabang.id',
+            'cabang.kodecabang',
+            'cabang.namacabang',
+            'parameter.memo as statusaktif',
+            'cabang.modifiedby',
+            'cabang.created_at',
+            'cabang.updated_at'
+        )
+            ->leftJoin('parameter', 'cabang.statusaktif', 'parameter.id');
+
+
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
-        $this->selectColumns($query);
         $this->sort($query);
         $this->filter($query);
         $this->paginate($query);
@@ -45,9 +56,9 @@ class Cabang extends MyModel
             "$this->table.kodecabang",
             "$this->table.namacabang",
             "parameter.text as statusaktif",
+            "$this->table.modifiedby",
             "$this->table.created_at",
             "$this->table.updated_at",
-            "$this->table.modifiedby",
         )->leftJoin('parameter', 'cabang.statusaktif', '=', 'parameter.id');
     }
 
@@ -62,9 +73,9 @@ class Cabang extends MyModel
             $table->string('grp', 500)->default('');
             $table->string('subgrp', 250)->default('');
             $table->string('statusaktif', 500)->default('');
+            $table->string('modifiedby', 50)->default('');
             $table->dateTime('created_at')->default('1900/1/1');
             $table->dateTime('updated_at')->default('1900/1/1');
-            $table->string('modifiedby', 50)->default('');
             $table->increments('position');
         });
 
@@ -78,9 +89,9 @@ class Cabang extends MyModel
             'grp',
             'subgrp',
             'statusaktif',
+            'modifiedby',
             'created_at',
-            'updated_at',
-            'modifiedby'
+            'updated_at'
         ], $models);
 
         return  $temp;

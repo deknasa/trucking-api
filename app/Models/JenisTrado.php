@@ -30,7 +30,7 @@ class JenisTrado extends MyModel
             'jenistrado.id',
             'jenistrado.kodejenistrado',
             'jenistrado.keterangan',
-            'parameter.text as statusaktif',
+            'parameter.memo as statusaktif',
             'jenistrado.modifiedby',
             'jenistrado.created_at',
             'jenistrado.updated_at'

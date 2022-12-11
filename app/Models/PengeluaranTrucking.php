@@ -28,12 +28,21 @@ class PengeluaranTrucking extends MyModel
     {
         $this->setRequestParameters();
 
-        $query = DB::table($this->table);
+        $query = DB::table($this->table)->select(
+            'pengeluarantrucking.id',
+            'pengeluarantrucking.kodepengeluaran',
+            'pengeluarantrucking.keterangan',
+            'pengeluarantrucking.coa',
+            'parameter.memo as statusformat',
+            'pengeluarantrucking.created_at',
+            'pengeluarantrucking.modifiedby',
+            'pengeluarantrucking.updated_at'
+        )
+            ->leftJoin('parameter', 'pengeluarantrucking.statusformat', 'parameter.id');
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
-        $this->selectColumns($query);
         $this->sort($query);
         $this->filter($query);
         $this->paginate($query);

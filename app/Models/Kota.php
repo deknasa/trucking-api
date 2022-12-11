@@ -32,7 +32,7 @@ class Kota extends MyModel
             'kota.kodekota',
             'kota.keterangan',
             'zona.zona as zona_id',
-            'parameter.text as statusaktif',
+            'parameter.memo as statusaktif',
             'kota.modifiedby',
             'kota.created_at',
             'kota.updated_at'

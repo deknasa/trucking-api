@@ -45,10 +45,10 @@ class UpahSupir extends MyModel
             'kotasampai.keterangan as kotasampai_id',
             'upahsupir.jarak',
             'zona.keterangan as zona_id',
-            'parameter.text as statusaktif',
+            'parameter.memo as statusaktif',
             'upahsupir.tglmulaiberlaku',
             'upahsupir.tglakhirberlaku',
-            'statusluarkota.text as statusluarkota',
+            'statusluarkota.memo as statusluarkota',
             'upahsupir.created_at',
             'upahsupir.modifiedby',
             'upahsupir.updated_at'

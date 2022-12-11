@@ -28,12 +28,21 @@ class PenerimaanTrucking extends MyModel
     {
         $this->setRequestParameters();
 
-        $query = DB::table($this->table);
+        $query = DB::table($this->table)->select(
+            'penerimaantrucking.id',
+            'penerimaantrucking.kodepenerimaan',
+            'penerimaantrucking.keterangan',
+            'penerimaantrucking.coa',
+            'parameter.memo as statusformat',
+            'penerimaantrucking.created_at',
+            'penerimaantrucking.modifiedby',
+            'penerimaantrucking.updated_at'
+        )
+            ->leftJoin('parameter', 'penerimaantrucking.statusformat', 'parameter.id');
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
-        $this->selectColumns($query);
         $this->sort($query);
         $this->filter($query);
         $this->paginate($query);

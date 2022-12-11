@@ -34,12 +34,36 @@ class Agen extends MyModel
     {
         $this->setRequestParameters();
 
-        $query = DB::table($this->table);
+        $query = DB::table($this->table)->select(
+            'agen.id',
+            'agen.kodeagen',
+            'agen.namaagen',
+            'agen.keterangan',
+            'parameter.memo as statusaktif',
+            'agen.namaperusahaan',
+            'agen.alamat',
+            'agen.notelp',
+            'agen.nohp',
+            'agen.contactperson',
+            'agen.top',
+            'statusapproval.memo as statusapproval',
+            'agen.userapproval',
+            'agen.tglapproval',
+            'statustas.memo as statustas',
+            'agen.jenisemkl',
+            'agen.created_at',
+            'agen.modifiedby',
+            'agen.updated_at'
+        )
+            ->leftJoin('parameter', 'agen.statusaktif', 'parameter.id')
+            ->leftJoin('parameter as statusapproval', 'agen.statusapproval', 'statusapproval.id')
+            ->leftJoin('parameter as statustas', 'agen.statustas', 'statustas.id');
+
+
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
-        $this->selectColumns($query);
         $this->sort($query);
         $this->filter($query);
         $this->paginate($query);

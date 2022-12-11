@@ -30,7 +30,7 @@ class Kerusakan extends MyModel
         $query = DB::table($this->table)->select(
             'kerusakan.id',
             'kerusakan.keterangan',
-            'parameter.text as statusaktif',
+            'parameter.memo as statusaktif',
             'kerusakan.modifiedby',
             'kerusakan.created_at',
             'kerusakan.updated_at'

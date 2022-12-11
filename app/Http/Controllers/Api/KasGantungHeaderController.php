@@ -90,7 +90,7 @@ class KasGantungHeaderController extends Controller
             $kasgantungHeader->tglkaskeluar = date('Y-m-d', strtotime($request->tglkaskeluar)) ?? '1900/1/1';
             $kasgantungHeader->modifiedby = auth('api')->user()->name;
             $kasgantungHeader->statusformat = $format->id ?? $request->statusformat;
-            $kasgantungHeader->statuscetak = $statusCetak->id;
+            $kasgantungHeader->statuscetak = $statusCetak->id ?? 0;
             $kasgantungHeader->userbukacetak = '';
             $kasgantungHeader->tglbukacetak = '';
 

@@ -19,7 +19,7 @@ class AbsenTrado extends MyModel
 
         $query = DB::table($this->table)->select(
             'absentrado.*',
-            'parameter.text as statusaktif',
+            'parameter.memo as statusaktif',
         )
             ->leftJoin('parameter', 'absentrado.statusaktif', '=', 'parameter.id');
 

@@ -31,7 +31,7 @@ class Mekanik extends MyModel
             'mekanik.id',
             'mekanik.namamekanik',
             'mekanik.keterangan',
-            'parameter.text as statusaktif',
+            'parameter.memo as statusaktif',
             'mekanik.modifiedby',
             'mekanik.created_at',
             'mekanik.updated_at'

@@ -31,7 +31,7 @@ class JenisEmkl extends MyModel
             'jenisemkl.id',
             'jenisemkl.kodejenisemkl',
             'jenisemkl.keterangan',
-            'parameter.text as statusaktif',
+            'parameter.memo as statusaktif',
             'jenisemkl.modifiedby',
             'jenisemkl.created_at',
             'jenisemkl.updated_at'

@@ -31,7 +31,7 @@ class JenisOrder extends MyModel
             'jenisorder.id',
             'jenisorder.kodejenisorder',
             'jenisorder.keterangan',
-            'parameter.text as statusaktif',
+            'parameter.memo as statusaktif',
             'jenisorder.modifiedby',
             'jenisorder.created_at',
             'jenisorder.updated_at'

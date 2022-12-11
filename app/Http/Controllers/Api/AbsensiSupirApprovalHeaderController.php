@@ -80,9 +80,11 @@ class AbsensiSupirApprovalHeaderController extends Controller
                 ->where('subgrp', $subgroup)
                 ->first();
 
+                
             $coakaskeluar = $coaaproval->text;
             $absensiSupirApprovalHeader = new AbsensiSupirApprovalHeader();
             $absensisupir = DB::table('absensisupirheader')->where('nobukti', $request->absensisupir)->first();
+            $statusCetak = Parameter::where('grp','STATUSCETAK')->where('text','BELUM CETAK')->first();
 
             /* Store header */
             $absensiSupirApprovalHeader->tglbukti =  date('Y-m-d', strtotime($request->tglbukti));
@@ -94,15 +96,18 @@ class AbsensiSupirApprovalHeaderController extends Controller
             $absensiSupirApprovalHeader->coakaskeluar = $coakaskeluar;
             $absensiSupirApprovalHeader->tglkaskeluar = $request->tglkaskeluar ?? '1900/1/1';
             $absensiSupirApprovalHeader->postingdari =  "ABSENSI SUPIR APPROVAL";
+            $absensiSupirApprovalHeader->statuscetak = $statusCetak->id ?? 0;
             $absensiSupirApprovalHeader->modifiedby =  auth('api')->user()->name;
             TOP:
             $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
             $absensiSupirApprovalHeader->nobukti = $nobukti;
 
             if ($absensiSupirApprovalHeader->save()) {
+
                 $bank = DB::table('bank')->where('coa', $coakaskeluar)->first();
                 // $kasgantung = DB::table('kasgantungheader')->where('nobukti', $request->kasgantung_nobukti)->first();
                 $kasgantung = KasGantungHeader::where('nobukti', $request->kasgantung_nobukti)->first();
+                // dd($kasgantung);
                 $kasgantungdetail = DB::table('kasgantungdetail')->where('nobukti', $request->kasgantung_nobukti)->get();
                 $details = [];
                 $total = 0;
@@ -111,6 +116,7 @@ class AbsensiSupirApprovalHeaderController extends Controller
                     $details['nominal'][] = $detail->nominal;
                     $total += $detail->nominal;
                 }
+                                               
 
                 $dataKasgantung = [
                     "tglbukti" => $kasgantung->tglbukti,
@@ -118,12 +124,12 @@ class AbsensiSupirApprovalHeaderController extends Controller
                     "bank_id" => $bank->id,
                     "penerima_id" => $kasgantung->penerima_id,
                     "coakaskeluar" => $coakaskeluar,
-                    "postingdari" => 'ENTRY ABSENSI SUPIR APPROVAL',
+                    "postingdari" => 'ENTRY ABSENSI SUsPIR APPROVAL',
                     "tglkaskeluar" => $request->tglbukti,
                     'keterangan_detail' => $details['keterangan'],
                     'nominal' => $details['nominal'],
                 ];
-
+                
                 $data = new StoreKasGantungHeaderRequest($dataKasgantung);
                 $kasgantungStore = app(KasGantungHeaderController::class)->update($data, $kasgantung);
                 $kasgantung = $kasgantungStore->original['data'];
@@ -132,6 +138,7 @@ class AbsensiSupirApprovalHeaderController extends Controller
                 $absensiSupirApprovalHeader->pengeluaran_nobukti = $kasgantung->pengeluaran_nobukti;
                 $absensiSupirApprovalHeader->tglkaskeluar = $kasgantung->tglkaskeluar;
                 $absensiSupirApprovalHeader->save();
+
 
 
                 $logTrail = [
@@ -581,6 +588,42 @@ class AbsensiSupirApprovalHeaderController extends Controller
             ]
         ]);
     }
+
+
+    public function cekvalidasi($id)
+    {
+        
+        $absensisupirapproval = AbsensiSupirApprovalHeader::find($id);
+        $statusdatacetak = $absensisupirapproval->statuscetak;
+        $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
+
+        if ($statusdatacetak == $statusCetak->id) {
+            $query = DB::table('error')
+                ->select('keterangan')
+                ->where('kodeerror', '=', 'SDC')
+                ->get();
+            $keterangan = $query['0'];
+            $data = [
+                'message' => $keterangan,
+                'errors' => 'sudah cetak',
+                'kodestatus' => '1',
+                'kodenobukti' => '1'
+            ];
+
+            return response($data);
+        } else {
+
+            $data = [
+                'message' => '',
+                'errors' => 'belum approve',
+                'kodestatus' => '0',
+                'kodenobukti' => '1'
+            ];
+
+            return response($data);
+        }
+    }
+
     public function getApproval($absensi)
     {
         $absensiSupirApprovalHeader = new AbsensiSupirApprovalHeader();

@@ -34,19 +34,24 @@ class AbsensiSupirApprovalHeader extends MyModel
             'absensisupirapprovalheader.tglbukti',
             'absensisupirapprovalheader.absensisupir_nobukti',
             'absensisupirapprovalheader.keterangan',
-            'statusapproval.singkatan as statusapproval_memo',
+            'statusapproval.memo as statusapproval',
             db::raw("(case when year(isnull(absensisupirapprovalheader.tglapproval,'1900/1/1'))=1900 then null else absensisupirapprovalheader.tglapproval end) as tglapproval"),
             'absensisupirapprovalheader.userapproval',
-            'statusformat.memo as statusformat_memo',
+            'statusformat.memo as statusformat',
             'absensisupirapprovalheader.pengeluaran_nobukti',
             'absensisupirapprovalheader.coakaskeluar',
             'absensisupirapprovalheader.postingdari',
             db::raw("(case when year(isnull(absensisupirapprovalheader.tglkaskeluar,'1900/1/1'))=1900 then null else absensisupirapprovalheader.tglkaskeluar end) as tglkaskeluar"),
+            'statuscetak.memo as statuscetak',
+            db::raw("(case when year(isnull(absensisupirapprovalheader.tglbukacetak,'1900/1/1'))=1900 then null else absensisupirapprovalheader.tglbukacetak end) as tglbukacetak"),
+            'absensisupirapprovalheader.userbukacetak',
+            'absensisupirapprovalheader.jumlahcetak',
             'absensisupirapprovalheader.modifiedby',
             'absensisupirapprovalheader.updated_at',
             'absensisupirapprovalheader.created_at',
         )
             ->leftJoin('parameter as statusapproval', 'absensisupirapprovalheader.statusapproval', 'statusapproval.id')
+            ->leftJoin('parameter as statuscetak', 'absensisupirapprovalheader.statuscetak', 'statuscetak.id')
             ->leftJoin('parameter as statusformat', 'absensisupirapprovalheader.statusformat', 'statusformat.id');
 
 
@@ -76,41 +81,30 @@ class AbsensiSupirApprovalHeader extends MyModel
             $table->date('tglbukti')->default('1900/1/1');
             $table->string('absensisupir_nobukti', 50)->default('');
             $table->longText('keterangan')->default('');
-            $table->integer('statusapproval')->length(11)->default(0);
+            $table->string('statusapproval',1000)->default('');
             $table->dateTime('tglapproval')->default('1900/1/1');
             $table->string('userapproval', 200)->default('');
-            $table->unsignedBigInteger('statusformat')->default(0);
+            $table->string('statusformat',1000)->default('');
             $table->string('pengeluaran_nobukti', 50)->default('');
             $table->string('coakaskeluar', 50)->default('');
             $table->string('postingdari', 50)->default('');
             $table->date('tglkaskeluar')->default('1900/1/1');
+            $table->string('statuscetak', 1000)->default('');
+            $table->string('userbukacetak', 50)->default('');
+            $table->date('tglbukacetak')->default('1900/1/1');
+            $table->integer('jumlahcetak')->Length(11)->default('0');
             $table->string('modifiedby', 1000)->default('');
             $table->dateTime('created_at')->default('1900/1/1');
             $table->dateTime('updated_at')->default('1900/1/1');
             $table->increments('position');
         });
+        
 
         $query = DB::table($modelTable);
-        $query = $query->select(
-            "$this->table.id",
-            "$this->table.nobukti",
-            "$this->table.tglbukti",
-            "$this->table.absensisupir_nobukti",
-            "$this->table.keterangan",
-            "$this->table.statusapproval",
-            "$this->table.tglapproval",
-            "$this->table.userapproval",
-            "$this->table.statusformat",
-            "$this->table.pengeluaran_nobukti",
-            "$this->table.coakaskeluar",
-            "$this->table.postingdari",
-            "$this->table.tglkaskeluar",
-            "$this->table.modifiedby"
-        );
+        $query = $this->selectColumns($query);
 
         $query = $this->sort($query);
         $models = $this->filter($query);
-
         DB::table($temp)->insertUsing([
             'id',
             'nobukti',
@@ -124,8 +118,13 @@ class AbsensiSupirApprovalHeader extends MyModel
             'pengeluaran_nobukti',
             'coakaskeluar',
             'postingdari',
-            'tglkaskeluar',
+            'tglkaskeluar', 
+            'statuscetak', 
+            'userbukacetak', 
+            'tglbukacetak', 
+            'jumlahcetak',
             'modifiedby',
+            'created_at','updated_at'
         ], $models);
 
         return $temp;
@@ -134,26 +133,34 @@ class AbsensiSupirApprovalHeader extends MyModel
     public function selectColumns($query)
     {
         return $query->select(
-            "$this->table.id",
-            "$this->table.nobukti",
-            "$this->table.tglbukti",
-            "$this->table.absensisupir_nobukti",
-            "$this->table.keterangan",
-            "$this->table.statusapproval",
-            "$this->table.pengeluaran_nobukti",
-            "$this->table.coakaskeluar",
-            "$this->table.postingdari",
-            "$this->table.tglkaskeluar",
-            "$this->table.tglapproval",
-            "$this->table.userapproval",
-            "$this->table.statusformat",
-            "$this->table.modifiedby",
-            "absensisupirheader.kasgantung_nobukti",
-
-            "statusapproval.memo as  statusapproval_memo",
-            "statusformat.memo as  statusformat_memo",
-        );
-    }
+            DB::raw(
+                "$this->table.id,
+                $this->table.nobukti,
+                $this->table.tglbukti,
+                $this->table.absensisupir_nobukti,
+                $this->table.keterangan,
+                'statusapproval.text as statusapproval',
+                $this->table.tglapproval,
+                $this->table.userapproval,
+                'statusformat.text as statusformat',
+                $this->table.pengeluaran_nobukti,
+                $this->table.coakaskeluar,
+                $this->table.postingdari,
+                $this->table.tglkaskeluar,
+                'statuscetak.text as statuscetak',
+                $this->table . userbukacetak,
+                $this->table . tglbukacetak,
+                $this->table . jumlahcetak,
+                $this->table.modifiedby,
+                $this->table.created_at,
+                $this->table.updated_at"
+            )
+        )
+        ->leftJoin('absensisupirheader', 'absensisupirapprovalheader.nobukti', 'absensisupirheader.nobukti')
+        ->leftJoin('parameter as statuscetak' , 'absensisupirapprovalheader.statuscetak', 'statuscetak.id')
+        ->leftJoin('parameter as statusapproval' , 'absensisupirapprovalheader.statusapproval', 'statusapproval.id')
+        ->leftJoin('parameter as statusformat' , 'absensisupirapprovalheader.statusformat', 'statusformat.id');
+   }
 
     public function getApproval($nobukti)
     {
@@ -215,7 +222,7 @@ class AbsensiSupirApprovalHeader extends MyModel
         return $query;
     }
 
-    public function find($id)
+    public function findAll($id)
     {
         $this->setRequestParameters();
 
@@ -224,6 +231,7 @@ class AbsensiSupirApprovalHeader extends MyModel
             ->leftJoin('pengeluaranheader', 'absensisupirapprovalheader.pengeluaran_nobukti', 'pengeluaranheader.nobukti')
             ->leftJoin('absensisupirheader', 'absensisupirapprovalheader.absensisupir_nobukti', 'absensisupirheader.nobukti')
             ->leftJoin('parameter as statusapproval', 'absensisupirapprovalheader.statusapproval', 'statusapproval.id')
+            ->leftJoin('parameter as statuscetak', 'absensisupirapprovalheader.statuscetak', 'statuscetak.id')
             ->leftJoin('parameter as statusformat', 'absensisupirapprovalheader.statusformat', 'statusformat.id');
         $data = $query->where("$this->table.id", $id)->first();
         return $data;

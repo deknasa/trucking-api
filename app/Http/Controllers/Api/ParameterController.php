@@ -384,7 +384,6 @@ class ParameterController extends Controller
 
     public function combolist(Request $request)
     {
-
         $params = [
             'status' => $request->status ?? '',
             'grp' => $request->grp ?? '',

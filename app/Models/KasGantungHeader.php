@@ -166,6 +166,7 @@ class KasGantungHeader extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
+        
         DB::table($temp)->insertUsing(['id','nobukti','tglbukti','penerima_id','keterangan','bank_id','pengeluaran_nobukti','coakaskeluar','tglkaskeluar','statuscetak','userbukacetak','tglbukacetak','jumlahcetak','modifiedby','created_at','updated_at'],$models);
 
 

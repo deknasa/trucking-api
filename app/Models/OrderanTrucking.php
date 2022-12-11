@@ -45,8 +45,8 @@ class OrderanTrucking extends MyModel
                 'orderantrucking.nojobemkl2',
                 'orderantrucking.nocont2',
                 'orderantrucking.noseal2',
-                'parameter.text as statuslangsir',
-                'param2.text as statusperalihan',
+                'parameter.memo as statuslangsir',
+                'param2.memo as statusperalihan',
                 'orderantrucking.modifiedby',
                 'orderantrucking.created_at',
                 'orderantrucking.updated_at'

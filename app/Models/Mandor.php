@@ -26,7 +26,7 @@ class Mandor extends MyModel
             'mandor.id',
             'mandor.namamandor',
             'mandor.keterangan',
-            'parameter.text as statusaktif',
+            'parameter.memo as statusaktif',
             'mandor.modifiedby',
             'mandor.created_at',
             'mandor.updated_at'

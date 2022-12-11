@@ -188,6 +188,7 @@ use App\Http\Controllers\Api\BankPelangganController;
         Route::get('absensisupirapprovalheader/export', [AbsensiSupirApprovalHeaderController::class, 'export']);
         Route::get('absensisupirapprovalheader/{absensi}/getabsensi', [AbsensiSupirApprovalHeaderController::class, 'getAbsensi']);
         Route::get('absensisupirapprovalheader/{absensi}/getapproval', [AbsensiSupirApprovalHeaderController::class, 'getApproval']);
+        Route::post('absensisupirapprovalheader/{id}/cekvalidasi', [AbsensiSupirApprovalHeaderController::class, 'cekvalidasi'])->name('absensisupirapprovalheader.cekvalidasi');
         Route::post('absensisupirapprovalheader/{id}/approval', [AbsensiSupirApprovalHeaderController::class,'approval']);
         Route::apiResource('absensisupirapprovalheader', AbsensiSupirApprovalHeaderController::class);
         Route::apiResource('absensisupirapprovaldetail', AbsensiSupirApprovalDetailController::class);

@@ -32,7 +32,7 @@ class Container extends MyModel
             'container.id',
             'container.kodecontainer',
             'container.keterangan',
-            'parameter.text as statusaktif',
+            'parameter.memo as statusaktif',
             'container.modifiedby',
             'container.created_at',
             'container.updated_at'
