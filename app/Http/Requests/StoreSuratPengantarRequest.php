@@ -47,14 +47,14 @@ class StoreSuratPengantarRequest extends FormRequest
             // 'statusritasiomset' => 'required',
             'cabang_id' => 'required',
             'statustrip' => 'required',
-            'qtyton' => 'required|numeric|gt:0',
-            'totalton' => 'required|numeric|gt:0',
+            // 'qtyton' => 'required|numeric|gt:0',
+            // 'totalton' => 'required|numeric|gt:0',
             'statusnotif' => 'required',
             'statusoneway' => 'required',
             'statusedittujuan' => 'required',
-            'tgldoor' => 'required',
-            'upahbongkardepo' => 'required|numeric|gt:0',
-            'upahmuatdepo' => 'required|numeric|gt:0',
+            // 'tgldoor' => 'required',
+            // 'upahbongkardepo' => 'required|numeric|gt:0',
+            // 'upahmuatdepo' => 'required|numeric|gt:0',
 
         ];
     }
