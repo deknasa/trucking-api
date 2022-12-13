@@ -237,6 +237,8 @@ class PenerimaanHeader extends MyModel
             $this->table.tglapproval,
             $this->table.noresi,
             statusberkas.text as statusberkas,
+            cetak.text as statuscetak_text,
+            $this->table.statuscetak,
             $this->table.userberkas,
             $this->table.tglberkas,
             statuscetak.text as statuscetak,
@@ -249,6 +251,7 @@ class PenerimaanHeader extends MyModel
             )
         )
             ->leftJoin('pelanggan', 'penerimaanheader.pelanggan_id', 'pelanggan.id')
+            ->leftJoin('parameter as cetak','penerimaanheader.statuscetak','cetak.id')
             ->leftJoin('bank', 'penerimaanheader.bank_id', 'bank.id')
             ->leftJoin('cabang', 'penerimaanheader.cabang_id', 'cabang.id')
             ->leftJoin('parameter as statuskas', 'penerimaanheader.statuskas', 'statuskas.id')
@@ -369,6 +372,12 @@ class PenerimaanHeader extends MyModel
             $query->where('penerimaanheader.statusapproval', '<>', request()->approve)
                 ->whereYear('penerimaanheader.tglbukti', '=', request()->year)
                 ->whereMonth('penerimaanheader.tglbukti', '=', request()->month);
+            return $query;
+        }
+        if (request()->cetak && request()->periode) {
+            $query->where('penerimaanheader.statuscetak','<>', request()->cetak)
+                  ->whereYear('penerimaanheader.tglbukti','=', request()->year)
+                  ->whereMonth('penerimaanheader.tglbukti','=', request()->month);
             return $query;
         }
         return $query;

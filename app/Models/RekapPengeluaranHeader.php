@@ -31,6 +31,8 @@ class RekapPengeluaranHeader extends MyModel
         $query = DB::table($this->table);
         $query = $this->selectColumns($query)
         ->leftJoin('parameter as statusapproval','rekappengeluaranheader.statusapproval','statusapproval.id')
+        ->leftJoin('parameter as statuscetak','rekappengeluaranheader.statuscetak','statuscetak.id')
+
         ->leftJoin('bank','rekappengeluaranheader.bank_id','bank.id');
 
         $this->totalRows = $query->count();
@@ -101,7 +103,12 @@ class RekapPengeluaranHeader extends MyModel
             $this->totalRows = $query->count();
             $this->totalPages = $this->params['limit'] > 0 ? ceil($this->totalRows / $this->params['limit']) : 1;
         }
-
+        if (request()->cetak && request()->periode) {
+            $query->where('rekappengeluaranheader.statuscetak','<>', request()->cetak)
+                  ->whereYear('rekappengeluaranheader.tglbukti','=', request()->year)
+                  ->whereMonth('rekappengeluaranheader.tglbukti','=', request()->month);
+            return $query;
+        }
         return $query;
     }
 
@@ -178,6 +185,7 @@ class RekapPengeluaranHeader extends MyModel
             "$this->table.modifiedby",
             "bank.namabank as bank",
             "statusapproval.memo as  statusapproval_memo",
+            "statuscetak.memo as  statuscetak",
 
         );
     }
@@ -205,6 +213,7 @@ class RekapPengeluaranHeader extends MyModel
         $query = DB::table($this->table);
         $query = $this->selectColumns($query)
         ->leftJoin('parameter as statusapproval','rekappengeluaranheader.statusapproval','statusapproval.id')
+        ->leftJoin('parameter as statuscetak','rekappengeluaranheader.statuscetak','statuscetak.id')
         ->leftJoin('bank','rekappengeluaranheader.bank_id','bank.id');
 
         $data = $query->where("$this->table.id",$id)->first();

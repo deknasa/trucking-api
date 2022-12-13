@@ -279,6 +279,12 @@ class InvoiceHeader extends MyModel
                   ->whereMonth('invoiceheader.tglbukti','=', request()->month);
             return $query;
         }
+        if (request()->cetak && request()->periode) {
+            $query->where('invoiceheader.statuscetak','<>', request()->cetak)
+                  ->whereYear('invoiceheader.tglbukti','=', request()->year)
+                  ->whereMonth('invoiceheader.tglbukti','=', request()->month);
+            return $query;
+        }
         return $query;
     }
 

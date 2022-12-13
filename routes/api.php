@@ -9,6 +9,7 @@
     
     use App\Http\Controllers\Api\ApprovalTransaksiHeaderController;
     use App\Http\Controllers\Api\ApprovalInvoiceHeaderController;
+    use App\Http\Controllers\Api\ApprovalBukaCetakController;
     
     use App\Http\Controllers\Api\AbsenTradoController;
     use App\Http\Controllers\Api\CabangController;
@@ -179,8 +180,11 @@ use App\Http\Controllers\Api\BankPelangganController;
         Route::apiResource('approvaltransaksiheader', ApprovalTransaksiHeaderController::class);
         
         Route::get('approvalinvoiceheader/combo', [ApprovalInvoiceHeaderController::class, 'combo']);
-        Route::apiResource('approvalinvoiceheader', ApprovalInvoiceHeaderController::class);
-
+        Route::resource('approvalinvoiceheader', ApprovalInvoiceHeaderController::class);
+        Route::resource('approvalinvoiceheader', ApprovalBukaCetakController::class);
+        
+        Route::get('approvalbukacetak/combo', [ApprovalBukaCetakController::class, 'combo']);
+        Route::resource('approvalbukacetak', ApprovalBukaCetakController::class);
         
         Route::get('absensisupirapprovalheader/running_number', [AbsensiSupirApprovalHeaderController::class, 'getRunningNumber']);
         Route::get('absensisupirapprovalheader/grid', [AbsensiSupirApprovalHeaderController::class, 'grid']);

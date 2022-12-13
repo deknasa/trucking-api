@@ -246,7 +246,12 @@ class KasGantungHeader extends MyModel
             $this->totalRows = $query->count();
             $this->totalPages = $this->params['limit'] > 0 ? ceil($this->totalRows / $this->params['limit']) : 1;
         }
-
+        if (request()->cetak && request()->periode) {
+            $query->where('kasgantungheader.statuscetak','<>', request()->cetak)
+                  ->whereYear('kasgantungheader.tglbukti','=', request()->year)
+                  ->whereMonth('kasgantungheader.tglbukti','=', request()->month);
+            return $query;
+        }
         return $query;
     }
 

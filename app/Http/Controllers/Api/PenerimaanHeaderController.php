@@ -591,6 +591,95 @@ class PenerimaanHeaderController extends Controller
     }
 
 
+
+    public function approval($id)
+    {
+        DB::beginTransaction();
+
+        try {
+            $penerimaanHeader = PenerimaanHeader::find($id);
+            $statusApproval = Parameter::where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
+            $statusNonApproval = Parameter::where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
+
+            if ($penerimaanHeader->statusapproval == $statusApproval->id) {
+                $penerimaanHeader->statusapproval = $statusNonApproval->id;
+            } else {
+                $penerimaanHeader->statusapproval = $statusApproval->id;
+            }
+
+            $penerimaanHeader->tglapproval = date('Y-m-d', time());
+            $penerimaanHeader->userapproval = auth('api')->user()->name;
+
+            if ($penerimaanHeader->save()) {
+                $logTrail = [
+                    'namatabel' => strtoupper($penerimaanHeader->getTable()),
+                    'postingdari' => 'UN/APPROVE PENERIMAANHEADER',
+                    'idtrans' => $penerimaanHeader->id,
+                    'nobuktitrans' => $penerimaanHeader->id,
+                    'aksi' => 'UN/APPROVE',
+                    'datajson' => $penerimaanHeader->toArray(),
+                    'modifiedby' => $penerimaanHeader->modifiedby
+                ];
+
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+
+                DB::commit();
+            }
+
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
+    public function bukaCetak($id)
+    {
+        DB::beginTransaction();
+
+        try {
+            $penerimaanHeader = PenerimaanHeader::find($id);
+            $statusCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
+            $statusBelumCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
+
+            if ($penerimaanHeader->statuscetak == $statusCetak->id) {
+                $penerimaanHeader->statuscetak = $statusBelumCetak->id;
+            } else {
+                $penerimaanHeader->statuscetak = $statusCetak->id;
+            }
+
+            $penerimaanHeader->tglbukacetak = date('Y-m-d', time());
+            $penerimaanHeader->userbukacetak = auth('api')->user()->name;
+
+            if ($penerimaanHeader->save()) {
+                $logTrail = [
+                    'namatabel' => strtoupper($penerimaanHeader->getTable()),
+                    'postingdari' => 'BUKA/BELUM CETAK PENERIMAANHEADER',
+                    'idtrans' => $penerimaanHeader->id,
+                    'nobuktitrans' => $penerimaanHeader->id,
+                    'aksi' => 'BUKA/BELUM CETAK',
+                    'datajson' => $penerimaanHeader->toArray(),
+                    'modifiedby' => $penerimaanHeader->modifiedby
+                ];
+
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+
+                DB::commit();
+            }
+
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
+
+
     public function tarikPelunasan($id)
     {
         $penerimaan = new PenerimaanHeader();

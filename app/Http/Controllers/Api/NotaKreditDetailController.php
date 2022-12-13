@@ -123,8 +123,9 @@ class NotaKreditDetailController extends Controller
             $notaKreditDetail->coaadjust = $request->coaadjust;
             $notaKreditDetail->modifiedby = $request->modifiedby;
             
-            DB::commit();
+            
             if ($notaKreditDetail->save()) {
+                DB::commit();
                 return [
                     'error' => false,
                     'id' => $notaKreditDetail->id,

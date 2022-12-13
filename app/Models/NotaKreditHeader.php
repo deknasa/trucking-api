@@ -30,6 +30,7 @@ class NotaKreditHeader extends MyModel
 
         $query = DB::table($this->table);
         $query = $this->selectColumns($query)
+        ->leftJoin('parameter as statuscetak','notakreditheader.statuscetak','statuscetak.id')
         ->leftJoin('pelunasanpiutangheader as pelunasanpiutang','notakreditheader.pelunasanpiutang_nobukti','pelunasanpiutang.nobukti')
         ->leftJoin('parameter','notakreditheader.statusapproval','parameter.id');
 
@@ -122,6 +123,7 @@ class NotaKreditHeader extends MyModel
             "$this->table.statusformat",
             "$this->table.modifiedby",
             "parameter.memo as  statusapproval_memo",
+            "statuscetak.memo as  statuscetak",
         );
     }
 
@@ -220,6 +222,12 @@ class NotaKreditHeader extends MyModel
             $this->totalRows = $query->count();
             $this->totalPages = $this->params['limit'] > 0 ? ceil($this->totalRows / $this->params['limit']) : 1;
         }
+        if (request()->cetak && request()->periode) {
+            $query->where('notakreditheader.statuscetak','<>', request()->cetak)
+                  ->whereYear('notakreditheader.tglbukti','=', request()->year)
+                  ->whereMonth('notakreditheader.tglbukti','=', request()->month);
+            return $query;
+        }
 
         return $query;
     }
@@ -230,6 +238,7 @@ class NotaKreditHeader extends MyModel
         $query = DB::table($this->table);
         $query = $this->selectColumns($query)
         ->leftJoin('parameter','notakreditheader.statusapproval','parameter.id')
+        ->leftJoin('parameter as statuscetak','notakreditheader.statuscetak','statuscetak.id')
         ->leftJoin('pelunasanpiutangheader as pelunasanpiutang','notakreditheader.pelunasanpiutang_nobukti','pelunasanpiutang.nobukti');
  
         $data = $query->where("$this->table.id",$id)->first();

@@ -40,6 +40,7 @@ class GajiSupirHeader extends MyModel
             'gajisupirheader.tglsampai',
             'gajisupirheader.total',
             'parameter.memo as statuscetak',
+            "parameter.text as statuscetak_text",
             'gajisupirheader.userbukacetak',
             'gajisupirheader.jumlahcetak',
             DB::raw('(case when (year(gajisupirheader.tglbukacetak) <= 2000) then null else gajisupirheader.tglbukacetak end ) as tglbukacetak'),
@@ -228,7 +229,12 @@ class GajiSupirHeader extends MyModel
             $this->totalRows = $query->count();
             $this->totalPages = $this->params['limit'] > 0 ? ceil($this->totalRows / $this->params['limit']) : 1;
         }
-
+        if (request()->cetak && request()->periode) {
+            $query->where('gajisupirheader.statuscetak','<>', request()->cetak)
+                  ->whereYear('gajisupirheader.tglbukti','=', request()->year)
+                  ->whereMonth('gajisupirheader.tglbukti','=', request()->month);
+            return $query;
+        }
         return $query;
     }
 

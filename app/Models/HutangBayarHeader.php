@@ -121,7 +121,7 @@ class HutangBayarHeader extends MyModel
                 'statusapproval.text as statusapproval',
                 $this->table.userapproval,
                 $this->table.tglapproval,
-                'statuscetak.text as statuscetak',
+                'statuscetak.momo as statuscetak',
                 $this->table.userbukacetak,
                 $this->table.tglbukacetak,
                 $this->table.jumlahcetak,
@@ -312,7 +312,12 @@ class HutangBayarHeader extends MyModel
             $this->totalRows = $query->count();
             $this->totalPages = $this->params['limit'] > 0 ? ceil($this->totalRows / $this->params['limit']) : 1;
         }
-
+        if (request()->cetak && request()->periode) {
+            $query->where('hutangbayarheader.statuscetak','<>', request()->cetak)
+                  ->whereYear('hutangbayarheader.tglbukti','=', request()->year)
+                  ->whereMonth('hutangbayarheader.tglbukti','=', request()->month);
+            return $query;
+        }
         return $query;
     }
 

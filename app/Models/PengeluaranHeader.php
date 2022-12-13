@@ -251,6 +251,12 @@ class PengeluaranHeader extends MyModel
                       ->whereMonth('pengeluaranheader.tglbukti','=', request()->month);
                 return $query;
             }
+            if (request()->cetak && request()->periode) {
+                $query->where('pengeluaranheader.statuscetak','<>', request()->cetak)
+                      ->whereYear('pengeluaranheader.tglbukti','=', request()->year)
+                      ->whereMonth('pengeluaranheader.tglbukti','=', request()->month);
+                return $query;
+            }
 
             return $query;
         }
