@@ -14,6 +14,9 @@ use App\Http\Requests\StoreApprovalBukuCetakHeaderRequest;
 
 class ApprovalBukaCetakController extends Controller
 {
+    /**
+     * @ClassName 
+     */
     public function index(Request $request)
     {
         
@@ -39,6 +42,9 @@ class ApprovalBukaCetakController extends Controller
         }
     }
 
+    /**
+     * @ClassName 
+     */
     public function store(StoreApprovalBukuCetakHeaderRequest $request)
     {
         if ($request->table && $request->cetak){
