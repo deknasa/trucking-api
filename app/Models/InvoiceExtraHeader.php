@@ -31,6 +31,7 @@ class InvoiceExtraHeader extends MyModel
         $query = DB::table($this->table); 
         $query = $this->selectColumns($query)
         ->leftJoin('parameter','invoiceextraheader.statusapproval','parameter.id')
+        ->leftJoin('parameter as cetak','invoiceextraheader.statuscetak','cetak.id')
         ->leftJoin('pelanggan','invoiceextraheader.pelanggan_id','pelanggan.id')
         ->leftJoin('agen','invoiceextraheader.agen_id','agen.id')
         ->leftJoin('parameter as statusformat','invoiceextraheader.statusformat','statusformat.id');
@@ -121,7 +122,7 @@ class InvoiceExtraHeader extends MyModel
             "$this->table.userapproval",
             "$this->table.tglapproval",
             "$this->table.statusformat",
-            "$this->table.statuscetak",
+            "cetak.memo as statuscetak",
             "$this->table.modifiedby",
             "statusformat.memo as  statusformat_memo",
             "pelanggan.namapelanggan as  pelanggan",
@@ -161,6 +162,12 @@ class InvoiceExtraHeader extends MyModel
                   ->whereMonth('invoiceextraheader.tglbukti','=', request()->month);
             return $query;
         }
+        if (request()->cetak && request()->periode) {
+            $query->where('invoiceextraheader.statuscetak','<>', request()->cetak)
+                  ->whereYear('invoiceextraheader.tglbukti','=', request()->year)
+                  ->whereMonth('invoiceextraheader.tglbukti','=', request()->month);
+            return $query;
+        }
         return $query;
     }
 
@@ -172,6 +179,7 @@ class InvoiceExtraHeader extends MyModel
         $query = $this->selectColumns($query)
         ->leftJoin('parameter','invoiceextraheader.statusapproval','parameter.id')
         ->leftJoin('pelanggan','invoiceextraheader.pelanggan_id','pelanggan.id')
+        ->leftJoin('parameter as cetak','invoiceextraheader.statuscetak','cetak.id')
         ->leftJoin('agen','invoiceextraheader.agen_id','agen.id')
         ->leftJoin('parameter as statusformat','invoiceextraheader.statusformat','statusformat.id');
         $data = $query->where("$this->table.id",$id)->first();

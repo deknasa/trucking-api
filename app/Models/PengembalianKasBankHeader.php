@@ -44,6 +44,7 @@ class PengembalianKasBankHeader extends MyModel
             
             'statusjenistransaksi.text as statusjenistransaksi',
             'statusapproval.text as statusapproval',
+            'statuscetak.memo as statuscetak',
             'pengembaliankasbankheader.tglapproval',
             'pengembaliankasbankheader.userapproval',
             'pengembaliankasbankheader.transferkeac',
@@ -58,6 +59,7 @@ class PengembalianKasBankHeader extends MyModel
         ->leftJoin('cabang', 'pengembaliankasbankheader.cabang_id', 'cabang.id')
         ->leftJoin('bank', 'pengembaliankasbankheader.bank_id', 'bank.id')
         ->leftJoin('parameter as statusapproval' , 'pengembaliankasbankheader.statusapproval', 'statusapproval.id')
+        ->leftJoin('parameter as statuscetak' , 'pengembaliankasbankheader.statuscetak', 'statuscetak.id')
         ->leftJoin('parameter as statusjenistransaksi' , 'pengembaliankasbankheader.statusjenistransaksi', 'statusjenistransaksi.id');
 
         $this->totalRows = $query->count();
@@ -128,6 +130,7 @@ class PengembalianKasBankHeader extends MyModel
                  'bank.namabank as bank_id',
                  'statusjenistransaksi.text as statusjenistransaksi',
                  'statusapproval.text as statusapproval',
+                 'statuscetak.memo as statuscetak',
                  $this->table.transferkeac,
                  $this->table.transferkean,
                  $this->table.transferkebank,
@@ -140,6 +143,7 @@ class PengembalianKasBankHeader extends MyModel
         ->leftJoin('cabang', 'pengembaliankasbankheader.cabang_id', 'cabang.id')
         ->leftJoin('bank', 'pengembaliankasbankheader.bank_id', 'bank.id')
         ->leftJoin('parameter as statusapproval' , 'pengembaliankasbankheader.statusapproval', 'statusapproval.id')
+        ->leftJoin('parameter as statuscetak' , 'pengembaliankasbankheader.statuscetak', 'statuscetak.id')
         ->leftJoin('parameter as statusjenistransaksi' , 'pengembaliankasbankheader.statusjenistransaksi', 'statusjenistransaksi.id');
 
     }
@@ -229,7 +233,12 @@ class PengembalianKasBankHeader extends MyModel
                 $this->totalRows = $query->count();
                 $this->totalPages = $this->params['limit'] > 0 ? ceil($this->totalRows / $this->params['limit']) : 1;
             }
-    
+            if (request()->cetak && request()->periode) {
+                $query->where('pengembaliankasbankheader.statuscetak','<>', request()->cetak)
+                      ->whereYear('pengembaliankasbankheader.tglbukti','=', request()->year)
+                      ->whereMonth('pengembaliankasbankheader.tglbukti','=', request()->month);
+                return $query;
+            }
             return $query;
         }
     

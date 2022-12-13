@@ -492,14 +492,57 @@ class InvoiceExtraHeaderController extends Controller
         }
     }
 
+    public function bukaCetak($id)
+    {
+        DB::beginTransaction();
+
+        try {
+            $invoiceExtraHeader = InvoiceExtraHeader::findOrFail($id);
+            $statusCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
+            $statusBelumCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
+
+            if ($invoiceExtraHeader->statuscetak == $statusCetak->id) {
+                $invoiceExtraHeader->statuscetak = $statusBelumCetak->id;
+            } else {
+                $invoiceExtraHeader->statuscetak = $statusCetak->id;
+            }
+
+            $invoiceExtraHeader->tglbukacetak = date('Y-m-d', time());
+            $invoiceExtraHeader->userbukacetak = auth('api')->user()->name;
+
+            if ($invoiceExtraHeader->save()) {
+                $logTrail = [
+                    'namatabel' => strtoupper($invoiceExtraHeader->getTable()),
+                    'postingdari' => 'BUKA/BELUM CETAK Invoice Extra Header',
+                    'idtrans' => $invoiceExtraHeader->id,
+                    'nobuktitrans' => $invoiceExtraHeader->id,
+                    'aksi' => 'BUKA/BELUM CETAK',
+                    'datajson' => $invoiceExtraHeader->toArray(),
+                    'modifiedby' => $invoiceExtraHeader->modifiedby
+                ];
+
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+
+                DB::commit();
+            }
+
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
     public function printReport($id)
     {
         DB::beginTransaction();
 
         try {
             $invoiceExtra = InvoiceExtraHeader::findOrFail($id);
-            $statusSudahCetak = Parameter::where('grp', '=', 'STATUS CETAK')->where('text', '=', 'SUDAH CETAK')->first();
-            $statusBelumCetak = Parameter::where('grp', '=', 'STATUS CETAK')->where('text', '=', 'BELUM CETAK')->first();
+            $statusSudahCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
+            $statusBelumCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
 
             if ($invoiceExtra->statuscetak != $statusSudahCetak->id) {
                 $invoiceExtra->statuscetak = $statusSudahCetak->id;

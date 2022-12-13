@@ -32,7 +32,8 @@ class PenerimaanStokHeader extends MyModel
         ->leftJoin('gudang as gudangs','penerimaanstokheader.gudang_id','gudangs.id')
         ->leftJoin('gudang as dari','penerimaanstokheader.gudangdari_id','dari.id')
         ->leftJoin('gudang as ke','penerimaanstokheader.gudangke_id','ke.id')
-        
+        ->leftJoin('parameter as statuscetak','penerimaanstokheader.statuscetak','statuscetak.id')
+
         ->leftJoin('penerimaanstok','penerimaanstokheader.penerimaanstok_id','penerimaanstok.id')
         ->leftJoin('trado','penerimaanstokheader.trado_id','trado.id')
         ->leftJoin('supplier','penerimaanstokheader.supplier_id','supplier.id');
@@ -76,6 +77,7 @@ class PenerimaanStokHeader extends MyModel
             "penerimaanstokheader.penerimaanstok_id",
             "penerimaanstokheader.trado_id",
             "penerimaanstokheader.supplier_id",
+            "statuscetak.memo as  statuscetak",
         );
     }
 
@@ -241,7 +243,12 @@ class PenerimaanStokHeader extends MyModel
             $this->totalRows = $query->count();
             $this->totalPages = $this->params['limit'] > 0 ? ceil($this->totalRows / $this->params['limit']) : 1;
         }
-
+        if (request()->cetak && request()->periode) {
+            $query->where('penerimaanstokheader.statuscetak','<>', request()->cetak)
+                  ->whereYear('penerimaanstokheader.tglbukti','=', request()->year)
+                  ->whereMonth('penerimaanstokheader.tglbukti','=', request()->month);
+            return $query;
+        }
         return $query;
     }
 
@@ -254,7 +261,8 @@ class PenerimaanStokHeader extends MyModel
         ->leftJoin('gudang as gudangs','penerimaanstokheader.gudang_id','gudangs.id')
         ->leftJoin('gudang as dari','penerimaanstokheader.gudangdari_id','dari.id')
         ->leftJoin('gudang as ke','penerimaanstokheader.gudangke_id','ke.id')
-        
+        ->leftJoin('parameter as statuscetak','penerimaanstokheader.statuscetak','statuscetak.id')
+
         ->leftJoin('penerimaanstok','penerimaanstokheader.penerimaanstok_id','penerimaanstok.id')
         ->leftJoin('trado','penerimaanstokheader.trado_id','trado.id')
         ->leftJoin('supplier','penerimaanstokheader.supplier_id','supplier.id');

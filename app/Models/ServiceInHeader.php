@@ -36,6 +36,7 @@ class ServiceInHeader extends MyModel
             'serviceinheader.tglbukti',
 
             'trado.keterangan as trado_id',
+            'statuscetak.memo as statuscetak',
 
             'serviceinheader.tglmasuk',
             'serviceinheader.keterangan',
@@ -44,6 +45,7 @@ class ServiceInHeader extends MyModel
             'serviceinheader.updated_at'
 
         )
+        ->leftJoin('parameter as statuscetak' , 'serviceinheader.statuscetak', 'statuscetak.id')
         ->leftJoin('trado', 'serviceinheader.trado_id', 'trado.id');
 
         $this->totalRows = $query->count();
@@ -66,6 +68,7 @@ class ServiceInHeader extends MyModel
             'serviceinheader.nobukti',
             'serviceinheader.tglbukti',
             'serviceinheader.trado_id',
+            'statuscetak.memo as statuscetak',
 
             'trado.keterangan as trado',
 
@@ -76,6 +79,7 @@ class ServiceInHeader extends MyModel
             'serviceinheader.updated_at'
 
         )
+        ->leftJoin('parameter as statuscetak' , 'serviceinheader.statuscetak', 'statuscetak.id')
         ->leftJoin('trado', 'serviceinheader.trado_id', 'trado.id')
         ->where('serviceinheader.id', $id);
 
@@ -95,6 +99,7 @@ class ServiceInHeader extends MyModel
             'trado.keterangan as trado_id',
             $this->table.tglmasuk,
             $this->table.keterangan,
+            'statuscetak.memo as statuscetak',
 
             $this->table.modifiedby,
             $this->table.created_at,
@@ -102,6 +107,7 @@ class ServiceInHeader extends MyModel
             )
             
         )
+        ->leftJoin('parameter as statuscetak' , 'serviceinheader.statuscetak', 'statuscetak.id')
         ->leftJoin('trado', 'serviceinheader.trado_id', 'trado.id');
 
     }
@@ -116,6 +122,7 @@ class ServiceInHeader extends MyModel
             $table->string('trado_id')->default('0');
             $table->date('tglmasuk')->default('1900/1/1');
             $table->longText('keterangan')->default('');
+            $table->string('statuscetak',1000)->default('');
 
             $table->string('modifiedby', 50)->default('');
             $table->dateTime('created_at')->default('1900/1/1');
@@ -171,7 +178,12 @@ class ServiceInHeader extends MyModel
             $this->totalRows = $query->count();
             $this->totalPages = $this->params['limit'] > 0 ? ceil($this->totalRows / $this->params['limit']) : 1;
         }
-
+        if (request()->cetak && request()->periode) {
+            $query->where('serviceinheader.statuscetak','<>', request()->cetak)
+                  ->whereYear('serviceinheader.tglbukti','=', request()->year)
+                  ->whereMonth('serviceinheader.tglbukti','=', request()->month);
+            return $query;
+        }
         return $query;
     }
 

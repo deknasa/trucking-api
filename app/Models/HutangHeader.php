@@ -239,7 +239,12 @@ class HutangHeader extends MyModel
             $this->totalRows = $query->count();
             $this->totalPages = $this->params['limit'] > 0 ? ceil($this->totalRows / $this->params['limit']) : 1;
         }
-
+        if (request()->cetak && request()->periode) {
+            $query->where('hutangheader.statuscetak','<>', request()->cetak)
+                  ->whereYear('hutangheader.tglbukti','=', request()->year)
+                  ->whereMonth('hutangheader.tglbukti','=', request()->month);
+            return $query;
+        }
         return $query;
     }
 

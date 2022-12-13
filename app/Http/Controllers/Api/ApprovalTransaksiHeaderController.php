@@ -26,35 +26,28 @@ class ApprovalTransaksiHeaderController extends Controller
         
         if ($request->transaksi == 'PENERIMAAN BANK' && $request->approve){
             $penerimaan = new PenerimaanHeader();
-
-            return response([
-                'data' => $penerimaan->get(),
-                'attributes' => [
-                    'totalRows' => $penerimaan->totalRows,
-                    'totalPages' => $penerimaan->totalPages
-                ]
-            ]);
+            $data = $penerimaan->get();
+            $totalRows = $penerimaan->totalRows;
+            $totalPages = $penerimaan->totalPages;
         } else if ($request->transaksi == 'PENGELUARAN BANK' && $request->approve){
             $pengeluaran = new PengeluaranHeader();
-
-            return response([
-                'data' => $pengeluaran->get(),
-                'attributes' => [
-                    'totalRows' => $pengeluaran->totalRows,
-                    'totalPages' => $pengeluaran->totalPages
-                ]
-            ]);
+            $data = $pengeluaran->get();
+            $totalRows = $pengeluaran->totalRows;
+            $totalPages = $pengeluaran->totalPages;
         } else{
-            return response([
-                'data' => [],
-                'attributes' => [
-                    'totalRows' => 0,
-                    'totalPages' => 0,
-                ]
-            ]);
+            $data = [];
+            $totalRows = 0;
+            $totalPages = 0;
         }
-        
-       
+         
+        return response([
+            'data' => $data,
+            'attributes' => [
+                'totalRows' => $totalRows,
+                'totalPages' => $totalPages
+            ]
+        ]);
+            
     }
     /**
      * @ClassName 

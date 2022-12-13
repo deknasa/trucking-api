@@ -193,7 +193,12 @@ class PendapatanSupirHeader extends MyModel
             $this->totalRows = $query->count();
             $this->totalPages = $this->params['limit'] > 0 ? ceil($this->totalRows / $this->params['limit']) : 1;
         }
-
+        if (request()->cetak && request()->periode) {
+            $query->where('pendapatansupirheader.statuscetak','<>', request()->cetak)
+                  ->whereYear('pendapatansupirheader.tglbukti','=', request()->year)
+                  ->whereMonth('pendapatansupirheader.tglbukti','=', request()->month);
+            return $query;
+        }
         return $query;
     }
 

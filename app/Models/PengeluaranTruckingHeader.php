@@ -103,7 +103,7 @@ class PengeluaranTruckingHeader extends MyModel
             $this->table.keterangan,
             'bank.namabank as bank_id',
             'statusposting.text as statusposting',
-            'statuscetak.text as statuscetak',
+            'statuscetak.memo as statuscetak',
             $this->table.userbukacetak,
             $this->table.tglbukacetak,
             $this->table.coa,
@@ -201,7 +201,12 @@ class PengeluaranTruckingHeader extends MyModel
             $this->totalRows = $query->count();
             $this->totalPages = $this->params['limit'] > 0 ? ceil($this->totalRows / $this->params['limit']) : 1;
         }
-
+        if (request()->cetak && request()->periode) {
+            $query->where('pengeluarantruckingheader.statuscetak','<>', request()->cetak)
+                  ->whereYear('pengeluarantruckingheader.tglbukti','=', request()->year)
+                  ->whereMonth('pengeluarantruckingheader.tglbukti','=', request()->month);
+            return $query;
+        }
         return $query;
     }
 

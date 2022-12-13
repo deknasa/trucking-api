@@ -69,6 +69,7 @@ class PenerimaanGiroHeader extends MyModel
             $this->table.diterimadari,
             $this->table.tgllunas,
             statusapproval.text as statusapproval,
+            statuscetak.memo as statuscetak,
             $this->table.userapproval,
             $this->table.tglapproval,
             $this->table.modifiedby,
@@ -77,6 +78,7 @@ class PenerimaanGiroHeader extends MyModel
             )
         )
             ->leftJoin('pelanggan', 'penerimaangiroheader.pelanggan_id', 'pelanggan.id')
+            ->leftJoin('parameter as statuscetak', 'penerimaangiroheader.statuscetak', 'statuscetak.id')
             ->leftJoin('parameter as statusapproval', 'penerimaangiroheader.statusapproval', 'statusapproval.id');
     }
 
@@ -206,7 +208,12 @@ class PenerimaanGiroHeader extends MyModel
             $this->totalRows = $query->count();
             $this->totalPages = $this->params['limit'] > 0 ? ceil($this->totalRows / $this->params['limit']) : 1;
         }
-
+        if (request()->cetak && request()->periode) {
+            $query->where('penerimaangiroheader.statuscetak','<>', request()->cetak)
+                  ->whereYear('penerimaangiroheader.tglbukti','=', request()->year)
+                  ->whereMonth('penerimaangiroheader.tglbukti','=', request()->month);
+            return $query;
+        }
         return $query;
     }
 

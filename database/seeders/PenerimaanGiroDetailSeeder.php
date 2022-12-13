@@ -28,7 +28,7 @@ class PenerimaanGiroDetailSeeder extends Seeder
             'invoice_nobukti' => 'INV 0001/IV/2022',
             'bankpelanggan_id' => 0,
             'jenisbiaya' => '',
-            'penerimaanpiutang_nobukti' => 'PPT 0001/V/2022',
+            // 'penerimaanpiutang_nobukti' => 'PPT 0001/V/2022',
             'bulanbeban' => '',
             'modifiedby' => 'ADMIN',
         ]);

@@ -40,6 +40,7 @@ class ServiceOutHeader extends MyModel
             'serviceoutheader.tglbukti',
 
             'trado.keterangan as trado_id',
+            'statuscetak.memo as statuscetak',
 
             'serviceoutheader.tglkeluar',
             'serviceoutheader.keterangan',
@@ -47,7 +48,8 @@ class ServiceOutHeader extends MyModel
             'serviceoutheader.created_at',
             'serviceoutheader.updated_at'
 
-        )
+            )
+            ->leftJoin('parameter as statuscetak' , 'serviceoutheader.statuscetak', 'statuscetak.id')
             ->leftJoin('trado', 'serviceoutheader.trado_id', 'trado.id');
 
         $this->totalRows = $query->count();
@@ -72,6 +74,7 @@ class ServiceOutHeader extends MyModel
             'serviceoutheader.trado_id',
 
             'trado.keterangan as trado',
+            'statuscetak.memo as statuscetak',
 
             'serviceoutheader.tglkeluar',
             'serviceoutheader.keterangan',
@@ -80,6 +83,7 @@ class ServiceOutHeader extends MyModel
             'serviceoutheader.updated_at'
 
         )
+        ->leftJoin('parameter as statuscetak' , 'serviceoutheader.statuscetak', 'statuscetak.id')
         ->leftJoin('trado', 'serviceoutheader.trado_id', 'trado.id')
         ->where('serviceoutheader.id', $id);
         $data = $query->first();
@@ -98,6 +102,7 @@ class ServiceOutHeader extends MyModel
             'trado.keterangan as trado_id',
             $this->table.tglkeluar,
             $this->table.keterangan,
+            'statuscetak.memo as statuscetak',
 
             $this->table.modifiedby,
             $this->table.created_at,
@@ -106,6 +111,7 @@ class ServiceOutHeader extends MyModel
             )
 
         )
+        ->leftJoin('parameter as statuscetak' , 'serviceoutheader.statuscetak', 'statuscetak.id')
          ->leftJoin('trado', 'serviceoutheader.trado_id', 'trado.id');
 
     }
@@ -176,7 +182,12 @@ class ServiceOutHeader extends MyModel
             $this->totalRows = $query->count();
             $this->totalPages = $this->params['limit'] > 0 ? ceil($this->totalRows / $this->params['limit']) : 1;
         }
-
+        if (request()->cetak && request()->periode) {
+            $query->where('serviceoutheader.statuscetak','<>', request()->cetak)
+                  ->whereYear('serviceoutheader.tglbukti','=', request()->year)
+                  ->whereMonth('serviceoutheader.tglbukti','=', request()->month);
+            return $query;
+        }
         return $query;
     }
 

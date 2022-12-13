@@ -31,7 +31,8 @@ class NotaDebetHeader extends MyModel
         $query = DB::table($this->table);
         $query = $this->selectColumns($query)
         ->leftJoin('pelunasanpiutangheader as pelunasanpiutang','notadebetheader.pelunasanpiutang_nobukti','pelunasanpiutang.nobukti')
-        ->leftJoin('parameter','notadebetheader.statusapproval','parameter.id');
+        ->leftJoin('parameter','notadebetheader.statusapproval','parameter.id')
+        ->leftJoin('parameter as statuscetak','notadebetheader.statuscetak','statuscetak.id');
 
 
         $this->totalRows = $query->count();
@@ -118,6 +119,7 @@ class NotaDebetHeader extends MyModel
             "$this->table.userapproval",
             "$this->table.tglapproval",
             "$this->table.statusformat",
+            "statuscetak.memo as statuscetak",
             "$this->table.modifiedby",
             "parameter.memo as  statusapproval_memo",
          
@@ -218,7 +220,12 @@ class NotaDebetHeader extends MyModel
             $this->totalRows = $query->count();
             $this->totalPages = $this->params['limit'] > 0 ? ceil($this->totalRows / $this->params['limit']) : 1;
         }
-
+        if (request()->cetak && request()->periode) {
+            $query->where('notadebetheader.statuscetak','<>', request()->cetak)
+                  ->whereYear('notadebetheader.tglbukti','=', request()->year)
+                  ->whereMonth('notadebetheader.tglbukti','=', request()->month);
+            return $query;
+        }
         return $query;
     }
     public function find($id)
@@ -228,6 +235,7 @@ class NotaDebetHeader extends MyModel
         $query = DB::table($this->table);
         $query = $this->selectColumns($query)
         ->leftJoin('parameter','notadebetheader.statusapproval','parameter.id')
+        ->leftJoin('parameter as statuscetak','notadebetheader.statuscetak','statuscetak.id')
         ->leftJoin('pelunasanpiutangheader as pelunasanpiutang','notadebetheader.pelunasanpiutang_nobukti','pelunasanpiutang.nobukti');
  
         $data = $query->where("$this->table.id",$id)->first();
