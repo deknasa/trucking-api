@@ -35,8 +35,8 @@ class Penerima extends MyModel
             'penerima.noktp',
             'penerima.modifiedby',
             'penerima.updated_at',
-            'parameter_statusaktif.text as statusaktif',
-            'parameter_statuskaryawan.text as statuskaryawan',
+            'parameter_statusaktif.memo as statusaktif',
+            'parameter_statuskaryawan.memo as statuskaryawan',
         )
         ->leftJoin('parameter as parameter_statusaktif', 'penerima.statusaktif', '=', 'parameter_statusaktif.id')
         ->leftJoin('parameter as parameter_statuskaryawan', 'penerima.statuskaryawan', '=', 'parameter_statuskaryawan.id');
@@ -115,7 +115,7 @@ class Penerima extends MyModel
                         if ($filters['field'] == 'statusaktif') {
                             $query = $query->where('parameter_statusaktif.text', '=', $filters['data']);
                         } else if ($filters['field'] == 'statuskaryawan') {
-                            $query = $query->where('parameter_statuskaryawan.text', 'LIKE', "%$filters[data]%");
+                            $query = $query->where('parameter_statuskaryawan.text', '=', "$filters[data]");
                         } else {
                             $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
@@ -127,7 +127,7 @@ class Penerima extends MyModel
                         if ($filters['field'] == 'statusaktif') {
                             $query = $query->where('parameter_statusaktif.text', '=', $filters['data']);
                         } else if ($filters['field'] == 'statuskaryawan') {
-                            $query = $query->where('parameter_statuskaryawan.text', 'LIKE', "%$filters[data]%");
+                            $query = $query->where('parameter_statuskaryawan.text', '=', "$filters[data]");
                         } else {
                             $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }

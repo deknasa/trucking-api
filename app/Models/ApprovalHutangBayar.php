@@ -50,7 +50,7 @@ class ApprovalHutangBayar extends MyModel
                 'hutangbayarheader.pengeluaran_nobukti',
                 'bank.namabank as bank_id',
                 'supplier.namasupplier as supplier_id',
-                'parameter.text as statusapproval',
+                'parameter.memo as statusapproval',
                 'hutangbayarheader.tglapproval',
                 'hutangbayarheader.userapproval',
                 'hutangbayarheader.modifiedby',

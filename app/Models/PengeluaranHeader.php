@@ -44,7 +44,7 @@ class PengeluaranHeader extends MyModel
             'pengeluaranheader.dibayarke',
             'cabang.namacabang as cabang_id',
             'bank.namabank as bank_id',
-            'statusjenistransaksi.text as statusjenistransaksi',
+            'statusjenistransaksi.memo as statusjenistransaksi',
             'statusapproval.memo as statusapproval',
             DB::raw('(case when (year(pengeluaranheader.tglapproval) <= 2000) then null else pengeluaranheader.tglapproval end ) as tglapproval'),
             'pengeluaranheader.userapproval',

@@ -186,9 +186,9 @@ class Tarif extends MyModel
                         } elseif ($filters['field'] == 'zona_id') {
                             $query = $query->where('zona.keterangan', 'LIKE', "%$filters[data]%");
                         } elseif ($filters['field'] == 'statuspenyesuaianharga') {
-                            $query = $query->where('p.text', 'LIKE', "%$filters[data]%");
+                            $query = $query->where('p.text', '=', "$filters[data]");
                         } elseif ($filters['field'] == 'statussistemton') {
-                            $query = $query->where('sistemton.text', 'LIKE', "%$filters[data]%");
+                            $query = $query->where('sistemton.text', '=', "$filters[data]");
                         } else {
                             $query = $query->where('tarif.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
@@ -206,9 +206,9 @@ class Tarif extends MyModel
                         } elseif ($filters['field'] == 'zona_id') {
                             $query = $query->orWhere('zona.keterangan', 'LIKE', "%$filters[data]%");
                         } elseif ($filters['field'] == 'statuspenyesuaianharga') {
-                            $query = $query->orWhere('p.text', 'LIKE', "%$filters[data]%");
+                            $query = $query->orWhere('p.text', '=', "$filters[data]");
                         } elseif ($filters['field'] == 'statussistemton') {
-                            $query = $query->orWhere('sistemton.text', 'LIKE', "%$filters[data]%");
+                            $query = $query->orWhere('sistemton.text', '=', "$filters[data]");
                         } else {
                             $query = $query->orWhere('tarif.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }

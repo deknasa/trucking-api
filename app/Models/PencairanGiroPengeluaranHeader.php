@@ -31,7 +31,7 @@ class PencairanGiroPengeluaranHeader extends MyModel
         $month = substr($periode,0,2);
         $year = substr($periode,3);
         
-        $query = DB::table($this->anotherTable)->select(DB::raw("pengeluaranheader.nobukti as pengeluaran_nobukti,pengeluaranheader.id, pengeluaranheader.dibayarke, bank.namabank as bank_id, pengeluaranheader.transferkeac, pengeluaranheader.modifiedby, pengeluaranheader.created_at,pengeluaranheader.updated_at,pengeluaranheader.keterangan, alatbayar.keterangan as alatbayar_id, pgp.nobukti, pgp.tglbukti, parameter.text as statusapproval, (SELECT (SUM(pengeluarandetail.nominal)) FROM pengeluarandetail 
+        $query = DB::table($this->anotherTable)->select(DB::raw("pengeluaranheader.nobukti as pengeluaran_nobukti,pengeluaranheader.id, pengeluaranheader.dibayarke, bank.namabank as bank_id, pengeluaranheader.transferkeac, pengeluaranheader.modifiedby, pengeluaranheader.created_at,pengeluaranheader.updated_at,pengeluaranheader.keterangan, alatbayar.keterangan as alatbayar_id, pgp.nobukti, pgp.tglbukti, parameter.memo as statusapproval, (SELECT (SUM(pengeluarandetail.nominal)) FROM pengeluarandetail 
         WHERE pengeluarandetail.nobukti= pengeluaranheader.nobukti and pengeluarandetail.alatbayar_id=2) as nominal")
         )
         ->distinct('pengeluaranheader.nobukti')

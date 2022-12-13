@@ -50,8 +50,6 @@ class ParameterController extends Controller
             $parameter->text = $request->text;
             $parameter->kelompok = $request->kelompok ?? '';
             $parameter->type = $request->type ?? 0;
-            $parameter->singkatan = $request->singkatan ?? '';
-            $parameter->warna = $request->warna ?? '';
             $parameter->modifiedby = auth('api')->user()->name;
 
             $detailmemo = [];
@@ -122,11 +120,7 @@ class ParameterController extends Controller
             $parameter->text = $request->text;
             $parameter->kelompok = $request->kelompok ?? '';
             $parameter->type = $request->type ?? 0;
-            $parameter->singkatan = $request->singkatan ?? '';
-            $parameter->warna = $request->warna ?? '';
             $parameter->modifiedby = auth('api')->user()->name;
-            $request->sortname = $request->sortname ?? 'id';
-            $request->sortorder = $request->sortorder ?? 'asc';
 
             $detailmemo = [];
             for ($i = 0; $i < count($request->key); $i++) {

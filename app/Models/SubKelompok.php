@@ -34,7 +34,7 @@ class SubKelompok extends MyModel
             'subkelompok.kodesubkelompok',
             'subkelompok.keterangan',
             'kelompok.keterangan as kelompok_id',
-            'parameter.text as statusaktif',
+            'parameter.memo as statusaktif',
             'subkelompok.modifiedby',
             'subkelompok.created_at',
             'subkelompok.updated_at'

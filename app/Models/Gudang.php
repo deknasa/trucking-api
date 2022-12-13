@@ -31,7 +31,7 @@ class Gudang extends MyModel
         $query = DB::table($this->table)->select(
             'gudang.id',
             'gudang.gudang',
-            'parameter.text as statusaktif',
+            'parameter.memo as statusaktif',
             'gudang.modifiedby',
             'gudang.created_at',
             'gudang.updated_at'

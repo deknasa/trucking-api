@@ -34,8 +34,8 @@ class AlatBayar extends MyModel
             'alatbayar.kodealatbayar',
             'alatbayar.namaalatbayar',
             'alatbayar.keterangan',
-            'parameter_statuslangsunggcair.text as statuslangsunggcair',
-            'parameter_statusdefault.text as statusdefault',
+            'parameter_statuslangsunggcair.memo as statuslangsunggcair',
+            'parameter_statusdefault.memo as statusdefault',
             'bank.namabank as bank_id',
             'alatbayar.modifiedby',
             'alatbayar.created_at',
@@ -137,9 +137,9 @@ class AlatBayar extends MyModel
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statuslangsunggcair') {
-                            $query = $query->where('parameter_statuslangsunggcair.text', 'LIKE', "%$filters[data]%");
+                            $query = $query->where('parameter_statuslangsunggcair.text', '=', "$filters[data]");
                         } else if ($filters['field'] == 'statusdefault') {
-                            $query = $query->where('parameter_statusdefault.text', 'LIKE', "%$filters[data]%");
+                            $query = $query->where('parameter_statusdefault.text', '=', "$filters[data]");
                         } else if ($filters['field'] == 'bank_id') {
                             $query = $query->where('bank.namabank', 'LIKE', "%$filters[data]%");
                         } else {
@@ -151,9 +151,9 @@ class AlatBayar extends MyModel
                 case "OR":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statuslangsunggcair') {
-                            $query = $query->orWhere('parameter_statuslangsunggcair.text', 'LIKE', "%$filters[data]%");
+                            $query = $query->orWhere('parameter_statuslangsunggcair.text', '=', "$filters[data]");
                         } else if ($filters['field'] == 'statusdefault') {
-                            $query = $query->orWhere('parameter_statusdefault.text', 'LIKE', "%$filters[data]%");
+                            $query = $query->orWhere('parameter_statusdefault.text', '=', "$filters[data]");
                         } else if ($filters['field'] == 'bank_id') {
                             $query = $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");
                         } else {

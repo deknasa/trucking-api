@@ -30,7 +30,7 @@ class Satuan extends MyModel
         $query = DB::table($this->table)->select(
             'satuan.id',
             'satuan.satuan',
-            'parameter.text as statusaktif',
+            'parameter.memo as statusaktif',
             'satuan.modifiedby',
             'satuan.created_at',
             'satuan.updated_at'

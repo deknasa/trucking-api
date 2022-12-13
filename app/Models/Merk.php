@@ -31,7 +31,7 @@ class Merk extends MyModel
             'merk.id',
             'merk.kodemerk',
             'merk.keterangan',
-            'parameter.text as statusaktif',
+            'parameter.memo as statusaktif',
             'merk.modifiedby',
             'merk.created_at',
             'merk.updated_at'

@@ -49,7 +49,7 @@ class ApprovalPendapatanSupir extends MyModel
                 'pendapatansupirheader.keterangan',
                 'pendapatansupirheader.tgldari',
                 'pendapatansupirheader.tglsampai',
-                'parameter.text as statusapproval',
+                'parameter.memo as statusapproval',
                 'pendapatansupirheader.userapproval',
                 DB::raw('(case when (year(pendapatansupirheader.tglapproval) <= 2000) then null else pendapatansupirheader.tglapproval end ) as tglapproval'),
                 'pendapatansupirheader.periode',

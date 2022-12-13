@@ -36,8 +36,8 @@ class PengeluaranStok extends MyModel
             'pengeluaranstok.kodepengeluaran',
             'pengeluaranstok.keterangan',
             'pengeluaranstok.coa',
-            'parameterstatusformat.text as statusformat',
-            'parameterstatushitungstok.text as statushitungstok',
+            'parameterstatusformat.memo as statusformat',
+            'parameterstatushitungstok.memo as statushitungstok',
             'pengeluaranstok.modifiedby',
             'pengeluaranstok.created_at',
             'pengeluaranstok.updated_at'
@@ -123,13 +123,21 @@ class PengeluaranStok extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");                         
+                        if ($filters['field'] == 'statushitungstok') {
+                            $query = $query->where('parameterstatushitungstok.text', '=', "$filters[data]");
+                        }else{
+                            $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");                         
+                        }
                     }
 
                     break;
                 case "OR":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                        if ($filters['field'] == 'statushitungstok') {
+                            $query = $query->orWhere('parameterstatushitungstok.text', '=', "$filters[data]");
+                        }else{
+                            $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                        }
                     }
 
                     break;

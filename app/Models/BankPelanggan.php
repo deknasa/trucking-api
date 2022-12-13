@@ -32,7 +32,7 @@ class BankPelanggan extends MyModel
             'bankpelanggan.kodebank',
             'bankpelanggan.namabank',
             'bankpelanggan.keterangan',
-            'parameter.text as statusaktif',
+            'parameter.memo as statusaktif',
             'bankpelanggan.modifiedby',
             'bankpelanggan.created_at',
             'bankpelanggan.updated_at'

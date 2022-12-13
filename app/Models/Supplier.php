@@ -42,7 +42,7 @@ class Supplier extends MyModel
             'supplier.notelp2',
             'supplier.email',
 
-            'parameter_statusaktif.text as statusaktif',
+            'parameter_statusaktif.memo as statusaktif',
             'supplier.web',
             'supplier.namapemilik',
             'supplier.jenisusaha',
@@ -51,7 +51,7 @@ class Supplier extends MyModel
             'supplier.namarekening',
             'supplier.jabatan',
 
-            'parameter_statusdaftarharga.text as statusdaftarharga',
+            'parameter_statusdaftarharga.memo as statusdaftarharga',
             'supplier.kategoriusaha',
 
             'supplier.modifiedby',

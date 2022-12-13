@@ -27,7 +27,7 @@ class Zona extends MyModel
             'zona.id',
             'zona.zona',
             'zona.keterangan',
-            'parameter.text as statusaktif',
+            'parameter.memo as statusaktif',
             'zona.modifiedby',
             'zona.created_at',
             'zona.updated_at'

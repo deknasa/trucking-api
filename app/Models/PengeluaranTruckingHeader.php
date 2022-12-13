@@ -42,7 +42,7 @@ class PengeluaranTruckingHeader extends MyModel
             'statuscetak.memo as statuscetak',
             'pengeluarantruckingheader.userbukacetak',
             'pengeluarantruckingheader.coa',
-            'statusposting.text as statusposting'
+            'statusposting.memo as statusposting'
         )
             ->leftJoin('pengeluarantrucking', 'pengeluarantruckingheader.pengeluarantrucking_id','pengeluarantrucking.id')
             ->leftJoin('bank', 'pengeluarantruckingheader.bank_id', 'bank.id')

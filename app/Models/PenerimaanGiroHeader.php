@@ -27,11 +27,26 @@ class PenerimaanGiroHeader extends MyModel
     public function get(){
         $this->setRequestParameters();
 
-        $query = DB::table($this->table);
+        $query = DB::table($this->table)->select(
+            'penerimaangiroheader.id',
+            'penerimaangiroheader.nobukti',
+            'penerimaangiroheader.tglbukti',
+            'penerimaangiroheader.keterangan',
+            'pelanggan.namapelanggan as pelanggan_id',
+            'penerimaangiroheader.postingdari',
+            'penerimaangiroheader.diterimadari',
+            'penerimaangiroheader.tgllunas',
+            'statusapproval.memo as statusapproval',
+            DB::raw('(case when (year(penerimaangiroheader.tglapproval) <= 2000) then null else penerimaangiroheader.tglapproval end ) as tglapproval'),
+            'penerimaangiroheader.userapproval',
+            'penerimaangiroheader.created_at',
+            'penerimaangiroheader.modifiedby',
+            'penerimaangiroheader.updated_at'
+        )->leftJoin('pelanggan', 'penerimaangiroheader.pelanggan_id', 'pelanggan.id')
+        ->leftJoin('parameter as statusapproval', 'penerimaangiroheader.statusapproval', 'statusapproval.id');
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
-        $this->selectColumns($query);
         $this->sort($query);
         $this->filter($query);
         $this->paginate($query);

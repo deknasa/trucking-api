@@ -82,26 +82,26 @@ class UpdateSuratPengantarRequest extends FormRequest
             'tarif_id' => 'Tarif',
             'nosp' => 'NO SP',
             'tglsp' => 'Tgl SP',
-            'statusritasiomset' => 'Status Ritasi Omset',
+            // 'statusritasiomset' => 'Status Ritasi Omset',
             'cabang_id' => 'Cabang',
             'statustrip' => 'Status Trip',
-            'qtyton' => 'QTY Ton',
+            // 'qtyton' => 'QTY Ton',
             'statusnotif' => 'Status Notif',
             'statusoneway' => 'Status One Way',
             'statusedittujuan' => 'Status Edit Tujuan',
-            'tgldoor' => 'Tgl Door',
-            'upahbongkardepo' => 'Upah Bongkar Depo',
-            'upahmuatdepo' => 'Upah Muat Depo',
+            // 'tgldoor' => 'Tgl Door',
+            // 'upahbongkardepo' => 'Upah Bongkar Depo',
+            // 'upahmuatdepo' => 'Upah Muat Depo',
 
         ];
     }
 
-    public function messages()
-    {
-        return [
-            'qtyton.gt' => 'QTY Ton tidak boleh kosong',
-            'upahbongkardepo.gt' => 'Upah Bongkar Depo tidak boleh kosong',
-            'upahmuatdepo.gt' => 'Upah Muat Depo tidak boleh kosong',
-        ];
-    }
+    // public function messages()
+    // {
+    //     return [
+    //         'qtyton.gt' => 'QTY Ton tidak boleh kosong',
+    //         'upahbongkardepo.gt' => 'Upah Bongkar Depo tidak boleh kosong',
+    //         'upahmuatdepo.gt' => 'Upah Muat Depo tidak boleh kosong',
+    //     ];
+    // }
 }

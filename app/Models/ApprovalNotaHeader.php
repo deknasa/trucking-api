@@ -43,7 +43,7 @@ class ApprovalNotaHeader extends MyModel
         $query = DB::table($tabel)
             ->select(
                 DB::raw(" 
-                    $tabel.id,$tabel.nobukti, $tabel.pelunasanpiutang_nobukti, $tabel.tglbukti, $tabel.keterangan, $tabel.postingdari, parameter.text as statusapproval, $tabel.tglapproval, $tabel.userapproval, $tabel.tgllunas, $tabel.modifiedby, $tabel.created_at, $tabel.updated_at
+                    $tabel.id,$tabel.nobukti, $tabel.pelunasanpiutang_nobukti, $tabel.tglbukti, $tabel.keterangan, $tabel.postingdari, parameter.memo as statusapproval, $tabel.tglapproval, $tabel.userapproval, $tabel.tgllunas, $tabel.modifiedby, $tabel.created_at, $tabel.updated_at
                 ")
             )
             ->leftJoin("parameter", "$tabel.statusapproval", "parameter.id")

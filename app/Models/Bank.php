@@ -27,12 +27,26 @@ class Bank extends MyModel
     {
         $this->setRequestParameters();
 
-        $query = DB::table($this->table);
+        $query = DB::table($this->table)->select(
+            'bank.id',
+            'bank.kodebank',
+            'bank.namabank',
+            'bank.coa',
+            'bank.tipe',
+            'parameter.memo as statusaktif',
+            'statusformatpenerimaan.memo as statusformatpenerimaan',
+            'statusformatpengeluaran.memo as statusformatpengeluaran',
+            'bank.modifiedby',
+            'bank.created_at',
+            'bank.updated_at'
+        )
+        ->leftJoin('parameter', 'bank.statusaktif', '=', 'parameter.id')
+        ->leftJoin('parameter as statusformatpenerimaan', 'bank.statusformatpenerimaan', '=', 'statusformatpenerimaan.id')
+        ->leftJoin('parameter as statusformatpengeluaran', 'bank.statusformatpengeluaran', '=', 'statusformatpengeluaran.id');
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
         
-        $this->selectColumns($query);
         $this->sort($query);
         $this->filter($query);
         $this->paginate($query);

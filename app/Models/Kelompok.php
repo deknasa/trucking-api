@@ -32,7 +32,7 @@ class Kelompok extends MyModel
             'kelompok.id',
             'kelompok.kodekelompok',
             'kelompok.keterangan',
-            'parameter.text as statusaktif',
+            'parameter.memo as statusaktif',
             'kelompok.modifiedby',
             'kelompok.created_at',
             'kelompok.updated_at'
