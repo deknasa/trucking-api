@@ -113,20 +113,20 @@ class UpahSupirController extends Controller
 
                     $detaillog[] = $datadetaillog;
 
-                    $datalogtrail = [
-                        'namatabel' => $tabeldetail,
-                        'postingdari' => 'ENTRY UPAH SUPIR RINCIAN',
-                        'idtrans' =>  $iddetail,
-                        'nobuktitrans' => $iddetail,
-                        'aksi' => 'ENTRY',
-                        'datajson' => $detaillog,
-                        'modifiedby' => $request->modifiedby,
-                    ];
-
-                    $data = new StoreLogTrailRequest($datalogtrail);
-                    app(LogTrailController::class)->store($data);
                 }
 
+                $datalogtrail = [
+                    'namatabel' => $tabeldetail,
+                    'postingdari' => 'ENTRY UPAH SUPIR RINCIAN',
+                    'idtrans' =>  $upahsupir->id,
+                    'nobuktitrans' => $upahsupir->id,
+                    'aksi' => 'ENTRY',
+                    'datajson' => $detaillog,
+                    'modifiedby' => $request->modifiedby,
+                ];
+
+                $data = new StoreLogTrailRequest($datalogtrail);
+                app(LogTrailController::class)->store($data);
 
                 $request->sortname = $request->sortname ?? 'id';
                 $request->sortorder = $request->sortorder ?? 'asc';
@@ -242,20 +242,20 @@ class UpahSupirController extends Controller
                     ];
                     $detaillog[] = $datadetaillog;
 
-
-                    $datalogtrail = [
-                        'namatabel' => $tabeldetail,
-                        'postingdari' => 'EDIT UPAH SUPIR RINCIAN',
-                        'idtrans' =>  $iddetail,
-                        'nobuktitrans' => $iddetail,
-                        'aksi' => 'EDIT',
-                        'datajson' => $detaillog,
-                        'modifiedby' => $upahsupir->modifiedby,
-                    ];
-
-                    $data = new StoreLogTrailRequest($datalogtrail);
-                    app(LogTrailController::class)->store($data);
                 }
+
+                $datalogtrail = [
+                    'namatabel' => $tabeldetail,
+                    'postingdari' => 'EDIT UPAH SUPIR RINCIAN',
+                    'idtrans' =>  $upahsupir->id,
+                    'nobuktitrans' => $upahsupir->id,
+                    'aksi' => 'EDIT',
+                    'datajson' => $detaillog,
+                    'modifiedby' => $upahsupir->modifiedby,
+                ];
+
+                $data = new StoreLogTrailRequest($datalogtrail);
+                app(LogTrailController::class)->store($data);
             }
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
@@ -287,6 +287,7 @@ class UpahSupirController extends Controller
 
         DB::beginTransaction();
         try {
+            $getDetail = UpahSupirRincian::where('upahsupir_id', $upahsupir->id)->get();
             $delete = UpahSupirRincian::where('upahsupir_id', $upahsupir->id)->lockForUpdate()->delete();
             $delete = UpahSupir::destroy($upahsupir->id);
 
@@ -303,6 +304,42 @@ class UpahSupirController extends Controller
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
+                
+                // DELETE UPAH SUPIR RINCIAN
+                $detailLogPiutangDetail = [];
+
+                foreach ($getDetail as $detailUpah) {
+                   
+                    $datadetaillog = [
+                        'id' => $detailUpah->id,
+                        'upahsupir_id' => $detailUpah->upahsupir_id,
+                        'container_id' => $detailUpah->container_id,
+                        'statuscontainer_id' => $detailUpah->statuscontainer_id,
+                        'nominalsupir' => $detailUpah->nominalsupir,
+                        'nominalkenek' => $detailUpah->nominalkenek ?? 0,
+                        'nominalkomisi' => $detailUpah->nominalkomisi ?? 0,
+                        'nominaltol' =>  $detailUpah->nominaltol ?? 0,
+                        'liter' => $detailUpah->liter ?? 0,
+                        'modifiedby' => $detailUpah->modifiedby,
+                        'created_at' => date('d-m-Y H:i:s', strtotime($upahsupir->created_at)),
+                        'updated_at' => date('d-m-Y H:i:s', strtotime($upahsupir->updated_at)),
+                    ];
+                    $detailLogPiutangDetail[] = $datadetaillog;
+                }
+
+                $logTrailPiutangDetail = [
+                    'namatabel' => 'UPAHSUPIRRINCIAN',
+                    'postingdari' => 'DELETE UPAH SUPIR RINCIAN',
+                    'idtrans' => $upahsupir->id,
+                    'nobuktitrans' => $upahsupir->id,
+                    'aksi' => 'DELETE',
+                    'datajson' => $detailLogPiutangDetail,
+                    'modifiedby' => auth('api')->user()->name
+                ];
+
+                $validatedLogTrailPiutangDetail = new StoreLogTrailRequest($logTrailPiutangDetail);
+                app(LogTrailController::class)->store($validatedLogTrailPiutangDetail);
+
             }
 
             DB::commit();

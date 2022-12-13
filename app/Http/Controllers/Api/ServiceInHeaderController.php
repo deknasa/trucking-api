@@ -119,19 +119,20 @@ class ServiceInHeaderController extends Controller
                 $detaillog[] = $datadetaillog;
                 // }
 
-                $datalogtrail = [
-                    'namatabel' => $tabeldetail,
-                    'postingdari' => 'ENTRY SERVICE IN DETAIL',
-                    'idtrans' =>  $iddetail,
-                    'nobuktitrans' => $servicein->nobukti,
-                    'aksi' => 'ENTRY',
-                    'datajson' => $detaillog,
-                    'modifiedby' => $servicein->modifiedby,
-                ];
-
-                $data = new StoreLogTrailRequest($datalogtrail);
-                app(LogTrailController::class)->store($data);
             }
+            $datalogtrail = [
+                'namatabel' => $tabeldetail,
+                'postingdari' => 'ENTRY SERVICE IN DETAIL',
+                'idtrans' =>  $servicein->id,
+                'nobuktitrans' => $servicein->nobukti,
+                'aksi' => 'ENTRY',
+                'datajson' => $detaillog,
+                'modifiedby' => $servicein->modifiedby,
+            ];
+
+            $data = new StoreLogTrailRequest($datalogtrail);
+            app(LogTrailController::class)->store($data);
+
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
             DB::commit();
@@ -236,7 +237,7 @@ class ServiceInHeaderController extends Controller
                 $datalogtrail = [
                     'namatabel' => $tabeldetail,
                     'postingdari' => 'EDIT SERVICE IN DETAIL',
-                    'idtrans' =>  $iddetail,
+                    'idtrans' =>  $serviceinheader->id,
                     'nobuktitrans' => $serviceinheader->nobukti,
                     'aksi' => 'EDIT',
                     'datajson' => $detaillog,
@@ -274,6 +275,7 @@ class ServiceInHeaderController extends Controller
         DB::beginTransaction();
 
         try {
+            $getDetail = ServiceInDetail::where('servicein_id', $serviceinheader->id)->get();
             $delete = ServiceInDetail::where('servicein_id', $serviceinheader->id)->lockForUpdate()->delete();
             $delete = ServiceInHeader::destroy($serviceinheader->id);
 
@@ -290,6 +292,37 @@ class ServiceInHeaderController extends Controller
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
+
+                // DELETE SERVICE IN DETAIL
+                $detailLogServiceIn = [];
+
+                foreach ($getDetail as $detailServicein) {
+                    
+                $datadetaillog = [
+                    'id' => $detailServicein->id,
+                    'servicein_id' => $detailServicein->servicein_id,
+                    'nobukti' => $detailServicein->nobukti,
+                    'mekanik_id' => $detailServicein->mekanik_id,
+                    'keterangan' => $detailServicein->keterangan,
+                    'modifiedby' => $detailServicein->modifiedby,
+                    'created_at' => date('d-m-Y H:i:s', strtotime($detailServicein->created_at)),
+                    'updated_at' => date('d-m-Y H:i:s', strtotime($detailServicein->updated_at)),
+                ];
+                    $detailLogServiceIn[] = $datadetaillog;
+                }
+
+                $logTrailServiceIn = [
+                    'namatabel' => 'SERVICEINDETAIL',
+                    'postingdari' => 'DELETE SERVICE IN DETAIL',
+                    'idtrans' => $serviceinheader->id,
+                    'nobuktitrans' => $serviceinheader->nobukti,
+                    'aksi' => 'DELETE',
+                    'datajson' => $detailLogServiceIn,
+                    'modifiedby' => auth('api')->user()->name
+                ];
+
+                $validatedLogTrailServiceinDetail = new StoreLogTrailRequest($logTrailServiceIn);
+                app(LogTrailController::class)->store($validatedLogTrailServiceinDetail);
 
                 DB::commit();
 

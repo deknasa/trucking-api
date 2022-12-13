@@ -111,8 +111,9 @@ class JurnalUmumHeaderController extends Controller
 
             if ($tanpaprosesnobukti == 0) {
 
+                $detaillog = [];
                 for ($i = 0; $i < count($request->nominal_detail); $i++) {
-                    $detaillog = [];
+                    
                     for ($x = 0; $x <= 1; $x++) {
                         if ($x == 1) {
                             $datadetail = [
@@ -159,7 +160,7 @@ class JurnalUmumHeaderController extends Controller
                                 'nobukti' => $jurnalumum->nobukti,
                                 'tglbukti' => $jurnalumum->tglbukti,
                                 'coa' => $request->coakredit_detail[$i],
-                                'nominal' => $request->nominal_detail[$i],
+                                'nominal' => '-'.$request->nominal_detail[$i],
                                 'keterangan' => $request->keterangan_detail[$i],
                                 'modifiedby' => $jurnalumum->modifiedby,
                                 'created_at' => date('d-m-Y H:i:s', strtotime($jurnalumum->created_at)),
@@ -181,27 +182,22 @@ class JurnalUmumHeaderController extends Controller
                                 'baris' => $i,
                             ];
                         }
-
-
-
                         $detaillog[] = $datadetaillog;
-
-
-
-                        $datalogtrail = [
-                            'namatabel' => $tabeldetail,
-                            'postingdari' => 'ENTRY JURNAL UMUM DETAIL',
-                            'idtrans' =>  $iddetail,
-                            'nobuktitrans' => $jurnalumum->nobukti,
-                            'aksi' => 'ENTRY',
-                            'datajson' => $detaillog,
-                            'modifiedby' => $request->modifiedby,
-                        ];
-
-                        $data = new StoreLogTrailRequest($datalogtrail);
-                        app(LogTrailController::class)->store($data);
                     }
                 }
+
+                $datalogtrail = [
+                    'namatabel' => $tabeldetail,
+                    'postingdari' => 'ENTRY JURNAL UMUM DETAIL',
+                    'idtrans' =>  $jurnalumum->id,
+                    'nobuktitrans' => $jurnalumum->nobukti,
+                    'aksi' => 'ENTRY',
+                    'datajson' => $detaillog,
+                    'modifiedby' => $request->modifiedby,
+                ];
+
+                $data = new StoreLogTrailRequest($datalogtrail);
+                app(LogTrailController::class)->store($data);
 
 
                 $request->sortname = $request->sortname ?? 'id';
@@ -213,10 +209,6 @@ class JurnalUmumHeaderController extends Controller
                 $selected = $this->getPosition($jurnalumum, $jurnalumum->getTable());
                 $jurnalumum->position = $selected->position;
                 $jurnalumum->page = ceil($jurnalumum->position / ($request->limit ?? 10));
-
-
-                // dd('test');
-
 
             }
 
@@ -298,10 +290,9 @@ class JurnalUmumHeaderController extends Controller
 
                 /* Store detail */
 
-
+                $detaillog = [];
                 for ($i = 0; $i < count($request->nominal_detail); $i++) {
-                    $detaillog = [];
-                    $nominal = str_replace('.00', '', $request->nominal_detail[$i]);
+
                     for ($x = 0; $x <= 1; $x++) {
                         if ($x == 1) {
                             $datadetail = [
@@ -309,7 +300,7 @@ class JurnalUmumHeaderController extends Controller
                                 'nobukti' => $jurnalumumheader->nobukti,
                                 'tglbukti' => $jurnalumumheader->tglbukti,
                                 'coa' => $request->coakredit_detail[$i],
-                                'nominal' => '-' . str_replace(',', '', $nominal),
+                                'nominal' => '-'.$request->nominal_detail[$i],
                                 'keterangan' => $request->keterangan_detail[$i],
                                 'modifiedby' => $jurnalumumheader->modifiedby,
                                 'baris' => $i,
@@ -320,7 +311,7 @@ class JurnalUmumHeaderController extends Controller
                                 'nobukti' => $jurnalumumheader->nobukti,
                                 'tglbukti' => $jurnalumumheader->tglbukti,
                                 'coa' => $request->coadebet_detail[$i],
-                                'nominal' => str_replace(',', '', $nominal),
+                                'nominal' => $request->nominal_detail[$i],
                                 'keterangan' => $request->keterangan_detail[$i],
                                 'modifiedby' => $jurnalumumheader->modifiedby,
                                 'baris' => $i,
@@ -347,7 +338,7 @@ class JurnalUmumHeaderController extends Controller
                                 'nobukti' => $jurnalumumheader->nobukti,
                                 'tglbukti' => $jurnalumumheader->tglbukti,
                                 'coa' => $request->coakredit_detail[$i],
-                                'nominal' => '-' . str_replace(',', '', $nominal),
+                                'nominal' => '-' . $request->nominal_detail[$i],
                                 'keterangan' => $request->keterangan_detail[$i],
                                 'modifiedby' => $jurnalumumheader->modifiedby,
                                 'created_at' => date('d-m-Y H:i:s', strtotime($jurnalumumheader->created_at)),
@@ -361,7 +352,7 @@ class JurnalUmumHeaderController extends Controller
                                 'nobukti' => $jurnalumumheader->nobukti,
                                 'tglbukti' => $jurnalumumheader->tglbukti,
                                 'coa' => $request->coadebet_detail[$i],
-                                'nominal' => str_replace(',', '', $nominal),
+                                'nominal' => $request->nominal_detail[$i],
                                 'keterangan' => $request->keterangan_detail[$i],
                                 'modifiedby' => $jurnalumumheader->modifiedby,
                                 'created_at' => date('d-m-Y H:i:s', strtotime($jurnalumumheader->created_at)),
@@ -372,21 +363,22 @@ class JurnalUmumHeaderController extends Controller
 
                         $detaillog[] = $datadetaillog;
 
-                        $datalogtrail = [
-                            'namatabel' => $tabeldetail,
-                            'postingdari' => 'EDIT JURNAL UMUM DETAIL',
-                            'idtrans' =>  $iddetail,
-                            'nobuktitrans' => $jurnalumumheader->nobukti,
-                            'aksi' => 'EDIT',
-                            'datajson' => $detaillog,
-                            'modifiedby' => $request->modifiedby,
-                        ];
-
-                        $data = new StoreLogTrailRequest($datalogtrail);
-
-                        app(LogTrailController::class)->store($data);
                     }
                 }
+                
+                $datalogtrail = [
+                    'namatabel' => $tabeldetail,
+                    'postingdari' => 'EDIT JURNAL UMUM DETAIL',
+                    'idtrans' =>  $jurnalumumheader->id,
+                    'nobuktitrans' => $jurnalumumheader->nobukti,
+                    'aksi' => 'EDIT',
+                    'datajson' => $detaillog,
+                    'modifiedby' => $request->modifiedby,
+                ];
+
+                $data = new StoreLogTrailRequest($datalogtrail);
+
+                app(LogTrailController::class)->store($data);
             }
 
             $request->sortname = $request->sortname ?? 'id';
@@ -416,6 +408,7 @@ class JurnalUmumHeaderController extends Controller
     {
         DB::beginTransaction();
         try {
+            $getDetail = JurnalUmumDetail::where('jurnalumum_id', $jurnalumumheader->id)->get();
             $delete = JurnalUmumDetail::where('jurnalumum_id', $jurnalumumheader->id)->lockForUpdate()->delete();
             $delete = JurnalUmumHeader::destroy($jurnalumumheader->id);
             // $delete = $jurnalumum->delete($id);
@@ -428,11 +421,44 @@ class JurnalUmumHeaderController extends Controller
                     'nobuktitrans' => $jurnalumumheader->nobukti,
                     'aksi' => 'DELETE',
                     'datajson' => $jurnalumumheader->toArray(),
-                    'modifiedby' => $jurnalumumheader->modifiedby
+                    'modifiedby' => auth('api')->user()->name
                 ];
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
+
+                // DELETE JURNAL DETAIL
+                $detailLogJurnalDetail = [];
+
+                foreach ($getDetail as $detailJurnal) {
+                    $datadetaillog = [
+                        'id' => $detailJurnal->id,
+                        'jurnalumum_id' =>  $detailJurnal->jurnalumum_id,
+                        'nobukti' => $detailJurnal->nobukti,
+                        'tglbukti' => $detailJurnal->tglbukti,
+                        'coa' => $detailJurnal->coa,
+                        'nominal' => $detailJurnal->nominal,
+                        'keterangan' => $detailJurnal->keterangan,
+                        'modifiedby' => $detailJurnal->modifiedby,
+                        'created_at' => date('d-m-Y H:i:s', strtotime($detailJurnal->created_at)),
+                        'updated_at' => date('d-m-Y H:i:s', strtotime($detailJurnal->updated_at)),
+                        'baris' => $detailJurnal->baris,
+                    ];
+                    $detailLogJurnalDetail[] = $datadetaillog;
+                }
+                
+                $logTrailJurnalDetail = [
+                    'namatabel' => 'JURNALUMUMDETAIL',
+                    'postingdari' => 'DELETE JURNAL UMUM DETAIL',
+                    'idtrans' => $jurnalumumheader->id,
+                    'nobuktitrans' => $jurnalumumheader->nobukti,
+                    'aksi' => 'DELETE',
+                    'datajson' => $detailLogJurnalDetail,
+                    'modifiedby' => auth('api')->user()->name
+                ];
+
+                $validatedLogTrailJurnalDetail = new StoreLogTrailRequest($logTrailJurnalDetail);
+                app(LogTrailController::class)->store($validatedLogTrailJurnalDetail);
 
                 DB::commit();
 

@@ -139,6 +139,7 @@ class JurnalUmumDetailController extends Controller
 
             return [
                 'error' => false,
+                'detail' => $jurnalumumDetail,
                 'id' => $jurnalumumDetail->id,
                 'tabel' => $jurnalumumDetail->getTable(),
             ];

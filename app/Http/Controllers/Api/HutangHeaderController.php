@@ -100,7 +100,6 @@ class HutangHeaderController extends Controller
 
             /* Store detail */
             $detaillog = [];
-            // $detaillog = [];
             for ($i = 0; $i < count($request->total_detail); $i++) {
 
                 $datadetail = [
@@ -139,23 +138,22 @@ class HutangHeaderController extends Controller
                     'updated_at' => date('d-m-Y H:i:s', strtotime($hutangHeader->updated_at)),
 
                 ];
-
-
                 $detaillog[] = $datadetaillog;
 
-                $datalogtrail = [
-                    'namatabel' => $tabeldetail,
-                    'postingdari' => 'ENTRY HUTANG DETAIL',
-                    'idtrans' =>  $iddetail,
-                    'nobuktitrans' => $hutangHeader->nobukti,
-                    'aksi' => 'ENTRY',
-                    'datajson' => $detaillog,
-                    'modifiedby' => $hutangHeader->modifiedby,
-                ];
-
-                $data = new StoreLogTrailRequest($datalogtrail);
-                app(LogTrailController::class)->store($data);
             }
+
+            $datalogtrail = [
+                'namatabel' => $tabeldetail,
+                'postingdari' => 'ENTRY HUTANG DETAIL',
+                'idtrans' =>  $hutangHeader->id,
+                'nobuktitrans' => $hutangHeader->nobukti,
+                'aksi' => 'ENTRY',
+                'datajson' => $detaillog,
+                'modifiedby' => $hutangHeader->modifiedby,
+            ];
+
+            $data = new StoreLogTrailRequest($datalogtrail);
+            app(LogTrailController::class)->store($data);
 
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
@@ -350,7 +348,7 @@ class HutangHeaderController extends Controller
                 $datalogtrail = [
                     'namatabel' => $tabeldetail,
                     'postingdari' => 'EDIT HUTANG DETAIL',
-                    'idtrans' =>  $iddetail,
+                    'idtrans' =>  $hutangheader->id,
                     'nobuktitrans' => $hutangheader->nobukti,
                     'aksi' => 'EDIT',
                     'datajson' => $detaillog,
@@ -450,6 +448,11 @@ class HutangHeaderController extends Controller
 
         DB::beginTransaction();
         try {
+
+            $getDetail = HutangDetail::where('hutang_id', $hutangheader->id)->get();
+            $getJurnalHeader = JurnalUmumHeader::where('nobukti', $hutangheader->nobukti)->first();
+            $getJurnalDetail = JurnalUmumDetail::where('nobukti', $hutangheader->nobukti)->get();
+
             JurnalUmumHeader::where('nobukti', $hutangheader->nobukti)->lockForUpdate()->delete();
             JurnalUmumDetail::where('nobukti', $hutangheader->nobukti)->lockForUpdate()->delete();
             $delete = HutangDetail::where('hutang_id', $hutangheader->id)->lockForUpdate()->delete();
@@ -463,11 +466,94 @@ class HutangHeaderController extends Controller
                     'nobuktitrans' => $hutangheader->nobukti,
                     'aksi' => 'DELETE',
                     'datajson' => $hutangheader->toArray(),
-                    'modifiedby' => $hutangheader->modifiedby
+                    'modifiedby' => auth('api')->user()->name
                 ];
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
+
+                // DELETE HUTANG DETAIL
+                $detailLogHutangDetail = [];
+
+                foreach ($getDetail as $detailHutang) {
+                    $datadetaillog = [
+                        'id' => $detailHutang->id,
+                        'hutang_id' => $detailHutang->hutang_id,
+                        'nobukti' => $detailHutang->nobukti,
+                        'supplier_id' => $detailHutang->supplier_id,
+                        'tgljatuhtempo' => date('Y-m-d', strtotime($detailHutang->tgljatuhtempo)),
+                        'total' => $detailHutang->total,
+                        'cicilan' => '',
+                        'totalbayar' => '',
+                        'keterangan' => $detailHutang->keterangan,
+                        'modifiedby' => $detailHutang->modifiedby,
+                        'created_at' => date('d-m-Y H:i:s', strtotime($detailHutang->created_at)),
+                        'updated_at' => date('d-m-Y H:i:s', strtotime($detailHutang->updated_at)),
+    
+                    ];
+                    $detailLogHutangDetail[] = $datadetaillog;
+                }
+
+                $logTrailHutangDetail = [
+                    'namatabel' => 'HUTANGDETAIL',
+                    'postingdari' => 'DELETE HUTANG DETAIL',
+                    'idtrans' => $hutangheader->id,
+                    'nobuktitrans' => $hutangheader->nobukti,
+                    'aksi' => 'DELETE',
+                    'datajson' => $detailLogHutangDetail,
+                    'modifiedby' => auth('api')->user()->name
+                ];
+
+                $validatedLogTrailHutangDetail = new StoreLogTrailRequest($logTrailHutangDetail);
+                app(LogTrailController::class)->store($validatedLogTrailHutangDetail);
+
+                // DELETE JURNAL HEADER
+                $logTrailJurnalHeader = [
+                    'namatabel' => 'JURNALUMUMHEADER',
+                    'postingdari' => 'DELETE JURNAL UMUM HEADER',
+                    'idtrans' => $getJurnalHeader->id,
+                    'nobuktitrans' => $getJurnalHeader->nobukti,
+                    'aksi' => 'DELETE',
+                    'datajson' => $getJurnalHeader->toArray(),
+                    'modifiedby' => auth('api')->user()->name
+                ];
+
+                $validatedLogTrailJurnalHeader = new StoreLogTrailRequest($logTrailJurnalHeader);
+                app(LogTrailController::class)->store($validatedLogTrailJurnalHeader);
+
+                
+                // DELETE JURNAL DETAIL
+                $detailLogJurnalDetail = [];
+
+                foreach ($getJurnalDetail as $detailJurnal) {
+                    $datadetaillog = [
+                        'id' => $detailJurnal->id,
+                        'jurnalumum_id' =>  $detailJurnal->jurnalumum_id,
+                        'nobukti' => $detailJurnal->nobukti,
+                        'tglbukti' => $detailJurnal->tglbukti,
+                        'coa' => $detailJurnal->coa,
+                        'nominal' => $detailJurnal->nominal,
+                        'keterangan' => $detailJurnal->keterangan,
+                        'modifiedby' => $detailJurnal->modifiedby,
+                        'created_at' => date('d-m-Y H:i:s', strtotime($detailJurnal->created_at)),
+                        'updated_at' => date('d-m-Y H:i:s', strtotime($detailJurnal->updated_at)),
+                        'baris' => $detailJurnal->baris,
+                    ];
+                    $detailLogJurnalDetail[] = $datadetaillog;
+                }
+                
+                $logTrailJurnalDetail = [
+                    'namatabel' => 'JURNALUMUMDETAIL',
+                    'postingdari' => 'DELETE JURNAL UMUM DETAIL',
+                    'idtrans' => $getJurnalHeader->id,
+                    'nobuktitrans' => $getJurnalHeader->nobukti,
+                    'aksi' => 'DELETE',
+                    'datajson' => $detailLogJurnalDetail,
+                    'modifiedby' => auth('api')->user()->name
+                ];
+
+                $validatedLogTrailJurnalDetail = new StoreLogTrailRequest($logTrailJurnalDetail);
+                app(LogTrailController::class)->store($validatedLogTrailJurnalDetail);
 
                 DB::commit();
 
@@ -512,20 +598,46 @@ class HutangHeaderController extends Controller
                 ->where('nobukti', '=', $nobukti)
                 ->first();
             $id = $fetchId->id;
-            $details = [];
+            $detailLog = [];
 
             foreach ($detail as $value) {
                 $value['jurnalumum_id'] = $id;
                 $detail = new StoreJurnalUmumDetailRequest($value);
-                app(JurnalUmumDetailController::class)->store($detail);
-                $details = $detail;
+                $datadetails = app(JurnalUmumDetailController::class)->store($detail);
+
+                $details = $datadetails['detail'];
+                $datadetaillog = [
+                    'id' => $details->id,
+                    'jurnalumum_id' =>  $details->jurnalumum_id,
+                    'nobukti' => $details->nobukti,
+                    'tglbukti' => $details->tglbukti,
+                    'coa' => $details->coa,
+                    'nominal' => $details->nominal,
+                    'keterangan' => $details->keterangan,
+                    'modifiedby' => $details->modifiedby,
+                    'created_at' => date('d-m-Y H:i:s', strtotime($details->created_at)),
+                    'updated_at' => date('d-m-Y H:i:s', strtotime($details->updated_at)),
+                    'baris' => $details->baris,
+                ];
+                $detailLog[] = $datadetaillog;
             }
-            // die;
+
+            $datalogtrail = [
+                'namatabel' => $datadetails['tabel'],
+                'postingdari' => 'ENTRY JURNAL UMUM DETAIL DARI HUTANG',
+                'idtrans' =>  $id,
+                'nobuktitrans' => $nobukti,
+                'aksi' => 'ENTRY',
+                'datajson' => $detailLog,
+                'modifiedby' => auth('api')->user()->name,
+            ];
+
+            $data = new StoreLogTrailRequest($datalogtrail);
+            app(LogTrailController::class)->store($data);
+           
             DB::commit();
             return [
                 'status' => true,
-                'head' => $jurnals,
-                'det' => $details,
             ];
         } catch (\Throwable $th) {
             DB::rollBack();

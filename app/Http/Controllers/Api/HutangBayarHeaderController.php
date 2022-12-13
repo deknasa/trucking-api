@@ -162,19 +162,20 @@ class HutangBayarHeaderController extends Controller
                 ];
                 $detaillog[] = $datadetaillog;
 
-                $datalogtrail = [
-                    'namatabel' => $tabeldetail,
-                    'postingdari' => 'ENTRY HUTANG BAYAR DETAIL',
-                    'idtrans' =>  $iddetail,
-                    'nobuktitrans' => $hutangbayarheader->nobukti,
-                    'aksi' => 'ENTRY',
-                    'datajson' => $detaillog,
-                    'modifiedby' => $hutangbayarheader->modifiedby,
-                ];
-
-                $data = new StoreLogTrailRequest($datalogtrail);
-                app(LogTrailController::class)->store($data);
             }
+
+            $datalogtrail = [
+                'namatabel' => $tabeldetail,
+                'postingdari' => 'ENTRY HUTANG BAYAR DETAIL',
+                'idtrans' =>  $hutangbayarheader->id,
+                'nobuktitrans' => $hutangbayarheader->nobukti,
+                'aksi' => 'ENTRY',
+                'datajson' => $detaillog,
+                'modifiedby' => $hutangbayarheader->modifiedby,
+            ];
+
+            $data = new StoreLogTrailRequest($datalogtrail);
+            app(LogTrailController::class)->store($data);
 
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
