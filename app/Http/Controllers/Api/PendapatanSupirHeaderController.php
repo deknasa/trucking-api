@@ -129,19 +129,20 @@ class PendapatanSupirHeaderController extends Controller
 
                     $detaillog[] = $datadetaillog;
 
-                    $datalogtrail = [
-                        'namatabel' => $tabeldetail,
-                        'postingdari' => 'ENTRY PENDAPATAN SUPIR DETAIL',
-                        'idtrans' =>  $iddetail,
-                        'nobuktitrans' => $pendapatanSupir->nobukti,
-                        'aksi' => 'ENTRY',
-                        'datajson' => $datadetaillog,
-                        'modifiedby' => $pendapatanSupir->modifiedby,
-                    ];
-
-                    $data = new StoreLogTrailRequest($datalogtrail);
-                    app(LogTrailController::class)->store($data);
                 }
+
+                $datalogtrail = [
+                    'namatabel' => $tabeldetail,
+                    'postingdari' => 'ENTRY PENDAPATAN SUPIR DETAIL',
+                    'idtrans' =>  $pendapatanSupir->id,
+                    'nobuktitrans' => $pendapatanSupir->nobukti,
+                    'aksi' => 'ENTRY',
+                    'datajson' => $detaillog,
+                    'modifiedby' => $pendapatanSupir->modifiedby,
+                ];
+
+                $data = new StoreLogTrailRequest($datalogtrail);
+                app(LogTrailController::class)->store($data);
 
                 $request->sortname = $request->sortname ?? 'id';
                 $request->sortorder = $request->sortorder ?? 'asc';
@@ -248,19 +249,19 @@ class PendapatanSupirHeaderController extends Controller
 
                     $detaillog[] = $datadetaillog;
 
-                    $datalogtrail = [
-                        'namatabel' => $tabeldetail,
-                        'postingdari' => 'EDIT PENDAPATAN SUPIR DETAIL',
-                        'idtrans' =>  $iddetail,
-                        'nobuktitrans' => $pendapatanSupirHeader->nobukti,
-                        'aksi' => 'EDIT',
-                        'datajson' => $datadetaillog,
-                        'modifiedby' => $pendapatanSupirHeader->modifiedby,
-                    ];
-
-                    $data = new StoreLogTrailRequest($datalogtrail);
-                    app(LogTrailController::class)->store($data);
                 }
+                $datalogtrail = [
+                    'namatabel' => $tabeldetail,
+                    'postingdari' => 'EDIT PENDAPATAN SUPIR DETAIL',
+                    'idtrans' =>  $pendapatanSupirHeader->id,
+                    'nobuktitrans' => $pendapatanSupirHeader->nobukti,
+                    'aksi' => 'EDIT',
+                    'datajson' => $detaillog,
+                    'modifiedby' => $pendapatanSupirHeader->modifiedby,
+                ];
+
+                $data = new StoreLogTrailRequest($datalogtrail);
+                app(LogTrailController::class)->store($data);
                 $request->sortname = $request->sortname ?? 'id';
                 $request->sortorder = $request->sortorder ?? 'asc';
 
@@ -292,6 +293,7 @@ class PendapatanSupirHeaderController extends Controller
         DB::beginTransaction();
 
         try {
+            $getDetail = PendapatanSupirDetail::where('pendapatansupir_id', $pendapatanSupirHeader->id)->get();
             $delete = PendapatanSupirDetail::where('pendapatansupir_id', $pendapatanSupirHeader->id)->lockForUpdate()->delete();
             $delete = PendapatanSupirHeader::destroy($pendapatanSupirHeader->id);
 
@@ -303,25 +305,39 @@ class PendapatanSupirHeaderController extends Controller
                     'nobuktitrans' => $pendapatanSupirHeader->nobukti,
                     'aksi' => 'DELETE',
                     'datajson' => $pendapatanSupirHeader->toArray(),
-                    'modifiedby' => $pendapatanSupirHeader->modifiedby
+                    'modifiedby' => auth('api')->user()->name
                 ];
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
 
-                DB::commit();
+                // DELETE PENDAPATAN SUPIR DETAIL
+                $logTrailPendapatanDetail = [
+                    'namatabel' => 'PENDAPATANSUPIRDETAIL',
+                    'postingdari' => 'DELETE PENDAPATAN SUPIR DETAIL',
+                    'idtrans' => $pendapatanSupirHeader->id,
+                    'nobuktitrans' => $pendapatanSupirHeader->nobukti,
+                    'aksi' => 'DELETE',
+                    'datajson' => $getDetail->toArray(),
+                    'modifiedby' => auth('api')->user()->name
+                ];
 
-                $selected = $this->getPosition($pendapatanSupirHeader, $pendapatanSupirHeader->getTable(), true);
-                $pendapatanSupirHeader->position = $selected->position;
-                $pendapatanSupirHeader->id = $selected->id;
-                $pendapatanSupirHeader->page = ceil($pendapatanSupirHeader->position / ($request->limit ?? 10));
+                $validatedLogTrailPendapatanDetail = new StoreLogTrailRequest($logTrailPendapatanDetail);
+                app(LogTrailController::class)->store($validatedLogTrailPendapatanDetail);
 
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil dihapus',
-                    'data' => $pendapatanSupirHeader
-                ]);
             }
+            DB::commit();
+
+            $selected = $this->getPosition($pendapatanSupirHeader, $pendapatanSupirHeader->getTable(), true);
+            $pendapatanSupirHeader->position = $selected->position;
+            $pendapatanSupirHeader->id = $selected->id;
+            $pendapatanSupirHeader->page = ceil($pendapatanSupirHeader->position / ($request->limit ?? 10));
+
+            return response([
+                'status' => true,
+                'message' => 'Berhasil dihapus',
+                'data' => $pendapatanSupirHeader
+            ]);
         } catch (\Throwable $th) {
             DB::rollBack();
 

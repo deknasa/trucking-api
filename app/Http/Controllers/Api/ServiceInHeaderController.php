@@ -287,37 +287,20 @@ class ServiceInHeaderController extends Controller
                     'nobuktitrans' => $serviceinheader->nobukti,
                     'aksi' => 'DELETE',
                     'datajson' => $serviceinheader->toArray(),
-                    'modifiedby' => $serviceinheader->modifiedby
+                    'modifiedby' => auth('api')->user()->name
                 ];
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
 
                 // DELETE SERVICE IN DETAIL
-                $detailLogServiceIn = [];
-
-                foreach ($getDetail as $detailServicein) {
-                    
-                $datadetaillog = [
-                    'id' => $detailServicein->id,
-                    'servicein_id' => $detailServicein->servicein_id,
-                    'nobukti' => $detailServicein->nobukti,
-                    'mekanik_id' => $detailServicein->mekanik_id,
-                    'keterangan' => $detailServicein->keterangan,
-                    'modifiedby' => $detailServicein->modifiedby,
-                    'created_at' => date('d-m-Y H:i:s', strtotime($detailServicein->created_at)),
-                    'updated_at' => date('d-m-Y H:i:s', strtotime($detailServicein->updated_at)),
-                ];
-                    $detailLogServiceIn[] = $datadetaillog;
-                }
-
                 $logTrailServiceIn = [
                     'namatabel' => 'SERVICEINDETAIL',
                     'postingdari' => 'DELETE SERVICE IN DETAIL',
                     'idtrans' => $serviceinheader->id,
                     'nobuktitrans' => $serviceinheader->nobukti,
                     'aksi' => 'DELETE',
-                    'datajson' => $detailLogServiceIn,
+                    'datajson' => $getDetail->toArray(),
                     'modifiedby' => auth('api')->user()->name
                 ];
 

@@ -86,10 +86,11 @@ class UpahRitasiController extends Controller
                         'nominalkomisi' => $request->nominalkomisi[$i] ?? 0,
                         'nominaltol' =>  $request->nominaltol[$i] ?? 0,
                         'liter' => $request->liter[$i] ?? 0,
-                        'modifiedby' => $request->modifiedby,
+                        'modifiedby' => $upahritasi->modifiedby,
                     ];
                     $data = new StoreUpahRitasiRincianRequest($datadetail);
                     $datadetails = app(UpahRitasiRincianController::class)->store($data);
+
                     if ($datadetails['error']) {
                         return response($datadetails, 422);
                     } else {
@@ -107,7 +108,7 @@ class UpahRitasiController extends Controller
                         'nominalkomisi' => $request->nominalkomisi[$i] ?? 0,
                         'nominaltol' =>  $request->nominaltol[$i] ?? 0,
                         'liter' => $request->liter[$i] ?? 0,
-                        'modifiedby' => $request->modifiedby,
+                        'modifiedby' => $upahritasi->modifiedby,
                         'created_at' => date('d-m-Y H:i:s', strtotime($upahritasi->created_at)),
                         'updated_at' => date('d-m-Y H:i:s', strtotime($upahritasi->updated_at)),
                     ];
@@ -119,11 +120,11 @@ class UpahRitasiController extends Controller
                 $datalogtrail = [
                     'namatabel' => $tabeldetail,
                     'postingdari' => 'ENTRY UPAH RITASI RINCIAN',
-                    'idtrans' =>  $iddetail,
-                    'nobuktitrans' => $iddetail,
+                    'idtrans' =>  $upahritasi->id,
+                    'nobuktitrans' => $upahritasi->id,
                     'aksi' => 'ENTRY',
                     'datajson' => $detaillog,
-                    'modifiedby' => $request->modifiedby,
+                    'modifiedby' => $upahritasi->modifiedby,
                 ];
 
                 $data = new StoreLogTrailRequest($datalogtrail);
@@ -212,7 +213,7 @@ class UpahRitasiController extends Controller
                         'nominalkomisi' => $request->nominalkomisi[$i] ?? 0,
                         'nominaltol' =>  $request->nominaltol[$i] ?? 0,
                         'liter' => $request->liter[$i] ?? 0,
-                        'modifiedby' => $request->modifiedby,
+                        'modifiedby' => $upahritasi->modifiedby,
                     ];
 
                     $data = new StoreUpahRitasiRincianRequest($datadetail);
@@ -235,7 +236,7 @@ class UpahRitasiController extends Controller
                         'nominalkomisi' => $request->nominalkomisi[$i] ?? 0,
                         'nominaltol' =>  $request->nominaltol[$i] ?? 0,
                         'liter' => $request->liter[$i] ?? 0,
-                        'modifiedby' => $request->modifiedby,
+                        'modifiedby' => $upahritasi->modifiedby,
                         'created_at' => date('d-m-Y H:i:s', strtotime($upahritasi->created_at)),
                         'updated_at' => date('d-m-Y H:i:s', strtotime($upahritasi->updated_at)),
                     ];
@@ -245,8 +246,8 @@ class UpahRitasiController extends Controller
                 $datalogtrail = [
                     'namatabel' => $tabeldetail,
                     'postingdari' => 'EDIT UPAH RITASI RINCIAN',
-                    'idtrans' =>  $iddetail,
-                    'nobuktitrans' => $iddetail,
+                    'idtrans' =>  $upahritasi->id,
+                    'nobuktitrans' => $upahritasi->id,
                     'aksi' => 'EDIT',
                     'datajson' => $detaillog,
                     'modifiedby' => $upahritasi->modifiedby,
@@ -284,22 +285,37 @@ class UpahRitasiController extends Controller
 
         DB::beginTransaction();
         try {
+            $getDetail = UpahRitasiRincian::where('upahritasi_id', $upahritasi->id)->get();
             $delete = UpahRitasiRincian::where('upahritasi_id', $upahritasi->id)->lockForUpdate()->delete();
             $delete = UpahRitasi::destroy($upahritasi->id);
 
             if ($delete) {
                 $logTrail = [
                     'namatabel' => strtoupper($upahritasi->getTable()),
-                    'postingdari' => 'DELETE UPAHRITASI',
+                    'postingdari' => 'DELETE UPAH RITASI',
                     'idtrans' => $upahritasi->id,
                     'nobuktitrans' => $upahritasi->id,
                     'aksi' => 'DELETE',
                     'datajson' => $upahritasi->toArray(),
-                    'modifiedby' => $upahritasi->modifiedby
+                    'modifiedby' => auth('api')->user()->name
                 ];
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
+
+                // DELETE UPAH RITASI RINCIAN
+                $logTrailUpahRitasiRincian = [
+                    'namatabel' => 'UPAHRITASIRINCIAN',
+                    'postingdari' => 'DELETE UPAH RITASI RINCIAN',
+                    'idtrans' => $upahritasi->id,
+                    'nobuktitrans' => $upahritasi->id,
+                    'aksi' => 'DELETE',
+                    'datajson' => $getDetail->toArray(),
+                    'modifiedby' => auth('api')->user()->name
+                ];
+
+                $validatedLogTrailUpahRitasiRincian = new StoreLogTrailRequest($logTrailUpahRitasiRincian);
+                app(LogTrailController::class)->store($validatedLogTrailUpahRitasiRincian);
 
                 DB::commit();
             }

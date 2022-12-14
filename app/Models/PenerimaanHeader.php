@@ -237,8 +237,6 @@ class PenerimaanHeader extends MyModel
             $this->table.tglapproval,
             $this->table.noresi,
             statusberkas.text as statusberkas,
-            cetak.text as statuscetak_text,
-            $this->table.statuscetak,
             $this->table.userberkas,
             $this->table.tglberkas,
             statuscetak.text as statuscetak,
@@ -251,7 +249,6 @@ class PenerimaanHeader extends MyModel
             )
         )
             ->leftJoin('pelanggan', 'penerimaanheader.pelanggan_id', 'pelanggan.id')
-            ->leftJoin('parameter as cetak','penerimaanheader.statuscetak','cetak.id')
             ->leftJoin('bank', 'penerimaanheader.bank_id', 'bank.id')
             ->leftJoin('cabang', 'penerimaanheader.cabang_id', 'cabang.id')
             ->leftJoin('parameter as statuskas', 'penerimaanheader.statuskas', 'statuskas.id')
@@ -298,8 +295,7 @@ class PenerimaanHeader extends MyModel
         $this->sort($query);
         $models = $this->filter($query);
         DB::table($temp)->insertUsing([
-            'id', 'nobukti', 'tglbukti', 'pelanggan_id', 'bank_id', 'keterangan', 'postingdari',
-            'diterimadari', 'tgllunas', 'cabang_id',  'statuskas', 'statusapproval', 'userapproval', 'tglapproval', 'noresi', 'statusberkas', 'userberkas', 'tglberkas','statuscetak','userbukacetak','tglbukacetak','jumlahcetak', 'modifiedby', 'created_at', 'updated_at'
+            'id', 'nobukti', 'tglbukti', 'pelanggan_id', 'bank_id', 'keterangan', 'postingdari', 'diterimadari', 'tgllunas', 'cabang_id',  'statuskas', 'statusapproval', 'userapproval', 'tglapproval', 'noresi', 'statusberkas', 'userberkas', 'tglberkas','statuscetak','userbukacetak','tglbukacetak','jumlahcetak', 'modifiedby', 'created_at', 'updated_at'
         ], $models);
 
 

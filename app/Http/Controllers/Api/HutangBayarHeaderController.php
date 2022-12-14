@@ -110,10 +110,10 @@ class HutangBayarHeaderController extends Controller
 
             for ($i = 0; $i < count($request->hutang_id); $i++) {
                 $hutang = HutangHeader::where('id', $request->hutang_id[$i])->first();
-                if($request->bayar[$i] > $hutang->total) {
-                        
+                if ($request->bayar[$i] > $hutang->total) {
+
                     $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'NBH')
-                    ->first();
+                        ->first();
                     return response([
                         'message' => "$query->keterangan",
                     ], 422);
@@ -161,7 +161,6 @@ class HutangBayarHeaderController extends Controller
                     'updated_at' => date('d-m-Y H:i:s', strtotime($hutangbayarheader->updated_at)),
                 ];
                 $detaillog[] = $datadetaillog;
-
             }
 
             $datalogtrail = [
@@ -181,20 +180,20 @@ class HutangBayarHeaderController extends Controller
             $request->sortorder = $request->sortorder ?? 'asc';
 
             //INSERT TO PENGELUARAN
-            $bank = Bank::select('coa','statusformatpengeluaran','tipe')->where('id', $hutangbayarheader->bank_id)->first();
-            $parameter = Parameter::where('id',$bank->statusformatpengeluaran)->first();
-           
-            
-            if($bank->tipe == 'KAS'){
-                $jenisTransaksi = Parameter::where('grp','JENIS TRANSAKSI')->where('text','KAS')->first();
+            $bank = Bank::select('coa', 'statusformatpengeluaran', 'tipe')->where('id', $hutangbayarheader->bank_id)->first();
+            $parameter = Parameter::where('id', $bank->statusformatpengeluaran)->first();
+
+
+            if ($bank->tipe == 'KAS') {
+                $jenisTransaksi = Parameter::where('grp', 'JENIS TRANSAKSI')->where('text', 'KAS')->first();
             }
-            if($bank->tipe == 'BANK'){
-                $jenisTransaksi = Parameter::where('grp','JENIS TRANSAKSI')->where('text','BANK')->first();
+            if ($bank->tipe == 'BANK') {
+                $jenisTransaksi = Parameter::where('grp', 'JENIS TRANSAKSI')->where('text', 'BANK')->first();
             }
             $group = $parameter->grp;
             $subgroup = $parameter->subgrp;
             $format = DB::table('parameter')
-                ->where('grp', $group )
+                ->where('grp', $group)
                 ->where('subgrp', $subgroup)
                 ->first();
 
@@ -204,8 +203,8 @@ class HutangBayarHeaderController extends Controller
             $pengeluaranRequest['table'] = 'pengeluaranheader';
             $pengeluaranRequest['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
 
-            $nobuktiPengeluaran= app(Controller::class)->getRunningNumber($pengeluaranRequest)->original['data'];
-                
+            $nobuktiPengeluaran = app(Controller::class)->getRunningNumber($pengeluaranRequest)->original['data'];
+
             $hutangbayarheader->pengeluaran_nobukti = $nobuktiPengeluaran;
             $hutangbayarheader->save();
 
@@ -217,7 +216,7 @@ class HutangBayarHeaderController extends Controller
                 'keterangan' => $request->keterangan,
                 'statusjenistransaksi' => $jenisTransaksi->id,
                 'postingdari' => 'ENTRY HUTANG BAYAR',
-                'statusapproval' => $statusApproval->id, 
+                'statusapproval' => $statusApproval->id,
                 'dibayarke' => '',
                 'cabang_id' => '',
                 'bank_id' => $hutangbayarheader->bank_id,
@@ -231,13 +230,13 @@ class HutangBayarHeaderController extends Controller
             ];
 
             $pengeluaranDetail = [];
-            $coaDebet = Parameter::where('grp','COA PEMBAYARAN HUTANG DEBET')->first();
+            $coaDebet = Parameter::where('grp', 'COA PEMBAYARAN HUTANG DEBET')->first();
 
             for ($i = 0; $i < count($request->hutang_id); $i++) {
                 $hutang = HutangHeader::where('id', $request->hutang_id[$i])->first();
-                $hutangDetail = HutangDetail::where('nobukti',$hutang->nobukti)->first();
+                $hutangDetail = HutangDetail::where('nobukti', $hutang->nobukti)->first();
                 $detail = [];
-                
+
                 $detail = [
                     'entriluar' => 1,
                     'nobukti' => $nobuktiPengeluaran,
@@ -253,11 +252,11 @@ class HutangBayarHeaderController extends Controller
                 ];
                 $pengeluaranDetail[] = $detail;
             }
-            
 
-            $pengeluaran = $this->storePengeluaran($pengeluaranHeader,$pengeluaranDetail);
-            
-            
+
+            $pengeluaran = $this->storePengeluaran($pengeluaranHeader, $pengeluaranDetail);
+
+
             // if (!$pengeluaran['status'] AND @$pengeluaran['errorCode'] == 2601) {
             //     goto ATAS;
             // }
@@ -299,7 +298,7 @@ class HutangBayarHeaderController extends Controller
     /**
      * @ClassName update
      */
-    public function update(UpdateHutangBayarHeaderRequest $request,HutangBayarHeader $hutangbayarheader)
+    public function update(UpdateHutangBayarHeaderRequest $request, HutangBayarHeader $hutangbayarheader)
     {
         DB::beginTransaction();
 
@@ -324,20 +323,20 @@ class HutangBayarHeaderController extends Controller
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-                
-                PengeluaranDetail::where('nobukti',$hutangbayarheader->pengeluaran_nobukti)->lockForUpdate()->delete();
-                PengeluaranHeader::where('nobukti',$hutangbayarheader->pengeluaran_nobukti)->lockForUpdate()->delete();
-                JurnalUmumDetail::where('nobukti',$hutangbayarheader->pengeluaran_nobukti)->lockForUpdate()->delete();
-                JurnalUmumHeader::where('nobukti',$hutangbayarheader->pengeluaran_nobukti)->lockForUpdate()->delete();
+
+                PengeluaranDetail::where('nobukti', $hutangbayarheader->pengeluaran_nobukti)->lockForUpdate()->delete();
+                PengeluaranHeader::where('nobukti', $hutangbayarheader->pengeluaran_nobukti)->lockForUpdate()->delete();
+                JurnalUmumDetail::where('nobukti', $hutangbayarheader->pengeluaran_nobukti)->lockForUpdate()->delete();
+                JurnalUmumHeader::where('nobukti', $hutangbayarheader->pengeluaran_nobukti)->lockForUpdate()->delete();
                 HutangBayarDetail::where('hutangbayar_id', $hutangbayarheader->id)->lockForUpdate()->delete();
                 /* Store detail */
                 $detaillog = [];
                 for ($i = 0; $i < count($request->hutang_id); $i++) {
                     $hutang = HutangHeader::where('id', $request->hutang_id[$i])->first();
-                    if($request->bayar[$i] > $hutang->total) {
-                        
+                    if ($request->bayar[$i] > $hutang->total) {
+
                         $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'NBH')
-                        ->first();
+                            ->first();
                         return response([
                             'message' => "$query->keterangan",
                         ], 422);
@@ -386,10 +385,10 @@ class HutangBayarHeaderController extends Controller
                 }
                 $datalogtrail = [
                     'namatabel' => $tabeldetail,
-                    'postingdari' => 'ENTRY HUTANG BAYAR DETAIL',
+                    'postingdari' => 'EDIT HUTANG BAYAR DETAIL',
                     'idtrans' =>  $iddetail,
                     'nobuktitrans' => $hutangbayarheader->nobukti,
-                    'aksi' => 'ENTRY',
+                    'aksi' => 'EDIT',
                     'datajson' => $detaillog,
                     'modifiedby' => $hutangbayarheader->modifiedby,
                 ];
@@ -401,21 +400,21 @@ class HutangBayarHeaderController extends Controller
             $request->sortorder = $request->sortorder ?? 'asc';
 
             //INSERT TO PENGELUARAN
-            $bank = Bank::select('coa','statusformatpengeluaran','tipe')->where('id', $hutangbayarheader->bank_id)->first();
-            $parameter = Parameter::where('id',$bank->statusformatpengeluaran)->first();
-        
+            $bank = Bank::select('coa', 'statusformatpengeluaran', 'tipe')->where('id', $hutangbayarheader->bank_id)->first();
+            $parameter = Parameter::where('id', $bank->statusformatpengeluaran)->first();
+
             $statusApproval = Parameter::where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
-            
-            if($bank->tipe == 'KAS'){
-                $jenisTransaksi = Parameter::where('grp','JENIS TRANSAKSI')->where('text','KAS')->first();
+
+            if ($bank->tipe == 'KAS') {
+                $jenisTransaksi = Parameter::where('grp', 'JENIS TRANSAKSI')->where('text', 'KAS')->first();
             }
-            if($bank->tipe == 'BANK'){
-                $jenisTransaksi = Parameter::where('grp','JENIS TRANSAKSI')->where('text','BANK')->first();
+            if ($bank->tipe == 'BANK') {
+                $jenisTransaksi = Parameter::where('grp', 'JENIS TRANSAKSI')->where('text', 'BANK')->first();
             }
             $group = $parameter->grp;
             $subgroup = $parameter->subgrp;
             $format = DB::table('parameter')
-                ->where('grp', $group )
+                ->where('grp', $group)
                 ->where('subgrp', $subgroup)
                 ->first();
 
@@ -425,8 +424,8 @@ class HutangBayarHeaderController extends Controller
             $pengeluaranRequest['table'] = 'pengeluaranheader';
             $pengeluaranRequest['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
 
-            $nobuktiPengeluaran= app(Controller::class)->getRunningNumber($pengeluaranRequest)->original['data'];
-                
+            $nobuktiPengeluaran = app(Controller::class)->getRunningNumber($pengeluaranRequest)->original['data'];
+
             $hutangbayarheader->pengeluaran_nobukti = $nobuktiPengeluaran;
             $hutangbayarheader->save();
 
@@ -438,7 +437,7 @@ class HutangBayarHeaderController extends Controller
                 'keterangan' => $request->keterangan,
                 'statusjenistransaksi' => $jenisTransaksi->id,
                 'postingdari' => 'ENTRY HUTANG BAYAR',
-                'statusapproval' => $statusApproval->id, 
+                'statusapproval' => $statusApproval->id,
                 'dibayarke' => '',
                 'cabang_id' => '',
                 'bank_id' => $hutangbayarheader->bank_id,
@@ -452,12 +451,12 @@ class HutangBayarHeaderController extends Controller
             ];
 
             $pengeluaranDetail = [];
-            $coaDebet = Parameter::where('grp','COA PEMBAYARAN HUTANG DEBET')->first();
+            $coaDebet = Parameter::where('grp', 'COA PEMBAYARAN HUTANG DEBET')->first();
             for ($i = 0; $i < count($request->hutang_id); $i++) {
                 $hutang = HutangHeader::where('id', $request->hutang_id[$i])->first();
-                $hutangDetail = HutangDetail::where('nobukti',$hutang->nobukti)->first();
+                $hutangDetail = HutangDetail::where('nobukti', $hutang->nobukti)->first();
                 $detail = [];
-                
+
                 $detail = [
                     'entriluar' => 1,
                     'nobukti' => $nobuktiPengeluaran,
@@ -473,11 +472,11 @@ class HutangBayarHeaderController extends Controller
                 ];
                 $pengeluaranDetail[] = $detail;
             }
-            
 
-            $pengeluaran = $this->storePengeluaran($pengeluaranHeader,$pengeluaranDetail);
-            
-            
+
+            $pengeluaran = $this->storePengeluaran($pengeluaranHeader, $pengeluaranDetail);
+
+
             // if (!$pengeluaran['status'] AND @$pengeluaran['errorCode'] == 2601) {
             //     goto ATAS;
             // }
@@ -510,27 +509,102 @@ class HutangBayarHeaderController extends Controller
     {
         DB::beginTransaction();
         try {
+            $getDetail = HutangBayarDetail::where('hutangbayar_id', $hutangbayarheader->id)->get();
+            $getPengeluaranHeader = PengeluaranHeader::where('nobukti', $hutangbayarheader->pengeluaran_nobukti)->first();
+            $getPengeluaranDetail = PengeluaranDetail::where('nobukti', $hutangbayarheader->pengeluaran_nobukti)->get();
+            $getJurnalHeader = JurnalUmumHeader::where('nobukti', $hutangbayarheader->pengeluaran_nobukti)->first();
+            $getJurnalDetail = JurnalUmumDetail::where('nobukti', $hutangbayarheader->pengeluaran_nobukti)->get();
 
-            $delete = PengeluaranDetail::where('nobukti',$hutangbayarheader->pengeluaran_nobukti)->lockForUpdate()->delete();
-            $delete = PengeluaranHeader::where('nobukti',$hutangbayarheader->pengeluaran_nobukti)->lockForUpdate()->delete();
-            $delete = JurnalUmumDetail::where('nobukti',$hutangbayarheader->pengeluaran_nobukti)->lockForUpdate()->delete();
-            $delete = JurnalUmumHeader::where('nobukti',$hutangbayarheader->pengeluaran_nobukti)->lockForUpdate()->delete();
+            $delete = PengeluaranDetail::where('nobukti', $hutangbayarheader->pengeluaran_nobukti)->lockForUpdate()->delete();
+            $delete = PengeluaranHeader::where('nobukti', $hutangbayarheader->pengeluaran_nobukti)->lockForUpdate()->delete();
+            $delete = JurnalUmumDetail::where('nobukti', $hutangbayarheader->pengeluaran_nobukti)->lockForUpdate()->delete();
+            $delete = JurnalUmumHeader::where('nobukti', $hutangbayarheader->pengeluaran_nobukti)->lockForUpdate()->delete();
             $delete = HutangBayarDetail::where('hutangbayar_id', $hutangbayarheader->id)->lockForUpdate()->delete();
             $delete = HutangBayarHeader::destroy($hutangbayarheader->id);
 
             if ($delete) {
                 $logTrail = [
                     'namatabel' => strtoupper($hutangbayarheader->getTable()),
-                    'postingdari' => 'DELETE PEMBAYARAN HUTANG HEADER',
+                    'postingdari' => 'DELETE HUTANG BAYAR HEADER',
                     'idtrans' => $hutangbayarheader->id,
                     'nobuktitrans' => $hutangbayarheader->nobukti,
                     'aksi' => 'DELETE',
                     'datajson' => $hutangbayarheader->toArray(),
-                    'modifiedby' => $hutangbayarheader->modifiedby
+                    'modifiedby' => auth('api')->user()->name
                 ];
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
+
+                // DELETE HUTANG BAYAR DETAIL
+                $logTrailHutangBayarDetail = [
+                    'namatabel' => 'HUTANGBAYARDETAIL',
+                    'postingdari' => 'DELETE HUTANG BAYAR DETAIL',
+                    'idtrans' => $hutangbayarheader->id,
+                    'nobuktitrans' => $hutangbayarheader->nobukti,
+                    'aksi' => 'DELETE',
+                    'datajson' => $getDetail->toArray(),
+                    'modifiedby' => auth('api')->user()->name
+                ];
+
+                $validatedLogTrailHutangBayarDetail = new StoreLogTrailRequest($logTrailHutangBayarDetail);
+                app(LogTrailController::class)->store($validatedLogTrailHutangBayarDetail);
+
+                // DELETE PENGELUARAN HEADER
+                $logTrailPengeluaranHeader = [
+                    'namatabel' => 'PENGELUARAN',
+                    'postingdari' => 'DELETE PENGELUARAN HEADER DARI HUTANG BAYAR',
+                    'idtrans' => $getPengeluaranHeader->id,
+                    'nobuktitrans' => $getPengeluaranHeader->nobukti,
+                    'aksi' => 'DELETE',
+                    'datajson' => $getPengeluaranHeader->toArray(),
+                    'modifiedby' => auth('api')->user()->name
+                ];
+
+                $validatedLogTrailPengeluaranHeader = new StoreLogTrailRequest($logTrailPengeluaranHeader);
+                app(LogTrailController::class)->store($validatedLogTrailPengeluaranHeader);
+               
+                // DELETE PENGELUARAN DETAIL
+                $logTrailPengeluaranDetail = [
+                    'namatabel' => 'PENGELUARANDETAIL',
+                    'postingdari' => 'DELETE PENGELUARAN DETAIL DARI HUTANG BAYAR',
+                    'idtrans' => $getPengeluaranHeader->id,
+                    'nobuktitrans' => $getPengeluaranHeader->nobukti,
+                    'aksi' => 'DELETE',
+                    'datajson' => $getPengeluaranDetail->toArray(),
+                    'modifiedby' => auth('api')->user()->name
+                ];
+
+                $validatedLogTrailPengeluaranDetail = new StoreLogTrailRequest($logTrailPengeluaranDetail);
+                app(LogTrailController::class)->store($validatedLogTrailPengeluaranDetail);
+
+                // DELETE JURNAL HEADER
+                $logTrailJurnalHeader = [
+                    'namatabel' => 'JURNALUMUMHEADER',
+                    'postingdari' => 'DELETE JURNAL UMUM HEADER DARI HUTANG BAYAR',
+                    'idtrans' => $getJurnalHeader->id,
+                    'nobuktitrans' => $getJurnalHeader->nobukti,
+                    'aksi' => 'DELETE',
+                    'datajson' => $getJurnalHeader->toArray(),
+                    'modifiedby' => auth('api')->user()->name
+                ];
+
+                $validatedLogTrailJurnalHeader = new StoreLogTrailRequest($logTrailJurnalHeader);
+                app(LogTrailController::class)->store($validatedLogTrailJurnalHeader);
+               
+                // DELETE JURNAL DETAIL
+                $logTrailJurnalDetail = [
+                    'namatabel' => 'JURNALUMUMDETAIL',
+                    'postingdari' => 'DELETE JURNAL UMUM DETAIL DARI HUTANG BAYAR',
+                    'idtrans' => $getJurnalHeader->id,
+                    'nobuktitrans' => $getJurnalHeader->nobukti,
+                    'aksi' => 'DELETE',
+                    'datajson' => $getJurnalDetail->toArray(),
+                    'modifiedby' => auth('api')->user()->name
+                ];
+
+                $validatedLogTrailJurnalDetail = new StoreLogTrailRequest($logTrailJurnalDetail);
+                app(LogTrailController::class)->store($validatedLogTrailJurnalDetail);
 
                 DB::commit();
 
@@ -558,7 +632,7 @@ class HutangBayarHeaderController extends Controller
             return response($th->getMessage());
         }
     }
-    
+
     public function fieldLength()
     {
         $data = [];
@@ -616,17 +690,17 @@ class HutangBayarHeaderController extends Controller
         ]);
     }
 
-    public function storePengeluaran($pengeluaranHeader,$pengeluaranDetail)
+    public function storePengeluaran($pengeluaranHeader, $pengeluaranDetail)
     {
         try {
 
-            
+
             $pengeluaran = new StorePengeluaranHeaderRequest($pengeluaranHeader);
             $header = app(PengeluaranHeaderController::class)->store($pengeluaran);
-           
+
             $nobukti = $pengeluaranHeader['nobukti'];
             $fetchPengeluaran = PengeluaranHeader::whereRaw("nobukti = '$nobukti'")->first();
-                
+
             $parameterController = new ParameterController;
             $statusApp = $parameterController->getparameterid('STATUS APPROVAL', 'STATUS APPROVAL', 'NON APPROVAL');
             $jurnalHeader = [
@@ -641,27 +715,52 @@ class HutangBayarHeaderController extends Controller
                 'statusformat' => 0,
                 'modifiedby' => auth('api')->user()->name,
             ];
-            $jurnal = new StoreJurnalUmumHeaderRequest($jurnalHeader);
-            app(JurnalUmumHeaderController::class)->store($jurnal);
-            $id = $fetchPengeluaran->id;
 
+            $storeJurnal = new StoreJurnalUmumHeaderRequest($jurnalHeader);
+            app(JurnalUmumHeaderController::class)->store($storeJurnal);
+            
+            $fetchJurnal = JurnalUmumHeader::whereRaw("nobukti = '$nobukti'")->first();
+         
+            $idPengeluaran = $fetchPengeluaran->id;
+
+            $detailLogPengeluaran = [];
+            $detailLogJurnal = [];
             foreach ($pengeluaranDetail as $value) {
-                
-                $value['pengeluaran_id'] = $id;
+
+                $value['pengeluaran_id'] = $idPengeluaran;
                 $pengeluaranDetail = new StorePengeluaranDetailRequest($value);
-                $tes = app(PengeluaranDetailController::class)->store($pengeluaranDetail);
-                
-                $fetchId = JurnalUmumHeader::select('id','tglbukti')
-                ->where('nobukti','=',$nobukti)
-                ->first();
-    
+                $detailPengeluaran = app(PengeluaranDetailController::class)->store($pengeluaranDetail);
+
+                $pengeluarans = $detailPengeluaran['detail'];
+                $dataDetailLogPengeluaran = [
+                    'id' => $pengeluarans->id,
+                    'pengeluaran_id' => $pengeluarans->pengeluaran_id,
+                    'nobukti' => $pengeluarans->nobukti,
+                    'alatbayar_id' => $pengeluarans->alatbayar_id,
+                    'nowarkat' => $pengeluarans->nowarkat,
+                    'tgljatuhtempo' =>  date('Y-m-d', strtotime($pengeluarans->tgljatuhtempo)),
+                    'nominal' => $pengeluarans->nominal,
+                    'coadebet' =>  $pengeluarans->coadebet,
+                    'coakredit' => $pengeluarans->coakredit,
+                    'keterangan' => $pengeluarans->keterangan,
+                    'bulanbeban' =>  date('Y-m-d', strtotime($pengeluarans->bulanbeban)) ?? '',
+                    'modifiedby' => $pengeluarans->modifiedby,
+                    'created_at' => date('d-m-Y H:i:s', strtotime($pengeluarans->created_at)),
+                    'updated_at' => date('d-m-Y H:i:s', strtotime($pengeluarans->updated_at)),
+                ];
+                $detailLogPengeluaran[] = $dataDetailLogPengeluaran;
+
+                // JURNAL
+                $fetchId = JurnalUmumHeader::select('id', 'tglbukti')
+                    ->where('nobukti', '=', $nobukti)
+                    ->first();
 
                 $getBaris = DB::table('jurnalumumdetail')->select('baris')->where('nobukti', $nobukti)->orderByDesc('baris')->first();
 
-                if(is_null($getBaris)) {
+                if (is_null($getBaris)) {
                     $baris = 0;
-                }else{
-                    $baris = $getBaris->baris+1;
+                } else {
+                    $baris = $getBaris->baris + 1;
                 }
 
                 for ($x = 0; $x <= 1; $x++) {
@@ -688,22 +787,65 @@ class HutangBayarHeaderController extends Controller
                             'baris' => $baris,
                         ];
                     }
+                    
                     $detail = new StoreJurnalUmumDetailRequest($datadetail);
-                    $tes = app(JurnalUmumDetailController::class)->store($detail); 
+                    $detailJurnal = app(JurnalUmumDetailController::class)->store($detail);
+                    
+                    $jurnals = $detailJurnal['detail'];
+                    $dataDetailLogJurnal = [
+                        'id' => $jurnals->id,
+                        'jurnalumum_id' =>  $jurnals->jurnalumum_id,
+                        'nobukti' => $jurnals->nobukti,
+                        'tglbukti' => $jurnals->tglbukti,
+                        'coa' => $jurnals->coa,
+                        'nominal' => $jurnals->nominal,
+                        'keterangan' => $jurnals->keterangan,
+                        'modifiedby' => $jurnals->modifiedby,
+                        'created_at' => date('d-m-Y H:i:s', strtotime($jurnals->created_at)),
+                        'updated_at' => date('d-m-Y H:i:s', strtotime($jurnals->updated_at)),
+                        'baris' => $jurnals->baris,
+                    ];
+                    $detailLogJurnal[] = $dataDetailLogJurnal;
                 }
+
             }
 
-            
+            $datalogtrail = [
+                'namatabel' => $detailPengeluaran['tabel'],
+                'postingdari' => 'ENTRY HUTANG BAYAR',
+                'idtrans' =>  $idPengeluaran,
+                'nobuktitrans' => $nobukti,
+                'aksi' => 'ENTRY',
+                'datajson' => $detailLogPengeluaran,
+                'modifiedby' => auth('api')->user()->name,
+            ];
+
+            $data = new StoreLogTrailRequest($datalogtrail);
+            app(LogTrailController::class)->store($data);
+
+
+            $datalogtrail = [
+                'namatabel' => $detailJurnal['tabel'],
+                'postingdari' => 'ENTRY PENGELUARAN DARI HUTANG BAYAR',
+                'idtrans' =>  $fetchJurnal->id,
+                'nobuktitrans' => $fetchJurnal->nobukti,
+                'aksi' => 'ENTRY',
+                'datajson' => $detailLogJurnal,
+                'modifiedby' => auth('api')->user()->name,
+            ];
+
+            $data = new StoreLogTrailRequest($datalogtrail);
+            app(LogTrailController::class)->store($data);
+
+
             return [
                 'status' => true
             ];
-
         } catch (\Throwable $th) {
             throw $th;
-            
         }
     }
-    
+
     public function printReport($id)
     {
         DB::beginTransaction();
@@ -717,7 +859,7 @@ class HutangBayarHeaderController extends Controller
                 $hutangBayar->statuscetak = $statusSudahCetak->id;
                 $hutangBayar->tglbukacetak = date('Y-m-d H:i:s');
                 $hutangBayar->userbukacetak = auth('api')->user()->name;
-                $hutangBayar->jumlahcetak = $hutangBayar->jumlahcetak+1;
+                $hutangBayar->jumlahcetak = $hutangBayar->jumlahcetak + 1;
 
                 if ($hutangBayar->save()) {
                     $logTrail = [
@@ -729,10 +871,10 @@ class HutangBayarHeaderController extends Controller
                         'datajson' => $hutangBayar->toArray(),
                         'modifiedby' => $hutangBayar->modifiedby
                     ];
-    
+
                     $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                     $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-    
+
                     DB::commit();
                 }
             }
@@ -744,7 +886,6 @@ class HutangBayarHeaderController extends Controller
         } catch (\Throwable $th) {
             throw $th;
         }
-        
     }
 
     public function cekvalidasi($id)
@@ -798,7 +939,7 @@ class HutangBayarHeaderController extends Controller
 
     public function comboapproval(Request $request)
     {
-        
+
         $params = [
             'status' => $request->status ?? '',
             'grp' => $request->grp ?? '',

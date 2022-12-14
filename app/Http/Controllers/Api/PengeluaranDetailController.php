@@ -173,6 +173,7 @@ class PengeluaranDetailController extends Controller
             DB::commit();
             return [
                 'error' => false,
+                'detail' => $pengeluaranDetail,
                 'id' => $pengeluaranDetail->id,
                 'tabel' => $pengeluaranDetail->getTable(),
             ];

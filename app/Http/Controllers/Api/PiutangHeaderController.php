@@ -482,31 +482,13 @@ class PiutangHeaderController extends Controller
                 app(LogTrailController::class)->store($validatedLogTrail);
 
                 // DELETE PIUTANG DETAIL
-                $detailLogPiutangDetail = [];
-
-                foreach ($getDetail as $detailPiutang) {
-                    $datadetaillog = [
-                        'id' => $detailPiutang->id,
-                        'piutang_id' => $detailPiutang->piutang_id,
-                        'nobukti' => $detailPiutang->nobukti,
-                        'nominal' => $detailPiutang->nominal,
-                        'keterangan' => $detailPiutang->keterangan,
-                        'invoice_nobukti' => $detailPiutang->invoice_nobukti,
-                        'modifiedby' => $detailPiutang->modifiedby,
-                        'created_at' => date('d-m-Y H:i:s', strtotime($detailPiutang->created_at)),
-                        'updated_at' => date('d-m-Y H:i:s', strtotime($detailPiutang->updated_at)),
-
-                    ];
-                    $detailLogPiutangDetail[] = $datadetaillog;
-                }
-
                 $logTrailPiutangDetail = [
                     'namatabel' => 'PIUTANGDETAIL',
                     'postingdari' => 'DELETE PIUTANG DETAIL',
                     'idtrans' => $piutangHeader->id,
                     'nobuktitrans' => $piutangHeader->nobukti,
                     'aksi' => 'DELETE',
-                    'datajson' => $detailLogPiutangDetail,
+                    'datajson' => $getDetail->toArray(),
                     'modifiedby' => auth('api')->user()->name
                 ];
 
@@ -516,7 +498,7 @@ class PiutangHeaderController extends Controller
                 // DELETE JURNAL HEADER
                 $logTrailJurnalHeader = [
                     'namatabel' => 'JURNALUMUMHEADER',
-                    'postingdari' => 'DELETE JURNAL UMUM HEADER',
+                    'postingdari' => 'DELETE JURNAL UMUM HEADER DARI PIUTANG',
                     'idtrans' => $getJurnalHeader->id,
                     'nobuktitrans' => $getJurnalHeader->nobukti,
                     'aksi' => 'DELETE',
@@ -529,32 +511,14 @@ class PiutangHeaderController extends Controller
 
                 
                 // DELETE JURNAL DETAIL
-                $detailLogJurnalDetail = [];
-
-                foreach ($getJurnalDetail as $detailJurnal) {
-                    $datadetaillog = [
-                        'id' => $detailJurnal->id,
-                        'jurnalumum_id' =>  $detailJurnal->jurnalumum_id,
-                        'nobukti' => $detailJurnal->nobukti,
-                        'tglbukti' => $detailJurnal->tglbukti,
-                        'coa' => $detailJurnal->coa,
-                        'nominal' => $detailJurnal->nominal,
-                        'keterangan' => $detailJurnal->keterangan,
-                        'modifiedby' => $detailJurnal->modifiedby,
-                        'created_at' => date('d-m-Y H:i:s', strtotime($detailJurnal->created_at)),
-                        'updated_at' => date('d-m-Y H:i:s', strtotime($detailJurnal->updated_at)),
-                        'baris' => $detailJurnal->baris,
-                    ];
-                    $detailLogJurnalDetail[] = $datadetaillog;
-                }
-
+                
                 $logTrailJurnalDetail = [
                     'namatabel' => 'JURNALUMUMDETAIL',
-                    'postingdari' => 'DELETE JURNAL UMUM DETAIL',
+                    'postingdari' => 'DELETE JURNAL UMUM DETAIL DARI PIUTANG',
                     'idtrans' => $getJurnalHeader->id,
                     'nobuktitrans' => $getJurnalHeader->nobukti,
                     'aksi' => 'DELETE',
-                    'datajson' => $detailLogJurnalDetail,
+                    'datajson' => $getJurnalDetail->toArray(),
                     'modifiedby' => auth('api')->user()->name
                 ];
 
@@ -621,7 +585,7 @@ class PiutangHeaderController extends Controller
 
             $datalogtrail = [
                 'namatabel' => $datadetails['tabel'],
-                'postingdari' => 'ENTRY JURNAL UMUM DETAIL DARI PIUTANG',
+                'postingdari' => 'ENTRY PIUTANG',
                 'idtrans' =>  $id,
                 'nobuktitrans' => $nobukti,
                 'aksi' => 'ENTRY',

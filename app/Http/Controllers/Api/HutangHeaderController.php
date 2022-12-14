@@ -283,7 +283,6 @@ class HutangHeaderController extends Controller
             $hutangheader->keterangan = $request->keterangan ?? '';
             $hutangheader->coa = $request->akunpusat;
             $hutangheader->pelanggan_id = $request->pelanggan_id;
-            $hutangheader->postingdari = $request->postingdari ?? 'ENTRY HUTANG';
             $hutangheader->total = array_sum($request->total_detail);
             $hutangheader->modifiedby = auth('api')->user()->name;
 
@@ -510,7 +509,7 @@ class HutangHeaderController extends Controller
                 // DELETE JURNAL HEADER
                 $logTrailJurnalHeader = [
                     'namatabel' => 'JURNALUMUMHEADER',
-                    'postingdari' => 'DELETE JURNAL UMUM HEADER',
+                    'postingdari' => 'DELETE JURNAL UMUM HEADER DARI HUTANG',
                     'idtrans' => $getJurnalHeader->id,
                     'nobuktitrans' => $getJurnalHeader->nobukti,
                     'aksi' => 'DELETE',
@@ -544,7 +543,7 @@ class HutangHeaderController extends Controller
                 
                 $logTrailJurnalDetail = [
                     'namatabel' => 'JURNALUMUMDETAIL',
-                    'postingdari' => 'DELETE JURNAL UMUM DETAIL',
+                    'postingdari' => 'DELETE JURNAL UMUM DETAIL DARI HUTANG',
                     'idtrans' => $getJurnalHeader->id,
                     'nobuktitrans' => $getJurnalHeader->nobukti,
                     'aksi' => 'DELETE',

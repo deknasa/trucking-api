@@ -120,11 +120,11 @@ class AbsensiSupirDetailController extends Controller
 
 
             DB::commit();
-            return response([
+            return [
                 'error' => false,
                 'id' => $AbsensiSupirDetail->id,
                 'tabel' => $AbsensiSupirDetail->getTable(),
-            ]);
+            ];
         } catch (\Throwable $th) {
             DB::rollBack();
             return response($th->getMessage());

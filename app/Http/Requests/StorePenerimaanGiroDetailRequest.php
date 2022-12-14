@@ -32,10 +32,8 @@ class StorePenerimaanGiroDetailRequest extends FormRequest
             'keterangan_detail.*' => 'required',
             'bank' => 'required|array',
             'bank.*' => 'required',
-            'bankpelanggan' => 'required|array',
-            'bankpelanggan.*' => 'required',
-            'jenisbiaya' => 'required|array',
-            'jenisbiaya.*' => 'required'
+            'nowarkat' => 'required|array',
+            'nowarkat.*' => 'required',
         ];
     }
 }
