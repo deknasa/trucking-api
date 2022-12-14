@@ -18,7 +18,7 @@ class PengeluaranStokSeeder extends Seeder
 
         DB::statement("delete PengeluaranStok");
         DB::statement("DBCC CHECKIDENT ('PengeluaranStok', RESEED, 1);");
-        PengeluaranStok::create(['kodepengeluaran' => 'SPK', 'keterangan' => 'SPK STOK', 'coa' => '', 'statusformat' => '135', 'statushitungstok' => '141', 'modifiedby' => 'ADMIN',]);
-        PengeluaranStok::create(['kodepengeluaran' => 'RBT', 'keterangan' => 'RETUR STOK', 'coa' => '', 'statusformat' => '139', 'statushitungstok' => '141', 'modifiedby' => 'ADMIN',]);
+        PengeluaranStok::create(['kodepengeluaran' => 'SPK', 'keterangan' => 'SPK STOK', 'coa' => '', 'statusformat' => '135', 'statushitungstok' => '177', 'modifiedby' => 'ADMIN',]);
+        PengeluaranStok::create(['kodepengeluaran' => 'RBT', 'keterangan' => 'RETUR STOK', 'coa' => '', 'statusformat' => '139', 'statushitungstok' => '177', 'modifiedby' => 'ADMIN',]);
     }
 }

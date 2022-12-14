@@ -30,7 +30,7 @@ class Stok extends MyModel
         $query = DB::table($this->table)->select(
             'stok.id',
             'stok.namastok',
-            'stok.statusaktif',
+            'parameter.memo as statusaktif',
             'stok.qtymin',
             'stok.qtymax',
             'stok.keterangan',
@@ -47,6 +47,7 @@ class Stok extends MyModel
             ->leftJoin('kelompok','stok.kelompok_id', 'kelompok.id')
             ->leftJoin('subkelompok','stok.subkelompok_id', 'subkelompok.id')
             ->leftJoin('kategori','stok.kategori_id', 'kategori.id')
+            ->leftJoin('parameter', 'stok.statusaktif', 'parameter.id')
             ->leftJoin('merk','stok.merk_id', 'merk.id');
             
         $this->totalRows = $query->count();

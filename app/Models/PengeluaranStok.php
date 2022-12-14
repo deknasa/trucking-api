@@ -37,7 +37,11 @@ class PengeluaranStok extends MyModel
             'pengeluaranstok.keterangan',
             'pengeluaranstok.coa',
             'parameterstatusformat.memo as statusformat',
+            'parameterstatusformat.text as statusformattext',
+            'parameterstatusformat.id as statusformatid',
             'parameterstatushitungstok.memo as statushitungstok',
+            'parameterstatushitungstok.text as statushitungstoktext',
+            'parameterstatushitungstok.id as statushitungstokid',            
             'pengeluaranstok.modifiedby',
             'pengeluaranstok.created_at',
             'pengeluaranstok.updated_at'
