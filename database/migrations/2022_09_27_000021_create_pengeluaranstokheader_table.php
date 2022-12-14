@@ -24,6 +24,7 @@ class CreatePengeluaranstokheaderTable extends Migration
             $table->unsignedBigInteger('pengeluaranstok_id')->default(0);
             $table->unsignedBigInteger('trado_id')->default('0');
             $table->unsignedBigInteger('gudang_id')->default('0');
+            $table->unsignedBigInteger('gandengan_id')->default('0');
             $table->unsignedBigInteger('supir_id')->default('0');
             $table->unsignedBigInteger('supplier_id')->default('0');
             $table->string('pengeluaranstok_nobukti',50)->default('');
@@ -42,6 +43,7 @@ class CreatePengeluaranstokheaderTable extends Migration
 
             $table->foreign('pengeluaranstok_id', 'pengeluaranstokheader_pengeluaranstok_pengeluaranstok_id_foreign')->references('id')->on('pengeluaranstok');  
             $table->foreign('trado_id', 'pengeluaranstokheader_trado_trado_id_foreign')->references('id')->on('trado');  
+            $table->foreign('gandengan_id', 'pengeluaranstokheader_gandengan_gandengan_id_foreign')->references('id')->on('gandengan');  
             $table->foreign('gudang_id', 'pengeluaranstokheader_gudang_gudang_id_foreign')->references('id')->on('gudang');  
             $table->foreign('supir_id', 'pengeluaranstokheader_gudang_supir_id_foreign')->references('id')->on('supir');  
             $table->foreign('supplier_id', 'pengeluaranstokheader_supplier_supplier_id_foreign')->references('id')->on('supplier');  
@@ -51,6 +53,7 @@ class CreatePengeluaranstokheaderTable extends Migration
 
         DB::statement("ALTER TABLE pengeluaranstokheader NOCHECK CONSTRAINT pengeluaranstokheader_pengeluaranstok_pengeluaranstok_id_foreign");
         DB::statement("ALTER TABLE pengeluaranstokheader NOCHECK CONSTRAINT pengeluaranstokheader_trado_trado_id_foreign");
+        DB::statement("ALTER TABLE pengeluaranstokheader NOCHECK CONSTRAINT pengeluaranstokheader_gandengan_gandengan_id_foreign");
         DB::statement("ALTER TABLE pengeluaranstokheader NOCHECK CONSTRAINT pengeluaranstokheader_gudang_gudang_id_foreign");
         DB::statement("ALTER TABLE pengeluaranstokheader NOCHECK CONSTRAINT pengeluaranstokheader_gudang_supir_id_foreign");
         DB::statement("ALTER TABLE pengeluaranstokheader NOCHECK CONSTRAINT pengeluaranstokheader_supplier_supplier_id_foreign");

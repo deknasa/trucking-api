@@ -41,6 +41,7 @@ class PenerimaanStokHeaderController extends Controller
      */
     public function store(StorePenerimaanStokHeaderRequest $request)
     {
+   
         DB::beginTransaction();
 
         try {

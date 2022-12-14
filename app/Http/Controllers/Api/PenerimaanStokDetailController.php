@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Http\Controllers\Controller;
 use App\Models\PenerimaanStokDetail;
+use App\Models\StokPersediaan;
 use App\Http\Requests\StorePenerimaanStokDetailRequest;
 use App\Http\Requests\UpdatePenerimaanStokDetailRequest;
 
@@ -101,6 +102,7 @@ class PenerimaanStokDetailController extends Controller
      */
     public function store(StorePenerimaanStokDetailRequest $request)
     {
+        // dd($request);
         DB::beginTransaction();
         $validator = Validator::make($request->all(), [
             'stok_id' => ['required',
@@ -140,6 +142,9 @@ class PenerimaanStokDetailController extends Controller
         $nominaldiscount = $total * ($request->persentasediscount/100);
         $total -= $nominaldiscount;
             try {
+
+                // $stokpersediaan  = StokPersediaan::lockForUpdate()->findOrFail($request->stok_id,);
+
                 $penerimaanStokDetail = new PenerimaanStokDetail();
                 $penerimaanStokDetail->penerimaanstokheader_id = $request->penerimaanstokheader_id;
                 $penerimaanStokDetail->nobukti = $request->nobukti;

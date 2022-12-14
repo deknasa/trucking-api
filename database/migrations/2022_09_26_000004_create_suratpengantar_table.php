@@ -34,6 +34,7 @@ class CreateSuratpengantarTable extends Migration
             $table->string('nocont2',50)->default('');
             $table->unsignedBigInteger('statuscontainer_id')->default('0');
             $table->unsignedBigInteger('trado_id')->default('0');
+            $table->unsignedBigInteger('gandengan_id')->default('0');
             $table->unsignedBigInteger('supir_id')->default('0');
             $table->string('nojob',50)->default('');
             $table->string('nojob2',50)->default('');
@@ -88,6 +89,7 @@ class CreateSuratpengantarTable extends Migration
             $table->foreign('container_id', 'suratpengantar_container_container_id_foreign')->references('id')->on('container');
             $table->foreign('statuscontainer_id', 'suratpengantar_statuscontainer_statuscontainer_id_foreign')->references('id')->on('statuscontainer');
             $table->foreign('trado_id', 'suratpengantar_trado_trado_id_foreign')->references('id')->on('trado');
+            $table->foreign('gandengan_id', 'suratpengantar_gandengan_gandengan_id_foreign')->references('id')->on('gandengan');
             $table->foreign('supir_id', 'suratpengantar_supir_supir_id_foreign')->references('id')->on('supir');
             $table->foreign('agen_id', 'suratpengantar_agen_agen_id_foreign')->references('id')->on('agen');
             $table->foreign('jenisorder_id', 'suratpengantar_jenisorder_jenisorder_id_foreign')->references('id')->on('jenisorder');
@@ -107,6 +109,7 @@ class CreateSuratpengantarTable extends Migration
         DB::statement("ALTER TABLE suratpengantar NOCHECK CONSTRAINT suratpengantar_container_container_id_foreign");
         DB::statement("ALTER TABLE suratpengantar NOCHECK CONSTRAINT suratpengantar_statuscontainer_statuscontainer_id_foreign");
         DB::statement("ALTER TABLE suratpengantar NOCHECK CONSTRAINT suratpengantar_trado_trado_id_foreign");
+        DB::statement("ALTER TABLE suratpengantar NOCHECK CONSTRAINT suratpengantar_gandengan_gandengan_id_foreign");
         DB::statement("ALTER TABLE suratpengantar NOCHECK CONSTRAINT suratpengantar_supir_supir_id_foreign");
         DB::statement("ALTER TABLE suratpengantar NOCHECK CONSTRAINT suratpengantar_agen_agen_id_foreign");
         DB::statement("ALTER TABLE suratpengantar NOCHECK CONSTRAINT suratpengantar_jenisorder_jenisorder_id_foreign");
