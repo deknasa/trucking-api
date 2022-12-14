@@ -119,19 +119,19 @@ class ServiceOutHeaderController extends Controller
                 $detaillog[] = $datadetaillog;
                 // }
 
-                $datalogtrail = [
-                    'namatabel' => $tabeldetail,
-                    'postingdari' => 'ENTRY SERVICE OUT',
-                    'idtrans' =>  $iddetail,
-                    'nobuktitrans' => $serviceout->nobukti,
-                    'aksi' => 'ENTRY',
-                    'datajson' => $detaillog,
-                    'modifiedby' => $serviceout->modifiedby,
-                ];
-
-                $data = new StoreLogTrailRequest($datalogtrail);
-                app(LogTrailController::class)->store($data);
             }
+            $datalogtrail = [
+                'namatabel' => $tabeldetail,
+                'postingdari' => 'ENTRY SERVICE OUT',
+                'idtrans' =>  $serviceout->id,
+                'nobuktitrans' => $serviceout->nobukti,
+                'aksi' => 'ENTRY',
+                'datajson' => $detaillog,
+                'modifiedby' => $serviceout->modifiedby,
+            ];
+
+            $data = new StoreLogTrailRequest($datalogtrail);
+            app(LogTrailController::class)->store($data);
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
             DB::commit();
@@ -237,7 +237,7 @@ class ServiceOutHeaderController extends Controller
                 $datalogtrail = [
                     'namatabel' => $tabeldetail,
                     'postingdari' => 'EDIT SERVICE OUT DETAIL',
-                    'idtrans' =>  $iddetail,
+                    'idtrans' =>  $serviceoutheader->id,
                     'nobuktitrans' => $serviceoutheader->nobukti,
                     'aksi' => 'EDIT',
                     'datajson' => $detaillog,
@@ -276,13 +276,14 @@ class ServiceOutHeaderController extends Controller
 
         DB::beginTransaction();
         try {
+            $getDetail = ServiceOutDetail::where('Serviceout_id', $serviceoutheader->id)->get();
             $delete = ServiceOutDetail::where('Serviceout_id', $serviceoutheader->id)->lockForUpdate()->delete();
             $delete = ServiceOutHeader::destroy($serviceoutheader->id);
 
             if ($delete) {
                 $logTrail = [
                     'namatabel' => strtoupper($serviceoutheader->getTable()),
-                    'postingdari' => 'DELETE SERVICEOUT HEADER',
+                    'postingdari' => 'DELETE SERVICE OUT HEADER',
                     'idtrans' => $serviceoutheader->id,
                     'nobuktitrans' => $serviceoutheader->nobukti,
                     'aksi' => 'DELETE',
@@ -292,6 +293,37 @@ class ServiceOutHeaderController extends Controller
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
+
+                // DELETE SERVICE OUT DETAIL
+                $detailLogServiceOut = [];
+
+                foreach ($getDetail as $detailServiceout) {
+
+                    $datadetaillog = [
+                        'id' => $detailServiceout->id,
+                        'serviceout_id' => $detailServiceout->serviceout_id,
+                        'nobukti' => $detailServiceout->nobukti,
+                        'servicein_nobukti' => $detailServiceout->servicein_nobukti,
+                        'keterangan' => $detailServiceout->keterangan,
+                        'modifiedby' => $detailServiceout->modifiedby,
+                        'created_at' => date('d-m-Y H:i:s', strtotime($detailServiceout->created_at)),
+                        'updated_at' => date('d-m-Y H:i:s', strtotime($detailServiceout->updated_at)),
+                    ];
+                    $detailLogServiceOut[] = $datadetaillog;
+                }
+
+                $logTrailServiceOut = [
+                    'namatabel' => 'SERVICEOUTDETAIL',
+                    'postingdari' => 'DELETE SERVICE OUT DETAIL',
+                    'idtrans' => $serviceoutheader->id,
+                    'nobuktitrans' => $serviceoutheader->nobukti,
+                    'aksi' => 'DELETE',
+                    'datajson' => $detailLogServiceOut,
+                    'modifiedby' => auth('api')->user()->name
+                ];
+
+                $validatedLogTrailServiceOutDetail = new StoreLogTrailRequest($logTrailServiceOut);
+                app(LogTrailController::class)->store($validatedLogTrailServiceOutDetail);
 
                 DB::commit();
 
@@ -306,7 +338,7 @@ class ServiceOutHeaderController extends Controller
                     'message' => 'Berhasil dihapus',
                     'data' => $serviceoutheader
                 ]);
-            } 
+            }
         } catch (\Throwable $th) {
             DB::rollBack();
             return response($th->getMessage());

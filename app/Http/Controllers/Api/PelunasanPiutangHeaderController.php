@@ -101,7 +101,6 @@ class PelunasanPiutangHeaderController extends Controller
 
                 $detaillog = [];
 
-
                 for ($i = 0; $i < count($request->piutang_id); $i++) {
                     $idpiutang = $request->piutang_id[$i];
                     $piutang = PiutangHeader::where('id', $idpiutang)->first();
@@ -186,27 +185,20 @@ class PelunasanPiutangHeaderController extends Controller
 
                     $detaillog[] = $datadetaillog;
 
-
-                    $dataid = LogTrail::select('id')
-                        ->where('idtrans', '=', $pelunasanpiutangheader->id)
-                        ->where('namatabel', '=', $pelunasanpiutangheader->getTable())
-                        ->orderBy('id', 'DESC')
-                        ->first();
-
-                    $datalogtrail = [
-                        'namatabel' => $tabeldetail,
-                        'postingdari' => 'ENTRY PELUNASAN PIUTANG DETAIL',
-                        'idtrans' =>  $dataid->id,
-                        'nobuktitrans' => $pelunasanpiutangheader->nobukti,
-                        'aksi' => 'ENTRY',
-                        'datajson' => $detaillog,
-                        'modifiedby' => $request->modifiedby,
-                    ];
-
-                    $data = new StoreLogTrailRequest($datalogtrail);
-                    app(LogTrailController::class)->store($data);
                 }
 
+                $datalogtrail = [
+                    'namatabel' => $tabeldetail,
+                    'postingdari' => 'ENTRY PELUNASAN PIUTANG DETAIL',
+                    'idtrans' =>  $pelunasanpiutangheader->id,
+                    'nobuktitrans' => $pelunasanpiutangheader->nobukti,
+                    'aksi' => 'ENTRY',
+                    'datajson' => $detaillog,
+                    'modifiedby' => $request->modifiedby,
+                ];
+
+                $data = new StoreLogTrailRequest($datalogtrail);
+                app(LogTrailController::class)->store($data);
 
                 $request->sortname = $request->sortname ?? 'id';
                 $request->sortorder = $request->sortorder ?? 'asc';
@@ -373,20 +365,21 @@ class PelunasanPiutangHeaderController extends Controller
 
                     $detaillog[] = $datadetaillog;
 
-                    $datalogtrail = [
-                        'namatabel' => $tabeldetail,
-                        'postingdari' => 'EDIT PELUNASAN PIUTANG DETAIL',
-                        'idtrans' =>  $iddetail,
-                        'nobuktitrans' => $pelunasanpiutangheader->nobukti,
-                        'aksi' => 'EDIT',
-                        'datajson' => $detaillog,
-                        'modifiedby' => $request->modifiedby,
-                    ];
-
-                    $data = new StoreLogTrailRequest($datalogtrail);
-
-                    app(LogTrailController::class)->store($data);
                 }
+
+                $datalogtrail = [
+                    'namatabel' => $tabeldetail,
+                    'postingdari' => 'EDIT PELUNASAN PIUTANG DETAIL',
+                    'idtrans' =>  $pelunasanpiutangheader->id,
+                    'nobuktitrans' => $pelunasanpiutangheader->nobukti,
+                    'aksi' => 'EDIT',
+                    'datajson' => $detaillog,
+                    'modifiedby' => $request->modifiedby,
+                ];
+
+                $data = new StoreLogTrailRequest($datalogtrail);
+
+                app(LogTrailController::class)->store($data);
             }
 
             $request->sortname = $request->sortname ?? 'id';
@@ -420,6 +413,7 @@ class PelunasanPiutangHeaderController extends Controller
     {
         DB::beginTransaction();
         try {
+            $getDetail = PelunasanPiutangDetail::where('pelunasanpiutang_id', $pelunasanpiutangheader->id)->get();
 
             $delete = PelunasanPiutangDetail::where('pelunasanpiutang_id', $pelunasanpiutangheader->id)->lockForUpdate()->delete();
             $delete = PelunasanPiutangHeader::destroy($pelunasanpiutangheader->id);
@@ -437,6 +431,50 @@ class PelunasanPiutangHeaderController extends Controller
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
+
+                // DELETE PELUNASAN PIUTANG DETAIL
+                $detailLogPelunasanPiutangDetail = [];
+
+                foreach ($getDetail as $detailPelunasan) {
+                   
+                    $datadetaillog = [
+                        'id' => $detailPelunasan->id,
+                        'pelunasanpiutang_id' => $detailPelunasan->pelunasanpiutang_id,
+                        'nobukti' => $detailPelunasan->nobukti,
+                        'pelanggan_id' => $detailPelunasan->pelanggan_id,
+                        'agen_id' => $detailPelunasan->agen_id,
+                        'nominal' => $detailPelunasan->nominal,
+                        'piutang_nobukti' => $detailPelunasan->piutang_nobukti,
+                        'cicilan' => '',
+                        'tglcair' => $detailPelunasan->tglcair,
+                        'keterangan' => $detailPelunasan->keterangan,
+                        'tgljt' => $detailPelunasan->tgljt,
+                        'penyesuaian' => $detailPelunasan->penyesuaian,
+                        'coapenyesuaian' => $detailPelunasan->coapenyesuaian,
+                        'invoice_nobukti' => $detailPelunasan->invoice_nobukti,
+                        'keteranganpenyesuaian' => $detailPelunasan->keteranganpenyesuaian,
+                        'nominallebihbayar' => $detailPelunasan->nominallebihbayar,
+                        'coalebihbayar' => $detailPelunasan->coalebihbayar,
+                        'modifiedby' => $detailPelunasan->modifiedby,
+                        'created_at' => date('d-m-Y H:i:s', strtotime($detailPelunasan->created_at)),
+                        'updated_at' => date('d-m-Y H:i:s', strtotime($detailPelunasan->updated_at)),
+
+                    ];
+                    $detailLogPelunasanPiutangDetail[] = $datadetaillog;
+                }
+
+                $logTrailPiutangDetail = [
+                    'namatabel' => 'PELUNASANPIUTANGDETAIL',
+                    'postingdari' => 'DELETE PELUNASAN PIUTANG DETAIL',
+                    'idtrans' => $pelunasanpiutangheader->id,
+                    'nobuktitrans' => $pelunasanpiutangheader->nobukti,
+                    'aksi' => 'DELETE',
+                    'datajson' => $detailLogPelunasanPiutangDetail,
+                    'modifiedby' => auth('api')->user()->name
+                ];
+
+                $validatedLogTrailPiutangDetail = new StoreLogTrailRequest($logTrailPiutangDetail);
+                app(LogTrailController::class)->store($validatedLogTrailPiutangDetail);
 
                 DB::commit();
 
