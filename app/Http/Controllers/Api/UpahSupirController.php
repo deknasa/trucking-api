@@ -65,7 +65,7 @@ class UpahSupirController extends Controller
                     'namatabel' => strtoupper($upahsupir->getTable()),
                     'postingdari' => 'ENTRY UPAH SUPIR',
                     'idtrans' => $upahsupir->id,
-                    'nobuktitrans' => '',
+                    'nobuktitrans' => $upahsupir->id,
                     'aksi' => 'ENTRY',
                     'datajson' => $upahsupir->toArray(),
                     'modifiedby' => $upahsupir->modifiedby
@@ -85,7 +85,7 @@ class UpahSupirController extends Controller
                         'nominalkomisi' => $request->nominalkomisi[$i] ?? 0,
                         'nominaltol' =>  $request->nominaltol[$i] ?? 0,
                         'liter' => $request->liter[$i] ?? 0,
-                        'modifiedby' => $request->modifiedby,
+                        'modifiedby' => auth('api')->user()->name,
                     ];
                     $data = new StoreUpahSupirRincianRequest($datadetail);
                     $datadetails = app(UpahSupirRincianController::class)->store($data);
@@ -106,7 +106,7 @@ class UpahSupirController extends Controller
                         'nominalkomisi' => $request->nominalkomisi[$i] ?? 0,
                         'nominaltol' =>  $request->nominaltol[$i] ?? 0,
                         'liter' => $request->liter[$i] ?? 0,
-                        'modifiedby' => $request->modifiedby,
+                        'modifiedby' => auth('api')->user()->name,
                         'created_at' => date('d-m-Y H:i:s', strtotime($upahsupir->created_at)),
                         'updated_at' => date('d-m-Y H:i:s', strtotime($upahsupir->updated_at)),
                     ];
@@ -213,7 +213,7 @@ class UpahSupirController extends Controller
                         'nominalkomisi' => $request->nominalkomisi[$i] ?? 0,
                         'nominaltol' =>  $request->nominaltol[$i] ?? 0,
                         'liter' => $request->liter[$i] ?? 0,
-                        'modifiedby' => $request->modifiedby,
+                        'modifiedby' => $upahsupir->modifiedby,
                     ];
 
                     $data = new StoreUpahSupirRincianRequest($datadetail);
@@ -236,7 +236,7 @@ class UpahSupirController extends Controller
                         'nominalkomisi' => $request->nominalkomisi[$i] ?? 0,
                         'nominaltol' =>  $request->nominaltol[$i] ?? 0,
                         'liter' => $request->liter[$i] ?? 0,
-                        'modifiedby' => $request->modifiedby,
+                        'modifiedby' => $upahsupir->modifiedby,
                         'created_at' => date('d-m-Y H:i:s', strtotime($upahsupir->created_at)),
                         'updated_at' => date('d-m-Y H:i:s', strtotime($upahsupir->updated_at)),
                     ];
@@ -251,7 +251,7 @@ class UpahSupirController extends Controller
                     'nobuktitrans' => $upahsupir->id,
                     'aksi' => 'EDIT',
                     'datajson' => $detaillog,
-                    'modifiedby' => $upahsupir->modifiedby,
+                    'modifiedby' => auth('api')->user()->name,
                 ];
 
                 $data = new StoreLogTrailRequest($datalogtrail);
@@ -294,51 +294,31 @@ class UpahSupirController extends Controller
             if ($delete) {
                 $logTrail = [
                     'namatabel' => strtoupper($upahsupir->getTable()),
-                    'postingdari' => 'DELETE UPAHSUPIR',
+                    'postingdari' => 'DELETE UPAH SUPIR',
                     'idtrans' => $upahsupir->id,
                     'nobuktitrans' => $upahsupir->id,
                     'aksi' => 'DELETE',
                     'datajson' => $upahsupir->toArray(),
-                    'modifiedby' => $upahsupir->modifiedby
+                    'modifiedby' => auth('api')->user()->name
                 ];
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
                 
                 // DELETE UPAH SUPIR RINCIAN
-                $detailLogPiutangDetail = [];
 
-                foreach ($getDetail as $detailUpah) {
-                   
-                    $datadetaillog = [
-                        'id' => $detailUpah->id,
-                        'upahsupir_id' => $detailUpah->upahsupir_id,
-                        'container_id' => $detailUpah->container_id,
-                        'statuscontainer_id' => $detailUpah->statuscontainer_id,
-                        'nominalsupir' => $detailUpah->nominalsupir,
-                        'nominalkenek' => $detailUpah->nominalkenek ?? 0,
-                        'nominalkomisi' => $detailUpah->nominalkomisi ?? 0,
-                        'nominaltol' =>  $detailUpah->nominaltol ?? 0,
-                        'liter' => $detailUpah->liter ?? 0,
-                        'modifiedby' => $detailUpah->modifiedby,
-                        'created_at' => date('d-m-Y H:i:s', strtotime($upahsupir->created_at)),
-                        'updated_at' => date('d-m-Y H:i:s', strtotime($upahsupir->updated_at)),
-                    ];
-                    $detailLogPiutangDetail[] = $datadetaillog;
-                }
-
-                $logTrailPiutangDetail = [
+                $logTrailUpahSupirRincian = [
                     'namatabel' => 'UPAHSUPIRRINCIAN',
                     'postingdari' => 'DELETE UPAH SUPIR RINCIAN',
                     'idtrans' => $upahsupir->id,
                     'nobuktitrans' => $upahsupir->id,
                     'aksi' => 'DELETE',
-                    'datajson' => $detailLogPiutangDetail,
+                    'datajson' => $getDetail->toArray(),
                     'modifiedby' => auth('api')->user()->name
                 ];
 
-                $validatedLogTrailPiutangDetail = new StoreLogTrailRequest($logTrailPiutangDetail);
-                app(LogTrailController::class)->store($validatedLogTrailPiutangDetail);
+                $validatedLogTrailUpahSupirRincian = new StoreLogTrailRequest($logTrailUpahSupirRincian);
+                app(LogTrailController::class)->store($validatedLogTrailUpahSupirRincian);
 
             }
 

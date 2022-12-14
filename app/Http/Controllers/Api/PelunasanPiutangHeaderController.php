@@ -426,42 +426,13 @@ class PelunasanPiutangHeaderController extends Controller
                     'nobuktitrans' => $pelunasanpiutangheader->nobukti,
                     'aksi' => 'DELETE',
                     'datajson' => $pelunasanpiutangheader->toArray(),
-                    'modifiedby' => $pelunasanpiutangheader->modifiedby
+                    'modifiedby' => auth('api')->user()->name
                 ];
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
 
                 // DELETE PELUNASAN PIUTANG DETAIL
-                $detailLogPelunasanPiutangDetail = [];
-
-                foreach ($getDetail as $detailPelunasan) {
-                   
-                    $datadetaillog = [
-                        'id' => $detailPelunasan->id,
-                        'pelunasanpiutang_id' => $detailPelunasan->pelunasanpiutang_id,
-                        'nobukti' => $detailPelunasan->nobukti,
-                        'pelanggan_id' => $detailPelunasan->pelanggan_id,
-                        'agen_id' => $detailPelunasan->agen_id,
-                        'nominal' => $detailPelunasan->nominal,
-                        'piutang_nobukti' => $detailPelunasan->piutang_nobukti,
-                        'cicilan' => '',
-                        'tglcair' => $detailPelunasan->tglcair,
-                        'keterangan' => $detailPelunasan->keterangan,
-                        'tgljt' => $detailPelunasan->tgljt,
-                        'penyesuaian' => $detailPelunasan->penyesuaian,
-                        'coapenyesuaian' => $detailPelunasan->coapenyesuaian,
-                        'invoice_nobukti' => $detailPelunasan->invoice_nobukti,
-                        'keteranganpenyesuaian' => $detailPelunasan->keteranganpenyesuaian,
-                        'nominallebihbayar' => $detailPelunasan->nominallebihbayar,
-                        'coalebihbayar' => $detailPelunasan->coalebihbayar,
-                        'modifiedby' => $detailPelunasan->modifiedby,
-                        'created_at' => date('d-m-Y H:i:s', strtotime($detailPelunasan->created_at)),
-                        'updated_at' => date('d-m-Y H:i:s', strtotime($detailPelunasan->updated_at)),
-
-                    ];
-                    $detailLogPelunasanPiutangDetail[] = $datadetaillog;
-                }
 
                 $logTrailPiutangDetail = [
                     'namatabel' => 'PELUNASANPIUTANGDETAIL',
@@ -469,7 +440,7 @@ class PelunasanPiutangHeaderController extends Controller
                     'idtrans' => $pelunasanpiutangheader->id,
                     'nobuktitrans' => $pelunasanpiutangheader->nobukti,
                     'aksi' => 'DELETE',
-                    'datajson' => $detailLogPelunasanPiutangDetail,
+                    'datajson' => $getDetail->toArray(),
                     'modifiedby' => auth('api')->user()->name
                 ];
 

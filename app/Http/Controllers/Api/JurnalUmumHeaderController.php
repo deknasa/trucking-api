@@ -95,7 +95,7 @@ class JurnalUmumHeaderController extends Controller
 
             $logTrail = [
                 'namatabel' => strtoupper($jurnalumum->getTable()),
-                'postingdari' => 'ENTRY JURNAL UMUM HEADER',
+                'postingdari' => $request->postingdari ?? 'ENTRY JURNAL UMUM HEADER',
                 'idtrans' => $jurnalumum->id,
                 'nobuktitrans' => $jurnalumum->nobukti,
                 'aksi' => 'ENTRY',
@@ -428,24 +428,6 @@ class JurnalUmumHeaderController extends Controller
                 app(LogTrailController::class)->store($validatedLogTrail);
 
                 // DELETE JURNAL DETAIL
-                $detailLogJurnalDetail = [];
-
-                foreach ($getDetail as $detailJurnal) {
-                    $datadetaillog = [
-                        'id' => $detailJurnal->id,
-                        'jurnalumum_id' =>  $detailJurnal->jurnalumum_id,
-                        'nobukti' => $detailJurnal->nobukti,
-                        'tglbukti' => $detailJurnal->tglbukti,
-                        'coa' => $detailJurnal->coa,
-                        'nominal' => $detailJurnal->nominal,
-                        'keterangan' => $detailJurnal->keterangan,
-                        'modifiedby' => $detailJurnal->modifiedby,
-                        'created_at' => date('d-m-Y H:i:s', strtotime($detailJurnal->created_at)),
-                        'updated_at' => date('d-m-Y H:i:s', strtotime($detailJurnal->updated_at)),
-                        'baris' => $detailJurnal->baris,
-                    ];
-                    $detailLogJurnalDetail[] = $datadetaillog;
-                }
                 
                 $logTrailJurnalDetail = [
                     'namatabel' => 'JURNALUMUMDETAIL',
@@ -453,33 +435,26 @@ class JurnalUmumHeaderController extends Controller
                     'idtrans' => $jurnalumumheader->id,
                     'nobuktitrans' => $jurnalumumheader->nobukti,
                     'aksi' => 'DELETE',
-                    'datajson' => $detailLogJurnalDetail,
+                    'datajson' => $getDetail->toArray(),
                     'modifiedby' => auth('api')->user()->name
                 ];
 
                 $validatedLogTrailJurnalDetail = new StoreLogTrailRequest($logTrailJurnalDetail);
                 app(LogTrailController::class)->store($validatedLogTrailJurnalDetail);
 
-                DB::commit();
+            } 
+            DB::commit();
 
-                $selected = $this->getPosition($jurnalumumheader, $jurnalumumheader->getTable(), true);
-                $jurnalumumheader->position = $selected->position;
-                $jurnalumumheader->id = $selected->id;
-                $jurnalumumheader->page = ceil($jurnalumumheader->position / ($request->limit ?? 10));
+            $selected = $this->getPosition($jurnalumumheader, $jurnalumumheader->getTable(), true);
+            $jurnalumumheader->position = $selected->position;
+            $jurnalumumheader->id = $selected->id;
+            $jurnalumumheader->page = ceil($jurnalumumheader->position / ($request->limit ?? 10));
 
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil dihapus',
-                    'data' => $jurnalumumheader
-                ]);
-            } else {
-                DB::rollBack();
-
-                return response([
-                    'status' => false,
-                    'message' => 'Gagal dihapus'
-                ]);
-            }
+            return response([
+                'status' => true,
+                'message' => 'Berhasil dihapus',
+                'data' => $jurnalumumheader
+            ]);
         } catch (\Throwable $th) {
             DB::rollBack();
             return response($th->getMessage());

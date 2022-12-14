@@ -122,28 +122,29 @@ class JurnalUmumPusatHeaderController extends Controller
                         ];
 
                         $detaillog[] = $datadetaillog;
-
-                        $datalogtrail = [
-                            'namatabel' => $tabeldetail,
-                            'postingdari' => 'ENTRY JURNAL UMUM PUSAT DETAIL',
-                            'idtrans' =>  $iddetail,
-                            'nobuktitrans' => $jurnalUmumPusat->nobukti,
-                            'aksi' => 'ENTRY',
-                            'datajson' => $detaillog,
-                            'modifiedby' => $request->modifiedby,
-                        ];
-
-                        $data = new StoreLogTrailRequest($datalogtrail);
-                        app(LogTrailController::class)->store($data);
                     }
+                    $datalogtrail = [
+                        'namatabel' => $tabeldetail,
+                        'postingdari' => 'ENTRY JURNAL UMUM PUSAT DETAIL',
+                        'idtrans' =>  $jurnalUmumPusat->id,
+                        'nobuktitrans' => $jurnalUmumPusat->nobukti,
+                        'aksi' => 'ENTRY',
+                        'datajson' => $detaillog,
+                        'modifiedby' => $jurnalUmumPusat->modifiedby,
+                    ];
+
+                    $data = new StoreLogTrailRequest($datalogtrail);
+                    app(LogTrailController::class)->store($data);
                 }
             } else {
 
                 for ($i = 0; $i < count($request->jurnalId); $i++) {
 
                     $get = JurnalUmumHeader::where('id', $request->jurnalId[$i])->first();
-                    $jurnalUmumPusat = JurnalUmumPusatHeader::where('nobukti',$get->nobukti)->first();
-                    if($jurnalUmumPusat != null) {
+                    $jurnalUmumPusat = JurnalUmumPusatHeader::where('nobukti', $get->nobukti)->first();
+                    if ($jurnalUmumPusat != null) {
+
+                        $getDetail = JurnalUmumPusatDetail::where('jurnalumumpusat_id', $jurnalUmumPusat->id)->get();
                         JurnalUmumPusatHeader::destroy($jurnalUmumPusat->id);
                         JurnalUmumPusatDetail::where('jurnalumumpusat_id', $jurnalUmumPusat->id)->lockForUpdate()->delete();
 
@@ -154,13 +155,28 @@ class JurnalUmumPusatHeaderController extends Controller
                             'nobuktitrans' => $jurnalUmumPusat->nobukti,
                             'aksi' => 'DELETE',
                             'datajson' => $jurnalUmumPusat->toArray(),
-                            'modifiedby' => $jurnalUmumPusat->modifiedby
+                            'modifiedby' => auth('api')->user()->name
                         ];
 
                         $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                         $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-                        
-                    }                    
+
+
+                        // DELETE JURNAL DETAIL
+
+                        $logTrailJurnalDetail = [
+                            'namatabel' => 'JURNALUMUMPUSATDETAIL',
+                            'postingdari' => 'DELETE JURNAL UMUM PUSAT DETAIL',
+                            'idtrans' => $jurnalUmumPusat->id,
+                            'nobuktitrans' => $jurnalUmumPusat->nobukti,
+                            'aksi' => 'DELETE',
+                            'datajson' => $getDetail->toArray(),
+                            'modifiedby' => auth('api')->user()->name
+                        ];
+
+                        $validatedLogTrailJurnalDetail = new StoreLogTrailRequest($logTrailJurnalDetail);
+                        app(LogTrailController::class)->store($validatedLogTrailJurnalDetail);
+                    }
 
                     $jurnalApprove = JurnalUmumHeader::lockForUpdate()->findOrFail($request->jurnalId[$i]);
                     $jurnalApprove->statusapproval = $request->approve;

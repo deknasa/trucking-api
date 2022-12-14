@@ -69,9 +69,12 @@ class PenerimaanGiroHeader extends MyModel
             $this->table.diterimadari,
             $this->table.tgllunas,
             statusapproval.text as statusapproval,
-            statuscetak.memo as statuscetak,
             $this->table.userapproval,
             $this->table.tglapproval,
+            statuscetak.text as statuscetak,
+            $this->table.userbukacetak,
+            $this->table.tglbukacetak,
+            $this->table.jumlahcetak,
             $this->table.modifiedby,
             $this->table.created_at,
             $this->table.updated_at"
@@ -147,6 +150,10 @@ class PenerimaanGiroHeader extends MyModel
             $table->string('statusapproval', 1000)->default('');
             $table->string('userapproval', 1000)->default('');
             $table->dateTime('tglapproval')->default('1900/1/1');
+            $table->string('statuscetak', 1000)->nullable('');
+            $table->string('userbukacetak', 1000)->default('');
+            $table->dateTime('tglbukacetak')->default('1900/1/1');
+            $table->integer('jumlahcetak')->Length(11)->default('0');
             $table->string('modifiedby', 50)->default('');
             $table->dateTime('created_at')->default('1900/1/1');
             $table->dateTime('updated_at')->default('1900/1/1');
@@ -159,7 +166,7 @@ class PenerimaanGiroHeader extends MyModel
         $this->sort($query);
         $models = $this->filter($query);
         DB::table($temp)->insertUsing([
-            'id', 'nobukti', 'tglbukti', 'pelanggan_id','keterangan', 'postingdari', 'diterimadari','tgllunas', 'statusapproval', 'userapproval', 'tglapproval', 'modifiedby', 'created_at', 'updated_at'
+            'id', 'nobukti', 'tglbukti', 'pelanggan_id','keterangan', 'postingdari', 'diterimadari','tgllunas', 'statusapproval', 'userapproval', 'tglapproval','statuscetak', 'userbukacetak', 'tglbukacetak','jumlahcetak', 'modifiedby', 'created_at', 'updated_at'
         ], $models);
 
 

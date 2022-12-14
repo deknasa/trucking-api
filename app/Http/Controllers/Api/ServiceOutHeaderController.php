@@ -288,29 +288,13 @@ class ServiceOutHeaderController extends Controller
                     'nobuktitrans' => $serviceoutheader->nobukti,
                     'aksi' => 'DELETE',
                     'datajson' => $serviceoutheader->toArray(),
-                    'modifiedby' => $serviceoutheader->modifiedby
+                    'modifiedby' => auth('api')->user()->name
                 ];
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
 
                 // DELETE SERVICE OUT DETAIL
-                $detailLogServiceOut = [];
-
-                foreach ($getDetail as $detailServiceout) {
-
-                    $datadetaillog = [
-                        'id' => $detailServiceout->id,
-                        'serviceout_id' => $detailServiceout->serviceout_id,
-                        'nobukti' => $detailServiceout->nobukti,
-                        'servicein_nobukti' => $detailServiceout->servicein_nobukti,
-                        'keterangan' => $detailServiceout->keterangan,
-                        'modifiedby' => $detailServiceout->modifiedby,
-                        'created_at' => date('d-m-Y H:i:s', strtotime($detailServiceout->created_at)),
-                        'updated_at' => date('d-m-Y H:i:s', strtotime($detailServiceout->updated_at)),
-                    ];
-                    $detailLogServiceOut[] = $datadetaillog;
-                }
 
                 $logTrailServiceOut = [
                     'namatabel' => 'SERVICEOUTDETAIL',
@@ -318,7 +302,7 @@ class ServiceOutHeaderController extends Controller
                     'idtrans' => $serviceoutheader->id,
                     'nobuktitrans' => $serviceoutheader->nobukti,
                     'aksi' => 'DELETE',
-                    'datajson' => $detailLogServiceOut,
+                    'datajson' => $getDetail->toArray(),
                     'modifiedby' => auth('api')->user()->name
                 ];
 

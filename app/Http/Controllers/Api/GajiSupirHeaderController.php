@@ -168,28 +168,21 @@ class GajiSupirHeaderController extends Controller
 
                     $detaillog[] = $datadetaillog;
 
-
-                    $dataid = LogTrail::select('id')
-                        ->where('idtrans', '=', $gajisupirheader->id)
-                        ->where('namatabel', '=', $gajisupirheader->getTable())
-                        ->orderBy('id', 'DESC')
-                        ->first();
-
-                    $datalogtrail = [
-                        'namatabel' => $tabeldetail,
-                        'postingdari' => 'ENTRY GAJI SUPIR DETAIL',
-                        'idtrans' =>  $dataid->id,
-                        'nobuktitrans' => $gajisupirheader->nobukti,
-                        'aksi' => 'ENTRY',
-                        'datajson' => $detaillog,
-                        'modifiedby' => $request->modifiedby,
-                    ];
-
-                    $data = new StoreLogTrailRequest($datalogtrail);
-                    app(LogTrailController::class)->store($data);
-
                     $urut++;
                 }
+                $datalogtrail = [
+                    'namatabel' => $tabeldetail,
+                    'postingdari' => 'ENTRY GAJI SUPIR DETAIL',
+                    'idtrans' =>  $gajisupirheader->id,
+                    'nobuktitrans' => $gajisupirheader->nobukti,
+                    'aksi' => 'ENTRY',
+                    'datajson' => $detaillog,
+                    'modifiedby' => $gajisupirheader->modifiedby,
+                ];
+
+                $data = new StoreLogTrailRequest($datalogtrail);
+                app(LogTrailController::class)->store($data);
+
 
                 $gajisupirheader->nominal = $total;
                 $gajisupirheader->total = $total;
@@ -353,21 +346,21 @@ class GajiSupirHeaderController extends Controller
 
                     $detaillog[] = $datadetaillog;
 
-                    $datalogtrail = [
-                        'namatabel' => $tabeldetail,
-                        'postingdari' => 'EDIT GAJI SUPIR DETAIL',
-                        'idtrans' =>  $iddetail,
-                        'nobuktitrans' => $gajisupirheader->nobukti,
-                        'aksi' => 'EDIT',
-                        'datajson' => $detaillog,
-                        'modifiedby' => $request->modifiedby,
-                    ];
-
-                    $data = new StoreLogTrailRequest($datalogtrail);
-
-                    app(LogTrailController::class)->store($data);
                     $urut++;
                 }
+                $datalogtrail = [
+                    'namatabel' => $tabeldetail,
+                    'postingdari' => 'EDIT GAJI SUPIR DETAIL',
+                    'idtrans' =>  $gajisupirheader->id,
+                    'nobuktitrans' => $gajisupirheader->nobukti,
+                    'aksi' => 'EDIT',
+                    'datajson' => $detaillog,
+                    'modifiedby' => $gajisupirheader->modifiedby,
+                ];
+
+                $data = new StoreLogTrailRequest($datalogtrail);
+
+                app(LogTrailController::class)->store($data);
             }
 
             $gajisupirheader->nominal = $total;
@@ -404,7 +397,7 @@ class GajiSupirHeaderController extends Controller
     {
         DB::beginTransaction();
         try {
-
+            $getDetail = GajiSupirDetail::where('gajisupir_id', $gajisupirheader->id)->get();
             $delete = GajiSupirDetail::where('gajisupir_id', $gajisupirheader->id)->lockForUpdate()->delete();
             $delete = GajiSupirHeader::destroy($gajisupirheader->id);
 
@@ -416,32 +409,39 @@ class GajiSupirHeaderController extends Controller
                     'nobuktitrans' => $gajisupirheader->nobukti,
                     'aksi' => 'DELETE',
                     'datajson' => $gajisupirheader->toArray(),
-                    'modifiedby' => $gajisupirheader->modifiedby
+                    'modifiedby' => auth('api')->user()->name
                 ];
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
 
-                DB::commit();
+                // DELETE GAJI SUPIR DETAIL
+                $logTrailGajiSupirDetail = [
+                    'namatabel' => 'GAJISUPIRDETAIL',
+                    'postingdari' => 'DELETE GAJI SUPIR DETAIL',
+                    'idtrans' => $gajisupirheader->id,
+                    'nobuktitrans' => $gajisupirheader->nobukti,
+                    'aksi' => 'DELETE',
+                    'datajson' => $getDetail->toArray(),
+                    'modifiedby' => auth('api')->user()->name
+                ];
 
-                $selected = $this->getPosition($gajisupirheader, $gajisupirheader->getTable(), true);
-                $gajisupirheader->position = $selected->position;
-                $gajisupirheader->id = $selected->id;
-                $gajisupirheader->page = ceil($gajisupirheader->position / ($request->limit ?? 10));
+                $validatedLogTrailGajiSupirDetail = new StoreLogTrailRequest($logTrailGajiSupirDetail);
+                app(LogTrailController::class)->store($validatedLogTrailGajiSupirDetail);
+               
+            }  
+            DB::commit();
 
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil dihapus',
-                    'data' => $gajisupirheader
-                ]);
-            } else {
-                DB::rollBack();
+            $selected = $this->getPosition($gajisupirheader, $gajisupirheader->getTable(), true);
+            $gajisupirheader->position = $selected->position;
+            $gajisupirheader->id = $selected->id;
+            $gajisupirheader->page = ceil($gajisupirheader->position / ($request->limit ?? 10));
 
-                return response([
-                    'status' => false,
-                    'message' => 'Gagal dihapus'
-                ]);
-            }
+            return response([
+                'status' => true,
+                'message' => 'Berhasil dihapus',
+                'data' => $gajisupirheader
+            ]);
         } catch (\Throwable $th) {
             DB::rollBack();
             return response($th->getMessage());

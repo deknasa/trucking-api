@@ -56,8 +56,6 @@ class PenerimaanHeaderController extends Controller
 
             $tanpaprosesnobukti = $request->tanpaprosesnobukti ?? 0;
 
-            
-            
             $content = new Request();
             $bankid = $request->bank_id;
             $querysubgrppenerimaan = DB::table('bank')
@@ -90,7 +88,7 @@ class PenerimaanHeaderController extends Controller
             $penerimaanHeader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $penerimaanHeader->pelanggan_id = $request->pelanggan_id;
             $penerimaanHeader->keterangan = $request->keterangan ?? '';
-            $penerimaanHeader->postingdari = $request->postingdari ?? 'PENERIMAAN';
+            $penerimaanHeader->postingdari = $request->postingdari ?? 'ENTRY PENERIMAAN KAS/BANK';
             $penerimaanHeader->diterimadari = $request->diterimadari ?? '';
             $penerimaanHeader->tgllunas = date('Y-m-d', strtotime($request->tgllunas));
             $penerimaanHeader->cabang_id = $request->cabang_id ?? 0;
@@ -113,7 +111,7 @@ class PenerimaanHeaderController extends Controller
 
             $logTrail = [
                 'namatabel' => strtoupper($penerimaanHeader->getTable()),
-                'postingdari' => 'ENTRY PENERIMAAN KAS/BANK',
+                'postingdari' => 'ENTRY PENERIMAAN HEADER',
                 'idtrans' => $penerimaanHeader->id,
                 'nobuktitrans' => $penerimaanHeader->nobukti,
                 'aksi' => 'ENTRY',
@@ -160,6 +158,7 @@ class PenerimaanHeaderController extends Controller
                     }
     
                     $datadetaillog = [
+                        'id' => $iddetail,
                         'penerimaan_id' => $penerimaanHeader->id,
                         'nobukti' => $penerimaanHeader->nobukti,
                         'nowarkat' => $request->nowarkat[$i],
@@ -181,29 +180,20 @@ class PenerimaanHeaderController extends Controller
                     ];
                     $detaillog[] = $datadetaillog;
     
-                  
-                    $dataid = LogTrail::select('id')
-                        ->where('nobuktitrans', '=', $penerimaanHeader->nobukti)
-                        ->where('namatabel', '=', $penerimaanHeader->getTable())
-                        ->orderBy('id', 'DESC')
-                        ->first();
-    
-                    $datalogtrail = [
-                        'namatabel' => $tabeldetail,
-                        'postingdari' => 'ENTRY PENERIMAAN DETAIL KAS/BANK',
-                        'idtrans' =>  $dataid->id,
-                        'nobuktitrans' => $penerimaanHeader->nobukti,
-                        'aksi' => 'ENTRY',
-                        'datajson' => $detaillog,
-                        'modifiedby' => auth('api')->user()->name,
-                    ];
-    
-    
-                    $data = new StoreLogTrailRequest($datalogtrail);
-                    app(LogTrailController::class)->store($data);
                 }
     
-          
+                $datalogtrail = [
+                    'namatabel' => $tabeldetail,
+                    'postingdari' => 'ENTRY PENERIMAAN DETAIL',
+                    'idtrans' =>  $penerimaanHeader->id,
+                    'nobuktitrans' => $penerimaanHeader->nobukti,
+                    'aksi' => 'ENTRY',
+                    'datajson' => $detaillog,
+                    'modifiedby' => auth('api')->user()->name,
+                ];
+
+                $data = new StoreLogTrailRequest($datalogtrail);
+                app(LogTrailController::class)->store($data);          
 
                 $request->sortname = $request->sortname ?? 'id';
                 $request->sortorder = $request->sortorder ?? 'asc';
@@ -217,7 +207,7 @@ class PenerimaanHeaderController extends Controller
                         'nobukti' => $penerimaanHeader->nobukti,
                         'tgl' => date('Y-m-d', strtotime($request->tglbukti)),
                         'keterangan' => $request->keterangan,
-                        'postingdari' => 'ENTRY PENERIMAAN KAS',
+                        'postingdari' => 'ENTRY PENERIMAAN KAS/BANK',
                         'statusapproval' => $statusApp->id,
                         'userapproval' => "",
                         'tglapproval' => "",
@@ -351,7 +341,6 @@ class PenerimaanHeaderController extends Controller
             $penerimaanheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $penerimaanheader->pelanggan_id = $request->pelanggan_id;
             $penerimaanheader->keterangan = $request->keterangan ?? '';
-            $penerimaanheader->postingdari = $request->postingdari ?? 'PENERIMAAN';
             $penerimaanheader->diterimadari = $request->diterimadari ?? '';
             $penerimaanheader->tgllunas = date('Y-m-d', strtotime($request->tgllunas));
             $penerimaanheader->cabang_id = $request->cabang_id ?? 0;
@@ -365,7 +354,7 @@ class PenerimaanHeaderController extends Controller
             if ($penerimaanheader->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($penerimaanheader->getTable()),
-                    'postingdari' => 'EDIT PENERIMAAN KAS',
+                    'postingdari' => 'EDIT PENERIMAAN HEADER',
                     'idtrans' => $penerimaanheader->id,
                     'nobuktitrans' => $penerimaanheader->nobukti,
                     'aksi' => 'EDIT',
@@ -418,6 +407,7 @@ class PenerimaanHeaderController extends Controller
                 }
 
                 $datadetaillog = [
+                    'id' => $iddetail,
                     'penerimaan_id' => $penerimaanheader->id,
                     'nobukti' => $penerimaanheader->nobukti,
                     'nowarkat' => $request->nowarkat[$i],
@@ -440,16 +430,10 @@ class PenerimaanHeaderController extends Controller
                 $detaillog[] = $datadetaillog;
             }
 
-            $dataid = LogTrail::select('id')
-                ->where('nobuktitrans', '=', $penerimaanheader->nobukti)
-                ->where('namatabel', '=', $penerimaanheader->getTable())
-                ->orderBy('id', 'DESC')
-                ->first();
-
             $datalogtrail = [
                 'namatabel' => $tabeldetail,
-                'postingdari' => 'EDIT PENERIMAAN DETAIL KAS/BANK',
-                'idtrans' =>  $dataid->id,
+                'postingdari' => 'EDIT PENERIMAAN DETAIL',
+                'idtrans' =>  $penerimaanheader->id,
                 'nobuktitrans' => $penerimaanheader->nobukti,
                 'aksi' => 'EDIT',
                 'datajson' => $detaillog,
@@ -471,7 +455,7 @@ class PenerimaanHeaderController extends Controller
                     'nobukti' => $penerimaanheader->nobukti,
                     'tgl' => date('Y-m-d', strtotime($request->tglbukti)),
                     'keterangan' => $request->keterangan,
-                    'postingdari' => 'ENTRY PENERIMAAN KAS',
+                    'postingdari' => 'ENTRY PENERIMAAN KAS/BANK',
                     'statusapproval' => $statusApp->id,
                     'userapproval' => "",
                     'tglapproval' => "",
@@ -546,44 +530,86 @@ class PenerimaanHeaderController extends Controller
         DB::beginTransaction();
 
         try {
+            $getDetail = PenerimaanDetail::where('penerimaan_id', $penerimaanheader->id)->get();
+            $getJurnalHeader = JurnalUmumHeader::where('nobukti', $penerimaanheader->nobukti)->first();
+            $getJurnalDetail = JurnalUmumDetail::where('nobukti', $penerimaanheader->nobukti)->get();
+
             $delete = PenerimaanDetail::where('penerimaan_id', $penerimaanheader->id)->lockForUpdate()->delete();
             $delete = JurnalUmumHeader::where('nobukti', $penerimaanheader->nobukti)->lockForUpdate()->delete();
             $delete = JurnalUmumDetail::where('nobukti', $penerimaanheader->nobukti)->lockForUpdate()->delete();
 
             $delete = PenerimaanHeader::destroy($penerimaanheader->id);
 
-            $datalogtrail = [
-                'namatabel' => strtoupper($penerimaanheader->getTable()),
-                'postingdari' => 'DELETE PENERIMAAN KAS/BANK',
-                'idtrans' => $penerimaanheader->id,
-                'nobuktitrans' => $penerimaanheader->nobukti,
-                'aksi' => 'DELETE',
-                'datajson' => $penerimaanheader->toArray(),
-                'modifiedby' => $penerimaanheader->modifiedby,
-            ];
-
-            $data = new StoreLogTrailRequest($datalogtrail);
-            app(LogTrailController::class)->store($data);
 
             if ($delete) {
-                DB::commit();
+                $datalogtrail = [
+                    'namatabel' => strtoupper($penerimaanheader->getTable()),
+                    'postingdari' => 'DELETE PENERIMAAN HEADER',
+                    'idtrans' => $penerimaanheader->id,
+                    'nobuktitrans' => $penerimaanheader->nobukti,
+                    'aksi' => 'DELETE',
+                    'datajson' => $penerimaanheader->toArray(),
+                    'modifiedby' => auth('api')->user()->name
+                ];
+    
+                $data = new StoreLogTrailRequest($datalogtrail);
+                app(LogTrailController::class)->store($data);
+               
+                // DELETE PENERIMAAN DETAIL
+                $logTrailPenerimaanDetail = [
+                    'namatabel' => 'PENERIMAANDETAIL',
+                    'postingdari' => 'DELETE PENERIMAAN DETAIL',
+                    'idtrans' => $penerimaanheader->id,
+                    'nobuktitrans' => $penerimaanheader->nobukti,
+                    'aksi' => 'DELETE',
+                    'datajson' => $getDetail->toArray(),
+                    'modifiedby' => auth('api')->user()->name
+                ];
 
-                $selected = $this->getPosition($penerimaanheader, $penerimaanheader->getTable(), true);
-                $penerimaanheader->position = $selected->position;
-                $penerimaanheader->id = $selected->id;
-                $penerimaanheader->page = ceil($penerimaanheader->position / ($request->limit ?? 10));
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil dihapus',
-                    'data' => $penerimaanheader
-                ]);
-            } else {
-                DB::rollBack();
-                return response([
-                    'status' => false,
-                    'message' => 'Gagal dihapus'
-                ]);
-            }
+                $validatedLogTrailPenerimaanDetail = new StoreLogTrailRequest($logTrailPenerimaanDetail);
+                app(LogTrailController::class)->store($validatedLogTrailPenerimaanDetail);
+
+                // DELETE JURNAL HEADER
+                $logTrailJurnalHeader = [
+                    'namatabel' => 'JURNALUMUMHEADER',
+                    'postingdari' => 'DELETE JURNAL UMUM HEADER DARI PENERIMAAN HEADER',
+                    'idtrans' => $getJurnalHeader->id,
+                    'nobuktitrans' => $getJurnalHeader->nobukti,
+                    'aksi' => 'DELETE',
+                    'datajson' => $getJurnalHeader->toArray(),
+                    'modifiedby' => auth('api')->user()->name
+                ];
+
+                $validatedLogTrailJurnalHeader = new StoreLogTrailRequest($logTrailJurnalHeader);
+                app(LogTrailController::class)->store($validatedLogTrailJurnalHeader);
+
+                
+                // DELETE JURNAL DETAIL
+                
+                $logTrailJurnalDetail = [
+                    'namatabel' => 'JURNALUMUMDETAIL',
+                    'postingdari' => 'DELETE JURNAL UMUM DETAIL DARI PENERIMAAN HEADER',
+                    'idtrans' => $getJurnalHeader->id,
+                    'nobuktitrans' => $getJurnalHeader->nobukti,
+                    'aksi' => 'DELETE',
+                    'datajson' => $getJurnalDetail->toArray(),
+                    'modifiedby' => auth('api')->user()->name
+                ];
+
+                $validatedLogTrailJurnalDetail = new StoreLogTrailRequest($logTrailJurnalDetail);
+                app(LogTrailController::class)->store($validatedLogTrailJurnalDetail);
+            }  
+            DB::commit();
+
+            $selected = $this->getPosition($penerimaanheader, $penerimaanheader->getTable(), true);
+            $penerimaanheader->position = $selected->position;
+            $penerimaanheader->id = $selected->id;
+            $penerimaanheader->page = ceil($penerimaanheader->position / ($request->limit ?? 10));
+            return response([
+                'status' => true,
+                'message' => 'Berhasil dihapus',
+                'data' => $penerimaanheader
+            ]);
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
@@ -701,15 +727,43 @@ class PenerimaanHeaderController extends Controller
 
         try {
             $jurnal = new StoreJurnalUmumHeaderRequest($header);
-            // dd($header);
             $jurnals = app(JurnalUmumHeaderController::class)->store($jurnal);
 
+            $detailLog = [];
             foreach ($detail as $key => $value) {
                 $value['jurnalumum_id'] = $jurnals->original['data']['id'];
                 $jurnal = new StoreJurnalUmumDetailRequest($value);
+                $datadetails = app(JurnalUmumDetailController::class)->store($jurnal);
 
-                app(JurnalUmumDetailController::class)->store($jurnal);
+                $details = $datadetails['detail'];
+                $datadetaillog = [
+                    'id' => $details->id,
+                    'jurnalumum_id' =>  $details->jurnalumum_id,
+                    'nobukti' => $details->nobukti,
+                    'tglbukti' => $details->tglbukti,
+                    'coa' => $details->coa,
+                    'nominal' => $details->nominal,
+                    'keterangan' => $details->keterangan,
+                    'modifiedby' => $details->modifiedby,
+                    'created_at' => date('d-m-Y H:i:s', strtotime($details->created_at)),
+                    'updated_at' => date('d-m-Y H:i:s', strtotime($details->updated_at)),
+                    'baris' => $details->baris,
+                ];
+                $detailLog[] = $datadetaillog;
             }
+            $datalogtrail = [
+                'namatabel' => $datadetails['tabel'],
+                'postingdari' => 'ENTRY PENERIMAAN KAS/BANK',
+                'idtrans' => $jurnals->original['data']['id'],
+                'nobuktitrans' => $header['nobukti'],
+                'aksi' => 'ENTRY',
+                'datajson' => $detailLog,
+                'modifiedby' => auth('api')->user()->name,
+            ];
+
+            $data = new StoreLogTrailRequest($datalogtrail);
+            app(LogTrailController::class)->store($data);
+
 
             return [
                 'status' => true,

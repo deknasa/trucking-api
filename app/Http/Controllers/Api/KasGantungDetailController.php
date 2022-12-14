@@ -149,6 +149,7 @@ class KasGantungDetailController extends Controller
             if ($validator->passes()) {
                 return [
                     'error' => false,
+                    'detail' => $kasgantungDetail,
                     'id' => $kasgantungDetail->id,
                     'tabel' => $kasgantungDetail->getTable(),
                 ];
