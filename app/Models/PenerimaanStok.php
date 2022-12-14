@@ -36,7 +36,9 @@ class PenerimaanStok extends MyModel
             'penerimaanstok.keterangan',
             'penerimaanstok.coa',
             'parameterstatusformat.memo as statusformat',
+            'parameterstatusformat.id as statusformatid',
             'parameterstatushitungstok.memo as statushitungstok',
+            'parameterstatushitungstok.memo as statushitungstokid',
             'penerimaanstok.modifiedby',
             'penerimaanstok.created_at',
             'penerimaanstok.updated_at'

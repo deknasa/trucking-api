@@ -13,6 +13,7 @@
     
     use App\Http\Controllers\Api\AbsenTradoController;
     use App\Http\Controllers\Api\CabangController;
+    use App\Http\Controllers\Api\GandenganController;
     use App\Http\Controllers\Api\ParameterController;
     use App\Http\Controllers\Api\SupirController;
     use App\Http\Controllers\Api\TradoController;
@@ -209,6 +210,12 @@ use App\Http\Controllers\Api\BankPelangganController;
         Route::get('cabang/combostatus', [CabangController::class, 'combostatus']);
         Route::get('cabang/getPosition2', [CabangController::class, 'getPosition2']);
         Route::resource('cabang', CabangController::class);
+
+        Route::get('gandengan/field_length', [GandenganController::class, 'fieldLength']);
+        Route::get('gandengan/combostatus', [GandenganController::class, 'combostatus']);
+        Route::get('gandengan/getPosition2', [GandenganController::class, 'getPosition2']);
+        Route::resource('gandengan', GandenganController::class);
+
 
         Route::get('acos/field_length', [AcosController::class, 'fieldLength']);
         Route::resource('acos', AcosController::class);
