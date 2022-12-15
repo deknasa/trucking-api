@@ -460,8 +460,10 @@ class InvoiceExtraHeaderController extends Controller
 
             if ($invoice->statusapproval == $statusApproval->id) {
                 $invoice->statusapproval = $statusNonApproval->id;
+                $aksi = $statusNonApproval->text;
             } else {
                 $invoice->statusapproval = $statusApproval->id;
+                $aksi = $statusApproval->text;
             }
 
             $invoice->tglapproval = date('Y-m-d H:i:s');
@@ -470,12 +472,12 @@ class InvoiceExtraHeaderController extends Controller
             if ($invoice->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($invoice->getTable()),
-                    'postingdari' => 'UN/APPROVE INVOICE EXTRA',
+                    'postingdari' => 'APPROVED INVOICE',
                     'idtrans' => $invoice->id,
-                    'nobuktitrans' => $invoice->id,
-                    'aksi' => 'UN/APPROVE',
+                    'nobuktitrans' => $invoice->nobukti,
+                    'aksi' => $aksi,
                     'datajson' => $invoice->toArray(),
-                    'modifiedby' => $invoice->modifiedby
+                    'modifiedby' => auth('api')->user()->name
                 ];
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);

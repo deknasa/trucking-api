@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreApprovalPendapatanSupirRequest;
+use App\Http\Requests\StoreLogTrailRequest;
 use App\Models\ApprovalPendapatanSupir;
 use App\Models\LogTrail;
+use App\Models\Parameter;
 use App\Models\PendapatanSupirHeader;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -44,6 +46,21 @@ class ApprovalPendapatanSupirController extends Controller
                 $approvePendapatan->tglapproval = date('Y-m-d h:i:s');
 
                 $approvePendapatan->save();
+                
+                $statusApp = Parameter::where('id',$request->approve)->first();
+                
+                $logTrail = [
+                    'namatabel' => strtoupper($approvePendapatan->getTable()),
+                    'postingdari' => 'APPROVAL PENDAPATAN',
+                    'idtrans' => $approvePendapatan->id,
+                    'nobuktitrans' => $approvePendapatan->nobukti,
+                    'aksi' => $statusApp->text,
+                    'datajson' => $approvePendapatan->toArray(),
+                    'modifiedby' => auth('api')->user()->name
+                ];
+
+                $validatedlogTrail = new StoreLogTrailRequest($logTrail);
+                app(LogTrailController::class)->store($validatedlogTrail);
             }
 
             $request->sortname = $request->sortname ?? 'id';

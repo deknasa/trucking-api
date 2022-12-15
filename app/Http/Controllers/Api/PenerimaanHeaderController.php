@@ -629,8 +629,10 @@ class PenerimaanHeaderController extends Controller
 
             if ($penerimaanHeader->statusapproval == $statusApproval->id) {
                 $penerimaanHeader->statusapproval = $statusNonApproval->id;
+                $aksi = $statusNonApproval->text;
             } else {
                 $penerimaanHeader->statusapproval = $statusApproval->id;
+                $aksi = $statusApproval->text;
             }
 
             $penerimaanHeader->tglapproval = date('Y-m-d', time());
@@ -639,12 +641,12 @@ class PenerimaanHeaderController extends Controller
             if ($penerimaanHeader->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($penerimaanHeader->getTable()),
-                    'postingdari' => 'UN/APPROVE PENERIMAANHEADER',
+                    'postingdari' => 'APPROVED KAS/BANK',
                     'idtrans' => $penerimaanHeader->id,
-                    'nobuktitrans' => $penerimaanHeader->id,
-                    'aksi' => 'UN/APPROVE',
+                    'nobuktitrans' => $penerimaanHeader->nobukti,
+                    'aksi' => $aksi,
                     'datajson' => $penerimaanHeader->toArray(),
-                    'modifiedby' => $penerimaanHeader->modifiedby
+                    'modifiedby' => auth('api')->user()->name
                 ];
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);

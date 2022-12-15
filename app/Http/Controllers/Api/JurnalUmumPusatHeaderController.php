@@ -12,6 +12,7 @@ use App\Models\JurnalUmumDetail;
 use App\Models\JurnalUmumHeader;
 use App\Models\JurnalUmumPusatDetail;
 use App\Models\LogTrail;
+use App\Models\Parameter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -40,6 +41,7 @@ class JurnalUmumPusatHeaderController extends Controller
         DB::BeginTransaction();
         try {
 
+            $statusApp = Parameter::where('id',$request->approve)->first();
             if ($request->approve == 3) {
 
                 for ($i = 0; $i < count($request->jurnalId); $i++) {
@@ -78,6 +80,20 @@ class JurnalUmumPusatHeaderController extends Controller
                     $jurnalApprove->tglapproval = date('Y-m-d H:i:s');
 
                     $jurnalApprove->save();
+                
+                    $logTrail = [
+                        'namatabel' => strtoupper($jurnalApprove->getTable()),
+                        'postingdari' => 'APPROVED JURNAL',
+                        'idtrans' => $jurnalApprove->id,
+                        'nobuktitrans' => $jurnalApprove->nobukti,
+                        'aksi' => $statusApp->text,
+                        'datajson' => $jurnalApprove->toArray(),
+                        'modifiedby' => auth('api')->user()->name
+                    ];
+    
+                    $validatedlogTrail = new StoreLogTrailRequest($logTrail);
+                    app(LogTrailController::class)->store($validatedlogTrail);
+
                     /* Store detail */
                     $detaillog = [];
 
@@ -184,6 +200,19 @@ class JurnalUmumPusatHeaderController extends Controller
                     $jurnalApprove->tglapproval = date('Y-m-d H:i:s');
 
                     $jurnalApprove->save();
+                    
+                    $logTrail = [
+                        'namatabel' => strtoupper($jurnalApprove->getTable()),
+                        'postingdari' => 'APPROVED JURNAL',
+                        'idtrans' => $jurnalApprove->id,
+                        'nobuktitrans' => $jurnalApprove->nobukti,
+                        'aksi' => $statusApp->text,
+                        'datajson' => $jurnalApprove->toArray(),
+                        'modifiedby' => auth('api')->user()->name
+                    ];
+    
+                    $validatedlogTrail = new StoreLogTrailRequest($logTrail);
+                    app(LogTrailController::class)->store($validatedlogTrail);
                 }
             }
             $request->sortname = $request->sortname ?? 'id';
