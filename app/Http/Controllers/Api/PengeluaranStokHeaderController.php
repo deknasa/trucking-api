@@ -6,8 +6,12 @@ use App\Models\Parameter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+
+use App\Models\PengeluaranStok;
 use App\Models\PengeluaranStokHeader;
 use App\Models\PengeluaranStokDetail;
+use App\Models\StokPersediaan;
+
 use Illuminate\Support\Facades\Schema;
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Http\Requests\StorePengeluaranStokHeaderRequest;
@@ -309,7 +313,8 @@ class PengeluaranStokHeaderController extends Controller
         DB::beginTransaction();
 
         $pengeluaranStokHeader = PengeluaranStokHeader::where('id',$id)->first();
-        $delete = $pengeluaranStokHeader->lockForUpdate()->delete();
+        $delete = $pengeluaranStokHeader->lockForUpdate()->where('id',$id)->delete();
+
 
         if ($delete) {
             $logTrail = [

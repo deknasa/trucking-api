@@ -6,6 +6,8 @@ use App\Http\Requests\StoreLogTrailRequest;
 use App\Http\Controllers\Controller;
 use App\Models\PenerimaanStokDetail;
 use App\Models\PenerimaanStokHeader;
+use App\Models\PenerimaanStok;
+use App\Models\Parameter;
 use App\Models\StokPersediaan;
 use App\Http\Requests\StorePenerimaanStokDetailRequest;
 use App\Http\Requests\UpdatePenerimaanStokDetailRequest;
@@ -33,7 +35,7 @@ class PenerimaanStokDetailController extends Controller
             'sortIndex' => $request->sortOrder ?? 'id',
             'sortOrder' => $request->sortOrder ?? 'asc',
         ];
-        
+
         try {
             $query = PenerimaanStokDetail::from('penerimaanstokdetail as detail');
 
@@ -81,11 +83,11 @@ class PenerimaanStokDetailController extends Controller
                     'detail.vulkanisirke',
                     'detail.modifiedby',
                 )
-                // ->leftJoin('penerimaanstok','penerimaanstokheader.penerimaanstok_id','penerimaanstok.id')
+                    // ->leftJoin('penerimaanstok','penerimaanstokheader.penerimaanstok_id','penerimaanstok.id')
 
-                ->leftJoin('penerimaanstokheader', 'detail.penerimaanstokheader_id', 'penerimaanstokheader.id')
-                ->leftJoin('stok', 'detail.stok_id', 'stok.id');       
-                 
+                    ->leftJoin('penerimaanstokheader', 'detail.penerimaanstokheader_id', 'penerimaanstokheader.id')
+                    ->leftJoin('stok', 'detail.stok_id', 'stok.id');
+
                 $penerimaanStokDetail = $query->get();
             }
 
@@ -104,83 +106,89 @@ class PenerimaanStokDetailController extends Controller
     public function store(StorePenerimaanStokDetailRequest $request)
     {
         DB::beginTransaction();
-        $validator = Validator::make($request->all(), [
-            'stok_id' => ['required',
-                Rule::unique('penerimaanstokdetail')->where( function ($query) use ($request) {
-                return $query->where('penerimaanstokheader_id', $request->penerimaanstokheader_id);
-            })],
-            'penerimaanstokheader_id' => 'required',
-            'harga' => "required|numeric|gt:0",
-            'persentasediscount' => "numeric|max:100",
-            'detail_keterangan' => 'required',
-            'vulkanisirke' => 'required',
-            'qty' => "required|numeric|gt:0",
-         ], [
-             'stok_id.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
-             'stok_id.unique' => ':attribute' . ' ' . app(ErrorController::class)->geterror('spi')->keterangan,
-             'penerimaanstokheader_id.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
-             'qty.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
-             'qty.gt' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
-             'harga.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
-             'harga.gt' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
-             'detail_keterangan.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
-             'persentasediscount.max' => ':attribute' . ' ' . app(ErrorController::class)->geterror('MAX')->keterangan,
-         ], [
-             'stok_id' => 'stok',
-            //  'keterangan' => 'keterangan Detail',
-             'qty' => 'qty',
-             'persentasediscount' => 'persentase discount',
+        $validator = Validator::make(
+            $request->all(),
+            [
+                'stok_id' => [
+                    'required',
+                    Rule::unique('penerimaanstokdetail')->where(function ($query) use ($request) {
+                        return $query->where('penerimaanstokheader_id', $request->penerimaanstokheader_id);
+                    })
+                ],
+                'penerimaanstokheader_id' => 'required',
+                'harga' => "required|numeric|gt:0",
+                'detail_keterangan' => 'required',
+                'qty' => "required|numeric|gt:0",
             ],
-         );
-         if (!$validator->passes()) {
-             return [
-                 'error' => true,
-                 'errors' => $validator->messages()
-             ];
-         }
+            [
+                'stok_id.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
+                'stok_id.unique' => ':attribute' . ' ' . app(ErrorController::class)->geterror('spi')->keterangan,
+                'penerimaanstokheader_id.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
+                'qty.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
+                'qty.gt' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
+                'harga.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
+                'harga.gt' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
+                'detail_keterangan.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
+            ],
+            [
+                'stok_id' => 'stok',
+                //  'keterangan' => 'keterangan Detail',
+                'qty' => 'qty',
+                'persentasediscount' => 'persentase discount',
+            ],
+        );
+        if (!$validator->passes()) {
+            return [
+                'error' => true,
+                'errors' => $validator->messages()
+            ];
+        }
         $total = $request->qty * $request->harga;
-        $nominaldiscount = $total * ($request->persentasediscount/100);
+        $nominaldiscount = $total * ($request->persentasediscount / 100);
         $total -= $nominaldiscount;
         $penerimaanstokheader = PenerimaanStokHeader::where('id', $request->penerimaanstokheader_id)->first();
-            try {
+        try {
+            $datahitungstok = PenerimaanStok::select('statushitungstok as statushitungstok_id')
+                ->where('statusformat', '=', $penerimaanstokheader->statusformat)
+                ->first();
 
-                 $stokpersediaan  = StokPersediaan::lockForUpdate()->where("stok_id",$request->stok_id)
-                                    ->where("gudang_id",$penerimaanstokheader->gudang_id)->firstorFail();
-                                    
-                $penerimaanStokDetail = new PenerimaanStokDetail();
-                $penerimaanStokDetail->penerimaanstokheader_id = $request->penerimaanstokheader_id;
-                $penerimaanStokDetail->nobukti = $request->nobukti;
-                $penerimaanStokDetail->stok_id = $request->stok_id;
-                $penerimaanStokDetail->qty = $request->qty;
-                $penerimaanStokDetail->harga = $request->harga;
-                $penerimaanStokDetail->nominaldiscount = $nominaldiscount;
-                $penerimaanStokDetail->total = $total;
-                $penerimaanStokDetail->persentasediscount = $request->persentasediscount;
-                $penerimaanStokDetail->vulkanisirke = $request->vulkanisirke;
-                $penerimaanStokDetail->keterangan = $request->detail_keterangan;
-                
-                $penerimaanStokDetail->modifiedby = auth('api')->user()->name;
-                
-                
-               
-                DB::commit();
-                if ($penerimaanStokDetail->save()) {
+            $statushitungstok = Parameter::where('grp', 'STATUS HITUNG STOK')->where('text', 'HITUNG STOK')->first();
+            if ($datahitungstok->statushitungstok_id == $statushitungstok->id) {
+                $stokpersediaan  = StokPersediaan::lockForUpdate()->where("stok_id", $request->stok_id)
+                    ->where("gudang_id", $penerimaanstokheader->gudang_id)->firstorFail();
+            }
+            $penerimaanStokDetail = new PenerimaanStokDetail();
+            $penerimaanStokDetail->penerimaanstokheader_id = $request->penerimaanstokheader_id;
+            $penerimaanStokDetail->nobukti = $request->nobukti;
+            $penerimaanStokDetail->stok_id = $request->stok_id;
+            $penerimaanStokDetail->qty = $request->qty;
+            $penerimaanStokDetail->harga = $request->harga;
+            $penerimaanStokDetail->nominaldiscount = $nominaldiscount;
+            $penerimaanStokDetail->total = $total;
+            $penerimaanStokDetail->persentasediscount = $request->persentasediscount ?? 0;
+            $penerimaanStokDetail->vulkanisirke = $request->vulkanisirke ?? '';
+            $penerimaanStokDetail->keterangan = $request->detail_keterangan;
+
+            $penerimaanStokDetail->modifiedby = auth('api')->user()->name;
+
+
+
+            DB::commit();
+            if ($penerimaanStokDetail->save()) {
+                if ($datahitungstok->statushitungstok_id == $statushitungstok->id) {
 
                     $stokpersediaan->qty += $request->qty;
                     $stokpersediaan->save();
-    
-                    return [
-                        'error' => false,
-                        'id' => $penerimaanStokDetail->id,
-                        'tabel' => $penerimaanStokDetail->getTable(),
-                    ];
                 }
-            } catch (\Throwable $th) {
-                throw $th;
-                DB::rollBack();
-            }        
-        
+                return [
+                    'error' => false,
+                    'id' => $penerimaanStokDetail->id,
+                    'tabel' => $penerimaanStokDetail->getTable(),
+                ];
+            }
+        } catch (\Throwable $th) {
+            throw $th;
+            DB::rollBack();
+        }
     }
-
-
 }
