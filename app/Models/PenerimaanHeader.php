@@ -376,6 +376,12 @@ class PenerimaanHeader extends MyModel
                   ->whereMonth('penerimaanheader.tglbukti','=', request()->month);
             return $query;
         }
+        if (request()->cetak && request()->periode) {
+            $query->where('penerimaanheader.statuscetak','<>', request()->cetak)
+                  ->whereYear('penerimaanheader.tglbukti','=', request()->year)
+                  ->whereMonth('penerimaanheader.tglbukti','=', request()->month);
+            return $query;
+        }
         return $query;
     }
 

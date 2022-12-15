@@ -157,6 +157,7 @@ use App\Http\Controllers\Api\BankPelangganController;
 
     Route::get('supir/image/{field}/{filename}/{type}', [SupirController::class, 'getImage']);
     Route::get('trado/image/{field}/{filename}/{type}', [TradoController::class, 'getImage']);
+    Route::get('stok/{filename}/{type}', [StokController::class, 'getImage']);
 
     route::middleware(['auth:api'])->group(function () {
         Route::get('parameter/export', [ParameterController::class, 'export']);
@@ -182,7 +183,6 @@ use App\Http\Controllers\Api\BankPelangganController;
         
         Route::get('approvalinvoiceheader/combo', [ApprovalInvoiceHeaderController::class, 'combo']);
         Route::resource('approvalinvoiceheader', ApprovalInvoiceHeaderController::class);
-        Route::resource('approvalinvoiceheader', ApprovalBukaCetakController::class);
         
         Route::get('approvalbukacetak/combo', [ApprovalBukaCetakController::class, 'combo']);
         Route::resource('approvalbukacetak', ApprovalBukaCetakController::class);
@@ -366,6 +366,7 @@ use App\Http\Controllers\Api\BankPelangganController;
         // Route::get('supplier/export', [SupplierController::class, 'export']);
         // Route::get('supplier/field_length', [SupplierController::class, 'fieldLength']);
         Route::apiResource('stok', StokController::class);
+
 
         Route::get('penerima/export', [PenerimaController::class, 'export']);
         Route::get('penerima/field_length', [PenerimaController::class, 'fieldLength']);
