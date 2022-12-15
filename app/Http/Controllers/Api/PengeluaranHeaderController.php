@@ -673,6 +673,52 @@ class PengeluaranHeaderController extends Controller
             ];
         }
     }
+    
+    public function approval($id)
+    {
+        DB::beginTransaction();
+
+        try {
+            $pengeluaranHeader = PengeluaranHeader::find($id);
+            $statusApproval = Parameter::where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
+            $statusNonApproval = Parameter::where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
+
+            if ($pengeluaranHeader->statusapproval == $statusApproval->id) {
+                $pengeluaranHeader->statusapproval = $statusNonApproval->id;
+                $aksi = $statusNonApproval->text;
+            } else {
+                $pengeluaranHeader->statusapproval = $statusApproval->id;
+                $aksi = $statusApproval->text;
+            }
+
+            $pengeluaranHeader->tglapproval = date('Y-m-d', time());
+            $pengeluaranHeader->userapproval = auth('api')->user()->name;
+
+            if ($pengeluaranHeader->save()) {
+                $logTrail = [
+                    'namatabel' => strtoupper($pengeluaranHeader->getTable()),
+                    'postingdari' => 'APPROVED KAS/BANK',
+                    'idtrans' => $pengeluaranHeader->id,
+                    'nobuktitrans' => $pengeluaranHeader->nobukti,
+                    'aksi' => $aksi,
+                    'datajson' => $pengeluaranHeader->toArray(),
+                    'modifiedby' => auth('api')->user()->name
+                ];
+
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+
+                DB::commit();
+            }
+
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
     public function printReport($id)
     {
         DB::beginTransaction();

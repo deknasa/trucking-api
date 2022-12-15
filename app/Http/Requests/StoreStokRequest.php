@@ -13,7 +13,7 @@ class StoreStokRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +24,15 @@ class StoreStokRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            "namastok"=>'required',
+            "kelompok"=>'required',
+            "subkelompok"=>'required',
+            "kategori"=>'required',
+            "merk"=>'required',
+            "jenistrado"=>'required',
+            "keterangan"=>'required',
+            "qtymin"=>'required',
+            "qtymax"=>'required',
         ];
     }
 }

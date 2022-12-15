@@ -811,6 +811,51 @@ class InvoiceHeaderController extends Controller
         }
     }
     
+    public function approval($id)
+    {
+        DB::beginTransaction();
+
+        try {
+            $invoice = InvoiceHeader::lockForUpdate()->findOrFail($id);
+            $statusApproval = Parameter::where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
+            $statusNonApproval = Parameter::where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
+
+            if ($invoice->statusapproval == $statusApproval->id) {
+                $invoice->statusapproval = $statusNonApproval->id;
+                $aksi = $statusNonApproval->text;
+            } else {
+                $invoice->statusapproval = $statusApproval->id;
+                $aksi = $statusApproval->text;
+            }
+
+            $invoice->tglapproval = date('Y-m-d H:i:s');
+            $invoice->userapproval = auth('api')->user()->name;
+
+            if ($invoice->save()) {
+                $logTrail = [
+                    'namatabel' => strtoupper($invoice->getTable()),
+                    'postingdari' => 'APPROVED INVOICE',
+                    'idtrans' => $invoice->id,
+                    'nobuktitrans' => $invoice->nobukti,
+                    'aksi' => $aksi,
+                    'datajson' => $invoice->toArray(),
+                    'modifiedby' => auth('api')->user()->name
+                ];
+
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+
+                DB::commit();
+            }
+
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
     public function printReport($id)
     {
         DB::beginTransaction();

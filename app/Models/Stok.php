@@ -42,6 +42,8 @@ class Stok extends MyModel
             'subkelompok.keterangan as subkelompok',
             'kategori.keterangan as kategori',
             'merk.keterangan as merk',
+            'stok.created_at',
+            'stok.updated_at',
             )
             ->leftJoin('jenistrado','stok.jenistrado_id', 'jenistrado.id')
             ->leftJoin('kelompok','stok.kelompok_id', 'kelompok.id')
@@ -61,6 +63,96 @@ class Stok extends MyModel
 
         return $data;
     }
+
+    public function findAll($id)
+    {
+        $data = DB::table('stok')->select(
+            'stok.*',
+            'jenistrado.keterangan as jenistrado',
+            'kelompok.keterangan as kelompok',
+            'subkelompok.keterangan as subkelompok',
+            'kategori.keterangan as kategori',
+            'merk.keterangan as merk',
+        )
+        ->leftJoin('jenistrado','stok.jenistrado_id', 'jenistrado.id')
+        ->leftJoin('kelompok','stok.kelompok_id', 'kelompok.id')
+        ->leftJoin('subkelompok','stok.subkelompok_id', 'subkelompok.id')
+        ->leftJoin('kategori','stok.kategori_id', 'kategori.id')
+        ->leftJoin('merk','stok.merk_id', 'merk.id')
+        ->where('stok.id',$id)
+        ->first();
+
+        return $data;
+    }
+
+    public function createTemp(string $modelTable)
+    { //sesuaikan dengan column index
+        $temp = '##temp' . rand(1, 10000);
+        Schema::create($temp, function ($table) {
+            $table->bigInteger('id')->default('0');
+            $table->unsignedBigInteger('jenistrado_id')->default('0');
+            $table->unsignedBigInteger('kelompok_id')->default('0');
+            $table->unsignedBigInteger('subkelompok_id')->default('0');
+            $table->unsignedBigInteger('kategori_id')->default('0');
+            $table->unsignedBigInteger('merk_id')->default('0');
+            $table->string('namastok',200)->default('');
+            $table->integer('statusaktif')->length(11)->default('0');
+            $table->double('qtymin',15,2)->default('0');
+            $table->double('qtymax',15,2)->default('0');
+            $table->longText('keterangan')->default('');
+            $table->longText('gambar')->default('');
+            $table->longText('namaterpusat')->default('');
+
+            $table->string('modifiedby', 50)->default('');
+            $table->dateTime('created_at')->default('1900/1/1');
+            $table->dateTime('updated_at')->default('1900/1/1');
+            $table->increments('position');
+        });
+
+        $this->setRequestParameters();
+        $query = DB::table($modelTable);
+        $query = $this->select(
+            'id',
+            'jenistrado_id',
+            'kelompok_id',
+            'subkelompok_id',
+            'kategori_id',
+            'merk_id',
+            'namastok',
+            'statusaktif',
+            'qtymin',
+            'qtymax',
+            'keterangan',
+            'gambar',
+            'namaterpusat',
+            'modifiedby',
+            'created_at',
+            'updated_at'
+        );
+        $query = $this->sort($query);
+        $models = $this->filter($query);
+        DB::table($temp)->insertUsing([
+            'id',
+            'jenistrado_id',
+            'kelompok_id',
+            'subkelompok_id',
+            'kategori_id',
+            'merk_id',
+            'namastok',
+            'statusaktif',
+            'qtymin',
+            'qtymax',
+            'keterangan',
+            'gambar',
+            'namaterpusat',
+            'modifiedby',
+            'created_at',
+            'updated_at'
+        ], $models);
+        
+        return  $temp;
+    }
+
     public function sort($query)
     {
         return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
