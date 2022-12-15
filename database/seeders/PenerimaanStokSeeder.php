@@ -18,12 +18,12 @@ class PenerimaanStokSeeder extends Seeder
         DB::statement("delete PenerimaanStok");
         DB::statement("DBCC CHECKIDENT ('PenerimaanStok', RESEED, 1);");
 
-        PenerimaanStok::create(['kodepenerimaan' => 'DOT', 'keterangan' => 'DELIVERY ORDER', 'coa' => '', 'statusformat' => '132', 'statushitungstok' => '142', 'modifiedby' => 'ADMIN',]);
-        PenerimaanStok::create(['kodepenerimaan' => 'POT', 'keterangan' => 'PO STOK', 'coa' => '', 'statusformat' => '133', 'statushitungstok' => '142', 'modifiedby' => 'ADMIN',]);
-        PenerimaanStok::create(['kodepenerimaan' => 'PBT', 'keterangan' => 'BELI STOK', 'coa' => '', 'statusformat' => '134', 'statushitungstok' => '141', 'modifiedby' => 'ADMIN',]);
-        PenerimaanStok::create(['kodepenerimaan' => 'KST', 'keterangan' => 'KOREKSI STOK', 'coa' => '', 'statusformat' => '136', 'statushitungstok' => '141', 'modifiedby' => 'ADMIN',]);
-        PenerimaanStok::create(['kodepenerimaan' => 'PGT', 'keterangan' => 'PINDAH GUDANG', 'coa' => '', 'statusformat' => '137', 'statushitungstok' => '141', 'modifiedby' => 'ADMIN',]);
-        PenerimaanStok::create(['kodepenerimaan' => 'PST', 'keterangan' => 'PERBAIKAN STOK', 'coa' => '', 'statusformat' => '138', 'statushitungstok' => '141', 'modifiedby' => 'ADMIN',]);
-        PenerimaanStok::create(['kodepenerimaan' => 'SST', 'keterangan' => 'SALDO STOK TRUCKING', 'coa' => '', 'statusformat' => '138', 'statushitungstok' => '141', 'modifiedby' => 'ADMIN',]);
+        PenerimaanStok::create(['kodepenerimaan' => 'DOT', 'keterangan' => 'DELIVERY ORDER', 'coa' => '', 'statusformat' => '132', 'statushitungstok' => '178', 'modifiedby' => 'ADMIN',]);
+        PenerimaanStok::create(['kodepenerimaan' => 'POT', 'keterangan' => 'PO STOK', 'coa' => '', 'statusformat' => '133', 'statushitungstok' => '178', 'modifiedby' => 'ADMIN',]);
+        PenerimaanStok::create(['kodepenerimaan' => 'PBT', 'keterangan' => 'BELI STOK', 'coa' => '', 'statusformat' => '134', 'statushitungstok' => '177', 'modifiedby' => 'ADMIN',]);
+        PenerimaanStok::create(['kodepenerimaan' => 'KST', 'keterangan' => 'KOREKSI STOK', 'coa' => '', 'statusformat' => '136', 'statushitungstok' => '177', 'modifiedby' => 'ADMIN',]);
+        PenerimaanStok::create(['kodepenerimaan' => 'PGT', 'keterangan' => 'PINDAH GUDANG', 'coa' => '', 'statusformat' => '137', 'statushitungstok' => '177', 'modifiedby' => 'ADMIN',]);
+        PenerimaanStok::create(['kodepenerimaan' => 'PST', 'keterangan' => 'PERBAIKAN STOK', 'coa' => '', 'statusformat' => '138', 'statushitungstok' => '177', 'modifiedby' => 'ADMIN',]);
+        PenerimaanStok::create(['kodepenerimaan' => 'SST', 'keterangan' => 'SALDO STOK TRUCKING', 'coa' => '', 'statusformat' => '138', 'statushitungstok' => '177', 'modifiedby' => 'ADMIN',]);
     }
 }

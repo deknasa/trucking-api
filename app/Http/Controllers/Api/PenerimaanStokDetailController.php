@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Http\Controllers\Controller;
 use App\Models\PenerimaanStokDetail;
+use App\Models\PenerimaanStokHeader;
 use App\Models\StokPersediaan;
 use App\Http\Requests\StorePenerimaanStokDetailRequest;
 use App\Http\Requests\UpdatePenerimaanStokDetailRequest;
@@ -102,7 +103,6 @@ class PenerimaanStokDetailController extends Controller
      */
     public function store(StorePenerimaanStokDetailRequest $request)
     {
-        // dd($request);
         DB::beginTransaction();
         $validator = Validator::make($request->all(), [
             'stok_id' => ['required',
@@ -141,10 +141,12 @@ class PenerimaanStokDetailController extends Controller
         $total = $request->qty * $request->harga;
         $nominaldiscount = $total * ($request->persentasediscount/100);
         $total -= $nominaldiscount;
+        $penerimaanstokheader = PenerimaanStokHeader::where('id', $request->penerimaanstokheader_id)->first();
             try {
 
-                // $stokpersediaan  = StokPersediaan::lockForUpdate()->findOrFail($request->stok_id,);
-
+                 $stokpersediaan  = StokPersediaan::lockForUpdate()->where("stok_id",$request->stok_id)
+                                    ->where("gudang_id",$penerimaanstokheader->gudang_id)->firstorFail();
+                                    
                 $penerimaanStokDetail = new PenerimaanStokDetail();
                 $penerimaanStokDetail->penerimaanstokheader_id = $request->penerimaanstokheader_id;
                 $penerimaanStokDetail->nobukti = $request->nobukti;
@@ -163,6 +165,10 @@ class PenerimaanStokDetailController extends Controller
                
                 DB::commit();
                 if ($penerimaanStokDetail->save()) {
+
+                    $stokpersediaan->qty += $request->qty;
+                    $stokpersediaan->save();
+    
                     return [
                         'error' => false,
                         'id' => $penerimaanStokDetail->id,
