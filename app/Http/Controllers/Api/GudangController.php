@@ -140,11 +140,12 @@ class GudangController extends Controller
 
                 $datadetail = json_decode($stokgudang->get(), true);
 
-      
-                $stokpersediaan = new StokPersediaan();
-
+                $dataexist = $stokgudang->exists();
+                $detaillogtrail = [];
                 foreach ($datadetail as $item) {
 
+
+                    $stokpersediaan = new StokPersediaan();
                     $stokpersediaan->stok_id = $item['stok_id'];
                     $stokpersediaan->gudang_id = $item['gudang_id'];
                     $stokpersediaan->trado_id = $item['trado_id'];
@@ -152,9 +153,10 @@ class GudangController extends Controller
                     $stokpersediaan->qty = $item['qty'];
                     $stokpersediaan->modifiedby = $item['modifiedby'];
                     $stokpersediaan->save();
+                    $detaillogtrail[] = $stokpersediaan->toArray();
                 }
-                
-                if ($stokgudang->exists()==true) {
+
+                if ($dataexist == true) {
 
                     $logTrail = [
                         'namatabel' => strtoupper($stokpersediaan->getTable()),
@@ -162,7 +164,7 @@ class GudangController extends Controller
                         'idtrans' => $gudang->id,
                         'nobuktitrans' => $gudang->id,
                         'aksi' => 'EDIT',
-                        'datajson' => $stokpersediaan->toArray(),
+                        'datajson' => json_encode($detaillogtrail),
                         'modifiedby' => $gudang->modifiedby
                     ];
 
