@@ -79,7 +79,7 @@ class InvoiceExtraHeaderController extends Controller
                     'namatabel' => strtoupper($invoiceExtraHeader->getTable()),
                     'postingdari' => 'ENTRY INVOICE EXTRA HEADER',
                     'idtrans' => $invoiceExtraHeader->id,
-                    'nobuktitrans' => $invoiceExtraHeader->id,
+                    'nobuktitrans' => $invoiceExtraHeader->nobukti,
                     'aksi' => 'ENTRY',
                     'datajson' => $invoiceExtraHeader->toArray(),
                     'modifiedby' => $invoiceExtraHeader->modifiedby
@@ -112,6 +112,7 @@ class InvoiceExtraHeaderController extends Controller
                         }
     
                         $datadetaillog = [
+                            "id" =>$iddetail,
                             "invoiceextra_id" =>$invoiceExtraHeader->id,
                             "nobukti" => $invoiceExtraHeader->nobukti,
                             "nominal" => $request->nominal_detail[$i],
@@ -126,7 +127,7 @@ class InvoiceExtraHeaderController extends Controller
                     $datalogtrail = [
                         'namatabel' => $tabeldetail,
                         'postingdari' => 'ENTRY INVOICE EXTRA DETAIL',
-                        'idtrans' =>  $iddetail,
+                        'idtrans' =>  $storedLogTrail['id'],
                         'nobuktitrans' => $invoiceExtraHeader->nobukti,
                         'aksi' => 'ENTRY',
                         'datajson' => $detaillog,
@@ -259,7 +260,7 @@ class InvoiceExtraHeaderController extends Controller
                     'namatabel' => strtoupper($invoiceextraheader->getTable()),
                     'postingdari' => 'EDIT INVOICE EXTRA HEADER',
                     'idtrans' => $invoiceextraheader->id,
-                    'nobuktitrans' => $invoiceextraheader->id,
+                    'nobuktitrans' => $invoiceextraheader->nobukti,
                     'aksi' => 'EDIT',
                     'datajson' => $invoiceextraheader->toArray(),
                     'modifiedby' => $invoiceextraheader->modifiedby
@@ -302,6 +303,7 @@ class InvoiceExtraHeaderController extends Controller
                         }
     
                         $datadetaillog = [
+                            "id" =>$iddetail,
                             "invoiceextra_id" =>$invoiceextraheader->id,
                             "nobukti" => $invoiceextraheader->nobukti,
                             "nominal" => $request->nominal_detail[$i],
@@ -316,7 +318,7 @@ class InvoiceExtraHeaderController extends Controller
                     $datalogtrail = [
                         'namatabel' => $tabeldetail,
                         'postingdari' => 'ENTRY INVOICE EXTRA DETAIL',
-                        'idtrans' =>  $iddetail,
+                        'idtrans' =>  $storedLogTrail['id'],
                         'nobuktitrans' => $invoiceextraheader->nobukti,
                         'aksi' => 'ENTRY',
                         'datajson' => $detaillog,
@@ -517,7 +519,7 @@ class InvoiceExtraHeaderController extends Controller
                     'namatabel' => strtoupper($invoiceExtraHeader->getTable()),
                     'postingdari' => 'BUKA/BELUM CETAK Invoice Extra Header',
                     'idtrans' => $invoiceExtraHeader->id,
-                    'nobuktitrans' => $invoiceExtraHeader->id,
+                    'nobuktitrans' => $invoiceExtraHeader->nobukti,
                     'aksi' => 'BUKA/BELUM CETAK',
                     'datajson' => $invoiceExtraHeader->toArray(),
                     'modifiedby' => $invoiceExtraHeader->modifiedby

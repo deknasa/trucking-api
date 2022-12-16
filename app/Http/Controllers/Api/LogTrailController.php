@@ -157,6 +157,10 @@ class LogTrailController extends Controller
 
             if ($LogTrail->save()) {
                 DB::commit();
+                return [
+                    'error' => false,
+                    'id' => $LogTrail->id
+                ];
             }
         } catch (\Throwable $th) {
             DB::rollBack();
@@ -293,7 +297,7 @@ class LogTrailController extends Controller
         ]);
     }
 
-    public function detail()
+    public function detail(Request $request)
     {
         $params = [
             'offset' => request()->offset ?? ((request()->page - 1) * request()->limit),
@@ -306,7 +310,7 @@ class LogTrailController extends Controller
         $query = LogTrail::select(
             'datajson',
             'namatabel',
-        )->where('idtrans', '=',  request()->id);
+        )->where('idtrans', '=',  $request->id);
 
         $data = $query->first();
 
