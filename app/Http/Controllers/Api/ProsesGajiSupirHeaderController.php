@@ -127,31 +127,15 @@ class ProsesGajiSupirHeaderController extends Controller
                         $iddetail = $datadetails['id'];
                         $tabeldetail = $datadetails['tabel'];
                     }
-
-                    $datadetaillog = [
-                        'id' => $iddetail,
-                        'prosesgajisupir_id' => $prosesgajisupirheader->id,
-                        'nobukti' => $prosesgajisupirheader->nobukti,
-                        'gajisupir_nobukti' => $ric->nobukti,
-                        'supir_id' => $ric->supir_id,
-                        'trado_id' => $sp->trado_id,
-                        'nominal' => $ric->nominal,
-                        'keterangan' => $ric->keterangan,
-                        'modifiedby' => $prosesgajisupirheader->modifiedby,
-                        'created_at' => date('d-m-Y H:i:s', strtotime($prosesgajisupirheader->created_at)),
-                        'updated_at' => date('d-m-Y H:i:s', strtotime($prosesgajisupirheader->updated_at)),
-
-                    ];
-
-                    $detaillog[] = $datadetaillog;
+                    $detaillog[] = $datadetails['detail']->toArray();
 
 
                     $urut++;
                 }
                 $datalogtrail = [
-                    'namatabel' => $tabeldetail,
+                    'namatabel' => strtoupper($tabeldetail),
                     'postingdari' => 'ENTRY PROSES GAJI SUPIR DETAIL',
-                    'idtrans' =>  $prosesgajisupirheader->id,
+                    'idtrans' =>  $storedLogTrail['id'],
                     'nobuktitrans' => $prosesgajisupirheader->nobukti,
                     'aksi' => 'ENTRY',
                     'datajson' => $detaillog,
@@ -268,29 +252,14 @@ class ProsesGajiSupirHeaderController extends Controller
                         $tabeldetail = $datadetails['tabel'];
                     }
 
-                    $datadetaillog = [
-                        'id' => $iddetail,
-                        'prosesgajisupir_id' => $prosesgajisupirheader->id,
-                        'nobukti' => $prosesgajisupirheader->nobukti,
-                        'gajisupir_nobukti' => $ric->nobukti,
-                        'supir_id' => $ric->supir_id,
-                        'trado_id' => $sp->trado_id,
-                        'nominal' => $ric->nominal,
-                        'keterangan' => $ric->keterangan,
-                        'modifiedby' => $prosesgajisupirheader->modifiedby,
-                        'created_at' => date('d-m-Y H:i:s', strtotime($prosesgajisupirheader->created_at)),
-                        'updated_at' => date('d-m-Y H:i:s', strtotime($prosesgajisupirheader->updated_at)),
-
-                    ];
-
-                    $detaillog[] = $datadetaillog;
+                    $detaillog[] = $datadetails['detail']->toArray();
 
                     $urut++;
                 }
                 $datalogtrail = [
-                    'namatabel' => $tabeldetail,
+                    'namatabel' => strtoupper($tabeldetail),
                     'postingdari' => 'EDIT PROSES GAJI SUPIR DETAIL',
-                    'idtrans' =>  $prosesgajisupirheader->id,
+                    'idtrans' =>  $storedLogTrail['id'],
                     'nobuktitrans' => $prosesgajisupirheader->nobukti,
                     'aksi' => 'EDIT',
                     'datajson' => $detaillog,
@@ -348,13 +317,13 @@ class ProsesGajiSupirHeaderController extends Controller
                 ];
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                app(LogTrailController::class)->store($validatedLogTrail);
+                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
                 // DELETE PROSES GAJI SUPIR DETAIL
                 $logTrailProsesGajiSupirDetail = [
                     'namatabel' => 'PROSESGAJISUPIRDETAIL',
                     'postingdari' => 'DELETE PROSES GAJI SUPIR DETAIL',
-                    'idtrans' => $prosesgajisupirheader->id,
+                    'idtrans' => $storedLogTrail['id'],
                     'nobuktitrans' => $prosesgajisupirheader->nobukti,
                     'aksi' => 'DELETE',
                     'datajson' => $getDetail->toArray(),

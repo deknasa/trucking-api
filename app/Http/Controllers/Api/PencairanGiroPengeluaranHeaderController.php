@@ -90,13 +90,13 @@ class PencairanGiroPengeluaranHeaderController extends Controller
                     ];
 
                     $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                    app(LogTrailController::class)->store($validatedLogTrail);
+                    $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
                     // DELETE PENCAIRAN GIRO PENGELUARAN DETAIL
                     $logTrailPencairanGiroDetail = [
                         'namatabel' => 'PENCAIRANGIROPENGELUARANDETAIL',
                         'postingdari' => 'DELETE PENCAIRAN GIRO PENGELUARAN DETAIL',
-                        'idtrans' => $cekPencairan->id,
+                        'idtrans' => $storedLogTrail['id'],
                         'nobuktitrans' => $cekPencairan->nobukti,
                         'aksi' => 'DELETE',
                         'datajson' => $getDetail->toArray(),
@@ -118,7 +118,7 @@ class PencairanGiroPengeluaranHeaderController extends Controller
                     ];
 
                     $validatedLogTrailJurnalHeader = new StoreLogTrailRequest($logTrailJurnalHeader);
-                    app(LogTrailController::class)->store($validatedLogTrailJurnalHeader);
+                    $storedLogTrailJurnal = app(LogTrailController::class)->store($validatedLogTrailJurnalHeader);
 
 
                     // DELETE JURNAL DETAIL
@@ -126,7 +126,7 @@ class PencairanGiroPengeluaranHeaderController extends Controller
                     $logTrailJurnalDetail = [
                         'namatabel' => 'JURNALUMUMDETAIL',
                         'postingdari' => 'DELETE JURNAL UMUM DETAIL DARI PENCAIRAN GIRO',
-                        'idtrans' => $getJurnalHeader->id,
+                        'idtrans' => $storedLogTrailJurnal['id'],
                         'nobuktitrans' => $getJurnalHeader->nobukti,
                         'aksi' => 'DELETE',
                         'datajson' => $getJurnalDetail->toArray(),
@@ -208,24 +208,7 @@ class PencairanGiroPengeluaranHeaderController extends Controller
                             $tabeldetail = $datadetails['tabel'];
                         }
 
-                        $datadetaillog = [
-                            'id' => $iddetail,
-                            'pencairangiropengeluaran_id' => $pencairanGiro->id,
-                            'nobukti' => $pencairanGiro->nobukti,
-                            'alatbayar_id' => $value->alatbayar_id,
-                            'nowarkat' => $value->nowarkat,
-                            'tgljatuhtempo' => $value->tgljatuhtempo,
-                            'nominal' => $value->nominal,
-                            'coadebet' => $value->coadebet,
-                            'coakredit' => $value->coakredit,
-                            'keterangan' => $value->keterangan,
-                            'bulanbeban' => $value->bulanbeban,
-                            'modifiedby' => $pencairanGiro->modifiedby,
-                            'created_at' => date('d-m-Y H:i:s', strtotime($pencairanGiro->created_at)),
-                            'updated_at' => date('d-m-Y H:i:s', strtotime($pencairanGiro->updated_at)),
-                        ];
-
-                        $detaillog[] = $datadetaillog;
+                        $detaillog[] = $datadetails['detail']->toArray();
 
 
                         $jurnalDetail = [
@@ -253,9 +236,9 @@ class PencairanGiroPengeluaranHeaderController extends Controller
                     }
 
                     $datalogtrail = [
-                        'namatabel' => $tabeldetail,
+                        'namatabel' => strtoupper($tabeldetail),
                         'postingdari' => 'ENTRY PENCAIRAN GIRO PENGELUARAN DETAIL',
-                        'idtrans' =>  $pencairanGiro->id,
+                        'idtrans' =>  $storedLogTrail['id'],
                         'nobuktitrans' => $pencairanGiro->nobukti,
                         'aksi' => 'ENTRY',
                         'datajson' => $detaillog,
@@ -304,27 +287,13 @@ class PencairanGiroPengeluaranHeaderController extends Controller
                 $jurnal = new StoreJurnalUmumDetailRequest($value);
                 $datadetails = app(JurnalUmumDetailController::class)->store($jurnal);
 
-                $details = $datadetails['detail'];
-                $datadetaillog = [
-                    'id' => $details->id,
-                    'jurnalumum_id' =>  $details->jurnalumum_id,
-                    'nobukti' => $details->nobukti,
-                    'tglbukti' => $details->tglbukti,
-                    'coa' => $details->coa,
-                    'nominal' => $details->nominal,
-                    'keterangan' => $details->keterangan,
-                    'modifiedby' => $details->modifiedby,
-                    'created_at' => date('d-m-Y H:i:s', strtotime($details->created_at)),
-                    'updated_at' => date('d-m-Y H:i:s', strtotime($details->updated_at)),
-                    'baris' => $details->baris,
-                ];
-                $detailLog[] = $datadetaillog;
+                $detailLog[] = $datadetails['detail']->toArray();
             }
 
             $datalogtrail = [
-                'namatabel' => $datadetails['tabel'],
+                'namatabel' => strtoupper($datadetails['tabel']),
                 'postingdari' => 'ENTRY PENCAIRAN GIRO PENGELUARAN',
-                'idtrans' => $jurnals->original['data']['id'],
+                'idtrans' => $jurnals->original['idlogtrail'],
                 'nobuktitrans' => $nobukti,
                 'aksi' => 'ENTRY',
                 'datajson' => $detailLog,

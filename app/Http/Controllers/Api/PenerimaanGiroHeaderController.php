@@ -133,39 +133,14 @@ class PenerimaanGiroHeaderController extends Controller
                     $tabeldetail = $datadetails['tabel'];
                 }
 
-
-                $datadetaillog = [
-                    'id' => $iddetail,
-                    'penerimaangiro_id' => $penerimaanGiro->id,
-                    'nobukti' => $penerimaanGiro->nobukti,
-                    'nowarkat' => $request->nowarkat[$i],
-                    'tgljatuhtempo' => date('Y-m-d', strtotime($request->tgljatuhtempo[$i])),
-                    'nominal' => $request->nominal[$i],
-                    'coadebet' => $coadebet->text,
-                    'coakredit' => $coakredit->text,
-                    'keterangan' => $request->keterangan_detail[$i],
-                    'bank_id' => $request->bank_id[$i],
-                    'pelanggan_id' => $penerimaanGiro->pelanggan_id,
-                    'invoice_nobukti' => $request->invoice_nobukti[$i] ?? '-',
-                    'bankpelanggan_id' => $request->bankpelanggan_id[$i] ?? '',
-                    'jenisbiaya' => $request->jenisbiaya[$i] ?? '',
-                    'pelunasanpiutang_nobukti' => $request->pelunasanpiutang_nobukti[$i] ?? '-',
-                    'bulanbeban' => date('Y-m-d', strtotime($request->bulanbeban[$i])) ?? '',
-                    'modifiedby' => $penerimaanGiro->modifiedby,
-                    'created_at' => date('d-m-Y H:i:s', strtotime($penerimaanGiro->created_at)),
-                    'updated_at' => date('d-m-Y H:i:s', strtotime($penerimaanGiro->updated_at)),
-
-                ];
-
-
-                $detaillog[] = $datadetaillog;
+                $detaillog[] = $datadetails['detail']->toArray();
 
             }
 
             $datalogtrail = [
-                'namatabel' => $tabeldetail,
+                'namatabel' => strtoupper($tabeldetail),
                 'postingdari' => 'ENTRY PENERIMAAN GIRO DETAIL',
-                'idtrans' =>  $penerimaanGiro->id,
+                'idtrans' =>  $storedLogTrail['id'],
                 'nobuktitrans' => $penerimaanGiro->nobukti,
                 'aksi' => 'ENTRY',
                 'datajson' => $detaillog,
@@ -332,39 +307,14 @@ class PenerimaanGiroHeaderController extends Controller
                     $tabeldetail = $datadetails['tabel'];
                 }
 
-
-                $datadetaillog = [
-                    'id' => $iddetail,
-                    'penerimaangiro_id' => $penerimaanGiroHeader->id,
-                    'nobukti' => $penerimaanGiroHeader->nobukti,
-                    'nowarkat' => $request->nowarkat[$i],
-                    'tgljatuhtempo' => date('Y-m-d', strtotime($request->tgljatuhtempo[$i])),
-                    'nominal' => $request->nominal[$i],
-                    'coadebet' => $coadebet->text,
-                    'coakredit' => $coakredit->text,
-                    'keterangan' => $request->keterangan_detail[$i],
-                    'bank_id' => $request->bank_id[$i],
-                    'pelanggan_id' => $penerimaanGiroHeader->pelanggan_id,
-                    'invoice_nobukti' => $invoice,
-                    'bankpelanggan_id' => $request->bankpelanggan_id[$i] ?? '',
-                    'jenisbiaya' => $request->jenisbiaya[$i] ?? '',
-                    'pelunasanpiutang_nobukti' => $pelunasanpiutang,
-                    'bulanbeban' => date('Y-m-d', strtotime($request->bulanbeban[$i])) ?? '',
-                    'modifiedby' => $penerimaanGiroHeader->modifiedby,
-                    'created_at' => date('d-m-Y H:i:s', strtotime($penerimaanGiroHeader->created_at)),
-                    'updated_at' => date('d-m-Y H:i:s', strtotime($penerimaanGiroHeader->updated_at)),
-
-                ];
-
-
-                $detaillog[] = $datadetaillog;
+                $detaillog[] = $datadetails['detail']->toArray();
 
             }
 
             $datalogtrail = [
-                'namatabel' => $tabeldetail,
+                'namatabel' => strtoupper($tabeldetail),
                 'postingdari' => 'EDIT PENERIMAAN GIRO DETAIL',
-                'idtrans' =>  $penerimaanGiroHeader->id,
+                'idtrans' =>  $storedLogTrail['id'],
                 'nobuktitrans' => $penerimaanGiroHeader->nobukti,
                 'aksi' => 'EDIT',
                 'datajson' => $detaillog,
@@ -473,7 +423,7 @@ class PenerimaanGiroHeaderController extends Controller
             
             if ($delete) {
                 $datalogtrail = [
-                    'namatabel' => $penerimaangiroheader->getTable(),
+                    'namatabel' => strtoupper($penerimaangiroheader->getTable()),
                     'postingdari' => 'DELETE PENERIMAAN GIRO HEADER',
                     'idtrans' => $penerimaangiroheader->id,
                     'nobuktitrans' => $penerimaangiroheader->nobukti,
@@ -483,13 +433,13 @@ class PenerimaanGiroHeaderController extends Controller
                 ];
     
                 $data = new StoreLogTrailRequest($datalogtrail);
-                app(LogTrailController::class)->store($data);
+                $storedLogTrail = app(LogTrailController::class)->store($data);
 
                 // DELETE PENERIMAANGIRO DETAIL
                 $logTrailPenerimaanGiroDetail = [
                     'namatabel' => 'PENERIMAANGIRODETAIL',
                     'postingdari' => 'DELETE PENERIMAAN GIRO DETAIL',
-                    'idtrans' => $penerimaangiroheader->id,
+                    'idtrans' => $storedLogTrail['id'],
                     'nobuktitrans' => $penerimaangiroheader->nobukti,
                     'aksi' => 'DELETE',
                     'datajson' => $getDetail->toArray(),
@@ -511,7 +461,7 @@ class PenerimaanGiroHeaderController extends Controller
                 ];
 
                 $validatedLogTrailJurnalHeader = new StoreLogTrailRequest($logTrailJurnalHeader);
-                app(LogTrailController::class)->store($validatedLogTrailJurnalHeader);
+                $storedLogTrailJurnal = app(LogTrailController::class)->store($validatedLogTrailJurnalHeader);
 
                 
                 // DELETE JURNAL DETAIL
@@ -519,7 +469,7 @@ class PenerimaanGiroHeaderController extends Controller
                 $logTrailJurnalDetail = [
                     'namatabel' => 'JURNALUMUMDETAIL',
                     'postingdari' => 'DELETE JURNAL UMUM DETAIL DARI PENERIMAAN GIRO',
-                    'idtrans' => $getJurnalHeader->id,
+                    'idtrans' => $storedLogTrailJurnal['id'],
                     'nobuktitrans' => $getJurnalHeader->nobukti,
                     'aksi' => 'DELETE',
                     'datajson' => $getJurnalDetail->toArray(),
@@ -601,27 +551,13 @@ class PenerimaanGiroHeaderController extends Controller
                 $jurnal = new StoreJurnalUmumDetailRequest($value);
                 $datadetails = app(JurnalUmumDetailController::class)->store($jurnal);
                 
-                $details = $datadetails['detail'];
-                $datadetaillog = [
-                    'id' => $details->id,
-                    'jurnalumum_id' =>  $details->jurnalumum_id,
-                    'nobukti' => $details->nobukti,
-                    'tglbukti' => $details->tglbukti,
-                    'coa' => $details->coa,
-                    'nominal' => $details->nominal,
-                    'keterangan' => $details->keterangan,
-                    'modifiedby' => $details->modifiedby,
-                    'created_at' => date('d-m-Y H:i:s', strtotime($details->created_at)),
-                    'updated_at' => date('d-m-Y H:i:s', strtotime($details->updated_at)),
-                    'baris' => $details->baris,
-                ];
-                $detailLog[] = $datadetaillog;
+                $detailLog[] = $datadetails['detail']->toArray();
             }
 
             $datalogtrail = [
-                'namatabel' => $datadetails['tabel'],
+                'namatabel' => strtoupper($datadetails['tabel']),
                 'postingdari' => 'ENTRY PENERIMAAN GIRO',
-                'idtrans' => $jurnals->original['data']['id'],
+                'idtrans' => $jurnals->original['idlogtrail'],
                 'nobuktitrans' => $header['nobukti'],
                 'aksi' => 'ENTRY',
                 'datajson' => $detailLog,
@@ -656,5 +592,95 @@ class PenerimaanGiroHeaderController extends Controller
         return response([
             'data' => $get->getPelunasan($id),
         ]);
+    }
+    
+    public function printReport($id)
+    {
+        DB::beginTransaction();
+
+        try {
+            $piutang = PenerimaanGiroHeader::lockForUpdate()->findOrFail($id);
+            $statusSudahCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
+            $statusBelumCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
+
+            if ($piutang->statuscetak != $statusSudahCetak->id) {
+                $piutang->statuscetak = $statusSudahCetak->id;
+                $piutang->tglbukacetak = date('Y-m-d H:i:s');
+                $piutang->userbukacetak = auth('api')->user()->name;
+
+                if ($piutang->save()) {
+                    $logTrail = [
+                        'namatabel' => strtoupper($piutang->getTable()),
+                        'postingdari' => 'PRINT PIUTANG HEADER',
+                        'idtrans' => $piutang->id,
+                        'nobuktitrans' => $piutang->nobukti,
+                        'aksi' => 'PRINT',
+                        'datajson' => $piutang->toArray(),
+                        'modifiedby' => $piutang->modifiedby
+                    ];
+
+                    $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                    $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+
+                    DB::commit();
+                }
+            }
+
+
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
+    public function cekvalidasi($id)
+    {
+        $pengeluaran = PenerimaanGiroHeader::find($id);
+        $status = $pengeluaran->statusapproval;
+        $statusApproval = Parameter::where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
+        $statusdatacetak = $pengeluaran->statuscetak;
+        $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
+
+        if ($status == $statusApproval->id) {
+            $query = DB::table('error')
+                ->select('keterangan')
+                ->where('kodeerror', '=', 'SAP')
+                ->get();
+            $keterangan = $query['0'];
+            $data = [
+                'message' => $keterangan,
+                'errors' => 'sudah approve',
+                'kodestatus' => '1',
+                'kodenobukti' => '1'
+            ];
+
+            return response($data);
+        } else if ($statusdatacetak == $statusCetak->id) {
+            $query = DB::table('error')
+                ->select('keterangan')
+                ->where('kodeerror', '=', 'SDC')
+                ->get();
+            $keterangan = $query['0'];
+            $data = [
+                'message' => $keterangan,
+                'errors' => 'sudah cetak',
+                'kodestatus' => '1',
+                'kodenobukti' => '1'
+            ];
+
+            return response($data);
+        } else {
+
+            $data = [
+                'message' => '',
+                'errors' => 'belum approve',
+                'kodestatus' => '0',
+                'kodenobukti' => '1'
+            ];
+
+            return response($data);
+        }
     }
 }

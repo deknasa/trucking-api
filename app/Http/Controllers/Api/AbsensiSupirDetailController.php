@@ -122,6 +122,7 @@ class AbsensiSupirDetailController extends Controller
             DB::commit();
             return [
                 'error' => false,
+                'detail' => $AbsensiSupirDetail,
                 'id' => $AbsensiSupirDetail->id,
                 'tabel' => $AbsensiSupirDetail->getTable(),
             ];

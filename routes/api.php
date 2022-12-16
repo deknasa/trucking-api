@@ -617,8 +617,9 @@ use App\Http\Controllers\Api\BankPelangganController;
 
         Route::resource('pengeluarandetail', PengeluaranDetailController::class);
         
-        Route::post('penerimaangiroheader/{id}/approval', [PenerimaanGiroHeaderController::class, 'approval'])->name('penerimaangiroheader.approval');
-        Route::get('penerimaangiroheader/no_bukti', [PenerimaanGiroHeaderController::class, 'getNoBukti']);
+        Route::post('penerimaangiroheader/{id}/approval', [PenerimaanGiroHeaderController::class, 'approval'])->name('penerimaangiroheader.approval');   
+        Route::post('penerimaangiroheader/{id}/cekvalidasi', [PenerimaanGiroHeaderController::class, 'cekvalidasi'])->name('penerimaangiroheader.cekvalidasi');
+        Route::get('penerimaangiroheader/{id}/printreport', [PenerimaanGiroHeaderController::class,'printReport']);
         Route::get('penerimaangiroheader/field_length', [PenerimaanGiroHeaderController::class, 'fieldLength']);
         Route::get('penerimaangiroheader/combo', [PenerimaanGiroHeaderController::class, 'combo']);
         Route::get('penerimaangiroheader/grid', [PenerimaanGiroHeaderController::class, 'grid']);

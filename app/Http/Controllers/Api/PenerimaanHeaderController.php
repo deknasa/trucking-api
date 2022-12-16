@@ -156,36 +156,14 @@ class PenerimaanHeaderController extends Controller
                         $iddetail = $datadetails['id'];
                         $tabeldetail = $datadetails['tabel'];
                     }
-    
-                    $datadetaillog = [
-                        'id' => $iddetail,
-                        'penerimaan_id' => $penerimaanHeader->id,
-                        'nobukti' => $penerimaanHeader->nobukti,
-                        'nowarkat' => $request->nowarkat[$i],
-                        'tgljatuhtempo' =>  date('Y-m-d', strtotime($request->tgljatuhtempo[$i])),
-                        'nominal' => $request->nominal_detail[$i],
-                        'coadebet' => $request->coadebet[$i],
-                        'coakredit' => $querysubgrppenerimaan->coa,
-                        'keterangan' => $request->keterangan_detail[$i],
-                        'bank_id' => $penerimaanHeader->bank_id,
-                        'pelanggan_id' => $penerimaanHeader->pelanggan_id,
-                        'invoice_nobukti' => $request->invoice_nobukti[$i] ?? '-',
-                        'bankpelanggan_id' => $request->bankpelanggan_id[$i] ?? '',
-                        'jenisbiaya' => $request->jenisbiaya[$i] ?? '',
-                        'pelunasanpiutang_nobukti' => $request->pelunasanpiutang_nobukti[$i] ?? '-',
-                        'bulanbeban' => date('Y-m-d', strtotime($request->bulanbeban[$i])) ?? '',
-                        'modifiedby' => auth('api')->user()->name,
-                        'created_at' => date('d-m-Y H:i:s', strtotime($penerimaanHeader->created_at)),
-                        'updated_at' => date('d-m-Y H:i:s', strtotime($penerimaanHeader->updated_at)),
-                    ];
-                    $detaillog[] = $datadetaillog;
+                    $detaillog[] = $datadetails['detail']->toArray();
     
                 }
     
                 $datalogtrail = [
-                    'namatabel' => $tabeldetail,
+                    'namatabel' => strtoupper($tabeldetail),
                     'postingdari' => 'ENTRY PENERIMAAN DETAIL',
-                    'idtrans' =>  $penerimaanHeader->id,
+                    'idtrans' =>  $storedLogTrail['id'],
                     'nobuktitrans' => $penerimaanHeader->nobukti,
                     'aksi' => 'ENTRY',
                     'datajson' => $detaillog,
@@ -405,35 +383,13 @@ class PenerimaanHeaderController extends Controller
                     $iddetail = $datadetails['id'];
                     $tabeldetail = $datadetails['tabel'];
                 }
-
-                $datadetaillog = [
-                    'id' => $iddetail,
-                    'penerimaan_id' => $penerimaanheader->id,
-                    'nobukti' => $penerimaanheader->nobukti,
-                    'nowarkat' => $request->nowarkat[$i],
-                    'tgljatuhtempo' =>  date('Y-m-d', strtotime($request->tgljatuhtempo[$i])),
-                    'nominal' => $request->nominal_detail[$i],
-                    'coadebet' => $request->coadebet[$i],
-                    'coakredit' => $querysubgrppenerimaan->coa,
-                    'keterangan' => $request->keterangan_detail[$i],
-                    'bank_id' => $penerimaanheader->bank_id,
-                    'pelanggan_id' => $penerimaanheader->pelanggan_id,
-                    'invoice_nobukti' => $request->invoice_nobukti[$i] ?? '-',
-                    'bankpelanggan_id' => $request->bankpelanggan_id[$i] ?? '',
-                    'jenisbiaya' => $request->jenisbiaya[$i] ?? '',
-                    'pelunasanpiutang_nobukti' => $request->pelunasanpiutang_nobukti[$i] ?? '-',
-                    'bulanbeban' => date('Y-m-d', strtotime($request->bulanbeban[$i])) ?? '',
-                    'modifiedby' => auth('api')->user()->name,
-                    'created_at' => date('d-m-Y H:i:s', strtotime($penerimaanheader->created_at)),
-                    'updated_at' => date('d-m-Y H:i:s', strtotime($penerimaanheader->updated_at)),
-                ];
-                $detaillog[] = $datadetaillog;
+                $detaillog[] = $datadetails['detail']->toArray();
             }
 
             $datalogtrail = [
-                'namatabel' => $tabeldetail,
+                'namatabel' => strtoupper($tabeldetail),
                 'postingdari' => 'EDIT PENERIMAAN DETAIL',
-                'idtrans' =>  $penerimaanheader->id,
+                'idtrans' =>  $storedLogTrail['id'],
                 'nobuktitrans' => $penerimaanheader->nobukti,
                 'aksi' => 'EDIT',
                 'datajson' => $detaillog,
@@ -553,13 +509,13 @@ class PenerimaanHeaderController extends Controller
                 ];
     
                 $data = new StoreLogTrailRequest($datalogtrail);
-                app(LogTrailController::class)->store($data);
+                $storedLogTrail = app(LogTrailController::class)->store($data);
                
                 // DELETE PENERIMAAN DETAIL
                 $logTrailPenerimaanDetail = [
                     'namatabel' => 'PENERIMAANDETAIL',
                     'postingdari' => 'DELETE PENERIMAAN DETAIL',
-                    'idtrans' => $penerimaanheader->id,
+                    'idtrans' => $storedLogTrail['id'],
                     'nobuktitrans' => $penerimaanheader->nobukti,
                     'aksi' => 'DELETE',
                     'datajson' => $getDetail->toArray(),
@@ -581,7 +537,7 @@ class PenerimaanHeaderController extends Controller
                 ];
 
                 $validatedLogTrailJurnalHeader = new StoreLogTrailRequest($logTrailJurnalHeader);
-                app(LogTrailController::class)->store($validatedLogTrailJurnalHeader);
+                $storedLogTrailJurnal = app(LogTrailController::class)->store($validatedLogTrailJurnalHeader);
 
                 
                 // DELETE JURNAL DETAIL
@@ -589,7 +545,7 @@ class PenerimaanHeaderController extends Controller
                 $logTrailJurnalDetail = [
                     'namatabel' => 'JURNALUMUMDETAIL',
                     'postingdari' => 'DELETE JURNAL UMUM DETAIL DARI PENERIMAAN HEADER',
-                    'idtrans' => $getJurnalHeader->id,
+                    'idtrans' => $storedLogTrailJurnal['id'],
                     'nobuktitrans' => $getJurnalHeader->nobukti,
                     'aksi' => 'DELETE',
                     'datajson' => $getJurnalDetail->toArray(),
@@ -737,26 +693,12 @@ class PenerimaanHeaderController extends Controller
                 $jurnal = new StoreJurnalUmumDetailRequest($value);
                 $datadetails = app(JurnalUmumDetailController::class)->store($jurnal);
 
-                $details = $datadetails['detail'];
-                $datadetaillog = [
-                    'id' => $details->id,
-                    'jurnalumum_id' =>  $details->jurnalumum_id,
-                    'nobukti' => $details->nobukti,
-                    'tglbukti' => $details->tglbukti,
-                    'coa' => $details->coa,
-                    'nominal' => $details->nominal,
-                    'keterangan' => $details->keterangan,
-                    'modifiedby' => $details->modifiedby,
-                    'created_at' => date('d-m-Y H:i:s', strtotime($details->created_at)),
-                    'updated_at' => date('d-m-Y H:i:s', strtotime($details->updated_at)),
-                    'baris' => $details->baris,
-                ];
-                $detailLog[] = $datadetaillog;
+                $detailLog[] = $datadetails['detail']->toArray();
             }
             $datalogtrail = [
-                'namatabel' => $datadetails['tabel'],
+                'namatabel' => strtoupper($datadetails['tabel']),
                 'postingdari' => 'ENTRY PENERIMAAN KAS/BANK',
-                'idtrans' => $jurnals->original['data']['id'],
+                'idtrans' => $jurnals->original['idlogtrail'],
                 'nobuktitrans' => $header['nobukti'],
                 'aksi' => 'ENTRY',
                 'datajson' => $detailLog,

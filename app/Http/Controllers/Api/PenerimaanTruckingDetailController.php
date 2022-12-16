@@ -101,6 +101,7 @@ class PenerimaanTruckingDetailController extends Controller
             DB::commit();
             return [
                 'error' => false,
+                'detail' => $penerimaantruckingDetail,
                 'id' => $penerimaantruckingDetail->id,
                 'tabel' => $penerimaantruckingDetail->getTable(),
             ];

@@ -127,6 +127,7 @@ class UpahRitasiRincianController extends Controller
            
             return [
                 'error' => false,
+                'detail' => $upahritasirincian,
                 'id' => $upahritasirincian->id,
                 'tabel' => $upahritasirincian->getTable(),
             ];

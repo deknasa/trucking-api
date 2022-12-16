@@ -84,6 +84,7 @@ class PencairanGiroPengeluaranDetailController extends Controller
 
             return [
                 'error' => false,
+                'detail' => $pencairanGiroDetail,
                 'id' => $pencairanGiroDetail->id,
                 'tabel' => $pencairanGiroDetail->getTable(),
             ];

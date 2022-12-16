@@ -106,24 +106,13 @@ class ServiceOutHeaderController extends Controller
                     $tabeldetail = $datadetails['tabel'];
                 }
 
-                $datadetaillog = [
-                    'id' => $iddetail,
-                    'serviceout_id' => $serviceout->id,
-                    'nobukti' => $serviceout->nobukti,
-                    'servicein_nobukti' => $request->servicein_nobukti[$i],
-                    'keterangan' => $request->keterangan_detail[$i],
-                    'modifiedby' => $serviceout->modifiedby,
-                    'created_at' => date('d-m-Y H:i:s', strtotime($serviceout->created_at)),
-                    'updated_at' => date('d-m-Y H:i:s', strtotime($serviceout->updated_at)),
-                ];
-                $detaillog[] = $datadetaillog;
-                // }
+                $detaillog[] = $datadetails['detail']->toArray();
 
             }
             $datalogtrail = [
-                'namatabel' => $tabeldetail,
+                'namatabel' => strtoupper($tabeldetail),
                 'postingdari' => 'ENTRY SERVICE OUT',
-                'idtrans' =>  $serviceout->id,
+                'idtrans' =>  $storedLogTrail['id'],
                 'nobuktitrans' => $serviceout->nobukti,
                 'aksi' => 'ENTRY',
                 'datajson' => $detaillog,
@@ -221,23 +210,13 @@ class ServiceOutHeaderController extends Controller
                         $tabeldetail = $datadetails['tabel'];
                     }
 
-                    $datadetaillog = [
-                        'id' => $iddetail,
-                        'serviceout_id' => $serviceoutheader->id,
-                        'nobukti' => $serviceoutheader->nobukti,
-                        'servicein_nobukti' => $request->servicein_nobukti[$i],
-                        'keterangan' => $request->keterangan_detail[$i],
-                        'modifiedby' => $serviceoutheader->modifiedby,
-                        'created_at' => date('d-m-Y H:i:s', strtotime($serviceoutheader->created_at)),
-                        'updated_at' => date('d-m-Y H:i:s', strtotime($serviceoutheader->updated_at)),
-                    ];
-                    $detaillog[] = $datadetaillog;
+                    $detaillog[] = $datadetails['detail']->toArray();
                 }
 
                 $datalogtrail = [
                     'namatabel' => $tabeldetail,
                     'postingdari' => 'EDIT SERVICE OUT DETAIL',
-                    'idtrans' =>  $serviceoutheader->id,
+                    'idtrans' =>  $storedLogTrail['id'],
                     'nobuktitrans' => $serviceoutheader->nobukti,
                     'aksi' => 'EDIT',
                     'datajson' => $detaillog,
@@ -292,14 +271,14 @@ class ServiceOutHeaderController extends Controller
                 ];
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                app(LogTrailController::class)->store($validatedLogTrail);
+                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
                 // DELETE SERVICE OUT DETAIL
 
                 $logTrailServiceOut = [
                     'namatabel' => 'SERVICEOUTDETAIL',
                     'postingdari' => 'DELETE SERVICE OUT DETAIL',
-                    'idtrans' => $serviceoutheader->id,
+                    'idtrans' => $storedLogTrail['id'],
                     'nobuktitrans' => $serviceoutheader->nobukti,
                     'aksi' => 'DELETE',
                     'datajson' => $getDetail->toArray(),

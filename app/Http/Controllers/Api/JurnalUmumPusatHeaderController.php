@@ -123,26 +123,12 @@ class JurnalUmumPusatHeaderController extends Controller
                             $tabeldetail = $datadetails['tabel'];
                         }
 
-                        $datadetaillog = [
-                            'id' => $iddetail,
-                            'jurnalumumpusat_id' => $jurnalUmumPusat->id,
-                            'nobukti' => $jurnalUmumPusat->nobukti,
-                            'tglbukti' => $jurnalUmumPusat->tglbukti,
-                            'coa' => $value->coa,
-                            'nominal' => $value->nominal,
-                            'keterangan' => $value->keterangan,
-                            'modifiedby' => $jurnalUmumPusat->modifiedby,
-                            'created_at' => date('d-m-Y H:i:s', strtotime($jurnalUmumPusat->created_at)),
-                            'updated_at' => date('d-m-Y H:i:s', strtotime($jurnalUmumPusat->updated_at)),
-                            'baris' => $value->baris,
-                        ];
-
-                        $detaillog[] = $datadetaillog;
+                        $detaillog[] = $datadetails['detail']->toArray();
                     }
                     $datalogtrail = [
-                        'namatabel' => $tabeldetail,
+                        'namatabel' => strtoupper($tabeldetail),
                         'postingdari' => 'ENTRY JURNAL UMUM PUSAT DETAIL',
-                        'idtrans' =>  $jurnalUmumPusat->id,
+                        'idtrans' =>  $storedLogTrail['id'],
                         'nobuktitrans' => $jurnalUmumPusat->nobukti,
                         'aksi' => 'ENTRY',
                         'datajson' => $detaillog,
@@ -183,7 +169,7 @@ class JurnalUmumPusatHeaderController extends Controller
                         $logTrailJurnalDetail = [
                             'namatabel' => 'JURNALUMUMPUSATDETAIL',
                             'postingdari' => 'DELETE JURNAL UMUM PUSAT DETAIL',
-                            'idtrans' => $jurnalUmumPusat->id,
+                            'idtrans' => $storedLogTrail['id'],
                             'nobuktitrans' => $jurnalUmumPusat->nobukti,
                             'aksi' => 'DELETE',
                             'datajson' => $getDetail->toArray(),

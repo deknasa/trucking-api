@@ -98,29 +98,14 @@ class UpahRitasiController extends Controller
                         $tabeldetail = $datadetails['tabel'];
                     }
 
-                    $datadetaillog = [
-                        'id' => $iddetail,
-                        'upahritasi_id' => $upahritasi->id,
-                        'container_id' => $request->container_id[$i],
-                        'statuscontainer_id' => $request->statuscontainer_id[$i],
-                        'nominalsupir' => $request->nominalsupir[$i],
-                        'nominalkenek' => $request->nominalkenek[$i] ?? 0,
-                        'nominalkomisi' => $request->nominalkomisi[$i] ?? 0,
-                        'nominaltol' =>  $request->nominaltol[$i] ?? 0,
-                        'liter' => $request->liter[$i] ?? 0,
-                        'modifiedby' => $upahritasi->modifiedby,
-                        'created_at' => date('d-m-Y H:i:s', strtotime($upahritasi->created_at)),
-                        'updated_at' => date('d-m-Y H:i:s', strtotime($upahritasi->updated_at)),
-                    ];
-
-                    $detaillog[] = $datadetaillog;
+                    $detaillog[] = $datadetails['detail']->toArray();
                 }
 
 
                 $datalogtrail = [
-                    'namatabel' => $tabeldetail,
+                    'namatabel' => strtoupper($tabeldetail),
                     'postingdari' => 'ENTRY UPAH RITASI RINCIAN',
-                    'idtrans' =>  $upahritasi->id,
+                    'idtrans' =>  $storedLogTrail['id'],
                     'nobuktitrans' => $upahritasi->id,
                     'aksi' => 'ENTRY',
                     'datajson' => $detaillog,
@@ -226,27 +211,13 @@ class UpahRitasiController extends Controller
                         $tabeldetail = $datadetails['tabel'];
                     }
 
-                    $datadetaillog = [
-                        'id' => $iddetail,
-                        'upahritasi_id' => $upahritasi->id,
-                        'container_id' => $request->container_id[$i],
-                        'statuscontainer_id' => $request->statuscontainer_id[$i],
-                        'nominalsupir' => $request->nominalsupir[$i],
-                        'nominalkenek' => $request->nominalkenek[$i] ?? 0,
-                        'nominalkomisi' => $request->nominalkomisi[$i] ?? 0,
-                        'nominaltol' =>  $request->nominaltol[$i] ?? 0,
-                        'liter' => $request->liter[$i] ?? 0,
-                        'modifiedby' => $upahritasi->modifiedby,
-                        'created_at' => date('d-m-Y H:i:s', strtotime($upahritasi->created_at)),
-                        'updated_at' => date('d-m-Y H:i:s', strtotime($upahritasi->updated_at)),
-                    ];
-                    $detaillog[] = $datadetaillog;
+                    $detaillog[] = $datadetails['detail']->toArray();
                 }
 
                 $datalogtrail = [
-                    'namatabel' => $tabeldetail,
+                    'namatabel' => strtoupper($tabeldetail),
                     'postingdari' => 'EDIT UPAH RITASI RINCIAN',
-                    'idtrans' =>  $upahritasi->id,
+                    'idtrans' =>  $storedLogTrail['id'],
                     'nobuktitrans' => $upahritasi->id,
                     'aksi' => 'EDIT',
                     'datajson' => $detaillog,
@@ -301,13 +272,13 @@ class UpahRitasiController extends Controller
                 ];
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                app(LogTrailController::class)->store($validatedLogTrail);
+                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
                 // DELETE UPAH RITASI RINCIAN
                 $logTrailUpahRitasiRincian = [
                     'namatabel' => 'UPAHRITASIRINCIAN',
                     'postingdari' => 'DELETE UPAH RITASI RINCIAN',
-                    'idtrans' => $upahritasi->id,
+                    'idtrans' => $storedLogTrail['id'],
                     'nobuktitrans' => $upahritasi->id,
                     'aksi' => 'DELETE',
                     'datajson' => $getDetail->toArray(),

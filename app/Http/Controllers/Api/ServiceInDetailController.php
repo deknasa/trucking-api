@@ -110,6 +110,7 @@ class ServiceInDetailController extends Controller
             DB::commit();
             return [
                 'error' => false,
+                'detail' => $serviceInDetail,
                 'id' => $serviceInDetail->id,
                 'tabel' => $serviceInDetail->getTable(),
             ];

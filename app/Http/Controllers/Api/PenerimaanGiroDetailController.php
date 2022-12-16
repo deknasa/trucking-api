@@ -135,6 +135,7 @@ class PenerimaanGiroDetailController extends Controller
             DB::commit();
             return [
                 'error' => false,
+                'detail' => $penerimaangiroDetail,
                 'id' => $penerimaangiroDetail->id,
                 'tabel' => $penerimaangiroDetail->getTable(),
             ];

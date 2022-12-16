@@ -115,6 +115,7 @@ class HutangDetailController extends Controller
             DB::commit();
             return [
                 'error' => false,
+                'detail' => $hutangdetail,
                 'id' => $hutangdetail->id,
                 'tabel' => $hutangdetail->getTable(),
             ];

@@ -123,6 +123,7 @@ class HutangBayarDetailController extends Controller
             if ($validator->passes()) {
                 return [
                     'error' => false,
+                    'detail' => $hutangbayarDetail,
                     'id' => $hutangbayarDetail->id,
                     'tabel' => $hutangbayarDetail->getTable(),
                 ];
