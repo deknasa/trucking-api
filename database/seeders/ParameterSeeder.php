@@ -197,5 +197,7 @@ class ParameterSeeder extends Seeder
         parameter::create(['grp' => 'STATUS HITUNG STOK', 'subgrp' => 'STATUS HITUNG STOK', 'kelompok' => '', 'text' => 'HITUNG STOK', 'memo' => '{"MEMO":"HITUNG STOK","SINGKATAN":"HS","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN',]);
         parameter::create(['grp' => 'STATUS HITUNG STOK', 'subgrp' => 'STATUS HITUNG STOK', 'kelompok' => '', 'text' => 'TIDAK HITUNG STOK', 'memo' => '{"MEMO":"TIDAK HITUNG STOK","SINGKATAN":"THS","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN',]);
         parameter::create(['grp' => 'PO STOK', 'subgrp' => 'PO STOK', 'kelompok' => '', 'text' => '2', 'memo' => '{"MEMO":"PO STOK","SINGKATAN":"2","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN',]);
+        parameter::create(['grp' => 'PENCAIRAN GIRO BUKTI', 'subgrp' => 'PENCAIRAN GIRO BUKTI', 'kelompok' => '', 'text' => '#PGB #9999#/#R#/#Y', 'memo' => '{"MEMO":"PENCAIRAN GIRO BUKTI","SINGKATAN":"#PGB #9999#/#R#/#Y","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN',]);
+        
     }
 }
