@@ -129,26 +129,12 @@ class PenerimaanStokHeaderController extends Controller
                         $iddetail = $penerimaanStokDetail['id'];
                         $tabeldetail = $penerimaanStokDetail['tabel'];
                     }
-
-                    $datadetaillog = [
-                        "penerimaanstokheader_id" => $penerimaanStokHeader->id,
-                        "nobukti" => $penerimaanStokHeader->nobukti,
-                        "stok" => $request->detail_stok[$i],
-                        "qty" => $request->detail_qty[$i],
-                        "harga" => $request->detail_harga[$i],
-                        "persentasediscount" => $request->detail_persentasediscount[$i],
-                        "vulkanisirke" => $request->detail_vulkanisirke[$i],
-                        "keterangan" => $request->detail_keterangan[$i],
-                        'modifiedby' => auth('api')->user()->name,
-                        'created_at' => date('d-m-Y H:i:s', strtotime($penerimaanStokHeader->created_at)),
-                        'updated_at' => date('d-m-Y H:i:s', strtotime($penerimaanStokHeader->updated_at)),
-                    ];
-                    $detaillog[] = $datadetaillog;
+                    $detaillog[] = $penerimaanStokDetail['detail']->toArray();
                 }
                 $datalogtrail = [
-                    'namatabel' => $tabeldetail,
-                    'postingdari' => 'ENTRY PENERIMAAN STOK HEADER',
-                    'idtrans' =>  $iddetail,
+                    'namatabel' => strtoupper($tabeldetail),
+                    'postingdari' => 'ENTRY PENERIMAAN STOK DETAIL',
+                    'idtrans' =>  $storedLogTrail['id'],
                     'nobuktitrans' => $penerimaanStokHeader->nobukti,
                     'aksi' => 'ENTRY',
                     'datajson' => $detaillog,
@@ -281,27 +267,14 @@ class PenerimaanStokHeaderController extends Controller
                         $tabeldetail = $penerimaanStokDetail['tabel'];
                     }
 
-                    $datadetaillog = [
-                        "penerimaanstokheader_id" => $penerimaanStokHeader->id,
-                        "nobukti" => $penerimaanStokHeader->nobukti,
-                        "stok" => $request->detail_stok[$i],
-                        "qty" => $request->detail_qty[$i],
-                        "harga" => $request->detail_harga[$i],
-                        "persentasediscount" => $request->detail_persentasediscount[$i],
-                        "vulkanisirke" => $request->detail_vulkanisirke[$i],
-                        "keterangan" => $request->detail_keterangan[$i],
-                        'modifiedby' => auth('api')->user()->name,
-                        'created_at' => date('d-m-Y H:i:s', strtotime($penerimaanStokHeader->created_at)),
-                        'updated_at' => date('d-m-Y H:i:s', strtotime($penerimaanStokHeader->updated_at)),
-                    ];
-                    $detaillog[] = $datadetaillog;
+                    $detaillog[] = $penerimaanStokDetail['detail']->toArray();
                 }
                 $datalogtrail = [
-                    'namatabel' => $tabeldetail,
-                    'postingdari' => 'ENTRY PENERIMAAN STOK HEADER',
-                    'idtrans' =>  $iddetail,
+                    'namatabel' => strtoupper($tabeldetail),
+                    'postingdari' => 'EDIT PENERIMAAN STOK HEADER',
+                    'idtrans' =>  $storedLogTrail['id'],
                     'nobuktitrans' => $penerimaanStokHeader->nobukti,
-                    'aksi' => 'ENTRY',
+                    'aksi' => 'EDIT',
                     'datajson' => $detaillog,
                     'modifiedby' => auth('api')->user()->name,
                 ];
@@ -363,6 +336,7 @@ class PenerimaanStokHeaderController extends Controller
         }
 
 
+        $getDetail = PenerimaanStokDetail::where('penerimaanstokheader_id', $id)->get();
         $delete = $penerimaanStokHeader->lockForUpdate()->where('id',$id)->delete();
 
         if ($delete) {
@@ -370,15 +344,28 @@ class PenerimaanStokHeaderController extends Controller
                 'namatabel' => strtoupper($penerimaanStokHeader->getTable()),
                 'postingdari' => 'DELETE PENERIMAAN STOK',
                 'idtrans' => $penerimaanStokHeader->id,
-                'nobuktitrans' => $penerimaanStokHeader->id,
+                'nobuktitrans' => $penerimaanStokHeader->nobukti,
                 'aksi' => 'DELETE',
                 'datajson' => $penerimaanStokHeader->toArray(),
                 'modifiedby' => $penerimaanStokHeader->modifiedby
             ];
 
             $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-            app(LogTrailController::class)->store($validatedLogTrail);
+            $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
+            // DELETE PENERIMAAN STOK DETAIL
+            $logTrailPenerimaanStokDetail = [
+                'namatabel' => 'PENERIMAANSTOKDETAIL',
+                'postingdari' => 'DELETE PENERIMAAN STOK DETAIL',
+                'idtrans' => $storedLogTrail['id'],
+                'nobuktitrans' => $penerimaanStokHeader->nobukti,
+                'aksi' => 'DELETE',
+                'datajson' => $getDetail->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ];
+
+            $validatedLogTrailPenerimaanStokDetail = new StoreLogTrailRequest($logTrailPenerimaanStokDetail);
+            app(LogTrailController::class)->store($validatedLogTrailPenerimaanStokDetail);
             DB::commit();
 
             $selected = $this->getPosition($penerimaanStokHeader, $penerimaanStokHeader->getTable(), true);

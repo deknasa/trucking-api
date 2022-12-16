@@ -507,8 +507,10 @@ class PenerimaanGiroHeaderController extends Controller
 
             if ($penerimaanGiro->statusapproval == $statusApproval->id) {
                 $penerimaanGiro->statusapproval = $statusNonApproval->id;
+                $aksi = $statusNonApproval->text;
             } else {
                 $penerimaanGiro->statusapproval = $statusApproval->id;
+                $aksi = $statusApproval->text;
             }
 
             $penerimaanGiro->tglapproval = date('Y-m-d H:i:s');
@@ -517,10 +519,10 @@ class PenerimaanGiroHeaderController extends Controller
             if ($penerimaanGiro->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($penerimaanGiro->getTable()),
-                    'postingdari' => 'UN/APPROVE PENERIMAAN GIRO',
+                    'postingdari' => 'APPROVED KAS/BANK',
                     'idtrans' => $penerimaanGiro->id,
-                    'nobuktitrans' => $penerimaanGiro->id,
-                    'aksi' => 'UN/APPROVE',
+                    'nobuktitrans' => $penerimaanGiro->nobukti,
+                    'aksi' => $aksi,
                     'datajson' => $penerimaanGiro->toArray(),
                     'modifiedby' => $penerimaanGiro->modifiedby
                 ];

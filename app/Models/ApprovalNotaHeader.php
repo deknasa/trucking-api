@@ -28,15 +28,19 @@ class ApprovalNotaHeader extends MyModel
         $this->setRequestParameters();
         $periode = request()->periode ?? date('m-Y');
         $approve = request()->approve ?? 0;
-        $approval = 0;
         
-        $tabel = request()->tabel ?? 'notadebetheader';
-        if($approve == 3) {
-            $approval = 4;
+        
+        $tabel = (request()->tabel == 'NOTA DEBET') ? 'notadebetheader' : 'notakreditheader';
+        $approval = Parameter::where('grp','STATUS APPROVAL')->where('text','APPROVAL')->first();
+        $nonApproval = Parameter::where('grp','STATUS APPROVAL')->where('text','NON APPROVAL')->first();
+        if($approve == $approval->id) {
+            $approval = $nonApproval->id;
+        }else if($approve == $nonApproval->id) {
+            $approval = $approval->id;
+        }else{
+            $approval = 0;
         }
-        if($approve == 4){
-            $approval = 3;
-        }
+        
         $month = substr($periode,0,2);
         $year = substr($periode,3);
 

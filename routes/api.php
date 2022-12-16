@@ -650,6 +650,7 @@ use App\Http\Controllers\Api\BankPelangganController;
         Route::resource('pencairangiropengeluaranheader', PencairanGiroPengeluaranHeaderController::class);
         Route::resource('pencairangiropengeluarandetail', PencairanGiroPengeluaranDetailController::class);
 
+        Route::get('approvalnotaheader/combo', [ApprovalNotaHeaderController::class, 'combo']);
         Route::resource('approvalnotaheader', ApprovalNotaHeaderController::class);
         Route::resource('approvalhutangbayar', ApprovalHutangBayarController::class);
         

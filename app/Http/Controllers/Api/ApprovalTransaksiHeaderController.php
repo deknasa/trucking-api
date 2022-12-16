@@ -8,6 +8,7 @@ use App\Models\Parameter;
 use App\Models\PenerimaanHeader;
 use App\Models\PengeluaranHeader;
 use App\Http\Requests\StoreApprovalTransaksiHeaderRequest;
+use App\Models\PenerimaanGiroHeader;
 
 class ApprovalTransaksiHeaderController extends Controller
 {
@@ -34,7 +35,12 @@ class ApprovalTransaksiHeaderController extends Controller
             $data = $pengeluaran->get();
             $totalRows = $pengeluaran->totalRows;
             $totalPages = $pengeluaran->totalPages;
-        } else{
+        } else if ($request->transaksi == 'PENERIMAAN GIRO' && $request->approve){
+            $penerimaanGiro = new PenerimaanGiroHeader();
+            $data = $penerimaanGiro->get();
+            $totalRows = $penerimaanGiro->totalRows;
+            $totalPages = $penerimaanGiro->totalPages;
+        }else{
             $data = [];
             $totalRows = 0;
             $totalPages = 0;
@@ -70,6 +76,14 @@ class ApprovalTransaksiHeaderController extends Controller
                     // return response($pengeluaranHeader, 422);
                 }
             }
+        }else if ($request->transaksi == 'PENERIMAAN GIRO' && $request->approve){
+            if ($request->transaksiId) {
+                
+                for ($i = 0; $i < count($request->transaksiId); $i++) {
+                    $penerimaanGiro = app(PenerimaanGiroHeaderController::class)->approval($request->transaksiId[$i]);
+                    // return response($pengeluaranHeader, 422);
+                }
+            }
         }
         return response([
             'message' => 'Berhasil'
@@ -78,7 +92,7 @@ class ApprovalTransaksiHeaderController extends Controller
     }
     public function combo(Request $request)
     {
-        $parameters = Parameter::select('kelompok')->whereIn('kelompok', ['PENERIMAAN BANK','PENGELUARAN BANK'])
+        $parameters = Parameter::select('kelompok')->whereIn('kelompok', ['PENERIMAAN BANK','PENGELUARAN BANK','PENERIMAAN GIRO'])
             ->groupBy('kelompok')
             ->get();
 

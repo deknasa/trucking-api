@@ -38,7 +38,8 @@ class ApprovalNotaHeaderController extends Controller
         DB::BeginTransaction();
         try {
 
-            $tabel = $request->tabel;
+            $tabel = ($request->tabel == 'NOTA DEBET') ? 'notadebetheader' : 'notakreditheader';
+
             
             for ($i = 0; $i < count($request->notaId); $i++) {
 
@@ -83,6 +84,17 @@ class ApprovalNotaHeaderController extends Controller
             throw $th;
             return response($th->getMessage());
         }
+    }
+    
+    public function combo(Request $request)
+    {
+        $parameters = Parameter::select('kelompok')->whereIn('kelompok', ['NOTA DEBET','NOTA KREDIT'])
+            ->groupBy('kelompok')
+            ->get();
+
+        return response([
+            'data' => $parameters
+        ]);
     }
 
 

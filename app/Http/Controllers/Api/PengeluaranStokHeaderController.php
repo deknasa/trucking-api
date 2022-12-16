@@ -122,27 +122,13 @@ class PengeluaranStokHeaderController extends Controller
                             $iddetail = $pengeluaranStokDetail['id'];
                             $tabeldetail = $pengeluaranStokDetail['tabel'];
                         }
-    
-                        $datadetaillog = [
-                            "pengeluaranstokheader_id" =>$pengeluaranStokHeader->id,
-                            "nobukti" => $pengeluaranStokHeader->nobukti,
-                            "stok" => $request->detail_stok[$i],
-                            "qty" => $request->detail_qty[$i],
-                            "harga" => $request->detail_harga[$i],
-                            "persentasediscount" => $request->detail_persentasediscount[$i],
-                            "vulkanisirke" => $request->detail_vulkanisirke[$i],
-                            "keterangan" => $request->detail_keterangan[$i],
-                            'modifiedby' => auth('api')->user()->name,
-                            'created_at' => date('d-m-Y H:i:s', strtotime($pengeluaranStokHeader->created_at)),
-                            'updated_at' => date('d-m-Y H:i:s', strtotime($pengeluaranStokHeader->updated_at)),
-                        ];
-                        $detaillog[] = $datadetaillog;
+                        $detaillog[] = $pengeluaranStokDetail['detail']->toArray();
         
                     }
                     $datalogtrail = [
-                        'namatabel' => $tabeldetail,
+                        'namatabel' => strtoupper($tabeldetail),
                         'postingdari' => 'ENTRY PENGELUARAN STOK DETAIL',
-                        'idtrans' =>  $iddetail,
+                        'idtrans' =>  $storedLogTrail['id'],
                         'nobuktitrans' => $pengeluaranStokHeader->nobukti,
                         'aksi' => 'ENTRY',
                         'datajson' => $detaillog,
@@ -251,27 +237,13 @@ class PengeluaranStokHeaderController extends Controller
                             $iddetail = $pengeluaranStokDetail['id'];
                             $tabeldetail = $pengeluaranStokDetail['tabel'];
                         }
-    
-                        $datadetaillog = [
-                            "pengeluaranstokheader_id" =>$pengeluaranStokHeader->id,
-                            "nobukti" => $pengeluaranStokHeader->nobukti,
-                            "stok" => $request->detail_stok[$i],
-                            "qty" => $request->detail_qty[$i],
-                            "harga" => $request->detail_harga[$i],
-                            "persentasediscount" => $request->detail_persentasediscount[$i],
-                            "vulkanisirke" => $request->detail_vulkanisirke[$i],
-                            "keterangan" => $request->detail_keterangan[$i],
-                            'modifiedby' => auth('api')->user()->name,
-                            'created_at' => date('d-m-Y H:i:s', strtotime($pengeluaranStokHeader->created_at)),
-                            'updated_at' => date('d-m-Y H:i:s', strtotime($pengeluaranStokHeader->updated_at)),
-                        ];
-                        $detaillog[] = $datadetaillog;
+                        $detaillog[] = $pengeluaranStokDetail['detail']->toArray();
         
                     }
                     $datalogtrail = [
-                        'namatabel' => $tabeldetail,
+                        'namatabel' => strtoupper($tabeldetail),
                         'postingdari' => 'ENTRY PENGELUARAN STOK HEADER',
-                        'idtrans' =>  $iddetail,
+                        'idtrans' =>  $storedLogTrail['id'],
                         'nobuktitrans' => $pengeluaranStokHeader->nobukti,
                         'aksi' => 'ENTRY',
                         'datajson' => $detaillog,
@@ -312,6 +284,7 @@ class PengeluaranStokHeaderController extends Controller
     {
         DB::beginTransaction();
 
+        $getDetail = PengeluaranStokDetail::where('pengeluaranstokheader_id', $id)->get();
         $pengeluaranStokHeader = PengeluaranStokHeader::where('id',$id)->first();
         $delete = $pengeluaranStokHeader->lockForUpdate()->where('id',$id)->delete();
 
@@ -321,15 +294,28 @@ class PengeluaranStokHeaderController extends Controller
                 'namatabel' => strtoupper($pengeluaranStokHeader->getTable()),
                 'postingdari' => 'DELETE PENGELUARAN STOK',
                 'idtrans' => $pengeluaranStokHeader->id,
-                'nobuktitrans' => $pengeluaranStokHeader->id,
+                'nobuktitrans' => $pengeluaranStokHeader->nobukti,
                 'aksi' => 'DELETE',
                 'datajson' => $pengeluaranStokHeader->toArray(),
                 'modifiedby' => $pengeluaranStokHeader->modifiedby
             ];
 
             $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-            app(LogTrailController::class)->store($validatedLogTrail);
+            $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
+            // DELETE PENGELUARAN STOK DETAIL
+            $logTrailPengeluaranStokDetail = [
+                'namatabel' => 'PENGELUARANSTOKDETAIL',
+                'postingdari' => 'DELETE PENGELUARAN STOK DETAIL',
+                'idtrans' => $storedLogTrail['id'],
+                'nobuktitrans' => $pengeluaranStokHeader->nobukti,
+                'aksi' => 'DELETE',
+                'datajson' => $getDetail->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ];
+
+            $validatedLogTrailPengeluaranStokDetail = new StoreLogTrailRequest($logTrailPengeluaranStokDetail);
+            app(LogTrailController::class)->store($validatedLogTrailPengeluaranStokDetail);
             DB::commit();
 
             $selected = $this->getPosition($pengeluaranStokHeader, $pengeluaranStokHeader->getTable(), true);
