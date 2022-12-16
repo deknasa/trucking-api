@@ -40,9 +40,14 @@ class PenerimaanGiroHeader extends MyModel
             DB::raw('(case when (year(penerimaangiroheader.tglapproval) <= 2000) then null else penerimaangiroheader.tglapproval end ) as tglapproval'),
             'penerimaangiroheader.userapproval',
             'penerimaangiroheader.created_at',
+            'statuscetak.memo as statuscetak',
+            DB::raw('(case when (year(penerimaangiroheader.tglbukacetak) <= 2000) then null else penerimaangiroheader.tglbukacetak end ) as tglbukacetak'),
+            'penerimaangiroheader.userbukacetak',
+            'penerimaangiroheader.created_at',
             'penerimaangiroheader.modifiedby',
             'penerimaangiroheader.updated_at'
         )->leftJoin('pelanggan', 'penerimaangiroheader.pelanggan_id', 'pelanggan.id')
+        ->leftJoin('parameter as statuscetak', 'penerimaangiroheader.statuscetak', 'statuscetak.id')
         ->leftJoin('parameter as statusapproval', 'penerimaangiroheader.statusapproval', 'statusapproval.id');
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -88,7 +93,7 @@ class PenerimaanGiroHeader extends MyModel
     public function findAll($id) 
     {
         $query = DB::table('penerimaangiroheader')->select(
-            'penerimaangiroheader.id','penerimaangiroheader.nobukti','penerimaangiroheader.tglbukti','penerimaangiroheader.pelanggan_id','pelanggan.namapelanggan as pelanggan','penerimaangiroheader.keterangan','penerimaangiroheader.diterimadari','penerimaangiroheader.tgllunas'
+            'penerimaangiroheader.id','penerimaangiroheader.nobukti','penerimaangiroheader.tglbukti','penerimaangiroheader.pelanggan_id','pelanggan.namapelanggan as pelanggan','penerimaangiroheader.keterangan','penerimaangiroheader.diterimadari','penerimaangiroheader.tgllunas','penerimaangiroheader.statuscetak'
         )->leftJoin('pelanggan','penerimaangiroheader.pelanggan_id','pelanggan.id')
         ->where('penerimaangiroheader.id',$id);
        
@@ -187,6 +192,8 @@ class PenerimaanGiroHeader extends MyModel
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statusapproval') {
                             $query = $query->where('statusapproval.text', '=', "$filters[data]");
+                        } else if ($filters['field'] == 'statuscetak') {
+                            $query = $query->where('statuscetak.text', '=', "$filters[data]");
                         } else if ($filters['field'] == 'pelanggan_id') {
                             $query = $query->where('pelanggan.namapelanggan', 'LIKE', "%$filters[data]%");
                         } else {
@@ -199,6 +206,8 @@ class PenerimaanGiroHeader extends MyModel
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statusapproval') {
                             $query = $query->orWhere('statusapproval.text', '=', "$filters[data]");
+                        } else if ($filters['field'] == 'statuscetak') {
+                            $query = $query->orWhere('statuscetak.text', '=', "$filters[data]");
                         } else if ($filters['field'] == 'pelanggan_id') {
                             $query = $query->orWhere('pelanggan.namapelanggan', 'LIKE', "%$filters[data]%");
                         } else {
