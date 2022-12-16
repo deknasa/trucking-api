@@ -194,29 +194,13 @@ class PengeluaranHeaderController extends Controller
                         $tabeldetail = $datadetails['tabel'];
                     }
 
-                    $datadetaillog = [
-                        'id' => $iddetail,
-                        'pengeluaran_id' => $pengeluaranHeader->id,
-                        'nobukti' => $pengeluaranHeader->nobukti,
-                        'alatbayar_id' => $request->alatbayar_id[$i],
-                        'nowarkat' => $request->nowarkat[$i],
-                        'tgljatuhtempo' =>  date('Y-m-d', strtotime($request->tgljatuhtempo[$i])),
-                        'nominal' => $request->nominal_detail[$i],
-                        'coadebet' =>  $request->coadebet[$i],
-                        'coakredit' => $querysubgrppengeluaran->coa,
-                        'keterangan' => $request->keterangan_detail[$i],
-                        'bulanbeban' =>  date('Y-m-d', strtotime($request->bulanbeban[$i])) ?? '',
-                        'modifiedby' => auth('api')->user()->name,
-                        'created_at' => date('d-m-Y H:i:s', strtotime($pengeluaranHeader->created_at)),
-                        'updated_at' => date('d-m-Y H:i:s', strtotime($pengeluaranHeader->updated_at)),
-                    ];
-                    $detaillog[] = $datadetaillog;
+                    $detaillog[] = $datadetails['detail']->toArray();
                 }
 
                 $datalogtrail = [
-                    'namatabel' => $tabeldetail,
+                    'namatabel' => strtoupper($tabeldetail),
                     'postingdari' => 'ENTRY PENGELUARAN DETAIL',
-                    'idtrans' =>  $pengeluaranHeader->id,
+                    'idtrans' =>  $storedLogTrail['id'],
                     'nobuktitrans' => $pengeluaranHeader->nobukti,
                     'aksi' => 'ENTRY',
                     'datajson' => $detaillog,
@@ -296,6 +280,7 @@ class PengeluaranHeaderController extends Controller
             return response([
                 'status' => true,
                 'message' => 'Berhasil disimpan',
+                'idlogtrail' => $storedLogTrail['id'],
                 'data' => $pengeluaranHeader
             ], 201);
         } catch (\Throwable $th) {
@@ -414,30 +399,14 @@ class PengeluaranHeaderController extends Controller
                     $tabeldetail = $datadetails['tabel'];
                 }
 
-                $datadetaillog = [
-                    'id' => $iddetail,
-                    'pengeluaran_id' => $pengeluaranheader->id,
-                    'nobukti' => $pengeluaranheader->nobukti,
-                    'alatbayar_id' => $request->alatbayar_id[$i],
-                    'nowarkat' => $request->nowarkat[$i],
-                    'tgljatuhtempo' =>  date('Y-m-d', strtotime($request->tgljatuhtempo[$i])),
-                    'nominal' => $request->nominal_detail[$i],
-                    'coadebet' => $request->coadebet[$i],
-                    'coakredit' => $querysubgrppengeluaran->coa,
-                    'keterangan' => $request->keterangan_detail[$i],
-                    'bulanbeban' =>  date('Y-m-d', strtotime($request->bulanbeban[$i])) ?? '',
-                    'modifiedby' => auth('api')->user()->name,
-                    'created_at' => date('d-m-Y H:i:s', strtotime($pengeluaranheader->created_at)),
-                    'updated_at' => date('d-m-Y H:i:s', strtotime($pengeluaranheader->updated_at)),
-                ];
-                $detaillog[] = $datadetaillog;
+                $detaillog[] = $datadetails['detail']->toArray();
             }
 
 
             $datalogtrail = [
-                'namatabel' => $tabeldetail,
+                'namatabel' => strtoupper($tabeldetail),
                 'postingdari' => 'EDIT PENGELUARAN DETAIL',
-                'idtrans' =>  $pengeluaranheader->id,
+                'idtrans' =>  $storedLogTrail['id'],
                 'nobuktitrans' => $pengeluaranheader->nobukti,
                 'aksi' => 'EDIT',
                 'datajson' => $detaillog,
@@ -556,13 +525,13 @@ class PengeluaranHeaderController extends Controller
                 ];
     
                 $data = new StoreLogTrailRequest($datalogtrail);
-                app(LogTrailController::class)->store($data);
+                $storedLogTrail = app(LogTrailController::class)->store($data);
                 
                 // DELETE PENGELUARAN DETAIL
                 $logTrailPengeluaranDetail = [
                     'namatabel' => 'PENGELUARANDETAIL',
                     'postingdari' => 'DELETE PENGELUARAN DETAIL',
-                    'idtrans' => $pengeluaranheader->id,
+                    'idtrans' => $storedLogTrail['id'],
                     'nobuktitrans' => $pengeluaranheader->nobukti,
                     'aksi' => 'DELETE',
                     'datajson' => $getDetail->toArray(),
@@ -584,15 +553,14 @@ class PengeluaranHeaderController extends Controller
                 ];
 
                 $validatedLogTrailJurnalHeader = new StoreLogTrailRequest($logTrailJurnalHeader);
-                app(LogTrailController::class)->store($validatedLogTrailJurnalHeader);
+                $storedLogTrailJurnal = app(LogTrailController::class)->store($validatedLogTrailJurnalHeader);
 
-                
                 // DELETE JURNAL DETAIL
                 
                 $logTrailJurnalDetail = [
                     'namatabel' => 'JURNALUMUMDETAIL',
                     'postingdari' => 'DELETE JURNAL UMUM DETAIL DARI PENGELUARAN HEADER',
-                    'idtrans' => $getJurnalHeader->id,
+                    'idtrans' => $storedLogTrailJurnal['id'],
                     'nobuktitrans' => $getJurnalHeader->nobukti,
                     'aksi' => 'DELETE',
                     'datajson' => $getJurnalDetail->toArray(),
@@ -634,26 +602,12 @@ class PengeluaranHeaderController extends Controller
                 $jurnal = new StoreJurnalUmumDetailRequest($value);
                 $datadetails = app(JurnalUmumDetailController::class)->store($jurnal);
                 
-                $details = $datadetails['detail'];
-                $datadetaillog = [
-                    'id' => $details->id,
-                    'jurnalumum_id' =>  $details->jurnalumum_id,
-                    'nobukti' => $details->nobukti,
-                    'tglbukti' => $details->tglbukti,
-                    'coa' => $details->coa,
-                    'nominal' => $details->nominal,
-                    'keterangan' => $details->keterangan,
-                    'modifiedby' => $details->modifiedby,
-                    'created_at' => date('d-m-Y H:i:s', strtotime($details->created_at)),
-                    'updated_at' => date('d-m-Y H:i:s', strtotime($details->updated_at)),
-                    'baris' => $details->baris,
-                ];
-                $detailLog[] = $datadetaillog;
+                $detailLog[] = $datadetails['detail']->toArray();
             }
             $datalogtrail = [
-                'namatabel' => $datadetails['tabel'],
+                'namatabel' => strtoupper($datadetails['tabel']),
                 'postingdari' => 'ENTRY PENGELUARAN KAS/BANK',
-                'idtrans' => $jurnals->original['data']['id'],
+                'idtrans' => $jurnals->original['idlogtrail'],
                 'nobuktitrans' => $header['nobukti'],
                 'aksi' => 'ENTRY',
                 'datajson' => $detailLog,

@@ -159,38 +159,14 @@ class PelunasanPiutangHeaderController extends Controller
                     }
 
 
-                    $datadetaillog = [
-                        'id' => $iddetail,
-                        'pelunasanpiutang_id' => $pelunasanpiutangheader->id,
-                        'nobukti' => $pelunasanpiutangheader->nobukti,
-                        'pelanggan_id' => $request->pelanggan_id,
-                        'agen_id' => $request->agendetail_id,
-                        'nominal' => $request->bayarppd[$i],
-                        'piutang_nobukti' => $piutang->nobukti,
-                        'cicilan' => '',
-                        'tglcair' => $piutang->tglbukti,
-                        'keterangan' => $request->keterangandetailppd[$i] ?? '',
-                        'tgljt' => $piutang->tglbukti,
-                        'penyesuaian' => $request->penyesuaianppd[$i] ?? '',
-                        'coapenyesuaian' => $getCoaPenyesuaian->coa ?? '',
-                        'invoice_nobukti' => $piutang->invoice_nobukti,
-                        'keteranganpenyesuaian' => $keteranganpenyesuaianppd[$i] ?? '',
-                        'nominallebihbayar' => $request->nominallebihbayarppd[$i] ?? '',
-                        'coalebihbayar' => $getNominalLebih->coa ?? '',
-                        'modifiedby' => $pelunasanpiutangheader->modifiedby,
-                        'created_at' => date('d-m-Y H:i:s', strtotime($pelunasanpiutangheader->created_at)),
-                        'updated_at' => date('d-m-Y H:i:s', strtotime($pelunasanpiutangheader->updated_at)),
-
-                    ];
-
-                    $detaillog[] = $datadetaillog;
+                    $detaillog[] = $datadetails['detail']->toArray();
 
                 }
 
                 $datalogtrail = [
-                    'namatabel' => $tabeldetail,
+                    'namatabel' => strtoupper($tabeldetail),
                     'postingdari' => 'ENTRY PELUNASAN PIUTANG DETAIL',
-                    'idtrans' =>  $pelunasanpiutangheader->id,
+                    'idtrans' =>  $storedLogTrail['id'],
                     'nobuktitrans' => $pelunasanpiutangheader->nobukti,
                     'aksi' => 'ENTRY',
                     'datajson' => $detaillog,
@@ -338,39 +314,14 @@ class PelunasanPiutangHeaderController extends Controller
                         $iddetail = $datadetails['id'];
                         $tabeldetail = $datadetails['tabel'];
                     }
-
-                    $datadetaillog = [
-                        'id' => $iddetail,
-                        'pelunasanpiutang_id' => $pelunasanpiutangheader->id,
-                        'nobukti' => $pelunasanpiutangheader->nobukti,
-                        'pelanggan_id' => $request->pelanggan_id,
-                        'agen_id' => $request->agendetail_id,
-                        'nominal' => $request->bayarppd[$i],
-                        'piutang_nobukti' => $piutang->nobukti,
-                        'cicilan' => '',
-                        'tglcair' => $piutang->tglbukti,
-                        'keterangan' => $request->keterangandetailppd[$i] ?? '',
-                        'tgljt' => $piutang->tglbukti,
-                        'penyesuaian' => $request->penyesuaianppd[$i] ?? '',
-                        'coapenyesuaian' => $getCoaPenyesuaian->coa ?? '',
-                        'invoice_nobukti' => $piutang->invoice_nobukti,
-                        'keteranganpenyesuaian' => $request->keteranganpenyesuaianppd[$i] ?? '',
-                        'nominallebihbayar' => $request->nominallebihbayarppd[$i] ?? '',
-                        'coalebihbayar' => $getNominalLebih->coa ?? '',
-                        'modifiedby' => $pelunasanpiutangheader->modifiedby,
-                        'created_at' => date('d-m-Y H:i:s', strtotime($pelunasanpiutangheader->created_at)),
-                        'updated_at' => date('d-m-Y H:i:s', strtotime($pelunasanpiutangheader->updated_at)),
-
-                    ];
-
-                    $detaillog[] = $datadetaillog;
+                    $detaillog[] = $datadetails['detail']->toArray();
 
                 }
 
                 $datalogtrail = [
-                    'namatabel' => $tabeldetail,
+                    'namatabel' => strtoupper($tabeldetail),
                     'postingdari' => 'EDIT PELUNASAN PIUTANG DETAIL',
-                    'idtrans' =>  $pelunasanpiutangheader->id,
+                    'idtrans' =>  $storedLogTrail['id'],
                     'nobuktitrans' => $pelunasanpiutangheader->nobukti,
                     'aksi' => 'EDIT',
                     'datajson' => $detaillog,
@@ -430,14 +381,14 @@ class PelunasanPiutangHeaderController extends Controller
                 ];
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                app(LogTrailController::class)->store($validatedLogTrail);
+                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
                 // DELETE PELUNASAN PIUTANG DETAIL
 
                 $logTrailPiutangDetail = [
                     'namatabel' => 'PELUNASANPIUTANGDETAIL',
                     'postingdari' => 'DELETE PELUNASAN PIUTANG DETAIL',
-                    'idtrans' => $pelunasanpiutangheader->id,
+                    'idtrans' => $storedLogTrail['id'],
                     'nobuktitrans' => $pelunasanpiutangheader->nobukti,
                     'aksi' => 'DELETE',
                     'datajson' => $getDetail->toArray(),

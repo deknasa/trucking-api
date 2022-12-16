@@ -130,6 +130,7 @@ class InvoiceDetailController extends Controller
            
             return [
                 'error' => false,
+                'detail' => $invoiceDetail,
                 'id' => $invoiceDetail->id,
                 'tabel' => $invoiceDetail->getTable(),
             ];

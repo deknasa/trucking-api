@@ -112,29 +112,14 @@ class PendapatanSupirHeaderController extends Controller
                         $tabeldetail = $datadetails['tabel'];
                     }
 
-
-                    $datadetaillog = [
-                        'id' => $iddetail,
-                        'pendapatansupir_id' => $pendapatanSupir->id,
-                        'nobukti' => $pendapatanSupir->nobukti,
-                        'supir_id' => $request->supir_id[$i],
-                        'nominal' => $request->nominal[$i],
-                        'keterangan' => $request->keterangan_detail[$i],
-                        'modifiedby' => $pendapatanSupir->modifiedby,
-                        'created_at' => date('d-m-Y H:i:s', strtotime($pendapatanSupir->created_at)),
-                        'updated_at' => date('d-m-Y H:i:s', strtotime($pendapatanSupir->updated_at)),
-
-                    ];
-
-
-                    $detaillog[] = $datadetaillog;
+                    $detaillog[] = $datadetails['detail']->toArray();
 
                 }
 
                 $datalogtrail = [
-                    'namatabel' => $tabeldetail,
+                    'namatabel' => strtoupper($tabeldetail),
                     'postingdari' => 'ENTRY PENDAPATAN SUPIR DETAIL',
-                    'idtrans' =>  $pendapatanSupir->id,
+                    'idtrans' =>  $storedLogTrail['id'],
                     'nobuktitrans' => $pendapatanSupir->nobukti,
                     'aksi' => 'ENTRY',
                     'datajson' => $detaillog,
@@ -232,28 +217,13 @@ class PendapatanSupirHeaderController extends Controller
                         $tabeldetail = $datadetails['tabel'];
                     }
 
-
-                    $datadetaillog = [
-                        'id' => $iddetail,
-                        'pendapatansupir_id' => $pendapatanSupirHeader->id,
-                        'nobukti' => $pendapatanSupirHeader->nobukti,
-                        'supir_id' => $request->supir_id[$i],
-                        'nominal' => $request->nominal[$i],
-                        'keterangan' => $request->keterangan_detail[$i],
-                        'modifiedby' => $pendapatanSupirHeader->modifiedby,
-                        'created_at' => date('d-m-Y H:i:s', strtotime($pendapatanSupirHeader->created_at)),
-                        'updated_at' => date('d-m-Y H:i:s', strtotime($pendapatanSupirHeader->updated_at)),
-
-                    ];
-
-
-                    $detaillog[] = $datadetaillog;
+                    $detaillog[] = $datadetails['detail']->toArray();
 
                 }
                 $datalogtrail = [
-                    'namatabel' => $tabeldetail,
+                    'namatabel' => strtoupper($tabeldetail),
                     'postingdari' => 'EDIT PENDAPATAN SUPIR DETAIL',
-                    'idtrans' =>  $pendapatanSupirHeader->id,
+                    'idtrans' =>  $storedLogTrail['id'],
                     'nobuktitrans' => $pendapatanSupirHeader->nobukti,
                     'aksi' => 'EDIT',
                     'datajson' => $detaillog,
@@ -309,13 +279,13 @@ class PendapatanSupirHeaderController extends Controller
                 ];
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                app(LogTrailController::class)->store($validatedLogTrail);
+                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
                 // DELETE PENDAPATAN SUPIR DETAIL
                 $logTrailPendapatanDetail = [
                     'namatabel' => 'PENDAPATANSUPIRDETAIL',
                     'postingdari' => 'DELETE PENDAPATAN SUPIR DETAIL',
-                    'idtrans' => $pendapatanSupirHeader->id,
+                    'idtrans' => $storedLogTrail['id'],
                     'nobuktitrans' => $pendapatanSupirHeader->nobukti,
                     'aksi' => 'DELETE',
                     'datajson' => $getDetail->toArray(),

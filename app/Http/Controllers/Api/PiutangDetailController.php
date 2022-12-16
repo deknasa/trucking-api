@@ -75,24 +75,8 @@ class PiutangDetailController extends Controller
     {
         DB::beginTransaction();
 
-        $validator = Validator::make($request->all(), [
-            'nominal' => 'required',
-            'keterangan' => 'required'
-        ], [
-            'nominal.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
-            'keterangan.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan
-        ]);
-        // dd($request->all());
-
-        if (!$validator->passes()) {
-            return [
-                'error' => true,
-                'errors' => $validator->messages()
-            ];
-        }
         try {
             $piutangdetail = new PiutangDetail();
-            $entriLuar = $request->entriluar ?? 0;
 
             $piutangdetail->piutang_id = $request->piutang_id;
             $piutangdetail->nobukti = $request->nobukti;
@@ -151,14 +135,13 @@ class PiutangDetailController extends Controller
             // }
             DB::commit();
 
-            if ($validator->passes()) {
+           
                 return [
                     'error' => false,
                     'detail' => $piutangdetail,
                     'id' => $piutangdetail->id,
                     'tabel' => $piutangdetail->getTable(),
                 ];
-            }
         } catch (\Throwable $th) {
             DB::rollBack();
 

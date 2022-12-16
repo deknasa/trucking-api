@@ -143,6 +143,7 @@ class UpahSupirRincianController extends Controller
            
                 return [
                     'error' => false,
+                    'detail' => $upahSupirRincian,
                     'id' => $upahSupirRincian->id,
                     'tabel' => $upahSupirRincian->getTable(),
                 ];

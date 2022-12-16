@@ -105,6 +105,7 @@ class ProsesGajiSupirDetailController extends Controller
            
             return [
                 'error' => false,
+                'detail' => $gajisupirdetail,
                 'id' => $gajisupirdetail->id,
                 'tabel' => $gajisupirdetail->getTable(),
             ];

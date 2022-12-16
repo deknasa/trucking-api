@@ -57,7 +57,7 @@ class GajiSupirHeaderController extends Controller
                 $content['table'] = 'gajisupirheader';
                 $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
 
-                $statusCetak = Parameter::where('grp','STATUSCETAK')->where('text', 'BELUM CETAK')->first();
+                $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
 
                 $gajisupirheader = new GajiSupirHeader();
                 $gajisupirheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
@@ -89,18 +89,6 @@ class GajiSupirHeaderController extends Controller
 
                 $gajisupirheader->save();
 
-                $logTrail = [
-                    'namatabel' => strtoupper($gajisupirheader->getTable()),
-                    'postingdari' => 'ENTRY GAJI SUPIR HEADER',
-                    'idtrans' => $gajisupirheader->id,
-                    'nobuktitrans' => $gajisupirheader->nobukti,
-                    'aksi' => 'ENTRY',
-                    'datajson' => $gajisupirheader->toArray(),
-                    'modifiedby' => $gajisupirheader->modifiedby
-                ];
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
                 /* Store detail */
 
@@ -135,8 +123,6 @@ class GajiSupirHeaderController extends Controller
 
                     $datadetails = app(GajiSupirDetailController::class)->store($data);
 
-
-
                     if ($datadetails['error']) {
                         return response($datadetails, 422);
                     } else {
@@ -145,35 +131,34 @@ class GajiSupirHeaderController extends Controller
                     }
 
 
-                    $datadetaillog = [
-                        'id' => $iddetail,
-                        'gajisupir_id' => $gajisupirheader->id,
-                        'nobukti' => $gajisupirheader->nobukti,
-                        'nominaldeposito' => $request->nominaldeposito[$i] ?? 0,
-                        'nourut' => $urut,
-                        'suratpengantar_nobukti' => $sp->nobukti,
-                        'komisisupir' => $sp->komisisupir,
-                        'tolsupir' => $sp->tolsupir,
-                        'voucher' => $request->voucher[$i] ?? 0,
-                        'novoucher' => $request->novoucher[$i]  ?? 0,
-                        'gajisupir' => $sp->gajisupir,
-                        'gajikenek' => $sp->gajikenek,
-                        'gajiritasi' => $request->gajiritasi[$i] ?? 0,
-                        'nominalpengembalianpinjaman' => $request->nominalpengembalianpinjaman[$i] ?? 0,
-                        'modifiedby' => $gajisupirheader->modifiedby,
-                        'created_at' => date('d-m-Y H:i:s', strtotime($gajisupirheader->created_at)),
-                        'updated_at' => date('d-m-Y H:i:s', strtotime($gajisupirheader->updated_at)),
-
-                    ];
-
-                    $detaillog[] = $datadetaillog;
+                    $detaillog[] = $datadetails['detail']->toArray();
 
                     $urut++;
                 }
+
+                $gajisupirheader->nominal = $total;
+                $gajisupirheader->total = $total;
+                $gajisupirheader->save();
+
+                // Store Header
+                $logTrail = [
+                    'namatabel' => strtoupper($gajisupirheader->getTable()),
+                    'postingdari' => 'ENTRY GAJI SUPIR HEADER',
+                    'idtrans' => $gajisupirheader->id,
+                    'nobuktitrans' => $gajisupirheader->nobukti,
+                    'aksi' => 'ENTRY',
+                    'datajson' => $gajisupirheader->toArray(),
+                    'modifiedby' => $gajisupirheader->modifiedby
+                ];
+
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+
+                // store detail
                 $datalogtrail = [
-                    'namatabel' => $tabeldetail,
+                    'namatabel' => strtoupper($tabeldetail),
                     'postingdari' => 'ENTRY GAJI SUPIR DETAIL',
-                    'idtrans' =>  $gajisupirheader->id,
+                    'idtrans' =>  $storedLogTrail['id'],
                     'nobuktitrans' => $gajisupirheader->nobukti,
                     'aksi' => 'ENTRY',
                     'datajson' => $detaillog,
@@ -182,12 +167,6 @@ class GajiSupirHeaderController extends Controller
 
                 $data = new StoreLogTrailRequest($datalogtrail);
                 app(LogTrailController::class)->store($data);
-
-
-                $gajisupirheader->nominal = $total;
-                $gajisupirheader->total = $total;
-                $gajisupirheader->save();
-
 
                 $request->sortname = $request->sortname ?? 'id';
                 $request->sortorder = $request->sortorder ?? 'asc';
@@ -268,23 +247,10 @@ class GajiSupirHeaderController extends Controller
 
 
             if ($gajisupirheader->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($gajisupirheader->getTable()),
-                    'postingdari' => 'EDIT GAJI SUPIR HEADER',
-                    'idtrans' => $gajisupirheader->id,
-                    'nobuktitrans' => $gajisupirheader->nobukti,
-                    'aksi' => 'EDIT',
-                    'datajson' => $gajisupirheader->toArray(),
-                    'modifiedby' => $gajisupirheader->modifiedby
-                ];
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
+               
                 GajiSupirDetail::where('gajisupir_id', $gajisupirheader->id)->lockForUpdate()->delete();
 
                 /* Store detail */
-
-
                 $detaillog = [];
                 $total = 0;
                 $urut = 1;
@@ -323,35 +289,33 @@ class GajiSupirHeaderController extends Controller
                         $tabeldetail = $datadetails['tabel'];
                     }
 
-                    $datadetaillog = [
-                        'id' => $iddetail,
-                        'gajisupir_id' => $gajisupirheader->id,
-                        'nobukti' => $gajisupirheader->nobukti,
-                        'nominaldeposito' => $request->nominaldeposito[$i] ?? 0,
-                        'nourut' => $urut,
-                        'suratpengantar_nobukti' => $sp->nobukti,
-                        'komisisupir' => $sp->komisisupir,
-                        'tolsupir' => $sp->tolsupir,
-                        'voucher' => $request->voucher[$i] ?? 0,
-                        'novoucher' => $request->novoucher[$i]  ?? 0,
-                        'gajisupir' => $sp->gajisupir,
-                        'gajikenek' => $sp->gajikenek,
-                        'gajiritasi' => $request->gajiritasi[$i] ?? 0,
-                        'nominalpengembalianpinjaman' => $request->nominalpengembalianpinjaman[$i] ?? 0,
-                        'modifiedby' => $gajisupirheader->modifiedby,
-                        'created_at' => date('d-m-Y H:i:s', strtotime($gajisupirheader->created_at)),
-                        'updated_at' => date('d-m-Y H:i:s', strtotime($gajisupirheader->updated_at)),
-
-                    ];
-
-                    $detaillog[] = $datadetaillog;
+                    $detaillog[] = $datadetails['detail']->toArray();
 
                     $urut++;
                 }
+
+                $gajisupirheader->nominal = $total;
+                $gajisupirheader->total = $total;
+                $gajisupirheader->save();
+
+                // store log header
+                $logTrail = [
+                    'namatabel' => strtoupper($gajisupirheader->getTable()),
+                    'postingdari' => 'EDIT GAJI SUPIR HEADER',
+                    'idtrans' => $gajisupirheader->id,
+                    'nobuktitrans' => $gajisupirheader->nobukti,
+                    'aksi' => 'EDIT',
+                    'datajson' => $gajisupirheader->toArray(),
+                    'modifiedby' => $gajisupirheader->modifiedby
+                ];
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+
+                // store log detail
                 $datalogtrail = [
-                    'namatabel' => $tabeldetail,
+                    'namatabel' => strtoupper($tabeldetail),
                     'postingdari' => 'EDIT GAJI SUPIR DETAIL',
-                    'idtrans' =>  $gajisupirheader->id,
+                    'idtrans' =>  $storedLogTrail['id'],
                     'nobuktitrans' => $gajisupirheader->nobukti,
                     'aksi' => 'EDIT',
                     'datajson' => $detaillog,
@@ -362,10 +326,6 @@ class GajiSupirHeaderController extends Controller
 
                 app(LogTrailController::class)->store($data);
             }
-
-            $gajisupirheader->nominal = $total;
-            $gajisupirheader->total = $total;
-            $gajisupirheader->save();
 
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
@@ -413,13 +373,13 @@ class GajiSupirHeaderController extends Controller
                 ];
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                app(LogTrailController::class)->store($validatedLogTrail);
+                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
                 // DELETE GAJI SUPIR DETAIL
                 $logTrailGajiSupirDetail = [
                     'namatabel' => 'GAJISUPIRDETAIL',
                     'postingdari' => 'DELETE GAJI SUPIR DETAIL',
-                    'idtrans' => $gajisupirheader->id,
+                    'idtrans' => $storedLogTrail['id'],
                     'nobuktitrans' => $gajisupirheader->nobukti,
                     'aksi' => 'DELETE',
                     'datajson' => $getDetail->toArray(),
@@ -428,8 +388,7 @@ class GajiSupirHeaderController extends Controller
 
                 $validatedLogTrailGajiSupirDetail = new StoreLogTrailRequest($logTrailGajiSupirDetail);
                 app(LogTrailController::class)->store($validatedLogTrailGajiSupirDetail);
-               
-            }  
+            }
             DB::commit();
 
             $selected = $this->getPosition($gajisupirheader, $gajisupirheader->getTable(), true);
@@ -467,9 +426,9 @@ class GajiSupirHeaderController extends Controller
 
             //CEK APAKAH SP SUDAH DIBENTUK
             if ($cekTrip) {
-                
+
                 $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'SPSD')
-                ->first();
+                    ->first();
                 return response([
                     'message' => "$query->keterangan",
                 ], 422);
@@ -484,13 +443,12 @@ class GajiSupirHeaderController extends Controller
                 ]);
             }
         } else {
-           
+
             $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'NT')
-            ->first();
+                ->first();
             return response([
                 'message' => "$query->keterangan",
             ], 422);
-
         }
     }
 
@@ -506,12 +464,12 @@ class GajiSupirHeaderController extends Controller
     public function noEdit()
     {
         $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'RICX')
-        ->first();
+            ->first();
         return response([
             'message' => "$query->keterangan",
         ]);
     }
-    
+
     public function printReport($id)
     {
         DB::beginTransaction();
@@ -525,7 +483,7 @@ class GajiSupirHeaderController extends Controller
                 $gajisupir->statuscetak = $statusSudahCetak->id;
                 $gajisupir->tglbukacetak = date('Y-m-d H:i:s');
                 $gajisupir->userbukacetak = auth('api')->user()->name;
-                $gajisupir->jumlahcetak = $gajisupir->jumlahcetak+1;
+                $gajisupir->jumlahcetak = $gajisupir->jumlahcetak + 1;
 
                 if ($gajisupir->save()) {
                     $logTrail = [
@@ -537,10 +495,10 @@ class GajiSupirHeaderController extends Controller
                         'datajson' => $gajisupir->toArray(),
                         'modifiedby' => $gajisupir->modifiedby
                     ];
-    
+
                     $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                     $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-    
+
                     DB::commit();
                 }
             }
@@ -552,15 +510,14 @@ class GajiSupirHeaderController extends Controller
         } catch (\Throwable $th) {
             throw $th;
         }
-        
     }
-    
+
     public function cekvalidasi($id)
     {
         $gajisupir = GajiSupirHeader::find($id);
         $statusdatacetak = $gajisupir->statuscetak;
         $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
-        
+
         if ($statusdatacetak == $statusCetak->id) {
             $query = DB::table('error')
                 ->select('keterangan')

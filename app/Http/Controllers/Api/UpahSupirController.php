@@ -96,29 +96,15 @@ class UpahSupirController extends Controller
                         $tabeldetail = $datadetails['tabel'];
                     }
 
-                    $datadetaillog = [
-                        'id' => $iddetail,
-                        'upahsupir_id' => $upahsupir->id,
-                        'container_id' => $request->container_id[$i],
-                        'statuscontainer_id' => $request->statuscontainer_id[$i],
-                        'nominalsupir' => $request->nominalsupir[$i],
-                        'nominalkenek' => $request->nominalkenek[$i] ?? 0,
-                        'nominalkomisi' => $request->nominalkomisi[$i] ?? 0,
-                        'nominaltol' =>  $request->nominaltol[$i] ?? 0,
-                        'liter' => $request->liter[$i] ?? 0,
-                        'modifiedby' => auth('api')->user()->name,
-                        'created_at' => date('d-m-Y H:i:s', strtotime($upahsupir->created_at)),
-                        'updated_at' => date('d-m-Y H:i:s', strtotime($upahsupir->updated_at)),
-                    ];
 
-                    $detaillog[] = $datadetaillog;
+                    $detaillog[] = $datadetails['detail']->toArray();
 
                 }
 
                 $datalogtrail = [
-                    'namatabel' => $tabeldetail,
+                    'namatabel' => strtoupper($tabeldetail),
                     'postingdari' => 'ENTRY UPAH SUPIR RINCIAN',
-                    'idtrans' =>  $upahsupir->id,
+                    'idtrans' =>  $storedLogTrail['id'],
                     'nobuktitrans' => $upahsupir->id,
                     'aksi' => 'ENTRY',
                     'datajson' => $detaillog,
@@ -226,28 +212,14 @@ class UpahSupirController extends Controller
                         $tabeldetail = $datadetails['tabel'];
                     }
 
-                    $datadetaillog = [
-                        'id' => $iddetail,
-                        'upahsupir_id' => $upahsupir->id,
-                        'container_id' => $request->container_id[$i],
-                        'statuscontainer_id' => $request->statuscontainer_id[$i],
-                        'nominalsupir' => $request->nominalsupir[$i],
-                        'nominalkenek' => $request->nominalkenek[$i] ?? 0,
-                        'nominalkomisi' => $request->nominalkomisi[$i] ?? 0,
-                        'nominaltol' =>  $request->nominaltol[$i] ?? 0,
-                        'liter' => $request->liter[$i] ?? 0,
-                        'modifiedby' => $upahsupir->modifiedby,
-                        'created_at' => date('d-m-Y H:i:s', strtotime($upahsupir->created_at)),
-                        'updated_at' => date('d-m-Y H:i:s', strtotime($upahsupir->updated_at)),
-                    ];
-                    $detaillog[] = $datadetaillog;
+                    $detaillog[] = $datadetails['detail']->toArray();
 
                 }
 
                 $datalogtrail = [
-                    'namatabel' => $tabeldetail,
+                    'namatabel' => strtoupper($tabeldetail),
                     'postingdari' => 'EDIT UPAH SUPIR RINCIAN',
-                    'idtrans' =>  $upahsupir->id,
+                    'idtrans' =>  $storedLogTrail['id'],
                     'nobuktitrans' => $upahsupir->id,
                     'aksi' => 'EDIT',
                     'datajson' => $detaillog,
@@ -303,14 +275,14 @@ class UpahSupirController extends Controller
                 ];
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                app(LogTrailController::class)->store($validatedLogTrail);
+                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
                 
                 // DELETE UPAH SUPIR RINCIAN
 
                 $logTrailUpahSupirRincian = [
                     'namatabel' => 'UPAHSUPIRRINCIAN',
                     'postingdari' => 'DELETE UPAH SUPIR RINCIAN',
-                    'idtrans' => $upahsupir->id,
+                    'idtrans' => $storedLogTrail['id'],
                     'nobuktitrans' => $upahsupir->id,
                     'aksi' => 'DELETE',
                     'datajson' => $getDetail->toArray(),

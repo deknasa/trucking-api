@@ -101,6 +101,7 @@ class PendapatanSupirDetailController extends Controller
             DB::commit();
             return [
                 'error' => false,
+                'detail' => $pendapatanSupirDetail,
                 'id' => $pendapatanSupirDetail->id,
                 'tabel' => $pendapatanSupirDetail->getTable(),
             ];

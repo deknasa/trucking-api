@@ -98,6 +98,7 @@ class ServiceOutDetailController extends Controller
 
             return [
                 'error' => false,
+                'detail' => $serviceoutdetail,
                 'id' => $serviceoutdetail->id,
                 'tabel' => $serviceoutdetail->getTable(),
             ];

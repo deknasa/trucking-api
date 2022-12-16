@@ -135,27 +135,13 @@ class PengeluaranTruckingHeaderController extends Controller
                     $tabeldetail = $datadetails['tabel'];
                 }
 
-
-                $datadetaillog = [
-                    'id' => $iddetail,
-                    'pengeluarantruckingheader_id' => $pengeluarantruckingheader->id,
-                    'nobukti' => $pengeluarantruckingheader->nobukti,
-                    'supir_id' => $request->supir_id[$i],
-                    'penerimaantruckingheader_nobukti' => $request->penerimaantruckingheader_nobukti[$i] ?? '',
-                    'nominal' => $request->nominal[$i],
-                    'modifiedby' => $pengeluarantruckingheader->modifiedby,
-                    'created_at' => date('d-m-Y H:i:s', strtotime($pengeluarantruckingheader->created_at)),
-                    'updated_at' => date('d-m-Y H:i:s', strtotime($pengeluarantruckingheader->updated_at)),
-
-                ];
-
-                $detaillog[] = $datadetaillog;
+                $detaillog[] = $datadetails['detail']->toArray();
             }
 
             $datalogtrail = [
-                'namatabel' => $tabeldetail,
+                'namatabel' => strtoupper($tabeldetail),
                 'postingdari' => 'ENTRY PENGELUARAN TRUCKING DETAIL',
-                'idtrans' =>  $pengeluarantruckingheader->id,
+                'idtrans' =>  $storedLogTrail['id'],
                 'nobuktitrans' => $pengeluarantruckingheader->nobukti,
                 'aksi' => 'ENTRY',
                 'datajson' => $detaillog,
@@ -291,25 +277,12 @@ class PengeluaranTruckingHeaderController extends Controller
                         $tabeldetail = $datadetails['tabel'];
                     }
 
-                    $datadetaillog = [
-                        'id' => $iddetail,
-                        'pengeluarantruckingheader_id' => $pengeluarantruckingheader->id,
-                        'nobukti' => $pengeluarantruckingheader->nobukti,
-                        'supir_id' => $request->supir_id[$i],
-                        'penerimaantruckingheader_nobukti' => $request->penerimaantruckingheader_nobukti[$i] ?? '',
-                        'nominal' => $request->nominal[$i],
-                        'modifiedby' => $pengeluarantruckingheader->modifiedby,
-                        'created_at' => date('d-m-Y H:i:s', strtotime($pengeluarantruckingheader->created_at)),
-                        'updated_at' => date('d-m-Y H:i:s', strtotime($pengeluarantruckingheader->updated_at)),
-
-                    ];
-
-                    $detaillog[] = $datadetaillog;
+                    $detaillog[] = $datadetails['detail']->toArray();
                 }
                 $datalogtrail = [
-                    'namatabel' => $tabeldetail,
+                    'namatabel' => strtoupper($tabeldetail),
                     'postingdari' => 'EDIT PENGELUARAN TRUCKING DETAIL',
-                    'idtrans' =>  $pengeluarantruckingheader->id,
+                    'idtrans' =>  $storedLogTrail['id'],
                     'nobuktitrans' => $pengeluarantruckingheader->nobukti,
                     'aksi' => 'EDIT',
                     'datajson' => $detaillog,
@@ -369,13 +342,13 @@ class PengeluaranTruckingHeaderController extends Controller
                 ];
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                app(LogTrailController::class)->store($validatedLogTrail);
+                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
                 // DELETE PENGELUARAN TRUCKING DETAIL
                 $logTrailPengeluaranTruckingDetail = [
                     'namatabel' => 'PENGELUARANTRUCKINGDETAIL',
                     'postingdari' => 'DELETE PENGELUARAN TRUCKING DETAIL',
-                    'idtrans' => $pengeluarantruckingheader->id,
+                    'idtrans' => $storedLogTrail['id'],
                     'nobuktitrans' => $pengeluarantruckingheader->nobukti,
                     'aksi' => 'DELETE',
                     'datajson' => $getDetail->toArray(),

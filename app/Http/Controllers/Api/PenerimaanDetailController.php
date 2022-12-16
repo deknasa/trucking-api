@@ -141,6 +141,7 @@ class PenerimaanDetailController extends Controller
 
             return [
                 'error' => false,
+                'detail' => $penerimaanDetail,
                 'id' => $penerimaanDetail->id,
                 'tabel' => $penerimaanDetail->getTable(),
             ];

@@ -145,6 +145,7 @@ class PelunasanPiutangDetailController extends Controller
             if ($validator->passes()) {
                 return [
                     'error' => false,
+                    'detail' => $pelunasanpiutangdetail,
                     'id' => $pelunasanpiutangdetail->id,
                     'tabel' => $pelunasanpiutangdetail->getTable(),
                 ];

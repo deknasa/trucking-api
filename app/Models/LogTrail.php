@@ -10,7 +10,7 @@ class LogTrail extends MyModel
     use HasFactory;
 
     protected $table = 'logtrail';
-
+    protected $toUppercase = false;
     protected $casts = [
         'datajson' => 'array'
     ];
