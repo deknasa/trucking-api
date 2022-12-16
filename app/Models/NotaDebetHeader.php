@@ -154,7 +154,7 @@ class NotaDebetHeader extends MyModel
 			left join notadebetheader on notadebetdetail.notadebet_id = notadebetheader.id
             WHERE notadebetheader.pelunasanpiutang_nobukti = pelunasanpiutangdetail.nobukti   
           )")
-          ->where('pelunasanpeiutangdetail.nominallebihbayar', '>', 0)
+          ->where('pelunasanpiutangdetail.nominallebihbayar', '>', 0)
           ->where('notadebetheader.id' , $id);
         
         $data = $query->get();
