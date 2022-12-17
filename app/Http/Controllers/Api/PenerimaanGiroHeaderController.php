@@ -618,7 +618,7 @@ class PenerimaanGiroHeaderController extends Controller
                         'nobuktitrans' => $piutang->nobukti,
                         'aksi' => 'PRINT',
                         'datajson' => $piutang->toArray(),
-                        'modifiedby' => $piutang->modifiedby
+                        'modifiedby' => auth('api')->user()->name,
                     ];
 
                     $validatedLogTrail = new StoreLogTrailRequest($logTrail);

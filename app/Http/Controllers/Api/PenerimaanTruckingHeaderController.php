@@ -390,7 +390,7 @@ class PenerimaanTruckingHeaderController extends Controller
                         'nobuktitrans' => $penerimaanTrucking->nobukti,
                         'aksi' => 'PRINT',
                         'datajson' => $penerimaanTrucking->toArray(),
-                        'modifiedby' => $penerimaanTrucking->modifiedby
+                        'modifiedby' => auth('api')->user()->name,
                     ];
     
                     $validatedLogTrail = new StoreLogTrailRequest($logTrail);

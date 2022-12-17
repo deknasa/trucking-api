@@ -62,6 +62,7 @@ class PengeluaranStokHeaderController extends Controller
             $content['table'] = 'pengeluaranstokheader';
             $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
 
+            $statusCetak = Parameter::where('grp','STATUSCETAK')->where('text','BELUM CETAK')->first();
             /* Store header */
             $pengeluaranStokHeader = new PengeluaranStokHeader();
             $pengeluaranStokHeader->tglbukti          = date('Y-m-d', strtotime($request->tglbukti));
@@ -77,6 +78,7 @@ class PengeluaranStokHeaderController extends Controller
             $pengeluaranStokHeader->kerusakan_id         = ($request->kerusakan_id == null) ?"" :$request->supir_id;
             $pengeluaranStokHeader->statusformat      = ($request->statusformat_id == null) ?"" :$request->statusformat_id;
             $pengeluaranStokHeader->modifiedby        = auth('api')->user()->name;
+            $pengeluaranStokHeader->statuscetak        = $statusCetak;
             $request->sortname                 = $request->sortname ?? 'id';
             $request->sortorder                = $request->sortorder ?? 'asc';
             TOP:

@@ -842,7 +842,7 @@ class KasGantungHeaderController extends Controller
                         'nobuktitrans' => $kasgantung->nobukti,
                         'aksi' => 'PRINT',
                         'datajson' => $kasgantung->toArray(),
-                        'modifiedby' => $kasgantung->modifiedby
+                        'modifiedby' => auth('api')->user()->name,
                     ];
 
                     $validatedLogTrail = new StoreLogTrailRequest($logTrail);

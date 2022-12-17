@@ -119,7 +119,8 @@ class NotaDebetHeader extends MyModel
             "$this->table.userapproval",
             "$this->table.tglapproval",
             "$this->table.statusformat",
-            "statuscetak.memo as statuscetak",
+            "$this->table.statuscetak",
+            "statuscetak.memo as statuscetak_memo",
             "$this->table.modifiedby",
             "parameter.memo as  statusapproval_memo",
          
@@ -228,7 +229,7 @@ class NotaDebetHeader extends MyModel
         }
         return $query;
     }
-    public function find($id)
+    public function findAll($id)
     {
         $this->setRequestParameters();
 

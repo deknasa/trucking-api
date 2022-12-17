@@ -846,7 +846,7 @@ class InvoiceHeaderController extends Controller
                         'nobuktitrans' => $invoice->nobukti,
                         'aksi' => 'PRINT',
                         'datajson' => $invoice->toArray(),
-                        'modifiedby' => $invoice->modifiedby
+                        'modifiedby' => auth('api')->user()->name,
                     ];
     
                     $validatedLogTrail = new StoreLogTrailRequest($logTrail);

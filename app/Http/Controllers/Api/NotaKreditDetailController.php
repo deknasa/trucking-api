@@ -45,6 +45,9 @@ class NotaKreditDetailController extends Controller
 
             if ($params['forReport']) {
                 $query->select(
+                    "header.nobukti as nobukti_header",
+                    "header.tglbukti",
+                    "header.keterangan as keterangan_header",
                     "detail.id",
                     "detail.notakredit_id",
                     "detail.nobukti",
@@ -56,7 +59,8 @@ class NotaKreditDetailController extends Controller
                     "detail.keterangan",
                     "detail.coaadjust",
                     "detail.modifiedby"
-                );
+                )
+                ->leftJoin('notakreditheader as header', 'header.id', 'detail.notakredit_id');
 
                 $pengeluaranStokDetail = $query->get();
             } else {

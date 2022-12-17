@@ -338,7 +338,7 @@ class PendapatanSupirHeaderController extends Controller
                         'nobuktitrans' => $pendapatan->nobukti,
                         'aksi' => 'PRINT',
                         'datajson' => $pendapatan->toArray(),
-                        'modifiedby' => $pendapatan->modifiedby
+                        'modifiedby' => auth('api')->user()->name,
                     ];
     
                     $validatedLogTrail = new StoreLogTrailRequest($logTrail);

@@ -159,7 +159,7 @@ class NotaDebetHeaderController extends Controller
 
     public function show(NotaDebetHeader $notaDebetHeader, $id)
     {
-        $data = $notaDebetHeader->find($id);
+        $data = $notaDebetHeader->findAll($id);
         // $detail = NotaDebetHeaderDetail::findAll($id);
 
         return response([
@@ -372,5 +372,96 @@ class NotaDebetHeaderController extends Controller
         return response([
             'data' => $data
         ]);
+    }
+    public function cekvalidasi($id)
+    {
+        $notaDebet = NotaDebetHeader::find($id);
+        $status = $notaDebet->statusapproval;
+        $statusApproval = Parameter::where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
+        $statusdatacetak = $notaDebet->statuscetak;
+        $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
+
+        if ($status == $statusApproval->id) {
+            $query = DB::table('error')
+                ->select('keterangan')
+                ->where('kodeerror', '=', 'SAP')
+                ->get();
+            $keterangan = $query['0'];
+            $data = [
+                'message' => $keterangan,
+                'errors' => 'sudah approve',
+                'kodestatus' => '1',
+                'kodenobukti' => '1'
+            ];
+
+            return response($data);
+        } else if ($statusdatacetak == $statusCetak->id) {
+            $query = DB::table('error')
+                ->select('keterangan')
+                ->where('kodeerror', '=', 'SDC')
+                ->get();
+            $keterangan = $query['0'];
+            $data = [
+                'message' => $keterangan,
+                'errors' => 'sudah cetak',
+                'kodestatus' => '1',
+                'kodenobukti' => '1'
+            ];
+
+            return response($data);
+        } else {
+
+            $data = [
+                'message' => '',
+                'errors' => 'belum approve',
+                'kodestatus' => '0',
+                'kodenobukti' => '1'
+            ];
+
+            return response($data);
+        }
+    }
+    
+    public function printReport($id)
+    {
+        DB::beginTransaction();
+
+        try {
+            $notadebet = NotaDebetHeader::lockForUpdate()->findOrFail($id);
+            $statusSudahCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
+            $statusBelumCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
+
+            if ($notadebet->statuscetak != $statusSudahCetak->id) {
+                $notadebet->statuscetak = $statusSudahCetak->id;
+                $notadebet->tglbukacetak = date('Y-m-d H:i:s');
+                $notadebet->userbukacetak = auth('api')->user()->name;
+                $notadebet->jumlahcetak = $notadebet->jumlahcetak+1;
+
+                if ($notadebet->save()) {
+                    $logTrail = [
+                        'namatabel' => strtoupper($notadebet->getTable()),
+                        'postingdari' => 'PRINT NOTA KREDIT HEADER',
+                        'idtrans' => $notadebet->id,
+                        'nobuktitrans' => $notadebet->nobukti,
+                        'aksi' => 'PRINT',
+                        'datajson' => $notadebet->toArray(),
+                        'modifiedby' => auth('api')->user()->name
+                    ];
+    
+                    $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                    $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+    
+                    DB::commit();
+                }
+            }
+
+
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+        
     }
 }

@@ -159,7 +159,7 @@ class NotaKreditHeaderController extends Controller
 
     public function show(NotaKreditHeader $notaKreditHeader,$id)
     {
-        $data = $notaKreditHeader->find($id);
+        $data = $notaKreditHeader->findAll($id);
         // $detail = NotaKreditHeaderDetail::findAll($id);
         
         return response([
@@ -375,9 +375,7 @@ class NotaKreditHeaderController extends Controller
             'data' => $data
         ]);
     }
-    /**
-     * @ClassName 
-     */
+    
     public function approval(NotaKreditHeader $notaKreditHeader,$id)
     {
         DB::beginTransaction();
@@ -422,4 +420,95 @@ class NotaKreditHeaderController extends Controller
     }
 
 
+    public function cekvalidasi($id)
+    {
+        $notaKredit = NotaKreditHeader::find($id);
+        $status = $notaKredit->statusapproval;
+        $statusApproval = Parameter::where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
+        $statusdatacetak = $notaKredit->statuscetak;
+        $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
+
+        if ($status == $statusApproval->id) {
+            $query = DB::table('error')
+                ->select('keterangan')
+                ->where('kodeerror', '=', 'SAP')
+                ->get();
+            $keterangan = $query['0'];
+            $data = [
+                'message' => $keterangan,
+                'errors' => 'sudah approve',
+                'kodestatus' => '1',
+                'kodenobukti' => '1'
+            ];
+
+            return response($data);
+        } else if ($statusdatacetak == $statusCetak->id) {
+            $query = DB::table('error')
+                ->select('keterangan')
+                ->where('kodeerror', '=', 'SDC')
+                ->get();
+            $keterangan = $query['0'];
+            $data = [
+                'message' => $keterangan,
+                'errors' => 'sudah cetak',
+                'kodestatus' => '1',
+                'kodenobukti' => '1'
+            ];
+
+            return response($data);
+        } else {
+
+            $data = [
+                'message' => '',
+                'errors' => 'belum approve',
+                'kodestatus' => '0',
+                'kodenobukti' => '1'
+            ];
+
+            return response($data);
+        }
+    }
+    
+    public function printReport($id)
+    {
+        DB::beginTransaction();
+
+        try {
+            $notakredit = NotaKreditHeader::lockForUpdate()->findOrFail($id);
+            $statusSudahCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
+            $statusBelumCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
+
+            if ($notakredit->statuscetak != $statusSudahCetak->id) {
+                $notakredit->statuscetak = $statusSudahCetak->id;
+                $notakredit->tglbukacetak = date('Y-m-d H:i:s');
+                $notakredit->userbukacetak = auth('api')->user()->name;
+                $notakredit->jumlahcetak = $notakredit->jumlahcetak+1;
+
+                if ($notakredit->save()) {
+                    $logTrail = [
+                        'namatabel' => strtoupper($notakredit->getTable()),
+                        'postingdari' => 'PRINT NOTA KREDIT HEADER',
+                        'idtrans' => $notakredit->id,
+                        'nobuktitrans' => $notakredit->nobukti,
+                        'aksi' => 'PRINT',
+                        'datajson' => $notakredit->toArray(),
+                        'modifiedby' => auth('api')->user()->name
+                    ];
+    
+                    $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                    $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+    
+                    DB::commit();
+                }
+            }
+
+
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+        
+    }
 }

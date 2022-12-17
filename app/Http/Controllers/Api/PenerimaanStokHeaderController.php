@@ -66,6 +66,7 @@ class PenerimaanStokHeaderController extends Controller
             $content['subgroup'] = $fetchGrp->subgrp;
             $content['table'] = 'penerimaanstokheader';
             $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
+            $statusCetak = Parameter::where('grp','STATUSCETAK')->where('text','BELUM CETAK')->first();
 
             /* Store header */
             $penerimaanStokHeader = new PenerimaanStokHeader();
@@ -85,6 +86,7 @@ class PenerimaanStokHeaderController extends Controller
             $penerimaanStokHeader->gudangdari_id     = ($request->gudangdari_id == null) ? "" : $request->gudangdari_id;
             $penerimaanStokHeader->gudangke_id       = ($request->gudangke_id == null) ? "" : $request->gudangke_id;
             $penerimaanStokHeader->modifiedby        = auth('api')->user()->name;
+            $penerimaanStokHeader->statuscetak        = $statusCetak;
             $request->sortname                 = $request->sortname ?? 'id';
             $request->sortorder                = $request->sortorder ?? 'asc';
             TOP:

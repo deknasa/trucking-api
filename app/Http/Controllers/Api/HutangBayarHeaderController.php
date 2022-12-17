@@ -795,7 +795,7 @@ class HutangBayarHeaderController extends Controller
                         'nobuktitrans' => $hutangBayar->nobukti,
                         'aksi' => 'PRINT',
                         'datajson' => $hutangBayar->toArray(),
-                        'modifiedby' => $hutangBayar->modifiedby
+                        'modifiedby' => auth('api')->user()->name,
                     ];
 
                     $validatedLogTrail = new StoreLogTrailRequest($logTrail);
