@@ -67,7 +67,20 @@ class Stok extends MyModel
     public function findAll($id)
     {
         $data = DB::table('stok')->select(
-            'stok.*',
+            'stok.id',
+            'stok.namastok',
+            'stok.statusaktif',
+            'stok.qtymin',
+            'stok.qtymax',
+            'stok.keterangan',
+            'stok.gambar',
+            'stok.namaterpusat',
+            'stok.modifiedby',
+            'stok.jenistrado_id',
+            'stok.kelompok_id',
+            'stok.subkelompok_id',
+            'stok.kategori_id',
+            'stok.merk_id',
             'jenistrado.keterangan as jenistrado',
             'kelompok.keterangan as kelompok',
             'subkelompok.keterangan as subkelompok',

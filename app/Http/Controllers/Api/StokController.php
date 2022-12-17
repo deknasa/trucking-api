@@ -43,6 +43,8 @@ class StokController extends Controller
             $stok = new stok();
             $stok->keterangan = $request->keterangan;
             $stok->namastok = $request->namastok;
+            $stok->namaterpusat = $request->namaterpusat;
+            $stok->statusaktif = $request->statusaktif;
             $stok->kelompok_id = $request->kelompok_id;
             $stok->subkelompok_id = $request->subkelompok_id;
             $stok->kategori_id = $request->kategori_id;
@@ -112,6 +114,9 @@ class StokController extends Controller
         try {
             $stok->keterangan = $request->keterangan;
             $stok->namastok = $request->namastok;
+            $stok->namaterpusat = $request->namaterpusat;
+            $stok->namaterpusat = $request->namaterpusat;
+            $stok->statusaktif = $request->statusaktif;
             $stok->kelompok_id = $request->kelompok_id;
             $stok->subkelompok_id = $request->subkelompok_id;
             $stok->kategori_id = $request->kategori_id;
