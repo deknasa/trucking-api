@@ -59,7 +59,7 @@ class StoreTradoRequest extends FormRequest
             'model' => 'required',
             'nobpkb' => 'required',
             'statusmobilstoring' => 'required',
-            'mandor' => 'required|int|exists:mandor,id',
+            'mandor' => 'required',
             'supir' => 'required',
             'jumlahbanserap' => 'required',
             'statusappeditban' => 'required',

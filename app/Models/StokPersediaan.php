@@ -64,16 +64,14 @@ class stokpersediaan extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'jenistrado') {
-                            $query = $query->where('jenistrado.keterangan', '=', "$filters[data]");
-                        } else if ($filters['field'] == 'kelompok') {
-                            $query = $query->where('kelompok.keterangan', '=', "$filters[data]");
-                        } else if ($filters['field'] == 'subkelompok') {
-                            $query = $query->where('subkelompok.keterangan', '=', "$filters[data]");
-                        } else if ($filters['field'] == 'kategori') {
-                            $query = $query->where('kategori.keterangan', '=', "$filters[data]");
-                        } else if ($filters['field'] == 'merk') {
-                            $query = $query->where('merk.keterangan', '=', "$filters[data]");
+                        if ($filters['field'] == 'stok_id') {
+                            $query = $query->where('stok.namastok', '=', "$filters[data]");
+                        } else if ($filters['field'] == 'gudang_id') {
+                            $query = $query->where('gudang.gudang', '=', "$filters[data]");
+                        } else if ($filters['field'] == 'trado_id') {
+                            $query = $query->where('trado.keterangan', '=', "$filters[data]");
+                        } else if ($filters['field'] == 'gandengan_id') {
+                            $query = $query->where('gandengan.keterangan', '=', "$filters[data]");
                         } else {
                             $query = $query->where($this->table . '.' .$filters['field'], 'LIKE', "%$filters[data]%");
                         }
@@ -82,16 +80,14 @@ class stokpersediaan extends MyModel
                     break;
                 case "OR":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'jenistrado') {
-                            $query = $query->orWhere('jenistrado.keterangan', '=', "$filters[data]");
-                        } else if ($filters['field'] == 'kelompok') {
-                            $query = $query->orWhere('kelompok.keterangan', '=', "$filters[data]");
-                        } else if ($filters['field'] == 'subkelompok') {
-                            $query = $query->orWhere('subkelompok.keterangan', '=', "$filters[data]");
-                        } else if ($filters['field'] == 'kategori') {
-                            $query = $query->orWhere('kategori.keterangan', '=', "$filters[data]");
-                        } else if ($filters['field'] == 'merk') {
-                            $query = $query->orWhere('merk.keterangan', '=', "$filters[data]");
+                        if ($filters['field'] == 'stok_id') {
+                            $query = $query->orWhere('stok.namastok', '=', "$filters[data]");
+                        } else if ($filters['field'] == 'gudang_id') {
+                            $query = $query->orWhere('gudang.gudang', '=', "$filters[data]");
+                        } else if ($filters['field'] == 'trado_id') {
+                            $query = $query->orWhere('trado.keterangan', '=', "$filters[data]");
+                        } else if ($filters['field'] == 'gandengan_id') {
+                            $query = $query->orWhere('gandengan.keterangan', '=', "$filters[data]");
                         } else {
                             $query = $query->orWhere($this->table . '.' .$filters['field'], 'LIKE', "%$filters[data]%");
                         }

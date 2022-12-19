@@ -137,6 +137,7 @@ use App\Http\Controllers\Api\BankPelangganController;
     use App\Http\Controllers\Api\PendapatanSupirDetailController;
     use App\Http\Controllers\Api\PendapatanSupirHeaderController;
     use App\Http\Controllers\Api\ReportNeracaController;
+    use App\Http\Controllers\Api\StokPersediaanController;
 
     /*
     |--------------------------------------------------------------------------
@@ -664,6 +665,7 @@ use App\Http\Controllers\Api\BankPelangganController;
         Route::resource('pendapatansupirdetail', PendapatanSupirDetailController::class);
         
         Route::resource('approvalpendapatansupir', ApprovalPendapatanSupirController::class);
+        Route::resource('stokpersediaan', StokPersediaanController::class);
 
     });
 
