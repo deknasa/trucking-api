@@ -350,5 +350,9 @@ class AclSeeder extends Seeder
         Acl::create(['aco_id' => '326', 'role_id' => '1', 'modifiedby' => 'ADMIN',]);
         Acl::create(['aco_id' => '327', 'role_id' => '1', 'modifiedby' => 'ADMIN',]);
         Acl::create(['aco_id' => '328', 'role_id' => '1', 'modifiedby' => 'ADMIN',]);
+        Acl::create(['aco_id' => '329', 'role_id' => '1', 'modifiedby' => 'ADMIN',]);
+        Acl::create(['aco_id' => '330', 'role_id' => '1', 'modifiedby' => 'ADMIN',]);
+        Acl::create(['aco_id' => '331', 'role_id' => '1', 'modifiedby' => 'ADMIN',]);
+        Acl::create(['aco_id' => '332', 'role_id' => '1', 'modifiedby' => 'ADMIN',]);
     }
 }
