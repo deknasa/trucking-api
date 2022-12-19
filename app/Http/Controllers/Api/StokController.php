@@ -197,7 +197,7 @@ class StokController extends Controller
             $selected = $this->getPosition($stok, $stok->getTable(), true);
             $stok->position = $selected->position;
             $stok->id = $selected->id;
-            $stok->page = ceil($stok->position / ($request->limit ?? 10));
+            $stok->page = ceil($stok->position / ($stok->limit ?? 10));
 
             return response([
                 'status' => true,
