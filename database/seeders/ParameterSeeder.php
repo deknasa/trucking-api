@@ -198,6 +198,11 @@ class ParameterSeeder extends Seeder
         parameter::create(['grp' => 'STATUS HITUNG STOK', 'subgrp' => 'STATUS HITUNG STOK', 'kelompok' => '', 'text' => 'TIDAK HITUNG STOK', 'memo' => '{"MEMO":"TIDAK HITUNG STOK","SINGKATAN":"THS","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN',]);
         parameter::create(['grp' => 'PO STOK', 'subgrp' => 'PO STOK', 'kelompok' => '', 'text' => '2', 'memo' => '{"MEMO":"PO STOK","SINGKATAN":"2","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN',]);
         parameter::create(['grp' => 'PENCAIRAN GIRO BUKTI', 'subgrp' => 'PENCAIRAN GIRO BUKTI', 'kelompok' => '', 'text' => '#PGB #9999#/#R#/#Y', 'memo' => '{"MEMO":"PENCAIRAN GIRO BUKTI","SINGKATAN":"#PGB #9999#/#R#/#Y","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN',]);
+        parameter::create(['grp' => 'SPB STOK', 'subgrp' => 'SPB STOK', 'kelompok' => '', 'text' => '2', 'memo' => '{"MEMO":"SPB STOK","SINGKATAN":"2","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN',]);
+        parameter::create(['grp' => 'PG STOK', 'subgrp' => 'PG STOK', 'kelompok' => '', 'text' => '2', 'memo' => '{"MEMO":"PG STOK","SINGKATAN":"2","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN',]);
+        parameter::create(['grp' => 'KOR STOK', 'subgrp' => 'KOR STOK', 'kelompok' => '', 'text' => '2', 'memo' => '{"MEMO":"KOR STOK","SINGKATAN":"2","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN',]);
+        parameter::create(['grp' => 'REUSE STOK', 'subgrp' => 'REUSE STOK', 'kelompok' => '', 'text' => '2', 'memo' => '{"MEMO":"REUSE STOK","SINGKATAN":"2","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN',]);
+        parameter::create(['grp' => 'DO STOK', 'subgrp' => 'DO STOK', 'kelompok' => '', 'text' => '2', 'memo' => '{"MEMO":"DO STOK","SINGKATAN":"2","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN',]);
         
     }
 }
