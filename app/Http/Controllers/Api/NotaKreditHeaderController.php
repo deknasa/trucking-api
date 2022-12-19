@@ -55,6 +55,8 @@ class NotaKreditHeaderController extends Controller
             $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
             $notaKreditHeader = new NotaKreditHeader();
             
+            $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
+
             $notaKreditHeader->pelunasanpiutang_nobukti = $request->pelunasanpiutang_nobukti;
             $notaKreditHeader->tglbukti = date('Y-m-d',strtotime($request->tglbukti));
             $notaKreditHeader->keterangan = $request->keterangan;
@@ -62,6 +64,7 @@ class NotaKreditHeaderController extends Controller
             $notaKreditHeader->tgllunas = date('Y-m-d',strtotime($request->tgllunas));
             $notaKreditHeader->statusformat = $request->statusformat;
             $notaKreditHeader->statusformat = $format->id;
+            $notaKreditHeader->statuscetak = $statusCetak->id;
             $notaKreditHeader->modifiedby = auth('api')->user()->name;
             TOP:
                 $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
@@ -100,7 +103,7 @@ class NotaKreditHeaderController extends Controller
                             "modifiedby" => $notaKreditHeader->modifiedby = auth('api')->user()->name
                         ];
                         
-                        $detaillog []=$datadetail;
+                        
                         $data = new StoreNotaKreditDetailRequest($datadetail);
                         $notaKreditDetail = app(NotaKreditDetailController::class)->store($data);
     
@@ -109,18 +112,19 @@ class NotaKreditHeaderController extends Controller
                         } else {
                             $iddetail = $notaKreditDetail['id'];
                             $tabeldetail = $notaKreditDetail['tabel'];
+                            $detaillog[] =$notaKreditDetail['data']->toArray();
                         }
                     }
                     $datalogtrail = [
-                        'namatabel' => $tabeldetail,
+                        'namatabel' => strtoupper($tabeldetail),
                         'postingdari' => 'ENTRY NOTA KREDIT DETAIL',
-                        'idtrans' =>  $iddetail,
+                        'idtrans' =>  $storedLogTrail['id'],
                         'nobuktitrans' => $notaKreditHeader->nobukti,
-                        'aksi' => 'EDIT',
+                        'aksi' => 'ENTRY',
                         'datajson' => $detaillog,
                         'modifiedby' => auth('api')->user()->name,
                     ];
-                    $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                    $validatedLogTrail = new StoreLogTrailRequest($datalogtrail);
                     $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
                     
                     DB::commit();
@@ -155,7 +159,7 @@ class NotaKreditHeaderController extends Controller
 
     public function show(NotaKreditHeader $notaKreditHeader,$id)
     {
-        $data = $notaKreditHeader->find($id);
+        $data = $notaKreditHeader->findAll($id);
         // $detail = NotaKreditHeaderDetail::findAll($id);
         
         return response([
@@ -189,7 +193,7 @@ class NotaKreditHeaderController extends Controller
                     'postingdari' => 'EDIT NOTA KREDIT HEADER',
                     'idtrans' => $notaKreditHeader->id,
                     'nobuktitrans' => $notaKreditHeader->nobukti,
-                    'aksi' => 'EDII',
+                    'aksi' => 'EDIT',
                     'datajson' => $notaKreditHeader->toArray(),
                     'modifiedby' => $notaKreditHeader->modifiedby
                 ];
@@ -224,19 +228,19 @@ class NotaKreditHeaderController extends Controller
                         } else {
                             $iddetail = $notaKreditDetail['id'];
                             $tabeldetail = $notaKreditDetail['tabel'];
-                            $detaillog []=$notaKreditDetail['data'];
+                            $detaillog []=$notaKreditDetail['data']->toArray();
                         }
                     }
                     $datalogtrail = [
-                        'namatabel' => $tabeldetail,
-                        'postingdari' => 'ENTRY NOTA KREDIT DETAIL',
-                        'idtrans' =>  $iddetail,
+                        'namatabel' => strtoupper($tabeldetail),
+                        'postingdari' => 'EDIT NOTA KREDIT DETAIL',
+                        'idtrans' =>  $storedLogTrail['id'],
                         'nobuktitrans' => $notaKreditHeader->nobukti,
                         'aksi' => 'EDIT',
                         'datajson' =>$detaillog,
                         'modifiedby' => auth('api')->user()->name,
                     ];
-                    $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                    $validatedLogTrail = new StoreLogTrailRequest($datalogtrail);
                     $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
                     
                     DB::commit();
@@ -275,6 +279,7 @@ class NotaKreditHeaderController extends Controller
     {
         DB::beginTransaction();
 
+        $getDetail = NotaKreditDetail::where('notakredit_id', $id)->get();
         $notaKreditHeader = NotaKreditHeader::where('id',$id)->first();
         $delete = $notaKreditHeader->lockForUpdate()->delete();
 
@@ -283,14 +288,28 @@ class NotaKreditHeaderController extends Controller
                 'namatabel' => strtoupper($notaKreditHeader->getTable()),
                 'postingdari' => 'DELETE NOTA KREDIT ',
                 'idtrans' => $notaKreditHeader->id,
-                'nobuktitrans' => $notaKreditHeader->id,
+                'nobuktitrans' => $notaKreditHeader->nobukti,
                 'aksi' => 'DELETE',
                 'datajson' => $notaKreditHeader->toArray(),
-                'modifiedby' => $notaKreditHeader->modifiedby
+                'modifiedby' => auth('api')->user()->name
             ];
 
             $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-            app(LogTrailController::class)->store($validatedLogTrail);
+            $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+
+                // DELETE NOTA KREDIT DETAIL
+                $logTrailNotaKreditDetail = [
+                    'namatabel' => 'NOTAKREDITDETAIL',
+                    'postingdari' => 'DELETE NOTA KREDIT DETAIL',
+                    'idtrans' => $storedLogTrail['id'],
+                    'nobuktitrans' => $notaKreditHeader->nobukti,
+                    'aksi' => 'DELETE',
+                    'datajson' => $getDetail->toArray(),
+                    'modifiedby' => auth('api')->user()->name
+                ];
+
+                $validatedLogTrailNotaKreditDetail = new StoreLogTrailRequest($logTrailNotaKreditDetail);
+                app(LogTrailController::class)->store($validatedLogTrailNotaKreditDetail);
 
             DB::commit();
 
@@ -356,9 +375,7 @@ class NotaKreditHeaderController extends Controller
             'data' => $data
         ]);
     }
-    /**
-     * @ClassName 
-     */
+    
     public function approval(NotaKreditHeader $notaKreditHeader,$id)
     {
         DB::beginTransaction();
@@ -403,4 +420,95 @@ class NotaKreditHeaderController extends Controller
     }
 
 
+    public function cekvalidasi($id)
+    {
+        $notaKredit = NotaKreditHeader::find($id);
+        $status = $notaKredit->statusapproval;
+        $statusApproval = Parameter::where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
+        $statusdatacetak = $notaKredit->statuscetak;
+        $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
+
+        if ($status == $statusApproval->id) {
+            $query = DB::table('error')
+                ->select('keterangan')
+                ->where('kodeerror', '=', 'SAP')
+                ->get();
+            $keterangan = $query['0'];
+            $data = [
+                'message' => $keterangan,
+                'errors' => 'sudah approve',
+                'kodestatus' => '1',
+                'kodenobukti' => '1'
+            ];
+
+            return response($data);
+        } else if ($statusdatacetak == $statusCetak->id) {
+            $query = DB::table('error')
+                ->select('keterangan')
+                ->where('kodeerror', '=', 'SDC')
+                ->get();
+            $keterangan = $query['0'];
+            $data = [
+                'message' => $keterangan,
+                'errors' => 'sudah cetak',
+                'kodestatus' => '1',
+                'kodenobukti' => '1'
+            ];
+
+            return response($data);
+        } else {
+
+            $data = [
+                'message' => '',
+                'errors' => 'belum approve',
+                'kodestatus' => '0',
+                'kodenobukti' => '1'
+            ];
+
+            return response($data);
+        }
+    }
+    
+    public function printReport($id)
+    {
+        DB::beginTransaction();
+
+        try {
+            $notakredit = NotaKreditHeader::lockForUpdate()->findOrFail($id);
+            $statusSudahCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
+            $statusBelumCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
+
+            if ($notakredit->statuscetak != $statusSudahCetak->id) {
+                $notakredit->statuscetak = $statusSudahCetak->id;
+                $notakredit->tglbukacetak = date('Y-m-d H:i:s');
+                $notakredit->userbukacetak = auth('api')->user()->name;
+                $notakredit->jumlahcetak = $notakredit->jumlahcetak+1;
+
+                if ($notakredit->save()) {
+                    $logTrail = [
+                        'namatabel' => strtoupper($notakredit->getTable()),
+                        'postingdari' => 'PRINT NOTA KREDIT HEADER',
+                        'idtrans' => $notakredit->id,
+                        'nobuktitrans' => $notakredit->nobukti,
+                        'aksi' => 'PRINT',
+                        'datajson' => $notakredit->toArray(),
+                        'modifiedby' => auth('api')->user()->name
+                    ];
+    
+                    $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                    $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+    
+                    DB::commit();
+                }
+            }
+
+
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+        
+    }
 }

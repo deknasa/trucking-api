@@ -433,7 +433,7 @@ class ProsesGajiSupirHeaderController extends Controller
                         'nobuktitrans' => $prosesgaji->nobukti,
                         'aksi' => 'PRINT',
                         'datajson' => $prosesgaji->toArray(),
-                        'modifiedby' => $prosesgaji->modifiedby
+                        'modifiedby' => auth('api')->user()->name,
                     ];
     
                     $validatedLogTrail = new StoreLogTrailRequest($logTrail);

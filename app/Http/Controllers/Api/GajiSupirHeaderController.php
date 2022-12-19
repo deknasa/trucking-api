@@ -493,7 +493,7 @@ class GajiSupirHeaderController extends Controller
                         'nobuktitrans' => $gajisupir->nobukti,
                         'aksi' => 'PRINT',
                         'datajson' => $gajisupir->toArray(),
-                        'modifiedby' => $gajisupir->modifiedby
+                        'modifiedby' => auth('api')->user()->name,
                     ];
 
                     $validatedLogTrail = new StoreLogTrailRequest($logTrail);

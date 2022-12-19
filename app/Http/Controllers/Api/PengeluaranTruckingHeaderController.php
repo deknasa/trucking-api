@@ -400,7 +400,7 @@ class PengeluaranTruckingHeaderController extends Controller
                         'nobuktitrans' => $pengeluaran->nobukti,
                         'aksi' => 'PRINT',
                         'datajson' => $pengeluaran->toArray(),
-                        'modifiedby' => $pengeluaran->modifiedby
+                        'modifiedby' => auth('api')->user()->name,
                     ];
     
                     $validatedLogTrail = new StoreLogTrailRequest($logTrail);

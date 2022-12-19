@@ -119,7 +119,8 @@ class NotaDebetHeader extends MyModel
             "$this->table.userapproval",
             "$this->table.tglapproval",
             "$this->table.statusformat",
-            "statuscetak.memo as statuscetak",
+            "$this->table.statuscetak",
+            "statuscetak.memo as statuscetak_memo",
             "$this->table.modifiedby",
             "parameter.memo as  statusapproval_memo",
          
@@ -154,7 +155,7 @@ class NotaDebetHeader extends MyModel
 			left join notadebetheader on notadebetdetail.notadebet_id = notadebetheader.id
             WHERE notadebetheader.pelunasanpiutang_nobukti = pelunasanpiutangdetail.nobukti   
           )")
-          ->where('pelunasanpeiutangdetail.nominallebihbayar', '>', 0)
+          ->where('pelunasanpiutangdetail.nominallebihbayar', '>', 0)
           ->where('notadebetheader.id' , $id);
         
         $data = $query->get();
@@ -228,7 +229,7 @@ class NotaDebetHeader extends MyModel
         }
         return $query;
     }
-    public function find($id)
+    public function findAll($id)
     {
         $this->setRequestParameters();
 

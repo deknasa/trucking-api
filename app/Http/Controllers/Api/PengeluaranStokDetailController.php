@@ -161,6 +161,7 @@ class PengeluaranStokDetailController extends Controller
                         'error' => false,
                         'id' => $pengeluaranStokDetail->id,
                         'tabel' => $pengeluaranStokDetail->getTable(),
+                        'detail' => $pengeluaranStokDetail
                     ];
                 }
             } catch (\Throwable $th) {

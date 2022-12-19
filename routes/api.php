@@ -513,7 +513,8 @@ use App\Http\Controllers\Api\BankPelangganController;
         Route::resource('gajisupirheader', GajiSupirHeaderController::class);
         Route::resource('gajisupirdetail', GajiSupirDetailController::class);
 
-        
+        Route::post('notakreditheader/{id}/cekvalidasi', [NotaKreditHeaderController::class, 'cekvalidasi'])->name('notakreditheader.cekvalidasi');
+        Route::get('notakreditheader/{id}/printreport', [NotaKreditHeaderController::class,'printReport']);
         Route::get('notakreditheader/field_length', [NotaKreditHeaderController::class,'fieldLength']);
         Route::get('notakreditheader/{id}/getpelunasan', [NotaKreditHeaderController::class,'getPelunasan']);
         Route::get('notakreditheader/{id}/getnotakredit', [NotaKreditHeaderController::class,'getNotaKredit']);
@@ -522,6 +523,8 @@ use App\Http\Controllers\Api\BankPelangganController;
         Route::resource('notakreditheader', NotaKreditHeaderController::class);
         Route::resource('notakredit_detail', NotaKreditDetailController::class);
         
+        Route::post('notadebetheader/{id}/cekvalidasi', [NotaDebetHeaderController::class, 'cekvalidasi'])->name('notadebetheader.cekvalidasi');
+        Route::get('notadebetheader/{id}/printreport', [NotaDebetHeaderController::class,'printReport']);
         Route::get('notadebetheader/field_length', [NotaDebetHeaderController::class,'fieldLength']);
         Route::get('notadebetheader/{id}/getpelunasan', [NotaDebetHeaderController::class,'getPelunasan']);
         Route::get('notadebetheader/{id}/getnotadebet', [NotaDebetHeaderController::class,'getNotaDebet']);
@@ -650,6 +653,7 @@ use App\Http\Controllers\Api\BankPelangganController;
         Route::resource('pencairangiropengeluaranheader', PencairanGiroPengeluaranHeaderController::class);
         Route::resource('pencairangiropengeluarandetail', PencairanGiroPengeluaranDetailController::class);
 
+        Route::get('approvalnotaheader/combo', [ApprovalNotaHeaderController::class, 'combo']);
         Route::resource('approvalnotaheader', ApprovalNotaHeaderController::class);
         Route::resource('approvalhutangbayar', ApprovalHutangBayarController::class);
         

@@ -792,7 +792,7 @@ class PenerimaanHeaderController extends Controller
                         'nobuktitrans' => $penerimaan->nobukti,
                         'aksi' => 'PRINT',
                         'datajson' => $penerimaan->toArray(),
-                        'modifiedby' => $penerimaan->modifiedby
+                        'modifiedby' => auth('api')->user()->name
                     ];
     
                     $validatedLogTrail = new StoreLogTrailRequest($logTrail);

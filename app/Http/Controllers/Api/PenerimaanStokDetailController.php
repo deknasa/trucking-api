@@ -184,6 +184,7 @@ class PenerimaanStokDetailController extends Controller
                     'error' => false,
                     'id' => $penerimaanStokDetail->id,
                     'tabel' => $penerimaanStokDetail->getTable(),
+                    'detail' => $penerimaanStokDetail
                 ];
             }
         } catch (\Throwable $th) {
