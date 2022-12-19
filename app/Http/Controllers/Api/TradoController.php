@@ -14,6 +14,8 @@ use App\Models\LogTrail;
 use App\Models\Parameter;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
+use App\Models\Stok;
+use App\Models\StokPersediaan;
 
 use Illuminate\Support\Facades\DB;
 use Intervention\Image\ImageManagerStatic as Image;
@@ -107,6 +109,60 @@ class TradoController extends Controller
             $validatedLogTrail = new StoreLogTrailRequest($logTrail);
             $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
+            
+            $param1 = $trado->id;
+            $param2 = $trado->modifiedby;
+            $stokgudang = Stok::select(DB::raw(
+                "stok.id as stok_id,
+                    0  as gudang_id,"
+                    . $param1 . " as trado_id,
+                0 as gandengan_id,
+                0 as qty,'"
+                    . $param2 . "' as modifiedby"
+            ))
+                ->leftjoin('stokpersediaan', function ($join) use ($param1) {
+                    $join->on('stokpersediaan.stok_id', '=', 'stok.id');
+                    $join->on('stokpersediaan.trado_id', '=', DB::raw("'" . $param1 . "'"));
+                })
+                ->where(DB::raw("isnull(stokpersediaan.id,0)"), '=', 0);
+
+
+
+            $datadetail = json_decode($stokgudang->get(), true);
+
+            $dataexist = $stokgudang->exists();
+            $detaillogtrail = [];
+            foreach ($datadetail as $item) {
+
+
+                $stokpersediaan = new StokPersediaan();
+                $stokpersediaan->stok_id = $item['stok_id'];
+                $stokpersediaan->gudang_id = $item['gudang_id'];
+                $stokpersediaan->trado_id = $item['trado_id'];
+                $stokpersediaan->gandengan_id = $item['gandengan_id'];
+                $stokpersediaan->qty = $item['qty'];
+                $stokpersediaan->modifiedby = $item['modifiedby'];
+                $stokpersediaan->save();
+                $detaillogtrail[] = $stokpersediaan->toArray();
+            }
+
+            if ($dataexist == true) {
+
+                $logTrail = [
+                    'namatabel' => strtoupper($stokpersediaan->getTable()),
+                    'postingdari' => 'STOK PERSEDIAAN',
+                    'idtrans' => $trado->id,
+                    'nobuktitrans' => $trado->id,
+                    'aksi' => 'EDIT',
+                    'datajson' => json_encode($detaillogtrail),
+                    'modifiedby' => $trado->modifiedby
+                ];
+
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                app(LogTrailController::class)->store($validatedLogTrail);
+            }
+
+
             DB::commit();
 
             /* Set position and page */
@@ -193,6 +249,60 @@ class TradoController extends Controller
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
             }
+
+            $param1 = $trado->id;
+            $param2 = $trado->modifiedby;
+            $stokgudang = Stok::select(DB::raw(
+                "stok.id as stok_id,
+                    0  as gudang_id,"
+                    . $param1 . " as trado_id,
+                0 as gandengan_id,
+                0 as qty,'"
+                    . $param2 . "' as modifiedby"
+            ))
+                ->leftjoin('stokpersediaan', function ($join) use ($param1) {
+                    $join->on('stokpersediaan.stok_id', '=', 'stok.id');
+                    $join->on('stokpersediaan.trado_id', '=', DB::raw("'" . $param1 . "'"));
+                })
+                ->where(DB::raw("isnull(stokpersediaan.id,0)"), '=', 0);
+
+
+
+            $datadetail = json_decode($stokgudang->get(), true);
+
+            $dataexist = $stokgudang->exists();
+            $detaillogtrail = [];
+            foreach ($datadetail as $item) {
+
+
+                $stokpersediaan = new StokPersediaan();
+                $stokpersediaan->stok_id = $item['stok_id'];
+                $stokpersediaan->gudang_id = $item['gudang_id'];
+                $stokpersediaan->trado_id = $item['trado_id'];
+                $stokpersediaan->gandengan_id = $item['gandengan_id'];
+                $stokpersediaan->qty = $item['qty'];
+                $stokpersediaan->modifiedby = $item['modifiedby'];
+                $stokpersediaan->save();
+                $detaillogtrail[] = $stokpersediaan->toArray();
+            }
+
+            if ($dataexist == true) {
+
+                $logTrail = [
+                    'namatabel' => strtoupper($stokpersediaan->getTable()),
+                    'postingdari' => 'STOK PERSEDIAAN',
+                    'idtrans' => $trado->id,
+                    'nobuktitrans' => $trado->id,
+                    'aksi' => 'EDIT',
+                    'datajson' => json_encode($detaillogtrail),
+                    'modifiedby' => $trado->modifiedby
+                ];
+
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                app(LogTrailController::class)->store($validatedLogTrail);
+            }
+
+            
             DB::commit();
 
             $selected = $this->getPosition($trado, $trado->getTable());
