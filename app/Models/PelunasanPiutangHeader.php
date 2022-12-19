@@ -90,7 +90,7 @@ class PelunasanPiutangHeader extends MyModel
     }
     
     public function createTempPiutang($id,$agenid) {
-        $temp = '##tempPiutang' . rand(1, 10000);
+        $temp = '##tempPiutang' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
 
         $fetch = DB::table('piutangheader')

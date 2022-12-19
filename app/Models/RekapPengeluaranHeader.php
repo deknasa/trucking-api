@@ -116,7 +116,7 @@ class RekapPengeluaranHeader extends MyModel
     {
         $this->setRequestParameters();
 
-        $temp = '##temp' . rand(1, 10000);
+        $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
         Schema::create($temp, function ($table) {
             $table->bigInteger('id')->default('0');

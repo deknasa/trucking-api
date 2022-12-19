@@ -66,7 +66,7 @@ class Pelanggan extends MyModel
 
     public function createTemp(string $modelTable)
     {
-        $temp = '##temp' . rand(1, 10000);
+        $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temp, function ($table) {
             $table->bigInteger('id')->default('0');
             $table->string('kodepelanggan', 1000)->default('');
