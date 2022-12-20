@@ -31,8 +31,13 @@ class CreatePenerimaanstokheaderTable extends Migration
             $table->unsignedBigInteger('trado_id')->default('0');
             $table->unsignedBigInteger('gandengan_id')->default('0');
             $table->unsignedBigInteger('gudang_id')->default('0');
+            $table->integer('statuspindahgudang')->Length(11)->default('0');
             $table->unsignedBigInteger('gudangdari_id')->default('0');
             $table->unsignedBigInteger('gudangke_id')->default('0');            
+            $table->unsignedBigInteger('tradodari_id')->default('0');
+            $table->unsignedBigInteger('tradoke_id')->default('0');            
+            $table->unsignedBigInteger('gandengandari_id')->default('0');
+            $table->unsignedBigInteger('gandenganke_id')->default('0');            
             $table->string('coa',50)->default('');
             $table->longText('keterangan')->default('');
             $table->unsignedBigInteger('statusformat')->default(0);   
@@ -50,6 +55,10 @@ class CreatePenerimaanstokheaderTable extends Migration
             $table->foreign('gudang_id', 'penerimaanstokheader_gudang_gudang_id_foreign')->references('id')->on('gudang');  
             $table->foreign('gudangdari_id', 'penerimaanstokheader_gudang_gudangdari_id_foreign')->references('id')->on('gudang');  
             $table->foreign('gudangke_id', 'penerimaanstokheader_gudang_gudangke_id_foreign')->references('id')->on('gudang');  
+            $table->foreign('tradodari_id', 'penerimaanstokheader_trado_tradodari_id_foreign')->references('id')->on('trado');  
+            $table->foreign('tradoke_id', 'penerimaanstokheader_trado_tradoke_id_foreign')->references('id')->on('trado');  
+            $table->foreign('gandengandari_id', 'penerimaanstokheader_gandengan_gandengandari_id_foreign')->references('id')->on('gandengan');  
+            $table->foreign('gandenganke_id', 'penerimaanstokheader_gandengan_gandenganke_id_foreign')->references('id')->on('gandengan');  
             $table->foreign('coa', 'penerimaanstokheader_akunpusat_coa_foreign')->references('coa')->on('akunpusat');  
 
 
@@ -62,6 +71,10 @@ class CreatePenerimaanstokheaderTable extends Migration
         DB::statement("ALTER TABLE penerimaanstokheader NOCHECK CONSTRAINT penerimaanstokheader_gudang_gudang_id_foreign");
         DB::statement("ALTER TABLE penerimaanstokheader NOCHECK CONSTRAINT penerimaanstokheader_gudang_gudangdari_id_foreign");
         DB::statement("ALTER TABLE penerimaanstokheader NOCHECK CONSTRAINT penerimaanstokheader_gudang_gudangke_id_foreign");
+        DB::statement("ALTER TABLE penerimaanstokheader NOCHECK CONSTRAINT penerimaanstokheader_trado_tradodari_id_foreign");
+        DB::statement("ALTER TABLE penerimaanstokheader NOCHECK CONSTRAINT penerimaanstokheader_trado_tradoke_id_foreign");
+        DB::statement("ALTER TABLE penerimaanstokheader NOCHECK CONSTRAINT penerimaanstokheader_gandengan_gandengandari_id_foreign");
+        DB::statement("ALTER TABLE penerimaanstokheader NOCHECK CONSTRAINT penerimaanstokheader_gandengan_gandenganke_id_foreign");
         DB::statement("ALTER TABLE penerimaanstokheader NOCHECK CONSTRAINT penerimaanstokheader_akunpusat_coa_foreign");
     }
 

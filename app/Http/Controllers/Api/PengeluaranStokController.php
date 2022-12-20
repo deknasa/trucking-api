@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Http\Controllers\Controller;
 use App\Models\PengeluaranStok;
+
 use App\Http\Requests\StorePengeluaranStokRequest;
 use App\Http\Requests\UpdatePengeluaranStokRequest;
 use Illuminate\Http\Request;

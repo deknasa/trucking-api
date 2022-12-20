@@ -26,6 +26,7 @@ class CreateStokTable extends Migration
             $table->unsignedBigInteger('merk_id')->default('0');
             $table->string('namastok',200)->default('');
             $table->integer('statusaktif')->length(11)->default('0');
+            $table->integer('statusreuse')->length(11)->default('0');
             $table->double('qtymin',15,2)->default('0');
             $table->double('qtymax',15,2)->default('0');
             $table->longText('keterangan')->default('');

@@ -9,6 +9,7 @@ use App\Models\PenerimaanStokHeader;
 use App\Models\PenerimaanStok;
 use App\Models\Parameter;
 use App\Models\StokPersediaan;
+use App\Models\Stok;
 use App\Http\Requests\StorePenerimaanStokDetailRequest;
 use App\Http\Requests\UpdatePenerimaanStokDetailRequest;
 
@@ -148,6 +149,14 @@ class PenerimaanStokDetailController extends Controller
         $total -= $nominaldiscount;
         $penerimaanstokheader = PenerimaanStokHeader::where('id', $request->penerimaanstokheader_id)->first();
         try {
+            $stok= Stok::where('id', $request->stok_id)->first();
+            $stokreuse = Parameter::where('grp', 'STATUS REUSE')->where('subgrp', 'STATUS REUSE')->where('text', 'REUSE')->first();
+
+            if ($stok->statusreuse==$stokreuse->id) {
+                $reuse=true;
+            } else {
+                $reuse=false;
+            }
 
             $spb = Parameter::where('grp', 'SPB STOK')->where('subgrp', 'SPB STOK')->first();
            
@@ -166,7 +175,7 @@ class PenerimaanStokDetailController extends Controller
             }
 
             $pg = Parameter::where('grp', 'PG STOK')->where('subgrp', 'PG STOK')->first();
-            if ($penerimaanstokheader->penerimaanstok_id == $pg->text) {
+            if ($penerimaanstokheader->penerimaanstok_id == $pg->text and $reuse==true) {
 
                 $datahitungstok = PenerimaanStok::select('statushitungstok as statushitungstok_id')
                     ->where('statusformat', '=', $penerimaanstokheader->statusformat)
@@ -211,7 +220,7 @@ class PenerimaanStokDetailController extends Controller
                     }
                 }
 
-                if ($penerimaanstokheader->penerimaanstok_id == $pg->text) {
+                if ($penerimaanstokheader->penerimaanstok_id == $pg->text  and $reuse==true ) {
                     if ($datahitungstok->statushitungstok_id == $statushitungstok->id) {
 
                         $stokpersediaangudangke->qty += $request->qty;

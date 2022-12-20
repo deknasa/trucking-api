@@ -4,7 +4,13 @@ namespace App\Http\Controllers\Api;
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Http\Controllers\Controller;
 
+use App\Models\PengeluaranStok;
 use App\Models\PengeluaranStokDetail;
+use App\Models\PengeluaranStokHeader;
+use App\Models\Parameter;
+use App\Models\StokPersediaan;
+use App\Models\Stok;
+
 use App\Http\Requests\StorePengeluaranStokDetailRequest;
 use App\Http\Requests\UpdatePengeluaranStokDetailRequest;
  
@@ -110,7 +116,7 @@ class PengeluaranStokDetailController extends Controller
             'harga' => "required|numeric|gt:0",
             'persentasediscount' => "numeric|max:100",
             'detail_keterangan' => 'required',
-            'vulkanisirke' => 'required',
+            // 'vulkanisirke' => 'required',
             'qty' => "required|numeric|gt:0",
          ], [
              'stok_id.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
@@ -138,7 +144,26 @@ class PengeluaranStokDetailController extends Controller
         $total = $request->qty * $request->harga;
         $nominaldiscount = $total * ($request->persentasediscount/100);
         $total -= $nominaldiscount;
+        $pengeluaranstokheader = PengeluaranStokHeader::where('id', $request->pengeluaranstokheader_id)->first();
+
             try {
+
+                $spk = Parameter::where('grp', 'SPK STOK')->where('subgrp', 'SPK STOK')->first();
+     
+                if ($pengeluaranstokheader->pengeluaranstok_id == $spk->text) {
+
+                    $datahitungstok = PengeluaranStok::select('statushitungstok as statushitungstok_id')
+                        ->where('statusformat', '=', $pengeluaranstokheader->statusformat)
+                        ->first();
+    
+                    $statushitungstok = Parameter::where('grp', 'STATUS HITUNG STOK')->where('text', 'HITUNG STOK')->first();
+                    if ($datahitungstok->statushitungstok_id == $statushitungstok->id) {
+                        $stokpersediaan  = StokPersediaan::lockForUpdate()->where("stok_id", $request->stok_id)
+                            ->where("gudang_id", $pengeluaranstokheader->gudang_id)->firstorFail();
+                    }
+                }
+    
+                
                 $pengeluaranStokDetail = new PengeluaranStokDetail();
                 $pengeluaranStokDetail->pengeluaranstokheader_id = $request->pengeluaranstokheader_id;
                 $pengeluaranStokDetail->nobukti = $request->nobukti;
@@ -147,8 +172,8 @@ class PengeluaranStokDetailController extends Controller
                 $pengeluaranStokDetail->harga = $request->harga;
                 $pengeluaranStokDetail->nominaldiscount = $nominaldiscount;
                 $pengeluaranStokDetail->total = $total;
-                $pengeluaranStokDetail->persentasediscount = $request->persentasediscount;
-                $pengeluaranStokDetail->vulkanisirke = $request->vulkanisirke;
+                $pengeluaranStokDetail->persentasediscount = $request->persentasediscount ?? 0;
+                $pengeluaranStokDetail->vulkanisirke = $request->vulkanisirke ?? 0;
                 $pengeluaranStokDetail->keterangan = $request->detail_keterangan;
                 
                 $pengeluaranStokDetail->modifiedby = auth('api')->user()->name;
@@ -157,6 +182,17 @@ class PengeluaranStokDetailController extends Controller
                
                 DB::commit();
                 if ($pengeluaranStokDetail->save()) {
+
+                    $spk = Parameter::where('grp', 'SPK STOK')->where('subgrp', 'SPK STOK')->first();
+                    if ($pengeluaranstokheader->pengeluaranstok_id == $spk->text) {
+    
+                        if ($datahitungstok->statushitungstok_id == $statushitungstok->id) {
+    
+                            $stokpersediaan->qty -= $request->qty;
+                            $stokpersediaan->save();
+                        }
+                    }
+
                     return [
                         'error' => false,
                         'id' => $pengeluaranStokDetail->id,

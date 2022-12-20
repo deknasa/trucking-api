@@ -206,6 +206,16 @@ class ParameterSeeder extends Seeder
         parameter::create(['grp' => 'STOK PERSEDIAAN', 'subgrp' => 'STOK PERSEDIAAN', 'kelompok' => '', 'text' => 'GUDANG', 'memo' => '{"MEMO":"GUDANG","SINGKATAN":"GUDANG","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN',]);
         parameter::create(['grp' => 'STOK PERSEDIAAN', 'subgrp' => 'STOK PERSEDIAAN', 'kelompok' => '', 'text' => 'TRADO', 'memo' => '{"MEMO":"TRADO","SINGKATAN":"TRADO","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN',]);
         parameter::create(['grp' => 'STOK PERSEDIAAN', 'subgrp' => 'STOK PERSEDIAAN', 'kelompok' => '', 'text' => 'GANDENGAN', 'memo' => '{"MEMO":"GANDENGAN","SINGKATAN":"GANDENGAN","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN',]);
+        parameter::create(['grp' => 'STATUS REUSE', 'subgrp' => 'STATUS REUSE', 'kelompok' => '', 'text' => 'REUSE', 'memo' => '{"MEMO":"REUSE","SINGKATAN":"R","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN',]);
+        parameter::create(['grp' => 'STATUS REUSE', 'subgrp' => 'STATUS REUSE', 'kelompok' => '', 'text' => 'NON REUSE', 'memo' => '{"MEMO":"NON REUSE","SINGKATAN":"NR","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN',]);
+        parameter::create(['grp' => 'STATUS PINDAH GUDANG', 'subgrp' => 'STATUS PINDAH GUDANG', 'kelompok' => '', 'text' => 'GUDANG KE GUDANG', 'memo' => '{"MEMO":"GUDANG KE GUDANG","SINGKATAN":"GKG","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN',]);
+        parameter::create(['grp' => 'STATUS PINDAH GUDANG', 'subgrp' => 'STATUS PINDAH GUDANG', 'kelompok' => '', 'text' => 'TRADO KE TRADO', 'memo' => '{"MEMO":"TRADO KE TRADO","SINGKATAN":"TKT","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN',]);
+        parameter::create(['grp' => 'STATUS PINDAH GUDANG', 'subgrp' => 'STATUS PINDAH GUDANG', 'kelompok' => '', 'text' => 'GANDENGAN KE GANDENGAN', 'memo' => '{"MEMO":"GANDENGAN KE GANDENGAN","SINGKATAN":"DKD","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN',]);
+        parameter::create(['grp' => 'STATUS PINDAH GUDANG', 'subgrp' => 'STATUS PINDAH GUDANG', 'kelompok' => '', 'text' => 'GUDANG KE TRADO', 'memo' => '{"MEMO":"GUDANG KE TRADO","SINGKATAN":"GKT","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN',]);
+        parameter::create(['grp' => 'STATUS PINDAH GUDANG', 'subgrp' => 'STATUS PINDAH GUDANG', 'kelompok' => '', 'text' => 'GUDANG KE GANDENGAN', 'memo' => '{"MEMO":"GUDANG KE GANDENGAN","SINGKATAN":"GKD","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN',]);
+        parameter::create(['grp' => 'STATUS PINDAH GUDANG', 'subgrp' => 'STATUS PINDAH GUDANG', 'kelompok' => '', 'text' => 'TRADO KE GANDENGAN', 'memo' => '{"MEMO":"TRADO KE GANDENGAN","SINGKATAN":"TKD","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN',]);
+        parameter::create(['grp' => 'SPK STOK', 'subgrp' => 'SPK STOK', 'kelompok' => '', 'text' => '1', 'memo' => '{"MEMO":"SPK STOK","SINGKATAN":"1","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN',]);
+        parameter::create(['grp' => 'RETUR STOK', 'subgrp' => 'RETUR STOK', 'kelompok' => '', 'text' => '2', 'memo' => '{"MEMO":"RETUR STOK","SINGKATAN":"2","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN',]);
         
     }
 }
