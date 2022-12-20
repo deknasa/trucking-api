@@ -72,7 +72,7 @@ class PelunasanPiutangHeaderController extends Controller
                 $pelunasanpiutangheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
                 $pelunasanpiutangheader->keterangan = $request->keterangan;
                 $pelunasanpiutangheader->bank_id = $request->bank_id;
-                $pelunasanpiutangheader->agen_id = $request->agen_id;
+                $pelunasanpiutangheader->agen_id = $request->agendetail_id;
                 $pelunasanpiutangheader->cabang_id = $request->cabang_id;
                 $pelunasanpiutangheader->statusformat = $format->id;
                 $pelunasanpiutangheader->modifiedby = auth('api')->user()->name;
@@ -110,6 +110,9 @@ class PelunasanPiutangHeaderController extends Controller
                         $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'NBP')
                         ->first();
                         return response([
+                            'errors' => [
+                                "bayarppd.$i" => "$query->keterangan"
+                            ],
                             'message' => "$query->keterangan",
                         ], 422);
                     }
@@ -239,7 +242,7 @@ class PelunasanPiutangHeaderController extends Controller
             $pelunasanpiutangheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $pelunasanpiutangheader->keterangan = $request->keterangan;
             $pelunasanpiutangheader->bank_id = $request->bank_id;
-            $pelunasanpiutangheader->agen_id = $request->agen_id;
+            $pelunasanpiutangheader->agen_id = $request->agendetail_id;
             $pelunasanpiutangheader->cabang_id = $request->cabang_id;
             $pelunasanpiutangheader->modifiedby = auth('api')->user()->name;
 
@@ -270,6 +273,9 @@ class PelunasanPiutangHeaderController extends Controller
                         $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'NBP')
                         ->first();
                         return response([
+                            'errors' => [
+                                "bayarppd.$i" => "$query->keterangan"
+                            ],
                             'message' => "$query->keterangan",
                         ], 422);
                     }

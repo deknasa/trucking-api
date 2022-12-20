@@ -16,7 +16,6 @@ class StokPersediaanController extends Controller
      */
     public function index(Request $request)
     {
-        if($request->keterangan){
             $stokPersediaan = new StokPersediaan();
             
             return response([
@@ -26,16 +25,7 @@ class StokPersediaanController extends Controller
                     'totalPages' => $stokPersediaan->totalPages
                 ]
             ]);
-        } else {
-            return response([
-                'data' => [],
-                'attributes' => [
-                    'totalRows' => 0,
-                    'totalPages' => 0,
-                ]
-            ]);
-        }
-
+       
     }
 
 }

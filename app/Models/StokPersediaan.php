@@ -35,19 +35,25 @@ class stokpersediaan extends MyModel
         )
         ->leftJoin('stok','stokpersediaan.stok_id', 'stok.id');
         
-            
-        $parameter = Parameter::where('id', request()->keterangan)->first();
-        if($parameter->text == 'GUDANG'){
-            $gudang_id = request()->data;
-            $query->where('stokpersediaan.gudang_id', $gudang_id);
-        } 
-        if($parameter->text == 'TRADO'){
-            $trado_id = request()->data;
-            $query->where('stokpersediaan.trado_id', $trado_id);
-        } 
-        if($parameter->text == 'GANDENGAN'){
-            $gandengan_id = request()->data;
-            $query->where('stokpersediaan.gandengan_id', $gandengan_id);
+        if(request()->keterangan && request()->data){
+
+            $parameter = Parameter::where('id', request()->keterangan)->first();
+            if($parameter->text == 'GUDANG'){
+                $gudang_id = request()->data;
+                $query->where('stokpersediaan.gudang_id', $gudang_id);
+            } 
+            if($parameter->text == 'TRADO'){
+                $trado_id = request()->data;
+                $query->where('stokpersediaan.trado_id', $trado_id);
+            } 
+            if($parameter->text == 'GANDENGAN'){
+                $gandengan_id = request()->data;
+                $query->where('stokpersediaan.gandengan_id', $gandengan_id);
+            }
+        }
+        else{
+            $gudang = Gudang::first();
+            $query->where('stokpersediaan.gudang_id', $gudang->id);
         }
         
         $this->totalRows = $query->count();

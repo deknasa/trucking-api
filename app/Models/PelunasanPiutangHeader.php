@@ -252,15 +252,12 @@ class PelunasanPiutangHeader extends MyModel
             'pelunasanpiutangheader.tglbukti',
             'pelunasanpiutangheader.keterangan',
             'pelunasanpiutangheader.bank_id',
-            'pelunasanpiutangheader.agen_id',
             'pelunasanpiutangheader.cabang_id',
 
             'bank.namabank as bank',
-            'agen.namaagen as agen',
             'cabang.namacabang as cabang',
         )
             ->leftJoin('bank', 'pelunasanpiutangheader.bank_id', 'bank.id')
-            ->leftJoin('agen', 'pelunasanpiutangheader.agen_id', 'agen.id')
             ->leftJoin('cabang' , 'pelunasanpiutangheader.cabang_id', 'cabang.id')
             ->where('pelunasanpiutangheader.id', $id);
 
@@ -283,14 +280,12 @@ class PelunasanPiutangHeader extends MyModel
             $this->table.tglbukti,
             $this->table.keterangan,
             'bank.namabank as bank_id',
-            'agen.namaagen as agen_id',
             'cabang.namacabang as cabang_id',
             $this->table.modifiedby,
             $this->table.updated_at
             ")
         )
             ->leftJoin('bank', 'pelunasanpiutangheader.bank_id', 'bank.id')
-            ->leftJoin('agen', 'pelunasanpiutangheader.agen_id', 'agen.id')
             ->leftJoin('cabang' , 'pelunasanpiutangheader.cabang_id', 'cabang.id');
             
     }
@@ -304,7 +299,6 @@ class PelunasanPiutangHeader extends MyModel
             $table->date('tglbukti')->default('');
             $table->string('keterangan', 1000)->default('');
             $table->string('bank_id')->default('');
-            $table->string('agen_id')->default('');
             $table->string('cabang_id')->default('');
             $table->string('modifiedby')->default();
             $table->dateTime('updated_at')->default('1900/1/1');
@@ -316,7 +310,7 @@ class PelunasanPiutangHeader extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id','nobukti','tglbukti','keterangan','bank_id','agen_id','cabang_id','modifiedby','updated_at'], $models);
+        DB::table($temp)->insertUsing(['id','nobukti','tglbukti','keterangan','bank_id','cabang_id','modifiedby','updated_at'], $models);
 
         return $temp;
     }
@@ -332,9 +326,7 @@ class PelunasanPiutangHeader extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'agen_id') {
-                            $query = $query->where('agen.namaagen', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'bank_id') {
+                        if ($filters['field'] == 'bank_id') {
                             $query = $query->where('bank.namabank', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'cabang_id') {
                             $query = $query->where('cabang.namacabang', 'LIKE', "%$filters[data]%");
@@ -346,9 +338,7 @@ class PelunasanPiutangHeader extends MyModel
                     break;
                 case "OR":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'agen_id') {
-                            $query = $query->orWhere('agen.namaagen', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'bank_id') {
+                        if ($filters['field'] == 'bank_id') {
                             $query = $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'cabang_id') {
                             $query = $query->orWhere('cabang.namacabang', 'LIKE', "%$filters[data]%");
