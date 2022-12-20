@@ -68,6 +68,14 @@ class PenerimaanStokHeaderController extends Controller
             $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
             $statusCetak = Parameter::where('grp','STATUSCETAK')->where('text','BELUM CETAK')->first();
 
+            $spb = Parameter::where('grp', 'SPB STOK')->where('subgrp', 'SPB STOK')->first();
+     
+            if ($request->penerimaanstok_id == $spb->text) {
+                $gudangkantor = Parameter::where('grp', 'GUDANG KANTOR')->where('subgrp', 'GUDANG KANTOR')->first();
+                $request->gudang_id=$gudangkantor->text;
+
+            }            
+
             /* Store header */
             $penerimaanStokHeader = new PenerimaanStokHeader();
 
