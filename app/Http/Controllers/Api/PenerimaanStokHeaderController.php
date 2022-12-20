@@ -18,6 +18,7 @@ use App\Http\Requests\StorePenerimaanStokDetailRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Validation\Rule;
 
 class PenerimaanStokHeaderController extends Controller
 {
@@ -47,6 +48,9 @@ class PenerimaanStokHeaderController extends Controller
         DB::beginTransaction();
 
         try {
+            $request->validate([
+                "supplier"=>Rule::requiredIf($request->penerimaanstok_id=='3')
+            ]);
 
             $idpenerimaan = $request->penerimaanstok_id;
             $fetchFormat =  DB::table('penerimaanstok')
@@ -192,6 +196,9 @@ class PenerimaanStokHeaderController extends Controller
     public function update(UpdatePenerimaanStokHeaderRequest $request, PenerimaanStokHeader $penerimaanStokHeader, $id)
     {
         try {
+            $request->validate([
+                "supplier"=>Rule::requiredIf($request->penerimaanstok_id=='3')
+            ]);
             /* Store header */
             $penerimaanStokHeader = PenerimaanStokHeader::lockForUpdate()->findOrFail($id);
 

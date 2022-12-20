@@ -128,8 +128,15 @@ class PenerimaanStok extends MyModel
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statushitungstok') {
-                            $query = $query->where('parameterstatushitungstok.text', '=', "$filters[data]");
-                        }else{
+                            $query = $query->where('parameterstatushitungstok.text', 'LIKE', "%$filters[data]%");
+                        }else if ($filters['field'] == 'statusformattext') {
+                            $query = $query->where('parameterstatusformat.text', 'LIKE', "%$filters[data]%");
+                        
+                        }else if ($filters['field'] == 'statusformatid') {
+                            $query = $query->where('parameterstatusformat.id', 'LIKE', "%$filters[data]%");
+                        }
+                        
+                        else{
                             $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");                         
                         }          
                     }
@@ -138,8 +145,15 @@ class PenerimaanStok extends MyModel
                 case "OR":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statushitungstok') {
-                            $query = $query->orWhere('parameterstatushitungstok.text', '=', "$filters[data]");
-                        }else{
+                            $query = $query->orWhere('parameterstatushitungstok.text', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'statusformattext') {
+                            $query = $query->orWhere('parameterstatusformat.text', 'LIKE', "%$filters[data]%");
+                        
+                        } else if ($filters['field'] == 'statusformatid') {
+                            $query = $query->orWhere('parameterstatusformat.id', 'LIKE', "%$filters[data]%");
+                        }
+                       
+                        else{
                             $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
                     }
