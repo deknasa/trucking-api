@@ -198,7 +198,13 @@ class PenerimaanStokHeader extends MyModel
                             case 'gudangke':
                                 $query = $query->where('ke.gudang', 'LIKE', "%$filters[data]%");
                                 break;
-                            
+                            case 'penerimaanstok_id_not_null':
+                            $query = $query->where($this->table . '.penerimaanstok_id', '=', "$filters[data]")->whereRaw(" $this->table.nobukti NOT IN 
+                            (SELECT DISTINCT $this->table.penerimaanstok_nobukti
+                            FROM penerimaanstokheader
+                            WHERE $this->table.penerimaanstok_nobukti IS NOT NULL)
+                            ");
+                                break;
                             default:
                                 $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                 break;

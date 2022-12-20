@@ -11,6 +11,7 @@ use App\Models\PengeluaranStok;
 use App\Models\PengeluaranStokHeader;
 use App\Models\PengeluaranStokDetail;
 use App\Models\StokPersediaan;
+use App\Models\Stok;
 
 use Illuminate\Support\Facades\Schema;
 use App\Http\Requests\StoreLogTrailRequest;
@@ -42,7 +43,7 @@ class PengeluaranStokHeaderController extends Controller
         DB::beginTransaction();
 
         try {
-            
+
             $idpenerimaan = $request->pengeluaranstok_id;
             $fetchFormat =  DB::table('pengeluaranstok')
                 ->where('id', $idpenerimaan)
@@ -62,23 +63,23 @@ class PengeluaranStokHeaderController extends Controller
             $content['table'] = 'pengeluaranstokheader';
             $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
 
-            $statusCetak = Parameter::where('grp','STATUSCETAK')->where('text','BELUM CETAK')->first();
+            $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
             /* Store header */
             $pengeluaranStokHeader = new PengeluaranStokHeader();
             $pengeluaranStokHeader->tglbukti          = date('Y-m-d', strtotime($request->tglbukti));
-            $pengeluaranStokHeader->keterangan        = ($request->keterangan == null) ?"" :$request->keterangan;
-            $pengeluaranStokHeader->pengeluaranstok_id = ($request->pengeluaranstok_id == null) ?"" :$request->pengeluaranstok_id;
-            $pengeluaranStokHeader->trado_id          = ($request->trado_id == null) ?"" :$request->trado_id;
-            $pengeluaranStokHeader->gudang_id         = ($request->gudang_id == null) ?"" :$request->gudang_id;
-            $pengeluaranStokHeader->supir_id         = ($request->supir_id == null) ?"" :$request->supir_id;
-            $pengeluaranStokHeader->supplier_id         = ($request->supplier_id == null) ?"" :$request->supplier_id;
-            $pengeluaranStokHeader->pengeluaranstok_nobukti = ($request->pengeluaranstok_nobukti == null) ?"" :$request->pengeluaranstok_nobukti;
-            $pengeluaranStokHeader->penerimaanstok_nobukti  = ($request->penerimaanstok_nobukti == null) ?"" :$request->penerimaanstok_nobukti;
-            $pengeluaranStokHeader->servicein_nobukti    = ($request->servicein_nobukti == null) ?"" :$request->servicein_nobukti;
-            $pengeluaranStokHeader->kerusakan_id         = ($request->kerusakan_id == null) ?"" :$request->supir_id;
-            $pengeluaranStokHeader->statusformat      = ($request->statusformat_id == null) ?"" :$request->statusformat_id;
+            $pengeluaranStokHeader->keterangan        = ($request->keterangan == null) ? "" : $request->keterangan;
+            $pengeluaranStokHeader->pengeluaranstok_id = ($request->pengeluaranstok_id == null) ? "" : $request->pengeluaranstok_id;
+            $pengeluaranStokHeader->trado_id          = ($request->trado_id == null) ? "" : $request->trado_id;
+            $pengeluaranStokHeader->gudang_id         = ($request->gudang_id == null) ? "" : $request->gudang_id;
+            $pengeluaranStokHeader->supir_id         = ($request->supir_id == null) ? "" : $request->supir_id;
+            $pengeluaranStokHeader->supplier_id         = ($request->supplier_id == null) ? "" : $request->supplier_id;
+            $pengeluaranStokHeader->pengeluaranstok_nobukti = ($request->pengeluaranstok_nobukti == null) ? "" : $request->pengeluaranstok_nobukti;
+            $pengeluaranStokHeader->penerimaanstok_nobukti  = ($request->penerimaanstok_nobukti == null) ? "" : $request->penerimaanstok_nobukti;
+            $pengeluaranStokHeader->servicein_nobukti    = ($request->servicein_nobukti == null) ? "" : $request->servicein_nobukti;
+            $pengeluaranStokHeader->kerusakan_id         = ($request->kerusakan_id == null) ? "" : $request->supir_id;
+            $pengeluaranStokHeader->statusformat      = ($request->statusformat_id == null) ? "" : $request->statusformat_id;
             $pengeluaranStokHeader->modifiedby        = auth('api')->user()->name;
-            $pengeluaranStokHeader->statuscetak        = $statusCetak;
+            $pengeluaranStokHeader->statuscetak        = $statusCetak->id ?? 0;
             $request->sortname                 = $request->sortname ?? 'id';
             $request->sortorder                = $request->sortorder ?? 'asc';
             TOP:
@@ -97,15 +98,15 @@ class PengeluaranStokHeaderController extends Controller
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-                
+
                 if ($request->detail_harga) {
-                   
+
                     /* Store detail */
                     $detaillog = [];
-        
-                    for ($i=0; $i <count($request->detail_harga) ; $i++) { 
+
+                    for ($i = 0; $i < count($request->detail_harga); $i++) {
                         $datadetail = [
-                            "pengeluaranstokheader_id" =>$pengeluaranStokHeader->id,
+                            "pengeluaranstokheader_id" => $pengeluaranStokHeader->id,
                             "nobukti" => $pengeluaranStokHeader->nobukti,
                             "stok_id" => $request->detail_stok_id[$i],
                             "qty" => $request->detail_qty[$i],
@@ -114,10 +115,10 @@ class PengeluaranStokHeaderController extends Controller
                             "vulkanisirke" => $request->detail_vulkanisirke[$i],
                             "detail_keterangan" => $request->detail_keterangan[$i],
                         ];
-    
+
                         $data = new StorePengeluaranStokDetailRequest($datadetail);
                         $pengeluaranStokDetail = app(PengeluaranStokDetailController::class)->store($data);
-                        
+
                         if ($pengeluaranStokDetail['error']) {
                             return response($pengeluaranStokDetail, 422);
                         } else {
@@ -125,7 +126,6 @@ class PengeluaranStokHeaderController extends Controller
                             $tabeldetail = $pengeluaranStokDetail['tabel'];
                         }
                         $detaillog[] = $pengeluaranStokDetail['detail']->toArray();
-        
                     }
                     $datalogtrail = [
                         'namatabel' => strtoupper($tabeldetail),
@@ -136,11 +136,11 @@ class PengeluaranStokHeaderController extends Controller
                         'datajson' => $detaillog,
                         'modifiedby' => auth('api')->user()->name,
                     ];
-        
+
                     $data = new StoreLogTrailRequest($datalogtrail);
                     app(LogTrailController::class)->store($data);
                 }
-                
+
                 DB::commit();
             }
 
@@ -161,11 +161,10 @@ class PengeluaranStokHeaderController extends Controller
             DB::rollBack();
 
             throw $th;
-        } 
-
+        }
     }
 
-    public function show(PengeluaranStokHeader $pengeluaranStokHeader,$id)
+    public function show(PengeluaranStokHeader $pengeluaranStokHeader, $id)
     {
         return response([
             'status' => true,
@@ -176,25 +175,25 @@ class PengeluaranStokHeaderController extends Controller
     /**
      * @ClassName 
      */
-    public function update(UpdatePengeluaranStokHeaderRequest $request, PengeluaranStokHeader $pengeluaranStokHeader,$id)
+    public function update(UpdatePengeluaranStokHeaderRequest $request, PengeluaranStokHeader $pengeluaranStokHeader, $id)
     {
         try {
 
             /* Store header */
             $pengeluaranStokHeader = PengeluaranStokHeader::lockForUpdate()->findOrFail($id);
-            
+
             $pengeluaranStokHeader->tglbukti          = date('Y-m-d', strtotime($request->tglbukti));
-            $pengeluaranStokHeader->keterangan        = ($request->keterangan == null) ?"" :$request->keterangan;
-            $pengeluaranStokHeader->pengeluaranstok_id = ($request->pengeluaranstok_id == null) ?"" :$request->pengeluaranstok_id;
-            $pengeluaranStokHeader->trado_id          = ($request->trado_id == null) ?"" :$request->trado_id;
-            $pengeluaranStokHeader->gudang_id         = ($request->gudang_id == null) ?"" :$request->gudang_id;
-            $pengeluaranStokHeader->supir_id         = ($request->supir_id == null) ?"" :$request->supir_id;
-            $pengeluaranStokHeader->supplier_id         = ($request->supplier_id == null) ?"" :$request->supplier_id;
-            $pengeluaranStokHeader->pengeluaranstok_nobukti = ($request->pengeluaranstok_nobukti == null) ?"" :$request->pengeluaranstok_nobukti;
-            $pengeluaranStokHeader->penerimaanstok_nobukti  = ($request->penerimaanstok_nobukti == null) ?"" :$request->penerimaanstok_nobukti;
-            $pengeluaranStokHeader->servicein_nobukti    = ($request->servicein_nobukti == null) ?"" :$request->servicein_nobukti;
-            $pengeluaranStokHeader->kerusakan_id         = ($request->kerusakan_id == null) ?"" :$request->supir_id;
-            $pengeluaranStokHeader->statusformat      = ($request->statusformat_id == null) ?"" :$request->statusformat_id;
+            $pengeluaranStokHeader->keterangan        = ($request->keterangan == null) ? "" : $request->keterangan;
+            $pengeluaranStokHeader->pengeluaranstok_id = ($request->pengeluaranstok_id == null) ? "" : $request->pengeluaranstok_id;
+            $pengeluaranStokHeader->trado_id          = ($request->trado_id == null) ? "" : $request->trado_id;
+            $pengeluaranStokHeader->gudang_id         = ($request->gudang_id == null) ? "" : $request->gudang_id;
+            $pengeluaranStokHeader->supir_id         = ($request->supir_id == null) ? "" : $request->supir_id;
+            $pengeluaranStokHeader->supplier_id         = ($request->supplier_id == null) ? "" : $request->supplier_id;
+            $pengeluaranStokHeader->pengeluaranstok_nobukti = ($request->pengeluaranstok_nobukti == null) ? "" : $request->pengeluaranstok_nobukti;
+            $pengeluaranStokHeader->penerimaanstok_nobukti  = ($request->penerimaanstok_nobukti == null) ? "" : $request->penerimaanstok_nobukti;
+            $pengeluaranStokHeader->servicein_nobukti    = ($request->servicein_nobukti == null) ? "" : $request->servicein_nobukti;
+            $pengeluaranStokHeader->kerusakan_id         = ($request->kerusakan_id == null) ? "" : $request->supir_id;
+            $pengeluaranStokHeader->statusformat      = ($request->statusformat_id == null) ? "" : $request->statusformat_id;
             $pengeluaranStokHeader->modifiedby        = auth('api')->user()->name;
             $request->sortname                 = $request->sortname ?? 'id';
             $request->sortorder                = $request->sortorder ?? 'asc';
@@ -211,16 +210,45 @@ class PengeluaranStokHeaderController extends Controller
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-                
+
                 if ($request->detail_harga) {
+
+
+                    /*Update  di stok persediaan*/
+
+                    $spk = Parameter::where('grp', 'SPK STOK')->where('subgrp', 'SPK STOK')->first();
+                    if ($request->pengeluaranstok_id == $spk->text) {
+                        $datahitungstok = PengeluaranStok::select('statushitungstok as statushitungstok_id')
+                            ->where('statusformat', '=', $request->statusformat_id)
+                            ->first();
+
+                        $statushitungstok = Parameter::where('grp', 'STATUS HITUNG STOK')->where('text', 'HITUNG STOK')->first();
+
+                        if ($datahitungstok->statushitungstok_id == $statushitungstok->id) {
+                            $datadetail = PengeluaranStokDetail::select('stok_id', 'qty')
+                                ->where('pengeluaranstokheader_id', '=', $id)
+                                ->get();
+
+                            $datadetail = json_decode($datadetail, true);
+
+                            foreach ($datadetail as $item) {
+                                $stokpersediaan  = StokPersediaan::lockForUpdate()->where("stok_id", $item['stok_id'])
+                                    ->where("gudang_id", ($request->gudang_id))->firstorFail();
+                                $stokpersediaan->qty += $item['qty'];
+                                $stokpersediaan->save();
+                            }
+                        }
+                    }
+
+
                     /* Delete existing detail */
-                    $pengeluaranStokDetail = PengeluaranStokDetail::where('pengeluaranstokheader_id',$id)->lockForUpdate()->delete();
+                    $pengeluaranStokDetail = PengeluaranStokDetail::where('pengeluaranstokheader_id', $id)->lockForUpdate()->delete();
                     /* Store detail */
                     $detaillog = [];
-        
-                    for ($i=0; $i <count($request->detail_harga) ; $i++) { 
+
+                    for ($i = 0; $i < count($request->detail_harga); $i++) {
                         $datadetail = [
-                            "pengeluaranstokheader_id" =>$pengeluaranStokHeader->id,
+                            "pengeluaranstokheader_id" => $pengeluaranStokHeader->id,
                             "nobukti" => $pengeluaranStokHeader->nobukti,
                             "stok_id" => $request->detail_stok_id[$i],
                             "qty" => $request->detail_qty[$i],
@@ -229,10 +257,10 @@ class PengeluaranStokHeaderController extends Controller
                             "vulkanisirke" => $request->detail_vulkanisirke[$i],
                             "detail_keterangan" => $request->detail_keterangan[$i],
                         ];
-    
+
                         $data = new StorePengeluaranStokDetailRequest($datadetail);
                         $pengeluaranStokDetail = app(PengeluaranStokDetailController::class)->store($data);
-                        
+
                         if ($pengeluaranStokDetail['error']) {
                             return response($pengeluaranStokDetail, 422);
                         } else {
@@ -240,7 +268,6 @@ class PengeluaranStokHeaderController extends Controller
                             $tabeldetail = $pengeluaranStokDetail['tabel'];
                         }
                         $detaillog[] = $pengeluaranStokDetail['detail']->toArray();
-        
                     }
                     $datalogtrail = [
                         'namatabel' => strtoupper($tabeldetail),
@@ -251,11 +278,11 @@ class PengeluaranStokHeaderController extends Controller
                         'datajson' => $detaillog,
                         'modifiedby' => auth('api')->user()->name,
                     ];
-        
+
                     $data = new StoreLogTrailRequest($datalogtrail);
                     app(LogTrailController::class)->store($data);
                 }
-                
+
                 DB::commit();
             }
 
@@ -276,19 +303,19 @@ class PengeluaranStokHeaderController extends Controller
             DB::rollBack();
 
             throw $th;
-        } 
+        }
     }
 
     /**
      * @ClassName 
      */
-    public function destroy(PengeluaranStokHeader $pengeluaranStokHeader,$id)
+    public function destroy(PengeluaranStokHeader $pengeluaranStokHeader, $id)
     {
         DB::beginTransaction();
 
         $getDetail = PengeluaranStokDetail::where('pengeluaranstokheader_id', $id)->get();
-        $pengeluaranStokHeader = PengeluaranStokHeader::where('id',$id)->first();
-        $delete = $pengeluaranStokHeader->lockForUpdate()->where('id',$id)->delete();
+        $pengeluaranStokHeader = PengeluaranStokHeader::where('id', $id)->first();
+        $delete = $pengeluaranStokHeader->lockForUpdate()->where('id', $id)->delete();
 
 
         if ($delete) {
@@ -304,6 +331,33 @@ class PengeluaranStokHeaderController extends Controller
 
             $validatedLogTrail = new StoreLogTrailRequest($logTrail);
             $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+
+
+            /*Update  di stok persediaan*/
+
+            $spk = Parameter::where('grp', 'SPK STOK')->where('subgrp', 'SPK STOK')->first();
+            if ($pengeluaranStokHeader->pengeluaranstok_id == $spk->text) {
+                $datahitungstok = PengeluaranStok::select('statushitungstok as statushitungstok_id')
+                    ->where('statusformat', '=', $pengeluaranStokHeader->statusformat_id)
+                    ->first();
+
+                $statushitungstok = Parameter::where('grp', 'STATUS HITUNG STOK')->where('text', 'HITUNG STOK')->first();
+
+                if ($datahitungstok->statushitungstok_id == $statushitungstok->id) {
+                    $datadetail = PengeluaranStokDetail::select('stok_id', 'qty')
+                        ->where('pengeluaranstokheader_id', '=', $id)
+                        ->get();
+
+                    $datadetail = json_decode($datadetail, true);
+
+                    foreach ($datadetail as $item) {
+                        $stokpersediaan  = StokPersediaan::lockForUpdate()->where("stok_id", $item['stok_id'])
+                            ->where("gudang_id", ($pengeluaranStokHeader->gudang_id))->firstorFail();
+                        $stokpersediaan->qty += $item['qty'];
+                        $stokpersediaan->save();
+                    }
+                }
+            }
 
             // DELETE PENGELUARAN STOK DETAIL
             $logTrailPengeluaranStokDetail = [
