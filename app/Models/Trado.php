@@ -95,11 +95,11 @@ class Trado extends MyModel
             'mandor.namamandor as mandor',
             'supir.namasupir as supir'
         )
-        ->join('mandor','trado.mandor_id','mandor.id')
-        ->join('supir','trado.supir_id','supir.id')
+        ->leftJoin('mandor','trado.mandor_id','mandor.id')
+        ->leftJoin('supir','trado.supir_id','supir.id')
         ->where('trado.id',$id)
         ->first();
-
+        
         return $data;
     }
 
