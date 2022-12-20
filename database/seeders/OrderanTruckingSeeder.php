@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\OrderanTrucking;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class OrderanTruckingSeeder extends Seeder
 {
@@ -14,24 +15,10 @@ class OrderanTruckingSeeder extends Seeder
      */
     public function run()
     {
-        OrderanTrucking::create([
-            'nobukti' => '0001/III/22',
-            'tglbukti' => '2022-03-02',
-            'container_id' => 1,
-            'agen_id' => 2,
-            'jenisorder_id' => 1,
-            'pelanggan_id' => 1,
-            'tarif_id' => 1,
-            'nominal' => 1021000,
-            'nojobemkl' => 'PRE1/II/KTR - MD/JKT/22',
-            'nocont' => 'SPNU 123456',
-            'noseal' => '',
-            'nojobemkl2' => '',
-            'nocont2' => '',
-            'noseal2' => '',
-            'statuslangsir' => 80,
-            'statusperalihan' => 67,
-            'modifiedby' => 'ADMIN'
-        ]);
+
+        DB::statement("delete orderantrucking");
+        DB::statement("DBCC CHECKIDENT ('orderantrucking', RESEED, 1);");
+
+        orderantrucking::create(['nobukti' => '0001/XII/2022', 'tglbukti' => '2022/12/20', 'container_id' => '1', 'agen_id' => '2', 'jenisorder_id' => '1', 'pelanggan_id' => '1', 'tarif_id' => '1', 'nominal' => '1021000', 'nojobemkl' => '111', 'nocont' => '111', 'noseal' => '111', 'nojobemkl2' => '', 'nocont2' => '', 'noseal2' => '', 'statuslangsir' => '80', 'statusperalihan' => '68', 'statusformat' => '103', 'modifiedby' => 'ADMIN',]);
     }
 }
