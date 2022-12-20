@@ -60,16 +60,16 @@ class SupirController extends Controller
 
         try {
             $supir = new Supir();
-            $depositke = str_replace(',','',$request->depositke);
+            $depositke = str_replace(',', '', $request->depositke);
             $supir->namasupir = $request->namasupir;
             $supir->alamat = $request->alamat;
             $supir->kota = $request->kota;
             $supir->telp = $request->telp;
             $supir->statusaktif = $request->statusaktif;
-            $supir->nominaldepositsa = str_replace(',','',$request->nominaldepositsa) ?? 0;
-            $supir->depositke = str_replace('.','',$depositke) ?? 0;
+            $supir->nominaldepositsa = str_replace(',', '', $request->nominaldepositsa) ?? 0;
+            $supir->depositke = str_replace('.', '', $depositke) ?? 0;
             $supir->tglmasuk = date('Y-m-d', strtotime($request->tglmasuk));
-            $supir->nominalpinjamansaldoawal = str_replace(',','',$request->nominalpinjamansaldoawal) ?? 0;
+            $supir->nominalpinjamansaldoawal = str_replace(',', '', $request->nominalpinjamansaldoawal) ?? 0;
             $supir->supirold_id = $request->supirold_id ?? 0;
             $supir->tglexpsim = date('Y-m-d', strtotime($request->tglexpsim));
             $supir->nosim = $request->nosim;
@@ -80,8 +80,8 @@ class SupirController extends Controller
             $supir->statusluarkota = $request->statusluarkota;
             $supir->statuszonatertentu = $request->statuszonatertentu;
             $supir->zona_id = $request->zona_id;
-            $supir->angsuranpinjaman = str_replace(',','',$request->angsuranpinjaman) ?? 0;
-            $supir->plafondeposito = str_replace(',','',$request->plafondeposito) ?? 0;
+            $supir->angsuranpinjaman = str_replace(',', '', $request->angsuranpinjaman) ?? 0;
+            $supir->plafondeposito = str_replace(',', '', $request->plafondeposito) ?? 0;
             $supir->keteranganresign = $request->keteranganresign ?? '';
             $supir->statusblacklist = $request->statusblacklist;
             $supir->tglberhentisupir = date('Y-m-d', strtotime($request->tglberhentisupir)) ?? '';
@@ -94,7 +94,7 @@ class SupirController extends Controller
             $supir->photokk = $this->storeFiles($request->photokk, 'kk');
             $supir->photoskck = $this->storeFiles($request->photoskck, 'skck');
             $supir->photodomisili = $this->storeFiles($request->photodomisili, 'domisili');
-            
+
             $supir->save();
 
             $logTrail = [
@@ -138,17 +138,17 @@ class SupirController extends Controller
         DB::beginTransaction();
 
         try {
-            
-            $depositke = str_replace(',','',$request->depositke);
+
+            $depositke = str_replace(',', '', $request->depositke);
             $supir->namasupir = $request->namasupir;
             $supir->alamat = $request->alamat;
             $supir->kota = $request->kota;
             $supir->telp = $request->telp;
             $supir->statusaktif = $request->statusaktif;
-            $supir->nominaldepositsa = str_replace(',','',$request->nominaldepositsa) ?? 0;
-            $supir->depositke = str_replace('.00','',$depositke) ?? 0;
+            $supir->nominaldepositsa = str_replace(',', '', $request->nominaldepositsa) ?? 0;
+            $supir->depositke = str_replace('.00', '', $depositke) ?? 0;
             $supir->tglmasuk = date('Y-m-d', strtotime($request->tglmasuk));
-            $supir->nominalpinjamansaldoawal = str_replace(',','',$request->nominalpinjamansaldoawal) ?? 0;
+            $supir->nominalpinjamansaldoawal = str_replace(',', '', $request->nominalpinjamansaldoawal) ?? 0;
             $supir->supirold_id = $request->supirold_id ?? 0;
             $supir->tglexpsim = date('Y-m-d', strtotime($request->tglexpsim));
             $supir->nosim = $request->nosim;
@@ -159,8 +159,8 @@ class SupirController extends Controller
             $supir->statusluarkota = $request->statusluarkota;
             $supir->statuszonatertentu = $request->statuszonatertentu;
             $supir->zona_id = $request->zona_id;
-            $supir->angsuranpinjaman = str_replace(',','',$request->angsuranpinjaman) ?? 0;
-            $supir->plafondeposito = str_replace(',','',$request->plafondeposito) ?? 0;
+            $supir->angsuranpinjaman = str_replace(',', '', $request->angsuranpinjaman) ?? 0;
+            $supir->plafondeposito = str_replace(',', '', $request->plafondeposito) ?? 0;
             $supir->keteranganresign = $request->keteranganresign ?? '';
             $supir->statusblacklist = $request->statusblacklist;
             $supir->tglberhentisupir = date('Y-m-d', strtotime($request->tglberhentisupir)) ?? '';
@@ -331,47 +331,60 @@ class SupirController extends Controller
         $photoSkck = json_decode($supir->photoskck, true);
         $photoDomisili = json_decode($supir->photodomisili, true);
 
-        foreach ($photoSupir as $path) {
-            foreach ($sizeTypes as $sizeType) {
-                $relatedPhotoSupir[] = "supir/$sizeType-$path";
+        if ($photoSupir != '') {
+            foreach ($photoSupir as $path) {
+                foreach ($sizeTypes as $sizeType) {
+                    $relatedPhotoSupir[] = "supir/$sizeType-$path";
+                }
             }
+            Storage::delete($relatedPhotoSupir);
         }
 
-        foreach ($photoKtp as $path) {
-            foreach ($sizeTypes as $sizeType) {
-                $relatedPhotoKtp[] = "ktp/$sizeType-$path";
+        if ($photoKtp != '') {
+            foreach ($photoKtp as $path) {
+                foreach ($sizeTypes as $sizeType) {
+                    $relatedPhotoKtp[] = "ktp/$sizeType-$path";
+                }
             }
+            Storage::delete($relatedPhotoKtp);
         }
 
-        foreach ($photoSim as $path) {
-            foreach ($sizeTypes as $sizeType) {
-                $relatedPhotoSim[] = "sim/$sizeType-$path";
+        if ($photoSim != '') {
+            foreach ($photoSim as $path) {
+                foreach ($sizeTypes as $sizeType) {
+                    $relatedPhotoSim[] = "sim/$sizeType-$path";
+                }
             }
+            Storage::delete($relatedPhotoSim);
         }
 
-        foreach ($photoKk as $path) {
-            foreach ($sizeTypes as $sizeType) {
-                $relatedPhotoKk[] = "kk/$sizeType-$path";
+        if ($photoKk != '') {
+            foreach ($photoKk as $path) {
+                foreach ($sizeTypes as $sizeType) {
+                    $relatedPhotoKk[] = "kk/$sizeType-$path";
+                }
             }
+            Storage::delete($relatedPhotoKk);
         }
 
-        foreach ($photoSkck as $path) {
-            foreach ($sizeTypes as $sizeType) {
-                $relatedPhotoSkck[] = "skck/$sizeType-$path";
+        if ($photoSkck != '') {
+            foreach ($photoSkck as $path) {
+                foreach ($sizeTypes as $sizeType) {
+                    $relatedPhotoSkck[] = "skck/$sizeType-$path";
+                }
             }
+            Storage::delete($relatedPhotoSkck);
         }
 
-        foreach ($photoDomisili as $path) {
-            foreach ($sizeTypes as $sizeType) {
-                $relatedPhotoDomisili[] = "domisili/$sizeType-$path";
+        if ($photoDomisili != '') {
+            foreach ($photoDomisili as $path) {
+                foreach ($sizeTypes as $sizeType) {
+                    $relatedPhotoDomisili[] = "domisili/$sizeType-$path";
+                }
             }
+            Storage::delete($relatedPhotoDomisili);
         }
 
-        Storage::delete($relatedPhotoSupir);
-        Storage::delete($relatedPhotoKtp);
-        Storage::delete($relatedPhotoSim);
-        Storage::delete($relatedPhotoKk);
-        Storage::delete($relatedPhotoSkck);
-        Storage::delete($relatedPhotoDomisili);
+        
     }
 }

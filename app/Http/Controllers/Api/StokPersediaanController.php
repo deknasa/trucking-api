@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\StokPersediaan;
 use App\Http\Requests\StoreStokPersediaanRequest;
 use App\Http\Requests\UpdateStokPersediaanRequest;
+use App\Models\Parameter;
 use Illuminate\Http\Request;
 
 class StokPersediaanController extends Controller
@@ -15,8 +16,9 @@ class StokPersediaanController extends Controller
      */
     public function index(Request $request)
     {
-        if($request->stok_id && $request->keterangan){
+        if($request->keterangan){
             $stokPersediaan = new StokPersediaan();
+            
             return response([
                 'data' => $stokPersediaan->get(),
                 'attributes' => [

@@ -51,8 +51,8 @@ class TradoController extends Controller
             $trado = new Trado();
             $trado->keterangan = $request->keterangan;
             $trado->statusaktif = $request->statusaktif;
-            $trado->kmawal = str_replace(',','',$request->kmawal);
-            $trado->kmakhirgantioli = str_replace(',','',$request->kmakhirgantioli);
+            $trado->kmawal = str_replace(',', '', $request->kmawal);
+            $trado->kmakhirgantioli = str_replace(',', '', $request->kmakhirgantioli);
             $trado->tglakhirgantioli = date('Y-m-d', strtotime($request->tglakhirgantioli));
             $trado->tglstnkmati = date('Y-m-d', strtotime($request->tglstnkmati));
             $trado->tglasuransimati = date('Y-m-d', strtotime($request->tglasuransimati));
@@ -76,7 +76,7 @@ class TradoController extends Controller
             $trado->statusvalidasikendaraan = $request->statusvalidasikendaraan;
             $trado->tipe = $request->tipe;
             $trado->jenis = $request->jenis;
-            $trado->isisilinder =  str_replace(',','',$request->isisilinder);
+            $trado->isisilinder =  str_replace(',', '', $request->isisilinder);
             $trado->warna = $request->warna;
             $trado->jenisbahanbakar = $request->jenisbahanbakar;
             $trado->jumlahsumbu = $request->jumlahsumbu;
@@ -109,7 +109,7 @@ class TradoController extends Controller
             $validatedLogTrail = new StoreLogTrailRequest($logTrail);
             $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-            
+
             $param1 = $trado->id;
             $param2 = $trado->modifiedby;
             $stokgudang = Stok::select(DB::raw(
@@ -184,14 +184,14 @@ class TradoController extends Controller
     /**
      * @ClassName 
      */
-    public function update(UpdateTradoRequest $request,Trado $trado)
+    public function update(UpdateTradoRequest $request, Trado $trado)
     {
         DB::beginTransaction();
         try {
             $trado->keterangan = $request->keterangan;
             $trado->statusaktif = $request->statusaktif;
-            $trado->kmawal = str_replace(',','',$request->kmawal);
-            $trado->kmakhirgantioli = str_replace(',','',$request->kmakhirgantioli);
+            $trado->kmawal = str_replace(',', '', $request->kmawal);
+            $trado->kmakhirgantioli = str_replace(',', '', $request->kmakhirgantioli);
             $trado->tglakhirgantioli = date('Y-m-d', strtotime($request->tglakhirgantioli));
             $trado->tglstnkmati = date('Y-m-d', strtotime($request->tglstnkmati));
             $trado->tglasuransimati = date('Y-m-d', strtotime($request->tglasuransimati));
@@ -215,7 +215,7 @@ class TradoController extends Controller
             $trado->statusvalidasikendaraan = $request->statusvalidasikendaraan;
             $trado->tipe = $request->tipe;
             $trado->jenis = $request->jenis;
-            $trado->isisilinder =  str_replace(',','',$request->isisilinder);
+            $trado->isisilinder =  str_replace(',', '', $request->isisilinder);
             $trado->warna = $request->warna;
             $trado->jenisbahanbakar = $request->jenisbahanbakar;
             $trado->jumlahsumbu = $request->jumlahsumbu;
@@ -302,7 +302,7 @@ class TradoController extends Controller
                 app(LogTrailController::class)->store($validatedLogTrail);
             }
 
-            
+
             DB::commit();
 
             $selected = $this->getPosition($trado, $trado->getTable());
@@ -438,27 +438,31 @@ class TradoController extends Controller
         $photoStnk = json_decode($trado->photostnk, true);
         $photoBpkb = json_decode($trado->photobpkb, true);
 
-        foreach ($photoTrado as $path) {
-            foreach ($sizeTypes as $sizeType) {
-                $relatedPhotoTrado[] = "trado/$sizeType-$path";
+        if ($photoTrado != '') {
+            foreach ($photoTrado as $path) {
+                foreach ($sizeTypes as $sizeType) {
+                    $relatedPhotoTrado[] = "trado/$sizeType-$path";
+                }
             }
+            Storage::delete($relatedPhotoTrado);
         }
 
-        foreach ($photoStnk as $path) {
-            foreach ($sizeTypes as $sizeType) {
-                $relatedPhotoStnk[] = "stnk/$sizeType-$path";
+        if ($photoStnk != '') {
+            foreach ($photoStnk as $path) {
+                foreach ($sizeTypes as $sizeType) {
+                    $relatedPhotoStnk[] = "stnk/$sizeType-$path";
+                }
             }
+            Storage::delete($relatedPhotoStnk);
         }
 
-        foreach ($photoBpkb as $path) {
-            foreach ($sizeTypes as $sizeType) {
-                $relatedPhotoBpkb[] = "bpkb/$sizeType-$path";
+        if ($photoBpkb != '') {
+            foreach ($photoBpkb as $path) {
+                foreach ($sizeTypes as $sizeType) {
+                    $relatedPhotoBpkb[] = "bpkb/$sizeType-$path";
+                }
             }
+            Storage::delete($relatedPhotoBpkb);
         }
-
-
-        Storage::delete($relatedPhotoTrado);
-        Storage::delete($relatedPhotoStnk);
-        Storage::delete($relatedPhotoBpkb);
     }
 }

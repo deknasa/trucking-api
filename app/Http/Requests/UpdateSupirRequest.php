@@ -79,4 +79,15 @@ class UpdateSupirRequest extends FormRequest
             'tglterbitsim' => 'Tanggal Terbit SIM',
         ];
     }
+    public function messages() 
+    {
+        return [
+            'noktp.max' => 'Max. 16 karakter',
+            'noktp.min' => 'Min. 16 karakter',
+            'nokk.max' => 'Max. 16 karakter',
+            'nokk.min' => 'Min. 16 karakter',
+            'nosim.max' => 'Max. 12 karakter',
+            'nosim.min' => 'Min. 12 karakter',
+        ];
+    }
 }
