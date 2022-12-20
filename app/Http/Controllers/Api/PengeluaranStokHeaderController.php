@@ -64,6 +64,15 @@ class PengeluaranStokHeaderController extends Controller
             $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
 
             $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
+
+            $spk = Parameter::where('grp', 'SPK STOK')->where('subgrp', 'SPK STOK')->first();
+     
+            if ($request->pengeluaranstok_id == $spk->text) {
+                $gudangkantor = Parameter::where('grp', 'GUDANG KANTOR')->where('subgrp', 'GUDANG KANTOR')->first();
+                $request->gudang_id=$gudangkantor->text;
+
+            }
+
             /* Store header */
             $pengeluaranStokHeader = new PengeluaranStokHeader();
             $pengeluaranStokHeader->tglbukti          = date('Y-m-d', strtotime($request->tglbukti));

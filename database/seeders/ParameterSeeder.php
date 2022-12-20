@@ -216,6 +216,7 @@ class ParameterSeeder extends Seeder
         parameter::create(['grp' => 'STATUS PINDAH GUDANG', 'subgrp' => 'STATUS PINDAH GUDANG', 'kelompok' => '', 'text' => 'TRADO KE GANDENGAN', 'memo' => '{"MEMO":"TRADO KE GANDENGAN","SINGKATAN":"TKD","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN',]);
         parameter::create(['grp' => 'SPK STOK', 'subgrp' => 'SPK STOK', 'kelompok' => '', 'text' => '1', 'memo' => '{"MEMO":"SPK STOK","SINGKATAN":"1","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN',]);
         parameter::create(['grp' => 'RETUR STOK', 'subgrp' => 'RETUR STOK', 'kelompok' => '', 'text' => '2', 'memo' => '{"MEMO":"RETUR STOK","SINGKATAN":"2","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN',]);
+        parameter::create(['grp' => 'GUDANG KANTOR', 'subgrp' => 'GUDANG KANTOR', 'kelompok' => '', 'text' => '1', 'memo' => '{"MEMO":"GUDANG KANTOR","SINGKATAN":"1","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN',]);
         
     }
 }
