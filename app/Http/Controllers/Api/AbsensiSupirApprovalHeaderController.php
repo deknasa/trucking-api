@@ -333,8 +333,11 @@ class AbsensiSupirApprovalHeaderController extends Controller
                 $bank = DB::table('bank')->where('coa', $coakaskeluar)->first();
 
                 // $kasgantung = DB::table('kasgantungheader')->where('nobukti', $request->kasgantung_nobukti)->first();
-                $kasgantung = KasGantungHeader::where('nobukti', $request->kasgantung_nobukti)->first();
-                $kasgantungdetail = DB::table('kasgantungdetail')->where('nobukti', $request->kasgantung_nobukti)->get();
+                $absensisupir = AbsensiSupirHeader::where('nobukti', $request->absensisupir_nobukti)->first();
+                $kasgantung = KasGantungHeader::where('nobukti', $absensisupir->kasgantung_nobukti)->first();
+                // return response($kasgantung, 442);
+
+                $kasgantungdetail = DB::table('kasgantungdetail')->where('nobukti', $absensisupir->kasgantung_nobukti)->get();
                 $details = [];
                 $total = 0;
                 foreach ($kasgantungdetail as $detail) {
@@ -357,7 +360,7 @@ class AbsensiSupirApprovalHeaderController extends Controller
                 ];
 
                 $data = new StoreKasGantungHeaderRequest($dataKasgantung);
-                $kasgantungStore = app(KasGantungHeaderController::class)->update($data, $kasgantung->id);
+                $kasgantungStore = app(KasGantungHeaderController::class)->update($data, $kasgantung);
                 $kasgantung = $kasgantungStore->original['data'];
 
 
