@@ -35,7 +35,6 @@ class CreateAbsensisupirapprovaldetailTable extends Migration
 
         });
 
-        DB::statement("ALTER TABLE absensisupirapprovaldetail NOCHECK CONSTRAINT absensisupirapprovaldetail_absensisupirheader_absensi_id_foreign");
         DB::statement("ALTER TABLE absensisupirapprovaldetail NOCHECK CONSTRAINT absensisupirapprovaldetail_trado_trado_id_foreign");
         DB::statement("ALTER TABLE absensisupirapprovaldetail NOCHECK CONSTRAINT absensisupirapprovaldetail_supir_supir_id_foreign");
         DB::statement("ALTER TABLE absensisupirapprovaldetail NOCHECK CONSTRAINT absensisupirapprovaldetail_supir_supirserap_id_foreign");

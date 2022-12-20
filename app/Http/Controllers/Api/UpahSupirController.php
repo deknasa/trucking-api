@@ -322,7 +322,7 @@ class UpahSupirController extends Controller
             'container' => Container::all(),
             'statuscontainer' => StatusContainer::all(),
             'statusaktif' => Parameter::where('grp', 'STATUS AKTIF')->get(),
-            'statusluarkota' => Parameter::where('grp', 'STATUS LUAR KOTA')->get(),
+            'statusluarkota' => Parameter::where('grp', 'UPAH SUPIR LUAR KOTA')->get(),
         ];
 
         return response([

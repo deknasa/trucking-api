@@ -18,6 +18,6 @@ class AbsensiSupirApprovalHeaderSeeder extends Seeder
         DB::statement("delete AbsensiSupirApprovalHeader");
         DB::statement("DBCC CHECKIDENT ('AbsensiSupirApprovalHeader', RESEED, 1);");
 
-        AbsensiSupirApprovalHeader::create([ 'nobukti' => 'ASA 0001/II/2022', 'tglbukti' => '2022/2/24', 'absensisupir_nobukti' => '', 'keterangan' => '', 'statusapproval' => '4', 'tglapproval' => '1900/1/1', 'userapproval' => '', 'statusformat' => '144', 'modifiedby' => 'ADMIN',]);
+        AbsensiSupirapprovalheader::create(['nobukti' => 'ASA 0001/XII/2022', 'tglbukti' => '2022/12/20', 'absensisupir_nobukti' => 'ABS 0001/XII/2022', 'keterangan' => 'TEST', 'statusapproval' => '4', 'tglapproval' => '1900/1/1', 'userapproval' => '', 'statusformat' => '144', 'pengeluaran_nobukti' => 'KBT 0001/XII/2022', 'coakaskeluar' => '01.01.01.02', 'postingdari' => 'ABSENSI SUPIR APPROVAL', 'tglkaskeluar' => '2022/12/20', 'statuscetak' => '175', 'userbukacetak' => '', 'tglbukacetak' => '1900/1/1', 'jumlahcetak' => '0', 'modifiedby' => 'ADMIN',]);
     }
 }

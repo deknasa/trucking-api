@@ -217,6 +217,8 @@ class ParameterSeeder extends Seeder
         parameter::create(['grp' => 'SPK STOK', 'subgrp' => 'SPK STOK', 'kelompok' => '', 'text' => '1', 'memo' => '{"MEMO":"SPK STOK","SINGKATAN":"1","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN',]);
         parameter::create(['grp' => 'RETUR STOK', 'subgrp' => 'RETUR STOK', 'kelompok' => '', 'text' => '2', 'memo' => '{"MEMO":"RETUR STOK","SINGKATAN":"2","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN',]);
         parameter::create(['grp' => 'GUDANG KANTOR', 'subgrp' => 'GUDANG KANTOR', 'kelompok' => '', 'text' => '1', 'memo' => '{"MEMO":"GUDANG KANTOR","SINGKATAN":"1","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN',]);
+        parameter::create(['grp' => 'UPAH SUPIR LUAR KOTA', 'subgrp' => 'UPAH SUPIR LUAR KOTA', 'kelompok' => '', 'text' => 'LUAR KOTA', 'memo' => '{"MEMO":"LUAR KOTA","SINGKATAN":"LK","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN',]);
+        parameter::create(['grp' => 'UPAH SUPIR LUAR KOTA', 'subgrp' => 'UPAH SUPIR LUAR KOTA', 'kelompok' => '', 'text' => 'BUKAN LUAR KOTA', 'memo' => '{"MEMO":"BUKAN LUAR KOTA","SINGKATAN":"BLK","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN',]);
         
     }
 }

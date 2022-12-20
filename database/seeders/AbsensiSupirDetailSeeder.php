@@ -18,7 +18,6 @@ class AbsensiSupirDetailSeeder extends Seeder
         DB::statement("delete AbsensiSupirDetail");
         DB::statement("DBCC CHECKIDENT ('AbsensiSupirDetail', RESEED, 1);");
 
-        AbsensiSupirDetail::create([ 'absensi_id' => '1', 'nobukti' => 'ABS 0001/II/2022', 'trado_id' => '1', 'supir_id' => '1', 'keterangan' => 'absensi supir ', 'uangjalan' => '125000', 'absen_id' => '1', 'jam' => '17:00:00.0000000', 'modifiedby' => 'ADMIN',]);
-        AbsensiSupirDetail::create([ 'absensi_id' => '1', 'nobukti' => 'ABS 0001/II/2022', 'trado_id' => '2', 'supir_id' => '2', 'keterangan' => 'absensi supir ', 'uangjalan' => '125000', 'absen_id' => '1', 'jam' => '17:00:00.0000000', 'modifiedby' => 'ADMIN',]);
+        AbsensiSupirDetail::create(['absensi_id' => '1', 'nobukti' => 'ABS 0001/XII/2022', 'trado_id' => '1', 'supir_id' => '1', 'keterangan' => 'ABSENSI -1', 'uangjalan' => '250000', 'absen_id' => '0', 'jam' => '11:11:00.0000000', 'modifiedby' => 'ADMIN',]);
     }
 }
