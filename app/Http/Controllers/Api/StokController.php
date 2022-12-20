@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers\Api;
+
 use App\Helpers\App;
 use App\Http\Requests\StoreLogTrailRequest;
 
@@ -8,6 +9,11 @@ use App\Http\Controllers\Controller;
 use App\Models\Stok;
 use App\Http\Requests\StoreStokRequest;
 use App\Http\Requests\UpdateStokRequest;
+use App\Models\StokPersediaan;
+use App\Models\Gudang;
+use App\Models\Gandengan;
+use App\Models\Trado;
+
 
 use Illuminate\Support\Facades\DB;
 use Intervention\Image\ImageManagerStatic as Image;
@@ -72,6 +78,108 @@ class StokController extends Controller
             $validatedLogTrail = new StoreLogTrailRequest($logTrail);
             $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
+            $param1 = $stok->id;
+            $param2 = $stok->modifiedby;
+
+            $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($temp, function ($table) {
+                $table->unsignedBigInteger('stok_id')->default(0);
+                $table->unsignedBigInteger('gudang_id')->default(0);
+                $table->unsignedBigInteger('trado_id')->default(0);
+                $table->unsignedBigInteger('gandengan_id')->default(0);
+                $table->float('qty')->default(0);
+                $table->string('modifiedby', 500)->default();
+            });
+
+
+            $stokgandengan = Gandengan::select(DB::raw(
+                $param1 . " as  stok_id,
+                       0  as gudang_id,
+                   0 as trado_id,
+                   gandengan.id as gandengan_id,
+                   0 as qty,'"
+                    . $param2 . "' as modifiedby"
+            ))
+                ->leftjoin('stokpersediaan', function ($join) use ($param1) {
+                    $join->on('stokpersediaan.gandengan_id', '=', 'gandengan.id');
+                    $join->on('stokpersediaan.stok_id', '=', DB::raw("'" . $param1 . "'"));
+                })
+                ->where(DB::raw("isnull(stokpersediaan.id,0)"), '=', 0);
+
+            DB::table($temp)->insertUsing(['stok_id', 'gudang_id', 'trado_id', 'gandengan_id', 'qty', 'modifiedby'], $stokgandengan);
+
+            $stoktrado = Trado::select(DB::raw(
+                $param1 . " as stok_id,
+                           0  as gudang_id,
+                       trado.id as trado_id,
+                       0 as gandengan_id,
+                       0 as qty,'"
+                    . $param2 . "' as modifiedby"
+            ))
+                ->leftjoin('stokpersediaan', function ($join) use ($param1) {
+                    $join->on('stokpersediaan.trado_id', '=', 'trado.id');
+                    $join->on('stokpersediaan.stok_id', '=', DB::raw("'" . $param1 . "'"));
+                })
+                ->where(DB::raw("isnull(stokpersediaan.id,0)"), '=', 0);
+
+            DB::table($temp)->insertUsing(['stok_id', 'gudang_id', 'trado_id', 'gandengan_id', 'qty', 'modifiedby'], $stoktrado);
+
+
+            $stokgudang = Gudang::select(DB::raw(
+                $param1 . " as  stok_id,
+                        gudang.id  as gudang_id,
+                    0 as trado_id,
+                    0 as gandengan_id,
+                    0 as qty,'"
+                    . $param2 . "' as modifiedby"
+            ))
+                ->leftjoin('stokpersediaan', function ($join) use ($param1) {
+                    $join->on('stokpersediaan.gudang_id', '=', 'gudang.id');
+                    $join->on('stokpersediaan.stok_id', '=', DB::raw("'" . $param1 . "'"));
+                })
+                ->where(DB::raw("isnull(stokpersediaan.id,0)"), '=', 0);
+
+            DB::table($temp)->insertUsing(['stok_id', 'gudang_id', 'trado_id', 'gandengan_id', 'qty', 'modifiedby'], $stokgudang);
+
+            $query = DB::table($temp);
+
+
+            // dd($stokgudang->get()->toSql());
+            $datadetail = json_decode($query->get(), true);
+
+            $dataexist = $query->exists();
+            $detaillogtrail = [];
+            foreach ($datadetail as $item) {
+
+
+                $stokpersediaan = new StokPersediaan();
+                $stokpersediaan->stok_id = $item['stok_id'];
+                $stokpersediaan->gudang_id = $item['gudang_id'];
+                $stokpersediaan->trado_id = $item['trado_id'];
+                $stokpersediaan->gandengan_id = $item['gandengan_id'];
+                $stokpersediaan->qty = $item['qty'];
+                $stokpersediaan->modifiedby = $item['modifiedby'];
+                $stokpersediaan->save();
+                $detaillogtrail[] = $stokpersediaan->toArray();
+            }
+
+            if ($dataexist == true) {
+
+                $logTrail = [
+                    'namatabel' => strtoupper($stokpersediaan->getTable()),
+                    'postingdari' => 'STOK PERSEDIAAN',
+                    'idtrans' => $stok->id,
+                    'nobuktitrans' => $stok->id,
+                    'aksi' => 'EDIT',
+                    'datajson' => json_encode($detaillogtrail),
+                    'modifiedby' => $stok->modifiedby
+                ];
+
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                app(LogTrailController::class)->store($validatedLogTrail);
+            }
+
+
             DB::commit();
 
             /* Set position and page */
@@ -91,7 +199,7 @@ class StokController extends Controller
         }
     }
 
-    
+
     public function show($id)
     {
         $stok = Stok::findAll($id);
@@ -106,7 +214,7 @@ class StokController extends Controller
     /**
      * @ClassName 
      */
-    public function update(UpdateStokRequest $request,$id)
+    public function update(UpdateStokRequest $request, $id)
     {
         $stok = Stok::find($id);
 
@@ -127,10 +235,10 @@ class StokController extends Controller
             $stok->qtymax = $request->qtymax;
             $stok->modifiedby = auth('api')->user()->name;
 
-           $this->deleteFiles($stok);
+            $this->deleteFiles($stok);
             if ($request->gambar) {
                 $stok->gambar = $this->storeFiles($request->gambar, 'stok');
-            }else {
+            } else {
                 $stok->gambar = '';
             }
 
@@ -147,6 +255,107 @@ class StokController extends Controller
             ];
             $validatedLogTrail = new StoreLogTrailRequest($logTrail);
             $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+
+            $param1 = $stok->id;
+            $param2 = $stok->modifiedby;
+
+            $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($temp, function ($table) {
+                $table->unsignedBigInteger('stok_id')->default(0);
+                $table->unsignedBigInteger('gudang_id')->default(0);
+                $table->unsignedBigInteger('trado_id')->default(0);
+                $table->unsignedBigInteger('gandengan_id')->default(0);
+                $table->float('qty')->default(0);
+                $table->string('modifiedby', 500)->default();
+            });
+
+
+            $stokgandengan = Gandengan::select(DB::raw(
+                $param1 . " as  stok_id,
+                       0  as gudang_id,
+                   0 as trado_id,
+                   gandengan.id as gandengan_id,
+                   0 as qty,'"
+                    . $param2 . "' as modifiedby"
+            ))
+                ->leftjoin('stokpersediaan', function ($join) use ($param1) {
+                    $join->on('stokpersediaan.gandengan_id', '=', 'gandengan.id');
+                    $join->on('stokpersediaan.stok_id', '=', DB::raw("'" . $param1 . "'"));
+                })
+                ->where(DB::raw("isnull(stokpersediaan.id,0)"), '=', 0);
+
+            DB::table($temp)->insertUsing(['stok_id', 'gudang_id', 'trado_id', 'gandengan_id', 'qty', 'modifiedby'], $stokgandengan);
+
+            $stoktrado = Trado::select(DB::raw(
+                $param1 . " as stok_id,
+                           0  as gudang_id,
+                       trado.id as trado_id,
+                       0 as gandengan_id,
+                       0 as qty,'"
+                    . $param2 . "' as modifiedby"
+            ))
+                ->leftjoin('stokpersediaan', function ($join) use ($param1) {
+                    $join->on('stokpersediaan.trado_id', '=', 'trado.id');
+                    $join->on('stokpersediaan.stok_id', '=', DB::raw("'" . $param1 . "'"));
+                })
+                ->where(DB::raw("isnull(stokpersediaan.id,0)"), '=', 0);
+
+            DB::table($temp)->insertUsing(['stok_id', 'gudang_id', 'trado_id', 'gandengan_id', 'qty', 'modifiedby'], $stoktrado);
+
+
+            $stokgudang = Gudang::select(DB::raw(
+                $param1 . " as  stok_id,
+                        gudang.id  as gudang_id,
+                    0 as trado_id,
+                    0 as gandengan_id,
+                    0 as qty,'"
+                    . $param2 . "' as modifiedby"
+            ))
+                ->leftjoin('stokpersediaan', function ($join) use ($param1) {
+                    $join->on('stokpersediaan.gudang_id', '=', 'gudang.id');
+                    $join->on('stokpersediaan.stok_id', '=', DB::raw("'" . $param1 . "'"));
+                })
+                ->where(DB::raw("isnull(stokpersediaan.id,0)"), '=', 0);
+
+            DB::table($temp)->insertUsing(['stok_id', 'gudang_id', 'trado_id', 'gandengan_id', 'qty', 'modifiedby'], $stokgudang);
+
+            $query = DB::table($temp);
+
+
+            // dd($stokgudang->get()->toSql());
+            $datadetail = json_decode($query->get(), true);
+
+            $dataexist = $query->exists();
+            $detaillogtrail = [];
+            foreach ($datadetail as $item) {
+
+
+                $stokpersediaan = new StokPersediaan();
+                $stokpersediaan->stok_id = $item['stok_id'];
+                $stokpersediaan->gudang_id = $item['gudang_id'];
+                $stokpersediaan->trado_id = $item['trado_id'];
+                $stokpersediaan->gandengan_id = $item['gandengan_id'];
+                $stokpersediaan->qty = $item['qty'];
+                $stokpersediaan->modifiedby = $item['modifiedby'];
+                $stokpersediaan->save();
+                $detaillogtrail[] = $stokpersediaan->toArray();
+            }
+
+            if ($dataexist == true) {
+
+                $logTrail = [
+                    'namatabel' => strtoupper($stokpersediaan->getTable()),
+                    'postingdari' => 'STOK PERSEDIAAN',
+                    'idtrans' => $stok->id,
+                    'nobuktitrans' => $stok->id,
+                    'aksi' => 'EDIT',
+                    'datajson' => json_encode($detaillogtrail),
+                    'modifiedby' => $stok->modifiedby
+                ];
+
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                app(LogTrailController::class)->store($validatedLogTrail);
+            }
 
             DB::commit();
 
@@ -197,7 +406,7 @@ class StokController extends Controller
             $selected = $this->getPosition($stok, $stok->getTable(), true);
             $stok->position = $selected->position;
             $stok->id = $selected->id;
-            $stok->page = ceil($stok->position / ($request->limit ?? 10));
+            $stok->page = ceil($stok->position / ($stok->limit ?? 10));
 
             return response([
                 'status' => true,
@@ -234,13 +443,13 @@ class StokController extends Controller
         $photoStok = json_decode($stok->gambar, true);
         foreach ($photoStok as $path) {
             foreach ($sizeTypes as $sizeType) {
-            $relatedPhotoStok[] = "stok/$sizeType-$path";
+                $relatedPhotoStok[] = "stok/$sizeType-$path";
             }
         }
         Storage::delete($relatedPhotoStok);
     }
 
-    public function getImage( string $filename, string $type)
+    public function getImage(string $filename, string $type)
     {
         return response()->file(storage_path("app/stok/$type-$filename"));
     }

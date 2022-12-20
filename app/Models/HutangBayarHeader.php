@@ -199,7 +199,7 @@ class HutangBayarHeader extends MyModel
 
     public function createTempPembayaran($id)
     {
-        $tempo = '##tempPembayaran' . rand(1, 10000);
+        $tempo = '##tempPembayaran' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
         $fetch = DB::table('hutangbayardetail as hbd')
             ->select(DB::raw("hutangheader.id,hbd.hutangbayar_id,hbd.hutang_nobukti,hutangheader.tglbukti,hbd.nominal as bayar, hbd.keterangan,hbd.tglcair,hbd.potongan,hbd.alatbayar_id,alatbayar.namaalatbayar as alatbayar,hutangheader.total as nominalhutang, (SELECT (hutangheader.total - SUM(hutangbayardetail.nominal)) FROM hutangbayardetail WHERE hutangbayardetail.hutang_nobukti= hutangheader.nobukti) AS sisa"))
@@ -229,7 +229,7 @@ class HutangBayarHeader extends MyModel
 
     public function createTemp(string $modelTable)
     { //sesuaikan dengan column index
-        $temp = '##temp' . rand(1, 10000);
+        $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temp, function ($table) {
             $table->bigInteger('id')->default('0');
             $table->string('nobukti', 1000)->default('');
