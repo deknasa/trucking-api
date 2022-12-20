@@ -36,8 +36,6 @@ class stokpersediaan extends MyModel
         ->leftJoin('stok','stokpersediaan.stok_id', 'stok.id');
         
             
-        $this->totalRows = $query->count();
-        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
         $parameter = Parameter::where('id', request()->keterangan)->first();
         if($parameter->text == 'GUDANG'){
             $gudang_id = request()->data;
@@ -51,6 +49,9 @@ class stokpersediaan extends MyModel
             $gandengan_id = request()->data;
             $query->where('stokpersediaan.gandengan_id', $gandengan_id);
         }
+        
+        $this->totalRows = $query->count();
+        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
         $this->sort($query);
         $this->filter($query);
         $this->paginate($query);

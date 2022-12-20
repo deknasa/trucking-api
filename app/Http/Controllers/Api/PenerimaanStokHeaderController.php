@@ -66,7 +66,7 @@ class PenerimaanStokHeaderController extends Controller
             $content['subgroup'] = $fetchGrp->subgrp;
             $content['table'] = 'penerimaanstokheader';
             $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
-            $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
+            $statusCetak = Parameter::where('grp','STATUSCETAK')->where('text','BELUM CETAK')->first();
 
             /* Store header */
             $penerimaanStokHeader = new PenerimaanStokHeader();
@@ -218,64 +218,27 @@ class PenerimaanStokHeaderController extends Controller
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-
                 /*Update  di stok persediaan*/
-                $spb = Parameter::where('grp', 'SPB STOK')->where('subgrp', 'SPB STOK')->first();
-                if ($request->penerimaanstok_id == $spb->text) {
-                    $datahitungstok = PenerimaanStok::select('statushitungstok as statushitungstok_id')
-                        ->where('statusformat', '=', $request->statusformat_id)
-                        ->first();
+                $datahitungstok = PenerimaanStok::select('statushitungstok as statushitungstok_id')
+                    ->where('statusformat', '=', $request->statusformat_id)
+                    ->first();
 
-                    $statushitungstok = Parameter::where('grp', 'STATUS HITUNG STOK')->where('text', 'HITUNG STOK')->first();
+                $statushitungstok = Parameter::where('grp', 'STATUS HITUNG STOK')->where('text', 'HITUNG STOK')->first();
 
-                    if ($datahitungstok->statushitungstok_id == $statushitungstok->id) {
-                        $datadetail = PenerimaanStokDetail::select('stok_id', 'qty')
-                            ->where('penerimaanstokheader_id', '=', $id)
-                            ->get();
+                if ($datahitungstok->statushitungstok_id == $statushitungstok->id) {
+                    $datadetail = PenerimaanStokDetail::select('stok_id', 'qty')
+                        ->where('penerimaanstokheader_id', '=', $id)
+                        ->get();
 
-                        $datadetail = json_decode($datadetail, true);
+                    $datadetail = json_decode($datadetail, true);
 
-                        foreach ($datadetail as $item) {
-                            $stokpersediaan  = StokPersediaan::lockForUpdate()->where("stok_id", $item['stok_id'])
-                                ->where("gudang_id", ($request->gudang_id))->firstorFail();
-                            $stokpersediaan->qty -= $item['qty'];
-                            $stokpersediaan->save();
-                        }
+                    foreach ($datadetail as $item) {
+                        $stokpersediaan  = StokPersediaan::lockForUpdate()->where("stok_id", $item['stok_id'])
+                            ->where("gudang_id", ($request->gudang_id))->firstorFail();
+                        $stokpersediaan->qty -= $item['qty'];
+                        $stokpersediaan->save();
                     }
                 }
-
-                $pg = Parameter::where('grp', 'PG STOK')->where('subgrp', 'PG STOK')->first();
-                if ($request->penerimaanstok_id == $pg->text) {
-                    $datahitungstok = PenerimaanStok::select('statushitungstok as statushitungstok_id')
-                        ->where('statusformat', '=', $request->statusformat_id)
-                        ->first();
-
-                    $statushitungstok = Parameter::where('grp', 'STATUS HITUNG STOK')->where('text', 'HITUNG STOK')->first();
-
-                    if ($datahitungstok->statushitungstok_id == $statushitungstok->id) {
-                        $datadetail = PenerimaanStokDetail::select('stok_id', 'qty')
-                            ->where('penerimaanstokheader_id', '=', $id)
-                            ->get();
-
-                        $datadetail = json_decode($datadetail, true);
-
-                        foreach ($datadetail as $item) {
-                            $stokpersediaan  = StokPersediaan::lockForUpdate()->where("stok_id", $item['stok_id'])
-                                ->where("gudang_id", ($request->gudangke_id))->firstorFail();
-                            $stokpersediaan->qty += $item['qty'];
-                            $stokpersediaan->save();
-                        }
-
-                        foreach ($datadetail as $item) {
-                            $stokpersediaan  = StokPersediaan::lockForUpdate()->where("stok_id", $item['stok_id'])
-                                ->where("gudang_id", ($request->gudangdari_id))->firstorFail();
-                            $stokpersediaan->qty -= $item['qty'];
-                            $stokpersediaan->save();
-                        }
-
-                    }
-                }
-
 
 
 
@@ -376,7 +339,7 @@ class PenerimaanStokHeaderController extends Controller
 
 
         $getDetail = PenerimaanStokDetail::where('penerimaanstokheader_id', $id)->get();
-        $delete = $penerimaanStokHeader->lockForUpdate()->where('id', $id)->delete();
+        $delete = $penerimaanStokHeader->lockForUpdate()->where('id',$id)->delete();
 
         if ($delete) {
             $logTrail = [
