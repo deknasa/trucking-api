@@ -25,23 +25,12 @@ class UpdateInvoiceHeaderRequest extends FormRequest
     {
         $rules = [
             'tglterima' => 'required',
-            'agen_id' => 'required',
-            'jenisorder_id' => 'required',
-            'cabang_id' => 'required',
+            'agen' => 'required',
+            'jenisorder' => 'required',
+            'cabang' => 'required',
             'tglbukti' => 'required',
             'keterangan' => 'required',
         ];
-
-        $relatedRequests = [
-            UpdateInvoiceDetailRequest::class
-        ];
-
-        foreach ($relatedRequests as $relatedRequest) {
-            $rules = array_merge(
-                $rules,
-                (new $relatedRequest)->rules()
-            );
-        }
         
         return $rules;
     }
@@ -52,10 +41,7 @@ class UpdateInvoiceHeaderRequest extends FormRequest
             'tglbukti' => 'Tanggal Bukti',
             'keterangan' => 'Keterangan',
             'tglterima' => 'Tanggal Terima',
-            'agen_id' => 'Agen',
-            'jenisorder_id' => 'Jenis Order',
-            'cabang_id' => 'Cabang',
-            'sp_id' => 'SP'
+            'jenisorder' => 'Jenis Order'
         ];
 
         return $attributes;

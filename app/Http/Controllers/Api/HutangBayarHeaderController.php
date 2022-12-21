@@ -115,6 +115,9 @@ class HutangBayarHeaderController extends Controller
                     $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'NBH')
                         ->first();
                     return response([
+                        'errors' => [
+                            "bayar.$i" => "$query->keterangan"
+                        ],
                         'message' => "$query->keterangan",
                     ], 422);
                 }
@@ -320,6 +323,9 @@ class HutangBayarHeaderController extends Controller
                         $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'NBH')
                             ->first();
                         return response([
+                            'errors' => [
+                                "bayar.$i" => "$query->keterangan"
+                            ],
                             'message' => "$query->keterangan",
                         ], 422);
                     }

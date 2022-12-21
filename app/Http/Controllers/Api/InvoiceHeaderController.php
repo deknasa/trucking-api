@@ -56,189 +56,200 @@ class InvoiceHeaderController extends Controller
         DB::beginTransaction();
 
         try {
-            $group = 'INVOICE BUKTI';
-            $subgroup = 'INVOICE BUKTI';
 
-            $format = DB::table('parameter')
-                ->where('grp', $group)
-                ->where('subgrp', $subgroup)
-                ->first();
+            if ($request->sp_id != '') {
+                $group = 'INVOICE BUKTI';
+                $subgroup = 'INVOICE BUKTI';
 
-            $content = new Request();
-            $content['group'] = $group;
-            $content['subgroup'] = $subgroup;
-            $content['table'] = 'invoiceheader';
-            $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
+                $format = DB::table('parameter')
+                    ->where('grp', $group)
+                    ->where('subgrp', $subgroup)
+                    ->first();
 
-            date_default_timezone_set('Asia/Jakarta');
+                $content = new Request();
+                $content['group'] = $group;
+                $content['subgroup'] = $subgroup;
+                $content['table'] = 'invoiceheader';
+                $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
 
-            $statusApproval = Parameter::where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
-            $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
+                date_default_timezone_set('Asia/Jakarta');
 
-            $invoice = new InvoiceHeader();
-            $invoice->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
-            $invoice->keterangan = $request->keterangan;
-            $invoice->nominal = '';
-            $invoice->tglterima = date('Y-m-d', strtotime($request->tglterima));
-            $invoice->tgljatuhtempo = date('Y-m-d');
-            $invoice->agen_id = $request->agen_id;
-            $invoice->jenisorder_id = $request->jenisorder_id;
-            $invoice->cabang_id = $request->cabang_id;
-            $invoice->piutang_nobukti = $request->piutang_nobukti ?? '';
-            $invoice->statusapproval = $statusApproval->id;
-            $invoice->userapproval = '';
-            $invoice->tglapproval = '';
-            $invoice->statuscetak = $statusCetak->id;
-            $invoice->tgldari = date('Y-m-d', strtotime($request->tgldari));
-            $invoice->tglsampai = date('Y-m-d', strtotime($request->tglsampai));
-            $invoice->modifiedby = auth('api')->user()->name;
-            $invoice->statusformat = $format->id;
+                $statusApproval = Parameter::where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
+                $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
 
-            $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
-            $invoice->nobukti = $nobukti;
+                $invoice = new InvoiceHeader();
+                $invoice->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
+                $invoice->keterangan = $request->keterangan;
+                $invoice->nominal = '';
+                $invoice->tglterima = date('Y-m-d', strtotime($request->tglterima));
+                $invoice->tgljatuhtempo = date('Y-m-d');
+                $invoice->agen_id = $request->agen_id;
+                $invoice->jenisorder_id = $request->jenisorder_id;
+                $invoice->cabang_id = $request->cabang_id;
+                $invoice->piutang_nobukti = $request->piutang_nobukti ?? '';
+                $invoice->statusapproval = $statusApproval->id;
+                $invoice->userapproval = '';
+                $invoice->tglapproval = '';
+                $invoice->statuscetak = $statusCetak->id;
+                $invoice->tgldari = date('Y-m-d', strtotime($request->tgldari));
+                $invoice->tglsampai = date('Y-m-d', strtotime($request->tglsampai));
+                $invoice->modifiedby = auth('api')->user()->name;
+                $invoice->statusformat = $format->id;
 
-            $invoice->save();
-            
-            /* Store detail */
+                $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
+                $invoice->nobukti = $nobukti;
 
-            $detaillog = [];
-            $total = 0;
-            for ($i = 0; $i < count($request->sp_id); $i++) {
+                $invoice->save();
 
-                $SP = SuratPengantar::where('id', $request->sp_id[$i])->first();
-                $orderantrucking = OrderanTrucking::where('nobukti', $SP->jobtrucking)->first();
-                $total = $total + $orderantrucking->nominal;
-                $getSP = SuratPengantar::where('jobtrucking', $SP->jobtrucking)->get();
+                /* Store detail */
 
-                $allSP = "";
-                foreach($getSP as $value){
-                   $allSP = $allSP. $value->nobukti .', ';
+                $detaillog = [];
+                $total = 0;
+                for ($i = 0; $i < count($request->sp_id); $i++) {
+
+                    $SP = SuratPengantar::where('id', $request->sp_id[$i])->first();
+                    $orderantrucking = OrderanTrucking::where('nobukti', $SP->jobtrucking)->first();
+                    $total = $total + $orderantrucking->nominal;
+                    $getSP = SuratPengantar::where('jobtrucking', $SP->jobtrucking)->get();
+
+                    $allSP = "";
+                    foreach ($getSP as $value) {
+                        $allSP = $allSP . $value->nobukti . ', ';
+                    }
+                    $datadetail = [
+                        'invoice_id' => $invoice->id,
+                        'nobukti' => $invoice->nobukti,
+                        'nominal' => $orderantrucking->nominal,
+                        'keterangan' => $SP->keterangan,
+                        'orderantrucking_nobukti' => $SP->jobtrucking,
+                        'suratpengantar_nobukti' => $allSP,
+                        'modifiedby' => $invoice->modifiedby,
+                    ];
+
+                    // STORE 
+                    $data = new StoreInvoiceDetailRequest($datadetail);
+
+                    $datadetails = app(ApiInvoiceDetailController::class)->store($data);
+
+                    if ($datadetails['error']) {
+                        return response($datadetails, 422);
+                    } else {
+                        $iddetail = $datadetails['id'];
+                        $tabeldetail = $datadetails['tabel'];
+                    }
+
+                    $detaillog[] = $datadetails['detail']->toArray();
                 }
-                $datadetail = [
-                    'invoice_id' => $invoice->id,
-                    'nobukti' => $invoice->nobukti,
-                    'nominal' => $orderantrucking->nominal,
-                    'keterangan' => $SP->keterangan,
-                    'orderantrucking_nobukti' => $SP->jobtrucking,
-                    'suratpengantar_nobukti' => $allSP,
+
+                $group = 'PIUTANG BUKTI';
+                $subgroup = 'PIUTANG BUKTI';
+                $format = DB::table('parameter')
+                    ->where('grp', $group)
+                    ->where('subgrp', $subgroup)
+                    ->first();
+
+                $nobuktiPiutang = new Request();
+                $nobuktiPiutang['group'] = 'PIUTANG BUKTI';
+                $nobuktiPiutang['subgroup'] = 'PIUTANG BUKTI';
+                $nobuktiPiutang['table'] = 'piutangheader';
+                $nobuktiPiutang['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
+
+                $piutang_nobukti = app(Controller::class)->getRunningNumber($nobuktiPiutang)->original['data'];
+
+                $invoice->piutang_nobukti = $piutang_nobukti;
+                $invoice->nominal = $total;
+                $invoice->save();
+
+                // store log header
+                $logTrail = [
+                    'namatabel' => strtoupper($invoice->getTable()),
+                    'postingdari' => 'ENTRY INVOICE HEADER',
+                    'idtrans' => $invoice->id,
+                    'nobuktitrans' => $invoice->nobukti,
+                    'aksi' => 'ENTRY',
+                    'datajson' => $invoice->toArray(),
+                    'modifiedby' => $invoice->modifiedby
+                ];
+
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+                // store log detail
+                $datalogtrail = [
+                    'namatabel' => strtoupper($tabeldetail),
+                    'postingdari' => 'ENTRY INVOICE DETAIL',
+                    'idtrans' =>  $storedLogTrail['id'],
+                    'nobuktitrans' => $invoice->nobukti,
+                    'aksi' => 'ENTRY',
+                    'datajson' => $detaillog,
                     'modifiedby' => $invoice->modifiedby,
                 ];
 
-                // STORE 
-                $data = new StoreInvoiceDetailRequest($datadetail);
+                $data = new StoreLogTrailRequest($datalogtrail);
+                app(LogTrailController::class)->store($data);
 
-                $datadetails = app(ApiInvoiceDetailController::class)->store($data);
 
-                if ($datadetails['error']) {
-                    return response($datadetails, 422);
-                } else {
-                    $iddetail = $datadetails['id'];
-                    $tabeldetail = $datadetails['tabel'];
-                }
-
-                $detaillog[] = $datadetails['detail']->toArray();
-
-            }
-
-            $group = 'PIUTANG BUKTI';
-            $subgroup = 'PIUTANG BUKTI';
-            $format = DB::table('parameter')
-                ->where('grp', $group)
-                ->where('subgrp', $subgroup)
-                ->first();
-
-            $nobuktiPiutang = new Request();
-            $nobuktiPiutang['group'] = 'PIUTANG BUKTI';
-            $nobuktiPiutang['subgroup'] = 'PIUTANG BUKTI';
-            $nobuktiPiutang['table'] = 'piutangheader';
-            $nobuktiPiutang['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
-
-            $piutang_nobukti = app(Controller::class)->getRunningNumber($nobuktiPiutang)->original['data'];
-
-            $invoice->piutang_nobukti = $piutang_nobukti;
-            $invoice->nominal = $total;
-            $invoice->save();
-            
-            // store log header
-            $logTrail = [
-                'namatabel' => strtoupper($invoice->getTable()),
-                'postingdari' => 'ENTRY INVOICE HEADER',
-                'idtrans' => $invoice->id,
-                'nobuktitrans' => $invoice->nobukti,
-                'aksi' => 'ENTRY',
-                'datajson' => $invoice->toArray(),
-                'modifiedby' => $invoice->modifiedby
-            ];
-
-            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-            $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-            // store log detail
-            $datalogtrail = [
-                'namatabel' => strtoupper($tabeldetail),
-                'postingdari' => 'ENTRY INVOICE DETAIL',
-                'idtrans' =>  $storedLogTrail['id'],
-                'nobuktitrans' => $invoice->nobukti,
-                'aksi' => 'ENTRY',
-                'datajson' => $detaillog,
-                'modifiedby' => $invoice->modifiedby,
-            ];
-
-            $data = new StoreLogTrailRequest($datalogtrail);
-            app(LogTrailController::class)->store($data);
-            
-
-            $piutangHeader = [
-                'tanpaprosesnobukti' => 1,
-                'nobukti' => $piutang_nobukti,
-                'tglbukti' => date('Y-m-d', strtotime($invoice->tglbukti)),
-                'keterangan' => $invoice->keterangan,
-                'postingdari' => "ENTRY INVOICE",
-                'nominal' => $invoice->nominal,
-                'invoice_nobukti' => $invoice->nobukti,
-                'agen_id' => $invoice->agen_id,
-                'modifiedby' => auth('api')->user()->name,
-                'statusformat' => 1,
-            ];
-
-            $piutangDetail = [];
-            for ($i = 0; $i < count($request->sp_id); $i++) {
-                $detail = [];
-
-                $SP = SuratPengantar::where('id', $request->sp_id[$i])->first();
-                $orderantrucking = OrderanTrucking::where('nobukti', $SP->jobtrucking)->first();
-                
-                $detail = [
-                    'entriluar' => 1,
+                $piutangHeader = [
+                    'tanpaprosesnobukti' => 1,
                     'nobukti' => $piutang_nobukti,
-                    'nominal' => $orderantrucking->nominal,
-                    'keterangan' => $SP->keterangan,
+                    'tglbukti' => date('Y-m-d', strtotime($invoice->tglbukti)),
+                    'keterangan' => $invoice->keterangan,
+                    'postingdari' => "ENTRY INVOICE",
+                    'nominal' => $invoice->nominal,
                     'invoice_nobukti' => $invoice->nobukti,
-                    'modifiedby' =>  auth('api')->user()->name
+                    'agen_id' => $invoice->agen_id,
+                    'modifiedby' => auth('api')->user()->name,
+                    'statusformat' => 1,
                 ];
 
-                $piutangDetail[] = $detail;
+                $piutangDetail = [];
+                for ($i = 0; $i < count($request->sp_id); $i++) {
+                    $detail = [];
+
+                    $SP = SuratPengantar::where('id', $request->sp_id[$i])->first();
+                    $orderantrucking = OrderanTrucking::where('nobukti', $SP->jobtrucking)->first();
+
+                    $detail = [
+                        'entriluar' => 1,
+                        'nobukti' => $piutang_nobukti,
+                        'nominal' => $orderantrucking->nominal,
+                        'keterangan' => $SP->keterangan,
+                        'invoice_nobukti' => $invoice->nobukti,
+                        'modifiedby' =>  auth('api')->user()->name
+                    ];
+
+                    $piutangDetail[] = $detail;
+                }
+
+                $piutang = $this->storePiutang($piutangHeader, $piutangDetail);
+
+                if (!$piutang['status']) {
+                    throw new \Throwable($piutang['message']);
+                }
+
+                $request->sortname = $request->sortname ?? 'id';
+                $request->sortorder = $request->sortorder ?? 'asc';
+                DB::commit();
+
+                /* Set position and page */
+                $selected = $this->getPosition($invoice, $invoice->getTable());
+                $invoice->position = $selected->position;
+                $invoice->page = ceil($invoice->position / ($request->limit ?? 10));
+
+                return response([
+                    'status' => true,
+                    'message' => 'Berhasil disimpan',
+                    'data' => $invoice
+                ], 201);
+            } else {
+                $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'WP')
+                    ->first();
+                return response([
+                    'errors' => [
+                        'sp' => "SP $query->keterangan"
+                    ],
+                    'message' => "SP $query->keterangan",
+                ], 422);
             }
-
-            $piutang = $this->storePiutang($piutangHeader, $piutangDetail);
-
-            if (!$piutang['status']) {
-                throw new \Throwable($piutang['message']);
-            }
-            
-            $request->sortname = $request->sortname ?? 'id';
-            $request->sortorder = $request->sortorder ?? 'asc';
-            DB::commit();
-
-            /* Set position and page */
-            $selected = $this->getPosition($invoice, $invoice->getTable());
-            $invoice->position = $selected->position;
-            $invoice->page = ceil($invoice->position / ($request->limit ?? 10));
-
-            return response([
-                'status' => true,
-                'message' => 'Berhasil disimpan',
-                'data' => $invoice
-            ], 201);
         } catch (\Throwable $th) {
             DB::rollBack();
 
@@ -279,7 +290,7 @@ class InvoiceHeaderController extends Controller
 
 
             if ($invoiceheader->save()) {
-                
+
                 $getPiutang = PiutangHeader::where('invoice_nobukti', $invoiceheader->nobukti)->first();
 
                 JurnalUmumHeader::where('nobukti', $getPiutang->nobukti)->lockForUpdate()->delete();
@@ -300,8 +311,8 @@ class InvoiceHeaderController extends Controller
                     $getSP = SuratPengantar::where('jobtrucking', $SP->jobtrucking)->get();
 
                     $allSP = "";
-                    foreach($getSP as $value){
-                       $allSP = $allSP. $value->nobukti .', ';
+                    foreach ($getSP as $value) {
+                        $allSP = $allSP . $value->nobukti . ', ';
                     }
 
                     $datadetail = [
@@ -326,12 +337,9 @@ class InvoiceHeaderController extends Controller
 
 
                     $detaillog[] = $datadetails['detail']->toArray();
-
-
                 }
-
             }
-            
+
             $group = 'PIUTANG BUKTI';
             $subgroup = 'PIUTANG BUKTI';
             $format = DB::table('parameter')
@@ -350,7 +358,7 @@ class InvoiceHeaderController extends Controller
             $invoiceheader->piutang_nobukti = $piutang_nobukti;
             $invoiceheader->nominal = $total;
             $invoiceheader->save();
-            
+
             // store log header
             $logTrail = [
                 'namatabel' => strtoupper($invoiceheader->getTable()),
@@ -377,7 +385,7 @@ class InvoiceHeaderController extends Controller
 
             $data = new StoreLogTrailRequest($datalogtrail);
             app(LogTrailController::class)->store($data);
-            
+
             $piutangHeader = [
                 'tanpaprosesnobukti' => 1,
                 'nobukti' => $piutang_nobukti,
@@ -397,7 +405,7 @@ class InvoiceHeaderController extends Controller
 
                 $SP = SuratPengantar::where('id', $request->sp_id[$i])->first();
                 $orderantrucking = OrderanTrucking::where('nobukti', $SP->jobtrucking)->first();
-                
+
                 $detail = [
                     'entriluar' => 1,
                     'nobukti' => $piutang_nobukti,
@@ -445,7 +453,7 @@ class InvoiceHeaderController extends Controller
     public function destroy(InvoiceHeader $invoiceheader, Request $request)
     {
         DB::beginTransaction();
-        try { 
+        try {
             $getPiutang = PiutangHeader::where('invoice_nobukti', $invoiceheader->nobukti)->first();
 
             $getDetail = InvoiceDetail::where('invoice_id', $invoiceheader->id)->get();
@@ -502,7 +510,7 @@ class InvoiceHeaderController extends Controller
 
                 $validatedLogTrailPiutangHeader = new StoreLogTrailRequest($logTrailPiutangHeader);
                 $storedLogTrailPiutang = app(LogTrailController::class)->store($validatedLogTrailPiutangHeader);
-               
+
                 // DELETE PIUTANG DETAIL
                 $logTrailPiutangDetail = [
                     'namatabel' => 'PIUTANGDETAIL',
@@ -530,7 +538,7 @@ class InvoiceHeaderController extends Controller
 
                 $validatedLogTrailJurnalHeader = new StoreLogTrailRequest($logTrailJurnalHeader);
                 $storedLogTrailJurnal = app(LogTrailController::class)->store($validatedLogTrailJurnalHeader);
-               
+
                 // DELETE JURNAL DETAIL
                 $logTrailJurnalDetail = [
                     'namatabel' => 'JURNALUMUMDETAIL',
@@ -544,7 +552,6 @@ class InvoiceHeaderController extends Controller
 
                 $validatedLogTrailJurnalDetail = new StoreLogTrailRequest($logTrailJurnalDetail);
                 app(LogTrailController::class)->store($validatedLogTrailJurnalDetail);
-
             }
             DB::commit();
 
@@ -591,7 +598,7 @@ class InvoiceHeaderController extends Controller
             ->whereRaw("tglbukti >= '$dari'")
             ->whereRaw("tglbukti <= '$sampai'")
             ->whereRaw("suratpengantar.jobtrucking not in(select orderantrucking_nobukti from invoicedetail)");
- 
+
         if ($cekSP->first()) {
             return response([
                 "data" => $invoice->getSP($request)
@@ -684,10 +691,10 @@ class InvoiceHeaderController extends Controller
                 'statusformat' => 0,
                 'modifiedby' => auth('api')->user()->name,
             ];
-            
+
             $storeJurnal = new StoreJurnalUmumHeaderRequest($jurnalHeader);
             $jurnal = app(JurnalUmumHeaderController::class)->store($storeJurnal);
-            
+
 
             $detailLogPiutang = [];
             $detailLogJurnal = [];
@@ -702,16 +709,16 @@ class InvoiceHeaderController extends Controller
                 // JURNAL
 
                 $getBaris = DB::table('jurnalumumdetail')->select('baris')->where('nobukti', $nobukti)->orderByDesc('baris')->first();
-                $getCOA = DB::table('parameter')->where("kelompok","COA INVOICE")->get();
-                
-                if(is_null($getBaris)) {
+                $getCOA = DB::table('parameter')->where("kelompok", "COA INVOICE")->get();
+
+                if (is_null($getBaris)) {
                     $baris = 0;
-                }else{
-                    $baris = $getBaris->baris+1;
+                } else {
+                    $baris = $getBaris->baris + 1;
                 }
-                
+
                 for ($x = 0; $x <= 1; $x++) {
-                    
+
                     if ($x == 1) {
                         $datadetail = [
                             'jurnalumum_id' => $jurnal->original['data']['id'],
@@ -736,11 +743,10 @@ class InvoiceHeaderController extends Controller
                         ];
                     }
                     $detail = new StoreJurnalUmumDetailRequest($datadetail);
-                    $detailJurnal = app(JurnalUmumDetailController::class)->store($detail); 
-                
+                    $detailJurnal = app(JurnalUmumDetailController::class)->store($detail);
+
                     $detailLogJurnal[] = $detailJurnal['detail']->toArray();
                 }
-
             }
 
             $datalogtrail = [
@@ -777,7 +783,7 @@ class InvoiceHeaderController extends Controller
             throw $th;
         }
     }
-    
+
     public function approval($id)
     {
         DB::beginTransaction();
@@ -836,7 +842,7 @@ class InvoiceHeaderController extends Controller
                 $invoice->statuscetak = $statusSudahCetak->id;
                 $invoice->tglbukacetak = date('Y-m-d H:i:s');
                 $invoice->userbukacetak = auth('api')->user()->name;
-                $invoice->jumlahcetak = $invoice->jumlahcetak+1;
+                $invoice->jumlahcetak = $invoice->jumlahcetak + 1;
 
                 if ($invoice->save()) {
                     $logTrail = [
@@ -848,10 +854,10 @@ class InvoiceHeaderController extends Controller
                         'datajson' => $invoice->toArray(),
                         'modifiedby' => auth('api')->user()->name,
                     ];
-    
+
                     $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                     $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-    
+
                     DB::commit();
                 }
             }
@@ -863,7 +869,6 @@ class InvoiceHeaderController extends Controller
         } catch (\Throwable $th) {
             throw $th;
         }
-        
     }
 
     public function cekvalidasi($id)
