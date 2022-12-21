@@ -219,6 +219,10 @@ class ParameterSeeder extends Seeder
         parameter::create(['grp' => 'GUDANG KANTOR', 'subgrp' => 'GUDANG KANTOR', 'kelompok' => '', 'text' => '1', 'memo' => '{"MEMO":"GUDANG KANTOR","SINGKATAN":"1","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN',]);
         parameter::create(['grp' => 'UPAH SUPIR LUAR KOTA', 'subgrp' => 'UPAH SUPIR LUAR KOTA', 'kelompok' => '', 'text' => 'LUAR KOTA', 'memo' => '{"MEMO":"LUAR KOTA","SINGKATAN":"LK","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN',]);
         parameter::create(['grp' => 'UPAH SUPIR LUAR KOTA', 'subgrp' => 'UPAH SUPIR LUAR KOTA', 'kelompok' => '', 'text' => 'BUKAN LUAR KOTA', 'memo' => '{"MEMO":"BUKAN LUAR KOTA","SINGKATAN":"BLK","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN',]);
+        parameter::create(['grp' => 'STATUS RITASI OMSET', 'subgrp' => 'STATUS RITASI OMSET', 'kelompok' => '', 'text' => 'RITASI OMSET', 'memo' => '{"MEMO":"RITASI OMSET","SINGKATAN":"RO","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN',]);
+        parameter::create(['grp' => 'STATUS RITASI OMSET', 'subgrp' => 'STATUS RITASI OMSET', 'kelompok' => '', 'text' => 'BUKAN RITASI OMSET', 'memo' => '{"MEMO":"BUKAN RITASI OMSET","SINGKATAN":"BRO","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN',]);
+        parameter::create(['grp' => 'STATUS GUDANG SAMA', 'subgrp' => 'STATUS GUDANG SAMA', 'kelompok' => '', 'text' => 'GUDANG SAMA', 'memo' => '{"MEMO":"GUDANG SAMA","SINGKATAN":"GS","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN',]);
+        parameter::create(['grp' => 'STATUS GUDANG SAMA', 'subgrp' => 'STATUS GUDANG SAMA', 'kelompok' => '', 'text' => 'BUKAN GUDANG SAMA', 'memo' => '{"MEMO":"BUKAN GUDANG SAMA","SINGKATAN":"BGS","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN',]);
         
     }
 }
