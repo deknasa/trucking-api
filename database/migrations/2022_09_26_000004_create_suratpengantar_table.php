@@ -32,6 +32,8 @@ class CreateSuratpengantarTable extends Migration
             $table->unsignedBigInteger('container_id')->default('0');
             $table->string('nocont',50)->default('');
             $table->string('nocont2',50)->default('');
+            $table->string('noseal',50)->default('');
+            $table->string('noseal2',50)->default('');
             $table->unsignedBigInteger('statuscontainer_id')->default('0');
             $table->unsignedBigInteger('trado_id')->default('0');
             $table->unsignedBigInteger('gandengan_id')->default('0');
