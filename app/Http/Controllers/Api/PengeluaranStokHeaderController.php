@@ -144,16 +144,19 @@ class PengeluaranStokHeaderController extends Controller
                             "gudang_id" => $request->gudang_id,
                             "tglbukti" => $request->tglbukti,
                             "qty" => $request->detail_qty[$i],
+                            "modifiedby" => auth('api')->user()->name,
                         ];
 
                         $datafifo = new StorePengeluaranStokDetailFifoRequest($datadetailfifo);
                         $pengeluaranStokDetailFifo = app(PengeluaranStokDetailFifoController::class)->store($datafifo);
 
-                        if ($pengeluaranStokDetailFifo['error']) {
-                            return response($pengeluaranStokDetailFifo, 422);
-                        } else {
-                            $tabeldetail = $pengeluaranStokDetailFifo['tabel'];
-                        }
+                     
+                        // if ($pengeluaranStokDetailFifo['error']) {
+                        //     return response($pengeluaranStokDetailFifo, 422);
+                        // } else {
+                        //     $tabeldetail = $pengeluaranStokDetailFifo['tabel'];
+                        // }
+                        // dd('test');
                     }
                     $datalogtrail = [
                         'namatabel' => strtoupper($tabeldetail),

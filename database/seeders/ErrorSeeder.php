@@ -35,5 +35,6 @@ class ErrorSeeder extends Seeder
         error::create(['kodeerror' => 'NSP', 'keterangan' => 'TIDAK ADA SURAT PENGANTAR', 'modifiedby' => 'ADMIN',]);
         error::create(['kodeerror' => 'SDC', 'keterangan' => 'SUDAH CETAK', 'modifiedby' => 'ADMIN',]);
         error::create(['kodeerror' => 'WP', 'keterangan' => 'WAJIB DI PILIH', 'modifiedby' => 'ADMIN',]);
+        error::create(['kodeerror' => 'SMIN', 'keterangan' => 'NILAI STOK MINUS', 'modifiedby' => 'ADMIN',]);
     }
 }
