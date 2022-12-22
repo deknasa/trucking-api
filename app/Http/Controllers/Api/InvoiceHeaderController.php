@@ -450,24 +450,25 @@ class InvoiceHeaderController extends Controller
     /**
      * @ClassName
      */
-    public function destroy(InvoiceHeader $invoiceheader, Request $request)
+    public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
         try {
-            $getPiutang = PiutangHeader::where('invoice_nobukti', $invoiceheader->nobukti)->first();
+            $invoiceheader = InvoiceHeader::lockForUpdate()->findOrFail($id);
 
-            $getDetail = InvoiceDetail::where('invoice_id', $invoiceheader->id)->get();
+            $getDetail = InvoiceDetail::where('invoice_id', $invoiceheader->id)->get();            
+            $delete = $invoiceheader->delete();
+
             $getPiutangHeader = PiutangHeader::where('invoice_nobukti', $invoiceheader->nobukti)->first();
             $getPiutangDetail = PiutangDetail::where('invoice_nobukti', $invoiceheader->nobukti)->get();
-            $getJurnalHeader = JurnalUmumHeader::where('nobukti', $getPiutang->nobukti)->first();
-            $getJurnalDetail = JurnalUmumDetail::where('nobukti', $getPiutang->nobukti)->get();
+            $getJurnalHeader = JurnalUmumHeader::where('nobukti', $invoiceheader->piutang_nobukti)->first();
+            $getJurnalDetail = JurnalUmumDetail::where('nobukti', $invoiceheader->piutang_nobukti)->get();
 
-            JurnalUmumHeader::where('nobukti', $getPiutang->nobukti)->lockForUpdate()->delete();
-            JurnalUmumDetail::where('nobukti', $getPiutang->nobukti)->lockForUpdate()->delete();
-            PiutangHeader::where('invoice_nobukti', $invoiceheader->nobukti)->lockForUpdate()->delete();
-            PiutangDetail::where('invoice_nobukti', $invoiceheader->nobukti)->lockForUpdate()->delete();
-            $delete = InvoiceDetail::where('invoice_id', $invoiceheader->id)->lockForUpdate()->delete();
-            $delete = InvoiceHeader::destroy($invoiceheader->id);
+            InvoiceDetail::where('invoice_id', $invoiceheader->id)->delete();
+            PiutangHeader::where('invoice_nobukti', $invoiceheader->nobukti)->delete();
+            PiutangDetail::where('invoice_nobukti', $invoiceheader->nobukti)->delete();
+            JurnalUmumHeader::where('nobukti', $invoiceheader->piutang_nobukti)->delete();
+            JurnalUmumDetail::where('nobukti', $invoiceheader->piutang_nobukti)->delete();
 
             if ($delete) {
                 $logTrail = [
@@ -552,19 +553,20 @@ class InvoiceHeaderController extends Controller
 
                 $validatedLogTrailJurnalDetail = new StoreLogTrailRequest($logTrailJurnalDetail);
                 app(LogTrailController::class)->store($validatedLogTrailJurnalDetail);
+
+                DB::commit();
+    
+                $selected = $this->getPosition($invoiceheader, $invoiceheader->getTable(), true);
+                $invoiceheader->position = $selected->position;
+                $invoiceheader->id = $selected->id;
+                $invoiceheader->page = ceil($invoiceheader->position / ($request->limit ?? 10));
+    
+                return response([
+                    'status' => true,
+                    'message' => 'Berhasil dihapus',
+                    'data' => $invoiceheader
+                ]);
             }
-            DB::commit();
-
-            $selected = $this->getPosition($invoiceheader, $invoiceheader->getTable(), true);
-            $invoiceheader->position = $selected->position;
-            $invoiceheader->id = $selected->id;
-            $invoiceheader->page = ceil($invoiceheader->position / ($request->limit ?? 10));
-
-            return response([
-                'status' => true,
-                'message' => 'Berhasil dihapus',
-                'data' => $invoiceheader
-            ]);
         } catch (\Throwable $th) {
             DB::rollBack();
 

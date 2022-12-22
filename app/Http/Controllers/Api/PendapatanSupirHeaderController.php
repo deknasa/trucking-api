@@ -258,14 +258,16 @@ class PendapatanSupirHeaderController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(PendapatanSupirHeader $pendapatanSupirHeader, Request $request)
+    public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
 
         try {
+            
+            $pendapatanSupirHeader = PendapatanSupirHeader::lockForUpdate()->findOrFail($id);
             $getDetail = PendapatanSupirDetail::where('pendapatansupir_id', $pendapatanSupirHeader->id)->get();
-            $delete = PendapatanSupirDetail::where('pendapatansupir_id', $pendapatanSupirHeader->id)->lockForUpdate()->delete();
-            $delete = PendapatanSupirHeader::destroy($pendapatanSupirHeader->id);
+            $delete = $pendapatanSupirHeader->delete();
+            PendapatanSupirDetail::where('pendapatansupir_id', $pendapatanSupirHeader->id)->delete();
 
             if ($delete) {
                 $logTrail = [
@@ -295,19 +297,19 @@ class PendapatanSupirHeaderController extends Controller
                 $validatedLogTrailPendapatanDetail = new StoreLogTrailRequest($logTrailPendapatanDetail);
                 app(LogTrailController::class)->store($validatedLogTrailPendapatanDetail);
 
+                DB::commit();
+
+                $selected = $this->getPosition($pendapatanSupirHeader, $pendapatanSupirHeader->getTable(), true);
+                $pendapatanSupirHeader->position = $selected->position;
+                $pendapatanSupirHeader->id = $selected->id;
+                $pendapatanSupirHeader->page = ceil($pendapatanSupirHeader->position / ($request->limit ?? 10));
+    
+                return response([
+                    'status' => true,
+                    'message' => 'Berhasil dihapus',
+                    'data' => $pendapatanSupirHeader
+                ]);
             }
-            DB::commit();
-
-            $selected = $this->getPosition($pendapatanSupirHeader, $pendapatanSupirHeader->getTable(), true);
-            $pendapatanSupirHeader->position = $selected->position;
-            $pendapatanSupirHeader->id = $selected->id;
-            $pendapatanSupirHeader->page = ceil($pendapatanSupirHeader->position / ($request->limit ?? 10));
-
-            return response([
-                'status' => true,
-                'message' => 'Berhasil dihapus',
-                'data' => $pendapatanSupirHeader
-            ]);
         } catch (\Throwable $th) {
             DB::rollBack();
 
