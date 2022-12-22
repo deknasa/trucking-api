@@ -36,12 +36,15 @@ class UpdateSuratPengantarRequest extends FormRequest
             'statuslongtrip' => 'required',
             'nosp' => 'required',
             'statusritasiomset' => 'required',
+            'statusgudangsama' => 'required',
             'cabang' => 'required',
-            // 'qtyton' => 'required|numeric|gt:0',
+            'qtyton' => 'required|numeric|gt:0',
+            'gudang' => 'required',
+            'statusbatalmuat' => 'required',
             // 'totalton' => 'required|numeric|gt:0',
         ];
     }
-
+    
     public function attributes()
     {
         return [
@@ -50,17 +53,19 @@ class UpdateSuratPengantarRequest extends FormRequest
             'statusperalihan' => 'status peralihan',
             'statuscontainer' => 'status container',
             'statuslongtrip' => 'status longtrip',
-            'statusritasiomset' => 'status ritasi omset'
+            'statusgudangsama' => 'status gudangsama',
+            'statusritasiomset' => 'status ritasi omset',
+            'qtyton' => 'QTY ton',
+            'statusbatalmuat' => 'status batal muat'
+            
 
         ];
     }
 
-    // public function messages()
-    // {
-    //     return [
-    //         'qtyton.gt' => 'QTY Ton tidak boleh kosong',
-    //         'upahbongkardepo.gt' => 'Upah Bongkar Depo tidak boleh kosong',
-    //         'upahmuatdepo.gt' => 'Upah Muat Depo tidak boleh kosong',
-    //     ];
-    // }
+    public function messages()
+    {
+        return [
+            'qtyton.gt' => 'QTY Ton tidak boleh kosong',
+        ];
+    }
 }
