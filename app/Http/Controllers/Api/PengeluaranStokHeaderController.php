@@ -18,6 +18,7 @@ use App\Http\Requests\StoreLogTrailRequest;
 use App\Http\Requests\StorePengeluaranStokHeaderRequest;
 use App\Http\Requests\UpdatePengeluaranStokHeaderRequest;
 use App\Http\Requests\StorePengeluaranStokDetailRequest;
+use App\Http\Requests\StorePengeluaranStokDetailFifoRequest;
 
 class PengeluaranStokHeaderController extends Controller
 {
@@ -66,11 +67,10 @@ class PengeluaranStokHeaderController extends Controller
             $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
 
             $spk = Parameter::where('grp', 'SPK STOK')->where('subgrp', 'SPK STOK')->first();
-     
+
             if ($request->pengeluaranstok_id == $spk->text) {
                 $gudangkantor = Parameter::where('grp', 'GUDANG KANTOR')->where('subgrp', 'GUDANG KANTOR')->first();
-                $request->gudang_id=$gudangkantor->text;
-
+                $request->gudang_id = $gudangkantor->text;
             }
 
             /* Store header */
@@ -135,6 +135,25 @@ class PengeluaranStokHeaderController extends Controller
                             $tabeldetail = $pengeluaranStokDetail['tabel'];
                         }
                         $detaillog[] = $pengeluaranStokDetail['detail']->toArray();
+
+
+                        $datadetailfifo = [
+                            "pengeluaranstokheader_id" => $pengeluaranStokHeader->id,
+                            "nobukti" => $pengeluaranStokHeader->nobukti,
+                            "stok_id" => $request->detail_stok_id[$i],
+                            "gudang_id" => $request->gudang_id,
+                            "tglbukti" => $request->tglbukti,
+                            "qty" => $request->detail_qty[$i],
+                        ];
+
+                        $datafifo = new StorePengeluaranStokDetailFifoRequest($datadetailfifo);
+                        $pengeluaranStokDetailFifo = app(PengeluaranStokDetailFifoController::class)->store($datafifo);
+
+                        if ($pengeluaranStokDetailFifo['error']) {
+                            return response($pengeluaranStokDetailFifo, 422);
+                        } else {
+                            $tabeldetail = $pengeluaranStokDetailFifo['tabel'];
+                        }
                     }
                     $datalogtrail = [
                         'namatabel' => strtoupper($tabeldetail),
@@ -149,6 +168,7 @@ class PengeluaranStokHeaderController extends Controller
                     $data = new StoreLogTrailRequest($datalogtrail);
                     app(LogTrailController::class)->store($data);
                 }
+
 
                 DB::commit();
             }

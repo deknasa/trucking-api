@@ -223,6 +223,8 @@ class ParameterSeeder extends Seeder
         parameter::create(['grp' => 'STATUS RITASI OMSET', 'subgrp' => 'STATUS RITASI OMSET', 'kelompok' => '', 'text' => 'BUKAN RITASI OMSET', 'memo' => '{"MEMO":"BUKAN RITASI OMSET","SINGKATAN":"BRO","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN',]);
         parameter::create(['grp' => 'STATUS GUDANG SAMA', 'subgrp' => 'STATUS GUDANG SAMA', 'kelompok' => '', 'text' => 'GUDANG SAMA', 'memo' => '{"MEMO":"GUDANG SAMA","SINGKATAN":"GS","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN',]);
         parameter::create(['grp' => 'STATUS GUDANG SAMA', 'subgrp' => 'STATUS GUDANG SAMA', 'kelompok' => '', 'text' => 'BUKAN GUDANG SAMA', 'memo' => '{"MEMO":"BUKAN GUDANG SAMA","SINGKATAN":"BGS","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN',]);
+        parameter::create(['grp' => 'STATUS BATAL MUAT', 'subgrp' => 'STATUS BATAL MUAT', 'kelompok' => '', 'text' => 'BATAL MUAT', 'memo' => '{"MEMO":"BATAL MUAT","SINGKATAN":"BM","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN',]);
+        parameter::create(['grp' => 'STATUS BATAL MUAT', 'subgrp' => 'STATUS BATAL MUAT', 'kelompok' => '', 'text' => 'BUKAN BATAL MUAT', 'memo' => '{"MEMO":"BUKAN BATAL MUAT","SINGKATAN":"BMB","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN',]);
         
     }
 }

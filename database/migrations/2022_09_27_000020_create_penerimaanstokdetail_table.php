@@ -28,6 +28,7 @@ class CreatePenerimaanstokdetailTable extends Migration
             $table->double('total', 15,2)->default(0);
             $table->longText('keterangan')->default('');
             $table->unsignedBigInteger('vulkanisirke')->default(0);
+            $table->double('qtykeluar', 15,2)->default(0);
             $table->string('modifiedby',50)->default('');            
 
             $table->timestamps();

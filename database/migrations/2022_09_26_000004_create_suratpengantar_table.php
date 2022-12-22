@@ -81,6 +81,7 @@ class CreateSuratpengantarTable extends Migration
             $table->integer('statusdisc')->length(11)->default('0');
             $table->unsignedBigInteger('statusformat')->default(0);
             $table->unsignedBigInteger('statusgudangsama')->default(0);
+            $table->unsignedBigInteger('statusbatalmuat')->default(0);
             $table->string('gudang',500)->default('');
             $table->string('modifiedby',50)->default('');
             $table->timestamps();
