@@ -25,7 +25,10 @@ class JurnalUmumHeader extends MyModel
         'updated_at',
     ];
 
-    
+    // public function resolveRouteBinding($value, $field = null)
+    // {
+    //     return $this->where('id', '=', $value)->lockForUpdate()->firstOrFail();
+    // }
 
     public function get()
     {

@@ -345,14 +345,17 @@ class JurnalUmumHeaderController extends Controller
     /**
      * @ClassName
      */
-    public function destroy(JurnalUmumHeader $jurnalumumheader, Request $request)
+    public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
+
         try {
+            $jurnalumumheader = JurnalUmumHeader::lockForUpdate()->findOrFail($id);
+            
             $getDetail = JurnalUmumDetail::where('jurnalumum_id', $jurnalumumheader->id)->get();
-            $delete = JurnalUmumDetail::where('jurnalumum_id', $jurnalumumheader->id)->lockForUpdate()->delete();
-            $delete = JurnalUmumHeader::destroy($jurnalumumheader->id);
-            // $delete = $jurnalumum->delete($id);
+            $delete = $jurnalumumheader->delete();
+
+            JurnalUmumDetail::where('jurnalumum_id', $jurnalumumheader->id)->delete();
 
             if ($delete) {
                 $logTrail = [
@@ -383,22 +386,23 @@ class JurnalUmumHeaderController extends Controller
                 $validatedLogTrailJurnalDetail = new StoreLogTrailRequest($logTrailJurnalDetail);
                 app(LogTrailController::class)->store($validatedLogTrailJurnalDetail);
 
+                DB::commit();
+
+                $selected = $this->getPosition($jurnalumumheader, $jurnalumumheader->getTable(), true);
+                $jurnalumumheader->position = $selected->position;
+                $jurnalumumheader->id = $selected->id;
+                $jurnalumumheader->page = ceil($jurnalumumheader->position / ($request->limit ?? 10));
+    
+                return response([
+                    'status' => true,
+                    'message' => 'Berhasil dihapus',
+                    'data' => $jurnalumumheader
+                ]);
             } 
-            DB::commit();
-
-            $selected = $this->getPosition($jurnalumumheader, $jurnalumumheader->getTable(), true);
-            $jurnalumumheader->position = $selected->position;
-            $jurnalumumheader->id = $selected->id;
-            $jurnalumumheader->page = ceil($jurnalumumheader->position / ($request->limit ?? 10));
-
-            return response([
-                'status' => true,
-                'message' => 'Berhasil dihapus',
-                'data' => $jurnalumumheader
-            ]);
         } catch (\Throwable $th) {
             DB::rollBack();
-            return response($th->getMessage());
+
+            throw $th;
         }
     }
     public function approval($id)

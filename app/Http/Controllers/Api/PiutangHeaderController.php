@@ -24,7 +24,9 @@ use App\Models\JurnalUmumHeader;
 use App\Http\Requests\StoreJurnalUmumHeaderRequest;
 use App\Http\Requests\StoreJurnalUmumDetailRequest;
 use App\Models\Parameter;
+use Exception;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\Log;
 
 class PiutangHeaderController extends Controller
 {
@@ -407,20 +409,21 @@ class PiutangHeaderController extends Controller
     /**
      * @ClassName
      */
-    public function destroy(PiutangHeader $piutangHeader, Request $request)
+    public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
 
-        try {
+        try {            
+            $piutangHeader = PiutangHeader::lockForUpdate()->findOrFail($id);
             $getDetail = PiutangDetail::where('piutang_id', $piutangHeader->id)->get();
+            $delete = $piutangHeader->delete();
+            
             $getJurnalHeader = JurnalUmumHeader::where('nobukti', $piutangHeader->nobukti)->first();
             $getJurnalDetail = JurnalUmumDetail::where('nobukti', $piutangHeader->nobukti)->get();
             
-            $delete = PiutangDetail::where('piutang_id', $piutangHeader->id)->lockForUpdate()->delete();
-            $delete = PiutangHeader::destroy($piutangHeader->id);
-
-            JurnalUmumHeader::where('nobukti', $piutangHeader->nobukti)->lockForUpdate()->delete();
-            JurnalUmumDetail::where('nobukti', $piutangHeader->nobukti)->lockForUpdate()->delete();
+            PiutangDetail::where('piutang_id', $piutangHeader->id)->delete();
+            JurnalUmumHeader::where('nobukti', $piutangHeader->nobukti)->delete();
+            JurnalUmumDetail::where('nobukti', $piutangHeader->nobukti)->delete();
 
             if ($delete) {
                 // DELETE PIUTANG HEADER
@@ -467,7 +470,6 @@ class PiutangHeaderController extends Controller
 
                 
                 // DELETE JURNAL DETAIL
-                
                 $logTrailJurnalDetail = [
                     'namatabel' => 'JURNALUMUMDETAIL',
                     'postingdari' => 'DELETE JURNAL UMUM DETAIL DARI PIUTANG',
@@ -482,12 +484,12 @@ class PiutangHeaderController extends Controller
                 app(LogTrailController::class)->store($validatedLogTrailJurnalDetail);
 
                 DB::commit();
-
+    
                 $selected = $this->getPosition($piutangHeader, $piutangHeader->getTable(), true);
                 $piutangHeader->position = $selected->position;
                 $piutangHeader->id = $selected->id;
                 $piutangHeader->page = ceil($piutangHeader->position / ($request->limit ?? 10));
-
+    
                 return response([
                     'status' => true,
                     'message' => 'Berhasil dihapus',
