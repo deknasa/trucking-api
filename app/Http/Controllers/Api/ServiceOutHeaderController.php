@@ -250,14 +250,17 @@ class ServiceOutHeaderController extends Controller
     /**
      * @ClassName
      */
-    public function destroy(ServiceOutHeader $serviceoutheader, Request $request)
+    public function destroy(Request $request, $id)
     {
 
         DB::beginTransaction();
         try {
+            
+            $serviceoutheader = ServiceInHeader::lockForUpdate()->findOrFail($id);
             $getDetail = ServiceOutDetail::where('Serviceout_id', $serviceoutheader->id)->get();
-            $delete = ServiceOutDetail::where('Serviceout_id', $serviceoutheader->id)->lockForUpdate()->delete();
-            $delete = ServiceOutHeader::destroy($serviceoutheader->id);
+
+            $delete = $serviceoutheader->delete();
+            ServiceOutDetail::where('serviceout_id', $serviceoutheader->id)->delete();
 
             if ($delete) {
                 $logTrail = [
@@ -304,7 +307,7 @@ class ServiceOutHeaderController extends Controller
             }
         } catch (\Throwable $th) {
             DB::rollBack();
-            return response($th->getMessage());
+            throw $th;
         }
     }
 

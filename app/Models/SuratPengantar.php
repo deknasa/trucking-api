@@ -65,6 +65,7 @@ class SuratPengantar extends MyModel
             'mandortrado.namamandor as mandortrado_id',
             'mandorsupir.namamandor as mandorsupir_id',
             'statusgudangsama.memo as statusgudangsama',
+            'statusbatalmuat.memo as statusbatalmuat',
             'suratpengantar.modifiedby',
             'suratpengantar.created_at',
             'suratpengantar.updated_at'
@@ -85,6 +86,7 @@ class SuratPengantar extends MyModel
             ->leftJoin('parameter as statusperalihan','suratpengantar.statusperalihan','statusperalihan.id')
             ->leftJoin('parameter as statusritasiomset','suratpengantar.statusritasiomset','statusritasiomset.id')
             ->leftJoin('parameter as statusgudangsama','suratpengantar.statusgudangsama','statusgudangsama.id')
+            ->leftJoin('parameter as statusbatalmuat','suratpengantar.statusbatalmuat','statusbatalmuat.id')
             ->leftJoin('mandor as mandortrado', 'suratpengantar.mandortrado_id','mandortrado.id')
             ->leftJoin('mandor as mandorsupir', 'suratpengantar.mandorsupir_id','mandorsupir.id')
             ->leftJoin('tarif', 'suratpengantar.tarif_id', 'tarif.id');
@@ -149,6 +151,7 @@ class SuratPengantar extends MyModel
             'cabang.namacabang as cabang',
             'suratpengantar.qtyton',
             'suratpengantar.gudang',
+            'suratpengantar.statusbatalmuat',
             'suratpengantar.gajisupir',
             'suratpengantar.gajikenek',
             'suratpengantar.komisisupir',
@@ -314,6 +317,8 @@ class SuratPengantar extends MyModel
                             $query = $query->where('statusritasiomset.text', '=', "$filters[data]");
                         } else if ($filters['field'] == 'statusgudangsama') {
                             $query = $query->where('statusgudangsama.text', '=', "$filters[data]");
+                        } else if ($filters['field'] == 'statusbatalmuat') {
+                            $query = $query->where('statusbatalmuat.text', '=', "$filters[data]");
                         } else {
                             $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
@@ -354,6 +359,8 @@ class SuratPengantar extends MyModel
                             $query = $query->orWhere('statusritasiomset.text', '=', "$filters[data]");
                         } else if ($filters['field'] == 'statusgudangsama') {
                             $query = $query->orWhere('statusgudangsama.text', '=', "$filters[data]");
+                        } else if ($filters['field'] == 'statusbatalmuat') {
+                            $query = $query->orWhere('statusbatalmuat.text', '=', "$filters[data]");
                         } else {
                             $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }

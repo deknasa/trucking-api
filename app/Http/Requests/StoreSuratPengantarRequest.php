@@ -40,6 +40,7 @@ class StoreSuratPengantarRequest extends FormRequest
             'cabang' => 'required',
             'qtyton' => 'required|numeric|gt:0',
             'gudang' => 'required',
+            'statusbatalmuat' => 'required',
             // 'totalton' => 'required|numeric|gt:0',
         ];
     }
@@ -55,6 +56,7 @@ class StoreSuratPengantarRequest extends FormRequest
             'statusgudangsama' => 'status gudangsama',
             'statusritasiomset' => 'status ritasi omset',
             'qtyton' => 'QTY ton',
+            'statusbatalmuat' => 'status batal muat'
             
 
         ];

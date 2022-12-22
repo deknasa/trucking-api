@@ -126,6 +126,7 @@ class SuratPengantarController extends Controller
             $suratpengantar->mandorsupir_id = $trado->mandor_id;
             $suratpengantar->mandortrado_id = $trado->mandor_id;
             $suratpengantar->statusgudangsama = $request->statusgudangsama;
+            $suratpengantar->statusbatalmuat = $request->statusbatalmuat;
             $suratpengantar->gudang = $request->gudang;
             $suratpengantar->modifiedby = auth('api')->user()->name;
             $suratpengantar->statusformat = $format->id;
@@ -264,6 +265,7 @@ class SuratPengantarController extends Controller
             $suratpengantar->mandorsupir_id = $trado->mandor_id;
             $suratpengantar->mandortrado_id = $trado->mandor_id;
             $suratpengantar->statusgudangsama = $request->statusgudangsama;
+            $suratpengantar->statusbatalmuat = $request->statusbatalmuat;
             $suratpengantar->gudang = $request->gudang;
             $suratpengantar->modifiedby = auth('api')->user()->name;
 
