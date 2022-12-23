@@ -107,6 +107,7 @@ use App\Http\Controllers\Api\BankPelangganController;
     use App\Http\Controllers\Api\PenerimaanStokDetailController;
     use App\Http\Controllers\Api\PengeluaranStokController;
     use App\Http\Controllers\Api\PengeluaranStokDetailController;
+    use App\Http\Controllers\Api\PengeluaranStokDetailFifoController;
     use App\Http\Controllers\Api\PengeluaranStokHeaderController;
     use App\Http\Controllers\Api\JurnalUmumHeaderController;
     use App\Http\Controllers\Api\JurnalUmumDetailController;

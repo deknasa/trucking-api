@@ -113,7 +113,7 @@ class PengeluaranStokDetailController extends Controller
                 return $query->where('pengeluaranstokheader_id', $request->pengeluaranstokheader_id);
             })],
             'pengeluaranstokheader_id' => 'required',
-            'harga' => "required|numeric|gt:0",
+            // 'harga' => "required|numeric|gt:0",
             'persentasediscount' => "numeric|max:100",
             'detail_keterangan' => 'required',
             // 'vulkanisirke' => 'required',
@@ -124,8 +124,8 @@ class PengeluaranStokDetailController extends Controller
              'pengeluaranstokheader_id.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
              'qty.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
              'qty.gt' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
-             'harga.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
-             'harga.gt' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
+            //  'harga.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
+            //  'harga.gt' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
              'detail_keterangan.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
              'persentasediscount.max' => ':attribute' . ' ' . app(ErrorController::class)->geterror('MAX')->keterangan,
          ], [
@@ -168,10 +168,10 @@ class PengeluaranStokDetailController extends Controller
                 $pengeluaranStokDetail->pengeluaranstokheader_id = $request->pengeluaranstokheader_id;
                 $pengeluaranStokDetail->nobukti = $request->nobukti;
                 $pengeluaranStokDetail->stok_id = $request->stok_id;
-                $pengeluaranStokDetail->qty = $request->qty;
-                $pengeluaranStokDetail->harga = $request->harga;
+                $pengeluaranStokDetail->qty = $request->qty ;
+                $pengeluaranStokDetail->harga = $request->harga ?? 0;
                 $pengeluaranStokDetail->nominaldiscount = $nominaldiscount;
-                $pengeluaranStokDetail->total = $total;
+                $pengeluaranStokDetail->total = $total ?? 0;
                 $pengeluaranStokDetail->persentasediscount = $request->persentasediscount ?? 0;
                 $pengeluaranStokDetail->vulkanisirke = $request->vulkanisirke ?? 0;
                 $pengeluaranStokDetail->keterangan = $request->detail_keterangan;

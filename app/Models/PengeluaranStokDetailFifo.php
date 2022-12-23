@@ -11,7 +11,7 @@ class PengeluaranStokDetailFifo extends MyModel
 {
     use HasFactory;
 
-    protected $table = 'PengeluaranStokDetailFifo';
+    protected $table = 'pengeluaranstokdetailfifo';
 
     protected $casts = [
         'created_at' => 'date:d-m-Y H:i:s',

@@ -10,6 +10,8 @@ use App\Http\Controllers\Controller;
 use App\Models\PengeluaranStok;
 use App\Models\PengeluaranStokHeader;
 use App\Models\PengeluaranStokDetail;
+use App\Models\PenerimaanStokDetail;
+use App\Models\PengeluaranStokDetailFifo;
 use App\Models\StokPersediaan;
 use App\Models\Stok;
 
@@ -150,7 +152,7 @@ class PengeluaranStokHeaderController extends Controller
                         $datafifo = new StorePengeluaranStokDetailFifoRequest($datadetailfifo);
                         $pengeluaranStokDetailFifo = app(PengeluaranStokDetailFifoController::class)->store($datafifo);
 
-                     
+
                         // if ($pengeluaranStokDetailFifo['error']) {
                         //     return response($pengeluaranStokDetailFifo, 422);
                         // } else {
@@ -347,6 +349,44 @@ class PengeluaranStokHeaderController extends Controller
 
         $getDetail = PengeluaranStokDetail::where('pengeluaranstokheader_id', $id)->get();
         $pengeluaranStokHeader = PengeluaranStokHeader::where('id', $id)->first();
+
+        /*Update  di stok persediaan*/
+
+        $spk = Parameter::where('grp', 'SPK STOK')->where('subgrp', 'SPK STOK')->first();
+        if ($pengeluaranStokHeader->pengeluaranstok_id == $spk->text) {
+            $datadetail = PengeluaranStokDetail::select('stok_id', 'qty')
+                ->where('pengeluaranstokheader_id', '=', $id)
+                ->get();
+
+            $datadetail = json_decode($datadetail, true);
+
+            foreach ($datadetail as $item) {
+                $stokpersediaan  = StokPersediaan::lockForUpdate()->where("stok_id", $item['stok_id'])
+                    ->where("gudang_id", ($pengeluaranStokHeader->gudang_id))->firstorFail();
+                $stokpersediaan->qty += $item['qty'];
+                $stokpersediaan->save();
+            }
+
+
+            $datadetailfifo = PengeluaranStokDetailFifo::select('stok_id', 'penerimaanstokheader_nobukti', 'penerimaanstok_qty')
+                ->where('pengeluaranstokheader_id', '=', $id)
+                ->get();
+
+
+
+            $datadetailfifo = json_decode($datadetailfifo, true);
+
+            foreach ($datadetailfifo as $item) {
+                $penerimaanstokdetail  = PenerimaanStokDetail::lockForUpdate()->where("stok_id", $item['stok_id'])
+                    ->where("nobukti",  $item['penerimaanstokheader_nobukti'])->firstorFail();
+
+
+                $penerimaanstokdetail->qtykeluar -= $item['penerimaanstok_qty'];
+                $penerimaanstokdetail->save();
+            }
+        }
+
+
         $delete = $pengeluaranStokHeader->lockForUpdate()->where('id', $id)->delete();
 
 
@@ -365,31 +405,10 @@ class PengeluaranStokHeaderController extends Controller
             $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
 
-            /*Update  di stok persediaan*/
 
-            $spk = Parameter::where('grp', 'SPK STOK')->where('subgrp', 'SPK STOK')->first();
-            if ($pengeluaranStokHeader->pengeluaranstok_id == $spk->text) {
-                $datahitungstok = PengeluaranStok::select('statushitungstok as statushitungstok_id')
-                    ->where('statusformat', '=', $pengeluaranStokHeader->statusformat_id)
-                    ->first();
 
-                $statushitungstok = Parameter::where('grp', 'STATUS HITUNG STOK')->where('text', 'HITUNG STOK')->first();
 
-                if ($datahitungstok->statushitungstok_id == $statushitungstok->id) {
-                    $datadetail = PengeluaranStokDetail::select('stok_id', 'qty')
-                        ->where('pengeluaranstokheader_id', '=', $id)
-                        ->get();
 
-                    $datadetail = json_decode($datadetail, true);
-
-                    foreach ($datadetail as $item) {
-                        $stokpersediaan  = StokPersediaan::lockForUpdate()->where("stok_id", $item['stok_id'])
-                            ->where("gudang_id", ($pengeluaranStokHeader->gudang_id))->firstorFail();
-                        $stokpersediaan->qty += $item['qty'];
-                        $stokpersediaan->save();
-                    }
-                }
-            }
 
             // DELETE PENGELUARAN STOK DETAIL
             $logTrailPengeluaranStokDetail = [
