@@ -211,8 +211,46 @@ class PengeluaranStokHeaderController extends Controller
      */
     public function update(UpdatePengeluaranStokHeaderRequest $request, PengeluaranStokHeader $pengeluaranStokHeader, $id)
     {
+
+
+
+        DB::beginTransaction();
+        
         try {
 
+
+            $pengeluaranStokHeader = PengeluaranStokHeader::where('id', $id)->first();
+
+
+
+            $spk = Parameter::where('grp', 'SPK STOK')->where('subgrp', 'SPK STOK')->first();
+            if ($pengeluaranStokHeader->pengeluaranstok_id == $spk->text) {
+
+                $querypengeluaranstokdetail = PengeluaranStokDetail::from(
+                    "pengeluaranstokdetail as i"
+                )
+                    ->select(
+                        'i.stok_id',
+
+                    )
+                    ->where('i.pengeluaranstokheader_id', '=', $id)
+                    ->orderBy('i.id', 'Asc')
+                    ->get();
+
+
+                $datastokdetail = json_decode($querypengeluaranstokdetail, true);
+                foreach ($datastokdetail as $item) {
+
+                    $reset = $this->resethpp($pengeluaranStokHeader->id, $item['stok_id'], false);
+
+
+                    if (!$reset['status']) {
+                        throw new \Throwable($reset['message']);
+                    }
+                }
+            }
+            // dd('test');
+        
             /* Store header */
             $pengeluaranStokHeader = PengeluaranStokHeader::lockForUpdate()->findOrFail($id);
 
@@ -252,25 +290,18 @@ class PengeluaranStokHeaderController extends Controller
 
                     $spk = Parameter::where('grp', 'SPK STOK')->where('subgrp', 'SPK STOK')->first();
                     if ($request->pengeluaranstok_id == $spk->text) {
-                        $datahitungstok = PengeluaranStok::select('statushitungstok as statushitungstok_id')
-                            ->where('statusformat', '=', $request->statusformat_id)
-                            ->first();
 
-                        $statushitungstok = Parameter::where('grp', 'STATUS HITUNG STOK')->where('text', 'HITUNG STOK')->first();
+                        $datadetail = PengeluaranStokDetail::select('stok_id', 'qty')
+                            ->where('pengeluaranstokheader_id', '=', $id)
+                            ->get();
 
-                        if ($datahitungstok->statushitungstok_id == $statushitungstok->id) {
-                            $datadetail = PengeluaranStokDetail::select('stok_id', 'qty')
-                                ->where('pengeluaranstokheader_id', '=', $id)
-                                ->get();
+                        $datadetail = json_decode($datadetail, true);
 
-                            $datadetail = json_decode($datadetail, true);
-
-                            foreach ($datadetail as $item) {
-                                $stokpersediaan  = StokPersediaan::lockForUpdate()->where("stok_id", $item['stok_id'])
-                                    ->where("gudang_id", ($request->gudang_id))->firstorFail();
-                                $stokpersediaan->qty += $item['qty'];
-                                $stokpersediaan->save();
-                            }
+                        foreach ($datadetail as $item) {
+                            $stokpersediaan  = StokPersediaan::lockForUpdate()->where("stok_id", $item['stok_id'])
+                                ->where("gudang_id", ($request->gudang_id))->firstorFail();
+                            $stokpersediaan->qty += $item['qty'];
+                            $stokpersediaan->save();
                         }
                     }
 
@@ -302,6 +333,26 @@ class PengeluaranStokHeaderController extends Controller
                             $tabeldetail = $pengeluaranStokDetail['tabel'];
                         }
                         $detaillog[] = $pengeluaranStokDetail['detail']->toArray();
+
+                        $datadetailfifo = [
+                            "pengeluaranstokheader_id" => $pengeluaranStokHeader->id,
+                            "nobukti" => $pengeluaranStokHeader->nobukti,
+                            "stok_id" => $request->detail_stok_id[$i],
+                            "gudang_id" => $request->gudang_id,
+                            "tglbukti" => $request->tglbukti,
+                            "qty" => $request->detail_qty[$i],
+                            "modifiedby" => auth('api')->user()->name,
+                        ];
+
+                        $datafifo = new StorePengeluaranStokDetailFifoRequest($datadetailfifo);
+                        $pengeluaranStokDetailFifo = app(PengeluaranStokDetailFifoController::class)->store($datafifo);
+
+                        $reset = $this->resethppedit($pengeluaranStokHeader->id, $request->detail_stok_id[$i]);
+
+
+                        if (!$reset['status']) {
+                            throw new \Throwable($reset['message']);
+                        }
                     }
                     $datalogtrail = [
                         'namatabel' => strtoupper($tabeldetail),
@@ -345,9 +396,9 @@ class PengeluaranStokHeaderController extends Controller
      */
     public function destroy(PengeluaranStokHeader $pengeluaranStokHeader, $id)
     {
-        DB::beginTransaction();
 
-        $getDetail = PengeluaranStokDetail::where('pengeluaranstokheader_id', $id)->get();
+
+
         $pengeluaranStokHeader = PengeluaranStokHeader::where('id', $id)->first();
 
         /*Update  di stok persediaan*/
@@ -362,7 +413,7 @@ class PengeluaranStokHeaderController extends Controller
                     'i.stok_id',
 
                 )
-                ->where('i.pengeluaranstokheader_id','=',$id)
+                ->where('i.pengeluaranstokheader_id', '=', $id)
                 ->orderBy('i.id', 'Asc')
                 ->get();
 
@@ -370,7 +421,8 @@ class PengeluaranStokHeaderController extends Controller
             $datastokdetail = json_decode($querypengeluaranstokdetail, true);
             foreach ($datastokdetail as $item) {
 
-                $reset = $this->resethpp($pengeluaranStokHeader->id, $item['stok_id'] );
+                $reset = $this->resethpp($pengeluaranStokHeader->id, $item['stok_id'], true);
+
 
                 if (!$reset['status']) {
                     throw new \Throwable($reset['message']);
@@ -378,7 +430,8 @@ class PengeluaranStokHeaderController extends Controller
             }
         }
 
-
+        DB::beginTransaction();
+        $getDetail = PengeluaranStokDetail::where('pengeluaranstokheader_id', $id)->get();
         $delete = $pengeluaranStokHeader->lockForUpdate()->where('id', $id)->delete();
 
 
@@ -437,17 +490,18 @@ class PengeluaranStokHeaderController extends Controller
         }
     }
 
-    private function resethpp($id, $stok_id)
+    private function resethppedit($id, $stok_id)
     {
-        DB::beginTransaction();
-
         try {
-            $temphpp = '##temphpp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+
+            $temphpp = '##temphppedit' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
             Schema::create($temphpp, function ($table) {
                 $table->unsignedBigInteger('id')->default(0);
                 $table->string('nobukti', 100)->default('');
                 $table->double('qty', 15, 2)->default(0);
+                $table->unsignedBigInteger('pengeluaranstokheader_id')->default(0);
             });
+
 
             $querytemphpp = PengeluaranStokDetail::from(
                 "pengeluaranstokdetail as i"
@@ -455,56 +509,19 @@ class PengeluaranStokHeaderController extends Controller
                 ->select(
                     'i.id',
                     'i.nobukti',
-                    'i.qty'
+                    'i.qty',
+                    'i.pengeluaranstokheader_id'
                 )
-                ->whereRaw("i.pengeluaranstokheader_id>".$id);
+                ->whereRaw("i.pengeluaranstokheader_id>" . $id);
+
+
 
             DB::table($temphpp)->insertUsing([
                 'id',
                 'nobukti',
                 'qty',
+                'pengeluaranstokheader_id'
             ], $querytemphpp);
-
-            $querydetailfifo = PengeluaranStokDetailFifo::from(
-                "pengeluaranstokdetailfifo as i"
-            )
-                ->select(
-                    'i.id',
-                    'i.penerimaanstok_qty',
-                    'i.penerimaanstokheader_nobukti',
-                )
-                ->whereRaw("i.pengeluaranstokheader_id>=" . $id . " and i.stok_id=" . $stok_id)
-                ->orderBy('i.id', 'Asc')
-                ->get();
-
-
-            $gudangkantor = Parameter::where('grp', 'GUDANG KANTOR')->where('subgrp', 'GUDANG KANTOR')->first();
-
-            $datadetail = json_decode($querydetailfifo, true);
-            foreach ($datadetail as $item) {
-
-
-                $datapenerimaanstokdetail  = PenerimaanStokDetail::lockForUpdate()->where("stok_id", $stok_id)
-                    ->where("nobukti", $item['penerimaanstokheader_nobukti'])
-                    ->firstorFail();
-                $datapenerimaanstokdetail->qtykeluar += $item['penerimaanstok_qty'] ?? 0;
-                $datapenerimaanstokdetail->save();
-
-                $datastokpersediaan  = StokPersediaan::lockForUpdate()->where("stok_id", $stok_id)
-                    ->where("gudang_id", $gudangkantor->text)
-                    ->firstorFail();
-                $datastokpersediaan->qty += $item['penerimaanstok_qty'] ?? 0;
-                $datastokpersediaan->save();
-
-
-                $datapengeluaranstokdetailfifo = PengeluaranStokDetailFifo::lockForUpdate()->where("stok_id", $stok_id)
-                    ->where("id", $item['id'])
-                    ->firstorFail();
-
-                $datapengeluaranstokdetailfifo->delete();
-            }
-
-     
 
             $querytemphpp = DB::table($temphpp)->from(
                 $temphpp . " as i"
@@ -518,12 +535,17 @@ class PengeluaranStokHeaderController extends Controller
                     'a.modifiedby',
 
                 )
-                ->leftjoin('pengeluaranstokheader as a', 'i.nobukti', 'a.nobukti')
+                ->join('pengeluaranstokheader as a', 'i.nobukti', 'a.nobukti')
+                ->orderBy('i.pengeluaranstokheader_id', 'Asc')
                 ->orderBy('i.id', 'Asc')
                 ->get();
 
+
+            $gudangkantor = Parameter::where('grp', 'GUDANG KANTOR')->where('subgrp', 'GUDANG KANTOR')->first();
+
             $datafifo = json_decode($querytemphpp, true);
             foreach ($datafifo as $item) {
+
 
                 $datadetailfifo = [
                     "pengeluaranstokheader_id" => $item['pengeluaranstokheader_id'],
@@ -537,14 +559,149 @@ class PengeluaranStokHeaderController extends Controller
                 $datafifo = new StorePengeluaranStokDetailFifoRequest($datadetailfifo);
                 app(PengeluaranStokDetailFifoController::class)->store($datafifo);
             }
-
-
-            DB::commit();
             return [
                 'status' => true,
             ];
         } catch (\Throwable $th) {
-            DB::rollBack();
+            // DB::rollBack();
+
+            throw $th;
+        }
+    }
+
+    private function resethpp($id, $stok_id, $hapus)
+    {
+        // DB::beginTransaction();
+
+        try {
+            $temphpp = '##temphpp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($temphpp, function ($table) {
+                $table->unsignedBigInteger('id')->default(0);
+                $table->string('nobukti', 100)->default('');
+                $table->double('qty', 15, 2)->default(0);
+                $table->unsignedBigInteger('pengeluaranstokheader_id')->default(0);
+            });
+
+
+            $querytemphpp = PengeluaranStokDetail::from(
+                "pengeluaranstokdetail as i"
+            )
+                ->select(
+                    'i.id',
+                    'i.nobukti',
+                    'i.qty',
+                    'i.pengeluaranstokheader_id'
+                )
+                ->whereRaw("i.pengeluaranstokheader_id>" . $id);
+
+
+
+            DB::table($temphpp)->insertUsing([
+                'id',
+                'nobukti',
+                'qty',
+                'pengeluaranstokheader_id'
+            ], $querytemphpp);
+
+            $querydetailfifo = PengeluaranStokDetailFifo::from(
+                "pengeluaranstokdetailfifo as i"
+            )
+                ->select(
+                    'i.id',
+                    'i.penerimaanstok_qty',
+                    'i.penerimaanstokheader_nobukti',
+                    'i.pengeluaranstokheader_id',
+                )
+                ->whereRaw("i.pengeluaranstokheader_id>=" . $id . " and i.stok_id=" . $stok_id)
+                ->orderBy('i.id', 'Asc')
+                ->get();
+
+
+            $gudangkantor = Parameter::where('grp', 'GUDANG KANTOR')->where('subgrp', 'GUDANG KANTOR')->first();
+
+
+            $datadetail = json_decode($querydetailfifo, true);
+        //  dd($datadetail);
+            foreach ($datadetail as $item) {
+
+
+                $datapenerimaanstokdetail  = PenerimaanStokDetail::lockForUpdate()->where("stok_id", $stok_id)
+                    ->where("nobukti", $item['penerimaanstokheader_nobukti'])
+                    ->firstorFail();
+
+                // dump( $stok_id);
+                // dd($item['penerimaanstokheader_nobukti']);
+                $datapenerimaanstokdetail->qtykeluar -= $item['penerimaanstok_qty'];
+                $datapenerimaanstokdetail->save();
+
+                if ($hapus == true) {
+                    $datastokpersediaan  = StokPersediaan::lockForUpdate()->where("stok_id", $stok_id)
+                        ->where("gudang_id", $gudangkantor->text)
+                        ->firstorFail();
+                    $datastokpersediaan->qty += $item['penerimaanstok_qty'];
+                    $datastokpersediaan->save();
+                }
+
+                $datapengeluaranstokdetailfifo = PengeluaranStokDetailFifo::lockForUpdate()->where("stok_id", $stok_id)
+                    ->where("id", $item['id'])
+                    ->firstorFail();
+                // dd($datapengeluaranstokdetailfifo);
+                $datapengeluaranstokdetailfifo->delete();
+            }
+// dd('test');
+
+            if ($hapus == true) {
+                $querytemphpp = DB::table($temphpp)->from(
+                    $temphpp . " as i"
+                )
+                    ->select(
+                        'i.id',
+                        'i.nobukti',
+                        'i.qty',
+                        'a.id as pengeluaranstokheader_id',
+                        'a.tglbukti',
+                        'a.modifiedby',
+
+                    )
+                    ->join('pengeluaranstokheader as a', 'i.nobukti', 'a.nobukti')
+                    ->orderBy('i.pengeluaranstokheader_id', 'Asc')
+                    ->orderBy('i.id', 'Asc')
+                    ->get();
+
+
+
+
+                $datafifo = json_decode($querytemphpp, true);
+                foreach ($datafifo as $item) {
+
+
+                    $datadetailfifo = [
+                        "pengeluaranstokheader_id" => $item['pengeluaranstokheader_id'],
+                        "nobukti" => $item['nobukti'],
+                        "stok_id" => $stok_id,
+                        "gudang_id" => $gudangkantor->text,
+                        "tglbukti" => $item['tglbukti'],
+                        "qty" => $item['qty'],
+                        "modifiedby" => $item['modifiedby'],
+                    ];
+                    $datafifo = new StorePengeluaranStokDetailFifoRequest($datadetailfifo);
+                    app(PengeluaranStokDetailFifoController::class)->store($datafifo);
+
+                    $datastokpersediaan  = StokPersediaan::lockForUpdate()->where("stok_id", $stok_id)
+                        ->where("gudang_id", $gudangkantor->text)
+                        ->firstorFail();
+                    $datastokpersediaan->qty -= $item['qty'];
+                    $datastokpersediaan->save();
+                }
+            }
+
+
+            // DB::commit();
+            return [
+                'status' => true,
+            ];
+        } catch (\Throwable $th) {
+            // DB::rollBack();
 
             throw $th;
         }
