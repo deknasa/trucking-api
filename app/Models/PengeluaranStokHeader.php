@@ -93,7 +93,10 @@ class PengeluaranStokHeader extends MyModel
                             case 'kerusakan':
                                 $query = $query->where('kerusakan.keteragan', 'LIKE', "%$filters[data]%");
                                 break;
-                            
+                            case 'supir':
+                                $query = $query->where('supir.namasupir', 'LIKE', "%$filters[data]%");
+                                break;
+                                
                             default:
                                 $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                 break;
@@ -118,6 +121,9 @@ class PengeluaranStokHeader extends MyModel
                                 break;
                             case 'kerusakan':
                                 $query = $query->orWhere('kerusakan.keterangan', 'LIKE', "%$filters[data]%");
+                                break;
+                            case 'supir':
+                                $query = $query->orWhere('supir.namasupir', 'LIKE', "%$filters[data]%");
                                 break;
                             default:
                                 $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
