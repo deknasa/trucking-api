@@ -213,30 +213,42 @@ class PenerimaanStokHeader extends MyModel
 
                     break;
                 case "OR":
+                    $query = $query->where(function ($query){
+                        foreach ($this->params['filters']['rules'] as $index => $filters) {
+                            switch ($filters['field']) {
+                                case 'penerimaanstok':
+                                    $query = $query->where('penerimaanstok.kodepenerimaan', 'LIKE', "%$filters[data]%");
+                                    break;
+                                case 'gudangs':
+                                    $query = $query->orWhere('gudangs.gudang', 'LIKE', "%$filters[data]%");
+                                    break;
+                                case 'trado':
+                                    $query = $query->orWhere('trado.keterangan', 'LIKE', "%$filters[data]%");
+                                    break;
+                                case 'supplier':
+                                    $query = $query->orWhere('supplier.namasupplier', 'LIKE', "%$filters[data]%");
+                                    break;
+                                case 'gudangdari':
+                                    $query = $query->orWhere('dari.gudang', 'LIKE', "%$filters[data]%");
+                                    break;
+                                case 'gudangke':
+                                    $query = $query->orWhere('ke.gudang', 'LIKE', "%$filters[data]%");
+                                    break;
+                                case 'penerimaanstok_id_not_null':
+                                    break;
+                                default:
+                                    $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                    break;
+                            }
+                        }
+                    });//function query
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        switch ($filters['field']) {
-                            case 'penerimaanstok':
-                                $query = $query->where('penerimaanstok.kodepenerimaan', 'LIKE', "%$filters[data]%");
-                                break;
-                            case 'gudangs':
-                                $query = $query->orWhere('gudangs.gudang', 'LIKE', "%$filters[data]%");
-                                break;
-                            case 'trado':
-                                $query = $query->orWhere('trado.keterangan', 'LIKE', "%$filters[data]%");
-                                break;
-                            case 'supplier':
-                                $query = $query->orWhere('supplier.namasupplier', 'LIKE', "%$filters[data]%");
-                                break;
-                            case 'gudangdari':
-                                $query = $query->orWhere('dari.gudang', 'LIKE', "%$filters[data]%");
-                                break;
-                            case 'gudangke':
-                                $query = $query->orWhere('ke.gudang', 'LIKE', "%$filters[data]%");
-                                break;
-                            
-                            default:
-                                $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                                break;
+                        if ($filters['field'] == 'penerimaanstok_id_not_null') {
+                            $query = $query->where($this->table . '.penerimaanstok_id', '=', "$filters[data]")->whereRaw(" $this->table.nobukti NOT IN 
+                                (SELECT DISTINCT $this->table.penerimaanstok_nobukti
+                                FROM penerimaanstokheader
+                                WHERE $this->table.penerimaanstok_nobukti IS NOT NULL)
+                                ");
                         }
                     }
 
