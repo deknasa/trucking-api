@@ -27,6 +27,7 @@ class CreateUpahsupirTable extends Migration
             $table->date('tglmulaiberlaku')->default('1900/1/1');
             $table->date('tglakhirberlaku')->default('1900/1/1');
             $table->integer('statusluarkota')->length(11)->default('0');
+            $table->longText('gambar')->default('');
             $table->string('modifiedby',50)->Default('');            
             $table->timestamps();
 

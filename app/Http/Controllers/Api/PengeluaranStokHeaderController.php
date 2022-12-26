@@ -87,7 +87,7 @@ class PengeluaranStokHeaderController extends Controller
             $pengeluaranStokHeader->pengeluaranstok_nobukti = ($request->pengeluaranstok_nobukti == null) ? "" : $request->pengeluaranstok_nobukti;
             $pengeluaranStokHeader->penerimaanstok_nobukti  = ($request->penerimaanstok_nobukti == null) ? "" : $request->penerimaanstok_nobukti;
             $pengeluaranStokHeader->servicein_nobukti    = ($request->servicein_nobukti == null) ? "" : $request->servicein_nobukti;
-            $pengeluaranStokHeader->kerusakan_id         = ($request->kerusakan_id == null) ? "" : $request->supir_id;
+            $pengeluaranStokHeader->kerusakan_id         = ($request->kerusakan_id == null) ? "" : $request->kerusakan_id;
             $pengeluaranStokHeader->statusformat      = ($request->statusformat_id == null) ? "" : $request->statusformat_id;
             $pengeluaranStokHeader->modifiedby        = auth('api')->user()->name;
             $pengeluaranStokHeader->statuscetak        = $statusCetak->id ?? 0;
