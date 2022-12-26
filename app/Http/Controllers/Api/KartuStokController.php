@@ -14,8 +14,8 @@ class KartuStokController extends Controller
      */
     public function index(Request $request)
     {
-
             $kartuStok = new KartuStok();
+
 
             return response([
                 'data' => $kartuStok->get(),

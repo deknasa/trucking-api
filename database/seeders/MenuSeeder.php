@@ -122,5 +122,6 @@ class MenuSeeder extends Seeder
         Menu::create(['menuname' => 'PENCAIRAN GIRO', 'menuseq' => '100', 'menuparent' => '29', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '327', 'link' => '', 'menuexe' => '', 'menukode' => '38', 'modifiedby' => 'ADMIN',]);
         Menu::create(['menuname' => 'GANDENGAN', 'menuseq' => '100', 'menuparent' => '17', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '329', 'link' => '', 'menuexe' => '', 'menukode' => '13K', 'modifiedby' => 'ADMIN',]);
         Menu::create(['menuname' => 'PERSEDIAAN STOK', 'menuseq' => '100', 'menuparent' => '81', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '333', 'link' => '', 'menuexe' => '', 'menukode' => '73', 'modifiedby' => 'ADMIN',]);
+        Menu::create(['menuname' => 'KARTU STOK', 'menuseq' => '100', 'menuparent' => '81', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '334', 'link' => '', 'menuexe' => '', 'menukode' => '74', 'modifiedby' => 'ADMIN',]);
     }
 }
