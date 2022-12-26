@@ -132,6 +132,7 @@ use App\Http\Controllers\Api\BankPelangganController;
     use App\Http\Controllers\Api\PenerimaanGiroHeaderController;
     use App\Http\Controllers\Api\JurnalUmumPusatDetailController;
     use App\Http\Controllers\Api\JurnalUmumPusatHeaderController;
+    use App\Http\Controllers\Api\KartuStokController;
     use App\Http\Controllers\Api\ReportAllController;
     use App\Http\Controllers\Api\PencairanGiroPengeluaranDetailController;
     use App\Http\Controllers\Api\PencairanGiroPengeluaranHeaderController;
@@ -199,9 +200,6 @@ use App\Http\Controllers\Api\BankPelangganController;
         Route::post('absensisupirapprovalheader/{id}/approval', [AbsensiSupirApprovalHeaderController::class,'approval']);
         Route::apiResource('absensisupirapprovalheader', AbsensiSupirApprovalHeaderController::class);
         Route::apiResource('absensisupirapprovaldetail', AbsensiSupirApprovalDetailController::class);
-
-        Route::get('absen_trado/field_length', [AbsenTradoController::class, 'fieldLength']);
-        Route::resource('absen_trado', AbsenTradoController::class);
 
         Route::get('agen/field_length', [AgenController::class, 'fieldLength']);
         Route::get('agen/export', [AgenController::class, 'export'])->name('export');
@@ -667,6 +665,8 @@ use App\Http\Controllers\Api\BankPelangganController;
         
         Route::resource('approvalpendapatansupir', ApprovalPendapatanSupirController::class);
         Route::resource('stokpersediaan', StokPersediaanController::class);
+        Route::get('kartustok/report', [KartuStokController::class, 'report'])->name('kartustok.report');
+        Route::resource('kartustok', KartuStokController::class);
 
     });
 
