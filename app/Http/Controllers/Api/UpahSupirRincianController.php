@@ -141,17 +141,15 @@ class UpahSupirRincianController extends Controller
             
             DB::commit();
            
-                return [
-                    'error' => false,
-                    'detail' => $upahSupirRincian,
-                    'id' => $upahSupirRincian->id,
-                    'tabel' => $upahSupirRincian->getTable(),
-                ];
+            return [
+                'error' => false,
+                'detail' => $upahSupirRincian,
+                'id' => $upahSupirRincian->id,
+                'tabel' => $upahSupirRincian->getTable(),
+            ];
         } catch (\Throwable $th) {
             DB::rollBack();
             return response($th->getMessage());
-        }        
+        }
     }
-
-  
 }

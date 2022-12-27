@@ -15,6 +15,8 @@ use App\Http\Requests\StoreUpahSupirRincianRequest;
 use App\Http\Requests\UpdateUpahSupirRincianRequest;
 use App\Http\Requests\StoreLogTrailRequest;
 
+use App\Helpers\App;
+use Illuminate\Support\Facades\Storage;
 use App\Models\LogTrail;
 use App\Models\Parameter;
 use Illuminate\Database\QueryException;
@@ -59,7 +61,12 @@ class UpahSupirController extends Controller
             $upahsupir->statusluarkota = $request->statusluarkota;
 
             $upahsupir->modifiedby = auth('api')->user()->name;
-
+            $this->deleteFiles($upahsupir);
+            if ($request->gambar) {
+                $upahsupir->gambar = $this->storeFiles($request->gambar, 'upahsupir');
+            }else {
+                $upahsupir->gambar = '';
+            }
             if ($upahsupir->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($upahsupir->getTable()),
@@ -131,6 +138,7 @@ class UpahSupirController extends Controller
                 'data' => $upahsupir
             ], 201);
         } catch (\Throwable $th) {
+            $this->deleteFiles($upahsupir);
             DB::rollBack();
             return response($th->getMessage());
         }
@@ -173,6 +181,12 @@ class UpahSupirController extends Controller
 
             $upahsupir->modifiedby = auth('api')->user()->name;
 
+            $this->deleteFiles($upahsupir);
+            if ($request->gambar) {
+                $upahsupir->gambar = $this->storeFiles($request->gambar, 'upahsupir');
+            }else {
+                $upahsupir->gambar = '';
+            }
             if ($upahsupir->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($upahsupir->getTable()),
@@ -245,6 +259,7 @@ class UpahSupirController extends Controller
                 'data' => $upahsupir
             ]);
         } catch (\Throwable $th) {
+            $this->deleteFiles($upahsupir);
             DB::rollBack();
             throw $th;
         }
@@ -262,7 +277,7 @@ class UpahSupirController extends Controller
             $getDetail = UpahSupirRincian::where('upahsupir_id', $upahsupir->id)->get();
             $delete = UpahSupirRincian::where('upahsupir_id', $upahsupir->id)->lockForUpdate()->delete();
             $delete = UpahSupir::destroy($upahsupir->id);
-
+            $this->deleteFiles($upahsupir);
             if ($delete) {
                 $logTrail = [
                     'namatabel' => strtoupper($upahsupir->getTable()),
@@ -342,5 +357,41 @@ class UpahSupirController extends Controller
         return response([
             'data' => $data
         ]);
+    }
+
+    private function storeFiles(array $files, string $destinationFolder): string
+    {
+        $storedFiles = [];
+
+        foreach ($files as $file) {
+            $originalFileName = $file->hashName();
+            $storedFile = Storage::putFileAs($destinationFolder, $file, 'ori-' . $originalFileName);
+            $resizedFiles = App::imageResize(storage_path("app/$destinationFolder/"), storage_path("app/$storedFile"), $originalFileName);
+
+            $storedFiles[] = $originalFileName;
+        }
+
+        return json_encode($storedFiles);
+    }
+
+    private function deleteFiles(UpahSupir $upahsupir)
+    {
+        $sizeTypes = ['ori', 'medium', 'small'];
+
+        $relatedPhotoUpahSupir = [];
+        $photoUpahSupir = json_decode($upahsupir->gambar, true);
+        if ($photoUpahSupir) {
+            foreach ($photoUpahSupir as $path) {
+                foreach ($sizeTypes as $sizeType) {
+                $relatedPhotoUpahSupir[] = "upahsupir/$sizeType-$path";
+                }
+            }
+            Storage::delete($relatedPhotoUpahSupir);
+        }
+    }
+
+    public function getImage( string $filename, string $type)
+    {
+        return response()->file(storage_path("app/upahsupir/$type-$filename"));
     }
 }
