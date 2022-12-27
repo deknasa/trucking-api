@@ -121,6 +121,7 @@ class PengeluaranStokDetailFifoController extends Controller
 
             $qtyin = $querymsk->qty ?? 0;
 
+            
 
             $validator = Validator::make(
                 $request->all(),
@@ -140,14 +141,21 @@ class PengeluaranStokDetailFifoController extends Controller
                     'qty' => 'qty',
                 ],
             );
+
             if (!$validator->passes()) {
+                // dump($qtyin);
+                // dump($validator->messages());
+                // dd($validator->passes());
+
+                // return $validator->messages();
+    
                 return [
                     'error' => true,
                     'errors' => $validator->messages()
                 ];
             }
 
-
+         
 
             $tempkeluar = '##tempkeluar' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
             Schema::create($tempkeluar, function ($table) {
@@ -535,6 +543,9 @@ class PengeluaranStokDetailFifoController extends Controller
 
 
             DB::commit();
+            return [
+                'error' => false,
+            ];
         } catch (\Throwable $th) {
             throw $th;
             DB::rollBack();
