@@ -133,6 +133,7 @@ use App\Http\Controllers\Api\BankPelangganController;
     use App\Http\Controllers\Api\JurnalUmumPusatDetailController;
     use App\Http\Controllers\Api\JurnalUmumPusatHeaderController;
     use App\Http\Controllers\Api\KartuStokController;
+use App\Http\Controllers\Api\LaporanBukuBesarController;
 use App\Http\Controllers\Api\LaporanKasBankController;
 use App\Http\Controllers\Api\ReportAllController;
     use App\Http\Controllers\Api\PencairanGiroPengeluaranDetailController;
@@ -671,6 +672,8 @@ use App\Http\Controllers\Api\ReportAllController;
         
         Route::get('laporankasbank/report', [LaporanKasBankController::class, 'report'])->name('laporankasbank.report');
         Route::resource('laporankasbank', LaporanKasBankController::class);
+        Route::get('laporanbukubesar/report', [LaporanBukuBesarController::class, 'report'])->name('laporanbukubesar.report');
+        Route::resource('laporanbukubesar', LaporanBukuBesarController::class);
 
     });
 
