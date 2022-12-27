@@ -124,18 +124,21 @@ class KartuStok extends MyModel
         $gudangkantor = Parameter::where('grp', 'GUDANG KANTOR')->where('subgrp', 'GUDANG KANTOR')->first();
 
         if ($filter == 'GUDANG' and $gudang_id = $gudangkantor->text) {
-            $spb = Parameter::where('grp', 'SPB STOK')->where('subgrp', 'SPB STOK')->first();
+            $spb = Parameter::from(
+                DB::raw("parameter with (readuncommitted)")
+            )
+                ->where('grp', 'SPB STOK')->where('subgrp', 'SPB STOK')->first();
 
             $querysaldomasuk = PenerimaanstokHeader::from(
-                "penerimaanstokheader as a"
+                DB::raw("penerimaanstokheader as a with (readuncommitted)")
             )
                 ->select(
                     'c.id as kodebarang',
                     DB::raw("sum(b.qty) as qtymasuk"),
                     DB::raw("sum(b.qty*b.harga) as nilaimasuk"),
                 )
-                ->join('penerimaanstokdetail as b', 'a.id', 'b.penerimaanstokheader_id')
-                ->join('stok as c', 'b.stok_id', 'c.id')
+                ->join(DB::raw("penerimaanstokdetail as b with (readuncommitted)"), 'a.id', 'b.penerimaanstokheader_id')
+                ->join(DB::raw("stok as c with (readuncommitted)"), 'b.stok_id', 'c.id')
                 ->whereRaw("(b.stok_id>=" . $stokdari . " and B.stok_id<=" . $stoksampai . " )  and (a.tglBukti <'" . $tgldari . "')")
                 ->whereRaw("a.penerimaanstok_id in(" . $spb->text . ",7)")
                 ->groupBy('c.id');
@@ -150,7 +153,7 @@ class KartuStok extends MyModel
 
 
             $queryrekap = PenerimaanStokHeader::from(
-                "penerimaanstokheader as a"
+                DB::raw("penerimaanstokheader as a with (readuncommitted)")
             )
                 ->select(
                     DB::raw("1 as statusmasuk"),
@@ -167,8 +170,8 @@ class KartuStok extends MyModel
                     DB::raw("0 as nilaisaldo"),
                     'a.modifiedby'
                 )
-                ->join('penerimaanstokdetail as b', 'a.id', 'b.penerimaanstokheader_id')
-                ->join('stok as c', 'b.stok_id', 'c.id')
+                ->join(DB::raw("penerimaanstokdetail as b with (readuncommitted)"), 'a.id', 'b.penerimaanstokheader_id')
+                ->join(DB::raw("stok as c with (readuncommitted)"), 'b.stok_id', 'c.id')
                 ->whereRaw("(b.stok_id>=" . $stokdari . " and B.stok_id<=" . $stoksampai . " )  and (a.tglBukti >='" . $tgldari . "' and a.tglbukti<='" . $tglsampai . "')")
                 ->whereRaw("a.penerimaanstok_id in(" . $spb->text . ")")
                 ->orderBy('a.tglbukti', 'Asc')
@@ -192,18 +195,20 @@ class KartuStok extends MyModel
                 'modifiedby',
             ], $queryrekap);
 
-            $spk = Parameter::where('grp', 'SPK STOK')->where('subgrp', 'SPK STOK')->first();
+            $spk = Parameter::from (
+                DB::raw("parameter with (readuncommitted)")
+            )->where('grp', 'SPK STOK')->where('subgrp', 'SPK STOK')->first();
 
             $querysaldokeluar = PengeluaranstokHeader::from(
-                "pengeluaranstokheader as a"
+                DB::raw("pengeluaranstokheader as a with (readuncommitted)")
             )
                 ->select(
                     'c.id as kodebarang',
                     DB::raw("sum(b.penerimaanstok_qty) as qtykeluar"),
                     DB::raw("sum(b.penerimaanstok_qty*b.penerimaanstok_harga) as nilaikeluar"),
                 )
-                ->join('pengeluaranstokdetailfifo as b', 'a.id', 'b.pengeluaranstokheader_id')
-                ->join('stok as c', 'b.stok_id', 'c.id')
+                ->join(DB::raw("pengeluaranstokdetailfifo as b with (readuncommitted)"), 'a.id', 'b.pengeluaranstokheader_id')
+                ->join(DB::raw("stok as c with (readuncommitted)"), 'b.stok_id', 'c.id')
                 ->whereRaw("(b.stok_id>=" . $stokdari . " and B.stok_id<=" . $stoksampai . " )  and (a.tglBukti <'" . $tgldari . "')")
                 ->whereRaw("a.pengeluaranstok_id=" . $spk->text)
                 ->groupBy('c.id');
@@ -215,7 +220,7 @@ class KartuStok extends MyModel
             ], $querysaldokeluar);
 
             $querysaldo = Stok::from(
-                "stok as a"
+                DB::raw("stok as a with (readuncommitted)")
             )
                 ->select(
                     'a.id as kodebarang',
@@ -239,9 +244,9 @@ class KartuStok extends MyModel
                 ->select(
                     DB::raw("0 as statusmasuk"),
                     'c.id as kodebarang',
-                    DB::raw("'Saldo Awal '+ltrim(rtrim(c.namastok)) as namabarang"),
+                    DB::raw("c.namastok as namabarang"),
                     DB::raw("'" . $tgldari . "' as tglbukti"),
-                    DB::raw("'' as nobukti"),
+                    DB::raw("'Saldo Awal' as nobukti"),
                     'c.kategori_id',
                     DB::raw("a.qtysaldo as qtymasuk"),
                     DB::raw("a.nilaisaldo as nilaimasuk"),
@@ -251,7 +256,7 @@ class KartuStok extends MyModel
                     DB::raw("0 as nilaisaldo"),
                     DB::raw("'' as modifiedby"),
                 )
-                ->join('stok as c', 'a.kodebarang', 'c.id');
+                ->join(DB::raw("stok as c with (readuncommitted)"), 'a.kodebarang', 'c.id');
 
 
             DB::table($temprekap)->insertUsing([
@@ -273,7 +278,7 @@ class KartuStok extends MyModel
 
 
             $queryrekap = PengeluaranStokHeader::from(
-                "pengeluaranstokheader as a"
+                DB::raw("pengeluaranstokheader as a with (readuncommitted)")
             )
                 ->select(
                     DB::raw("2 as statusmasuk"),
@@ -290,8 +295,8 @@ class KartuStok extends MyModel
                     DB::raw("0 as nilaisaldo"),
                     'a.modifiedby'
                 )
-                ->join('pengeluaranstokdetailfifo as b', 'a.id', 'b.pengeluaranstokheader_id')
-                ->join('stok as c', 'b.stok_id', 'c.id')
+                ->join(DB::raw("pengeluaranstokdetailfifo as b with (readuncommitted)"), 'a.id', 'b.pengeluaranstokheader_id')
+                ->join(DB::raw("stok as c with (readuncommitted)"), 'b.stok_id', 'c.id')
                 ->whereRaw("(b.stok_id>=" . $stokdari . " and B.stok_id<=" . $stoksampai . " )  and (a.tglBukti >='" . $tgldari . "' and a.tglbukti<='" . $tglsampai . "')")
                 ->whereRaw("a.pengeluaranstok_id=" . $spk->text)
                 ->orderBy('a.tglbukti', 'Asc')

@@ -199,6 +199,7 @@ class InvoiceHeaderController extends Controller
                     'agen_id' => $invoice->agen_id,
                     'modifiedby' => auth('api')->user()->name,
                     'statusformat' => 1,
+                    'jenisinvoice' =>'UTAMA',
                 ];
 
                 $piutangDetail = [];
