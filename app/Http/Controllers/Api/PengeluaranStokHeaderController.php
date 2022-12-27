@@ -153,11 +153,9 @@ class PengeluaranStokHeaderController extends Controller
                         $pengeluaranStokDetailFifo = app(PengeluaranStokDetailFifoController::class)->store($datafifo);
 
 
-                        // if ($pengeluaranStokDetailFifo['error']) {
-                        //     return response($pengeluaranStokDetailFifo, 422);
-                        // } else {
-                        //     $tabeldetail = $pengeluaranStokDetailFifo['tabel'];
-                        // }
+                        if ($pengeluaranStokDetailFifo['error']) {
+                            return response($pengeluaranStokDetailFifo, 422);
+                        } 
                         // dd('test');
                     }
                     $datalogtrail = [
