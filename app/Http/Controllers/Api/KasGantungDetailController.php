@@ -29,7 +29,7 @@ class KasGantungDetailController extends Controller
         ];
 
         try {
-            $query = KasGantungDetail::from('kasgantungdetail as detail');
+            $query = KasGantungDetail::from(DB::raw("kasgantungdetail as detail with (readuncommitted)"));
 
             if (isset($params['id'])) {
                 $query->where('detail.id', $params['id']);
@@ -63,9 +63,9 @@ class KasGantungDetailController extends Controller
                     'detail.coa',
                     'detail.kasgantung_id'
                 )
-                    ->leftjoin('kasgantungheader as header', 'header.id', 'detail.kasgantung_id')
-                    ->leftjoin('penerima','header.penerima_id','penerima.id')
-                    ->leftjoin('bank','header.bank_id','bank.id');
+                    ->leftjoin(DB::raw("kasgantungheader as header with (readuncommitted)"), 'header.id', 'detail.kasgantung_id')
+                    ->leftjoin(DB::raw("penerima with (readuncommitted)"),'header.penerima_id','penerima.id')
+                    ->leftjoin(DB::raw("bank with (readuncommitted)"),'header.bank_id','bank.id');
 
                 $kasgantungDetail = $query->get();
             } else {
@@ -75,7 +75,7 @@ class KasGantungDetailController extends Controller
                     'detail.nominal',
                     'detail.nobukti',
                     'akunpusat.keterangancoa as coa',
-                )->leftjoin('akunpusat','detail.coa','akunpusat.coa');
+                )->leftjoin(DB::raw("akunpusat with (readuncommitted)"),'detail.coa','akunpusat.coa');
                 $kasgantungDetail = $query->get();
             }
 
@@ -160,23 +160,4 @@ class KasGantungDetailController extends Controller
         }        
     }
 
-    public function show(KasGantungDetail $kasGantungDetail)
-    {
-        //
-    }
-
-    public function edit(KasGantungDetail $kasGantungDetail)
-    {
-        //
-    }
-
-    public function update(UpdateKasGantungDetailRequest $request, KasGantungDetail $kasGantungDetail)
-    {
-        //
-    }
-
-    public function destroy(KasGantungDetail $kasGantungDetail)
-    {
-        //
-    }
 }

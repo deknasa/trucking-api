@@ -29,7 +29,7 @@ class JurnalUmumHeaderController extends Controller
     public function index()
     {
         $jurnalumum = new JurnalUmumHeader();
-        
+
         return response([
             'data' => $jurnalumum->get(),
             'attributes' => [
@@ -66,7 +66,9 @@ class JurnalUmumHeaderController extends Controller
             }
 
             $jurnalumum = new JurnalUmumHeader();
-            $statusApproval = Parameter::where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
+            $statusApproval = Parameter::from(
+                        DB::raw("parameter with (readuncommitted)")
+                    )->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
 
             if ($tanpaprosesnobukti == 1) {
                 $jurnalumum->nobukti = $request->nobukti;
@@ -113,7 +115,7 @@ class JurnalUmumHeaderController extends Controller
 
                 $detaillog = [];
                 for ($i = 0; $i < count($request->nominal_detail); $i++) {
-                    
+
                     for ($x = 0; $x <= 1; $x++) {
                         if ($x == 1) {
                             $datadetail = [
@@ -180,7 +182,6 @@ class JurnalUmumHeaderController extends Controller
                 $selected = $this->getPosition($jurnalumum, $jurnalumum->getTable());
                 $jurnalumum->position = $selected->position;
                 $jurnalumum->page = ceil($jurnalumum->position / ($request->limit ?? 10));
-
             }
 
             return response([
@@ -204,8 +205,9 @@ class JurnalUmumHeaderController extends Controller
 
         $nobukti = $data['nobukti'];
 
-        $query = DB::table('jurnalumumdetail AS A')
-            ->select(['A.coa as coadebet', 'b.coa as coakredit', 'A.nominal', 'A.keterangan'])
+        $query = JurnalUmumDetail::from(
+                     DB::raw("jurnalumumdetail as A with (readuncommitted)")
+            )->select(['A.coa as coadebet', 'b.coa as coakredit', 'A.nominal', 'A.keterangan'])
             ->join(
                 DB::raw("(SELECT baris,coa FROM jurnalumumdetail WHERE nobukti='$nobukti' AND nominal<0) B"),
                 function ($join) {
@@ -258,7 +260,7 @@ class JurnalUmumHeaderController extends Controller
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
 
-                JurnalUmumDetail::where('jurnalumum_id', $jurnalumumheader->id)->lockForUpdate()->delete();
+                JurnalUmumDetail::where('jurnalumum_id', $jurnalumumheader->id)->delete();
 
                 /* Store detail */
 
@@ -272,7 +274,7 @@ class JurnalUmumHeaderController extends Controller
                                 'nobukti' => $jurnalumumheader->nobukti,
                                 'tglbukti' => $jurnalumumheader->tglbukti,
                                 'coa' => $request->coakredit_detail[$i],
-                                'nominal' => '-'.$request->nominal_detail[$i],
+                                'nominal' => '-' . $request->nominal_detail[$i],
                                 'keterangan' => $request->keterangan_detail[$i],
                                 'modifiedby' => $jurnalumumheader->modifiedby,
                                 'baris' => $i,
@@ -302,11 +304,10 @@ class JurnalUmumHeaderController extends Controller
                             $iddetail = $datadetails['id'];
                             $tabeldetail = $datadetails['tabel'];
                         }
-                         $detaillog[] = $datadetails['detail']->toArray();
-
+                        $detaillog[] = $datadetails['detail']->toArray();
                     }
                 }
-                
+
                 $datalogtrail = [
                     'namatabel' => strtoupper($tabeldetail),
                     'postingdari' => 'EDIT JURNAL UMUM DETAIL',
@@ -345,19 +346,15 @@ class JurnalUmumHeaderController extends Controller
     /**
      * @ClassName
      */
-    public function destroy(Request $request, $id)
+    public function destroy(JurnalUmumHeader $jurnalumumheader, Request $request)
     {
         DB::beginTransaction();
 
         try {
-            $jurnalumumheader = JurnalUmumHeader::lockForUpdate()->findOrFail($id);
-            
             $getDetail = JurnalUmumDetail::where('jurnalumum_id', $jurnalumumheader->id)->get();
-            $delete = $jurnalumumheader->delete();
+            $isDelete = JurnalUmumHeader::where('id', $jurnalumumheader->id)->delete();
 
-            JurnalUmumDetail::where('jurnalumum_id', $jurnalumumheader->id)->delete();
-
-            if ($delete) {
+            if ($isDelete) {
                 $logTrail = [
                     'namatabel' => strtoupper($jurnalumumheader->getTable()),
                     'postingdari' => 'DELETE JURNAL UMUM HEADER',
@@ -372,7 +369,7 @@ class JurnalUmumHeaderController extends Controller
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
                 // DELETE JURNAL DETAIL
-                
+
                 $logTrailJurnalDetail = [
                     'namatabel' => 'JURNALUMUMDETAIL',
                     'postingdari' => 'DELETE JURNAL UMUM DETAIL',
@@ -392,13 +389,17 @@ class JurnalUmumHeaderController extends Controller
                 $jurnalumumheader->position = $selected->position;
                 $jurnalumumheader->id = $selected->id;
                 $jurnalumumheader->page = ceil($jurnalumumheader->position / ($request->limit ?? 10));
-    
+
                 return response([
                     'status' => true,
                     'message' => 'Berhasil dihapus',
                     'data' => $jurnalumumheader
                 ]);
-            } 
+            }
+
+            return response([
+                'message' => 'Gagal dihapus'
+            ], 500);
         } catch (\Throwable $th) {
             DB::rollBack();
 
@@ -411,8 +412,12 @@ class JurnalUmumHeaderController extends Controller
 
         try {
             $jurnalumum = JurnalUmumHeader::find($id);
-            $statusApproval = Parameter::where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
-            $statusNonApproval = Parameter::where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
+            $statusApproval = Parameter::from(
+                DB::raw("parameter with (readuncommitted)")
+            )->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
+            $statusNonApproval = Parameter::from(
+                DB::raw("parameter with (readuncommitted)")
+            )->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
 
             if ($jurnalumum->statusapproval == $statusApproval->id) {
                 $jurnalumum->statusapproval = $statusNonApproval->id;

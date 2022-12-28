@@ -79,7 +79,10 @@ class PiutangHeaderController extends Controller
                 $piutang->nobukti = $request->nobukti;
             }
 
-            $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
+            $statusCetak = Parameter::from(
+                DB::raw("parameter with (readuncommitted)")
+            )->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
+
             $piutang->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $piutang->keterangan = $request->keterangan;
             $piutang->postingdari = $request->postingdari ?? 'ENTRY PIUTANG';
@@ -115,6 +118,8 @@ class PiutangHeaderController extends Controller
 
             $validatedLogTrail = new StoreLogTrailRequest($logTrail);
             $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+
+            $idLogTrail = $storedLogTrail['id'];
 
             if ($tanpaprosesnobukti == 0) {
                 /* Store detail */
@@ -166,14 +171,17 @@ class PiutangHeaderController extends Controller
                 $jenisinvoice = $request->jenisinvoice ?? '';
 
                 if ($jenisinvoice == 'UTAMA') {
-                    $coapiutang = DB::table('parameter')
-                        ->where('grp', 'JURNAL PIUTANG INVOICE UTAMA')->get();
+                    $coapiutang = DB::table('parameter')->from(
+                        DB::raw("parameter with (readuncommitted)")
+                    )->where('grp', 'JURNAL PIUTANG INVOICE UTAMA')->get();
                 } else if ($jenisinvoice == 'TAMBAHAN') {
-                    $coapiutang = DB::table('parameter')
-                        ->where('grp', 'JURNAL PIUTANG INVOICE TAMBAHAN')->get();
+                    $coapiutang = DB::table('parameter')->from(
+                        DB::raw("parameter with (readuncommitted)")
+                    )->where('grp', 'JURNAL PIUTANG INVOICE TAMBAHAN')->get();
                 } else {
-                    $coapiutang = DB::table('parameter')
-                        ->where('grp', 'JURNAL PIUTANG MANUAL')->get();
+                    $coapiutang = DB::table('parameter')->from(
+                        DB::raw("parameter with (readuncommitted)")
+                    )->where('grp', 'JURNAL PIUTANG MANUAL')->get();
                 }
 
 
@@ -235,12 +243,37 @@ class PiutangHeaderController extends Controller
                 $selected = $this->getPosition($piutang, $piutang->getTable());
                 $piutang->position = $selected->position;
                 $piutang->page = ceil($piutang->position / ($request->limit ?? 10));
+            } else {
+                // INSERT JURNAL UMUM
+                $parameterController = new ParameterController;
+                $statusApp = $parameterController->getparameterid('STATUS APPROVAL', 'STATUS APPROVAL', 'NON APPROVAL');
+                $jurnalHeader = [
+                    'tanpaprosesnobukti' => 1,
+                    'nobukti' => $piutang->nobukti,
+                    'tglbukti' => $piutang->tglbukti,
+                    'keterangan' => $piutang->keterangan,
+                    'postingdari' => "ENTRY PIUTANG DARI INVOICE",
+                    'statusapproval' => $statusApp->id,
+                    'userapproval' => "",
+                    'tglapproval' => "",
+                    'statusformat' => 0,
+                    'modifiedby' => auth('api')->user()->name,
+                ];
+
+                $storeJurnal = new StoreJurnalUmumHeaderRequest($jurnalHeader);
+                $jurnal = app(JurnalUmumHeaderController::class)->store($storeJurnal);
+                $idLogTrail = [];
+                $idLogTrail = [
+                    'piutang' => $storedLogTrail['id'],
+                    'jurnal' => $jurnal->original['idlogtrail'],
+                    'jurnal_id' => $jurnal->original['data']['id']
+                ];
             }
 
 
             return response([
                 'status' => true,
-                'idlogtrail' => $storedLogTrail['id'],
+                'idlogtrail' => $idLogTrail,
                 'message' => 'Berhasil disimpan',
                 'data' => $piutang
             ], 201);
@@ -289,7 +322,7 @@ class PiutangHeaderController extends Controller
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-                PiutangDetail::where('piutang_id', $piutangHeader->id)->lockForUpdate()->delete();
+                PiutangDetail::where('piutang_id', $piutangHeader->id)->delete();
 
                 /* Store detail */
 
@@ -337,8 +370,8 @@ class PiutangHeaderController extends Controller
 
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
-            JurnalUmumHeader::where('nobukti', $piutangHeader->nobukti)->lockForUpdate()->delete();
-            JurnalUmumDetail::where('nobukti', $piutangHeader->nobukti)->lockForUpdate()->delete();
+            JurnalUmumHeader::where('nobukti', $piutangHeader->nobukti)->delete();
+            JurnalUmumDetail::where('nobukti', $piutangHeader->nobukti)->delete();
 
             $parameterController = new ParameterController;
             $statusApp = $parameterController->getparameterid('STATUS APPROVAL', 'STATUS APPROVAL', 'NON APPROVAL');
@@ -366,15 +399,12 @@ class PiutangHeaderController extends Controller
 
                 foreach ($coapiutang as $key => $coa) {
                     $a = 0;
-                    $getcoa = DB::table('akunpusat')
-                        ->where('id', $coa->text)->first();
-
+                    $memo = json_decode($coa->memo, true);
 
                     $jurnalDetail = [
                         [
                             'nobukti' => $piutangHeader->nobukti,
                             'tglbukti' => date('Y-m-d', strtotime($piutangHeader->tglbukti)),
-                            'coa' =>  $getcoa->coa,
                             'keterangan' => $request->keterangan_detail[$i],
                             'modifiedby' => auth('api')->user()->name,
                             'baris' => $i,
@@ -382,8 +412,10 @@ class PiutangHeaderController extends Controller
                     ];
                     if ($coa->subgrp == 'DEBET') {
                         $jurnalDetail[$a]['nominal'] = $request->nominal_detail[$i];
+                        $jurnalDetail[$a]['coa'] = $memo['JURNAL'];
                     } else {
                         $jurnalDetail[$a]['nominal'] = '-' . $request->nominal_detail[$i];
+                        $jurnalDetail[$a]['coa'] = $memo['JURNAL'];
                     }
 
                     $detail = array_merge($detail, $jurnalDetail);
@@ -420,23 +452,29 @@ class PiutangHeaderController extends Controller
     /**
      * @ClassName
      */
-    public function destroy(Request $request, $id)
+    public function destroy(PiutangHeader $piutangHeader, Request $request)
     {
         DB::beginTransaction();
 
         try {
-            $piutangHeader = PiutangHeader::lockForUpdate()->findOrFail($id);
-            $getDetail = PiutangDetail::where('piutang_id', $piutangHeader->id)->get();
-            $delete = $piutangHeader->delete();
+            $getDetail = PiutangDetail::from(
+                DB::raw("piutangdetail with (readuncommitted)")
+            )->where('piutang_id', $piutangHeader->id)->get();
 
-            $getJurnalHeader = JurnalUmumHeader::where('nobukti', $piutangHeader->nobukti)->first();
-            $getJurnalDetail = JurnalUmumDetail::where('nobukti', $piutangHeader->nobukti)->get();
+            $getJurnalHeader = JurnalUmumHeader::from(
+                DB::raw("jurnalumumheader with (readuncommitted)")
+            )->where('nobukti', $piutangHeader->nobukti)->first();
 
-            PiutangDetail::where('piutang_id', $piutangHeader->id)->delete();
+            $getJurnalDetail = JurnalUmumDetail::from(
+                DB::raw("jurnalumumdetail with (readuncommitted)")
+            )->where('nobukti', $piutangHeader->nobukti)->get();
+
+            $isDelete = PiutangHeader::where('id', $piutangHeader->id)->delete();
+
+
             JurnalUmumHeader::where('nobukti', $piutangHeader->nobukti)->delete();
-            JurnalUmumDetail::where('nobukti', $piutangHeader->nobukti)->delete();
 
-            if ($delete) {
+            if ($isDelete) {
                 // DELETE PIUTANG HEADER
                 $logTrail = [
                     'namatabel' => strtoupper($piutangHeader->getTable()),
@@ -507,6 +545,10 @@ class PiutangHeaderController extends Controller
                     'data' => $piutangHeader
                 ]);
             }
+            
+            return response([
+                'message' => 'Gagal dihapus'
+            ], 500);
         } catch (\Throwable $th) {
             DB::rollBack();
 
@@ -562,8 +604,12 @@ class PiutangHeaderController extends Controller
 
         try {
             $piutang = PiutangHeader::lockForUpdate()->findOrFail($id);
-            $statusSudahCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
-            $statusBelumCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
+            $statusSudahCetak = Parameter::from(
+                DB::raw("parameter with (readuncommitted)")
+            )->where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
+            $statusBelumCetak = Parameter::from(
+                DB::raw("parameter with (readuncommitted)")
+            )->where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
 
             if ($piutang->statuscetak != $statusSudahCetak->id) {
                 $piutang->statuscetak = $statusSudahCetak->id;
@@ -601,9 +647,13 @@ class PiutangHeaderController extends Controller
     {
         $pengeluaran = PiutangHeader::find($id);
         $status = $pengeluaran->statusapproval;
-        $statusApproval = Parameter::where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
+        $statusApproval = Parameter::from(
+            DB::raw("parameter with (readuncommitted)")
+        )->where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
         $statusdatacetak = $pengeluaran->statuscetak;
-        $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
+        $statusCetak = Parameter::from(
+            DB::raw("parameter with (readuncommitted)")
+        )->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
 
         if ($status == $statusApproval->id) {
             $query = DB::table('error')

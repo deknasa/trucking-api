@@ -28,7 +28,7 @@ class AbsensiSupirDetailController extends Controller
         ];
 
         try {
-            $query = AbsensiSupirDetail::from('absensisupirdetail as detail');
+            $query = AbsensiSupirDetail::from(DB::raw("absensisupirdetail as detail with (readuncommitted)"));
 
             if (isset($params['id'])) {
                 $query->where('detail.id', $params['id']);
@@ -62,10 +62,10 @@ class AbsensiSupirDetailController extends Controller
                     'detail.uangjalan',
                     'detail.absensi_id'
                 )
-                    ->join('absensisupirheader as header', 'header.id', 'detail.absensi_id')
-                    ->join('trado', 'trado.id','detail.trado_id')
-                    ->join('supir', 'supir.id','detail.supir_id')
-                    ->leftjoin('absentrado', 'absentrado.id','detail.absen_id');
+                    ->leftjoin(DB::raw("absensisupirheader as header with (readuncommitted)"), 'header.id', 'detail.absensi_id')
+                    ->leftjoin(DB::raw("trado with (readuncommitted)"), 'trado.id','detail.trado_id')
+                    ->leftjoin(DB::raw("supir with (readuncommitted)"), 'supir.id','detail.supir_id')
+                    ->leftjoin(DB::raw("absentrado with (readuncommitted)"), 'absentrado.id','detail.absen_id');
 
                 $absensiSupirDetail = $query->get();
             } else {
@@ -78,9 +78,9 @@ class AbsensiSupirDetailController extends Controller
                     'detail.uangjalan',
                     'detail.absensi_id'
                 )
-                    ->join('trado', 'trado.id', '=', 'detail.trado_id')
-                    ->join('supir', 'supir.id', '=', 'detail.supir_id')
-                    ->leftjoin('absentrado', 'absentrado.id', '=', 'detail.absen_id');
+                ->leftjoin(DB::raw("trado with (readuncommitted)"), 'trado.id','detail.trado_id')
+                ->leftjoin(DB::raw("supir with (readuncommitted)"), 'supir.id','detail.supir_id')
+                ->leftjoin(DB::raw("absentrado with (readuncommitted)"), 'absentrado.id','detail.absen_id');
                 $absensiSupirDetail = $query->get();
             }
             $idUser = auth('api')->user()->id;

@@ -27,7 +27,7 @@ class ServiceOutDetailController extends Controller
             'sortOrder' => $request->sortOrder ?? 'asc',
         ];
         try {
-            $query = ServiceOutDetail::from('serviceoutdetail as detail');
+            $query = ServiceOutDetail::from(DB::raw("serviceoutdetail as detail with (readuncommitted)"));
 
             if (isset($params['id'])) {
                 $query->where('detail.id', $params['id']);
@@ -51,8 +51,8 @@ class ServiceOutDetailController extends Controller
                     'detail.servicein_nobukti',
                     'detail.keterangan',
                 )
-                    ->leftJoin('serviceoutheader as header', 'header.id', 'detail.serviceout_id')
-                    ->leftJoin('trado', 'header.trado_id', 'trado.id');
+                    ->leftJoin(DB::raw("serviceoutheader as header with (readuncommitted)"), 'header.id', 'detail.serviceout_id')
+                    ->leftJoin(DB::raw("trado with (readuncommitted)"), 'header.trado_id', 'trado.id');
 
                 $serviceOutDetail = $query->get();
             } else {

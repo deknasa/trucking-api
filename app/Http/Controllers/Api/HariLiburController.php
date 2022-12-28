@@ -131,13 +131,13 @@ class HariLiburController extends Controller
      /**
      * @ClassName 
      */
-    public function destroy(HariLibur $harilibur, Request $request)
+    public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
         
         try {
-            $delete = HariLibur::destroy($harilibur->id);
-            $del = 1;
+            $harilibur = HariLibur::lockForUpdate()->findOrFail($id);
+            $delete = $harilibur->delete();
             if ($delete) {
                 $logTrail = [
                     'namatabel' => strtoupper($harilibur->getTable()),
@@ -146,7 +146,7 @@ class HariLiburController extends Controller
                     'nobuktitrans' => $harilibur->id,
                     'aksi' => 'DELETE',
                     'datajson' => $harilibur->toArray(),
-                    'modifiedby' => $harilibur->modifiedby
+                    'modifiedby' => auth('api')->user()->name
                 ];
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);

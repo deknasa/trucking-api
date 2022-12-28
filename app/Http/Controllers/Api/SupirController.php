@@ -217,12 +217,13 @@ class SupirController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Supir $supir, Request $request)
+    public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
 
         try {
-            $delete = Supir::destroy($supir->id);
+            $supir = Supir::lockForUpdate()->findOrFail($id);
+            $delete = $supir->delete();
 
             if ($delete) {
                 $logTrail = [
@@ -232,28 +233,28 @@ class SupirController extends Controller
                     'nobuktitrans' => $supir->id,
                     'aksi' => 'DELETE',
                     'datajson' => $supir->toArray(),
-                    'modifiedby' => $supir->modifiedby
+                    'modifiedby' => auth('api')->user()->name
                 ];
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
+                $this->deleteFiles($supir);
+    
+                DB::commit();
+    
+                /* Set position and page */
+                $selected = $this->getPosition($supir, $supir->getTable(), true);
+                $supir->position = $selected->position;
+                $supir->id = $selected->id;
+                $supir->page = ceil($supir->position / ($request->limit ?? 10));
+    
+                return response([
+                    'status' => true,
+                    'message' => 'Berhasil dihapus',
+                    'data' => $supir
+                ]);
             }
 
-            $this->deleteFiles($supir);
-
-            DB::commit();
-
-            /* Set position and page */
-            $selected = $this->getPosition($supir, $supir->getTable(), true);
-            $supir->position = $selected->position;
-            $supir->id = $selected->id;
-            $supir->page = ceil($supir->position / ($request->limit ?? 10));
-
-            return response([
-                'status' => true,
-                'message' => 'Berhasil dihapus',
-                'data' => $supir
-            ]);
         } catch (\Throwable $th) {
             $this->deleteFiles($supir);
 

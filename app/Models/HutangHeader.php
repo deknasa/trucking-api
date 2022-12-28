@@ -28,7 +28,8 @@ class HutangHeader extends MyModel
     {
         $this->setRequestParameters();
 
-        $query = DB::table($this->table)->select(
+        $query = DB::table($this->table)->from(DB::raw("hutangheader with (readuncommitted)"))
+        ->select(
             'hutangheader.id',
             'hutangheader.nobukti',
             'hutangheader.tglbukti',
@@ -46,8 +47,8 @@ class HutangHeader extends MyModel
             'hutangheader.created_at',
             'hutangheader.updated_at'
         )
-            ->leftJoin('parameter', 'hutangheader.statuscetak', 'parameter.id')
-            ->leftJoin('pelanggan', 'hutangheader.pelanggan_id', 'pelanggan.id');
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'hutangheader.statuscetak', 'parameter.id')
+            ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'hutangheader.pelanggan_id', 'pelanggan.id');
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -67,8 +68,7 @@ class HutangHeader extends MyModel
             'hutangheader.nobukti',
             'hutangheader.tglbukti',
             'hutangheader.keterangan',
-            'akunpusat.coa as akunpusat',
-            // 'akunpusat.coa as coa',
+            'hutangheader.coa as akunpusat',
             'pelanggan.namapelanggan as pelanggan',
             'pelanggan.id as pelanggan_id',
             'hutangheader.statuscetak',
@@ -77,8 +77,8 @@ class HutangHeader extends MyModel
             'hutangheader.modifiedby',
             'hutangheader.updated_at'
         )
-            ->leftJoin('akunpusat', 'hutangheader.coa', 'akunpusat.coa')
-            ->leftJoin('pelanggan', 'hutangheader.pelanggan_id', 'pelanggan.id')
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'hutangheader.statuscetak', 'parameter.id')
+            ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'hutangheader.pelanggan_id', 'pelanggan.id')
 
             ->where('hutangheader.id', $id);
 
@@ -91,9 +91,9 @@ class HutangHeader extends MyModel
         $this->setRequestParameters();
 
         $temp = $this->createTempHutang($id);
-        $query = DB::table('hutangheader')
+        $query = DB::table('hutangheader')->from(DB::raw("hutangheader with (readuncommitted)"))
             ->select(DB::raw("hutangheader.id as id,hutangheader.nobukti as nobukti,hutangheader.tglbukti, hutangheader.total," . $temp . ".sisa"))
-            ->join($temp, 'hutangheader.id', $temp . ".id")
+            ->join(DB::raw("$temp with (readuncommitted)"), 'hutangheader.id', $temp . ".id")
             ->whereRaw("hutangheader.nobukti = $temp.nobukti")
             ->where(function ($query) use ($temp) {
                 $query->whereRaw("$temp.sisa != 0")
@@ -148,7 +148,7 @@ class HutangHeader extends MyModel
                  $this->table.nobukti,
                  $this->table.tglbukti,
                  $this->table.keterangan,
-                 'akunpusat.coa as akunpusat',
+                 $this->table.coa,
                  'pelanggan.namapelanggan as pelanggan_id',
                  $this->table.total,
                  'parameter.text as statuscetak',
@@ -161,9 +161,8 @@ class HutangHeader extends MyModel
                  $this->table.statusformat"
             )
 
-        )->leftJoin('akunpusat', 'hutangheader.coa', 'akunpusat.coa')
-        ->leftJoin('parameter', 'hutangheader.statuscetak', 'parameter.id')
-        ->leftJoin('pelanggan', 'hutangheader.pelanggan_id', 'pelanggan.id');
+        ) ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'hutangheader.statuscetak', 'parameter.id')
+        ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'hutangheader.pelanggan_id', 'pelanggan.id');
     }
 
     public function createTemp(string $modelTable)

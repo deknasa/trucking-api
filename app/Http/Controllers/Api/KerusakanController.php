@@ -137,11 +137,12 @@ class KerusakanController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Kerusakan $kerusakan, Request $request)
+    public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
         try {
-            $delete = Kerusakan::destroy($kerusakan->id);
+            $kerusakan = Kerusakan::lockForUpdate()->findOrFail($id);
+            $delete = $kerusakan->delete();
 
             if ($delete) {
                 $logTrail = [
@@ -151,25 +152,25 @@ class KerusakanController extends Controller
                     'nobuktitrans' => $kerusakan->id,
                     'aksi' => 'DELETE',
                     'datajson' => $kerusakan->toArray(),
-                    'modifiedby' => $kerusakan->modifiedby
+                    'modifiedby' => auth('api')->user()->name
                 ];
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
 
                 DB::commit();
+
+                $selected = $this->getPosition($kerusakan, $kerusakan->getTable(), true);
+                $kerusakan->position = $selected->position;
+                $kerusakan->id = $selected->id;
+                $kerusakan->page = ceil($kerusakan->position / ($request->limit ?? 10));
+    
+                return response([
+                    'status' => true,
+                    'message' => 'Berhasil dihapus',
+                    'data' => $kerusakan
+                ]);
             }
-
-            $selected = $this->getPosition($kerusakan, $kerusakan->getTable(), true);
-            $kerusakan->position = $selected->position;
-            $kerusakan->id = $selected->id;
-            $kerusakan->page = ceil($kerusakan->position / ($request->limit ?? 10));
-
-            return response([
-                'status' => true,
-                'message' => 'Berhasil dihapus',
-                'data' => $kerusakan
-            ]);
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;

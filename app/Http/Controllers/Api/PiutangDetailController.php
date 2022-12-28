@@ -27,7 +27,9 @@ class PiutangDetailController extends Controller
         ];
 
         try {
-            $query = PiutangDetail::from('piutangdetail as detail');
+            $query = PiutangDetail::from(
+                DB::raw("piutangdetail as detail with (readuncommitted)")
+            );
 
             if (isset($params['id'])) {
                 $query->where('detail.id', $params['id']);
@@ -86,14 +88,67 @@ class PiutangDetailController extends Controller
             $piutangdetail->modifiedby = auth('api')->user()->name;
 
             $piutangdetail->save();
+            
+            $datadetail = $piutangdetail;
+            if($request->entridetail == 1) {
+                $nobukti = $piutangdetail->nobukti;
+                $getBaris = DB::table('jurnalumumdetail')->from(
+                    DB::raw("jurnalumumdetail with (readuncommitted)")
+                )->select('baris')->where('nobukti', $nobukti)->orderByDesc('baris')->first();
 
-           
+                $getCOA = DB::table('parameter')->from(
+                    DB::raw("parameter with (readuncommitted)")
+                )->where("kelompok", "COA INVOICE")->get();
+
+                if (is_null($getBaris)) {
+                    $baris = 0;
+                } else {
+                    $baris = $getBaris->baris + 1;
+                }
+                $detailLogJurnal = [];
+                for ($x = 0; $x <= 1; $x++) {
+                    
+                    if ($x == 1) {
+                        $datadetail = [
+                            'jurnalumum_id' => $request->jurnal_id,
+                            'nobukti' => $nobukti,
+                            'tglbukti' => $request->tglbukti,
+                            'coa' =>  $getCOA[$x]->text,
+                            'nominal' => -$piutangdetail->nominal,
+                            'keterangan' => $piutangdetail->keterangan,
+                            'modifiedby' => auth('api')->user()->name,
+                            'baris' => $baris,
+                        ];
+                    } else {
+                        $datadetail = [
+                            'jurnalumum_id' => $request->jurnal_id,
+                            'nobukti' => $nobukti,
+                            'tglbukti' => $request->tglbukti,
+                            'coa' =>  $getCOA[$x]->text,
+                            'nominal' => $piutangdetail->nominal,
+                            'keterangan' => $piutangdetail->keterangan,
+                            'modifiedby' => auth('api')->user()->name,
+                            'baris' => $baris,
+                        ];
+                    }
+                    $detail = new StoreJurnalUmumDetailRequest($datadetail);
+                    $detailJurnal = app(JurnalUmumDetailController::class)->store($detail);
+
+                    
+                    $detailLogJurnal[] = $detailJurnal['detail']->toArray();
+                }
+
+                $datadetail = [];
+                $datadetail = [
+                    'piutangdetail' => $piutangdetail,
+                    'jurnaldetail' => $detailLogJurnal
+                ];
+            }
             DB::commit();
 
-           
                 return [
                     'error' => false,
-                    'detail' => $piutangdetail,
+                    'detail' => $datadetail,
                     'id' => $piutangdetail->id,
                     'tabel' => $piutangdetail->getTable(),
                 ];

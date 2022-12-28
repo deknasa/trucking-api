@@ -39,7 +39,8 @@ class UpahSupir extends MyModel
     {
         $this->setRequestParameters();
 
-        $query = DB::table($this->table)->select(
+        $query = DB::table($this->table)->from(DB::raw("upahsupir with (readuncommitted)"))
+        ->select(
             'upahsupir.id',
             'kotadari.keterangan as kotadari_id',
             'kotasampai.keterangan as kotasampai_id',
@@ -53,11 +54,11 @@ class UpahSupir extends MyModel
             'upahsupir.modifiedby',
             'upahsupir.updated_at'
         )
-            ->join('kota as kotadari', 'kotadari.id', '=', 'upahsupir.kotadari_id')
-            ->join('kota as kotasampai', 'kotasampai.id', '=', 'upahsupir.kotasampai_id')
-            ->leftJoin('parameter', 'upahsupir.statusaktif', 'parameter.id')
-            ->leftJoin('parameter as statusluarkota', 'upahsupir.statusluarkota', 'statusluarkota.id')
-            ->leftJoin('zona', 'upahsupir.zona_id', 'zona.id');
+            ->leftJoin(DB::raw("kota as kotadari with (readuncommitted)"), 'kotadari.id', '=', 'upahsupir.kotadari_id')
+            ->leftJoin(DB::raw("kota as kotasampai with (readuncommitted)"), 'kotasampai.id', '=', 'upahsupir.kotasampai_id')
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'upahsupir.statusaktif', 'parameter.id')
+            ->leftJoin(DB::raw("parameter as statusluarkota with (readuncommitted)"), 'upahsupir.statusluarkota', 'statusluarkota.id')
+            ->leftJoin(DB::raw("zona with (readuncommitted)"), 'upahsupir.zona_id', 'zona.id');
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -94,10 +95,10 @@ class UpahSupir extends MyModel
             'upahsupir.modifiedby',
             'upahsupir.updated_at'
         )
-            ->join('kota as kotadari', 'kotadari.id', '=', 'upahsupir.kotadari_id')
-            ->join('kota as kotasampai', 'kotasampai.id', '=', 'upahsupir.kotasampai_id')
-            ->leftJoin('zona', 'upahsupir.zona_id', 'zona.id')
-            ->leftJoin('parameter as statusluarkota', 'upahsupir.statusluarkota', 'statusluarkota.id')
+            ->leftJoin(DB::raw("kota as kotadari with (readuncommitted)"), 'kotadari.id', '=', 'upahsupir.kotadari_id')
+            ->leftJoin(DB::raw("kota as kotasampai with (readuncommitted)"), 'kotasampai.id', '=', 'upahsupir.kotasampai_id')
+            ->leftJoin(DB::raw("zona with (readuncommitted)"), 'upahsupir.zona_id', 'zona.id')
+            ->leftJoin(DB::raw("parameter as statusluarkota with (readuncommitted)"), 'upahsupir.statusluarkota', 'statusluarkota.id')
 
             ->where('upahsupir.id', $id);
 
@@ -129,10 +130,10 @@ class UpahSupir extends MyModel
                  $this->table.updated_at"
             )
 
-        )->join('kota as kotadari', 'kotadari.id', '=', 'upahsupir.kotadari_id')
-            ->join('kota as kotasampai', 'kotasampai.id', '=', 'upahsupir.kotasampai_id')
-
-            ->leftJoin('zona', 'upahsupir.zona_id', 'zona.id');
+        )
+        ->leftJoin(DB::raw("kota as kotadari with (readuncommitted)"), 'kotadari.id', '=', 'upahsupir.kotadari_id')
+        ->leftJoin(DB::raw("kota as kotasampai with (readuncommitted)"), 'kotasampai.id', '=', 'upahsupir.kotasampai_id')
+        ->leftJoin(DB::raw("zona with (readuncommitted)"), 'upahsupir.zona_id', 'zona.id');
     }
 
     public function createTemp(string $modelTable)

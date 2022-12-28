@@ -137,12 +137,13 @@ class JenisOrderController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(JenisOrder $jenisorder, Request $request)
+    public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
         try {
 
-            $delete = JenisOrder::destroy($jenisorder->id);
+            $jenisorder = JenisOrder::lockForUpdate()->findOrFail($id);
+            $delete = $jenisorder->delete();
 
             if ($delete) {
                 $logTrail = [
@@ -152,7 +153,7 @@ class JenisOrderController extends Controller
                     'nobuktitrans' => $jenisorder->id,
                     'aksi' => 'DELETE',
                     'datajson' => $jenisorder->toArray(),
-                    'modifiedby' => $jenisorder->modifiedby
+                    'modifiedby' => auth('api')->user()->name
                 ];
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
@@ -160,22 +161,23 @@ class JenisOrderController extends Controller
 
 
                 DB::commit();
+                /* Set position and page */
+                $selected = $this->getPosition($jenisorder, $jenisorder->getTable(), true);
+                $jenisorder->position = $selected->position;
+                $jenisorder->id = $selected->id;
+                $jenisorder->page = ceil($jenisorder->position / ($request->limit ?? 10));
+    
+                return response([
+                    'status' => true,
+                    'message' => 'Berhasil dihapus',
+                    'data' => $jenisorder
+                ]);
             }
 
-            /* Set position and page */
-            $selected = $this->getPosition($jenisorder, $jenisorder->getTable(), true);
-            $jenisorder->position = $selected->position;
-            $jenisorder->id = $selected->id;
-            $jenisorder->page = ceil($jenisorder->position / ($request->limit ?? 10));
-
-            return response([
-                'status' => true,
-                'message' => 'Berhasil dihapus',
-                'data' => $jenisorder
-            ]);
         } catch (\Throwable $th) {
             DB::rollBack();
-            return response($th->getMessage());
+            // return response($th->getMessage());
+            throw $th;
         }
     }
 
