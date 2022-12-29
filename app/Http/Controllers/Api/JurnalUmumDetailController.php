@@ -29,7 +29,9 @@ class JurnalUmumDetailController extends Controller
             'sortOrder' => $request->sortOrder ?? 'asc',
         ];
         try {
-            $query = JurnalUmumDetail::from('jurnalumumdetail as detail');
+            $query = JurnalUmumDetail::from(
+                DB::raw("jurnalumumdetail as detail with (readuncommitted)")
+            );
 
             if (isset($params['id'])) {
                 $query->where('detail.id', $params['id']);
@@ -48,14 +50,14 @@ class JurnalUmumDetailController extends Controller
                 $nobukti = $data['nobukti'];
 
                 $jurnalUmumDetail = DB::table('jurnalumumdetail AS A')
-                    ->select(['A.coa as coadebet', 'b.coa as coakredit', 'A.nominal', 'A.keterangan as keterangandetail', 'header.nobukti', 'header.tglbukti','header.keterangan','A.jurnalumum_id'])
+                    ->select(['A.coa as coadebet', 'b.coa as coakredit', 'A.nominal', 'A.keterangan as keterangandetail', 'header.nobukti', 'header.tglbukti', 'header.keterangan', 'A.jurnalumum_id'])
                     ->join(
                         DB::raw("(SELECT baris,coa FROM jurnalumumdetail WHERE nobukti='$nobukti' AND nominal<0) B"),
                         function ($join) {
                             $join->on('A.baris', '=', 'B.baris');
                         }
                     )
-                    ->join('jurnalumumheader as header','header.id','A.jurnalumum_id')
+                    ->join('jurnalumumheader as header', 'header.id', 'A.jurnalumum_id')
                     ->where([
                         ['A.nobukti', '=', $nobukti],
                         ['A.nominal', '>=', '0']
@@ -84,7 +86,9 @@ class JurnalUmumDetailController extends Controller
                 $data = JurnalUmumHeader::find($id);
                 $nobukti = $data['nobukti'];
 
-                $jurnalUmumDetail = DB::table('jurnalumumdetail AS A')
+                $jurnalUmumDetail = JurnalUmumDetail::from(
+                        DB::raw("jurnalumumdetail as A with (readuncommitted)")
+                    )
                     ->select(['A.coa as coadebet', 'b.coa as coakredit', 'A.nominal', 'A.keterangan', 'A.nobukti', 'A.tglbukti'])
                     ->join(
                         DB::raw("(SELECT baris,coa FROM jurnalumumdetail WHERE nobukti='$nobukti' AND nominal<0) B"),
@@ -100,9 +104,9 @@ class JurnalUmumDetailController extends Controller
             }
 
             $idUser = auth('api')->user()->id;
-            $getuser = User::select('name','cabang.namacabang as cabang_id')
-            ->where('user.id',$idUser)->join('cabang','user.cabang_id','cabang.id')->first();
-           
+            $getuser = User::select('name', 'cabang.namacabang as cabang_id')
+                ->where('user.id', $idUser)->join('cabang', 'user.cabang_id', 'cabang.id')->first();
+
 
             return response([
                 'data' => $jurnalUmumDetail,
@@ -145,7 +149,7 @@ class JurnalUmumDetailController extends Controller
             ];
         } catch (\Throwable $th) {
             DB::rollBack();
-            
+
             throw $th;
         }
     }

@@ -140,12 +140,13 @@ class CabangController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Cabang $cabang, Request $request)
+    public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
 
         try {
-            $delete = Cabang::destroy($cabang->id);
+            $cabang = Cabang::lockForUpdate()->findOrFail($id);
+            $delete = $cabang->delete();
 
             if ($delete) {
                 $logTrail = [
@@ -155,7 +156,7 @@ class CabangController extends Controller
                     'nobuktitrans' => $cabang->id,
                     'aksi' => 'DELETE',
                     'datajson' => $cabang->toArray(),
-                    'modifiedby' => $cabang->modifiedby
+                    'modifiedby' => auth('api')->user()->name
                 ];
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);

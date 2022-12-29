@@ -164,12 +164,13 @@ class AgenController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Agen $agen, Request $request)
+    public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
 
         try {
-            $delete = Agen::destroy($agen->id);
+            $agen = Agen::lockForUpdate()->findOrFail($id);
+            $delete = $agen->delete();
 
             if ($delete) {
                 $logTrail = [
@@ -179,30 +180,29 @@ class AgenController extends Controller
                     'nobuktitrans' => $agen->id,
                     'aksi' => 'DELETE',
                     'datajson' => $agen->toArray(),
-                    'modifiedby' => $agen->modifiedby
+                    'modifiedby' => auth('api')->user()->name
                 ];
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
+
+                DB::commit();
+    
+                $selected = $this->getPosition($agen, $agen->getTable(), true);
+                $agen->position = $selected->position;
+                $agen->id = $selected->id;
+                $agen->page = ceil($agen->position / ($request->limit ?? 10));
+    
+                return response([
+                    'status' => true,
+                    'message' => 'Berhasil dihapus',
+                    'data' => $agen
+                ]);
             }
-            DB::commit();
-
-            $selected = $this->getPosition($agen, $agen->getTable(), true);
-            $agen->position = $selected->position;
-            $agen->id = $selected->id;
-            $agen->page = ceil($agen->position / ($request->limit ?? 10));
-
-            return response([
-                'status' => true,
-                'message' => 'Berhasil dihapus',
-                'data' => $agen
-            ]);
-        } catch (NotDeletableModel $exception) {
+        } catch (\Throwable $th) {
             DB::rollBack();
 
-            return response([
-                'message' => $exception->getMessage()
-            ], 403);
+            throw $th;
         }
     }
 

@@ -30,7 +30,10 @@ class ServiceInHeader extends MyModel
     public function get()
     {
         $this->setRequestParameters();
-        $query = DB::table($this->table)->select(
+        $query = DB::table($this->table)->from(
+            DB::raw("serviceinheader with (readuncommitted)")
+        )
+        ->select(
             'serviceinheader.id',
             'serviceinheader.nobukti',
             'serviceinheader.tglbukti',
@@ -45,8 +48,8 @@ class ServiceInHeader extends MyModel
             'serviceinheader.updated_at'
 
         )
-        ->leftJoin('parameter as statuscetak' , 'serviceinheader.statuscetak', 'statuscetak.id')
-        ->leftJoin('trado', 'serviceinheader.trado_id', 'trado.id');
+        ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)") , 'serviceinheader.statuscetak', 'statuscetak.id')
+        ->leftJoin(DB::raw("trado with (readuncommitted)"), 'serviceinheader.trado_id', 'trado.id');
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -63,7 +66,8 @@ class ServiceInHeader extends MyModel
     public function findAll($id)
     {
 
-        $query = DB::table('serviceinheader')->select(
+        $query = DB::table('serviceinheader')->from(DB::raw("serviceinheader with (readuncommitted)"))
+        ->select(
             'serviceinheader.id',
             'serviceinheader.nobukti',
             'serviceinheader.tglbukti',
@@ -79,8 +83,8 @@ class ServiceInHeader extends MyModel
             'serviceinheader.updated_at'
 
         )
-        ->leftJoin('parameter as statuscetak' , 'serviceinheader.statuscetak', 'statuscetak.id')
-        ->leftJoin('trado', 'serviceinheader.trado_id', 'trado.id')
+        ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'serviceinheader.statuscetak', 'statuscetak.id')
+        ->leftJoin(DB::raw("trado with (readuncommitted)"), 'serviceinheader.trado_id', 'trado.id')
         ->where('serviceinheader.id', $id);
 
         $data = $query->first();
@@ -107,8 +111,8 @@ class ServiceInHeader extends MyModel
             )
             
         )
-        ->leftJoin('parameter as statuscetak' , 'serviceinheader.statuscetak', 'statuscetak.id')
-        ->leftJoin('trado', 'serviceinheader.trado_id', 'trado.id');
+        ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'serviceinheader.statuscetak', 'statuscetak.id')
+        ->leftJoin(DB::raw("trado with (readuncommitted)"), 'serviceinheader.trado_id', 'trado.id');
 
     }
 

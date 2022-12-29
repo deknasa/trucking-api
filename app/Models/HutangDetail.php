@@ -27,7 +27,8 @@ class HutangDetail extends MyModel
     {
        
 
-        $query = DB::table('hutangdetail')->select(
+        $query = DB::table('hutangdetail')->from(DB::raw("hutangdetail with (readuncommitted)"))
+        ->select(
             'hutangdetail.total',
             'hutangdetail.cicilan',
             'hutangdetail.totalbayar',            
@@ -39,7 +40,7 @@ class HutangDetail extends MyModel
             //'supplier.id as supplier_id',
             'hutangdetail.keterangan',
         )
-            ->leftJoin('supplier', 'hutangdetail.supplier_id','supplier.id')
+            ->leftJoin(DB::raw("supplier with (readuncommitted)"), 'hutangdetail.supplier_id','supplier.id')
             ->where('hutang_id', '=', $id);
             
 

@@ -148,13 +148,13 @@ class KategoriController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Kategori $kategori, Request $request)
+    public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
 
         try {
-            $delete = Kategori::destroy($kategori->id);
-            $del = 1;
+            $kategori = Kategori::lockForUpdate()->findOrFail($id);
+            $delete = $kategori->delete();
             if ($delete) {
                 $logTrail = [
                     'namatabel' => strtoupper($kategori->getTable()),
@@ -163,7 +163,7 @@ class KategoriController extends Controller
                     'nobuktitrans' => $kategori->id,
                     'aksi' => 'DELETE',
                     'datajson' => $kategori->toArray(),
-                    'modifiedby' => $kategori->modifiedby
+                    'modifiedby' => auth('api')->user()->name
                 ];
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
@@ -171,20 +171,19 @@ class KategoriController extends Controller
 
 
                 DB::commit();
-                /* Set position and page */
+
+                $selected = $this->getPosition($kategori, $kategori->getTable(), true);
+    
+                $kategori->position = $selected->position;
+                $kategori->id = $selected->id;
+                $kategori->page = ceil($kategori->position / ($request->limit ?? 10));
+    
+                return response([
+                    'status' => true,
+                    'message' => 'Berhasil dihapus',
+                    'data' => $kategori
+                ]);
             }
-
-            $selected = $this->getPosition($kategori, $kategori->getTable(), true);
-
-            $kategori->position = $selected->position;
-            $kategori->id = $selected->id;
-            $kategori->page = ceil($kategori->position / ($request->limit ?? 10));
-
-            return response([
-                'status' => true,
-                'message' => 'Berhasil dihapus',
-                'data' => $kategori
-            ]);
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;

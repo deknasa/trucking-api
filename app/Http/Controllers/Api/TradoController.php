@@ -332,11 +332,14 @@ class TradoController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Trado $trado, Request $request)
+    public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
         try {
-            if ($trado->lockForUpdate()->delete()) {
+
+            $trado = Trado::lockForUpdate()->findOrFail($id);
+            $delete = $trado->delete();
+            if ($delete) {
                 $logTrail = [
                     'namatabel' => strtoupper($trado->getTable()),
                     'postingdari' => 'DELETE TRADO',
@@ -349,27 +352,28 @@ class TradoController extends Controller
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
+
+
+                $this->deleteFiles($trado);
+                DB::commit();
+
+                /* Set position and page */
+                $selected = $this->getPosition($trado, $trado->getTable(), true);
+                $trado->position = $selected->position;
+                $trado->id = $selected->id;
+                $trado->page = ceil($trado->position / ($request->limit ?? 10));
+
+                // dd($trado);
+                return response([
+                    'status' => true,
+                    'message' => 'Berhasil dihapus',
+                    'data' => $trado
+                ]);
             }
-
-            $this->deleteFiles($trado);
-            DB::commit();
-
-            /* Set position and page */
-            $selected = $this->getPosition($trado, $trado->getTable(), true);
-            $trado->position = $selected->position;
-            $trado->id = $selected->id;
-            $trado->page = ceil($trado->position / ($request->limit ?? 10));
-
-            // dd($trado);
-            return response([
-                'status' => true,
-                'message' => 'Berhasil dihapus',
-                'data' => $trado
-            ]);
         } catch (\Throwable $th) {
             $this->deleteFiles($trado);
             DB::rollBack();
-            return response($th->getMessage());
+            throw $th;
         }
     }
 

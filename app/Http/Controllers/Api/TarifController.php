@@ -163,14 +163,14 @@ class TarifController extends Controller
     /**
      * @ClassName
      */
-    public function destroy(Tarif $tarif, Request $request)
+    public function destroy(Request $request, $id)
     {
 
         DB::beginTransaction();
 
         try {
-            // $delete = $servicein->delete();
-            $delete = Tarif::destroy($tarif->id);
+            $tarif = Tarif::lockForUpdate()->findOrFail($id);
+            $delete = $tarif->delete();
 
             if ($delete) {
                 $logTrail = [
@@ -180,28 +180,28 @@ class TarifController extends Controller
                     'nobuktitrans' => $tarif->id,
                     'aksi' => 'DELETE',
                     'datajson' => $tarif->toArray(),
-                    'modifiedby' => $tarif->modifiedby
+                    'modifiedby' => auth('api')->user()->name
                 ];
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
 
                 DB::commit();
+                /* Set position and page */
+                $selected = $this->getPosition($tarif, $tarif->getTable(), true);
+                $tarif->position = $selected->position;
+                $tarif->id = $selected->id;
+                $tarif->page = ceil($tarif->position / ($request->limit ?? 10));
+    
+                return response([
+                    'status' => true,
+                    'message' => 'Berhasil dihapus',
+                    'data' => $tarif
+                ]);
             }
-            /* Set position and page */
-            $selected = $this->getPosition($tarif, $tarif->getTable(), true);
-            $tarif->position = $selected->position;
-            $tarif->id = $selected->id;
-            $tarif->page = ceil($tarif->position / ($request->limit ?? 10));
-
-            return response([
-                'status' => true,
-                'message' => 'Berhasil dihapus',
-                'data' => $tarif
-            ]);
         } catch (\Throwable $th) {
             DB::rollBack();
-            return response($th->getMessage());
+            throw $th;
         }
     }
 

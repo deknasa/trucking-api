@@ -26,7 +26,8 @@ class ServiceInDetail extends MyModel
 
     function getAll($id)
     {
-        $query = DB::table('serviceindetail')->select(
+        $query = DB::table('serviceindetail')->from(DB::raw("serviceindetail with (readuncommitted)"))
+        ->select(
             // 'serviceindetail.nobukti',
             'mekanik.id as mekanik_id',
             'mekanik.namamekanik as mekanik',

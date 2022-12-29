@@ -33,7 +33,8 @@ class AbsensiSupirHeader extends MyModel
     {
         $this->setRequestParameters();
 
-        $query = DB::table($this->table)->select(
+        $query = DB::table($this->table)->from(DB::raw("absensisupirheader with (readuncommitted)"))
+        ->select(
             'absensisupirheader.id',
             'absensisupirheader.nobukti',
             'absensisupirheader.tglbukti',
@@ -48,7 +49,7 @@ class AbsensiSupirHeader extends MyModel
             'absensisupirheader.created_at',
             'absensisupirheader.updated_at'
         )
-            ->leftJoin('parameter as statuscetak', 'absensisupirheader.statuscetak', 'statuscetak.id');
+            ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'absensisupirheader.statuscetak', 'statuscetak.id');
 
            
 
@@ -66,7 +67,7 @@ class AbsensiSupirHeader extends MyModel
 
     public function findAll($id)
     {
-        $query = DB::table('absensisupirheader')
+        $query = DB::table('absensisupirheader')->from(DB::raw("absensisupirheader with (readuncommitted)"))
             ->select(
                 'absensisupirheader.id',
                 'absensisupirheader.nobukti',
@@ -105,7 +106,7 @@ class AbsensiSupirHeader extends MyModel
             $this->table.updated_at"
             )
         )
-        ->leftJoin('parameter as statuscetak' , 'absensisupirheader.statuscetak', 'statuscetak.id');
+        ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)") , 'absensisupirheader.statuscetak', 'statuscetak.id');
     }
 
     public function createTemp(string $modelTable)
@@ -157,7 +158,7 @@ class AbsensiSupirHeader extends MyModel
 
     public function getAbsensi($id)
     {
-        $query = DB::table('absensisupirdetail')
+        $query = DB::table('absensisupirdetail')->from(DB::raw("absensisupirdetail with (readuncommitted)"))
             ->select(
                 'absensisupirdetail.keterangan as keterangan_detail',
                 'absensisupirdetail.jam',
@@ -170,9 +171,9 @@ class AbsensiSupirHeader extends MyModel
                 'supirutama.id as supir_id',
                 'absensisupirheader.kasgantung_nobukti',
             )
-            ->leftJoin('absensisupirheader', 'absensisupirdetail.absensi_id', 'absensisupirheader.id')
-            ->leftJoin('trado', 'absensisupirdetail.trado_id', 'trado.id')
-            ->leftJoin('supir as supirutama', 'absensisupirdetail.supir_id', 'supirutama.id')
+            ->leftJoin(DB::raw("absensisupirheader with (readuncommitted)"), 'absensisupirdetail.absensi_id', 'absensisupirheader.id')
+            ->leftJoin(DB::raw("trado with (readuncommitted)"), 'absensisupirdetail.trado_id', 'trado.id')
+            ->leftJoin(DB::raw("supir as supirutama with (readuncommitted)"), 'absensisupirdetail.supir_id', 'supirutama.id')
             ->whereRaw("not EXISTS (
             SELECT absensisupirapprovalheader.absensisupir_nobukti
     FROM absensisupirdetail          

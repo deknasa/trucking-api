@@ -138,11 +138,12 @@ class ZonaController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Zona $zona, Request $request)
+    public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
         try {
-            $delete = Zona::destroy($zona->id);
+            $zona = Zona::lockForUpdate()->findOrFail($id);
+            $delete = $zona->delete();
             if ($delete) {
                 $logTrail = [
                     'namatabel' => strtoupper($zona->getTable()),
@@ -151,24 +152,24 @@ class ZonaController extends Controller
                     'nobuktitrans' => $zona->id,
                     'aksi' => 'DELETE',
                     'datajson' => $zona->toArray(),
-                    'modifiedby' => $zona->modifiedby
+                    'modifiedby' => auth('api')->user()->name
                 ];
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
+                DB::commit();
+    
+                $selected = $this->getPosition($zona, $zona->getTable(), true);
+                $zona->position = $selected->position;
+                $zona->id = $selected->id;
+                $zona->page = ceil($zona->position / ($request->limit ?? 10));
+    
+                return response([
+                    'status' => true,
+                    'message' => 'Berhasil dihapus',
+                    'data' => $zona
+                ]);
             }
-            DB::commit();
-
-            $selected = $this->getPosition($zona, $zona->getTable(), true);
-            $zona->position = $selected->position;
-            $zona->id = $selected->id;
-            $zona->page = ceil($zona->position / ($request->limit ?? 10));
-
-            return response([
-                'status' => true,
-                'message' => 'Berhasil dihapus',
-                'data' => $zona
-            ]);
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;

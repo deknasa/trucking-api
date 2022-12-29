@@ -26,12 +26,13 @@ class ServiceOutDetail extends MyModel
 
     function getAll($id)
     {
-        $query = DB::table('serviceoutdetail')->select(
+        $query = DB::table('serviceoutdetail')->from(DB::raw("serviceoutdetail with (readuncommitted)"))
+        ->select(
             'serviceoutdetail.nobukti',
             'serviceoutdetail.keterangan',
             'serviceinheader.nobukti as servicein_nobukti',
         )
-            ->leftJoin('serviceinheader', 'serviceoutdetail.servicein_nobukti', 'serviceinheader.nobukti')
+            ->leftJoin(DB::raw("serviceinheader with (readuncommitted)"), 'serviceoutdetail.servicein_nobukti', 'serviceinheader.nobukti')
 
             ->where('serviceout_id', '=', $id);
 

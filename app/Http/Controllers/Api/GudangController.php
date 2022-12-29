@@ -247,12 +247,12 @@ class GudangController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Gudang $gudang, Request $request)
+    public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
         try {
-            $delete = Gudang::destroy($gudang->id);
-            $del = 1;
+            $gudang = Gudang::lockForUpdate()->findOrFail($id);
+            $delete = $gudang->delete();
             if ($delete) {
                 $logTrail = [
                     'namatabel' => strtoupper($gudang->getTable()),
@@ -261,29 +261,30 @@ class GudangController extends Controller
                     'nobuktitrans' => $gudang->id,
                     'aksi' => 'DELETE',
                     'datajson' => $gudang->toArray(),
-                    'modifiedby' => $gudang->modifiedby
+                    'modifiedby' => auth('api')->user()->name
                 ];
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
 
                 DB::commit();
+                /* Set position and page */
+                $selected = $this->getPosition($gudang, $gudang->getTable());
+                $gudang->position = $selected->position;
+                $gudang->id = $selected->id;
+                $gudang->page = ceil($gudang->position / ($request->limit ?? 10));
+    
+                return response([
+                    'status' => true,
+                    'message' => 'Berhasil dihapus',
+                    'data' => $gudang
+                ]);
             }
 
-            /* Set position and page */
-            $selected = $this->getPosition($gudang, $gudang->getTable());
-            $gudang->position = $selected->position;
-            $gudang->id = $selected->id;
-            $gudang->page = ceil($gudang->position / ($request->limit ?? 10));
-
-            return response([
-                'status' => true,
-                'message' => 'Berhasil dihapus',
-                'data' => $gudang
-            ]);
         } catch (\Throwable $th) {
             DB::rollBack();
-            return response($th->getMessage());
+            // return response($th->getMessage());
+            throw $th;
         }
     }
 

@@ -200,7 +200,7 @@ class UpahSupirController extends Controller
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-                UpahSupirRincian::where('upahsupir_id', $upahsupir->id)->lockForUpdate()->delete();
+                UpahSupirRincian::where('upahsupir_id', $upahsupir->id)->delete();
                 /* Store detail */
                 $detaillog = [];
                 for ($i = 0; $i < count($request->nominalsupir); $i++) {
@@ -274,11 +274,10 @@ class UpahSupirController extends Controller
 
         DB::beginTransaction();
         try {
-            $getDetail = UpahSupirRincian::where('upahsupir_id', $upahsupir->id)->get();
-            $delete = UpahSupirRincian::where('upahsupir_id', $upahsupir->id)->lockForUpdate()->delete();
-            $delete = UpahSupir::destroy($upahsupir->id);
-            $this->deleteFiles($upahsupir);
-            if ($delete) {
+            $getDetail = UpahSupirRincian::from(DB::raw('upahsupirrincian with (readuncommitted)'))->where('upahsupir_id', $upahsupir->id)->get();
+            $isDelete = UpahSupir::where('id', $upahsupir->id)->delete();
+
+            if ($isDelete) {
                 $logTrail = [
                     'namatabel' => strtoupper($upahsupir->getTable()),
                     'postingdari' => 'DELETE UPAH SUPIR',
@@ -306,25 +305,28 @@ class UpahSupirController extends Controller
 
                 $validatedLogTrailUpahSupirRincian = new StoreLogTrailRequest($logTrailUpahSupirRincian);
                 app(LogTrailController::class)->store($validatedLogTrailUpahSupirRincian);
+                DB::commit();
+    
+                /* Set position and page */
+                $selected = $this->getPosition($upahsupir, $upahsupir->getTable(), true);
+                $upahsupir->position = $selected->position;
+                $upahsupir->id = $selected->id;
+                $upahsupir->page = ceil($upahsupir->position / ($request->limit ?? 10));
+    
+                return response([
+                    'status' => true,
+                    'message' => 'Berhasil dihapus',
+                    'data' => $upahsupir
+                ]);
 
             }
 
-            DB::commit();
-
-            /* Set position and page */
-            $selected = $this->getPosition($upahsupir, $upahsupir->getTable(), true);
-            $upahsupir->position = $selected->position;
-            $upahsupir->id = $selected->id;
-            $upahsupir->page = ceil($upahsupir->position / ($request->limit ?? 10));
-
             return response([
-                'status' => true,
-                'message' => 'Berhasil dihapus',
-                'data' => $upahsupir
-            ]);
+                'message' => 'Gagal dihapus'
+            ], 500);
         } catch (\Throwable $th) {
             DB::rollBack();
-            return response($th->getMessage());
+            throw $th;
         }
     }
 

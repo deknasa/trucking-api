@@ -199,6 +199,7 @@ class InvoiceHeaderController extends Controller
                     'agen_id' => $invoice->agen_id,
                     'modifiedby' => auth('api')->user()->name,
                     'statusformat' => 1,
+                    'jenisinvoice' =>'UTAMA',
                 ];
 
                 $piutangDetail = [];
@@ -679,82 +680,27 @@ class InvoiceHeaderController extends Controller
 
             $nobukti = $piutangHeader['nobukti'];
 
-            $parameterController = new ParameterController;
-            $statusApp = $parameterController->getparameterid('STATUS APPROVAL', 'STATUS APPROVAL', 'NON APPROVAL');
-            $jurnalHeader = [
-                'tanpaprosesnobukti' => 1,
-                'nobukti' => $header->original['data']['nobukti'],
-                'tglbukti' => $header->original['data']['tglbukti'],
-                'keterangan' => $header->original['data']['keterangan'],
-                'postingdari' => "ENTRY PIUTANG DARI INVOICE",
-                'statusapproval' => $statusApp->id,
-                'userapproval' => "",
-                'tglapproval' => "",
-                'statusformat' => 0,
-                'modifiedby' => auth('api')->user()->name,
-            ];
-
-            $storeJurnal = new StoreJurnalUmumHeaderRequest($jurnalHeader);
-            $jurnal = app(JurnalUmumHeaderController::class)->store($storeJurnal);
-
+            
 
             $detailLogPiutang = [];
             $detailLogJurnal = [];
             foreach ($piutangDetail as $value) {
 
                 $value['piutang_id'] = $header->original['data']['id'];
+                $value['entridetail'] = 1;
+                $value['jurnal_id'] = $header->original['idlogtrail']['jurnal_id'];
+                $value['tglbukti'] = $piutangHeader['tglbukti'];
                 $piutangDetail = new StorePiutangDetailRequest($value);
                 $detailPiutang = app(PiutangDetailController::class)->store($piutangDetail);
 
-                $detailLogPiutang[] = $detailPiutang['detail']->toArray();
-
-                // JURNAL
-
-                $getBaris = DB::table('jurnalumumdetail')->select('baris')->where('nobukti', $nobukti)->orderByDesc('baris')->first();
-                $getCOA = DB::table('parameter')->where("kelompok", "COA INVOICE")->get();
-
-                if (is_null($getBaris)) {
-                    $baris = 0;
-                } else {
-                    $baris = $getBaris->baris + 1;
-                }
-
-                for ($x = 0; $x <= 1; $x++) {
-
-                    if ($x == 1) {
-                        $datadetail = [
-                            'jurnalumum_id' => $jurnal->original['data']['id'],
-                            'nobukti' => $nobukti,
-                            'tglbukti' => $jurnal->original['data']['tglbukti'],
-                            'coa' =>  $getCOA[$x]->text,
-                            'nominal' => -$piutangDetail->nominal,
-                            'keterangan' => $piutangDetail->keterangan,
-                            'modifiedby' => auth('api')->user()->name,
-                            'baris' => $baris,
-                        ];
-                    } else {
-                        $datadetail = [
-                            'jurnalumum_id' => $jurnal->original['data']['id'],
-                            'nobukti' => $nobukti,
-                            'tglbukti' => $jurnal->original['data']['tglbukti'],
-                            'coa' =>  $getCOA[$x]->text,
-                            'nominal' => $piutangDetail->nominal,
-                            'keterangan' => $piutangDetail->keterangan,
-                            'modifiedby' => auth('api')->user()->name,
-                            'baris' => $baris,
-                        ];
-                    }
-                    $detail = new StoreJurnalUmumDetailRequest($datadetail);
-                    $detailJurnal = app(JurnalUmumDetailController::class)->store($detail);
-
-                    $detailLogJurnal[] = $detailJurnal['detail']->toArray();
-                }
+                $detailLogPiutang[] = $detailPiutang['detail']['piutangdetail']->toArray();
+                $detailLogJurnal = array_merge($detailLogJurnal, $detailPiutang['detail']['jurnaldetail']);
             }
 
             $datalogtrail = [
                 'namatabel' => strtoupper($detailPiutang['tabel']),
                 'postingdari' => 'ENTRY INVOICE HEADER',
-                'idtrans' =>  $header->original['idlogtrail'],
+                'idtrans' =>  $header->original['idlogtrail']['piutang'],
                 'nobuktitrans' => $nobukti,
                 'aksi' => 'ENTRY',
                 'datajson' => $detailLogPiutang,
@@ -764,11 +710,10 @@ class InvoiceHeaderController extends Controller
             $data = new StoreLogTrailRequest($datalogtrail);
             app(LogTrailController::class)->store($data);
 
-
             $datalogtrail = [
-                'namatabel' => strtoupper($detailJurnal['tabel']),
+                'namatabel' => strtoupper('JURNALUMUMDETAIL'),
                 'postingdari' => 'ENTRY PIUTANG DARI INVOICE ',
-                'idtrans' =>  $jurnal->original['idlogtrail'],
+                'idtrans' =>  $header->original['idlogtrail']['jurnal'],
                 'nobuktitrans' => $nobukti,
                 'aksi' => 'ENTRY',
                 'datajson' => $detailLogJurnal,

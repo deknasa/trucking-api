@@ -36,7 +36,9 @@ class JurnalUmumHeader extends MyModel
 
         $lennobukti = 3;
 
-        $query = DB::table($this->table)
+        $query = DB::table($this->table)->from(
+                DB::raw("jurnalumumheader with (readuncommitted)")
+            )
             ->select(
                 'jurnalumumheader.id',
                 'jurnalumumheader.nobukti',

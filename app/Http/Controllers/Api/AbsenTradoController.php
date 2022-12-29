@@ -137,11 +137,12 @@ class AbsenTradoController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(AbsenTrado $absenTrado, Request $request)
+    public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
         try {
-            $delete = AbsenTrado::destroy($absenTrado->id);
+            $absenTrado = AbsenTrado::lockForUpdate()->findOrFail($id);
+            $delete = $absenTrado->delete();
 
             if ($delete) {
                 $logTrail = [
@@ -151,7 +152,7 @@ class AbsenTradoController extends Controller
                     'nobuktitrans' => $absenTrado->id,
                     'aksi' => 'DELETE',
                     'datajson' => $absenTrado->toArray(),
-                    'modifiedby' => $absenTrado->modifiedby
+                    'modifiedby' => auth('api')->user()->name
                 ];
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);

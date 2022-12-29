@@ -41,7 +41,8 @@ class KasGantungHeader extends MyModel
     {
         $this->setRequestParameters();
 
-        $query = DB::table($this->table)->select(
+        $query = DB::table($this->table)->from(DB::raw("kasgantungheader with (readuncommitted)"))
+        ->select(
             'kasgantungheader.id',
             'kasgantungheader.nobukti',
             'kasgantungheader.tglbukti',
@@ -60,10 +61,10 @@ class KasGantungHeader extends MyModel
             'kasgantungheader.created_at',
             'kasgantungheader.updated_at'
         )
-            ->leftJoin('parameter', 'kasgantungheader.statuscetak', 'parameter.id')
-            ->leftJoin('penerima', 'kasgantungheader.penerima_id', 'penerima.id')
-            ->leftJoin('parameter as statuscetak' , 'kasgantungheader.statuscetak', 'statuscetak.id')
-            ->leftJoin('bank', 'kasgantungheader.bank_id', 'bank.id');
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'kasgantungheader.statuscetak', 'parameter.id')
+            ->leftJoin(DB::raw("penerima with (readuncommitted)"), 'kasgantungheader.penerima_id', 'penerima.id')
+            ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'kasgantungheader.statuscetak', 'statuscetak.id')
+            ->leftJoin(DB::raw("bank with (readuncommitted)"), 'kasgantungheader.bank_id', 'bank.id');
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -79,7 +80,7 @@ class KasGantungHeader extends MyModel
 
     public function findUpdate($id) 
     {
-        $query = DB::table('kasgantungheader')
+        $query = DB::table('kasgantungheader')->from(DB::raw("kasgantungheader with (readuncommitted)"))
         ->select(
             'kasgantungheader.id',
             'kasgantungheader.nobukti',
@@ -101,8 +102,8 @@ class KasGantungHeader extends MyModel
             'kasgantungheader.created_at',
             'kasgantungheader.updated_at'
         )
-            ->leftJoin('penerima', 'kasgantungheader.penerima_id', 'penerima.id')
-            ->leftJoin('bank', 'kasgantungheader.bank_id', 'bank.id')
+            ->leftJoin(DB::raw("penerima with (readuncommitted)"), 'kasgantungheader.penerima_id', 'penerima.id')
+            ->leftJoin(DB::raw("bank with (readuncommitted)"), 'kasgantungheader.bank_id', 'bank.id')
             ->where('kasgantungheader.id',$id);
 
         $data = $query->first();
@@ -132,9 +133,9 @@ class KasGantungHeader extends MyModel
             $this->table.updated_at"
             )
         )
-        ->leftJoin('penerima', 'kasgantungheader.penerima_id', 'penerima.id')
-        ->leftJoin('parameter as statuscetak' , 'kasgantungheader.statuscetak', 'statuscetak.id')
-        ->leftJoin('bank', 'kasgantungheader.bank_id', 'bank.id');
+        ->leftJoin(DB::raw("penerima with (readuncommitted)"), 'kasgantungheader.penerima_id', 'penerima.id')
+        ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'kasgantungheader.statuscetak', 'statuscetak.id')
+        ->leftJoin(DB::raw("bank with (readuncommitted)"), 'kasgantungheader.bank_id', 'bank.id');
 
     }
 
@@ -178,7 +179,7 @@ class KasGantungHeader extends MyModel
     public function getKasGantung($dari,$sampai)
     {
         $this->setRequestParameters();
-        $query = DB::table('kasgantungdetail')
+        $query = DB::table('kasgantungdetail')->from(DB::raw("kasgantungdetail with (readuncommitted)"))
         ->select(DB::raw("kasgantungdetail.id as detail_id,kasgantungdetail.*,kasgantungheader.id,kasgantungheader.tglbukti"))
         ->whereBetween('tglbukti', [$dari, $sampai])
         ->whereRaw(" NOT EXISTS (

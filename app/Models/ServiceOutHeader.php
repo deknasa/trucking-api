@@ -34,7 +34,8 @@ class ServiceOutHeader extends MyModel
     public function get()
     {
         $this->setRequestParameters();
-        $query = DB::table($this->table)->select(
+        $query = DB::table($this->table)->from(DB::raw("serviceoutheader with (readuncommitted)"))
+        ->select(
             'serviceoutheader.id',
             'serviceoutheader.nobukti',
             'serviceoutheader.tglbukti',
@@ -49,8 +50,8 @@ class ServiceOutHeader extends MyModel
             'serviceoutheader.updated_at'
 
             )
-            ->leftJoin('parameter as statuscetak' , 'serviceoutheader.statuscetak', 'statuscetak.id')
-            ->leftJoin('trado', 'serviceoutheader.trado_id', 'trado.id');
+            ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)") , 'serviceoutheader.statuscetak', 'statuscetak.id')
+            ->leftJoin(DB::raw("trado with (readuncommitted)"), 'serviceoutheader.trado_id', 'trado.id');
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -83,8 +84,8 @@ class ServiceOutHeader extends MyModel
             'serviceoutheader.updated_at'
 
         )
-        ->leftJoin('parameter as statuscetak' , 'serviceoutheader.statuscetak', 'statuscetak.id')
-        ->leftJoin('trado', 'serviceoutheader.trado_id', 'trado.id')
+        ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)") , 'serviceoutheader.statuscetak', 'statuscetak.id')
+        ->leftJoin(DB::raw("trado with (readuncommitted)"), 'serviceoutheader.trado_id', 'trado.id')
         ->where('serviceoutheader.id', $id);
         $data = $query->first();
 
@@ -110,8 +111,8 @@ class ServiceOutHeader extends MyModel
             )
 
         )
-        ->leftJoin('parameter as statuscetak' , 'serviceoutheader.statuscetak', 'statuscetak.id')
-         ->leftJoin('trado', 'serviceoutheader.trado_id', 'trado.id');
+        ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)") , 'serviceoutheader.statuscetak', 'statuscetak.id')
+        ->leftJoin(DB::raw("trado with (readuncommitted)"), 'serviceoutheader.trado_id', 'trado.id');
 
     }
 

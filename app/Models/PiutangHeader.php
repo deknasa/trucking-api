@@ -28,7 +28,9 @@ class PiutangHeader extends MyModel
     {
         $this->setRequestParameters();
 
-        $query = DB::table($this->table)->select(
+        $query = DB::table($this->table)->from(
+            DB::raw("piutangheader with (readuncommitted)")
+        )->select(
             'piutangheader.id',
             'piutangheader.nobukti',
             'piutangheader.tglbukti',
@@ -44,8 +46,8 @@ class PiutangHeader extends MyModel
             'piutangheader.userbukacetak',
             'agen.namaagen as agen_id'
         )
-        ->leftJoin('parameter', 'piutangheader.statuscetak', 'parameter.id')
-        ->leftJoin('agen', 'piutangheader.agen_id', 'agen.id');
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'piutangheader.statuscetak', 'parameter.id')
+            ->leftJoin(DB::raw("agen with (readuncommitted)"), 'piutangheader.agen_id', 'agen.id');
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -65,8 +67,11 @@ class PiutangHeader extends MyModel
 
         $temp = $this->createTempPiutang($id);
         $query = DB::table('piutangheader')
+            ->from(
+                DB::raw("piutangheader with (readuncommitted)")
+            )
             ->select(DB::raw("piutangheader.id as id,piutangheader.nobukti as nobukti,piutangheader.tglbukti, piutangheader.keterangan, piutangheader.invoice_nobukti, piutangheader.nominal, piutangheader.agen_id," . $temp . ".sisa"))
-            ->leftJoin($temp, 'piutangheader.agen_id', $temp . ".agen_id")
+            ->leftJoin(DB::raw("$temp with (readuncommitted)"), 'piutangheader.agen_id', $temp . ".agen_id")
             ->whereRaw("piutangheader.agen_id = $id")
             ->whereRaw("piutangheader.nobukti = $temp.nobukti")
             ->where(function ($query) use ($temp) {
@@ -92,8 +97,11 @@ class PiutangHeader extends MyModel
 
 
         $fetch = DB::table('piutangheader')
+            ->from(
+                DB::raw("piutangheader with (readuncommitted)")
+            )
             ->select(DB::raw("piutangheader.nobukti,piutangheader.agen_id, sum(pelunasanpiutangdetail.nominal) as nominalbayar, (SELECT (piutangheader.nominal - coalesce(SUM(pelunasanpiutangdetail.nominal),0)) FROM pelunasanpiutangdetail WHERE pelunasanpiutangdetail.piutang_nobukti= piutangheader.nobukti) AS sisa"))
-            ->leftJoin('pelunasanpiutangdetail', 'pelunasanpiutangdetail.piutang_nobukti', 'piutangheader.nobukti')
+            ->leftJoin(DB::raw("pelunasanpiutangdetail with (readuncommitted)"), 'pelunasanpiutangdetail.piutang_nobukti', 'piutangheader.nobukti')
             ->whereRaw("piutangheader.agen_id = $id")
             ->groupBy('piutangheader.nobukti', 'piutangheader.agen_id', 'piutangheader.nominal');
         // ->get();
@@ -148,7 +156,7 @@ class PiutangHeader extends MyModel
                  $this->table.updated_at"
             )
         )
-            ->leftJoin('agen', 'piutangheader.agen_id', 'agen.id');
+            ->leftJoin(DB::raw("agen with (readuncommitted)"), 'piutangheader.agen_id', 'agen.id');
     }
 
     public function createTemp(string $modelTable)

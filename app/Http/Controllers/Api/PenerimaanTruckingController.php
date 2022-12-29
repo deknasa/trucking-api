@@ -146,12 +146,13 @@ class PenerimaanTruckingController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(PenerimaanTrucking $penerimaanTrucking, Request $request)
+    public function destroy(Request $request, $id)
     {
         
         DB::beginTransaction();
         try {
-            $delete = PenerimaanTrucking::destroy($penerimaanTrucking->id);
+            $penerimaanTrucking = PenerimaanTrucking::lockForUpdate()->findOrFail($id);
+            $delete = $penerimaanTrucking->delete();
             
             if ($delete) {
                 $logTrail = [
@@ -161,7 +162,7 @@ class PenerimaanTruckingController extends Controller
                     'nobuktitrans' => $penerimaanTrucking->id,
                     'aksi' => 'DELETE',
                     'datajson' => $penerimaanTrucking->toArray(),
-                    'modifiedby' => $penerimaanTrucking->modifiedby
+                    'modifiedby' => auth('api')->user()->name
                 ];
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
@@ -178,17 +179,10 @@ class PenerimaanTruckingController extends Controller
                     'message' => 'Berhasil dihapus',
                     'data' => $penerimaanTrucking
                 ]);
-            } else {
-                
-                DB::rollBack();
-                return response([
-                    'status' => false,
-                    'message' => 'Gagal dihapus'
-                ]);
             }
         } catch (\Throwable $th) {
             DB::rollBack();         
-            return response($th->getMessage());   
+            throw $th;
         }
     }
 

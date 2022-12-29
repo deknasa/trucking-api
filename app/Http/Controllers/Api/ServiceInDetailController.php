@@ -26,7 +26,7 @@ class ServiceInDetailController extends Controller
         ];
 
         try {
-            $query = ServiceInDetail::from('serviceindetail as detail');
+            $query = ServiceInDetail::from(DB::raw("serviceindetail as detail with (readuncommitted)"));
 
             if (isset($params['id'])) {
                 $query->where('detail.id', $params['id']);
