@@ -27,7 +27,7 @@ class InvoiceDetailController extends Controller
             'sortOrder' => $request->sortOrder ?? 'asc',
         ];
         try {
-            $query = InvoiceDetail::from('invoicedetail as detail');
+            $query = InvoiceDetail::from(DB::raw("invoicedetail as detail with (readuncommitted)"));
 
             if (isset($params['id'])) {
                 $query->where('detail.id', $params['id']);
@@ -61,11 +61,11 @@ class InvoiceDetailController extends Controller
                     'detail.invoice_id'
                 )
                 ->distinct('detail.orderantrucking_nobukti')
-                ->leftJoin('suratpengantar','detail.orderantrucking_nobukti','suratpengantar.jobtrucking')
-                ->leftJoin('invoiceheader as header','header.id','detail.invoice_id')
-                ->leftJoin('agen','header.agen_id','agen.id')
-                ->leftJoin('cabang','header.cabang_id','cabang.id')
-                ->leftJoin('kota','suratpengantar.sampai_id','kota.id');
+                ->leftJoin(DB::raw("suratpengantar with (readuncommitted)"),'detail.orderantrucking_nobukti','suratpengantar.jobtrucking')
+                ->leftJoin(DB::raw("invoiceheader as header with (readuncommitted)"),'header.id','detail.invoice_id')
+                ->leftJoin(DB::raw("agen with (readuncommitted)"),'header.agen_id','agen.id')
+                ->leftJoin(DB::raw("cabang with (readuncommitted)"),'header.cabang_id','cabang.id')
+                ->leftJoin(DB::raw("kota with (readuncommitted)"),'suratpengantar.sampai_id','kota.id');
 
                 $invoiceDetail = $query->get();
             } else if ($params['forExport']) {
@@ -78,9 +78,9 @@ class InvoiceDetailController extends Controller
                    'detail.keterangan as keterangan_detail' 
                 )
                 
-                ->leftJoin('suratpengantar','detail.suratpengantar_nobukti','suratpengantar.nobukti')
-                ->leftJoin('agen','suratpengantar.agen_id','agen.id')
-                ->leftJoin('kota','suratpengantar.sampai_id','kota.id');
+                ->leftJoin(DB::raw("suratpengantar with (readuncommitted)"),'detail.suratpengantar_nobukti','suratpengantar.nobukti')
+                ->leftJoin(DB::raw("agen with (readuncommitted)"),'suratpengantar.agen_id','agen.id')
+                ->leftJoin(DB::raw("kota with (readuncommitted)"),'suratpengantar.sampai_id','kota.id');
 
                 $invoiceDetail = $query->get();
             } else {

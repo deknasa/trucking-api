@@ -109,7 +109,7 @@ class PiutangDetailController extends Controller
                 for ($x = 0; $x <= 1; $x++) {
                     
                     if ($x == 1) {
-                        $datadetail = [
+                        $jurnaldetail = [
                             'jurnalumum_id' => $request->jurnal_id,
                             'nobukti' => $nobukti,
                             'tglbukti' => $request->tglbukti,
@@ -120,7 +120,7 @@ class PiutangDetailController extends Controller
                             'baris' => $baris,
                         ];
                     } else {
-                        $datadetail = [
+                        $jurnaldetail = [
                             'jurnalumum_id' => $request->jurnal_id,
                             'nobukti' => $nobukti,
                             'tglbukti' => $request->tglbukti,
@@ -131,7 +131,7 @@ class PiutangDetailController extends Controller
                             'baris' => $baris,
                         ];
                     }
-                    $detail = new StoreJurnalUmumDetailRequest($datadetail);
+                    $detail = new StoreJurnalUmumDetailRequest($jurnaldetail);
                     $detailJurnal = app(JurnalUmumDetailController::class)->store($detail);
 
                     

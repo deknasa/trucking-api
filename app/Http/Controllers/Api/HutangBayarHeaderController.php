@@ -72,8 +72,10 @@ class HutangBayarHeaderController extends Controller
             $content['table'] = 'hutangbayarheader';
             $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
 
-            $statusApproval = Parameter::where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
-            $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
+            $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                ->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
+            $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                ->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
 
             $hutangbayarheader = new HutangBayarHeader();
             $hutangbayarheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
@@ -94,17 +96,6 @@ class HutangBayarHeaderController extends Controller
             $hutangbayarheader->nobukti = $nobukti;
             $hutangbayarheader->save();
 
-            $logTrail = [
-                'namatabel' => strtoupper($hutangbayarheader->getTable()),
-                'postingdari' => 'ENTRY HUTANG BAYAR HEADER',
-                'idtrans' => $hutangbayarheader->id,
-                'nobuktitrans' => $hutangbayarheader->nobukti,
-                'aksi' => 'ENTRY',
-                'datajson' => $hutangbayarheader->toArray(),
-                'modifiedby' => $hutangbayarheader->modifiedby
-            ];
-            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-            $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
             /* Store detail */
             $detaillog = [];
 
@@ -147,33 +138,22 @@ class HutangBayarHeaderController extends Controller
                 }
                 $detaillog[] = $datadetails['detail']->toArray();
             }
-
-            $datalogtrail = [
-                'namatabel' => strtoupper($tabeldetail),
-                'postingdari' => 'ENTRY HUTANG BAYAR DETAIL',
-                'idtrans' =>  $storedLogTrail['id'],
-                'nobuktitrans' => $hutangbayarheader->nobukti,
-                'aksi' => 'ENTRY',
-                'datajson' => $detaillog,
-                'modifiedby' => $hutangbayarheader->modifiedby,
-            ];
-
-            $data = new StoreLogTrailRequest($datalogtrail);
-            app(LogTrailController::class)->store($data);
-
-            $request->sortname = $request->sortname ?? 'id';
-            $request->sortorder = $request->sortorder ?? 'asc';
+            
 
             //INSERT TO PENGELUARAN
-            $bank = Bank::select('coa', 'statusformatpengeluaran', 'tipe')->where('id', $hutangbayarheader->bank_id)->first();
-            $parameter = Parameter::where('id', $bank->statusformatpengeluaran)->first();
+            $bank = Bank::from(DB::raw("bank with (readuncommitted)"))
+                ->select('coa', 'statusformatpengeluaran', 'tipe')->where('id', $hutangbayarheader->bank_id)->first();
+
+            $parameter = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('id', $bank->statusformatpengeluaran)->first();
 
 
             if ($bank->tipe == 'KAS') {
-                $jenisTransaksi = Parameter::where('grp', 'JENIS TRANSAKSI')->where('text', 'KAS')->first();
+                $jenisTransaksi = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                    ->where('grp', 'JENIS TRANSAKSI')->where('text', 'KAS')->first();
             }
             if ($bank->tipe == 'BANK') {
-                $jenisTransaksi = Parameter::where('grp', 'JENIS TRANSAKSI')->where('text', 'BANK')->first();
+                $jenisTransaksi = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                    ->where('grp', 'JENIS TRANSAKSI')->where('text', 'BANK')->first();
             }
             $group = $parameter->grp;
             $subgroup = $parameter->subgrp;
@@ -192,6 +172,34 @@ class HutangBayarHeaderController extends Controller
 
             $hutangbayarheader->pengeluaran_nobukti = $nobuktiPengeluaran;
             $hutangbayarheader->save();
+
+            
+            //LOGTRAIL HUTANG BAYAR HEADER
+            $logTrail = [
+                'namatabel' => strtoupper($hutangbayarheader->getTable()),
+                'postingdari' => 'ENTRY HUTANG BAYAR HEADER',
+                'idtrans' => $hutangbayarheader->id,
+                'nobuktitrans' => $hutangbayarheader->nobukti,
+                'aksi' => 'ENTRY',
+                'datajson' => $hutangbayarheader->toArray(),
+                'modifiedby' => $hutangbayarheader->modifiedby
+            ];
+            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+            $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+
+            //LOGTRAIL HUTANG BAYAR DETAIL
+            $datalogtrail = [
+                'namatabel' => strtoupper($tabeldetail),
+                'postingdari' => 'ENTRY HUTANG BAYAR DETAIL',
+                'idtrans' =>  $storedLogTrail['id'],
+                'nobuktitrans' => $hutangbayarheader->nobukti,
+                'aksi' => 'ENTRY',
+                'datajson' => $detaillog,
+                'modifiedby' => $hutangbayarheader->modifiedby,
+            ];
+
+            $data = new StoreLogTrailRequest($datalogtrail);
+            app(LogTrailController::class)->store($data);
 
             $pengeluaranHeader = [
                 'tanpaprosesnobukti' => 1,
@@ -215,11 +223,11 @@ class HutangBayarHeaderController extends Controller
             ];
 
             $pengeluaranDetail = [];
-            $coaDebet = Parameter::where('grp', 'COA PEMBAYARAN HUTANG DEBET')->first();
+            $coaDebet = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'COA PEMBAYARAN HUTANG DEBET')->first();
 
             for ($i = 0; $i < count($request->hutang_id); $i++) {
-                $hutang = HutangHeader::where('id', $request->hutang_id[$i])->first();
-                $hutangDetail = HutangDetail::where('nobukti', $hutang->nobukti)->first();
+                $hutang = HutangHeader::from(DB::raw("hutangheader with (readuncommitted)"))->where('id', $request->hutang_id[$i])->first();
+                $hutangDetail = HutangDetail::from(DB::raw("hutangdetail with (readuncommitted)"))->where('nobukti', $hutang->nobukti)->first();
                 $detail = [];
 
                 $detail = [
@@ -241,13 +249,12 @@ class HutangBayarHeaderController extends Controller
 
             $pengeluaran = $this->storePengeluaran($pengeluaranHeader, $pengeluaranDetail);
 
-
-            // if (!$pengeluaran['status'] AND @$pengeluaran['errorCode'] == 2601) {
-            //     goto ATAS;
-            // }
             if (!$pengeluaran['status']) {
                 throw new \Throwable($pengeluaran['message']);
             }
+
+            $request->sortname = $request->sortname ?? 'id';
+            $request->sortorder = $request->sortorder ?? 'asc';
             DB::commit();
             /* Set position and page */
             $selected = $this->getPosition($hutangbayarheader, $hutangbayarheader->getTable());
@@ -309,18 +316,17 @@ class HutangBayarHeaderController extends Controller
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-                PengeluaranDetail::where('nobukti', $hutangbayarheader->pengeluaran_nobukti)->lockForUpdate()->delete();
-                PengeluaranHeader::where('nobukti', $hutangbayarheader->pengeluaran_nobukti)->lockForUpdate()->delete();
-                JurnalUmumDetail::where('nobukti', $hutangbayarheader->pengeluaran_nobukti)->lockForUpdate()->delete();
-                JurnalUmumHeader::where('nobukti', $hutangbayarheader->pengeluaran_nobukti)->lockForUpdate()->delete();
-                HutangBayarDetail::where('hutangbayar_id', $hutangbayarheader->id)->lockForUpdate()->delete();
+                PengeluaranHeader::where('nobukti', $hutangbayarheader->pengeluaran_nobukti)->delete();
+                JurnalUmumHeader::where('nobukti', $hutangbayarheader->pengeluaran_nobukti)->delete();
+                HutangBayarDetail::where('hutangbayar_id', $hutangbayarheader->id)->delete();
+                
                 /* Store detail */
                 $detaillog = [];
                 for ($i = 0; $i < count($request->hutang_id); $i++) {
                     $hutang = HutangHeader::where('id', $request->hutang_id[$i])->first();
                     if ($request->bayar[$i] > $hutang->total) {
 
-                        $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'NBH')
+                        $query = DB::table('error')->from(DB::raw("error with (readuncommitted)"))->select('keterangan')->where('kodeerror', '=', 'NBH')
                             ->first();
                         return response([
                             'errors' => [
@@ -371,15 +377,19 @@ class HutangBayarHeaderController extends Controller
 
             //INSERT TO PENGELUARAN
             $bank = Bank::select('coa', 'statusformatpengeluaran', 'tipe')->where('id', $hutangbayarheader->bank_id)->first();
-            $parameter = Parameter::where('id', $bank->statusformatpengeluaran)->first();
+            $parameter = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                ->where('id', $bank->statusformatpengeluaran)->first();
 
-            $statusApproval = Parameter::where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
+            $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                ->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
 
             if ($bank->tipe == 'KAS') {
-                $jenisTransaksi = Parameter::where('grp', 'JENIS TRANSAKSI')->where('text', 'KAS')->first();
+                $jenisTransaksi = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                    ->where('grp', 'JENIS TRANSAKSI')->where('text', 'KAS')->first();
             }
             if ($bank->tipe == 'BANK') {
-                $jenisTransaksi = Parameter::where('grp', 'JENIS TRANSAKSI')->where('text', 'BANK')->first();
+                $jenisTransaksi = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                    ->where('grp', 'JENIS TRANSAKSI')->where('text', 'BANK')->first();
             }
             $group = $parameter->grp;
             $subgroup = $parameter->subgrp;
@@ -421,10 +431,12 @@ class HutangBayarHeaderController extends Controller
             ];
 
             $pengeluaranDetail = [];
-            $coaDebet = Parameter::where('grp', 'COA PEMBAYARAN HUTANG DEBET')->first();
+            $coaDebet = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'COA PEMBAYARAN HUTANG DEBET')->first();
             for ($i = 0; $i < count($request->hutang_id); $i++) {
-                $hutang = HutangHeader::where('id', $request->hutang_id[$i])->first();
-                $hutangDetail = HutangDetail::where('nobukti', $hutang->nobukti)->first();
+                $hutang = HutangHeader::from(DB::raw("hutangheader with (readuncommitted)"))
+                    ->where('id', $request->hutang_id[$i])->first();
+                $hutangDetail = HutangDetail::from(DB::raw("hutangdetail with (readuncommitted)"))
+                    ->where('nobukti', $hutang->nobukti)->first();
                 $detail = [];
 
                 $detail = [
@@ -479,20 +491,22 @@ class HutangBayarHeaderController extends Controller
     {
         DB::beginTransaction();
         try {
-            $getDetail = HutangBayarDetail::where('hutangbayar_id', $hutangbayarheader->id)->get();
-            $getPengeluaranHeader = PengeluaranHeader::where('nobukti', $hutangbayarheader->pengeluaran_nobukti)->first();
-            $getPengeluaranDetail = PengeluaranDetail::where('nobukti', $hutangbayarheader->pengeluaran_nobukti)->get();
-            $getJurnalHeader = JurnalUmumHeader::where('nobukti', $hutangbayarheader->pengeluaran_nobukti)->first();
-            $getJurnalDetail = JurnalUmumDetail::where('nobukti', $hutangbayarheader->pengeluaran_nobukti)->get();
+            $getDetail = HutangBayarDetail::from(DB::raw("hutangbayardetail with (readuncommitted)"))
+                ->where('hutangbayar_id', $hutangbayarheader->id)->get();
+            $getPengeluaranHeader = PengeluaranHeader::from(DB::raw("pengeluaranheader with (readuncommitted)"))
+                ->where('nobukti', $hutangbayarheader->pengeluaran_nobukti)->first();
+            $getPengeluaranDetail = PengeluaranDetail::from(DB::raw("pengeluarandetail with (readuncommitted)"))
+                ->where('nobukti', $hutangbayarheader->pengeluaran_nobukti)->get();
+            $getJurnalHeader = JurnalUmumHeader::from(DB::raw("jurnalumumheader with (readuncommitted)"))
+                ->where('nobukti', $hutangbayarheader->pengeluaran_nobukti)->first();
+            $getJurnalDetail = JurnalUmumDetail::from(DB::raw("jurnalumumdetail with (readuncommitted)"))
+                ->where('nobukti', $hutangbayarheader->pengeluaran_nobukti)->get();
 
-            $delete = PengeluaranDetail::where('nobukti', $hutangbayarheader->pengeluaran_nobukti)->lockForUpdate()->delete();
-            $delete = PengeluaranHeader::where('nobukti', $hutangbayarheader->pengeluaran_nobukti)->lockForUpdate()->delete();
-            $delete = JurnalUmumDetail::where('nobukti', $hutangbayarheader->pengeluaran_nobukti)->lockForUpdate()->delete();
-            $delete = JurnalUmumHeader::where('nobukti', $hutangbayarheader->pengeluaran_nobukti)->lockForUpdate()->delete();
-            $delete = HutangBayarDetail::where('hutangbayar_id', $hutangbayarheader->id)->lockForUpdate()->delete();
-            $delete = HutangBayarHeader::destroy($hutangbayarheader->id);
+            $isDelete = HutangBayarHeader::where('id', $hutangbayarheader->id)->delete();
+            PengeluaranHeader::where('nobukti', $hutangbayarheader->pengeluaran_nobukti)->delete();
+            JurnalUmumHeader::where('nobukti', $hutangbayarheader->pengeluaran_nobukti)->delete();
 
-            if ($delete) {
+            if ($isDelete) {
                 $logTrail = [
                     'namatabel' => strtoupper($hutangbayarheader->getTable()),
                     'postingdari' => 'DELETE HUTANG BAYAR HEADER',
@@ -533,7 +547,7 @@ class HutangBayarHeaderController extends Controller
 
                 $validatedLogTrailPengeluaranHeader = new StoreLogTrailRequest($logTrailPengeluaranHeader);
                 $storedLogTrailPengeluaran = app(LogTrailController::class)->store($validatedLogTrailPengeluaranHeader);
-               
+
                 // DELETE PENGELUARAN DETAIL
                 $logTrailPengeluaranDetail = [
                     'namatabel' => 'PENGELUARANDETAIL',
@@ -561,7 +575,7 @@ class HutangBayarHeaderController extends Controller
 
                 $validatedLogTrailJurnalHeader = new StoreLogTrailRequest($logTrailJurnalHeader);
                 $storedLogTrailJurnal = app(LogTrailController::class)->store($validatedLogTrailJurnalHeader);
-               
+
                 // DELETE JURNAL DETAIL
                 $logTrailJurnalDetail = [
                     'namatabel' => 'JURNALUMUMDETAIL',
@@ -589,14 +603,11 @@ class HutangBayarHeaderController extends Controller
                     'message' => 'Berhasil dihapus',
                     'data' => $hutangbayarheader
                 ]);
-            } else {
-                DB::rollBack();
-
-                return response([
-                    'status' => false,
-                    'message' => 'Gagal dihapus'
-                ]);
             }
+
+            return response([
+                'message' => 'Gagal dihapus'
+            ], 500);
         } catch (\Throwable $th) {
             DB::rollBack();
             return response($th->getMessage());
@@ -670,82 +681,26 @@ class HutangBayarHeaderController extends Controller
 
             $nobukti = $pengeluaranHeader['nobukti'];
 
-            $parameterController = new ParameterController;
-            $statusApp = $parameterController->getparameterid('STATUS APPROVAL', 'STATUS APPROVAL', 'NON APPROVAL');
-            $jurnalHeader = [
-                'tanpaprosesnobukti' => 1,
-                'nobukti' => $header->original['data']['nobukti'],
-                'tglbukti' => $header->original['data']['tglbukti'],
-                'keterangan' => $header->original['data']['keterangan'],
-                'postingdari' => "ENTRY PENGELUARAN DARI HUTANG BAYAR",
-                'statusapproval' => $statusApp->id,
-                'userapproval' => "",
-                'tglapproval' => "",
-                'statusformat' => 0,
-                'modifiedby' => auth('api')->user()->name,
-            ];
-
-            $storeJurnal = new StoreJurnalUmumHeaderRequest($jurnalHeader);
-            $jurnal = app(JurnalUmumHeaderController::class)->store($storeJurnal);
-            
-
             $detailLogPengeluaran = [];
             $detailLogJurnal = [];
             foreach ($pengeluaranDetail as $value) {
 
                 $value['pengeluaran_id'] = $header->original['data']['id'];
+                $value['entridetail'] = 1;
+                $value['jurnal_id'] = $header->original['idlogtrail']['jurnal_id'];
+                $value['tglbukti'] = $pengeluaranHeader['tglbukti'];
                 $pengeluaranDetail = new StorePengeluaranDetailRequest($value);
                 $detailPengeluaran = app(PengeluaranDetailController::class)->store($pengeluaranDetail);
 
-                $detailLogPengeluaran[] = $detailPengeluaran['detail']->toArray();
-
-                // JURNAL
-
-                $getBaris = DB::table('jurnalumumdetail')->select('baris')->where('nobukti', $nobukti)->orderByDesc('baris')->first();
-
-                if (is_null($getBaris)) {
-                    $baris = 0;
-                } else {
-                    $baris = $getBaris->baris + 1;
-                }
-
-                for ($x = 0; $x <= 1; $x++) {
-                    if ($x == 1) {
-                        $datadetail = [
-                            'jurnalumum_id' => $jurnal->original['data']['id'],
-                            'nobukti' => $nobukti,
-                            'tglbukti' => $jurnal->original['data']['tglbukti'],
-                            'coa' =>  $pengeluaranDetail['coakredit'],
-                            'nominal' => -$pengeluaranDetail['nominal'],
-                            'keterangan' => $pengeluaranDetail['keterangan'],
-                            'modifiedby' => auth('api')->user()->name,
-                            'baris' => $baris,
-                        ];
-                    } else {
-                        $datadetail = [
-                            'jurnalumum_id' => $jurnal->original['data']['id'],
-                            'nobukti' => $nobukti,
-                            'tglbukti' => $jurnal->original['data']['tglbukti'],
-                            'coa' =>  $pengeluaranDetail['coadebet'],
-                            'nominal' => $pengeluaranDetail['nominal'],
-                            'keterangan' => $pengeluaranDetail['keterangan'],
-                            'modifiedby' => auth('api')->user()->name,
-                            'baris' => $baris,
-                        ];
-                    }
-                    
-                    $detail = new StoreJurnalUmumDetailRequest($datadetail);
-                    $detailJurnal = app(JurnalUmumDetailController::class)->store($detail);
-                    
-                    $detailLogJurnal[] = $detailJurnal['detail']->toArray();
-                }
+                $detailLogPengeluaran[] = $detailPengeluaran['detail']['pengeluarandetail']->toArray();
+                $detailLogJurnal = array_merge($detailLogJurnal, $detailPengeluaran['detail']['jurnaldetail']);
 
             }
 
             $datalogtrail = [
                 'namatabel' => strtoupper($detailPengeluaran['tabel']),
                 'postingdari' => 'ENTRY HUTANG BAYAR',
-                'idtrans' =>  $header->original['idlogtrail'],
+                'idtrans' =>  $header->original['idlogtrail']['pengeluaran'],
                 'nobuktitrans' => $nobukti,
                 'aksi' => 'ENTRY',
                 'datajson' => $detailLogPengeluaran,
@@ -757,9 +712,9 @@ class HutangBayarHeaderController extends Controller
 
 
             $datalogtrail = [
-                'namatabel' => strtoupper($detailJurnal['tabel']),
+                'namatabel' => strtoupper('JURNALUMUMDETAIL'),
                 'postingdari' => 'ENTRY PENGELUARAN DARI HUTANG BAYAR',
-                'idtrans' =>  $jurnal->original['idlogtrail'],
+                'idtrans' =>  $header->original['idlogtrail']['jurnal'],
                 'nobuktitrans' => $nobukti,
                 'aksi' => 'ENTRY',
                 'datajson' => $detailLogJurnal,
@@ -784,8 +739,10 @@ class HutangBayarHeaderController extends Controller
 
         try {
             $hutangBayar = HutangBayarHeader::lockForUpdate()->findOrFail($id);
-            $statusSudahCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
-            $statusBelumCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
+            $statusSudahCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                ->where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
+            $statusBelumCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                ->where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
 
             if ($hutangBayar->statuscetak != $statusSudahCetak->id) {
                 $hutangBayar->statuscetak = $statusSudahCetak->id;
@@ -824,9 +781,11 @@ class HutangBayarHeaderController extends Controller
     {
         $hutangBayar = HutangBayarHeader::find($id);
         $status = $hutangBayar->statusapproval;
-        $statusApproval = Parameter::where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
+        $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
         $statusdatacetak = $hutangBayar->statuscetak;
-        $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
+        $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
 
         if ($status == $statusApproval->id) {
             $query = DB::table('error')

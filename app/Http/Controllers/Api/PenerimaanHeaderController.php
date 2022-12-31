@@ -23,6 +23,7 @@ use App\Models\PenerimaanDetail;
 use App\Http\Requests\StoreJurnalUmumHeaderRequest;
 use App\Http\Requests\StoreJurnalUmumDetailRequest;
 use App\Http\Requests\UpdatePenerimaanHeaderRequest;
+use App\Models\Error;
 use Exception;
 use Illuminate\Database\QueryException;
 use PhpParser\Builder\Param;
@@ -58,7 +59,7 @@ class PenerimaanHeaderController extends Controller
 
             $content = new Request();
             $bankid = $request->bank_id;
-            $querysubgrppenerimaan = DB::table('bank')
+            $querysubgrppenerimaan = Bank::from(DB::raw("bank with (readuncommitted)"))
                 ->select(
                     'parameter.grp',
                     'parameter.subgrp',
@@ -66,7 +67,7 @@ class PenerimaanHeaderController extends Controller
                     'bank.coa',
                     'bank.tipe'
                 )
-                ->join('parameter', 'bank.statusformatpenerimaan', 'parameter.id')
+                ->join(DB::raw("parameter with (readuncommitted)"), 'bank.statusformatpenerimaan', 'parameter.id')
                 ->whereRaw("bank.id = $bankid")
                 ->first();
 
@@ -80,10 +81,14 @@ class PenerimaanHeaderController extends Controller
             // if ($tanpaprosesnobukti == 1) {
             //     $pengeluaranHeader->nobukti = $request->nobukti;
             // }
-            
-            $statusApproval = Parameter::where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
-            $statusBerkas = Parameter::where('grp', 'STATUS BERKAS')->where('text', 'TIDAK ADA BERKAS')->first();
-            $statuscetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
+
+            $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                ->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
+            $statusBerkas = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                ->where('grp', 'STATUS BERKAS')->where('text', 'TIDAK ADA BERKAS')->first();
+            $statuscetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                ->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
+
             $penerimaanHeader = new PenerimaanHeader();
             $penerimaanHeader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $penerimaanHeader->pelanggan_id = $request->pelanggan_id;
@@ -95,9 +100,9 @@ class PenerimaanHeaderController extends Controller
             $penerimaanHeader->statuskas = $request->statuskas ?? 0;
             $penerimaanHeader->bank_id = $request->bank_id ?? '';
             $penerimaanHeader->noresi = $request->noresi ?? '';
-            $penerimaanHeader->statusapproval = $statusApproval->id ?? 0;
-            $penerimaanHeader->statusberkas = $statusBerkas->id ?? 0;
-            $penerimaanHeader->statuscetak = $statuscetak->id ?? 0;
+            $penerimaanHeader->statusapproval = $statusApproval->id;
+            $penerimaanHeader->statusberkas = $statusBerkas->id;
+            $penerimaanHeader->statuscetak = $statuscetak->id;
             $penerimaanHeader->modifiedby = auth('api')->user()->name;
             $penerimaanHeader->statusformat = $querysubgrppenerimaan->statusformatpenerimaan;
             $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
@@ -124,10 +129,10 @@ class PenerimaanHeaderController extends Controller
             if ($tanpaprosesnobukti == 0) {
                 /* Store detail */
                 $detaillog = [];
-                
+
                 for ($i = 0; $i < count($request->nominal_detail); $i++) {
-    
-    
+
+
                     $datadetail = [
                         'penerimaan_id' => $penerimaanHeader->id,
                         'nobukti' => $penerimaanHeader->nobukti,
@@ -146,10 +151,10 @@ class PenerimaanHeaderController extends Controller
                         'bulanbeban' => date('Y-m-d', strtotime($request->bulanbeban[$i])) ?? '',
                         'modifiedby' => auth('api')->user()->name,
                     ];
-    
+
                     $data = new StorePenerimaanDetailRequest($datadetail);
                     $datadetails = app(PenerimaanDetailController::class)->store($data);
-    
+
                     if ($datadetails['error']) {
                         return response($datadetails, 422);
                     } else {
@@ -157,9 +162,8 @@ class PenerimaanHeaderController extends Controller
                         $tabeldetail = $datadetails['tabel'];
                     }
                     $detaillog[] = $datadetails['detail']->toArray();
-    
                 }
-    
+
                 $datalogtrail = [
                     'namatabel' => strtoupper($tabeldetail),
                     'postingdari' => 'ENTRY PENERIMAAN DETAIL',
@@ -171,15 +175,15 @@ class PenerimaanHeaderController extends Controller
                 ];
 
                 $data = new StoreLogTrailRequest($datalogtrail);
-                app(LogTrailController::class)->store($data);          
+                app(LogTrailController::class)->store($data);
 
                 $request->sortname = $request->sortname ?? 'id';
                 $request->sortorder = $request->sortorder ?? 'asc';
-    
+
                 if ($penerimaanHeader->save() && $penerimaanHeader->penerimaandetail) {
                     $parameterController = new ParameterController;
                     $statusApp = $parameterController->getparameterid('STATUS APPROVAL', 'STATUS APPROVAL', 'NON APPROVAL');
-    
+
                     $jurnalHeader = [
                         'tanpaprosesnobukti' => 1,
                         'nobukti' => $penerimaanHeader->nobukti,
@@ -193,10 +197,10 @@ class PenerimaanHeaderController extends Controller
                         'statusformat' => "0",
                     ];
                     $jurnaldetail = [];
-    
+
                     for ($i = 0; $i < count($request->nominal_detail); $i++) {
                         $detail = [];
-    
+
                         $jurnalDetail = [
                             [
                                 'nobukti' => $penerimaanHeader->nobukti,
@@ -217,26 +221,26 @@ class PenerimaanHeaderController extends Controller
                                 'baris' => $i,
                             ]
                         ];
-    
-    
+
+
                         $jurnaldetail = array_merge($jurnaldetail, $jurnalDetail);
                     }
-    
-    
+
+
                     $jurnal = $this->storeJurnal($jurnalHeader, $jurnaldetail);
-    
-    
+
+
                     // if (!$jurnal['status'] AND @$jurnal['errorCode'] == 2601) {
                     //     goto ATAS;
                     // }
-    
+
                     if (!$jurnal['status']) {
                         throw new Exception($jurnal['message']);
                     }
                 }
-    
+
                 DB::commit();
-    
+
                 /* Set position and page */
                 $selected = $this->getPosition($penerimaanHeader, $penerimaanHeader->getTable());
                 $penerimaanHeader->position = $selected->position;
@@ -248,7 +252,7 @@ class PenerimaanHeaderController extends Controller
                 'message' => 'Berhasil disimpan',
                 'data' => $penerimaanHeader
             ], 201);
-        }catch (\Throwable $th) {
+        } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
         }
@@ -268,27 +272,6 @@ class PenerimaanHeaderController extends Controller
         ]);
     }
 
-    public function combo(Request $request)
-    {
-        $data = [
-            'penerimaan'    => PenerimaanHeader::all(),
-            'cabang'        => Cabang::all(),
-            'pelanggan'     => Pelanggan::all(),
-            'bankpelanggan' => BankPelanggan::all(),
-            'coa'           => AkunPusat::all(),
-            'penerimaanpiutang' => PelunasanPiutangHeader::all(),
-            'bank'          => Bank::all(),
-            'statuskas'     => Parameter::where('grp', 'STATUS KAS')->get(),
-            'statusapproval' => Parameter::where('grp', 'STATUS APPROVAL')->get(),
-            'statusberkas'  => Parameter::where('grp', 'STATUS BERKAS')->get(),
-
-        ];
-
-        return response([
-            'data' => $data
-        ]);
-    }
-
 
     /**
      * @ClassName
@@ -301,7 +284,7 @@ class PenerimaanHeaderController extends Controller
             /* Store header */
             $content = new Request();
             $bankid = $request->bank_id;
-            $querysubgrppenerimaan = DB::table('bank')
+            $querysubgrppenerimaan = Bank::from(DB::raw("bank with (readuncommitted)"))
                 ->select(
                     'parameter.grp',
                     'parameter.subgrp',
@@ -309,12 +292,14 @@ class PenerimaanHeaderController extends Controller
                     'bank.coa',
                     'bank.tipe'
                 )
-                ->join('parameter', 'bank.statusformatpenerimaan', 'parameter.id')
+                ->join(DB::raw("parameter with (readuncommitted)"), 'bank.statusformatpenerimaan', 'parameter.id')
                 ->whereRaw("bank.id = $bankid")
                 ->first();
 
-            $statusApproval = Parameter::where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
-            $statusBerkas = Parameter::where('grp', 'STATUS BERKAS')->where('text', 'TIDAK ADA BERKAS')->first();
+            $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                ->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
+            $statusBerkas = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                ->where('grp', 'STATUS BERKAS')->where('text', 'TIDAK ADA BERKAS')->first();
 
             $penerimaanheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $penerimaanheader->pelanggan_id = $request->pelanggan_id;
@@ -345,9 +330,8 @@ class PenerimaanHeaderController extends Controller
             }
 
             /* Delete existing detail */
-            $penerimaanheader->penerimaanDetail()->lockForUpdate()->delete();
-            JurnalUmumDetail::where('nobukti', $penerimaanheader->nobukti)->lockForUpdate()->delete();
-            JurnalUmumHeader::where('nobukti', $penerimaanheader->nobukti)->lockForUpdate()->delete();
+            $penerimaanheader->penerimaanDetail()->delete();
+            JurnalUmumHeader::where('nobukti', $penerimaanheader->nobukti)->delete();
 
             /* Store detail */
             $detaillog = [];
@@ -367,7 +351,7 @@ class PenerimaanHeaderController extends Controller
                     'pelanggan_id' => $penerimaanheader->pelanggan_id,
                     'invoice_nobukti' => $request->invoice_nobukti[$i] ?? '-',
                     'bankpelanggan_id' => $request->bankpelanggan_id[$i] ?? '',
-                    'jenisbiaya' => $request->jenisbiaya[$i] ?? '', 
+                    'jenisbiaya' => $request->jenisbiaya[$i] ?? '',
                     'pelunasanpiutang_nobukti' => $request->pelunasanpiutang_nobukti[$i] ?? '-',
                     'bulanbeban' => date('Y-m-d', strtotime($request->bulanbeban[$i])) ?? '',
                     'modifiedby' => auth('api')->user()->name,
@@ -486,18 +470,18 @@ class PenerimaanHeaderController extends Controller
         DB::beginTransaction();
 
         try {
-            $getDetail = PenerimaanDetail::where('penerimaan_id', $penerimaanheader->id)->get();
-            $getJurnalHeader = JurnalUmumHeader::where('nobukti', $penerimaanheader->nobukti)->first();
-            $getJurnalDetail = JurnalUmumDetail::where('nobukti', $penerimaanheader->nobukti)->get();
-
-            $delete = PenerimaanDetail::where('penerimaan_id', $penerimaanheader->id)->lockForUpdate()->delete();
-            $delete = JurnalUmumHeader::where('nobukti', $penerimaanheader->nobukti)->lockForUpdate()->delete();
-            $delete = JurnalUmumDetail::where('nobukti', $penerimaanheader->nobukti)->lockForUpdate()->delete();
-
-            $delete = PenerimaanHeader::destroy($penerimaanheader->id);
+            $getDetail = PenerimaanDetail::from(DB::raw("penerimaandetail with (readuncommitted)"))
+                ->where('penerimaan_id', $penerimaanheader->id)->get();
+            $getJurnalHeader = JurnalUmumHeader::from(DB::raw("jurnalumumheader with (readuncommitted)"))
+                ->where('nobukti', $penerimaanheader->nobukti)->first();
+            $getJurnalDetail = JurnalUmumDetail::from(DB::raw("jurnalumumdetail with (readuncommitted)"))
+                ->where('nobukti', $penerimaanheader->nobukti)->get();
 
 
-            if ($delete) {
+            $isDelete = PenerimaanHeader::where('id', $penerimaanheader->id)->delete();
+            JurnalUmumHeader::where('nobukti', $penerimaanheader->nobukti)->delete();
+
+            if ($isDelete) {
                 $datalogtrail = [
                     'namatabel' => strtoupper($penerimaanheader->getTable()),
                     'postingdari' => 'DELETE PENERIMAAN HEADER',
@@ -507,10 +491,10 @@ class PenerimaanHeaderController extends Controller
                     'datajson' => $penerimaanheader->toArray(),
                     'modifiedby' => auth('api')->user()->name
                 ];
-    
+
                 $data = new StoreLogTrailRequest($datalogtrail);
                 $storedLogTrail = app(LogTrailController::class)->store($data);
-               
+
                 // DELETE PENERIMAAN DETAIL
                 $logTrailPenerimaanDetail = [
                     'namatabel' => 'PENERIMAANDETAIL',
@@ -528,7 +512,7 @@ class PenerimaanHeaderController extends Controller
                 // DELETE JURNAL HEADER
                 $logTrailJurnalHeader = [
                     'namatabel' => 'JURNALUMUMHEADER',
-                    'postingdari' => 'DELETE JURNAL UMUM HEADER DARI PENERIMAAN HEADER',
+                    'postingdari' => 'DELETE JURNAL UMUM HEADER DARI PENERIMAAN KAS/BANK',
                     'idtrans' => $getJurnalHeader->id,
                     'nobuktitrans' => $getJurnalHeader->nobukti,
                     'aksi' => 'DELETE',
@@ -539,12 +523,12 @@ class PenerimaanHeaderController extends Controller
                 $validatedLogTrailJurnalHeader = new StoreLogTrailRequest($logTrailJurnalHeader);
                 $storedLogTrailJurnal = app(LogTrailController::class)->store($validatedLogTrailJurnalHeader);
 
-                
+
                 // DELETE JURNAL DETAIL
-                
+
                 $logTrailJurnalDetail = [
                     'namatabel' => 'JURNALUMUMDETAIL',
-                    'postingdari' => 'DELETE JURNAL UMUM DETAIL DARI PENERIMAAN HEADER',
+                    'postingdari' => 'DELETE JURNAL UMUM DETAIL DARI PENERIMAAN KAS/BANK',
                     'idtrans' => $storedLogTrailJurnal['id'],
                     'nobuktitrans' => $getJurnalHeader->nobukti,
                     'aksi' => 'DELETE',
@@ -554,18 +538,21 @@ class PenerimaanHeaderController extends Controller
 
                 $validatedLogTrailJurnalDetail = new StoreLogTrailRequest($logTrailJurnalDetail);
                 app(LogTrailController::class)->store($validatedLogTrailJurnalDetail);
-            }  
-            DB::commit();
-
-            $selected = $this->getPosition($penerimaanheader, $penerimaanheader->getTable(), true);
-            $penerimaanheader->position = $selected->position;
-            $penerimaanheader->id = $selected->id;
-            $penerimaanheader->page = ceil($penerimaanheader->position / ($request->limit ?? 10));
+                DB::commit();
+    
+                $selected = $this->getPosition($penerimaanheader, $penerimaanheader->getTable(), true);
+                $penerimaanheader->position = $selected->position;
+                $penerimaanheader->id = $selected->id;
+                $penerimaanheader->page = ceil($penerimaanheader->position / ($request->limit ?? 10));
+                return response([
+                    'status' => true,
+                    'message' => 'Berhasil dihapus',
+                    'data' => $penerimaanheader
+                ]);
+            }
             return response([
-                'status' => true,
-                'message' => 'Berhasil dihapus',
-                'data' => $penerimaanheader
-            ]);
+                'message' => 'Gagal dihapus'
+            ], 500);
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
@@ -580,8 +567,10 @@ class PenerimaanHeaderController extends Controller
 
         try {
             $penerimaanHeader = PenerimaanHeader::find($id);
-            $statusApproval = Parameter::where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
-            $statusNonApproval = Parameter::where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
+            $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
+            $statusNonApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
 
             if ($penerimaanHeader->statusapproval == $statusApproval->id) {
                 $penerimaanHeader->statusapproval = $statusNonApproval->id;
@@ -625,8 +614,10 @@ class PenerimaanHeaderController extends Controller
 
         try {
             $penerimaanHeader = PenerimaanHeader::find($id);
-            $statusCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
-            $statusBelumCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
+            $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                ->where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
+            $statusBelumCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                ->where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
 
             if ($penerimaanHeader->statuscetak == $statusCetak->id) {
                 $penerimaanHeader->statuscetak = $statusBelumCetak->id;
@@ -719,17 +710,19 @@ class PenerimaanHeaderController extends Controller
             ];
         }
     }
-    
+
     public function cekvalidasi($id)
     {
         $pengeluaran = PenerimaanHeader::find($id);
         $status = $pengeluaran->statusapproval;
-        $statusApproval = Parameter::where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
+        $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
         $statusdatacetak = $pengeluaran->statuscetak;
-        $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
+        $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
 
         if ($status == $statusApproval->id) {
-            $query = DB::table('error')
+            $query = Error::from(DB::raw("error with (readuncommitted)"))
                 ->select('keterangan')
                 ->where('kodeerror', '=', 'SAP')
                 ->get();
@@ -743,7 +736,7 @@ class PenerimaanHeaderController extends Controller
 
             return response($data);
         } else if ($statusdatacetak == $statusCetak->id) {
-            $query = DB::table('error')
+            $query = Error::from(DB::raw("error with (readuncommitted)"))
                 ->select('keterangan')
                 ->where('kodeerror', '=', 'SDC')
                 ->get();
@@ -768,21 +761,23 @@ class PenerimaanHeaderController extends Controller
             return response($data);
         }
     }
-    
+
     public function printReport($id)
     {
         DB::beginTransaction();
 
         try {
             $penerimaan = PenerimaanHeader::lockForUpdate()->findOrFail($id);
-            $statusSudahCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
-            $statusBelumCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
+            $statusSudahCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                ->where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
+            $statusBelumCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                ->where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
 
             if ($penerimaan->statuscetak != $statusSudahCetak->id) {
                 $penerimaan->statuscetak = $statusSudahCetak->id;
                 $penerimaan->tglbukacetak = date('Y-m-d H:i:s');
                 $penerimaan->userbukacetak = auth('api')->user()->name;
-                $penerimaan->jumlahcetak = $penerimaan->jumlahcetak+1;
+                $penerimaan->jumlahcetak = $penerimaan->jumlahcetak + 1;
 
                 if ($penerimaan->save()) {
                     $logTrail = [
@@ -794,10 +789,10 @@ class PenerimaanHeaderController extends Controller
                         'datajson' => $penerimaan->toArray(),
                         'modifiedby' => auth('api')->user()->name
                     ];
-    
+
                     $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                     $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-    
+
                     DB::commit();
                 }
             }
@@ -809,6 +804,5 @@ class PenerimaanHeaderController extends Controller
         } catch (\Throwable $th) {
             throw $th;
         }
-        
     }
 }

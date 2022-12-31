@@ -27,7 +27,7 @@ class HutangBayarDetailController extends Controller
 
 
         try {
-            $query = HutangBayarDetail::from('hutangbayardetail as detail');
+            $query = HutangBayarDetail::from(DB::raw("hutangbayardetail as detail with (readuncommitted)"));
 
             if (isset($params['id'])) {
                 $query->where('detail.id', $params['id']);
@@ -57,10 +57,10 @@ class HutangBayarDetailController extends Controller
                     'alatbayar.namaalatbayar as alatbayar_id',
 
                 )
-                ->leftJoin('hutangbayarheader as header','header.id','detail.hutangbayar_id')
-                ->leftJoin('bank', 'header.bank_id', 'bank.id')
-                ->leftJoin('supplier', 'header.supplier_id', 'supplier.id')
-                ->leftJoin('alatbayar', 'detail.alatbayar_id', 'alatbayar.id');
+                    ->leftJoin(DB::raw("hutangbayarheader as header with (readuncommitted)"), 'header.id', 'detail.hutangbayar_id')
+                    ->leftJoin(DB::raw("bank with (readuncommitted)"), 'header.bank_id', 'bank.id')
+                    ->leftJoin(DB::raw("supplier with (readuncommitted)"), 'header.supplier_id', 'supplier.id')
+                    ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'detail.alatbayar_id', 'alatbayar.id');
 
 
                 $hutangbayarDetail = $query->get();
@@ -75,13 +75,13 @@ class HutangBayarDetailController extends Controller
 
                     'alatbayar.namaalatbayar as alatbayar_id',
                 )
-                    ->leftJoin('alatbayar', 'detail.alatbayar_id', 'alatbayar.id');
+                    ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'detail.alatbayar_id', 'alatbayar.id');
 
                 $hutangbayarDetail = $query->get();
             }
             return response([
                 'data' => $hutangbayarDetail
-                
+
             ]);
         } catch (\Throwable $th) {
             return response([
@@ -93,18 +93,7 @@ class HutangBayarDetailController extends Controller
     public function store(StoreHutangBayarDetailRequest $request)
     {
         DB::beginTransaction();
-        $validator = Validator::make($request->all(), [
-            'keterangan' => 'required'
-        ], [
-            'keterangan.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan
-        ]);
 
-        if (!$validator->passes()) {
-            return [
-                'error' => true,
-                'errors' => $validator->messages()
-            ];
-        }
         try {
             $hutangbayarDetail = new HutangBayarDetail();
             $hutangbayarDetail->hutangbayar_id = $request->hutangbayar_id;
@@ -120,14 +109,12 @@ class HutangBayarDetailController extends Controller
             $hutangbayarDetail->save();
 
             DB::commit();
-            if ($validator->passes()) {
-                return [
-                    'error' => false,
-                    'detail' => $hutangbayarDetail,
-                    'id' => $hutangbayarDetail->id,
-                    'tabel' => $hutangbayarDetail->getTable(),
-                ];
-            }
+            return [
+                'error' => false,
+                'detail' => $hutangbayarDetail,
+                'id' => $hutangbayarDetail->id,
+                'tabel' => $hutangbayarDetail->getTable(),
+            ];
         } catch (\Throwable $th) {
             throw $th;
             DB::rollBack();

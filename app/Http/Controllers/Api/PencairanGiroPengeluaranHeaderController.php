@@ -65,19 +65,22 @@ class PencairanGiroPengeluaranHeaderController extends Controller
                 $pencairanGiro = new PencairanGiroPengeluaranHeader();
 
                 $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
-                $pengeluaran = PengeluaranHeader::select('nobukti', 'keterangan')->where('id', $request->pengeluaranId[$i])->first();
+                $pengeluaran = PengeluaranHeader::from(DB::raw("pengeluaranheader with (readuncommitted)"))
+                    ->select('nobukti', 'keterangan')->where('id', $request->pengeluaranId[$i])->first();
 
-                $cekPencairan = PencairanGiroPengeluaranHeader::where('pengeluaran_nobukti', $pengeluaran->nobukti)->first();
+                $cekPencairan = PencairanGiroPengeluaranHeader::from(DB::raw("pencairangiropengeluaranheader with (readuncommitted)"))
+                    ->where('pengeluaran_nobukti', $pengeluaran->nobukti)->first();
 
                 if ($cekPencairan != null) {
-                    $getDetail = PencairanGiroPengeluaranDetail::where('pencairangiropengeluaran_id', $cekPencairan->id)->get();
-                    $getJurnalHeader = JurnalUmumHeader::where('nobukti', $cekPencairan->nobukti)->first();
-                    $getJurnalDetail = JurnalUmumDetail::where('nobukti', $cekPencairan->nobukti)->get();
+                    $getDetail = PencairanGiroPengeluaranDetail::from(DB::raw("pencairangiropengeluarandetail with (readuncommitted)"))
+                        ->where('pencairangiropengeluaran_id', $cekPencairan->id)->get();
+                    $getJurnalHeader = JurnalUmumHeader::from(DB::raw("jurnalumumheader with (readuncommitted)"))
+                        ->where('nobukti', $cekPencairan->nobukti)->first();
+                    $getJurnalDetail = JurnalUmumDetail::from(DB::raw("jurnalumumdetail with (readuncommitted)"))
+                        ->where('nobukti', $cekPencairan->nobukti)->get();
 
-                    PencairanGiroPengeluaranDetail::where('pencairangiropengeluaran_id', $cekPencairan->id)->lockForUpdate()->delete();
-                    JurnalUmumHeader::where('nobukti', $cekPencairan->nobukti)->lockForUpdate()->delete();
-                    JurnalUmumDetail::where('nobukti', $cekPencairan->nobukti)->lockForUpdate()->delete();
-                    PencairanGiroPengeluaranHeader::destroy($cekPencairan->id);
+                    PencairanGiroPengeluaranHeader::where('id', $cekPencairan->id)->delete();
+                    JurnalUmumHeader::where('nobukti', $cekPencairan->nobukti)->delete();
 
                     $logTrail = [
                         'namatabel' => strtoupper($pencairanGiro->getTable()),

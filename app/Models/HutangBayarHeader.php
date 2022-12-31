@@ -29,7 +29,8 @@ class HutangBayarHeader extends MyModel
 
         $this->setRequestParameters();
 
-        $query = DB::table($this->table)->select(
+        $query = DB::table($this->table)->from(DB::raw("hutangbayarheader with (readuncommitted)"))
+        ->select(
             'hutangbayarheader.id',
             'hutangbayarheader.nobukti',
             'hutangbayarheader.tglbukti',
@@ -51,11 +52,11 @@ class HutangBayarHeader extends MyModel
             'akunpusat.coa as coa',
 
         )
-            ->leftJoin('bank', 'hutangbayarheader.bank_id', 'bank.id')
-            ->leftJoin('akunpusat', 'hutangbayarheader.coa', 'akunpusat.coa')
-            ->leftJoin('supplier', 'hutangbayarheader.supplier_id', 'supplier.id')
-            ->join('parameter as statuscetak', 'hutangbayarheader.statuscetak', 'statuscetak.id')
-            ->join('parameter as statusapproval', 'hutangbayarheader.statusapproval', 'statusapproval.id');
+            ->leftJoin(DB::raw("bank with (readuncommitted)"), 'hutangbayarheader.bank_id', 'bank.id')
+            ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'hutangbayarheader.coa', 'akunpusat.coa')
+            ->leftJoin(DB::raw("supplier with (readuncommitted)"), 'hutangbayarheader.supplier_id', 'supplier.id')
+            ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'hutangbayarheader.statuscetak', 'statuscetak.id')
+            ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'hutangbayarheader.statusapproval', 'statusapproval.id');
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -72,7 +73,8 @@ class HutangBayarHeader extends MyModel
     public function findAll($id)
     {
 
-        $query = DB::table('hutangbayarheader')->select(
+        $query = DB::table('hutangbayarheader')->from(DB::raw("hutangbayarheader with (readuncommitted)"))
+        ->select(
             'hutangbayarheader.id',
             'hutangbayarheader.nobukti',
             'hutangbayarheader.tglbukti',
@@ -89,9 +91,9 @@ class HutangBayarHeader extends MyModel
 
 
         )
-            ->leftJoin('bank', 'hutangbayarheader.bank_id', 'bank.id')
-            ->leftJoin('akunpusat', 'hutangbayarheader.coa', 'akunpusat.coa')
-            ->leftJoin('supplier', 'hutangbayarheader.supplier_id', 'supplier.id')
+            ->leftJoin(DB::raw("bank with (readuncommitted)"), 'hutangbayarheader.bank_id', 'bank.id')
+            ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'hutangbayarheader.coa', 'akunpusat.coa')
+            ->leftJoin(DB::raw("supplier with (readuncommitted)"), 'hutangbayarheader.supplier_id', 'supplier.id')
 
             ->where('hutangbayarheader.id', $id);
 
@@ -147,24 +149,18 @@ class HutangBayarHeader extends MyModel
         $tempPembayaran = $this->createTempPembayaran($id);
 
 
-        $hutang = DB::table("$tempHutang as A")
+        $hutang = DB::table("$tempHutang as A")->from(DB::raw("$tempHutang as A with (readuncommitted)"))
             ->select(DB::raw("A.id as id,null as hutangbayar_id,A.nobukti as hutang_nobukti, A.tglbukti as tglbukti, null as bayar, null as keterangan, null as tglcair, null as potongan, null as alatbayar_id, null as alatbayar, A.nominalhutang, A.sisa as sisa"))
             // ->distinct("A.nobukti")
-            ->leftJoin("$tempPembayaran as B", "A.nobukti", "B.hutang_nobukti")
+            ->leftJoin(DB::raw("$tempPembayaran as B with (readuncommitted)"), "A.nobukti", "B.hutang_nobukti")
             ->whereRaw("isnull(b.hutang_nobukti,'') = ''")
             ->whereRaw("a.sisa > 0");
 
 
-        $pembayaran = DB::table($tempPembayaran)
+        $pembayaran = DB::table($tempPembayaran)->from(DB::raw("$tempPembayaran with (readuncommitted)"))
             ->select(DB::raw("id,hutangbayar_id,hutang_nobukti,tglbukti,bayar,keterangan,tglcair,potongan,alatbayar_id,alatbayar,nominalhutang,sisa"))
             ->unionAll($hutang);
 
-        // $this->totalRows = $pembayaran->count();
-        // $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
-
-        // $this->sort($pembayaran);
-        // $this->filter($pembayaran);
-        // $this->paginate($pembayaran);
 
         $data = $pembayaran->get();
 
@@ -176,10 +172,10 @@ class HutangBayarHeader extends MyModel
         $temp = '##tempHutang' . rand(1, 10000);
 
 
-        $fetch = DB::table('hutangheader')
+        $fetch = DB::table('hutangheader')->from(DB::raw("hutangheader with (readuncommitted)"))
             ->select(DB::raw("hutangheader.id,hutangheader.nobukti,hutangheader.tglbukti,hutangdetail.supplier_id,hutangheader.total as nominalhutang, (SELECT (hutangheader.total - COALESCE(SUM(hutangbayardetail.nominal),0)) FROM hutangbayardetail WHERE hutangbayardetail.hutang_nobukti= hutangheader.nobukti) AS sisa"))
-            ->join('hutangdetail', 'hutangheader.id', 'hutangdetail.hutang_id')
-            ->leftJoin('hutangbayardetail', 'hutangheader.nobukti', 'hutangbayardetail.hutang_nobukti')
+            ->leftJoin(DB::raw("hutangdetail with (readuncommitted)"), 'hutangheader.id', 'hutangdetail.hutang_id')
+            ->leftJoin(DB::raw("hutangbayardetail with (readuncommitted)"), 'hutangheader.nobukti', 'hutangbayardetail.hutang_nobukti')
             ->whereRaw("hutangdetail.supplier_id = $supplierId")
             ->groupBy('hutangheader.id', 'hutangheader.nobukti', 'hutangdetail.supplier_id', 'hutangheader.total', 'hutangheader.tglbukti');
 
@@ -201,10 +197,10 @@ class HutangBayarHeader extends MyModel
     {
         $tempo = '##tempPembayaran' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
-        $fetch = DB::table('hutangbayardetail as hbd')
+        $fetch = DB::table('hutangbayardetail as hbd')->from(DB::raw("hutangbayardetail as hbd with (readuncommitted)"))
             ->select(DB::raw("hutangheader.id,hbd.hutangbayar_id,hbd.hutang_nobukti,hutangheader.tglbukti,hbd.nominal as bayar, hbd.keterangan,hbd.tglcair,hbd.potongan,hbd.alatbayar_id,alatbayar.namaalatbayar as alatbayar,hutangheader.total as nominalhutang, (SELECT (hutangheader.total - SUM(hutangbayardetail.nominal)) FROM hutangbayardetail WHERE hutangbayardetail.hutang_nobukti= hutangheader.nobukti) AS sisa"))
-            ->leftJoin('hutangheader', 'hbd.hutang_nobukti', 'hutangheader.nobukti')
-            ->leftJoin('alatbayar', 'hbd.alatbayar_id', 'alatbayar.id')
+            ->leftJoin(DB::raw("hutangheader with (readuncommitted)"), 'hbd.hutang_nobukti', 'hutangheader.nobukti')
+            ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'hbd.alatbayar_id', 'alatbayar.id')
             ->whereRaw("hbd.hutangbayar_id = $id");
 
         Schema::create($tempo, function ($table) {

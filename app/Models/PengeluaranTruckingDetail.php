@@ -27,7 +27,8 @@ class PengeluaranTruckingDetail extends MyModel
     {
        
 
-        $query = DB::table('pengeluarantruckingdetail')->select(
+        $query = DB::table('pengeluarantruckingdetail')->from(DB::raw("pengeluarantruckingdetail with (readuncommitted)"))
+        ->select(
             'pengeluarantruckingdetail.pengeluarantruckingheader_id',
             'pengeluarantruckingdetail.nominal',
             'pengeluarantruckingdetail.penerimaantruckingheader_nobukti',
@@ -35,7 +36,7 @@ class PengeluaranTruckingDetail extends MyModel
             'supir.namasupir as supir',
             'supir.id as supir_id'
         )
-            ->leftJoin('supir', 'pengeluarantruckingdetail.supir_id','supir.id')
+            ->leftJoin(DB::raw("supir with (readuncommitted)"), 'pengeluarantruckingdetail.supir_id','supir.id')
             ->where('pengeluarantruckingdetail.pengeluarantruckingheader_id', '=', $id);
             
 

@@ -27,7 +27,8 @@ class PendapatanSupirHeader extends MyModel
     public function get()
     {
         $this->setRequestParameters();
-        $query = DB::table($this->table)->select(
+        $query = DB::table($this->table)->from(DB::raw("pendapatansupirheader with (readuncommitted)"))
+        ->select(
             'pendapatansupirheader.id',
             'pendapatansupirheader.nobukti',
             'pendapatansupirheader.tglbukti',
@@ -47,9 +48,9 @@ class PendapatanSupirHeader extends MyModel
             'pendapatansupirheader.created_at',
             'pendapatansupirheader.updated_at'
         )
-            ->leftJoin('bank', 'pendapatansupirheader.bank_id', 'bank.id')
-            ->leftJoin('parameter as statusapproval', 'pendapatansupirheader.statusapproval', 'statusapproval.id')
-            ->leftJoin('parameter as statuscetak', 'pendapatansupirheader.statuscetak', 'statuscetak.id');
+            ->leftJoin(DB::raw("bank with (readuncommitted)"), 'pendapatansupirheader.bank_id', 'bank.id')
+            ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'pendapatansupirheader.statusapproval', 'statusapproval.id')
+            ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'pendapatansupirheader.statuscetak', 'statuscetak.id');
           
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -65,7 +66,8 @@ class PendapatanSupirHeader extends MyModel
 
     public function findUpdate($id)
     {
-        $data = DB::table('pendapatansupirheader')->select(
+        $data = DB::table('pendapatansupirheader')->from(DB::raw("pendapatansupirheader with (readuncommitted)"))
+        ->select(
             'pendapatansupirheader.id',
             'pendapatansupirheader.nobukti',
             'pendapatansupirheader.tglbukti',
@@ -77,7 +79,7 @@ class PendapatanSupirHeader extends MyModel
             'pendapatansupirheader.periode',
             'pendapatansupirheader.statuscetak',
         )
-        ->leftJoin('bank','pendapatansupirheader.bank_id','bank.id')
+        ->leftJoin(DB::raw("bank with (readuncommitted)"),'pendapatansupirheader.bank_id','bank.id')
         ->where('pendapatansupirheader.id', $id)
         ->first();
 

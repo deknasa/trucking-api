@@ -25,13 +25,14 @@ class PendapatanSupirDetail extends Model
 
     public function findUpdate($id)
     {
-        $query = DB::table('pendapatansupirdetail')->select(
+        $query = DB::table('pendapatansupirdetail')->from(DB::raw("pendapatansupirdetail with (readuncommitted)"))
+        ->select(
             'pendapatansupirdetail.supir_id',
             'supir.namasupir as supir',
             'pendapatansupirdetail.nominal',
             'pendapatansupirdetail.keterangan'
         )
-        ->leftJoin('supir','pendapatansupirdetail.supir_id','supir.id')
+        ->leftJoin(DB::raw("supir with (readuncommitted)"),'pendapatansupirdetail.supir_id','supir.id')
         ->where('pendapatansupirdetail.pendapatansupir_id', $id)
         ->get();
 

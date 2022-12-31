@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Validator;
 
 class PelunasanPiutangDetailController extends Controller
 {
-    
+
     public function index(Request $request)
     {
         $params = [
@@ -26,7 +26,7 @@ class PelunasanPiutangDetailController extends Controller
             'sortOrder' => $request->sortOrder ?? 'asc',
         ];
         try {
-            $query = PelunasanPiutangDetail::from('pelunasanpiutangdetail as detail');
+            $query = PelunasanPiutangDetail::from(DB::raw("pelunasanpiutangdetail as detail with (readuncommitted)"));
 
             if (isset($params['id'])) {
                 $query->where('detail.id', $params['id']);
@@ -55,12 +55,13 @@ class PelunasanPiutangDetailController extends Controller
                     'detail.tgljt',
                     'agen_detail.namaagen as agen_detail',
                     'pelanggan.namapelanggan as pelanggan',
-                )->leftJoin('pelunasanpiutangheader as header','header.id','detail.pelunasanpiutang_id')
-                ->leftJoin('bank','header.bank_id','bank.id')
-                ->leftJoin('cabang','header.cabang_id','cabang.id')
-                ->leftJoin('agen','header.agen_id','agen.id')
-                ->leftJoin('agen as agen_detail','detail.agen_id','agen_detail.id')
-                ->leftJoin('pelanggan','detail.pelanggan_id','pelanggan.id');
+                )
+                    ->leftJoin(DB::raw("pelunasanpiutangheader as header with (readuncommitted)"), 'header.id', 'detail.pelunasanpiutang_id')
+                    ->leftJoin(DB::raw("bank with (readuncommitted)"), 'header.bank_id', 'bank.id')
+                    ->leftJoin(DB::raw("cabang with (readuncommitted)"), 'header.cabang_id', 'cabang.id')
+                    ->leftJoin(DB::raw("agen with (readuncommitted)"), 'header.agen_id', 'agen.id')
+                    ->leftJoin(DB::raw("agen as agen_detail with (readuncommitted)"), 'detail.agen_id', 'agen_detail.id')
+                    ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'detail.pelanggan_id', 'pelanggan.id');
 
                 $piutangDetail = $query->get();
             } else {
@@ -77,15 +78,15 @@ class PelunasanPiutangDetailController extends Controller
                     'pelanggan.namapelanggan as pelanggan_id',
                     'agen.namaagen as agen_id',
                 )
-                ->leftJoin('pelanggan', 'detail.pelanggan_id', 'pelanggan.id')
-                ->leftJoin('agen', 'detail.agen_id', 'agen.id');
+                    ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'detail.pelanggan_id', 'pelanggan.id')
+                    ->leftJoin(DB::raw("agen with (readuncommitted)"), 'detail.agen_id', 'agen.id');
                 $piutangDetail = $query->get();
             }
 
             $idUser = auth('api')->user()->id;
-            $getuser = User::select('name','cabang.namacabang as cabang_id')
-            ->where('user.id',$idUser)->join('cabang','user.cabang_id','cabang.id')->first();
-           
+            $getuser = User::select('name', 'cabang.namacabang as cabang_id')
+                ->where('user.id', $idUser)->join('cabang', 'user.cabang_id', 'cabang.id')->first();
+
 
             return response([
                 'data' => $piutangDetail,
@@ -103,23 +104,9 @@ class PelunasanPiutangDetailController extends Controller
     {
         DB::beginTransaction();
 
-        $validator = Validator::make($request->all(), [
-            'pelanggan_id' => 'required',
-        ], [
-            'pelanggan_id.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
-            
-        ]);
-        // dd($request->all());
-
-        if (!$validator->passes()) {
-            return [
-                'error' => true,
-                'errors' => $validator->messages()
-            ];
-        }
         try {
             $pelunasanpiutangdetail = new PelunasanPiutangDetail();
-            
+
             $pelunasanpiutangdetail->pelunasanpiutang_id = $request->pelunasanpiutang_id;
             $pelunasanpiutangdetail->nobukti = $request->nobukti;
             $pelunasanpiutangdetail->pelanggan_id = $request->pelanggan_id;
@@ -136,25 +123,19 @@ class PelunasanPiutangDetailController extends Controller
             $pelunasanpiutangdetail->keteranganpenyesuaian = $request->keteranganpenyesuaian;
             $pelunasanpiutangdetail->nominallebihbayar = $request->nominallebihbayar;
             $pelunasanpiutangdetail->coalebihbayar = $request->coalebihbayar;
-            
+
             $pelunasanpiutangdetail->modifiedby = auth('api')->user()->name;
-            
             $pelunasanpiutangdetail->save();
-           
             DB::commit();
-            if ($validator->passes()) {
-                return [
-                    'error' => false,
-                    'detail' => $pelunasanpiutangdetail,
-                    'id' => $pelunasanpiutangdetail->id,
-                    'tabel' => $pelunasanpiutangdetail->getTable(),
-                ];
-            }
+            return [
+                'error' => false,
+                'detail' => $pelunasanpiutangdetail,
+                'id' => $pelunasanpiutangdetail->id,
+                'tabel' => $pelunasanpiutangdetail->getTable(),
+            ];
         } catch (\Throwable $th) {
             throw $th;
             DB::rollBack();
-        }        
+        }
     }
-
-   
 }

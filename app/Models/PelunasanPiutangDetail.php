@@ -25,17 +25,16 @@ class PelunasanPiutangDetail extends MyModel
 
     public function findAll($id) {
       
-        $query = DB::table('pelunasanpiutangdetail')->select(
-            
-
+        $query = DB::table('pelunasanpiutangdetail')->from(DB::raw("pelunasanpiutangdetail with (readuncommitted)"))
+        ->select(
             'pelunasanpiutangdetail.pelanggan_id as pelanggan_id',
             'pelunasanpiutangdetail.agen_id as agendetail_id',
             
             'pelanggan.namapelanggan as pelanggan',
             'agen.namaagen as agendetail'
         )
-            ->leftJoin('pelanggan', 'pelunasanpiutangdetail.pelanggan_id', 'pelanggan.id')
-            ->leftJoin('agen', 'pelunasanpiutangdetail.agen_id', 'agen.id')
+            ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'pelunasanpiutangdetail.pelanggan_id', 'pelanggan.id')
+            ->leftJoin(DB::raw("agen with (readuncommitted)"), 'pelunasanpiutangdetail.agen_id', 'agen.id')
             ->where('pelunasanpiutangdetail.pelunasanpiutang_id', '=', $id);
 
         $data = $query->first();

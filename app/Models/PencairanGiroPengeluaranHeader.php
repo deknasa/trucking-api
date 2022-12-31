@@ -31,15 +31,16 @@ class PencairanGiroPengeluaranHeader extends MyModel
         $month = substr($periode,0,2);
         $year = substr($periode,3);
         
-        $query = DB::table($this->anotherTable)->select(DB::raw("pengeluaranheader.nobukti as pengeluaran_nobukti,pengeluaranheader.id, pengeluaranheader.dibayarke, bank.namabank as bank_id, pengeluaranheader.transferkeac, pengeluaranheader.modifiedby, pengeluaranheader.created_at,pengeluaranheader.updated_at,pengeluaranheader.keterangan, alatbayar.keterangan as alatbayar_id, pgp.nobukti, pgp.tglbukti, parameter.memo as statusapproval, (SELECT (SUM(pengeluarandetail.nominal)) FROM pengeluarandetail 
+        $query = DB::table($this->anotherTable)->from(DB::raw("pengeluaranheader with (readuncommitted)"))
+        ->select(DB::raw("pengeluaranheader.nobukti as pengeluaran_nobukti,pengeluaranheader.id, pengeluaranheader.dibayarke, bank.namabank as bank_id, pengeluaranheader.transferkeac, pengeluaranheader.modifiedby, pengeluaranheader.created_at,pengeluaranheader.updated_at,pengeluaranheader.keterangan, alatbayar.keterangan as alatbayar_id, pgp.nobukti, pgp.tglbukti, parameter.memo as statusapproval, (SELECT (SUM(pengeluarandetail.nominal)) FROM pengeluarandetail 
         WHERE pengeluarandetail.nobukti= pengeluaranheader.nobukti and pengeluarandetail.alatbayar_id=2) as nominal")
         )
         ->distinct('pengeluaranheader.nobukti')
-        ->leftJoin('pengeluarandetail','pengeluarandetail.nobukti','pengeluaranheader.nobukti')
-        ->leftJoin('pencairangiropengeluaranheader as pgp','pgp.pengeluaran_nobukti','pengeluaranheader.nobukti')
-        ->leftJoin('parameter','pgp.statusapproval','parameter.id')
-        ->leftJoin('bank','pengeluaranheader.bank_id','bank.id')
-        ->leftJoin('alatbayar','pengeluarandetail.alatbayar_id','alatbayar.id')
+        ->leftJoin(DB::raw("pengeluarandetail with (readuncommitted)"),'pengeluarandetail.nobukti','pengeluaranheader.nobukti')
+        ->leftJoin(DB::raw("pencairangiropengeluaranheader as pgp with (readuncommitted)"),'pgp.pengeluaran_nobukti','pengeluaranheader.nobukti')
+        ->leftJoin(DB::raw("parameter with (readuncommitted)"),'pgp.statusapproval','parameter.id')
+        ->leftJoin(DB::raw("bank with (readuncommitted)"),'pengeluaranheader.bank_id','bank.id')
+        ->leftJoin(DB::raw("alatbayar with (readuncommitted)"),'pengeluarandetail.alatbayar_id','alatbayar.id')
         ->whereRaw("MONTH(pengeluaranheader.tglbukti) = $month")
         ->whereRaw("YEAR(pengeluaranheader.tglbukti) = $year")
         ->where('pengeluarandetail.alatbayar_id','2');

@@ -25,7 +25,7 @@ class PencairanGiroPengeluaranDetailController extends Controller
             'sortOrder' => $request->sortOrder ?? 'asc',
         ];
         try {
-            $query = PengeluaranDetail::from('pengeluarandetail as detail');
+            $query = PengeluaranDetail::from(DB::raw("pengeluarandetail as detail with (readuncommitted)"));
 
             if (isset($params['id'])) {
                 $query->where('detail.id', $params['id']);
@@ -44,7 +44,7 @@ class PencairanGiroPengeluaranDetailController extends Controller
                 $query->select(
                     'detail.nobukti','detail.nowarkat','alatbayar.keterangan as alatbayar_id', 'detail.tgljatuhtempo', 'detail.nominal','detail.coadebet','detail.coakredit','detail.keterangan','detail.bulanbeban'
                 )
-                ->leftJoin('alatbayar','detail.alatbayar_id','alatbayar.id');
+                ->leftJoin(DB::raw("alatbayar with (readuncommitted)"),'detail.alatbayar_id','alatbayar.id');
                 
                 $pengeluaranDetail = $query->get();
             }

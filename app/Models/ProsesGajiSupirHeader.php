@@ -27,7 +27,8 @@ class ProsesGajiSupirHeader extends MyModel
     public function get() {
         $this->setRequestParameters();
 
-        $query = DB::table($this->table)->select(
+        $query = DB::table($this->table)->from(DB::raw("prosesgajisupirheader with (readuncommitted)"))
+        ->select(
             'prosesgajisupirheader.id',
             'prosesgajisupirheader.nobukti',
             'prosesgajisupirheader.tglbukti',
@@ -46,8 +47,8 @@ class ProsesGajiSupirHeader extends MyModel
             'prosesgajisupirheader.created_at',
             'prosesgajisupirheader.updated_at',
         )
-        ->leftJoin('parameter as statuscetak','prosesgajisupirheader.statuscetak','statuscetak.id')
-        ->leftJoin('parameter as statusapproval','prosesgajisupirheader.statusapproval','statusapproval.id');
+        ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"),'prosesgajisupirheader.statuscetak','statuscetak.id')
+        ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"),'prosesgajisupirheader.statusapproval','statusapproval.id');
             
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -63,18 +64,19 @@ class ProsesGajiSupirHeader extends MyModel
 
     public function getRic($dari, $sampai) 
     {
-        $query = DB::table('gajisupirheader')
+        $query = GajiSupirHeader::from(DB::raw("gajisupirheader with (readuncommitted)"))
                 ->select('gajisupirheader.id','gajisupirheader.nobukti','gajisupirheader.tglbukti','supir.namasupir','gajisupirheader.keterangan','gajisupirheader.tgldari','gajisupirheader.tglsampai','gajisupirheader.nominal')
-                ->join('supir','gajisupirheader.supir_id','supir.id')
-                ->where('gajisupirheader.tgldari','>=', $dari)
-                ->where('gajisupirheader.tglsampai','<=', $sampai);
+                ->leftJoin(DB::raw("supir with (readuncommitted)"),'gajisupirheader.supir_id','supir.id')
+                ->where('gajisupirheader.tglbukti','>=', $dari)
+                ->where('gajisupirheader.tglbukti','<=', $sampai);
 
         $data = $query->get();
         return $data;
     }
 
     public function getEdit($gajiId) {
-        $query = DB::table('prosesgajisupirdetail')->select(
+        $query = ProsesGajiSupirDetail::from(DB::raw("prosesgajisupirdetail with (readuncommitted)"))
+        ->select(
             'gajisupirheader.id',
             'prosesgajisupirdetail.gajisupir_nobukti as nobukti',
             'gajisupirheader.tglbukti',
@@ -84,8 +86,8 @@ class ProsesGajiSupirHeader extends MyModel
             'gajisupirheader.tglsampai',
             'gajisupirheader.nominal'
         )
-        ->join('gajisupirheader','prosesgajisupirdetail.gajisupir_nobukti','gajisupirheader.nobukti')
-        ->join('supir','gajisupirheader.supir_id','supir.id')
+        ->leftJoin(DB::raw("gajisupirheader with (readuncommitted)"),'prosesgajisupirdetail.gajisupir_nobukti','gajisupirheader.nobukti')
+        ->leftJoin(DB::raw("supir with (readuncommitted)"),'gajisupirheader.supir_id','supir.id')
         ->where('prosesgajisupirdetail.prosesgajisupir_id',$gajiId);
 
         $data = $query->get();

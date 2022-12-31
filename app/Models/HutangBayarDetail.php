@@ -27,7 +27,8 @@ class HutangBayarDetail extends MyModel
     public function getAll($id)
     {
 
-        $query = DB::table('hutangbayardetail')->select(
+        $query = DB::table('hutangbayardetail')->from(DB::raw("hutangbayardetail with (readuncommitted)"))
+        ->select(
             'hutangbayardetail.nominal',
             'hutangbayardetail.hutang_nobukti',
             'hutangbayardetail.cicilan',

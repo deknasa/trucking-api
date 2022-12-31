@@ -28,7 +28,8 @@ class PengeluaranTruckingHeader extends MyModel
     {
         $this->setRequestParameters();
 
-        $query = DB::table($this->table)->select(
+        $query = DB::table($this->table)->from(DB::raw("pengeluarantruckingheader with (readuncommitted)"))
+        ->select(
             'pengeluarantruckingheader.id',
             'pengeluarantruckingheader.nobukti',
             'pengeluarantruckingheader.tglbukti',
@@ -44,10 +45,10 @@ class PengeluaranTruckingHeader extends MyModel
             'pengeluarantruckingheader.coa',
             'statusposting.memo as statusposting'
         )
-            ->leftJoin('pengeluarantrucking', 'pengeluarantruckingheader.pengeluarantrucking_id','pengeluarantrucking.id')
-            ->leftJoin('bank', 'pengeluarantruckingheader.bank_id', 'bank.id')
-            ->leftJoin('parameter as statuscetak' , 'pengeluarantruckingheader.statuscetak', 'statuscetak.id')
-            ->leftJoin('parameter as statusposting' , 'pengeluarantruckingheader.statusposting', 'statusposting.id');
+            ->leftJoin(DB::raw("pengeluarantrucking with (readuncommitted)"), 'pengeluarantruckingheader.pengeluarantrucking_id','pengeluarantrucking.id')
+            ->leftJoin(DB::raw("bank with (readuncommitted)"), 'pengeluarantruckingheader.bank_id', 'bank.id')
+            ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)") , 'pengeluarantruckingheader.statuscetak', 'statuscetak.id')
+            ->leftJoin(DB::raw("parameter as statusposting with (readuncommitted)"), 'pengeluarantruckingheader.statusposting', 'statusposting.id');
             
 
 
@@ -65,7 +66,8 @@ class PengeluaranTruckingHeader extends MyModel
 
     public function findAll($id)
     {
-        $query = DB::table('pengeluarantruckingheader')->select(
+        $query = DB::table('pengeluarantruckingheader')->from(DB::raw("pengeluarantruckingheader with (readuncommitted)"))
+        ->select(
             'pengeluarantruckingheader.id',
             'pengeluarantruckingheader.nobukti',
             'pengeluarantruckingheader.tglbukti',
@@ -79,8 +81,8 @@ class PengeluaranTruckingHeader extends MyModel
             'pengeluarantruckingheader.coa',
             'pengeluarantruckingheader.pengeluaran_nobukti'            
         )
-            ->leftJoin('pengeluarantrucking', 'pengeluarantruckingheader.pengeluarantrucking_id','pengeluarantrucking.id')
-            ->leftJoin('bank', 'pengeluarantruckingheader.bank_id', 'bank.id')
+            ->leftJoin(DB::raw("pengeluarantrucking with (readuncommitted)"), 'pengeluarantruckingheader.pengeluarantrucking_id','pengeluarantrucking.id')
+            ->leftJoin(DB::raw("bank with (readuncommitted)"), 'pengeluarantruckingheader.bank_id', 'bank.id')
             ->where('pengeluarantruckingheader.id', '=', $id);
             
 

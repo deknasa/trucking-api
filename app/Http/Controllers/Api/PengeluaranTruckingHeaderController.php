@@ -74,8 +74,10 @@ class PengeluaranTruckingHeaderController extends Controller
             $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
 
             $pengeluarantruckingheader = new PengeluaranTruckingHeader();
-            $statusPosting = Parameter::where('grp', 'STATUS POSTING')->where('text', 'BUKAN POSTING')->first();
-            $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
+            $statusPosting = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                ->where('grp', 'STATUS POSTING')->where('text', 'BUKAN POSTING')->first();
+            $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                ->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
 
             $pengeluarantruckingheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $pengeluarantruckingheader->pengeluarantrucking_id = $request->pengeluarantrucking_id;
@@ -269,7 +271,7 @@ class PengeluaranTruckingHeaderController extends Controller
                     //STORE 
                     $data = new StorePengeluaranTruckingDetailRequest($datadetail);
                     $datadetails = app(PengeluaranTruckingDetailController::class)->store($data);
-                 
+
                     if ($datadetails['error']) {
                         return response($datadetails, 422);
                     } else {
@@ -327,10 +329,9 @@ class PengeluaranTruckingHeaderController extends Controller
         try {
 
             $getDetail = PengeluaranTruckingDetail::where('pengeluarantruckingheader_id', $pengeluarantruckingheader->id)->get();
-            $delete = PengeluaranTruckingDetail::where('pengeluarantruckingheader_id', $pengeluarantruckingheader->id)->lockForUpdate()->delete();
-            $delete = PengeluaranTruckingHeader::destroy($pengeluarantruckingheader->id);
+            $isDelete = PengeluaranTruckingHeader::where('id', $pengeluarantruckingheader->id)->delete();
 
-            if ($delete) {
+            if ($isDelete) {
                 $logTrail = [
                     'namatabel' => strtoupper($pengeluarantruckingheader->getTable()),
                     'postingdari' => 'DELETE PENGELUARAN TRUCKING HEADER',
@@ -357,23 +358,26 @@ class PengeluaranTruckingHeaderController extends Controller
 
                 $validatedLogTrailPengeluaranTruckingDetail = new StoreLogTrailRequest($logTrailPengeluaranTruckingDetail);
                 app(LogTrailController::class)->store($validatedLogTrailPengeluaranTruckingDetail);
-                
-            } 
-            DB::commit();
 
-            $selected = $this->getPosition($pengeluarantruckingheader, $pengeluarantruckingheader->getTable(), true);
-            $pengeluarantruckingheader->position = $selected->position;
-            $pengeluarantruckingheader->id = $selected->id;
-            $pengeluarantruckingheader->page = ceil($pengeluarantruckingheader->position / ($request->limit ?? 10));
+                DB::commit();
 
+                $selected = $this->getPosition($pengeluarantruckingheader, $pengeluarantruckingheader->getTable(), true);
+                $pengeluarantruckingheader->position = $selected->position;
+                $pengeluarantruckingheader->id = $selected->id;
+                $pengeluarantruckingheader->page = ceil($pengeluarantruckingheader->position / ($request->limit ?? 10));
+
+                return response([
+                    'status' => true,
+                    'message' => 'Berhasil dihapus',
+                    'data' => $pengeluarantruckingheader
+                ]);
+            }
             return response([
-                'status' => true,
-                'message' => 'Berhasil dihapus',
-                'data' => $pengeluarantruckingheader
-            ]);
+                'message' => 'Gagal dihapus'
+            ], 500);
         } catch (\Throwable $th) {
             DB::rollBack();
-            return response($th->getMessage());
+            throw $th;
         }
     }
 
@@ -383,14 +387,16 @@ class PengeluaranTruckingHeaderController extends Controller
 
         try {
             $pengeluaran = PengeluaranTruckingHeader::lockForUpdate()->findOrFail($id);
-            $statusSudahCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
-            $statusBelumCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
+            $statusSudahCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                ->where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
+            $statusBelumCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                ->where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
 
             if ($pengeluaran->statuscetak != $statusSudahCetak->id) {
                 $pengeluaran->statuscetak = $statusSudahCetak->id;
                 $pengeluaran->tglbukacetak = date('Y-m-d H:i:s');
                 $pengeluaran->userbukacetak = auth('api')->user()->name;
-                $pengeluaran->jumlahcetak = $pengeluaran->jumlahcetak+1;
+                $pengeluaran->jumlahcetak = $pengeluaran->jumlahcetak + 1;
 
                 if ($pengeluaran->save()) {
                     $logTrail = [
@@ -402,10 +408,10 @@ class PengeluaranTruckingHeaderController extends Controller
                         'datajson' => $pengeluaran->toArray(),
                         'modifiedby' => auth('api')->user()->name,
                     ];
-    
+
                     $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                     $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-    
+
                     DB::commit();
                 }
             }
@@ -417,16 +423,17 @@ class PengeluaranTruckingHeaderController extends Controller
         } catch (\Throwable $th) {
             throw $th;
         }
-        
     }
 
     public function cekvalidasi($id)
     {
         $pengeluaran = PengeluaranTruckingHeader::find($id);
         $status = $pengeluaran->statusapproval;
-        $statusApproval = Parameter::where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
+        $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
         $statusdatacetak = $pengeluaran->statuscetak;
-        $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
+        $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
 
         if ($status == $statusApproval->id) {
             $query = DB::table('error')

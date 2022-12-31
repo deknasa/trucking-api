@@ -32,7 +32,8 @@ class PengeluaranHeader extends MyModel
     {
         $this->setRequestParameters();
 
-        $query = DB::table($this->table)->select(
+        $query = DB::table($this->table)->from(DB::raw("pengeluaranheader with (readuncommitted)"))
+        ->select(
             'pengeluaranheader.id',
             'pengeluaranheader.nobukti',
             'pengeluaranheader.tglbukti',
@@ -61,12 +62,12 @@ class PengeluaranHeader extends MyModel
             'pengeluaranheader.updated_at'
 
         )
-        ->leftJoin('pelanggan', 'pengeluaranheader.pelanggan_id', 'pelanggan.id')
-        ->leftJoin('cabang', 'pengeluaranheader.cabang_id', 'cabang.id')
-        ->leftJoin('bank', 'pengeluaranheader.bank_id', 'bank.id')
-        ->leftJoin('parameter as statusapproval' , 'pengeluaranheader.statusapproval', 'statusapproval.id')
-        ->leftJoin('parameter as statuscetak' , 'pengeluaranheader.statuscetak', 'statuscetak.id')
-        ->leftJoin('parameter as statusjenistransaksi' , 'pengeluaranheader.statusjenistransaksi', 'statusjenistransaksi.id');
+        ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'pengeluaranheader.pelanggan_id', 'pelanggan.id')
+        ->leftJoin(DB::raw("cabang with (readuncommitted)"), 'pengeluaranheader.cabang_id', 'cabang.id')
+        ->leftJoin(DB::raw("bank with (readuncommitted)"), 'pengeluaranheader.bank_id', 'bank.id')
+        ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'pengeluaranheader.statusapproval', 'statusapproval.id')
+        ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'pengeluaranheader.statuscetak', 'statuscetak.id')
+        ->leftJoin(DB::raw("parameter as statusjenistransaksi with (readuncommitted)"), 'pengeluaranheader.statusjenistransaksi', 'statusjenistransaksi.id');
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -82,7 +83,8 @@ class PengeluaranHeader extends MyModel
 
     public function findAll($id)
     {
-        $query = DB::table('pengeluaranheader')->select(
+        $query =  PengeluaranHeader::from(DB::raw("pengeluaranheader with (readuncommitted)"))
+        ->select(
             'pengeluaranheader.id',
             'pengeluaranheader.nobukti',
             'pengeluaranheader.tglbukti',
@@ -104,9 +106,9 @@ class PengeluaranHeader extends MyModel
             'pengeluaranheader.jumlahcetak',
             'pengeluaranheader.tglbukacetak',
             )
-        ->leftJoin('pelanggan', 'pengeluaranheader.pelanggan_id', 'pelanggan.id')
-        ->leftJoin('cabang', 'pengeluaranheader.cabang_id', 'cabang.id')
-        ->leftJoin('bank', 'pengeluaranheader.bank_id', 'bank.id')
+        ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'pengeluaranheader.pelanggan_id', 'pelanggan.id')
+        ->leftJoin(DB::raw("cabang with (readuncommitted)"), 'pengeluaranheader.cabang_id', 'cabang.id')
+        ->leftJoin(DB::raw("bank with (readuncommitted)"), 'pengeluaranheader.bank_id', 'bank.id')
         ->where('pengeluaranheader.id',$id);
 
         $data = $query->first();
@@ -270,7 +272,8 @@ class PengeluaranHeader extends MyModel
         {
             $this->setRequestParameters();
     
-            $query = DB::table($this->table)->select(
+            $query = DB::table($this->table)->from(DB::raw("pengeluaranheader with (readuncommitted)"))
+            ->select(
                 'pengeluaranheader.nobukti',
                 'pengeluaranheader.keterangan as keterangan_detail',
                 'pengeluaranheader.tglbukti',
@@ -283,7 +286,7 @@ class PengeluaranHeader extends MyModel
                 FROM rekappengeluarandetail
                 WHERE pengeluaran_nobukti = pengeluaranheader.nobukti   
               )")
-            ->leftJoin('pengeluarandetail', 'pengeluaranheader.id', 'pengeluarandetail.pengeluaran_id')
+            ->leftJoin(DB::raw("pengeluarandetail with (readuncommitted)"), 'pengeluaranheader.id', 'pengeluarandetail.pengeluaran_id')
             ->groupBy('pengeluaranheader.nobukti','pengeluaranheader.keterangan' ,'pengeluaranheader.tglbukti');
             $data = $query->get();
                 

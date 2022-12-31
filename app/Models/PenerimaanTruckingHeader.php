@@ -28,7 +28,8 @@ class PenerimaanTruckingHeader extends MyModel
     {
         $this->setRequestParameters();
 
-        $query = DB::table($this->table)->select(
+        $query = DB::table($this->table)->from(DB::raw("penerimaantruckingheader with (readuncommitted)"))
+        ->select(
             'penerimaantruckingheader.id',
             'penerimaantruckingheader.nobukti',
             'penerimaantruckingheader.tglbukti',
@@ -46,12 +47,10 @@ class PenerimaanTruckingHeader extends MyModel
             'penerimaantruckingheader.modifiedby',
             'penerimaantruckingheader.updated_at',
         )
-            ->leftJoin('penerimaantrucking', 'penerimaantruckingheader.penerimaantrucking_id','penerimaantrucking.id')
-            ->leftJoin('parameter', 'penerimaantruckingheader.statuscetak','parameter.id')
-            ->leftJoin('bank', 'penerimaantruckingheader.bank_id', 'bank.id');
+            ->leftJoin(DB::raw("penerimaantrucking with (readuncommitted)"), 'penerimaantruckingheader.penerimaantrucking_id','penerimaantrucking.id')
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'penerimaantruckingheader.statuscetak','parameter.id')
+            ->leftJoin(DB::raw("bank with (readuncommitted)"), 'penerimaantruckingheader.bank_id', 'bank.id');
             
-
-
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
@@ -67,7 +66,8 @@ class PenerimaanTruckingHeader extends MyModel
     public function findAll($id)
     {
 
-        $query = DB::table('penerimaantruckingheader')->select(
+        $query = DB::table('penerimaantruckingheader')->from(DB::raw("penerimaantruckingheader with (readuncommitted)"))
+        ->select(
             'penerimaantruckingheader.id',
             'penerimaantruckingheader.nobukti',
             'penerimaantruckingheader.tglbukti',
@@ -80,8 +80,8 @@ class PenerimaanTruckingHeader extends MyModel
             'penerimaantruckingheader.coa',
             'penerimaantruckingheader.penerimaan_nobukti'
         )
-            ->leftJoin('penerimaantrucking', 'penerimaantruckingheader.penerimaantrucking_id','penerimaantrucking.id')
-            ->leftJoin('bank', 'penerimaantruckingheader.bank_id', 'bank.id')
+            ->leftJoin(DB::raw("penerimaantrucking with (readuncommitted)"), 'penerimaantruckingheader.penerimaantrucking_id','penerimaantrucking.id')
+            ->leftJoin(DB::raw("bank with (readuncommitted)"), 'penerimaantruckingheader.bank_id', 'bank.id')
             ->where('penerimaantruckingheader.id', '=', $id);
             
 

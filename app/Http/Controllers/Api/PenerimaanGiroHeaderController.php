@@ -60,8 +60,10 @@ class PenerimaanGiroHeaderController extends Controller
             $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
 
             $penerimaanGiro = new PenerimaanGiroHeader();
-            $statusApproval = Parameter::where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
-            $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
+            $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                ->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
+            $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                ->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
 
             $penerimaanGiro->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $penerimaanGiro->pelanggan_id = $request->pelanggan_id;
@@ -95,12 +97,13 @@ class PenerimaanGiroHeaderController extends Controller
             $validatedLogTrail = new StoreLogTrailRequest($logTrail);
             $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-            $coadebet = DB::table('parameter')->select('text')->where('grp', 'COA PENERIMAAN GIRO DEBET')->first();
-            $coakredit = DB::table('parameter')->select('text')->where('grp', 'COA PENERIMAAN GIRO KREDIT')->first();
+            $coadebet = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                ->select('text')->where('grp', 'COA PENERIMAAN GIRO DEBET')->first();
+            $coakredit = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                ->select('text')->where('grp', 'COA PENERIMAAN GIRO KREDIT')->first();
 
             $detaillog = [];
             for ($i = 0; $i < count($request->nominal); $i++) {
-
 
                 $datadetail = [
                     'penerimaangiro_id' => $penerimaanGiro->id,
@@ -235,38 +238,39 @@ class PenerimaanGiroHeaderController extends Controller
     /**
      * @ClassName
      */
-    public function update(UpdatePenerimaanGiroHeaderRequest $request, $id)
+    public function update(UpdatePenerimaanGiroHeaderRequest $request, PenerimaanGiroHeader $penerimaangiroheader)
     {
         DB::beginTransaction();
 
         try {
-            $penerimaanGiroHeader = PenerimaanGiroHeader::lockForUpdate()->findOrFail($id);
-            $penerimaanGiroHeader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
-            $penerimaanGiroHeader->pelanggan_id = $request->pelanggan_id;
-            $penerimaanGiroHeader->keterangan = $request->keterangan;
-            $penerimaanGiroHeader->diterimadari = $request->diterimadari;
-            $penerimaanGiroHeader->tgllunas = date('Y-m-d', strtotime($request->tgllunas));
-            $penerimaanGiroHeader->modifiedby = auth('api')->user()->name;
+            $penerimaangiroheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
+            $penerimaangiroheader->pelanggan_id = $request->pelanggan_id;
+            $penerimaangiroheader->keterangan = $request->keterangan;
+            $penerimaangiroheader->diterimadari = $request->diterimadari;
+            $penerimaangiroheader->tgllunas = date('Y-m-d', strtotime($request->tgllunas));
+            $penerimaangiroheader->modifiedby = auth('api')->user()->name;
 
-            if ($penerimaanGiroHeader->save()) {
+            if ($penerimaangiroheader->save()) {
                 $logTrail = [
-                    'namatabel' => strtoupper($penerimaanGiroHeader->getTable()),
+                    'namatabel' => strtoupper($penerimaangiroheader->getTable()),
                     'postingdari' => 'EDIT PENERIMAAN GIRO HEADER',
-                    'idtrans' => $penerimaanGiroHeader->id,
-                    'nobuktitrans' => $penerimaanGiroHeader->nobukti,
+                    'idtrans' => $penerimaangiroheader->id,
+                    'nobuktitrans' => $penerimaangiroheader->nobukti,
                     'aksi' => 'EDIT',
-                    'datajson' => $penerimaanGiroHeader->toArray(),
-                    'modifiedby' => $penerimaanGiroHeader->modifiedby
+                    'datajson' => $penerimaangiroheader->toArray(),
+                    'modifiedby' => $penerimaangiroheader->modifiedby
                 ];
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
             }
 
-            PenerimaanGiroDetail::where('penerimaangiro_id', $penerimaanGiroHeader->id)->lockForUpdate()->delete();
+            PenerimaanGiroDetail::where('penerimaangiro_id', $penerimaangiroheader->id)->delete();
 
-            $coadebet = DB::table('parameter')->select('text')->where('grp', 'COA PENERIMAAN GIRO DEBET')->first();
-            $coakredit = DB::table('parameter')->select('text')->where('grp', 'COA PENERIMAAN GIRO KREDIT')->first();
+            $coadebet = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                ->select('text')->where('grp', 'COA PENERIMAAN GIRO DEBET')->first();
+            $coakredit = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                ->select('text')->where('grp', 'COA PENERIMAAN GIRO KREDIT')->first();
             $detaillog = [];
             for ($i = 0; $i < count($request->nominal); $i++) {
                 $invoice = '-';
@@ -277,8 +281,8 @@ class PenerimaanGiroHeaderController extends Controller
                     $pelunasanpiutang = $getLunas->nobukti;
                 }
                 $datadetail = [
-                    'penerimaangiro_id' => $penerimaanGiroHeader->id,
-                    'nobukti' => $penerimaanGiroHeader->nobukti,
+                    'penerimaangiro_id' => $penerimaangiroheader->id,
+                    'nobukti' => $penerimaangiroheader->nobukti,
                     'nowarkat' => $request->nowarkat[$i],
                     'tgljatuhtempo' => date('Y-m-d', strtotime($request->tgljatuhtempo[$i])),
                     'nominal' => $request->nominal[$i],
@@ -286,13 +290,13 @@ class PenerimaanGiroHeaderController extends Controller
                     'coakredit' => $coakredit->text,
                     'keterangan' => $request->keterangan_detail[$i],
                     'bank_id' => $request->bank_id[$i],
-                    'pelanggan_id' => $penerimaanGiroHeader->pelanggan_id,
+                    'pelanggan_id' => $penerimaangiroheader->pelanggan_id,
                     'invoice_nobukti' => $invoice,
                     'bankpelanggan_id' => $request->bankpelanggan_id[$i] ?? '',
                     'jenisbiaya' => $request->jenisbiaya[$i] ?? '',
                     'pelunasanpiutang_nobukti' => $pelunasanpiutang,
                     'bulanbeban' => date('Y-m-d', strtotime($request->bulanbeban[$i])) ?? '',
-                    'modifiedby' => $penerimaanGiroHeader->modifiedby,
+                    'modifiedby' => $penerimaangiroheader->modifiedby,
                 ];
 
                 // STORE 
@@ -315,24 +319,24 @@ class PenerimaanGiroHeaderController extends Controller
                 'namatabel' => strtoupper($tabeldetail),
                 'postingdari' => 'EDIT PENERIMAAN GIRO DETAIL',
                 'idtrans' =>  $storedLogTrail['id'],
-                'nobuktitrans' => $penerimaanGiroHeader->nobukti,
+                'nobuktitrans' => $penerimaangiroheader->nobukti,
                 'aksi' => 'EDIT',
                 'datajson' => $detaillog,
-                'modifiedby' => $penerimaanGiroHeader->modifiedby,
+                'modifiedby' => $penerimaangiroheader->modifiedby,
             ];
 
             $data = new StoreLogTrailRequest($datalogtrail);
             app(LogTrailController::class)->store($data);
 
-            JurnalUmumHeader::where('nobukti', $penerimaanGiroHeader->nobukti)->lockForUpdate()->delete();
-            JurnalUmumDetail::where('nobukti', $penerimaanGiroHeader->nobukti)->lockForUpdate()->delete();
+            JurnalUmumHeader::where('nobukti', $penerimaangiroheader->nobukti)->delete();
+            JurnalUmumDetail::where('nobukti', $penerimaangiroheader->nobukti)->delete();
 
             $parameterController = new ParameterController;
             $statusApp = $parameterController->getparameterid('STATUS APPROVAL', 'STATUS APPROVAL', 'NON APPROVAL');
 
             $jurnalHeader = [
                 'tanpaprosesnobukti' => 1,
-                'nobukti' => $penerimaanGiroHeader->nobukti,
+                'nobukti' => $penerimaangiroheader->nobukti,
                 'tgl' => date('Y-m-d', strtotime($request->tglbukti)),
                 'keterangan' => $request->keterangan,
                 'postingdari' => 'ENTRY PENERIMAAN GIRO',
@@ -348,7 +352,7 @@ class PenerimaanGiroHeaderController extends Controller
                 $detail = [];
                 $jurnalDetail = [
                     [
-                        'nobukti' => $penerimaanGiroHeader->nobukti,
+                        'nobukti' => $penerimaangiroheader->nobukti,
                         'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
                         'coa' =>  $coadebet->text,
                         'nominal' => $request->nominal[$i],
@@ -357,7 +361,7 @@ class PenerimaanGiroHeaderController extends Controller
                         'baris' => $i,
                     ],
                     [
-                        'nobukti' => $penerimaanGiroHeader->nobukti,
+                        'nobukti' => $penerimaangiroheader->nobukti,
                         'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
                         'coa' =>  $coakredit->text,
                         'nominal' => -$request->nominal[$i],
@@ -388,14 +392,14 @@ class PenerimaanGiroHeaderController extends Controller
             DB::commit();
 
             /* Set position and page */
-            $selected = $this->getPosition($penerimaanGiroHeader, $penerimaanGiroHeader->getTable());
-            $penerimaanGiroHeader->position = $selected->position;
-            $penerimaanGiroHeader->page = ceil($penerimaanGiroHeader->position / ($request->limit ?? 10));
+            $selected = $this->getPosition($penerimaangiroheader, $penerimaangiroheader->getTable());
+            $penerimaangiroheader->position = $selected->position;
+            $penerimaangiroheader->page = ceil($penerimaangiroheader->position / ($request->limit ?? 10));
 
             return response([
                 'status' => true,
                 'message' => 'Berhasil disimpan',
-                'data' => $penerimaanGiroHeader
+                'data' => $penerimaangiroheader
             ]);
         } catch (\Throwable $th) {
             DB::rollBack();
@@ -414,14 +418,11 @@ class PenerimaanGiroHeaderController extends Controller
             $getDetail = PenerimaanGiroDetail::where('penerimaangiro_id', $penerimaangiroheader->id)->get();
             $getJurnalHeader = JurnalUmumHeader::where('nobukti', $penerimaangiroheader->nobukti)->first();
             $getJurnalDetail = JurnalUmumDetail::where('nobukti', $penerimaangiroheader->nobukti)->get();
-
-            $delete = PenerimaanGiroDetail::where('penerimaangiro_id', $penerimaangiroheader->id)->lockForUpdate()->delete();
-            $delete = JurnalUmumHeader::where('nobukti', $penerimaangiroheader->nobukti)->lockForUpdate()->delete();
-            $delete = JurnalUmumDetail::where('nobukti', $penerimaangiroheader->nobukti)->lockForUpdate()->delete();
-
-            $delete = PenerimaanGiroHeader::destroy($penerimaangiroheader->id);
             
-            if ($delete) {
+            $isDelete = PenerimaanGiroHeader::where('id', $penerimaangiroheader->id)->delete();
+            JurnalUmumHeader::where('nobukti', $penerimaangiroheader->nobukti)->delete();
+            
+            if ($isDelete) {
                 $datalogtrail = [
                     'namatabel' => strtoupper($penerimaangiroheader->getTable()),
                     'postingdari' => 'DELETE PENERIMAAN GIRO HEADER',
@@ -478,18 +479,22 @@ class PenerimaanGiroHeaderController extends Controller
 
                 $validatedLogTrailJurnalDetail = new StoreLogTrailRequest($logTrailJurnalDetail);
                 app(LogTrailController::class)->store($validatedLogTrailJurnalDetail);
-            } 
-            DB::commit();
 
-            $selected = $this->getPosition($penerimaangiroheader, $penerimaangiroheader->getTable(), true);
-            $penerimaangiroheader->position = $selected->position;
-            $penerimaangiroheader->id = $selected->id;
-            $penerimaangiroheader->page = ceil($penerimaangiroheader->position / ($request->limit ?? 10));
+                DB::commit();
+    
+                $selected = $this->getPosition($penerimaangiroheader, $penerimaangiroheader->getTable(), true);
+                $penerimaangiroheader->position = $selected->position;
+                $penerimaangiroheader->id = $selected->id;
+                $penerimaangiroheader->page = ceil($penerimaangiroheader->position / ($request->limit ?? 10));
+                return response([
+                    'status' => true,
+                    'message' => 'Berhasil dihapus',
+                    'data' => $penerimaangiroheader
+                ]);
+            } 
             return response([
-                'status' => true,
-                'message' => 'Berhasil dihapus',
-                'data' => $penerimaangiroheader
-            ]);
+                'message' => 'Gagal dihapus'
+            ], 500);
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
@@ -502,8 +507,10 @@ class PenerimaanGiroHeaderController extends Controller
 
         try {
             $penerimaanGiro = PenerimaanGiroHeader::find($id);
-            $statusApproval = Parameter::where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
-            $statusNonApproval = Parameter::where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
+            $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
+            $statusNonApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
 
             if ($penerimaanGiro->statusapproval == $statusApproval->id) {
                 $penerimaanGiro->statusapproval = $statusNonApproval->id;
@@ -602,8 +609,10 @@ class PenerimaanGiroHeaderController extends Controller
 
         try {
             $piutang = PenerimaanGiroHeader::lockForUpdate()->findOrFail($id);
-            $statusSudahCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
-            $statusBelumCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
+            $statusSudahCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                ->where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
+            $statusBelumCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                ->where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
 
             if ($piutang->statuscetak != $statusSudahCetak->id) {
                 $piutang->statuscetak = $statusSudahCetak->id;
@@ -641,9 +650,11 @@ class PenerimaanGiroHeaderController extends Controller
     {
         $pengeluaran = PenerimaanGiroHeader::find($id);
         $status = $pengeluaran->statusapproval;
-        $statusApproval = Parameter::where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
+        $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
         $statusdatacetak = $pengeluaran->statuscetak;
-        $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
+        $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
 
         if ($status == $statusApproval->id) {
             $query = DB::table('error')

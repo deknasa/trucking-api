@@ -75,7 +75,8 @@ class PenerimaanTruckingHeaderController extends Controller
             $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
 
             $penerimaantruckingheader = new PenerimaanTruckingHeader();
-            $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
+            $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                ->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
 
             $penerimaantruckingheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $penerimaantruckingheader->penerimaantrucking_id = $idpenerimaan;
@@ -317,10 +318,9 @@ class PenerimaanTruckingHeaderController extends Controller
         try {
 
             $getDetail = PenerimaanTruckingDetail::where('penerimaantruckingheader_id', $penerimaantruckingheader->id)->get();
-            $delete = PenerimaanTruckingDetail::where('penerimaantruckingheader_id', $penerimaantruckingheader->id)->lockForUpdate()->delete();
-            $delete = PenerimaanTruckingHeader::destroy($penerimaantruckingheader->id);
+            $isDelete = PenerimaanTruckingHeader::where('id', $penerimaantruckingheader->id)->delete();
 
-            if ($delete) {
+            if ($isDelete) {
                 $logTrail = [
                     'namatabel' => strtoupper($penerimaantruckingheader->getTable()),
                     'postingdari' => 'DELETE PENERIMAAN TRUCKING HEADER',
@@ -347,20 +347,24 @@ class PenerimaanTruckingHeaderController extends Controller
 
                 $validatedLogTrailPenerimaanTruckingDetail = new StoreLogTrailRequest($logTrailPenerimaanTruckingDetail);
                 app(LogTrailController::class)->store($validatedLogTrailPenerimaanTruckingDetail);
+                DB::commit();
+    
+                $selected = $this->getPosition($penerimaantruckingheader, $penerimaantruckingheader->getTable(), true);
+                $penerimaantruckingheader->position = $selected->position;
+                $penerimaantruckingheader->id = $selected->id;
+                $penerimaantruckingheader->page = ceil($penerimaantruckingheader->position / ($request->limit ?? 10));
+    
+                return response([
+                    'status' => true,
+                    'message' => 'Berhasil dihapus',
+                    'data' => $penerimaantruckingheader
+                ]);
 
             } 
-            DB::commit();
-
-            $selected = $this->getPosition($penerimaantruckingheader, $penerimaantruckingheader->getTable(), true);
-            $penerimaantruckingheader->position = $selected->position;
-            $penerimaantruckingheader->id = $selected->id;
-            $penerimaantruckingheader->page = ceil($penerimaantruckingheader->position / ($request->limit ?? 10));
-
             return response([
-                'status' => true,
-                'message' => 'Berhasil dihapus',
-                'data' => $penerimaantruckingheader
-            ]);
+                'message' => 'Gagal dihapus'
+            ], 500);
+
         } catch (\Throwable $th) {
             DB::rollBack();
             return response($th->getMessage());
@@ -373,8 +377,10 @@ class PenerimaanTruckingHeaderController extends Controller
 
         try {
             $penerimaanTrucking = PenerimaanTruckingHeader::lockForUpdate()->findOrFail($id);
-            $statusSudahCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
-            $statusBelumCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
+            $statusSudahCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                ->where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
+            $statusBelumCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                ->where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
 
             if ($penerimaanTrucking->statuscetak != $statusSudahCetak->id) {
                 $penerimaanTrucking->statuscetak = $statusSudahCetak->id;
@@ -414,7 +420,8 @@ class PenerimaanTruckingHeaderController extends Controller
     {
         $penerimaanTrucking = PenerimaanTruckingHeader::find($id);
         $statusdatacetak = $penerimaanTrucking->statuscetak;
-        $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
+        $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
 
         if ($statusdatacetak == $statusCetak->id) {
             $query = DB::table('error')

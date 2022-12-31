@@ -472,7 +472,7 @@ class KasGantungHeaderController extends Controller
                     $parameterController = new ParameterController;
                     $statusApp = $parameterController->getparameterid('STATUS APPROVAL', 'STATUS APPROVAL', 'NON APPROVAL');
 
-                    $coaKasKeluar = DB::table('parameter')->select('text')->where('id', '110')->first();
+                    $coaKasKeluar = DB::table('parameter')->where('grp', 'COA KAS GANTUNG')->where('subgrp', 'COA KAS GANTUNG')->first();
 
                     $content = new Request();
                     $content['group'] = $querysubgrppengeluaran->grp;
@@ -723,80 +723,26 @@ class KasGantungHeaderController extends Controller
 
             $nobukti = $pengeluaranHeader['nobukti'];
 
-            $parameterController = new ParameterController;
-            $statusApp = $parameterController->getparameterid('STATUS APPROVAL', 'STATUS APPROVAL', 'NON APPROVAL');
-            $jurnalHeader = [
-                'tanpaprosesnobukti' => 1,
-                'nobukti' => $header->original['data']['nobukti'],
-                'tglbukti' => $header->original['data']['tglbukti'],
-                'keterangan' => $header->original['data']['keterangan'],
-                'postingdari' => "ENTRY PENGELUARAN DARI KAS GANTUNG",
-                'statusapproval' => $statusApp->id,
-                'userapproval' => "",
-                'tglapproval' => "",
-                'statusformat' => 0,
-                'modifiedby' => auth('api')->user()->name,
-            ];
-
-            $storeJurnal = new StoreJurnalUmumHeaderRequest($jurnalHeader);
-            $jurnal = app(JurnalUmumHeaderController::class)->store($storeJurnal);
-            
             $detailLogPengeluaran = [];
             $detailLogJurnal = [];
             foreach ($pengeluaranDetail as $value) {
 
                 $value['pengeluaran_id'] = $header->original['data']['id'];
+                $value['entridetail'] = 1;
+                $value['jurnal_id'] = $header->original['idlogtrail']['jurnal_id'];
+                $value['tglbukti'] = $pengeluaranHeader['tglbukti'];
                 $pengeluaranDetail = new StorePengeluaranDetailRequest($value);
                 $detailPengeluaran = app(PengeluaranDetailController::class)->store($pengeluaranDetail);
 
-                $detailLogPengeluaran[] = $detailPengeluaran['detail']->toArray();
-
-                // JURNAL
-                $getBaris = DB::table('jurnalumumdetail')->select('baris')->where('nobukti', $nobukti)->orderByDesc('baris')->first();
-
-                if (is_null($getBaris)) {
-                    $baris = 0;
-                } else {
-                    $baris = $getBaris->baris + 1;
-                }
-
-                for ($x = 0; $x <= 1; $x++) {
-                    if ($x == 1) {
-                        $datadetail = [
-                            'jurnalumum_id' => $jurnal->original['data']['id'],
-                            'nobukti' => $nobukti,
-                            'tglbukti' => $jurnal->original['data']['tglbukti'],
-                            'coa' =>  $pengeluaranDetail['coakredit'],
-                            'nominal' => -$pengeluaranDetail['nominal'],
-                            'keterangan' => $pengeluaranDetail['keterangan'],
-                            'modifiedby' => auth('api')->user()->name,
-                            'baris' => $baris,
-                        ];
-                    } else {
-                        $datadetail = [
-                            'jurnalumum_id' =>  $jurnal->original['data']['id'],
-                            'nobukti' => $nobukti,
-                            'tglbukti' => $jurnal->original['data']['tglbukti'],
-                            'coa' =>  $pengeluaranDetail['coadebet'],
-                            'nominal' => $pengeluaranDetail['nominal'],
-                            'keterangan' => $pengeluaranDetail['keterangan'],
-                            'modifiedby' => auth('api')->user()->name,
-                            'baris' => $baris,
-                        ];
-                    }
-                    
-                    $detail = new StoreJurnalUmumDetailRequest($datadetail);
-                    $detailJurnal = app(JurnalUmumDetailController::class)->store($detail);
-                    
-                    $detailLogJurnal[] = $detailJurnal['detail']->toArray();
-                }
+                $detailLogPengeluaran[] = $detailPengeluaran['detail']['pengeluarandetail']->toArray();
+                $detailLogJurnal = array_merge($detailLogJurnal, $detailPengeluaran['detail']['jurnaldetail']);
 
             }
 
             $datalogtrail = [
                 'namatabel' => strtoupper($detailPengeluaran['tabel']),
                 'postingdari' => 'ENTRY KAS GANTUNG',
-                'idtrans' =>  $header->original['idlogtrail'],
+                'idtrans' =>  $header->original['idlogtrail']['pengeluaran'],
                 'nobuktitrans' => $nobukti,
                 'aksi' => 'ENTRY',
                 'datajson' => $detailLogPengeluaran,
@@ -808,9 +754,9 @@ class KasGantungHeaderController extends Controller
 
 
             $datalogtrail = [
-                'namatabel' => strtoupper($detailJurnal['tabel']),
+                'namatabel' => strtoupper('JURNALUMUMDETAIL'),
                 'postingdari' => 'ENTRY PENGELUARAN DARI KAS GANTUNG',
-                'idtrans' =>  $jurnal->original['idlogtrail'],
+                'idtrans' =>  $header->original['idlogtrail']['jurnal'],
                 'nobuktitrans' => $nobukti,
                 'aksi' => 'ENTRY',
                 'datajson' => $detailLogJurnal,

@@ -26,7 +26,7 @@ class PenerimaanTruckingDetailController extends Controller
             'sortOrder' => $request->sortOrder ?? 'asc',
         ];
         try {
-            $query = PenerimaanTruckingDetail::from('penerimaantruckingdetail as detail');
+            $query = PenerimaanTruckingDetail::from(DB::raw("penerimaantruckingdetail as detail with (readuncommitted)"));
 
             if (isset($params['id'])) {
                 $query->where('detail.id', $params['id']);
@@ -52,10 +52,10 @@ class PenerimaanTruckingDetailController extends Controller
                     'detail.pengeluarantruckingheader_nobukti',
                     'detail.nominal'
                 )
-                ->leftJoin('penerimaantruckingheader as header','header.id','detail.penerimaantruckingheader_id')
-                ->leftJoin('penerimaantrucking', 'header.penerimaantrucking_id','penerimaantrucking.id')
-                ->leftJoin('bank', 'header.bank_id', 'bank.id')
-                ->leftJoin('supir', 'detail.supir_id', 'supir.id');
+                ->leftJoin(DB::raw("penerimaantruckingheader as header with (readuncommitted)"),'header.id','detail.penerimaantruckingheader_id')
+                ->leftJoin(DB::raw("penerimaantrucking with (readuncommitted)"), 'header.penerimaantrucking_id','penerimaantrucking.id')
+                ->leftJoin(DB::raw("bank with (readuncommitted)"), 'header.bank_id', 'bank.id')
+                ->leftJoin(DB::raw("supir with (readuncommitted)"), 'detail.supir_id', 'supir.id');
 
                 $penerimaanTruckingDetail = $query->get();
             } else {
@@ -66,7 +66,7 @@ class PenerimaanTruckingDetailController extends Controller
                     'supir.namasupir as supir_id',
                     'detail.pengeluarantruckingheader_nobukti',
                 )
-                ->leftJoin('supir', 'detail.supir_id', 'supir.id');
+                ->leftJoin(DB::raw("supir with (readuncommitted)"), 'detail.supir_id', 'supir.id');
                 
                 $penerimaanTruckingDetail = $query->get();
             }

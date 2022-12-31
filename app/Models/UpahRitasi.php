@@ -39,26 +39,27 @@ class UpahRitasi extends MyModel
     {
         $this->setRequestParameters();
 
-        $query = DB::table($this->table)->select(
-            'upahritasi.id',
-            'kotadari.keterangan as kotadari_id',
-            'kotasampai.keterangan as kotasampai_id',
-            'upahritasi.jarak',
-            'zona.keterangan as zona_id',
-            'parameter.text as statusaktif',
-            'upahritasi.tglmulaiberlaku',
-            'upahritasi.tglakhirberlaku',
-            'statusluarkota.text as statusluarkota',
-            'upahritasi.created_at',
-            'upahritasi.modifiedby',
-            'upahritasi.updated_at'
-        )
-            ->join('kota as kotadari', 'kotadari.id', '=', 'upahritasi.kotadari_id')
-            ->join('kota as kotasampai', 'kotasampai.id', '=', 'upahritasi.kotasampai_id')
-            ->leftJoin('parameter', 'upahritasi.statusaktif', 'parameter.id')
-            ->leftJoin('parameter as statusluarkota', 'upahritasi.statusluarkota', 'statusluarkota.id')
+        $query = DB::table($this->table)->from(DB::raw("upahritasi with (readuncommitted)"))
+            ->select(
+                'upahritasi.id',
+                'kotadari.keterangan as kotadari_id',
+                'kotasampai.keterangan as kotasampai_id',
+                'upahritasi.jarak',
+                'zona.keterangan as zona_id',
+                'parameter.text as statusaktif',
+                'upahritasi.tglmulaiberlaku',
+                'upahritasi.tglakhirberlaku',
+                'statusluarkota.text as statusluarkota',
+                'upahritasi.created_at',
+                'upahritasi.modifiedby',
+                'upahritasi.updated_at'
+            )
+            ->leftJoin(DB::raw("kota as kotadari with (readuncommitted)"), 'kotadari.id', '=', 'upahritasi.kotadari_id')
+            ->leftJoin(DB::raw("kota as kotasampai with (readuncommitted)"), 'kotasampai.id', '=', 'upahritasi.kotasampai_id')
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'upahritasi.statusaktif', 'parameter.id')
+            ->leftJoin(DB::raw("parameter as statusluarkota with (readuncommitted)"), 'upahritasi.statusluarkota', 'statusluarkota.id')
 
-            ->leftJoin('zona', 'upahritasi.zona_id', 'zona.id');
+            ->leftJoin(DB::raw("zona with (readuncommitted)"), 'upahritasi.zona_id', 'zona.id');
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -73,32 +74,33 @@ class UpahRitasi extends MyModel
     }
     public function findAll($id)
     {
-        $query = DB::table('upahritasi')->select(
-            'upahritasi.id',
-            'upahritasi.kotadari_id',
-            'kotadari.keterangan as kotadari',
+        $query = DB::table('upahritasi')->from(DB::raw("upahritasi with (readuncommitted)"))
+            ->select(
+                'upahritasi.id',
+                'upahritasi.kotadari_id',
+                'kotadari.keterangan as kotadari',
 
-            'upahritasi.kotasampai_id',
-            'kotasampai.keterangan as kotasampai',
+                'upahritasi.kotasampai_id',
+                'kotasampai.keterangan as kotasampai',
 
-            'upahritasi.jarak',
-            'upahritasi.zona_id',
-            'zona.keterangan as zona',
+                'upahritasi.jarak',
+                'upahritasi.zona_id',
+                'zona.keterangan as zona',
 
-            'upahritasi.statusaktif',
+                'upahritasi.statusaktif',
 
-            'upahritasi.tglmulaiberlaku',
-            'upahritasi.tglakhirberlaku',
-            'upahritasi.statusluarkota',
-            'statusluarkota.text as statusluarkotas',
+                'upahritasi.tglmulaiberlaku',
+                'upahritasi.tglakhirberlaku',
+                'upahritasi.statusluarkota',
+                'statusluarkota.text as statusluarkotas',
 
-            'upahritasi.modifiedby',
-            'upahritasi.updated_at'
-        )
-            ->join('kota as kotadari', 'kotadari.id', '=', 'upahritasi.kotadari_id')
-            ->join('kota as kotasampai', 'kotasampai.id', '=', 'upahritasi.kotasampai_id')
-            ->leftJoin('zona', 'upahritasi.zona_id', 'zona.id')
-            ->leftJoin('parameter as statusluarkota', 'upahritasi.statusluarkota', 'statusluarkota.id')
+                'upahritasi.modifiedby',
+                'upahritasi.updated_at'
+            )
+            ->leftJoin(DB::raw("kota as kotadari with (readuncommitted)"), 'kotadari.id', '=', 'upahritasi.kotadari_id')
+            ->leftJoin(DB::raw("kota as kotasampai with (readuncommitted)"), 'kotasampai.id', '=', 'upahritasi.kotasampai_id')
+            ->leftJoin(DB::raw("zona with (readuncommitted)"), 'upahritasi.zona_id', 'zona.id')
+            ->leftJoin(DB::raw("parameter as statusluarkota with (readuncommitted)"), 'upahritasi.statusluarkota', 'statusluarkota.id')
             ->where('upahritasi.id', $id);
 
         $data = $query->first();
@@ -128,10 +130,10 @@ class UpahRitasi extends MyModel
                  $this->table.updated_at"
             )
 
-        )->join('kota as kotadari', 'kotadari.id', '=', 'upahritasi.kotadari_id')
-            ->join('kota as kotasampai', 'kotasampai.id', '=', 'upahritasi.kotasampai_id')
-
-            ->leftJoin('zona', 'upahritasi.zona_id', 'zona.id');
+        )
+            ->leftJoin(DB::raw("kota as kotadari with (readuncommitted)"), 'kotadari.id', '=', 'upahritasi.kotadari_id')
+            ->leftJoin(DB::raw("kota as kotasampai with (readuncommitted)"), 'kotasampai.id', '=', 'upahritasi.kotasampai_id')
+            ->leftJoin(DB::raw("zona with (readuncommitted)"), 'upahritasi.zona_id', 'zona.id');
     }
 
     public function createTemp(string $modelTable)
@@ -158,7 +160,7 @@ class UpahRitasi extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id', 'kotadari_id', 'kotasampai_id', 'zona_id','jarak', 'statusaktif', 'tglmulaiberlaku', 'tglakhirberlaku','statusluarkota', 'modifiedby', 'created_at', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'kotadari_id', 'kotasampai_id', 'zona_id', 'jarak', 'statusaktif', 'tglmulaiberlaku', 'tglakhirberlaku', 'statusluarkota', 'modifiedby', 'created_at', 'updated_at'], $models);
 
         return $temp;
     }

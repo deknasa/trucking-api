@@ -55,8 +55,10 @@ class PendapatanSupirHeaderController extends Controller
 
             $pendapatanSupir = new PendapatanSupirHeader();
 
-            $statusApp = Parameter::where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
-            $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
+            $statusApp = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                ->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
+            $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                ->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
 
             $pendapatanSupir->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $pendapatanSupir->bank_id  = $request->bank_id;
@@ -113,7 +115,6 @@ class PendapatanSupirHeaderController extends Controller
                     }
 
                     $detaillog[] = $datadetails['detail']->toArray();
-
                 }
 
                 $datalogtrail = [
@@ -193,7 +194,7 @@ class PendapatanSupirHeaderController extends Controller
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-                PendapatanSupirDetail::where('pendapatansupir_id', $pendapatanSupirHeader->id)->lockForUpdate()->delete();
+                PendapatanSupirDetail::where('pendapatansupir_id', $pendapatanSupirHeader->id)->delete();
 
                 for ($i = 0; $i < count($request->nominal); $i++) {
                     $datadetail = [
@@ -218,7 +219,6 @@ class PendapatanSupirHeaderController extends Controller
                     }
 
                     $detaillog[] = $datadetails['detail']->toArray();
-
                 }
                 $datalogtrail = [
                     'namatabel' => strtoupper($tabeldetail),
@@ -258,18 +258,16 @@ class PendapatanSupirHeaderController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Request $request, $id)
+    public function destroy(PendapatanSupirHeader $pendapatanSupirHeader, Request $request)
     {
         DB::beginTransaction();
 
         try {
-            
-            $pendapatanSupirHeader = PendapatanSupirHeader::lockForUpdate()->findOrFail($id);
-            $getDetail = PendapatanSupirDetail::where('pendapatansupir_id', $pendapatanSupirHeader->id)->get();
-            $delete = $pendapatanSupirHeader->delete();
-            PendapatanSupirDetail::where('pendapatansupir_id', $pendapatanSupirHeader->id)->delete();
 
-            if ($delete) {
+            $getDetail = PendapatanSupirDetail::where('pendapatansupir_id', $pendapatanSupirHeader->id)->get();
+            $isDelete = PendapatanSupirHeader::where('id', $pendapatanSupirHeader->id)->delete();
+
+            if ($isDelete) {
                 $logTrail = [
                     'namatabel' => strtoupper($pendapatanSupirHeader->getTable()),
                     'postingdari' => 'DELETE PENDAPATAN SUPIR HEADER',
@@ -303,13 +301,16 @@ class PendapatanSupirHeaderController extends Controller
                 $pendapatanSupirHeader->position = $selected->position;
                 $pendapatanSupirHeader->id = $selected->id;
                 $pendapatanSupirHeader->page = ceil($pendapatanSupirHeader->position / ($request->limit ?? 10));
-    
+
                 return response([
                     'status' => true,
                     'message' => 'Berhasil dihapus',
                     'data' => $pendapatanSupirHeader
                 ]);
             }
+            return response([
+                'message' => 'Gagal dihapus'
+            ], 500);
         } catch (\Throwable $th) {
             DB::rollBack();
 
@@ -323,14 +324,16 @@ class PendapatanSupirHeaderController extends Controller
 
         try {
             $pendapatan = PendapatanSupirHeader::lockForUpdate()->findOrFail($id);
-            $statusSudahCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
-            $statusBelumCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
+            $statusSudahCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                ->where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
+            $statusBelumCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                ->where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
 
             if ($pendapatan->statuscetak != $statusSudahCetak->id) {
                 $pendapatan->statuscetak = $statusSudahCetak->id;
                 $pendapatan->tglbukacetak = date('Y-m-d H:i:s');
                 $pendapatan->userbukacetak = auth('api')->user()->name;
-                $pendapatan->jumlahcetak = $pendapatan->jumlahcetak+1;
+                $pendapatan->jumlahcetak = $pendapatan->jumlahcetak + 1;
 
                 if ($pendapatan->save()) {
                     $logTrail = [
@@ -342,10 +345,10 @@ class PendapatanSupirHeaderController extends Controller
                         'datajson' => $pendapatan->toArray(),
                         'modifiedby' => auth('api')->user()->name,
                     ];
-    
+
                     $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                     $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-    
+
                     DB::commit();
                 }
             }
@@ -357,16 +360,17 @@ class PendapatanSupirHeaderController extends Controller
         } catch (\Throwable $th) {
             throw $th;
         }
-        
     }
 
     public function cekvalidasi($id)
     {
         $pendapatan = PendapatanSupirHeader::find($id);
         $status = $pendapatan->statusapproval;
-        $statusApproval = Parameter::where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
+        $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
         $statusdatacetak = $pendapatan->statuscetak;
-        $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
+        $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
 
         if ($status == $statusApproval->id) {
             $query = DB::table('error')
@@ -408,5 +412,4 @@ class PendapatanSupirHeaderController extends Controller
             return response($data);
         }
     }
-
 }
