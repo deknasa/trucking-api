@@ -50,6 +50,7 @@ class UpahSupir extends MyModel
             'upahsupir.tglmulaiberlaku',
             'upahsupir.tglakhirberlaku',
             'statusluarkota.memo as statusluarkota',
+            'upahsupir.gambar',
             'upahsupir.created_at',
             'upahsupir.modifiedby',
             'upahsupir.updated_at'
@@ -91,6 +92,7 @@ class UpahSupir extends MyModel
             'upahsupir.tglakhirberlaku',
             'upahsupir.statusluarkota',
             'statusluarkota.text as statusluarkotas',
+            'upahsupir.gambar',
 
             'upahsupir.modifiedby',
             'upahsupir.updated_at'

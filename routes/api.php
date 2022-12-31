@@ -163,6 +163,7 @@ use App\Http\Controllers\Api\ReportAllController;
     Route::get('supir/image/{field}/{filename}/{type}', [SupirController::class, 'getImage']);
     Route::get('trado/image/{field}/{filename}/{type}', [TradoController::class, 'getImage']);
     Route::get('stok/{filename}/{type}', [StokController::class, 'getImage']);
+    Route::get('upahsupir/{filename}/{type}', [UpahSupirController::class, 'getImage']);
 
     route::middleware(['auth:api'])->group(function () {
         Route::get('parameter/export', [ParameterController::class, 'export']);
