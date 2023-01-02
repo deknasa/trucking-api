@@ -134,6 +134,7 @@ use App\Http\Controllers\Api\BankPelangganController;
     use App\Http\Controllers\Api\JurnalUmumPusatHeaderController;
     use App\Http\Controllers\Api\KartuStokController;
     use App\Http\Controllers\Api\HistoriPenerimaanStokController;
+    use App\Http\Controllers\Api\HistoriPengeluaranStokController;
 use App\Http\Controllers\Api\LaporanBukuBesarController;
 use App\Http\Controllers\Api\LaporanKasBankController;
 use App\Http\Controllers\Api\ReportAllController;
@@ -675,6 +676,9 @@ use App\Http\Controllers\Api\ReportAllController;
         
         Route::get('historipenerimaanstok/report', [HistoriPenerimaanStokController::class, 'report'])->name('historipenerimaanstok.report');
         Route::resource('historipenerimaanstok', HistoriPenerimaanStokController::class);
+        
+        Route::get('historipengeluaranstok/report', [HistoriPengeluaranStokController::class, 'report'])->name('historipengeluaranstok.report');
+        Route::resource('historipengeluaranstok', HistoriPengeluaranStokController::class);
         
         Route::get('laporankasbank/report', [LaporanKasBankController::class, 'report'])->name('laporankasbank.report');
         Route::resource('laporankasbank', LaporanKasBankController::class);
