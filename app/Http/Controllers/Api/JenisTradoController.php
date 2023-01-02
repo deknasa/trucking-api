@@ -68,28 +68,15 @@ class JenisTradoController extends Controller
             }
 
             /* Set position and page */
-            $del = 0;
-            $data = $this->getid($jenistrado->id, $request, $del);
-            $jenistrado->position = $data->row;
-
-            if (isset($request->limit)) {
-                $jenistrado->page = ceil($jenistrado->position / $request->limit);
-            }
+            $selected = $this->getPosition($jenistrado, $jenistrado->getTable());
+            $jenistrado->position = $selected->position;
+            $jenistrado->page = ceil($jenistrado->position / ($request->limit ?? 10));
 
             return response([
                 'status' => true,
                 'message' => 'Berhasil disimpan',
                 'data' => $jenistrado
             ], 201);
-        } catch (QueryException $queryException) {
-            if (isset($queryException->errorInfo[1]) && is_array($queryException->errorInfo)) {
-                // Check if deadlock
-                if ($queryException->errorInfo[1] === 1205) {
-                    goto TOP;
-                }
-            }
-
-            throw $queryException;
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
@@ -108,11 +95,10 @@ class JenisTradoController extends Controller
     /**
      * @ClassName 
      */
-    public function update(StoreJenisTradoRequest $request, jenistrado $jenistrado)
+    public function update(StoreJenisTradoRequest $request, JenisTrado $jenistrado)
     {
         DB::beginTransaction();
         try {
-            $jenistrado = JenisTrado::lockForUpdate()->findOrFail($jenistrado->id);
             $jenistrado->kodejenistrado = $request->kodejenistrado;
             $jenistrado->keterangan = $request->keterangan;
             $jenistrado->statusaktif = $request->statusaktif;
@@ -136,7 +122,6 @@ class JenisTradoController extends Controller
 
                 $selected = $this->getPosition($jenistrado, $jenistrado->getTable(), true);
                 $jenistrado->position = $selected->position;
-                $jenistrado->id = $selected->id;
                 $jenistrado->page = ceil($jenistrado->position / ($request->limit ?? 10));
 
                 return response([
@@ -155,14 +140,13 @@ class JenisTradoController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Request $request, $id)
+    public function destroy(JenisTrado $jenistrado, Request $request)
     {
         DB::beginTransaction();
         try {
-            $jenistrado = JenisTrado::lockForUpdate()->findOrFail($id);
-            $delete = $jenistrado->delete();
+            $isDelete = JenisTrado::where('id', $jenistrado->id)->delete();
 
-            if ($delete) {
+            if ($isDelete) {
                 $logTrail = [
                     'namatabel' => strtoupper($jenistrado->getTable()),
                     'postingdari' => 'DELETE JENIS TRADO',
@@ -189,6 +173,9 @@ class JenisTradoController extends Controller
                     'data' => $jenistrado
                 ]);
             }
+            return response([
+                'message' => 'Gagal dihapus'
+            ], 500);
         } catch (\Throwable $th) {
             DB::rollBack();
 

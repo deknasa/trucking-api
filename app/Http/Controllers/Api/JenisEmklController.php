@@ -136,13 +136,12 @@ class JenisEmklController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Request $request, $id)
+    public function destroy(JenisEmkl $jenisemkl, Request $request)
     {
         DB::beginTransaction();
         try {
-            $jenisemkl = JenisEmkl::lockForUpdate()->findOrFail($id);
-            $delete = $jenisemkl->delete();
-            if ($delete) {
+            $isDelete = JenisEmkl::where('id', $jenisemkl->id)->delete();
+            if ($isDelete) {
                 $logTrail = [
                     'namatabel' => strtoupper($jenisemkl->getTable()),
                     'postingdari' => 'DELETE JENISEMKL',
@@ -169,6 +168,9 @@ class JenisEmklController extends Controller
                     'data' => $jenisemkl
                 ]);
             }
+            return response([
+                'message' => 'Gagal dihapus'
+            ], 500);
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;

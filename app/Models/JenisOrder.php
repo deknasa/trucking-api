@@ -27,7 +27,8 @@ class JenisOrder extends MyModel
     {
         $this->setRequestParameters();
 
-        $query = DB::table($this->table)->select(
+        $query = JenisOrder::from(DB::raw("$this->table with (readuncommitted)"))
+        ->select(
             'jenisorder.id',
             'jenisorder.kodejenisorder',
             'jenisorder.keterangan',
@@ -36,7 +37,7 @@ class JenisOrder extends MyModel
             'jenisorder.created_at',
             'jenisorder.updated_at'
         )
-            ->leftJoin('parameter', 'jenisorder.statusaktif', '=', 'parameter.id');
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'jenisorder.statusaktif', '=', 'parameter.id');
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;

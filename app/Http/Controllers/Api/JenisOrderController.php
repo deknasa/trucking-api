@@ -137,15 +137,14 @@ class JenisOrderController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Request $request, $id)
+    public function destroy(JenisOrder $jenisorder, Request $request)
     {
         DB::beginTransaction();
         try {
 
-            $jenisorder = JenisOrder::lockForUpdate()->findOrFail($id);
-            $delete = $jenisorder->delete();
+            $isDelete = JenisOrder::where('id', $jenisorder->id)->delete();
 
-            if ($delete) {
+            if ($isDelete) {
                 $logTrail = [
                     'namatabel' => strtoupper($jenisorder->getTable()),
                     'postingdari' => 'DELETE JENIS ORDER',
@@ -173,6 +172,9 @@ class JenisOrderController extends Controller
                     'data' => $jenisorder
                 ]);
             }
+            return response([
+                'message' => 'Gagal dihapus'
+            ], 500);
 
         } catch (\Throwable $th) {
             DB::rollBack();

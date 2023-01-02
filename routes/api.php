@@ -233,6 +233,7 @@ use App\Http\Controllers\Api\ReportAllController;
         Route::post('trado/upload_image/{id}', [TradoController::class, 'uploadImage']);
         Route::resource('trado', TradoController::class);
 
+        Route::get('absentrado/field_length', [AbsenTradoController::class, 'fieldLength']);
         Route::resource('absentrado', AbsenTradoController::class);
 
         Route::get('container/field_length', [ContainerController::class, 'fieldLength']);
@@ -331,7 +332,6 @@ use App\Http\Controllers\Api\ReportAllController;
         Route::post('trado/upload_image/{id}', [TradoController::class, 'uploadImage']);
         Route::resource('trado', TradoController::class);
 
-        Route::resource('absentrado', AbsenTradoController::class);
 
         Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
 

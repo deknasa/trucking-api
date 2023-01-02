@@ -146,15 +146,14 @@ class KotaController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Request $request, $id)
+    public function destroy(Kota $kota, Request $request)
     {
         DB::beginTransaction();
 
         try {
-            $kota = Kota::lockForUpdate()->findOrFail($id);
-            $delete = $kota->delete();
+            $isDelete = Kota::where('id', $kota->id)->delete();
 
-            if ($delete) {
+            if ($isDelete) {
                 $logTrail = [
                     'namatabel' => strtoupper($kota->getTable()),
                     'postingdari' => 'DELETE KOTA',
@@ -180,6 +179,9 @@ class KotaController extends Controller
                     'data' => $kota
                 ]);
             }
+            return response([
+                'message' => 'Gagal dihapus'
+            ], 500);
         } catch (\Throwable $th) {
             DB::rollBack();
 

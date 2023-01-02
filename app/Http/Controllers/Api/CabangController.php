@@ -140,15 +140,14 @@ class CabangController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Request $request, $id)
+    public function destroy(Cabang $cabang, Request $request)
     {
         DB::beginTransaction();
 
         try {
-            $cabang = Cabang::lockForUpdate()->findOrFail($id);
-            $delete = $cabang->delete();
+            $isDelete = Cabang::where('id', $cabang->id)->delete();
 
-            if ($delete) {
+            if ($isDelete) {
                 $logTrail = [
                     'namatabel' => strtoupper($cabang->getTable()),
                     'postingdari' => 'DELETE CABANG',
@@ -177,6 +176,9 @@ class CabangController extends Controller
                     'data' => $cabang
                 ]);
             }
+            return response([
+                'message' => 'Gagal dihapus'
+            ], 500);
         } catch (\Throwable $th) {
             DB::rollBack();
 

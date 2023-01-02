@@ -138,14 +138,13 @@ class MekanikController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Request $request, $id)
+    public function destroy(Mekanik $mekanik, Request $request)
     {
         DB::beginTransaction();
         try {
-            $mekanik = Mekanik::lockForUpdate()->findOrFail($id);
-            $delete = $mekanik->delete();
+            $isDelete = Mekanik::where('id', $mekanik->id)->delete();
             
-            if ($delete) {
+            if ($isDelete) {
                 $logTrail = [
                     'namatabel' => strtoupper($mekanik->getTable()),
                     'postingdari' => 'DELETE MEKANIK',
@@ -173,6 +172,9 @@ class MekanikController extends Controller
                     'data' => $mekanik
                 ]);
             }
+            return response([
+                'message' => 'Gagal dihapus'
+            ], 500);
         } catch (\Throwable $th) {
             DB::rollBack();
 

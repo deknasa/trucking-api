@@ -142,15 +142,13 @@ class ContainerController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Request $request, $id)
+    public function destroy(Container $container, Request $request)
     {
         DB::beginTransaction();
         try {
+            $isDelete = Container::where('id', $container->id)->delete();
 
-            $container = Container::lockForUpdate()->findOrFail($id);
-            $delete = $container->delete();
-
-            if ($delete) {
+            if ($isDelete) {
                 $logTrail = [
                     'namatabel' => strtoupper($container->getTable()),
                     'postingdari' => 'DELETE CONTAINER',
@@ -177,6 +175,9 @@ class ContainerController extends Controller
                     'data' => $container
                 ]);
             }
+            return response([
+                'message' => 'Gagal dihapus'
+            ], 500);
         } catch (\Throwable $th) {
             DB::rollBack();
             // return response($th->getMessage());
