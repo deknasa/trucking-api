@@ -25,7 +25,8 @@ class PengeluaranDetail extends MyModel
 
     public function findAll($id)
     {
-        $query =  DB::table('pengeluarandetail')->select(
+        $query =  DB::table('pengeluarandetail')->from(DB::raw("pengeluarandetail with (readuncommitted)"))
+        ->select(
             'pengeluarandetail.alatbayar_id',
             'alatbayar.namaalatbayar as alatbayar',
             'pengeluarandetail.nowarkat',
@@ -35,7 +36,7 @@ class PengeluaranDetail extends MyModel
             'pengeluarandetail.coadebet',
             'pengeluarandetail.bulanbeban'
         )
-        ->leftJoin('alatbayar', 'pengeluarandetail.alatbayar_id', 'alatbayar.id')
+        ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'pengeluarandetail.alatbayar_id', 'alatbayar.id')
         ->where('pengeluarandetail.pengeluaran_id',$id);
 
         $data = $query->get();

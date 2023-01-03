@@ -26,7 +26,7 @@ class PengeluaranTruckingDetailController extends Controller
             'sortOrder' => $request->sortOrder ?? 'asc',
         ];
         try {
-            $query = PengeluaranTruckingDetail::from('pengeluarantruckingdetail as detail');
+            $query = PengeluaranTruckingDetail::from(DB::raw("pengeluarantruckingdetail as detail with (readuncommitted)"));
 
             if (isset($params['id'])) {
                 $query->where('detail.id', $params['id']);
@@ -52,10 +52,10 @@ class PengeluaranTruckingDetailController extends Controller
                     'detail.penerimaantruckingheader_nobukti',
                     'detail.nominal'
                 ) 
-                ->leftJoin('pengeluarantruckingheader as header','header.id','detail.pengeluarantruckingheader_id')
-                ->leftJoin('pengeluarantrucking', 'header.pengeluarantrucking_id','pengeluarantrucking.id')
-                ->leftJoin('bank', 'header.bank_id', 'bank.id')
-                ->leftJoin('supir', 'detail.supir_id', 'supir.id');
+                ->leftJoin(DB::raw("pengeluarantruckingheader as header with (readuncommitted)"),'header.id','detail.pengeluarantruckingheader_id')
+                ->leftJoin(DB::raw("pengeluarantrucking with (readuncommitted)"), 'header.pengeluarantrucking_id','pengeluarantrucking.id')
+                ->leftJoin(DB::raw("bank with (readuncommitted)"), 'header.bank_id', 'bank.id')
+                ->leftJoin(DB::raw("supir with (readuncommitted)"), 'detail.supir_id', 'supir.id');
 
                 $pengeluaranTruckingDetail = $query->get();
             } else {
@@ -66,7 +66,7 @@ class PengeluaranTruckingDetailController extends Controller
                     'supir.namasupir as supir_id',
                     'detail.penerimaantruckingheader_nobukti',
                 )
-                ->leftJoin('supir', 'detail.supir_id', 'supir.id');
+                ->leftJoin(DB::raw("supir with (readuncommitted)"), 'detail.supir_id', 'supir.id');
                 
                 $pengeluaranTruckingDetail = $query->get();
             }

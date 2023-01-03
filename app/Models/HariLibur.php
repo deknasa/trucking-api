@@ -28,7 +28,7 @@ class HariLibur extends MyModel
     {
         $this->setRequestParameters();
 
-        $query = DB::table($this->table)
+        $query = HariLibur::from(DB::raw("$this->table with (readuncommitted)"))
             ->select(
                 "$this->table.id",
                 "$this->table.tgl",

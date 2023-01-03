@@ -27,7 +27,8 @@ class PenerimaanTruckingDetail extends MyModel
     {
        
 
-        $query = DB::table('penerimaantruckingdetail')->select(
+        $query = DB::table('penerimaantruckingdetail')->from(DB::raw("penerimaantruckingdetail with (readuncommitted)"))
+        ->select(
             'penerimaantruckingdetail.penerimaantruckingheader_id',
             'penerimaantruckingdetail.nominal',
             'penerimaantruckingdetail.pengeluarantruckingheader_nobukti',

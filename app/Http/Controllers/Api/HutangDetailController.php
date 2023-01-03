@@ -39,7 +39,7 @@ class HutangDetailController extends Controller
             'sortOrder' => $request->sortOrder ?? 'asc',
         ];
         try {
-            $query = HutangDetail::from('hutangdetail as detail');
+            $query = HutangDetail::from(DB::raw("hutangdetail as detail with (readuncommitted)"));
 
             if (isset($params['id'])) {
                 $query->where('detail.id', $params['id']);
@@ -64,9 +64,9 @@ class HutangDetailController extends Controller
                     'detail.tgljatuhtempo',
                     'detail.total',
                     'detail.keterangan'
-                )->leftJoin('hutangheader as header','header.id','detail.hutang_id')
-                ->leftJoin('pelanggan', 'header.pelanggan_id', 'pelanggan.id')
-                ->leftJoin('supplier', 'detail.supplier_id', 'supplier.id');
+                )->leftJoin(DB::raw("hutangheader as header with (readuncommitted)"),'header.id','detail.hutang_id')
+                ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'header.pelanggan_id', 'pelanggan.id')
+                ->leftJoin(DB::raw("supplier with (readuncommitted)"), 'detail.supplier_id', 'supplier.id');
 
                 $hutangDetail = $query->get();
             } else {
@@ -79,7 +79,7 @@ class HutangDetailController extends Controller
                     'supplier.namasupplier as supplier_id',
 
                 )
-                ->leftJoin('supplier', 'detail.supplier_id', 'supplier.id');
+                ->leftJoin(DB::raw("supplier with (readuncommitted)"), 'detail.supplier_id', 'supplier.id');
 
                 $hutangDetail = $query->get();
             }

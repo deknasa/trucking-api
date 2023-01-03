@@ -8,9 +8,11 @@ use App\Models\GajiSupirHeader;
 use App\Http\Requests\StoreGajiSupirHeaderRequest;
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Http\Requests\UpdateGajiSupirHeaderRequest;
+use App\Models\Error;
 use App\Models\GajiSupirDetail;
 use App\Models\LogTrail;
 use App\Models\Parameter;
+use App\Models\SuratPengantar;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -57,7 +59,8 @@ class GajiSupirHeaderController extends Controller
                 $content['table'] = 'gajisupirheader';
                 $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
 
-                $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
+                $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                    ->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
 
                 $gajisupirheader = new GajiSupirHeader();
                 $gajisupirheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
@@ -98,7 +101,7 @@ class GajiSupirHeaderController extends Controller
                 $urut = 1;
                 for ($i = 0; $i < count($request->sp_id); $i++) {
 
-                    $sp = DB::table('suratpengantar')->where('id', $request->sp_id[$i])->first();
+                    $sp = SuratPengantar::from(DB::raw("suratpengantar with (readuncommitted)"))->where('id', $request->sp_id[$i])->first();
 
                     $total = $total + $sp->gajisupir + $sp->gajikenek;
                     $datadetail = [
@@ -186,7 +189,7 @@ class GajiSupirHeaderController extends Controller
                     'data' => $gajisupirheader
                 ], 201);
             } else {
-                $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'WP')
+                $query = Error::from(DB::raw("error with (readuncommitted)"))->select('keterangan')->where('kodeerror', '=', 'WP')
                     ->first();
                 return response([
                     'errors' => [
@@ -248,7 +251,7 @@ class GajiSupirHeaderController extends Controller
 
             if ($gajisupirheader->save()) {
                
-                GajiSupirDetail::where('gajisupir_id', $gajisupirheader->id)->lockForUpdate()->delete();
+                GajiSupirDetail::where('gajisupir_id', $gajisupirheader->id)->delete();
 
                 /* Store detail */
                 $detaillog = [];
@@ -256,7 +259,7 @@ class GajiSupirHeaderController extends Controller
                 $urut = 1;
 
                 for ($i = 0; $i < count($request->sp_id); $i++) {
-                    $sp = DB::table('suratpengantar')->where('id', $request->sp_id[$i])->first();
+                    $sp = SuratPengantar::from(DB::raw("suratpengantar with (readuncommitted)"))->where('id', $request->sp_id[$i])->first();
 
                     $total = $total + $sp->gajisupir + $sp->gajikenek;
 
@@ -358,10 +361,9 @@ class GajiSupirHeaderController extends Controller
         DB::beginTransaction();
         try {
             $getDetail = GajiSupirDetail::where('gajisupir_id', $gajisupirheader->id)->get();
-            $delete = GajiSupirDetail::where('gajisupir_id', $gajisupirheader->id)->lockForUpdate()->delete();
-            $delete = GajiSupirHeader::destroy($gajisupirheader->id);
+            $isDelete = GajiSupirHeader::where('id', $gajisupirheader->id)->delete();
 
-            if ($delete) {
+            if ($isDelete) {
                 $logTrail = [
                     'namatabel' => strtoupper($gajisupirheader->getTable()),
                     'postingdari' => 'DELETE GAJI SUPIR HEADER',
@@ -388,22 +390,25 @@ class GajiSupirHeaderController extends Controller
 
                 $validatedLogTrailGajiSupirDetail = new StoreLogTrailRequest($logTrailGajiSupirDetail);
                 app(LogTrailController::class)->store($validatedLogTrailGajiSupirDetail);
+                DB::commit();
+    
+                $selected = $this->getPosition($gajisupirheader, $gajisupirheader->getTable(), true);
+                $gajisupirheader->position = $selected->position;
+                $gajisupirheader->id = $selected->id;
+                $gajisupirheader->page = ceil($gajisupirheader->position / ($request->limit ?? 10));
+    
+                return response([
+                    'status' => true,
+                    'message' => 'Berhasil dihapus',
+                    'data' => $gajisupirheader
+                ]);
             }
-            DB::commit();
-
-            $selected = $this->getPosition($gajisupirheader, $gajisupirheader->getTable(), true);
-            $gajisupirheader->position = $selected->position;
-            $gajisupirheader->id = $selected->id;
-            $gajisupirheader->page = ceil($gajisupirheader->position / ($request->limit ?? 10));
-
             return response([
-                'status' => true,
-                'message' => 'Berhasil dihapus',
-                'data' => $gajisupirheader
-            ]);
+                'message' => 'Gagal dihapus'
+            ], 500);
         } catch (\Throwable $th) {
             DB::rollBack();
-            return response($th->getMessage());
+            throw $th;
         }
     }
 
@@ -414,7 +419,7 @@ class GajiSupirHeaderController extends Controller
         $tglSampai = date('Y-m-d', strtotime($sampai));
 
 
-        $cekSP = DB::table('suratpengantar')
+        $cekSP = SuratPengantar::from(DB::raw("suratpengantar with (readuncommitted)"))
             ->where('tglbukti', '>=', $tglDari)
             ->where('tglbukti', '<=', $tglSampai)
             ->where('supir_id', $supir_id)->first();
@@ -422,12 +427,12 @@ class GajiSupirHeaderController extends Controller
         // CEK APAKAH ADA SP UNTUK DATA TERSEBUT
         if ($cekSP) {
             $nobukti = $cekSP->nobukti;
-            $cekTrip = DB::table('gajisupirdetail')->where('suratpengantar_nobukti', $nobukti)->first();
+            $cekTrip = GajiSupirDetail::from(DB::raw("gajisupirdetail with (readuncommitted)"))->where('suratpengantar_nobukti', $nobukti)->first();
 
             //CEK APAKAH SP SUDAH DIBENTUK
             if ($cekTrip) {
 
-                $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'SPSD')
+                $query = Error::from(DB::raw("error with (readuncommitted)"))->select('keterangan')->where('kodeerror', '=', 'SPSD')
                     ->first();
                 return response([
                     'message' => "$query->keterangan",
@@ -444,7 +449,7 @@ class GajiSupirHeaderController extends Controller
             }
         } else {
 
-            $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'NT')
+            $query = Error::from(DB::raw("error with (readuncommitted)"))->select('keterangan')->where('kodeerror', '=', 'NT')
                 ->first();
             return response([
                 'message' => "$query->keterangan",
@@ -463,7 +468,7 @@ class GajiSupirHeaderController extends Controller
 
     public function noEdit()
     {
-        $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'RICX')
+        $query = Error::from(DB::raw("error with (readuncommitted)"))->select('keterangan')->where('kodeerror', '=', 'RICX')
             ->first();
         return response([
             'message' => "$query->keterangan",
@@ -476,8 +481,10 @@ class GajiSupirHeaderController extends Controller
 
         try {
             $gajisupir = GajiSupirHeader::lockForUpdate()->findOrFail($id);
-            $statusSudahCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
-            $statusBelumCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
+            $statusSudahCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                ->where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
+            $statusBelumCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                ->where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
 
             if ($gajisupir->statuscetak != $statusSudahCetak->id) {
                 $gajisupir->statuscetak = $statusSudahCetak->id;
@@ -516,10 +523,11 @@ class GajiSupirHeaderController extends Controller
     {
         $gajisupir = GajiSupirHeader::find($id);
         $statusdatacetak = $gajisupir->statuscetak;
-        $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
+        $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
 
         if ($statusdatacetak == $statusCetak->id) {
-            $query = DB::table('error')
+            $query = Error::from(DB::raw("error with (readuncommitted)"))
                 ->select('keterangan')
                 ->where('kodeerror', '=', 'SDC')
                 ->get();

@@ -141,8 +141,8 @@ class MandorController extends Controller
     {
         DB::beginTransaction();
         try {
-            $delete = Mandor::destroy($mandor->id);
-            if ($delete) {
+            $isDelete = Mandor::where('id', $mandor->id)->delete();
+            if ($isDelete) {
                 $logTrail = [
                     'namatabel' => strtoupper($mandor->getTable()),
                     'postingdari' => 'DELETE MANDOR',
@@ -150,7 +150,7 @@ class MandorController extends Controller
                     'nobuktitrans' => $mandor->id,
                     'aksi' => 'DELETE',
                     'datajson' => $mandor->toArray(),
-                    'modifiedby' => $mandor->modifiedby
+                    'modifiedby' => auth('api')->user()->name
                 ];
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
@@ -158,17 +158,20 @@ class MandorController extends Controller
 
 
                 DB::commit();
+                $selected = $this->getPosition($mandor, $mandor->getTable(), true);
+                $mandor->position = $selected->position;
+                $mandor->id = $selected->id;
+                $mandor->page = ceil($mandor->position / ($request->limit ?? 10));
+    
+                return response([
+                    'status' => true,
+                    'message' => 'Berhasil dihapus',
+                    'data' => $mandor
+                ]);
             }
-            $selected = $this->getPosition($mandor, $mandor->getTable(), true);
-            $mandor->position = $selected->position;
-            $mandor->id = $selected->id;
-            $mandor->page = ceil($mandor->position / ($request->limit ?? 10));
-
             return response([
-                'status' => true,
-                'message' => 'Berhasil dihapus',
-                'data' => $mandor
-            ]);
+                'message' => 'Gagal dihapus'
+            ], 500);
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;

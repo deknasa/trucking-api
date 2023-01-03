@@ -151,12 +151,12 @@ class PengeluaranTruckingController extends Controller
    /**
      * @ClassName 
      */
-    public function destroy(PengeluaranTrucking $pengeluaranTrucking, Request $request)
+    public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
         try {
-            $delete = PengeluaranTrucking::destroy($pengeluaranTrucking->id);
-            $del = 1;
+            $pengeluaranTrucking = PengeluaranTrucking::lockForUpdate()->findOrFail($id);
+            $delete = $pengeluaranTrucking->delete();
             if ($delete) {
                 $logTrail = [
                     'namatabel' => strtoupper($pengeluaranTrucking->getTable()),
@@ -165,7 +165,7 @@ class PengeluaranTruckingController extends Controller
                     'nobuktitrans' => $pengeluaranTrucking->id,
                     'aksi' => 'DELETE',
                     'datajson' => $pengeluaranTrucking->toArray(),
-                    'modifiedby' => $pengeluaranTrucking->modifiedby
+                    'modifiedby' => auth('api')->user()->name
                 ];
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
@@ -183,16 +183,10 @@ class PengeluaranTruckingController extends Controller
                     'message' => 'Berhasil dihapus',
                     'data' => $pengeluaranTrucking
                 ]);
-            } else {
-                DB::rollBack();  
-                return response([
-                    'status' => false,
-                    'message' => 'Gagal dihapus'
-                ]);
-            }
+            } 
         } catch (\Throwable $th) {
             DB::rollBack();         
-            return response($th->getMessage());   
+            throw $th;
         }
     }
 

@@ -34,7 +34,8 @@ class Agen extends MyModel
     {
         $this->setRequestParameters();
 
-        $query = DB::table($this->table)->select(
+        $query = Agen::from(DB::raw("$this->table with (readuncommitted)"))
+        ->select(
             'agen.id',
             'agen.kodeagen',
             'agen.namaagen',
@@ -55,9 +56,9 @@ class Agen extends MyModel
             'agen.modifiedby',
             'agen.updated_at'
         )
-            ->leftJoin('parameter', 'agen.statusaktif', 'parameter.id')
-            ->leftJoin('parameter as statusapproval', 'agen.statusapproval', 'statusapproval.id')
-            ->leftJoin('parameter as statustas', 'agen.statustas', 'statustas.id');
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'agen.statusaktif', 'parameter.id')
+            ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'agen.statusapproval', 'statusapproval.id')
+            ->leftJoin(DB::raw("parameter as statustas with (readuncommitted)"), 'agen.statustas', 'statustas.id');
 
 
 

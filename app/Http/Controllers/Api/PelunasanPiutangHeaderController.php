@@ -18,6 +18,7 @@ use App\Models\Agen;
 use App\Models\AkunPusat;
 use App\Models\Cabang;
 use App\Models\Bank;
+use App\Models\Error;
 use App\Models\Pelanggan;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
@@ -100,15 +101,14 @@ class PelunasanPiutangHeaderController extends Controller
                 /* Store detail */
 
                 $detaillog = [];
-
                 for ($i = 0; $i < count($request->piutang_id); $i++) {
                     $idpiutang = $request->piutang_id[$i];
                     $piutang = PiutangHeader::where('id', $idpiutang)->first();
 
-                    if($request->bayarppd[$i] > $piutang->nominal) {
-                        
-                        $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'NBP')
-                        ->first();
+                    if ($request->bayarppd[$i] > $piutang->nominal) {
+
+                        $query =  Error::from(DB::raw("error with (readuncommitted)"))->select('keterangan')->where('kodeerror', '=', 'NBP')
+                            ->first();
                         return response([
                             'errors' => [
                                 "bayarppd.$i" => "$query->keterangan"
@@ -140,7 +140,7 @@ class PelunasanPiutangHeaderController extends Controller
                         'tgljt' => $piutang->tglbukti,
                         'penyesuaian' => $request->penyesuaianppd[$i] ?? '',
                         'coapenyesuaian' => $getCoaPenyesuaian->coa ?? '',
-                        'invoice_nobukti' => $piutang->invoice_nobukti,
+                        'invoice_nobukti' => $piutang->invoice_nobukti ?? '',
                         'keteranganpenyesuaian' => $request->keteranganpenyesuaianppd[$i] ?? '',
                         'nominallebihbayar' => $request->nominallebihbayarppd[$i] ?? '',
                         'coalebihbayar' => $getNominalLebih->coa ?? '',
@@ -163,7 +163,6 @@ class PelunasanPiutangHeaderController extends Controller
 
 
                     $detaillog[] = $datadetails['detail']->toArray();
-
                 }
 
                 $datalogtrail = [
@@ -206,7 +205,7 @@ class PelunasanPiutangHeaderController extends Controller
                     'message' => "PIUTANG $query->keterangan",
                 ], 422);
             }
-        }catch (\Throwable $th) {
+        } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
             return response($th->getMessage());
@@ -259,7 +258,7 @@ class PelunasanPiutangHeaderController extends Controller
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-                PelunasanPiutangDetail::where('pelunasanpiutang_id', $pelunasanpiutangheader->id)->lockForUpdate()->delete();
+                PelunasanPiutangDetail::where('pelunasanpiutang_id', $pelunasanpiutangheader->id)->delete();
 
                 /* Store detail */
 
@@ -269,9 +268,9 @@ class PelunasanPiutangHeaderController extends Controller
                     $idpiutang = $request->piutang_id[$i];
                     $piutang = PiutangHeader::where('id', $idpiutang)->first();
 
-                    if($request->bayarppd[$i] > $piutang->nominal) {
-                        $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'NBP')
-                        ->first();
+                    if ($request->bayarppd[$i] > $piutang->nominal) {
+                        $query = Error::from(DB::raw("error with (readuncommitted)"))->select('keterangan')->where('kodeerror', '=', 'NBP')
+                            ->first();
                         return response([
                             'errors' => [
                                 "bayarppd.$i" => "$query->keterangan"
@@ -321,7 +320,6 @@ class PelunasanPiutangHeaderController extends Controller
                         $tabeldetail = $datadetails['tabel'];
                     }
                     $detaillog[] = $datadetails['detail']->toArray();
-
                 }
 
                 $datalogtrail = [
@@ -372,8 +370,7 @@ class PelunasanPiutangHeaderController extends Controller
         try {
             $getDetail = PelunasanPiutangDetail::where('pelunasanpiutang_id', $pelunasanpiutangheader->id)->get();
 
-            $delete = PelunasanPiutangDetail::where('pelunasanpiutang_id', $pelunasanpiutangheader->id)->lockForUpdate()->delete();
-            $delete = PelunasanPiutangHeader::destroy($pelunasanpiutangheader->id);
+            $delete = PelunasanPiutangHeader::where('id', $pelunasanpiutangheader->id)->delete();
 
             if ($delete) {
                 $logTrail = [
@@ -416,14 +413,12 @@ class PelunasanPiutangHeaderController extends Controller
                     'message' => 'Berhasil dihapus',
                     'data' => $pelunasanpiutangheader
                 ]);
-            } else {
-                DB::rollBack();
-
-                return response([
-                    'status' => false,
-                    'message' => 'Gagal dihapus'
-                ]);
             }
+
+
+            return response([
+                'message' => 'Gagal dihapus'
+            ], 500);
         } catch (\Throwable $th) {
             DB::rollBack();
             return response($th->getMessage());
@@ -433,13 +428,9 @@ class PelunasanPiutangHeaderController extends Controller
     public function getpiutang($id)
     {
         $piutang = new PiutangHeader();
-        $currentURL = url()->current();
-        $previousURL = url()->previous();
         return response([
             'data' => $piutang->getPiutang($id),
             'id' => $id,
-            'currentURL' => $currentURL,
-            'previousURL' => $previousURL,
             'attributes' => [
                 'totalRows' => $piutang->totalRows,
                 'totalPages' => $piutang->totalPages

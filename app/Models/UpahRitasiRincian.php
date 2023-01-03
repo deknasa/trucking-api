@@ -26,7 +26,8 @@ class UpahRitasiRincian extends MyModel
 
     public function getAll($id)
     {
-        $query = DB::table('upahritasirincian')->select(
+        $query = DB::table('upahritasirincian')->from(DB::raw("upahritasirincian with (readuncommitted)"))
+        ->select(
             'upahritasirincian.container_id',
             'container.keterangan as container',
             'upahritasirincian.statuscontainer_id',

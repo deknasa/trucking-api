@@ -29,7 +29,8 @@ class GajiSupirHeader extends MyModel
     {
         $this->setRequestParameters();
 
-        $query = DB::table($this->table)->select(
+        $query = DB::table($this->table)->from(DB::raw("gajisupirheader with (readuncommitted)"))
+        ->select(
             'gajisupirheader.id',
             'gajisupirheader.nobukti',
             'gajisupirheader.tglbukti',
@@ -48,8 +49,8 @@ class GajiSupirHeader extends MyModel
             'gajisupirheader.created_at',
             'gajisupirheader.updated_at',
         )
-            ->leftJoin('parameter', 'gajisupirheader.statuscetak', 'parameter.id')
-            ->leftJoin('supir', 'gajisupirheader.supir_id', 'supir.id');
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'gajisupirheader.statuscetak', 'parameter.id')
+            ->leftJoin(DB::raw("supir with (readuncommitted)"), 'gajisupirheader.supir_id', 'supir.id');
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -65,12 +66,13 @@ class GajiSupirHeader extends MyModel
     public function findAll($id)
     {
 
-        $query = DB::table('gajisupirheader')->select(
+        $query = DB::table('gajisupirheader')->from(DB::raw("gajisupirheader with (readuncommitted)"))
+        ->select(
             'gajisupirheader.*',
             'supir.namasupir as supir',
 
         )
-            ->leftJoin('supir', 'gajisupirheader.supir_id', 'supir.id')
+            ->leftJoin(DB::raw("supir with (readuncommitted)"), 'gajisupirheader.supir_id', 'supir.id')
             ->where('gajisupirheader.id', $id);
 
         $data = $query->first();
@@ -80,7 +82,8 @@ class GajiSupirHeader extends MyModel
 
     public function getTrip($supirId, $tglDari, $tglSampai)
     {
-        $query = DB::table('suratpengantar')->select(
+        $query = SuratPengantar::from(DB::raw("suratpengantar with (readuncommitted)"))
+        ->select(
             'suratpengantar.id',
             'suratpengantar.nobukti',
             'suratpengantar.tglbukti',
@@ -95,9 +98,9 @@ class GajiSupirHeader extends MyModel
             'suratpengantar.gajisupir',
             'suratpengantar.gajikenek',
         )
-            ->leftJoin('kota as kotaDari', 'suratpengantar.dari_id', 'kotaDari.id')
-            ->leftJoin('kota as kotaSampai', 'suratpengantar.sampai_id', 'kotaSampai.id')
-            ->leftJoin('trado', 'suratpengantar.trado_id', 'trado.id')
+            ->leftJoin(DB::raw("kota as kotaDari with (readuncommitted)"), 'suratpengantar.dari_id', 'kotaDari.id')
+            ->leftJoin(DB::raw("kota as kotaSampai with (readuncommitted)"), 'suratpengantar.sampai_id', 'kotaSampai.id')
+            ->leftJoin(DB::raw("trado with (readuncommitted)"), 'suratpengantar.trado_id', 'trado.id')
             ->where('suratpengantar.supir_id', $supirId)
             ->where('suratpengantar.tglbukti', '>=', $tglDari)
             ->where('suratpengantar.tglbukti', '<=', $tglSampai);
@@ -107,7 +110,8 @@ class GajiSupirHeader extends MyModel
 
     public function getEditTrip($gajiId)
     {
-        $query = DB::table('gajisupirdetail')->select(
+        $query = GajiSupirDetail::from(DB::raw("gajisupirdetail with (readuncommitted)"))
+        ->select(
             'suratpengantar.id',
             'gajisupirdetail.suratpengantar_nobukti as nobukti',
             'suratpengantar.tglbukti',
@@ -119,10 +123,10 @@ class GajiSupirHeader extends MyModel
             'gajisupirdetail.gajisupir',
             'gajisupirdetail.gajikenek',
         )
-            ->join('suratpengantar', 'gajisupirdetail.suratpengantar_nobukti', 'suratpengantar.nobukti')
-            ->join('kota as kotaDari', 'suratpengantar.dari_id', 'kotaDari.id')
-            ->join('kota as kotaSampai', 'suratpengantar.sampai_id', 'kotaSampai.id')
-            ->join('trado', 'suratpengantar.trado_id', 'trado.id')
+            ->leftJoin(DB::raw("suratpengantar with (readuncommitted)"), 'gajisupirdetail.suratpengantar_nobukti', 'suratpengantar.nobukti')
+            ->leftJoin(DB::raw("kota as kotaDari with (readuncommitted)"), 'suratpengantar.dari_id', 'kotaDari.id')
+            ->leftJoin(DB::raw("kota as kotaSampai with (readuncommitted)"), 'suratpengantar.sampai_id', 'kotaSampai.id')
+            ->leftJoin(DB::raw("trado with (readuncommitted)"), 'suratpengantar.trado_id', 'trado.id')
             ->where('gajisupirdetail.gajisupir_id', $gajiId);
 
         $data = $query->get();

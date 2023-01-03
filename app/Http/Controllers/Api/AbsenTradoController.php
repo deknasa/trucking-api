@@ -78,36 +78,36 @@ class AbsenTradoController extends Controller
         }
     }
 
-    public function show(AbsenTrado $absenTrado)
+    public function show(AbsenTrado $absentrado)
     {
         return response([
             'status' => true,
-            'data' => $absenTrado
+            'data' => $absentrado
         ]);
     }
 
     /**
      * @ClassName 
      */
-    public function update(UpdateAbsenTradoRequest $request, AbsenTrado $absenTrado)
+    public function update(UpdateAbsenTradoRequest $request, AbsenTrado $absentrado)
     {
         DB::beginTransaction();
 
         try {
-            $absenTrado->kodeabsen = $request->kodeabsen;
-            $absenTrado->keterangan = $request->keterangan;
-            $absenTrado->statusaktif = $request->statusaktif;
-            $absenTrado->modifiedby = auth('api')->user()->name;
+            $absentrado->kodeabsen = $request->kodeabsen;
+            $absentrado->keterangan = $request->keterangan;
+            $absentrado->statusaktif = $request->statusaktif;
+            $absentrado->modifiedby = auth('api')->user()->name;
 
-            if ($absenTrado->save()) {
+            if ($absentrado->save()) {
                 $logTrail = [
-                    'namatabel' => strtoupper($absenTrado->getTable()),
+                    'namatabel' => strtoupper($absentrado->getTable()),
                     'postingdari' => 'EDIT ABSEN TRADO',
-                    'idtrans' => $absenTrado->id,
-                    'nobuktitrans' => $absenTrado->id,
+                    'idtrans' => $absentrado->id,
+                    'nobuktitrans' => $absentrado->id,
                     'aksi' => 'EDIT',
-                    'datajson' => $absenTrado->toArray(),
-                    'modifiedby' => $absenTrado->modifiedby
+                    'datajson' => $absentrado->toArray(),
+                    'modifiedby' => $absentrado->modifiedby
                 ];
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
@@ -116,14 +116,14 @@ class AbsenTradoController extends Controller
                 DB::commit();
 
                 /* Set position and page */
-                $selected = $this->getPosition($absenTrado, $absenTrado->getTable());
-                $absenTrado->position = $selected->position;
-                $absenTrado->page = ceil($absenTrado->position / ($request->limit ?? 10));
+                $selected = $this->getPosition($absentrado, $absentrado->getTable());
+                $absentrado->position = $selected->position;
+                $absentrado->page = ceil($absentrado->position / ($request->limit ?? 10));
 
                 return response([
                     'status' => true,
                     'message' => 'Berhasil diubah',
-                    'data' => $absenTrado
+                    'data' => $absentrado
                 ]);
             }
         } catch (\Throwable $th) {
@@ -137,21 +137,21 @@ class AbsenTradoController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(AbsenTrado $absenTrado, Request $request)
+    public function destroy(AbsenTrado $absentrado, Request $request)
     {
         DB::beginTransaction();
         try {
-            $delete = AbsenTrado::destroy($absenTrado->id);
+            $isDelete = AbsenTrado::where('id', $absentrado->id)->delete();
 
-            if ($delete) {
+            if ($isDelete) {
                 $logTrail = [
-                    'namatabel' => strtoupper($absenTrado->getTable()),
+                    'namatabel' => strtoupper($absentrado->getTable()),
                     'postingdari' => 'DELETE ABSEN TRADO',
-                    'idtrans' => $absenTrado->id,
-                    'nobuktitrans' => $absenTrado->id,
+                    'idtrans' => $absentrado->id,
+                    'nobuktitrans' => $absentrado->id,
                     'aksi' => 'DELETE',
-                    'datajson' => $absenTrado->toArray(),
-                    'modifiedby' => $absenTrado->modifiedby
+                    'datajson' => $absentrado->toArray(),
+                    'modifiedby' => auth('api')->user()->name
                 ];
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
@@ -159,17 +159,20 @@ class AbsenTradoController extends Controller
 
                 DB::commit();
 
-                $selected = $this->getPosition($absenTrado, $absenTrado->getTable(), true);
-                $absenTrado->position = $selected->position;
-                $absenTrado->id = $selected->id;
-                $absenTrado->page = ceil($absenTrado->position / ($request->limit ?? 10));
+                $selected = $this->getPosition($absentrado, $absentrado->getTable(), true);
+                $absentrado->position = $selected->position;
+                $absentrado->id = $selected->id;
+                $absentrado->page = ceil($absentrado->position / ($request->limit ?? 10));
 
                 return response([
                     'status' => true,
                     'message' => 'Berhasil dihapus',
-                    'data' => $absenTrado
+                    'data' => $absentrado
                 ]);
             } 
+            return response([
+                'message' => 'Gagal dihapus'
+            ], 500);
         } catch (\Throwable $th) {
             DB::rollBack();
 

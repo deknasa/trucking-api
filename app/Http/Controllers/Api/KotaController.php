@@ -151,9 +151,9 @@ class KotaController extends Controller
         DB::beginTransaction();
 
         try {
-            $delete = Kota::destroy($kota->id);
+            $isDelete = Kota::where('id', $kota->id)->delete();
 
-            if ($delete) {
+            if ($isDelete) {
                 $logTrail = [
                     'namatabel' => strtoupper($kota->getTable()),
                     'postingdari' => 'DELETE KOTA',
@@ -161,24 +161,27 @@ class KotaController extends Controller
                     'nobuktitrans' => $kota->id,
                     'aksi' => 'DELETE',
                     'datajson' => $kota->toArray(),
-                    'modifiedby' => $kota->modifiedby
+                    'modifiedby' => auth('api')->user()->name
                 ];
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
 
                 DB::commit();
+                $selected = $this->getPosition($kota, $kota->getTable(), true);
+                $kota->position = $selected->position;
+                $kota->id = $selected->id;
+                $kota->page = ceil($kota->position / ($request->limit ?? 10));
+    
+                return response([
+                    'status' => true,
+                    'message' => 'Berhasil dihapus',
+                    'data' => $kota
+                ]);
             }
-            $selected = $this->getPosition($kota, $kota->getTable(), true);
-            $kota->position = $selected->position;
-            $kota->id = $selected->id;
-            $kota->page = ceil($kota->position / ($request->limit ?? 10));
-
             return response([
-                'status' => true,
-                'message' => 'Berhasil dihapus',
-                'data' => $kota
-            ]);
+                'message' => 'Gagal dihapus'
+            ], 500);
         } catch (\Throwable $th) {
             DB::rollBack();
 

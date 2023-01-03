@@ -133,6 +133,8 @@ use App\Http\Controllers\Api\BankPelangganController;
     use App\Http\Controllers\Api\JurnalUmumPusatDetailController;
     use App\Http\Controllers\Api\JurnalUmumPusatHeaderController;
     use App\Http\Controllers\Api\KartuStokController;
+    use App\Http\Controllers\Api\HistoriPenerimaanStokController;
+    use App\Http\Controllers\Api\HistoriPengeluaranStokController;
 use App\Http\Controllers\Api\LaporanBukuBesarController;
 use App\Http\Controllers\Api\LaporanKasBankController;
 use App\Http\Controllers\Api\ReportAllController;
@@ -163,6 +165,7 @@ use App\Http\Controllers\Api\ReportAllController;
     Route::get('supir/image/{field}/{filename}/{type}', [SupirController::class, 'getImage']);
     Route::get('trado/image/{field}/{filename}/{type}', [TradoController::class, 'getImage']);
     Route::get('stok/{filename}/{type}', [StokController::class, 'getImage']);
+    Route::get('upahsupir/{filename}/{type}', [UpahSupirController::class, 'getImage']);
 
     route::middleware(['auth:api'])->group(function () {
         Route::get('parameter/export', [ParameterController::class, 'export']);
@@ -232,6 +235,7 @@ use App\Http\Controllers\Api\ReportAllController;
         Route::post('trado/upload_image/{id}', [TradoController::class, 'uploadImage']);
         Route::resource('trado', TradoController::class);
 
+        Route::get('absentrado/field_length', [AbsenTradoController::class, 'fieldLength']);
         Route::resource('absentrado', AbsenTradoController::class);
 
         Route::get('container/field_length', [ContainerController::class, 'fieldLength']);
@@ -330,7 +334,6 @@ use App\Http\Controllers\Api\ReportAllController;
         Route::post('trado/upload_image/{id}', [TradoController::class, 'uploadImage']);
         Route::resource('trado', TradoController::class);
 
-        Route::resource('absentrado', AbsenTradoController::class);
 
         Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
 
@@ -669,6 +672,13 @@ use App\Http\Controllers\Api\ReportAllController;
         Route::resource('stokpersediaan', StokPersediaanController::class);
         Route::get('kartustok/report', [KartuStokController::class, 'report'])->name('kartustok.report');
         Route::resource('kartustok', KartuStokController::class);
+        Route::resource('kartustok', HistoriPenerimaanStokController::class);
+        
+        Route::get('historipenerimaanstok/report', [HistoriPenerimaanStokController::class, 'report'])->name('historipenerimaanstok.report');
+        Route::resource('historipenerimaanstok', HistoriPenerimaanStokController::class);
+        
+        Route::get('historipengeluaranstok/report', [HistoriPengeluaranStokController::class, 'report'])->name('historipengeluaranstok.report');
+        Route::resource('historipengeluaranstok', HistoriPengeluaranStokController::class);
         
         Route::get('laporankasbank/report', [LaporanKasBankController::class, 'report'])->name('laporankasbank.report');
         Route::resource('laporankasbank', LaporanKasBankController::class);

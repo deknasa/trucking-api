@@ -27,7 +27,7 @@ class PenerimaanDetailController extends Controller
             'sortOrder' => $request->sortOrder ?? 'asc',
         ];
         try {
-            $query = PenerimaanDetail::from('penerimaandetail as detail');
+            $query = PenerimaanDetail::from(DB::raw("penerimaandetail as detail with (readuncommitted)"));
 
             if (isset($params['id'])) {
                 $query->where('detail.id', $params['id']);
@@ -67,12 +67,12 @@ class PenerimaanDetailController extends Controller
                     'detail.coadebet',
 
                 )
-                    ->leftJoin('penerimaanheader as header', 'header.id', 'detail.penerimaan_id')
-                    ->leftJoin('bank', 'bank.id', 'header.bank_id')
-                    ->leftJoin('pelanggan', 'pelanggan.id', 'header.pelanggan_id')
-                    ->leftJoin('bank as bd', 'bd.id', '=', 'detail.bank_id')
-                    ->leftJoin('pelanggan as pd', 'pd.id', '=', 'detail.pelanggan_id')
-                    ->leftJoin('bankpelanggan as bpd', 'bpd.id', '=', 'detail.bankpelanggan_id');
+                    ->leftJoin(DB::raw("penerimaanheader as header with (readuncommitted)"), 'header.id', 'detail.penerimaan_id')
+                    ->leftJoin(DB::raw("bank with (readuncommitted)"), 'bank.id', 'header.bank_id')
+                    ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'pelanggan.id', 'header.pelanggan_id')
+                    ->leftJoin(DB::raw("bank as bd with (readuncommitted)"), 'bd.id', '=', 'detail.bank_id')
+                    ->leftJoin(DB::raw("pelanggan as pd with (readuncommitted)"), 'pd.id', '=', 'detail.pelanggan_id')
+                    ->leftJoin(DB::raw("bankpelanggan as bpd with (readuncommitted)"), 'bpd.id', '=', 'detail.bankpelanggan_id');
                 $penerimaanDetail = $query->get();
             } else {
                 $query->select(
@@ -93,9 +93,9 @@ class PenerimaanDetailController extends Controller
                     'detail.coadebet',
 
                 )
-                    ->leftJoin('bank', 'bank.id', '=', 'detail.bank_id')
-                    ->leftJoin('pelanggan', 'pelanggan.id', '=', 'detail.pelanggan_id')
-                    ->leftJoin('bankpelanggan', 'bankpelanggan.id', '=', 'detail.bankpelanggan_id');
+                    ->leftJoin(DB::raw("bank with (readuncommitted)"), 'bank.id', '=', 'detail.bank_id')
+                    ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'pelanggan.id', '=', 'detail.pelanggan_id')
+                    ->leftJoin(DB::raw("bankpelanggan with (readuncommitted)"), 'bankpelanggan.id', '=', 'detail.bankpelanggan_id');
 
 
                 $penerimaanDetail = $query->get();

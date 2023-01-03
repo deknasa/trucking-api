@@ -36,42 +36,42 @@ class PenerimaanHeader extends MyModel
         $this->setRequestParameters();
 
 
-        $query = DB::table($this->table)
-        ->select(
-            'penerimaanheader.id',
-            'penerimaanheader.nobukti',
-            'penerimaanheader.tglbukti',
-            'pelanggan.namapelanggan as pelanggan_id',
-            'bank.namabank as bank_id',
-            'penerimaanheader.keterangan',
-            'penerimaanheader.postingdari',
-            'penerimaanheader.diterimadari',
-            DB::raw('(case when (year(penerimaanheader.tgllunas) <= 2000) then null else penerimaanheader.tgllunas end ) as tgllunas'),
-            'cabang.namacabang as cabang_id',
-            'statuskas.memo as statuskas',
-            'penerimaanheader.userapproval',
-            DB::raw('(case when (year(penerimaanheader.tglapproval) <= 2000) then null else penerimaanheader.tglapproval end ) as tglapproval'),
-            'penerimaanheader.noresi',
-            'statusberkas.memo as statusberkas',
-            'penerimaanheader.userberkas',
-            DB::raw('(case when (year(penerimaanheader.tglberkas) <= 2000) then null else penerimaanheader.tglberkas end ) as tglberkas'),
-            
-            'statuscetak.memo as statuscetak',
-            'penerimaanheader.userbukacetak',
-            DB::raw('(case when (year(penerimaanheader.tglbukacetak) <= 2000) then null else penerimaanheader.tglbukacetak end ) as tglberkas'),
-            'penerimaanheader.jumlahcetak',
-            'penerimaanheader.modifiedby',
-            'penerimaanheader.created_at',
-            'penerimaanheader.updated_at',
-            'statusapproval.memo as statusapproval',
-        )
-        ->leftJoin('parameter as statusapproval', 'penerimaanheader.statusapproval', 'statusapproval.id')
-        ->leftJoin('pelanggan', 'penerimaanheader.pelanggan_id', 'pelanggan.id')
-        ->leftJoin('bank', 'penerimaanheader.bank_id', 'bank.id')
-        ->leftJoin('parameter as statuskas', 'penerimaanheader.statuskas', 'statuskas.id')
-        ->leftJoin('parameter as statusberkas', 'penerimaanheader.statusberkas', 'statusberkas.id')
-        ->leftJoin('parameter as statuscetak', 'penerimaanheader.statuscetak', 'statuscetak.id')
-        ->leftJoin('cabang', 'penerimaanheader.cabang_id', 'cabang.id');
+        $query = DB::table($this->table)->from(DB::raw("penerimaanheader with (readuncommitted)"))
+            ->select(
+                'penerimaanheader.id',
+                'penerimaanheader.nobukti',
+                'penerimaanheader.tglbukti',
+                'pelanggan.namapelanggan as pelanggan_id',
+                'bank.namabank as bank_id',
+                'penerimaanheader.keterangan',
+                'penerimaanheader.postingdari',
+                'penerimaanheader.diterimadari',
+                DB::raw('(case when (year(penerimaanheader.tgllunas) <= 2000) then null else penerimaanheader.tgllunas end ) as tgllunas'),
+                'cabang.namacabang as cabang_id',
+                'statuskas.memo as statuskas',
+                'penerimaanheader.userapproval',
+                DB::raw('(case when (year(penerimaanheader.tglapproval) <= 2000) then null else penerimaanheader.tglapproval end ) as tglapproval'),
+                'penerimaanheader.noresi',
+                'statusberkas.memo as statusberkas',
+                'penerimaanheader.userberkas',
+                DB::raw('(case when (year(penerimaanheader.tglberkas) <= 2000) then null else penerimaanheader.tglberkas end ) as tglberkas'),
+
+                'statuscetak.memo as statuscetak',
+                'penerimaanheader.userbukacetak',
+                DB::raw('(case when (year(penerimaanheader.tglbukacetak) <= 2000) then null else penerimaanheader.tglbukacetak end ) as tglberkas'),
+                'penerimaanheader.jumlahcetak',
+                'penerimaanheader.modifiedby',
+                'penerimaanheader.created_at',
+                'penerimaanheader.updated_at',
+                'statusapproval.memo as statusapproval',
+            )
+            ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'penerimaanheader.statusapproval', 'statusapproval.id')
+            ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'penerimaanheader.pelanggan_id', 'pelanggan.id')
+            ->leftJoin(DB::raw("bank with (readuncommitted)"), 'penerimaanheader.bank_id', 'bank.id')
+            ->leftJoin(DB::raw("parameter as statuskas with (readuncommitted)"), 'penerimaanheader.statuskas', 'statuskas.id')
+            ->leftJoin(DB::raw("parameter as statusberkas with (readuncommitted)"), 'penerimaanheader.statusberkas', 'statusberkas.id')
+            ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'penerimaanheader.statuscetak', 'statuscetak.id')
+            ->leftJoin(DB::raw("cabang with (readuncommitted)"), 'penerimaanheader.cabang_id', 'cabang.id');
 
 
         $this->totalRows = $query->count();
@@ -89,15 +89,17 @@ class PenerimaanHeader extends MyModel
     public function tarikPelunasan($id)
     {
         if ($id != 'null') {
-            $penerimaan = DB::table('penerimaandetail')->select('pelunasanpiutang_nobukti')->distinct('pelunasanpiutang_nobukti')->where('penerimaan_id', $id)->get();
+            $penerimaan = DB::table('penerimaandetail')->from(DB::raw("penerimaandetail with (readuncommitted)"))
+                ->select('pelunasanpiutang_nobukti')->distinct('pelunasanpiutang_nobukti')->where('penerimaan_id', $id)->get();
             $data = [];
             foreach ($penerimaan as $index => $value) {
                 $tbl = substr($value->pelunasanpiutang_nobukti, 0, 3);
                 if ($tbl == 'PPT') {
-                    $pelunasan = DB::table('pelunasanpiutangheader')->select(DB::raw("pelunasanpiutangheader.id,pelunasanpiutangheader.nobukti,pelunasanpiutangheader.tglbukti, pelanggan.namapelanggan as pelanggan, (SELECT (SUM(pelunasanpiutangdetail.nominal)) FROM pelunasanpiutangdetail WHERE pelunasanpiutangdetail.nobukti= pelunasanpiutangheader.nobukti) AS nominal"))
+                    $pelunasan = DB::table('pelunasanpiutangheader')->from(DB::raw("pelunasanpiutangheader with (readuncommitted)"))
+                        ->select(DB::raw("pelunasanpiutangheader.id,pelunasanpiutangheader.nobukti,pelunasanpiutangheader.tglbukti, pelanggan.namapelanggan as pelanggan, (SELECT (SUM(pelunasanpiutangdetail.nominal)) FROM pelunasanpiutangdetail WHERE pelunasanpiutangdetail.nobukti= pelunasanpiutangheader.nobukti) AS nominal"))
                         ->distinct("pelunasanpiutangheader.nobukti")
-                        ->join('pelunasanpiutangdetail', 'pelunasanpiutangheader.id', 'pelunasanpiutangdetail.pelunasanpiutang_id')
-                        ->join('pelanggan', 'pelunasanpiutangdetail.pelanggan_id', 'pelanggan.id')
+                        ->leftJoin(DB::raw("pelunasanpiutangdetail with (readuncommitted)"), 'pelunasanpiutangheader.id', 'pelunasanpiutangdetail.pelunasanpiutang_id')
+                        ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'pelunasanpiutangdetail.pelanggan_id', 'pelanggan.id')
 
                         ->where('pelunasanpiutangheader.nobukti', $value->pelunasanpiutang_nobukti)
                         ->get();
@@ -105,10 +107,10 @@ class PenerimaanHeader extends MyModel
                         $data[] = $value;
                     }
                 } else {
-                    $giro = DB::table('penerimaangiroheader')
+                    $giro = DB::table('penerimaangiroheader')->from(DB::raw("penerimaangiroheader with (readuncommitted)"))
                         ->select(DB::raw("penerimaangiroheader.id,penerimaangiroheader.nobukti,penerimaangiroheader.tglbukti,pelanggan.namapelanggan as pelanggan,penerimaangirodetail.pelunasanpiutang_nobukti, (SELECT (SUM(penerimaangirodetail.nominal)) FROM penerimaangirodetail WHERE penerimaangirodetail.nobukti = penerimaangiroheader.nobukti) AS nominal"))
-                        ->leftJoin('penerimaangirodetail', 'penerimaangirodetail.nobukti', 'penerimaangiroheader.nobukti')
-                        ->leftJoin('pelanggan', 'penerimaangiroheader.pelanggan_id', 'pelanggan.id')
+                        ->leftJoin(DB::raw("penerimaangirodetail with (readuncommitted)"), 'penerimaangirodetail.nobukti', 'penerimaangiroheader.nobukti')
+                        ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'penerimaangiroheader.pelanggan_id', 'pelanggan.id')
                         ->where("penerimaangiroheader.nobukti", $value->pelunasanpiutang_nobukti)
                         ->get();
 
@@ -122,12 +124,12 @@ class PenerimaanHeader extends MyModel
             $tempPelunasan = $this->createTempPelunasan();
             $tempGiro = $this->createTempGiro();
 
-            $pelunasan = DB::table("$tempPelunasan as a")
+            $pelunasan = DB::table("$tempPelunasan as a")->from(DB::raw("$tempPelunasan as a with (readuncommitted)"))
                 ->select(DB::raw("a.nobukti as nobukti, a.id as id,a.tglbukti as tglbukti, a.pelanggan as pelangggan, a.nominal as nominal,null as pelunasanpiutang_nobukti"))
                 ->distinct("a.nobukti")
-                ->join("$tempGiro as B", "a.nobukti", "=", "B.pelunasanpiutang_nobukti", "left outer");
+                ->join(DB::raw("$tempGiro as B with (readuncommitted)"), "a.nobukti", "=", "B.pelunasanpiutang_nobukti", "left outer");
 
-            $giro = DB::table($tempGiro)
+            $giro = DB::table($tempGiro)->from(DB::raw("$tempGiro with (readuncommitted)"))
                 ->select(DB::raw("nobukti,id,tglbukti,pelanggan,nominal,pelunasanpiutang_nobukti"))
 
                 ->distinct("nobukti")
@@ -142,7 +144,7 @@ class PenerimaanHeader extends MyModel
         $temp = '##tempPelunasan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
 
-        $fetch = DB::table('pelunasanpiutangheader')
+        $fetch = DB::table('pelunasanpiutangheader')->from(DB::raw("pelunasanpiutangheader with (readuncommitted)"))
             ->select(DB::raw("pelunasanpiutangheader.id,pelunasanpiutangheader.nobukti,pelunasanpiutangheader.tglbukti,pelanggan.namapelanggan as pelanggan, (SELECT (SUM(pelunasanpiutangdetail.nominal)) FROM pelunasanpiutangdetail WHERE pelunasanpiutangdetail.nobukti = pelunasanpiutangheader.nobukti) AS nominal"))
             ->join('pelunasanpiutangdetail', 'pelunasanpiutangheader.id', 'pelunasanpiutangdetail.pelunasanpiutang_id')
             ->join('pelanggan', 'pelunasanpiutangdetail.pelanggan_id', 'pelanggan.id')
@@ -167,7 +169,7 @@ class PenerimaanHeader extends MyModel
         $temp = '##tempGiro' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
 
-        $fetch = DB::table('penerimaangiroheader')
+        $fetch = DB::table('penerimaangiroheader')->from(DB::raw("penerimaangiroheader with (readuncommitted)"))
             ->select(DB::raw("penerimaangiroheader.id,penerimaangiroheader.nobukti,penerimaangiroheader.tglbukti,pelanggan.namapelanggan as pelanggan,penerimaangirodetail.pelunasanpiutang_nobukti, (SELECT (SUM(penerimaangirodetail.nominal)) FROM penerimaangirodetail WHERE penerimaangirodetail.nobukti = penerimaangiroheader.nobukti) AS nominal"))
             ->leftJoin('penerimaangirodetail', 'penerimaangirodetail.nobukti', 'penerimaangiroheader.nobukti')
             ->leftJoin('pelanggan', 'penerimaangiroheader.pelanggan_id', 'pelanggan.id')
@@ -191,11 +193,13 @@ class PenerimaanHeader extends MyModel
     public function getPelunasan($id, $table)
     {
         if ($table == 'giro') {
-            $data = DB::table('penerimaangirodetail')->select('id', 'nominal', 'tgljatuhtempo as tgljt', 'keterangan', 'invoice_nobukti', 'nobukti')
+            $data = DB::table('penerimaangirodetail')->from(DB::raw("penerimaangirodetail with (readuncommitted)"))
+                ->select('id', 'nominal', 'tgljatuhtempo as tgljt', 'keterangan', 'invoice_nobukti', 'nobukti')
                 ->where('penerimaangiro_id', $id)
                 ->get();
         } else {
-            $data = DB::table('pelunasanpiutangdetail')->select('id', 'nominal', 'tgljt', 'keterangan', 'invoice_nobukti', 'nobukti')
+            $data = DB::table('pelunasanpiutangdetail')->from(DB::raw("pelunasanpiutangdetail with (readuncommitted)"))
+                ->select('id', 'nominal', 'tgljt', 'keterangan', 'invoice_nobukti', 'nobukti')
                 ->where('pelunasanpiutang_id', $id)
                 ->get();
         }
@@ -207,10 +211,11 @@ class PenerimaanHeader extends MyModel
 
     public function findAll($id)
     {
-        $data = PenerimaanHeader::select('penerimaanheader.id', 'penerimaanheader.nobukti', 'penerimaanheader.tglbukti', 'penerimaanheader.pelanggan_id', 'pelanggan.namapelanggan as pelanggan', 'penerimaanheader.statuscetak', 'penerimaanheader.keterangan', 'penerimaanheader.diterimadari', 'penerimaanheader.tgllunas', 'penerimaanheader.cabang_id', 'cabang.namacabang as cabang', 'penerimaanheader.statuskas', 'penerimaanheader.bank_id', 'bank.namabank as bank')
-            ->join('pelanggan', 'penerimaanheader.pelanggan_id', 'pelanggan.id')
-            ->join('bank', 'penerimaanheader.bank_id', 'bank.id')
-            ->join('cabang', 'penerimaanheader.cabang_id', 'cabang.id')
+        $data = PenerimaanHeader::from(DB::raw("penerimaanheader with (readuncommitted)"))
+        ->select('penerimaanheader.id', 'penerimaanheader.nobukti', 'penerimaanheader.tglbukti', 'penerimaanheader.pelanggan_id', 'pelanggan.namapelanggan as pelanggan', 'penerimaanheader.statuscetak', 'penerimaanheader.keterangan', 'penerimaanheader.diterimadari', 'penerimaanheader.tgllunas', 'penerimaanheader.cabang_id', 'cabang.namacabang as cabang', 'penerimaanheader.statuskas', 'penerimaanheader.bank_id', 'bank.namabank as bank')
+            ->join(DB::raw("pelanggan with (readuncommitted)"), 'penerimaanheader.pelanggan_id', 'pelanggan.id')
+            ->join(DB::raw("bank with (readuncommitted)"), 'penerimaanheader.bank_id', 'bank.id')
+            ->join(DB::raw("cabang with (readuncommitted)"), 'penerimaanheader.cabang_id', 'cabang.id')
             ->where('penerimaanheader.id', $id)
             ->first();
 
@@ -279,8 +284,8 @@ class PenerimaanHeader extends MyModel
             $table->string('statusberkas', 1000)->default('')->nullable();
             $table->string('userberkas', 1000)->default('');
             $table->dateTime('tglberkas')->default('1900/1/1');
-            $table->string('statuscetak',1000)->default('');
-            $table->string('userbukacetak',50)->default('');
+            $table->string('statuscetak', 1000)->default('');
+            $table->string('userbukacetak', 50)->default('');
             $table->date('tglbukacetak')->default('1900/1/1');
             $table->integer('jumlahcetak')->Length(11)->default('0');
             $table->string('modifiedby', 50)->default('');
@@ -295,7 +300,7 @@ class PenerimaanHeader extends MyModel
         $this->sort($query);
         $models = $this->filter($query);
         DB::table($temp)->insertUsing([
-            'id', 'nobukti', 'tglbukti', 'pelanggan_id', 'bank_id', 'keterangan', 'postingdari', 'diterimadari', 'tgllunas', 'cabang_id',  'statuskas', 'statusapproval', 'userapproval', 'tglapproval', 'noresi', 'statusberkas', 'userberkas', 'tglberkas','statuscetak','userbukacetak','tglbukacetak','jumlahcetak', 'modifiedby', 'created_at', 'updated_at'
+            'id', 'nobukti', 'tglbukti', 'pelanggan_id', 'bank_id', 'keterangan', 'postingdari', 'diterimadari', 'tgllunas', 'cabang_id',  'statuskas', 'statusapproval', 'userapproval', 'tglapproval', 'noresi', 'statusberkas', 'userberkas', 'tglberkas', 'statuscetak', 'userbukacetak', 'tglbukacetak', 'jumlahcetak', 'modifiedby', 'created_at', 'updated_at'
         ], $models);
 
 
@@ -371,15 +376,15 @@ class PenerimaanHeader extends MyModel
             return $query;
         }
         if (request()->cetak && request()->periode) {
-            $query->where('penerimaanheader.statuscetak','<>', request()->cetak)
-                  ->whereYear('penerimaanheader.tglbukti','=', request()->year)
-                  ->whereMonth('penerimaanheader.tglbukti','=', request()->month);
+            $query->where('penerimaanheader.statuscetak', '<>', request()->cetak)
+                ->whereYear('penerimaanheader.tglbukti', '=', request()->year)
+                ->whereMonth('penerimaanheader.tglbukti', '=', request()->month);
             return $query;
         }
         if (request()->cetak && request()->periode) {
-            $query->where('penerimaanheader.statuscetak','<>', request()->cetak)
-                  ->whereYear('penerimaanheader.tglbukti','=', request()->year)
-                  ->whereMonth('penerimaanheader.tglbukti','=', request()->month);
+            $query->where('penerimaanheader.statuscetak', '<>', request()->cetak)
+                ->whereYear('penerimaanheader.tglbukti', '=', request()->year)
+                ->whereMonth('penerimaanheader.tglbukti', '=', request()->month);
             return $query;
         }
         return $query;

@@ -27,7 +27,8 @@ class Kota extends MyModel
     {
         $this->setRequestParameters();
 
-        $query = DB::table($this->table)->select(
+        $query = Kota::from(DB::raw("$this->table with (readuncommitted)"))
+        ->select(
             'kota.id',
             'kota.kodekota',
             'kota.keterangan',
@@ -37,8 +38,8 @@ class Kota extends MyModel
             'kota.created_at',
             'kota.updated_at'
         )
-            ->leftJoin('parameter', 'kota.statusaktif', '=', 'parameter.id')
-            ->leftJoin('zona', 'kota.zona_id', '=', 'zona.id');
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'kota.statusaktif', '=', 'parameter.id')
+            ->leftJoin(DB::raw("zona with (readuncommitted)"), 'kota.zona_id', '=', 'zona.id');
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -55,8 +56,9 @@ class Kota extends MyModel
     public function findAll($id)
     {
     
-        $query =  DB::table('kota')->select(DB::raw('kota.*, zona.zona as zona'))
-        ->join('zona','kota.zona_id','zona.id')->whereRaw("kota.id = $id");
+        $query = Kota::from(DB::raw("kota with (readuncommitted)"))
+        ->select(DB::raw('kota.*, zona.zona as zona'))
+        ->join(DB::raw("zona with (readuncommitted)"),'kota.zona_id','zona.id')->whereRaw("kota.id = $id");
 
         $data = $query->first();
         return $data;

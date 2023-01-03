@@ -39,7 +39,8 @@ class AgenController extends Controller
         DB::beginTransaction();
 
         try {
-            $statusNonApproval = Parameter::where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
+            $statusNonApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
 
             $agen = new Agen();
             $agen->kodeagen = $request->kodeagen;
@@ -95,7 +96,8 @@ class AgenController extends Controller
 
     public function show($id)
     {
-        $agen = Agen::select('agen.*', 'jenisemkl.keterangan as keteranganjenisemkl')->join('jenisemkl', 'agen.jenisemkl', 'jenisemkl.id')->where('agen.id', $id)->first();
+        $agen = Agen::from(DB::raw("agen with (readuncommitted)"))
+            ->select('agen.*', 'jenisemkl.keterangan as keteranganjenisemkl')->join('jenisemkl', 'agen.jenisemkl', 'jenisemkl.id')->where('agen.id', $id)->first();
         return response([
             'status' => true,
             'data' => $agen
@@ -169,9 +171,9 @@ class AgenController extends Controller
         DB::beginTransaction();
 
         try {
-            $delete = Agen::destroy($agen->id);
+            $isDelete = Agen::where('id', $agen->id)->delete();
 
-            if ($delete) {
+            if ($isDelete) {
                 $logTrail = [
                     'namatabel' => strtoupper($agen->getTable()),
                     'postingdari' => 'DELETE AGEN',
@@ -179,30 +181,32 @@ class AgenController extends Controller
                     'nobuktitrans' => $agen->id,
                     'aksi' => 'DELETE',
                     'datajson' => $agen->toArray(),
-                    'modifiedby' => $agen->modifiedby
+                    'modifiedby' => auth('api')->user()->name
                 ];
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
+
+                DB::commit();
+    
+                $selected = $this->getPosition($agen, $agen->getTable(), true);
+                $agen->position = $selected->position;
+                $agen->id = $selected->id;
+                $agen->page = ceil($agen->position / ($request->limit ?? 10));
+    
+                return response([
+                    'status' => true,
+                    'message' => 'Berhasil dihapus',
+                    'data' => $agen
+                ]);
             }
-            DB::commit();
-
-            $selected = $this->getPosition($agen, $agen->getTable(), true);
-            $agen->position = $selected->position;
-            $agen->id = $selected->id;
-            $agen->page = ceil($agen->position / ($request->limit ?? 10));
-
             return response([
-                'status' => true,
-                'message' => 'Berhasil dihapus',
-                'data' => $agen
-            ]);
-        } catch (NotDeletableModel $exception) {
+                'message' => 'Gagal dihapus'
+            ], 500);
+        } catch (\Throwable $th) {
             DB::rollBack();
 
-            return response([
-                'message' => $exception->getMessage()
-            ], 403);
+            throw $th;
         }
     }
 
@@ -303,8 +307,10 @@ class AgenController extends Controller
         DB::beginTransaction();
 
         try {
-            $statusApproval = Parameter::where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
-            $statusNonApproval = Parameter::where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
+            $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
+            $statusNonApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
 
             if ($agen->statusapproval == $statusApproval->id) {
                 $agen->statusapproval = $statusNonApproval->id;

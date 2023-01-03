@@ -133,13 +133,14 @@ class StatusContainerController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(StatusContainer $statusContainer,  Request $request)
+    public function destroy(Request $request, $id)
     {
 
         DB::beginTransaction();
         try {
 
-            $delete = StatusContainer::destroy($statusContainer->id);
+            $statusContainer = StatusContainer::lockForUpdate()->findOrFail($id);
+            $delete = $statusContainer->delete();
 
             if ($delete) {
                 $logTrail = [
@@ -149,30 +150,29 @@ class StatusContainerController extends Controller
                     'nobuktitrans' => $statusContainer->id,
                     'aksi' => 'DELETE',
                     'datajson' => $statusContainer->toArray(),
-                    'modifiedby' => $statusContainer->modifiedby
+                    'modifiedby' => auth('api')->user()->name
                 ];
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
 
+                DB::commit();
+
+                /* Set position and page */
+                $selected = $this->getPosition($statusContainer, $statusContainer->getTable(), true);
+                $statusContainer->position = $selected->position;
+                $statusContainer->id = $selected->id;
+                $statusContainer->page = ceil($statusContainer->position / ($request->limit ?? 10));
+    
+                return response([
+                    'status' => true,
+                    'message' => 'Berhasil dihapus',
+                    'data' => $statusContainer
+                ]);
             }
-
-            DB::commit();
-
-            /* Set position and page */
-            $selected = $this->getPosition($statusContainer, $statusContainer->getTable(), true);
-            $statusContainer->position = $selected->position;
-            $statusContainer->id = $selected->id;
-            $statusContainer->page = ceil($statusContainer->position / ($request->limit ?? 10));
-
-            return response([
-                'status' => true,
-                'message' => 'Berhasil dihapus',
-                'data' => $statusContainer
-            ]);
         } catch (\Throwable $th) {
             DB::rollBack();
-            return response($th->getMessage());
+            throw $th;
         }
     }
 

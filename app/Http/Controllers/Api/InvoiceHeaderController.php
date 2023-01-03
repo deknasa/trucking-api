@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\DB;
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Http\Requests\StorePiutangDetailRequest;
 use App\Http\Requests\StorePiutangHeaderRequest;
+use App\Models\Error;
 use App\Models\InvoiceDetail;
 use App\Models\JurnalUmumDetail;
 use App\Models\JurnalUmumHeader;
@@ -74,8 +75,10 @@ class InvoiceHeaderController extends Controller
 
                 date_default_timezone_set('Asia/Jakarta');
 
-                $statusApproval = Parameter::where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
-                $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
+                $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                    ->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
+                $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                    ->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
 
                 $invoice = new InvoiceHeader();
                 $invoice->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
@@ -107,10 +110,13 @@ class InvoiceHeaderController extends Controller
                 $total = 0;
                 for ($i = 0; $i < count($request->sp_id); $i++) {
 
-                    $SP = SuratPengantar::where('id', $request->sp_id[$i])->first();
-                    $orderantrucking = OrderanTrucking::where('nobukti', $SP->jobtrucking)->first();
+                    $SP = SuratPengantar::from(DB::raw("suratpengantar with (readuncommitted)"))
+                        ->where('id', $request->sp_id[$i])->first();
+                    $orderantrucking = OrderanTrucking::from(DB::raw("orderantrucking with (readuncommitted)"))
+                        ->where('nobukti', $SP->jobtrucking)->first();
                     $total = $total + $orderantrucking->nominal;
-                    $getSP = SuratPengantar::where('jobtrucking', $SP->jobtrucking)->get();
+                    $getSP = SuratPengantar::from(DB::raw("suratpengantar with (readuncommitted)"))
+                        ->where('jobtrucking', $SP->jobtrucking)->get();
 
                     $allSP = "";
                     foreach ($getSP as $value) {
@@ -206,8 +212,10 @@ class InvoiceHeaderController extends Controller
                 for ($i = 0; $i < count($request->sp_id); $i++) {
                     $detail = [];
 
-                    $SP = SuratPengantar::where('id', $request->sp_id[$i])->first();
-                    $orderantrucking = OrderanTrucking::where('nobukti', $SP->jobtrucking)->first();
+                    $SP = SuratPengantar::from(DB::raw("suratpengantar with (readuncommitted)"))
+                        ->where('id', $request->sp_id[$i])->first();
+                    $orderantrucking = OrderanTrucking::from(DB::raw("orderantrucking with (readuncommitted)"))
+                        ->where('nobukti', $SP->jobtrucking)->first();
 
                     $detail = [
                         'entriluar' => 1,
@@ -242,7 +250,8 @@ class InvoiceHeaderController extends Controller
                     'data' => $invoice
                 ], 201);
             } else {
-                $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'WP')
+                $query = Error::from(DB::raw("error with (readuncommitted)"))
+                    ->select('keterangan')->where('kodeerror', '=', 'WP')
                     ->first();
                 return response([
                     'errors' => [
@@ -292,24 +301,26 @@ class InvoiceHeaderController extends Controller
 
             if ($invoiceheader->save()) {
 
-                $getPiutang = PiutangHeader::where('invoice_nobukti', $invoiceheader->nobukti)->first();
+                $getPiutang = PiutangHeader::from(DB::raw("piutangheader with (readuncommitted)"))
+                    ->where('invoice_nobukti', $invoiceheader->nobukti)->first();
 
-                JurnalUmumHeader::where('nobukti', $getPiutang->nobukti)->lockForUpdate()->delete();
-                JurnalUmumDetail::where('nobukti', $getPiutang->nobukti)->lockForUpdate()->delete();
-                PiutangHeader::where('invoice_nobukti', $invoiceheader->nobukti)->lockForUpdate()->delete();
-                PiutangDetail::where('invoice_nobukti', $invoiceheader->nobukti)->lockForUpdate()->delete();
-                InvoiceDetail::where('invoice_id', $invoiceheader->id)->lockForUpdate()->delete();
+                JurnalUmumHeader::where('nobukti', $getPiutang->nobukti)->delete();
+                PiutangHeader::where('invoice_nobukti', $invoiceheader->nobukti)->delete();
+                InvoiceDetail::where('invoice_id', $invoiceheader->id)->delete();
 
                 /* Store detail */
                 $detaillog = [];
                 $total = 0;
                 for ($i = 0; $i < count($request->sp_id); $i++) {
 
-                    $SP = SuratPengantar::where('id', $request->sp_id[$i])->first();
+                    $SP = SuratPengantar::from(DB::raw("suratpengantar with (readuncommitted)"))
+                        ->where('id', $request->sp_id[$i])->first();
 
-                    $orderantrucking = OrderanTrucking::where('nobukti', $SP->jobtrucking)->first();
+                    $orderantrucking = OrderanTrucking::from(DB::raw("orderantrucking with (readuncommitted)"))
+                        ->where('nobukti', $SP->jobtrucking)->first();
                     $total = $total + $orderantrucking->nominal;
-                    $getSP = SuratPengantar::where('jobtrucking', $SP->jobtrucking)->get();
+                    $getSP = SuratPengantar::from(DB::raw("suratpengantar with (readuncommitted)"))
+                        ->where('jobtrucking', $SP->jobtrucking)->get();
 
                     $allSP = "";
                     foreach ($getSP as $value) {
@@ -404,8 +415,10 @@ class InvoiceHeaderController extends Controller
             for ($i = 0; $i < count($request->sp_id); $i++) {
                 $detail = [];
 
-                $SP = SuratPengantar::where('id', $request->sp_id[$i])->first();
-                $orderantrucking = OrderanTrucking::where('nobukti', $SP->jobtrucking)->first();
+                $SP = SuratPengantar::from(DB::raw("suratpengantar with (readuncommitted)"))
+                    ->where('id', $request->sp_id[$i])->first();
+                $orderantrucking = OrderanTrucking::from(DB::raw("orderantrucking with (readuncommitted)"))
+                    ->where('nobukti', $SP->jobtrucking)->first();
 
                 $detail = [
                     'entriluar' => 1,
@@ -451,27 +464,27 @@ class InvoiceHeaderController extends Controller
     /**
      * @ClassName
      */
-    public function destroy(Request $request, $id)
+    public function destroy(InvoiceHeader $invoiceheader, Request $request)
     {
         DB::beginTransaction();
         try {
-            $invoiceheader = InvoiceHeader::lockForUpdate()->findOrFail($id);
+            $getDetail = InvoiceDetail::from(DB::raw("invoicedetail with (readuncommitted)"))
+                ->where('invoice_id', $invoiceheader->id)->get();       
 
-            $getDetail = InvoiceDetail::where('invoice_id', $invoiceheader->id)->get();            
-            $delete = $invoiceheader->delete();
+            $getPiutangHeader = PiutangHeader::from(DB::raw("piutangheader with (readuncommitted)"))
+                ->where('invoice_nobukti', $invoiceheader->nobukti)->first();
+            $getPiutangDetail = PiutangDetail::from(DB::raw("piutangdetail with (readuncommitted)"))
+                ->where('invoice_nobukti', $invoiceheader->nobukti)->get();
+            $getJurnalHeader = JurnalUmumHeader::from(DB::raw("jurnalumumheader with (readuncommitted)"))
+                ->where('nobukti', $invoiceheader->piutang_nobukti)->first();
+            $getJurnalDetail = JurnalUmumDetail::from(DB::raw("jurnalumumdetail with (readuncommitted)"))
+                ->where('nobukti', $invoiceheader->piutang_nobukti)->get();
 
-            $getPiutangHeader = PiutangHeader::where('invoice_nobukti', $invoiceheader->nobukti)->first();
-            $getPiutangDetail = PiutangDetail::where('invoice_nobukti', $invoiceheader->nobukti)->get();
-            $getJurnalHeader = JurnalUmumHeader::where('nobukti', $invoiceheader->piutang_nobukti)->first();
-            $getJurnalDetail = JurnalUmumDetail::where('nobukti', $invoiceheader->piutang_nobukti)->get();
-
-            InvoiceDetail::where('invoice_id', $invoiceheader->id)->delete();
             PiutangHeader::where('invoice_nobukti', $invoiceheader->nobukti)->delete();
-            PiutangDetail::where('invoice_nobukti', $invoiceheader->nobukti)->delete();
-            JurnalUmumHeader::where('nobukti', $invoiceheader->piutang_nobukti)->delete();
-            JurnalUmumDetail::where('nobukti', $invoiceheader->piutang_nobukti)->delete();
+            JurnalUmumHeader::where('nobukti', $invoiceheader->piutang_nobukti)->delete();     
+            $isDelete = InvoiceHeader::where('id', $invoiceheader->id)->delete();
 
-            if ($delete) {
+            if ($isDelete) {
                 $logTrail = [
                     'namatabel' => strtoupper($invoiceheader->getTable()),
                     'postingdari' => 'DELETE INVOICE HEADER',
@@ -501,7 +514,7 @@ class InvoiceHeaderController extends Controller
 
                 // DELETE PIUTANG HEADER
                 $logTrailPiutangHeader = [
-                    'namatabel' => 'PIUTANG',
+                    'namatabel' => 'PIUTANGHEADER',
                     'postingdari' => 'DELETE PIUTANG HEADER DARI INVOICE',
                     'idtrans' => $getPiutangHeader->id,
                     'nobuktitrans' => $getPiutangHeader->nobukti,
@@ -568,6 +581,9 @@ class InvoiceHeaderController extends Controller
                     'data' => $invoiceheader
                 ]);
             }
+            return response([
+                'message' => 'Gagal dihapus'
+            ], 500);
         } catch (\Throwable $th) {
             DB::rollBack();
 
@@ -595,20 +611,20 @@ class InvoiceHeaderController extends Controller
         $dari = date('Y-m-d', strtotime($request->tgldari));
         $sampai = date('Y-m-d', strtotime($request->tglsampai));
 
-        $cekSP = DB::table('suratpengantar')
+        $cekSP = SuratPengantar::from(DB::raw("suratpengantar with (readuncommitted)"))
             ->whereRaw("agen_id = $request->agen_id")
             ->whereRaw("jenisorder_id = $request->jenisorder_id")
             ->whereRaw("tglbukti >= '$dari'")
             ->whereRaw("tglbukti <= '$sampai'")
             ->whereRaw("suratpengantar.jobtrucking not in(select orderantrucking_nobukti from invoicedetail)");
-
+       
         if ($cekSP->first()) {
             return response([
                 "data" => $invoice->getSP($request)
             ]);
         } else {
 
-            $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'NSP')
+            $query = Error::from(DB::raw("error with (readuncommitted)"))->select('keterangan')->where('kodeerror', '=', 'NSP')
                 ->first();
             return response([
                 'message' => "$query->keterangan",
@@ -680,82 +696,27 @@ class InvoiceHeaderController extends Controller
 
             $nobukti = $piutangHeader['nobukti'];
 
-            $parameterController = new ParameterController;
-            $statusApp = $parameterController->getparameterid('STATUS APPROVAL', 'STATUS APPROVAL', 'NON APPROVAL');
-            $jurnalHeader = [
-                'tanpaprosesnobukti' => 1,
-                'nobukti' => $header->original['data']['nobukti'],
-                'tglbukti' => $header->original['data']['tglbukti'],
-                'keterangan' => $header->original['data']['keterangan'],
-                'postingdari' => "ENTRY PIUTANG DARI INVOICE",
-                'statusapproval' => $statusApp->id,
-                'userapproval' => "",
-                'tglapproval' => "",
-                'statusformat' => 0,
-                'modifiedby' => auth('api')->user()->name,
-            ];
-
-            $storeJurnal = new StoreJurnalUmumHeaderRequest($jurnalHeader);
-            $jurnal = app(JurnalUmumHeaderController::class)->store($storeJurnal);
-
+            
 
             $detailLogPiutang = [];
             $detailLogJurnal = [];
             foreach ($piutangDetail as $value) {
 
                 $value['piutang_id'] = $header->original['data']['id'];
+                $value['entridetail'] = 1;
+                $value['jurnal_id'] = $header->original['idlogtrail']['jurnal_id'];
+                $value['tglbukti'] = $piutangHeader['tglbukti'];
                 $piutangDetail = new StorePiutangDetailRequest($value);
                 $detailPiutang = app(PiutangDetailController::class)->store($piutangDetail);
 
-                $detailLogPiutang[] = $detailPiutang['detail']->toArray();
-
-                // JURNAL
-
-                $getBaris = DB::table('jurnalumumdetail')->select('baris')->where('nobukti', $nobukti)->orderByDesc('baris')->first();
-                $getCOA = DB::table('parameter')->where("kelompok", "COA INVOICE")->get();
-
-                if (is_null($getBaris)) {
-                    $baris = 0;
-                } else {
-                    $baris = $getBaris->baris + 1;
-                }
-
-                for ($x = 0; $x <= 1; $x++) {
-
-                    if ($x == 1) {
-                        $datadetail = [
-                            'jurnalumum_id' => $jurnal->original['data']['id'],
-                            'nobukti' => $nobukti,
-                            'tglbukti' => $jurnal->original['data']['tglbukti'],
-                            'coa' =>  $getCOA[$x]->text,
-                            'nominal' => -$piutangDetail->nominal,
-                            'keterangan' => $piutangDetail->keterangan,
-                            'modifiedby' => auth('api')->user()->name,
-                            'baris' => $baris,
-                        ];
-                    } else {
-                        $datadetail = [
-                            'jurnalumum_id' => $jurnal->original['data']['id'],
-                            'nobukti' => $nobukti,
-                            'tglbukti' => $jurnal->original['data']['tglbukti'],
-                            'coa' =>  $getCOA[$x]->text,
-                            'nominal' => $piutangDetail->nominal,
-                            'keterangan' => $piutangDetail->keterangan,
-                            'modifiedby' => auth('api')->user()->name,
-                            'baris' => $baris,
-                        ];
-                    }
-                    $detail = new StoreJurnalUmumDetailRequest($datadetail);
-                    $detailJurnal = app(JurnalUmumDetailController::class)->store($detail);
-
-                    $detailLogJurnal[] = $detailJurnal['detail']->toArray();
-                }
+                $detailLogPiutang[] = $detailPiutang['detail']['piutangdetail']->toArray();
+                $detailLogJurnal = array_merge($detailLogJurnal, $detailPiutang['detail']['jurnaldetail']);
             }
 
             $datalogtrail = [
                 'namatabel' => strtoupper($detailPiutang['tabel']),
                 'postingdari' => 'ENTRY INVOICE HEADER',
-                'idtrans' =>  $header->original['idlogtrail'],
+                'idtrans' =>  $header->original['idlogtrail']['piutang'],
                 'nobuktitrans' => $nobukti,
                 'aksi' => 'ENTRY',
                 'datajson' => $detailLogPiutang,
@@ -765,11 +726,10 @@ class InvoiceHeaderController extends Controller
             $data = new StoreLogTrailRequest($datalogtrail);
             app(LogTrailController::class)->store($data);
 
-
             $datalogtrail = [
-                'namatabel' => strtoupper($detailJurnal['tabel']),
+                'namatabel' => strtoupper('JURNALUMUMDETAIL'),
                 'postingdari' => 'ENTRY PIUTANG DARI INVOICE ',
-                'idtrans' =>  $jurnal->original['idlogtrail'],
+                'idtrans' =>  $header->original['idlogtrail']['jurnal'],
                 'nobuktitrans' => $nobukti,
                 'aksi' => 'ENTRY',
                 'datajson' => $detailLogJurnal,
@@ -793,8 +753,10 @@ class InvoiceHeaderController extends Controller
 
         try {
             $invoice = InvoiceHeader::lockForUpdate()->findOrFail($id);
-            $statusApproval = Parameter::where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
-            $statusNonApproval = Parameter::where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
+            $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
+            $statusNonApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
 
             if ($invoice->statusapproval == $statusApproval->id) {
                 $invoice->statusapproval = $statusNonApproval->id;
@@ -838,8 +800,10 @@ class InvoiceHeaderController extends Controller
 
         try {
             $invoice = InvoiceHeader::lockForUpdate()->findOrFail($id);
-            $statusSudahCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
-            $statusBelumCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
+            $statusSudahCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                ->where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
+            $statusBelumCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                ->where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
 
             if ($invoice->statuscetak != $statusSudahCetak->id) {
                 $invoice->statuscetak = $statusSudahCetak->id;
@@ -878,14 +842,16 @@ class InvoiceHeaderController extends Controller
     {
         $pengeluaran = InvoiceHeader::find($id);
         $status = $pengeluaran->statusapproval;
-        $statusApproval = Parameter::where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
+        $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
         $statusdatacetak = $pengeluaran->statuscetak;
-        $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
+        $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
 
         if ($status == $statusApproval->id) {
-            $query = DB::table('error')
+            $query = Error::from(DB::raw("error with (readuncommitted)"))
                 ->select('keterangan')
-                ->where('kodeerror', '=', 'SAP')
+                ->whereRaw("kodeerror = SAP")
                 ->get();
             $keterangan = $query['0'];
             $data = [
@@ -897,9 +863,9 @@ class InvoiceHeaderController extends Controller
 
             return response($data);
         } else if ($statusdatacetak == $statusCetak->id) {
-            $query = DB::table('error')
+            $query = Error::from(DB::raw("error with (readuncommitted)"))
                 ->select('keterangan')
-                ->where('kodeerror', '=', 'SDC')
+                ->whereRaw("kodeerror = SDC")
                 ->get();
             $keterangan = $query['0'];
             $data = [

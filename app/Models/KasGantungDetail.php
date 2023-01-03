@@ -24,7 +24,7 @@ class KasGantungDetail extends MyModel
     ]; 
 
     public function findUpdate($id) {
-        $query = DB::table('kasgantungdetail')->select(
+        $query = DB::table('kasgantungdetail')->from(DB::raw('kasgantungdetail with (readuncommitted)'))->select(
             'keterangan',
             'nominal',
         )

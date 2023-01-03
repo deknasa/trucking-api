@@ -29,7 +29,8 @@ class PelunasanPiutangHeader extends MyModel
     public function get() {
         $this->setRequestParameters();
 
-        $query = DB::table($this->table)->select(
+        $query = DB::table($this->table)->from(DB::raw("pelunasanpiutangheader with (readuncommitted)"))
+        ->select(
             'pelunasanpiutangheader.id',
             'pelunasanpiutangheader.nobukti',
             'pelunasanpiutangheader.tglbukti',
@@ -41,10 +42,10 @@ class PelunasanPiutangHeader extends MyModel
             'agen.namaagen as agen_id',
             'cabang.namacabang as cabang_id',
         )
-            ->leftJoin('bank', 'pelunasanpiutangheader.bank_id', 'bank.id')
-            ->leftJoin('agen', 'pelunasanpiutangheader.agen_id', 'agen.id')
-            ->leftJoin('cabang' , 'pelunasanpiutangheader.cabang_id', 'cabang.id');
-            
+            ->leftJoin(DB::raw("bank with (readuncommitted)"), 'pelunasanpiutangheader.bank_id', 'bank.id')
+            ->leftJoin(DB::raw("agen with (readuncommitted)"), 'pelunasanpiutangheader.agen_id', 'agen.id')
+            ->leftJoin(DB::raw("cabang with (readuncommitted)"), 'pelunasanpiutangheader.cabang_id', 'cabang.id');
+        
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
@@ -65,15 +66,15 @@ class PelunasanPiutangHeader extends MyModel
         $tempPelunasan = $this->createTempPelunasan($id,$agenid);
 
         
-        $piutang = DB::table("$tempPiutang as A")
+        $piutang = DB::table("$tempPiutang as A")->from(DB::raw("$tempPiutang as A with (readuncommitted)"))
             ->select(DB::raw("A.id as id,null as pelunasanpiutang_id,A.nobukti as piutang_nobukti, A.tglbukti as tglbukti, A.agen_id as agen_id, A.invoice_nobukti as invoice_nobukti,null as nominal, null as keterangan, null as penyesuaian, null as keteranganpenyesuaian, null as nominallebihbayar, A.nominalpiutang, A.sisa as sisa"))
             ->distinct("A.nobukti")
-            ->leftJoin("$tempPelunasan as B","A.nobukti","B.piutang_nobukti")
+            ->leftJoin(DB::raw("$tempPelunasan as B with (readuncommitted)"),"A.nobukti","B.piutang_nobukti")
             ->whereRaw("isnull(b.piutang_nobukti,'') = ''")
             ->whereRaw("a.sisa > 0");
            
 
-        $pelunasan = DB::table($tempPelunasan)
+        $pelunasan = DB::table($tempPelunasan)->from(DB::raw("$tempPelunasan with (readuncommitted)"))
             ->select(DB::raw("id,pelunasanpiutang_id,piutang_nobukti,tglbukti,agen_id,invoice_nobukti,nominal,keterangan,penyesuaian,keteranganpenyesuaian,nominallebihbayar,nominalpiutang,sisa"))
             ->unionAll($piutang);
         
@@ -93,7 +94,7 @@ class PelunasanPiutangHeader extends MyModel
         $temp = '##tempPiutang' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
 
-        $fetch = DB::table('piutangheader')
+        $fetch = DB::table('piutangheader')->from(DB::raw("piutangheader with (readuncommitted)"))
         ->select(DB::raw("piutangheader.id,piutangheader.nobukti,piutangheader.tglbukti,piutangheader.agen_id,piutangheader.nominal as nominalpiutang,piutangheader.invoice_nobukti, (SELECT (piutangheader.nominal - COALESCE(SUM(pelunasanpiutangdetail.nominal),0)) FROM pelunasanpiutangdetail WHERE pelunasanpiutangdetail.piutang_nobukti= piutangheader.nobukti) AS sisa"))
         ->leftJoin('pelunasanpiutangdetail','pelunasanpiutangdetail.agen_id','piutangheader.agen_id')
         ->whereRaw("piutangheader.agen_id = $agenid")
@@ -118,9 +119,9 @@ class PelunasanPiutangHeader extends MyModel
     public function createTempPelunasan($id,$agenid) {
         $tempo = '##tempPelunasan' . rand(1, 10000);
         
-        $fetch = DB::table('pelunasanpiutangdetail as ppd')
+        $fetch = DB::table('pelunasanpiutangdetail as ppd')->from(DB::raw("pelunasanpiutangdetail as ppd with (readuncommitted)"))
         ->select(DB::raw("piutangheader.id,ppd.pelunasanpiutang_id,ppd.piutang_nobukti,piutangheader.tglbukti,ppd.agen_id,ppd.nominal,ppd.keterangan,ppd.penyesuaian,ppd.keteranganpenyesuaian,ppd.nominallebihbayar, piutangheader.nominal as nominalpiutang,ppd.invoice_nobukti, (SELECT (piutangheader.nominal - SUM(pelunasanpiutangdetail.nominal)) FROM pelunasanpiutangdetail WHERE pelunasanpiutangdetail.piutang_nobukti= piutangheader.nobukti) AS sisa"))
-        ->leftJoin('piutangheader','ppd.piutang_nobukti','piutangheader.nobukti')
+        ->leftJoin(DB::raw("piutangheader with (readuncommitted)"),'ppd.piutang_nobukti','piutangheader.nobukti')
         ->whereRaw("ppd.pelunasanpiutang_id = $id");
                
         Schema::create($tempo, function ($table) {
@@ -146,7 +147,7 @@ class PelunasanPiutangHeader extends MyModel
 
     public function getDeletePelunasanPiutang($id, $agenId) {
        
-        $query = DB::table('pelunasanpiutangdetail')
+        $query = DB::table('pelunasanpiutangdetail')->from(DB::raw("pelunasanpiutangdetail with (readuncommitted)"))
             ->select(
                 DB::raw("
                 pelunasanpiutangdetail.pelunasanpiutang_id, 
@@ -162,7 +163,7 @@ class PelunasanPiutangHeader extends MyModel
                     FROM pelunasanpiutangdetail 
                     WHERE pelunasanpiutangdetail.piutang_nobukti= piutangheader.nobukti) AS sisa")
             )
-        ->join('piutangheader','pelunasanpiutangdetail.piutang_nobukti','piutangheader.nobukti')
+        ->leftJoin(DB::raw("piutangheader with (readuncommitted)"),'pelunasanpiutangdetail.piutang_nobukti','piutangheader.nobukti')
         ->whereRaw("pelunasanpiutangdetail.pelunasanpiutang_id = $id")
         ->whereRaw("pelunasanpiutangdetail.agen_id = $agenId");
         
@@ -174,7 +175,7 @@ class PelunasanPiutangHeader extends MyModel
     {
         $this->setRequestParameters();
 
-        $query = DB::table('pelunasanpiutangdetail')
+        $query = DB::table('pelunasanpiutangdetail')->from(DB::raw("pelunasanpiutangdetail with (readuncommitted)"))
         ->select(DB::raw('
         pelunasanpiutangdetail.id as detail_id,
         pelunasanpiutangdetail.nobukti,
@@ -211,7 +212,7 @@ class PelunasanPiutangHeader extends MyModel
     {
         $this->setRequestParameters();
 
-        $query = DB::table('pelunasanpiutangdetail')
+        $query = DB::table('pelunasanpiutangdetail')->from(DB::raw("pelunasanpiutangdetail with (readuncommitted)"))
         ->select(DB::raw('
         pelunasanpiutangdetail.id as detail_id,
         pelunasanpiutangdetail.nobukti,
@@ -246,7 +247,8 @@ class PelunasanPiutangHeader extends MyModel
 
     public function findAll($id) {
       
-        $query = DB::table('pelunasanpiutangheader')->select(
+        $query = DB::table('pelunasanpiutangheader')->from(DB::raw("pelunasanpiutangheader with (readuncommitted)"))
+        ->select(
             'pelunasanpiutangheader.id',
             'pelunasanpiutangheader.nobukti',
             'pelunasanpiutangheader.tglbukti',

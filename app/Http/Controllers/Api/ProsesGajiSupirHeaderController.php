@@ -10,10 +10,12 @@ use App\Http\Requests\StoreProsesGajiSupirDetailRequest;
 use App\Models\ProsesGajiSupirHeader;
 use App\Http\Requests\StoreProsesGajiSupirHeaderRequest;
 use App\Http\Requests\UpdateProsesGajiSupirHeaderRequest;
-
+use App\Models\Error;
+use App\Models\GajiSupirHeader;
 use App\Models\LogTrail;
 use App\Models\Parameter;
 use App\Models\ProsesGajiSupirDetail;
+use App\Models\SuratPengantar;
 use Exception;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
@@ -62,8 +64,10 @@ class ProsesGajiSupirHeaderController extends Controller
                 $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
 
                 $prosesgajisupirheader = new ProsesGajiSupirHeader();
-                $statusApproval = Parameter::where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
-                $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
+                $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                    ->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
+                $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                    ->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
 
                 $prosesgajisupirheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
                 $prosesgajisupirheader->keterangan = $request->keterangan;
@@ -103,8 +107,10 @@ class ProsesGajiSupirHeaderController extends Controller
 
                 for ($i = 0; $i < count($request->ric_id); $i++) {
 
-                    $ric = DB::table('gajisupirheader')->where('id', $request->ric_id[$i])->first();
-                    $sp = DB::table('suratpengantar')->where('supir_id', $ric->supir_id)->first();
+                    $ric = GajiSupirHeader::from(DB::raw("gajisupirheader with (readuncommitted)"))
+                        ->where('id', $request->ric_id[$i])->first();
+                    $sp = SuratPengantar::from(DB::raw("suratpengantar with (readuncommitted)"))
+                        ->where('supir_id', $ric->supir_id)->first();
                     $datadetail = [
                         'prosesgajisupir_id' => $prosesgajisupirheader->id,
                         'nobukti' => $prosesgajisupirheader->nobukti,
@@ -163,7 +169,7 @@ class ProsesGajiSupirHeaderController extends Controller
                     'data' => $prosesgajisupirheader
                 ], 201);
             } else {
-                $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'WP')
+                $query = Error::from(DB::raw("error with (readuncommitted)"))->select('keterangan')->where('kodeerror', '=', 'WP')
                     ->first();
                 return response([
                     'errors' => [
@@ -181,7 +187,7 @@ class ProsesGajiSupirHeaderController extends Controller
 
     public function show($id)
     {
-        $prosesGajiSupirHeader = DB::table('prosesgajisupirheader')->where('id', $id)->first();
+        $prosesGajiSupirHeader = ProsesGajiSupirHeader::from(DB::raw("prosesgajisupirheader with (readuncommitted)"))->where('id', $id)->first();
         return response([
             'status' => true,
             'data' => $prosesGajiSupirHeader
@@ -219,7 +225,7 @@ class ProsesGajiSupirHeaderController extends Controller
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-                ProsesGajiSupirDetail::where('prosesgajisupir_id', $prosesgajisupirheader->id)->lockForUpdate()->delete();
+                ProsesGajiSupirDetail::where('prosesgajisupir_id', $prosesgajisupirheader->id)->delete();
 
                 /* Store detail */
 
@@ -227,8 +233,10 @@ class ProsesGajiSupirHeaderController extends Controller
                 $urut = 1;
 
                 for ($i = 0; $i < count($request->ric_id); $i++) {
-                    $ric = DB::table('gajisupirheader')->where('id', $request->ric_id[$i])->first();
-                    $sp = DB::table('suratpengantar')->where('supir_id', $ric->supir_id)->first();
+                    $ric = GajiSupirHeader::from(DB::raw("gajisupirheader with (readuncommitted)"))
+                        ->where('id', $request->ric_id[$i])->first();
+                    $sp = SuratPengantar::from(DB::raw("suratpengantar with (readuncommitted)"))
+                        ->where('supir_id', $ric->supir_id)->first();
                     $datadetail = [
                         'prosesgajisupir_id' => $prosesgajisupirheader->id,
                         'nobukti' => $prosesgajisupirheader->nobukti,
@@ -302,10 +310,9 @@ class ProsesGajiSupirHeaderController extends Controller
         try {
 
             $getDetail = ProsesGajiSupirDetail::where('prosesgajisupir_id', $prosesgajisupirheader->id)->get();
-            $delete = ProsesGajiSupirDetail::where('prosesgajisupir_id', $prosesgajisupirheader->id)->lockForUpdate()->delete();
-            $delete = ProsesGajiSupirHeader::destroy($prosesgajisupirheader->id);
+            $isDelete = ProsesGajiSupirHeader::where('id', $prosesgajisupirheader->id)->delete();
 
-            if ($delete) {
+            if ($isDelete) {
                 $logTrail = [
                     'namatabel' => strtoupper($prosesgajisupirheader->getTable()),
                     'postingdari' => 'DELETE PROSES GAJI SUPIR HEADER',
@@ -332,23 +339,25 @@ class ProsesGajiSupirHeaderController extends Controller
 
                 $validatedLogTrailProsesGajiSupirDetail = new StoreLogTrailRequest($logTrailProsesGajiSupirDetail);
                 app(LogTrailController::class)->store($validatedLogTrailProsesGajiSupirDetail);
-
+                DB::commit();
+    
+                $selected = $this->getPosition($prosesgajisupirheader, $prosesgajisupirheader->getTable(), true);
+                $prosesgajisupirheader->position = $selected->position;
+                $prosesgajisupirheader->id = $selected->id;
+                $prosesgajisupirheader->page = ceil($prosesgajisupirheader->position / ($request->limit ?? 10));
+    
+                return response([
+                    'status' => true,
+                    'message' => 'Berhasil dihapus',
+                    'data' => $prosesgajisupirheader
+                ]);
             } 
-            DB::commit();
-
-            $selected = $this->getPosition($prosesgajisupirheader, $prosesgajisupirheader->getTable(), true);
-            $prosesgajisupirheader->position = $selected->position;
-            $prosesgajisupirheader->id = $selected->id;
-            $prosesgajisupirheader->page = ceil($prosesgajisupirheader->position / ($request->limit ?? 10));
-
             return response([
-                'status' => true,
-                'message' => 'Berhasil dihapus',
-                'data' => $prosesgajisupirheader
-            ]);
+                'message' => 'Gagal dihapus'
+            ], 500);
         } catch (\Throwable $th) {
             DB::rollBack();
-            return response($th->getMessage());
+            throw $th;
         }
     }
 
@@ -358,18 +367,19 @@ class ProsesGajiSupirHeaderController extends Controller
         $dari = date('Y-m-d', strtotime($dari));
         $sampai = date('Y-m-d', strtotime($sampai));
 
-        $cekRic = DB::table('gajisupirheader')
-            ->where('tgldari', '>=', $dari)
-            ->where('tglsampai', '<=', $sampai)
+        $cekRic = GajiSupirHeader::from(DB::raw("gajisupirheader with (readuncommitted)"))
+            ->whereRaw("tglbukti >= '$dari'")
+            ->whereRaw("tglbukti <= '$sampai'")
             ->first();
 
         //CEK APAKAH ADA RIC
         if ($cekRic) {
             $nobukti = $cekRic->nobukti;
-            $cekEBS = DB::table('prosesgajisupirdetail')->where('gajisupir_nobukti', $nobukti)->first();
+            $cekEBS = ProsesGajiSupirDetail::from(DB::raw("prosesgajisupirdetail with (readuncommitted)"))
+                ->whereRaw("gajisupir_nobukti = '$nobukti'")->first();
             if ($cekEBS) {
                 
-                $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'RICSD')
+                $query = Error::from(DB::raw("error with (readuncommitted)"))->select('keterangan')->where('kodeerror', '=', 'RICSD')
                 ->first();
                 return response([
                     'message' => "$query->keterangan",
@@ -382,7 +392,7 @@ class ProsesGajiSupirHeaderController extends Controller
             }
         } else {
             
-            $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'NRIC')
+            $query = Error::from(DB::raw("error with (readuncommitted)"))->select('keterangan')->where('kodeerror', '=', 'NRIC')
             ->first();
             return response([
                 'message' => "$query->keterangan",
@@ -400,7 +410,7 @@ class ProsesGajiSupirHeaderController extends Controller
 
     public function noEdit()
     {
-        $query = DB::table('error')
+        $query = Error::from(DB::raw("error with (readuncommitted)"))
             ->select('keterangan')
             ->where('kodeerror', '=', 'EBSX')
             ->first();
@@ -416,8 +426,10 @@ class ProsesGajiSupirHeaderController extends Controller
 
         try {
             $prosesgaji = ProsesGajiSupirHeader::lockForUpdate()->findOrFail($id);
-            $statusSudahCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
-            $statusBelumCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
+            $statusSudahCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                ->where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
+            $statusBelumCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                ->where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
 
             if ($prosesgaji->statuscetak != $statusSudahCetak->id) {
                 $prosesgaji->statuscetak = $statusSudahCetak->id;
@@ -457,12 +469,14 @@ class ProsesGajiSupirHeaderController extends Controller
     {
         $prosesgaji = ProsesGajiSupirHeader::find($id);
         $status = $prosesgaji->statusapproval;
-        $statusApproval = Parameter::where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
+        $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
         $statusdatacetak = $prosesgaji->statuscetak;
-        $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
+        $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
 
         if ($status == $statusApproval->id) {
-            $query = DB::table('error')
+            $query = Error::from(DB::raw("error with (readuncommitted)"))
                 ->select('keterangan')
                 ->where('kodeerror', '=', 'SAP')
                 ->get();
@@ -476,7 +490,7 @@ class ProsesGajiSupirHeaderController extends Controller
 
             return response($data);
         } else if ($statusdatacetak == $statusCetak->id) {
-            $query = DB::table('error')
+            $query = Error::from(DB::raw("error with (readuncommitted)"))
                 ->select('keterangan')
                 ->where('kodeerror', '=', 'SDC')
                 ->get();

@@ -24,7 +24,7 @@ class PenerimaanGiroDetailController extends Controller
             'sortOrder' => $request->sortOrder ?? 'asc',
         ];
         try {
-            $query = PenerimaanGiroDetail::from('penerimaangirodetail as detail');
+            $query = PenerimaanGiroDetail::from(DB::raw("penerimaangirodetail as detail with (readuncommitted)"));
 
             if (isset($params['id'])) {
                 $query->where('detail.id', $params['id']);
@@ -59,11 +59,11 @@ class PenerimaanGiroDetailController extends Controller
                     'detail.keterangan',
                     'detail.nominal'
                 ) 
-                ->leftJoin('penerimaangiroheader as header','header.id','detail.penerimaangiro_id')
-                ->leftJoin('pelanggan as ph', 'header.pelanggan_id', 'ph.id')
-                ->leftJoin('bank', 'detail.bank_id', 'bank.id')
-                ->leftJoin('pelanggan', 'detail.pelanggan_id', 'pelanggan.id')
-                ->leftJoin('bankpelanggan', 'detail.bankpelanggan_id', 'bankpelanggan.id');
+                ->leftJoin(DB::raw("penerimaangiroheader as header with (readuncommitted)"),'header.id','detail.penerimaangiro_id')
+                ->leftJoin(DB::raw("pelanggan as ph with (readuncommitted)"), 'header.pelanggan_id', 'ph.id')
+                ->leftJoin(DB::raw("bank with (readuncommitted)"), 'detail.bank_id', 'bank.id')
+                ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'detail.pelanggan_id', 'pelanggan.id')
+                ->leftJoin(DB::raw("bankpelanggan with (readuncommitted)"), 'detail.bankpelanggan_id', 'bankpelanggan.id');
                 
                 $pengeluaranTruckingDetail = $query->get();
             } else {
@@ -83,9 +83,9 @@ class PenerimaanGiroDetailController extends Controller
                     'detail.keterangan',
                     'detail.nominal'
                 )
-                ->leftJoin('bank', 'detail.bank_id', 'bank.id')
-                ->leftJoin('pelanggan', 'detail.pelanggan_id', 'pelanggan.id')
-                ->leftJoin('bankpelanggan', 'detail.bankpelanggan_id', 'bankpelanggan.id');
+                ->leftJoin(DB::raw("bank with (readuncommitted)"), 'detail.bank_id', 'bank.id')
+                ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'detail.pelanggan_id', 'pelanggan.id')
+                ->leftJoin(DB::raw("bankpelanggan with (readuncommitted)"), 'detail.bankpelanggan_id', 'bankpelanggan.id');
                 
                 $pengeluaranTruckingDetail = $query->get();
             }

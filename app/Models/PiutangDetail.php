@@ -28,7 +28,9 @@ class PiutangDetail extends MyModel
     {
         $this->setRequestParameters();
         
-        $query = DB::table($this->table);
+        $query = DB::table($this->table)->from(
+            DB::raw("piutangdetail with (readuncommitted)")
+        );
 
         $this->selectColumns($query, $piutangId);
         

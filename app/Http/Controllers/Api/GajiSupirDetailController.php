@@ -24,7 +24,7 @@ class GajiSupirDetailController extends Controller
             'sortOrder' => $request->sortOrder ?? 'asc',
         ];
         try {
-            $query = GajiSupirDetail::from('gajisupirdetail as detail');
+            $query = GajiSupirDetail::from(DB::raw("gajisupirdetail as detail with (readuncommitted)"));
 
             if (isset($params['id'])) {
                 $query->where('detail.id', $params['id']);
@@ -54,11 +54,11 @@ class GajiSupirDetailController extends Controller
                     'detail.gajisupir',
                     'detail.gajikenek',
                 )
-                ->join('gajisupirheader as header','header.id','detail.gajisupir_id')
-                ->join('supir','header.supir_id','supir.id')
-                ->join('suratpengantar','detail.suratpengantar_nobukti','suratpengantar.nobukti')
-                ->join('kota as dari','suratpengantar.dari_id','dari.id')
-                ->join('kota as sampai','suratpengantar.sampai_id','sampai.id');
+                ->leftJoin(DB::raw("gajisupirheader as header with (readuncommitted)"),'header.id','detail.gajisupir_id')
+                ->leftJoin(DB::raw("supir with (readuncommitted)"),'header.supir_id','supir.id')
+                ->leftJoin(DB::raw("suratpengantar with (readuncommitted)"),'detail.suratpengantar_nobukti','suratpengantar.nobukti')
+                ->leftJoin(DB::raw("kota as dari with (readuncommitted)"),'suratpengantar.dari_id','dari.id')
+                ->leftJoin(DB::raw("kota as sampai with (readuncommitted)"),'suratpengantar.sampai_id','sampai.id');
 
                 $gajisupirDetail = $query->get();
             } else {
@@ -73,9 +73,9 @@ class GajiSupirDetailController extends Controller
                     'detail.gajisupir',
                     'detail.gajikenek',
                 )
-                ->join('suratpengantar','detail.suratpengantar_nobukti','suratpengantar.nobukti')
-                ->join('kota as dari','suratpengantar.dari_id','dari.id')
-                ->join('kota as sampai','suratpengantar.sampai_id','sampai.id');
+                ->leftJoin(DB::raw("suratpengantar with (readuncommitted)"),'detail.suratpengantar_nobukti','suratpengantar.nobukti')
+                ->leftJoin(DB::raw("kota as dari with (readuncommitted)"),'suratpengantar.dari_id','dari.id')
+                ->leftJoin(DB::raw("kota as sampai with (readuncommitted)"),'suratpengantar.sampai_id','sampai.id');
                 $gajisupirDetail = $query->get();
             }
             return response([

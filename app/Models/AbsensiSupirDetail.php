@@ -47,7 +47,7 @@ class AbsensiSupirDetail extends MyModel
 
     public function find($id) 
     {
-        $query = DB::table('absensisupirdetail')
+        $query = DB::table('absensisupirdetail')->from(DB::raw("absensisupirdetail with (readuncommitted)"))
             ->select(
                 'absensisupirdetail.trado_id',
                 'trado.keterangan as trado',

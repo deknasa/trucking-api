@@ -27,7 +27,7 @@ class UpahSupirRincianController extends Controller
         ];
 
         try {
-            $query = UpahSupirRincian::from('upahsupirrincian as detail');
+            $query = UpahSupirRincian::from(DB::raw("upahsupirrincian as detail with (readuncommitted)"));
 
             if (isset($params['id'])) {
                 $query->where('detail.id', $params['id']);
@@ -62,13 +62,13 @@ class UpahSupirRincianController extends Controller
                     'detail.nominaltol',
                     'detail.liter',
                 )
-                    ->join('upahsupir as header', 'header.id', 'detail.upahsupir_id') 
-                    ->join('kota as kotadari', 'kotadari.id', '=', 'header.kotadari_id')
-                    ->join('kota as kotasampai', 'kotasampai.id', '=', 'header.kotasampai_id')
-                    ->leftJoin('zona', 'header.zona_id', 'zona.id')
-                    ->leftJoin('parameter as statusluarkota', 'header.statusluarkota', 'statusluarkota.id')
-                    ->leftJoin('container', 'container.id', 'detail.container_id')
-                    ->leftJoin('statuscontainer', 'statuscontainer.id', 'detail.statuscontainer_id');
+                    ->leftJoin(DB::raw("upahsupir as header with (readuncommitted)"), 'header.id', 'detail.upahsupir_id') 
+                    ->leftJoin(DB::raw("kota as kotadari with (readuncommitted)"), 'kotadari.id', '=', 'header.kotadari_id')
+                    ->leftJoin(DB::raw("kota as kotasampai with (readuncommitted)"), 'kotasampai.id', '=', 'header.kotasampai_id')
+                    ->leftJoin(DB::raw("zona with (readuncommitted)"), 'header.zona_id', 'zona.id')
+                    ->leftJoin(DB::raw("parameter as statusluarkota with (readuncommitted)"), 'header.statusluarkota', 'statusluarkota.id')
+                    ->leftJoin(DB::raw("container with (readuncommitted)"), 'container.id', 'detail.container_id')
+                    ->leftJoin(DB::raw("statuscontainer with (readuncommitted)"), 'statuscontainer.id', 'detail.statuscontainer_id');
 
                 $upahsupir = $query->get();
             } else {
@@ -81,9 +81,8 @@ class UpahSupirRincianController extends Controller
                     'detail.nominaltol',
                     'detail.liter',
                 )
-                    ->join('upahsupir as header', 'header.id', 'detail.upahsupir_id')
-                    ->leftJoin('container', 'container.id', 'detail.container_id')
-                    ->leftJoin('statuscontainer', 'statuscontainer.id', 'detail.statuscontainer_id');
+                    ->leftJoin(DB::raw("container with (readuncommitted)"), 'container.id', 'detail.container_id')
+                    ->leftJoin(DB::raw("statuscontainer with (readuncommitted)"), 'statuscontainer.id', 'detail.statuscontainer_id');
                 $upahsupir = $query->get();
             }
 
@@ -104,22 +103,7 @@ class UpahSupirRincianController extends Controller
         }
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \App\Http\Requests\StoreUpahSupirRincianRequest  $request
-     * @return \Illuminate\Http\Response
-     */
     public function store(StoreUpahSupirRincianRequest $request)
     {
         DB::beginTransaction();
@@ -141,17 +125,15 @@ class UpahSupirRincianController extends Controller
             
             DB::commit();
            
-                return [
-                    'error' => false,
-                    'detail' => $upahSupirRincian,
-                    'id' => $upahSupirRincian->id,
-                    'tabel' => $upahSupirRincian->getTable(),
-                ];
+            return [
+                'error' => false,
+                'detail' => $upahSupirRincian,
+                'id' => $upahSupirRincian->id,
+                'tabel' => $upahSupirRincian->getTable(),
+            ];
         } catch (\Throwable $th) {
             DB::rollBack();
             return response($th->getMessage());
-        }        
+        }
     }
-
-  
 }

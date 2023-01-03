@@ -185,7 +185,7 @@ class UpahRitasiController extends Controller
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-                UpahRitasiRincian::where('upahritasi_id', $upahritasi->id)->lockForUpdate()->delete();
+                UpahRitasiRincian::where('upahritasi_id', $upahritasi->id)->delete();
                 /* Store detail */
                 $detaillog = [];
                 for ($i = 0; $i < count($request->nominalsupir); $i++) {
@@ -257,10 +257,9 @@ class UpahRitasiController extends Controller
         DB::beginTransaction();
         try {
             $getDetail = UpahRitasiRincian::where('upahritasi_id', $upahritasi->id)->get();
-            $delete = UpahRitasiRincian::where('upahritasi_id', $upahritasi->id)->lockForUpdate()->delete();
-            $delete = UpahRitasi::destroy($upahritasi->id);
+            $isDelete = UpahRitasi::where('id',$upahritasi->id)->delete();
 
-            if ($delete) {
+            if ($isDelete) {
                 $logTrail = [
                     'namatabel' => strtoupper($upahritasi->getTable()),
                     'postingdari' => 'DELETE UPAH RITASI',
@@ -289,18 +288,21 @@ class UpahRitasiController extends Controller
                 app(LogTrailController::class)->store($validatedLogTrailUpahRitasiRincian);
 
                 DB::commit();
+                /* Set position and page */
+                $selected = $this->getPosition($upahritasi, $upahritasi->getTable(), true);
+                $upahritasi->position = $selected->position;
+                $upahritasi->id = $selected->id;
+                $upahritasi->page = ceil($upahritasi->position / ($request->limit ?? 10));
+    
+                return response([
+                    'status' => true,
+                    'message' => 'Berhasil dihapus',
+                    'data' => $upahritasi
+                ]);
             }
-            /* Set position and page */
-            $selected = $this->getPosition($upahritasi, $upahritasi->getTable(), true);
-            $upahritasi->position = $selected->position;
-            $upahritasi->id = $selected->id;
-            $upahritasi->page = ceil($upahritasi->position / ($request->limit ?? 10));
-
             return response([
-                'status' => true,
-                'message' => 'Berhasil dihapus',
-                'data' => $upahritasi
-            ]);
+                'message' => 'Gagal dihapus'
+            ], 500);
         } catch (\Throwable $th) {
             DB::rollBack();
             return response($th->getMessage());

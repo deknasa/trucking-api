@@ -188,7 +188,7 @@ class ServiceInHeaderController extends Controller
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-                ServiceInDetail::where('servicein_id', $serviceinheader->id)->lockForUpdate()->delete();
+                ServiceInDetail::where('servicein_id', $serviceinheader->id)->delete();
                 /* Store detail */
                 $detaillog = [];
                 for ($i = 0; $i < count($request->keterangan_detail); $i++) {
@@ -249,18 +249,16 @@ class ServiceInHeaderController extends Controller
     /**
      * @ClassName
      */
-    public function destroy(Request $request, $id)
+    public function destroy(ServiceInHeader $serviceinheader, Request $request)
     {
         DB::beginTransaction();
 
         try {
-            $serviceinheader = ServiceInHeader::lockForUpdate()->findOrFail($id);
-            $getDetail = ServiceInDetail::where('servicein_id', $serviceinheader->id)->get();
+            $getDetail = ServiceInDetail::from(DB::raw('serviceindetail with (readuncommitted)'))->where('servicein_id', $serviceinheader->id)->get();
             
-            $delete = $serviceinheader->delete();
-            ServiceInDetail::where('servicein_id', $serviceinheader->id)->delete();
+            $isDelete = ServiceInHeader::where('id', $serviceinheader->id)->delete();
 
-            if ($delete) {
+            if ($isDelete) {
                 $logTrail = [
                     'namatabel' => strtoupper($serviceinheader->getTable()),
                     'postingdari' => 'DELETE SERVICE IN HEADER',
@@ -302,6 +300,9 @@ class ServiceInHeaderController extends Controller
                     'data' => $serviceinheader
                 ]);
             } 
+            return response([
+                'message' => 'Gagal dihapus'
+            ], 500);
         } catch (\Throwable $th) {
             DB::rollBack();
 

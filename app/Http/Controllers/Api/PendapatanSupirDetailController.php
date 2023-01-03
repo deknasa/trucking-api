@@ -24,7 +24,7 @@ class PendapatanSupirDetailController extends Controller
             'sortOrder' => $request->sortOrder ?? 'asc',
         ];
         try {
-            $query = PendapatanSupirDetail::from('pendapatansupirdetail as detail');
+            $query = PendapatanSupirDetail::from(DB::raw("pendapatansupirdetail as detail with (readuncommitted)"));
 
             if (isset($params['id'])) {
                 $query->where('detail.id', $params['id']);
@@ -50,9 +50,9 @@ class PendapatanSupirDetailController extends Controller
                     'detail.keterangan',
                     'detail.nominal'
                 ) 
-                ->leftJoin('pendapatansupirheader as header','header.id','detail.pendapatansupir_id')
-                ->leftJoin('bank', 'header.bank_id', 'bank.id')
-                ->leftJoin('supir', 'detail.supir_id', 'supir.id');
+                ->leftJoin(DB::raw("pendapatansupirheader as header with (readuncommitted)"),'header.id','detail.pendapatansupir_id')
+                ->leftJoin(DB::raw("bank with (readuncommitted)"), 'header.bank_id', 'bank.id')
+                ->leftJoin(DB::raw("supir with (readuncommitted)"), 'detail.supir_id', 'supir.id');
                 
                 $pendapatanSupirDetail = $query->get();
             } else {
@@ -62,14 +62,9 @@ class PendapatanSupirDetailController extends Controller
                     'detail.keterangan',
                     'detail.nominal'
                 )
-                ->leftJoin('supir', 'detail.supir_id', 'supir.id');
-                
+                ->leftJoin(DB::raw("supir with (readuncommitted)"), 'detail.supir_id', 'supir.id');
                 $pendapatanSupirDetail = $query->get();
             }
-            $idUser = auth('api')->user()->id;
-            $getuser = User::select('name','cabang.namacabang as cabang_id')
-            ->where('user.id',$idUser)->join('cabang','user.cabang_id','cabang.id')->first();
-           
             return response([
                 'data' => $pendapatanSupirDetail,
                 

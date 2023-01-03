@@ -82,7 +82,7 @@ class AbsensiSupirHeaderController extends Controller
 
             /* Store header */
             $absensisupir = new AbsensiSupirHeader();
-            $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
+            $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
 
 
             $absensisupir->nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
@@ -124,11 +124,9 @@ class AbsensiSupirHeaderController extends Controller
 
                 //GET NO BUKTI KAS GANTUNG
                 
-                $group = 'KAS GANTUNG';
-                $subgroup = 'NOMOR KAS GANTUNG';
                 $format = DB::table('parameter')
-                    ->where('grp', $group)
-                    ->where('subgrp', $subgroup)
+                    ->where('grp', 'KAS GANTUNG')
+                    ->where('subgrp', 'NOMOR KAS GANTUNG')
                     ->first();
 
                 $noBuktiKasgantungRequest = new Request();
@@ -240,7 +238,7 @@ class AbsensiSupirHeaderController extends Controller
 
         try {
             /* Store header */
-            $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
+            $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
 
             $absensiSupirHeader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $absensiSupirHeader->keterangan = $request->keterangan ?? '';
@@ -263,9 +261,9 @@ class AbsensiSupirHeaderController extends Controller
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-                KasGantungDetail::where('nobukti', $request->kasgantung_nobukti)->lockForUpdate()->delete();
-                KasGantungHeader::where('nobukti', $request->kasgantung_nobukti)->lockForUpdate()->delete();
-                AbsensiSupirDetail::where('absensi_id', $absensiSupirHeader->id)->lockForUpdate()->delete();
+                KasGantungDetail::where('nobukti', $request->kasgantung_nobukti)->delete();
+                KasGantungHeader::where('nobukti', $request->kasgantung_nobukti)->delete();
+                AbsensiSupirDetail::where('absensi_id', $absensiSupirHeader->id)->delete();
                 $detaillog = [];
                 for ($i = 0; $i < count($request->trado_id); $i++) {
                     /* Store Detail */
@@ -393,16 +391,17 @@ class AbsensiSupirHeaderController extends Controller
     {
         DB::beginTransaction();
         try {
-            $getDetail = AbsensiSupirDetail::where('absensi_id', $absensiSupirHeader->id)->get();
-            $getKasgantungHeader = KasGantungHeader::where('nobukti', $absensiSupirHeader->kasgantung_nobukti)->first();
-            $getKasgantungDetail = KasGantungDetail::where('nobukti', $absensiSupirHeader->kasgantung_nobukti)->get();
+            $getDetail = AbsensiSupirDetail::from(DB::raw("absensisupirdetail with (readuncommitted)"))
+            ->where('absensi_id', $absensiSupirHeader->id)->get();
+            $getKasgantungHeader = KasGantungHeader::from(DB::raw("kasgantungheader with (readuncommitted)"))
+            ->where('nobukti', $absensiSupirHeader->kasgantung_nobukti)->first();
+            $getKasgantungDetail = KasGantungDetail::from(DB::raw("kasgantungdetail with (readuncommitted)"))
+            ->where('nobukti', $absensiSupirHeader->kasgantung_nobukti)->get();
 
-            $delete = AbsensiSupirDetail::where('absensi_id', $absensiSupirHeader->id)->lockForUpdate()->delete();
-            $delete = KasGantungDetail::where('nobukti', $absensiSupirHeader->kasgantung_nobukti)->lockForUpdate()->delete();
-            $delete = KasGantungHeader::where('nobukti', $absensiSupirHeader->kasgantung_nobukti)->lockForUpdate()->delete();
-            $delete = AbsensiSupirHeader::destroy($absensiSupirHeader->id);
+            $isDelete = AbsensiSupirHeader::where('id', $absensiSupirHeader->id)->delete();
+            KasGantungHeader::where('nobukti', $absensiSupirHeader->kasgantung_nobukti)->delete();
 
-            if ($delete) {
+            if ($isDelete) {
                 $logTrail = [
                     'namatabel' => strtoupper($absensiSupirHeader->getTable()),
                     'postingdari' => 'DELETE ABSENSI SUPIR HEADER',
@@ -457,23 +456,27 @@ class AbsensiSupirHeaderController extends Controller
 
                 $validatedLogTrailKasgantungDetail = new StoreLogTrailRequest($logTrailKasgantungDetail);
                 app(LogTrailController::class)->store($validatedLogTrailKasgantungDetail);
+
+                DB::commit();
+    
+                $selected = $this->getPosition($absensiSupirHeader, $absensiSupirHeader->getTable(), true);
+                $absensiSupirHeader->position = $selected->position;
+                $absensiSupirHeader->id = $selected->id;
+                $absensiSupirHeader->page = ceil($absensiSupirHeader->position / ($request->limit ?? 10));
+    
+                return response([
+                    'status' => true,
+                    'message' => 'Berhasil dihapus',
+                    'data' => $absensiSupirHeader
+                ]);
             }
-
-            DB::commit();
-
-            $selected = $this->getPosition($absensiSupirHeader, $absensiSupirHeader->getTable(), true);
-            $absensiSupirHeader->position = $selected->position;
-            $absensiSupirHeader->id = $selected->id;
-            $absensiSupirHeader->page = ceil($absensiSupirHeader->position / ($request->limit ?? 10));
-
             return response([
-                'status' => true,
-                'message' => 'Berhasil dihapus',
-                'data' => $absensiSupirHeader
-            ]);
+                'message' => 'Gagal dihapus',
+            ], 500);
+
         } catch (\Throwable $th) {
             DB::rollBack();
-            return response($th->getMessage());
+            throw $th;
         }
     }
 
@@ -523,7 +526,7 @@ class AbsensiSupirHeaderController extends Controller
     {
         $absensisupir = AbsensiSupirHeader::find($id);
         $statusdatacetak = $absensisupir->statuscetak;
-        $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
+        $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
 
         if ($statusdatacetak == $statusCetak->id) {
             $query = DB::table('error')

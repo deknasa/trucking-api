@@ -145,9 +145,9 @@ class CabangController extends Controller
         DB::beginTransaction();
 
         try {
-            $delete = Cabang::destroy($cabang->id);
+            $isDelete = Cabang::where('id', $cabang->id)->delete();
 
-            if ($delete) {
+            if ($isDelete) {
                 $logTrail = [
                     'namatabel' => strtoupper($cabang->getTable()),
                     'postingdari' => 'DELETE CABANG',
@@ -155,7 +155,7 @@ class CabangController extends Controller
                     'nobuktitrans' => $cabang->id,
                     'aksi' => 'DELETE',
                     'datajson' => $cabang->toArray(),
-                    'modifiedby' => $cabang->modifiedby
+                    'modifiedby' => auth('api')->user()->name
                 ];
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
@@ -176,6 +176,9 @@ class CabangController extends Controller
                     'data' => $cabang
                 ]);
             }
+            return response([
+                'message' => 'Gagal dihapus'
+            ], 500);
         } catch (\Throwable $th) {
             DB::rollBack();
 

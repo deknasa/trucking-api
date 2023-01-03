@@ -257,12 +257,13 @@ class GandenganController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Gandengan $gandengan, Request $request)
+    public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
 
         try {
-            $delete = Gandengan::destroy($gandengan->id);
+            $gandengan = Gandengan::lockForUpdate()->findOrFail($id);
+            $delete = $gandengan->delete();
 
             if ($delete) {
                 $logTrail = [
@@ -272,7 +273,7 @@ class GandenganController extends Controller
                     'nobuktitrans' => $gandengan->id,
                     'aksi' => 'DELETE',
                     'datajson' => $gandengan->toArray(),
-                    'modifiedby' => $gandengan->modifiedby
+                    'modifiedby' => auth('api')->user()->name
                 ];
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);

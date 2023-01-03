@@ -26,7 +26,7 @@ class ProsesGajiSupirDetailController extends Controller
             'sortOrder' => $request->sortOrder ?? 'asc',
         ];
         try {
-            $query = ProsesGajiSupirDetail::from('prosesgajisupirdetail as detail');
+            $query = ProsesGajiSupirDetail::from(DB::raw("prosesgajisupirdetail as detail with (readuncommitted)"));
 
             if (isset($params['id'])) {
                 $query->where('detail.id', $params['id']);
@@ -50,9 +50,9 @@ class ProsesGajiSupirDetailController extends Controller
                     'detail.nominal',
                     'detail.keterangan as keterangan_detail'
                 )
-                ->join('prosesgajisupirheader as header','header.id','detail.prosesgajisupir_id')
-                ->join('supir','detail.supir_id','supir.id')
-                ->join('trado','detail.trado_id','trado.id');
+                ->leftJoin(DB::raw("prosesgajisupirheader as header with (readuncommitted)"),'header.id','detail.prosesgajisupir_id')
+                ->leftJoin(DB::raw("supir with (readuncommitted)"),'detail.supir_id','supir.id')
+                ->leftJoin(DB::raw("trado with (readuncommitted)"),'detail.trado_id','trado.id');
 
                 $prosesgajisupirDetail = $query->get();
             } else {
@@ -63,15 +63,10 @@ class ProsesGajiSupirDetailController extends Controller
                     'detail.keterangan',
                     'detail.nominal',
                 )
-                ->join('supir','detail.supir_id','supir.id')
-                ->join('trado','detail.trado_id','trado.id');
+                ->leftJoin(DB::raw("supir with (readuncommitted)"),'detail.supir_id','supir.id')
+                ->leftJoin(DB::raw("trado with (readuncommitted)"),'detail.trado_id','trado.id');
                 $prosesgajisupirDetail = $query->get();
             }
-            $idUser = auth('api')->user()->id;
-            $getuser = User::select('name','cabang.namacabang as cabang_id')
-            ->where('user.id',$idUser)->join('cabang','user.cabang_id','cabang.id')->first();
-           
-
             return response([
                 'data' => $prosesgajisupirDetail
             ]);

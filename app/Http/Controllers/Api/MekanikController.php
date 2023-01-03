@@ -142,9 +142,9 @@ class MekanikController extends Controller
     {
         DB::beginTransaction();
         try {
-            $delete = Mekanik::destroy($mekanik->id);
-
-            if ($delete) {
+            $isDelete = Mekanik::where('id', $mekanik->id)->delete();
+            
+            if ($isDelete) {
                 $logTrail = [
                     'namatabel' => strtoupper($mekanik->getTable()),
                     'postingdari' => 'DELETE MEKANIK',
@@ -152,7 +152,7 @@ class MekanikController extends Controller
                     'nobuktitrans' => $mekanik->id,
                     'aksi' => 'DELETE',
                     'datajson' => $mekanik->toArray(),
-                    'modifiedby' => $mekanik->modifiedby
+                    'modifiedby' => auth('api')->user()->name
                 ];
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
@@ -160,20 +160,25 @@ class MekanikController extends Controller
 
 
                 DB::commit();
-            }
-            $selected = $this->getPosition($mekanik, $mekanik->getTable(), true);
-            $mekanik->position = $selected->position;
-            $mekanik->id = $selected->id;
-            $mekanik->page = ceil($mekanik->position / ($request->limit ?? 10));
 
+                $selected = $this->getPosition($mekanik, $mekanik->getTable(), true);
+                $mekanik->position = $selected->position;
+                $mekanik->id = $selected->id;
+                $mekanik->page = ceil($mekanik->position / ($request->limit ?? 10));
+
+                return response([
+                    'status' => true,
+                    'message' => 'Berhasil dihapus',
+                    'data' => $mekanik
+                ]);
+            }
             return response([
-                'status' => true,
-                'message' => 'Berhasil dihapus',
-                'data' => $mekanik
-            ]);
+                'message' => 'Gagal dihapus'
+            ], 500);
         } catch (\Throwable $th) {
             DB::rollBack();
-            return response($th->getMessage());
+
+            throw $th;
         }
     }
 
