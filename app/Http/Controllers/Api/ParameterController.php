@@ -175,13 +175,14 @@ class ParameterController extends Controller
     /**
      * @ClassName
      */
-    public function destroy(Parameter $parameter, Request $request)
+    public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
 
-        $delete = Parameter::destroy($parameter->id);
+        $parameter = new Parameter();
+        $parameter = $parameter->lockAndDestroy($id);
 
-        if ($delete) {
+        if ($parameter) {
             $logTrail = [
                 'namatabel' => strtoupper($parameter->getTable()),
                 'postingdari' => 'DELETE PARAMETER',
@@ -351,7 +352,7 @@ class ParameterController extends Controller
                 $table->string('param', 50)->default(0);
             });
 
- 
+
             DB::table($temp)->insert(
                 [
                     'id' => '0',
@@ -395,7 +396,7 @@ class ParameterController extends Controller
                 $table->string('param', 50)->default(0);
             });
 
- 
+
             DB::table($temp)->insert(
                 [
                     'id' => '0',
@@ -419,5 +420,4 @@ class ParameterController extends Controller
             'data' => $data
         ]);
     }
-        
 }
