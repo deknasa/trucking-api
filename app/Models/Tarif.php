@@ -29,7 +29,8 @@ class Tarif extends MyModel
     {
         $this->setRequestParameters();
 
-        $query = DB::table($this->table)->select(
+        $query = Tarif::from(DB::raw("$this->table with (readuncommitted)"))
+        ->select(
             'tarif.id',
             'tarif.tujuan',
             'container.keterangan as container_id',
@@ -47,12 +48,12 @@ class Tarif extends MyModel
             'tarif.created_at',
             'tarif.updated_at'
         )
-            ->leftJoin('parameter', 'tarif.statusaktif', '=', 'parameter.id')
-            ->leftJoin('container', 'tarif.container_id', '=', 'container.id')
-            ->leftJoin('kota', 'tarif.kota_id', '=', 'kota.id')
-            ->leftJoin('zona', 'tarif.zona_id', '=', 'zona.id')
-            ->leftJoin('parameter AS p', 'tarif.statuspenyesuaianharga', '=', 'p.id')
-            ->leftJoin('parameter AS sistemton', 'tarif.statussistemton', '=', 'sistemton.id');
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'tarif.statusaktif', '=', 'parameter.id')
+            ->leftJoin(DB::raw("container with (readuncommitted)"), 'tarif.container_id', '=', 'container.id')
+            ->leftJoin(DB::raw("kota with (readuncommitted)"), 'tarif.kota_id', '=', 'kota.id')
+            ->leftJoin(DB::raw("zona with (readuncommitted)"), 'tarif.zona_id', '=', 'zona.id')
+            ->leftJoin(DB::raw("parameter AS p with (readuncommitted)"), 'tarif.statuspenyesuaianharga', '=', 'p.id')
+            ->leftJoin(DB::raw("parameter AS sistemton with (readuncommitted)"), 'tarif.statussistemton', '=', 'sistemton.id');
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -135,7 +136,8 @@ class Tarif extends MyModel
 
     public function findAll($id)
     {
-        $query = DB::table('tarif')->select(
+        $query = Tarif::from(DB::raw("tarif with (readuncommitted)"))
+        ->select(
             'tarif.id',
             'tarif.tujuan',
             'tarif.container_id',
@@ -155,9 +157,9 @@ class Tarif extends MyModel
             'tarif.tglakhirberlaku',
             'tarif.statuspenyesuaianharga',
         )
-            ->leftJoin('container','tarif.container_id','container.id')
-            ->leftJoin('kota', 'tarif.kota_id', '=', 'kota.id')
-            ->leftJoin('zona', 'tarif.zona_id', '=', 'zona.id')
+            ->leftJoin(DB::raw("container with (readuncommitted)"),'tarif.container_id','container.id')
+            ->leftJoin(DB::raw("kota with (readuncommitted)"), 'tarif.kota_id', '=', 'kota.id')
+            ->leftJoin(DB::raw("zona with (readuncommitted)"), 'tarif.zona_id', '=', 'zona.id')
 
             ->where('tarif.id', $id);
 

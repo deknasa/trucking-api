@@ -229,6 +229,7 @@ class PengeluaranStokHeader extends MyModel
             "$this->table.penerimaanstok_nobukti",
             "$this->table.servicein_nobukti",
             "$this->table.kerusakan_id",
+            "$this->table.statuscetak",
             "$this->table.statusformat",
             "$this->table.modifiedby",
             "kerusakan.keterangan as kerusakan",

@@ -76,15 +76,6 @@ class PengeluaranTruckingController extends Controller
                 'message' => 'Berhasil disimpan',
                 'data' => $pengeluaranTrucking
             ], 201);
-        } catch (QueryException $queryException) {
-            if (isset($queryException->errorInfo[1]) && is_array($queryException->errorInfo)) {
-                // Check if deadlock
-                if ($queryException->errorInfo[1] === 1205) {
-                    goto TOP;
-                }
-            }
-
-            throw $queryException;
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
@@ -151,13 +142,12 @@ class PengeluaranTruckingController extends Controller
    /**
      * @ClassName 
      */
-    public function destroy(Request $request, $id)
+    public function destroy(PengeluaranTrucking $pengeluaranTrucking, Request $request)
     {
         DB::beginTransaction();
         try {
-            $pengeluaranTrucking = PengeluaranTrucking::lockForUpdate()->findOrFail($id);
-            $delete = $pengeluaranTrucking->delete();
-            if ($delete) {
+            $isDelete = PengeluaranTrucking::where('id', $pengeluaranTrucking->id)->delete();
+            if ($isDelete) {
                 $logTrail = [
                     'namatabel' => strtoupper($pengeluaranTrucking->getTable()),
                     'postingdari' => 'DELETE PENGELUARAN TRUCKING',
@@ -184,6 +174,9 @@ class PengeluaranTruckingController extends Controller
                     'data' => $pengeluaranTrucking
                 ]);
             } 
+            return response([
+                'message' => 'Gagal dihapus'
+            ], 500);
         } catch (\Throwable $th) {
             DB::rollBack();         
             throw $th;

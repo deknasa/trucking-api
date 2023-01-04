@@ -11,6 +11,7 @@ use App\Models\Zona;
 
 use App\Http\Controllers\Controller;
 use Carbon\Carbon;
+use Hamcrest\Type\IsDouble;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -50,8 +51,6 @@ class KotaController extends Controller
             $kota->zona_id = $request->zona_id;
             $kota->statusaktif = $request->statusaktif;
             $kota->modifiedby = auth('api')->user()->name;
-            $request->sortname = $request->sortname ?? 'id';
-            $request->sortorder = $request->sortorder ?? 'asc';
 
             if ($kota->save()) {
                 $logTrail = [
@@ -151,10 +150,10 @@ class KotaController extends Controller
         DB::beginTransaction();
 
         try {
-            $kota = Kota::lockForUpdate()->findOrFail($id);
-            $delete = $kota->delete();
-
-            if ($delete) {
+            $kota = Kota::LockForUpdate()->findOrFail($id);
+            $isDelete = Kota::where('id', $id)->delete();
+            // dd($isDelete->toSql);
+            if ($isDelete) {
                 $logTrail = [
                     'namatabel' => strtoupper($kota->getTable()),
                     'postingdari' => 'DELETE KOTA',
@@ -180,6 +179,9 @@ class KotaController extends Controller
                     'data' => $kota
                 ]);
             }
+            return response([
+                'message' => 'Gagal dihapus'
+            ], 500);
         } catch (\Throwable $th) {
             DB::rollBack();
 

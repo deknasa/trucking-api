@@ -217,15 +217,14 @@ class SupirController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Request $request, $id)
+    public function destroy(Supir $supir, Request $request)
     {
         DB::beginTransaction();
 
         try {
-            $supir = Supir::lockForUpdate()->findOrFail($id);
-            $delete = $supir->delete();
+            $isDelete = Supir::where('id', $supir->id)->delete();
 
-            if ($delete) {
+            if ($isDelete) {
                 $logTrail = [
                     'namatabel' => strtoupper($supir->getTable()),
                     'postingdari' => 'DELETE SUPIR',
@@ -254,6 +253,9 @@ class SupirController extends Controller
                     'data' => $supir
                 ]);
             }
+            return response([
+                'message' => 'Gagal dihapus'
+            ], 500);
 
         } catch (\Throwable $th) {
             $this->deleteFiles($supir);

@@ -137,14 +137,13 @@ class KerusakanController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Request $request, $id)
+    public function destroy(Kerusakan $kerusakan, Request $request)
     {
         DB::beginTransaction();
         try {
-            $kerusakan = Kerusakan::lockForUpdate()->findOrFail($id);
-            $delete = $kerusakan->delete();
+            $isDelete = Kerusakan::where('id', $kerusakan->id)->delete();
 
-            if ($delete) {
+            if ($isDelete) {
                 $logTrail = [
                     'namatabel' => strtoupper($kerusakan->getTable()),
                     'postingdari' => 'DELETE KERUSAKAN',
@@ -171,6 +170,9 @@ class KerusakanController extends Controller
                     'data' => $kerusakan
                 ]);
             }
+            return response([
+                'message' => 'Gagal dihapus'
+            ], 500);
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;

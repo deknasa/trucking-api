@@ -619,7 +619,7 @@ class PengeluaranStokHeaderController extends Controller
 
 
             $datadetail = json_decode($querydetailfifo, true);
-        //  dd($datadetail);
+            //  dd($datadetail);
             foreach ($datadetail as $item) {
 
 
@@ -646,7 +646,7 @@ class PengeluaranStokHeaderController extends Controller
                 // dd($datapengeluaranstokdetailfifo);
                 $datapengeluaranstokdetailfifo->delete();
             }
-// dd('test');
+        // dd('test');
 
             if ($hapus == true) {
                 $querytemphpp = DB::table($temphpp)->from(
@@ -703,5 +703,47 @@ class PengeluaranStokHeaderController extends Controller
 
             throw $th;
         }
+    }
+
+    public function printReport($id)
+    {
+        DB::beginTransaction();
+
+        try {
+            $pengeluaranStokHeader = PengeluaranStokheader::findOrFail($id);
+            $statusSudahCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
+            $statusBelumCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
+
+            if ($pengeluaranStokHeader->statuscetak != $statusSudahCetak->id) {
+                $pengeluaranStokHeader->statuscetak = $statusSudahCetak->id;
+                $pengeluaranStokHeader->tglbukacetak = date('Y-m-d H:i:s');
+                $pengeluaranStokHeader->userbukacetak = auth('api')->user()->name;
+                $pengeluaranStokHeader->jumlahcetak = $pengeluaranStokHeader->jumlahcetak+1;
+                if ($pengeluaranStokHeader->save()) {
+                    $logTrail = [
+                        'namatabel' => strtoupper($pengeluaranStokHeader->getTable()),
+                        'postingdari' => 'PRINT INVOICE EXTRA',
+                        'idtrans' => $pengeluaranStokHeader->id,
+                        'nobuktitrans' => $pengeluaranStokHeader->id,
+                        'aksi' => 'PRINT',
+                        'datajson' => $pengeluaranStokHeader->toArray(),
+                        'modifiedby' => $pengeluaranStokHeader->modifiedby
+                    ];
+    
+                    $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                    $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+    
+                    DB::commit();
+                }
+            }
+
+
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+        
     }
 }

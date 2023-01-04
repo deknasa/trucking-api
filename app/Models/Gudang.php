@@ -28,7 +28,8 @@ class Gudang extends MyModel
     {
         $this->setRequestParameters();
 
-        $query = DB::table($this->table)->select(
+        $query = Gudang::from(DB::raw("$this->table with (readuncommitted)"))
+        ->select(
             'gudang.id',
             'gudang.gudang',
             'parameter.memo as statusaktif',
@@ -36,7 +37,7 @@ class Gudang extends MyModel
             'gudang.created_at',
             'gudang.updated_at'
         )
-            ->leftJoin('parameter', 'gudang.statusaktif', '=', 'parameter.id');
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'gudang.statusaktif', '=', 'parameter.id');
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;

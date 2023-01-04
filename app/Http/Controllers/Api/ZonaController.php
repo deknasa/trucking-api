@@ -138,13 +138,12 @@ class ZonaController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Request $request, $id)
+    public function destroy(Zona $zona, Request $request)
     {
         DB::beginTransaction();
         try {
-            $zona = Zona::lockForUpdate()->findOrFail($id);
-            $delete = $zona->delete();
-            if ($delete) {
+            $isDelete = Zona::where('id', $zona->id)->delete();
+            if ($isDelete) {
                 $logTrail = [
                     'namatabel' => strtoupper($zona->getTable()),
                     'postingdari' => 'DELETE ZONA',
@@ -170,6 +169,9 @@ class ZonaController extends Controller
                     'data' => $zona
                 ]);
             }
+            return response([
+                'message' => 'Gagal dihapus'
+            ], 500);
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;

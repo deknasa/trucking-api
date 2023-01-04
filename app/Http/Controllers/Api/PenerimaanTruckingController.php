@@ -146,15 +146,14 @@ class PenerimaanTruckingController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Request $request, $id)
+    public function destroy(PenerimaanTrucking $penerimaanTrucking, Request $request)
     {
         
         DB::beginTransaction();
         try {
-            $penerimaanTrucking = PenerimaanTrucking::lockForUpdate()->findOrFail($id);
-            $delete = $penerimaanTrucking->delete();
+            $isDelete = PenerimaanTrucking::where('id', $penerimaanTrucking->id)->delete();
             
-            if ($delete) {
+            if ($isDelete) {
                 $logTrail = [
                     'namatabel' => strtoupper($penerimaanTrucking->getTable()),
                     'postingdari' => 'DELETE PENERIMAAN TRUCKING',
@@ -180,6 +179,9 @@ class PenerimaanTruckingController extends Controller
                     'data' => $penerimaanTrucking
                 ]);
             }
+            return response([
+                'message' => 'Gagal dihapus'
+            ], 500);
         } catch (\Throwable $th) {
             DB::rollBack();         
             throw $th;

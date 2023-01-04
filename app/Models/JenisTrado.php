@@ -27,7 +27,8 @@ class JenisTrado extends MyModel
     {
         $this->setRequestParameters();
 
-        $query = DB::table($this->table)->select(
+        $query = JenisTrado::from(DB::raw("$this->table with (readuncommitted)"))
+        ->select(
             'jenistrado.id',
             'jenistrado.kodejenistrado',
             'jenistrado.keterangan',
@@ -36,7 +37,7 @@ class JenisTrado extends MyModel
             'jenistrado.created_at',
             'jenistrado.updated_at'
         )
-            ->leftJoin('parameter', 'jenistrado.statusaktif', '=', 'parameter.id');
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'jenistrado.statusaktif', '=', 'parameter.id');
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;

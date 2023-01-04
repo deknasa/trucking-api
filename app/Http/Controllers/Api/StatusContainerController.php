@@ -133,16 +133,16 @@ class StatusContainerController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Request $request, $id)
+    public function destroy(StatusContainer $statusContainer, Request $request)
     {
 
         DB::beginTransaction();
         try {
 
-            $statusContainer = StatusContainer::lockForUpdate()->findOrFail($id);
-            $delete = $statusContainer->delete();
+            // $statusContainer = StatusContainer::lockForUpdate()->findOrFail($id);
+            $isDelete = StatusContainer::where('id', $statusContainer->id)->delete();
 
-            if ($delete) {
+            if ($isDelete) {
                 $logTrail = [
                     'namatabel' => strtoupper($statusContainer->getTable()),
                     'postingdari' => 'DELETE STATUS CONTAINER',
@@ -170,6 +170,9 @@ class StatusContainerController extends Controller
                     'data' => $statusContainer
                 ]);
             }
+            return response([
+                'message' => 'Gagal dihapus'
+            ], 500);
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;

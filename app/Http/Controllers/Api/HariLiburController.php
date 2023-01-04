@@ -34,7 +34,7 @@ class HariLiburController extends Controller
     {
         DB::beginTransaction();
 
-        try{
+        try {
 
             $hariLibur = new HariLibur();
             $hariLibur->tgl = date('Y-m-d', strtotime($request->tgl));
@@ -42,7 +42,7 @@ class HariLiburController extends Controller
             $hariLibur->statusaktif = $request->statusaktif;
             $hariLibur->modifiedby = auth('api')->user()->name;
 
-            
+
             if ($hariLibur->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($hariLibur->getTable()),
@@ -71,12 +71,12 @@ class HariLiburController extends Controller
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
-        } 
+        }
     }
-    
+
     public function show($id)
     {
-        $hariLibur = HariLibur::where('id',$id)->first();
+        $hariLibur = HariLibur::where('id', $id)->first();
         return response([
             'status' => true,
             'data' => $hariLibur
@@ -86,7 +86,7 @@ class HariLiburController extends Controller
     /**
      * @ClassName 
      */
-    public function update(StoreHariLiburRequest $request,HariLibur $harilibur)
+    public function update(StoreHariLiburRequest $request, HariLibur $harilibur)
     {
         DB::beginTransaction();
 
@@ -121,24 +121,23 @@ class HariLiburController extends Controller
                 'message' => 'Berhasil disimpan',
                 'data' => $harilibur
             ]);
-
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
-        } 
+        }
     }
 
-     /**
+    /**
      * @ClassName 
      */
-    public function destroy(Request $request, $id)
+    public function destroy(HariLibur $harilibur, Request $request)
     {
         DB::beginTransaction();
-        
+
         try {
-            $harilibur = HariLibur::lockForUpdate()->findOrFail($id);
-            $delete = $harilibur->delete();
-            if ($delete) {
+
+            $isDelete = HariLibur::where('id', $harilibur->id)->delete();
+            if ($isDelete) {
                 $logTrail = [
                     'namatabel' => strtoupper($harilibur->getTable()),
                     'postingdari' => 'DELETE HARI LIBUR',
@@ -156,28 +155,26 @@ class HariLiburController extends Controller
                 /* Set position and page */
 
                 $selected = $this->getPosition($harilibur, $harilibur->getTable(), true);
-                
+
                 $harilibur->position = $selected->position;
                 $harilibur->id = $selected->id;
                 $harilibur->page = ceil($harilibur->position / ($request->limit ?? 10));
-                
+
                 return response([
                     'status' => true,
                     'message' => 'Berhasil dihapus',
                     'data' => $harilibur
                 ]);
-            } else {
-                return response([
-                    'status' => false,
-                    'message' => 'Gagal dihapus'
-                ]);
             }
+            return response([
+                'message' => 'Gagal dihapus'
+            ], 500);
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
-        } 
+        }
     }
-    
+
     public function fieldLength()
     {
         $data = [];

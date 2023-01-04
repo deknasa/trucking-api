@@ -23,7 +23,8 @@ class Zona extends MyModel
     {
         $this->setRequestParameters();
 
-        $query = DB::table($this->table)->select(
+        $query = Zona::from(DB::raw("$this->table with (readuncommitted)"))
+        ->select(
             'zona.id',
             'zona.zona',
             'zona.keterangan',
@@ -32,7 +33,7 @@ class Zona extends MyModel
             'zona.created_at',
             'zona.updated_at'
         )
-            ->leftJoin('parameter', 'zona.statusaktif', '=', 'parameter.id');
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'zona.statusaktif', '=', 'parameter.id');
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;

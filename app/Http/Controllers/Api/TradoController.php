@@ -112,7 +112,8 @@ class TradoController extends Controller
 
             $param1 = $trado->id;
             $param2 = $trado->modifiedby;
-            $stokgudang = Stok::select(DB::raw(
+            $stokgudang = Stok::from(DB::raw("stok with (readuncommitted)"))
+            ->select(DB::raw(
                 "stok.id as stok_id,
                     0  as gudang_id,"
                     . $param1 . " as trado_id,
@@ -252,7 +253,8 @@ class TradoController extends Controller
 
             $param1 = $trado->id;
             $param2 = $trado->modifiedby;
-            $stokgudang = Stok::select(DB::raw(
+            $stokgudang = Stok::from(DB::raw("stok with (readuncommitted)"))
+            ->select(DB::raw(
                 "stok.id as stok_id,
                     0  as gudang_id,"
                     . $param1 . " as trado_id,
@@ -332,14 +334,12 @@ class TradoController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Request $request, $id)
+    public function destroy(Trado $trado, Request $request)
     {
         DB::beginTransaction();
         try {
-
-            $trado = Trado::lockForUpdate()->findOrFail($id);
-            $delete = $trado->delete();
-            if ($delete) {
+            $isDelete = Trado::where('id', $trado->id)->delete();
+            if ($isDelete) {
                 $logTrail = [
                     'namatabel' => strtoupper($trado->getTable()),
                     'postingdari' => 'DELETE TRADO',
@@ -370,6 +370,9 @@ class TradoController extends Controller
                     'data' => $trado
                 ]);
             }
+            return response([
+                'message' => 'Gagal dihapus'
+            ], 500);
         } catch (\Throwable $th) {
             $this->deleteFiles($trado);
             DB::rollBack();

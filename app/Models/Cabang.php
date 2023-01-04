@@ -24,7 +24,8 @@ class Cabang extends MyModel
     {
         $this->setRequestParameters();
 
-        $query = DB::table($this->table)->select(
+        $query = Cabang::from(DB::raw("$this->table with (readuncommitted)"))
+        ->select(
             'cabang.id',
             'cabang.kodecabang',
             'cabang.namacabang',

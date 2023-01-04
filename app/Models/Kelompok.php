@@ -28,7 +28,8 @@ class Kelompok extends MyModel
     {
         $this->setRequestParameters();
 
-        $query = DB::table($this->table)->select(
+        $query = Kelompok::from(DB::raw("$this->table with (readuncommitted)"))
+        ->select(
             'kelompok.id',
             'kelompok.kodekelompok',
             'kelompok.keterangan',
@@ -37,7 +38,7 @@ class Kelompok extends MyModel
             'kelompok.created_at',
             'kelompok.updated_at'
         )
-            ->leftJoin('parameter', 'kelompok.statusaktif', '=', 'parameter.id');
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'kelompok.statusaktif', '=', 'parameter.id');
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;

@@ -17,11 +17,12 @@ class AbsenTrado extends MyModel
     {
         $this->setRequestParameters();
 
-        $query = DB::table($this->table)->select(
+        $query = AbsenTrado::from(DB::raw("$this->table with (readuncommitted)"))
+        ->select(
             'absentrado.*',
             'parameter.memo as statusaktif',
         )
-            ->leftJoin('parameter', 'absentrado.statusaktif', '=', 'parameter.id');
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'absentrado.statusaktif', '=', 'parameter.id');
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;

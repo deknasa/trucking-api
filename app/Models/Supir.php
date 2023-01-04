@@ -29,7 +29,8 @@ class Supir extends MyModel
     public function get()
     {
         $this->setRequestParameters();
-        $query = DB::table($this->table)->select(
+        $query = Supir::from(DB::raw("$this->table with (readuncommitted)"))
+        ->select(
             'supir.id',
             'supir.namasupir',
             'supir.tgllahir',
@@ -64,13 +65,13 @@ class Supir extends MyModel
             'supir.created_at',
             'supir.updated_at'
         )
-            ->leftJoin('zona', 'supir.zona_id', 'zona.id')
-            ->leftJoin('parameter', 'supir.statusaktif', '=', 'parameter.id')
-            ->leftJoin('parameter as statusadaupdategambar', 'supir.statusadaupdategambar', '=', 'statusadaupdategambar.id')
-            ->leftJoin('parameter as statusluarkota', 'supir.statusluarkota', '=', 'statusluarkota.id')
-            ->leftJoin('parameter as statuszonatertentu', 'supir.statuszonatertentu', '=', 'statuszonatertentu.id')
-            ->leftJoin('parameter as statusblacklist', 'supir.statusblacklist', '=', 'statusblacklist.id')
-            ->leftJoin('supir as supirlama', 'supir.supirold_id', '=', 'supirlama.id');
+            ->leftJoin(DB::raw("zona with (readuncommitted)"), 'supir.zona_id', 'zona.id')
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'supir.statusaktif', '=', 'parameter.id')
+            ->leftJoin(DB::raw("parameter as statusadaupdategambar with (readuncommitted)"), 'supir.statusadaupdategambar', '=', 'statusadaupdategambar.id')
+            ->leftJoin(DB::raw("parameter as statusluarkota with (readuncommitted)"), 'supir.statusluarkota', '=', 'statusluarkota.id')
+            ->leftJoin(DB::raw("parameter as statuszonatertentu with (readuncommitted)"), 'supir.statuszonatertentu', '=', 'statuszonatertentu.id')
+            ->leftJoin(DB::raw("parameter as statusblacklist with (readuncommitted)"), 'supir.statusblacklist', '=', 'statusblacklist.id')
+            ->leftJoin(DB::raw("supir as supirlama with (readuncommitted)"), 'supir.supirold_id', '=', 'supirlama.id');
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -86,7 +87,8 @@ class Supir extends MyModel
 
     public function findAll($id)
     {
-        $data = DB::table('supir')->select(
+        $data = Supir::from(DB::raw("supir with (readuncommitted)"))
+        ->select(
             'supir.id',
             'supir.namasupir',
             'supir.alamat',
@@ -128,8 +130,8 @@ class Supir extends MyModel
             'supir.updated_at'
         )
 
-            ->leftJoin('zona', 'supir.zona_id', 'zona.id')
-            ->leftJoin('supir as supirlama', 'supir.supirold_id', '=', 'supirlama.id')
+            ->leftJoin(DB::raw("zona with (readuncommitted)"), 'supir.zona_id', 'zona.id')
+            ->leftJoin(DB::raw("supir as supirlama with (readuncommitted)"), 'supir.supirold_id', '=', 'supirlama.id')
 
             ->where('supir.id', $id)->first();
 

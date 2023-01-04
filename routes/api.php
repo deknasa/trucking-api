@@ -134,6 +134,7 @@ use App\Http\Controllers\Api\BankPelangganController;
     use App\Http\Controllers\Api\JurnalUmumPusatHeaderController;
     use App\Http\Controllers\Api\KartuStokController;
     use App\Http\Controllers\Api\HistoriPenerimaanStokController;
+    use App\Http\Controllers\Api\HistoriPengeluaranStokController;
 use App\Http\Controllers\Api\LaporanBukuBesarController;
 use App\Http\Controllers\Api\LaporanKasBankController;
 use App\Http\Controllers\Api\ReportAllController;
@@ -143,6 +144,7 @@ use App\Http\Controllers\Api\ReportAllController;
     use App\Http\Controllers\Api\PendapatanSupirHeaderController;
     use App\Http\Controllers\Api\ReportNeracaController;
     use App\Http\Controllers\Api\StokPersediaanController;
+    use App\Http\Controllers\Api\TutupBukuController;
 
     /*
     |--------------------------------------------------------------------------
@@ -224,6 +226,9 @@ use App\Http\Controllers\Api\ReportAllController;
         Route::get('acos/field_length', [AcosController::class, 'fieldLength']);
         Route::resource('acos', AcosController::class);
 
+        Route::get('kota/combo', [KotaController::class, 'combo']);
+        Route::get('kota/field_length', [KotaController::class, 'fieldLength']);
+        Route::resource('kota', KotaController::class);
 
         Route::get('logtrail/detail', [LogTrailController::class, 'detail']);
         Route::get('logtrail/header', [LogTrailController::class, 'header']);
@@ -234,6 +239,7 @@ use App\Http\Controllers\Api\ReportAllController;
         Route::post('trado/upload_image/{id}', [TradoController::class, 'uploadImage']);
         Route::resource('trado', TradoController::class);
 
+        Route::get('absentrado/field_length', [AbsenTradoController::class, 'fieldLength']);
         Route::resource('absentrado', AbsenTradoController::class);
 
         Route::get('container/field_length', [ContainerController::class, 'fieldLength']);
@@ -332,7 +338,6 @@ use App\Http\Controllers\Api\ReportAllController;
         Route::post('trado/upload_image/{id}', [TradoController::class, 'uploadImage']);
         Route::resource('trado', TradoController::class);
 
-        Route::resource('absentrado', AbsenTradoController::class);
 
         Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
 
@@ -424,12 +429,16 @@ use App\Http\Controllers\Api\ReportAllController;
         Route::get('penerimaanstok/field_length', [PenerimaanStokController::class,'fieldLength']);
         Route::get('penerimaanstok/export', [PenerimaanStokController::class,'export']);
         Route::apiResource('penerimaanstok', PenerimaanStokController::class);
+        
+        Route::get('penerimaanstokheader/{id}/printreport', [PenerimaanStokHeaderController::class,'printReport']);
         Route::apiResource('penerimaanstokheader', PenerimaanStokHeaderController::class);
         Route::apiResource('penerimaanstokdetail', PenerimaanStokDetailController::class);
 
         Route::get('pengeluaranstok/field_length', [PengeluaranStokController::class,'fieldLength']);
         // Route::get('pengeluaranstok/export', [PengeluaranStokController::class,'export']);
         Route::apiResource('pengeluaranstok', PengeluaranStokController::class);
+        
+        Route::get('pengeluaranstokheader/{id}/printreport', [PengeluaranStokHeaderController::class,'printReport']);
         Route::apiResource('pengeluaranstokheader', PengeluaranStokHeaderController::class);
         Route::apiResource('pengeluaranstokdetail', PengeluaranStokDetailController::class);
 
@@ -592,6 +601,9 @@ use App\Http\Controllers\Api\ReportAllController;
         Route::resource('invoiceheader', InvoiceHeaderController::class);
         Route::resource('invoicedetail', InvoiceDetailController::class);
 
+        Route::resource('tutupbuku', TutupBukuController::class);
+
+
         Route::get('suratpengantar/combo', [SuratPengantarController::class, 'combo']);
         Route::get('suratpengantar/field_length', [SuratPengantarController::class, 'fieldLength']);
         Route::post('suratpengantar/cekUpahSupir', [SuratPengantarController::class, 'cekUpahSupir']);
@@ -676,6 +688,9 @@ use App\Http\Controllers\Api\ReportAllController;
         Route::get('historipenerimaanstok/report', [HistoriPenerimaanStokController::class, 'report'])->name('historipenerimaanstok.report');
         Route::resource('historipenerimaanstok', HistoriPenerimaanStokController::class);
         
+        Route::get('historipengeluaranstok/report', [HistoriPengeluaranStokController::class, 'report'])->name('historipengeluaranstok.report');
+        Route::resource('historipengeluaranstok', HistoriPengeluaranStokController::class);
+        
         Route::get('laporankasbank/report', [LaporanKasBankController::class, 'report'])->name('laporankasbank.report');
         Route::resource('laporankasbank', LaporanKasBankController::class);
         Route::get('laporanbukubesar/report', [LaporanBukuBesarController::class, 'report'])->name('laporanbukubesar.report');
@@ -699,9 +714,6 @@ use App\Http\Controllers\Api\ReportAllController;
     Route::get('kerusakan/field_length', [KerusakanController::class, 'fieldLength']);
     Route::resource('kerusakan', KerusakanController::class);
 
-    Route::get('kota/combo', [KotaController::class, 'combo']);
-    Route::get('kota/field_length', [KotaController::class, 'fieldLength']);
-    Route::resource('kota', KotaController::class);
 
     Route::get('mandor/combo', [MandorController::class, 'combo']);
     Route::get('mandor/field_length', [MandorController::class, 'fieldLength']);
