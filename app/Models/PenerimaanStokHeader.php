@@ -78,6 +78,7 @@ class PenerimaanStokHeader extends MyModel
             "penerimaanstokheader.trado_id",
             "penerimaanstokheader.supplier_id",
             "statuscetak.memo as  statuscetak",
+            "statuscetak.id as  statuscetak_id",
         );
     }
 
