@@ -144,6 +144,7 @@ use App\Http\Controllers\Api\ReportAllController;
     use App\Http\Controllers\Api\PendapatanSupirHeaderController;
     use App\Http\Controllers\Api\ReportNeracaController;
     use App\Http\Controllers\Api\StokPersediaanController;
+    use App\Http\Controllers\Api\TutupBukuController;
 
     /*
     |--------------------------------------------------------------------------
@@ -428,12 +429,16 @@ use App\Http\Controllers\Api\ReportAllController;
         Route::get('penerimaanstok/field_length', [PenerimaanStokController::class,'fieldLength']);
         Route::get('penerimaanstok/export', [PenerimaanStokController::class,'export']);
         Route::apiResource('penerimaanstok', PenerimaanStokController::class);
+        
+        Route::get('penerimaanstokheader/{id}/printreport', [PenerimaanStokHeaderController::class,'printReport']);
         Route::apiResource('penerimaanstokheader', PenerimaanStokHeaderController::class);
         Route::apiResource('penerimaanstokdetail', PenerimaanStokDetailController::class);
 
         Route::get('pengeluaranstok/field_length', [PengeluaranStokController::class,'fieldLength']);
         // Route::get('pengeluaranstok/export', [PengeluaranStokController::class,'export']);
         Route::apiResource('pengeluaranstok', PengeluaranStokController::class);
+        
+        Route::get('pengeluaranstokheader/{id}/printreport', [PengeluaranStokHeaderController::class,'printReport']);
         Route::apiResource('pengeluaranstokheader', PengeluaranStokHeaderController::class);
         Route::apiResource('pengeluaranstokdetail', PengeluaranStokDetailController::class);
 
@@ -595,6 +600,9 @@ use App\Http\Controllers\Api\ReportAllController;
         Route::post('invoiceheader/{id}/cekvalidasi', [InvoiceHeaderController::class, 'cekvalidasi'])->name('invoiceheader.cekvalidasi');
         Route::resource('invoiceheader', InvoiceHeaderController::class);
         Route::resource('invoicedetail', InvoiceDetailController::class);
+
+        Route::resource('tutupbuku', TutupBukuController::class);
+
 
         Route::get('suratpengantar/combo', [SuratPengantarController::class, 'combo']);
         Route::get('suratpengantar/field_length', [SuratPengantarController::class, 'fieldLength']);

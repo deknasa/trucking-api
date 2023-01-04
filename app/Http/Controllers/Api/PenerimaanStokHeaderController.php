@@ -404,4 +404,46 @@ class PenerimaanStokHeaderController extends Controller
             ]);
         }
     }
+
+    public function printReport($id)
+    {
+        DB::beginTransaction();
+
+        try {
+            $penerimaanStokHeader = PenerimaanStokheader::findOrFail($id);
+            $statusSudahCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
+            $statusBelumCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
+     
+            if ($penerimaanStokHeader->statuscetak != $statusSudahCetak->id) {
+                $penerimaanStokHeader->statuscetak = $statusSudahCetak->id;
+                $penerimaanStokHeader->tglbukacetak = date('Y-m-d H:i:s');
+                $penerimaanStokHeader->userbukacetak = auth('api')->user()->name;
+                $penerimaanStokHeader->jumlahcetak = $penerimaanStokHeader->jumlahcetak+1;
+                if ($penerimaanStokHeader->save()) {
+                    $logTrail = [
+                        'namatabel' => strtoupper($penerimaanStokHeader->getTable()),
+                        'postingdari' => 'PRINT INVOICE EXTRA',
+                        'idtrans' => $penerimaanStokHeader->id,
+                        'nobuktitrans' => $penerimaanStokHeader->id,
+                        'aksi' => 'PRINT',
+                        'datajson' => $penerimaanStokHeader->toArray(),
+                        'modifiedby' => $penerimaanStokHeader->modifiedby
+                    ];
+    
+                    $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                    $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+    
+                    DB::commit();
+                }
+            }
+
+
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+        
+    }
 }
