@@ -148,14 +148,13 @@ class KategoriController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Request $request, $id)
+    public function destroy(Kategori $kategori, Request $request)
     {
         DB::beginTransaction();
 
         try {
-            $kategori = Kategori::lockForUpdate()->findOrFail($id);
-            $delete = $kategori->delete();
-            if ($delete) {
+            $isDelete = Kategori::where('id', $kategori->id)->delete();
+            if ($isDelete) {
                 $logTrail = [
                     'namatabel' => strtoupper($kategori->getTable()),
                     'postingdari' => 'DELETE KATEGORI',
@@ -184,6 +183,9 @@ class KategoriController extends Controller
                     'data' => $kategori
                 ]);
             }
+            return response([
+                'message' => 'Gagal dihapus'
+            ], 500);
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;

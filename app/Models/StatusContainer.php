@@ -24,7 +24,8 @@ class StatusContainer extends MyModel
     {
         $this->setRequestParameters();
 
-        $query = DB::table($this->table)->select(
+        $query = StatusContainer::from(DB::raw("$this->table with (readuncommitted)"))
+        ->select(
             'statuscontainer.id',
             'statuscontainer.kodestatuscontainer',
             'statuscontainer.keterangan',
@@ -35,7 +36,7 @@ class StatusContainer extends MyModel
             'statuscontainer.created_at',
             'statuscontainer.updated_at'
         )
-            ->leftJoin('parameter', 'statuscontainer.statusaktif', '=', 'parameter.id');
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'statuscontainer.statusaktif', '=', 'parameter.id');
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;

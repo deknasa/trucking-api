@@ -22,7 +22,8 @@ class Trado extends MyModel
     {
         $this->setRequestParameters();
 
-        $query = DB::table($this->table)->select(
+        $query = Trado::from(DB::raw("$this->table with (readuncommitted)"))
+        ->select(
             'trado.id',
             'trado.keterangan',
             'trado.kmawal',
@@ -65,16 +66,16 @@ class Trado extends MyModel
             'mandor.namamandor as mandor_id',
             'supir.namasupir as supir_id',
         )
-            ->leftJoin('parameter as parameter_statusaktif', 'trado.statusaktif', 'parameter_statusaktif.id')
-            ->leftJoin('parameter as parameter_statusjenisplat', 'trado.statusjenisplat', 'parameter_statusjenisplat.id')
-            ->leftJoin('parameter as parameter_statusstandarisasi', 'trado.statusstandarisasi', 'parameter_statusstandarisasi.id')
-            ->leftJoin('parameter as parameter_statusmutasi', 'trado.statusmutasi', 'parameter_statusmutasi.id')
-            ->leftJoin('parameter as parameter_statusvalidasikendaraan', 'trado.statusvalidasikendaraan', 'parameter_statusvalidasikendaraan.id')
-            ->leftJoin('parameter as parameter_statusmobilstoring', 'trado.statusmobilstoring', 'parameter_statusmobilstoring.id')
-            ->leftJoin('parameter as parameter_statusappeditban', 'trado.statusappeditban', 'parameter_statusappeditban.id')
-            ->leftJoin('parameter as parameter_statuslewatvalidasi', 'trado.statuslewatvalidasi', 'parameter_statuslewatvalidasi.id')
-            ->leftJoin('mandor', 'trado.mandor_id', 'mandor.id')
-            ->leftJoin('supir', 'trado.supir_id', 'supir.id');
+            ->leftJoin(DB::raw("parameter as parameter_statusaktif with (readuncommitted)"), 'trado.statusaktif', 'parameter_statusaktif.id')
+            ->leftJoin(DB::raw("parameter as parameter_statusjenisplat with (readuncommitted)"), 'trado.statusjenisplat', 'parameter_statusjenisplat.id')
+            ->leftJoin(DB::raw("parameter as parameter_statusstandarisasi with (readuncommitted)"), 'trado.statusstandarisasi', 'parameter_statusstandarisasi.id')
+            ->leftJoin(DB::raw("parameter as parameter_statusmutasi with (readuncommitted)"), 'trado.statusmutasi', 'parameter_statusmutasi.id')
+            ->leftJoin(DB::raw("parameter as parameter_statusvalidasikendaraan with (readuncommitted)"), 'trado.statusvalidasikendaraan', 'parameter_statusvalidasikendaraan.id')
+            ->leftJoin(DB::raw("parameter as parameter_statusmobilstoring with (readuncommitted)"), 'trado.statusmobilstoring', 'parameter_statusmobilstoring.id')
+            ->leftJoin(DB::raw("parameter as parameter_statusappeditban with (readuncommitted)"), 'trado.statusappeditban', 'parameter_statusappeditban.id')
+            ->leftJoin(DB::raw("parameter as parameter_statuslewatvalidasi with (readuncommitted)"), 'trado.statuslewatvalidasi', 'parameter_statuslewatvalidasi.id')
+            ->leftJoin(DB::raw("mandor with (readuncommitted)"), 'trado.mandor_id', 'mandor.id')
+            ->leftJoin(DB::raw("supir with (readuncommitted)"), 'trado.supir_id', 'supir.id');
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -95,8 +96,8 @@ class Trado extends MyModel
             'mandor.namamandor as mandor',
             'supir.namasupir as supir'
         )
-        ->leftJoin('mandor','trado.mandor_id','mandor.id')
-        ->leftJoin('supir','trado.supir_id','supir.id')
+        ->leftJoin(DB::raw("mandor with (readuncommitted)"),'trado.mandor_id','mandor.id')
+        ->leftJoin(DB::raw("supir with (readuncommitted)"),'trado.supir_id','supir.id')
         ->where('trado.id',$id)
         ->first();
         

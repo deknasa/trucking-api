@@ -68,7 +68,8 @@ class GandenganController extends Controller
 
                 $param1 = $gandengan->id;
                 $param2 = $gandengan->modifiedby;
-                $stokgudang = Stok::select(DB::raw(
+                $stokgudang = Stok::from(DB::raw("stok with (readuncommitted)"))
+                ->select(DB::raw(
                     "stok.id as stok_id,
                         0  as gudang_id,
                     0 as trado_id,"
@@ -183,7 +184,8 @@ class GandenganController extends Controller
 
                 $param1 = $gandengan->id;
                 $param2 = $gandengan->modifiedby;
-                $stokgudang = Stok::select(DB::raw(
+                $stokgudang = Stok::from(DB::raw("stok with (readuncommitted)"))
+                ->select(DB::raw(
                     "stok.id as stok_id,
                         0  as gudang_id,
                     0 as trado_id,"
@@ -257,15 +259,14 @@ class GandenganController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Request $request, $id)
+    public function destroy(Gandengan $gandengan, Request $request)
     {
         DB::beginTransaction();
 
         try {
-            $gandengan = Gandengan::lockForUpdate()->findOrFail($id);
-            $delete = $gandengan->delete();
+            $isDelete = Gandengan::where('id', $gandengan->id)->delete();
 
-            if ($delete) {
+            if ($isDelete) {
                 $logTrail = [
                     'namatabel' => strtoupper($gandengan->getTable()),
                     'postingdari' => 'DELETE GANDENGAN',
@@ -294,6 +295,9 @@ class GandenganController extends Controller
                     'data' => $gandengan
                 ]);
             }
+            return response([
+                'message' => 'Gagal dihapus'
+            ], 500);
         } catch (\Throwable $th) {
             DB::rollBack();
 

@@ -163,16 +163,15 @@ class TarifController extends Controller
     /**
      * @ClassName
      */
-    public function destroy(Request $request, $id)
+    public function destroy(Tarif $tarif, Request $request)
     {
 
         DB::beginTransaction();
 
         try {
-            $tarif = Tarif::lockForUpdate()->findOrFail($id);
-            $delete = $tarif->delete();
+            $isDelete = Tarif::where('id', $tarif->id)->delete();
 
-            if ($delete) {
+            if ($isDelete) {
                 $logTrail = [
                     'namatabel' => strtoupper($tarif->getTable()),
                     'postingdari' => 'DELETE TARIF',
@@ -199,6 +198,9 @@ class TarifController extends Controller
                     'data' => $tarif
                 ]);
             }
+            return response([
+                'message' => 'Gagal dihapus'
+            ], 500);
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;

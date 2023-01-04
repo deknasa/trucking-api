@@ -34,10 +34,6 @@ class KelompokController extends Controller
         ]);
     }
 
-    public function create()
-    {
-        //
-    }
     /**
      * @ClassName 
      */
@@ -140,14 +136,13 @@ class KelompokController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Request $request, $id)
+    public function destroy(Kelompok $kelompok, Request $request)
     {
         DB::beginTransaction();
         try {
-            $kelompok = Kelompok::lockForUpdate()->findOrFail($id);
-            $delete = $kelompok->delete();
+            $isDelete = Kelompok::where('id', $kelompok->id)->delete();
 
-            if ($delete) {
+            if ($isDelete) {
                 $logTrail = [
                     'namatabel' => strtoupper($kelompok->getTable()),
                     'postingdari' => 'DELETE KELOMPOK',
@@ -175,6 +170,9 @@ class KelompokController extends Controller
                     'data' => $kelompok
                 ]);
             }
+            return response([
+                'message' => 'Gagal dihapus'
+            ], 500);
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;

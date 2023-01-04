@@ -28,7 +28,8 @@ class PengeluaranTrucking extends MyModel
     {
         $this->setRequestParameters();
 
-        $query = DB::table($this->table)->select(
+        $query = PengeluaranTrucking::from(DB::raw("$this->table with (readuncommitted)"))
+        ->select(
             'pengeluarantrucking.id',
             'pengeluarantrucking.kodepengeluaran',
             'pengeluarantrucking.keterangan',
@@ -38,7 +39,7 @@ class PengeluaranTrucking extends MyModel
             'pengeluarantrucking.modifiedby',
             'pengeluarantrucking.updated_at'
         )
-            ->leftJoin('parameter', 'pengeluarantrucking.statusformat', 'parameter.id');
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'pengeluarantrucking.statusformat', 'parameter.id');
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;

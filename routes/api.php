@@ -225,6 +225,9 @@ use App\Http\Controllers\Api\ReportAllController;
         Route::get('acos/field_length', [AcosController::class, 'fieldLength']);
         Route::resource('acos', AcosController::class);
 
+        Route::get('kota/combo', [KotaController::class, 'combo']);
+        Route::get('kota/field_length', [KotaController::class, 'fieldLength']);
+        Route::resource('kota', KotaController::class);
 
         Route::get('logtrail/detail', [LogTrailController::class, 'detail']);
         Route::get('logtrail/header', [LogTrailController::class, 'header']);
@@ -703,9 +706,6 @@ use App\Http\Controllers\Api\ReportAllController;
     Route::get('kerusakan/field_length', [KerusakanController::class, 'fieldLength']);
     Route::resource('kerusakan', KerusakanController::class);
 
-    Route::get('kota/combo', [KotaController::class, 'combo']);
-    Route::get('kota/field_length', [KotaController::class, 'fieldLength']);
-    Route::resource('kota', KotaController::class);
 
     Route::get('mandor/combo', [MandorController::class, 'combo']);
     Route::get('mandor/field_length', [MandorController::class, 'fieldLength']);

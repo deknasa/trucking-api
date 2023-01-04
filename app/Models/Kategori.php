@@ -27,7 +27,8 @@ class Kategori extends MyModel
     {
         $this->setRequestParameters();
 
-        $query = DB::table($this->table)->select(
+        $query = Kategori::from(DB::raw("$this->table with (readuncommitted)"))
+        ->select(
             'kategori.id',
             'kategori.kodekategori',
             'kategori.keterangan',
@@ -37,8 +38,8 @@ class Kategori extends MyModel
             'kategori.created_at',
             'kategori.updated_at'
         )
-            ->leftJoin('parameter', 'kategori.statusaktif', '=', 'parameter.id')
-            ->leftJoin('subkelompok AS p', 'kategori.subkelompok_id', '=', 'p.id');
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'kategori.statusaktif', '=', 'parameter.id')
+            ->leftJoin(DB::raw("subkelompok AS p with (readuncommitted)"), 'kategori.subkelompok_id', '=', 'p.id');
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -56,7 +57,8 @@ class Kategori extends MyModel
     {
         $this->setRequestParameters();
 
-        $data = DB::table($this->table)->select(
+        $data = Kategori::from(DB::raw("kategori with (readuncommitted)"))
+        ->select(
             'kategori.id',
             'kategori.kodekategori',
             'kategori.keterangan',
@@ -67,8 +69,8 @@ class Kategori extends MyModel
             'kategori.created_at',
             'kategori.updated_at'
         )
-            ->leftJoin('parameter', 'kategori.statusaktif', '=', 'parameter.id')
-            ->leftJoin('subkelompok AS p', 'kategori.subkelompok_id', '=', 'p.id')
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'kategori.statusaktif', '=', 'parameter.id')
+            ->leftJoin(DB::raw("subkelompok AS p with (readuncommitted)"), 'kategori.subkelompok_id', '=', 'p.id')
         ->where('kategori.id', $id)->first();
 
 

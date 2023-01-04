@@ -67,7 +67,8 @@ class GudangController extends Controller
                 
                 $param1 = $gudang->id;
                 $param2 = $gudang->modifiedby;
-                $stokgudang = Stok::select(DB::raw(
+                $stokgudang = Stok::from(DB::raw("stok with (readuncommitted)"))
+                ->select(DB::raw(
                     "stok.id as stok_id,"
                         . $param1 . "  as gudang_id,
                     0 as trado_id,
@@ -175,7 +176,8 @@ class GudangController extends Controller
 
                 $param1 = $gudang->id;
                 $param2 = $gudang->modifiedby;
-                $stokgudang = Stok::select(DB::raw(
+                $stokgudang = Stok::from(DB::raw("stok with (readuncommitted)"))
+                ->select(DB::raw(
                     "stok.id as stok_id,"
                         . $param1 . "  as gudang_id,
                     0 as trado_id,
@@ -247,13 +249,12 @@ class GudangController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Request $request, $id)
+    public function destroy(Gudang $gudang, Request $request)
     {
         DB::beginTransaction();
         try {
-            $gudang = Gudang::lockForUpdate()->findOrFail($id);
-            $delete = $gudang->delete();
-            if ($delete) {
+            $isDelete = Gudang::where('id', $gudang->id)->delete();
+            if ($isDelete) {
                 $logTrail = [
                     'namatabel' => strtoupper($gudang->getTable()),
                     'postingdari' => 'DELETE GUDANG',
@@ -280,6 +281,9 @@ class GudangController extends Controller
                     'data' => $gudang
                 ]);
             }
+            return response([
+                'message' => 'Gagal dihapus'
+            ], 500);
 
         } catch (\Throwable $th) {
             DB::rollBack();
