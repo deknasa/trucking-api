@@ -138,7 +138,7 @@ class HutangBayarHeaderController extends Controller
                 }
                 $detaillog[] = $datadetails['detail']->toArray();
             }
-            
+
 
             //INSERT TO PENGELUARAN
             $bank = Bank::from(DB::raw("bank with (readuncommitted)"))
@@ -173,7 +173,7 @@ class HutangBayarHeaderController extends Controller
             $hutangbayarheader->pengeluaran_nobukti = $nobuktiPengeluaran;
             $hutangbayarheader->save();
 
-            
+
             //LOGTRAIL HUTANG BAYAR HEADER
             $logTrail = [
                 'namatabel' => strtoupper($hutangbayarheader->getTable()),
@@ -319,7 +319,7 @@ class HutangBayarHeaderController extends Controller
                 PengeluaranHeader::where('nobukti', $hutangbayarheader->pengeluaran_nobukti)->delete();
                 JurnalUmumHeader::where('nobukti', $hutangbayarheader->pengeluaran_nobukti)->delete();
                 HutangBayarDetail::where('hutangbayar_id', $hutangbayarheader->id)->delete();
-                
+
                 /* Store detail */
                 $detaillog = [];
                 for ($i = 0; $i < count($request->hutang_id); $i++) {
@@ -487,130 +487,127 @@ class HutangBayarHeaderController extends Controller
     /**
      * @ClassName destroy
      */
-    public function destroy(HutangBayarHeader $hutangbayarheader, Request $request)
+    public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
-        try {
-            $getDetail = HutangBayarDetail::from(DB::raw("hutangbayardetail with (readuncommitted)"))
-                ->where('hutangbayar_id', $hutangbayarheader->id)->get();
-            $getPengeluaranHeader = PengeluaranHeader::from(DB::raw("pengeluaranheader with (readuncommitted)"))
-                ->where('nobukti', $hutangbayarheader->pengeluaran_nobukti)->first();
-            $getPengeluaranDetail = PengeluaranDetail::from(DB::raw("pengeluarandetail with (readuncommitted)"))
-                ->where('nobukti', $hutangbayarheader->pengeluaran_nobukti)->get();
-            $getJurnalHeader = JurnalUmumHeader::from(DB::raw("jurnalumumheader with (readuncommitted)"))
-                ->where('nobukti', $hutangbayarheader->pengeluaran_nobukti)->first();
-            $getJurnalDetail = JurnalUmumDetail::from(DB::raw("jurnalumumdetail with (readuncommitted)"))
-                ->where('nobukti', $hutangbayarheader->pengeluaran_nobukti)->get();
 
-            $isDelete = HutangBayarHeader::where('id', $hutangbayarheader->id)->delete();
-            PengeluaranHeader::where('nobukti', $hutangbayarheader->pengeluaran_nobukti)->delete();
-            JurnalUmumHeader::where('nobukti', $hutangbayarheader->pengeluaran_nobukti)->delete();
+        $getDetail = HutangBayarDetail::lockForUpdate()->where('hutangbayar_id', $id)->get();
 
-            if ($isDelete) {
-                $logTrail = [
-                    'namatabel' => strtoupper($hutangbayarheader->getTable()),
-                    'postingdari' => 'DELETE HUTANG BAYAR HEADER',
-                    'idtrans' => $hutangbayarheader->id,
-                    'nobuktitrans' => $hutangbayarheader->nobukti,
-                    'aksi' => 'DELETE',
-                    'datajson' => $hutangbayarheader->toArray(),
-                    'modifiedby' => auth('api')->user()->name
-                ];
+        $hutangbayarheader = new HutangBayarHeader();
+        $hutangbayarheader = $hutangbayarheader->lockAndDestroy($id);
 
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+        $getPengeluaranHeader = PengeluaranHeader::lockForUpdate()->where('nobukti', $hutangbayarheader->pengeluaran_nobukti)->first();
+        $getPengeluaranDetail = PengeluaranDetail::lockForUpdate()->where('nobukti', $hutangbayarheader->pengeluaran_nobukti)->get();
+        $getJurnalHeader = JurnalUmumHeader::lockForUpdate()->where('nobukti', $hutangbayarheader->pengeluaran_nobukti)->first();
+        $getJurnalDetail = JurnalUmumDetail::lockForUpdate()->where('nobukti', $hutangbayarheader->pengeluaran_nobukti)->get();
 
-                // DELETE HUTANG BAYAR DETAIL
-                $logTrailHutangBayarDetail = [
-                    'namatabel' => 'HUTANGBAYARDETAIL',
-                    'postingdari' => 'DELETE HUTANG BAYAR DETAIL',
-                    'idtrans' => $storedLogTrail['id'],
-                    'nobuktitrans' => $hutangbayarheader->nobukti,
-                    'aksi' => 'DELETE',
-                    'datajson' => $getDetail->toArray(),
-                    'modifiedby' => auth('api')->user()->name
-                ];
+        PengeluaranHeader::where('nobukti', $hutangbayarheader->pengeluaran_nobukti)->delete();
+        JurnalUmumHeader::where('nobukti', $hutangbayarheader->pengeluaran_nobukti)->delete();
 
-                $validatedLogTrailHutangBayarDetail = new StoreLogTrailRequest($logTrailHutangBayarDetail);
-                app(LogTrailController::class)->store($validatedLogTrailHutangBayarDetail);
+        if ($hutangbayarheader) {
+            $logTrail = [
+                'namatabel' => strtoupper($hutangbayarheader->getTable()),
+                'postingdari' => 'DELETE HUTANG BAYAR HEADER',
+                'idtrans' => $hutangbayarheader->id,
+                'nobuktitrans' => $hutangbayarheader->nobukti,
+                'aksi' => 'DELETE',
+                'datajson' => $hutangbayarheader->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ];
 
-                // DELETE PENGELUARAN HEADER
-                $logTrailPengeluaranHeader = [
-                    'namatabel' => 'PENGELUARAN',
-                    'postingdari' => 'DELETE PENGELUARAN HEADER DARI HUTANG BAYAR',
-                    'idtrans' => $getPengeluaranHeader->id,
-                    'nobuktitrans' => $getPengeluaranHeader->nobukti,
-                    'aksi' => 'DELETE',
-                    'datajson' => $getPengeluaranHeader->toArray(),
-                    'modifiedby' => auth('api')->user()->name
-                ];
+            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+            $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-                $validatedLogTrailPengeluaranHeader = new StoreLogTrailRequest($logTrailPengeluaranHeader);
-                $storedLogTrailPengeluaran = app(LogTrailController::class)->store($validatedLogTrailPengeluaranHeader);
+            // DELETE HUTANG BAYAR DETAIL
+            $logTrailHutangBayarDetail = [
+                'namatabel' => 'HUTANGBAYARDETAIL',
+                'postingdari' => 'DELETE HUTANG BAYAR DETAIL',
+                'idtrans' => $storedLogTrail['id'],
+                'nobuktitrans' => $hutangbayarheader->nobukti,
+                'aksi' => 'DELETE',
+                'datajson' => $getDetail->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ];
 
-                // DELETE PENGELUARAN DETAIL
-                $logTrailPengeluaranDetail = [
-                    'namatabel' => 'PENGELUARANDETAIL',
-                    'postingdari' => 'DELETE PENGELUARAN DETAIL DARI HUTANG BAYAR',
-                    'idtrans' => $storedLogTrailPengeluaran['id'],
-                    'nobuktitrans' => $getPengeluaranHeader->nobukti,
-                    'aksi' => 'DELETE',
-                    'datajson' => $getPengeluaranDetail->toArray(),
-                    'modifiedby' => auth('api')->user()->name
-                ];
+            $validatedLogTrailHutangBayarDetail = new StoreLogTrailRequest($logTrailHutangBayarDetail);
+            app(LogTrailController::class)->store($validatedLogTrailHutangBayarDetail);
 
-                $validatedLogTrailPengeluaranDetail = new StoreLogTrailRequest($logTrailPengeluaranDetail);
-                app(LogTrailController::class)->store($validatedLogTrailPengeluaranDetail);
+            // DELETE PENGELUARAN HEADER
+            $logTrailPengeluaranHeader = [
+                'namatabel' => 'PENGELUARAN',
+                'postingdari' => 'DELETE PENGELUARAN HEADER DARI HUTANG BAYAR',
+                'idtrans' => $getPengeluaranHeader->id,
+                'nobuktitrans' => $getPengeluaranHeader->nobukti,
+                'aksi' => 'DELETE',
+                'datajson' => $getPengeluaranHeader->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ];
 
-                // DELETE JURNAL HEADER
-                $logTrailJurnalHeader = [
-                    'namatabel' => 'JURNALUMUMHEADER',
-                    'postingdari' => 'DELETE JURNAL UMUM HEADER DARI HUTANG BAYAR',
-                    'idtrans' => $getJurnalHeader->id,
-                    'nobuktitrans' => $getJurnalHeader->nobukti,
-                    'aksi' => 'DELETE',
-                    'datajson' => $getJurnalHeader->toArray(),
-                    'modifiedby' => auth('api')->user()->name
-                ];
+            $validatedLogTrailPengeluaranHeader = new StoreLogTrailRequest($logTrailPengeluaranHeader);
+            $storedLogTrailPengeluaran = app(LogTrailController::class)->store($validatedLogTrailPengeluaranHeader);
 
-                $validatedLogTrailJurnalHeader = new StoreLogTrailRequest($logTrailJurnalHeader);
-                $storedLogTrailJurnal = app(LogTrailController::class)->store($validatedLogTrailJurnalHeader);
+            // DELETE PENGELUARAN DETAIL
+            $logTrailPengeluaranDetail = [
+                'namatabel' => 'PENGELUARANDETAIL',
+                'postingdari' => 'DELETE PENGELUARAN DETAIL DARI HUTANG BAYAR',
+                'idtrans' => $storedLogTrailPengeluaran['id'],
+                'nobuktitrans' => $getPengeluaranHeader->nobukti,
+                'aksi' => 'DELETE',
+                'datajson' => $getPengeluaranDetail->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ];
 
-                // DELETE JURNAL DETAIL
-                $logTrailJurnalDetail = [
-                    'namatabel' => 'JURNALUMUMDETAIL',
-                    'postingdari' => 'DELETE JURNAL UMUM DETAIL DARI HUTANG BAYAR',
-                    'idtrans' => $storedLogTrailJurnal['id'],
-                    'nobuktitrans' => $getJurnalHeader->nobukti,
-                    'aksi' => 'DELETE',
-                    'datajson' => $getJurnalDetail->toArray(),
-                    'modifiedby' => auth('api')->user()->name
-                ];
+            $validatedLogTrailPengeluaranDetail = new StoreLogTrailRequest($logTrailPengeluaranDetail);
+            app(LogTrailController::class)->store($validatedLogTrailPengeluaranDetail);
 
-                $validatedLogTrailJurnalDetail = new StoreLogTrailRequest($logTrailJurnalDetail);
-                app(LogTrailController::class)->store($validatedLogTrailJurnalDetail);
+            // DELETE JURNAL HEADER
+            $logTrailJurnalHeader = [
+                'namatabel' => 'JURNALUMUMHEADER',
+                'postingdari' => 'DELETE JURNAL UMUM HEADER DARI HUTANG BAYAR',
+                'idtrans' => $getJurnalHeader->id,
+                'nobuktitrans' => $getJurnalHeader->nobukti,
+                'aksi' => 'DELETE',
+                'datajson' => $getJurnalHeader->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ];
 
-                DB::commit();
+            $validatedLogTrailJurnalHeader = new StoreLogTrailRequest($logTrailJurnalHeader);
+            $storedLogTrailJurnal = app(LogTrailController::class)->store($validatedLogTrailJurnalHeader);
 
-                /* Set position and page */
-                $selected = $this->getPosition($hutangbayarheader, $hutangbayarheader->getTable(), true);
-                $hutangbayarheader->position = $selected->position;
-                $hutangbayarheader->id = $selected->id;
-                $hutangbayarheader->page = ceil($hutangbayarheader->position / ($request->limit ?? 10));
+            // DELETE JURNAL DETAIL
+            $logTrailJurnalDetail = [
+                'namatabel' => 'JURNALUMUMDETAIL',
+                'postingdari' => 'DELETE JURNAL UMUM DETAIL DARI HUTANG BAYAR',
+                'idtrans' => $storedLogTrailJurnal['id'],
+                'nobuktitrans' => $getJurnalHeader->nobukti,
+                'aksi' => 'DELETE',
+                'datajson' => $getJurnalDetail->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ];
 
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil dihapus',
-                    'data' => $hutangbayarheader
-                ]);
-            }
+            $validatedLogTrailJurnalDetail = new StoreLogTrailRequest($logTrailJurnalDetail);
+            app(LogTrailController::class)->store($validatedLogTrailJurnalDetail);
+
+            DB::commit();
+
+            /* Set position and page */
+            $selected = $this->getPosition($hutangbayarheader, $hutangbayarheader->getTable(), true);
+            $hutangbayarheader->position = $selected->position;
+            $hutangbayarheader->id = $selected->id;
+            $hutangbayarheader->page = ceil($hutangbayarheader->position / ($request->limit ?? 10));
 
             return response([
-                'message' => 'Gagal dihapus'
-            ], 500);
-        } catch (\Throwable $th) {
+                'status' => true,
+                'message' => 'Berhasil dihapus',
+                'data' => $hutangbayarheader
+            ]);
+        } else {
             DB::rollBack();
-            return response($th->getMessage());
+
+            return response([
+                'status' => false,
+                'message' => 'Gagal dihapus'
+            ]);
         }
     }
 
@@ -694,7 +691,6 @@ class HutangBayarHeaderController extends Controller
 
                 $detailLogPengeluaran[] = $detailPengeluaran['detail']['pengeluarandetail']->toArray();
                 $detailLogJurnal = array_merge($detailLogJurnal, $detailPengeluaran['detail']['jurnaldetail']);
-
             }
 
             $datalogtrail = [

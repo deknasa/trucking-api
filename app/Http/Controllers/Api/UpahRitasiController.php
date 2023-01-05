@@ -251,61 +251,61 @@ class UpahRitasiController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(UpahRitasi $upahritasi, Request $request)
+    public function destroy(Request $request, $id)
     {
 
         DB::beginTransaction();
-        try {
-            $getDetail = UpahRitasiRincian::where('upahritasi_id', $upahritasi->id)->get();
-            $isDelete = UpahRitasi::where('id',$upahritasi->id)->delete();
 
-            if ($isDelete) {
-                $logTrail = [
-                    'namatabel' => strtoupper($upahritasi->getTable()),
-                    'postingdari' => 'DELETE UPAH RITASI',
-                    'idtrans' => $upahritasi->id,
-                    'nobuktitrans' => $upahritasi->id,
-                    'aksi' => 'DELETE',
-                    'datajson' => $upahritasi->toArray(),
-                    'modifiedby' => auth('api')->user()->name
-                ];
+        $getDetail = UpahRitasiRincian::where('upahritasi_id', $id)->get();
+        $upahRitasi = new UpahRitasi();
+        $upahRitasi = $upahRitasi->lockAndDestroy($id);
+        if ($upahRitasi) {
+            $logTrail = [
+                'namatabel' => strtoupper($upahRitasi->getTable()),
+                'postingdari' => 'DELETE UPAH RITASI',
+                'idtrans' => $upahRitasi->id,
+                'nobuktitrans' => $upahRitasi->id,
+                'aksi' => 'DELETE',
+                'datajson' => $upahRitasi->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ];
 
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+            $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-                // DELETE UPAH RITASI RINCIAN
-                $logTrailUpahRitasiRincian = [
-                    'namatabel' => 'UPAHRITASIRINCIAN',
-                    'postingdari' => 'DELETE UPAH RITASI RINCIAN',
-                    'idtrans' => $storedLogTrail['id'],
-                    'nobuktitrans' => $upahritasi->id,
-                    'aksi' => 'DELETE',
-                    'datajson' => $getDetail->toArray(),
-                    'modifiedby' => auth('api')->user()->name
-                ];
+            // DELETE UPAH RITASI RINCIAN
+            $logTrailUpahRitasiRincian = [
+                'namatabel' => 'UPAHRITASIRINCIAN',
+                'postingdari' => 'DELETE UPAH RITASI RINCIAN',
+                'idtrans' => $storedLogTrail['id'],
+                'nobuktitrans' => $upahRitasi->id,
+                'aksi' => 'DELETE',
+                'datajson' => $getDetail->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ];
 
-                $validatedLogTrailUpahRitasiRincian = new StoreLogTrailRequest($logTrailUpahRitasiRincian);
-                app(LogTrailController::class)->store($validatedLogTrailUpahRitasiRincian);
+            $validatedLogTrailUpahRitasiRincian = new StoreLogTrailRequest($logTrailUpahRitasiRincian);
+            app(LogTrailController::class)->store($validatedLogTrailUpahRitasiRincian);
 
-                DB::commit();
-                /* Set position and page */
-                $selected = $this->getPosition($upahritasi, $upahritasi->getTable(), true);
-                $upahritasi->position = $selected->position;
-                $upahritasi->id = $selected->id;
-                $upahritasi->page = ceil($upahritasi->position / ($request->limit ?? 10));
-    
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil dihapus',
-                    'data' => $upahritasi
-                ]);
-            }
+            DB::commit();
+            /* Set position and page */
+            $selected = $this->getPosition($upahRitasi, $upahRitasi->getTable(), true);
+            $upahRitasi->position = $selected->position;
+            $upahRitasi->id = $selected->id;
+            $upahRitasi->page = ceil($upahRitasi->position / ($request->limit ?? 10));
+
             return response([
-                'message' => 'Gagal dihapus'
-            ], 500);
-        } catch (\Throwable $th) {
+                'status' => true,
+                'message' => 'Berhasil dihapus',
+                'data' => $upahRitasi
+            ]);
+        } else {
             DB::rollBack();
-            return response($th->getMessage());
+
+            return response([
+                'status' => false,
+                'message' => 'Gagal dihapus'
+            ]);
         }
     }
 

@@ -107,7 +107,6 @@ class ServiceOutHeaderController extends Controller
                 }
 
                 $detaillog[] = $datadetails['detail']->toArray();
-
             }
             $datalogtrail = [
                 'namatabel' => strtoupper($tabeldetail),
@@ -250,65 +249,64 @@ class ServiceOutHeaderController extends Controller
     /**
      * @ClassName
      */
-    public function destroy(ServiceOutHeader $serviceoutheader, Request $request)
+    public function destroy(Request $request, $id)
     {
 
         DB::beginTransaction();
-        try {
-            
-            $getDetail = ServiceOutDetail::from(DB::raw('serviceoutdetail with (readuncommitted)'))->where('Serviceout_id', $serviceoutheader->id)->get();
 
-            $delete = ServiceOutHeader::where('id', $serviceoutheader->id)->delete();
+        $getDetail = ServiceOutDetail::lockForUpdate()->where('serviceout_id', $id)->get();
 
-            if ($delete) {
-                $logTrail = [
-                    'namatabel' => strtoupper($serviceoutheader->getTable()),
-                    'postingdari' => 'DELETE SERVICE OUT HEADER',
-                    'idtrans' => $serviceoutheader->id,
-                    'nobuktitrans' => $serviceoutheader->nobukti,
-                    'aksi' => 'DELETE',
-                    'datajson' => $serviceoutheader->toArray(),
-                    'modifiedby' => auth('api')->user()->name
-                ];
+        $serviceOut = new ServiceOutHeader();
+        $serviceOut = $serviceOut->lockAndDestroy($id);
+        if ($serviceOut) {
+            $logTrail = [
+                'namatabel' => strtoupper($serviceOut->getTable()),
+                'postingdari' => 'DELETE SERVICE OUT HEADER',
+                'idtrans' => $serviceOut->id,
+                'nobuktitrans' => $serviceOut->nobukti,
+                'aksi' => 'DELETE',
+                'datajson' => $serviceOut->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ];
 
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+            $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-                // DELETE SERVICE OUT DETAIL
+            // DELETE SERVICE OUT DETAIL
 
-                $logTrailServiceOut = [
-                    'namatabel' => 'SERVICEOUTDETAIL',
-                    'postingdari' => 'DELETE SERVICE OUT DETAIL',
-                    'idtrans' => $storedLogTrail['id'],
-                    'nobuktitrans' => $serviceoutheader->nobukti,
-                    'aksi' => 'DELETE',
-                    'datajson' => $getDetail->toArray(),
-                    'modifiedby' => auth('api')->user()->name
-                ];
+            $logTrailServiceOut = [
+                'namatabel' => 'SERVICEOUTDETAIL',
+                'postingdari' => 'DELETE SERVICE OUT DETAIL',
+                'idtrans' => $storedLogTrail['id'],
+                'nobuktitrans' => $serviceOut->nobukti,
+                'aksi' => 'DELETE',
+                'datajson' => $getDetail->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ];
 
-                $validatedLogTrailServiceOutDetail = new StoreLogTrailRequest($logTrailServiceOut);
-                app(LogTrailController::class)->store($validatedLogTrailServiceOutDetail);
+            $validatedLogTrailServiceOutDetail = new StoreLogTrailRequest($logTrailServiceOut);
+            app(LogTrailController::class)->store($validatedLogTrailServiceOutDetail);
 
-                DB::commit();
+            DB::commit();
 
-                /* Set position and page */
-                $selected = $this->getPosition($serviceoutheader, $serviceoutheader->getTable(), true);
-                $serviceoutheader->position = $selected->position;
-                $serviceoutheader->id = $selected->id;
-                $serviceoutheader->page = ceil($serviceoutheader->position / ($request->limit ?? 10));
+            /* Set position and page */
+            $selected = $this->getPosition($serviceOut, $serviceOut->getTable(), true);
+            $serviceOut->position = $selected->position;
+            $serviceOut->id = $selected->id;
+            $serviceOut->page = ceil($serviceOut->position / ($request->limit ?? 10));
 
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil dihapus',
-                    'data' => $serviceoutheader
-                ]);
-            }
             return response([
-                'message' => 'Gagal dihapus',
-            ], 500);
-        } catch (\Throwable $th) {
+                'status' => true,
+                'message' => 'Berhasil dihapus',
+                'data' => $serviceOut
+            ]);
+        } else {
             DB::rollBack();
-            throw $th;
+
+            return response([
+                'status' => false,
+                'message' => 'Gagal dihapus'
+            ]);
         }
     }
 

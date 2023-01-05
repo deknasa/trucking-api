@@ -364,64 +364,63 @@ class PelunasanPiutangHeaderController extends Controller
     /**
      * @ClassName
      */
-    public function destroy(PelunasanPiutangHeader $pelunasanpiutangheader, Request $request)
+    public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
-        try {
-            $getDetail = PelunasanPiutangDetail::where('pelunasanpiutang_id', $pelunasanpiutangheader->id)->get();
 
-            $delete = PelunasanPiutangHeader::where('id', $pelunasanpiutangheader->id)->delete();
+        $getDetail = PelunasanPiutangDetail::where('pelunasanpiutang_id', $id)->get();
 
-            if ($delete) {
-                $logTrail = [
-                    'namatabel' => strtoupper($pelunasanpiutangheader->getTable()),
-                    'postingdari' => 'DELETE PELUNASAN PIUTANG HEADER',
-                    'idtrans' => $pelunasanpiutangheader->id,
-                    'nobuktitrans' => $pelunasanpiutangheader->nobukti,
-                    'aksi' => 'DELETE',
-                    'datajson' => $pelunasanpiutangheader->toArray(),
-                    'modifiedby' => auth('api')->user()->name
-                ];
+        $pelunasanpiutangheader = new PelunasanPiutangHeader();
+        $pelunasanpiutangheader = $pelunasanpiutangheader->lockAndDestroy($id);
+        
+        if ($pelunasanpiutangheader) {
+            $logTrail = [
+                'namatabel' => strtoupper($pelunasanpiutangheader->getTable()),
+                'postingdari' => 'DELETE PELUNASAN PIUTANG HEADER',
+                'idtrans' => $pelunasanpiutangheader->id,
+                'nobuktitrans' => $pelunasanpiutangheader->nobukti,
+                'aksi' => 'DELETE',
+                'datajson' => $pelunasanpiutangheader->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ];
 
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+            $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-                // DELETE PELUNASAN PIUTANG DETAIL
+            // DELETE PELUNASAN PIUTANG DETAIL
 
-                $logTrailPiutangDetail = [
-                    'namatabel' => 'PELUNASANPIUTANGDETAIL',
-                    'postingdari' => 'DELETE PELUNASAN PIUTANG DETAIL',
-                    'idtrans' => $storedLogTrail['id'],
-                    'nobuktitrans' => $pelunasanpiutangheader->nobukti,
-                    'aksi' => 'DELETE',
-                    'datajson' => $getDetail->toArray(),
-                    'modifiedby' => auth('api')->user()->name
-                ];
+            $logTrailPiutangDetail = [
+                'namatabel' => 'PELUNASANPIUTANGDETAIL',
+                'postingdari' => 'DELETE PELUNASAN PIUTANG DETAIL',
+                'idtrans' => $storedLogTrail['id'],
+                'nobuktitrans' => $pelunasanpiutangheader->nobukti,
+                'aksi' => 'DELETE',
+                'datajson' => $getDetail->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ];
 
-                $validatedLogTrailPiutangDetail = new StoreLogTrailRequest($logTrailPiutangDetail);
-                app(LogTrailController::class)->store($validatedLogTrailPiutangDetail);
+            $validatedLogTrailPiutangDetail = new StoreLogTrailRequest($logTrailPiutangDetail);
+            app(LogTrailController::class)->store($validatedLogTrailPiutangDetail);
 
-                DB::commit();
+            DB::commit();
 
-                $selected = $this->getPosition($pelunasanpiutangheader, $pelunasanpiutangheader->getTable(), true);
-                $pelunasanpiutangheader->position = $selected->position;
-                $pelunasanpiutangheader->id = $selected->id;
-                $pelunasanpiutangheader->page = ceil($pelunasanpiutangheader->position / ($request->limit ?? 10));
-
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil dihapus',
-                    'data' => $pelunasanpiutangheader
-                ]);
-            }
-
+            $selected = $this->getPosition($pelunasanpiutangheader, $pelunasanpiutangheader->getTable(), true);
+            $pelunasanpiutangheader->position = $selected->position;
+            $pelunasanpiutangheader->id = $selected->id;
+            $pelunasanpiutangheader->page = ceil($pelunasanpiutangheader->position / ($request->limit ?? 10));
 
             return response([
-                'message' => 'Gagal dihapus'
-            ], 500);
-        } catch (\Throwable $th) {
+                'status' => true,
+                'message' => 'Berhasil dihapus',
+                'data' => $pelunasanpiutangheader
+            ]);
+        } else {
             DB::rollBack();
-            return response($th->getMessage());
+
+            return response([
+                'status' => false,
+                'message' => 'Gagal dihapus'
+            ]);
         }
     }
 

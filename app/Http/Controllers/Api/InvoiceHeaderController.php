@@ -205,7 +205,7 @@ class InvoiceHeaderController extends Controller
                     'agen_id' => $invoice->agen_id,
                     'modifiedby' => auth('api')->user()->name,
                     'statusformat' => 1,
-                    'jenisinvoice' =>'UTAMA',
+                    'jenisinvoice' => 'UTAMA',
                 ];
 
                 $piutangDetail = [];
@@ -464,130 +464,125 @@ class InvoiceHeaderController extends Controller
     /**
      * @ClassName
      */
-    public function destroy(InvoiceHeader $invoiceheader, Request $request)
+    public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
-        try {
-            $getDetail = InvoiceDetail::from(DB::raw("invoicedetail with (readuncommitted)"))
-                ->where('invoice_id', $invoiceheader->id)->get();       
 
-            $getPiutangHeader = PiutangHeader::from(DB::raw("piutangheader with (readuncommitted)"))
-                ->where('invoice_nobukti', $invoiceheader->nobukti)->first();
-            $getPiutangDetail = PiutangDetail::from(DB::raw("piutangdetail with (readuncommitted)"))
-                ->where('invoice_nobukti', $invoiceheader->nobukti)->get();
-            $getJurnalHeader = JurnalUmumHeader::from(DB::raw("jurnalumumheader with (readuncommitted)"))
-                ->where('nobukti', $invoiceheader->piutang_nobukti)->first();
-            $getJurnalDetail = JurnalUmumDetail::from(DB::raw("jurnalumumdetail with (readuncommitted)"))
-                ->where('nobukti', $invoiceheader->piutang_nobukti)->get();
+        $getDetail = InvoiceDetail::lockForUpdate()->where('invoice_id', $id)->get();
 
-            PiutangHeader::where('invoice_nobukti', $invoiceheader->nobukti)->delete();
-            JurnalUmumHeader::where('nobukti', $invoiceheader->piutang_nobukti)->delete();     
-            $isDelete = InvoiceHeader::where('id', $invoiceheader->id)->delete();
+        $invoice = new InvoiceHeader();
+        $invoice = $invoice->lockAndDestroy($id);
+        $getPiutangHeader = PiutangHeader::lockForUpdate()->where('invoice_nobukti', $invoice->nobukti)->first();
+        $getPiutangDetail = PiutangDetail::lockForUpdate()->where('invoice_nobukti', $invoice->nobukti)->get();
+        $getJurnalHeader = JurnalUmumHeader::lockForUpdate()->where('nobukti', $invoice->piutang_nobukti)->first();
+        $getJurnalDetail = JurnalUmumDetail::lockForUpdate()->where('nobukti', $invoice->piutang_nobukti)->get();
 
-            if ($isDelete) {
-                $logTrail = [
-                    'namatabel' => strtoupper($invoiceheader->getTable()),
-                    'postingdari' => 'DELETE INVOICE HEADER',
-                    'idtrans' => $invoiceheader->id,
-                    'nobuktitrans' => $invoiceheader->nobukti,
-                    'aksi' => 'DELETE',
-                    'datajson' => $invoiceheader->toArray(),
-                    'modifiedby' => auth('api')->user()->name
-                ];
+        PiutangHeader::where('invoice_nobukti', $invoice->nobukti)->delete();
+        JurnalUmumHeader::where('nobukti', $invoice->piutang_nobukti)->delete();
 
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+        if ($invoice) {
+            $logTrail = [
+                'namatabel' => strtoupper($invoice->getTable()),
+                'postingdari' => 'DELETE INVOICE HEADER',
+                'idtrans' => $invoice->id,
+                'nobuktitrans' => $invoice->nobukti,
+                'aksi' => 'DELETE',
+                'datajson' => $invoice->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ];
 
-                // DELETE INVOICE DETAIL
-                $logTrailInvoiceDetail = [
-                    'namatabel' => 'INVOICEDETAIL',
-                    'postingdari' => 'DELETE INVOICE DETAIL',
-                    'idtrans' => $storedLogTrail['id'],
-                    'nobuktitrans' => $invoiceheader->nobukti,
-                    'aksi' => 'DELETE',
-                    'datajson' => $getDetail->toArray(),
-                    'modifiedby' => auth('api')->user()->name
-                ];
+            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+            $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-                $validatedLogTrailInvoiceDetail = new StoreLogTrailRequest($logTrailInvoiceDetail);
-                app(LogTrailController::class)->store($validatedLogTrailInvoiceDetail);
+            // DELETE INVOICE DETAIL
+            $logTrailInvoiceDetail = [
+                'namatabel' => 'INVOICEDETAIL',
+                'postingdari' => 'DELETE INVOICE DETAIL',
+                'idtrans' => $storedLogTrail['id'],
+                'nobuktitrans' => $invoice->nobukti,
+                'aksi' => 'DELETE',
+                'datajson' => $getDetail->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ];
 
-                // DELETE PIUTANG HEADER
-                $logTrailPiutangHeader = [
-                    'namatabel' => 'PIUTANGHEADER',
-                    'postingdari' => 'DELETE PIUTANG HEADER DARI INVOICE',
-                    'idtrans' => $getPiutangHeader->id,
-                    'nobuktitrans' => $getPiutangHeader->nobukti,
-                    'aksi' => 'DELETE',
-                    'datajson' => $getPiutangHeader->toArray(),
-                    'modifiedby' => auth('api')->user()->name
-                ];
+            $validatedLogTrailInvoiceDetail = new StoreLogTrailRequest($logTrailInvoiceDetail);
+            app(LogTrailController::class)->store($validatedLogTrailInvoiceDetail);
 
-                $validatedLogTrailPiutangHeader = new StoreLogTrailRequest($logTrailPiutangHeader);
-                $storedLogTrailPiutang = app(LogTrailController::class)->store($validatedLogTrailPiutangHeader);
+            // DELETE PIUTANG HEADER
+            $logTrailPiutangHeader = [
+                'namatabel' => 'PIUTANGHEADER',
+                'postingdari' => 'DELETE PIUTANG HEADER DARI INVOICE',
+                'idtrans' => $getPiutangHeader->id,
+                'nobuktitrans' => $getPiutangHeader->nobukti,
+                'aksi' => 'DELETE',
+                'datajson' => $getPiutangHeader->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ];
 
-                // DELETE PIUTANG DETAIL
-                $logTrailPiutangDetail = [
-                    'namatabel' => 'PIUTANGDETAIL',
-                    'postingdari' => 'DELETE PIUTANG DETAIL DARI INVOICE',
-                    'idtrans' => $storedLogTrailPiutang['id'],
-                    'nobuktitrans' => $getPiutangHeader->nobukti,
-                    'aksi' => 'DELETE',
-                    'datajson' => $getPiutangDetail->toArray(),
-                    'modifiedby' => auth('api')->user()->name
-                ];
+            $validatedLogTrailPiutangHeader = new StoreLogTrailRequest($logTrailPiutangHeader);
+            $storedLogTrailPiutang = app(LogTrailController::class)->store($validatedLogTrailPiutangHeader);
 
-                $validatedLogTrailPiutangDetail = new StoreLogTrailRequest($logTrailPiutangDetail);
-                app(LogTrailController::class)->store($validatedLogTrailPiutangDetail);
+            // DELETE PIUTANG DETAIL
+            $logTrailPiutangDetail = [
+                'namatabel' => 'PIUTANGDETAIL',
+                'postingdari' => 'DELETE PIUTANG DETAIL DARI INVOICE',
+                'idtrans' => $storedLogTrailPiutang['id'],
+                'nobuktitrans' => $getPiutangHeader->nobukti,
+                'aksi' => 'DELETE',
+                'datajson' => $getPiutangDetail->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ];
 
-                // DELETE JURNAL HEADER
-                $logTrailJurnalHeader = [
-                    'namatabel' => 'JURNALUMUMHEADER',
-                    'postingdari' => 'DELETE JURNAL UMUM HEADER DARI INVOICE',
-                    'idtrans' => $getJurnalHeader->id,
-                    'nobuktitrans' => $getJurnalHeader->nobukti,
-                    'aksi' => 'DELETE',
-                    'datajson' => $getJurnalHeader->toArray(),
-                    'modifiedby' => auth('api')->user()->name
-                ];
+            $validatedLogTrailPiutangDetail = new StoreLogTrailRequest($logTrailPiutangDetail);
+            app(LogTrailController::class)->store($validatedLogTrailPiutangDetail);
 
-                $validatedLogTrailJurnalHeader = new StoreLogTrailRequest($logTrailJurnalHeader);
-                $storedLogTrailJurnal = app(LogTrailController::class)->store($validatedLogTrailJurnalHeader);
+            // DELETE JURNAL HEADER
+            $logTrailJurnalHeader = [
+                'namatabel' => 'JURNALUMUMHEADER',
+                'postingdari' => 'DELETE JURNAL UMUM HEADER DARI INVOICE',
+                'idtrans' => $getJurnalHeader->id,
+                'nobuktitrans' => $getJurnalHeader->nobukti,
+                'aksi' => 'DELETE',
+                'datajson' => $getJurnalHeader->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ];
 
-                // DELETE JURNAL DETAIL
-                $logTrailJurnalDetail = [
-                    'namatabel' => 'JURNALUMUMDETAIL',
-                    'postingdari' => 'DELETE JURNAL UMUM DETAIL DARI INVOICE',
-                    'idtrans' => $storedLogTrailJurnal['id'],
-                    'nobuktitrans' => $getJurnalHeader->nobukti,
-                    'aksi' => 'DELETE',
-                    'datajson' => $getJurnalDetail->toArray(),
-                    'modifiedby' => auth('api')->user()->name
-                ];
+            $validatedLogTrailJurnalHeader = new StoreLogTrailRequest($logTrailJurnalHeader);
+            $storedLogTrailJurnal = app(LogTrailController::class)->store($validatedLogTrailJurnalHeader);
 
-                $validatedLogTrailJurnalDetail = new StoreLogTrailRequest($logTrailJurnalDetail);
-                app(LogTrailController::class)->store($validatedLogTrailJurnalDetail);
+            // DELETE JURNAL DETAIL
+            $logTrailJurnalDetail = [
+                'namatabel' => 'JURNALUMUMDETAIL',
+                'postingdari' => 'DELETE JURNAL UMUM DETAIL DARI INVOICE',
+                'idtrans' => $storedLogTrailJurnal['id'],
+                'nobuktitrans' => $getJurnalHeader->nobukti,
+                'aksi' => 'DELETE',
+                'datajson' => $getJurnalDetail->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ];
 
-                DB::commit();
-    
-                $selected = $this->getPosition($invoiceheader, $invoiceheader->getTable(), true);
-                $invoiceheader->position = $selected->position;
-                $invoiceheader->id = $selected->id;
-                $invoiceheader->page = ceil($invoiceheader->position / ($request->limit ?? 10));
-    
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil dihapus',
-                    'data' => $invoiceheader
-                ]);
-            }
+            $validatedLogTrailJurnalDetail = new StoreLogTrailRequest($logTrailJurnalDetail);
+            app(LogTrailController::class)->store($validatedLogTrailJurnalDetail);
+
+            DB::commit();
+
+            $selected = $this->getPosition($invoice, $invoice->getTable(), true);
+            $invoice->position = $selected->position;
+            $invoice->id = $selected->id;
+            $invoice->page = ceil($invoice->position / ($request->limit ?? 10));
+
             return response([
-                'message' => 'Gagal dihapus'
-            ], 500);
-        } catch (\Throwable $th) {
+                'status' => true,
+                'message' => 'Berhasil dihapus',
+                'data' => $invoice
+            ]);
+        } else {
             DB::rollBack();
 
-            throw $th;
+            return response([
+                'status' => false,
+                'message' => 'Gagal dihapus'
+            ]);
         }
     }
 
@@ -617,7 +612,7 @@ class InvoiceHeaderController extends Controller
             ->whereRaw("tglbukti >= '$dari'")
             ->whereRaw("tglbukti <= '$sampai'")
             ->whereRaw("suratpengantar.jobtrucking not in(select orderantrucking_nobukti from invoicedetail)");
-       
+
         if ($cekSP->first()) {
             return response([
                 "data" => $invoice->getSP($request)
@@ -696,7 +691,7 @@ class InvoiceHeaderController extends Controller
 
             $nobukti = $piutangHeader['nobukti'];
 
-            
+
 
             $detailLogPiutang = [];
             $detailLogJurnal = [];

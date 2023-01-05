@@ -64,7 +64,7 @@ class UpahSupirController extends Controller
             $this->deleteFiles($upahsupir);
             if ($request->gambar) {
                 $upahsupir->gambar = $this->storeFiles($request->gambar, 'upahsupir');
-            }else {
+            } else {
                 $upahsupir->gambar = '';
             }
             if ($upahsupir->save()) {
@@ -105,7 +105,6 @@ class UpahSupirController extends Controller
 
 
                     $detaillog[] = $datadetails['detail']->toArray();
-
                 }
 
                 $datalogtrail = [
@@ -184,7 +183,7 @@ class UpahSupirController extends Controller
             $this->deleteFiles($upahsupir);
             if ($request->gambar) {
                 $upahsupir->gambar = $this->storeFiles($request->gambar, 'upahsupir');
-            }else {
+            } else {
                 $upahsupir->gambar = '';
             }
             if ($upahsupir->save()) {
@@ -227,7 +226,6 @@ class UpahSupirController extends Controller
                     }
 
                     $detaillog[] = $datadetails['detail']->toArray();
-
                 }
 
                 $datalogtrail = [
@@ -269,65 +267,65 @@ class UpahSupirController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(UpahSupir $upahsupir, Request $request)
+    public function destroy(Request $request, $id)
     {
 
         DB::beginTransaction();
-        try {
-            $getDetail = UpahSupirRincian::from(DB::raw('upahsupirrincian with (readuncommitted)'))->where('upahsupir_id', $upahsupir->id)->get();
-            $isDelete = UpahSupir::where('id', $upahsupir->id)->delete();
 
-            if ($isDelete) {
-                $logTrail = [
-                    'namatabel' => strtoupper($upahsupir->getTable()),
-                    'postingdari' => 'DELETE UPAH SUPIR',
-                    'idtrans' => $upahsupir->id,
-                    'nobuktitrans' => $upahsupir->id,
-                    'aksi' => 'DELETE',
-                    'datajson' => $upahsupir->toArray(),
-                    'modifiedby' => auth('api')->user()->name
-                ];
+        $getDetail = UpahSupirRincian::lockForUpdate()->where('upahsupir_id', $id)->get();
 
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-                
-                // DELETE UPAH SUPIR RINCIAN
+        $upahSupir = new UpahSupir();
+        $upahSupir = $upahSupir->lockAndDestroy($id);
+        if ($upahSupir) {
+            $logTrail = [
+                'namatabel' => strtoupper($upahSupir->getTable()),
+                'postingdari' => 'DELETE UPAH SUPIR',
+                'idtrans' => $upahSupir->id,
+                'nobuktitrans' => $upahSupir->id,
+                'aksi' => 'DELETE',
+                'datajson' => $upahSupir->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ];
 
-                $logTrailUpahSupirRincian = [
-                    'namatabel' => 'UPAHSUPIRRINCIAN',
-                    'postingdari' => 'DELETE UPAH SUPIR RINCIAN',
-                    'idtrans' => $storedLogTrail['id'],
-                    'nobuktitrans' => $upahsupir->id,
-                    'aksi' => 'DELETE',
-                    'datajson' => $getDetail->toArray(),
-                    'modifiedby' => auth('api')->user()->name
-                ];
+            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+            $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-                $validatedLogTrailUpahSupirRincian = new StoreLogTrailRequest($logTrailUpahSupirRincian);
-                app(LogTrailController::class)->store($validatedLogTrailUpahSupirRincian);
-                DB::commit();
-    
-                /* Set position and page */
-                $selected = $this->getPosition($upahsupir, $upahsupir->getTable(), true);
-                $upahsupir->position = $selected->position;
-                $upahsupir->id = $selected->id;
-                $upahsupir->page = ceil($upahsupir->position / ($request->limit ?? 10));
-    
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil dihapus',
-                    'data' => $upahsupir
-                ]);
+            // DELETE UPAH SUPIR RINCIAN
 
-            }
+            $logTrailUpahSupirRincian = [
+                'namatabel' => 'UPAHSUPIRRINCIAN',
+                'postingdari' => 'DELETE UPAH SUPIR RINCIAN',
+                'idtrans' => $storedLogTrail['id'],
+                'nobuktitrans' => $upahSupir->id,
+                'aksi' => 'DELETE',
+                'datajson' => $getDetail->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ];
+
+            $validatedLogTrailUpahSupirRincian = new StoreLogTrailRequest($logTrailUpahSupirRincian);
+            app(LogTrailController::class)->store($validatedLogTrailUpahSupirRincian);
+            DB::commit();
+
+            /* Set position and page */
+            $selected = $this->getPosition($upahSupir, $upahSupir->getTable(), true);
+            $upahSupir->position = $selected->position;
+            $upahSupir->id = $selected->id;
+            $upahSupir->page = ceil($upahSupir->position / ($request->limit ?? 10));
 
             return response([
-                'message' => 'Gagal dihapus'
-            ], 500);
-        } catch (\Throwable $th) {
+                'status' => true,
+                'message' => 'Berhasil dihapus',
+                'data' => $upahSupir
+            ]);
+        } else {
             DB::rollBack();
-            throw $th;
+
+            return response([
+                'status' => false,
+                'message' => 'Gagal dihapus'
+            ]);
         }
+        throw $th;
     }
 
 
@@ -385,14 +383,14 @@ class UpahSupirController extends Controller
         if ($photoUpahSupir) {
             foreach ($photoUpahSupir as $path) {
                 foreach ($sizeTypes as $sizeType) {
-                $relatedPhotoUpahSupir[] = "upahsupir/$sizeType-$path";
+                    $relatedPhotoUpahSupir[] = "upahsupir/$sizeType-$path";
                 }
             }
             Storage::delete($relatedPhotoUpahSupir);
         }
     }
 
-    public function getImage( string $filename, string $type)
+    public function getImage(string $filename, string $type)
     {
         return response()->file(storage_path("app/upahsupir/$type-$filename"));
     }
