@@ -28,15 +28,15 @@ class JenisTrado extends MyModel
         $this->setRequestParameters();
 
         $query = JenisTrado::from(DB::raw("$this->table with (readuncommitted)"))
-        ->select(
-            'jenistrado.id',
-            'jenistrado.kodejenistrado',
-            'jenistrado.keterangan',
-            'parameter.memo as statusaktif',
-            'jenistrado.modifiedby',
-            'jenistrado.created_at',
-            'jenistrado.updated_at'
-        )
+            ->select(
+                'jenistrado.id',
+                'jenistrado.kodejenistrado',
+                'jenistrado.keterangan',
+                'parameter.memo as statusaktif',
+                'jenistrado.modifiedby',
+                'jenistrado.created_at',
+                'jenistrado.updated_at'
+            )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'jenistrado.statusaktif', '=', 'parameter.id');
 
         $this->totalRows = $query->count();
@@ -50,22 +50,24 @@ class JenisTrado extends MyModel
 
         return $data;
     }
-    
+
     public function selectColumns($query)
     {
-        return $query->select(
-            DB::raw(
-            "$this->table.id,
+        return $query->from(
+            DB::raw($this->table . " with (readuncommitted)")
+        )
+            ->select(
+                DB::raw(
+                    "$this->table.id,
             $this->table.kodejenistrado,
             $this->table.keterangan,
             'parameter.text as statusaktif',
             $this->table.modifiedby,
             $this->table.created_at,
             $this->table.updated_at"
+                )
             )
-        )
-        ->leftJoin('parameter', 'jenistrado.statusaktif','=', 'parameter.id');
-
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'jenistrado.statusaktif', '=', 'parameter.id');
     }
 
     public function createTemp(string $modelTable)
@@ -87,11 +89,10 @@ class JenisTrado extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id','kodejenistrado','keterangan','statusaktif','modifiedby','created_at','updated_at'],$models);
+        DB::table($temp)->insertUsing(['id', 'kodejenistrado', 'keterangan', 'statusaktif', 'modifiedby', 'created_at', 'updated_at'], $models);
 
 
-        return  $temp;         
-
+        return  $temp;
     }
 
     public function sort($query)
@@ -108,7 +109,7 @@ class JenisTrado extends MyModel
                         if ($filters['field'] == 'statusaktif') {
                             $query = $query->where('parameter.text', '=', "$filters[data]");
                         } else {
-                            $query = $query->where('jenistrado.'.$filters['field'], 'LIKE', "%$filters[data]%");
+                            $query = $query->where('jenistrado.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
                     }
 
@@ -118,7 +119,7 @@ class JenisTrado extends MyModel
                         if ($filters['field'] == 'statusaktif') {
                             $query = $query->orWhere('parameter.text', '=', "$filters[data]");
                         } else {
-                            $query = $query->orWhere('jenistrado.'.$filters['field'], 'LIKE', "%$filters[data]%");
+                            $query = $query->orWhere('jenistrado.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
                     }
 

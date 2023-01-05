@@ -28,15 +28,15 @@ class Mekanik extends MyModel
         $this->setRequestParameters();
 
         $query = Mekanik::from(DB::raw("$this->table with (readuncommitted)"))
-        ->select(
-            'mekanik.id',
-            'mekanik.namamekanik',
-            'mekanik.keterangan',
-            'parameter.memo as statusaktif',
-            'mekanik.modifiedby',
-            'mekanik.created_at',
-            'mekanik.updated_at'
-        )
+            ->select(
+                'mekanik.id',
+                'mekanik.namamekanik',
+                'mekanik.keterangan',
+                'parameter.memo as statusaktif',
+                'mekanik.modifiedby',
+                'mekanik.created_at',
+                'mekanik.updated_at'
+            )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'mekanik.statusaktif', '=', 'parameter.id');
 
         $this->totalRows = $query->count();
@@ -52,9 +52,11 @@ class Mekanik extends MyModel
     }
     public function selectColumns($query)
     {
-        return $query->select(
+        return $query->from(
+            DB::raw($this->table . " with (readuncommitted)")
+        )->select(
             DB::raw(
-            "$this->table.id,
+                "$this->table.id,
             $this->table.namamekanik,
             $this->table.keterangan,
             'parameter.text as statusaktif',
@@ -63,8 +65,7 @@ class Mekanik extends MyModel
             $this->table.updated_at"
             )
         )
-        ->leftJoin('parameter', 'mekanik.statusaktif','=', 'parameter.id');
-
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'mekanik.statusaktif', '=', 'parameter.id');
     }
 
     public function createTemp(string $modelTable)
@@ -86,11 +87,10 @@ class Mekanik extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id','namamekanik','keterangan','statusaktif','modifiedby','created_at','updated_at'],$models);
+        DB::table($temp)->insertUsing(['id', 'namamekanik', 'keterangan', 'statusaktif', 'modifiedby', 'created_at', 'updated_at'], $models);
 
 
-        return  $temp;         
-
+        return  $temp;
     }
 
     public function sort($query)

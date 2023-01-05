@@ -28,16 +28,16 @@ class Kategori extends MyModel
         $this->setRequestParameters();
 
         $query = Kategori::from(DB::raw("$this->table with (readuncommitted)"))
-        ->select(
-            'kategori.id',
-            'kategori.kodekategori',
-            'kategori.keterangan',
-            'parameter.memo as statusaktif',
-            'p.keterangan as subkelompok',
-            'kategori.modifiedby',
-            'kategori.created_at',
-            'kategori.updated_at'
-        )
+            ->select(
+                'kategori.id',
+                'kategori.kodekategori',
+                'kategori.keterangan',
+                'parameter.memo as statusaktif',
+                'p.keterangan as subkelompok',
+                'kategori.modifiedby',
+                'kategori.created_at',
+                'kategori.updated_at'
+            )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'kategori.statusaktif', '=', 'parameter.id')
             ->leftJoin(DB::raw("subkelompok AS p with (readuncommitted)"), 'kategori.subkelompok_id', '=', 'p.id');
 
@@ -58,20 +58,20 @@ class Kategori extends MyModel
         $this->setRequestParameters();
 
         $data = Kategori::from(DB::raw("kategori with (readuncommitted)"))
-        ->select(
-            'kategori.id',
-            'kategori.kodekategori',
-            'kategori.keterangan',
-            'kategori.subkelompok_id',
-            'p.keterangan as subkelompok',
-            'kategori.statusaktif',
-            'kategori.modifiedby',
-            'kategori.created_at',
-            'kategori.updated_at'
-        )
+            ->select(
+                'kategori.id',
+                'kategori.kodekategori',
+                'kategori.keterangan',
+                'kategori.subkelompok_id',
+                'p.keterangan as subkelompok',
+                'kategori.statusaktif',
+                'kategori.modifiedby',
+                'kategori.created_at',
+                'kategori.updated_at'
+            )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'kategori.statusaktif', '=', 'parameter.id')
             ->leftJoin(DB::raw("subkelompok AS p with (readuncommitted)"), 'kategori.subkelompok_id', '=', 'p.id')
-        ->where('kategori.id', $id)->first();
+            ->where('kategori.id', $id)->first();
 
 
 
@@ -79,9 +79,12 @@ class Kategori extends MyModel
     }
     public function selectColumns($query)
     {
-        return $query->select(
-            DB::raw(
-            "$this->table.id,
+        return $query->from(
+            DB::raw($this->table . " with (readuncommitted)")
+        )
+            ->select(
+                DB::raw(
+                    "$this->table.id,
             $this->table.kodekategori,
             $this->table.keterangan,
             'parameter.text as statusaktif',
@@ -89,10 +92,10 @@ class Kategori extends MyModel
             $this->table.modifiedby,
             $this->table.created_at,
             $this->table.updated_at"
+                )
             )
-        )
-        ->leftJoin('parameter', 'kategori.statusaktif', '=', 'parameter.id')
-        ->leftJoin('subkelompok AS p', 'kategori.subkelompok_id', '=', 'p.id');
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'kategori.statusaktif', '=', 'parameter.id')
+            ->leftJoin(DB::raw("subkelompok AS p with (readuncommitted)"), 'kategori.subkelompok_id', '=', 'p.id');
     }
 
     public function createTemp(string $modelTable)
@@ -115,11 +118,10 @@ class Kategori extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id','kodekategori','keterangan','statusaktif','subkelompok','modifiedby','created_at','updated_at'],$models);
+        DB::table($temp)->insertUsing(['id', 'kodekategori', 'keterangan', 'statusaktif', 'subkelompok', 'modifiedby', 'created_at', 'updated_at'], $models);
 
 
-        return  $temp;         
-
+        return  $temp;
     }
 
     public function sort($query)
@@ -138,7 +140,7 @@ class Kategori extends MyModel
                         } elseif ($filters['field'] == 'subkelompok') {
                             $query = $query->where('p.keterangan', 'LIKE', "%$filters[data]%");
                         } else {
-                            $query = $query->where('kategori.'.$filters['field'], 'LIKE', "%$filters[data]%");
+                            $query = $query->where('kategori.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
                     }
 
@@ -150,7 +152,7 @@ class Kategori extends MyModel
                         } elseif ($filters['field'] == 'subkelompok') {
                             $query = $query->orWhere('p.keterangan', 'LIKE', "%$filters[data]%");
                         } else {
-                            $query = $query->orWhere('kategori.'.$filters['field'], 'LIKE', "%$filters[data]%");
+                            $query = $query->orWhere('kategori.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
                     }
 
@@ -170,5 +172,5 @@ class Kategori extends MyModel
     public function paginate($query)
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
-    } 
+    }
 }

@@ -21,23 +21,26 @@ class BankPelanggan extends MyModel
     protected $casts = [
         'created_at' => 'date:d-m-Y H:i:s',
         'updated_at' => 'date:d-m-Y H:i:s'
-    ];      
+    ];
 
     public function get()
     {
         $this->setRequestParameters();
 
-        $query = DB::table($this->table)->select(
-            'bankpelanggan.id',
-            'bankpelanggan.kodebank',
-            'bankpelanggan.namabank',
-            'bankpelanggan.keterangan',
-            'parameter.memo as statusaktif',
-            'bankpelanggan.modifiedby',
-            'bankpelanggan.created_at',
-            'bankpelanggan.updated_at'
+        $query = DB::table($this->table)->from(
+            DB::raw($this->table . " with (readuncommitted)")
         )
-            ->leftJoin('parameter', 'bankpelanggan.statusaktif', '=', 'parameter.id');
+            ->select(
+                'bankpelanggan.id',
+                'bankpelanggan.kodebank',
+                'bankpelanggan.namabank',
+                'bankpelanggan.keterangan',
+                'parameter.memo as statusaktif',
+                'bankpelanggan.modifiedby',
+                'bankpelanggan.created_at',
+                'bankpelanggan.updated_at'
+            )
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'bankpelanggan.statusaktif', '=', 'parameter.id');
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -51,10 +54,13 @@ class BankPelanggan extends MyModel
         return $data;
     }
 
-    public function selectColumns($query) 
+    public function selectColumns($query)
     {
-        return $query->select(
-            DB::raw("
+        return $query->from(
+            DB::raw($this->table . " with (readuncommitted)")
+        )
+            ->select(
+                DB::raw("
                 $this->table.id,
                 $this->table.kodebank,
                 $this->table.namabank,
@@ -64,15 +70,14 @@ class BankPelanggan extends MyModel
                 $this->table.created_at,
                 $this->table.updated_at
             ")
-        )
-        ->leftJoin('parameter', 'bankpelanggan.statusaktif', '=', 'parameter.id');
-
+            )
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'bankpelanggan.statusaktif', '=', 'parameter.id');
     }
 
     public function createTemp(string $modelTable)
     {
         $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-        Schema::create($temp, function ($table){
+        Schema::create($temp, function ($table) {
             $table->bigInteger('id')->default('0');
             $table->string('kodebank', 1000)->default('');
             $table->string('namabank', 1000)->default('');
@@ -89,7 +94,7 @@ class BankPelanggan extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id','kodebank','namabank','keterangan','statusaktif','modifiedby','created_at','updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'kodebank', 'namabank', 'keterangan', 'statusaktif', 'modifiedby', 'created_at', 'updated_at'], $models);
 
         return $temp;
     }

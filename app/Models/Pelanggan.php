@@ -28,7 +28,9 @@ class Pelanggan extends MyModel
     {
         $this->setRequestParameters();
 
-        $query = DB::table($this->table)->select(
+        $query = DB::table($this->table)->from(
+            DB::raw($this->table . " with (readuncommitted)")
+        )->select(
             'pelanggan.*',
         );
 
@@ -46,9 +48,12 @@ class Pelanggan extends MyModel
 
     public function selectColumns($query)
     {
-        return $query->select(
-            DB::raw(
-            "$this->table.id,
+        return $query->from(
+            DB::raw($this->table . " with (readuncommitted)")
+        )
+            ->select(
+                DB::raw(
+                    "$this->table.id,
             $this->table.kodepelanggan,
             $this->table.namapelanggan,
             $this->table.keterangan,
@@ -60,8 +65,8 @@ class Pelanggan extends MyModel
             $this->table.modifiedby,
             $this->table.created_at,
             $this->table.updated_at"
-            )
-        );
+                )
+            );
     }
 
     public function createTemp(string $modelTable)
@@ -88,11 +93,10 @@ class Pelanggan extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id','kodepelanggan','namapelanggan','keterangan','telp','alamat','alamat2','kota','kodepos','modifiedby','created_at','updated_at'],$models);
+        DB::table($temp)->insertUsing(['id', 'kodepelanggan', 'namapelanggan', 'keterangan', 'telp', 'alamat', 'alamat2', 'kota', 'kodepos', 'modifiedby', 'created_at', 'updated_at'], $models);
 
 
-        return  $temp;         
-
+        return  $temp;
     }
 
     public function sort($query)

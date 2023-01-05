@@ -29,14 +29,17 @@ class LaporanBukuBesar extends MyModel
     {
         // data coba coba
         $query = DB::table('jurnalumumdetail AS A')
+        ->from(
+            DB::raw("jurnalumumdetail AS A with (readuncommitted)")
+        )
         ->select(['A.nominal as debet','b.nominal as kredit','A.nominal as saldo','A.keterangan', 'jurnalumumheader.nobukti', 'jurnalumumheader.tglbukti'])
         ->leftJoin(
-            DB::raw("(SELECT baris,nobukti,nominal FROM jurnalumumdetail WHERE nominal<0) B"),
+            DB::raw("(SELECT baris,nobukti,nominal FROM jurnalumumdetail with (readuncommitted) WHERE nominal<0) B"),
             function ($join) {
                 $join->on('A.baris', '=', 'B.baris');
             }
         )
-        ->leftJoin('jurnalumumheader','jurnalumumheader.nobukti','A.nobukti')
+        ->leftJoin(DB::raw("jurnalumumheader with (readuncommitted)"),'jurnalumumheader.nobukti','A.nobukti')
         ->whereRaw("A.nobukti = B.nobukti")
         ->whereRaw("A.nominal >= 0");
 

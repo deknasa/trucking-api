@@ -28,7 +28,9 @@ class AbsensiSupirApprovalHeader extends MyModel
     {
         $this->setRequestParameters();
 
-        $query = DB::table($this->table)->select(
+        $query = DB::table($this->table)->from(
+            DB::raw($this->table . " with (readuncommitted)")
+        )->select(
             'absensisupirapprovalheader.id',
             'absensisupirapprovalheader.nobukti',
             'absensisupirapprovalheader.tglbukti',
@@ -50,9 +52,9 @@ class AbsensiSupirApprovalHeader extends MyModel
             'absensisupirapprovalheader.updated_at',
             'absensisupirapprovalheader.created_at',
         )
-            ->leftJoin('parameter as statusapproval', 'absensisupirapprovalheader.statusapproval', 'statusapproval.id')
-            ->leftJoin('parameter as statuscetak', 'absensisupirapprovalheader.statuscetak', 'statuscetak.id')
-            ->leftJoin('parameter as statusformat', 'absensisupirapprovalheader.statusformat', 'statusformat.id');
+            ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'absensisupirapprovalheader.statusapproval', 'statusapproval.id')
+            ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'absensisupirapprovalheader.statuscetak', 'statuscetak.id')
+            ->leftJoin(DB::raw("parameter as statusformat with (readuncommitted)"), 'absensisupirapprovalheader.statusformat', 'statusformat.id');
 
 
 
@@ -81,10 +83,10 @@ class AbsensiSupirApprovalHeader extends MyModel
             $table->date('tglbukti')->default('1900/1/1');
             $table->string('absensisupir_nobukti', 50)->default('');
             $table->longText('keterangan')->default('');
-            $table->string('statusapproval',1000)->default('');
+            $table->string('statusapproval', 1000)->default('');
             $table->dateTime('tglapproval')->default('1900/1/1');
             $table->string('userapproval', 200)->default('');
-            $table->string('statusformat',1000)->default('');
+            $table->string('statusformat', 1000)->default('');
             $table->string('pengeluaran_nobukti', 50)->default('');
             $table->string('coakaskeluar', 50)->default('');
             $table->string('postingdari', 50)->default('');
@@ -98,7 +100,7 @@ class AbsensiSupirApprovalHeader extends MyModel
             $table->dateTime('updated_at')->default('1900/1/1');
             $table->increments('position');
         });
-        
+
 
         $query = DB::table($modelTable);
         $query = $this->selectColumns($query);
@@ -118,13 +120,13 @@ class AbsensiSupirApprovalHeader extends MyModel
             'pengeluaran_nobukti',
             'coakaskeluar',
             'postingdari',
-            'tglkaskeluar', 
-            'statuscetak', 
-            'userbukacetak', 
-            'tglbukacetak', 
+            'tglkaskeluar',
+            'statuscetak',
+            'userbukacetak',
+            'tglbukacetak',
             'jumlahcetak',
             'modifiedby',
-            'created_at','updated_at'
+            'created_at', 'updated_at'
         ], $models);
 
         return $temp;
@@ -132,7 +134,9 @@ class AbsensiSupirApprovalHeader extends MyModel
 
     public function selectColumns($query)
     {
-        return $query->select(
+        return $query->from(
+            DB::raw($this->table . " with (readuncommitted)")
+        )->select(
             DB::raw(
                 "$this->table.id,
                 $this->table.nobukti,
@@ -156,15 +160,17 @@ class AbsensiSupirApprovalHeader extends MyModel
                 $this->table.updated_at"
             )
         )
-        ->leftJoin('absensisupirheader', 'absensisupirapprovalheader.nobukti', 'absensisupirheader.nobukti')
-        ->leftJoin('parameter as statuscetak' , 'absensisupirapprovalheader.statuscetak', 'statuscetak.id')
-        ->leftJoin('parameter as statusapproval' , 'absensisupirapprovalheader.statusapproval', 'statusapproval.id')
-        ->leftJoin('parameter as statusformat' , 'absensisupirapprovalheader.statusformat', 'statusformat.id');
-   }
+            ->leftJoin(DB::raw("absensisupirheader with (readuncommitted)"), 'absensisupirapprovalheader.nobukti', 'absensisupirheader.nobukti')
+            ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'absensisupirapprovalheader.statuscetak', 'statuscetak.id')
+            ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'absensisupirapprovalheader.statusapproval', 'statusapproval.id')
+            ->leftJoin(DB::raw("parameter as statusformat with (readuncommitted)"), 'absensisupirapprovalheader.statusformat', 'statusformat.id');
+    }
 
     public function getApproval($nobukti)
     {
-        $query = DB::table('absensisupirdetail')
+        $query = DB::table('absensisupirdetail')->from(
+            DB::raw("absensisupirdetail with (readuncommitted)")
+        )
             ->select(
                 'absensisupirdetail.keterangan as keterangan_detail',
                 'absensisupirdetail.jam',
@@ -177,13 +183,13 @@ class AbsensiSupirApprovalHeader extends MyModel
                 'supirutama.id as supir_id',
                 'absensisupirheader.kasgantung_nobukti',
             )
-            ->leftJoin('absensisupirheader', 'absensisupirdetail.absensi_id', 'absensisupirheader.id')
-            ->leftJoin('trado', 'absensisupirdetail.trado_id', 'trado.id')
-            ->leftJoin('supir as supirutama', 'absensisupirdetail.supir_id', 'supirutama.id')
+            ->leftJoin(DB::raw("absensisupirheader with (readuncommitted)"), 'absensisupirdetail.absensi_id', 'absensisupirheader.id')
+            ->leftJoin(DB::raw("trado with (readuncommitted)"), 'absensisupirdetail.trado_id', 'trado.id')
+            ->leftJoin(DB::raw("supir as supirutama with (readuncommitted)"), 'absensisupirdetail.supir_id', 'supirutama.id')
             ->whereRaw(" EXISTS (
             SELECT absensisupirapprovalheader.absensisupir_nobukti
-    FROM absensisupirdetail          
-    left join absensisupirapprovalheader on absensisupirapprovalheader.absensisupir_nobukti= absensisupirdetail.nobukti
+    FROM absensisupirdetail    with (readuncommitted)        
+    left join absensisupirapprovalheader with (readuncommitted) on absensisupirapprovalheader.absensisupir_nobukti= absensisupirdetail.nobukti
     WHERE absensisupirapprovalheader.absensisupir_nobukti = absensisupirheader.nobukti
           )")
             ->where('absensisupirdetail.nobukti', $nobukti);
@@ -228,11 +234,11 @@ class AbsensiSupirApprovalHeader extends MyModel
 
         $query = DB::table($this->table);
         $query = $this->selectColumns($query)
-            ->leftJoin('pengeluaranheader', 'absensisupirapprovalheader.pengeluaran_nobukti', 'pengeluaranheader.nobukti')
-            ->leftJoin('absensisupirheader', 'absensisupirapprovalheader.absensisupir_nobukti', 'absensisupirheader.nobukti')
-            ->leftJoin('parameter as statusapproval', 'absensisupirapprovalheader.statusapproval', 'statusapproval.id')
-            ->leftJoin('parameter as statuscetak', 'absensisupirapprovalheader.statuscetak', 'statuscetak.id')
-            ->leftJoin('parameter as statusformat', 'absensisupirapprovalheader.statusformat', 'statusformat.id');
+            ->leftJoin(DB::raw("pengeluaranheader with (readuncommitted)"), 'absensisupirapprovalheader.pengeluaran_nobukti', 'pengeluaranheader.nobukti')
+            ->leftJoin(DB::raw("absensisupirheader with (readuncommitted)"), 'absensisupirapprovalheader.absensisupir_nobukti', 'absensisupirheader.nobukti')
+            ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'absensisupirapprovalheader.statusapproval', 'statusapproval.id')
+            ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'absensisupirapprovalheader.statuscetak', 'statuscetak.id')
+            ->leftJoin(DB::raw("parameter as statusformat with (readuncommitted)"), 'absensisupirapprovalheader.statusformat', 'statusformat.id');
         $data = $query->where("$this->table.id", $id)->first();
         return $data;
     }

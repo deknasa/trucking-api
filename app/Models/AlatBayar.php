@@ -18,7 +18,7 @@ class AlatBayar extends MyModel
         'created_at' => 'date:d-m-Y H:i:s',
         'updated_at' => 'date:d-m-Y H:i:s'
     ];
-    
+
     protected $guarded = [
         'id',
         'created_at',
@@ -29,21 +29,24 @@ class AlatBayar extends MyModel
     {
         $this->setRequestParameters();
 
-        $query = DB::table($this->table)->select(
-            'alatbayar.id',
-            'alatbayar.kodealatbayar',
-            'alatbayar.namaalatbayar',
-            'alatbayar.keterangan',
-            'parameter_statuslangsunggcair.memo as statuslangsunggcair',
-            'parameter_statusdefault.memo as statusdefault',
-            'bank.namabank as bank_id',
-            'alatbayar.modifiedby',
-            'alatbayar.created_at',
-            'alatbayar.updated_at'
+        $query = DB::table($this->table)->from(
+            DB::raw($this->table . " with (readuncommitted)")
         )
-            ->leftJoin('bank', 'alatbayar.bank_id', 'bank.id')
-            ->leftJoin('parameter as parameter_statuslangsunggcair', 'alatbayar.statuslangsunggcair', 'parameter_statuslangsunggcair.id')
-            ->leftJoin('parameter as parameter_statusdefault', 'alatbayar.statusdefault', 'parameter_statusdefault.id');
+            ->select(
+                'alatbayar.id',
+                'alatbayar.kodealatbayar',
+                'alatbayar.namaalatbayar',
+                'alatbayar.keterangan',
+                'parameter_statuslangsunggcair.memo as statuslangsunggcair',
+                'parameter_statusdefault.memo as statusdefault',
+                'bank.namabank as bank_id',
+                'alatbayar.modifiedby',
+                'alatbayar.created_at',
+                'alatbayar.updated_at'
+            )
+            ->leftJoin(DB::raw("bank with (readuncommitted)"), 'alatbayar.bank_id', 'bank.id')
+            ->leftJoin(DB::raw("parameter as parameter_statuslangsunggcair with (readuncommitted)"), 'alatbayar.statuslangsunggcair', 'parameter_statuslangsunggcair.id')
+            ->leftJoin(DB::raw("parameter as parameter_statusdefault with (readuncommitted)"), 'alatbayar.statusdefault', 'parameter_statusdefault.id');
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -58,18 +61,21 @@ class AlatBayar extends MyModel
     }
     public function find($id)
     {
-        $query = DB::table('alatbayar')->select(
-            'alatbayar.id',
-            'alatbayar.kodealatbayar',
-            'alatbayar.namaalatbayar',
-            'alatbayar.keterangan',
-            'alatbayar.statuslangsunggcair',
-            'alatbayar.statusdefault',
-            'alatbayar.bank_id',
-            'bank.namabank as bank',
-        )
-            ->leftJoin('bank', 'alatbayar.bank_id', 'bank.id')
-            ->where('alatbayar.id',$id);
+        $query = DB::table('alatbayar')
+            ->from(
+                DB::raw("alatbayar with (readuncommitted)")
+            )->select(
+                'alatbayar.id',
+                'alatbayar.kodealatbayar',
+                'alatbayar.namaalatbayar',
+                'alatbayar.keterangan',
+                'alatbayar.statuslangsunggcair',
+                'alatbayar.statusdefault',
+                'alatbayar.bank_id',
+                'bank.namabank as bank',
+            )
+            ->leftJoin(DB::raw("bank with (readuncommitted)"), 'alatbayar.bank_id', 'bank.id')
+            ->where('alatbayar.id', $id);
 
         $data = $query->first();
 
@@ -78,7 +84,10 @@ class AlatBayar extends MyModel
 
     public function selectColumns($query)
     {
-        return $query->select(
+        return $query->from(
+            DB::raw($this->table . " with (readuncommitted)")
+        )
+        ->select(
             DB::raw("
                 $this->table.id,
                 $this->table.kodealatbayar,
@@ -92,16 +101,15 @@ class AlatBayar extends MyModel
                 $this->table.updated_at
             ")
         )
-        ->leftJoin('bank', 'alatbayar.bank_id', 'bank.id')
-        ->leftJoin('parameter as parameter_statuslangsunggcair', 'alatbayar.statuslangsunggcair', 'parameter_statuslangsunggcair.id')
-        ->leftJoin('parameter as parameter_statusdefault', 'alatbayar.statusdefault', 'parameter_statusdefault.id');
-
+            ->leftJoin(DB::raw("bank with (readuncommitted)"), 'alatbayar.bank_id', 'bank.id')
+            ->leftJoin(DB::raw("parameter as parameter_statuslangsunggcair with (readuncommitted)"), 'alatbayar.statuslangsunggcair', 'parameter_statuslangsunggcair.id')
+            ->leftJoin(DB::raw("parameter as parameter_statusdefault with (readuncommitted)"), 'alatbayar.statusdefault', 'parameter_statusdefault.id');
     }
 
     public function createTemp(string $modelTable)
     {
         $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-        Schema::create($temp, function ($table){
+        Schema::create($temp, function ($table) {
             $table->bigInteger('id')->default('0');
             $table->string('kodealatbayar', 1000)->default('');
             $table->string('namaalatbayar', 1000)->default('');
@@ -120,7 +128,7 @@ class AlatBayar extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id','kodealatbayar','namaalatbayar','keterangan','statuslangsungcair','statusdefault','bank_id','modifiedby','created_at','updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'kodealatbayar', 'namaalatbayar', 'keterangan', 'statuslangsungcair', 'statusdefault', 'bank_id', 'modifiedby', 'created_at', 'updated_at'], $models);
 
         return $temp;
     }
@@ -178,5 +186,4 @@ class AlatBayar extends MyModel
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
-
 }

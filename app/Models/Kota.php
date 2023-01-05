@@ -66,7 +66,9 @@ class Kota extends MyModel
 
     public function selectColumns($query)
     {
-        return $query->select(
+        return $query->from(
+            DB::raw($this->table . " with (readuncommitted)")
+        )->select(
             DB::raw(
             "$this->table.id,
             $this->table.kodekota,
@@ -79,8 +81,8 @@ class Kota extends MyModel
             )
         )
         
-        ->leftJoin('parameter', 'kota.statusaktif', '=', 'parameter.id')
-        ->leftJoin('zona', 'kota.zona_id', '=', 'zona.id');
+        ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'kota.statusaktif', '=', 'parameter.id')
+        ->leftJoin(DB::raw("zona with (readuncommitted)"), 'kota.zona_id', '=', 'zona.id');
 
     }
 

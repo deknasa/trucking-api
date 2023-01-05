@@ -40,7 +40,9 @@ class ApprovalPendapatanSupir extends MyModel
         $month = substr($periode,0,2);
         $year = substr($periode,3);
 
-        $query = DB::table($this->table)
+        $query = DB::table($this->table)->from(
+            DB::raw($this->table . " with (readuncommitted)")
+        )
             ->select(
                 'pendapatansupirheader.id',
                 'pendapatansupirheader.nobukti',
@@ -57,8 +59,8 @@ class ApprovalPendapatanSupir extends MyModel
                 'pendapatansupirheader.created_at',
                 'pendapatansupirheader.updated_at'
             )
-            ->leftJoin('bank', 'pendapatansupirheader.bank_id', 'bank.id')
-            ->leftJoin('parameter', 'pendapatansupirheader.statusapproval', 'parameter.id')
+            ->leftJoin(DB::raw("bank with (readuncommitted)"), 'pendapatansupirheader.bank_id', 'bank.id')
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'pendapatansupirheader.statusapproval', 'parameter.id')
             ->whereRaw("pendapatansupirheader.statusapproval = $approval")
             ->whereRaw("MONTH(pendapatansupirheader.tglbukti) = $month")
             ->whereRaw("YEAR(pendapatansupirheader.tglbukti) = $year");

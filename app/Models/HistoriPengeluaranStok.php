@@ -187,7 +187,7 @@ class HistoriPengeluaranStok extends MyModel
                 DB::raw(" (a.qtykeluar * a.nilaikeluar) as total"),
                 'a.modifiedby',
             )
-            ->leftjoin('kategori as B','a.kategori_id','B.id')
+            ->leftjoin(DB::raw("kategori as B with (readuncommitted)"),'a.kategori_id','B.id')
             ->orderBy('a.id', 'asc');
         // dd($datalist->get());
         return $datalist;

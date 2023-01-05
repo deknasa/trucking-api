@@ -28,15 +28,15 @@ class JenisEmkl extends MyModel
         $this->setRequestParameters();
 
         $query = JenisEmkl::from(DB::raw("$this->table with (readuncommitted)"))
-        ->select(
-            'jenisemkl.id',
-            'jenisemkl.kodejenisemkl',
-            'jenisemkl.keterangan',
-            'parameter.memo as statusaktif',
-            'jenisemkl.modifiedby',
-            'jenisemkl.created_at',
-            'jenisemkl.updated_at'
-        )
+            ->select(
+                'jenisemkl.id',
+                'jenisemkl.kodejenisemkl',
+                'jenisemkl.keterangan',
+                'parameter.memo as statusaktif',
+                'jenisemkl.modifiedby',
+                'jenisemkl.created_at',
+                'jenisemkl.updated_at'
+            )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'jenisemkl.statusaktif', '=', 'parameter.id');
 
         $this->totalRows = $query->count();
@@ -52,10 +52,13 @@ class JenisEmkl extends MyModel
     }
 
     public function selectColumns($query)
-    {    
-        return $query->select(
-            DB::raw(
-                "$this->table.id,
+    {
+        return $query->from(
+            DB::raw($this->table . " with (readuncommitted)")
+        )
+            ->select(
+                DB::raw(
+                    "$this->table.id,
             $this->table.kodejenisemkl,
             $this->table.keterangan,
             'parameter.text as statusaktif',
@@ -63,19 +66,18 @@ class JenisEmkl extends MyModel
             $this->table.modifiedby,
             $this->table.created_at,
             $this->table.updated_at"
-            )    
-            
-        )
-        ->leftJoin('parameter', 'jenisemkl.statusaktif', '=', 'parameter.id');
+                )
 
+            )
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'jenisemkl.statusaktif', '=', 'parameter.id');
     }
 
     public function createTemp(string $modelTable)
-    {//sesuaikan dengan column index
+    { //sesuaikan dengan column index
         $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temp, function ($table) {
             $table->bigInteger('id')->default('0');
-            $table->string('kodejenisemkl',50)->Default('');
+            $table->string('kodejenisemkl', 50)->Default('');
             $table->longText('keterangan')->Default('');
             $table->string('statusaktif', 500)->default('');
 

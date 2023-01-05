@@ -17,7 +17,7 @@ class ApprovalHutangBayar extends MyModel
         'created_at' => 'date:d-m-Y H:i:s',
         'updated_at' => 'date:d-m-Y H:i:s'
     ];
-    
+
     protected $guarded = [
         'id',
         'created_at',
@@ -31,16 +31,18 @@ class ApprovalHutangBayar extends MyModel
         $approve = request()->approve ?? 0;
         $approval = 0;
 
-        if($approve == 3) {
+        if ($approve == 3) {
             $approval = 4;
         }
-        if($approve == 4){
+        if ($approve == 4) {
             $approval = 3;
         }
-        $month = substr($periode,0,2);
-        $year = substr($periode,3);
+        $month = substr($periode, 0, 2);
+        $year = substr($periode, 3);
 
-        $query = DB::table($this->table)
+        $query = DB::table($this->table)->from(
+            DB::raw($this->table . " with (readuncommitted)")
+        )
             ->select(
                 'hutangbayarheader.id',
                 'hutangbayarheader.nobukti',
@@ -57,17 +59,17 @@ class ApprovalHutangBayar extends MyModel
                 'hutangbayarheader.created_at',
                 'hutangbayarheader.updated_at',
             )
-            ->leftJoin("parameter", "hutangbayarheader.statusapproval", "parameter.id")
-            ->leftJoin("bank", "hutangbayarheader.bank_id", "bank.id")
-            ->leftJoin("supplier", "hutangbayarheader.supplier_id", "supplier.id")
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), "hutangbayarheader.statusapproval", "parameter.id")
+            ->leftJoin(DB::raw("bank  with (readuncommitted)"), "hutangbayarheader.bank_id", "bank.id")
+            ->leftJoin(DB::raw("supplier with (readuncommitted)"), "hutangbayarheader.supplier_id", "supplier.id")
             ->whereRaw("hutangbayarheader.statusapproval = $approval")
             ->whereRaw("MONTH(hutangbayarheader.tglbukti) = $month")
             ->whereRaw("YEAR(hutangbayarheader.tglbukti) = $year");
-        
 
-        
+
+
         $this->totalRows = $query->count();
-        
+
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
         $this->sort($query);
@@ -93,7 +95,7 @@ class ApprovalHutangBayar extends MyModel
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statusapproval') {
                             $query = $query->where('parameter.text', '=', $filters['data']);
-                        } else{
+                        } else {
                             $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
                     }
@@ -125,5 +127,4 @@ class ApprovalHutangBayar extends MyModel
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
-
 }

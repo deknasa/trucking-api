@@ -37,7 +37,7 @@ class HariLibur extends MyModel
                 "$this->table.modifiedby",
                 "$this->table.created_at",
                 "$this->table.updated_at",
-            )->leftJoin('parameter','harilibur.statusaktif','parameter.id');
+            )->leftJoin(DB::raw("parameter with (readuncommitted)"), 'harilibur.statusaktif', 'parameter.id');
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -54,8 +54,11 @@ class HariLibur extends MyModel
 
     public function selectColumns($query)
     {
-        return $query->select(
-            DB::raw("
+        return $query->from(
+            DB::raw($this->table . " with (readuncommitted)")
+        )
+            ->select(
+                DB::raw("
             $this->table.id,
             $this->table.tgl,
             $this->table.keterangan,
@@ -64,7 +67,7 @@ class HariLibur extends MyModel
             $this->table.created_at,
             $this->table.updated_at
             ")
-        )->leftJoin('parameter','harilibur.statusaktif','parameter.id');
+            )->leftJoin(DB::raw("parameter with (readuncommitted)"), 'harilibur.statusaktif', 'parameter.id');
     }
 
     public function createTemp(string $modelTable)
@@ -86,7 +89,7 @@ class HariLibur extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id', 'tgl', 'keterangan', 'statusaktif','modifiedby', 'created_at', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'tgl', 'keterangan', 'statusaktif', 'modifiedby', 'created_at', 'updated_at'], $models);
 
         return $temp;
     }

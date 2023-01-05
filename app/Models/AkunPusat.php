@@ -23,28 +23,31 @@ class AkunPusat extends MyModel
     {
         $this->setRequestParameters();
 
-        $query = DB::table($this->table)->select(
-            'akunpusat.id',
-            'akunpusat.coa',
-            'akunpusat.keterangancoa',
-            'akunpusat.type',
-            'akunpusat.level',
-            'akunpusat.parent',
-            'akunpusat.coamain',
-            'akunpusat.modifiedby',
-            'akunpusat.created_at',
-            'akunpusat.updated_at',
-            'parameter_statusaktif.memo as statusaktif',
-            'parameter_statuscoa.memo as statuscoa',
-            'parameter_statusaccountpayable.memo as statusaccountpayable',
-            'parameter_statusneraca.memo as statusneraca',
-            'parameter_statuslabarugi.memo as statuslabarugi'
+        $query = DB::table($this->table)->from(
+            DB::raw($this->table . " with (readuncommitted)")
         )
-            ->leftJoin('parameter as parameter_statusaktif', 'akunpusat.statusaktif', '=', 'parameter_statusaktif.id')
-            ->leftJoin('parameter as parameter_statuscoa', 'akunpusat.statuscoa', '=', 'parameter_statuscoa.id')
-            ->leftJoin('parameter as parameter_statusaccountpayable', 'akunpusat.statusaccountpayable', '=', 'parameter_statusaccountpayable.id')
-            ->leftJoin('parameter as parameter_statusneraca', 'akunpusat.statusneraca', '=', 'parameter_statusneraca.id')
-            ->leftJoin('parameter as parameter_statuslabarugi', 'akunpusat.statuslabarugi', '=', 'parameter_statuslabarugi.id');
+            ->select(
+                'akunpusat.id',
+                'akunpusat.coa',
+                'akunpusat.keterangancoa',
+                'akunpusat.type',
+                'akunpusat.level',
+                'akunpusat.parent',
+                'akunpusat.coamain',
+                'akunpusat.modifiedby',
+                'akunpusat.created_at',
+                'akunpusat.updated_at',
+                'parameter_statusaktif.memo as statusaktif',
+                'parameter_statuscoa.memo as statuscoa',
+                'parameter_statusaccountpayable.memo as statusaccountpayable',
+                'parameter_statusneraca.memo as statusneraca',
+                'parameter_statuslabarugi.memo as statuslabarugi'
+            )
+            ->leftJoin(DB::raw("parameter as parameter_statusaktif with (readuncommitted)"), 'akunpusat.statusaktif', '=', 'parameter_statusaktif.id')
+            ->leftJoin(DB::raw("parameter as parameter_statuscoa with (readuncommitted)"), 'akunpusat.statuscoa', '=', 'parameter_statuscoa.id')
+            ->leftJoin(DB::raw("parameter as parameter_statusaccountpayable with (readuncommitted)"), 'akunpusat.statusaccountpayable', '=', 'parameter_statusaccountpayable.id')
+            ->leftJoin(DB::raw("parameter as parameter_statusneraca with (readuncommitted)"), 'akunpusat.statusneraca', '=', 'parameter_statusneraca.id')
+            ->leftJoin(DB::raw("parameter as parameter_statuslabarugi with (readuncommitted)"), 'akunpusat.statuslabarugi', '=', 'parameter_statuslabarugi.id');
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -60,8 +63,11 @@ class AkunPusat extends MyModel
 
     public function selectColumns($query)
     {
-        return $query->select(
-            DB::raw("
+        return $query->from(
+            DB::raw($this->table . " with (readuncommitted)")
+        )
+            ->select(
+                DB::raw("
                 $this->table.id,
                 $this->table.coa,
                 $this->table.keterangancoa,
@@ -78,19 +84,18 @@ class AkunPusat extends MyModel
                 $this->table.created_at,
                 $this->table.updated_at
             ")
-        )
-        ->leftJoin('parameter as parameter_statusaktif', 'akunpusat.statusaktif', '=', 'parameter_statusaktif.id')
-        ->leftJoin('parameter as parameter_statuscoa', 'akunpusat.statuscoa', '=', 'parameter_statuscoa.id')
-        ->leftJoin('parameter as parameter_statusaccountpayable', 'akunpusat.statusaccountpayable', '=', 'parameter_statusaccountpayable.id')
-        ->leftJoin('parameter as parameter_statusneraca', 'akunpusat.statusneraca', '=', 'parameter_statusneraca.id')
-        ->leftJoin('parameter as parameter_statuslabarugi', 'akunpusat.statuslabarugi', '=', 'parameter_statuslabarugi.id');
-
+            )
+            ->leftJoin(DB::raw("parameter as parameter_statusaktif with (readuncommitted)"), 'akunpusat.statusaktif', '=', 'parameter_statusaktif.id')
+            ->leftJoin(DB::raw("parameter as parameter_statuscoa with (readuncommitted)"), 'akunpusat.statuscoa', '=', 'parameter_statuscoa.id')
+            ->leftJoin(DB::raw("parameter as parameter_statusaccountpayable with (readuncommitted)"), 'akunpusat.statusaccountpayable', '=', 'parameter_statusaccountpayable.id')
+            ->leftJoin(DB::raw("parameter as parameter_statusneraca with (readuncommitted)"), 'akunpusat.statusneraca', '=', 'parameter_statusneraca.id')
+            ->leftJoin(DB::raw("parameter as parameter_statuslabarugi with (readuncommitted)"), 'akunpusat.statuslabarugi', '=', 'parameter_statuslabarugi.id');
     }
 
     public function createTemp(string $modelTable)
     {
         $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-        Schema::create($temp, function ($table){
+        Schema::create($temp, function ($table) {
             $table->bigInteger('id')->default('0');
             $table->string('coa', 1000)->default('');
             $table->string('keterangancoa', 1000)->default('');
@@ -114,7 +119,7 @@ class AkunPusat extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id','coa','keterangancoa','type','level','statusaktif','parent','statuscoa','statusaccountpayable','statusneraca','statuslabarugi','coamain','modifiedby','created_at','updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'coa', 'keterangancoa', 'type', 'level', 'statusaktif', 'parent', 'statuscoa', 'statusaccountpayable', 'statusneraca', 'statuslabarugi', 'coamain', 'modifiedby', 'created_at', 'updated_at'], $models);
 
         return $temp;
     }
@@ -160,7 +165,7 @@ class AkunPusat extends MyModel
                             $query = $query->orWhere('parameter_statuslabarugi.text', '=', "$filters[data]");
                         } else {
                             $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                        }    
+                        }
                     }
 
                     break;

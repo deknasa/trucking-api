@@ -28,7 +28,7 @@ class Menu extends MyModel
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
-        
+
         $this->selectColumns($query);
         $this->sort($query);
         $this->filter($query);
@@ -39,12 +39,15 @@ class Menu extends MyModel
         return $data;
     }
 
-    
+
     public function selectColumns($query)
     {
-        return $query->select(
-            DB::raw(
-                "$this->table.id,
+        return $query->from(
+            DB::raw($this->table . " with (readuncommitted)")
+        )
+            ->select(
+                DB::raw(
+                    "$this->table.id,
                 $this->table.menuname,
                 isnull(menu2.menuname,'') as menuparent,
                 $this->table.menuicon,
@@ -55,12 +58,10 @@ class Menu extends MyModel
                 $this->table.modifiedby,
                 $this->table.created_at,
                 $this->table.updated_at"
+                )
             )
-        )
-            ->leftJoin('menu as menu2', 'menu2.id', '=', 'menu.menuparent')
-            ->leftJoin('acos', 'acos.id', '=', 'menu.aco_id');
-
-        
+            ->leftJoin(DB::raw("menu as menu2 with (readuncommitted)"), 'menu2.id', '=', 'menu.menuparent')
+            ->leftJoin(DB::raw("acos with (readuncommitted)"), 'acos.id', '=', 'menu.aco_id');
     }
     public function createTemp(string $modelTable)
     {
@@ -85,12 +86,11 @@ class Menu extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id','menuname','menuparent','menuicon','aco_id','link','menuexe','menukode','modifiedby','created_at','updated_at'],$models);
+        DB::table($temp)->insertUsing(['id', 'menuname', 'menuparent', 'menuicon', 'aco_id', 'link', 'menuexe', 'menukode', 'modifiedby', 'created_at', 'updated_at'], $models);
 
 
-        return  $temp;         
-
-      }
+        return  $temp;
+    }
 
 
     public function sort($query)

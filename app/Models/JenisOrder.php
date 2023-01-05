@@ -28,15 +28,15 @@ class JenisOrder extends MyModel
         $this->setRequestParameters();
 
         $query = JenisOrder::from(DB::raw("$this->table with (readuncommitted)"))
-        ->select(
-            'jenisorder.id',
-            'jenisorder.kodejenisorder',
-            'jenisorder.keterangan',
-            'parameter.memo as statusaktif',
-            'jenisorder.modifiedby',
-            'jenisorder.created_at',
-            'jenisorder.updated_at'
-        )
+            ->select(
+                'jenisorder.id',
+                'jenisorder.kodejenisorder',
+                'jenisorder.keterangan',
+                'parameter.memo as statusaktif',
+                'jenisorder.modifiedby',
+                'jenisorder.created_at',
+                'jenisorder.updated_at'
+            )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'jenisorder.statusaktif', '=', 'parameter.id');
 
         $this->totalRows = $query->count();
@@ -54,9 +54,12 @@ class JenisOrder extends MyModel
     public function selectColumns($query)
     { //sesuaikan dengan createtemp
 
-        return $query->select(
-            DB::raw(
-                "$this->table.id,
+        return $query->from(
+            DB::raw($this->table . " with (readuncommitted)")
+        )
+            ->select(
+                DB::raw(
+                    "$this->table.id,
             $this->table.kodejenisorder,
             $this->table.keterangan,
             'parameter.text as statusaktif',
@@ -64,9 +67,9 @@ class JenisOrder extends MyModel
             $this->table.modifiedby,
             $this->table.created_at,
             $this->table.updated_at"
+                )
             )
-        )
-            ->leftJoin('parameter', 'jenisorder.statusaktif', '=', 'parameter.id');
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'jenisorder.statusaktif', '=', 'parameter.id');
     }
 
     public function createTemp(string $modelTable)

@@ -19,7 +19,7 @@ class JurnalUmumPusatHeader extends MyModel
         'created_at' => 'date:d-m-Y H:i:s',
         'updated_at' => 'date:d-m-Y H:i:s'
     ];
-    
+
     protected $guarded = [
         'id',
         'created_at',
@@ -32,15 +32,17 @@ class JurnalUmumPusatHeader extends MyModel
         $periode = request()->periode ?? date('m-Y');
         $approve = request()->approve ?? 0;
         $approval = 0;
-        if($approve == 3) {
+        if ($approve == 3) {
             $approval = 4;
         }
-        if($approve == 4){
+        if ($approve == 4) {
             $approval = 3;
         }
-        $month = substr($periode,0,2);
-        $year = substr($periode,3);
-        $query = DB::table('jurnalumumheader')
+        $month = substr($periode, 0, 2);
+        $year = substr($periode, 3);
+        $query = DB::table('jurnalumumheader')->from(
+            DB::raw("jurnalumumheader with (readuncommitted)")
+        )
             ->select(
 
                 'jurnalumumheader.id',
@@ -54,15 +56,15 @@ class JurnalUmumPusatHeader extends MyModel
                 'jurnalumumheader.modifiedby',
                 'jurnalumumheader.created_at',
                 'jurnalumumheader.updated_at',
-                
+
             )
-            ->leftJoin('parameter as statusapproval', 'jurnalumumheader.statusapproval', 'statusapproval.id')
-            ->where('jurnalumumheader.statusapproval',$approval)
+            ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'jurnalumumheader.statusapproval', 'statusapproval.id')
+            ->where('jurnalumumheader.statusapproval', $approval)
             ->whereRaw("MONTH(jurnalumumheader.tglbukti) = $month")
             ->whereRaw("YEAR(jurnalumumheader.tglbukti) = $year");
-        
 
-        
+
+
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
@@ -76,12 +78,15 @@ class JurnalUmumPusatHeader extends MyModel
         return $data;
     }
 
-    
+
     public function selectColumns($query)
     {
-        return $query->select(
-            DB::raw(
-            "$this->anothertable.id,
+        return $query->from(
+            DB::raw($this->table . " with (readuncommitted)")
+        )
+            ->select(
+                DB::raw(
+                    "$this->anothertable.id,
             $this->anothertable.nobukti,
             $this->anothertable.tglbukti,
             $this->anothertable.keterangan,
@@ -92,10 +97,9 @@ class JurnalUmumPusatHeader extends MyModel
             $this->anothertable.modifiedby,
             $this->anothertable.created_at,
             $this->anothertable.updated_at"
+                )
             )
-        )
-        ->leftJoin('parameter as statusapproval', 'jurnalumumpusatheader.statusapproval', 'statusapproval.id');
-
+            ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'jurnalumumpusatheader.statusapproval', 'statusapproval.id');
     }
 
     public function createTemp(string $modelTable)
@@ -121,11 +125,10 @@ class JurnalUmumPusatHeader extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id','nobukti','tglbukti','keterangan','postingdari','statusapproval','userapproval','tglapproval','modifiedby','created_at','updated_at'],$models);
+        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'keterangan', 'postingdari', 'statusapproval', 'userapproval', 'tglapproval', 'modifiedby', 'created_at', 'updated_at'], $models);
 
 
-        return  $temp;         
-
+        return  $temp;
     }
 
     public function sort($query)
@@ -141,7 +144,7 @@ class JurnalUmumPusatHeader extends MyModel
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statusapproval') {
                             $query = $query->where('statusapproval.text', '=', $filters['data']);
-                        } else{
+                        } else {
                             $query = $query->where($this->anothertable . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
                     }
@@ -173,5 +176,4 @@ class JurnalUmumPusatHeader extends MyModel
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
-
 }

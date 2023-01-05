@@ -89,7 +89,9 @@ class AbsensiSupirHeader extends MyModel
     public function selectColumns($query)
     {
         
-        return $query->select(
+        return $query->from(
+            DB::raw($this->table . " with (readuncommitted)")
+        )->select(
             DB::raw(
             "$this->table.id,
             $this->table.nobukti,
@@ -176,8 +178,8 @@ class AbsensiSupirHeader extends MyModel
             ->leftJoin(DB::raw("supir as supirutama with (readuncommitted)"), 'absensisupirdetail.supir_id', 'supirutama.id')
             ->whereRaw("not EXISTS (
             SELECT absensisupirapprovalheader.absensisupir_nobukti
-    FROM absensisupirdetail          
-    left join absensisupirapprovalheader on absensisupirapprovalheader.absensisupir_nobukti= absensisupirdetail.nobukti
+    FROM absensisupirdetail  with (readuncommitted)        
+    left join absensisupirapprovalheader  with (readuncommitted)  on absensisupirapprovalheader.absensisupir_nobukti= absensisupirdetail.nobukti
     WHERE absensisupirapprovalheader.absensisupir_nobukti = absensisupirheader.nobukti 
           )")
             ->where('absensi_id', $id);

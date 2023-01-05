@@ -22,7 +22,7 @@ class CreateMenuTable extends Migration
             $table->unsignedBigInteger('aco_id')->default('0');
             $table->string('link',2000)->default('');
             $table->string('menuexe',200)->default('');
-            $table->string('menukode',50)->default('');
+            $table->string('menukode',50)->unique()->default('');
             $table->string('modifiedby',50)->default('');
             $table->timestamps();
         });

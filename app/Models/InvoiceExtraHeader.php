@@ -28,13 +28,15 @@ class InvoiceExtraHeader extends MyModel
     {
         $this->setRequestParameters();
 
-        $query = DB::table($this->table); 
-        $query = $this->selectColumns($query)
-        ->leftJoin('parameter','invoiceextraheader.statusapproval','parameter.id')
-        ->leftJoin('parameter as cetak','invoiceextraheader.statuscetak','cetak.id')
-        ->leftJoin('pelanggan','invoiceextraheader.pelanggan_id','pelanggan.id')
-        ->leftJoin('agen','invoiceextraheader.agen_id','agen.id')
-        ->leftJoin('parameter as statusformat','invoiceextraheader.statusformat','statusformat.id');
+        $query = DB::table($this->table);
+        $query = $this->from(
+            DB::raw($this->table . " with (readuncommitted)")
+        )->selectColumns($query)
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'invoiceextraheader.statusapproval', 'parameter.id')
+            ->leftJoin(DB::raw("parameter as cetak with (readuncommitted)"), 'invoiceextraheader.statuscetak', 'cetak.id')
+            ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'invoiceextraheader.pelanggan_id', 'pelanggan.id')
+            ->leftJoin(DB::raw("agen with (readuncommitted)"), 'invoiceextraheader.agen_id', 'agen.id')
+            ->leftJoin(DB::raw("parameter as statusformat with (readuncommitted)"), 'invoiceextraheader.statusformat', 'statusformat.id');
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -73,19 +75,23 @@ class InvoiceExtraHeader extends MyModel
         });
 
         $query = DB::table($modelTable);
-        $query = $query->select(
-            "$this->table.id",
-            "$this->table.nobukti",
-            "$this->table.tglbukti",
-            "$this->table.pelanggan_id",
-            "$this->table.agen_id",
-            "$this->table.nominal",
-            "$this->table.keterangan",
-            "$this->table.statusapproval",
-            "$this->table.userapproval",
-            "$this->table.tglapproval",
-            "$this->table.statusformat",
-            "$this->table.modifiedby");
+        $query = $query->from(
+            DB::raw($this->table . " with (readuncommitted)")
+        )
+            ->select(
+                "$this->table.id",
+                "$this->table.nobukti",
+                "$this->table.tglbukti",
+                "$this->table.pelanggan_id",
+                "$this->table.agen_id",
+                "$this->table.nominal",
+                "$this->table.keterangan",
+                "$this->table.statusapproval",
+                "$this->table.userapproval",
+                "$this->table.tglapproval",
+                "$this->table.statusformat",
+                "$this->table.modifiedby"
+            );
 
         $query = $this->sort($query);
         $models = $this->filter($query);
@@ -109,28 +115,31 @@ class InvoiceExtraHeader extends MyModel
     }
 
     public function selectColumns($query)
-    {        
-        return $query->select(
-            "$this->table.id",
-            "$this->table.nobukti",
-            "$this->table.tglbukti",
-            "$this->table.pelanggan_id",
-            "$this->table.agen_id",
-            "$this->table.nominal",
-            "$this->table.keterangan",
-            'parameter.memo as statusapproval',
-            "$this->table.userapproval",
-            "$this->table.tglapproval",
-            "$this->table.statusformat",
-            "cetak.memo as statuscetak",
+    {
+        return $query->from(
+            DB::raw($this->table . " with (readuncommitted)")
+        )
+            ->select(
+                "$this->table.id",
+                "$this->table.nobukti",
+                "$this->table.tglbukti",
+                "$this->table.pelanggan_id",
+                "$this->table.agen_id",
+                "$this->table.nominal",
+                "$this->table.keterangan",
+                'parameter.memo as statusapproval',
+                "$this->table.userapproval",
+                "$this->table.tglapproval",
+                "$this->table.statusformat",
+                "cetak.memo as statuscetak",
 
-            // "$this->table.statuscetak",
-            "cetak.text as statuscetak_text",
-            "$this->table.modifiedby",
-            "statusformat.memo as  statusformat_memo",
-            "pelanggan.namapelanggan as  pelanggan",
-            "agen.namaagen as  agen",
-        );
+                // "$this->table.statuscetak",
+                "cetak.text as statuscetak_text",
+                "$this->table.modifiedby",
+                "statusformat.memo as  statusformat_memo",
+                "pelanggan.namapelanggan as  pelanggan",
+                "agen.namaagen as  agen",
+            );
     }
 
     public function sort($query)
@@ -144,7 +153,7 @@ class InvoiceExtraHeader extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");                         
+                        $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                     }
                     break;
                 case "OR":
@@ -160,15 +169,15 @@ class InvoiceExtraHeader extends MyModel
             $this->totalPages = $this->params['limit'] > 0 ? ceil($this->totalRows / $this->params['limit']) : 1;
         }
         if (request()->approve && request()->periode) {
-            $query->where('invoiceextraheader.statusapproval','<>', request()->approve)
-                  ->whereYear('invoiceextraheader.tglbukti','=', request()->year)
-                  ->whereMonth('invoiceextraheader.tglbukti','=', request()->month);
+            $query->where('invoiceextraheader.statusapproval', '<>', request()->approve)
+                ->whereYear('invoiceextraheader.tglbukti', '=', request()->year)
+                ->whereMonth('invoiceextraheader.tglbukti', '=', request()->month);
             return $query;
         }
         if (request()->cetak && request()->periode) {
-            $query->where('invoiceextraheader.statuscetak','<>', request()->cetak)
-                  ->whereYear('invoiceextraheader.tglbukti','=', request()->year)
-                  ->whereMonth('invoiceextraheader.tglbukti','=', request()->month);
+            $query->where('invoiceextraheader.statuscetak', '<>', request()->cetak)
+                ->whereYear('invoiceextraheader.tglbukti', '=', request()->year)
+                ->whereMonth('invoiceextraheader.tglbukti', '=', request()->month);
             return $query;
         }
         return $query;
@@ -178,14 +187,17 @@ class InvoiceExtraHeader extends MyModel
     {
         $this->setRequestParameters();
 
-        $query = DB::table($this->table); 
-        $query = $this->selectColumns($query)
-        ->leftJoin('parameter','invoiceextraheader.statusapproval','parameter.id')
-        ->leftJoin('pelanggan','invoiceextraheader.pelanggan_id','pelanggan.id')
-        ->leftJoin('parameter as cetak','invoiceextraheader.statuscetak','cetak.id')
-        ->leftJoin('agen','invoiceextraheader.agen_id','agen.id')
-        ->leftJoin('parameter as statusformat','invoiceextraheader.statusformat','statusformat.id');
-        $data = $query->where("$this->table.id",$id)->first();
+        $query = DB::table($this->table);
+        $query = $this->from(
+            DB::raw($this->table . " with (readuncommitted)")
+        )
+            ->selectColumns($query)
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'invoiceextraheader.statusapproval', 'parameter.id')
+            ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'invoiceextraheader.pelanggan_id', 'pelanggan.id')
+            ->leftJoin(DB::raw("parameter as cetak with (readuncommitted)"), 'invoiceextraheader.statuscetak', 'cetak.id')
+            ->leftJoin(DB::raw("agen with (readuncommitted)"), 'invoiceextraheader.agen_id', 'agen.id')
+            ->leftJoin(DB::raw("parameter as statusformat with (readuncommitted)"), 'invoiceextraheader.statusformat', 'statusformat.id');
+        $data = $query->where("$this->table.id", $id)->first();
         return $data;
     }
 

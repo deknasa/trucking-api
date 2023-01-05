@@ -29,15 +29,15 @@ class Container extends MyModel
         $this->setRequestParameters();
 
         $query = Container::from(DB::raw("$this->table with (readuncommitted)"))
-        ->select(
-            'container.id',
-            'container.kodecontainer',
-            'container.keterangan',
-            'parameter.memo as statusaktif',
-            'container.modifiedby',
-            'container.created_at',
-            'container.updated_at'
-        )
+            ->select(
+                'container.id',
+                'container.kodecontainer',
+                'container.keterangan',
+                'parameter.memo as statusaktif',
+                'container.modifiedby',
+                'container.created_at',
+                'container.updated_at'
+            )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'container.statusaktif', '=', 'parameter.id');
 
         $this->totalRows = $query->count();
@@ -55,9 +55,12 @@ class Container extends MyModel
     public function selectColumns($query)
     { //sesuaikan dengan createtemp
 
-        return $query->select(
-            DB::raw(
-                "$this->table.id,
+        return $query->from(
+            DB::raw($this->table . " with (readuncommitted)")
+        )
+            ->select(
+                DB::raw(
+                    "$this->table.id,
             $this->table.kodecontainer,
             $this->table.keterangan,
             'parameter.text as statusaktif',
@@ -65,9 +68,9 @@ class Container extends MyModel
             $this->table.modifiedby,
             $this->table.created_at,
             $this->table.updated_at"
-            )
+                )
 
-        ) ->leftJoin('parameter', 'container.statusaktif', '=', 'parameter.id');
+            )->leftJoin(DB::raw("parameter with (readuncommitted)"), 'container.statusaktif', '=', 'parameter.id');
     }
 
     public function createTemp(string $modelTable)

@@ -27,7 +27,9 @@ class Merk extends MyModel
     {
         $this->setRequestParameters();
 
-        $query = DB::table($this->table)->select(
+        $query = DB::table($this->table)->from(
+            DB::raw($this->table . " with (readuncommitted)")
+        )->select(
             'merk.id',
             'merk.kodemerk',
             'merk.keterangan',
@@ -36,7 +38,7 @@ class Merk extends MyModel
             'merk.created_at',
             'merk.updated_at'
         )
-            ->leftJoin('parameter', 'merk.statusaktif', '=', 'parameter.id');
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'merk.statusaktif', '=', 'parameter.id');
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -52,19 +54,21 @@ class Merk extends MyModel
 
     public function selectColumns($query)
     {
-        return $query->select(
-            DB::raw(
-            "$this->table.id,
+        return $query->from(
+            DB::raw($this->table . " with (readuncommitted)")
+        )
+            ->select(
+                DB::raw(
+                    "$this->table.id,
             $this->table.kodemerk,
             $this->table.keterangan,
             'parameter.text as statusaktif',
             $this->table.modifiedby,
             $this->table.created_at,
             $this->table.updated_at"
+                )
             )
-        )
-        ->leftJoin('parameter', 'merk.statusaktif', 'parameter.id');
-
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'merk.statusaktif', 'parameter.id');
     }
 
     public function createTemp(string $modelTable)
@@ -86,13 +90,12 @@ class Merk extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id','kodemerk','keterangan','statusaktif','modifiedby','created_at','updated_at'],$models);
+        DB::table($temp)->insertUsing(['id', 'kodemerk', 'keterangan', 'statusaktif', 'modifiedby', 'created_at', 'updated_at'], $models);
 
 
-        return  $temp;         
-
+        return  $temp;
     }
-    
+
     public function sort($query)
     {
         return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
@@ -107,7 +110,7 @@ class Merk extends MyModel
                         if ($filters['field'] == 'statusaktif') {
                             $query = $query->where('parameter.text', '=', "$filters[data]");
                         } else {
-                            $query = $query->where('merk.'.$filters['field'], 'LIKE', "%$filters[data]%");
+                            $query = $query->where('merk.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
                     }
 
@@ -117,7 +120,7 @@ class Merk extends MyModel
                         if ($filters['field'] == 'statusaktif') {
                             $query = $query->orWhere('parameter.text', '=', "$filters[data]");
                         } else {
-                            $query = $query->orWhere('merk.'.$filters['field'], 'LIKE', "%$filters[data]%");
+                            $query = $query->orWhere('merk.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
                     }
 
@@ -138,5 +141,4 @@ class Merk extends MyModel
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
-
 }

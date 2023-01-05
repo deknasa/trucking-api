@@ -34,7 +34,7 @@ class Cabang extends MyModel
             'cabang.created_at',
             'cabang.updated_at'
         )
-            ->leftJoin('parameter', 'cabang.statusaktif', 'parameter.id');
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'cabang.statusaktif', 'parameter.id');
 
 
 
@@ -52,7 +52,9 @@ class Cabang extends MyModel
 
     public function selectColumns($query)
     {
-        return $query->select(
+        return $query->from(
+            DB::raw($this->table . " with (readuncommitted)")
+        )->select(
             "$this->table.id",
             "$this->table.kodecabang",
             "$this->table.namacabang",
@@ -60,7 +62,7 @@ class Cabang extends MyModel
             "$this->table.modifiedby",
             "$this->table.created_at",
             "$this->table.updated_at",
-        )->leftJoin('parameter', 'cabang.statusaktif', '=', 'parameter.id');
+        )->leftJoin(DB::raw("parameter with (readuncommitted)"), 'cabang.statusaktif', '=', 'parameter.id');
     }
 
     public function createTemp(string $modelTable)

@@ -29,7 +29,9 @@ class Acl extends MyModel
     {
         $this->setRequestParameters();
 
-        $query = DB::table($this->table)->select(
+        $query = DB::table($this->table)->from(
+            DB::raw($this->table . " with (readuncommitted)")
+        )->select(
             DB::raw("role.rolename as rolename,
                         acl.role_id as role_id,
                         min(acl.id) as id_,
@@ -37,7 +39,7 @@ class Acl extends MyModel
                         max(acl.created_at) as created_at,
                             max(acl.updated_at) as updated_at")
         )
-            ->Join('role', 'acl.role_id', '=', 'role.id')
+            ->Join(DB::raw("role with (readuncommitted)"), 'acl.role_id', '=', 'role.id')
             ->groupby('acl.role_id', 'role.rolename');
 
         $this->totalRows = $query->count();
@@ -55,7 +57,7 @@ class Acl extends MyModel
     public function createTemp(string $modelTable)
     {
         $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-        
+
         Schema::create($temp, function ($table) {
             $table->bigInteger('id')->default('0');
             $table->string('modifiedby', 30)->default('');
@@ -64,13 +66,15 @@ class Acl extends MyModel
             $table->increments('position');
         });
 
-        $query = Acl::select(
+        $query = Acl::from(
+            DB::raw("Acl with (readuncommitted)")
+        )->select(
             DB::raw("acl.role_id as id,
                         max(acl.modifiedby) as modifiedby,
                         max(acl.created_at) as created_at,
                             max(acl.updated_at) as updated_at")
         )
-            ->Join('role', 'acl.role_id', '=', 'role.id')
+            ->Join(DB::raw("role with (readuncommitted)"), 'acl.role_id', '=', 'role.id')
             ->groupby('acl.role_id');
 
         DB::table($temp)->insertUsing(['id', 'modifiedby', 'created_at', 'updated_at'], $query);

@@ -21,17 +21,19 @@ class GajiSupirDetail extends MyModel
     protected $casts = [
         'created_at' => 'date:d-m-Y H:i:s',
         'updated_at' => 'date:d-m-Y H:i:s'
-    ];  
-    
-    
+    ];
+
+
     public function get($gajiSupirId)
     {
         $this->setRequestParameters();
-        
-        $query = DB::table($this->table);
+
+        $query = DB::table($this->table)->from(
+            DB::raw($this->table . " with (readuncommitted)")
+        );
 
         $this->selectColumns($query, $gajiSupirId);
-        
+
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
@@ -47,14 +49,17 @@ class GajiSupirDetail extends MyModel
 
     public function selectColumns($query, $gajiSupirId)
     {
-        return $query->select(
-            "$this->table.id",
-            "$this->table.nobukti",
-            'suratpengantar.tglbukti',
-            
+        return $query->from(
+            DB::raw($this->table . " with (readuncommitted)")
         )
-        ->join('suratpengantar','gajisupirdetail.suratpengantar_nobukti','suratpengantar.nobukti')
-        ->where('gajisupir_id', $gajiSupirId);
+            ->select(
+                "$this->table.id",
+                "$this->table.nobukti",
+                'suratpengantar.tglbukti',
+
+            )
+            ->join(DB::raw("suratpengantar with (readuncommitted)"), 'gajisupirdetail.suratpengantar_nobukti', 'suratpengantar.nobukti')
+            ->where('gajisupir_id', $gajiSupirId);
     }
 
     public function sort($query)

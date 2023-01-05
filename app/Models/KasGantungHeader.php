@@ -25,7 +25,8 @@ class KasGantungHeader extends MyModel
     //     'updated_at' => 'date:d-m-Y H:i:s'
     // ];     
 
-    public function kasgantungDetail() {
+    public function kasgantungDetail()
+    {
         return $this->hasMany(KasGantungDetail::class, 'kasgantung_id');
     }
 
@@ -42,25 +43,25 @@ class KasGantungHeader extends MyModel
         $this->setRequestParameters();
 
         $query = DB::table($this->table)->from(DB::raw("kasgantungheader with (readuncommitted)"))
-        ->select(
-            'kasgantungheader.id',
-            'kasgantungheader.nobukti',
-            'kasgantungheader.tglbukti',
-            'penerima.namapenerima as penerima_id',
-            'kasgantungheader.keterangan',
-            'bank.namabank as bank_id',
-            'kasgantungheader.pengeluaran_nobukti',
-            'kasgantungheader.coakaskeluar',
-            db::raw("(case when year(isnull(kasgantungheader.tglkaskeluar,'1900/1/1'))=1900 then null else kasgantungheader.tglkaskeluar end) as tglkaskeluar"),
-            db::raw("(case when year(isnull(kasgantungheader.tglbukacetak,'1900/1/1'))=1900 then null else kasgantungheader.tglbukacetak end) as tglbukacetak"),
-            'kasgantungheader.postingdari',
-            'kasgantungheader.userbukacetak',
-            'kasgantungheader.jumlahcetak',
-            'statuscetak.memo as statuscetak',
-            'kasgantungheader.modifiedby',
-            'kasgantungheader.created_at',
-            'kasgantungheader.updated_at'
-        )
+            ->select(
+                'kasgantungheader.id',
+                'kasgantungheader.nobukti',
+                'kasgantungheader.tglbukti',
+                'penerima.namapenerima as penerima_id',
+                'kasgantungheader.keterangan',
+                'bank.namabank as bank_id',
+                'kasgantungheader.pengeluaran_nobukti',
+                'kasgantungheader.coakaskeluar',
+                db::raw("(case when year(isnull(kasgantungheader.tglkaskeluar,'1900/1/1'))=1900 then null else kasgantungheader.tglkaskeluar end) as tglkaskeluar"),
+                db::raw("(case when year(isnull(kasgantungheader.tglbukacetak,'1900/1/1'))=1900 then null else kasgantungheader.tglbukacetak end) as tglbukacetak"),
+                'kasgantungheader.postingdari',
+                'kasgantungheader.userbukacetak',
+                'kasgantungheader.jumlahcetak',
+                'statuscetak.memo as statuscetak',
+                'kasgantungheader.modifiedby',
+                'kasgantungheader.created_at',
+                'kasgantungheader.updated_at'
+            )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'kasgantungheader.statuscetak', 'parameter.id')
             ->leftJoin(DB::raw("penerima with (readuncommitted)"), 'kasgantungheader.penerima_id', 'penerima.id')
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'kasgantungheader.statuscetak', 'statuscetak.id')
@@ -74,37 +75,37 @@ class KasGantungHeader extends MyModel
         $this->paginate($query);
 
         $data = $query->get();
-        
+
         return $data;
     }
 
-    public function findUpdate($id) 
+    public function findUpdate($id)
     {
         $query = DB::table('kasgantungheader')->from(DB::raw("kasgantungheader with (readuncommitted)"))
-        ->select(
-            'kasgantungheader.id',
-            'kasgantungheader.nobukti',
-            'kasgantungheader.tglbukti',
-            'kasgantungheader.penerima_id',
-            'penerima.namapenerima as penerima',
-            'kasgantungheader.keterangan',
-            'kasgantungheader.bank_id',
-            'bank.namabank as bank',
-            'kasgantungheader.pengeluaran_nobukti',
-            'kasgantungheader.statuscetak',
-            'kasgantungheader.coakaskeluar',
-            'kasgantungheader.tglkaskeluar',
-            'kasgantungheader.tglbukacetak',
-            'kasgantungheader.statuscetak',
-            'kasgantungheader.userbukacetak',
-            'kasgantungheader.jumlahcetak',
-            'kasgantungheader.modifiedby',
-            'kasgantungheader.created_at',
-            'kasgantungheader.updated_at'
-        )
+            ->select(
+                'kasgantungheader.id',
+                'kasgantungheader.nobukti',
+                'kasgantungheader.tglbukti',
+                'kasgantungheader.penerima_id',
+                'penerima.namapenerima as penerima',
+                'kasgantungheader.keterangan',
+                'kasgantungheader.bank_id',
+                'bank.namabank as bank',
+                'kasgantungheader.pengeluaran_nobukti',
+                'kasgantungheader.statuscetak',
+                'kasgantungheader.coakaskeluar',
+                'kasgantungheader.tglkaskeluar',
+                'kasgantungheader.tglbukacetak',
+                'kasgantungheader.statuscetak',
+                'kasgantungheader.userbukacetak',
+                'kasgantungheader.jumlahcetak',
+                'kasgantungheader.modifiedby',
+                'kasgantungheader.created_at',
+                'kasgantungheader.updated_at'
+            )
             ->leftJoin(DB::raw("penerima with (readuncommitted)"), 'kasgantungheader.penerima_id', 'penerima.id')
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'kasgantungheader.bank_id', 'bank.id')
-            ->where('kasgantungheader.id',$id);
+            ->where('kasgantungheader.id', $id);
 
         $data = $query->first();
 
@@ -113,9 +114,12 @@ class KasGantungHeader extends MyModel
 
     public function selectColumns($query)
     {
-        return $query->select(
-            DB::raw(
-            "$this->table.id,
+        return $query->from(
+            DB::raw($this->table . " with (readuncommitted)")
+        )
+            ->select(
+                DB::raw(
+                    "$this->table.id,
             $this->table.nobukti,
             $this->table.tglbukti,
             'penerima.namapenerima as penerima_id',
@@ -131,12 +135,11 @@ class KasGantungHeader extends MyModel
             $this->table.modifiedby,
             $this->table.created_at,
             $this->table.updated_at"
+                )
             )
-        )
-        ->leftJoin(DB::raw("penerima with (readuncommitted)"), 'kasgantungheader.penerima_id', 'penerima.id')
-        ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'kasgantungheader.statuscetak', 'statuscetak.id')
-        ->leftJoin(DB::raw("bank with (readuncommitted)"), 'kasgantungheader.bank_id', 'bank.id');
-
+            ->leftJoin(DB::raw("penerima with (readuncommitted)"), 'kasgantungheader.penerima_id', 'penerima.id')
+            ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'kasgantungheader.statuscetak', 'statuscetak.id')
+            ->leftJoin(DB::raw("bank with (readuncommitted)"), 'kasgantungheader.bank_id', 'bank.id');
     }
 
     public function createTemp(string $modelTable)
@@ -152,8 +155,8 @@ class KasGantungHeader extends MyModel
             $table->string('pengeluaran_nobukti', 1000)->default('');
             $table->string('coakaskeluar', 1000)->default('');
             $table->date('tglkaskeluar')->default('1900/1/1');
-            $table->string('statuscetak',1000)->default('');
-            $table->string('userbukacetak',50)->default('');
+            $table->string('statuscetak', 1000)->default('');
+            $table->string('userbukacetak', 50)->default('');
             $table->date('tglbukacetak')->default('1900/1/1');
             $table->integer('jumlahcetak')->Length(11)->default('0');
             $table->string('modifiedby', 50)->default('');
@@ -167,24 +170,23 @@ class KasGantungHeader extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        
-        DB::table($temp)->insertUsing(['id','nobukti','tglbukti','penerima_id','keterangan','bank_id','pengeluaran_nobukti','coakaskeluar','tglkaskeluar','statuscetak','userbukacetak','tglbukacetak','jumlahcetak','modifiedby','created_at','updated_at'],$models);
+
+        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'penerima_id', 'keterangan', 'bank_id', 'pengeluaran_nobukti', 'coakaskeluar', 'tglkaskeluar', 'statuscetak', 'userbukacetak', 'tglbukacetak', 'jumlahcetak', 'modifiedby', 'created_at', 'updated_at'], $models);
 
 
-        return  $temp;         
-
+        return  $temp;
     }
 
 
-    public function getKasGantung($dari,$sampai)
+    public function getKasGantung($dari, $sampai)
     {
         $this->setRequestParameters();
         $query = DB::table('kasgantungdetail')->from(DB::raw("kasgantungdetail with (readuncommitted)"))
-        ->select(DB::raw("kasgantungdetail.id as detail_id,kasgantungdetail.*,kasgantungheader.id,kasgantungheader.tglbukti"))
-        ->whereBetween('tglbukti', [$dari, $sampai])
-        ->whereRaw(" NOT EXISTS (
+            ->select(DB::raw("kasgantungdetail.id as detail_id,kasgantungdetail.*,kasgantungheader.id,kasgantungheader.tglbukti"))
+            ->whereBetween('tglbukti', [$dari, $sampai])
+            ->whereRaw(" NOT EXISTS (
             SELECT pengembaliankasgantungdetail.kasgantung_nobukti 
-            FROM pengembaliankasgantungdetail 
+            FROM pengembaliankasgantungdetail with (readuncommitted)
             WHERE pengembaliankasgantungdetail.kasgantung_nobukti = kasgantungdetail.nobukti
             and pengembaliankasgantungdetail.nominal=kasgantungdetail.nominal
           )")->leftJoin('kasgantungheader', 'kasgantungdetail.kasgantung_id', 'kasgantungheader.id');
@@ -199,7 +201,6 @@ class KasGantungHeader extends MyModel
         $data = $query->get();
 
         return $data;
-    
     }
 
     public function sort($query)
@@ -248,9 +249,9 @@ class KasGantungHeader extends MyModel
             $this->totalPages = $this->params['limit'] > 0 ? ceil($this->totalRows / $this->params['limit']) : 1;
         }
         if (request()->cetak && request()->periode) {
-            $query->where('kasgantungheader.statuscetak','<>', request()->cetak)
-                  ->whereYear('kasgantungheader.tglbukti','=', request()->year)
-                  ->whereMonth('kasgantungheader.tglbukti','=', request()->month);
+            $query->where('kasgantungheader.statuscetak', '<>', request()->cetak)
+                ->whereYear('kasgantungheader.tglbukti', '=', request()->year)
+                ->whereMonth('kasgantungheader.tglbukti', '=', request()->month);
             return $query;
         }
         return $query;
@@ -260,5 +261,4 @@ class KasGantungHeader extends MyModel
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
-
 }

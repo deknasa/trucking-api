@@ -21,18 +21,21 @@ class Parameter extends MyModel
     public function get()
     {
         $this->setRequestParameters();
-        $query = DB::table('parameter')
-            ->select('parameter.id', 
-            'parameter.grp', 
-            'parameter.subgrp', 
-            'parameter.kelompok', 
-            'parameter.text', 
-            'parameter.modifiedby', 
-            'parameter.created_at', 
-            'parameter.updated_at', 
-            DB::raw("case when parameter.type = 0 then '' else B.grp end as type"),
+        $query = DB::table('parameter')->from(
+            DB::raw("parameter with (readuncommitted)")
+        )
+            ->select(
+                'parameter.id',
+                'parameter.grp',
+                'parameter.subgrp',
+                'parameter.kelompok',
+                'parameter.text',
+                'parameter.modifiedby',
+                'parameter.created_at',
+                'parameter.updated_at',
+                DB::raw("case when parameter.type = 0 then '' else B.grp end as type"),
             )
-            ->leftJoin('parameter as B', 'parameter.type', 'B.id');
+            ->leftJoin(DB::raw("parameter as B with (readuncommitted)"), 'parameter.type', 'B.id');
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -48,9 +51,11 @@ class Parameter extends MyModel
 
     public function findAll($id)
     {
-        $query = DB::table('parameter as A')
+        $query = DB::table('parameter as A')->from(
+            DB::raw("parameter as A with (readuncommitted)")
+        )
             ->select('A.id', 'A.grp', 'A.subgrp', 'A.kelompok', 'A.text', 'A.memo', 'A.type', 'B.grp as grup')
-            ->leftJoin('parameter as B', 'A.type', 'B.id')
+            ->leftJoin(DB::raw("parameter as B with (readuncommitted)"), 'A.type', 'B.id')
             ->where('A.id', $id);
 
         $data = $query->first();
@@ -59,18 +64,21 @@ class Parameter extends MyModel
 
     public function selectColumns($query)
     {
-        return $query->select(
-            "$this->table.id",
-            "$this->table.grp",
-            "$this->table.subgrp",
-            "$this->table.text",
-            "$this->table.memo",
-            "$this->table.kelompok",
-            DB::raw("case when parameter.type = 0 then '' else B.grp end as type"),
-            "$this->table.created_at",
-            "$this->table.updated_at",
-            "$this->table.modifiedby"
-        )->leftJoin('parameter as B', 'parameter.type', 'B.id');
+        return $query->from(
+            DB::raw($this->table . " with (readuncommitted)")
+        )
+            ->select(
+                "$this->table.id",
+                "$this->table.grp",
+                "$this->table.subgrp",
+                "$this->table.text",
+                "$this->table.memo",
+                "$this->table.kelompok",
+                DB::raw("case when parameter.type = 0 then '' else B.grp end as type"),
+                "$this->table.created_at",
+                "$this->table.updated_at",
+                "$this->table.modifiedby"
+            )->leftJoin(DB::raw("parameter as B with (readuncommitted)"), 'parameter.type', 'B.id');
     }
 
     public function createTemp(string $modelTable)

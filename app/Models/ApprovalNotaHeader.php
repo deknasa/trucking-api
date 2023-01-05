@@ -16,7 +16,7 @@ class ApprovalNotaHeader extends MyModel
         'created_at' => 'date:d-m-Y H:i:s',
         'updated_at' => 'date:d-m-Y H:i:s'
     ];
-    
+
     protected $guarded = [
         'id',
         'created_at',
@@ -28,37 +28,45 @@ class ApprovalNotaHeader extends MyModel
         $this->setRequestParameters();
         $periode = request()->periode ?? date('m-Y');
         $approve = request()->approve ?? 0;
-        
-        
+
+
         $tabel = (request()->tabel == 'NOTA DEBET') ? 'notadebetheader' : 'notakreditheader';
-        $approval = Parameter::where('grp','STATUS APPROVAL')->where('text','APPROVAL')->first();
-        $nonApproval = Parameter::where('grp','STATUS APPROVAL')->where('text','NON APPROVAL')->first();
-        if($approve == $approval->id) {
+        $approval = Parameter::from(
+            DB::raw("Parameter with (readuncommitted)")
+        )
+            ->where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
+        $nonApproval = Parameter::from(
+            DB::raw("Parameter with (readuncommitted)")
+        )
+            ->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
+        if ($approve == $approval->id) {
             $approval = $nonApproval->id;
-        }else if($approve == $nonApproval->id) {
+        } else if ($approve == $nonApproval->id) {
             $approval = $approval->id;
-        }else{
+        } else {
             $approval = 0;
         }
-        
-        $month = substr($periode,0,2);
-        $year = substr($periode,3);
 
-        $query = DB::table($tabel)
+        $month = substr($periode, 0, 2);
+        $year = substr($periode, 3);
+
+        $query = DB::table($tabel)->from(
+            DB::raw($tabel . " with (readuncommitted)")
+        )
             ->select(
                 DB::raw(" 
                     $tabel.id,$tabel.nobukti, $tabel.pelunasanpiutang_nobukti, $tabel.tglbukti, $tabel.keterangan, $tabel.postingdari, parameter.memo as statusapproval, $tabel.tglapproval, $tabel.userapproval, $tabel.tgllunas, $tabel.modifiedby, $tabel.created_at, $tabel.updated_at
                 ")
             )
-            ->leftJoin("parameter", "$tabel.statusapproval", "parameter.id")
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), "$tabel.statusapproval", "parameter.id")
             ->whereRaw("$tabel.statusapproval = $approval")
             ->whereRaw("MONTH($tabel.tglbukti) = $month")
             ->whereRaw("YEAR($tabel.tglbukti) = $year");
-        
 
-        
+
+
         $this->totalRows = $query->count();
-        
+
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
         $this->sort($query, $tabel);
@@ -71,12 +79,15 @@ class ApprovalNotaHeader extends MyModel
         return $data;
     }
 
-    
+
     public function selectColumns($query)
     {
-        return $query->select(
+        return $query->from(
+            DB::raw($this->table . " with (readuncommitted)")
+        )
+        ->select(
             DB::raw(
-            "$this->anothertable.id,
+                "$this->anothertable.id,
             $this->anothertable.nobukti,
             $this->anothertable.tglbukti,
             $this->anothertable.keterangan,
@@ -89,8 +100,7 @@ class ApprovalNotaHeader extends MyModel
             $this->anothertable.updated_at"
             )
         )
-        ->leftJoin('parameter as statusapproval', 'jurnalumumpusatheader.statusapproval', 'statusapproval.id');
-
+            ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'jurnalumumpusatheader.statusapproval', 'statusapproval.id');
     }
 
     public function sort($query, $tabel)
@@ -106,7 +116,7 @@ class ApprovalNotaHeader extends MyModel
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statusapproval') {
                             $query = $query->where('parameter.text', '=', $filters['data']);
-                        } else{
+                        } else {
                             $query = $query->where($tabel . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
                     }
@@ -138,5 +148,4 @@ class ApprovalNotaHeader extends MyModel
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
-
 }

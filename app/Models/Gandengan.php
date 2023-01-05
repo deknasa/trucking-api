@@ -20,21 +20,24 @@ class Gandengan extends MyModel
     ];
 
 
-    
+
     public function get()
     {
         $this->setRequestParameters();
 
-        $query = DB::table($this->table)->select(
-            'gandengan.id',
-            'gandengan.kodegandengan',
-            'gandengan.keterangan',
-            'parameter.memo as statusaktif',
-            'gandengan.modifiedby',
-            'gandengan.created_at',
-            'gandengan.updated_at'
+        $query = DB::table($this->table)->from(
+            DB::raw($this->table . " with (readuncommitted)")
         )
-            ->leftJoin('parameter', 'gandengan.statusaktif', 'parameter.id');
+            ->select(
+                'gandengan.id',
+                'gandengan.kodegandengan',
+                'gandengan.keterangan',
+                'parameter.memo as statusaktif',
+                'gandengan.modifiedby',
+                'gandengan.created_at',
+                'gandengan.updated_at'
+            )
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'gandengan.statusaktif', 'parameter.id');
 
 
 
@@ -52,15 +55,18 @@ class Gandengan extends MyModel
 
     public function selectColumns($query)
     {
-        return $query->select(
-            "$this->table.id",
-            "$this->table.kodegandengan",
-            "$this->table.keterangan",
-            "parameter.text as statusaktif",
-            "$this->table.modifiedby",
-            "$this->table.created_at",
-            "$this->table.updated_at",
-        )->leftJoin('parameter', 'gandengan.statusaktif', '=', 'parameter.id');
+        return $query->from(
+            DB::raw($this->table . " with (readuncommitted)")
+        )
+            ->select(
+                "$this->table.id",
+                "$this->table.kodegandengan",
+                "$this->table.keterangan",
+                "parameter.text as statusaktif",
+                "$this->table.modifiedby",
+                "$this->table.created_at",
+                "$this->table.updated_at",
+            )->leftJoin(DB::raw("parameter with (readuncommitted)"), 'gandengan.statusaktif', '=', 'parameter.id');
     }
 
     public function createTemp(string $modelTable)
@@ -102,7 +108,7 @@ class Gandengan extends MyModel
     {
         return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
     }
-    
+
     public function filter($query, $relationFields = [])
     {
         if (count($this->params['filters']) > 0 && @$this->params['filters']['rules'][0]['data'] != '') {

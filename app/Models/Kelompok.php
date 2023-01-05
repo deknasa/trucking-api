@@ -22,22 +22,22 @@ class Kelompok extends MyModel
     protected $casts = [
         'created_at' => 'date:d-m-Y H:i:s',
         'updated_at' => 'date:d-m-Y H:i:s'
-    ]; 
+    ];
 
     public function get()
     {
         $this->setRequestParameters();
 
         $query = Kelompok::from(DB::raw("$this->table with (readuncommitted)"))
-        ->select(
-            'kelompok.id',
-            'kelompok.kodekelompok',
-            'kelompok.keterangan',
-            'parameter.memo as statusaktif',
-            'kelompok.modifiedby',
-            'kelompok.created_at',
-            'kelompok.updated_at'
-        )
+            ->select(
+                'kelompok.id',
+                'kelompok.kodekelompok',
+                'kelompok.keterangan',
+                'parameter.memo as statusaktif',
+                'kelompok.modifiedby',
+                'kelompok.created_at',
+                'kelompok.updated_at'
+            )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'kelompok.statusaktif', '=', 'parameter.id');
 
         $this->totalRows = $query->count();
@@ -54,20 +54,22 @@ class Kelompok extends MyModel
 
     public function selectColumns($query)
     {
-        return $query->select(
-            DB::raw(
-            "   $this->table.id,
+        return $query->from(
+            DB::raw($this->table . " with (readuncommitted)")
+        )
+            ->select(
+                DB::raw(
+                    "   $this->table.id,
                 $this->table.kodekelompok,
                 $this->table.keterangan,
                 $this->table.statusaktif,
                 $this->table.modifiedby,
                 $this->table.created_at,
                 $this->table.updated_at"
-            )
+                )
             );
-
     }
-    
+
     public function createTemp(string $modelTable)
     {
         $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -87,11 +89,10 @@ class Kelompok extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id','kodekelompok','keterangan','statusaktif','modifiedby','created_at','updated_at'],$models);
+        DB::table($temp)->insertUsing(['id', 'kodekelompok', 'keterangan', 'statusaktif', 'modifiedby', 'created_at', 'updated_at'], $models);
 
 
-        return  $temp;         
-
+        return  $temp;
     }
 
     public function sort($query)
@@ -108,7 +109,7 @@ class Kelompok extends MyModel
                         if ($filters['field'] == 'statusaktif') {
                             $query = $query->where('parameter.text', '=', "$filters[data]");
                         } else {
-                            $query = $query->where('kelompok.'.$filters['field'], 'LIKE', "%$filters[data]%");
+                            $query = $query->where('kelompok.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
                     }
 
@@ -118,7 +119,7 @@ class Kelompok extends MyModel
                         if ($filters['field'] == 'statusaktif') {
                             $query = $query->orWhere('parameter.text', '=', "$filters[data]");
                         } else {
-                            $query = $query->orWhere('kelompok.'.$filters['field'], 'LIKE', "%$filters[data]%");
+                            $query = $query->orWhere('kelompok.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
                     }
 

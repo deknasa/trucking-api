@@ -29,10 +29,12 @@ class NotaDebetHeader extends MyModel
         $this->setRequestParameters();
 
         $query = DB::table($this->table);
-        $query = $this->selectColumns($query)
-        ->leftJoin('pelunasanpiutangheader as pelunasanpiutang','notadebetheader.pelunasanpiutang_nobukti','pelunasanpiutang.nobukti')
-        ->leftJoin('parameter','notadebetheader.statusapproval','parameter.id')
-        ->leftJoin('parameter as statuscetak','notadebetheader.statuscetak','statuscetak.id');
+        $query = $this->from(
+            DB::raw($this->table . " with (readuncommitted)")
+        )->selectColumns($query)
+            ->leftJoin(DB::raw("pelunasanpiutangheader as pelunasanpiutang with (readuncommitted)"), 'notadebetheader.pelunasanpiutang_nobukti', 'pelunasanpiutang.nobukti')
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'notadebetheader.statusapproval', 'parameter.id')
+            ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'notadebetheader.statuscetak', 'statuscetak.id');
 
 
         $this->totalRows = $query->count();
@@ -55,40 +57,43 @@ class NotaDebetHeader extends MyModel
 
         Schema::create($temp, function ($table) {
             $table->bigInteger('id')->default('0');
-            $table->string('nobukti',50)->unique();
-            $table->string('pelunasanpiutang_nobukti',50)->default('');
+            $table->string('nobukti', 50)->unique();
+            $table->string('pelunasanpiutang_nobukti', 50)->default('');
             $table->date('tglbukti')->default('1900/1/1');
             $table->longText('keterangan')->default('');
-            $table->string('postingdari',50)->default('');
+            $table->string('postingdari', 50)->default('');
             $table->integer('statusapproval')->length(11)->default('0');
             $table->date('tgllunas')->default('1900/1/1');
-            $table->string('userapproval',50)->default('');
+            $table->string('userapproval', 50)->default('');
             $table->date('tglapproval')->default('1900/1/1');
-            $table->unsignedBigInteger('statusformat')->default(0);            
-            $table->string('modifiedby',50)->default('');
+            $table->unsignedBigInteger('statusformat')->default(0);
+            $table->string('modifiedby', 50)->default('');
             $table->increments('position');
             $table->dateTime('created_at')->default('1900/1/1');
             $table->dateTime('updated_at')->default('1900/1/1');
         });
 
         $query = DB::table($modelTable);
-        $query = $this->select(
-            "id",
-            "nobukti",
-            "pelunasanpiutang_nobukti",
-            "tglbukti",
-            "keterangan",
-            "postingdari",
-            "statusapproval",
-            "tgllunas",
-            "userapproval",
-            "tglapproval",
-            "statusformat",
-            "modifiedby",
-        );
+        $query = $this->from(
+            DB::raw($this->table . " with (readuncommitted)")
+        )
+            ->select(
+                "id",
+                "nobukti",
+                "pelunasanpiutang_nobukti",
+                "tglbukti",
+                "keterangan",
+                "postingdari",
+                "statusapproval",
+                "tgllunas",
+                "userapproval",
+                "tglapproval",
+                "statusformat",
+                "modifiedby",
+            );
         $query = $this->sort($query);
         $models = $this->filter($query);
-        
+
         DB::table($temp)->insertUsing([
             "id",
             "nobukti",
@@ -107,24 +112,27 @@ class NotaDebetHeader extends MyModel
     }
     public function selectColumns($query)
     {
-        return $query->select(
-            "$this->table.id",
-            "$this->table.nobukti",
-            "$this->table.pelunasanpiutang_nobukti",
-            "$this->table.tglbukti",
-            "$this->table.keterangan",
-            "$this->table.postingdari",
-            "$this->table.statusapproval",
-            "$this->table.tgllunas",
-            "$this->table.userapproval",
-            "$this->table.tglapproval",
-            "$this->table.statusformat",
-            "$this->table.statuscetak",
-            "statuscetak.memo as statuscetak_memo",
-            "$this->table.modifiedby",
-            "parameter.memo as  statusapproval_memo",
-         
-        );
+        return $query->from(
+            DB::raw($this->table . " with (readuncommitted)")
+        )
+            ->select(
+                "$this->table.id",
+                "$this->table.nobukti",
+                "$this->table.pelunasanpiutang_nobukti",
+                "$this->table.tglbukti",
+                "$this->table.keterangan",
+                "$this->table.postingdari",
+                "$this->table.statusapproval",
+                "$this->table.tgllunas",
+                "$this->table.userapproval",
+                "$this->table.tglapproval",
+                "$this->table.statusformat",
+                "$this->table.statuscetak",
+                "statuscetak.memo as statuscetak_memo",
+                "$this->table.modifiedby",
+                "parameter.memo as  statusapproval_memo",
+
+            );
     }
 
 
@@ -132,8 +140,10 @@ class NotaDebetHeader extends MyModel
     {
         $this->setRequestParameters();
 
-        $query = DB::table('pelunasanpiutangdetail')
-        ->select(DB::raw('
+        $query = DB::table('pelunasanpiutangdetail')->from(
+            DB::raw("pelunasanpiutangdetail with (readuncommitted)")
+        )
+            ->select(DB::raw('
         pelunasanpiutangdetail.id as detail_id,
         pelunasanpiutangdetail.nobukti,
         pelunasanpiutangdetail.tglcair,
@@ -145,24 +155,24 @@ class NotaDebetHeader extends MyModel
         pelunasanpiutangdetail.coalebihbayar,
         COALESCE (pelunasanpiutangdetail.nominallebihbayar, 0) as lebihbayar '))
 
-        ->leftJoin('piutangheader','piutangheader.nobukti','pelunasanpiutangdetail.piutang_nobukti')
-        ->leftJoin('notadebetheader','notadebetheader.pelunasanpiutang_nobukti','pelunasanpiutangdetail.nobukti')
-        ->leftJoin('pelanggan', 'pelunasanpiutangdetail.pelanggan_id', 'pelanggan.id')
-        ->leftJoin('agen', 'pelunasanpiutangdetail.agen_id', 'agen.id')
-        ->whereRaw(" EXISTS (
+            ->leftJoin(DB::raw("piutangheader with (readuncommitted)"), 'piutangheader.nobukti', 'pelunasanpiutangdetail.piutang_nobukti')
+            ->leftJoin(DB::raw("notadebetheader with (readuncommitted)"), 'notadebetheader.pelunasanpiutang_nobukti', 'pelunasanpiutangdetail.nobukti')
+            ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'pelunasanpiutangdetail.pelanggan_id', 'pelanggan.id')
+            ->leftJoin(DB::raw("agen with (readuncommitted)"), 'pelunasanpiutangdetail.agen_id', 'agen.id')
+            ->whereRaw(" EXISTS (
             SELECT notadebetheader.pelunasanpiutang_nobukti
-            FROM notadebetdetail
-			left join notadebetheader on notadebetdetail.notadebet_id = notadebetheader.id
+            FROM notadebetdetail with (readuncommitted) 
+			left join notadebetheader  with (readuncommitted) on notadebetdetail.notadebet_id = notadebetheader.id
             WHERE notadebetheader.pelunasanpiutang_nobukti = pelunasanpiutangdetail.nobukti   
           )")
-          ->where('pelunasanpiutangdetail.nominallebihbayar', '>', 0)
-          ->where('notadebetheader.id' , $id);
-        
+            ->where('pelunasanpiutangdetail.nominallebihbayar', '>', 0)
+            ->where('notadebetheader.id', $id);
+
         $data = $query->get();
-    
+
         return $data;
     }
-        
+
     public function sort($query)
     {
         if ($this->params['sortIndex'] == 'grp') {
@@ -191,7 +201,7 @@ class NotaDebetHeader extends MyModel
                         switch ($filters['field']) {
                             case 'statusapproval_memo':
                                 $query = $query->where('parameter.memo', 'LIKE', "%$filters[data]%");
-                                break;                            
+                                break;
                             default:
                                 $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                 break;
@@ -205,7 +215,7 @@ class NotaDebetHeader extends MyModel
                             case 'statusapproval_memo':
                                 $query = $query->where('parameter.memo', 'LIKE', "%$filters[data]%");
                                 break;
-                            
+
                             default:
                                 $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                 break;
@@ -222,9 +232,9 @@ class NotaDebetHeader extends MyModel
             $this->totalPages = $this->params['limit'] > 0 ? ceil($this->totalRows / $this->params['limit']) : 1;
         }
         if (request()->cetak && request()->periode) {
-            $query->where('notadebetheader.statuscetak','<>', request()->cetak)
-                  ->whereYear('notadebetheader.tglbukti','=', request()->year)
-                  ->whereMonth('notadebetheader.tglbukti','=', request()->month);
+            $query->where('notadebetheader.statuscetak', '<>', request()->cetak)
+                ->whereYear('notadebetheader.tglbukti', '=', request()->year)
+                ->whereMonth('notadebetheader.tglbukti', '=', request()->month);
             return $query;
         }
         return $query;
@@ -235,11 +245,11 @@ class NotaDebetHeader extends MyModel
 
         $query = DB::table($this->table);
         $query = $this->selectColumns($query)
-        ->leftJoin('parameter','notadebetheader.statusapproval','parameter.id')
-        ->leftJoin('parameter as statuscetak','notadebetheader.statuscetak','statuscetak.id')
-        ->leftJoin('pelunasanpiutangheader as pelunasanpiutang','notadebetheader.pelunasanpiutang_nobukti','pelunasanpiutang.nobukti');
- 
-        $data = $query->where("$this->table.id",$id)->first();
+            ->leftJoin('parameter', 'notadebetheader.statusapproval', 'parameter.id')
+            ->leftJoin('parameter as statuscetak', 'notadebetheader.statuscetak', 'statuscetak.id')
+            ->leftJoin('pelunasanpiutangheader as pelunasanpiutang', 'notadebetheader.pelunasanpiutang_nobukti', 'pelunasanpiutang.nobukti');
+
+        $data = $query->where("$this->table.id", $id)->first();
         return $data;
     }
     public function paginate($query)

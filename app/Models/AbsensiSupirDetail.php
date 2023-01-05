@@ -59,9 +59,9 @@ class AbsensiSupirDetail extends MyModel
                 'absensisupirdetail.jam',
                 'absensisupirdetail.uangjalan'
             )
-            ->join('trado','absensisupirdetail.trado_id','trado.id')
-            ->join('supir','absensisupirdetail.supir_id','supir.id')
-            ->leftJoin('absentrado','absensisupirdetail.absen_id','absentrado.id')
+            ->join(DB::raw("trado with (readuncommitted)"),'absensisupirdetail.trado_id','trado.id')
+            ->join(DB::raw("supir with (readuncommitted)"),'absensisupirdetail.supir_id','supir.id')
+            ->leftJoin(DB::raw("absentrado with (readuncommitted)"),'absensisupirdetail.absen_id','absentrado.id')
             ->where('absensisupirdetail.absensi_id',$id);
 
         $detail = $query->get();

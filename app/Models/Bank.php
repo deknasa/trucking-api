@@ -27,26 +27,29 @@ class Bank extends MyModel
     {
         $this->setRequestParameters();
 
-        $query = DB::table($this->table)->select(
-            'bank.id',
-            'bank.kodebank',
-            'bank.namabank',
-            'bank.coa',
-            'bank.tipe',
-            'parameter.memo as statusaktif',
-            'statusformatpenerimaan.memo as statusformatpenerimaan',
-            'statusformatpengeluaran.memo as statusformatpengeluaran',
-            'bank.modifiedby',
-            'bank.created_at',
-            'bank.updated_at'
+        $query = DB::table($this->table)->from(
+            DB::raw($this->table . " with (readuncommitted)")
         )
-        ->leftJoin('parameter', 'bank.statusaktif', '=', 'parameter.id')
-        ->leftJoin('parameter as statusformatpenerimaan', 'bank.statusformatpenerimaan', '=', 'statusformatpenerimaan.id')
-        ->leftJoin('parameter as statusformatpengeluaran', 'bank.statusformatpengeluaran', '=', 'statusformatpengeluaran.id');
+            ->select(
+                'bank.id',
+                'bank.kodebank',
+                'bank.namabank',
+                'bank.coa',
+                'bank.tipe',
+                'parameter.memo as statusaktif',
+                'statusformatpenerimaan.memo as statusformatpenerimaan',
+                'statusformatpengeluaran.memo as statusformatpengeluaran',
+                'bank.modifiedby',
+                'bank.created_at',
+                'bank.updated_at'
+            )
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'bank.statusaktif', '=', 'parameter.id')
+            ->leftJoin(DB::raw("parameter as statusformatpenerimaan with (readuncommitted)"), 'bank.statusformatpenerimaan', '=', 'statusformatpenerimaan.id')
+            ->leftJoin(DB::raw("parameter as statusformatpengeluaran with (readuncommitted)"), 'bank.statusformatpengeluaran', '=', 'statusformatpengeluaran.id');
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
-        
+
         $this->sort($query);
         $this->filter($query);
         $this->paginate($query);
@@ -56,19 +59,23 @@ class Bank extends MyModel
         return $data;
     }
 
-    public function findAll($id) {
-        $query =  DB::table('bank')->select(
-            'bank.id',
-            'bank.kodebank',
-            'bank.namabank',
-            'bank.coa',
-            'bank.tipe',
-            'bank.statusaktif',
-            'bank.statusformatpenerimaan',
-            'bank.statusformatpengeluaran',
-            
+    public function findAll($id)
+    {
+        $query =  DB::table('bank')->from(
+            DB::raw("bank with (readuncommitted)")
         )
-        ->where('bank.id',$id);
+            ->select(
+                'bank.id',
+                'bank.kodebank',
+                'bank.namabank',
+                'bank.coa',
+                'bank.tipe',
+                'bank.statusaktif',
+                'bank.statusformatpenerimaan',
+                'bank.statusformatpengeluaran',
+
+            )
+            ->where('bank.id', $id);
 
         $data = $query->first();
         return $data;
@@ -76,9 +83,12 @@ class Bank extends MyModel
 
     public function selectColumns($query)
     {
-        return $query->select(
-            DB::raw(
-            "$this->table.id,
+        return $query->from(
+            DB::raw($this->table . " with (readuncommitted)")
+        )
+            ->select(
+                DB::raw(
+                    "$this->table.id,
             $this->table.kodebank,
             $this->table.namabank,
             $this->table.coa,
@@ -89,12 +99,11 @@ class Bank extends MyModel
             $this->table.modifiedby,
             $this->table.created_at,
             $this->table.updated_at"
+                )
             )
-        )
-            ->leftJoin('parameter', 'bank.statusaktif', '=', 'parameter.id')
-            ->leftJoin('parameter as statusformatpenerimaan', 'bank.statusformatpenerimaan', '=', 'statusformatpenerimaan.id')
-            ->leftJoin('parameter as statusformatpengeluaran', 'bank.statusformatpengeluaran', '=', 'statusformatpengeluaran.id');
-
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'bank.statusaktif', '=', 'parameter.id')
+            ->leftJoin(DB::raw("parameter as statusformatpenerimaan with (readuncommitted)"), 'bank.statusformatpenerimaan', '=', 'statusformatpenerimaan.id')
+            ->leftJoin(DB::raw("parameter as statusformatpengeluaran with (readuncommitted)"), 'bank.statusformatpengeluaran', '=', 'statusformatpengeluaran.id');
     }
 
     public function createTemp(string $modelTable)
@@ -120,12 +129,11 @@ class Bank extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id','kodebank','namabank','coa','tipe','statusaktif','statusformatpenerimaan','statusformatpengeluaran','modifiedby','created_at','updated_at'],$models);
+        DB::table($temp)->insertUsing(['id', 'kodebank', 'namabank', 'coa', 'tipe', 'statusaktif', 'statusformatpenerimaan', 'statusformatpengeluaran', 'modifiedby', 'created_at', 'updated_at'], $models);
 
 
-        return  $temp;         
-
-      }
+        return  $temp;
+    }
 
 
 

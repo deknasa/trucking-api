@@ -43,7 +43,9 @@ class AbsenTrado extends MyModel
 
     public function selectColumns($query)
     {
-        return $query->select(
+        return $query->from(
+            DB::raw($this->table . " with (readuncommitted)")
+        )->select(
             DB::raw("
                 $this->table.id,
                 $this->table.kodeabsen,
@@ -54,7 +56,7 @@ class AbsenTrado extends MyModel
                 $this->table.updated_at
             ")
         )
-        ->leftJoin('parameter', 'absentrado.statusaktif', '=', 'parameter.id');
+        ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'absentrado.statusaktif', '=', 'parameter.id');
 
     }
 

@@ -29,14 +29,14 @@ class Gudang extends MyModel
         $this->setRequestParameters();
 
         $query = Gudang::from(DB::raw("$this->table with (readuncommitted)"))
-        ->select(
-            'gudang.id',
-            'gudang.gudang',
-            'parameter.memo as statusaktif',
-            'gudang.modifiedby',
-            'gudang.created_at',
-            'gudang.updated_at'
-        )
+            ->select(
+                'gudang.id',
+                'gudang.gudang',
+                'parameter.memo as statusaktif',
+                'gudang.modifiedby',
+                'gudang.created_at',
+                'gudang.updated_at'
+            )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'gudang.statusaktif', '=', 'parameter.id');
 
         $this->totalRows = $query->count();
@@ -59,20 +59,22 @@ class Gudang extends MyModel
     public function selectColumns($query)
     { //sesuaikan dengan createtemp
 
-        return $query->select(
-            DB::raw(
-                "$this->table.id,
+        return $query->from(
+            DB::raw($this->table . " with (readuncommitted)")
+        )
+            ->select(
+                DB::raw(
+                    "$this->table.id,
             $this->table.gudang,
             'parameter.text as statusaktif',
            
             $this->table.modifiedby,
             $this->table.created_at,
             $this->table.updated_at"
+                )
+
             )
-
-        )
-        ->leftJoin('parameter', 'gudang.statusaktif', '=', 'parameter.id');
-
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'gudang.statusaktif', '=', 'parameter.id');
     }
 
     public function createTemp(string $modelTable)
@@ -80,9 +82,9 @@ class Gudang extends MyModel
         $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temp, function ($table) {
             $table->bigInteger('id')->default('0');
-            $table->string('gudang', 100)->default('');             
+            $table->string('gudang', 100)->default('');
             $table->string('statusaktif', 500)->default('');
-           
+
             $table->string('modifiedby', 50)->default('');
             $table->dateTime('created_at')->default('1900/1/1');
             $table->dateTime('updated_at')->default('1900/1/1');

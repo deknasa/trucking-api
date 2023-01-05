@@ -22,11 +22,13 @@ class InvoiceExtraDetail extends MyModel
     protected $casts = [
         'created_at' => 'date:d-m-Y H:i:s',
         'updated_at' => 'date:d-m-Y H:i:s'
-    ]; 
+    ];
     public function getAll($id)
     {
-        $query = DB::table($this->table); 
-        $query = $query->select(
+        $query = DB::table($this->table);
+        $query = $query->from(
+            DB::raw($this->table . " with (readuncommitted)")
+        )->select(
             "$this->table.id",
             "$this->table.invoiceextra_id",
             "$this->table.nobukti",
@@ -34,9 +36,9 @@ class InvoiceExtraDetail extends MyModel
             "$this->table.keterangan",
             "$this->table.modifiedby"
         )
-        
-        ->leftJoin('invoiceextraheader', 'invoiceextradetail.invoiceextra_id', 'invoiceextraheader.id');
-        $data = $query->where("invoiceextradetail.invoiceextra_id",$id)->get();
+
+            ->leftJoin(DB::raw("invoiceextraheader with (readuncommitted)"), 'invoiceextradetail.invoiceextra_id', 'invoiceextraheader.id');
+        $data = $query->where("invoiceextradetail.invoiceextra_id", $id)->get();
 
         return $data;
     }

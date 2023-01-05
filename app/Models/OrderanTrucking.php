@@ -28,7 +28,9 @@ class OrderanTrucking extends MyModel
     public function get()
     {
         $this->setRequestParameters();
-        $query = DB::table($this->table)
+        $query = DB::table($this->table)->from(
+            DB::raw($this->table . " with (readuncommitted)")
+        )
             ->select(
                 'orderantrucking.id',
                 'orderantrucking.nobukti',
@@ -51,13 +53,13 @@ class OrderanTrucking extends MyModel
                 'orderantrucking.created_at',
                 'orderantrucking.updated_at'
             )
-            ->leftJoin('tarif', 'orderantrucking.tarif_id', '=', 'tarif.id')
-            ->leftJoin('container', 'orderantrucking.container_id', '=', 'container.id')
-            ->leftJoin('agen', 'orderantrucking.agen_id', '=', 'agen.id')
-            ->leftJoin('jenisorder', 'orderantrucking.jenisorder_id', '=', 'jenisorder.id')
-            ->leftJoin('pelanggan', 'orderantrucking.pelanggan_id', '=', 'pelanggan.id')
-            ->leftJoin('parameter', 'orderantrucking.statuslangsir', '=', 'parameter.id')
-            ->leftJoin('parameter AS param2', 'orderantrucking.statusperalihan', '=', 'param2.id');
+            ->leftJoin(DB::raw("tarif with (readuncommitted)"), 'orderantrucking.tarif_id', '=', 'tarif.id')
+            ->leftJoin(DB::raw("container with (readuncommitted)"), 'orderantrucking.container_id', '=', 'container.id')
+            ->leftJoin(DB::raw("agen with (readuncommitted)"), 'orderantrucking.agen_id', '=', 'agen.id')
+            ->leftJoin(DB::raw("jenisorder with (readuncommitted)"), 'orderantrucking.jenisorder_id', '=', 'jenisorder.id')
+            ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'orderantrucking.pelanggan_id', '=', 'pelanggan.id')
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'orderantrucking.statuslangsir', '=', 'parameter.id')
+            ->leftJoin(DB::raw("parameter AS param2 with (readuncommitted)"), 'orderantrucking.statusperalihan', '=', 'param2.id');
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -75,6 +77,9 @@ class OrderanTrucking extends MyModel
     public function findAll($id)
     {
         $query = DB::table('orderantrucking')
+            ->from(
+                DB::raw("orderantrucking with (readuncommitted)")
+            )
             ->select(
                 'orderantrucking.id',
                 'orderantrucking.nobukti',
@@ -102,43 +107,51 @@ class OrderanTrucking extends MyModel
                 'orderantrucking.created_at',
                 'orderantrucking.updated_at'
             )
-            ->leftJoin('tarif', 'orderantrucking.tarif_id', '=', 'tarif.id')
-            ->leftJoin('container', 'orderantrucking.container_id', '=', 'container.id')
-            ->leftJoin('agen', 'orderantrucking.agen_id', '=', 'agen.id')
-            ->leftJoin('jenisorder', 'orderantrucking.jenisorder_id', '=', 'jenisorder.id')
-            ->leftJoin('pelanggan', 'orderantrucking.pelanggan_id', '=', 'pelanggan.id')
+            ->leftJoin(DB::raw("tarif with (readuncommitted)"), 'orderantrucking.tarif_id', '=', 'tarif.id')
+            ->leftJoin(DB::raw("container with (readuncommitted)"), 'orderantrucking.container_id', '=', 'container.id')
+            ->leftJoin(DB::raw("agen with (readuncommitted)"), 'orderantrucking.agen_id', '=', 'agen.id')
+            ->leftJoin(DB::raw("jenisorder with (readuncommitted)"), 'orderantrucking.jenisorder_id', '=', 'jenisorder.id')
+            ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'orderantrucking.pelanggan_id', '=', 'pelanggan.id')
             ->where('orderantrucking.id', $id);
 
-            $data = $query->first();
+        $data = $query->first();
 
         return $data;
     }
 
-    public function agen() {
+    public function agen()
+    {
         return $this->belongsTo(Agen::class, 'agen_id');
     }
 
-    public function container() {
+    public function container()
+    {
         return $this->belongsTo(Container::class, 'container_id');
     }
 
-    public function jenisorder() {
+    public function jenisorder()
+    {
         return $this->belongsTo(JenisOrder::class, 'jenisorder_id');
     }
 
-    public function pelanggan() {
+    public function pelanggan()
+    {
         return $this->belongsTo(Pelanggan::class, 'pelanggan_id');
     }
 
-    public function tarif() {
+    public function tarif()
+    {
         return $this->belongsTo(Tarif::class, 'tarif_id');
     }
 
     public function selectColumns($query)
     {
-        return $query->select(
-            DB::raw(
-            "$this->table.id,
+        return $query->from(
+            DB::raw($this->table . " with (readuncommitted)")
+        )
+            ->select(
+                DB::raw(
+                    "$this->table.id,
             $this->table.nobukti,
             $this->table.tglbukti,
             'container.keterangan as container_id',
@@ -158,16 +171,15 @@ class OrderanTrucking extends MyModel
             $this->table.modifiedby,
             $this->table.created_at,
             $this->table.updated_at"
+                )
             )
-        )
-        ->leftJoin('tarif', 'orderantrucking.tarif_id', '=', 'tarif.id')
-        ->leftJoin('container', 'orderantrucking.container_id', '=', 'container.id')
-        ->leftJoin('agen', 'orderantrucking.agen_id', '=', 'agen.id')
-        ->leftJoin('jenisorder', 'orderantrucking.jenisorder_id', '=', 'jenisorder.id')
-        ->leftJoin('pelanggan', 'orderantrucking.pelanggan_id', '=', 'pelanggan.id')
-        ->leftJoin('parameter', 'orderantrucking.statuslangsir', '=', 'parameter.id')
-        ->leftJoin('parameter AS param2', 'orderantrucking.statusperalihan', '=', 'param2.id');
-
+            ->leftJoin(DB::raw("tarif with (readuncommitted)"), 'orderantrucking.tarif_id', '=', 'tarif.id')
+            ->leftJoin(DB::raw("container with (readuncommitted)"), 'orderantrucking.container_id', '=', 'container.id')
+            ->leftJoin(DB::raw("agen with (readuncommitted)"), 'orderantrucking.agen_id', '=', 'agen.id')
+            ->leftJoin(DB::raw("jenisorder with (readuncommitted)"), 'orderantrucking.jenisorder_id', '=', 'jenisorder.id')
+            ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'orderantrucking.pelanggan_id', '=', 'pelanggan.id')
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'orderantrucking.statuslangsir', '=', 'parameter.id')
+            ->leftJoin(DB::raw("parameter AS param2 with (readuncommitted)"), 'orderantrucking.statusperalihan', '=', 'param2.id');
     }
 
     public function createTemp(string $modelTable)
@@ -202,11 +214,10 @@ class OrderanTrucking extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id','nobukti','tglbukti','container_id','agen_id','jenisorder_id','pelanggan_id','tarif_id','nominal','nojobemkl','nocont','noseal','nojobemkl2','nocont2','noseal2','statuslangsir','statusperalihan','modifiedby','created_at','updated_at'],$models);
+        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'container_id', 'agen_id', 'jenisorder_id', 'pelanggan_id', 'tarif_id', 'nominal', 'nojobemkl', 'nocont', 'noseal', 'nojobemkl2', 'nocont2', 'noseal2', 'statuslangsir', 'statusperalihan', 'modifiedby', 'created_at', 'updated_at'], $models);
 
 
-        return  $temp;         
-
+        return  $temp;
     }
     public function sort($query)
     {
@@ -221,20 +232,20 @@ class OrderanTrucking extends MyModel
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statuslangsir') {
                             $query = $query->where('parameter.text', '=', "$filters[data]");
-                        } elseif($filters['field'] == 'statusperalihan') {
+                        } elseif ($filters['field'] == 'statusperalihan') {
                             $query = $query->where('param2.text', '=', "$filters[data]");
-                        } elseif($filters['field'] == 'agen_id') {
+                        } elseif ($filters['field'] == 'agen_id') {
                             $query = $query->where('agen.namaagen', 'LIKE', "%$filters[data]%");
-                        } elseif($filters['field'] == 'pelanggan_id') {
+                        } elseif ($filters['field'] == 'pelanggan_id') {
                             $query = $query->where('pelanggan.namapelanggan', 'LIKE', "%$filters[data]%");
-                        } elseif($filters['field'] == 'container_id') {
+                        } elseif ($filters['field'] == 'container_id') {
                             $query = $query->where('container.keterangan', 'LIKE', "%$filters[data]%");
-                        } elseif($filters['field'] == 'tarif_id') {
+                        } elseif ($filters['field'] == 'tarif_id') {
                             $query = $query->where('tarif.tujuan', 'LIKE', "%$filters[data]%");
-                        } elseif($filters['field'] == 'jenisorder_id') {
+                        } elseif ($filters['field'] == 'jenisorder_id') {
                             $query = $query->where('jenisorder.keterangan', 'LIKE', "%$filters[data]%");
                         } else {
-                            $query = $query->where($this->table . '.' .$filters['field'], 'LIKE', "%$filters[data]%");
+                            $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
                     }
 
@@ -243,20 +254,20 @@ class OrderanTrucking extends MyModel
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statuslangsir') {
                             $query = $query->orWhere('parameter.text', '', "$filters[data]");
-                        } elseif($filters['field'] == 'statusperalihan') {
+                        } elseif ($filters['field'] == 'statusperalihan') {
                             $query = $query->orWhere('param2.text', '', "$filters[data]");
-                        } elseif($filters['field'] == 'agen_id') {
+                        } elseif ($filters['field'] == 'agen_id') {
                             $query = $query->orWhere('agen.namaagen', 'LIKE', "%$filters[data]%");
-                        } elseif($filters['field'] == 'pelanggan_id') {
+                        } elseif ($filters['field'] == 'pelanggan_id') {
                             $query = $query->orWhere('pelanggan.namapelanggan', 'LIKE', "%$filters[data]%");
-                        } elseif($filters['field'] == 'container_id') {
+                        } elseif ($filters['field'] == 'container_id') {
                             $query = $query->orWhere('container.keterangan', 'LIKE', "%$filters[data]%");
-                        } elseif($filters['field'] == 'tarif_id') {
+                        } elseif ($filters['field'] == 'tarif_id') {
                             $query = $query->orWhere('tarif.tujuan', 'LIKE', "%$filters[data]%");
-                        } elseif($filters['field'] == 'jenisorder_id') {
+                        } elseif ($filters['field'] == 'jenisorder_id') {
                             $query = $query->orWhere('jenisorder.keterangan', 'LIKE', "%$filters[data]%");
                         } else {
-                            $query = $query->orWhere($this->table . '.' .$filters['field'], 'LIKE', "%$filters[data]%");
+                            $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
                     }
 

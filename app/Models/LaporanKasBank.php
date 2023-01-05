@@ -29,15 +29,17 @@ class LaporanKasBank extends MyModel
     public function getReport($dari, $sampai, $bank_id)
     {
         // data coba coba
-        $query = DB::table('pengeluaranheader')->select(
+        $query = DB::table('pengeluaranheader')->from(
+            DB::raw("pengeluaranheader with (readuncommitted)")
+        )->select(
             'pengeluaranheader.id',
             'pengeluaranheader.nobukti',
             'pengeluaranheader.keterangan',
             'bank.namabank',
             'cabang.namacabang',
         )
-        ->leftJoin('bank', 'pengeluaranheader.bank_id', 'bank.id')
-        ->leftJoin('cabang', 'pengeluaranheader.cabang_id', 'cabang.id')
+        ->leftJoin(DB::raw("bank with (readuncommitted)"), 'pengeluaranheader.bank_id', 'bank.id')
+        ->leftJoin(DB::raw("cabang with (readuncommitted)"), 'pengeluaranheader.cabang_id', 'cabang.id')
         ->where('pengeluaranheader.bank_id', $bank_id);
 
         $data = $query->get();

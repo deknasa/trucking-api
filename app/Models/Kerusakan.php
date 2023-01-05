@@ -28,14 +28,14 @@ class Kerusakan extends MyModel
         $this->setRequestParameters();
 
         $query = Kerusakan::from(DB::raw("$this->table with (readuncommitted)"))
-        ->select(
-            'kerusakan.id',
-            'kerusakan.keterangan',
-            'parameter.memo as statusaktif',
-            'kerusakan.modifiedby',
-            'kerusakan.created_at',
-            'kerusakan.updated_at'
-        )
+            ->select(
+                'kerusakan.id',
+                'kerusakan.keterangan',
+                'parameter.memo as statusaktif',
+                'kerusakan.modifiedby',
+                'kerusakan.created_at',
+                'kerusakan.updated_at'
+            )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'kerusakan.statusaktif', '=', 'parameter.id');
 
         $this->totalRows = $query->count();
@@ -52,18 +52,20 @@ class Kerusakan extends MyModel
 
     public function selectColumns($query)
     {
-        return $query->select(
-            DB::raw(
-            "$this->table.id,
+        return $query->from(
+            DB::raw($this->table . " with (readuncommitted)")
+        )
+            ->select(
+                DB::raw(
+                    "$this->table.id,
             $this->table.keterangan,
             'parameter.text as statusaktif',
             $this->table.modifiedby,
             $this->table.created_at,
             $this->table.updated_at"
+                )
             )
-        )
-        ->leftJoin('parameter', 'kerusakan.statusaktif', 'parameter.id');
-
+            ->leftJoin('parameter', 'kerusakan.statusaktif', 'parameter.id');
     }
 
     public function createTemp(string $modelTable)
@@ -84,11 +86,10 @@ class Kerusakan extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id','keterangan','statusaktif','modifiedby','created_at','updated_at'],$models);
+        DB::table($temp)->insertUsing(['id', 'keterangan', 'statusaktif', 'modifiedby', 'created_at', 'updated_at'], $models);
 
 
-        return  $temp;         
-
+        return  $temp;
     }
 
     public function sort($query)
@@ -105,7 +106,7 @@ class Kerusakan extends MyModel
                         if ($filters['field'] == 'statusaktif') {
                             $query = $query->where('parameter.text', '=', "$filters[data]");
                         } else {
-                            $query = $query->where('kerusakan.'.$filters['field'], 'LIKE', "%$filters[data]%");
+                            $query = $query->where('kerusakan.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
                     }
 
@@ -115,7 +116,7 @@ class Kerusakan extends MyModel
                         if ($filters['field'] == 'statusaktif') {
                             $query = $query->orWhere('parameter.text', '=', "$filters[data]");
                         } else {
-                            $query = $query->orWhere('kerusakan.'.$filters['field'], 'LIKE', "%$filters[data]%");
+                            $query = $query->orWhere('kerusakan.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
                     }
 
@@ -136,5 +137,4 @@ class Kerusakan extends MyModel
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
-
 }

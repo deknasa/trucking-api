@@ -40,7 +40,7 @@ class HutangBayarDetail extends MyModel
             'alatbayar.id as alatbayar_id',
            
         )
-            ->leftJoin('alatbayar', 'hutangbayardetail.alatbayar_id', 'alatbayar.id')
+            ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'hutangbayardetail.alatbayar_id', 'alatbayar.id')
 
             ->where('hutangbayar_id', '=', $id);
 

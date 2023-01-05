@@ -25,7 +25,9 @@ class Agen extends MyModel
 
     public function isDeletable()
     {
-        $statusApproval = Parameter::where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
+        $statusApproval = Parameter::from(
+            DB::raw("Parameter with (readuncommitted)")
+        )->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
 
         return $this->statusapproval != $statusApproval->id;
     }
@@ -35,27 +37,27 @@ class Agen extends MyModel
         $this->setRequestParameters();
 
         $query = Agen::from(DB::raw("$this->table with (readuncommitted)"))
-        ->select(
-            'agen.id',
-            'agen.kodeagen',
-            'agen.namaagen',
-            'agen.keterangan',
-            'parameter.memo as statusaktif',
-            'agen.namaperusahaan',
-            'agen.alamat',
-            'agen.notelp',
-            'agen.nohp',
-            'agen.contactperson',
-            'agen.top',
-            'statusapproval.memo as statusapproval',
-            'agen.userapproval',
-            'agen.tglapproval',
-            'statustas.memo as statustas',
-            'agen.jenisemkl',
-            'agen.created_at',
-            'agen.modifiedby',
-            'agen.updated_at'
-        )
+            ->select(
+                'agen.id',
+                'agen.kodeagen',
+                'agen.namaagen',
+                'agen.keterangan',
+                'parameter.memo as statusaktif',
+                'agen.namaperusahaan',
+                'agen.alamat',
+                'agen.notelp',
+                'agen.nohp',
+                'agen.contactperson',
+                'agen.top',
+                'statusapproval.memo as statusapproval',
+                'agen.userapproval',
+                'agen.tglapproval',
+                'statustas.memo as statustas',
+                'agen.jenisemkl',
+                'agen.created_at',
+                'agen.modifiedby',
+                'agen.updated_at'
+            )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'agen.statusaktif', 'parameter.id')
             ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'agen.statusapproval', 'statusapproval.id')
             ->leftJoin(DB::raw("parameter as statustas with (readuncommitted)"), 'agen.statustas', 'statustas.id');
@@ -76,7 +78,9 @@ class Agen extends MyModel
 
     public function selectColumns($query)
     {
-        return $query->select(
+        return $query->from(
+            DB::raw($this->table . " with (readuncommitted)")
+        )->select(
             "$this->table.id",
             "$this->table.kodeagen",
             "$this->table.namaagen",
@@ -97,10 +101,10 @@ class Agen extends MyModel
             "$this->table.updated_at",
             "$this->table.modifiedby",
         )
-            ->leftJoin("parameter as parameter_statusaktif", "agen.statusaktif", "parameter_statusaktif.id")
-            ->leftJoin("parameter as parameter_statusapproval", "agen.statusapproval", "parameter_statusapproval.id")
-            ->leftJoin("parameter as parameter_statustas", "agen.statustas", "parameter_statustas.id")
-            ->leftJoin("jenisemkl", "agen.jenisemkl", "jenisemkl.id");
+            ->leftJoin(DB::raw("parameter as parameter_statusaktif with (readuncommitted)"), "agen.statusaktif", "parameter_statusaktif.id")
+            ->leftJoin(DB::raw("parameter as parameter_statusapproval with (readuncommitted)"), "agen.statusapproval", "parameter_statusapproval.id")
+            ->leftJoin(DB::raw("parameter as parameter_statustas with (readuncommitted)"), "agen.statustas", "parameter_statustas.id")
+            ->leftJoin(DB::raw("jenisemkl with (readuncommitted)"), "agen.jenisemkl", "jenisemkl.id");
     }
 
     public function createTemp(string $modelTable)
@@ -108,7 +112,7 @@ class Agen extends MyModel
         $this->setRequestParameters();
 
         $temp = '##temp'  . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-        
+
 
         Schema::create($temp, function ($table) {
             $table->bigInteger('id')->default('0');

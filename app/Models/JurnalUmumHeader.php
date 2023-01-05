@@ -18,7 +18,7 @@ class JurnalUmumHeader extends MyModel
         'created_at' => 'date:d-m-Y H:i:s',
         'updated_at' => 'date:d-m-Y H:i:s'
     ];
-    
+
     protected $guarded = [
         'id',
         'created_at',
@@ -37,8 +37,8 @@ class JurnalUmumHeader extends MyModel
         $lennobukti = 3;
 
         $query = DB::table($this->table)->from(
-                DB::raw("jurnalumumheader with (readuncommitted)")
-            )
+            DB::raw("jurnalumumheader with (readuncommitted)")
+        )
             ->select(
                 'jurnalumumheader.id',
                 'jurnalumumheader.nobukti',
@@ -52,7 +52,7 @@ class JurnalUmumHeader extends MyModel
                 'jurnalumumheader.updated_at',
                 'statusapproval.memo as statusapproval',
             )
-            ->leftJoin('parameter as statusapproval', 'jurnalumumheader.statusapproval', 'statusapproval.id');
+            ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'jurnalumumheader.statusapproval', 'statusapproval.id');
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -73,9 +73,12 @@ class JurnalUmumHeader extends MyModel
 
     public function selectColumns($query)
     {
-        return $query->select(
-            DB::raw(
-            "$this->table.id,
+        return $query->from(
+            DB::raw($this->table . " with (readuncommitted)")
+        )
+            ->select(
+                DB::raw(
+                    "$this->table.id,
             $this->table.nobukti,
             $this->table.tglbukti,
             $this->table.keterangan,
@@ -85,10 +88,9 @@ class JurnalUmumHeader extends MyModel
             $this->table.tglapproval,
             $this->table.modifiedby,
             $this->table.updated_at"
+                )
             )
-        )
-        ->leftJoin('parameter as statusapproval', 'jurnalumumheader.statusapproval', 'statusapproval.id');
-
+            ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'jurnalumumheader.statusapproval', 'statusapproval.id');
     }
 
     public function createTemp(string $modelTable)
@@ -113,11 +115,10 @@ class JurnalUmumHeader extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id','nobukti','tglbukti','keterangan','postingdari','statusapproval','userapproval','tglapproval','modifiedby','updated_at'],$models);
+        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'keterangan', 'postingdari', 'statusapproval', 'userapproval', 'tglapproval', 'modifiedby', 'updated_at'], $models);
 
 
-        return  $temp;         
-
+        return  $temp;
     }
 
     public function sort($query)
@@ -133,7 +134,7 @@ class JurnalUmumHeader extends MyModel
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statusapproval') {
                             $query = $query->where('statusapproval.text', '=', $filters['data']);
-                        } else{
+                        } else {
                             $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
                     }

@@ -30,25 +30,25 @@ class GajiSupirHeader extends MyModel
         $this->setRequestParameters();
 
         $query = DB::table($this->table)->from(DB::raw("gajisupirheader with (readuncommitted)"))
-        ->select(
-            'gajisupirheader.id',
-            'gajisupirheader.nobukti',
-            'gajisupirheader.tglbukti',
-            'supir.namasupir as supir_id',
-            'gajisupirheader.keterangan',
-            'gajisupirheader.nominal',
-            'gajisupirheader.tgldari',
-            'gajisupirheader.tglsampai',
-            'gajisupirheader.total',
-            'parameter.memo as statuscetak',
-            "parameter.text as statuscetak_text",
-            'gajisupirheader.userbukacetak',
-            'gajisupirheader.jumlahcetak',
-            DB::raw('(case when (year(gajisupirheader.tglbukacetak) <= 2000) then null else gajisupirheader.tglbukacetak end ) as tglbukacetak'),
-            'gajisupirheader.modifiedby',
-            'gajisupirheader.created_at',
-            'gajisupirheader.updated_at',
-        )
+            ->select(
+                'gajisupirheader.id',
+                'gajisupirheader.nobukti',
+                'gajisupirheader.tglbukti',
+                'supir.namasupir as supir_id',
+                'gajisupirheader.keterangan',
+                'gajisupirheader.nominal',
+                'gajisupirheader.tgldari',
+                'gajisupirheader.tglsampai',
+                'gajisupirheader.total',
+                'parameter.memo as statuscetak',
+                "parameter.text as statuscetak_text",
+                'gajisupirheader.userbukacetak',
+                'gajisupirheader.jumlahcetak',
+                DB::raw('(case when (year(gajisupirheader.tglbukacetak) <= 2000) then null else gajisupirheader.tglbukacetak end ) as tglbukacetak'),
+                'gajisupirheader.modifiedby',
+                'gajisupirheader.created_at',
+                'gajisupirheader.updated_at',
+            )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'gajisupirheader.statuscetak', 'parameter.id')
             ->leftJoin(DB::raw("supir with (readuncommitted)"), 'gajisupirheader.supir_id', 'supir.id');
 
@@ -67,11 +67,11 @@ class GajiSupirHeader extends MyModel
     {
 
         $query = DB::table('gajisupirheader')->from(DB::raw("gajisupirheader with (readuncommitted)"))
-        ->select(
-            'gajisupirheader.*',
-            'supir.namasupir as supir',
+            ->select(
+                'gajisupirheader.*',
+                'supir.namasupir as supir',
 
-        )
+            )
             ->leftJoin(DB::raw("supir with (readuncommitted)"), 'gajisupirheader.supir_id', 'supir.id')
             ->where('gajisupirheader.id', $id);
 
@@ -83,21 +83,21 @@ class GajiSupirHeader extends MyModel
     public function getTrip($supirId, $tglDari, $tglSampai)
     {
         $query = SuratPengantar::from(DB::raw("suratpengantar with (readuncommitted)"))
-        ->select(
-            'suratpengantar.id',
-            'suratpengantar.nobukti',
-            'suratpengantar.tglbukti',
-            'suratpengantar.trado_id',
-            'trado.keterangan as trado',
-            'suratpengantar.dari_id',
-            'kotaDari.keterangan as dari',
-            'suratpengantar.sampai_id',
-            'kotaSampai.keterangan as sampai',
-            'suratpengantar.nocont',
-            'suratpengantar.nosp',
-            'suratpengantar.gajisupir',
-            'suratpengantar.gajikenek',
-        )
+            ->select(
+                'suratpengantar.id',
+                'suratpengantar.nobukti',
+                'suratpengantar.tglbukti',
+                'suratpengantar.trado_id',
+                'trado.keterangan as trado',
+                'suratpengantar.dari_id',
+                'kotaDari.keterangan as dari',
+                'suratpengantar.sampai_id',
+                'kotaSampai.keterangan as sampai',
+                'suratpengantar.nocont',
+                'suratpengantar.nosp',
+                'suratpengantar.gajisupir',
+                'suratpengantar.gajikenek',
+            )
             ->leftJoin(DB::raw("kota as kotaDari with (readuncommitted)"), 'suratpengantar.dari_id', 'kotaDari.id')
             ->leftJoin(DB::raw("kota as kotaSampai with (readuncommitted)"), 'suratpengantar.sampai_id', 'kotaSampai.id')
             ->leftJoin(DB::raw("trado with (readuncommitted)"), 'suratpengantar.trado_id', 'trado.id')
@@ -111,18 +111,18 @@ class GajiSupirHeader extends MyModel
     public function getEditTrip($gajiId)
     {
         $query = GajiSupirDetail::from(DB::raw("gajisupirdetail with (readuncommitted)"))
-        ->select(
-            'suratpengantar.id',
-            'gajisupirdetail.suratpengantar_nobukti as nobukti',
-            'suratpengantar.tglbukti',
-            'trado.keterangan as trado',
-            'kotaDari.keterangan as dari',
-            'kotaSampai.keterangan as sampai',
-            'suratpengantar.nocont',
-            'suratpengantar.nosp',
-            'gajisupirdetail.gajisupir',
-            'gajisupirdetail.gajikenek',
-        )
+            ->select(
+                'suratpengantar.id',
+                'gajisupirdetail.suratpengantar_nobukti as nobukti',
+                'suratpengantar.tglbukti',
+                'trado.keterangan as trado',
+                'kotaDari.keterangan as dari',
+                'kotaSampai.keterangan as sampai',
+                'suratpengantar.nocont',
+                'suratpengantar.nosp',
+                'gajisupirdetail.gajisupir',
+                'gajisupirdetail.gajikenek',
+            )
             ->leftJoin(DB::raw("suratpengantar with (readuncommitted)"), 'gajisupirdetail.suratpengantar_nobukti', 'suratpengantar.nobukti')
             ->leftJoin(DB::raw("kota as kotaDari with (readuncommitted)"), 'suratpengantar.dari_id', 'kotaDari.id')
             ->leftJoin(DB::raw("kota as kotaSampai with (readuncommitted)"), 'suratpengantar.sampai_id', 'kotaSampai.id')
@@ -135,8 +135,11 @@ class GajiSupirHeader extends MyModel
 
     public function selectColumns($query)
     {
-        return $query->select(
-            DB::raw("
+        return $query->from(
+            DB::raw($this->table . " with (readuncommitted)")
+        )
+            ->select(
+                DB::raw("
             $this->table.id,
             $this->table.nobukti,
             $this->table.tglbukti,
@@ -154,9 +157,9 @@ class GajiSupirHeader extends MyModel
             $this->table.created_at,
             $this->table.updated_at
             ")
-        )
-            ->leftJoin('parameter', 'gajisupirheader.statuscetak', 'parameter.id')
-            ->leftJoin('supir', 'gajisupirheader.supir_id', 'supir.id');
+            )
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'gajisupirheader.statuscetak', 'parameter.id')
+            ->leftJoin(DB::raw("supir with (readuncommitted)"), 'gajisupirheader.supir_id', 'supir.id');
     }
 
     public function createTemp(string $modelTable)
@@ -172,8 +175,8 @@ class GajiSupirHeader extends MyModel
             $table->date('tgldari')->default('');
             $table->date('tglsampai')->default('');
             $table->bigInteger('total')->default('0');
-            $table->string('statuscetak',1000)->default('');
-            $table->string('userbukacetak',50)->default('');
+            $table->string('statuscetak', 1000)->default('');
+            $table->string('userbukacetak', 50)->default('');
             $table->date('tglbukacetak')->default('1900/1/1');
             $table->integer('jumlahcetak')->Length(11)->default('0');
             $table->string('modifiedby')->default();
@@ -187,7 +190,7 @@ class GajiSupirHeader extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'supir_id', 'keterangan', 'nominal', 'tgldari', 'tglsampai', 'total','statuscetak','userbukacetak','tglbukacetak','jumlahcetak', 'modifiedby', 'created_at', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'supir_id', 'keterangan', 'nominal', 'tgldari', 'tglsampai', 'total', 'statuscetak', 'userbukacetak', 'tglbukacetak', 'jumlahcetak', 'modifiedby', 'created_at', 'updated_at'], $models);
 
         return $temp;
     }
@@ -234,9 +237,9 @@ class GajiSupirHeader extends MyModel
             $this->totalPages = $this->params['limit'] > 0 ? ceil($this->totalRows / $this->params['limit']) : 1;
         }
         if (request()->cetak && request()->periode) {
-            $query->where('gajisupirheader.statuscetak','<>', request()->cetak)
-                  ->whereYear('gajisupirheader.tglbukti','=', request()->year)
-                  ->whereMonth('gajisupirheader.tglbukti','=', request()->month);
+            $query->where('gajisupirheader.statuscetak', '<>', request()->cetak)
+                ->whereYear('gajisupirheader.tglbukti', '=', request()->year)
+                ->whereMonth('gajisupirheader.tglbukti', '=', request()->month);
             return $query;
         }
         return $query;
