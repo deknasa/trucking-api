@@ -303,8 +303,8 @@ class KasGantungHeaderController extends Controller
                                 'nowarkat' => '',
                                 'tgljatuhtempo' => '',
                                 'nominal' => $request->nominal[$i],
-                                'coadebet' => $bank->coa,
-                                'coakredit' => $memo['JURNAL'],
+                                'coadebet' => $memo['JURNAL'],
+                                'coakredit' => $bank->coa,
                                 'keterangan' => $request->keterangan_detail[$i],
                                 'bulanbeban' => '',
                                 'modifiedby' =>  auth('api')->user()->name
@@ -409,7 +409,7 @@ class KasGantungHeaderController extends Controller
             $kasgantungheader->kasgantungDetail()->delete();
             PengeluaranHeader::where('nobukti', $request->pengeluaran_nobukti)->delete();
             JurnalUmumHeader::where('nobukti', $request->pengeluaran_nobukti)->delete();
-
+            
             /* Store detail */
             $detaillog = [];
             $total = 0;
@@ -474,9 +474,10 @@ class KasGantungHeaderController extends Controller
                     $parameterController = new ParameterController;
                     $statusApp = $parameterController->getparameterid('STATUS APPROVAL', 'STATUS APPROVAL', 'NON APPROVAL');
 
-                    $coaKasKeluar = DB::table('parameter')->where('grp', 'JURNAL KAS GANTUNG')->where('subgrp', 'JURNAL KAS GANTUNG')->first();
+                    $coaKasKeluar = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('memo')->where('grp', 'JURNAL KAS GANTUNG')->first();
+                
                     $memo = json_decode($coaKasKeluar->memo, true);
-
+                    
                     $content = new Request();
                     $content['group'] = $querysubgrppengeluaran->grp;
                     $content['subgroup'] = $querysubgrppengeluaran->subgrp;
@@ -533,8 +534,8 @@ class KasGantungHeaderController extends Controller
                             'nowarkat' => '',
                             'tgljatuhtempo' => '',
                             'nominal' => $request->nominal[$i],
-                            'coadebet' => $bank->coa,
-                            'coakredit' => $memo['JURNAL'],
+                            'coadebet' => $memo['JURNAL'],
+                            'coakredit' => $bank->coa,
                             'keterangan' => $request->keterangan_detail[$i],
                             'bulanbeban' => '',
                             'modifiedby' =>  auth('api')->user()->name
