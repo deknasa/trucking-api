@@ -55,15 +55,15 @@ class NotaKreditHeaderController extends Controller
             $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
             $notaKreditHeader = new NotaKreditHeader();
             
+            $statusApproval = Parameter::where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
             $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
 
             $notaKreditHeader->pelunasanpiutang_nobukti = $request->pelunasanpiutang_nobukti;
             $notaKreditHeader->tglbukti = date('Y-m-d',strtotime($request->tglbukti));
             $notaKreditHeader->keterangan = $request->keterangan;
-            $notaKreditHeader->statusapproval = $request->statusapproval;
             $notaKreditHeader->tgllunas = date('Y-m-d',strtotime($request->tgllunas));
-            $notaKreditHeader->statusformat = $request->statusformat;
             $notaKreditHeader->statusformat = $format->id;
+            $notaKreditHeader->statusApproval = $statusApproval->id;
             $notaKreditHeader->statuscetak = $statusCetak->id;
             $notaKreditHeader->modifiedby = auth('api')->user()->name;
             TOP:
@@ -178,13 +178,10 @@ class NotaKreditHeaderController extends Controller
             
             $notaKreditHeader = NotaKreditHeader::lockForUpdate()->findOrFail($id);
             $notaKreditHeader->tglbukti = date('Y-m-d',strtotime($request->tglbukti));
-            $notaKreditHeader->tglapproval = date('Y-m-d',strtotime($request->tglapproval));
-            $notaKreditHeader->statusapproval = $request->statusapproval;
             $notaKreditHeader->tgllunas = date('Y-m-d',strtotime($request->tgllunas));
             $notaKreditHeader->pelunasanpiutang_nobukti = $request->pelunasanpiutang_nobukti;
             $notaKreditHeader->keterangan = $request->keterangan;
             $notaKreditHeader->postingdari = "NOTA KREDIT HEADER";
-            $notaKreditHeader->userapproval = auth('api')->user()->name;
             $notaKreditHeader->modifiedby = auth('api')->user()->name;
            
             if ($notaKreditHeader->save()) {
@@ -278,12 +275,11 @@ class NotaKreditHeaderController extends Controller
     public function destroy(NotaKreditHeader $notaKreditHeader,$id)
     {
         DB::beginTransaction();
-
         $getDetail = NotaKreditDetail::where('notakredit_id', $id)->get();
-        $notaKreditHeader = NotaKreditHeader::where('id',$id)->first();
-        $delete = $notaKreditHeader->lockForUpdate()->delete();
+        $notaKreditHeader = new NotaKreditHeader();
+        $notaKreditHeader = $notaKreditHeader->lockAndDestroy($id);
 
-        if ($delete) {
+        if ($notaKreditHeader) {
             $logTrail = [
                 'namatabel' => strtoupper($notaKreditHeader->getTable()),
                 'postingdari' => 'DELETE NOTA KREDIT ',

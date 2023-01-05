@@ -29,9 +29,9 @@ class NotaDebetHeader extends MyModel
         $this->setRequestParameters();
 
         $query = DB::table($this->table);
-        $query = $this->from(
+        $query = $this->selectColumns($query)->from(
             DB::raw($this->table . " with (readuncommitted)")
-        )->selectColumns($query)
+            )
             ->leftJoin(DB::raw("pelunasanpiutangheader as pelunasanpiutang with (readuncommitted)"), 'notadebetheader.pelunasanpiutang_nobukti', 'pelunasanpiutang.nobukti')
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'notadebetheader.statusapproval', 'parameter.id')
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'notadebetheader.statuscetak', 'statuscetak.id');
@@ -110,6 +110,7 @@ class NotaDebetHeader extends MyModel
         ], $models);
         return $temp;
     }
+    
     public function selectColumns($query)
     {
         return $query->from(
