@@ -57,13 +57,14 @@ class NotaDebetHeaderController extends Controller
             $notaDebetHeader = new NotaDebetHeader();
 
             $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
+            $statusApproval = Parameter::where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
+            
 
             $notaDebetHeader->pelunasanpiutang_nobukti = $request->pelunasanpiutang_nobukti;
             $notaDebetHeader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $notaDebetHeader->keterangan = $request->keterangan;
-            $notaDebetHeader->statusapproval = $request->statusapproval;
+            $notaDebetHeader->statusapproval = $statusApproval->id;
             $notaDebetHeader->tgllunas = date('Y-m-d', strtotime($request->tgllunas));
-            $notaDebetHeader->statusformat = $request->statusformat;
             $notaDebetHeader->statusformat = $format->id;
             $notaDebetHeader->statuscetak = $statusCetak->id;
             $notaDebetHeader->modifiedby = auth('api')->user()->name;
@@ -177,13 +178,10 @@ class NotaDebetHeaderController extends Controller
         try {
 
             $notadebetheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
-            $notadebetheader->tglapproval = date('Y-m-d', strtotime($request->tglapproval));
-            $notadebetheader->statusapproval = $request->statusapproval;
             $notadebetheader->tgllunas = date('Y-m-d', strtotime($request->tgllunas));
             $notadebetheader->pelunasanpiutang_nobukti = $request->pelunasanpiutang_nobukti;
             $notadebetheader->keterangan = $request->keterangan;
             $notadebetheader->postingdari = "NOTA DEBET HEADER";
-            $notadebetheader->userapproval = auth('api')->user()->name;
             $notadebetheader->modifiedby = auth('api')->user()->name;
 
             if ($notadebetheader->save()) {

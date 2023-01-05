@@ -173,11 +173,45 @@ class PengembalianKasBankHeader extends MyModel
         });
         $this->setRequestParameters();
         $query = DB::table($modelTable);
-        $query = $this->selectColumns($query);
+        $query = $this->select('id',
+        'nobukti',
+        'tglbukti',
+        'pengeluaran_nobukti',
+        'keterangan',
+        'postingdari',
+        'dibayarke',
+        'cabang_id',
+        'bank_id',
+        'statusjenistransaksi',
+        'statusapproval',
+        'transferkeac',
+        'transferkean',
+        'transferkebank',
+        'modifiedby',
+        'created_at',
+        'updated_at');
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti','pengeluaran_nobukti', 'keterangan', 'postingdari', 'dibayarke', 'cabang_id', 'bank_id','statusjenistransaksi','statusapproval','transferkeac','transferkean','transferkebank', 'modifiedby','created_at', 'updated_at'], $models);
-
+        DB::table($temp)->insertUsing([
+            'id',
+            'nobukti',
+            'tglbukti',
+            'pengeluaran_nobukti',
+            'keterangan',
+            'postingdari',
+            'dibayarke',
+            'cabang_id',
+            'bank_id',
+            'statusjenistransaksi',
+            'statusapproval',
+            'transferkeac',
+            'transferkean',
+            'transferkebank',
+            'modifiedby',
+            'created_at',
+            'updated_at'
+        ], $models);
+            
         return $temp;
     }
         public function sort($query)

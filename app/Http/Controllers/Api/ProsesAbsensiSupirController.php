@@ -174,14 +174,15 @@ class ProsesAbsensiSupirController extends Controller
             $content['group'] = 'PROSESABSENSISUPIR';
             $content['subgroup'] = 'PROSESABSENSISUPIR';
             $content['table'] = 'prosesabsensisupir';
+            $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
 
             $prosesabsensisupir = new ProsesAbsensiSupir();
             $prosesabsensisupir->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $prosesabsensisupir->keterangan = $request->keterangan;
             $prosesabsensisupir->absensisupir_nobukti = $request->absensisupir_nobukti;
             $prosesabsensisupir->pengeluaran_nobukti = $request->pengeluaran_nobukti ?? '';
-            $prosesabsensisupir->nominal = $request->nominal;
-            $prosesabsensisupir->modifiedby = $request->modifiedby;
+            $prosesabsensisupir->nominal = $request->nominal ?? '';
+            $prosesabsensisupir->modifiedby = auth('api')->user()->name;
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
 
@@ -222,9 +223,10 @@ class ProsesAbsensiSupirController extends Controller
                     $coaKasKeluar = $parameterController->getparameterid('COA','COAKASKELUAR','09.01.01.03');
 
                     $content = new Request();
-                    $content['group'] = 'NOBUKTI';
-                    $content['subgroup'] = 'KASKELUAR';
+                    $content['group'] = 'PENGELUARAN KAS';
+                    $content['subgroup'] = 'NOMOR  PENGELUARAN KAS';
                     $content['table'] = 'pengeluaranheader';
+                    $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
 
                     ATAS:
                     $nobuktikaskeluar = app(Controller::class)->getRunningNumber($content)->original['data'];
@@ -264,37 +266,7 @@ class ProsesAbsensiSupirController extends Controller
                         'modifiedby' => $request->modifiedby,
                     ];
 
-                    $jurnalHeader = [
-                        'nobukti' => $nobuktikaskeluar,
-                        'tgl' => date('Y-m-d', strtotime($request->tglbukti)),
-                        'keterangan' => $request->keterangan,
-                        'postingdari' => "ENTRY PROSES ABSENSI SUPIR",
-                        'statusapproval' => $statusApp->id,
-                        'userapproval' => "",
-                        'tglapproval' => "",
-                        'modifiedby' => $request->modifiedby,
-                    ];
-
-                    $jurnalDetail = [
-                        [
-                            'nobukti' => $nobuktikaskeluar,
-                            'tgl' => date('Y-m-d', strtotime($request->tglbukti)),
-                            'coa' => $coaKasKeluar->text,
-                            'nominal' => $request->nominal,
-                            'keterangan' => $request->keterangan,
-                            'modifiedby' => $request->modifiedby,
-                        ],
-                        [
-                            'nobukti' => $nobuktikaskeluar,
-                            'tgl' => date('Y-m-d', strtotime($request->tglbukti)),
-                            'coa' => $bank->coa ?? '',
-                            'nominal' => -$request->nominal,
-                            'keterangan' => $request->keterangan,
-                            'modifiedby' => $request->modifiedby,
-                        ]
-                    ];
-
-                    $jurnal = $this->storeJurnal($pengeluaranHeader,$pengeluaranDetail,$jurnalHeader , $jurnalDetail);
+                    $jurnal = $this->storeJurnal($pengeluaranHeader,$pengeluaranDetail);
                     
                     if (!$jurnal['status'] AND @$jurnal['errorCode'] == 2601) {
                         goto ATAS;
@@ -390,6 +362,7 @@ class ProsesAbsensiSupirController extends Controller
                     $content['group'] = 'NOBUKTI';
                     $content['subgroup'] = 'KASKELUAR';
                     $content['table'] = 'pengeluaranheader';
+                    $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
 
                     ATAS:
                     $nobuktikaskeluar = app(Controller::class)->getRunningNumber($content)->original['data'];
@@ -428,38 +401,7 @@ class ProsesAbsensiSupirController extends Controller
                         'bulanbeban' => '',
                         'modifiedby' => $request->modifiedby,
                     ];
-
-                    $jurnalHeader = [
-                        'nobukti' => $nobuktikaskeluar,
-                        'tgl' => date('Y-m-d', strtotime($request->tglbukti)),
-                        'keterangan' => $request->keterangan,
-                        'postingdari' => "EDIT PROSES ABSENSI SUPIR",
-                        'statusapproval' => $statusApp->id,
-                        'userapproval' => "",
-                        'tglapproval' => "",
-                        'modifiedby' => $request->modifiedby,
-                    ];
-
-                    $jurnalDetail = [
-                        [
-                            'nobukti' => $nobuktikaskeluar,
-                            'tgl' => date('Y-m-d', strtotime($request->tglbukti)),
-                            'coa' => $coaKasKeluar->text,
-                            'nominal' => $request->nominal,
-                            'keterangan' => $request->keterangan,
-                            'modifiedby' => $request->modifiedby,
-                        ],
-                        [
-                            'nobukti' => $nobuktikaskeluar,
-                            'tgl' => date('Y-m-d', strtotime($request->tglbukti)),
-                            'coa' => $bank->coa ?? '',
-                            'nominal' => -$request->nominal,
-                            'keterangan' => $request->keterangan,
-                            'modifiedby' => $request->modifiedby,
-                        ]
-                    ];
-
-                    $jurnal = $this->storeJurnal($pengeluaranHeader,$pengeluaranDetail,$jurnalHeader , $jurnalDetail);
+                    $jurnal = $this->storePengeluaran($pengeluaranHeader,$pengeluaranDetail);
                     
                     if (!$jurnal['status'] AND @$jurnal['errorCode'] == 2601) {
                         goto ATAS;
@@ -702,7 +644,7 @@ class ProsesAbsensiSupirController extends Controller
         return $data;
     }
 
-    private function storeJurnal($pengeluaranHeader,$pengeluaranDetail,$header,$detail) {
+    private function storePengeluaran($pengeluaranHeader,$pengeluaranDetail) {
         try {
             $pengeluaran = new StorePengeluaranHeaderRequest($pengeluaranHeader);
             $pengeluarans = app(PengeluaranHeaderController::class)->store($pengeluaran);
@@ -720,15 +662,6 @@ class ProsesAbsensiSupirController extends Controller
             $pengeluaran = new StorePengeluaranDetailRequest($pengeluaranDetail);
             $pengeluarans = app(PengeluaranDetailController::class)->store($pengeluaran);
             
-            $jurnal = new StoreJurnalUmumHeaderRequest($header);
-            $jurnals = app(JurnalUmumHeaderController::class)->store($jurnal);
-            
-            foreach ($detail as $key => $value) {
-                $value['jurnalumum_id'] = $jurnals['id'];
-
-                $jurnal = new StoreJurnalUmumDetailRequest($value);
-                app(JurnalUmumDetailController::class)->store($jurnal);
-            }
 
             return [
                 'status' => true,
