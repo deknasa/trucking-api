@@ -68,18 +68,15 @@ class PencairanGiroPengeluaranHeaderController extends Controller
                 $pengeluaran = PengeluaranHeader::from(DB::raw("pengeluaranheader with (readuncommitted)"))
                     ->select('nobukti', 'keterangan')->where('id', $request->pengeluaranId[$i])->first();
 
-                $cekPencairan = PencairanGiroPengeluaranHeader::from(DB::raw("pencairangiropengeluaranheader with (readuncommitted)"))
-                    ->where('pengeluaran_nobukti', $pengeluaran->nobukti)->first();
+                $cekPencairan = PencairanGiroPengeluaranHeader::lockForUpdate()->where('pengeluaran_nobukti', $pengeluaran->nobukti)->first();
 
                 if ($cekPencairan != null) {
-                    $getDetail = PencairanGiroPengeluaranDetail::from(DB::raw("pencairangiropengeluarandetail with (readuncommitted)"))
-                        ->where('pencairangiropengeluaran_id', $cekPencairan->id)->get();
-                    $getJurnalHeader = JurnalUmumHeader::from(DB::raw("jurnalumumheader with (readuncommitted)"))
-                        ->where('nobukti', $cekPencairan->nobukti)->first();
-                    $getJurnalDetail = JurnalUmumDetail::from(DB::raw("jurnalumumdetail with (readuncommitted)"))
-                        ->where('nobukti', $cekPencairan->nobukti)->get();
+                    $getDetail = PencairanGiroPengeluaranDetail::lockForUpdate()->where('pencairangiropengeluaran_id', $cekPencairan->id)->get();
+                    $getJurnalHeader = JurnalUmumHeader::lockForUpdate()->where('nobukti', $cekPencairan->nobukti)->first();
+                    $getJurnalDetail = JurnalUmumDetail::lockForUpdate()->where('nobukti', $cekPencairan->nobukti)->get();
 
-                    PencairanGiroPengeluaranHeader::where('id', $cekPencairan->id)->delete();
+                    $pencairan = new PencairanGiroPengeluaranHeader();
+                    $pencairan = $pencairan->lockAndDestroy($cekPencairan->id);
                     JurnalUmumHeader::where('nobukti', $cekPencairan->nobukti)->delete();
 
                     $logTrail = [

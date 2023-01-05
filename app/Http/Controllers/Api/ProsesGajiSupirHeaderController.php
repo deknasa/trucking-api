@@ -304,60 +304,59 @@ class ProsesGajiSupirHeaderController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(ProsesGajiSupirHeader $prosesgajisupirheader, Request $request)
+    public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
-        try {
 
-            $getDetail = ProsesGajiSupirDetail::where('prosesgajisupir_id', $prosesgajisupirheader->id)->get();
-            $isDelete = ProsesGajiSupirHeader::where('id', $prosesgajisupirheader->id)->delete();
+        $getDetail = ProsesGajiSupirDetail::lockForUpdate()->where('prosesgajisupir_id', $id)->get();
+        $prosesGajiSupirHeader = new ProsesGajiSupirHeader();
+        $prosesGajiSupirHeader = $prosesGajiSupirHeader->lockAndDestroy($id);
+        if ($prosesGajiSupirHeader) {
+            $logTrail = [
+                'namatabel' => strtoupper($prosesGajiSupirHeader->getTable()),
+                'postingdari' => 'DELETE PROSES GAJI SUPIR HEADER',
+                'idtrans' => $prosesGajiSupirHeader->id,
+                'nobuktitrans' => $prosesGajiSupirHeader->nobukti,
+                'aksi' => 'DELETE',
+                'datajson' => $prosesGajiSupirHeader->toArray(),
+                'modifiedby' => $prosesGajiSupirHeader->modifiedby
+            ];
 
-            if ($isDelete) {
-                $logTrail = [
-                    'namatabel' => strtoupper($prosesgajisupirheader->getTable()),
-                    'postingdari' => 'DELETE PROSES GAJI SUPIR HEADER',
-                    'idtrans' => $prosesgajisupirheader->id,
-                    'nobuktitrans' => $prosesgajisupirheader->nobukti,
-                    'aksi' => 'DELETE',
-                    'datajson' => $prosesgajisupirheader->toArray(),
-                    'modifiedby' => $prosesgajisupirheader->modifiedby
-                ];
+            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+            $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+            // DELETE PROSES GAJI SUPIR DETAIL
+            $logTrailProsesGajiSupirDetail = [
+                'namatabel' => 'PROSESGAJISUPIRDETAIL',
+                'postingdari' => 'DELETE PROSES GAJI SUPIR DETAIL',
+                'idtrans' => $storedLogTrail['id'],
+                'nobuktitrans' => $prosesGajiSupirHeader->nobukti,
+                'aksi' => 'DELETE',
+                'datajson' => $getDetail->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ];
 
-                // DELETE PROSES GAJI SUPIR DETAIL
-                $logTrailProsesGajiSupirDetail = [
-                    'namatabel' => 'PROSESGAJISUPIRDETAIL',
-                    'postingdari' => 'DELETE PROSES GAJI SUPIR DETAIL',
-                    'idtrans' => $storedLogTrail['id'],
-                    'nobuktitrans' => $prosesgajisupirheader->nobukti,
-                    'aksi' => 'DELETE',
-                    'datajson' => $getDetail->toArray(),
-                    'modifiedby' => auth('api')->user()->name
-                ];
+            $validatedLogTrailProsesGajiSupirDetail = new StoreLogTrailRequest($logTrailProsesGajiSupirDetail);
+            app(LogTrailController::class)->store($validatedLogTrailProsesGajiSupirDetail);
+            DB::commit();
 
-                $validatedLogTrailProsesGajiSupirDetail = new StoreLogTrailRequest($logTrailProsesGajiSupirDetail);
-                app(LogTrailController::class)->store($validatedLogTrailProsesGajiSupirDetail);
-                DB::commit();
-    
-                $selected = $this->getPosition($prosesgajisupirheader, $prosesgajisupirheader->getTable(), true);
-                $prosesgajisupirheader->position = $selected->position;
-                $prosesgajisupirheader->id = $selected->id;
-                $prosesgajisupirheader->page = ceil($prosesgajisupirheader->position / ($request->limit ?? 10));
-    
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil dihapus',
-                    'data' => $prosesgajisupirheader
-                ]);
-            } 
+            $selected = $this->getPosition($prosesGajiSupirHeader, $prosesGajiSupirHeader->getTable(), true);
+            $prosesGajiSupirHeader->position = $selected->position;
+            $prosesGajiSupirHeader->id = $selected->id;
+            $prosesGajiSupirHeader->page = ceil($prosesGajiSupirHeader->position / ($request->limit ?? 10));
+
             return response([
-                'message' => 'Gagal dihapus'
-            ], 500);
-        } catch (\Throwable $th) {
+                'status' => true,
+                'message' => 'Berhasil dihapus',
+                'data' => $prosesGajiSupirHeader
+            ]);
+        } else {
             DB::rollBack();
-            throw $th;
+
+            return response([
+                'status' => false,
+                'message' => 'Gagal dihapus'
+            ]);
         }
     }
 
@@ -378,9 +377,9 @@ class ProsesGajiSupirHeaderController extends Controller
             $cekEBS = ProsesGajiSupirDetail::from(DB::raw("prosesgajisupirdetail with (readuncommitted)"))
                 ->whereRaw("gajisupir_nobukti = '$nobukti'")->first();
             if ($cekEBS) {
-                
+
                 $query = Error::from(DB::raw("error with (readuncommitted)"))->select('keterangan')->where('kodeerror', '=', 'RICSD')
-                ->first();
+                    ->first();
                 return response([
                     'message' => "$query->keterangan",
                 ], 422);
@@ -391,9 +390,9 @@ class ProsesGajiSupirHeaderController extends Controller
                 ]);
             }
         } else {
-            
+
             $query = Error::from(DB::raw("error with (readuncommitted)"))->select('keterangan')->where('kodeerror', '=', 'NRIC')
-            ->first();
+                ->first();
             return response([
                 'message' => "$query->keterangan",
             ], 422);
@@ -419,7 +418,7 @@ class ProsesGajiSupirHeaderController extends Controller
         ]);
     }
 
-    
+
     public function printReport($id)
     {
         DB::beginTransaction();
@@ -435,7 +434,7 @@ class ProsesGajiSupirHeaderController extends Controller
                 $prosesgaji->statuscetak = $statusSudahCetak->id;
                 $prosesgaji->tglbukacetak = date('Y-m-d H:i:s');
                 $prosesgaji->userbukacetak = auth('api')->user()->name;
-                $prosesgaji->jumlahcetak = $prosesgaji->jumlahcetak+1;
+                $prosesgaji->jumlahcetak = $prosesgaji->jumlahcetak + 1;
 
                 if ($prosesgaji->save()) {
                     $logTrail = [
@@ -447,10 +446,10 @@ class ProsesGajiSupirHeaderController extends Controller
                         'datajson' => $prosesgaji->toArray(),
                         'modifiedby' => auth('api')->user()->name,
                     ];
-    
+
                     $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                     $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-    
+
                     DB::commit();
                 }
             }
@@ -462,7 +461,6 @@ class ProsesGajiSupirHeaderController extends Controller
         } catch (\Throwable $th) {
             throw $th;
         }
-        
     }
 
     public function cekvalidasi($id)

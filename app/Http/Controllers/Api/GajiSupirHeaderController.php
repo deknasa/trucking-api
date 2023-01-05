@@ -250,7 +250,7 @@ class GajiSupirHeaderController extends Controller
 
 
             if ($gajisupirheader->save()) {
-               
+
                 GajiSupirDetail::where('gajisupir_id', $gajisupirheader->id)->delete();
 
                 /* Store detail */
@@ -356,59 +356,60 @@ class GajiSupirHeaderController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(GajiSupirHeader $gajisupirheader, Request $request)
+    public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
-        try {
-            $getDetail = GajiSupirDetail::where('gajisupir_id', $gajisupirheader->id)->get();
-            $isDelete = GajiSupirHeader::where('id', $gajisupirheader->id)->delete();
 
-            if ($isDelete) {
-                $logTrail = [
-                    'namatabel' => strtoupper($gajisupirheader->getTable()),
-                    'postingdari' => 'DELETE GAJI SUPIR HEADER',
-                    'idtrans' => $gajisupirheader->id,
-                    'nobuktitrans' => $gajisupirheader->nobukti,
-                    'aksi' => 'DELETE',
-                    'datajson' => $gajisupirheader->toArray(),
-                    'modifiedby' => auth('api')->user()->name
-                ];
+        $getDetail = GajiSupirDetail::lockForUpdate()->where('gajisupir_id', $id)->get();
+        $gajiSupir = new GajiSupirHeader();
+        $gajiSupir = $gajiSupir->lockAndDestroy($id);
 
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+        if ($gajiSupir) {
+            $logTrail = [
+                'namatabel' => strtoupper($gajiSupir->getTable()),
+                'postingdari' => 'DELETE GAJI SUPIR HEADER',
+                'idtrans' => $gajiSupir->id,
+                'nobuktitrans' => $gajiSupir->nobukti,
+                'aksi' => 'DELETE',
+                'datajson' => $gajiSupir->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ];
 
-                // DELETE GAJI SUPIR DETAIL
-                $logTrailGajiSupirDetail = [
-                    'namatabel' => 'GAJISUPIRDETAIL',
-                    'postingdari' => 'DELETE GAJI SUPIR DETAIL',
-                    'idtrans' => $storedLogTrail['id'],
-                    'nobuktitrans' => $gajisupirheader->nobukti,
-                    'aksi' => 'DELETE',
-                    'datajson' => $getDetail->toArray(),
-                    'modifiedby' => auth('api')->user()->name
-                ];
+            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+            $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-                $validatedLogTrailGajiSupirDetail = new StoreLogTrailRequest($logTrailGajiSupirDetail);
-                app(LogTrailController::class)->store($validatedLogTrailGajiSupirDetail);
-                DB::commit();
-    
-                $selected = $this->getPosition($gajisupirheader, $gajisupirheader->getTable(), true);
-                $gajisupirheader->position = $selected->position;
-                $gajisupirheader->id = $selected->id;
-                $gajisupirheader->page = ceil($gajisupirheader->position / ($request->limit ?? 10));
-    
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil dihapus',
-                    'data' => $gajisupirheader
-                ]);
-            }
+            // DELETE GAJI SUPIR DETAIL
+            $logTrailGajiSupirDetail = [
+                'namatabel' => 'GAJISUPIRDETAIL',
+                'postingdari' => 'DELETE GAJI SUPIR DETAIL',
+                'idtrans' => $storedLogTrail['id'],
+                'nobuktitrans' => $gajiSupir->nobukti,
+                'aksi' => 'DELETE',
+                'datajson' => $getDetail->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ];
+
+            $validatedLogTrailGajiSupirDetail = new StoreLogTrailRequest($logTrailGajiSupirDetail);
+            app(LogTrailController::class)->store($validatedLogTrailGajiSupirDetail);
+            DB::commit();
+
+            $selected = $this->getPosition($gajiSupir, $gajiSupir->getTable(), true);
+            $gajiSupir->position = $selected->position;
+            $gajiSupir->id = $selected->id;
+            $gajiSupir->page = ceil($gajiSupir->position / ($request->limit ?? 10));
+
             return response([
-                'message' => 'Gagal dihapus'
-            ], 500);
-        } catch (\Throwable $th) {
+                'status' => true,
+                'message' => 'Berhasil dihapus',
+                'data' => $gajiSupir
+            ]);
+        } else {
             DB::rollBack();
-            throw $th;
+
+            return response([
+                'status' => false,
+                'message' => 'Gagal dihapus'
+            ]);
         }
     }
 

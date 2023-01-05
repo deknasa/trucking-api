@@ -67,8 +67,8 @@ class JurnalUmumHeaderController extends Controller
 
             $jurnalumum = new JurnalUmumHeader();
             $statusApproval = Parameter::from(
-                        DB::raw("parameter with (readuncommitted)")
-                    )->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
+                DB::raw("parameter with (readuncommitted)")
+            )->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
 
             if ($tanpaprosesnobukti == 1) {
                 $jurnalumum->nobukti = $request->nobukti;
@@ -206,8 +206,8 @@ class JurnalUmumHeaderController extends Controller
         $nobukti = $data['nobukti'];
 
         $query = JurnalUmumDetail::from(
-                     DB::raw("jurnalumumdetail as A with (readuncommitted)")
-            )->select(['A.coa as coadebet', 'b.coa as coakredit', 'A.nominal', 'A.keterangan'])
+            DB::raw("jurnalumumdetail as A with (readuncommitted)")
+        )->select(['A.coa as coadebet', 'b.coa as coakredit', 'A.nominal', 'A.keterangan'])
             ->join(
                 DB::raw("(SELECT baris,coa FROM jurnalumumdetail WHERE nobukti='$nobukti' AND nominal<0) B"),
                 function ($join) {
@@ -346,64 +346,63 @@ class JurnalUmumHeaderController extends Controller
     /**
      * @ClassName
      */
-    public function destroy(JurnalUmumHeader $jurnalumumheader, Request $request)
+    public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
 
-        try {
-            $getDetail = JurnalUmumDetail::where('jurnalumum_id', $jurnalumumheader->id)->get();
-            $isDelete = JurnalUmumHeader::where('id', $jurnalumumheader->id)->delete();
+        $getDetail = JurnalUmumDetail::lockForUpdate()->where('jurnalumum_id', $id)->get();
 
-            if ($isDelete) {
-                $logTrail = [
-                    'namatabel' => strtoupper($jurnalumumheader->getTable()),
-                    'postingdari' => 'DELETE JURNAL UMUM HEADER',
-                    'idtrans' => $jurnalumumheader->id,
-                    'nobuktitrans' => $jurnalumumheader->nobukti,
-                    'aksi' => 'DELETE',
-                    'datajson' => $jurnalumumheader->toArray(),
-                    'modifiedby' => auth('api')->user()->name
-                ];
+        $jurnalumumheader = new JurnalUmumHeader();
+        $jurnalumumheader = $jurnalumumheader->lockAndDestroy($id);
 
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+        if ($jurnalumumheader) {
+            $logTrail = [
+                'namatabel' => strtoupper($jurnalumumheader->getTable()),
+                'postingdari' => 'DELETE JURNAL UMUM HEADER',
+                'idtrans' => $jurnalumumheader->id,
+                'nobuktitrans' => $jurnalumumheader->nobukti,
+                'aksi' => 'DELETE',
+                'datajson' => $jurnalumumheader->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ];
 
-                // DELETE JURNAL DETAIL
+            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+            $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-                $logTrailJurnalDetail = [
-                    'namatabel' => 'JURNALUMUMDETAIL',
-                    'postingdari' => 'DELETE JURNAL UMUM DETAIL',
-                    'idtrans' => $storedLogTrail['id'],
-                    'nobuktitrans' => $jurnalumumheader->nobukti,
-                    'aksi' => 'DELETE',
-                    'datajson' => $getDetail->toArray(),
-                    'modifiedby' => auth('api')->user()->name
-                ];
+            // DELETE JURNAL DETAIL
 
-                $validatedLogTrailJurnalDetail = new StoreLogTrailRequest($logTrailJurnalDetail);
-                app(LogTrailController::class)->store($validatedLogTrailJurnalDetail);
+            $logTrailJurnalDetail = [
+                'namatabel' => 'JURNALUMUMDETAIL',
+                'postingdari' => 'DELETE JURNAL UMUM DETAIL',
+                'idtrans' => $storedLogTrail['id'],
+                'nobuktitrans' => $jurnalumumheader->nobukti,
+                'aksi' => 'DELETE',
+                'datajson' => $getDetail->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ];
 
-                DB::commit();
+            $validatedLogTrailJurnalDetail = new StoreLogTrailRequest($logTrailJurnalDetail);
+            app(LogTrailController::class)->store($validatedLogTrailJurnalDetail);
 
-                $selected = $this->getPosition($jurnalumumheader, $jurnalumumheader->getTable(), true);
-                $jurnalumumheader->position = $selected->position;
-                $jurnalumumheader->id = $selected->id;
-                $jurnalumumheader->page = ceil($jurnalumumheader->position / ($request->limit ?? 10));
+            DB::commit();
 
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil dihapus',
-                    'data' => $jurnalumumheader
-                ]);
-            }
+            $selected = $this->getPosition($jurnalumumheader, $jurnalumumheader->getTable(), true);
+            $jurnalumumheader->position = $selected->position;
+            $jurnalumumheader->id = $selected->id;
+            $jurnalumumheader->page = ceil($jurnalumumheader->position / ($request->limit ?? 10));
 
             return response([
-                'message' => 'Gagal dihapus'
-            ], 500);
-        } catch (\Throwable $th) {
+                'status' => true,
+                'message' => 'Berhasil dihapus',
+                'data' => $jurnalumumheader
+            ]);
+        } else {
             DB::rollBack();
 
-            throw $th;
+            return response([
+                'status' => false,
+                'message' => 'Gagal dihapus'
+            ]);
         }
     }
     public function approval($id)

@@ -271,15 +271,15 @@ class NotaDebetHeaderController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(NotaDebetHeader $notaDebetHeader, $id)
+    public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
 
-        $getDetail = NotaDebetDetail::where('notadebet_id', $id)->get();
-        $notaDebetHeader = NotaDebetHeader::where('id', $id)->first();
-        $delete = $notaDebetHeader->lockForUpdate()->delete();
+        $getDetail = NotaDebetDetail::lockForUpdate()->where('notadebet_id', $id)->get();
+        $notaDebetHeader = new NotaDebetHeader();
+        $notaDebetHeader = $notaDebetHeader->lockAndDestroy($id);
 
-        if ($delete) {
+        if ($notaDebetHeader) {
             $logTrail = [
                 'namatabel' => strtoupper($notaDebetHeader->getTable()),
                 'postingdari' => 'DELETE NOTA DEBET ',

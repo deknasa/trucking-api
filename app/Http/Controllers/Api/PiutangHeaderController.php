@@ -452,107 +452,96 @@ class PiutangHeaderController extends Controller
     /**
      * @ClassName
      */
-    public function destroy(PiutangHeader $piutangHeader, Request $request)
+    public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
 
-        try {
-            $getDetail = PiutangDetail::from(
-                DB::raw("piutangdetail with (readuncommitted)")
-            )->where('piutang_id', $piutangHeader->id)->get();
+        $getDetail = PiutangDetail::lockForUpdate()->where('piutang_id', $id)->get();
 
-            $getJurnalHeader = JurnalUmumHeader::from(
-                DB::raw("jurnalumumheader with (readuncommitted)")
-            )->where('nobukti', $piutangHeader->nobukti)->first();
+        $piutangHeader = new PiutangHeader();
+        $piutangHeader = $piutangHeader->lockAndDestroy($id);
+        $getJurnalHeader = JurnalUmumHeader::lockForUpdate()->where('nobukti', $piutangHeader->nobukti)->first();
 
-            $getJurnalDetail = JurnalUmumDetail::from(
-                DB::raw("jurnalumumdetail with (readuncommitted)")
-            )->where('nobukti', $piutangHeader->nobukti)->get();
+        $getJurnalDetail = JurnalUmumDetail::lockForUpdate()->where('nobukti', $piutangHeader->nobukti)->get();
+        JurnalUmumHeader::where('nobukti', $piutangHeader->nobukti)->delete();
 
-            $isDelete = PiutangHeader::where('id', $piutangHeader->id)->delete();
+        if ($piutangHeader) {
+            // DELETE PIUTANG HEADER
+            $logTrail = [
+                'namatabel' => strtoupper($piutangHeader->getTable()),
+                'postingdari' => 'DELETE PIUTANG HEADER',
+                'idtrans' => $piutangHeader->id,
+                'nobuktitrans' => $piutangHeader->nobukti,
+                'aksi' => 'DELETE',
+                'datajson' => $piutangHeader->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ];
 
+            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+            $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-            JurnalUmumHeader::where('nobukti', $piutangHeader->nobukti)->delete();
+            // DELETE PIUTANG DETAIL
+            $logTrailPiutangDetail = [
+                'namatabel' => 'PIUTANGDETAIL',
+                'postingdari' => 'DELETE PIUTANG DETAIL',
+                'idtrans' => $storedLogTrail['id'],
+                'nobuktitrans' => $piutangHeader->nobukti,
+                'aksi' => 'DELETE',
+                'datajson' => $getDetail->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ];
 
-            if ($isDelete) {
-                // DELETE PIUTANG HEADER
-                $logTrail = [
-                    'namatabel' => strtoupper($piutangHeader->getTable()),
-                    'postingdari' => 'DELETE PIUTANG HEADER',
-                    'idtrans' => $piutangHeader->id,
-                    'nobuktitrans' => $piutangHeader->nobukti,
-                    'aksi' => 'DELETE',
-                    'datajson' => $piutangHeader->toArray(),
-                    'modifiedby' => auth('api')->user()->name
-                ];
+            $validatedLogTrailPiutangDetail = new StoreLogTrailRequest($logTrailPiutangDetail);
+            app(LogTrailController::class)->store($validatedLogTrailPiutangDetail);
 
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+            // DELETE JURNAL HEADER
+            $logTrailJurnalHeader = [
+                'namatabel' => 'JURNALUMUMHEADER',
+                'postingdari' => 'DELETE JURNAL UMUM HEADER DARI PIUTANG',
+                'idtrans' => $getJurnalHeader->id,
+                'nobuktitrans' => $getJurnalHeader->nobukti,
+                'aksi' => 'DELETE',
+                'datajson' => $getJurnalHeader->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ];
 
-                // DELETE PIUTANG DETAIL
-                $logTrailPiutangDetail = [
-                    'namatabel' => 'PIUTANGDETAIL',
-                    'postingdari' => 'DELETE PIUTANG DETAIL',
-                    'idtrans' => $storedLogTrail['id'],
-                    'nobuktitrans' => $piutangHeader->nobukti,
-                    'aksi' => 'DELETE',
-                    'datajson' => $getDetail->toArray(),
-                    'modifiedby' => auth('api')->user()->name
-                ];
-
-                $validatedLogTrailPiutangDetail = new StoreLogTrailRequest($logTrailPiutangDetail);
-                app(LogTrailController::class)->store($validatedLogTrailPiutangDetail);
-
-                // DELETE JURNAL HEADER
-                $logTrailJurnalHeader = [
-                    'namatabel' => 'JURNALUMUMHEADER',
-                    'postingdari' => 'DELETE JURNAL UMUM HEADER DARI PIUTANG',
-                    'idtrans' => $getJurnalHeader->id,
-                    'nobuktitrans' => $getJurnalHeader->nobukti,
-                    'aksi' => 'DELETE',
-                    'datajson' => $getJurnalHeader->toArray(),
-                    'modifiedby' => auth('api')->user()->name
-                ];
-
-                $validatedLogTrailJurnalHeader = new StoreLogTrailRequest($logTrailJurnalHeader);
-                $storedLogTrailJurnal = app(LogTrailController::class)->store($validatedLogTrailJurnalHeader);
+            $validatedLogTrailJurnalHeader = new StoreLogTrailRequest($logTrailJurnalHeader);
+            $storedLogTrailJurnal = app(LogTrailController::class)->store($validatedLogTrailJurnalHeader);
 
 
-                // DELETE JURNAL DETAIL
-                $logTrailJurnalDetail = [
-                    'namatabel' => 'JURNALUMUMDETAIL',
-                    'postingdari' => 'DELETE JURNAL UMUM DETAIL DARI PIUTANG',
-                    'idtrans' => $storedLogTrailJurnal['id'],
-                    'nobuktitrans' => $getJurnalHeader->nobukti,
-                    'aksi' => 'DELETE',
-                    'datajson' => $getJurnalDetail->toArray(),
-                    'modifiedby' => auth('api')->user()->name
-                ];
+            // DELETE JURNAL DETAIL
+            $logTrailJurnalDetail = [
+                'namatabel' => 'JURNALUMUMDETAIL',
+                'postingdari' => 'DELETE JURNAL UMUM DETAIL DARI PIUTANG',
+                'idtrans' => $storedLogTrailJurnal['id'],
+                'nobuktitrans' => $getJurnalHeader->nobukti,
+                'aksi' => 'DELETE',
+                'datajson' => $getJurnalDetail->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ];
 
-                $validatedLogTrailJurnalDetail = new StoreLogTrailRequest($logTrailJurnalDetail);
-                app(LogTrailController::class)->store($validatedLogTrailJurnalDetail);
+            $validatedLogTrailJurnalDetail = new StoreLogTrailRequest($logTrailJurnalDetail);
+            app(LogTrailController::class)->store($validatedLogTrailJurnalDetail);
 
-                DB::commit();
+            DB::commit();
 
-                $selected = $this->getPosition($piutangHeader, $piutangHeader->getTable(), true);
-                $piutangHeader->position = $selected->position;
-                $piutangHeader->id = $selected->id;
-                $piutangHeader->page = ceil($piutangHeader->position / ($request->limit ?? 10));
+            $selected = $this->getPosition($piutangHeader, $piutangHeader->getTable(), true);
+            $piutangHeader->position = $selected->position;
+            $piutangHeader->id = $selected->id;
+            $piutangHeader->page = ceil($piutangHeader->position / ($request->limit ?? 10));
 
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil dihapus',
-                    'data' => $piutangHeader
-                ]);
-            }
-            
             return response([
-                'message' => 'Gagal dihapus'
-            ], 500);
-        } catch (\Throwable $th) {
+                'status' => true,
+                'message' => 'Berhasil dihapus',
+                'data' => $piutangHeader
+            ]);
+        } else {
             DB::rollBack();
 
-            throw $th;
+            return response([
+                'status' => false,
+                'message' => 'Gagal dihapus'
+            ]);
         }
     }
 

@@ -258,63 +258,63 @@ class PendapatanSupirHeaderController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(PendapatanSupirHeader $pendapatanSupirHeader, Request $request)
+    public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
 
-        try {
 
-            $getDetail = PendapatanSupirDetail::where('pendapatansupir_id', $pendapatanSupirHeader->id)->get();
-            $isDelete = PendapatanSupirHeader::where('id', $pendapatanSupirHeader->id)->delete();
+        $getDetail = PendapatanSupirDetail::where('pendapatansupir_id', $id)->get();
 
-            if ($isDelete) {
-                $logTrail = [
-                    'namatabel' => strtoupper($pendapatanSupirHeader->getTable()),
-                    'postingdari' => 'DELETE PENDAPATAN SUPIR HEADER',
-                    'idtrans' => $pendapatanSupirHeader->id,
-                    'nobuktitrans' => $pendapatanSupirHeader->nobukti,
-                    'aksi' => 'DELETE',
-                    'datajson' => $pendapatanSupirHeader->toArray(),
-                    'modifiedby' => auth('api')->user()->name
-                ];
+        $pendapatanSupir = new PendapatanSupirHeader();
+        $pendapatanSupir = $pendapatanSupir->lockAndDestroy($id);
 
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+        if ($pendapatanSupir) {
+            $logTrail = [
+                'namatabel' => strtoupper($pendapatanSupir->getTable()),
+                'postingdari' => 'DELETE PENDAPATAN SUPIR HEADER',
+                'idtrans' => $pendapatanSupir->id,
+                'nobuktitrans' => $pendapatanSupir->nobukti,
+                'aksi' => 'DELETE',
+                'datajson' => $pendapatanSupir->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ];
 
-                // DELETE PENDAPATAN SUPIR DETAIL
-                $logTrailPendapatanDetail = [
-                    'namatabel' => 'PENDAPATANSUPIRDETAIL',
-                    'postingdari' => 'DELETE PENDAPATAN SUPIR DETAIL',
-                    'idtrans' => $storedLogTrail['id'],
-                    'nobuktitrans' => $pendapatanSupirHeader->nobukti,
-                    'aksi' => 'DELETE',
-                    'datajson' => $getDetail->toArray(),
-                    'modifiedby' => auth('api')->user()->name
-                ];
+            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+            $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-                $validatedLogTrailPendapatanDetail = new StoreLogTrailRequest($logTrailPendapatanDetail);
-                app(LogTrailController::class)->store($validatedLogTrailPendapatanDetail);
+            // DELETE PENDAPATAN SUPIR DETAIL
+            $logTrailPendapatanDetail = [
+                'namatabel' => 'PENDAPATANSUPIRDETAIL',
+                'postingdari' => 'DELETE PENDAPATAN SUPIR DETAIL',
+                'idtrans' => $storedLogTrail['id'],
+                'nobuktitrans' => $pendapatanSupir->nobukti,
+                'aksi' => 'DELETE',
+                'datajson' => $getDetail->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ];
 
-                DB::commit();
+            $validatedLogTrailPendapatanDetail = new StoreLogTrailRequest($logTrailPendapatanDetail);
+            app(LogTrailController::class)->store($validatedLogTrailPendapatanDetail);
 
-                $selected = $this->getPosition($pendapatanSupirHeader, $pendapatanSupirHeader->getTable(), true);
-                $pendapatanSupirHeader->position = $selected->position;
-                $pendapatanSupirHeader->id = $selected->id;
-                $pendapatanSupirHeader->page = ceil($pendapatanSupirHeader->position / ($request->limit ?? 10));
+            DB::commit();
 
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil dihapus',
-                    'data' => $pendapatanSupirHeader
-                ]);
-            }
+            $selected = $this->getPosition($pendapatanSupir, $pendapatanSupir->getTable(), true);
+            $pendapatanSupir->position = $selected->position;
+            $pendapatanSupir->id = $selected->id;
+            $pendapatanSupir->page = ceil($pendapatanSupir->position / ($request->limit ?? 10));
+
             return response([
-                'message' => 'Gagal dihapus'
-            ], 500);
-        } catch (\Throwable $th) {
+                'status' => true,
+                'message' => 'Berhasil dihapus',
+                'data' => $pendapatanSupir
+            ]);
+        } else {
             DB::rollBack();
 
-            throw $th;
+            return response([
+                'status' => false,
+                'message' => 'Gagal dihapus'
+            ]);
         }
     }
 

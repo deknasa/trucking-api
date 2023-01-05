@@ -136,7 +136,6 @@ class PenerimaanTruckingHeaderController extends Controller
                 }
 
                 $detaillog[] = $datadetails['detail']->toArray();
-
             }
             $datalogtrail = [
                 'namatabel' => strtoupper($tabeldetail),
@@ -312,62 +311,61 @@ class PenerimaanTruckingHeaderController extends Controller
     /**
      * @ClassName
      */
-    public function destroy(PenerimaanTruckingHeader $penerimaantruckingheader, Request $request)
+    public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
-        try {
 
-            $getDetail = PenerimaanTruckingDetail::where('penerimaantruckingheader_id', $penerimaantruckingheader->id)->get();
-            $isDelete = PenerimaanTruckingHeader::where('id', $penerimaantruckingheader->id)->delete();
+        $getDetail = PenerimaanTruckingDetail::lockForUpdate()->where('penerimaantruckingheader_id', $id)->get();
 
-            if ($isDelete) {
-                $logTrail = [
-                    'namatabel' => strtoupper($penerimaantruckingheader->getTable()),
-                    'postingdari' => 'DELETE PENERIMAAN TRUCKING HEADER',
-                    'idtrans' => $penerimaantruckingheader->id,
-                    'nobuktitrans' => $penerimaantruckingheader->nobukti,
-                    'aksi' => 'DELETE',
-                    'datajson' => $penerimaantruckingheader->toArray(),
-                    'modifiedby' => auth('api')->user()->name
-                ];
+        $penerimaanTrucking = new PenerimaanTruckingHeader();
+        $penerimaanTrucking = $penerimaanTrucking->lockAndDestroy($id);
 
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+        if ($penerimaanTrucking) {
+            $logTrail = [
+                'namatabel' => strtoupper($penerimaanTrucking->getTable()),
+                'postingdari' => 'DELETE PENERIMAAN TRUCKING HEADER',
+                'idtrans' => $penerimaanTrucking->id,
+                'nobuktitrans' => $penerimaanTrucking->nobukti,
+                'aksi' => 'DELETE',
+                'datajson' => $penerimaanTrucking->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ];
 
-                // DELETE PENERIMAAN TRUCKING DETAIL
-                $logTrailPenerimaanTruckingDetail = [
-                    'namatabel' => 'PENERIMAANTRUCKINGDETAIL',
-                    'postingdari' => 'DELETE PENERIMAAN TRUCKING DETAIL',
-                    'idtrans' => $storedLogTrail['id'],
-                    'nobuktitrans' => $penerimaantruckingheader->nobukti,
-                    'aksi' => 'DELETE',
-                    'datajson' => $getDetail->toArray(),
-                    'modifiedby' => auth('api')->user()->name
-                ];
+            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+            $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-                $validatedLogTrailPenerimaanTruckingDetail = new StoreLogTrailRequest($logTrailPenerimaanTruckingDetail);
-                app(LogTrailController::class)->store($validatedLogTrailPenerimaanTruckingDetail);
-                DB::commit();
-    
-                $selected = $this->getPosition($penerimaantruckingheader, $penerimaantruckingheader->getTable(), true);
-                $penerimaantruckingheader->position = $selected->position;
-                $penerimaantruckingheader->id = $selected->id;
-                $penerimaantruckingheader->page = ceil($penerimaantruckingheader->position / ($request->limit ?? 10));
-    
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil dihapus',
-                    'data' => $penerimaantruckingheader
-                ]);
+            // DELETE PENERIMAAN TRUCKING DETAIL
+            $logTrailPenerimaanTruckingDetail = [
+                'namatabel' => 'PENERIMAANTRUCKINGDETAIL',
+                'postingdari' => 'DELETE PENERIMAAN TRUCKING DETAIL',
+                'idtrans' => $storedLogTrail['id'],
+                'nobuktitrans' => $penerimaanTrucking->nobukti,
+                'aksi' => 'DELETE',
+                'datajson' => $getDetail->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ];
 
-            } 
+            $validatedLogTrailPenerimaanTruckingDetail = new StoreLogTrailRequest($logTrailPenerimaanTruckingDetail);
+            app(LogTrailController::class)->store($validatedLogTrailPenerimaanTruckingDetail);
+            DB::commit();
+
+            $selected = $this->getPosition($penerimaanTrucking, $penerimaanTrucking->getTable(), true);
+            $penerimaanTrucking->position = $selected->position;
+            $penerimaanTrucking->id = $selected->id;
+            $penerimaanTrucking->page = ceil($penerimaanTrucking->position / ($request->limit ?? 10));
+
             return response([
-                'message' => 'Gagal dihapus'
-            ], 500);
-
-        } catch (\Throwable $th) {
+                'status' => true,
+                'message' => 'Berhasil dihapus',
+                'data' => $penerimaanTrucking
+            ]);
+        } else {
             DB::rollBack();
-            return response($th->getMessage());
+
+            return response([
+                'status' => false,
+                'message' => 'Gagal dihapus'
+            ]);
         }
     }
 
@@ -386,7 +384,7 @@ class PenerimaanTruckingHeaderController extends Controller
                 $penerimaanTrucking->statuscetak = $statusSudahCetak->id;
                 $penerimaanTrucking->tglbukacetak = date('Y-m-d H:i:s');
                 $penerimaanTrucking->userbukacetak = auth('api')->user()->name;
-                $penerimaanTrucking->jumlahcetak = $penerimaanTrucking->jumlahcetak+1;
+                $penerimaanTrucking->jumlahcetak = $penerimaanTrucking->jumlahcetak + 1;
 
                 if ($penerimaanTrucking->save()) {
                     $logTrail = [
@@ -398,10 +396,10 @@ class PenerimaanTruckingHeaderController extends Controller
                         'datajson' => $penerimaanTrucking->toArray(),
                         'modifiedby' => auth('api')->user()->name,
                     ];
-    
+
                     $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                     $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-    
+
                     DB::commit();
                 }
             }
@@ -413,7 +411,6 @@ class PenerimaanTruckingHeaderController extends Controller
         } catch (\Throwable $th) {
             throw $th;
         }
-        
     }
 
     public function cekvalidasi($id)

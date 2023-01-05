@@ -142,14 +142,13 @@ class JurnalUmumPusatHeaderController extends Controller
 
                 for ($i = 0; $i < count($request->jurnalId); $i++) {
 
-                    $get = JurnalUmumHeader::where('id', $request->jurnalId[$i])->first();
-                    $jurnalUmumPusat = JurnalUmumPusatHeader::where('nobukti', $get->nobukti)->first();
+                    $get = JurnalUmumHeader::lockForUpdate()->where('id', $request->jurnalId[$i])->first();
+                    $jurnalUmumPusat = JurnalUmumPusatHeader::lockForUpdate()->where('nobukti', $get->nobukti)->first();
                     if ($jurnalUmumPusat != null) {
 
                         $getDetail = JurnalUmumPusatDetail::where('jurnalumumpusat_id', $jurnalUmumPusat->id)->get();
-                        JurnalUmumPusatHeader::destroy($jurnalUmumPusat->id);
-                        JurnalUmumPusatDetail::where('jurnalumumpusat_id', $jurnalUmumPusat->id)->lockForUpdate()->delete();
-
+                        $jurnalumum = new JurnalUmumPusatHeader();
+                        $jurnalumum = $jurnalumum->lockAndDestroy($jurnalUmumPusat->id);
                         $logTrail = [
                             'namatabel' => strtoupper($jurnalUmumPusat->getTable()),
                             'postingdari' => 'DELETE JURNAL UMUM PUSAT HEADER',

@@ -107,7 +107,6 @@ class ServiceInHeaderController extends Controller
                 }
 
                 $detaillog[] = $datadetails['detail']->toArray();
-
             }
             $datalogtrail = [
                 'namatabel' => strtoupper($tabeldetail),
@@ -249,64 +248,63 @@ class ServiceInHeaderController extends Controller
     /**
      * @ClassName
      */
-    public function destroy(ServiceInHeader $serviceinheader, Request $request)
+    public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
 
-        try {
-            $getDetail = ServiceInDetail::from(DB::raw('serviceindetail with (readuncommitted)'))->where('servicein_id', $serviceinheader->id)->get();
-            
-            $isDelete = ServiceInHeader::where('id', $serviceinheader->id)->delete();
+        $getDetail = ServiceInDetail::lockForUpdate()->where('servicein_id', $id)->get();
 
-            if ($isDelete) {
-                $logTrail = [
-                    'namatabel' => strtoupper($serviceinheader->getTable()),
-                    'postingdari' => 'DELETE SERVICE IN HEADER',
-                    'idtrans' => $serviceinheader->id,
-                    'nobuktitrans' => $serviceinheader->nobukti,
-                    'aksi' => 'DELETE',
-                    'datajson' => $serviceinheader->toArray(),
-                    'modifiedby' => auth('api')->user()->name
-                ];
+        $serviceIn = new ServiceInHeader();
+        $serviceIn = $serviceIn->lockAndDestroy($id);
 
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+        if ($serviceIn) {
+            $logTrail = [
+                'namatabel' => strtoupper($serviceIn->getTable()),
+                'postingdari' => 'DELETE SERVICE IN HEADER',
+                'idtrans' => $serviceIn->id,
+                'nobuktitrans' => $serviceIn->nobukti,
+                'aksi' => 'DELETE',
+                'datajson' => $serviceIn->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ];
 
-                // DELETE SERVICE IN DETAIL
-                $logTrailServiceIn = [
-                    'namatabel' => 'SERVICEINDETAIL',
-                    'postingdari' => 'DELETE SERVICE IN DETAIL',
-                    'idtrans' => $storedLogTrail['id'],
-                    'nobuktitrans' => $serviceinheader->nobukti,
-                    'aksi' => 'DELETE',
-                    'datajson' => $getDetail->toArray(),
-                    'modifiedby' => auth('api')->user()->name
-                ];
+            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+            $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-                $validatedLogTrailServiceinDetail = new StoreLogTrailRequest($logTrailServiceIn);
-                app(LogTrailController::class)->store($validatedLogTrailServiceinDetail);
+            // DELETE SERVICE IN DETAIL
+            $logTrailServiceIn = [
+                'namatabel' => 'SERVICEINDETAIL',
+                'postingdari' => 'DELETE SERVICE IN DETAIL',
+                'idtrans' => $storedLogTrail['id'],
+                'nobuktitrans' => $serviceIn->nobukti,
+                'aksi' => 'DELETE',
+                'datajson' => $getDetail->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ];
 
-                DB::commit();
+            $validatedLogTrailServiceinDetail = new StoreLogTrailRequest($logTrailServiceIn);
+            app(LogTrailController::class)->store($validatedLogTrailServiceinDetail);
 
-                /* Set position and page */
-                $selected = $this->getPosition($serviceinheader, $serviceinheader->getTable(), true);
-                $serviceinheader->position = $selected->position;
-                $serviceinheader->id = $selected->id;
-                $serviceinheader->page = ceil($serviceinheader->position / ($request->limit ?? 10));
+            DB::commit();
 
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil dihapus',
-                    'data' => $serviceinheader
-                ]);
-            } 
+            /* Set position and page */
+            $selected = $this->getPosition($serviceIn, $serviceIn->getTable(), true);
+            $serviceIn->position = $selected->position;
+            $serviceIn->id = $selected->id;
+            $serviceIn->page = ceil($serviceIn->position / ($request->limit ?? 10));
+
             return response([
-                'message' => 'Gagal dihapus'
-            ], 500);
-        } catch (\Throwable $th) {
+                'status' => true,
+                'message' => 'Berhasil dihapus',
+                'data' => $serviceIn
+            ]);
+        } else {
             DB::rollBack();
 
-            throw $th;
+            return response([
+                'status' => false,
+                'message' => 'Gagal dihapus'
+            ]);
         }
     }
 

@@ -410,103 +410,99 @@ class HutangHeaderController extends Controller
     /**
      * @ClassName
      */
-    public function destroy(HutangHeader $hutangheader, Request $request)
+    public function destroy(Request $request, $id)
     {
 
         DB::beginTransaction();
-        try {
 
-            $getDetail = HutangDetail::from(DB::raw("hutangdetail with (readuncommitted)"))
-                ->where('hutang_id', $hutangheader->id)->get();
-            $getJurnalHeader = JurnalUmumHeader::from(DB::raw("jurnalumumheader with (readuncommitted)"))
-                ->where('nobukti', $hutangheader->nobukti)->first();
-            $getJurnalDetail = JurnalUmumDetail::from(DB::raw("jurnalumumdetail with (readuncommitted)"))
-                ->where('nobukti', $hutangheader->nobukti)->get();
+        $getDetail = HutangDetail::lockForUpdate()->where('hutang_id', $id)->get();
+        $hutangheader = new HutangHeader();
+        $hutangheader = $hutangheader->lockAndDestroy($id);
 
-            $isDelete = HutangHeader::where('id', $hutangheader->id)->delete();
-            JurnalUmumHeader::where('nobukti', $hutangheader->nobukti)->lockForUpdate()->delete();
+        $getJurnalHeader = JurnalUmumHeader::lockForUpdate()->where('nobukti', $hutangheader->nobukti)->first();
+        $getJurnalDetail = JurnalUmumDetail::lockForUpdate()->where('nobukti', $hutangheader->nobukti)->get();
 
-            if ($isDelete) {
-                $logTrail = [
-                    'namatabel' => strtoupper($hutangheader->getTable()),
-                    'postingdari' => 'DELETE HUTANG HEADER',
-                    'idtrans' => $hutangheader->id,
-                    'nobuktitrans' => $hutangheader->nobukti,
-                    'aksi' => 'DELETE',
-                    'datajson' => $hutangheader->toArray(),
-                    'modifiedby' => auth('api')->user()->name
-                ];
+        JurnalUmumHeader::where('nobukti', $hutangheader->nobukti)->delete();
 
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+        if ($hutangheader) {
+            $logTrail = [
+                'namatabel' => strtoupper($hutangheader->getTable()),
+                'postingdari' => 'DELETE HUTANG HEADER',
+                'idtrans' => $hutangheader->id,
+                'nobuktitrans' => $hutangheader->nobukti,
+                'aksi' => 'DELETE',
+                'datajson' => $hutangheader->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ];
 
-                // DELETE HUTANG DETAIL
+            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+            $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-                $logTrailHutangDetail = [
-                    'namatabel' => 'HUTANGDETAIL',
-                    'postingdari' => 'DELETE HUTANG DETAIL',
-                    'idtrans' => $storedLogTrail['id'],
-                    'nobuktitrans' => $hutangheader->nobukti,
-                    'aksi' => 'DELETE',
-                    'datajson' => $getDetail->toArray(),
-                    'modifiedby' => auth('api')->user()->name
-                ];
+            // DELETE HUTANG DETAIL
 
-                $validatedLogTrailHutangDetail = new StoreLogTrailRequest($logTrailHutangDetail);
-                app(LogTrailController::class)->store($validatedLogTrailHutangDetail);
+            $logTrailHutangDetail = [
+                'namatabel' => 'HUTANGDETAIL',
+                'postingdari' => 'DELETE HUTANG DETAIL',
+                'idtrans' => $storedLogTrail['id'],
+                'nobuktitrans' => $hutangheader->nobukti,
+                'aksi' => 'DELETE',
+                'datajson' => $getDetail->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ];
 
-                // DELETE JURNAL HEADER
-                $logTrailJurnalHeader = [
-                    'namatabel' => 'JURNALUMUMHEADER',
-                    'postingdari' => 'DELETE JURNAL UMUM HEADER DARI HUTANG',
-                    'idtrans' => $getJurnalHeader->id,
-                    'nobuktitrans' => $getJurnalHeader->nobukti,
-                    'aksi' => 'DELETE',
-                    'datajson' => $getJurnalHeader->toArray(),
-                    'modifiedby' => auth('api')->user()->name
-                ];
+            $validatedLogTrailHutangDetail = new StoreLogTrailRequest($logTrailHutangDetail);
+            app(LogTrailController::class)->store($validatedLogTrailHutangDetail);
 
-                $validatedLogTrailJurnalHeader = new StoreLogTrailRequest($logTrailJurnalHeader);
-                $storedLogTrailJurnal = app(LogTrailController::class)->store($validatedLogTrailJurnalHeader);
+            // DELETE JURNAL HEADER
+            $logTrailJurnalHeader = [
+                'namatabel' => 'JURNALUMUMHEADER',
+                'postingdari' => 'DELETE JURNAL UMUM HEADER DARI HUTANG',
+                'idtrans' => $getJurnalHeader->id,
+                'nobuktitrans' => $getJurnalHeader->nobukti,
+                'aksi' => 'DELETE',
+                'datajson' => $getJurnalHeader->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ];
+
+            $validatedLogTrailJurnalHeader = new StoreLogTrailRequest($logTrailJurnalHeader);
+            $storedLogTrailJurnal = app(LogTrailController::class)->store($validatedLogTrailJurnalHeader);
 
 
-                // DELETE JURNAL DETAIL
+            // DELETE JURNAL DETAIL
 
-                $logTrailJurnalDetail = [
-                    'namatabel' => 'JURNALUMUMDETAIL',
-                    'postingdari' => 'DELETE JURNAL UMUM DETAIL DARI HUTANG',
-                    'idtrans' => $storedLogTrailJurnal['id'],
-                    'nobuktitrans' => $getJurnalHeader->nobukti,
-                    'aksi' => 'DELETE',
-                    'datajson' => $getJurnalDetail->toArray(),
-                    'modifiedby' => auth('api')->user()->name
-                ];
+            $logTrailJurnalDetail = [
+                'namatabel' => 'JURNALUMUMDETAIL',
+                'postingdari' => 'DELETE JURNAL UMUM DETAIL DARI HUTANG',
+                'idtrans' => $storedLogTrailJurnal['id'],
+                'nobuktitrans' => $getJurnalHeader->nobukti,
+                'aksi' => 'DELETE',
+                'datajson' => $getJurnalDetail->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ];
 
-                $validatedLogTrailJurnalDetail = new StoreLogTrailRequest($logTrailJurnalDetail);
-                app(LogTrailController::class)->store($validatedLogTrailJurnalDetail);
+            $validatedLogTrailJurnalDetail = new StoreLogTrailRequest($logTrailJurnalDetail);
+            app(LogTrailController::class)->store($validatedLogTrailJurnalDetail);
 
-                DB::commit();
+            DB::commit();
 
-                /* Set position and page */
-                $selected = $this->getPosition($hutangheader, $hutangheader->getTable(), true);
-                $hutangheader->position = $selected->position;
-                $hutangheader->id = $selected->id;
-                $hutangheader->page = ceil($hutangheader->position / ($request->limit ?? 10));
-
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil dihapus',
-                    'data' => $hutangheader
-                ]);
-            }
+            /* Set position and page */
+            $selected = $this->getPosition($hutangheader, $hutangheader->getTable(), true);
+            $hutangheader->position = $selected->position;
+            $hutangheader->id = $selected->id;
+            $hutangheader->page = ceil($hutangheader->position / ($request->limit ?? 10));
 
             return response([
-                'message' => 'Gagal dihapus'
-            ], 500);
-
-        } catch (\Throwable $th) {
+                'status' => true,
+                'message' => 'Berhasil dihapus',
+                'data' => $hutangheader
+            ]);
+        } else {
             DB::rollBack();
-            return response($th->getMessage());
+
+            return response([
+                'status' => false,
+                'message' => 'Gagal dihapus'
+            ]);
         }
     }
 

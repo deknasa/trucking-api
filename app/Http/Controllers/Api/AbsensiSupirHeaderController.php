@@ -95,7 +95,7 @@ class AbsensiSupirHeaderController extends Controller
             $absensisupir->modifiedby = auth('api')->user()->name;
 
             if ($absensisupir->save()) {
-               
+
                 $detaillog = [];
                 for ($i = 0; $i < count($request->trado_id); $i++) {
                     /* Store Detail */
@@ -123,7 +123,7 @@ class AbsensiSupirHeaderController extends Controller
                 }
 
                 //GET NO BUKTI KAS GANTUNG
-                
+
                 $format = DB::table('parameter')
                     ->where('grp', 'KAS GANTUNG')
                     ->where('subgrp', 'NOMOR KAS GANTUNG')
@@ -139,8 +139,8 @@ class AbsensiSupirHeaderController extends Controller
 
                 $absensisupir->kasgantung_nobukti = $nobuktiKasGantung;
                 $absensisupir->save();
-                 /* Store Header LogTrail */
-                 $logTrail = [
+                /* Store Header LogTrail */
+                $logTrail = [
                     'namatabel' => strtoupper($absensisupir->getTable()),
                     'postingdari' => 'ENTRY ABSENSI SUPIR HEADER',
                     'idtrans' => $absensisupir->id,
@@ -387,96 +387,94 @@ class AbsensiSupirHeaderController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(AbsensiSupirHeader $absensiSupirHeader, Request $request)
+    public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
-        try {
-            $getDetail = AbsensiSupirDetail::from(DB::raw("absensisupirdetail with (readuncommitted)"))
-            ->where('absensi_id', $absensiSupirHeader->id)->get();
-            $getKasgantungHeader = KasGantungHeader::from(DB::raw("kasgantungheader with (readuncommitted)"))
-            ->where('nobukti', $absensiSupirHeader->kasgantung_nobukti)->first();
-            $getKasgantungDetail = KasGantungDetail::from(DB::raw("kasgantungdetail with (readuncommitted)"))
-            ->where('nobukti', $absensiSupirHeader->kasgantung_nobukti)->get();
 
-            $isDelete = AbsensiSupirHeader::where('id', $absensiSupirHeader->id)->delete();
-            KasGantungHeader::where('nobukti', $absensiSupirHeader->kasgantung_nobukti)->delete();
+        $getDetail = AbsensiSupirDetail::lockForUpdate()->where('absensi_id', $id)->get();
+        $absensiSupirHeader = new AbsensiSupirHeader();
+        $absensiSupirHeader = $absensiSupirHeader->lockAndDestroy($id);
 
-            if ($isDelete) {
-                $logTrail = [
-                    'namatabel' => strtoupper($absensiSupirHeader->getTable()),
-                    'postingdari' => 'DELETE ABSENSI SUPIR HEADER',
-                    'idtrans' => $absensiSupirHeader->id,
-                    'nobuktitrans' => $absensiSupirHeader->nobukti,
-                    'aksi' => 'DELETE',
-                    'datajson' => $absensiSupirHeader->toArray(),
-                    'modifiedby' => auth('api')->user()->name
-                ];
+        $getKasgantungHeader = KasGantungHeader::lockForUpdate()->where('nobukti', $absensiSupirHeader->kasgantung_nobukti)->first();
+        $getKasgantungDetail = KasGantungDetail::lockForUpdate()->where('nobukti', $absensiSupirHeader->kasgantung_nobukti)->get();
 
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+        KasGantungHeader::where('nobukti', $absensiSupirHeader->kasgantung_nobukti)->delete();
 
-                // DELETE ABSENSI SUPIR DETAIL
-                $logTrailAbsensiSupirDetail = [
-                    'namatabel' => 'ABSENSISUPIRDETAIL',
-                    'postingdari' => 'DELETE ABSENSI SUPIR DETAIL',
-                    'idtrans' => $storedLogTrail['id'],
-                    'nobuktitrans' => $absensiSupirHeader->nobukti,
-                    'aksi' => 'DELETE',
-                    'datajson' => $getDetail->toArray(),
-                    'modifiedby' => auth('api')->user()->name
-                ];
+        if ($absensiSupirHeader) {
+            $logTrail = [
+                'namatabel' => strtoupper($absensiSupirHeader->getTable()),
+                'postingdari' => 'DELETE ABSENSI SUPIR HEADER',
+                'idtrans' => $absensiSupirHeader->id,
+                'nobuktitrans' => $absensiSupirHeader->nobukti,
+                'aksi' => 'DELETE',
+                'datajson' => $absensiSupirHeader->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ];
 
-                $validatedLogTrailAbsensiSupirDetail = new StoreLogTrailRequest($logTrailAbsensiSupirDetail);
-                app(LogTrailController::class)->store($validatedLogTrailAbsensiSupirDetail);
+            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+            $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-                // DELETE KAS GANTUNG HEADER
-                $logTrailKasgantungHeader = [
-                    'namatabel' => 'KASGANTUNGHEADER',
-                    'postingdari' => 'DELETE KAS GANTUNG HEADER DARI ABSENSI SUPIR',
-                    'idtrans' => $getKasgantungHeader->id,
-                    'nobuktitrans' => $getKasgantungHeader->nobukti,
-                    'aksi' => 'DELETE',
-                    'datajson' => $getKasgantungHeader->toArray(),
-                    'modifiedby' => auth('api')->user()->name
-                ];
+            // DELETE ABSENSI SUPIR DETAIL
+            $logTrailAbsensiSupirDetail = [
+                'namatabel' => 'ABSENSISUPIRDETAIL',
+                'postingdari' => 'DELETE ABSENSI SUPIR DETAIL',
+                'idtrans' => $storedLogTrail['id'],
+                'nobuktitrans' => $absensiSupirHeader->nobukti,
+                'aksi' => 'DELETE',
+                'datajson' => $getDetail->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ];
 
-                $validatedLogTrailKasgantungHeader = new StoreLogTrailRequest($logTrailKasgantungHeader);
-                $storedLogTrailKasgantung = app(LogTrailController::class)->store($validatedLogTrailKasgantungHeader);
+            $validatedLogTrailAbsensiSupirDetail = new StoreLogTrailRequest($logTrailAbsensiSupirDetail);
+            app(LogTrailController::class)->store($validatedLogTrailAbsensiSupirDetail);
 
-                // DELETE KAS GANTUNG DETAIL
-                $logTrailKasgantungDetail = [
-                    'namatabel' => 'KASGANTUNGDETAIL',
-                    'postingdari' => 'DELETE KAS GANTUNG DETAIL DARI ABSENSI SUPIR',
-                    'idtrans' => $storedLogTrailKasgantung['id'],
-                    'nobuktitrans' => $getKasgantungHeader->nobukti,
-                    'aksi' => 'DELETE',
-                    'datajson' => $getKasgantungDetail->toArray(),
-                    'modifiedby' => auth('api')->user()->name
-                ];
+            // DELETE KAS GANTUNG HEADER
+            $logTrailKasgantungHeader = [
+                'namatabel' => 'KASGANTUNGHEADER',
+                'postingdari' => 'DELETE KAS GANTUNG HEADER DARI ABSENSI SUPIR',
+                'idtrans' => $getKasgantungHeader->id,
+                'nobuktitrans' => $getKasgantungHeader->nobukti,
+                'aksi' => 'DELETE',
+                'datajson' => $getKasgantungHeader->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ];
 
-                $validatedLogTrailKasgantungDetail = new StoreLogTrailRequest($logTrailKasgantungDetail);
-                app(LogTrailController::class)->store($validatedLogTrailKasgantungDetail);
+            $validatedLogTrailKasgantungHeader = new StoreLogTrailRequest($logTrailKasgantungHeader);
+            $storedLogTrailKasgantung = app(LogTrailController::class)->store($validatedLogTrailKasgantungHeader);
 
-                DB::commit();
-    
-                $selected = $this->getPosition($absensiSupirHeader, $absensiSupirHeader->getTable(), true);
-                $absensiSupirHeader->position = $selected->position;
-                $absensiSupirHeader->id = $selected->id;
-                $absensiSupirHeader->page = ceil($absensiSupirHeader->position / ($request->limit ?? 10));
-    
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil dihapus',
-                    'data' => $absensiSupirHeader
-                ]);
-            }
+            // DELETE KAS GANTUNG DETAIL
+            $logTrailKasgantungDetail = [
+                'namatabel' => 'KASGANTUNGDETAIL',
+                'postingdari' => 'DELETE KAS GANTUNG DETAIL DARI ABSENSI SUPIR',
+                'idtrans' => $storedLogTrailKasgantung['id'],
+                'nobuktitrans' => $getKasgantungHeader->nobukti,
+                'aksi' => 'DELETE',
+                'datajson' => $getKasgantungDetail->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ];
+
+            $validatedLogTrailKasgantungDetail = new StoreLogTrailRequest($logTrailKasgantungDetail);
+            app(LogTrailController::class)->store($validatedLogTrailKasgantungDetail);
+
+            DB::commit();
+
+            $selected = $this->getPosition($absensiSupirHeader, $absensiSupirHeader->getTable(), true);
+            $absensiSupirHeader->position = $selected->position;
+            $absensiSupirHeader->id = $selected->id;
+            $absensiSupirHeader->page = ceil($absensiSupirHeader->position / ($request->limit ?? 10));
+
             return response([
-                'message' => 'Gagal dihapus',
-            ], 500);
-
-        } catch (\Throwable $th) {
+                'status' => true,
+                'message' => 'Berhasil dihapus',
+                'data' => $absensiSupirHeader
+            ]);
+        } else {
             DB::rollBack();
-            throw $th;
+
+            return response([
+                'status' => false,
+                'message' => 'Gagal dihapus'
+            ]);
         }
     }
 

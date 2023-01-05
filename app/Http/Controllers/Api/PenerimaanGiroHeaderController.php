@@ -137,7 +137,6 @@ class PenerimaanGiroHeaderController extends Controller
                 }
 
                 $detaillog[] = $datadetails['detail']->toArray();
-
             }
 
             $datalogtrail = [
@@ -312,7 +311,6 @@ class PenerimaanGiroHeaderController extends Controller
                 }
 
                 $detaillog[] = $datadetails['detail']->toArray();
-
             }
 
             $datalogtrail = [
@@ -410,94 +408,95 @@ class PenerimaanGiroHeaderController extends Controller
     /**
      * @ClassName
      */
-    public function destroy(PenerimaanGiroHeader $penerimaangiroheader, Request $request)
+    public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
 
-        try {
-            $getDetail = PenerimaanGiroDetail::where('penerimaangiro_id', $penerimaangiroheader->id)->get();
-            $getJurnalHeader = JurnalUmumHeader::where('nobukti', $penerimaangiroheader->nobukti)->first();
-            $getJurnalDetail = JurnalUmumDetail::where('nobukti', $penerimaangiroheader->nobukti)->get();
-            
-            $isDelete = PenerimaanGiroHeader::where('id', $penerimaangiroheader->id)->delete();
-            JurnalUmumHeader::where('nobukti', $penerimaangiroheader->nobukti)->delete();
-            
-            if ($isDelete) {
-                $datalogtrail = [
-                    'namatabel' => strtoupper($penerimaangiroheader->getTable()),
-                    'postingdari' => 'DELETE PENERIMAAN GIRO HEADER',
-                    'idtrans' => $penerimaangiroheader->id,
-                    'nobuktitrans' => $penerimaangiroheader->nobukti,
-                    'aksi' => 'DELETE',
-                    'datajson' => $penerimaangiroheader->toArray(),
-                    'modifiedby' =>auth('api')->user()->name
-                ];
-    
-                $data = new StoreLogTrailRequest($datalogtrail);
-                $storedLogTrail = app(LogTrailController::class)->store($data);
+        $getDetail = PenerimaanGiroDetail::lockForUpdate()->where('penerimaangiro_id', $id)->get();
+        $penerimaanGiro = new PenerimaanGiroHeader();
+        $penerimaanGiro = $penerimaanGiro->lockAndDestroy($id);
 
-                // DELETE PENERIMAANGIRO DETAIL
-                $logTrailPenerimaanGiroDetail = [
-                    'namatabel' => 'PENERIMAANGIRODETAIL',
-                    'postingdari' => 'DELETE PENERIMAAN GIRO DETAIL',
-                    'idtrans' => $storedLogTrail['id'],
-                    'nobuktitrans' => $penerimaangiroheader->nobukti,
-                    'aksi' => 'DELETE',
-                    'datajson' => $getDetail->toArray(),
-                    'modifiedby' => auth('api')->user()->name
-                ];
+        $getJurnalHeader = JurnalUmumHeader::lockForUpdate()->where('nobukti', $penerimaanGiro->nobukti)->first();
+        $getJurnalDetail = JurnalUmumDetail::lockForUpdate()->where('nobukti', $penerimaanGiro->nobukti)->get();
 
-                $validatedLogTrailPenerimaanGiroDetail = new StoreLogTrailRequest($logTrailPenerimaanGiroDetail);
-                app(LogTrailController::class)->store($validatedLogTrailPenerimaanGiroDetail);
+        JurnalUmumHeader::where('nobukti', $penerimaanGiro->nobukti)->delete();
 
-                // DELETE JURNAL HEADER
-                $logTrailJurnalHeader = [
-                    'namatabel' => 'JURNALUMUMHEADER',
-                    'postingdari' => 'DELETE JURNAL UMUM HEADER DARI PENERIMAAN GIRO',
-                    'idtrans' => $getJurnalHeader->id,
-                    'nobuktitrans' => $getJurnalHeader->nobukti,
-                    'aksi' => 'DELETE',
-                    'datajson' => $getJurnalHeader->toArray(),
-                    'modifiedby' => auth('api')->user()->name
-                ];
+        if ($penerimaanGiro) {
+            $datalogtrail = [
+                'namatabel' => strtoupper($penerimaanGiro->getTable()),
+                'postingdari' => 'DELETE PENERIMAAN GIRO HEADER',
+                'idtrans' => $penerimaanGiro->id,
+                'nobuktitrans' => $penerimaanGiro->nobukti,
+                'aksi' => 'DELETE',
+                'datajson' => $penerimaanGiro->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ];
 
-                $validatedLogTrailJurnalHeader = new StoreLogTrailRequest($logTrailJurnalHeader);
-                $storedLogTrailJurnal = app(LogTrailController::class)->store($validatedLogTrailJurnalHeader);
+            $data = new StoreLogTrailRequest($datalogtrail);
+            $storedLogTrail = app(LogTrailController::class)->store($data);
 
-                
-                // DELETE JURNAL DETAIL
-                
-                $logTrailJurnalDetail = [
-                    'namatabel' => 'JURNALUMUMDETAIL',
-                    'postingdari' => 'DELETE JURNAL UMUM DETAIL DARI PENERIMAAN GIRO',
-                    'idtrans' => $storedLogTrailJurnal['id'],
-                    'nobuktitrans' => $getJurnalHeader->nobukti,
-                    'aksi' => 'DELETE',
-                    'datajson' => $getJurnalDetail->toArray(),
-                    'modifiedby' => auth('api')->user()->name
-                ];
+            // DELETE PENERIMAANGIRO DETAIL
+            $logTrailPenerimaanGiroDetail = [
+                'namatabel' => 'PENERIMAANGIRODETAIL',
+                'postingdari' => 'DELETE PENERIMAAN GIRO DETAIL',
+                'idtrans' => $storedLogTrail['id'],
+                'nobuktitrans' => $penerimaanGiro->nobukti,
+                'aksi' => 'DELETE',
+                'datajson' => $getDetail->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ];
 
-                $validatedLogTrailJurnalDetail = new StoreLogTrailRequest($logTrailJurnalDetail);
-                app(LogTrailController::class)->store($validatedLogTrailJurnalDetail);
+            $validatedLogTrailPenerimaanGiroDetail = new StoreLogTrailRequest($logTrailPenerimaanGiroDetail);
+            app(LogTrailController::class)->store($validatedLogTrailPenerimaanGiroDetail);
 
-                DB::commit();
-    
-                $selected = $this->getPosition($penerimaangiroheader, $penerimaangiroheader->getTable(), true);
-                $penerimaangiroheader->position = $selected->position;
-                $penerimaangiroheader->id = $selected->id;
-                $penerimaangiroheader->page = ceil($penerimaangiroheader->position / ($request->limit ?? 10));
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil dihapus',
-                    'data' => $penerimaangiroheader
-                ]);
-            } 
+            // DELETE JURNAL HEADER
+            $logTrailJurnalHeader = [
+                'namatabel' => 'JURNALUMUMHEADER',
+                'postingdari' => 'DELETE JURNAL UMUM HEADER DARI PENERIMAAN GIRO',
+                'idtrans' => $getJurnalHeader->id,
+                'nobuktitrans' => $getJurnalHeader->nobukti,
+                'aksi' => 'DELETE',
+                'datajson' => $getJurnalHeader->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ];
+
+            $validatedLogTrailJurnalHeader = new StoreLogTrailRequest($logTrailJurnalHeader);
+            $storedLogTrailJurnal = app(LogTrailController::class)->store($validatedLogTrailJurnalHeader);
+
+
+            // DELETE JURNAL DETAIL
+
+            $logTrailJurnalDetail = [
+                'namatabel' => 'JURNALUMUMDETAIL',
+                'postingdari' => 'DELETE JURNAL UMUM DETAIL DARI PENERIMAAN GIRO',
+                'idtrans' => $storedLogTrailJurnal['id'],
+                'nobuktitrans' => $getJurnalHeader->nobukti,
+                'aksi' => 'DELETE',
+                'datajson' => $getJurnalDetail->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ];
+
+            $validatedLogTrailJurnalDetail = new StoreLogTrailRequest($logTrailJurnalDetail);
+            app(LogTrailController::class)->store($validatedLogTrailJurnalDetail);
+
+            DB::commit();
+
+            $selected = $this->getPosition($penerimaanGiro, $penerimaanGiro->getTable(), true);
+            $penerimaanGiro->position = $selected->position;
+            $penerimaanGiro->id = $selected->id;
+            $penerimaanGiro->page = ceil($penerimaanGiro->position / ($request->limit ?? 10));
             return response([
-                'message' => 'Gagal dihapus'
-            ], 500);
-        } catch (\Throwable $th) {
+                'status' => true,
+                'message' => 'Berhasil dihapus',
+                'data' => $penerimaanGiro
+            ]);
+        } else {
             DB::rollBack();
-            throw $th;
+
+            return response([
+                'status' => false,
+                'message' => 'Gagal dihapus'
+            ]);
         }
     }
 
@@ -559,7 +558,7 @@ class PenerimaanGiroHeaderController extends Controller
                 $value['jurnalumum_id'] = $jurnals->original['data']['id'];
                 $jurnal = new StoreJurnalUmumDetailRequest($value);
                 $datadetails = app(JurnalUmumDetailController::class)->store($jurnal);
-                
+
                 $detailLog[] = $datadetails['detail']->toArray();
             }
 
@@ -602,7 +601,7 @@ class PenerimaanGiroHeaderController extends Controller
             'data' => $get->getPelunasan($id),
         ]);
     }
-    
+
     public function printReport($id)
     {
         DB::beginTransaction();
