@@ -28,30 +28,30 @@ class PendapatanSupirHeader extends MyModel
     {
         $this->setRequestParameters();
         $query = DB::table($this->table)->from(DB::raw("pendapatansupirheader with (readuncommitted)"))
-        ->select(
-            'pendapatansupirheader.id',
-            'pendapatansupirheader.nobukti',
-            'pendapatansupirheader.tglbukti',
-            'bank.namabank as bank_id',
-            'pendapatansupirheader.keterangan',
-            'pendapatansupirheader.tgldari',
-            'pendapatansupirheader.tglsampai',
-            'statusapproval.memo as statusapproval',
-            'pendapatansupirheader.userapproval',
-            DB::raw('(case when (year(pendapatansupirheader.tglapproval) <= 2000) then null else pendapatansupirheader.tglapproval end ) as tglapproval'),
-            DB::raw('(case when (year(pendapatansupirheader.tglbukacetak) <= 2000) then null else pendapatansupirheader.tglbukacetak end ) as tglbukacetak'),
-            'statuscetak.memo as statuscetak',
-            'pendapatansupirheader.userbukacetak',
-            'pendapatansupirheader.jumlahcetak',
-            'pendapatansupirheader.periode',
-            'pendapatansupirheader.modifiedby',
-            'pendapatansupirheader.created_at',
-            'pendapatansupirheader.updated_at'
-        )
+            ->select(
+                'pendapatansupirheader.id',
+                'pendapatansupirheader.nobukti',
+                'pendapatansupirheader.tglbukti',
+                'bank.namabank as bank_id',
+                'pendapatansupirheader.keterangan',
+                'pendapatansupirheader.tgldari',
+                'pendapatansupirheader.tglsampai',
+                'statusapproval.memo as statusapproval',
+                'pendapatansupirheader.userapproval',
+                DB::raw('(case when (year(pendapatansupirheader.tglapproval) <= 2000) then null else pendapatansupirheader.tglapproval end ) as tglapproval'),
+                DB::raw('(case when (year(pendapatansupirheader.tglbukacetak) <= 2000) then null else pendapatansupirheader.tglbukacetak end ) as tglbukacetak'),
+                'statuscetak.memo as statuscetak',
+                'pendapatansupirheader.userbukacetak',
+                'pendapatansupirheader.jumlahcetak',
+                'pendapatansupirheader.periode',
+                'pendapatansupirheader.modifiedby',
+                'pendapatansupirheader.created_at',
+                'pendapatansupirheader.updated_at'
+            )
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'pendapatansupirheader.bank_id', 'bank.id')
             ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'pendapatansupirheader.statusapproval', 'statusapproval.id')
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'pendapatansupirheader.statuscetak', 'statuscetak.id');
-          
+
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
@@ -67,30 +67,33 @@ class PendapatanSupirHeader extends MyModel
     public function findUpdate($id)
     {
         $data = DB::table('pendapatansupirheader')->from(DB::raw("pendapatansupirheader with (readuncommitted)"))
-        ->select(
-            'pendapatansupirheader.id',
-            'pendapatansupirheader.nobukti',
-            'pendapatansupirheader.tglbukti',
-            'pendapatansupirheader.bank_id',
-            'bank.namabank as bank',
-            'pendapatansupirheader.keterangan',
-            'pendapatansupirheader.tgldari',
-            'pendapatansupirheader.tglsampai',
-            'pendapatansupirheader.periode',
-            'pendapatansupirheader.statuscetak',
-        )
-        ->leftJoin(DB::raw("bank with (readuncommitted)"),'pendapatansupirheader.bank_id','bank.id')
-        ->where('pendapatansupirheader.id', $id)
-        ->first();
+            ->select(
+                'pendapatansupirheader.id',
+                'pendapatansupirheader.nobukti',
+                'pendapatansupirheader.tglbukti',
+                'pendapatansupirheader.bank_id',
+                'bank.namabank as bank',
+                'pendapatansupirheader.keterangan',
+                'pendapatansupirheader.tgldari',
+                'pendapatansupirheader.tglsampai',
+                'pendapatansupirheader.periode',
+                'pendapatansupirheader.statuscetak',
+            )
+            ->leftJoin(DB::raw("bank with (readuncommitted)"), 'pendapatansupirheader.bank_id', 'bank.id')
+            ->where('pendapatansupirheader.id', $id)
+            ->first();
 
         return $data;
     }
 
     public function selectColumns($query)
     {
-        return $query->select(
-            DB::raw(
-                "$this->table.id,
+        return $query->from(
+            DB::raw($this->table . " with (readuncommitted)")
+        )
+            ->select(
+                DB::raw(
+                    "$this->table.id,
                  $this->table.nobukti,
                  $this->table.tglbukti,
                  'bank.namabank as bank_id', 
@@ -108,11 +111,11 @@ class PendapatanSupirHeader extends MyModel
                  $this->table.modifiedby,
                  $this->table.created_at,
                  $this->table.updated_at"
+                )
             )
-        )
-            ->leftJoin('bank', 'pendapatansupirheader.bank_id', 'bank.id')
-            ->leftJoin('parameter as statusapproval', 'pendapatansupirheader.statusapproval', 'statusapproval.id')
-            ->leftJoin('parameter as statuscetak', 'pendapatansupirheader.statuscetak', 'statuscetak.id');
+            ->leftJoin(DB::raw("bank with (readuncommitted)"), 'pendapatansupirheader.bank_id', 'bank.id')
+            ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'pendapatansupirheader.statusapproval', 'statusapproval.id')
+            ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'pendapatansupirheader.statuscetak', 'statuscetak.id');
     }
 
     public function createTemp(string $modelTable)
@@ -129,8 +132,8 @@ class PendapatanSupirHeader extends MyModel
             $table->string('statusapproval')->default('');
             $table->string('userapproval')->default('');
             $table->date('tglapproval')->default('');
-            $table->string('statuscetak',1000)->default('');
-            $table->string('userbukacetak',50)->default('');
+            $table->string('statuscetak', 1000)->default('');
+            $table->string('userbukacetak', 50)->default('');
             $table->date('tglbukacetak')->default('1900/1/1');
             $table->integer('jumlahcetak')->Length(11)->default('0');
             $table->date('periode')->default('');
@@ -145,7 +148,7 @@ class PendapatanSupirHeader extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti','bank_id', 'keterangan', 'tgldari', 'tglsampai', 'statusapproval', 'userapproval','tglapproval','statuscetak','userbukacetak','tglbukacetak','jumlahcetak','periode', 'modifiedby','created_at', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'bank_id', 'keterangan', 'tgldari', 'tglsampai', 'statusapproval', 'userapproval', 'tglapproval', 'statuscetak', 'userbukacetak', 'tglbukacetak', 'jumlahcetak', 'periode', 'modifiedby', 'created_at', 'updated_at'], $models);
 
         return $temp;
     }
@@ -196,9 +199,9 @@ class PendapatanSupirHeader extends MyModel
             $this->totalPages = $this->params['limit'] > 0 ? ceil($this->totalRows / $this->params['limit']) : 1;
         }
         if (request()->cetak && request()->periode) {
-            $query->where('pendapatansupirheader.statuscetak','<>', request()->cetak)
-                  ->whereYear('pendapatansupirheader.tglbukti','=', request()->year)
-                  ->whereMonth('pendapatansupirheader.tglbukti','=', request()->month);
+            $query->where('pendapatansupirheader.statuscetak', '<>', request()->cetak)
+                ->whereYear('pendapatansupirheader.tglbukti', '=', request()->year)
+                ->whereMonth('pendapatansupirheader.tglbukti', '=', request()->month);
             return $query;
         }
         return $query;

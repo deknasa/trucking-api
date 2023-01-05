@@ -28,42 +28,45 @@ class PencairanGiroPengeluaranHeader extends MyModel
     {
         $this->setRequestParameters();
         $periode = request()->periode ?? date('m-Y');
-        $month = substr($periode,0,2);
-        $year = substr($periode,3);
-        
+        $month = substr($periode, 0, 2);
+        $year = substr($periode, 3);
+
         $query = DB::table($this->anotherTable)->from(DB::raw("pengeluaranheader with (readuncommitted)"))
-        ->select(DB::raw("pengeluaranheader.nobukti as pengeluaran_nobukti,pengeluaranheader.id, pengeluaranheader.dibayarke, bank.namabank as bank_id, pengeluaranheader.transferkeac, pengeluaranheader.modifiedby, pengeluaranheader.created_at,pengeluaranheader.updated_at,pengeluaranheader.keterangan, alatbayar.keterangan as alatbayar_id, pgp.nobukti, pgp.tglbukti, parameter.memo as statusapproval, (SELECT (SUM(pengeluarandetail.nominal)) FROM pengeluarandetail 
+            ->select(
+                DB::raw("pengeluaranheader.nobukti as pengeluaran_nobukti,pengeluaranheader.id, pengeluaranheader.dibayarke, bank.namabank as bank_id, pengeluaranheader.transferkeac, pengeluaranheader.modifiedby, pengeluaranheader.created_at,pengeluaranheader.updated_at,pengeluaranheader.keterangan, alatbayar.keterangan as alatbayar_id, pgp.nobukti, pgp.tglbukti, parameter.memo as statusapproval, (SELECT (SUM(pengeluarandetail.nominal)) FROM pengeluarandetail 
         WHERE pengeluarandetail.nobukti= pengeluaranheader.nobukti and pengeluarandetail.alatbayar_id=2) as nominal")
-        )
-        ->distinct('pengeluaranheader.nobukti')
-        ->leftJoin(DB::raw("pengeluarandetail with (readuncommitted)"),'pengeluarandetail.nobukti','pengeluaranheader.nobukti')
-        ->leftJoin(DB::raw("pencairangiropengeluaranheader as pgp with (readuncommitted)"),'pgp.pengeluaran_nobukti','pengeluaranheader.nobukti')
-        ->leftJoin(DB::raw("parameter with (readuncommitted)"),'pgp.statusapproval','parameter.id')
-        ->leftJoin(DB::raw("bank with (readuncommitted)"),'pengeluaranheader.bank_id','bank.id')
-        ->leftJoin(DB::raw("alatbayar with (readuncommitted)"),'pengeluarandetail.alatbayar_id','alatbayar.id')
-        ->whereRaw("MONTH(pengeluaranheader.tglbukti) = $month")
-        ->whereRaw("YEAR(pengeluaranheader.tglbukti) = $year")
-        ->where('pengeluarandetail.alatbayar_id','2');
+            )
+            ->distinct('pengeluaranheader.nobukti')
+            ->leftJoin(DB::raw("pengeluarandetail with (readuncommitted)"), 'pengeluarandetail.nobukti', 'pengeluaranheader.nobukti')
+            ->leftJoin(DB::raw("pencairangiropengeluaranheader as pgp with (readuncommitted)"), 'pgp.pengeluaran_nobukti', 'pengeluaranheader.nobukti')
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'pgp.statusapproval', 'parameter.id')
+            ->leftJoin(DB::raw("bank with (readuncommitted)"), 'pengeluaranheader.bank_id', 'bank.id')
+            ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'pengeluarandetail.alatbayar_id', 'alatbayar.id')
+            ->whereRaw("MONTH(pengeluaranheader.tglbukti) = $month")
+            ->whereRaw("YEAR(pengeluaranheader.tglbukti) = $year")
+            ->where('pengeluarandetail.alatbayar_id', '2');
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
-        $this->sort($query,'pengeluaranheader');
-        $this->filter($query,'pengeluaranheader');
+        $this->sort($query, 'pengeluaranheader');
+        $this->filter($query, 'pengeluaranheader');
         $this->paginate($query);
 
         $data = $query->get();
 
         return $data;
-
     }
 
-    
+
     public function selectColumns($query)
     {
-        return $query->select(
-            DB::raw(
-                "$this->table.id,
+        return $query->from(
+            DB::raw($this->table . " with (readuncommitted)")
+        )
+            ->select(
+                DB::raw(
+                    "$this->table.id,
             $this->table.nobukti,
             $this->table.tglbukti,
             $this->table.keterangan,
@@ -74,9 +77,9 @@ class PencairanGiroPengeluaranHeader extends MyModel
             $this->table.modifiedby,
             $this->table.created_at,
             $this->table.updated_at"
+                )
             )
-        )
-            ->leftJoin('parameter as statusapproval', 'pencairangiropengeluaranheader.statusapproval', 'statusapproval.id');
+            ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'pencairangiropengeluaranheader.statusapproval', 'statusapproval.id');
     }
 
     public function createTemp(string $modelTable)
@@ -100,8 +103,8 @@ class PencairanGiroPengeluaranHeader extends MyModel
         $this->setRequestParameters();
         $query = DB::table($modelTable);
         $query = $this->selectColumns($query);
-        $this->sort($query,'pencairangiropengeluaranheader');
-        $models = $this->filter($query,'pencairangiropengeluaranheader');
+        $this->sort($query, 'pencairangiropengeluaranheader');
+        $models = $this->filter($query, 'pencairangiropengeluaranheader');
         DB::table($temp)->insertUsing([
             'id', 'nobukti', 'tglbukti', 'keterangan', 'pengeluaran_nobukti', 'statusapproval', 'userapproval', 'tglapproval', 'modifiedby', 'created_at', 'updated_at'
         ], $models);
@@ -111,12 +114,12 @@ class PencairanGiroPengeluaranHeader extends MyModel
     }
 
 
-    public function sort($query,$table)
+    public function sort($query, $table)
     {
         return $query->orderBy($table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
     }
 
-    public function filter($query,$table, $relationFields = [])
+    public function filter($query, $table, $relationFields = [])
     {
         if (count($this->params['filters']) > 0 && @$this->params['filters']['rules'][0]['data'] != '') {
             switch ($this->params['filters']['groupOp']) {
@@ -144,9 +147,9 @@ class PencairanGiroPengeluaranHeader extends MyModel
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statusapproval') {
                             $query = $query->orWhere('parameter.text', '=', "$filters[data]");
-                        }else if ($filters['field'] == 'bank_id') {
+                        } else if ($filters['field'] == 'bank_id') {
                             $query = $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");
-                        }else if ($filters['field'] == 'alatbayar_id') {
+                        } else if ($filters['field'] == 'alatbayar_id') {
                             $query = $query->orWhere('alatbayar.keterangan', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'nobukti') {
                             $query = $query->orWhere('pgp.nobukti', 'LIKE', "%$filters[data]%");
@@ -176,5 +179,4 @@ class PencairanGiroPengeluaranHeader extends MyModel
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
-
 }

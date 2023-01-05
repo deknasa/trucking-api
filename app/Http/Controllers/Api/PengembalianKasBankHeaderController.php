@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Models\Parameter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-
+use Exception;
 use App\Http\Controllers\Controller;
 use App\Models\PengembalianKasBankHeader;
 use App\Models\PengeluaranHeader;
@@ -194,55 +194,6 @@ class PengembalianKasBankHeaderController extends Controller
                     return response(['Error'], 422);
                 } 
 
-                 //SOTRE Jurnal
-                 $jurnalHeader = [
-                    'tanpaprosesnobukti' => 1,
-                    'nobukti' => $pengeluaranHeader['nobukti'],
-                    'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
-                    'keterangan' => $request->keterangan,
-                    'postingdari' => "ENTRY PENGELUARAN KAS",
-                    'statusapproval' => $statusApproval->id,
-                    'userapproval' => "",
-                    'tglapproval' => "",
-                    'modifiedby' => auth('api')->user()->name,
-                    'statusformat' => "0",
-                ];
-
-                $jurnaldetail = [];
-
-                for ($i = 0; $i < count($request->nominal_detail); $i++) {
-                    $detail = [];
-
-                    $jurnalDetail = [
-                        [
-                            'nobukti' => $pengeluaranHeader['nobukti'],
-                            'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
-                            'coa' =>  $request->coadebet[$i],
-                            'nominal' => $request->nominal_detail[$i],
-                            'keterangan' => $request->keterangan_detail[$i],
-                            'modifiedby' => auth('api')->user()->name,
-                            'baris' => $i,
-                        ],
-                        [
-                            'nobukti' => $pengeluaranHeader['nobukti'],
-                            'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
-                            'coa' =>  $request->coakredit[$i],
-                            'nominal' => -$request->nominal_detail[$i],
-                            'keterangan' => $request->keterangan_detail[$i],
-                            'modifiedby' => auth('api')->user()->name,
-                            'baris' => $i,
-                        ]
-                    ];
-
-                    
-                    $jurnaldetail = array_merge($jurnaldetail, $jurnalDetail);
-                }
-               
-                $jurnal = $this->storeJurnal($jurnalHeader, $jurnaldetail);
-
-                if (!$jurnal['status']) {
-                    throw new Exception($jurnal['message']);
-                }
                 DB::commit();
                 
                 /* Set position and page */
@@ -433,55 +384,6 @@ class PengembalianKasBankHeaderController extends Controller
                     return response(['Error'], 422);
                 } 
                 
-                //SOTRE Jurnal
-                $jurnalHeader = [
-                    'tanpaprosesnobukti' => 1,
-                    'nobukti' => $pengeluaranHeader['nobukti'],
-                    'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
-                    'keterangan' => $request->keterangan,
-                    'postingdari' => "ENTRY PENGELUARAN KAS",
-                    'statusapproval' => $statusApp->id,
-                    'userapproval' => "",
-                    'tglapproval' => "",
-                    'modifiedby' => auth('api')->user()->name,
-                    'statusformat' => "0",
-                ];
-
-                $jurnaldetail = [];
-
-                for ($i = 0; $i < count($request->nominal_detail); $i++) {
-                    $detail = [];
-
-                    $jurnalDetail = [
-                        [
-                            'nobukti' => $pengeluaranHeader['nobukti'],
-                            'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
-                            'coa' =>  $request->coadebet[$i],
-                            'nominal' => $request->nominal_detail,
-                            'keterangan' => $request->keterangan_detail[$i],
-                            'modifiedby' => auth('api')->user()->name,
-                            'baris' => $i,
-                        ],
-                        [
-                            'nobukti' => $pengeluaranHeader['nobukti'],
-                            'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
-                            'coa' =>  $request->coakredit[$i],
-                            'nominal' => -$request->nominal_detail,
-                            'keterangan' => $request->keterangan_detail[$i],
-                            'modifiedby' => auth('api')->user()->name,
-                            'baris' => $i,
-                        ]
-                    ];
-
-                    
-                    $jurnaldetail = array_merge($jurnaldetail, $jurnalDetail);
-                }
-               
-                $jurnal = $this->storeJurnal($jurnalHeader, $jurnaldetail);
-
-                if (!$jurnal['status']) {
-                    throw new Exception($jurnal['message']);
-                }
                 DB::commit();
                 
                 /* Set position and page */
