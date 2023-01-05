@@ -146,8 +146,8 @@ class PenerimaanHeader extends MyModel
 
         $fetch = DB::table('pelunasanpiutangheader')->from(DB::raw("pelunasanpiutangheader with (readuncommitted)"))
             ->select(DB::raw("pelunasanpiutangheader.id,pelunasanpiutangheader.nobukti,pelunasanpiutangheader.tglbukti,pelanggan.namapelanggan as pelanggan, (SELECT (SUM(pelunasanpiutangdetail.nominal)) FROM pelunasanpiutangdetail WHERE pelunasanpiutangdetail.nobukti = pelunasanpiutangheader.nobukti) AS nominal"))
-            ->join('pelunasanpiutangdetail', 'pelunasanpiutangheader.id', 'pelunasanpiutangdetail.pelunasanpiutang_id')
-            ->join('pelanggan', 'pelunasanpiutangdetail.pelanggan_id', 'pelanggan.id')
+            ->join(DB::raw("pelunasanpiutangdetail with (readuncommitted)"), 'pelunasanpiutangheader.id', 'pelunasanpiutangdetail.pelunasanpiutang_id')
+            ->join(DB::raw("pelanggan with (readuncommitted)"), 'pelunasanpiutangdetail.pelanggan_id', 'pelanggan.id')
             ->whereRaw("pelunasanpiutangheader.nobukti not in (select pelunasanpiutang_nobukti from penerimaandetail)")
             ->whereRaw("pelunasanpiutangheader.nobukti not in (select pelunasanpiutang_nobukti from penerimaangirodetail)");
 
@@ -212,7 +212,7 @@ class PenerimaanHeader extends MyModel
     public function findAll($id)
     {
         $data = PenerimaanHeader::from(DB::raw("penerimaanheader with (readuncommitted)"))
-        ->select('penerimaanheader.id', 'penerimaanheader.nobukti', 'penerimaanheader.tglbukti', 'penerimaanheader.pelanggan_id', 'pelanggan.namapelanggan as pelanggan', 'penerimaanheader.statuscetak', 'penerimaanheader.keterangan', 'penerimaanheader.diterimadari', 'penerimaanheader.tgllunas', 'penerimaanheader.cabang_id', 'cabang.namacabang as cabang', 'penerimaanheader.statuskas', 'penerimaanheader.bank_id', 'bank.namabank as bank')
+            ->select('penerimaanheader.id', 'penerimaanheader.nobukti', 'penerimaanheader.tglbukti', 'penerimaanheader.pelanggan_id', 'pelanggan.namapelanggan as pelanggan', 'penerimaanheader.statuscetak', 'penerimaanheader.keterangan', 'penerimaanheader.diterimadari', 'penerimaanheader.tgllunas', 'penerimaanheader.cabang_id', 'cabang.namacabang as cabang', 'penerimaanheader.statuskas', 'penerimaanheader.bank_id', 'bank.namabank as bank')
             ->join(DB::raw("pelanggan with (readuncommitted)"), 'penerimaanheader.pelanggan_id', 'pelanggan.id')
             ->join(DB::raw("bank with (readuncommitted)"), 'penerimaanheader.bank_id', 'bank.id')
             ->join(DB::raw("cabang with (readuncommitted)"), 'penerimaanheader.cabang_id', 'cabang.id')
@@ -224,9 +224,12 @@ class PenerimaanHeader extends MyModel
 
     public function selectColumns($query)
     {
-        return $query->select(
-            DB::raw(
-                "$this->table.id,
+        return $query->from(
+            DB::raw($this->table . " with (readuncommitted)")
+        )
+            ->select(
+                DB::raw(
+                    "$this->table.id,
             $this->table.nobukti,
             $this->table.tglbukti,
             pelanggan.namapelanggan as pelanggan_id,
@@ -251,15 +254,15 @@ class PenerimaanHeader extends MyModel
             $this->table.modifiedby,
             $this->table.created_at,
             $this->table.updated_at"
+                )
             )
-        )
-            ->leftJoin('pelanggan', 'penerimaanheader.pelanggan_id', 'pelanggan.id')
-            ->leftJoin('bank', 'penerimaanheader.bank_id', 'bank.id')
-            ->leftJoin('cabang', 'penerimaanheader.cabang_id', 'cabang.id')
-            ->leftJoin('parameter as statuskas', 'penerimaanheader.statuskas', 'statuskas.id')
-            ->leftJoin('parameter as statusapproval', 'penerimaanheader.statusapproval', 'statusapproval.id')
-            ->leftJoin('parameter as statuscetak', 'penerimaanheader.statuscetak', 'statuscetak.id')
-            ->leftJoin('parameter as statusberkas', 'penerimaanheader.statusberkas', 'statusberkas.id');
+            ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'penerimaanheader.pelanggan_id', 'pelanggan.id')
+            ->leftJoin(DB::raw("bank with (readuncommitted)"), 'penerimaanheader.bank_id', 'bank.id')
+            ->leftJoin(DB::raw("cabang with (readuncommitted)"), 'penerimaanheader.cabang_id', 'cabang.id')
+            ->leftJoin(DB::raw("parameter as statuskas with (readuncommitted)"), 'penerimaanheader.statuskas', 'statuskas.id')
+            ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'penerimaanheader.statusapproval', 'statusapproval.id')
+            ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'penerimaanheader.statuscetak', 'statuscetak.id')
+            ->leftJoin(DB::raw("parameter as statusberkas with (readuncommitted)"), 'penerimaanheader.statusberkas', 'statusberkas.id');
     }
 
     public function createTemp(string $modelTable)
@@ -399,7 +402,9 @@ class PenerimaanHeader extends MyModel
     {
         $this->setRequestParameters();
 
-        $query = DB::table($this->table)->select(
+        $query = DB::table($this->table)->from(
+            DB::raw($this->table . " with (readuncommitted)")
+        )->select(
             'penerimaanheader.nobukti',
             'penerimaanheader.keterangan as keterangan_detail',
             'penerimaanheader.tglbukti',
@@ -409,10 +414,10 @@ class PenerimaanHeader extends MyModel
             ->where('penerimaanheader.tglbukti', $tglbukti)
             ->whereRaw(" NOT EXISTS (
                 SELECT penerimaan_nobukti
-                FROM rekappenerimaandetail
+                FROM rekappenerimaandetail with (readuncommitted)
                 WHERE penerimaan_nobukti = penerimaanheader.nobukti   
               )")
-            ->leftJoin('penerimaandetail', 'penerimaanheader.id', 'penerimaandetail.penerimaan_id')
+            ->leftJoin(DB::raw("penerimaandetail with (readuncommitted)"), 'penerimaanheader.id', 'penerimaandetail.penerimaan_id')
             ->groupBy('penerimaanheader.nobukti', 'penerimaanheader.keterangan', 'penerimaanheader.tglbukti');
         $data = $query->get();
 

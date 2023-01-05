@@ -28,18 +28,21 @@ class Penerima extends MyModel
     {
         $this->setRequestParameters();
 
-        $query = DB::table($this->table)->select(
-            'penerima.id',
-            'penerima.namapenerima',
-            'penerima.npwp',
-            'penerima.noktp',
-            'penerima.modifiedby',
-            'penerima.updated_at',
-            'parameter_statusaktif.memo as statusaktif',
-            'parameter_statuskaryawan.memo as statuskaryawan',
+        $query = DB::table($this->table)->from(
+            DB::raw($this->table . " with (readuncommitted)")
         )
-        ->leftJoin('parameter as parameter_statusaktif', 'penerima.statusaktif', '=', 'parameter_statusaktif.id')
-        ->leftJoin('parameter as parameter_statuskaryawan', 'penerima.statuskaryawan', '=', 'parameter_statuskaryawan.id');
+            ->select(
+                'penerima.id',
+                'penerima.namapenerima',
+                'penerima.npwp',
+                'penerima.noktp',
+                'penerima.modifiedby',
+                'penerima.updated_at',
+                'parameter_statusaktif.memo as statusaktif',
+                'parameter_statuskaryawan.memo as statuskaryawan',
+            )
+            ->leftJoin(DB::raw("parameter as parameter_statusaktif with (readuncommitted)"), 'penerima.statusaktif', '=', 'parameter_statusaktif.id')
+            ->leftJoin(DB::raw("parameter as parameter_statuskaryawan with (readuncommitted)"), 'penerima.statuskaryawan', '=', 'parameter_statuskaryawan.id');
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -55,9 +58,12 @@ class Penerima extends MyModel
 
     public function selectColumns($query)
     {
-        return $query->select(
-            DB::raw(
-            "$this->table.id,
+        return $query->from(
+            DB::raw($this->table . " with (readuncommitted)")
+        )
+            ->select(
+                DB::raw(
+                    "$this->table.id,
             $this->table.namapenerima,
             $this->table.npwp,
             $this->table.noktp,
@@ -66,11 +72,10 @@ class Penerima extends MyModel
             $this->table.modifiedby,
             $this->table.created_at,
             $this->table.updated_at"
+                )
             )
-        )
-        ->leftJoin('parameter as parameter_statusaktif', 'penerima.statusaktif', '=', 'parameter_statusaktif.id')
-        ->leftJoin('parameter as parameter_statuskaryawan', 'penerima.statuskaryawan', '=', 'parameter_statuskaryawan.id');
-
+            ->leftJoin(DB::raw("parameter as parameter_statusaktif with (readuncommitted)"), 'penerima.statusaktif', '=', 'parameter_statusaktif.id')
+            ->leftJoin(DB::raw("parameter as parameter_statuskaryawan with (readuncommitted)"), 'penerima.statuskaryawan', '=', 'parameter_statuskaryawan.id');
     }
 
     public function createTemp(string $modelTable)
@@ -94,11 +99,10 @@ class Penerima extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id','namapenerima','npwp','noktp','statusaktif','statuskaryawan','modifiedby','created_at','updated_at'],$models);
+        DB::table($temp)->insertUsing(['id', 'namapenerima', 'npwp', 'noktp', 'statusaktif', 'statuskaryawan', 'modifiedby', 'created_at', 'updated_at'], $models);
 
 
-        return  $temp;         
-
+        return  $temp;
     }
 
     public function sort($query)

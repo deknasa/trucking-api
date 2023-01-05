@@ -86,7 +86,9 @@ class KasGantungHeaderController extends Controller
                     ->first();
 
 
-                $coaKasKeluar = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', 'COA KAS GANTUNG')->first();
+                $coaKasKeluar = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('memo')->where('grp', 'JURNAL KAS GANTUNG')->first();
+
+                $memo = json_decode($coaKasKeluar->memo, true);
 
                 $contentKasgantung = new Request();
                 $contentKasgantung['group'] = $querysubgrppengeluaran->grp;
@@ -302,7 +304,7 @@ class KasGantungHeaderController extends Controller
                                 'tgljatuhtempo' => '',
                                 'nominal' => $request->nominal[$i],
                                 'coadebet' => $bank->coa,
-                                'coakredit' => $coaKasKeluar->text,
+                                'coakredit' => $memo['JURNAL'],
                                 'keterangan' => $request->keterangan_detail[$i],
                                 'bulanbeban' => '',
                                 'modifiedby' =>  auth('api')->user()->name
@@ -472,7 +474,8 @@ class KasGantungHeaderController extends Controller
                     $parameterController = new ParameterController;
                     $statusApp = $parameterController->getparameterid('STATUS APPROVAL', 'STATUS APPROVAL', 'NON APPROVAL');
 
-                    $coaKasKeluar = DB::table('parameter')->where('grp', 'COA KAS GANTUNG')->where('subgrp', 'COA KAS GANTUNG')->first();
+                    $coaKasKeluar = DB::table('parameter')->where('grp', 'JURNAL KAS GANTUNG')->where('subgrp', 'JURNAL KAS GANTUNG')->first();
+                    $memo = json_decode($coaKasKeluar->memo, true);
 
                     $content = new Request();
                     $content['group'] = $querysubgrppengeluaran->grp;
@@ -531,7 +534,7 @@ class KasGantungHeaderController extends Controller
                             'tgljatuhtempo' => '',
                             'nominal' => $request->nominal[$i],
                             'coadebet' => $bank->coa,
-                            'coakredit' => $coaKasKeluar->text,
+                            'coakredit' => $memo['JURNAL'],
                             'keterangan' => $request->keterangan_detail[$i],
                             'bulanbeban' => '',
                             'modifiedby' =>  auth('api')->user()->name

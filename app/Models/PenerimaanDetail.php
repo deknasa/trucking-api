@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class PenerimaanDetail extends MyModel
 {
@@ -24,8 +26,11 @@ class PenerimaanDetail extends MyModel
 
     public function findAll($id)
     {
-        $detail = PenerimaanDetail::select('penerimaandetail.coadebet','penerimaandetail.tgljatuhtempo','penerimaandetail.nowarkat','penerimaandetail.bankpelanggan_id', 'bankpelanggan.namabank as bankpelanggan', 'penerimaandetail.keterangan', 'penerimaandetail.nominal','penerimaandetail.invoice_nobukti','penerimaandetail.jenisbiaya','penerimaandetail.pelunasanpiutang_nobukti','penerimaandetail.bulanbeban')
-        ->leftJoin('bankpelanggan','penerimaandetail.bankpelanggan_id','bankpelanggan.id')
+        $detail = PenerimaanDetail::from(
+            DB::raw( "penerimaandetail with (readuncommitted)")
+        )
+        ->select('penerimaandetail.coadebet','penerimaandetail.tgljatuhtempo','penerimaandetail.nowarkat','penerimaandetail.bankpelanggan_id', 'bankpelanggan.namabank as bankpelanggan', 'penerimaandetail.keterangan', 'penerimaandetail.nominal','penerimaandetail.invoice_nobukti','penerimaandetail.jenisbiaya','penerimaandetail.pelunasanpiutang_nobukti','penerimaandetail.bulanbeban')
+        ->leftJoin(DB::raw("bankpelanggan with (readuncommitted)"),'penerimaandetail.bankpelanggan_id','bankpelanggan.id')
         ->where('penerimaandetail.penerimaan_id',$id)
         ->get();
 
