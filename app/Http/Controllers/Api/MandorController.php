@@ -137,44 +137,46 @@ class MandorController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Mandor $mandor, Request $request)
+    public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
-        try {
-            $isDelete = Mandor::where('id', $mandor->id)->delete();
-            if ($isDelete) {
-                $logTrail = [
-                    'namatabel' => strtoupper($mandor->getTable()),
-                    'postingdari' => 'DELETE MANDOR',
-                    'idtrans' => $mandor->id,
-                    'nobuktitrans' => $mandor->id,
-                    'aksi' => 'DELETE',
-                    'datajson' => $mandor->toArray(),
-                    'modifiedby' => auth('api')->user()->name
-                ];
 
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                app(LogTrailController::class)->store($validatedLogTrail);
+        $mandor = new Mandor();
+        $mandor = $mandor->lockAndDestroy($id);
+
+        if ($mandor) {
+            $logTrail = [
+                'namatabel' => strtoupper($mandor->getTable()),
+                'postingdari' => 'DELETE MANDOR',
+                'idtrans' => $mandor->id,
+                'nobuktitrans' => $mandor->id,
+                'aksi' => 'DELETE',
+                'datajson' => $mandor->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ];
+
+            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+            app(LogTrailController::class)->store($validatedLogTrail);
 
 
-                DB::commit();
-                $selected = $this->getPosition($mandor, $mandor->getTable(), true);
-                $mandor->position = $selected->position;
-                $mandor->id = $selected->id;
-                $mandor->page = ceil($mandor->position / ($request->limit ?? 10));
-    
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil dihapus',
-                    'data' => $mandor
-                ]);
-            }
+            DB::commit();
+            $selected = $this->getPosition($mandor, $mandor->getTable(), true);
+            $mandor->position = $selected->position;
+            $mandor->id = $selected->id;
+            $mandor->page = ceil($mandor->position / ($request->limit ?? 10));
+
             return response([
-                'message' => 'Gagal dihapus'
-            ], 500);
-        } catch (\Throwable $th) {
+                'status' => true,
+                'message' => 'Berhasil dihapus',
+                'data' => $mandor
+            ]);
+        } else {
             DB::rollBack();
-            throw $th;
+
+            return response([
+                'status' => false,
+                'message' => 'Gagal dihapus'
+            ]);
         }
     }
 

@@ -64,18 +64,18 @@ class GudangController extends Controller
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-                
+
                 $param1 = $gudang->id;
                 $param2 = $gudang->modifiedby;
                 $stokgudang = Stok::from(DB::raw("stok with (readuncommitted)"))
-                ->select(DB::raw(
-                    "stok.id as stok_id,"
-                        . $param1 . "  as gudang_id,
+                    ->select(DB::raw(
+                        "stok.id as stok_id,"
+                            . $param1 . "  as gudang_id,
                     0 as trado_id,
                     0 as gandengan_id,
                     0 as qty,'"
-                        . $param2 . "' as modifiedby"
-                ))
+                            . $param2 . "' as modifiedby"
+                    ))
                     ->leftjoin('stokpersediaan', function ($join) use ($param1) {
                         $join->on('stokpersediaan.stok_id', '=', 'stok.id');
                         $join->on('stokpersediaan.gudang_id', '=', DB::raw("'" . $param1 . "'"));
@@ -177,14 +177,14 @@ class GudangController extends Controller
                 $param1 = $gudang->id;
                 $param2 = $gudang->modifiedby;
                 $stokgudang = Stok::from(DB::raw("stok with (readuncommitted)"))
-                ->select(DB::raw(
-                    "stok.id as stok_id,"
-                        . $param1 . "  as gudang_id,
+                    ->select(DB::raw(
+                        "stok.id as stok_id,"
+                            . $param1 . "  as gudang_id,
                     0 as trado_id,
                     0 as gandengan_id,
                     0 as qty,'"
-                        . $param2 . "' as modifiedby"
-                ))
+                            . $param2 . "' as modifiedby"
+                    ))
                     ->leftjoin('stokpersediaan', function ($join) use ($param1) {
                         $join->on('stokpersediaan.stok_id', '=', 'stok.id');
                         $join->on('stokpersediaan.gudang_id', '=', DB::raw("'" . $param1 . "'"));
@@ -249,46 +249,45 @@ class GudangController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Gudang $gudang, Request $request)
+    public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
-        try {
-            $isDelete = Gudang::where('id', $gudang->id)->delete();
-            if ($isDelete) {
-                $logTrail = [
-                    'namatabel' => strtoupper($gudang->getTable()),
-                    'postingdari' => 'DELETE GUDANG',
-                    'idtrans' => $gudang->id,
-                    'nobuktitrans' => $gudang->id,
-                    'aksi' => 'DELETE',
-                    'datajson' => $gudang->toArray(),
-                    'modifiedby' => auth('api')->user()->name
-                ];
 
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                app(LogTrailController::class)->store($validatedLogTrail);
+        $gudang = new Gudang();
+        $gudang = $gudang->lockAndDestroy($id);
+        if ($gudang) {
+            $logTrail = [
+                'namatabel' => strtoupper($gudang->getTable()),
+                'postingdari' => 'DELETE GUDANG',
+                'idtrans' => $gudang->id,
+                'nobuktitrans' => $gudang->id,
+                'aksi' => 'DELETE',
+                'datajson' => $gudang->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ];
 
-                DB::commit();
-                /* Set position and page */
-                $selected = $this->getPosition($gudang, $gudang->getTable());
-                $gudang->position = $selected->position;
-                $gudang->id = $selected->id;
-                $gudang->page = ceil($gudang->position / ($request->limit ?? 10));
-    
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil dihapus',
-                    'data' => $gudang
-                ]);
-            }
+            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+            app(LogTrailController::class)->store($validatedLogTrail);
+
+            DB::commit();
+            /* Set position and page */
+            $selected = $this->getPosition($gudang, $gudang->getTable());
+            $gudang->position = $selected->position;
+            $gudang->id = $selected->id;
+            $gudang->page = ceil($gudang->position / ($request->limit ?? 10));
+
             return response([
-                'message' => 'Gagal dihapus'
-            ], 500);
-
-        } catch (\Throwable $th) {
+                'status' => true,
+                'message' => 'Berhasil dihapus',
+                'data' => $gudang
+            ]);
+        } else {
             DB::rollBack();
-            // return response($th->getMessage());
-            throw $th;
+
+            return response([
+                'status' => false,
+                'message' => 'Gagal dihapus'
+            ]);
         }
     }
 

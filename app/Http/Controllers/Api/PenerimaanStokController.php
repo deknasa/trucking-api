@@ -176,14 +176,13 @@ class PenerimaanStokController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(PenerimaanStok $penerimaanStok,$id)
+    public function destroy(Request $request,$id)
     {
         DB::beginTransaction();
 
-        $penerimaanStok = PenerimaanStok::where('id',$id)->first();
-        $delete = $penerimaanStok->lockForUpdate()->delete();
-
-        if ($delete) {
+        $penerimaanStok = new PenerimaanStok;
+        $penerimaanStok = $penerimaanStok->lockAndDestroy($id);
+        if ($penerimaanStok) {
             $logTrail = [
                 'namatabel' => strtoupper($penerimaanStok->getTable()),
                 'postingdari' => 'DELETE PENERIMAAN STOK',

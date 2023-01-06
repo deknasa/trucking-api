@@ -149,43 +149,41 @@ class KotaController extends Controller
     {
         DB::beginTransaction();
 
-        try {
-            $kota = Kota::LockForUpdate()->findOrFail($id);
-            $isDelete = Kota::where('id', $id)->delete();
-            // dd($isDelete->toSql);
-            if ($isDelete) {
-                $logTrail = [
-                    'namatabel' => strtoupper($kota->getTable()),
-                    'postingdari' => 'DELETE KOTA',
-                    'idtrans' => $kota->id,
-                    'nobuktitrans' => $kota->id,
-                    'aksi' => 'DELETE',
-                    'datajson' => $kota->toArray(),
-                    'modifiedby' => auth('api')->user()->name
-                ];
+        $kota = new Kota();
+        $kota = $kota->lockAndDestroy($id);
 
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                app(LogTrailController::class)->store($validatedLogTrail);
+        if ($kota) {
+            $logTrail = [
+                'namatabel' => strtoupper($kota->getTable()),
+                'postingdari' => 'DELETE KOTA',
+                'idtrans' => $kota->id,
+                'nobuktitrans' => $kota->id,
+                'aksi' => 'DELETE',
+                'datajson' => $kota->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ];
 
-                DB::commit();
-                $selected = $this->getPosition($kota, $kota->getTable(), true);
-                $kota->position = $selected->position;
-                $kota->id = $selected->id;
-                $kota->page = ceil($kota->position / ($request->limit ?? 10));
-    
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil dihapus',
-                    'data' => $kota
-                ]);
-            }
+            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+            app(LogTrailController::class)->store($validatedLogTrail);
+
+            DB::commit();
+            $selected = $this->getPosition($kota, $kota->getTable(), true);
+            $kota->position = $selected->position;
+            $kota->id = $selected->id;
+            $kota->page = ceil($kota->position / ($request->limit ?? 10));
+
             return response([
-                'message' => 'Gagal dihapus'
-            ], 500);
-        } catch (\Throwable $th) {
+                'status' => true,
+                'message' => 'Berhasil dihapus',
+                'data' => $kota
+            ]);
+        } else {
             DB::rollBack();
 
-            throw $th;
+            return response([
+                'status' => false,
+                'message' => 'Gagal dihapus'
+            ]);
         }
     }
 

@@ -137,45 +137,45 @@ class KerusakanController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Kerusakan $kerusakan, Request $request)
+    public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
-        try {
-            $isDelete = Kerusakan::where('id', $kerusakan->id)->delete();
 
-            if ($isDelete) {
-                $logTrail = [
-                    'namatabel' => strtoupper($kerusakan->getTable()),
-                    'postingdari' => 'DELETE KERUSAKAN',
-                    'idtrans' => $kerusakan->id,
-                    'nobuktitrans' => $kerusakan->id,
-                    'aksi' => 'DELETE',
-                    'datajson' => $kerusakan->toArray(),
-                    'modifiedby' => auth('api')->user()->name
-                ];
+        $kerusakan = new Kerusakan();
+        $kerusakan = $kerusakan->lockAndDestroy($id);
+        if ($kerusakan) {
+            $logTrail = [
+                'namatabel' => strtoupper($kerusakan->getTable()),
+                'postingdari' => 'DELETE KERUSAKAN',
+                'idtrans' => $kerusakan->id,
+                'nobuktitrans' => $kerusakan->id,
+                'aksi' => 'DELETE',
+                'datajson' => $kerusakan->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ];
 
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                app(LogTrailController::class)->store($validatedLogTrail);
+            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+            app(LogTrailController::class)->store($validatedLogTrail);
 
-                DB::commit();
+            DB::commit();
 
-                $selected = $this->getPosition($kerusakan, $kerusakan->getTable(), true);
-                $kerusakan->position = $selected->position;
-                $kerusakan->id = $selected->id;
-                $kerusakan->page = ceil($kerusakan->position / ($request->limit ?? 10));
-    
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil dihapus',
-                    'data' => $kerusakan
-                ]);
-            }
+            $selected = $this->getPosition($kerusakan, $kerusakan->getTable(), true);
+            $kerusakan->position = $selected->position;
+            $kerusakan->id = $selected->id;
+            $kerusakan->page = ceil($kerusakan->position / ($request->limit ?? 10));
+
             return response([
-                'message' => 'Gagal dihapus'
-            ], 500);
-        } catch (\Throwable $th) {
+                'status' => true,
+                'message' => 'Berhasil dihapus',
+                'data' => $kerusakan
+            ]);
+        } else {
             DB::rollBack();
-            throw $th;
+
+            return response([
+                'status' => false,
+                'message' => 'Gagal dihapus'
+            ]);
         }
     }
 

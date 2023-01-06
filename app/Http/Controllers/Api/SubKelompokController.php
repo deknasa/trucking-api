@@ -140,29 +140,27 @@ class SubKelompokController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(SubKelompok $subKelompok, Request $request)
+    public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
 
-        try {
-            $delete = $subKelompok->lockForUpdate()->delete();
+        $subKelompok = new SubKelompok();
+        $subKelompok = $subKelompok->lockAndDestroy($id);
+        if ($subKelompok) {
+            $logTrail = [
+                'namatabel' => strtoupper($subKelompok->getTable()),
+                'postingdari' => 'DELETE PARAMETER',
+                'idtrans' => $subKelompok->id,
+                'nobuktitrans' => $subKelompok->id,
+                'aksi' => 'DELETE',
+                'datajson' => $subKelompok->toArray(),
+                'modifiedby' => $subKelompok->modifiedby
+            ];
 
-            if ($delete) {
-                $logTrail = [
-                    'namatabel' => strtoupper($subKelompok->getTable()),
-                    'postingdari' => 'DELETE PARAMETER',
-                    'idtrans' => $subKelompok->id,
-                    'nobuktitrans' => $subKelompok->id,
-                    'aksi' => 'DELETE',
-                    'datajson' => $subKelompok->toArray(),
-                    'modifiedby' => $subKelompok->modifiedby
-                ];
+            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+            app(LogTrailController::class)->store($validatedLogTrail);
 
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                app(LogTrailController::class)->store($validatedLogTrail);
-
-                DB::commit();
-            }
+            DB::commit();
             /* Set position and page */
             $selected = $this->getPosition($subKelompok, $subKelompok->getTable(), true);
             $subKelompok->position = $selected->position;
@@ -174,10 +172,13 @@ class SubKelompokController extends Controller
                 'message' => 'Berhasil dihapus',
                 'data' => $subKelompok
             ]);
-        } catch (\Throwable $th) {
+        } else {
             DB::rollBack();
 
-            throw $th;
+            return response([
+                'status' => false,
+                'message' => 'Gagal dihapus'
+            ]);
         }
     }
 

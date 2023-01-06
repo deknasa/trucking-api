@@ -217,52 +217,48 @@ class SupirController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Supir $supir, Request $request)
+    public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
 
-        try {
-            $isDelete = Supir::where('id', $supir->id)->delete();
+        $supir = new Supir();
+        $supir = $supir->lockAndDestroy($id);
 
-            if ($isDelete) {
-                $logTrail = [
-                    'namatabel' => strtoupper($supir->getTable()),
-                    'postingdari' => 'DELETE SUPIR',
-                    'idtrans' => $supir->id,
-                    'nobuktitrans' => $supir->id,
-                    'aksi' => 'DELETE',
-                    'datajson' => $supir->toArray(),
-                    'modifiedby' => auth('api')->user()->name
-                ];
+        if ($supir) {
+            $logTrail = [
+                'namatabel' => strtoupper($supir->getTable()),
+                'postingdari' => 'DELETE SUPIR',
+                'idtrans' => $supir->id,
+                'nobuktitrans' => $supir->id,
+                'aksi' => 'DELETE',
+                'datajson' => $supir->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ];
 
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                app(LogTrailController::class)->store($validatedLogTrail);
-                $this->deleteFiles($supir);
-    
-                DB::commit();
-    
-                /* Set position and page */
-                $selected = $this->getPosition($supir, $supir->getTable(), true);
-                $supir->position = $selected->position;
-                $supir->id = $selected->id;
-                $supir->page = ceil($supir->position / ($request->limit ?? 10));
-    
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil dihapus',
-                    'data' => $supir
-                ]);
-            }
-            return response([
-                'message' => 'Gagal dihapus'
-            ], 500);
-
-        } catch (\Throwable $th) {
+            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+            app(LogTrailController::class)->store($validatedLogTrail);
             $this->deleteFiles($supir);
 
+            DB::commit();
+
+            /* Set position and page */
+            $selected = $this->getPosition($supir, $supir->getTable(), true);
+            $supir->position = $selected->position;
+            $supir->id = $selected->id;
+            $supir->page = ceil($supir->position / ($request->limit ?? 10));
+
+            return response([
+                'status' => true,
+                'message' => 'Berhasil dihapus',
+                'data' => $supir
+            ]);
+        } else {
             DB::rollBack();
 
-            throw $th;
+            return response([
+                'status' => false,
+                'message' => 'Gagal dihapus'
+            ]);
         }
     }
 
@@ -387,7 +383,5 @@ class SupirController extends Controller
             }
             Storage::delete($relatedPhotoDomisili);
         }
-
-        
     }
 }

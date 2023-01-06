@@ -137,46 +137,46 @@ class AbsenTradoController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(AbsenTrado $absentrado, Request $request)
+    public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
-        try {
-            $isDelete = AbsenTrado::where('id', $absentrado->id)->delete();
 
-            if ($isDelete) {
-                $logTrail = [
-                    'namatabel' => strtoupper($absentrado->getTable()),
-                    'postingdari' => 'DELETE ABSEN TRADO',
-                    'idtrans' => $absentrado->id,
-                    'nobuktitrans' => $absentrado->id,
-                    'aksi' => 'DELETE',
-                    'datajson' => $absentrado->toArray(),
-                    'modifiedby' => auth('api')->user()->name
-                ];
+        $absenTrado = new AbsenTrado();
+        $absenTrado = $absenTrado->lockAndDestroy($id);
 
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                app(LogTrailController::class)->store($validatedLogTrail);
+        if ($absenTrado) {
+            $logTrail = [
+                'namatabel' => strtoupper($absenTrado->getTable()),
+                'postingdari' => 'DELETE ABSEN TRADO',
+                'idtrans' => $absenTrado->id,
+                'nobuktitrans' => $absenTrado->id,
+                'aksi' => 'DELETE',
+                'datajson' => $absenTrado->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ];
 
-                DB::commit();
+            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+            app(LogTrailController::class)->store($validatedLogTrail);
 
-                $selected = $this->getPosition($absentrado, $absentrado->getTable(), true);
-                $absentrado->position = $selected->position;
-                $absentrado->id = $selected->id;
-                $absentrado->page = ceil($absentrado->position / ($request->limit ?? 10));
+            DB::commit();
 
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil dihapus',
-                    'data' => $absentrado
-                ]);
-            } 
+            $selected = $this->getPosition($absenTrado, $absenTrado->getTable(), true);
+            $absenTrado->position = $selected->position;
+            $absenTrado->id = $selected->id;
+            $absenTrado->page = ceil($absenTrado->position / ($request->limit ?? 10));
+
             return response([
-                'message' => 'Gagal dihapus'
-            ], 500);
-        } catch (\Throwable $th) {
+                'status' => true,
+                'message' => 'Berhasil dihapus',
+                'data' => $absenTrado
+            ]);
+        } else {
             DB::rollBack();
 
-            throw $th;
+            return response([
+                'status' => false,
+                'message' => 'Gagal dihapus'
+            ]);
         }
     }
 

@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Schema;
 
 class PengeluaranTruckingController extends Controller
 {
-   /**
+    /**
      * @ClassName 
      */
     public function index()
@@ -29,7 +29,7 @@ class PengeluaranTruckingController extends Controller
         ]);
     }
 
-   /**
+    /**
      * @ClassName 
      */
     public function store(StorePengeluaranTruckingRequest $request)
@@ -58,9 +58,8 @@ class PengeluaranTruckingController extends Controller
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
             }
-            
+
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
             DB::commit();
@@ -69,7 +68,7 @@ class PengeluaranTruckingController extends Controller
             $selected = $this->getPosition($pengeluaranTrucking, $pengeluaranTrucking->getTable());
             $pengeluaranTrucking->position = $selected->position;
             $pengeluaranTrucking->page = ceil($pengeluaranTrucking->position / ($request->limit ?? 10));
-            
+
 
             return response([
                 'status' => true,
@@ -91,7 +90,7 @@ class PengeluaranTruckingController extends Controller
         ]);
     }
 
-   /**
+    /**
      * @ClassName 
      */
     public function update(StorePengeluaranTruckingRequest $request, PengeluaranTrucking $pengeluaranTrucking)
@@ -117,8 +116,7 @@ class PengeluaranTruckingController extends Controller
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
-
-            } 
+            }
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
 
@@ -127,59 +125,59 @@ class PengeluaranTruckingController extends Controller
             $selected = $this->getPosition($pengeluaranTrucking, $pengeluaranTrucking->getTable());
             $pengeluaranTrucking->position = $selected->position;
             $pengeluaranTrucking->page = ceil($pengeluaranTrucking->position / ($request->limit ?? 10));
-        
+
             return response([
                 'status' => true,
                 'message' => 'Berhasil diubah',
                 'data' => $pengeluaranTrucking
             ]);
         } catch (\Throwable $th) {
-            DB::rollBack();  
+            DB::rollBack();
             throw $th;
             return response($th->getMessage());
         }
     }
-   /**
+    /**
      * @ClassName 
      */
-    public function destroy(PengeluaranTrucking $pengeluaranTrucking, Request $request)
+    public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
-        try {
-            $isDelete = PengeluaranTrucking::where('id', $pengeluaranTrucking->id)->delete();
-            if ($isDelete) {
-                $logTrail = [
-                    'namatabel' => strtoupper($pengeluaranTrucking->getTable()),
-                    'postingdari' => 'DELETE PENGELUARAN TRUCKING',
-                    'idtrans' => $pengeluaranTrucking->id,
-                    'nobuktitrans' => $pengeluaranTrucking->id,
-                    'aksi' => 'DELETE',
-                    'datajson' => $pengeluaranTrucking->toArray(),
-                    'modifiedby' => auth('api')->user()->name
-                ];
+        $pengeluaranTrucking = new PengeluaranTrucking();
+        $pengeluaranTrucking = $pengeluaranTrucking->lockAndDestroy($id);
+        if ($pengeluaranTrucking) {
+            $logTrail = [
+                'namatabel' => strtoupper($pengeluaranTrucking->getTable()),
+                'postingdari' => 'DELETE PENGELUARAN TRUCKING',
+                'idtrans' => $pengeluaranTrucking->id,
+                'nobuktitrans' => $pengeluaranTrucking->id,
+                'aksi' => 'DELETE',
+                'datajson' => $pengeluaranTrucking->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ];
 
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                app(LogTrailController::class)->store($validatedLogTrail);
+            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+            app(LogTrailController::class)->store($validatedLogTrail);
 
-                DB::commit();
+            DB::commit();
 
-                $selected = $this->getPosition($pengeluaranTrucking, $pengeluaranTrucking->getTable(), true);
-                $pengeluaranTrucking->position = $selected->position;
-                $pengeluaranTrucking->id = $selected->id;
-                $pengeluaranTrucking->page = ceil($pengeluaranTrucking->position / ($request->limit ?? 10));
+            $selected = $this->getPosition($pengeluaranTrucking, $pengeluaranTrucking->getTable(), true);
+            $pengeluaranTrucking->position = $selected->position;
+            $pengeluaranTrucking->id = $selected->id;
+            $pengeluaranTrucking->page = ceil($pengeluaranTrucking->position / ($request->limit ?? 10));
 
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil dihapus',
-                    'data' => $pengeluaranTrucking
-                ]);
-            } 
             return response([
+                'status' => true,
+                'message' => 'Berhasil dihapus',
+                'data' => $pengeluaranTrucking
+            ]);
+        } else {
+            DB::rollBack();
+
+            return response([
+                'status' => false,
                 'message' => 'Gagal dihapus'
-            ], 500);
-        } catch (\Throwable $th) {
-            DB::rollBack();         
-            throw $th;
+            ]);
         }
     }
 
@@ -346,6 +344,4 @@ class PengeluaranTruckingController extends Controller
         $data = $querydata->first();
         return $data;
     }
-
-    
 }

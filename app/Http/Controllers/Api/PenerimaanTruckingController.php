@@ -15,12 +15,12 @@ use Illuminate\Support\Facades\Schema;
 
 class PenerimaanTruckingController extends Controller
 {
-   /**
+    /**
      * @ClassName 
      */
     public function index()
     {
-        
+
         $penerimaanTrucking = new PenerimaanTrucking();
         return response([
             'data' => $penerimaanTrucking->get(),
@@ -31,7 +31,7 @@ class PenerimaanTruckingController extends Controller
         ]);
     }
 
-   /**
+    /**
      * @ClassName 
      */
     public function store(StorePenerimaanTruckingRequest $request)
@@ -59,15 +59,13 @@ class PenerimaanTruckingController extends Controller
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
-                
             }
 
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
             DB::commit();
             /* Set position and page */
-           
+
             $selected = $this->getPosition($penerimaanTrucking, $penerimaanTrucking->getTable());
             $penerimaanTrucking->position = $selected->position;
             $penerimaanTrucking->page = ceil($penerimaanTrucking->position / ($request->limit ?? 10));
@@ -96,7 +94,7 @@ class PenerimaanTruckingController extends Controller
      * @ClassName 
      */
     public function update(UpdatePenerimaanTruckingRequest $request, PenerimaanTrucking $penerimaanTrucking)
-    { 
+    {
         DB::beginTransaction();
 
         try {
@@ -119,8 +117,7 @@ class PenerimaanTruckingController extends Controller
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
-               
-            } 
+            }
 
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
@@ -146,45 +143,45 @@ class PenerimaanTruckingController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(PenerimaanTrucking $penerimaanTrucking, Request $request)
+    public function destroy(Request $request, $id)
     {
-        
+
         DB::beginTransaction();
-        try {
-            $isDelete = PenerimaanTrucking::where('id', $penerimaanTrucking->id)->delete();
-            
-            if ($isDelete) {
-                $logTrail = [
-                    'namatabel' => strtoupper($penerimaanTrucking->getTable()),
-                    'postingdari' => 'DELETE PENERIMAAN TRUCKING',
-                    'idtrans' => $penerimaanTrucking->id,
-                    'nobuktitrans' => $penerimaanTrucking->id,
-                    'aksi' => 'DELETE',
-                    'datajson' => $penerimaanTrucking->toArray(),
-                    'modifiedby' => auth('api')->user()->name
-                ];
 
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                app(LogTrailController::class)->store($validatedLogTrail);
+        $penerimaanTrucking = new PenerimaanTrucking();
+        $penerimaanTrucking = $penerimaanTrucking->lockAndDestroy($id);
+        if ($penerimaanTrucking) {
+            $logTrail = [
+                'namatabel' => strtoupper($penerimaanTrucking->getTable()),
+                'postingdari' => 'DELETE PENERIMAAN TRUCKING',
+                'idtrans' => $penerimaanTrucking->id,
+                'nobuktitrans' => $penerimaanTrucking->id,
+                'aksi' => 'DELETE',
+                'datajson' => $penerimaanTrucking->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ];
 
-                DB::commit();
+            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+            app(LogTrailController::class)->store($validatedLogTrail);
 
-                $selected = $this->getPosition($penerimaanTrucking, $penerimaanTrucking->getTable(), true);
-                $penerimaanTrucking->position = $selected->position;
-                $penerimaanTrucking->id = $selected->id;
-                $penerimaanTrucking->page = ceil($penerimaanTrucking->position / ($request->limit ?? 10));
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil dihapus',
-                    'data' => $penerimaanTrucking
-                ]);
-            }
+            DB::commit();
+
+            $selected = $this->getPosition($penerimaanTrucking, $penerimaanTrucking->getTable(), true);
+            $penerimaanTrucking->position = $selected->position;
+            $penerimaanTrucking->id = $selected->id;
+            $penerimaanTrucking->page = ceil($penerimaanTrucking->position / ($request->limit ?? 10));
             return response([
+                'status' => true,
+                'message' => 'Berhasil dihapus',
+                'data' => $penerimaanTrucking
+            ]);
+        } else {
+            DB::rollBack();
+
+            return response([
+                'status' => false,
                 'message' => 'Gagal dihapus'
-            ], 500);
-        } catch (\Throwable $th) {
-            DB::rollBack();         
-            throw $th;
+            ]);
         }
     }
 

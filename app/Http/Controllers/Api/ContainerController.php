@@ -142,46 +142,44 @@ class ContainerController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Container $container, Request $request)
+    public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
-        try {
-            $isDelete = Container::where('id', $container->id)->delete();
+        $container = new Container();
+        $container = $container->lockAndDestroy($id);
+        if ($container) {
+            $logTrail = [
+                'namatabel' => strtoupper($container->getTable()),
+                'postingdari' => 'DELETE CONTAINER',
+                'idtrans' => $container->id,
+                'nobuktitrans' => $container->id,
+                'aksi' => 'DELETE',
+                'datajson' => $container->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ];
 
-            if ($isDelete) {
-                $logTrail = [
-                    'namatabel' => strtoupper($container->getTable()),
-                    'postingdari' => 'DELETE CONTAINER',
-                    'idtrans' => $container->id,
-                    'nobuktitrans' => $container->id,
-                    'aksi' => 'DELETE',
-                    'datajson' => $container->toArray(),
-                    'modifiedby' => auth('api')->user()->name
-                ];
+            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+            $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+            DB::commit();
 
-                DB::commit();
+            $selected = $this->getPosition($container, $container->getTable(), true);
+            $container->position = $selected->position;
+            $container->id = $selected->id;
+            $container->page = ceil($container->position / ($request->limit ?? 10));
 
-                $selected = $this->getPosition($container, $container->getTable(), true);
-                $container->position = $selected->position;
-                $container->id = $selected->id;
-                $container->page = ceil($container->position / ($request->limit ?? 10));
-    
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil dihapus',
-                    'data' => $container
-                ]);
-            }
             return response([
-                'message' => 'Gagal dihapus'
-            ], 500);
-        } catch (\Throwable $th) {
+                'status' => true,
+                'message' => 'Berhasil dihapus',
+                'data' => $container
+            ]);
+        } else {
             DB::rollBack();
-            // return response($th->getMessage());
-            throw $th;
+
+            return response([
+                'status' => false,
+                'message' => 'Gagal dihapus'
+            ]);
         }
     }
 

@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers\Api;
+
 use App\Helpers\App;
 use App\Http\Requests\StoreLogTrailRequest;
 
@@ -8,7 +9,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Stok;
 use App\Http\Requests\StoreStokRequest;
 use App\Http\Requests\UpdateStokRequest;
-
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Intervention\Image\ImageManagerStatic as Image;
 use Illuminate\Support\Facades\File;
@@ -91,7 +92,7 @@ class StokController extends Controller
         }
     }
 
-    
+
     public function show($id)
     {
         $stok = Stok::findAll($id);
@@ -106,7 +107,7 @@ class StokController extends Controller
     /**
      * @ClassName 
      */
-    public function update(UpdateStokRequest $request,$id)
+    public function update(UpdateStokRequest $request, $id)
     {
         $stok = Stok::find($id);
 
@@ -127,10 +128,10 @@ class StokController extends Controller
             $stok->qtymax = $request->qtymax;
             $stok->modifiedby = auth('api')->user()->name;
 
-           $this->deleteFiles($stok);
+            $this->deleteFiles($stok);
             if ($request->gambar) {
                 $stok->gambar = $this->storeFiles($request->gambar, 'stok');
-            }else {
+            } else {
                 $stok->gambar = '';
             }
 
@@ -170,26 +171,25 @@ class StokController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
-        try {
-            $stok = Stok::find($id);
-            if ($stok->lockForUpdate()->delete()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($stok->getTable()),
-                    'postingdari' => 'DELETE STOK',
-                    'idtrans' => $stok->id,
-                    'nobuktitrans' => $stok->id,
-                    'aksi' => 'DELETE',
-                    'datajson' => $stok->toArray(),
-                    'modifiedby' => $stok->modifiedby
-                ];
 
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                app(LogTrailController::class)->store($validatedLogTrail);
-            }
+        $stok = new Stok;
+        $stok = $stok->lockAndDestroy($id);
+        if ($stok) {
+            $logTrail = [
+                'namatabel' => strtoupper($stok->getTable()),
+                'postingdari' => 'DELETE STOK',
+                'idtrans' => $stok->id,
+                'nobuktitrans' => $stok->id,
+                'aksi' => 'DELETE',
+                'datajson' => $stok->toArray(),
+                'modifiedby' => $stok->modifiedby
+            ];
 
+            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+            app(LogTrailController::class)->store($validatedLogTrail);
             $this->deleteFiles($stok);
             DB::commit();
 
@@ -204,10 +204,14 @@ class StokController extends Controller
                 'message' => 'Berhasil dihapus',
                 'data' => $stok
             ]);
-        } catch (\Throwable $th) {
+        } else {
             $this->deleteFiles($stok);
             DB::rollBack();
-            return response($th->getMessage());
+
+            return response([
+                'status' => false,
+                'message' => 'Gagal dihapus'
+            ]);
         }
     }
 
@@ -235,14 +239,14 @@ class StokController extends Controller
         if ($photoStok) {
             foreach ($photoStok as $path) {
                 foreach ($sizeTypes as $sizeType) {
-                $relatedPhotoStok[] = "stok/$sizeType-$path";
+                    $relatedPhotoStok[] = "stok/$sizeType-$path";
                 }
             }
             Storage::delete($relatedPhotoStok);
         }
     }
 
-    public function getImage( string $filename, string $type)
+    public function getImage(string $filename, string $type)
     {
         return response()->file(storage_path("app/stok/$type-$filename"));
     }
