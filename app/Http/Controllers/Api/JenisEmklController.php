@@ -136,44 +136,45 @@ class JenisEmklController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(JenisEmkl $jenisemkl, Request $request)
+    public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
-        try {
-            $isDelete = JenisEmkl::where('id', $jenisemkl->id)->delete();
-            if ($isDelete) {
-                $logTrail = [
-                    'namatabel' => strtoupper($jenisemkl->getTable()),
-                    'postingdari' => 'DELETE JENISEMKL',
-                    'idtrans' => $jenisemkl->id,
-                    'nobuktitrans' => $jenisemkl->id,
-                    'aksi' => 'DELETE',
-                    'datajson' => $jenisemkl->toArray(),
-                    'modifiedby' => auth('api')->user()->name
-                ];
 
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                app(LogTrailController::class)->store($validatedLogTrail);
+        $jenisEmkl = new JenisEmkl();
+        $jenisEmkl = $jenisEmkl->lockAndDestroy($id);
+        if ($jenisEmkl) {
+            $logTrail = [
+                'namatabel' => strtoupper($jenisEmkl->getTable()),
+                'postingdari' => 'DELETE JENISEMKL',
+                'idtrans' => $jenisEmkl->id,
+                'nobuktitrans' => $jenisEmkl->id,
+                'aksi' => 'DELETE',
+                'datajson' => $jenisEmkl->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ];
 
-                DB::commit();
+            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+            app(LogTrailController::class)->store($validatedLogTrail);
 
-                $selected = $this->getPosition($jenisemkl, $jenisemkl->getTable(), true);
-                $jenisemkl->position = $selected->position;
-                $jenisemkl->id = $selected->id;
-                $jenisemkl->page = ceil($jenisemkl->position / ($request->limit ?? 10));
-    
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil dihapus',
-                    'data' => $jenisemkl
-                ]);
-            }
+            DB::commit();
+
+            $selected = $this->getPosition($jenisEmkl, $jenisEmkl->getTable(), true);
+            $jenisEmkl->position = $selected->position;
+            $jenisEmkl->id = $selected->id;
+            $jenisEmkl->page = ceil($jenisEmkl->position / ($request->limit ?? 10));
+
             return response([
-                'message' => 'Gagal dihapus'
-            ], 500);
-        } catch (\Throwable $th) {
+                'status' => true,
+                'message' => 'Berhasil dihapus',
+                'data' => $jenisEmkl
+            ]);
+        } else {
             DB::rollBack();
-            throw $th;
+
+            return response([
+                'status' => false,
+                'message' => 'Gagal dihapus'
+            ]);
         }
     }
 

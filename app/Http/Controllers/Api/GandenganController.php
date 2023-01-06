@@ -69,14 +69,14 @@ class GandenganController extends Controller
                 $param1 = $gandengan->id;
                 $param2 = $gandengan->modifiedby;
                 $stokgudang = Stok::from(DB::raw("stok with (readuncommitted)"))
-                ->select(DB::raw(
-                    "stok.id as stok_id,
+                    ->select(DB::raw(
+                        "stok.id as stok_id,
                         0  as gudang_id,
                     0 as trado_id,"
-                    . $param1 . " as gandengan_id,
+                            . $param1 . " as gandengan_id,
                     0 as qty,'"
-                        . $param2 . "' as modifiedby"
-                ))
+                            . $param2 . "' as modifiedby"
+                    ))
                     ->leftjoin('stokpersediaan', function ($join) use ($param1) {
                         $join->on('stokpersediaan.stok_id', '=', 'stok.id');
                         $join->on('stokpersediaan.gandengan_id', '=', DB::raw("'" . $param1 . "'"));
@@ -185,14 +185,14 @@ class GandenganController extends Controller
                 $param1 = $gandengan->id;
                 $param2 = $gandengan->modifiedby;
                 $stokgudang = Stok::from(DB::raw("stok with (readuncommitted)"))
-                ->select(DB::raw(
-                    "stok.id as stok_id,
+                    ->select(DB::raw(
+                        "stok.id as stok_id,
                         0  as gudang_id,
                     0 as trado_id,"
-                    . $param1 . " as gandengan_id,
+                            . $param1 . " as gandengan_id,
                     0 as qty,'"
-                        . $param2 . "' as modifiedby"
-                ))
+                            . $param2 . "' as modifiedby"
+                    ))
                     ->leftjoin('stokpersediaan', function ($join) use ($param1) {
                         $join->on('stokpersediaan.stok_id', '=', 'stok.id');
                         $join->on('stokpersediaan.gandengan_id', '=', DB::raw("'" . $param1 . "'"));
@@ -259,49 +259,47 @@ class GandenganController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Gandengan $gandengan, Request $request)
+    public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
 
-        try {
-            $isDelete = Gandengan::where('id', $gandengan->id)->delete();
+        $gandengan = new Gandengan();
+        $gandengan = $gandengan->lockAndDestroy($id);
+        if ($gandengan) {
+            $logTrail = [
+                'namatabel' => strtoupper($gandengan->getTable()),
+                'postingdari' => 'DELETE GANDENGAN',
+                'idtrans' => $gandengan->id,
+                'nobuktitrans' => $gandengan->id,
+                'aksi' => 'DELETE',
+                'datajson' => $gandengan->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ];
 
-            if ($isDelete) {
-                $logTrail = [
-                    'namatabel' => strtoupper($gandengan->getTable()),
-                    'postingdari' => 'DELETE GANDENGAN',
-                    'idtrans' => $gandengan->id,
-                    'nobuktitrans' => $gandengan->id,
-                    'aksi' => 'DELETE',
-                    'datajson' => $gandengan->toArray(),
-                    'modifiedby' => auth('api')->user()->name
-                ];
+            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+            $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
-                DB::commit();
+            DB::commit();
 
 
-                /* Set position and page */
-                $selected = $this->getPosition($gandengan, $gandengan->getTable(), true);
-                $gandengan->position = $selected->position;
-                $gandengan->id = $selected->id;
-                $gandengan->page = ceil($gandengan->position / ($request->limit ?? 10));
+            /* Set position and page */
+            $selected = $this->getPosition($gandengan, $gandengan->getTable(), true);
+            $gandengan->position = $selected->position;
+            $gandengan->id = $selected->id;
+            $gandengan->page = ceil($gandengan->position / ($request->limit ?? 10));
 
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil dihapus',
-                    'data' => $gandengan
-                ]);
-            }
             return response([
-                'message' => 'Gagal dihapus'
-            ], 500);
-        } catch (\Throwable $th) {
+                'status' => true,
+                'message' => 'Berhasil dihapus',
+                'data' => $gandengan
+            ]);
+        } else {
             DB::rollBack();
 
-            throw $th;
+            return response([
+                'status' => false,
+                'message' => 'Gagal dihapus'
+            ]);
         }
     }
 

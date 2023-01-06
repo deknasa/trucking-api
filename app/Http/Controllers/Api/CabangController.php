@@ -140,49 +140,47 @@ class CabangController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Cabang $cabang, Request $request)
+    public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
 
-        try {
-            $isDelete = Cabang::where('id', $cabang->id)->delete();
+        $cabang = new Cabang();
+        $cabang = $cabang->lockAndDestroy($id);
+        if ($cabang) {
+            $logTrail = [
+                'namatabel' => strtoupper($cabang->getTable()),
+                'postingdari' => 'DELETE CABANG',
+                'idtrans' => $cabang->id,
+                'nobuktitrans' => $cabang->id,
+                'aksi' => 'DELETE',
+                'datajson' => $cabang->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ];
 
-            if ($isDelete) {
-                $logTrail = [
-                    'namatabel' => strtoupper($cabang->getTable()),
-                    'postingdari' => 'DELETE CABANG',
-                    'idtrans' => $cabang->id,
-                    'nobuktitrans' => $cabang->id,
-                    'aksi' => 'DELETE',
-                    'datajson' => $cabang->toArray(),
-                    'modifiedby' => auth('api')->user()->name
-                ];
+            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+            $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
-                DB::commit();
+            DB::commit();
 
 
-                /* Set position and page */
-                $selected = $this->getPosition($cabang, $cabang->getTable(), true);
-                $cabang->position = $selected->position;
-                $cabang->id = $selected->id;
-                $cabang->page = ceil($cabang->position / ($request->limit ?? 10));
+            /* Set position and page */
+            $selected = $this->getPosition($cabang, $cabang->getTable(), true);
+            $cabang->position = $selected->position;
+            $cabang->id = $selected->id;
+            $cabang->page = ceil($cabang->position / ($request->limit ?? 10));
 
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil dihapus',
-                    'data' => $cabang
-                ]);
-            }
             return response([
-                'message' => 'Gagal dihapus'
-            ], 500);
-        } catch (\Throwable $th) {
+                'status' => true,
+                'message' => 'Berhasil dihapus',
+                'data' => $cabang
+            ]);
+        } else {
             DB::rollBack();
 
-            throw $th;
+            return response([
+                'status' => false,
+                'message' => 'Gagal dihapus'
+            ]);
         }
     }
 

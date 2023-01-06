@@ -138,47 +138,47 @@ class MekanikController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Mekanik $mekanik, Request $request)
+    public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
-        try {
-            $isDelete = Mekanik::where('id', $mekanik->id)->delete();
-            
-            if ($isDelete) {
-                $logTrail = [
-                    'namatabel' => strtoupper($mekanik->getTable()),
-                    'postingdari' => 'DELETE MEKANIK',
-                    'idtrans' => $mekanik->id,
-                    'nobuktitrans' => $mekanik->id,
-                    'aksi' => 'DELETE',
-                    'datajson' => $mekanik->toArray(),
-                    'modifiedby' => auth('api')->user()->name
-                ];
 
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                app(LogTrailController::class)->store($validatedLogTrail);
+        $mekanik = new Mekanik();
+        $mekanik = $mekanik->lockAndDestroy($id);
+
+        if ($mekanik) {
+            $logTrail = [
+                'namatabel' => strtoupper($mekanik->getTable()),
+                'postingdari' => 'DELETE MEKANIK',
+                'idtrans' => $mekanik->id,
+                'nobuktitrans' => $mekanik->id,
+                'aksi' => 'DELETE',
+                'datajson' => $mekanik->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ];
+
+            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+            app(LogTrailController::class)->store($validatedLogTrail);
 
 
-                DB::commit();
+            DB::commit();
 
-                $selected = $this->getPosition($mekanik, $mekanik->getTable(), true);
-                $mekanik->position = $selected->position;
-                $mekanik->id = $selected->id;
-                $mekanik->page = ceil($mekanik->position / ($request->limit ?? 10));
+            $selected = $this->getPosition($mekanik, $mekanik->getTable(), true);
+            $mekanik->position = $selected->position;
+            $mekanik->id = $selected->id;
+            $mekanik->page = ceil($mekanik->position / ($request->limit ?? 10));
 
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil dihapus',
-                    'data' => $mekanik
-                ]);
-            }
             return response([
-                'message' => 'Gagal dihapus'
-            ], 500);
-        } catch (\Throwable $th) {
+                'status' => true,
+                'message' => 'Berhasil dihapus',
+                'data' => $mekanik
+            ]);
+        } else {
             DB::rollBack();
 
-            throw $th;
+            return response([
+                'status' => false,
+                'message' => 'Gagal dihapus'
+            ]);
         }
     }
 

@@ -169,14 +169,14 @@ class PengeluaranStokController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(PengeluaranStok $pengeluaranStok,$id)
+    public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
 
-        $pengeluaranStok = PengeluaranStok::where('id',$id)->first();
-        $delete = $pengeluaranStok->lockForUpdate()->delete();
+        $pengeluaranStok = new PengeluaranStok();
+        $pengeluaranStok = $pengeluaranStok->lockAndDestroy($id);
 
-        if ($delete) {
+        if ($pengeluaranStok) {
             $logTrail = [
                 'namatabel' => strtoupper($pengeluaranStok->getTable()),
                 'postingdari' => 'DELETE PENERIMAAN STOK',

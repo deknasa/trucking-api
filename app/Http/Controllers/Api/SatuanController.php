@@ -137,29 +137,27 @@ class SatuanController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Satuan $satuan, Request $request)
+    public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
 
-        try {
-            $delete = Satuan::destroy($satuan->id);
+        $satuan = new Satuan();
+        $satuan = $satuan->lockAndDestroy($id);
+        if ($satuan) {
+            $logTrail = [
+                'namatabel' => strtoupper($satuan->getTable()),
+                'postingdari' => 'DELETE SATUAN',
+                'idtrans' => $satuan->id,
+                'nobuktitrans' => $satuan->id,
+                'aksi' => 'DELETE',
+                'datajson' => $satuan->toArray(),
+                'modifiedby' => $satuan->modifiedby
+            ];
 
-            if ($delete) {
-                $logTrail = [
-                    'namatabel' => strtoupper($satuan->getTable()),
-                    'postingdari' => 'DELETE SATUAN',
-                    'idtrans' => $satuan->id,
-                    'nobuktitrans' => $satuan->id,
-                    'aksi' => 'DELETE',
-                    'datajson' => $satuan->toArray(),
-                    'modifiedby' => $satuan->modifiedby
-                ];
+            $data = new StoreLogTrailRequest($logTrail);
+            app(LogTrailController::class)->store($data);
 
-                $data = new StoreLogTrailRequest($logTrail);
-                app(LogTrailController::class)->store($data);
-
-                DB::commit();
-            }
+            DB::commit();
             /* Set position and page */
             $selected = $this->getPosition($satuan, $satuan->getTable(), true);
             $satuan->position = $selected->position;
@@ -171,10 +169,13 @@ class SatuanController extends Controller
                 'message' => 'Berhasil dihapus',
                 'data' => $satuan
             ]);
-        } catch (\Throwable $th) {
+        } else {
             DB::rollBack();
 
-            throw $th;
+            return response([
+                'status' => false,
+                'message' => 'Gagal dihapus'
+            ]);
         }
     }
 

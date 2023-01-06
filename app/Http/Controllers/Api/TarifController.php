@@ -163,47 +163,46 @@ class TarifController extends Controller
     /**
      * @ClassName
      */
-    public function destroy(Tarif $tarif, Request $request)
+    public function destroy(Request $request, $id)
     {
 
         DB::beginTransaction();
 
-        try {
-            $isDelete = Tarif::where('id', $tarif->id)->delete();
+        $tarif = new Tarif();
+        $tarif = $tarif->lockAndDestroy($id);
+        if ($tarif) {
+            $logTrail = [
+                'namatabel' => strtoupper($tarif->getTable()),
+                'postingdari' => 'DELETE TARIF',
+                'idtrans' => $tarif->id,
+                'nobuktitrans' => $tarif->id,
+                'aksi' => 'DELETE',
+                'datajson' => $tarif->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ];
 
-            if ($isDelete) {
-                $logTrail = [
-                    'namatabel' => strtoupper($tarif->getTable()),
-                    'postingdari' => 'DELETE TARIF',
-                    'idtrans' => $tarif->id,
-                    'nobuktitrans' => $tarif->id,
-                    'aksi' => 'DELETE',
-                    'datajson' => $tarif->toArray(),
-                    'modifiedby' => auth('api')->user()->name
-                ];
+            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+            app(LogTrailController::class)->store($validatedLogTrail);
 
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                app(LogTrailController::class)->store($validatedLogTrail);
+            DB::commit();
+            /* Set position and page */
+            $selected = $this->getPosition($tarif, $tarif->getTable(), true);
+            $tarif->position = $selected->position;
+            $tarif->id = $selected->id;
+            $tarif->page = ceil($tarif->position / ($request->limit ?? 10));
 
-                DB::commit();
-                /* Set position and page */
-                $selected = $this->getPosition($tarif, $tarif->getTable(), true);
-                $tarif->position = $selected->position;
-                $tarif->id = $selected->id;
-                $tarif->page = ceil($tarif->position / ($request->limit ?? 10));
-    
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil dihapus',
-                    'data' => $tarif
-                ]);
-            }
             return response([
-                'message' => 'Gagal dihapus'
-            ], 500);
-        } catch (\Throwable $th) {
+                'status' => true,
+                'message' => 'Berhasil dihapus',
+                'data' => $tarif
+            ]);
+        } else {
             DB::rollBack();
-            throw $th;
+
+            return response([
+                'status' => false,
+                'message' => 'Gagal dihapus'
+            ]);
         }
     }
 

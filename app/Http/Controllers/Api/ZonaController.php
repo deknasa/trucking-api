@@ -138,43 +138,45 @@ class ZonaController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Zona $zona, Request $request)
+    public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
-        try {
-            $isDelete = Zona::where('id', $zona->id)->delete();
-            if ($isDelete) {
-                $logTrail = [
-                    'namatabel' => strtoupper($zona->getTable()),
-                    'postingdari' => 'DELETE ZONA',
-                    'idtrans' => $zona->id,
-                    'nobuktitrans' => $zona->id,
-                    'aksi' => 'DELETE',
-                    'datajson' => $zona->toArray(),
-                    'modifiedby' => auth('api')->user()->name
-                ];
 
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                app(LogTrailController::class)->store($validatedLogTrail);
-                DB::commit();
-    
-                $selected = $this->getPosition($zona, $zona->getTable(), true);
-                $zona->position = $selected->position;
-                $zona->id = $selected->id;
-                $zona->page = ceil($zona->position / ($request->limit ?? 10));
-    
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil dihapus',
-                    'data' => $zona
-                ]);
-            }
+        $zona = new Zona();
+        $zona = $zona->lockAndDestroy($id);
+
+        if ($zona) {
+            $logTrail = [
+                'namatabel' => strtoupper($zona->getTable()),
+                'postingdari' => 'DELETE ZONA',
+                'idtrans' => $zona->id,
+                'nobuktitrans' => $zona->id,
+                'aksi' => 'DELETE',
+                'datajson' => $zona->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ];
+
+            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+            app(LogTrailController::class)->store($validatedLogTrail);
+            DB::commit();
+
+            $selected = $this->getPosition($zona, $zona->getTable(), true);
+            $zona->position = $selected->position;
+            $zona->id = $selected->id;
+            $zona->page = ceil($zona->position / ($request->limit ?? 10));
+
             return response([
-                'message' => 'Gagal dihapus'
-            ], 500);
-        } catch (\Throwable $th) {
+                'status' => true,
+                'message' => 'Berhasil dihapus',
+                'data' => $zona
+            ]);
+        } else {
             DB::rollBack();
-            throw $th;
+
+            return response([
+                'status' => false,
+                'message' => 'Gagal dihapus'
+            ]);
         }
     }
 

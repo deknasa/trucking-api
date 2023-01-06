@@ -133,49 +133,47 @@ class StatusContainerController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(StatusContainer $statusContainer, Request $request)
+    public function destroy(Request $request, $id)
     {
 
         DB::beginTransaction();
-        try {
+        $statusContainer = new StatusContainer();
+        $statusContainer = $statusContainer->lockAndDestroy($id);
 
-            // $statusContainer = StatusContainer::lockForUpdate()->findOrFail($id);
-            $isDelete = StatusContainer::where('id', $statusContainer->id)->delete();
+        if ($statusContainer) {
+            $logTrail = [
+                'namatabel' => strtoupper($statusContainer->getTable()),
+                'postingdari' => 'DELETE STATUS CONTAINER',
+                'idtrans' => $statusContainer->id,
+                'nobuktitrans' => $statusContainer->id,
+                'aksi' => 'DELETE',
+                'datajson' => $statusContainer->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ];
 
-            if ($isDelete) {
-                $logTrail = [
-                    'namatabel' => strtoupper($statusContainer->getTable()),
-                    'postingdari' => 'DELETE STATUS CONTAINER',
-                    'idtrans' => $statusContainer->id,
-                    'nobuktitrans' => $statusContainer->id,
-                    'aksi' => 'DELETE',
-                    'datajson' => $statusContainer->toArray(),
-                    'modifiedby' => auth('api')->user()->name
-                ];
+            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+            app(LogTrailController::class)->store($validatedLogTrail);
 
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                app(LogTrailController::class)->store($validatedLogTrail);
+            DB::commit();
 
-                DB::commit();
+            /* Set position and page */
+            $selected = $this->getPosition($statusContainer, $statusContainer->getTable(), true);
+            $statusContainer->position = $selected->position;
+            $statusContainer->id = $selected->id;
+            $statusContainer->page = ceil($statusContainer->position / ($request->limit ?? 10));
 
-                /* Set position and page */
-                $selected = $this->getPosition($statusContainer, $statusContainer->getTable(), true);
-                $statusContainer->position = $selected->position;
-                $statusContainer->id = $selected->id;
-                $statusContainer->page = ceil($statusContainer->position / ($request->limit ?? 10));
-    
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil dihapus',
-                    'data' => $statusContainer
-                ]);
-            }
             return response([
-                'message' => 'Gagal dihapus'
-            ], 500);
-        } catch (\Throwable $th) {
+                'status' => true,
+                'message' => 'Berhasil dihapus',
+                'data' => $statusContainer
+            ]);
+        } else {
             DB::rollBack();
-            throw $th;
+
+            return response([
+                'status' => false,
+                'message' => 'Gagal dihapus'
+            ]);
         }
     }
 

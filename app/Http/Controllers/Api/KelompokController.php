@@ -136,46 +136,46 @@ class KelompokController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Kelompok $kelompok, Request $request)
+    public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
-        try {
-            $isDelete = Kelompok::where('id', $kelompok->id)->delete();
 
-            if ($isDelete) {
-                $logTrail = [
-                    'namatabel' => strtoupper($kelompok->getTable()),
-                    'postingdari' => 'DELETE KELOMPOK',
-                    'idtrans' => $kelompok->id,
-                    'nobuktitrans' => $kelompok->id,
-                    'aksi' => 'DELETE',
-                    'datajson' => $kelompok->toArray(),
-                    'modifiedby' => auth('api')->user()->name
-                ];
+        $kelompok = new Kelompok();
+        $kelompok = $kelompok->lockAndDestroy($id);
+        if ($kelompok) {
+            $logTrail = [
+                'namatabel' => strtoupper($kelompok->getTable()),
+                'postingdari' => 'DELETE KELOMPOK',
+                'idtrans' => $kelompok->id,
+                'nobuktitrans' => $kelompok->id,
+                'aksi' => 'DELETE',
+                'datajson' => $kelompok->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ];
 
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                app(LogTrailController::class)->store($validatedLogTrail);
+            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+            app(LogTrailController::class)->store($validatedLogTrail);
 
 
-                DB::commit();
+            DB::commit();
 
-                $selected = $this->getPosition($kelompok, $kelompok->getTable(), true);
-                $kelompok->position = $selected->position;
-                $kelompok->id = $selected->id;
-                $kelompok->page = ceil($kelompok->position / ($request->limit ?? 10));
-    
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil dihapus',
-                    'data' => $kelompok
-                ]);
-            }
+            $selected = $this->getPosition($kelompok, $kelompok->getTable(), true);
+            $kelompok->position = $selected->position;
+            $kelompok->id = $selected->id;
+            $kelompok->page = ceil($kelompok->position / ($request->limit ?? 10));
+
             return response([
-                'message' => 'Gagal dihapus'
-            ], 500);
-        } catch (\Throwable $th) {
+                'status' => true,
+                'message' => 'Berhasil dihapus',
+                'data' => $kelompok
+            ]);
+        } else {
             DB::rollBack();
-            throw $th;
+
+            return response([
+                'status' => false,
+                'message' => 'Gagal dihapus'
+            ]);
         }
     }
 

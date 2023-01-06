@@ -113,14 +113,14 @@ class TradoController extends Controller
             $param1 = $trado->id;
             $param2 = $trado->modifiedby;
             $stokgudang = Stok::from(DB::raw("stok with (readuncommitted)"))
-            ->select(DB::raw(
-                "stok.id as stok_id,
+                ->select(DB::raw(
+                    "stok.id as stok_id,
                     0  as gudang_id,"
-                    . $param1 . " as trado_id,
+                        . $param1 . " as trado_id,
                 0 as gandengan_id,
                 0 as qty,'"
-                    . $param2 . "' as modifiedby"
-            ))
+                        . $param2 . "' as modifiedby"
+                ))
                 ->leftjoin('stokpersediaan', function ($join) use ($param1) {
                     $join->on('stokpersediaan.stok_id', '=', 'stok.id');
                     $join->on('stokpersediaan.trado_id', '=', DB::raw("'" . $param1 . "'"));
@@ -254,14 +254,14 @@ class TradoController extends Controller
             $param1 = $trado->id;
             $param2 = $trado->modifiedby;
             $stokgudang = Stok::from(DB::raw("stok with (readuncommitted)"))
-            ->select(DB::raw(
-                "stok.id as stok_id,
+                ->select(DB::raw(
+                    "stok.id as stok_id,
                     0  as gudang_id,"
-                    . $param1 . " as trado_id,
+                        . $param1 . " as trado_id,
                 0 as gandengan_id,
                 0 as qty,'"
-                    . $param2 . "' as modifiedby"
-            ))
+                        . $param2 . "' as modifiedby"
+                ))
                 ->leftjoin('stokpersediaan', function ($join) use ($param1) {
                     $join->on('stokpersediaan.stok_id', '=', 'stok.id');
                     $join->on('stokpersediaan.trado_id', '=', DB::raw("'" . $param1 . "'"));
@@ -334,49 +334,50 @@ class TradoController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Trado $trado, Request $request)
+    public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
-        try {
-            $isDelete = Trado::where('id', $trado->id)->delete();
-            if ($isDelete) {
-                $logTrail = [
-                    'namatabel' => strtoupper($trado->getTable()),
-                    'postingdari' => 'DELETE TRADO',
-                    'idtrans' => $trado->id,
-                    'nobuktitrans' => $trado->id,
-                    'aksi' => 'DELETE',
-                    'datajson' => $trado->toArray(),
-                    'modifiedby' => $trado->modifiedby
-                ];
 
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                app(LogTrailController::class)->store($validatedLogTrail);
+        $trado = new Trado();
+        $trado = $trado->lockAndDestroy($id);
+
+        if ($trado) {
+            $logTrail = [
+                'namatabel' => strtoupper($trado->getTable()),
+                'postingdari' => 'DELETE TRADO',
+                'idtrans' => $trado->id,
+                'nobuktitrans' => $trado->id,
+                'aksi' => 'DELETE',
+                'datajson' => $trado->toArray(),
+                'modifiedby' => $trado->modifiedby
+            ];
+
+            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+            app(LogTrailController::class)->store($validatedLogTrail);
 
 
-                $this->deleteFiles($trado);
-                DB::commit();
-
-                /* Set position and page */
-                $selected = $this->getPosition($trado, $trado->getTable(), true);
-                $trado->position = $selected->position;
-                $trado->id = $selected->id;
-                $trado->page = ceil($trado->position / ($request->limit ?? 10));
-
-                // dd($trado);
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil dihapus',
-                    'data' => $trado
-                ]);
-            }
-            return response([
-                'message' => 'Gagal dihapus'
-            ], 500);
-        } catch (\Throwable $th) {
             $this->deleteFiles($trado);
+            DB::commit();
+
+            /* Set position and page */
+            $selected = $this->getPosition($trado, $trado->getTable(), true);
+            $trado->position = $selected->position;
+            $trado->id = $selected->id;
+            $trado->page = ceil($trado->position / ($request->limit ?? 10));
+
+            // dd($trado);
+            return response([
+                'status' => true,
+                'message' => 'Berhasil dihapus',
+                'data' => $trado
+            ]);
+        } else {
             DB::rollBack();
-            throw $th;
+
+            return response([
+                'status' => false,
+                'message' => 'Gagal dihapus'
+            ]);
         }
     }
 
