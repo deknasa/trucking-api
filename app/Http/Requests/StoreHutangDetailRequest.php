@@ -24,8 +24,6 @@ class StoreHutangDetailRequest extends FormRequest
     public function rules()
     {
         return [
-            'supplier' => 'required|array',
-            'supplier.*' => 'required',
             'tgljatuhtempo' => 'required|array',
             'tgljatuhtempo.*' => 'required',
             'total_detail' => 'required|array',

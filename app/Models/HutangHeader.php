@@ -37,6 +37,7 @@ class HutangHeader extends MyModel
 
                 'hutangheader.coa',
                 'pelanggan.namapelanggan as pelanggan_id',
+                'supplier.namasupplier as supplier_id',
                 'hutangheader.total',
                 'parameter.memo as statuscetak',
                 'hutangheader.userbukacetak',
@@ -48,7 +49,8 @@ class HutangHeader extends MyModel
                 'hutangheader.updated_at'
             )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'hutangheader.statuscetak', 'parameter.id')
-            ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'hutangheader.pelanggan_id', 'pelanggan.id');
+            ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'hutangheader.pelanggan_id', 'pelanggan.id')
+            ->leftJoin(DB::raw("supplier with (readuncommitted)"), 'hutangheader.supplier_id', 'supplier.id');
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -64,16 +66,17 @@ class HutangHeader extends MyModel
     public function findAll($id)
     {
         $query = DB::table('hutangheader')->from(
-            DB::raw($this->table . " with (readuncommitted)")
+            DB::raw("hutangheader with (readuncommitted)")
         )
             ->select(
                 'hutangheader.id',
                 'hutangheader.nobukti',
                 'hutangheader.tglbukti',
                 'hutangheader.keterangan',
-                'hutangheader.coa as akunpusat',
                 'pelanggan.namapelanggan as pelanggan',
                 'pelanggan.id as pelanggan_id',
+                'supplier.namasupplier as supplier',
+                'supplier.id as supplier_id',
                 'hutangheader.statuscetak',
                 'hutangheader.total',
 
@@ -82,6 +85,7 @@ class HutangHeader extends MyModel
             )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'hutangheader.statuscetak', 'parameter.id')
             ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'hutangheader.pelanggan_id', 'pelanggan.id')
+            ->leftJoin(DB::raw("supplier with (readuncommitted)"), 'hutangheader.supplier_id', 'supplier.id')
 
             ->where('hutangheader.id', $id);
 
