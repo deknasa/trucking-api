@@ -25,6 +25,7 @@ class CreateHutangheaderTable extends Migration
             $table->double('total',15,2)->default(0);            
             $table->string('postingdari', 50)->default('');            
             $table->unsignedBigInteger('pelanggan_id')->default('0');
+            $table->unsignedBigInteger('supplier_id')->default(0);            
             $table->unsignedBigInteger('statusformat')->default(0);  
             $table->integer('statuscetak')->Length(11)->default('0');
             $table->string('userbukacetak',50)->default('');
@@ -35,11 +36,14 @@ class CreateHutangheaderTable extends Migration
 
             $table->foreign('coa', 'hutangheader_akunpusat_coa_foreign')->references('coa')->on('akunpusat');    
             $table->foreign('pelanggan_id', 'hutangheader_pelanggan_pelanggan_id_foreign')->references('id')->on('pelanggan');    
+            $table->foreign('supplier_id', 'hutangheader_supplier_supplier_id_foreign')->references('id')->on('supplier');    
+
             
         });
 
         DB::statement("ALTER TABLE hutangheader NOCHECK CONSTRAINT hutangheader_pelanggan_pelanggan_id_foreign");
         DB::statement("ALTER TABLE hutangheader NOCHECK CONSTRAINT hutangheader_akunpusat_coa_foreign");
+        DB::statement("ALTER TABLE hutangheader NOCHECK CONSTRAINT hutangheader_supplier_supplier_id_foreign");
 
     }
 

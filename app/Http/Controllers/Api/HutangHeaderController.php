@@ -147,8 +147,9 @@ class HutangHeaderController extends Controller
             $statusApp = $parameterController->getparameterid('STATUS APPROVAL', 'STATUS APPROVAL', 'NON APPROVAL');
 
             $coahutang = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
-                ->where('grp', 'COA HUTANG MANUAL')->get();
+                ->where('grp', 'JURNAL HUTANG MANUAL')->get();
 
+         
             $jurnalHeader = [
                 'tanpaprosesnobukti' => 1,
                 'nobukti' => $hutangHeader->nobukti,
@@ -169,14 +170,13 @@ class HutangHeaderController extends Controller
 
                 foreach ($coahutang as $key => $coa) {
                     $a = 0;
-                    $getcoa = DB::table('akunpusat')
-                        ->where('id', $coa->text)->first();
-
+                    $memo = json_decode($coa->memo, true);
+                    
                     $jurnalDetail = [
                         [
                             'nobukti' => $hutangHeader->nobukti,
                             'tglbukti' => date('Y-m-d', strtotime($hutangHeader->tglbukti)),
-                            'coa' =>  $getcoa->coa,
+                            'coa' =>  $memo['JURNAL'],
                             'keterangan' => $request->keterangan_detail[$i],
                             'modifiedby' => auth('api')->user()->name,
                             'baris' => $i,

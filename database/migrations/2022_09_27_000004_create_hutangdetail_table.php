@@ -20,7 +20,6 @@ class CreateHutangdetailTable extends Migration
             $table->id();
             $table->unsignedBigInteger('hutang_id')->default(0);            
             $table->string('nobukti', 50)->default('');            
-            $table->unsignedBigInteger('supplier_id')->default(0);            
             $table->date('tgljatuhtempo')->default('1900/1/1');            
             $table->double('total',15,2)->default('0');            
             $table->double('cicilan',15,2)->default('0');            
@@ -31,10 +30,8 @@ class CreateHutangdetailTable extends Migration
 
 
             $table->foreign('hutang_id', 'hutangdetail_hutangheader_hutang_id_foreign')->references('id')->on('hutangheader')->onDelete('cascade');    
-            $table->foreign('hutang_id', 'hutangdetail_supplier_supplier_id_foreign')->references('id')->on('supplier');    
 
         });
-        DB::statement("ALTER TABLE hutangdetail NOCHECK CONSTRAINT hutangdetail_supplier_supplier_id_foreign");
     }
 
     /**
