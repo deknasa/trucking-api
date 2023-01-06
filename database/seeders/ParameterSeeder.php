@@ -127,7 +127,7 @@ class ParameterSeeder extends Seeder
         parameter::create(['grp' => 'CETAKULANG', 'subgrp' => 'CETAKULANG', 'kelompok' => '', 'text' => 'INVOICEHEADER', 'memo' => '{"MEMO":"DATA INVOICE","SINGKATAN":"INVOICEHEADER","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => '1',]);
         parameter::create(['grp' => 'CETAKULANG', 'subgrp' => 'CETAKULANG', 'kelompok' => '', 'text' => 'GAJISUPIRHEADER', 'memo' => '{"MEMO":"DATA RINCIAN GAJI SUPIR","SINGKATAN":"GAJISUPIRHEADER","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => '1',]);
         parameter::create(['grp' => 'CETAKULANG', 'subgrp' => 'CETAKULANG', 'kelompok' => '', 'text' => 'PROSESGAJISUPIRHEADER', 'memo' => '{"MEMO":"DATA PROSES GAJI SUPIR","SINGKATAN":"PROSESGAJISUPIRHEADER","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => '1',]);
-        parameter::create(['grp' => 'JURNAL KAS GANTUNG', 'subgrp' => 'KREDIT', 'kelompok' => '', 'text' => 'KREDIT', 'memo' => '{"MEMO":"JURNAL KAS GANTUNG","SINGKATAN":"JKG","WARNA":"#28A745","JURNAL":"01.01.02.00"}', 'type' => '0', 'modifiedby' => '1',]);
+        parameter::create(['grp' => 'JURNAL KAS GANTUNG', 'subgrp' => 'DEBET', 'kelompok' => '', 'text' => 'DEBET', 'memo' => '{"MEMO":"JURNAL KAS GANTUNG","SINGKATAN":"JKG","WARNA":"#28A745","JURNAL":"01.01.02.00"}', 'type' => '0', 'modifiedby' => '1',]);
         parameter::create(['grp' => 'CETAKULANG', 'subgrp' => 'CETAKULANG', 'kelompok' => '', 'text' => 'PIUTANGHEADER', 'memo' => '{"MEMO":"DATA PIUTANG","SINGKATAN":"","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => '1',]);
         parameter::create(['grp' => 'CETAKULANG', 'subgrp' => 'CETAKULANG', 'kelompok' => '', 'text' => 'PENGEMBALIANKASGANTUNGHEADER', 'memo' => '{"MEMO":"DATA PENGEMBALIAN KAS GANTUNG","SINGKATAN":"","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => '1',]);
         parameter::create(['grp' => 'RITASI', 'subgrp' => 'RITASI', 'kelompok' => '', 'text' => '#RTT #9999#/#R#/#Y', 'memo' => '{"MEMO":"","SINGKATAN":"#RTT #9999#/#R#/#Y","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => '1',]);
@@ -230,6 +230,7 @@ class ParameterSeeder extends Seeder
         parameter::create(['grp' => 'JURNAL PIUTANG INVOICE UTAMA', 'subgrp' => 'DEBET', 'kelompok' => '', 'text' => 'DEBET', 'memo' => '{"MEMO":"COA PIUTANG MANUAL DEBET","SINGKATAN":"D","WARNA":"#28A745","JURNAL":"01.03.01.02"}', 'type' => '0', 'modifiedby' => 'ADMIN',]);
         parameter::create(['grp' => 'JURNAL PIUTANG INVOICE UTAMA', 'subgrp' => 'KREDIT', 'kelompok' => '', 'text' => 'KREDIT', 'memo' => '{"MEMO":"COA PIUTANG MANUAL KREDIT","SINGKATAN":"K","WARNA":"#6C757D","JURNAL":"06.01.01.02"}', 'type' => '0', 'modifiedby' => 'ADMIN',]);
         parameter::create(['grp' => 'TUTUP BUKU', 'subgrp' => 'TUTUP BUKU', 'kelompok' => 'TUTUP BUKU', 'text' => '2022-12-31', 'memo' => '{"MEMO":"TUTUP BUKU","SINGKATAN":"TB","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN',]);
+        parameter::create(['grp' => 'JURNAL PENGEMBALIAN KAS GANTUNG', 'subgrp' => 'KREDIT', 'kelompok' => '', 'text' => 'KREDIT', 'memo' => '{"MEMO":"JURNAL PENGEMBALIAN KAS GANTUNG","SINGKATAN":"JPKG","WARNA":"#28A745","JURNAL":"01.01.02.00"}', 'type' => '0', 'modifiedby' => '1',]);
         
     }
 }

@@ -86,7 +86,7 @@ class KasGantungHeaderController extends Controller
                     ->first();
 
 
-                $coaKasKeluar = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('memo')->where('grp', 'JURNAL KAS GANTUNG')->first();
+                $coaKasKeluar = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('memo')->where('grp', 'JURNAL KAS GANTUNG')->where('subgrp', 'DEBET')->first();
 
                 $memo = json_decode($coaKasKeluar->memo, true);
 
@@ -474,7 +474,7 @@ class KasGantungHeaderController extends Controller
                     $parameterController = new ParameterController;
                     $statusApp = $parameterController->getparameterid('STATUS APPROVAL', 'STATUS APPROVAL', 'NON APPROVAL');
 
-                    $coaKasKeluar = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('memo')->where('grp', 'JURNAL KAS GANTUNG')->first();
+                    $coaKasKeluar = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('memo')->where('grp', 'JURNAL KAS GANTUNG')->where('subgrp', 'DEBET')->first();
                 
                     $memo = json_decode($coaKasKeluar->memo, true);
                     
