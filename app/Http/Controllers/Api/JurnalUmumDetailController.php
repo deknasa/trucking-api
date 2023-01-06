@@ -82,25 +82,33 @@ class JurnalUmumDetailController extends Controller
                     ])
                     ->get();
             } else {
-                $id = $request->jurnalumum_id;
-                $data = JurnalUmumHeader::find($id);
-                $nobukti = $data['nobukti'];
+                // $id = $request->jurnalumum_id;
+                // $data = JurnalUmumHeader::find($id);
+                // $nobukti = $data['nobukti'];
 
-                $jurnalUmumDetail = JurnalUmumDetail::from(
-                        DB::raw("jurnalumumdetail as A with (readuncommitted)")
-                    )
-                    ->select(['A.coa as coadebet', 'b.coa as coakredit', 'A.nominal', 'A.keterangan', 'A.nobukti', 'A.tglbukti'])
-                    ->join(
-                        DB::raw("(SELECT baris,coa FROM jurnalumumdetail WHERE nobukti='$nobukti' AND nominal<0) B"),
-                        function ($join) {
-                            $join->on('A.baris', '=', 'B.baris');
-                        }
-                    )
-                    ->where([
-                        ['A.nobukti', '=', $nobukti],
-                        ['A.nominal', '>=', '0']
-                    ])
-                    ->get();
+                // $jurnalUmumDetail = JurnalUmumDetail::from(
+                //         DB::raw("jurnalumumdetail as A with (readuncommitted)")
+                //     )
+                //     ->select(['A.coa as coadebet', 'b.coa as coakredit', 'A.nominal', 'A.keterangan', 'A.nobukti', 'A.tglbukti'])
+                //     ->join(
+                //         DB::raw("(SELECT baris,coa FROM jurnalumumdetail WHERE nobukti='$nobukti' AND nominal<0) B"),
+                //         function ($join) {
+                //             $join->on('A.baris', '=', 'B.baris');
+                //         }
+                //     )
+                //     ->where([
+                //         ['A.nobukti', '=', $nobukti],
+                //         ['A.nominal', '>=', '0']
+                //     ])
+                //     ->get();
+                $query->select(
+                    'detail.nobukti',
+                    'detail.tglbukti',
+                    'detail.coa',
+                    'detail.nominal',
+                    'detail.keterangan',
+                );
+                $jurnalUmumDetail = $query->get();
             }
 
             $idUser = auth('api')->user()->id;

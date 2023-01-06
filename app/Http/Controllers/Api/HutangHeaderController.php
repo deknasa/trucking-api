@@ -21,6 +21,7 @@ use App\Models\Parameter;
 use App\Http\Requests\StoreJurnalUmumHeaderRequest;
 use App\Http\Requests\StoreJurnalUmumDetailRequest;
 use App\Http\Requests\UpdateHutangHeaderRequest;
+use App\Models\Error;
 use App\Models\Pelanggan;
 use PhpParser\Builder\Param;
 use Illuminate\Database\QueryException;
@@ -68,13 +69,37 @@ class HutangHeaderController extends Controller
             $content['table'] = 'hutangheader';
             $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
 
-            $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
-
             $hutangHeader = new HutangHeader();
+            $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
+            $getCoaDebet = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+                ->where('grp', 'JURNAL HUTANG MANUAL')->where('subgrp', 'DEBET')->first();
+            $memo = json_decode($getCoaDebet->memo, true);
+
+            if ($request->supplier == '' && $request->pelanggan == '') {
+                $query = Error::from(DB::raw("error with (readuncommitted)"))
+                    ->select('keterangan')
+                    ->where('kodeerror', '=', 'WISP')
+                    ->first();
+                return response([
+                    'errors' => "$query->keterangan",
+                    'message' => "$query->keterangan",
+                ], 500);
+            } else if ($request->supplier != '' && $request->pelanggan != '') {
+                $query = Error::from(DB::raw("error with (readuncommitted)"))
+                    ->select('keterangan')
+                    ->where('kodeerror', '=', 'PSP')
+                    ->first();
+                return response([
+                    'errors' => "$query->keterangan",
+                    'message' => "$query->keterangan",
+                ], 500);
+            }
+
             $hutangHeader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $hutangHeader->keterangan = $request->keterangan ?? '';
-            $hutangHeader->coa = $request->akunpusat;
-            $hutangHeader->pelanggan_id = $request->pelanggan_id;
+            $hutangHeader->coa = $memo['JURNAL'];
+            $hutangHeader->pelanggan_id = $request->pelanggan_id ?? '';
+            $hutangHeader->supplier_id = $request->supplier_id ?? '';
             $hutangHeader->postingdari = $request->postingdari ?? 'ENTRY HUTANG';
             $hutangHeader->statusformat = $format->id;
             $hutangHeader->statuscetak = $statusCetak->id;
@@ -105,7 +130,6 @@ class HutangHeaderController extends Controller
                 $datadetail = [
                     'hutang_id' => $hutangHeader->id,
                     'nobukti' => $hutangHeader->nobukti,
-                    'supplier_id' => $request->supplier_id[$i],
                     'tgljatuhtempo' => date('Y-m-d', strtotime($request->tgljatuhtempo[$i])),
                     'total' => $request->total_detail[$i],
                     'cicilan' => '',
@@ -146,10 +170,11 @@ class HutangHeaderController extends Controller
             $parameterController = new ParameterController;
             $statusApp = $parameterController->getparameterid('STATUS APPROVAL', 'STATUS APPROVAL', 'NON APPROVAL');
 
-            $coahutang = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
-                ->where('grp', 'JURNAL HUTANG MANUAL')->get();
+            $getCoaKredit = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+                ->where('grp', 'JURNAL HUTANG MANUAL')->where('subgrp', 'KREDIT')->first();
+            $memoKredit = json_decode($getCoaKredit->memo, true);
 
-         
+
             $jurnalHeader = [
                 'tanpaprosesnobukti' => 1,
                 'nobukti' => $hutangHeader->nobukti,
@@ -164,36 +189,33 @@ class HutangHeaderController extends Controller
             ];
 
             $jurnaldetail = [];
+            $total = array_sum($request->total_detail);
+            $jurnaldetail[] =  [
+                'nobukti' => $hutangHeader->nobukti,
+                'tglbukti' => date('Y-m-d', strtotime($hutangHeader->tglbukti)),
+                'coa' =>  $memo['JURNAL'],
+                'nominal' => $total,
+                'keterangan' => $hutangHeader->keterangan,
+                'modifiedby' => auth('api')->user()->name,
+                'baris' => 0,
+            ];
 
             for ($i = 0; $i < count($request->total_detail); $i++) {
                 $detail = [];
 
-                foreach ($coahutang as $key => $coa) {
-                    $a = 0;
-                    $memo = json_decode($coa->memo, true);
-                    
-                    $jurnalDetail = [
-                        [
-                            'nobukti' => $hutangHeader->nobukti,
-                            'tglbukti' => date('Y-m-d', strtotime($hutangHeader->tglbukti)),
-                            'coa' =>  $memo['JURNAL'],
-                            'keterangan' => $request->keterangan_detail[$i],
-                            'modifiedby' => auth('api')->user()->name,
-                            'baris' => $i,
-                        ]
-                    ];
-                    if ($coa->subgrp == 'DEBET') {
-                        $jurnalDetail[$a]['nominal'] = $request->total_detail[$i];
-                    } else {
-                        $jurnalDetail[$a]['nominal'] = '-' . $request->total_detail[$i];
-                    }
-
-                    $detail = array_merge($detail, $jurnalDetail);
-                    $a++;
-                }
-                $jurnaldetail = array_merge($jurnaldetail, $detail);
+                $jurnalDetail = [
+                    [
+                        'nobukti' => $hutangHeader->nobukti,
+                        'tglbukti' => date('Y-m-d', strtotime($hutangHeader->tglbukti)),
+                        'coa' =>  $memoKredit['JURNAL'],
+                        'nominal' => '-' . $request->total_detail[$i],
+                        'keterangan' => $request->keterangan_detail[$i],
+                        'modifiedby' => auth('api')->user()->name,
+                        'baris' => 0,
+                    ]
+                ];
+                $jurnaldetail = array_merge($jurnaldetail, $jurnalDetail);
             }
-
             $jurnal = $this->storeJurnal($jurnalHeader, $jurnaldetail);
 
             if (!$jurnal['status']) {
@@ -263,10 +285,31 @@ class HutangHeaderController extends Controller
         DB::beginTransaction();
 
         try {
+            
+            if ($request->supplier == '' && $request->pelanggan == '') {
+                $query = Error::from(DB::raw("error with (readuncommitted)"))
+                    ->select('keterangan')
+                    ->where('kodeerror', '=', 'WISP')
+                    ->first();
+                return response([
+                    'errors' => "$query->keterangan",
+                    'message' => "$query->keterangan",
+                ], 500);
+            } else if ($request->supplier != '' && $request->pelanggan != '') {
+                $query = Error::from(DB::raw("error with (readuncommitted)"))
+                    ->select('keterangan')
+                    ->where('kodeerror', '=', 'PSP')
+                    ->first();
+                return response([
+                    'errors' => "$query->keterangan",
+                    'message' => "$query->keterangan",
+                ], 500);
+            }
+
             $hutangheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $hutangheader->keterangan = $request->keterangan ?? '';
-            $hutangheader->coa = $request->akunpusat;
-            $hutangheader->pelanggan_id = $request->pelanggan_id;
+            $hutangheader->pelanggan_id = $request->pelanggan_id ?? '';
+            $hutangheader->supplier_id = $request->supplier_id ?? '';
             $hutangheader->total = array_sum($request->total_detail);
             $hutangheader->modifiedby = auth('api')->user()->name;
 
@@ -291,7 +334,6 @@ class HutangHeaderController extends Controller
                     $datadetail = [
                         'hutang_id' => $hutangheader->id,
                         'nobukti' => $hutangheader->nobukti,
-                        'supplier_id' => $request->supplier_id[$i],
                         'tgljatuhtempo' => date('Y-m-d', strtotime($request->tgljatuhtempo[$i])),
                         'total' => $request->total_detail[$i],
                         'cicilan' => '',
@@ -333,9 +375,13 @@ class HutangHeaderController extends Controller
 
             $parameterController = new ParameterController;
             $statusApp = $parameterController->getparameterid('STATUS APPROVAL', 'STATUS APPROVAL', 'NON APPROVAL');
+            $getCoaDebet = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+                ->where('grp', 'JURNAL HUTANG MANUAL')->where('subgrp', 'DEBET')->first();
+            $memo = json_decode($getCoaDebet->memo, true);
 
-            $coahutang = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
-                ->where('grp', 'COA HUTANG MANUAL')->get();
+            $getCoaKredit = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+                ->where('grp', 'JURNAL HUTANG MANUAL')->where('subgrp', 'KREDIT')->first();
+            $memoKredit = json_decode($getCoaKredit->memo, true);
 
             $jurnalHeader = [
                 'tanpaprosesnobukti' => 1,
@@ -351,35 +397,31 @@ class HutangHeaderController extends Controller
             ];
 
             $jurnaldetail = [];
-
+            $total = array_sum($request->total_detail);
+            $jurnaldetail[] =  [
+                'nobukti' => $hutangheader->nobukti,
+                'tglbukti' => date('Y-m-d', strtotime($hutangheader->tglbukti)),
+                'coa' =>  $memo['JURNAL'],
+                'nominal' => $total,
+                'keterangan' => $hutangheader->keterangan,
+                'modifiedby' => auth('api')->user()->name,
+                'baris' => 0,
+            ];
             for ($i = 0; $i < count($request->total_detail); $i++) {
                 $detail = [];
 
-                foreach ($coahutang as $key => $coa) {
-                    $a = 0;
-                    $getcoa = DB::table('akunpusat')
-                        ->where('id', $coa->text)->first();
-
-                    $jurnalDetail = [
-                        [
-                            'nobukti' => $hutangheader->nobukti,
-                            'tglbukti' => date('Y-m-d', strtotime($hutangheader->tglbukti)),
-                            'coa' =>  $getcoa->coa,
-                            'keterangan' => $request->keterangan_detail[$i],
-                            'modifiedby' => auth('api')->user()->name,
-                            'baris' => $i,
-                        ]
-                    ];
-                    if ($coa->subgrp == 'DEBET') {
-                        $jurnalDetail[$a]['nominal'] = $request->total_detail[$i];
-                    } else {
-                        $jurnalDetail[$a]['nominal'] = '-' . $request->total_detail[$i];
-                    }
-
-                    $detail = array_merge($detail, $jurnalDetail);
-                    $a++;
-                }
-                $jurnaldetail = array_merge($jurnaldetail, $detail);
+                $jurnalDetail = [
+                    [
+                        'nobukti' => $hutangheader->nobukti,
+                        'tglbukti' => date('Y-m-d', strtotime($hutangheader->tglbukti)),
+                        'coa' =>  $memoKredit['JURNAL'],
+                        'nominal' => '-' . $request->total_detail[$i],
+                        'keterangan' => $request->keterangan_detail[$i],
+                        'modifiedby' => auth('api')->user()->name,
+                        'baris' => 0,
+                    ]
+                ];
+                $jurnaldetail = array_merge($jurnaldetail, $jurnalDetail);
             }
 
             $jurnal = $this->storeJurnal($jurnalHeader, $jurnaldetail);

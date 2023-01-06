@@ -66,7 +66,7 @@ class HutangDetailController extends Controller
                     'detail.keterangan'
                 )->leftJoin(DB::raw("hutangheader as header with (readuncommitted)"),'header.id','detail.hutang_id')
                 ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'header.pelanggan_id', 'pelanggan.id')
-                ->leftJoin(DB::raw("supplier with (readuncommitted)"), 'detail.supplier_id', 'supplier.id');
+                ->leftJoin(DB::raw("supplier with (readuncommitted)"), 'header.supplier_id', 'supplier.id');
 
                 $hutangDetail = $query->get();
             } else {
@@ -75,11 +75,7 @@ class HutangDetailController extends Controller
                     'detail.tgljatuhtempo',
                     'detail.total',
                     'detail.keterangan',
-
-                    'supplier.namasupplier as supplier_id',
-
-                )
-                ->leftJoin(DB::raw("supplier with (readuncommitted)"), 'detail.supplier_id', 'supplier.id');
+                );
 
                 $hutangDetail = $query->get();
             }
@@ -102,7 +98,6 @@ class HutangDetailController extends Controller
             $hutangdetail = new HutangDetail();
             $hutangdetail->hutang_id = $request->hutang_id;
             $hutangdetail->nobukti = $request->nobukti;
-            $hutangdetail->supplier_id = $request->supplier_id;
             $hutangdetail->tgljatuhtempo = date('Y-m-d', strtotime($request->tgljatuhtempo));
             $hutangdetail->total = $request->total;
             $hutangdetail->cicilan = $request->cicilan;

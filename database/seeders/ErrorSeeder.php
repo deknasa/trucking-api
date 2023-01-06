@@ -36,5 +36,7 @@ class ErrorSeeder extends Seeder
         error::create(['kodeerror' => 'SDC', 'keterangan' => 'SUDAH CETAK', 'modifiedby' => 'ADMIN',]);
         error::create(['kodeerror' => 'WP', 'keterangan' => 'WAJIB DI PILIH', 'modifiedby' => 'ADMIN',]);
         error::create(['kodeerror' => 'SMIN', 'keterangan' => 'NILAI STOK MINUS', 'modifiedby' => 'ADMIN',]);
+        error::create(['kodeerror' => 'WISP', 'keterangan' => 'WAJIB ISI SUPPLIER ATAU PELANGGAN', 'modifiedby' => 'ADMIN',]);
+        error::create(['kodeerror' => 'PSP', 'keterangan' => 'HANYA BOLEH PILIH SALAH SATU, PELANGGAN ATAU SUPPLIER', 'modifiedby' => 'ADMIN',]);
     }
 }

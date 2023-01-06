@@ -33,14 +33,8 @@ class HutangDetail extends MyModel
             'hutangdetail.cicilan',
             'hutangdetail.totalbayar',            
             'hutangdetail.tgljatuhtempo',
-            
-            'supplier.namasupplier as supplier',
-            'supplier.id as supplier_id',
-            //'supplier.namasupplier as supplier',
-            //'supplier.id as supplier_id',
             'hutangdetail.keterangan',
         )
-            ->leftJoin(DB::raw("supplier with (readuncommitted)"), 'hutangdetail.supplier_id','supplier.id')
             ->where('hutang_id', '=', $id);
             
 
