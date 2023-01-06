@@ -19,7 +19,7 @@ class MenuSeeder extends Seeder
         DB::statement("DBCC CHECKIDENT ('Menu', RESEED, 1);");
 
         Menu::create(['menuname' => 'DASHBOARD', 'menuseq' => '0', 'menuparent' => '0', 'menuicon' => 'FAS FA-HOME', 'aco_id' => '0', 'link' => 'DASHBOARD', 'menuexe' => '', 'menukode' => '0', 'modifiedby' => '',]);
-        Menu::create(['menuname' => 'LOGOUT', 'menuseq' => '9', 'menuparent' => '0', 'menuicon' => 'FAS FA-SIGN-OUT-ALT', 'aco_id' => '0', 'link' => 'LOGOUT', 'menuexe' => '', 'menukode' => '9', 'modifiedby' => '',]);
+        Menu::create(['menuname' => 'LOGOUT', 'menuseq' => '9', 'menuparent' => '0', 'menuicon' => 'FAS FA-SIGN-OUT-ALT', 'aco_id' => '0', 'link' => 'LOGOUT', 'menuexe' => '', 'menukode' => 'Z', 'modifiedby' => '',]);
         Menu::create(['menuname' => 'MASTER', 'menuseq' => '1', 'menuparent' => '0', 'menuicon' => 'FAS FA-USER-TAG', 'aco_id' => '0', 'link' => '', 'menuexe' => '', 'menukode' => '1', 'modifiedby' => '',]);
         Menu::create(['menuname' => 'SYSTEM', 'menuseq' => '11', 'menuparent' => '3', 'menuicon' => 'FAB FA-UBUNTU', 'aco_id' => '0', 'link' => '', 'menuexe' => '', 'menukode' => '11', 'modifiedby' => '',]);
         Menu::create(['menuname' => 'PARAMETER', 'menuseq' => '111', 'menuparent' => '4', 'menuicon' => 'FAS FA-EXCLAMATION', 'aco_id' => '1', 'link' => '', 'menuexe' => '', 'menukode' => '111', 'modifiedby' => 'ADMIN',]);
@@ -81,8 +81,8 @@ class MenuSeeder extends Seeder
         Menu::create(['menuname' => 'JURNAL UMUM', 'menuseq' => '41', 'menuparent' => '60', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '189', 'link' => '', 'menuexe' => '', 'menukode' => '41', 'modifiedby' => 'ADMIN',]);
         Menu::create(['menuname' => 'PENERIMAAN', 'menuseq' => '321', 'menuparent' => '108', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '194', 'link' => '', 'menuexe' => '', 'menukode' => '321', 'modifiedby' => 'ADMIN',]);
         Menu::create(['menuname' => 'HUTANG/PIUTANG', 'menuseq' => '5', 'menuparent' => '0', 'menuicon' => 'FAS FA-MONEY-CHECK', 'aco_id' => '0', 'link' => '', 'menuexe' => '', 'menukode' => '5', 'modifiedby' => 'ADMIN',]);
-        Menu::create(['menuname' => 'PIUTANG', 'menuseq' => '511', 'menuparent' => '112', 'menuicon' => 'FAS FA-MONEY-CHECK', 'aco_id' => '198', 'link' => '', 'menuexe' => '', 'menukode' => '511', 'modifiedby' => 'ADMIN',]);
-        Menu::create(['menuname' => 'PELUNASAN PIUTANG', 'menuseq' => '512', 'menuparent' => '112', 'menuicon' => 'FAS FA-MONEY-CHECK', 'aco_id' => '202', 'link' => '', 'menuexe' => '', 'menukode' => '512', 'modifiedby' => 'ADMIN',]);
+        Menu::create(['menuname' => 'PIUTANG', 'menuseq' => '511', 'menuparent' => '124', 'menuicon' => 'FAS FA-MONEY-CHECK', 'aco_id' => '198', 'link' => '', 'menuexe' => '', 'menukode' => 'A1', 'modifiedby' => 'ADMIN',]);
+        Menu::create(['menuname' => 'PELUNASAN PIUTANG', 'menuseq' => '512', 'menuparent' => '124', 'menuicon' => 'FAS FA-MONEY-CHECK', 'aco_id' => '202', 'link' => '', 'menuexe' => '', 'menukode' => 'A2', 'modifiedby' => 'ADMIN',]);
         Menu::create(['menuname' => 'PENGELUARAN TRUCKING', 'menuseq' => '27', 'menuparent' => '15', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '206', 'link' => '', 'menuexe' => '', 'menukode' => '27', 'modifiedby' => 'ADMIN',]);
         Menu::create(['menuname' => 'SERVICE IN', 'menuseq' => '251', 'menuparent' => '122', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '210', 'link' => '', 'menuexe' => '', 'menukode' => '251', 'modifiedby' => 'ADMIN',]);
         Menu::create(['menuname' => 'SERVICE OUT', 'menuseq' => '252', 'menuparent' => '122', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '214', 'link' => '', 'menuexe' => '', 'menukode' => '252', 'modifiedby' => 'ADMIN',]);
@@ -91,11 +91,11 @@ class MenuSeeder extends Seeder
         Menu::create(['menuname' => 'RINCIAN GAJI SUPIR', 'menuseq' => '231', 'menuparent' => '120', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '226', 'link' => '', 'menuexe' => '', 'menukode' => '231', 'modifiedby' => 'ADMIN',]);
         Menu::create(['menuname' => 'PROSES GAJI SUPIR', 'menuseq' => '232', 'menuparent' => '120', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '230', 'link' => '', 'menuexe' => '', 'menukode' => '232', 'modifiedby' => 'ADMIN',]);
         Menu::create(['menuname' => 'ABSENSI SUPIR APPROVAL', 'menuseq' => '213', 'menuparent' => '119', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '234', 'link' => '', 'menuexe' => '', 'menukode' => '213', 'modifiedby' => 'ADMIN',]);
-        Menu::create(['menuname' => 'HUTANG', 'menuseq' => '521', 'menuparent' => '107', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '238', 'link' => '', 'menuexe' => '', 'menukode' => '521', 'modifiedby' => 'ADMIN',]);
-        Menu::create(['menuname' => 'PEMBAYARAN HUTANG', 'menuseq' => '522', 'menuparent' => '107', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '242', 'link' => '', 'menuexe' => '', 'menukode' => '522', 'modifiedby' => 'ADMIN',]);
+        Menu::create(['menuname' => 'HUTANG', 'menuseq' => '10', 'menuparent' => '123', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '238', 'link' => '', 'menuexe' => '', 'menukode' => '91', 'modifiedby' => 'ADMIN',]);
+        Menu::create(['menuname' => 'PEMBAYARAN HUTANG', 'menuseq' => '522', 'menuparent' => '123', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '242', 'link' => '', 'menuexe' => '', 'menukode' => '92', 'modifiedby' => 'ADMIN',]);
         Menu::create(['menuname' => 'INVOICE', 'menuseq' => '241', 'menuparent' => '121', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '246', 'link' => '', 'menuexe' => '', 'menukode' => '241', 'modifiedby' => 'ADMIN',]);
-        Menu::create(['menuname' => 'NOTA DEBET', 'menuseq' => '531', 'menuparent' => '106', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '250', 'link' => '', 'menuexe' => '', 'menukode' => '531', 'modifiedby' => 'ADMIN',]);
-        Menu::create(['menuname' => 'NOTA KREDIT', 'menuseq' => '532', 'menuparent' => '106', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '254', 'link' => '', 'menuexe' => '', 'menukode' => '532', 'modifiedby' => 'ADMIN',]);
+        Menu::create(['menuname' => 'NOTA DEBET', 'menuseq' => '531', 'menuparent' => '125', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '250', 'link' => '', 'menuexe' => '', 'menukode' => 'B1', 'modifiedby' => 'ADMIN',]);
+        Menu::create(['menuname' => 'NOTA KREDIT', 'menuseq' => '532', 'menuparent' => '125', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '254', 'link' => '', 'menuexe' => '', 'menukode' => 'B2', 'modifiedby' => 'ADMIN',]);
         Menu::create(['menuname' => 'PENERIMAAN TRUCKING', 'menuseq' => '1352', 'menuparent' => '116', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '259', 'link' => '', 'menuexe' => '', 'menukode' => '1352', 'modifiedby' => 'ADMIN',]);
         Menu::create(['menuname' => 'PENERIMAAN TRUCKING', 'menuseq' => '26', 'menuparent' => '15', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '263', 'link' => '', 'menuexe' => '', 'menukode' => '26', 'modifiedby' => 'ADMIN',]);
         Menu::create(['menuname' => 'STOK', 'menuseq' => '6', 'menuparent' => '0', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '0', 'link' => '', 'menuexe' => '', 'menukode' => '6', 'modifiedby' => 'ADMIN',]);
@@ -140,5 +140,8 @@ class MenuSeeder extends Seeder
         Menu::create(['menuname' => 'GAJI SUPIR', 'menuseq' => '23', 'menuparent' => '15', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '0', 'link' => '', 'menuexe' => '', 'menukode' => '23', 'modifiedby' => 'ADMIN',]);
         Menu::create(['menuname' => 'INVOICE', 'menuseq' => '24', 'menuparent' => '15', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '0', 'link' => '', 'menuexe' => '', 'menukode' => '24', 'modifiedby' => 'ADMIN',]);
         Menu::create(['menuname' => 'SERVICE', 'menuseq' => '25', 'menuparent' => '15', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '0', 'link' => '', 'menuexe' => '', 'menukode' => '25', 'modifiedby' => 'ADMIN',]);
+        Menu::create(['menuname' => 'HUTANG', 'menuseq' => '9', 'menuparent' => '0', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '0', 'link' => '', 'menuexe' => '', 'menukode' => '9', 'modifiedby' => 'ADMIN',]);
+        Menu::create(['menuname' => 'PIUTANG', 'menuseq' => '100', 'menuparent' => '0', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '0', 'link' => '', 'menuexe' => '', 'menukode' => 'A', 'modifiedby' => 'ADMIN',]);
+        Menu::create(['menuname' => 'NOTA', 'menuseq' => '100', 'menuparent' => '0', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '0', 'link' => '', 'menuexe' => '', 'menukode' => 'B', 'modifiedby' => 'ADMIN',]);
     }
 }
