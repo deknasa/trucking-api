@@ -36,6 +36,33 @@ class JurnalUmumHeader extends MyModel
 
         $lennobukti = 3;
 
+        $tempsummary = '##tempsummary' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempsummary, function ($table) {
+            $table->id();
+            $table->string('nobukti', 1000)->default('');
+            $table->double('nominaldebet', 15, 2)->default(0);
+            $table->double('nominalkredit', 15, 2)->default(0);
+        });        
+
+        $querysummary = JurnalUmumHeader::from(
+            DB::raw("jurnalumumheader as a with (readuncommitted)")
+        )
+            ->select(
+                'a.nobukti as nobukti',
+                DB::raw("sum((case when b.nominal<=0 then 0 else b.nominal end)) as nominaldebet"),
+                DB::raw("sum((case when b.nominal>=0 then 0 else abs(b.nominal) end)) as nominalkredit"),                
+            )
+            ->join(DB::raw("jurnalumumdetail as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
+            ->groupBy('a.nobukti');
+
+
+            DB::table($tempsummary)->insertUsing([
+                'nobukti',
+                'nominaldebet',
+                'nominalkredit',
+            ], $querysummary);            
+
+
         $query = DB::table($this->table)->from(
             DB::raw("jurnalumumheader with (readuncommitted)")
         )
@@ -51,8 +78,11 @@ class JurnalUmumHeader extends MyModel
                 'jurnalumumheader.created_at',
                 'jurnalumumheader.updated_at',
                 'statusapproval.memo as statusapproval',
+                'c.nominaldebet as nominaldebet',
+                'c.nominalkredit as nominalkredit',
             )
-            ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'jurnalumumheader.statusapproval', 'statusapproval.id');
+            ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'jurnalumumheader.statusapproval', 'statusapproval.id')
+            ->leftjoin(DB::raw($tempsummary . " as c"), 'jurnalumumheader.nobukti', 'c.nobukti');
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -64,6 +94,7 @@ class JurnalUmumHeader extends MyModel
 
         $data = $query->get();
 
+     
         return $data;
     }
     public function jurnalumumdetail()
