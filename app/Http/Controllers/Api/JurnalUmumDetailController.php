@@ -49,42 +49,104 @@ class JurnalUmumDetailController extends Controller
                 $data = JurnalUmumHeader::find($id);
                 $nobukti = $data['nobukti'];
 
-                $jurnalUmumDetail = DB::table('jurnalumumdetail AS A')
-                    ->select(['A.coa as coadebet', 'b.coa as coakredit', 'A.nominal', 'A.keterangan as keterangandetail', 'header.nobukti', 'header.tglbukti', 'header.keterangan', 'A.jurnalumum_id'])
-                    ->join(
-                        DB::raw("(SELECT baris,coa FROM jurnalumumdetail WHERE nobukti='$nobukti' AND nominal<0) B"),
-                        function ($join) {
-                            $join->on('A.baris', '=', 'B.baris');
-                        }
+                // $jurnalUmumDetail = DB::table('jurnalumumdetail AS A')
+                //     ->select(['A.coa as coadebet', 'b.coa as coakredit', 'A.nominal', 'A.keterangan as keterangandetail', 'header.nobukti', 'header.tglbukti', 'header.keterangan', 'A.jurnalumum_id'])
+                //     ->join(
+                //         DB::raw("(SELECT baris,coa FROM jurnalumumdetail WHERE nobukti='$nobukti' AND nominal<0) B"),
+                //         function ($join) {
+                //             $join->on('A.baris', '=', 'B.baris');
+                //         }
+                //     )
+                //     ->join('jurnalumumheader as header', 'header.id', 'A.jurnalumum_id')
+                //     ->where([
+                //         ['A.nobukti', '=', $nobukti],
+                //         ['A.nominal', '>=', '0']
+                //     ])
+                //     ->get();
+
+                $jurnalUmumDetail=JurnalUmumDetail::from(
+                    DB::raw("jurnalumumdetail as A with (readuncommitted)")
+                )
+                ->select(
+                    'header.nobukti as nobukti',
+                    'header.tglbukti as tglbukti',
+                    'A.coa as coa',
+                    'coa.keterangancoa as keterangancoa',
+                    DB::raw("(case when A.nominal<=0 then 0 else A.nominal end) as nominaldebet"),
+                    DB::raw("(case when A.nominal>=0 then 0 else abs(A.nominal) end) as nominalkredit"),
+                    'A.keterangan as keterangan'
                     )
-                    ->join('jurnalumumheader as header', 'header.id', 'A.jurnalumum_id')
+                ->join(DB::raw("jurnalumumheader as header with (readuncommitted)"), 'header.id', 'A.jurnalumum_id')
+                ->join(DB::raw("akunpusat as coa with (readuncommitted)"), 'coa.coa', 'A.coa')
+
                     ->where([
-                        ['A.nobukti', '=', $nobukti],
-                        ['A.nominal', '>=', '0']
+                        ['A.nobukti', '=', $nobukti]
                     ])
-                    ->get();
+                ->get();
             } else if ($params['forExport']) {
                 $id = $params['jurnalumum_id'];
                 $data = JurnalUmumHeader::find($id);
                 $nobukti = $data['nobukti'];
 
-                $jurnalUmumDetail = DB::table('jurnalumumdetail AS A')
-                    ->select(['A.coa as coadebet', 'b.coa as coakredit', 'A.nominal', 'A.keterangan', 'A.nobukti', 'A.tglbukti'])
-                    ->join(
-                        DB::raw("(SELECT baris,coa FROM jurnalumumdetail WHERE nobukti='$nobukti' AND nominal<0) B"),
-                        function ($join) {
-                            $join->on('A.baris', '=', 'B.baris');
-                        }
+                // $jurnalUmumDetail = DB::table('jurnalumumdetail AS A')
+                //     ->select(['A.coa as coadebet', 'b.coa as coakredit', 'A.nominal', 'A.keterangan', 'A.nobukti', 'A.tglbukti'])
+                //     ->join(
+                //         DB::raw("(SELECT baris,coa FROM jurnalumumdetail WHERE nobukti='$nobukti' AND nominal<0) B"),
+                //         function ($join) {
+                //             $join->on('A.baris', '=', 'B.baris');
+                //         }
+                //     )
+                //     ->where([
+                //         ['A.nobukti', '=', $nobukti],
+                //         ['A.nominal', '>=', '0']
+                //     ])
+                //     ->get();
+
+                $jurnalUmumDetail=JurnalUmumDetail::from(
+                    DB::raw("jurnalumumdetail as A with (readuncommitted)")
+                )
+                ->select(
+                    'header.nobukti as nobukti',
+                    'header.tglbukti as tglbukti',
+                    'A.coa as coa',
+                    'coa.keterangancoa as keterangancoa',
+                    DB::raw("(case when A.nominal<=0 then 0 else A.nominal end) as nominaldebet"),
+                    DB::raw("(case when A.nominal>=0 then 0 else abs(A.nominal) end) as nominalkredit"),
+                    'A.keterangan as keterangan'
                     )
+                ->join(DB::raw("jurnalumumheader as header with (readuncommitted)"), 'header.id', 'A.jurnalumum_id')
+                ->join(DB::raw("akunpusat as coa with (readuncommitted)"), 'coa.coa', 'A.coa')
+
                     ->where([
-                        ['A.nobukti', '=', $nobukti],
-                        ['A.nominal', '>=', '0']
+                        ['A.nobukti', '=', $nobukti]
                     ])
-                    ->get();
+                ->get();                
             } else {
-                // $id = $request->jurnalumum_id;
-                // $data = JurnalUmumHeader::find($id);
-                // $nobukti = $data['nobukti'];
+                $id = $request->jurnalumum_id;
+                $data = JurnalUmumHeader::find($id);
+                $nobukti = $data['nobukti'];
+
+                $jurnalUmumDetail=JurnalUmumDetail::from(
+                    DB::raw("jurnalumumdetail as A with (readuncommitted)")
+                )
+                ->select(
+                    'header.nobukti as nobukti',
+                    'header.tglbukti as tglbukti',
+                    'A.coa as coa',
+                    'coa.keterangancoa as keterangancoa',
+                    DB::raw("(case when A.nominal<=0 then 0 else A.nominal end) as nominaldebet"),
+                    DB::raw("(case when A.nominal>=0 then 0 else abs(A.nominal) end) as nominalkredit"),
+                    'A.keterangan as keterangan'
+                    )
+                ->join(DB::raw("jurnalumumheader as header with (readuncommitted)"), 'header.id', 'A.jurnalumum_id')
+                ->join(DB::raw("akunpusat as coa with (readuncommitted)"), 'coa.coa', 'A.coa')
+
+                    ->where([
+                        ['A.nobukti', '=', $nobukti]
+                    ])
+                ->get();                
+
+               
 
                 // $jurnalUmumDetail = JurnalUmumDetail::from(
                 //         DB::raw("jurnalumumdetail as A with (readuncommitted)")
@@ -101,14 +163,6 @@ class JurnalUmumDetailController extends Controller
                 //         ['A.nominal', '>=', '0']
                 //     ])
                 //     ->get();
-                $query->select(
-                    'detail.nobukti',
-                    'detail.tglbukti',
-                    'detail.coa',
-                    'detail.nominal',
-                    'detail.keterangan',
-                );
-                $jurnalUmumDetail = $query->get();
             }
 
             $idUser = auth('api')->user()->id;

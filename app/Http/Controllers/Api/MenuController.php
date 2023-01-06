@@ -139,11 +139,19 @@ class MenuController extends Controller
                     $menukode = 0;
                     $list = Menu::select('menukode')
                         ->where('menuparent', '=', '0')
-                        ->where(DB::raw('right(menukode,1)'), '<>', '9')
+                        ->where(DB::raw('right(menukode,1)'), '<>', 'Z')
                         ->orderBy('menukode', 'desc')
                         ->first();
-                    // dd('test1');
-                    $menukode = $list->menukode + 1;
+
+                    $arrayangka = array('1', '2', '3', '4', '5', '6', '7', '8', '9');
+                    $kodeakhir =$list->menukode;;
+                    if (in_array($kodeakhir, $arrayangka)) {
+
+                        $menukode = $list->menukode + 1;
+                    } else {
+                        $menukode =  chr((ord($kodeakhir) + 1));
+                    }
+                    // $menukode = $list->menukode + 1;
                     $kodeakhir = substr($list->menukode, -1);
                     $arrayangka = array('1', '2', '3', '4', '5', '6', '7', '8');
                     if (in_array($kodeakhir, $arrayangka)) {
@@ -166,10 +174,9 @@ class MenuController extends Controller
             }
 
             if (strtoupper($request->menuname) == 'LOGOUT') {
-                $menukode = 9;
+                $menukode = 'Z';
             }
             $menu->menukode = $menukode;
-
             TOP:
             if ($menu->save()) {
                 $logTrail = [
