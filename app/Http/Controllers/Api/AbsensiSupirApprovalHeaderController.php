@@ -66,25 +66,32 @@ class AbsensiSupirApprovalHeaderController extends Controller
             $content['table'] = 'absensisupirapprovalheader';
             $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
 
-            $group = 'COA APPROVAL ABSENSI SUPIR KREDIT';
-            $subgroup = 'COA APPROVAL ABSENSI SUPIR KREDIT';
-            $coaaproval = DB::table('parameter')
+            $group = 'JURNAL APPROVAL ABSENSI SUPIR';
+            $subgroup = 'KREDIT';
+            $coaaproval = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
                 ->where('grp', $group)
                 ->where('subgrp', $subgroup)
                 ->first();
 
-            $group = 'COA APPROVAL ABSENSI SUPIR DEBET';
-            $subgroup = 'COA APPROVAL ABSENSI SUPIR DEBET';
-            $coadebet = DB::table('parameter')
+            $memokredit = json_decode($coaaproval->memo, true);
+
+
+            $group = 'JURNAL APPROVAL ABSENSI SUPIR';
+            $subgroup = 'DEBET';
+            $coadebet = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
                 ->where('grp', $group)
                 ->where('subgrp', $subgroup)
                 ->first();
 
-                
-            $coakaskeluar = $coaaproval->text;
+            $memodebet = json_decode($coadebet->memo, true);
+
+
+
+
+            $coakaskeluar = $memokredit['JURNAL'];
             $absensiSupirApprovalHeader = new AbsensiSupirApprovalHeader();
             $absensisupir = DB::table('absensisupirheader')->where('nobukti', $request->absensisupir)->first();
-            $statusCetak = Parameter::where('grp','STATUSCETAK')->where('text','BELUM CETAK')->first();
+            $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
 
             /* Store header */
             $absensiSupirApprovalHeader->tglbukti =  date('Y-m-d', strtotime($request->tglbukti));
@@ -116,7 +123,7 @@ class AbsensiSupirApprovalHeaderController extends Controller
                     $details['nominal'][] = $detail->nominal;
                     $total += $detail->nominal;
                 }
-                                               
+
 
                 $dataKasgantung = [
                     "tglbukti" => $kasgantung->tglbukti,
@@ -129,7 +136,7 @@ class AbsensiSupirApprovalHeaderController extends Controller
                     'keterangan_detail' => $details['keterangan'],
                     'nominal' => $details['nominal'],
                 ];
-                
+
                 $data = new StoreKasGantungHeaderRequest($dataKasgantung);
                 $kasgantungStore = app(KasGantungHeaderController::class)->update($data, $kasgantung);
                 $kasgantung = $kasgantungStore->original['data'];
@@ -217,7 +224,7 @@ class AbsensiSupirApprovalHeaderController extends Controller
                         [
                             'nobukti' => $absensiSupirApprovalHeader->nobukti,
                             'tglbukti' => date('Y-m-d', strtotime($absensiSupirApprovalHeader->tglbukti)),
-                            'coa' =>  $coadebet->text,
+                            'coa' =>  $memodebet['JURNAL'],
                             'nominal' => $total,
                             'keterangan' => $request->keterangan,
                             'modifiedby' => auth('api')->user()->name,
@@ -267,7 +274,7 @@ class AbsensiSupirApprovalHeaderController extends Controller
     /**
      * @ClassName 
      */
-    public function show(AbsensiSupirApprovalHeader $absensiSupirApprovalHeader,$id)
+    public function show(AbsensiSupirApprovalHeader $absensiSupirApprovalHeader, $id)
     {
         $data = $absensiSupirApprovalHeader->find($id);
         // $detail = NotaDebetHeaderDetail::findAll($id);
@@ -294,21 +301,24 @@ class AbsensiSupirApprovalHeaderController extends Controller
                 ->where('subgrp', $subgroup)
                 ->first();
 
-            $group = 'COA APPROVAL ABSENSI SUPIR KREDIT';
-            $subgroup = 'COA APPROVAL ABSENSI SUPIR KREDIT';
+            $group = 'JURNAL APPROVAL ABSENSI SUPIR';
+            $subgroup = 'KREDIT';
             $coaaproval = DB::table('parameter')
                 ->where('grp', $group)
                 ->where('subgrp', $subgroup)
                 ->first();
 
-            $group = 'COA APPROVAL ABSENSI SUPIR DEBET';
-            $subgroup = 'COA APPROVAL ABSENSI SUPIR DEBET';
+            $memokredit = json_decode($coaaproval->memo, true);
+
+            $group = 'JURNAL APPROVAL ABSENSI SUPIR';
+            $subgroup = 'DEBET';
             $coadebet = DB::table('parameter')
                 ->where('grp', $group)
                 ->where('subgrp', $subgroup)
                 ->first();
 
-            $coakaskeluar = $coaaproval->text;
+
+            $coakaskeluar = $memokredit['JURNAL'];
 
             /* Store header */
             $absensiSupirApprovalHeader = AbsensiSupirApprovalHeader::lockForUpdate()->findOrFail($id);
@@ -595,7 +605,7 @@ class AbsensiSupirApprovalHeaderController extends Controller
 
     public function cekvalidasi($id)
     {
-        
+
         $absensisupirapproval = AbsensiSupirApprovalHeader::find($id);
         $statusdatacetak = $absensisupirapproval->statuscetak;
         $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();

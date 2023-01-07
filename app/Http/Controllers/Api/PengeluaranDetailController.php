@@ -133,9 +133,8 @@ class PengeluaranDetailController extends Controller
                     DB::raw("jurnalumumdetail with (readuncommitted)")
                 )->select('baris')->where('nobukti', $nobukti)->orderByDesc('baris')->first();
 
-                $getCOA = DB::table('parameter')->from(
-                    DB::raw("parameter with (readuncommitted)")
-                )->where("kelompok", "COA INVOICE")->get();
+      
+             
 
                 if (is_null($getBaris)) {
                     $baris = 0;

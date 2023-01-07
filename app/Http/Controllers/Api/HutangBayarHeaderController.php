@@ -223,7 +223,8 @@ class HutangBayarHeaderController extends Controller
             ];
 
             $pengeluaranDetail = [];
-            $coaDebet = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'COA PEMBAYARAN HUTANG DEBET')->first();
+            $coaDebet = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL PEMBAYARAN HUTANG')->where('subgrp', 'DEBET')->first();
+            $memo = json_decode($coaDebet->memo, true);
 
             for ($i = 0; $i < count($request->hutang_id); $i++) {
                 $hutang = HutangHeader::from(DB::raw("hutangheader with (readuncommitted)"))->where('id', $request->hutang_id[$i])->first();
@@ -237,7 +238,7 @@ class HutangBayarHeaderController extends Controller
                     'nowarkat' => '',
                     'tgljatuhtempo' => $hutangDetail->tgljatuhtempo,
                     'nominal' => $request->bayar[$i] - $request->potongan[$i],
-                    'coadebet' => $coaDebet->text,
+                    'coadebet' => $memo['JURNAL'],
                     'coakredit' => $bank->coa,
                     'keterangan' => $request->keterangandetail[$i],
                     'bulanbeban' => '',
@@ -431,7 +432,9 @@ class HutangBayarHeaderController extends Controller
             ];
 
             $pengeluaranDetail = [];
-            $coaDebet = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'COA PEMBAYARAN HUTANG DEBET')->first();
+            $coaDebet = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL PEMBAYARAN HUTANG')->where('subgrp', 'DEBET')->first();
+            $memo = json_decode($coaDebet->memo, true);
+
             for ($i = 0; $i < count($request->hutang_id); $i++) {
                 $hutang = HutangHeader::from(DB::raw("hutangheader with (readuncommitted)"))
                     ->where('id', $request->hutang_id[$i])->first();
@@ -446,7 +449,7 @@ class HutangBayarHeaderController extends Controller
                     'nowarkat' => '',
                     'tgljatuhtempo' => $hutangDetail->tgljatuhtempo,
                     'nominal' => $request->bayar[$i] - $request->potongan[$i],
-                    'coadebet' => $coaDebet->text,
+                    'coadebet' => $memo['JURNAL'],
                     'coakredit' => $bank->coa,
                     'keterangan' => $request->keterangandetail[$i],
                     'bulanbeban' => '',

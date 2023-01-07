@@ -98,7 +98,12 @@ class PiutangDetailController extends Controller
 
                 $getCOA = DB::table('parameter')->from(
                     DB::raw("parameter with (readuncommitted)")
-                )->where("kelompok", "COA INVOICE")->get();
+                )->where("kelompok", "JURNAL INVOICE")->get();
+
+                $coaKasKeluar = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('memo')->where('grp', 'JURNAL KAS GANTUNG')->where('subgrp', 'DEBET')->first();
+
+                $memo = json_decode($coaKasKeluar->memo, true);
+
 
                 if (is_null($getBaris)) {
                     $baris = 0;
@@ -107,13 +112,15 @@ class PiutangDetailController extends Controller
                 }
                 $detailLogJurnal = [];
                 for ($x = 0; $x <= 1; $x++) {
+                    $memo = json_decode($getCOA[$x]->memo, true);
                     
                     if ($x == 1) {
                         $jurnaldetail = [
                             'jurnalumum_id' => $request->jurnal_id,
                             'nobukti' => $nobukti,
                             'tglbukti' => $request->tglbukti,
-                            'coa' =>  $getCOA[$x]->text,
+                            // 'coa' =>  $getCOA[$x]->text,
+                            'coa' =>  $memo['JURNAL'],
                             'nominal' => -$piutangdetail->nominal,
                             'keterangan' => $piutangdetail->keterangan,
                             'modifiedby' => auth('api')->user()->name,
@@ -124,7 +131,7 @@ class PiutangDetailController extends Controller
                             'jurnalumum_id' => $request->jurnal_id,
                             'nobukti' => $nobukti,
                             'tglbukti' => $request->tglbukti,
-                            'coa' =>  $getCOA[$x]->text,
+                            'coa' =>  $memo['JURNAL'],
                             'nominal' => $piutangdetail->nominal,
                             'keterangan' => $piutangdetail->keterangan,
                             'modifiedby' => auth('api')->user()->name,

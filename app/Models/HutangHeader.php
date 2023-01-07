@@ -129,7 +129,7 @@ class HutangHeader extends MyModel
             ->select(DB::raw("hutangheader.id,hutangheader.nobukti,sum(hutangbayardetail.nominal) as terbayar, (SELECT (hutangheader.total - coalesce(SUM(hutangbayardetail.nominal),0)) FROM hutangbayardetail WHERE hutangbayardetail.hutang_nobukti= hutangheader.nobukti) AS sisa"))
             ->join(DB::raw("hutangdetail with (readuncommitted)"), 'hutangheader.nobukti', 'hutangdetail.nobukti')
             ->leftJoin(DB::raw("hutangbayardetail with (readuncommitted)"), 'hutangbayardetail.hutang_nobukti', 'hutangheader.nobukti')
-            ->whereRaw("hutangdetail.supplier_id = $id")
+            ->whereRaw("hutangheader.supplier_id = $id")
             ->groupBy('hutangheader.id', 'hutangheader.nobukti', 'hutangheader.total');
         // ->get();
 

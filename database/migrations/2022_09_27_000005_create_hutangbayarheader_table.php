@@ -23,6 +23,7 @@ class CreateHutangbayarheaderTable extends Migration
             $table->longText('keterangan')->default('');            
             $table->unsignedBigInteger('bank_id')->default('0');            
             $table->unsignedBigInteger('supplier_id')->default('0');            
+            $table->unsignedBigInteger('pelanggan_id')->default('0');            
             $table->string('pengeluaran_nobukti', 50)->default('');            
             $table->string('coa',50)->default('');            
             $table->integer('statusapproval')->length(11)->default('0');            
@@ -38,12 +39,14 @@ class CreateHutangbayarheaderTable extends Migration
 
 
             $table->foreign('supplier_id', 'hutangbayarheader_supplier_supplier_id_foreign')->references('id')->on('supplier');    
+            $table->foreign('pelanggan_id', 'hutangbayarheader_pelanggan_pelanggan_id_foreign')->references('id')->on('pelanggan');    
             $table->foreign('bank_id', 'hutangbayarheader_bank_bank_id_foreign')->references('id')->on('bank');    
             $table->foreign('coa', 'hutangbayarheader_akunpusat_coa_foreign')->references('coa')->on('akunpusat');    
             $table->foreign('pengeluaran_nobukti', 'hutangbayarheader_pengeluaranheader_pengeluaran_nobukti_foreign')->references('nobukti')->on('pengeluaranheader');    
 
         });
         DB::statement("ALTER TABLE hutangbayarheader NOCHECK CONSTRAINT hutangbayarheader_supplier_supplier_id_foreign");
+        DB::statement("ALTER TABLE hutangbayarheader NOCHECK CONSTRAINT hutangbayarheader_pelanggan_pelanggan_id_foreign");
         DB::statement("ALTER TABLE hutangbayarheader NOCHECK CONSTRAINT hutangbayarheader_bank_bank_id_foreign");
         DB::statement("ALTER TABLE hutangbayarheader NOCHECK CONSTRAINT hutangbayarheader_akunpusat_coa_foreign");
         DB::statement("ALTER TABLE hutangbayarheader NOCHECK CONSTRAINT hutangbayarheader_pengeluaranheader_pengeluaran_nobukti_foreign");
