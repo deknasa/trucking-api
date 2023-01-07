@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\QueryException;
+
 class ErrorController extends Controller
 {
     /**
@@ -59,10 +60,10 @@ class ErrorController extends Controller
                 DB::commit();
             }
 
-             /* Set position and page */
-             $selected = $this->getPosition($error, $error->getTable());
-             $error->position = $selected->position;
-             $error->page = ceil($error->position / ($request->limit ?? 10));
+            /* Set position and page */
+            $selected = $this->getPosition($error, $error->getTable());
+            $error->position = $selected->position;
+            $error->page = ceil($error->position / ($request->limit ?? 10));
 
             return response([
                 'status' => true,
@@ -111,10 +112,10 @@ class ErrorController extends Controller
                 DB::commit();
             }
 
-           /* Set position and page */
-           $selected = $this->getPosition($error, $error->getTable());
-           $error->position = $selected->position;
-           $error->page = ceil($error->position / ($request->limit ?? 10));
+            /* Set position and page */
+            $selected = $this->getPosition($error, $error->getTable());
+            $error->position = $selected->position;
+            $error->page = ceil($error->position / ($request->limit ?? 10));
 
             return response([
                 'status' => true,
@@ -130,27 +131,27 @@ class ErrorController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Error $error, Request $request)
+    public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
-        try {
-            if ($error->lockForUpdate()->delete()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($error->getTable()),
-                    'postingdari' => 'DELETE ERROR',
-                    'idtrans' => $error->id,
-                    'nobuktitrans' => $error->id,
-                    'aksi' => 'DELETE',
-                    'datajson' => $error->toArray(),
-                    'modifiedby' => $error->modifiedby
-                ];
 
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+        $error = new Error();
+        $error = $error->lockAndDestroy($id);
+        if ($error) {
+            $logTrail = [
+                'namatabel' => strtoupper($error->getTable()),
+                'postingdari' => 'DELETE ERROR',
+                'idtrans' => $error->id,
+                'nobuktitrans' => $error->id,
+                'aksi' => 'DELETE',
+                'datajson' => $error->toArray(),
+                'modifiedby' => $error->modifiedby
+            ];
 
-                DB::commit();
-            }
+            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+            $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
+            DB::commit();
             /* Set position and page */
             $selected = $this->getPosition($error, $error->getTable(), true);
             $error->position = $selected->position;
@@ -162,9 +163,13 @@ class ErrorController extends Controller
                 'message' => 'Berhasil dihapus',
                 'data' => $error
             ]);
-        } catch (\Throwable $th) {
+        } else {
             DB::rollBack();
-            return response($th->getMessage());
+
+            return response([
+                'status' => false,
+                'message' => 'Gagal dihapus'
+            ]);
         }
     }
 

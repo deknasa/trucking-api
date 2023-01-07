@@ -146,41 +146,46 @@ class AlatBayarController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(AlatBayar $alatbayar, Request $request)
+    public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
-        try {
-            $delete = AlatBayar::destroy($alatbayar->id);
-            if ($delete) {
-                $logTrail = [
-                    'namatabel' => strtoupper($alatbayar->getTable()),
-                    'postingdari' => 'DELETE ALATBAYAR',
-                    'idtrans' => $alatbayar->id,
-                    'nobuktitrans' => $alatbayar->id,
-                    'aksi' => 'DELETE',
-                    'datajson' => $alatbayar->toArray(),
-                    'modifiedby' => $alatbayar->modifiedby
-                ];
 
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                app(LogTrailController::class)->store($validatedLogTrail);
+        $alatBayar = new AlatBayar();
+        $alatBayar = $alatBayar->lockAndDestroy($id);
 
-                DB::commit();
+        if ($alatBayar) {
+            $logTrail = [
+                'namatabel' => strtoupper($alatBayar->getTable()),
+                'postingdari' => 'DELETE ALATBAYAR',
+                'idtrans' => $alatBayar->id,
+                'nobuktitrans' => $alatBayar->id,
+                'aksi' => 'DELETE',
+                'datajson' => $alatBayar->toArray(),
+                'modifiedby' => $alatBayar->modifiedby
+            ];
 
-                $selected = $this->getPosition($alatbayar, $alatbayar->getTable(), true);
-                $alatbayar->position = $selected->position;
-                $alatbayar->id = $selected->id;
-                $alatbayar->page = ceil($alatbayar->position / ($request->limit ?? 10));
+            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+            app(LogTrailController::class)->store($validatedLogTrail);
 
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil dihapus',
-                    'data' => $alatbayar
-                ]);
-            }
-        } catch (\Throwable $th) {
+            DB::commit();
+
+            $selected = $this->getPosition($alatBayar, $alatBayar->getTable(), true);
+            $alatBayar->position = $selected->position;
+            $alatBayar->id = $selected->id;
+            $alatBayar->page = ceil($alatBayar->position / ($request->limit ?? 10));
+
+            return response([
+                'status' => true,
+                'message' => 'Berhasil dihapus',
+                'data' => $alatBayar
+            ]);
+        } else {
             DB::rollBack();
-            throw $th;
+
+            return response([
+                'status' => false,
+                'message' => 'Gagal dihapus'
+            ]);
         }
     }
 

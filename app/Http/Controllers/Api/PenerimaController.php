@@ -142,28 +142,27 @@ class PenerimaController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Penerima $penerima, Request $request)
+    public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
-        try {
-            $delete = $penerima->lockForUpdate()->delete();
 
-            if ($delete) {
-                $logTrail = [
-                    'namatabel' => strtoupper($penerima->getTable()),
-                    'postingdari' => 'DELETE PENERIMA',
-                    'idtrans' => $penerima->id,
-                    'nobuktitrans' => $penerima->id,
-                    'aksi' => 'DELETE',
-                    'datajson' => $penerima->toArray(),
-                    'modifiedby' => $penerima->modifiedby
-                ];
+        $penerima = new Penerima();
+        $penerima = $penerima->lockAndDestroy($id);
+        if ($penerima) {
+            $logTrail = [
+                'namatabel' => strtoupper($penerima->getTable()),
+                'postingdari' => 'DELETE PENERIMA',
+                'idtrans' => $penerima->id,
+                'nobuktitrans' => $penerima->id,
+                'aksi' => 'DELETE',
+                'datajson' => $penerima->toArray(),
+                'modifiedby' => $penerima->modifiedby
+            ];
 
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                app(LogTrailController::class)->store($validatedLogTrail);
+            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+            app(LogTrailController::class)->store($validatedLogTrail);
 
-                DB::commit();
-            }
+            DB::commit();
             $selected = $this->getPosition($penerima, $penerima->getTable(), true);
             $penerima->position = $selected->position;
             $penerima->id = $selected->id;
@@ -174,10 +173,13 @@ class PenerimaController extends Controller
                 'message' => 'Berhasil dihapus',
                 'data' => $penerima
             ]);
-        } catch (\Throwable $th) {
+        } else {
             DB::rollBack();
 
-            throw $th;
+            return response([
+                'status' => false,
+                'message' => 'Gagal dihapus'
+            ]);
         }
     }
 

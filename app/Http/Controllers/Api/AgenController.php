@@ -166,47 +166,45 @@ class AgenController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Agen $agen, Request $request)
+    public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
 
-        try {
-            $isDelete = Agen::where('id', $agen->id)->delete();
+        $agen = new Agen();
+        $agen = $agen->lockAndDestroy($id);
+        if ($agen) {
+            $logTrail = [
+                'namatabel' => strtoupper($agen->getTable()),
+                'postingdari' => 'DELETE AGEN',
+                'idtrans' => $agen->id,
+                'nobuktitrans' => $agen->id,
+                'aksi' => 'DELETE',
+                'datajson' => $agen->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ];
 
-            if ($isDelete) {
-                $logTrail = [
-                    'namatabel' => strtoupper($agen->getTable()),
-                    'postingdari' => 'DELETE AGEN',
-                    'idtrans' => $agen->id,
-                    'nobuktitrans' => $agen->id,
-                    'aksi' => 'DELETE',
-                    'datajson' => $agen->toArray(),
-                    'modifiedby' => auth('api')->user()->name
-                ];
+            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+            app(LogTrailController::class)->store($validatedLogTrail);
 
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                app(LogTrailController::class)->store($validatedLogTrail);
+            DB::commit();
 
-                DB::commit();
-    
-                $selected = $this->getPosition($agen, $agen->getTable(), true);
-                $agen->position = $selected->position;
-                $agen->id = $selected->id;
-                $agen->page = ceil($agen->position / ($request->limit ?? 10));
-    
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil dihapus',
-                    'data' => $agen
-                ]);
-            }
+            $selected = $this->getPosition($agen, $agen->getTable(), true);
+            $agen->position = $selected->position;
+            $agen->id = $selected->id;
+            $agen->page = ceil($agen->position / ($request->limit ?? 10));
+
             return response([
-                'message' => 'Gagal dihapus'
-            ], 500);
-        } catch (\Throwable $th) {
+                'status' => true,
+                'message' => 'Berhasil dihapus',
+                'data' => $agen
+            ]);
+        } else {
             DB::rollBack();
 
-            throw $th;
+            return response([
+                'status' => false,
+                'message' => 'Gagal dihapus'
+            ]);
         }
     }
 

@@ -66,9 +66,9 @@ class SuratPengantarController extends Controller
             $content['table'] = 'suratpengantar';
             $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
 
-            $orderanTrucking = OrderanTrucking::where('nobukti',$request->jobtrucking)->first();
+            $orderanTrucking = OrderanTrucking::where('nobukti', $request->jobtrucking)->first();
             $upahsupir = UpahSupir::where('kotadari_id', $request->dari_id)->where('kotasampai_id', $request->sampai_id)->first();
-            
+
             $tarif = Tarif::find($orderanTrucking->tarif_id);
             $trado = Trado::find($request->trado_id);
             $upahsupirRincian = UpahSupirRincian::where('upahsupir_id', $upahsupir->id)->where('container_id', $request->container_id)->where('statuscontainer_id', $request->statuscontainer_id)->first();
@@ -134,7 +134,7 @@ class SuratPengantarController extends Controller
             $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
             $suratpengantar->nobukti = $nobukti;
 
-           
+
             if ($suratpengantar->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($suratpengantar->getTable()),
@@ -147,11 +147,11 @@ class SuratPengantarController extends Controller
                 ];
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-                
-                if($request->nominal[0] != 0){
+
+                if ($request->nominal[0] != 0) {
                     for ($i = 0; $i < count($request->nominal); $i++) {
                         $suratpengantarbiayatambahan = new SuratPengantarBiayaTambahan();
-                            
+
                         $suratpengantarbiayatambahan->suratpengantar_id = $suratpengantar->id;
                         $suratpengantarbiayatambahan->keteranganbiaya = $request->keterangan_detail[$i];
                         $suratpengantarbiayatambahan->nominal = $request->nominal[$i];
@@ -163,24 +163,24 @@ class SuratPengantarController extends Controller
                         $suratpengantar->save();
                     }
                 }
-                    
-                    
-                    
-                    DB::commit();
-                }
-                
-                /* Set position and page */
-                $selected = $this->getPosition($suratpengantar, $suratpengantar->getTable());
-                $suratpengantar->position = $selected->position;
-                $suratpengantar->page = ceil($suratpengantar->position / ($request->limit ?? 10));
 
-            
+
+
+                DB::commit();
+            }
+
+            /* Set position and page */
+            $selected = $this->getPosition($suratpengantar, $suratpengantar->getTable());
+            $suratpengantar->position = $selected->position;
+            $suratpengantar->page = ceil($suratpengantar->position / ($request->limit ?? 10));
+
+
             return response([
                 'status' => true,
                 'message' => 'Berhasil disimpan',
                 'data' => $suratpengantar
             ], 201);
-        }catch (\Throwable $th) {
+        } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
         }
@@ -203,12 +203,12 @@ class SuratPengantarController extends Controller
      */
     public function update(UpdateSuratPengantarRequest $request, SuratPengantar $suratpengantar)
     {
-        
+
         DB::beginTransaction();
         try {
-            $orderanTrucking = OrderanTrucking::where('nobukti',$request->jobtrucking)->first();
+            $orderanTrucking = OrderanTrucking::where('nobukti', $request->jobtrucking)->first();
             $upahsupir = UpahSupir::where('kotadari_id', $request->dari_id)->where('kotasampai_id', $request->sampai_id)->first();
-            
+
             $tarif = Tarif::find($orderanTrucking->tarif_id);
             $trado = Trado::find($request->trado_id);
             $upahsupirRincian = UpahSupirRincian::where('upahsupir_id', $upahsupir->id)->where('container_id', $request->container_id)->where('statuscontainer_id', $request->statuscontainer_id)->first();
@@ -284,12 +284,12 @@ class SuratPengantarController extends Controller
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
 
-                if($request->nominal[0] != 0){
-                    
-                    SuratPengantarBiayaTambahan::where('suratpengantar_id',$suratpengantar->id)->lockForUpdate()->delete();
+                if ($request->nominal[0] != 0) {
+
+                    SuratPengantarBiayaTambahan::where('suratpengantar_id', $suratpengantar->id)->lockForUpdate()->delete();
                     for ($i = 0; $i < count($request->nominal); $i++) {
                         $suratpengantarbiayatambahan = new SuratPengantarBiayaTambahan();
-                            
+
                         $suratpengantarbiayatambahan->suratpengantar_id = $suratpengantar->id;
                         $suratpengantarbiayatambahan->keteranganbiaya = $request->keterangan_detail[$i];
                         $suratpengantarbiayatambahan->nominal = $request->nominal[$i];
@@ -319,7 +319,7 @@ class SuratPengantarController extends Controller
                 ]);
             }
         } catch (\Throwable $th) {
-           
+
             DB::rollBack();
             throw $th;
         }
@@ -328,44 +328,47 @@ class SuratPengantarController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(SuratPengantar $suratpengantar, Request $request)
+    public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
-        try {
-            $del = SuratPengantarBiayaTambahan::where('suratpengantar_id', $suratpengantar->id)->lockForUpdate()->delete();
-            // $delete = SuratPengantar::destroy($suratpengantar->id);
-            $delete = $suratpengantar->lockForUpdate()->delete();
 
-            if ($delete) {
-                $logTrail = [
-                    'namatabel' => strtoupper($suratpengantar->getTable()),
-                    'postingdari' => 'DELETE SURAT PENGANTAR',
-                    'idtrans' => $suratpengantar->id,
-                    'nobuktitrans' => $suratpengantar->nobukti,
-                    'aksi' => 'DELETE',
-                    'datajson' => $suratpengantar->toArray(),
-                    'modifiedby' => $suratpengantar->modifiedby
-                ];
+        $suratPengantar = new SuratPengantar();
+        $suratPengantar = $suratPengantar->lockAndDestroy($id);
+        $del = SuratPengantarBiayaTambahan::where('suratpengantar_id', $id)->delete();
 
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                app(LogTrailController::class)->store($validatedLogTrail);
-            }
 
+        if ($suratPengantar) {
+            $logTrail = [
+                'namatabel' => strtoupper($suratPengantar->getTable()),
+                'postingdari' => 'DELETE SURAT PENGANTAR',
+                'idtrans' => $suratPengantar->id,
+                'nobuktitrans' => $suratPengantar->nobukti,
+                'aksi' => 'DELETE',
+                'datajson' => $suratPengantar->toArray(),
+                'modifiedby' => $suratPengantar->modifiedby
+            ];
+
+            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+            app(LogTrailController::class)->store($validatedLogTrail);
             DB::commit();
 
-            $selected = $this->getPosition($suratpengantar, $suratpengantar->getTable(), true);
-            $suratpengantar->position = $selected->position;
-            $suratpengantar->id = $selected->id;
-            $suratpengantar->page = ceil($suratpengantar->position / ($request->limit ?? 10));
+            $selected = $this->getPosition($suratPengantar, $suratPengantar->getTable(), true);
+            $suratPengantar->position = $selected->position;
+            $suratPengantar->id = $selected->id;
+            $suratPengantar->page = ceil($suratPengantar->position / ($request->limit ?? 10));
 
             return response([
                 'status' => true,
                 'message' => 'Berhasil dihapus',
-                'data' => $suratpengantar
+                'data' => $suratPengantar
             ]);
-        } catch (\Throwable $th) {
+        } else {
             DB::rollBack();
-            return response($th->getMessage());
+
+            return response([
+                'status' => false,
+                'message' => 'Gagal dihapus'
+            ]);
         }
     }
     public function fieldLength()
@@ -382,16 +385,17 @@ class SuratPengantarController extends Controller
         ]);
     }
 
-    public function cekUpahSupir(Request $request) {
+    public function cekUpahSupir(Request $request)
+    {
         $upahSupir =  DB::table('upahsupir')
-                    ->select('upahsupirrincian.nominalsupir', 'upahsupirrincian.nominalkenek', 'upahsupirrincian.nominalkomisi')
-                    ->join('upahsupirrincian', 'upahsupir.id', 'upahsupirrincian.upahsupir_id')
-                    ->where('upahsupir.kotadari_id', $request->dari_id)
-                    ->where('upahsupir.kotasampai_id', $request->sampai_id)
-                    ->where('upahsupirrincian.container_id', $request->container_id)
-                    ->where('upahsupirrincian.statuscontainer_id', $request->statuscontainer_id)
-                    ->first();
-        if($upahSupir != null) {
+            ->select('upahsupirrincian.nominalsupir', 'upahsupirrincian.nominalkenek', 'upahsupirrincian.nominalkomisi')
+            ->join('upahsupirrincian', 'upahsupir.id', 'upahsupirrincian.upahsupir_id')
+            ->where('upahsupir.kotadari_id', $request->dari_id)
+            ->where('upahsupir.kotasampai_id', $request->sampai_id)
+            ->where('upahsupirrincian.container_id', $request->container_id)
+            ->where('upahsupirrincian.statuscontainer_id', $request->statuscontainer_id)
+            ->first();
+        if ($upahSupir != null) {
             $data = [
                 'message' => '',
                 'errors' => 'belum approve',
@@ -399,24 +403,26 @@ class SuratPengantarController extends Controller
             ];
 
             return response($data);
-        }else{
+        } else {
             $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'USBA')
-            ->first();
+                ->first();
             return response([
                 'message' => "$query->keterangan",
             ], 422);
         }
     }
-    
-    public function getTarifOmset($id){
+
+    public function getTarifOmset($id)
+    {
 
         $omset = Tarif::find($id);
         return response([
             "dataTarif" => $omset
         ]);
     }
-    
-    public function getOrderanTrucking($id){
+
+    public function getOrderanTrucking($id)
+    {
 
         $suratPengantar = new SuratPengantar();
         return response([
@@ -437,18 +443,16 @@ class SuratPengantarController extends Controller
 
             // dd($data->toSql());
             ->first();
-        if($data != null) {
+        if ($data != null) {
             return response([
                 'data' => $data
             ]);
-        }else{
+        } else {
             $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'USBA')
-            ->first();
+                ->first();
             return response([
                 'message' => "$query->keterangan",
             ], 422);
         }
-       
     }
-
 }

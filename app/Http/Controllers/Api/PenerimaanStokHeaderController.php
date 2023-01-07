@@ -325,7 +325,7 @@ class PenerimaanStokHeaderController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(PenerimaanStokHeader $penerimaanStokHeader, $id)
+    public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
 
@@ -354,17 +354,18 @@ class PenerimaanStokHeaderController extends Controller
 
 
         $getDetail = PenerimaanStokDetail::where('penerimaanstokheader_id', $id)->get();
-        $delete = $penerimaanStokHeader->lockForUpdate()->where('id',$id)->delete();
+        $penerimaanStok = new PenerimaanStokHeader();
+        $penerimaanStok = $penerimaanStok->lockAndDestroy($id);
 
-        if ($delete) {
+        if ($penerimaanStok) {
             $logTrail = [
-                'namatabel' => strtoupper($penerimaanStokHeader->getTable()),
+                'namatabel' => strtoupper($penerimaanStok->getTable()),
                 'postingdari' => 'DELETE PENERIMAAN STOK',
-                'idtrans' => $penerimaanStokHeader->id,
-                'nobuktitrans' => $penerimaanStokHeader->nobukti,
+                'idtrans' => $penerimaanStok->id,
+                'nobuktitrans' => $penerimaanStok->nobukti,
                 'aksi' => 'DELETE',
-                'datajson' => $penerimaanStokHeader->toArray(),
-                'modifiedby' => $penerimaanStokHeader->modifiedby
+                'datajson' => $penerimaanStok->toArray(),
+                'modifiedby' => $penerimaanStok->modifiedby
             ];
 
             $validatedLogTrail = new StoreLogTrailRequest($logTrail);
@@ -375,7 +376,7 @@ class PenerimaanStokHeaderController extends Controller
                 'namatabel' => 'PENERIMAANSTOKDETAIL',
                 'postingdari' => 'DELETE PENERIMAAN STOK DETAIL',
                 'idtrans' => $storedLogTrail['id'],
-                'nobuktitrans' => $penerimaanStokHeader->nobukti,
+                'nobuktitrans' => $penerimaanStok->nobukti,
                 'aksi' => 'DELETE',
                 'datajson' => $getDetail->toArray(),
                 'modifiedby' => auth('api')->user()->name
@@ -385,15 +386,15 @@ class PenerimaanStokHeaderController extends Controller
             app(LogTrailController::class)->store($validatedLogTrailPenerimaanStokDetail);
             DB::commit();
 
-            $selected = $this->getPosition($penerimaanStokHeader, $penerimaanStokHeader->getTable(), true);
-            $penerimaanStokHeader->position = $selected->position;
-            $penerimaanStokHeader->id = $selected->id;
-            $penerimaanStokHeader->page = ceil($penerimaanStokHeader->position / ($request->limit ?? 10));
+            $selected = $this->getPosition($penerimaanStok, $penerimaanStok->getTable(), true);
+            $penerimaanStok->position = $selected->position;
+            $penerimaanStok->id = $selected->id;
+            $penerimaanStok->page = ceil($penerimaanStok->position / ($request->limit ?? 10));
 
             return response([
                 'status' => true,
                 'message' => 'Berhasil dihapus',
-                'data' => $penerimaanStokHeader
+                'data' => $penerimaanStok
             ]);
         } else {
             DB::rollBack();

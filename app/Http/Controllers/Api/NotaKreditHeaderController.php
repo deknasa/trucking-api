@@ -272,10 +272,12 @@ class NotaKreditHeaderController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(NotaKreditHeader $notaKreditHeader,$id)
+    public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
+
         $getDetail = NotaKreditDetail::where('notakredit_id', $id)->get();
+        
         $notaKreditHeader = new NotaKreditHeader();
         $notaKreditHeader = $notaKreditHeader->lockAndDestroy($id);
 

@@ -392,11 +392,8 @@ class PengeluaranStokHeaderController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(PengeluaranStokHeader $pengeluaranStokHeader, $id)
+    public function destroy(Request $request, $id)
     {
-
-
-
         $pengeluaranStokHeader = PengeluaranStokHeader::where('id', $id)->first();
 
         /*Update  di stok persediaan*/
@@ -430,35 +427,30 @@ class PengeluaranStokHeaderController extends Controller
 
         DB::beginTransaction();
         $getDetail = PengeluaranStokDetail::where('pengeluaranstokheader_id', $id)->get();
-        $delete = $pengeluaranStokHeader->lockForUpdate()->where('id', $id)->delete();
+        $pengeluaranStok = new PengeluaranStokHeader();
+        $pengeluaranStok = $pengeluaranStok->lockAndDestroy($id);
 
 
-        if ($delete) {
+        if ($pengeluaranStok) {
             $logTrail = [
-                'namatabel' => strtoupper($pengeluaranStokHeader->getTable()),
+                'namatabel' => strtoupper($pengeluaranStok->getTable()),
                 'postingdari' => 'DELETE PENGELUARAN STOK',
-                'idtrans' => $pengeluaranStokHeader->id,
-                'nobuktitrans' => $pengeluaranStokHeader->nobukti,
+                'idtrans' => $pengeluaranStok->id,
+                'nobuktitrans' => $pengeluaranStok->nobukti,
                 'aksi' => 'DELETE',
-                'datajson' => $pengeluaranStokHeader->toArray(),
-                'modifiedby' => $pengeluaranStokHeader->modifiedby
+                'datajson' => $pengeluaranStok->toArray(),
+                'modifiedby' => $pengeluaranStok->modifiedby
             ];
 
             $validatedLogTrail = new StoreLogTrailRequest($logTrail);
             $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
-
-
-
-
-
 
             // DELETE PENGELUARAN STOK DETAIL
             $logTrailPengeluaranStokDetail = [
                 'namatabel' => 'PENGELUARANSTOKDETAIL',
                 'postingdari' => 'DELETE PENGELUARAN STOK DETAIL',
                 'idtrans' => $storedLogTrail['id'],
-                'nobuktitrans' => $pengeluaranStokHeader->nobukti,
+                'nobuktitrans' => $pengeluaranStok->nobukti,
                 'aksi' => 'DELETE',
                 'datajson' => $getDetail->toArray(),
                 'modifiedby' => auth('api')->user()->name
@@ -468,15 +460,15 @@ class PengeluaranStokHeaderController extends Controller
             app(LogTrailController::class)->store($validatedLogTrailPengeluaranStokDetail);
             DB::commit();
 
-            $selected = $this->getPosition($pengeluaranStokHeader, $pengeluaranStokHeader->getTable(), true);
-            $pengeluaranStokHeader->position = $selected->position;
-            $pengeluaranStokHeader->id = $selected->id;
-            $pengeluaranStokHeader->page = ceil($pengeluaranStokHeader->position / ($request->limit ?? 10));
+            $selected = $this->getPosition($pengeluaranStok, $pengeluaranStok->getTable(), true);
+            $pengeluaranStok->position = $selected->position;
+            $pengeluaranStok->id = $selected->id;
+            $pengeluaranStok->page = ceil($pengeluaranStok->position / ($request->limit ?? 10));
 
             return response([
                 'status' => true,
                 'message' => 'Berhasil dihapus',
-                'data' => $pengeluaranStokHeader
+                'data' => $pengeluaranStok
             ]);
         } else {
             DB::rollBack();

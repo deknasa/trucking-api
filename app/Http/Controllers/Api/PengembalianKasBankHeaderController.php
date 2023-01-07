@@ -410,23 +410,27 @@ class PengembalianKasBankHeaderController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
 
-        $pengembalianKasBankHeader = PengembalianKasBankHeader::where('id', $id)->first();
-        PengembalianKasBankDetail::where('nobukti',$pengembalianKasBankHeader->nobukti)->lockForUpdate()->delete();
-        PengeluaranDetail::where('nobukti', $pengembalianKasBankHeader->nobukti)->lockForUpdate()->delete();
-        PengeluaranHeader::where('nobukti', $pengembalianKasBankHeader->nobukti)->lockForUpdate()->delete();
-        JurnalUmumDetail::where('nobukti', $pengembalianKasBankHeader->nobukti)->lockForUpdate()->delete();
-        JurnalUmumHeader::where('nobukti', $pengembalianKasBankHeader->nobukti)->lockForUpdate()->delete();
-        
-        $delete = $pengembalianKasBankHeader->lockForUpdate()->delete();
+        $getDetail = PengembalianKasBankDetail::lockForUpdate()->where('pengembaliankasbank_id', $id)->get();
 
-        if ($delete) {
+        $pengembalianKasBankHeader = new PengembalianKasBankHeader;
+        $pengembalianKasBankHeader = $pengembalianKasBankHeader->lockAndDestroy($id);
+
+        $getPengeluaranHeader = PengeluaranHeader::lockForUpdate()->where('nobukti', $pengembalianKasBankHeader->pengeluaran_nobukti)->first();
+        $getPengeluaranDetail = PengeluaranDetail::lockForUpdate()->where('nobukti', $pengembalianKasBankHeader->pengeluaran_nobukti)->get();
+        $getJurnalHeader = JurnalUmumHeader::lockForUpdate()->where('nobukti', $pengembalianKasBankHeader->pengeluaran_nobukti)->first();
+        $getJurnalDetail = JurnalUmumDetail::lockForUpdate()->where('nobukti', $pengembalianKasBankHeader->pengeluaran_nobukti)->get();
+
+        PengeluaranHeader::where('nobukti', $pengembalianKasBankHeader->nobukti)->delete();
+        JurnalUmumHeader::where('nobukti', $pengembalianKasBankHeader->nobukti)->delete();
+
+        if ($pengembalianKasBankHeader) {
             $logTrail = [
                 'namatabel' => strtoupper($pengembalianKasBankHeader->getTable()),
-                'postingdari' => 'DELETE Pengembalian Kas Bank',
+                'postingdari' => 'DELETE PENGEMBALIAN KAS BANK HEADER',
                 'idtrans' => $pengembalianKasBankHeader->id,
                 'nobuktitrans' => $pengembalianKasBankHeader->id,
                 'aksi' => 'DELETE',
@@ -435,7 +439,77 @@ class PengembalianKasBankHeaderController extends Controller
             ];
 
             $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-            app(LogTrailController::class)->store($validatedLogTrail);
+            $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+
+            // DELETE PENGEMBALIAN KAS BANK DETAIL
+            $logTrailPengembalianKasbankDetail = [
+                'namatabel' => 'PENGEMBALIANKASBANKDETAIL',
+                'postingdari' => 'DELETE PENGEMBALIAN KAS BANK DETAIL',
+                'idtrans' => $storedLogTrail['id'],
+                'nobuktitrans' => $pengembalianKasBankHeader->nobukti,
+                'aksi' => 'DELETE',
+                'datajson' => $getDetail->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ];
+
+            $validatedLogTrailPengembalianKasbankDetail = new StoreLogTrailRequest($logTrailPengembalianKasbankDetail);
+            app(LogTrailController::class)->store($validatedLogTrailPengembalianKasbankDetail);
+
+            // DELETE PENGELUARAN HEADER
+            $logTrailPengeluaranHeader = [
+                'namatabel' => 'PENGELUARANHEADER',
+                'postingdari' => 'DELETE PENGELUARAN HEADER DARI PENGEMBALIAN KAS BANK',
+                'idtrans' => $getPengeluaranHeader->id,
+                'nobuktitrans' => $getPengeluaranHeader->nobukti,
+                'aksi' => 'DELETE',
+                'datajson' => $getPengeluaranHeader->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ];
+
+            $validatedLogTrailPengeluaranHeader = new StoreLogTrailRequest($logTrailPengeluaranHeader);
+            $storedLogTrailPengeluaran = app(LogTrailController::class)->store($validatedLogTrailPengeluaranHeader);
+
+            // DELETE PENGELUARAN DETAIL
+            $logTrailPengeluaranDetail = [
+                'namatabel' => 'PENGELUARANDETAIL',
+                'postingdari' => 'DELETE PENGELUARAN DETAIL DARI PENGEMBALIAN KAS BANK',
+                'idtrans' => $storedLogTrailPengeluaran['id'],
+                'nobuktitrans' => $getPengeluaranHeader->nobukti,
+                'aksi' => 'DELETE',
+                'datajson' => $getPengeluaranDetail->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ];
+
+            $validatedLogTrailPengeluaranDetail = new StoreLogTrailRequest($logTrailPengeluaranDetail);
+            app(LogTrailController::class)->store($validatedLogTrailPengeluaranDetail);
+
+            // DELETE JURNAL HEADER
+            $logTrailJurnalHeader = [
+                'namatabel' => 'JURNALUMUMHEADER',
+                'postingdari' => 'DELETE JURNAL UMUM HEADER DARI PENGEMBALIAN KAS BANK',
+                'idtrans' => $getJurnalHeader->id,
+                'nobuktitrans' => $getJurnalHeader->nobukti,
+                'aksi' => 'DELETE',
+                'datajson' => $getJurnalHeader->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ];
+
+            $validatedLogTrailJurnalHeader = new StoreLogTrailRequest($logTrailJurnalHeader);
+            $storedLogTrailJurnal = app(LogTrailController::class)->store($validatedLogTrailJurnalHeader);
+
+            // DELETE JURNAL DETAIL
+            $logTrailJurnalDetail = [
+                'namatabel' => 'JURNALUMUMDETAIL',
+                'postingdari' => 'DELETE JURNAL UMUM DETAIL DARI PENGEMBALIAN KAS BANK',
+                'idtrans' => $storedLogTrailJurnal['id'],
+                'nobuktitrans' => $getJurnalHeader->nobukti,
+                'aksi' => 'DELETE',
+                'datajson' => $getJurnalDetail->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ];
+
+            $validatedLogTrailJurnalDetail = new StoreLogTrailRequest($logTrailJurnalDetail);
+            app(LogTrailController::class)->store($validatedLogTrailJurnalDetail);
 
             DB::commit();
 

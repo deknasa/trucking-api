@@ -188,41 +188,45 @@ class OrderanTruckingController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(OrderanTrucking $orderantrucking, Request $request)
+    public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
-        try {
-            $delete = Orderantrucking::destroy($orderantrucking->id);
 
-            if ($delete) {
-                $logTrail = [
-                    'namatabel' => strtoupper($orderantrucking->getTable()),
-                    'postingdari' => 'DELETE ORDERAN TRUCKING',
-                    'idtrans' => $orderantrucking->id,
-                    'nobuktitrans' => $orderantrucking->id,
-                    'aksi' => 'DELETE',
-                    'datajson' => $orderantrucking->toArray(),
-                    'modifiedby' => $orderantrucking->modifiedby
-                ];
+        $orderanTrucking = new OrderanTrucking();
+        $orderanTrucking = $orderanTrucking->lockAndDestroy($id);
 
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                app(LogTrailController::class)->store($validatedLogTrail);
+        if ($orderanTrucking) {
+            $logTrail = [
+                'namatabel' => strtoupper($orderanTrucking->getTable()),
+                'postingdari' => 'DELETE ORDERAN TRUCKING',
+                'idtrans' => $orderanTrucking->id,
+                'nobuktitrans' => $orderanTrucking->id,
+                'aksi' => 'DELETE',
+                'datajson' => $orderanTrucking->toArray(),
+                'modifiedby' => $orderanTrucking->modifiedby
+            ];
 
-                DB::commit();
-            }
-            $selected = $this->getPosition($orderantrucking, $orderantrucking->getTable(), true);
-            $orderantrucking->position = $selected->position;
-            $orderantrucking->id = $selected->id;
-            $orderantrucking->page = ceil($orderantrucking->position / ($request->limit ?? 10));
+            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+            app(LogTrailController::class)->store($validatedLogTrail);
+
+            DB::commit();
+            $selected = $this->getPosition($orderanTrucking, $orderanTrucking->getTable(), true);
+            $orderanTrucking->position = $selected->position;
+            $orderanTrucking->id = $selected->id;
+            $orderanTrucking->page = ceil($orderanTrucking->position / ($request->limit ?? 10));
 
             return response([
                 'status' => true,
                 'message' => 'Berhasil dihapus',
-                'data' => $orderantrucking
+                'data' => $orderanTrucking
             ]);
-        } catch (\Throwable $th) {
+        } else {
             DB::rollBack();
-            throw $th;
+
+            return response([
+                'status' => false,
+                'message' => 'Gagal dihapus'
+            ]);
         }
     }
 

@@ -147,29 +147,29 @@ class PelangganController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Pelanggan $pelanggan, Request $request)
+    public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
-        try {
-            $delete = $pelanggan->lockForUpdate()->delete();
 
-            if ($delete) {
-                $logTrail = [
-                    'namatabel' => strtoupper($pelanggan->getTable()),
-                    'postingdari' => 'DELETE PARAMETER',
-                    'idtrans' => $pelanggan->id,
-                    'nobuktitrans' => $pelanggan->id,
-                    'aksi' => 'DELETE',
-                    'datajson' => $pelanggan->toArray(),
-                    'modifiedby' => $pelanggan->modifiedby
-                ];
+        $pelanggan = new Pelanggan();
+        $pelanggan = $pelanggan->lockAndDestroy($id);
+        
+        if ($pelanggan) {
+            $logTrail = [
+                'namatabel' => strtoupper($pelanggan->getTable()),
+                'postingdari' => 'DELETE PARAMETER',
+                'idtrans' => $pelanggan->id,
+                'nobuktitrans' => $pelanggan->id,
+                'aksi' => 'DELETE',
+                'datajson' => $pelanggan->toArray(),
+                'modifiedby' => $pelanggan->modifiedby
+            ];
 
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                app(LogTrailController::class)->store($validatedLogTrail);
+            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+            app(LogTrailController::class)->store($validatedLogTrail);
 
 
-                DB::commit();
-            }
+            DB::commit();
             /* Set position and page */
             $selected = $this->getPosition($pelanggan, $pelanggan->getTable(), true);
             $pelanggan->position = $selected->position;
@@ -181,10 +181,13 @@ class PelangganController extends Controller
                 'message' => 'Berhasil dihapus',
                 'data' => $pelanggan
             ]);
-        } catch (\Throwable $th) {
+        } else {
             DB::rollBack();
 
-            throw $th;
+            return response([
+                'status' => false,
+                'message' => 'Gagal dihapus'
+            ]);
         }
     }
 

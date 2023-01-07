@@ -146,43 +146,47 @@ class BankController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Bank $bank, Request $request)
+    public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
-        try {
-            $delete = Bank::destroy($bank->id);
 
-            if ($delete) {
-                $logTrail = [
-                    'namatabel' => strtoupper($bank->getTable()),
-                    'postingdari' => 'DELETE BANK',
-                    'idtrans' => $bank->id,
-                    'nobuktitrans' => $bank->id,
-                    'aksi' => 'DELETE',
-                    'datajson' => $bank->toArray(),
-                    'modifiedby' => $bank->modifiedby
-                ];
+        $bank = new Bank();
+        $bank = $bank->lockAndDestroy($id);
+        
+        if ($bank) {
+            $logTrail = [
+                'namatabel' => strtoupper($bank->getTable()),
+                'postingdari' => 'DELETE BANK',
+                'idtrans' => $bank->id,
+                'nobuktitrans' => $bank->id,
+                'aksi' => 'DELETE',
+                'datajson' => $bank->toArray(),
+                'modifiedby' => $bank->modifiedby
+            ];
 
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                app(LogTrailController::class)->store($validatedLogTrail);
+            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+            app(LogTrailController::class)->store($validatedLogTrail);
 
 
-                DB::commit();
+            DB::commit();
 
-                $selected = $this->getPosition($bank, $bank->getTable(), true);
-                $bank->position = $selected->position;
-                $bank->id = $selected->id;
-                $bank->page = ceil($bank->position / ($request->limit ?? 10));
+            $selected = $this->getPosition($bank, $bank->getTable(), true);
+            $bank->position = $selected->position;
+            $bank->id = $selected->id;
+            $bank->page = ceil($bank->position / ($request->limit ?? 10));
 
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil dihapus',
-                    'data' => $bank
-                ]);
-            }
-        } catch (\Throwable $th) {
+            return response([
+                'status' => true,
+                'message' => 'Berhasil dihapus',
+                'data' => $bank
+            ]);
+        } else {
             DB::rollBack();
-            return response($th->getMessage());
+
+            return response([
+                'status' => false,
+                'message' => 'Gagal dihapus'
+            ]);
         }
     }
 

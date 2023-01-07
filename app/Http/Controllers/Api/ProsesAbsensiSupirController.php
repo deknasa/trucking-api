@@ -437,56 +437,110 @@ class ProsesAbsensiSupirController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy($id, Request $request)
+    public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
 
-        try {
-            $get = ProsesAbsensiSupir::find($id);
-            $delete = PengeluaranDetail::where('nobukti',$get->pengeluaran_nobukti)->lockForUpdate()->delete();
-            $delete = PengeluaranHeader::where('nobukti',$get->pengeluaran_nobukti)->lockForUpdate()->delete();
-            $delete = JurnalUmumDetail::where('nobukti',$get->pengeluaran_nobukti)->lockForUpdate()->delete();
-            $delete = JurnalUmumHeader::where('nobukti',$get->pengeluaran_nobukti)->lockForUpdate()->delete();
-            $delete = ProsesAbsensiSupir::destroy($id);
-            
-            $datalogtrail = [
-                'namatabel' => $get->getTable(),
-                'postingdari' => 'HAPUS PROSES ABSENSI SUPIR',
-                'idtrans' => $id,
-                'nobuktitrans' => $get->nobukti,
-                'aksi' => 'HAPUS',
-                'datajson' => '',
-                'modifiedby' => $get->modifiedby,
+        $prosesAbsensiSupir = new ProsesAbsensiSupir();
+        $prosesAbsensiSupir = $prosesAbsensiSupir->lockAndDestroy($id);
+
+        $getPengeluaranHeader = PengeluaranHeader::lockForUpdate()->where('nobukti', $prosesAbsensiSupir->pengeluaran_nobukti)->first();
+        $getPengeluaranDetail = PengeluaranDetail::lockForUpdate()->where('nobukti', $prosesAbsensiSupir->pengeluaran_nobukti)->get();
+        $getJurnalHeader = JurnalUmumHeader::lockForUpdate()->where('nobukti', $prosesAbsensiSupir->pengeluaran_nobukti)->first();
+        $getJurnalDetail = JurnalUmumDetail::lockForUpdate()->where('nobukti', $prosesAbsensiSupir->pengeluaran_nobukti)->get();
+
+        PengeluaranHeader::where('nobukti', $prosesAbsensiSupir->nobukti)->delete();
+        JurnalUmumHeader::where('nobukti', $prosesAbsensiSupir->nobukti)->delete();
+
+        if ($prosesAbsensiSupir) {
+            $logTrail = [
+                'namatabel' => strtoupper($prosesAbsensiSupir->getTable()),
+                'postingdari' => 'DELETE PROSES ABSENSI SUPIR',
+                'idtrans' => $prosesAbsensiSupir->id,
+                'nobuktitrans' => $prosesAbsensiSupir->id,
+                'aksi' => 'DELETE',
+                'datajson' => $prosesAbsensiSupir->toArray(),
+                'modifiedby' => $prosesAbsensiSupir->modifiedby
             ];
 
-            $data = new StoreLogTrailRequest($datalogtrail);
-            app(LogTrailController::class)->store($data);
+            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+            $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-            if ($delete) {
-                DB::commit();
-                $del = 1;
-                $data = $this->getid($get->id, $request, $del);
-                $get->position = @$data->row;
-                $get->id = @$data->id;
-                if (isset($request->limit)) {
-                    $get->page = ceil($get->position / $request->limit);
-                }
+            // DELETE PENGELUARAN HEADER
+            $logTrailPengeluaranHeader = [
+                'namatabel' => 'PENGELUARANHEADER',
+                'postingdari' => 'DELETE PENGELUARAN HEADER DARI PROSES ABSENSI SUPIR',
+                'idtrans' => $getPengeluaranHeader->id,
+                'nobuktitrans' => $getPengeluaranHeader->nobukti,
+                'aksi' => 'DELETE',
+                'datajson' => $getPengeluaranHeader->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ];
 
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil dihapus',
-                    'data' => $get
-                ]);
-            } else {
-                DB::rollBack();
-                return response([
-                    'status' => false,
-                    'message' => 'Gagal dihapus'
-                ]);
-            }
-        } catch (\Throwable $th) {
+            $validatedLogTrailPengeluaranHeader = new StoreLogTrailRequest($logTrailPengeluaranHeader);
+            $storedLogTrailPengeluaran = app(LogTrailController::class)->store($validatedLogTrailPengeluaranHeader);
+
+            // DELETE PENGELUARAN DETAIL
+            $logTrailPengeluaranDetail = [
+                'namatabel' => 'PENGELUARANDETAIL',
+                'postingdari' => 'DELETE PENGELUARAN DETAIL DARI PROSES ABSENSI SUPIR',
+                'idtrans' => $storedLogTrailPengeluaran['id'],
+                'nobuktitrans' => $getPengeluaranHeader->nobukti,
+                'aksi' => 'DELETE',
+                'datajson' => $getPengeluaranDetail->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ];
+
+            $validatedLogTrailPengeluaranDetail = new StoreLogTrailRequest($logTrailPengeluaranDetail);
+            app(LogTrailController::class)->store($validatedLogTrailPengeluaranDetail);
+
+            // DELETE JURNAL HEADER
+            $logTrailJurnalHeader = [
+                'namatabel' => 'JURNALUMUMHEADER',
+                'postingdari' => 'DELETE JURNAL UMUM HEADER DARI PROSES ABSENSI SUPIR',
+                'idtrans' => $getJurnalHeader->id,
+                'nobuktitrans' => $getJurnalHeader->nobukti,
+                'aksi' => 'DELETE',
+                'datajson' => $getJurnalHeader->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ];
+
+            $validatedLogTrailJurnalHeader = new StoreLogTrailRequest($logTrailJurnalHeader);
+            $storedLogTrailJurnal = app(LogTrailController::class)->store($validatedLogTrailJurnalHeader);
+
+            // DELETE JURNAL DETAIL
+            $logTrailJurnalDetail = [
+                'namatabel' => 'JURNALUMUMDETAIL',
+                'postingdari' => 'DELETE JURNAL UMUM DETAIL DARI PROSES ABSENSI SUPIR',
+                'idtrans' => $storedLogTrailJurnal['id'],
+                'nobuktitrans' => $getJurnalHeader->nobukti,
+                'aksi' => 'DELETE',
+                'datajson' => $getJurnalDetail->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ];
+
+            $validatedLogTrailJurnalDetail = new StoreLogTrailRequest($logTrailJurnalDetail);
+            app(LogTrailController::class)->store($validatedLogTrailJurnalDetail);
+
+            DB::commit();
+
+            $selected = $this->getPosition($prosesAbsensiSupir, $prosesAbsensiSupir->getTable(), true);
+            $prosesAbsensiSupir->position = $selected->position;
+            $prosesAbsensiSupir->id = $selected->id;
+            $prosesAbsensiSupir->page = ceil($prosesAbsensiSupir->position / ($request->limit ?? 10));
+
+            return response([
+                'status' => true,
+                'message' => 'Berhasil dihapus',
+                'data' => $prosesAbsensiSupir
+            ]);
+        } else {
             DB::rollBack();
-            return response($th->getMessage());
+
+            return response([
+                'status' => false,
+                'message' => 'Gagal dihapus'
+            ]);
         }
     }
 
