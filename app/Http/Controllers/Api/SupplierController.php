@@ -163,8 +163,7 @@ class SupplierController extends Controller
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
-
-            } 
+            }
             DB::commit();
 
             /* Set position and page */
@@ -177,7 +176,6 @@ class SupplierController extends Controller
                 'message' => 'Berhasil diubah',
                 'data' => $supplier
             ]);
-
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
@@ -186,27 +184,26 @@ class SupplierController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Supplier $supplier, Request $request)
+    public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
 
-        try {
-            $delete = $supplier->lockForUpdate()->delete();
+        $supplier = new Supplier();
+        $supplier = $supplier->lockAndDestroy($id);
 
-            if ($delete) {
-                $logTrail = [
-                    'namatabel' => strtoupper($supplier->getTable()),
-                    'postingdari' => 'DELETE SUPPLIER',
-                    'idtrans' => $supplier->id,
-                    'nobuktitrans' => $supplier->id,
-                    'aksi' => 'DELETE',
-                    'datajson' => $supplier->toArray(),
-                    'modifiedby' => $supplier->modifiedby
-                ];
+        if ($supplier) {
+            $logTrail = [
+                'namatabel' => strtoupper($supplier->getTable()),
+                'postingdari' => 'DELETE SUPPLIER',
+                'idtrans' => $supplier->id,
+                'nobuktitrans' => $supplier->id,
+                'aksi' => 'DELETE',
+                'datajson' => $supplier->toArray(),
+                'modifiedby' => $supplier->modifiedby
+            ];
 
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                app(LogTrailController::class)->store($validatedLogTrail);
-            }
+            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+            app(LogTrailController::class)->store($validatedLogTrail);
             DB::commit();
 
             /* Set position and page */
@@ -220,10 +217,13 @@ class SupplierController extends Controller
                 'message' => 'Berhasil dihapus',
                 'data' => $supplier
             ]);
-        } catch (\Throwable $th) {
+        } else {
             DB::rollBack();
 
-            throw $th;
+            return response([
+                'status' => false,
+                'message' => 'Gagal dihapus'
+            ]);
         }
     }
 

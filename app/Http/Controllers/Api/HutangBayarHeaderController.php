@@ -534,7 +534,7 @@ class HutangBayarHeaderController extends Controller
 
             // DELETE PENGELUARAN HEADER
             $logTrailPengeluaranHeader = [
-                'namatabel' => 'PENGELUARAN',
+                'namatabel' => 'PENGELUARANHEADER',
                 'postingdari' => 'DELETE PENGELUARAN HEADER DARI HUTANG BAYAR',
                 'idtrans' => $getPengeluaranHeader->id,
                 'nobuktitrans' => $getPengeluaranHeader->nobukti,

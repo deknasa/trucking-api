@@ -153,46 +153,47 @@ class AkunPusatController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(AkunPusat $akunPusat, Request $request)
+    public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
 
-        try {
-            $delete = $akunPusat->lockForUpdate()->delete();
+        $akunPusat = new AkunPusat();
+        $akunPusat = $akunPusat->lockAndDestroy($id);
+        if ($akunPusat) {
+            $logTrail = [
+                'namatabel' => strtoupper($akunPusat->getTable()),
+                'postingdari' => 'DELETE AKUN PUSAT',
+                'idtrans' => $akunPusat->id,
+                'nobuktitrans' => $akunPusat->id,
+                'aksi' => 'DELETE',
+                'datajson' => $akunPusat->toArray(),
+                'modifiedby' => $akunPusat->modifiedby
+            ];
 
-            if ($delete) {
-                $logTrail = [
-                    'namatabel' => strtoupper($akunPusat->getTable()),
-                    'postingdari' => 'DELETE AKUN PUSAT',
-                    'idtrans' => $akunPusat->id,
-                    'nobuktitrans' => $akunPusat->id,
-                    'aksi' => 'DELETE',
-                    'datajson' => $akunPusat->toArray(),
-                    'modifiedby' => $akunPusat->modifiedby
-                ];
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                app(LogTrailController::class)->store($validatedLogTrail);
+            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+            app(LogTrailController::class)->store($validatedLogTrail);
 
 
-                DB::commit();
+            DB::commit();
 
-                /* Set position and page */
-                $selected = $this->getPosition($akunPusat, $akunPusat->getTable(), true);
-                $akunPusat->position = $selected->position;
-                $akunPusat->id = $selected->id;
-                $akunPusat->page = ceil($akunPusat->position / ($request->limit ?? 10));
+            /* Set position and page */
+            $selected = $this->getPosition($akunPusat, $akunPusat->getTable(), true);
+            $akunPusat->position = $selected->position;
+            $akunPusat->id = $selected->id;
+            $akunPusat->page = ceil($akunPusat->position / ($request->limit ?? 10));
 
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil dihapus',
-                    'data' => $akunPusat
-                ]);
-            }
-        } catch (\Throwable $th) {
+            return response([
+                'status' => true,
+                'message' => 'Berhasil dihapus',
+                'data' => $akunPusat
+            ]);
+        } else {
             DB::rollBack();
 
-            throw $th;
+            return response([
+                'status' => false,
+                'message' => 'Gagal dihapus'
+            ]);
         }
     }
 

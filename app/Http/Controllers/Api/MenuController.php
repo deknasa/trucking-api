@@ -307,12 +307,12 @@ class MenuController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Menu $menu, Request $request)
+    public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
 
         $list = Menu::Select('aco_id')
-            ->where('id', '=', $menu->id)
+            ->where('id', '=', $id)
             ->first();
 
 
@@ -327,7 +327,10 @@ class MenuController extends Controller
             Acos::where('class', $list->class)->delete();
         }
 
-        if ($menu->lockForUpdate()->delete()) {
+        $menu = new Menu();
+        $menu = $menu->lockAndDestroy($id);
+
+        if ($menu) {
             $logTrail = [
                 'namatabel' => strtoupper($menu->getTable()),
                 'postingdari' => 'DELETE MENU',
@@ -342,18 +345,25 @@ class MenuController extends Controller
             $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
             DB::commit();
+
+            $selected = $this->getPosition($menu, $menu->getTable(), true);
+            $menu->position = $selected->position;
+            $menu->id = $selected->id;
+            $menu->page = ceil($menu->position / ($request->limit ?? 10));
+    
+            return response([
+                'status' => true,
+                'message' => 'Berhasil dihapus',
+                'data' => $menu
+            ]);
+        } else {
+            DB::rollBack();
+
+            return response([
+                'status' => false,
+                'message' => 'Gagal dihapus'
+            ]);
         }
-
-        $selected = $this->getPosition($menu, $menu->getTable(), true);
-        $menu->position = $selected->position;
-        $menu->id = $selected->id;
-        $menu->page = ceil($menu->position / ($request->limit ?? 10));
-
-        return response([
-            'status' => true,
-            'message' => 'Berhasil dihapus',
-            'data' => $menu
-        ]);
     }
 
     public function export()

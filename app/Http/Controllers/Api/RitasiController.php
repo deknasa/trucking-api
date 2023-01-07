@@ -208,27 +208,27 @@ class RitasiController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Ritasi $ritasi, Request $request)
+    public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
-        try {
 
-            if ($ritasi->lockForUpdate()->delete()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($ritasi->getTable()),
-                    'postingdari' => 'DELETE RITASI',
-                    'idtrans' => $ritasi->id,
-                    'nobuktitrans' => $ritasi->id,
-                    'aksi' => 'DELETE',
-                    'datajson' => $ritasi->toArray(),
-                    'modifiedby' => $ritasi->modifiedby
-                ];
+        $ritasi = new Ritasi();
+        $ritasi = $ritasi->lockAndDestroy($id);
+        if ($ritasi) {
+            $logTrail = [
+                'namatabel' => strtoupper($ritasi->getTable()),
+                'postingdari' => 'DELETE RITASI',
+                'idtrans' => $ritasi->id,
+                'nobuktitrans' => $ritasi->id,
+                'aksi' => 'DELETE',
+                'datajson' => $ritasi->toArray(),
+                'modifiedby' => $ritasi->modifiedby
+            ];
 
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                app(LogTrailController::class)->store($validatedLogTrail);
+            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+            app(LogTrailController::class)->store($validatedLogTrail);
 
-                DB::commit();
-            }
+            DB::commit();
             $selected = $this->getPosition($ritasi, $ritasi->getTable(), true);
             $ritasi->position = $selected->position;
             $ritasi->id = $selected->id;
@@ -239,9 +239,13 @@ class RitasiController extends Controller
                 'message' => 'Berhasil dihapus',
                 'data' => $ritasi
             ]);
-        } catch (\Throwable $th) {
+        } else {
             DB::rollBack();
-            throw $th;
+
+            return response([
+                'status' => false,
+                'message' => 'Gagal dihapus'
+            ]);
         }
     }
 
