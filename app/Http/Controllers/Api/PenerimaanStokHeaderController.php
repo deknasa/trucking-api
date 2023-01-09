@@ -74,9 +74,26 @@ class PenerimaanStokHeaderController extends Controller
 
             $spb = Parameter::where('grp', 'SPB STOK')->where('subgrp', 'SPB STOK')->first();
      
+            $hutang_nobukti="";
             if ($request->penerimaanstok_id == $spb->text) {
                 $gudangkantor = Parameter::where('grp', 'GUDANG KANTOR')->where('subgrp', 'GUDANG KANTOR')->first();
                 $request->gudang_id=$gudangkantor->text;
+
+                // $group = 'PIUTANG BUKTI';
+                // $subgroup = 'PIUTANG BUKTI';
+                // $format = DB::table('parameter')
+                //     ->where('grp', $group)
+                //     ->where('subgrp', $subgroup)
+                //     ->first();
+
+                // $nobuktiPiutang = new Request();
+                // $nobuktiPiutang['group'] = 'PIUTANG BUKTI';
+                // $nobuktiPiutang['subgroup'] = 'PIUTANG BUKTI';
+                // $nobuktiPiutang['table'] = 'piutangheader';
+                // $nobuktiPiutang['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
+
+                // $hutang_nobukti = app(Controller::class)->getRunningNumber($nobuktiPiutang)->original['data'];
+
 
             }            
 
@@ -87,7 +104,7 @@ class PenerimaanStokHeaderController extends Controller
             $penerimaanStokHeader->penerimaanstok_nobukti  = ($request->penerimaanstok_nobukti == null) ? "" : $request->penerimaanstok_nobukti;
             $penerimaanStokHeader->pengeluaranstok_nobukti = ($request->pengeluaranstok_nobukti == null) ? "" : $request->pengeluaranstok_nobukti;
             $penerimaanStokHeader->nobon             = ($request->nobon == null) ? "" : $request->nobon;
-            $penerimaanStokHeader->hutang_nobukti    = ($request->hutang_nobukti == null) ? "" : $request->hutang_nobukti;
+            $penerimaanStokHeader->hutang_nobukti    = ($request->hutang_nobukti == null) ? $hutang_nobukti : $request->hutang_nobukti;
             $penerimaanStokHeader->keterangan        = ($request->keterangan == null) ? "" : $request->keterangan;
             $penerimaanStokHeader->coa               = ($request->coa == null) ? "" : $request->coa;
             $penerimaanStokHeader->statusformat      = ($request->statusformat_id == null) ? "" : $request->statusformat_id;

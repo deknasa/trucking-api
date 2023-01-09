@@ -28,7 +28,6 @@ class CreateHutangbayardetailTable extends Migration
             $table->string('userid', 50)->default('');
             $table->double('potongan', 15,2)->default(0);
             $table->longText('keterangan')->default('');
-            $table->unsignedBigInteger('coa_id')->default(0);
             $table->string('modifiedby', 50)->default('');
             $table->timestamps();
 

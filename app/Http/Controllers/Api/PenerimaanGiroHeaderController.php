@@ -98,9 +98,12 @@ class PenerimaanGiroHeaderController extends Controller
             $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
             $coadebet = Parameter::from(DB::raw("parameter with (readuncommitted)"))
-                ->select('text')->where('grp', 'COA PENERIMAAN GIRO DEBET')->first();
+                ->select('memo')->where('grp', 'JURNAL PENERIMAAN GIRO')->where('subgrp', 'DEBET')->first();
             $coakredit = Parameter::from(DB::raw("parameter with (readuncommitted)"))
-                ->select('text')->where('grp', 'COA PENERIMAAN GIRO KREDIT')->first();
+                ->select('memo')->where('grp', 'JURNAL PENERIMAAN GIRO')->where('subgrp', 'KREDIT')->first();
+
+                $memodebet = json_decode($coadebet->memo, true);                
+                $memokredit = json_decode($coakredit->memo, true);                
 
             $detaillog = [];
             for ($i = 0; $i < count($request->nominal); $i++) {
@@ -111,8 +114,8 @@ class PenerimaanGiroHeaderController extends Controller
                     'nowarkat' => $request->nowarkat[$i],
                     'tgljatuhtempo' => date('Y-m-d', strtotime($request->tgljatuhtempo[$i])),
                     'nominal' => $request->nominal[$i],
-                    'coadebet' => $coadebet->text,
-                    'coakredit' => $coakredit->text,
+                    'coadebet' => $memodebet['JURNAL'],
+                    'coakredit' => $memokredit['JURNAL'],
                     'keterangan' => $request->keterangan_detail[$i],
                     'bank_id' => $request->bank_id[$i],
                     'pelanggan_id' => $penerimaanGiro->pelanggan_id,
@@ -267,9 +270,13 @@ class PenerimaanGiroHeaderController extends Controller
             PenerimaanGiroDetail::where('penerimaangiro_id', $penerimaangiroheader->id)->delete();
 
             $coadebet = Parameter::from(DB::raw("parameter with (readuncommitted)"))
-                ->select('text')->where('grp', 'COA PENERIMAAN GIRO DEBET')->first();
+                ->select('memo')->where('grp', 'JURNAL PENERIMAAN GIRO')->where('subgrp', 'DEBET')->first();
             $coakredit = Parameter::from(DB::raw("parameter with (readuncommitted)"))
-                ->select('text')->where('grp', 'COA PENERIMAAN GIRO KREDIT')->first();
+                ->select('memo')->where('grp', 'JURNAL PENERIMAAN GIRO')->where('subgrp', 'KREDIT')->first();
+
+                $memodebet = json_decode($coadebet->memo, true);                
+                $memokredit = json_decode($coakredit->memo, true);   
+
             $detaillog = [];
             for ($i = 0; $i < count($request->nominal); $i++) {
                 $invoice = '-';
@@ -285,8 +292,8 @@ class PenerimaanGiroHeaderController extends Controller
                     'nowarkat' => $request->nowarkat[$i],
                     'tgljatuhtempo' => date('Y-m-d', strtotime($request->tgljatuhtempo[$i])),
                     'nominal' => $request->nominal[$i],
-                    'coadebet' => $coadebet->text,
-                    'coakredit' => $coakredit->text,
+                    'coadebet' => $memodebet['JURNAL'],
+                    'coakredit' => $memokredit['JURNAL'],
                     'keterangan' => $request->keterangan_detail[$i],
                     'bank_id' => $request->bank_id[$i],
                     'pelanggan_id' => $penerimaangiroheader->pelanggan_id,
