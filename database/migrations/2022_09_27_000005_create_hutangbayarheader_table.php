@@ -26,6 +26,9 @@ class CreateHutangbayarheaderTable extends Migration
             $table->unsignedBigInteger('pelanggan_id')->default('0');            
             $table->string('pengeluaran_nobukti', 50)->default('');            
             $table->string('coa',50)->default('');            
+            $table->unsignedBigInteger('alatbayar_id')->default(0);
+            $table->date('tglcair')->default('1900/1/1');
+            $table->string('nowarkat',100)->default('');            
             $table->integer('statusapproval')->length(11)->default('0');            
             $table->date('tglapproval')->default('1900/1/1');            
             $table->string('userapproval', 50)->default('');
@@ -43,6 +46,8 @@ class CreateHutangbayarheaderTable extends Migration
             $table->foreign('bank_id', 'hutangbayarheader_bank_bank_id_foreign')->references('id')->on('bank');    
             $table->foreign('coa', 'hutangbayarheader_akunpusat_coa_foreign')->references('coa')->on('akunpusat');    
             $table->foreign('pengeluaran_nobukti', 'hutangbayarheader_pengeluaranheader_pengeluaran_nobukti_foreign')->references('nobukti')->on('pengeluaranheader');    
+            $table->foreign('alatbayar_id', 'hutangbayarheader_alatbayar_alatbayar_id_foreign')->references('id')->on('alatbayar');    
+
 
         });
         DB::statement("ALTER TABLE hutangbayarheader NOCHECK CONSTRAINT hutangbayarheader_supplier_supplier_id_foreign");
@@ -50,6 +55,8 @@ class CreateHutangbayarheaderTable extends Migration
         DB::statement("ALTER TABLE hutangbayarheader NOCHECK CONSTRAINT hutangbayarheader_bank_bank_id_foreign");
         DB::statement("ALTER TABLE hutangbayarheader NOCHECK CONSTRAINT hutangbayarheader_akunpusat_coa_foreign");
         DB::statement("ALTER TABLE hutangbayarheader NOCHECK CONSTRAINT hutangbayarheader_pengeluaranheader_pengeluaran_nobukti_foreign");
+        DB::statement("ALTER TABLE hutangbayarheader NOCHECK CONSTRAINT hutangbayarheader_alatbayar_alatbayar_id_foreign");
+
     }
 
     /**

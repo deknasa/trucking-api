@@ -484,12 +484,44 @@ class HutangBayarHeaderController extends Controller
             $memo = json_decode($coaDebet->memo, true);
             $memopembelian = json_decode($coaDebetpembelian->memo, true);
 
+            
             for ($i = 0; $i < count($request->hutang_id); $i++) {
                 $hutang = HutangHeader::from(DB::raw("hutangheader with (readuncommitted)"))
                     ->where('id', $request->hutang_id[$i])->first();
                 $hutangDetail = HutangDetail::from(DB::raw("hutangdetail with (readuncommitted)"))
                     ->where('nobukti', $hutang->nobukti)->first();
                 $detail = [];
+
+                $query = HutangHeader::from(
+                    DB::raw("hutangheader a with (readuncommitted)")
+                )
+                    ->select(
+                        'a.nobukti'
+                    )
+                    ->join(db::Raw("penerimaanstokheader b with (readuncommitted)"), 'a.nobukti', 'b.hutang_nobukti')
+                    ->first();
+
+                if (isset($query)) {
+                    $coa = $memopembelian['JURNAL'];
+                } else {
+                    $coa = $memo['JURNAL'];
+                }
+
+                $langsungcair = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS LANGSUNG CAIR')->where('text', 'TIDAK LANGSUNG CAIR')->first();
+
+                $queryalatbayar = AlatBayar::from(
+                    db::raw("alatbayar a with (readuncommitted)")
+                )
+                    ->select(
+                        'a.coa'
+                    )
+                    ->where('a.id', '=', $request->alatbayar_id[$i])
+                    ->where('a.statuslangsungcair', '=', $langsungcair->id)->first();
+
+                $coakredit = $bank->coa;
+                if (isset($queryalatbayar)) {
+                    $coakredit =  $queryalatbayar->coa;
+                }
 
                 $detail = [
                     'entriluar' => 1,
@@ -498,8 +530,8 @@ class HutangBayarHeaderController extends Controller
                     'nowarkat' => '',
                     'tgljatuhtempo' => $hutangDetail->tgljatuhtempo,
                     'nominal' => $request->bayar[$i] - $request->potongan[$i],
-                    'coadebet' => $memo['JURNAL'],
-                    'coakredit' => $bank->coa,
+                    'coadebet' => $coa,
+                    'coakredit' => $coakredit,
                     'keterangan' => $request->keterangandetail[$i],
                     'bulanbeban' => '',
                     'modifiedby' =>  auth('api')->user()->name

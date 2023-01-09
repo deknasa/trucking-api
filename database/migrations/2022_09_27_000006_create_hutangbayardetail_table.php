@@ -23,8 +23,6 @@ class CreateHutangbayardetailTable extends Migration
             $table->double('nominal', 15,2)->default(0);
             $table->string('hutang_nobukti', 50)->default('');
             $table->integer('cicilan')->length(11)->default(0);
-            $table->unsignedBigInteger('alatbayar_id')->default(0);
-            $table->date('tglcair')->default('1900/1/1');
             $table->string('userid', 50)->default('');
             $table->double('potongan', 15,2)->default(0);
             $table->longText('keterangan')->default('');
@@ -33,12 +31,10 @@ class CreateHutangbayardetailTable extends Migration
 
                        
             $table->foreign('hutangbayar_id', 'hutangbayardetail_hutangbayarheader_hutangbayardetail_foreign')->references('id')->on('hutangbayarheader')->onDelete('cascade');    
-            $table->foreign('alatbayar_id', 'hutangbayardetail_alatbayar_alatbayar_id_foreign')->references('id')->on('alatbayar');    
             $table->foreign('hutang_nobukti', 'hutangbayardetail_hutangheader_hutang_nobukti_foreign')->references('nobukti')->on('hutangheader');    
 
 
         });
-        DB::statement("ALTER TABLE hutangbayardetail NOCHECK CONSTRAINT hutangbayardetail_alatbayar_alatbayar_id_foreign");
         DB::statement("ALTER TABLE hutangbayardetail NOCHECK CONSTRAINT hutangbayardetail_hutangheader_hutang_nobukti_foreign");
     }
 
