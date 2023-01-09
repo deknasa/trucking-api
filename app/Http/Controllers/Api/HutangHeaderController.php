@@ -306,8 +306,13 @@ class HutangHeaderController extends Controller
                 ], 500);
             }
 
+            $getCoaDebet = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+                ->where('grp', 'JURNAL PEMBAYARAN HUTANG')->where('subgrp', 'DEBET')->first();
+            $memo = json_decode($getCoaDebet->memo, true);
+            
             $hutangheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $hutangheader->keterangan = $request->keterangan ?? '';
+            $hutangheader->coa = $memo['JURNAL'];
             $hutangheader->pelanggan_id = $request->pelanggan_id ?? '';
             $hutangheader->supplier_id = $request->supplier_id ?? '';
             $hutangheader->total = array_sum($request->total_detail);

@@ -93,11 +93,11 @@ class HutangHeader extends MyModel
         return $data;
     }
 
-    public function getHutang($id)
+    public function getHutang($id, $field)
     {
         $this->setRequestParameters();
 
-        $temp = $this->createTempHutang($id);
+        $temp = $this->createTempHutang($id, $field);
         $query = DB::table('hutangheader')->from(DB::raw("hutangheader with (readuncommitted)"))
             ->select(DB::raw("hutangheader.id as id,hutangheader.nobukti as nobukti,hutangheader.tglbukti, hutangheader.total," . $temp . ".sisa"))
             ->join(DB::raw("$temp with (readuncommitted)"), 'hutangheader.id', $temp . ".id")
@@ -119,7 +119,7 @@ class HutangHeader extends MyModel
         return $data;
     }
 
-    public function createTempHutang($id)
+    public function createTempHutang($id, $field)
     {
         $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
@@ -127,12 +127,10 @@ class HutangHeader extends MyModel
             DB::raw("hutangheader with (readuncommitted)")
         )
             ->select(DB::raw("hutangheader.id,hutangheader.nobukti,sum(hutangbayardetail.nominal) as terbayar, (SELECT (hutangheader.total - coalesce(SUM(hutangbayardetail.nominal),0)) FROM hutangbayardetail WHERE hutangbayardetail.hutang_nobukti= hutangheader.nobukti) AS sisa"))
-            ->join(DB::raw("hutangdetail with (readuncommitted)"), 'hutangheader.nobukti', 'hutangdetail.nobukti')
             ->leftJoin(DB::raw("hutangbayardetail with (readuncommitted)"), 'hutangbayardetail.hutang_nobukti', 'hutangheader.nobukti')
-            ->whereRaw("hutangheader.supplier_id = $id")
+            ->whereRaw("hutangheader.$field = $id")
             ->groupBy('hutangheader.id', 'hutangheader.nobukti', 'hutangheader.total');
         // ->get();
-
         Schema::create($temp, function ($table) {
             $table->bigInteger('id')->default('0');
             $table->string('nobukti');
