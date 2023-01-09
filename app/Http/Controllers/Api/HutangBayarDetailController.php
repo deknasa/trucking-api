@@ -49,6 +49,7 @@ class HutangBayarDetailController extends Controller
                     'header.coa',
                     'bank.namabank as bank',
                     'supplier.namasupplier as supplier',
+                    'pelanggan.namapelanggan as pelanggan',
                     'detail.nominal',
                     'detail.keterangan',
                     'detail.tglcair',
@@ -60,6 +61,7 @@ class HutangBayarDetailController extends Controller
                     ->leftJoin(DB::raw("hutangbayarheader as header with (readuncommitted)"), 'header.id', 'detail.hutangbayar_id')
                     ->leftJoin(DB::raw("bank with (readuncommitted)"), 'header.bank_id', 'bank.id')
                     ->leftJoin(DB::raw("supplier with (readuncommitted)"), 'header.supplier_id', 'supplier.id')
+                    ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'header.pelanggan_id', 'pelanggan.id')
                     ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'detail.alatbayar_id', 'alatbayar.id');
 
 

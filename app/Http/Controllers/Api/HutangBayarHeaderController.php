@@ -17,6 +17,7 @@ use App\Http\Requests\UpdateHutangBayarHeaderRequest;
 use App\Models\AlatBayar;
 use App\Models\Bank;
 use App\Models\AkunPusat;
+use App\Models\Error;
 use App\Models\Supplier;
 use App\Models\HutangBayarHeader;
 use App\Models\HutangBayarDetail;
@@ -76,13 +77,17 @@ class HutangBayarHeaderController extends Controller
                 ->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
             $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
                 ->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
+            $getCoaDebet = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+                ->where('grp', 'JURNAL PEMBAYARAN HUTANG')->where('subgrp', 'DEBET')->first();
+            $memo = json_decode($getCoaDebet->memo, true);
 
             $hutangbayarheader = new HutangBayarHeader();
             $hutangbayarheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $hutangbayarheader->keterangan = $request->keterangan;
             $hutangbayarheader->bank_id = $request->bank_id;
-            $hutangbayarheader->supplier_id = $request->supplier_id;
-            $hutangbayarheader->coa = $request->coa;
+            $hutangbayarheader->supplier_id = $request->supplier_id ?? '';
+            $hutangbayarheader->pelanggan_id = $request->pelanggan_id ?? '';
+            $hutangbayarheader->coa = $memo['JURNAL'];
             $hutangbayarheader->pengeluaran_nobukti = '';
             $hutangbayarheader->statusapproval = $statusApproval->id ?? $request->statusapproval;
             $hutangbayarheader->userapproval = '';
@@ -121,7 +126,6 @@ class HutangBayarHeaderController extends Controller
                     'alatbayar_id' => $request->alatbayar_id[$i],
                     'tglcair' => $request->tglcair[$i],
                     'userid' => '',
-                    'coa_id' => '',
                     'potongan' => $request->potongan[$i],
                     'keterangan' => $request->keterangandetail[$i],
                     'modifiedby' => $hutangbayarheader->modifiedby,
@@ -296,11 +300,16 @@ class HutangBayarHeaderController extends Controller
         DB::beginTransaction();
 
         try {
+            $getCoaDebet = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+                ->where('grp', 'JURNAL PEMBAYARAN HUTANG')->where('subgrp', 'DEBET')->first();
+            $memo = json_decode($getCoaDebet->memo, true);
+
             $hutangbayarheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $hutangbayarheader->keterangan = $request->keterangan ?? '';
             $hutangbayarheader->bank_id = $request->bank_id;
-            $hutangbayarheader->supplier_id = $request->supplier_id;
-            $hutangbayarheader->coa = $request->coa;
+            $hutangbayarheader->supplier_id = $request->supplier_id ?? '';
+            $hutangbayarheader->pelanggan_id = $request->pelanggan_id ?? '';
+            $hutangbayarheader->coa = $memo['JURNAL'];
             $hutangbayarheader->modifiedby = auth('api')->user()->name;
 
             if ($hutangbayarheader->save()) {
@@ -646,11 +655,11 @@ class HutangBayarHeaderController extends Controller
         ]);
     }
 
-    public function getHutang($id)
+    public function getHutang($id, $field)
     {
         $hutang = new HutangHeader();
         return response([
-            'data' => $hutang->getHutang($id),
+            'data' => $hutang->getHutang($id, $field),
             'id' => $id,
             'attributes' => [
                 'totalRows' => $hutang->totalRows,
@@ -659,11 +668,11 @@ class HutangBayarHeaderController extends Controller
         ]);
     }
 
-    public function getPembayaran($id, $supplierId)
+    public function getPembayaran($id, $fieldId, $field)
     {
         $hutangBayar = new HutangBayarHeader();
         return response([
-            'data' => $hutangBayar->getPembayaran($id, $supplierId),
+            'data' => $hutangBayar->getPembayaran($id, $fieldId, $field),
             'attributes' => [
                 'totalRows' => $hutangBayar->totalRows,
                 'totalPages' => $hutangBayar->totalPages

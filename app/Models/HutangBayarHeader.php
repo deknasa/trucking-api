@@ -49,12 +49,12 @@ class HutangBayarHeader extends MyModel
 
                 'bank.namabank as bank_id',
                 'supplier.namasupplier as supplier_id',
-                'akunpusat.coa as coa',
+                'pelanggan.namapelanggan as pelanggan_id'
 
             )
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'hutangbayarheader.bank_id', 'bank.id')
-            ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'hutangbayarheader.coa', 'akunpusat.coa')
             ->leftJoin(DB::raw("supplier with (readuncommitted)"), 'hutangbayarheader.supplier_id', 'supplier.id')
+            ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'hutangbayarheader.pelanggan_id', 'pelanggan.id')
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'hutangbayarheader.statuscetak', 'statuscetak.id')
             ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'hutangbayarheader.statusapproval', 'statusapproval.id');
 
@@ -83,17 +83,18 @@ class HutangBayarHeader extends MyModel
                 'hutangbayarheader.updated_at',
                 'hutangbayarheader.bank_id',
                 'bank.namabank as bank',
-                'hutangbayarheader.coa',
                 'hutangbayarheader.statuscetak',
                 'hutangbayarheader.supplier_id',
                 'supplier.namasupplier as supplier',
+                'hutangbayarheader.pelanggan_id',
+                'pelanggan.namapelanggan as pelanggan',
                 'hutangbayarheader.pengeluaran_nobukti',
 
 
             )
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'hutangbayarheader.bank_id', 'bank.id')
-            ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'hutangbayarheader.coa', 'akunpusat.coa')
             ->leftJoin(DB::raw("supplier with (readuncommitted)"), 'hutangbayarheader.supplier_id', 'supplier.id')
+            ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'hutangbayarheader.pelanggan_id', 'pelanggan.id')
 
             ->where('hutangbayarheader.id', $id);
 
@@ -143,11 +144,11 @@ class HutangBayarHeader extends MyModel
             ->join(DB::raw("parameter as statusapproval with (readuncommitted)"), 'hutangbayarheader.statusapproval', 'statusapproval.id');
     }
 
-    public function getPembayaran($id, $supplierId)
+    public function getPembayaran($id, $fieldId, $field)
     {
         $this->setRequestParameters();
 
-        $tempHutang = $this->createTempHutang($supplierId);
+        $tempHutang = $this->createTempHutang($fieldId, $field);
         $tempPembayaran = $this->createTempPembayaran($id);
 
 
@@ -169,17 +170,16 @@ class HutangBayarHeader extends MyModel
         return $data;
     }
 
-    public function createTempHutang($supplierId)
+    public function createTempHutang($fieldId, $field)
     {
         $temp = '##tempHutang' . rand(1, 10000);
 
 
         $fetch = DB::table('hutangheader')->from(DB::raw("hutangheader with (readuncommitted)"))
-            ->select(DB::raw("hutangheader.id,hutangheader.nobukti,hutangheader.tglbukti,hutangdetail.supplier_id,hutangheader.total as nominalhutang, (SELECT (hutangheader.total - COALESCE(SUM(hutangbayardetail.nominal),0)) FROM hutangbayardetail WHERE hutangbayardetail.hutang_nobukti= hutangheader.nobukti) AS sisa"))
-            ->leftJoin(DB::raw("hutangdetail with (readuncommitted)"), 'hutangheader.id', 'hutangdetail.hutang_id')
+            ->select(DB::raw("hutangheader.id,hutangheader.nobukti,hutangheader.tglbukti,hutangheader.$field,hutangheader.total as nominalhutang, (SELECT (hutangheader.total - COALESCE(SUM(hutangbayardetail.nominal),0)) FROM hutangbayardetail WHERE hutangbayardetail.hutang_nobukti= hutangheader.nobukti) AS sisa"))
             ->leftJoin(DB::raw("hutangbayardetail with (readuncommitted)"), 'hutangheader.nobukti', 'hutangbayardetail.hutang_nobukti')
-            ->whereRaw("hutangdetail.supplier_id = $supplierId")
-            ->groupBy('hutangheader.id', 'hutangheader.nobukti', 'hutangdetail.supplier_id', 'hutangheader.total', 'hutangheader.tglbukti');
+            ->whereRaw("hutangheader.$field = $fieldId")
+            ->groupBy('hutangheader.id', 'hutangheader.nobukti', 'hutangheader.'.$field , 'hutangheader.total', 'hutangheader.tglbukti');
 
         Schema::create($temp, function ($table) {
             $table->bigInteger('id');

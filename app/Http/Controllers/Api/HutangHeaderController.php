@@ -379,9 +379,17 @@ class HutangHeaderController extends Controller
                 }
             }
 
+<<<<<<< HEAD
             $hutangheader = Hutangheader::lockForUpdate()->findOrFail($hutangheader->id);
+=======
+            $getCoaDebet = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+                ->where('grp', 'JURNAL PEMBAYARAN HUTANG')->where('subgrp', 'DEBET')->first();
+            $memo = json_decode($getCoaDebet->memo, true);
+            
+>>>>>>> 25fe5d72f4833fdc26e597f5d78739aa3348002c
             $hutangheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $hutangheader->keterangan = $request->keterangan ?? '';
+            $hutangheader->coa = $memo['JURNAL'];
             $hutangheader->pelanggan_id = $request->pelanggan_id ?? '';
             $hutangheader->supplier_id = $request->supplier_id ?? '';
             $hutangheader->total = array_sum($request->total_detail);
