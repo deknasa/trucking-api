@@ -234,6 +234,9 @@ class ParameterSeeder extends Seeder
         parameter::create(['grp' => 'JURNAL HUTANG PEMBELIAN STOK', 'subgrp' => 'DEBET', 'kelompok' => '', 'text' => 'DEBET', 'memo' => '{"MEMO":"JURNAL HUTANG PEMBELIAN STOK DEBET","SINGKATAN":"D","WARNA":"#28A745","JURNAL":"01.10.02.01"}', 'type' => '0', 'modifiedby' => 'ADMIN',]);
         parameter::create(['grp' => 'JURNAL HUTANG PEMBELIAN STOK', 'subgrp' => 'KREDIT', 'kelompok' => '', 'text' => 'KREDIT', 'memo' => '{"MEMO":"JURNAL HUTANG PEMBELIAN STOK KREDIT","SINGKATAN":"K","WARNA":"#6C757D","JURNAL":"03.02.02.01"}', 'type' => '0', 'modifiedby' => 'ADMIN',]);
         parameter::create(['grp' => 'JURNAL PEMBAYARAN HUTANG PEMBELIAN STOK', 'subgrp' => 'DEBET', 'kelompok' => '', 'text' => 'DEBET', 'memo' => '{"MEMO":"JURNAL PEMBAYARAN HUTANG PEMBELIAN STOK DEBET","SINGKATAN":"D","WARNA":"#28A745","JURNAL":"03.02.02.01"}', 'type' => '0', 'modifiedby' => 'ADMIN',]);
+        parameter::create(['grp' => 'JURNAL PEMAKAIAN STOK', 'subgrp' => 'DEBET', 'kelompok' => '', 'text' => 'DEBET', 'memo' => '{"MEMO":"JURNAL PEMAKAIAN STOK DEBET","SINGKATAN":"D","WARNA":"#28A745","JURNAL":"07.03.01.03"}', 'type' => '0', 'modifiedby' => 'ADMIN',]);
+        parameter::create(['grp' => 'JURNAL PEMAKAIAN STOK', 'subgrp' => 'KREDIT', 'kelompok' => '', 'text' => 'KREDIT', 'memo' => '{"MEMO":"JURNAL PEMAKAIAN STOK KREDIT","SINGKATAN":"K","WARNA":"#6C757D","JURNAL":"01.10.02.01"}', 'type' => '0', 'modifiedby' => 'ADMIN',]);
+
         
     }
 }

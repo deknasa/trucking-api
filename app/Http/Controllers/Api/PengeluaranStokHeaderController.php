@@ -141,12 +141,16 @@ class PengeluaranStokHeaderController extends Controller
 
                         $datadetailfifo = [
                             "pengeluaranstokheader_id" => $pengeluaranStokHeader->id,
+                            "pengeluaranstok_id" => $request->pengeluaranstok_id,
                             "nobukti" => $pengeluaranStokHeader->nobukti,
                             "stok_id" => $request->detail_stok_id[$i],
                             "gudang_id" => $request->gudang_id,
                             "tglbukti" => $request->tglbukti,
                             "qty" => $request->detail_qty[$i],
                             "modifiedby" => auth('api')->user()->name,
+                            "keterangan" => $request->keterangan ?? '',
+                            "detail_keterangan" => $request->detail_keterangan[$i] ?? '',
+                            "statusformat" => $request->statusformat_id,
                         ];
 
                         $datafifo = new StorePengeluaranStokDetailFifoRequest($datadetailfifo);

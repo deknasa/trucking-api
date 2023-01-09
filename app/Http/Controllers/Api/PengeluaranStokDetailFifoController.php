@@ -16,6 +16,9 @@ use App\Models\Stok;
 
 use App\Http\Requests\StorePengeluaranStokDetailFifoRequest;
 use App\Http\Requests\UpdatePengeluaranStokDetailFifoRequest;
+use App\Http\Requests\StoreJurnalUmumHeaderRequest;
+use App\Http\Requests\StoreJurnalUmumDetailRequest;
+use App\Http\Requests\UpdateJurnalUmumHeaderRequest;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -121,7 +124,7 @@ class PengeluaranStokDetailFifoController extends Controller
 
             $qtyin = $querymsk->qty ?? 0;
 
-            
+
 
             $validator = Validator::make(
                 $request->all(),
@@ -148,14 +151,14 @@ class PengeluaranStokDetailFifoController extends Controller
                 // dd($validator->passes());
 
                 // return $validator->messages();
-    
+
                 return [
                     'error' => true,
                     'errors' => $validator->messages()
                 ];
             }
 
-         
+
 
             $tempkeluar = '##tempkeluar' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
             Schema::create($tempkeluar, function ($table) {
@@ -505,7 +508,31 @@ class PengeluaranStokDetailFifoController extends Controller
 
             $datadetail = json_decode($datalist->get(), true);
             $totalharga = 0;
+            $spk = Parameter::from(
+                db::Raw("parameter with (readuncommitted)")
+            )
+                ->where('grp', 'SPK STOK')->where('subgrp', 'SPK STOK')->first();
 
+            $statusApp = Parameter::from(
+                db::Raw("parameter with (readuncommitted)")
+            )
+                ->where('grp', 'STATUS APPROVAL')->where('subgrp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
+
+
+
+
+            $jurnalHeader = [
+                'tanpaprosesnobukti' => 1,
+                'nobukti' => $request->nobukti,
+                'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
+                'keterangan' => $request->keterangan,
+                'postingdari' => "ENTRY HUTANG",
+                'statusapproval' => $statusApp->id,
+                'userapproval' => "",
+                'tglapproval' => "",
+                'modifiedby' => auth('api')->user()->name,
+                'statusformat' => "0",
+            ];
             foreach ($datadetail as $item) {
 
                 $pengeluaranstokdetailfifo = new PengeluaranStokDetailFifo();
@@ -519,7 +546,44 @@ class PengeluaranStokDetailFifoController extends Controller
                 $pengeluaranstokdetailfifo->penerimaanstok_qty = $item['penerimaan_qty'] ?? 0;
                 $pengeluaranstokdetailfifo->penerimaanstok_harga = $item['penerimaan_harga'] ?? 0;
                 $pengeluaranstokdetailfifo->modifiedby = $request->modifiedby ?? '';
-                $pengeluaranstokdetailfifo->save();
+                $total = $item['penerimaan_qty'] * $item['penerimaan_harga'];
+                if ($pengeluaranstokdetailfifo->save()) {
+                    if ($request->pengeluaranstok_id == $spk->text) {
+                        $getCoaDebet = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+                            ->where('grp', 'JURNAL PEMAKAIAN STOK')->where('subgrp', 'DEBET')->first();
+                        $memo = json_decode($getCoaDebet->memo, true);
+                        $getCoaKredit = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+                            ->where('grp', 'JURNAL PEMAKAIAN STOK')->where('subgrp', 'KREDIT')->first();
+                        $memokredit = json_decode($getCoaKredit->memo, true);
+
+                        $jurnaldetail = [
+                            [
+                                'nobukti' => $request->nobukti,
+                                'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
+                                'coa' =>  $memo['JURNAL'],
+                                'nominal' => $total,
+                                'keterangan' => $request->detail_keterangan,
+                                'modifiedby' => auth('api')->user()->name,
+                                'baris' => 0,
+                            ]
+                        ];
+
+                        $jurnalDetail = [
+                            [
+                                'nobukti' => $request->nobukti,
+                                'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
+                                'coa' =>  $memokredit['JURNAL'],
+                                'nominal' => ($total * -1),
+                                'keterangan' => $request->detail_keterangan,
+                                'modifiedby' => auth('api')->user()->name,
+                                'baris' => 0,
+                            ]
+                        ];
+
+                        $jurnaldetail = array_merge($jurnaldetail, $jurnalDetail);
+                    }
+                }
+
                 $totalharga += ($item['penerimaan_harga'] * $item['penerimaan_qty']);
 
 
@@ -529,6 +593,15 @@ class PengeluaranStokDetailFifoController extends Controller
                 $penerimaanstokdetail->qtykeluar += $item['penerimaan_qty'] ?? 0;
                 $penerimaanstokdetail->save();
             }
+            if ($request->pengeluaranstok_id == $spk->text) {
+                $jurnal = $this->storeJurnal($jurnalHeader, $jurnaldetail);
+                if (!$jurnal['status']) {
+                    throw new \Throwable($jurnal['message']);
+                }
+            }
+
+
+
 
             $pengeluaranstokdetail  = PengeluaranStokDetail::lockForUpdate()->where("stok_id", $item['stok_id'])
                 ->where("nobukti", $request->nobukti)
@@ -595,5 +668,47 @@ class PengeluaranStokDetailFifoController extends Controller
     public function destroy(PengeluaranStokDetailFifo $pengeluaranStokDetailFifo)
     {
         //
+    }
+
+    private function storeJurnal($header, $detail)
+    {
+        DB::beginTransaction();
+
+        try {
+
+            $jurnal = new StoreJurnalUmumHeaderRequest($header);
+            $jurnals = app(JurnalUmumHeaderController::class)->store($jurnal);
+
+            $detailLog = [];
+
+            foreach ($detail as $value) {
+                $value['jurnalumum_id'] = $jurnals->original['data']['id'];
+                $detail = new StoreJurnalUmumDetailRequest($value);
+                $datadetails = app(JurnalUmumDetailController::class)->store($detail);
+
+                $detailLog[] = $datadetails['detail']->toArray();
+            }
+
+            $datalogtrail = [
+                'namatabel' => strtoupper($datadetails['tabel']),
+                'postingdari' => 'ENTRY HUTANG',
+                'idtrans' => $jurnals->original['idlogtrail'],
+                'nobuktitrans' => $header['nobukti'],
+                'aksi' => 'ENTRY',
+                'datajson' => $detailLog,
+                'modifiedby' => auth('api')->user()->name,
+            ];
+
+            $data = new StoreLogTrailRequest($datalogtrail);
+            app(LogTrailController::class)->store($data);
+
+            DB::commit();
+            return [
+                'status' => true,
+            ];
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return response($th->getMessage());
+        }
     }
 }
