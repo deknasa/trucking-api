@@ -224,6 +224,7 @@ class PenerimaanStokHeaderController extends Controller
                         'coadebet' => $memo['JURNAL'],
                         'coakredit' => $memoKredit['JURNAL'],
                     ];
+               
                     $hutang = new StoreHutangHeaderRequest($hutangRequest);
                     app(HutangHeaderController::class)->store($hutang);
                 }

@@ -22,10 +22,11 @@ class CreatealatbayarTable extends Migration
             $table->string('kodealatbayar', 50)->default('');
             $table->string('namaalatbayar', 50)->default('');
             $table->longtext('keterangan')->default('');
-            $table->integer('statuslangsunggcair')->length(11)->default(0);
+            $table->integer('statuslangsungcair')->length(11)->default(0);
             $table->integer('statusdefault')->length(11)->default(0);
             $table->unsignedBigInteger('bank_id')->default(0);
             $table->string('modifiedby', 50)->default('');
+            $table->string('coa', 50)->default('');
             $table->timestamps();
 
             $table->foreign('bank_id', 'alatbayar_bank_bank_id_foreign')->references('id')->on('bank');

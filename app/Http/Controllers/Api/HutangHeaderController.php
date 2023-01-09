@@ -50,7 +50,7 @@ class HutangHeaderController extends Controller
     public function store(StoreHutangHeaderRequest $request)
     {
 
-
+        // dd($request->all());
         DB::beginTransaction();
 
         try {
@@ -379,17 +379,41 @@ class HutangHeaderController extends Controller
                 }
             }
 
-<<<<<<< HEAD
-            $hutangheader = Hutangheader::lockForUpdate()->findOrFail($hutangheader->id);
-=======
             $getCoaDebet = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
-                ->where('grp', 'JURNAL PEMBAYARAN HUTANG')->where('subgrp', 'DEBET')->first();
+                ->where('grp', 'JURNAL HUTANG MANUAL')->where('subgrp', 'DEBET')->first();
             $memo = json_decode($getCoaDebet->memo, true);
-            
->>>>>>> 25fe5d72f4833fdc26e597f5d78739aa3348002c
+
+            if ($proseslain == "") {
+                if ($request->supplier == '' && $request->pelanggan == '') {
+                    $query = Error::from(DB::raw("error with (readuncommitted)"))
+                        ->select('keterangan')
+                        ->where('kodeerror', '=', 'WISP')
+                        ->first();
+                    return response([
+                        'errors' => "$query->keterangan",
+                        'message' => "$query->keterangan",
+                    ], 500);
+                } else if ($request->supplier != '' && $request->pelanggan != '') {
+                    $query = Error::from(DB::raw("error with (readuncommitted)"))
+                        ->select('keterangan')
+                        ->where('kodeerror', '=', 'PSP')
+                        ->first();
+                    return response([
+                        'errors' => "$query->keterangan",
+                        'message' => "$query->keterangan",
+                    ], 500);
+                }
+                $total = array_sum($request->total_detail);
+                $coa = $memo['JURNAL'];
+            } else {
+                $total = $request->total;
+                $coa = $request->coa;
+            }
+
+            $hutangheader = Hutangheader::lockForUpdate()->findOrFail($hutangheader->id);
             $hutangheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $hutangheader->keterangan = $request->keterangan ?? '';
-            $hutangheader->coa = $memo['JURNAL'];
+            $hutangheader->coa =$coa;
             $hutangheader->pelanggan_id = $request->pelanggan_id ?? '';
             $hutangheader->supplier_id = $request->supplier_id ?? '';
             $hutangheader->total = array_sum($request->total_detail);

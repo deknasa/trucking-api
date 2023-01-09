@@ -233,6 +233,7 @@ class ParameterSeeder extends Seeder
         parameter::create(['grp' => 'JURNAL PENGEMBALIAN KAS GANTUNG', 'subgrp' => 'KREDIT', 'kelompok' => '', 'text' => 'KREDIT', 'memo' => '{"MEMO":"JURNAL PENGEMBALIAN KAS GANTUNG","SINGKATAN":"JPKG","WARNA":"#28A745","JURNAL":"01.01.02.00"}', 'type' => '0', 'modifiedby' => '1',]);
         parameter::create(['grp' => 'JURNAL HUTANG PEMBELIAN STOK', 'subgrp' => 'DEBET', 'kelompok' => '', 'text' => 'DEBET', 'memo' => '{"MEMO":"JURNAL HUTANG PEMBELIAN STOK DEBET","SINGKATAN":"D","WARNA":"#28A745","JURNAL":"01.10.02.01"}', 'type' => '0', 'modifiedby' => 'ADMIN',]);
         parameter::create(['grp' => 'JURNAL HUTANG PEMBELIAN STOK', 'subgrp' => 'KREDIT', 'kelompok' => '', 'text' => 'KREDIT', 'memo' => '{"MEMO":"JURNAL HUTANG PEMBELIAN STOK KREDIT","SINGKATAN":"K","WARNA":"#6C757D","JURNAL":"03.02.02.01"}', 'type' => '0', 'modifiedby' => 'ADMIN',]);
+        parameter::create(['grp' => 'JURNAL PEMBAYARAN HUTANG PEMBELIAN STOK', 'subgrp' => 'DEBET', 'kelompok' => '', 'text' => 'DEBET', 'memo' => '{"MEMO":"JURNAL PEMBAYARAN HUTANG PEMBELIAN STOK DEBET","SINGKATAN":"D","WARNA":"#28A745","JURNAL":"03.02.02.01"}', 'type' => '0', 'modifiedby' => 'ADMIN',]);
         
     }
 }
