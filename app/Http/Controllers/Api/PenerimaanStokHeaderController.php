@@ -6,10 +6,17 @@ use App\Http\Controllers\Controller;
 use App\Models\PenerimaanStok;
 use App\Models\PenerimaanStokHeader;
 use App\Models\PenerimaanStokDetail;
+use App\Models\HutangHeader;
+use App\Models\HutangDetail;
+
 
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Http\Requests\StorePenerimaanStokHeaderRequest;
 use App\Http\Requests\UpdatePenerimaanStokHeaderRequest;
+use App\Http\Requests\StoreHutangHeaderRequest;
+use App\Http\Requests\UpdateHutangHeaderRequest;
+use App\Http\Requests\StoreHutangDetailRequest;
+
 use App\Models\Parameter;
 use App\Models\StokPersediaan;
 
@@ -44,12 +51,12 @@ class PenerimaanStokHeaderController extends Controller
      */
     public function store(StorePenerimaanStokHeaderRequest $request)
     {
-
+        $keteranganheader = $request->keterangan ?? '';
         DB::beginTransaction();
 
         try {
             $request->validate([
-                "supplier"=>Rule::requiredIf($request->penerimaanstok_id=='3')
+                "supplier" => Rule::requiredIf($request->penerimaanstok_id == '3')
             ]);
 
             $idpenerimaan = $request->penerimaanstok_id;
@@ -70,32 +77,27 @@ class PenerimaanStokHeaderController extends Controller
             $content['subgroup'] = $fetchGrp->subgrp;
             $content['table'] = 'penerimaanstokheader';
             $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
-            $statusCetak = Parameter::where('grp','STATUSCETAK')->where('text','BELUM CETAK')->first();
+            $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
 
             $spb = Parameter::where('grp', 'SPB STOK')->where('subgrp', 'SPB STOK')->first();
-     
-            $hutang_nobukti="";
+
+            $hutang_nobukti = "";
             if ($request->penerimaanstok_id == $spb->text) {
                 $gudangkantor = Parameter::where('grp', 'GUDANG KANTOR')->where('subgrp', 'GUDANG KANTOR')->first();
-                $request->gudang_id=$gudangkantor->text;
+                $request->gudang_id = $gudangkantor->text;
 
-                // $group = 'PIUTANG BUKTI';
-                // $subgroup = 'PIUTANG BUKTI';
-                // $format = DB::table('parameter')
-                //     ->where('grp', $group)
-                //     ->where('subgrp', $subgroup)
-                //     ->first();
-
-                // $nobuktiPiutang = new Request();
-                // $nobuktiPiutang['group'] = 'PIUTANG BUKTI';
-                // $nobuktiPiutang['subgroup'] = 'PIUTANG BUKTI';
-                // $nobuktiPiutang['table'] = 'piutangheader';
-                // $nobuktiPiutang['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
-
-                // $hutang_nobukti = app(Controller::class)->getRunningNumber($nobuktiPiutang)->original['data'];
+                $group = 'HUTANG BUKTI';
+                $subgroup = 'HUTANG BUKTI';
 
 
-            }            
+                $nobuktiHutang = new Request();
+                $nobuktiHutang['group'] = 'HUTANG BUKTI';
+                $nobuktiHutang['subgroup'] = 'HUTANG BUKTI';
+                $nobuktiHutang['table'] = 'hutangheader';
+                $nobuktiHutang['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
+
+                $hutang_nobukti = app(Controller::class)->getRunningNumber($nobuktiHutang)->original['data'];
+            }
 
             /* Store header */
             $penerimaanStokHeader = new PenerimaanStokHeader();
@@ -118,6 +120,8 @@ class PenerimaanStokHeaderController extends Controller
             $penerimaanStokHeader->statuscetak        = $statusCetak->id;
             $request->sortname                 = $request->sortname ?? 'id';
             $request->sortorder                = $request->sortorder ?? 'asc';
+
+
             TOP:
             $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
             $penerimaanStokHeader->nobukti = $nobukti;
@@ -175,6 +179,56 @@ class PenerimaanStokHeaderController extends Controller
                 $data = new StoreLogTrailRequest($datalogtrail);
                 app(LogTrailController::class)->store($data);
 
+                if ($request->penerimaanstok_id == $spb->text) {
+                    $group = 'HUTANG BUKTI';
+                    $subgroup = 'HUTANG BUKTI';
+
+                    $format = DB::table('parameter')->from(
+                        db::Raw("parameter with (readuncommitted)")
+                    )
+                        ->where('grp', $group)
+                        ->where('subgrp', $subgroup)
+                        ->first();
+                    $totalharga = 0;
+                    $detaildata = [];
+                    for ($i = 0; $i < count($request->detail_harga); $i++) {
+                        $totalsat = ($request->detail_qty[$i] * $request->detail_harga[$i]);
+                        $totalharga += $totalsat;
+                        $detaildata[] = ($request->detail_qty[$i] * $request->detail_harga[$i]);
+                    }
+
+                    $getCoaDebet = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+                        ->where('grp', 'JURNAL HUTANG PEMBELIAN STOK')->where('subgrp', 'DEBET')->first();
+                    $memo = json_decode($getCoaDebet->memo, true);
+
+
+
+                    $getCoaKredit = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+                        ->where('grp', 'JURNAL HUTANG PEMBELIAN STOK')->where('subgrp', 'KREDIT')->first();
+                    $memoKredit = json_decode($getCoaKredit->memo, true);
+
+                    $hutangRequest = [
+                        'proseslain' => 'PEMBELIAN STOK',
+                        'nobukti' => $hutang_nobukti,
+                        'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
+                        'keterangan' => $keteranganheader,
+                        'coa' => $memo['JURNAL'],
+                        'pelanggan_id' =>  0,
+                        'supplier_id' => ($request->supplier_id == null) ? "" : $request->supplier_id,
+                        'postingdari' => 'PENERIMAAN STOK PEMBELIAN',
+                        'modifiedby' => auth('api')->user()->name,
+                        'total' => $totalharga,
+                        'tgljatuhtempo' => $request->tglbukti,
+                        'total_detail' => $detaildata,
+                        'keterangan_detail' => $request->detail_keterangan,
+                        'coadebet' => $memo['JURNAL'],
+                        'coakredit' => $memoKredit['JURNAL'],
+                    ];
+                    $hutang = new StoreHutangHeaderRequest($hutangRequest);
+                    app(HutangHeaderController::class)->store($hutang);
+                }
+
+
                 DB::commit();
             }
 
@@ -214,7 +268,7 @@ class PenerimaanStokHeaderController extends Controller
     {
         try {
             $request->validate([
-                "supplier"=>Rule::requiredIf($request->penerimaanstok_id=='3')
+                "supplier" => Rule::requiredIf($request->penerimaanstok_id == '3')
             ]);
             /* Store header */
             $penerimaanStokHeader = PenerimaanStokHeader::lockForUpdate()->findOrFail($id);
@@ -316,6 +370,67 @@ class PenerimaanStokHeaderController extends Controller
                 $data = new StoreLogTrailRequest($datalogtrail);
                 app(LogTrailController::class)->store($data);
 
+                $spb = Parameter::from(
+                    db::Raw("parameter with (readuncommitted)")
+                )
+                    ->where('grp', 'SPB STOK')->where('subgrp', 'SPB STOK')->first();
+
+                if ($request->penerimaanstok_id == $spb->text) {
+                    $group = 'HUTANG BUKTI';
+                    $subgroup = 'HUTANG BUKTI';
+
+                    $format = DB::table('parameter')->from(
+                        db::Raw("parameter with (readuncommitted)")
+                    )
+                        ->where('grp', $group)
+                        ->where('subgrp', $subgroup)
+                        ->first();
+                    $totalharga = 0;
+                    $detaildata = [];
+                    for ($i = 0; $i < count($request->detail_harga); $i++) {
+                        $totalsat = ($request->detail_qty[$i] * $request->detail_harga[$i]);
+                        $totalharga += $totalsat;
+                        $detaildata[] = ($request->detail_qty[$i] * $request->detail_harga[$i]);
+                    }
+
+                    $getCoaDebet = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+                        ->where('grp', 'JURNAL HUTANG PEMBELIAN STOK')->where('subgrp', 'DEBET')->first();
+                    $memo = json_decode($getCoaDebet->memo, true);
+
+
+
+                    $getCoaKredit = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+                        ->where('grp', 'JURNAL HUTANG PEMBELIAN STOK')->where('subgrp', 'KREDIT')->first();
+                    $memoKredit = json_decode($getCoaKredit->memo, true);
+
+                    $hutangHeader=HutangHeader::where('nobukti','=',$request->hutang_nobukti)->first();
+                    // dd($hutangHeader);
+
+                    $hutangRequest = [
+                        'proseslain' => 'PEMBELIAN STOK',
+                        'nobukti' => $request->hutang_nobukti,
+                        'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
+                        'keterangan' => $request->keterangan,
+                        'coa' => $memo['JURNAL'],
+                        'pelanggan_id' =>  0,
+                        'supplier_id' => ($request->supplier_id == null) ? "" : $request->supplier_id,
+                        'postingdari' => 'PENERIMAAN STOK PEMBELIAN',
+                        'modifiedby' => auth('api')->user()->name,
+                        'total' => $totalharga,
+                        'tgljatuhtempo' => $request->tglbukti,
+                        'total_detail' => $detaildata,
+                        'keterangan_detail' => $request->detail_keterangan,
+                        'coadebet' => $memo['JURNAL'],
+                        'coakredit' => $memoKredit['JURNAL'],
+                        'id'=>$hutangHeader->id,
+                    ];
+
+                    $hutangheader = new HutangHeader();
+                    $hutangheader->id=$hutangHeader->id;
+                    $hutang = new UpdateHutangHeaderRequest($hutangRequest);
+                    app(HutangHeaderController::class)->update($hutang,$hutangheader);
+                }
+
                 DB::commit();
             }
 
@@ -374,6 +489,25 @@ class PenerimaanStokHeaderController extends Controller
         $penerimaanStok = new PenerimaanStokHeader();
         $penerimaanStok = $penerimaanStok->lockAndDestroy($id);
 
+        $idhutang = HutangHeader::from(
+            db::Raw("hutangheader with (readuncommitted)")
+        )->where("nobukti", "=", $penerimaanStokHeader->hutang_nobukti)->first();
+
+
+
+        $spb = Parameter::where('grp', 'SPB STOK')->where('subgrp', 'SPB STOK')->first();
+
+        $hutang_nobukti = "";
+        if ($request->penerimaanstok_id == $spb->text) {
+            $hutangRequest = [
+                'proseslain' => 'PEMBELIAN STOK',
+            ];
+            $hutang = new StoreHutangHeaderRequest($hutangRequest);
+            app(HutangHeaderController::class)->destroy($hutang, $idhutang->id);
+        }
+
+        // app(HutangHeaderController::class)->destroy($hutangRequest,$idhutang->id);
+
         if ($penerimaanStok) {
             $logTrail = [
                 'namatabel' => strtoupper($penerimaanStok->getTable()),
@@ -431,12 +565,12 @@ class PenerimaanStokHeaderController extends Controller
             $penerimaanStokHeader = PenerimaanStokheader::findOrFail($id);
             $statusSudahCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
             $statusBelumCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
-     
+
             if ($penerimaanStokHeader->statuscetak != $statusSudahCetak->id) {
                 $penerimaanStokHeader->statuscetak = $statusSudahCetak->id;
                 $penerimaanStokHeader->tglbukacetak = date('Y-m-d H:i:s');
                 $penerimaanStokHeader->userbukacetak = auth('api')->user()->name;
-                $penerimaanStokHeader->jumlahcetak = $penerimaanStokHeader->jumlahcetak+1;
+                $penerimaanStokHeader->jumlahcetak = $penerimaanStokHeader->jumlahcetak + 1;
                 if ($penerimaanStokHeader->save()) {
                     $logTrail = [
                         'namatabel' => strtoupper($penerimaanStokHeader->getTable()),
@@ -447,10 +581,10 @@ class PenerimaanStokHeaderController extends Controller
                         'datajson' => $penerimaanStokHeader->toArray(),
                         'modifiedby' => $penerimaanStokHeader->modifiedby
                     ];
-    
+
                     $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                     $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-    
+
                     DB::commit();
                 }
             }
@@ -462,6 +596,5 @@ class PenerimaanStokHeaderController extends Controller
         } catch (\Throwable $th) {
             throw $th;
         }
-        
     }
 }

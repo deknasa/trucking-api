@@ -49,67 +49,99 @@ class HutangHeaderController extends Controller
      */
     public function store(StoreHutangHeaderRequest $request)
     {
+
+
         DB::beginTransaction();
 
         try {
             /* Store header */
 
+            $proseslain = $request->proseslain ?? "";
+            if ($proseslain == "PEMBELIAN STOK") {
+                $nobukti =  $request->nobukti;
+            } else {
+                $group = 'HUTANG BUKTI';
+                $subgroup = 'HUTANG BUKTI';
+
+                $content = new Request();
+                $content['group'] = $group;
+                $content['subgroup'] = $subgroup;
+                $content['table'] = 'hutangheader';
+                $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
+
+                $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
+            }
             $group = 'HUTANG BUKTI';
             $subgroup = 'HUTANG BUKTI';
-
 
             $format = DB::table('parameter')
                 ->where('grp', $group)
                 ->where('subgrp', $subgroup)
                 ->first();
 
-            $content = new Request();
-            $content['group'] = $group;
-            $content['subgroup'] = $subgroup;
-            $content['table'] = 'hutangheader';
-            $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
 
-            $hutangHeader = new HutangHeader();
             $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
             $getCoaDebet = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
                 ->where('grp', 'JURNAL HUTANG MANUAL')->where('subgrp', 'DEBET')->first();
             $memo = json_decode($getCoaDebet->memo, true);
 
-            if ($request->supplier == '' && $request->pelanggan == '') {
-                $query = Error::from(DB::raw("error with (readuncommitted)"))
-                    ->select('keterangan')
-                    ->where('kodeerror', '=', 'WISP')
-                    ->first();
-                return response([
-                    'errors' => "$query->keterangan",
-                    'message' => "$query->keterangan",
-                ], 500);
-            } else if ($request->supplier != '' && $request->pelanggan != '') {
-                $query = Error::from(DB::raw("error with (readuncommitted)"))
-                    ->select('keterangan')
-                    ->where('kodeerror', '=', 'PSP')
-                    ->first();
-                return response([
-                    'errors' => "$query->keterangan",
-                    'message' => "$query->keterangan",
-                ], 500);
+            if ($proseslain == "") {
+                if ($request->supplier == '' && $request->pelanggan == '') {
+                    $query = Error::from(DB::raw("error with (readuncommitted)"))
+                        ->select('keterangan')
+                        ->where('kodeerror', '=', 'WISP')
+                        ->first();
+                    return response([
+                        'errors' => "$query->keterangan",
+                        'message' => "$query->keterangan",
+                    ], 500);
+                } else if ($request->supplier != '' && $request->pelanggan != '') {
+                    $query = Error::from(DB::raw("error with (readuncommitted)"))
+                        ->select('keterangan')
+                        ->where('kodeerror', '=', 'PSP')
+                        ->first();
+                    return response([
+                        'errors' => "$query->keterangan",
+                        'message' => "$query->keterangan",
+                    ], 500);
+                }
+                $total = array_sum($request->total_detail);
+                $tglbukti = date('Y-m-d', strtotime($request->tglbukti));
+                $coa = $memo['JURNAL'];
+            } else {
+                $total = $request->total;
+                $tglbukti = $request->tglbukti;
+                $coa = $request->coa;
             }
 
-            $hutangHeader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
+            $hutangHeader = new HutangHeader();
+            $hutangHeader->tglbukti = $tglbukti;
             $hutangHeader->keterangan = $request->keterangan ?? '';
-            $hutangHeader->coa = $memo['JURNAL'];
+            $hutangHeader->coa = $coa;
             $hutangHeader->pelanggan_id = $request->pelanggan_id ?? '';
             $hutangHeader->supplier_id = $request->supplier_id ?? '';
             $hutangHeader->postingdari = $request->postingdari ?? 'ENTRY HUTANG';
             $hutangHeader->statusformat = $format->id;
             $hutangHeader->statuscetak = $statusCetak->id;
-            $hutangHeader->total = array_sum($request->total_detail);
+            $hutangHeader->total = $total;
             $hutangHeader->modifiedby = auth('api')->user()->name;
-
-            $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
-
             $hutangHeader->nobukti = $nobukti;
+
+            // dump($request->all());
+            // dump($tglbukti);
+            // dump($request->keterangan);
+            // dump($coa);
+            // dump($request->pelanggan_id);
+            // dump($request->supplier_id);
+            // dump($request->postingdari);
+            // dump($format->id);
+            // dump($statusCetak->id);
+            // dump($total);
+            // dump(auth('api')->user()->name);
+            // dd($nobukti);
+
             $hutangHeader->save();
+            // dump($request->all());
 
             $logTrail = [
                 'namatabel' => strtoupper($hutangHeader->getTable()),
@@ -188,33 +220,71 @@ class HutangHeaderController extends Controller
                 'statusformat' => "0",
             ];
 
+
+            if ($proseslain == "PEMBELIAN STOK") {
+                $kali = -1;
+                $coa2 = $request->coadebet;
+                $coa1 = $request->coakredit;
+            } else {
+                $kali = 1;
+                $coa1 = $memo['JURNAL'];
+                $coa2 = $memoKredit['JURNAL'];
+            }
+
             $jurnaldetail = [];
             $total = array_sum($request->total_detail);
-            $jurnaldetail[] =  [
-                'nobukti' => $hutangHeader->nobukti,
-                'tglbukti' => date('Y-m-d', strtotime($hutangHeader->tglbukti)),
-                'coa' =>  $memo['JURNAL'],
-                'nominal' => $total,
-                'keterangan' => $hutangHeader->keterangan,
-                'modifiedby' => auth('api')->user()->name,
-                'baris' => 0,
-            ];
+            if ($proseslain == "") {
+                $jurnaldetail[] =  [
+                    'nobukti' => $hutangHeader->nobukti,
+                    'tglbukti' => date('Y-m-d', strtotime($hutangHeader->tglbukti)),
+                    'coa' => $coa1,
+                    'nominal' => $total * $kali,
+                    'keterangan' => $hutangHeader->keterangan,
+                    'modifiedby' => auth('api')->user()->name,
+                    'baris' => 0,
+                ];
+            }
 
             for ($i = 0; $i < count($request->total_detail); $i++) {
                 $detail = [];
+
+
+                if ($proseslain == "PEMBELIAN STOK") {
+                    $nominaldetail = $request->total_detail[$i];
+                } else {
+                    $nominaldetail = '-' . $request->total_detail[$i];
+                }
 
                 $jurnalDetail = [
                     [
                         'nobukti' => $hutangHeader->nobukti,
                         'tglbukti' => date('Y-m-d', strtotime($hutangHeader->tglbukti)),
-                        'coa' =>  $memoKredit['JURNAL'],
-                        'nominal' => '-' . $request->total_detail[$i],
+                        'coa' =>  $coa2,
+                        'nominal' => $nominaldetail,
                         'keterangan' => $request->keterangan_detail[$i],
                         'modifiedby' => auth('api')->user()->name,
                         'baris' => 0,
                     ]
                 ];
-                $jurnaldetail = array_merge($jurnaldetail, $jurnalDetail);
+
+                if ($i == count($request->total_detail) - 1) {
+                    if ($proseslain == "PEMBELIAN STOK") {
+                        $jurnaldetail[] =  [
+                            'nobukti' => $hutangHeader->nobukti,
+                            'tglbukti' => date('Y-m-d', strtotime($hutangHeader->tglbukti)),
+                            'coa' => $coa1,
+                            'nominal' => $total * $kali,
+                            'keterangan' => $hutangHeader->keterangan,
+                            'modifiedby' => auth('api')->user()->name,
+                            'baris' => 0,
+                        ];
+                    }
+                }
+                if ($proseslain == "PEMBELIAN STOK") {
+                    $jurnaldetail = array_merge($jurnalDetail, $jurnaldetail);
+                } else {
+                    $jurnaldetail = array_merge($jurnaldetail, $jurnalDetail);
+                }
             }
             $jurnal = $this->storeJurnal($jurnalHeader, $jurnaldetail);
 
@@ -283,29 +353,33 @@ class HutangHeaderController extends Controller
     public function update(UpdateHutangHeaderRequest $request, HutangHeader $hutangheader)
     {
         DB::beginTransaction();
+        $proseslain = $request->proseslain ?? "";
 
         try {
-            
-            if ($request->supplier == '' && $request->pelanggan == '') {
-                $query = Error::from(DB::raw("error with (readuncommitted)"))
-                    ->select('keterangan')
-                    ->where('kodeerror', '=', 'WISP')
-                    ->first();
-                return response([
-                    'errors' => "$query->keterangan",
-                    'message' => "$query->keterangan",
-                ], 500);
-            } else if ($request->supplier != '' && $request->pelanggan != '') {
-                $query = Error::from(DB::raw("error with (readuncommitted)"))
-                    ->select('keterangan')
-                    ->where('kodeerror', '=', 'PSP')
-                    ->first();
-                return response([
-                    'errors' => "$query->keterangan",
-                    'message' => "$query->keterangan",
-                ], 500);
+
+            if ($proseslain == "") {
+                if ($request->supplier == '' && $request->pelanggan == '') {
+                    $query = Error::from(DB::raw("error with (readuncommitted)"))
+                        ->select('keterangan')
+                        ->where('kodeerror', '=', 'WISP')
+                        ->first();
+                    return response([
+                        'errors' => "$query->keterangan",
+                        'message' => "$query->keterangan",
+                    ], 500);
+                } else if ($request->supplier != '' && $request->pelanggan != '') {
+                    $query = Error::from(DB::raw("error with (readuncommitted)"))
+                        ->select('keterangan')
+                        ->where('kodeerror', '=', 'PSP')
+                        ->first();
+                    return response([
+                        'errors' => "$query->keterangan",
+                        'message' => "$query->keterangan",
+                    ], 500);
+                }
             }
 
+            $hutangheader = Hutangheader::lockForUpdate()->findOrFail($hutangheader->id);
             $hutangheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $hutangheader->keterangan = $request->keterangan ?? '';
             $hutangheader->pelanggan_id = $request->pelanggan_id ?? '';
@@ -375,6 +449,7 @@ class HutangHeaderController extends Controller
 
             $parameterController = new ParameterController;
             $statusApp = $parameterController->getparameterid('STATUS APPROVAL', 'STATUS APPROVAL', 'NON APPROVAL');
+
             $getCoaDebet = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
                 ->where('grp', 'JURNAL HUTANG MANUAL')->where('subgrp', 'DEBET')->first();
             $memo = json_decode($getCoaDebet->memo, true);
@@ -382,6 +457,8 @@ class HutangHeaderController extends Controller
             $getCoaKredit = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
                 ->where('grp', 'JURNAL HUTANG MANUAL')->where('subgrp', 'KREDIT')->first();
             $memoKredit = json_decode($getCoaKredit->memo, true);
+
+
 
             $jurnalHeader = [
                 'tanpaprosesnobukti' => 1,
@@ -396,32 +473,67 @@ class HutangHeaderController extends Controller
                 'statusformat' => "0",
             ];
 
+            if ($proseslain == "PEMBELIAN STOK") {
+                $kali = -1;
+                $coa2 = $request->coadebet;
+                $coa1 = $request->coakredit;
+            } else {
+                $kali = 1;
+                $coa1 = $memo['JURNAL'];
+                $coa2 = $memoKredit['JURNAL'];
+            }
+
             $jurnaldetail = [];
             $total = array_sum($request->total_detail);
-            $jurnaldetail[] =  [
-                'nobukti' => $hutangheader->nobukti,
-                'tglbukti' => date('Y-m-d', strtotime($hutangheader->tglbukti)),
-                'coa' =>  $memo['JURNAL'],
-                'nominal' => $total,
-                'keterangan' => $hutangheader->keterangan,
-                'modifiedby' => auth('api')->user()->name,
-                'baris' => 0,
-            ];
+            if ($proseslain == "") {
+                $jurnaldetail[] =  [
+                    'nobukti' => $hutangheader->nobukti,
+                    'tglbukti' => date('Y-m-d', strtotime($hutangheader->tglbukti)),
+                    'coa' => $coa1,
+                    'nominal' => $total * $kali,
+                    'keterangan' => $hutangheader->keterangan,
+                    'modifiedby' => auth('api')->user()->name,
+                    'baris' => 0,
+                ];
+            }
+
             for ($i = 0; $i < count($request->total_detail); $i++) {
                 $detail = [];
 
+                if ($proseslain == "PEMBELIAN STOK") {
+                    $nominaldetail = $request->total_detail[$i];
+                } else {
+                    $nominaldetail = '-' . $request->total_detail[$i];
+                }
                 $jurnalDetail = [
                     [
                         'nobukti' => $hutangheader->nobukti,
                         'tglbukti' => date('Y-m-d', strtotime($hutangheader->tglbukti)),
-                        'coa' =>  $memoKredit['JURNAL'],
-                        'nominal' => '-' . $request->total_detail[$i],
+                        'coa' =>  $coa2,
+                        'nominal' => $nominaldetail,
                         'keterangan' => $request->keterangan_detail[$i],
                         'modifiedby' => auth('api')->user()->name,
                         'baris' => 0,
                     ]
                 ];
-                $jurnaldetail = array_merge($jurnaldetail, $jurnalDetail);
+                if ($i == count($request->total_detail) - 1) {
+                    if ($proseslain == "PEMBELIAN STOK") {
+                        $jurnaldetail[] =  [
+                            'nobukti' => $hutangheader->nobukti,
+                            'tglbukti' => date('Y-m-d', strtotime($hutangheader->tglbukti)),
+                            'coa' => $coa1,
+                            'nominal' => $total * $kali,
+                            'keterangan' => $hutangheader->keterangan,
+                            'modifiedby' => auth('api')->user()->name,
+                            'baris' => 0,
+                        ];
+                    }
+                }
+                if ($proseslain == "PEMBELIAN STOK") {
+                    $jurnaldetail = array_merge($jurnalDetail, $jurnaldetail);
+                } else {
+                    $jurnaldetail = array_merge($jurnaldetail, $jurnalDetail);
+                }
             }
 
             $jurnal = $this->storeJurnal($jurnalHeader, $jurnaldetail);
