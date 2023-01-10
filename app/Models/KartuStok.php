@@ -32,13 +32,18 @@ class KartuStok extends MyModel
     public function get()
     {
         $this->setRequestParameters();
+        // dd('test');
 
         $tgldari = date('Y-m-d', strtotime(request()->dari));
         $tglsampai = date('Y-m-d', strtotime(request()->sampai));
 
         $filter = Parameter::where('grp', 'STOK PERSEDIAAN')->where('subgrp', 'STOK PERSEDIAAN')->where('text', 'GUDANG')->first();
 
+        // dump(request()->filter);
+        // dd($filter->id);
+
         if (request()->filter == $filter->id) {
+            // dd('test');
             $query = $this->getlaporan($tgldari, $tglsampai, request()->stokdari_id, request()->stoksampai_id, request()->datafilter, 0, 0, $filter->text);
         }
 
