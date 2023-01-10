@@ -238,6 +238,7 @@ class ParameterSeeder extends Seeder
         parameter::create(['grp' => 'JURNAL PEMAKAIAN STOK', 'subgrp' => 'KREDIT', 'kelompok' => '', 'text' => 'KREDIT', 'memo' => '{"MEMO":"JURNAL PEMAKAIAN STOK KREDIT","SINGKATAN":"K","WARNA":"#6C757D","JURNAL":"01.10.02.01"}', 'type' => '0', 'modifiedby' => 'ADMIN',]);
         parameter::create(['grp' => 'STATUS POTONG RETUR', 'subgrp' => 'STATUS POTONG RETUR', 'kelompok' => '', 'text' => 'POSTING KE KAS/BANK', 'memo' => '{"MEMO":"STATUS POTONG RETUR POSTING KE KAS/BANK","SINGKATAN":"PKB","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN',]);
         parameter::create(['grp' => 'STATUS POTONG RETUR', 'subgrp' => 'STATUS POTONG RETUR', 'kelompok' => '', 'text' => 'POTONG HUTANG', 'memo' => '{"MEMO":"STATUS POTONG RETUR POTONG HUTANG","SINGKATAN":"PH","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN',]);
+        parameter::create(['grp' => 'KOREKSI STOK MINUS BUKTI', 'subgrp' => 'KOREKSI STOK MINUS BUKTI', 'kelompok' => '', 'text' => '#KOR #9999#/#R#/#Y', 'memo' => '{"MEMO":"KOREKSI STOK MINUS BUKTI","SINGKATAN":"#KOR #9999#/#R#/#Y","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN',]);
 
         
     }
