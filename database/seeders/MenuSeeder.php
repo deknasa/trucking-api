@@ -143,5 +143,8 @@ class MenuSeeder extends Seeder
         Menu::create(['menuname' => 'HUTANG', 'menuseq' => '9', 'menuparent' => '0', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '0', 'link' => '', 'menuexe' => '', 'menukode' => '9', 'modifiedby' => 'ADMIN',]);
         Menu::create(['menuname' => 'PIUTANG', 'menuseq' => '100', 'menuparent' => '0', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '0', 'link' => '', 'menuexe' => '', 'menukode' => 'A', 'modifiedby' => 'ADMIN',]);
         Menu::create(['menuname' => 'NOTA', 'menuseq' => '100', 'menuparent' => '0', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '0', 'link' => '', 'menuexe' => '', 'menukode' => 'B', 'modifiedby' => 'ADMIN',]);
+        Menu::create(['menuname' => 'HISTORY STOK', 'menuseq' => '100', 'menuparent' => '81', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '0', 'link' => '', 'menuexe' => '', 'menukode' => '65', 'modifiedby' => 'ADMIN',]);
+        Menu::create(['menuname' => 'HISTORY PENERIMAAN', 'menuseq' => '100', 'menuparent' => '126', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '337', 'link' => '', 'menuexe' => '', 'menukode' => '651', 'modifiedby' => 'ADMIN',]);
+        Menu::create(['menuname' => 'HISTORY PENGELUARAN', 'menuseq' => '100', 'menuparent' => '126', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '339', 'link' => '', 'menuexe' => '', 'menukode' => '652', 'modifiedby' => 'ADMIN',]);
     }
 }

@@ -533,6 +533,7 @@ class PengeluaranStokDetailFifoController extends Controller
                 'modifiedby' => auth('api')->user()->name,
                 'statusformat' => "0",
             ];
+            $jurnaldetail=[];
             foreach ($datadetail as $item) {
 
                 $pengeluaranstokdetailfifo = new PengeluaranStokDetailFifo();
@@ -556,8 +557,7 @@ class PengeluaranStokDetailFifoController extends Controller
                             ->where('grp', 'JURNAL PEMAKAIAN STOK')->where('subgrp', 'KREDIT')->first();
                         $memokredit = json_decode($getCoaKredit->memo, true);
 
-                        $jurnaldetail = [
-                            [
+                        $jurnaldetail[] = [
                                 'nobukti' => $request->nobukti,
                                 'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
                                 'coa' =>  $memo['JURNAL'],
@@ -565,10 +565,9 @@ class PengeluaranStokDetailFifoController extends Controller
                                 'keterangan' => $request->detail_keterangan,
                                 'modifiedby' => auth('api')->user()->name,
                                 'baris' => 0,
-                            ]
                         ];
 
-                        $jurnalDetail = [
+                        $jurnaldetail []= 
                             [
                                 'nobukti' => $request->nobukti,
                                 'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
@@ -578,9 +577,9 @@ class PengeluaranStokDetailFifoController extends Controller
                                 'modifiedby' => auth('api')->user()->name,
                                 'baris' => 0,
                             ]
-                        ];
+                        ;
 
-                        $jurnaldetail = array_merge($jurnaldetail, $jurnalDetail);
+                        // $jurnaldetail = array_merge($jurnaldetail, $jurnalDetail);
                     }
                 }
 
@@ -593,8 +592,12 @@ class PengeluaranStokDetailFifoController extends Controller
                 $penerimaanstokdetail->qtykeluar += $item['penerimaan_qty'] ?? 0;
                 $penerimaanstokdetail->save();
             }
+            
             if ($request->pengeluaranstok_id == $spk->text) {
+                // dump($jurnalHeader);
+// dd($jurnaldetail);
                 $jurnal = $this->storeJurnal($jurnalHeader, $jurnaldetail);
+                // dd($jurnal);
                 if (!$jurnal['status']) {
                     throw new \Throwable($jurnal['message']);
                 }
@@ -708,7 +711,7 @@ class PengeluaranStokDetailFifoController extends Controller
             ];
         } catch (\Throwable $th) {
             DB::rollBack();
-            return response($th->getMessage());
+            throw $th;
         }
     }
 }
