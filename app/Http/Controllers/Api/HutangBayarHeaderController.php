@@ -93,6 +93,8 @@ class HutangBayarHeaderController extends Controller
             $hutangbayarheader->statusapproval = $statusApproval->id ?? $request->statusapproval;
             $hutangbayarheader->userapproval = '';
             $hutangbayarheader->tglapproval = '';
+            $hutangbayarheader->alatbayar_id = $request->alatbayar_id;
+            $hutangbayarheader->tglcair = date('Y-m-d', strtotime($request->tglcair));
             $hutangbayarheader->statuscetak = $statusCetak->id;
             $hutangbayarheader->statusformat = $format->id;
             $hutangbayarheader->modifiedby = auth('api')->user()->name;
@@ -126,8 +128,6 @@ class HutangBayarHeaderController extends Controller
                     'hutang_nobukti' => $hutang->nobukti,
                     'nominal' => $request->bayar[$i],
                     'cicilan' => '',
-                    'alatbayar_id' => $request->alatbayar_id[$i],
-                    'tglcair' => $request->tglcair[$i],
                     'userid' => '',
                     'potongan' => $request->potongan[$i],
                     'keterangan' => $request->keterangandetail[$i],
@@ -264,7 +264,7 @@ class HutangBayarHeaderController extends Controller
                     ->select(
                         'a.coa'
                     )
-                    ->where('a.id', '=', $request->alatbayar_id[$i])
+                    ->where('a.id', '=', $request->alatbayar_id)
                     ->where('a.statuslangsungcair', '=', $langsungcair->id)->first();
 
                 $coakredit = $bank->coa;
@@ -274,7 +274,7 @@ class HutangBayarHeaderController extends Controller
                 $detail = [
                     'entriluar' => 1,
                     'nobukti' => $nobuktiPengeluaran,
-                    'alatbayar_id' => $request->alatbayar_id[$i],
+                    'alatbayar_id' => $request->alatbayar_id,
                     'nowarkat' => '',
                     'tgljatuhtempo' => $hutangDetail->tgljatuhtempo,
                     'nominal' => $request->bayar[$i] - $request->potongan[$i],
@@ -346,6 +346,8 @@ class HutangBayarHeaderController extends Controller
             $hutangbayarheader->bank_id = $request->bank_id;
             $hutangbayarheader->supplier_id = $request->supplier_id ?? '';
             $hutangbayarheader->pelanggan_id = $request->pelanggan_id ?? '';
+            $hutangbayarheader->alatbayar_id = $request->alatbayar_id;
+            $hutangbayarheader->tglcair = date('Y-m-d', strtotime($request->tglcair));
             $hutangbayarheader->coa = $memo['JURNAL'];
             $hutangbayarheader->modifiedby = auth('api')->user()->name;
 
@@ -388,8 +390,6 @@ class HutangBayarHeaderController extends Controller
                         'hutang_nobukti' => $hutang->nobukti,
                         'nominal' => $request->bayar[$i],
                         'cicilan' => '',
-                        'alatbayar_id' => $request->alatbayar_id[$i],
-                        'tglcair' => $request->tglcair[$i],
                         'userid' => '',
                         'coa_id' => '',
                         'potongan' => $request->potongan[$i],
@@ -515,7 +515,7 @@ class HutangBayarHeaderController extends Controller
                     ->select(
                         'a.coa'
                     )
-                    ->where('a.id', '=', $request->alatbayar_id[$i])
+                    ->where('a.id', '=', $request->alatbayar_id)
                     ->where('a.statuslangsungcair', '=', $langsungcair->id)->first();
 
                 $coakredit = $bank->coa;
@@ -526,7 +526,7 @@ class HutangBayarHeaderController extends Controller
                 $detail = [
                     'entriluar' => 1,
                     'nobukti' => $nobuktiPengeluaran,
-                    'alatbayar_id' => $request->alatbayar_id[$i],
+                    'alatbayar_id' => $request->alatbayar_id,
                     'nowarkat' => '',
                     'tgljatuhtempo' => $hutangDetail->tgljatuhtempo,
                     'nominal' => $request->bayar[$i] - $request->potongan[$i],

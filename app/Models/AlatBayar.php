@@ -37,7 +37,7 @@ class AlatBayar extends MyModel
                 'alatbayar.kodealatbayar',
                 'alatbayar.namaalatbayar',
                 'alatbayar.keterangan',
-                'parameter_statuslangsunggcair.memo as statuslangsunggcair',
+                'parameter_statuslangsungcair.memo as statuslangsungcair',
                 'parameter_statusdefault.memo as statusdefault',
                 'bank.namabank as bank_id',
                 'alatbayar.modifiedby',
@@ -45,7 +45,7 @@ class AlatBayar extends MyModel
                 'alatbayar.updated_at'
             )
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'alatbayar.bank_id', 'bank.id')
-            ->leftJoin(DB::raw("parameter as parameter_statuslangsunggcair with (readuncommitted)"), 'alatbayar.statuslangsunggcair', 'parameter_statuslangsunggcair.id')
+            ->leftJoin(DB::raw("parameter as parameter_statuslangsungcair with (readuncommitted)"), 'alatbayar.statuslangsungcair', 'parameter_statuslangsungcair.id')
             ->leftJoin(DB::raw("parameter as parameter_statusdefault with (readuncommitted)"), 'alatbayar.statusdefault', 'parameter_statusdefault.id');
 
         $this->totalRows = $query->count();
@@ -69,10 +69,11 @@ class AlatBayar extends MyModel
                 'alatbayar.kodealatbayar',
                 'alatbayar.namaalatbayar',
                 'alatbayar.keterangan',
-                'alatbayar.statuslangsunggcair',
+                'alatbayar.statuslangsungcair',
                 'alatbayar.statusdefault',
                 'alatbayar.bank_id',
                 'bank.namabank as bank',
+                'alatbayar.coa'
             )
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'alatbayar.bank_id', 'bank.id')
             ->where('alatbayar.id', $id);
@@ -87,22 +88,22 @@ class AlatBayar extends MyModel
         return $query->from(
             DB::raw($this->table . " with (readuncommitted)")
         )
-        ->select(
-            DB::raw("
+            ->select(
+                DB::raw("
                 $this->table.id,
                 $this->table.kodealatbayar,
                 $this->table.namaalatbayar,
                 $this->table.keterangan,
-                'parameter_statuslangsunggcair.text as statuslangsunggcair',
+                'parameter_statuslangsungcair.text as statuslangsungcair',
                 'parameter_statusdefault.text as statusdefault',
                 'bank.namabank as bank_id',
                 $this->table.modifiedby,
                 $this->table.created_at,
                 $this->table.updated_at
             ")
-        )
+            )
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'alatbayar.bank_id', 'bank.id')
-            ->leftJoin(DB::raw("parameter as parameter_statuslangsunggcair with (readuncommitted)"), 'alatbayar.statuslangsunggcair', 'parameter_statuslangsunggcair.id')
+            ->leftJoin(DB::raw("parameter as parameter_statuslangsungcair with (readuncommitted)"), 'alatbayar.statuslangsungcair', 'parameter_statuslangsungcair.id')
             ->leftJoin(DB::raw("parameter as parameter_statusdefault with (readuncommitted)"), 'alatbayar.statusdefault', 'parameter_statusdefault.id');
     }
 
@@ -144,8 +145,8 @@ class AlatBayar extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'statuslangsunggcair') {
-                            $query = $query->where('parameter_statuslangsunggcair.text', '=', "$filters[data]");
+                        if ($filters['field'] == 'statuslangsungcair') {
+                            $query = $query->where('parameter_statuslangsungcair.text', '=', "$filters[data]");
                         } else if ($filters['field'] == 'statusdefault') {
                             $query = $query->where('parameter_statusdefault.text', '=', "$filters[data]");
                         } else if ($filters['field'] == 'bank_id') {
@@ -158,8 +159,8 @@ class AlatBayar extends MyModel
                     break;
                 case "OR":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'statuslangsunggcair') {
-                            $query = $query->orWhere('parameter_statuslangsunggcair.text', '=', "$filters[data]");
+                        if ($filters['field'] == 'statuslangsungcair') {
+                            $query = $query->orWhere('parameter_statuslangsungcair.text', '=', "$filters[data]");
                         } else if ($filters['field'] == 'statusdefault') {
                             $query = $query->orWhere('parameter_statusdefault.text', '=', "$filters[data]");
                         } else if ($filters['field'] == 'bank_id') {

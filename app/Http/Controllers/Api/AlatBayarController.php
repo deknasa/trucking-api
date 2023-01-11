@@ -9,6 +9,7 @@ use App\Http\Requests\UpdateAlatBayarRequest;
 use App\Http\Requests\StoreLogTrailRequest;
 
 use App\Http\Controllers\Controller;
+use App\Models\Error;
 use App\Models\LogTrail;
 use App\Models\Parameter;
 
@@ -41,14 +42,23 @@ class AlatBayarController extends Controller
     public function store(StoreAlatBayarRequest $request)
     {
         DB::beginTransaction();
-        try {
+        try {            
+            $statusCair = Parameter::where('grp', 'STATUS LANGSUNG CAIR')->where('text', 'TIDAK LANGSUNG CAIR')->first();
+            
+            if ($request->statuslangsungcair == $statusCair->id) {
+                
+                $request->validate([
+                    'coa' => 'required',
+                ]);
+            }
             $alatbayar = new AlatBayar();
             $alatbayar->kodealatbayar = $request->kodealatbayar;
             $alatbayar->namaalatbayar = $request->namaalatbayar;
             $alatbayar->keterangan = $request->keterangan;
-            $alatbayar->statuslangsunggcair = $request->statuslangsunggcair;
+            $alatbayar->statuslangsungcair = $request->statuslangsungcair;
             $alatbayar->statusdefault = $request->statusdefault;
             $alatbayar->bank_id = $request->bank_id;
+            $alatbayar->coa = $request->coa ?? '';
             $alatbayar->modifiedby = auth('api')->user()->name;
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
@@ -83,7 +93,8 @@ class AlatBayarController extends Controller
             ], 201);
         } catch (\Throwable $th) {
             DB::rollBack();
-            return response($th->getMessage());
+            
+            throw $th;
         }
     }
 
@@ -103,12 +114,20 @@ class AlatBayarController extends Controller
     {
         DB::beginTransaction();
         try {
+            $statusCair = Parameter::where('grp', 'STATUS LANGSUNG CAIR')->where('text', 'TIDAK LANGSUNG CAIR')->first();
+            
+            if ($request->statuslangsungcair == $statusCair->id) {
+                $request->validate([
+                    'coa' => 'required',
+                ]);
+            }
             $alatbayar->kodealatbayar = $request->kodealatbayar;
             $alatbayar->namaalatbayar = $request->namaalatbayar;
             $alatbayar->keterangan = $request->keterangan;
-            $alatbayar->statuslangsunggcair = $request->statuslangsunggcair;
+            $alatbayar->statuslangsungcair = $request->statuslangsungcair;
             $alatbayar->statusdefault = $request->statusdefault;
             $alatbayar->bank_id = $request->bank_id;
+            $alatbayar->coa = $request->coa ?? '';
             $alatbayar->modifiedby = auth('api')->user()->name;
 
             if ($alatbayar->save()) {

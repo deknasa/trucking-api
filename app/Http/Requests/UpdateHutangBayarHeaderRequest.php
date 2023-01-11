@@ -26,7 +26,9 @@ class UpdateHutangBayarHeaderRequest extends FormRequest
         $rules = [
             'tglbukti' => 'required',
             'keterangan' => 'required',
-            'bank' => 'required'
+            'bank' => 'required',
+            'alatbayar' => 'required',
+            'tglcair' => 'required'
         ];
         $relatedRequests = [
             UpdateHutangBayarDetailRequest::class
@@ -47,15 +49,13 @@ class UpdateHutangBayarHeaderRequest extends FormRequest
             'hutang_id' => 'Pilih Hutang',
             'keterangandetail.*' => 'keterangan detail',
             'bayar.*' => 'bayar',
-            'alatbayar.*' => 'alat bayar',
-            'tglcair.*' => 'tanggal cair'
         ];
     }
     
     public function messages()
     {
         return [
-            'bayar.*.gt' => 'bayar wajib di isi',
+            'bayar.*.gt' => 'bayar wajib di isi & harus lebih besar dari 0',
         ];
     }
 }
