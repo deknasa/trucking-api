@@ -27,6 +27,23 @@ class LaporanBukuBesar extends MyModel
     
     public function getReport()
     {
+        $tempsaldo = '##tempsaldo' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($templaporan, function ($table) {
+            $table->id();
+            $table->unsignedBigInteger('kodebarang')->default(0);
+            $table->string('namabarang', 1000)->default('');
+            $table->dateTime('tglbukti')->default('1900/1/1');
+            $table->string('nobukti', 100)->default('');
+            $table->unsignedBigInteger('kategori_id')->default(0);
+            $table->double('qtymasuk', 15, 2)->default(0);
+            $table->double('nilaimasuk', 15, 2)->default(0);
+            $table->double('qtykeluar', 15, 2)->default(0);
+            $table->double('nilaikeluar', 15, 2)->default(0);
+            $table->double('qtysaldo', 15, 2)->default(0);
+            $table->double('nilaisaldo', 15, 2)->default(0);
+            $table->string('modifiedby', 100)->default('');
+        });
+
         // data coba coba
         $query = DB::table('jurnalumumdetail AS A')
         ->from(

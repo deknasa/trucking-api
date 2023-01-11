@@ -209,11 +209,13 @@ use App\Http\Controllers\Api\ReportAllController;
 
         Route::get('agen/field_length', [AgenController::class, 'fieldLength']);
         Route::get('agen/export', [AgenController::class, 'export'])->name('export');
+        Route::get('agen/default', [AgenController::class, 'default']);
         Route::post('agen/{agen}/approval', [AgenController::class, 'approval'])->name('agen.approval');
         Route::resource('agen', AgenController::class);
 
         Route::get('cabang/field_length', [CabangController::class, 'fieldLength']);
         Route::get('cabang/combostatus', [CabangController::class, 'combostatus']);
+        Route::get('cabang/default', [CabangController::class, 'default']);
         Route::get('cabang/getPosition2', [CabangController::class, 'getPosition2']);
         Route::resource('cabang', CabangController::class);
 

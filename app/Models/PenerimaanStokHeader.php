@@ -27,16 +27,26 @@ class PenerimaanStokHeader extends MyModel
     {
         $this->setRequestParameters();
 
+        // dd(request());
+
+        $spb = Parameter::where('grp', 'SPB STOK')->where('subgrp', 'SPB STOK')->first();
+        $po = Parameter::where('grp', 'PO STOK')->where('subgrp', 'PO STOK')->first();
+
         $query = DB::table($this->table);
         $query = $this->selectColumns($query)
         ->leftJoin('gudang as gudangs','penerimaanstokheader.gudang_id','gudangs.id')
         ->leftJoin('gudang as dari','penerimaanstokheader.gudangdari_id','dari.id')
         ->leftJoin('gudang as ke','penerimaanstokheader.gudangke_id','ke.id')
         ->leftJoin('parameter as statuscetak','penerimaanstokheader.statuscetak','statuscetak.id')
-
         ->leftJoin('penerimaanstok','penerimaanstokheader.penerimaanstok_id','penerimaanstok.id')
         ->leftJoin('trado','penerimaanstokheader.trado_id','trado.id')
         ->leftJoin('supplier','penerimaanstokheader.supplier_id','supplier.id');
+        if (request()->penerimaanstok_id==$spb->text) {
+            $query->leftJoin('penerimaanstokheader as pobeli','penerimaanstokheader.penerimaanstok_nobukti','pobeli.nobukti');
+            $query->where('penerimaanstokheader.penerimaanstok_id','=',$po->text);
+            $query->whereRaw("isnull(pobeli.nobukti,'')=''");
+            // dd($query->get());
+        }
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -199,13 +209,7 @@ class PenerimaanStokHeader extends MyModel
                             case 'gudangke':
                                 $query = $query->where('ke.gudang', 'LIKE', "%$filters[data]%");
                                 break;
-                            case 'penerimaanstok_id_not_null':
-                            $query = $query->where($this->table . '.penerimaanstok_id', '=', "$filters[data]")->whereRaw(" $this->table.nobukti NOT IN 
-                            (SELECT DISTINCT $this->table.penerimaanstok_nobukti
-                            FROM penerimaanstokheader
-                            WHERE $this->table.penerimaanstok_nobukti IS NOT NULL)
-                            ");
-                                break;
+                          
                             default:
                                 $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                 break;

@@ -36,6 +36,17 @@ class CabangController extends Controller
         ]);
     }
 
+
+    public function default()
+    {
+
+        $cabang = new Cabang();
+        return response([
+            'status' => true,
+            'data' => $cabang->default(),
+        ]);
+    }
+
     /**
      * @ClassName 
      */
@@ -85,6 +96,7 @@ class CabangController extends Controller
 
     public function show(Cabang $cabang)
     {
+        // dd($cabang);
         return response([
             'status' => true,
             'data' => $cabang

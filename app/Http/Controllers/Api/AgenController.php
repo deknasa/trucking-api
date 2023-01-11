@@ -31,6 +31,16 @@ class AgenController extends Controller
         ]);
     }
 
+    public function default()
+    {
+
+        $agen = new Agen();
+        return response([
+            'status' => true,
+            'data' => $agen->default(),
+        ]);
+    }
+
     /**
      * @ClassName 
      */
