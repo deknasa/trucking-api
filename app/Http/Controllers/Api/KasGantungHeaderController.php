@@ -71,7 +71,7 @@ class KasGantungHeaderController extends Controller
                 $content['subgroup'] = $subgroup;
                 $content['table'] = 'kasgantungheader';
                 $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
-
+                
                 // nobukti pengeluaran
                 $bankid = $request->bank_id;
                 $querysubgrppengeluaran = DB::table('bank')->from(DB::raw("bank with (readuncommitted)"))
@@ -86,9 +86,7 @@ class KasGantungHeaderController extends Controller
                     ->first();
 
 
-                $coaKasKeluar = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('memo')->where('grp', 'JURNAL KAS GANTUNG')->where('subgrp', 'DEBET')->first();
-
-                $memo = json_decode($coaKasKeluar->memo, true);
+                $coaKasKeluar = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', 'COA KAS GANTUNG')->first();
 
                 $contentKasgantung = new Request();
                 $contentKasgantung['group'] = $querysubgrppengeluaran->grp;
@@ -253,7 +251,7 @@ class KasGantungHeaderController extends Controller
 
                 app(LogTrailController::class)->store($data);
 
-
+                
 
                 if ($kasgantungHeader->save() && $kasgantungHeader->kasgantungDetail) {
                     if ($request->bank_id != '') {
@@ -303,8 +301,8 @@ class KasGantungHeaderController extends Controller
                                 'nowarkat' => '',
                                 'tgljatuhtempo' => '',
                                 'nominal' => $request->nominal[$i],
-                                'coadebet' => $memo['JURNAL'],
-                                'coakredit' => $bank->coa,
+                                'coadebet' => $bank->coa,
+                                'coakredit' => $coaKasKeluar->text,
                                 'keterangan' => $request->keterangan_detail[$i],
                                 'bulanbeban' => '',
                                 'modifiedby' =>  auth('api')->user()->name
@@ -327,7 +325,7 @@ class KasGantungHeaderController extends Controller
 
                     $request->sortname = $request->sortname ?? 'id';
                     $request->sortorder = $request->sortorder ?? 'asc';
-
+    
                     DB::commit();
 
                     /* Set position and page */
@@ -409,7 +407,7 @@ class KasGantungHeaderController extends Controller
             $kasgantungheader->kasgantungDetail()->delete();
             PengeluaranHeader::where('nobukti', $request->pengeluaran_nobukti)->delete();
             JurnalUmumHeader::where('nobukti', $request->pengeluaran_nobukti)->delete();
-            
+
             /* Store detail */
             $detaillog = [];
             $total = 0;
@@ -474,10 +472,8 @@ class KasGantungHeaderController extends Controller
                     $parameterController = new ParameterController;
                     $statusApp = $parameterController->getparameterid('STATUS APPROVAL', 'STATUS APPROVAL', 'NON APPROVAL');
 
-                    $coaKasKeluar = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('memo')->where('grp', 'JURNAL KAS GANTUNG')->where('subgrp', 'DEBET')->first();
-                
-                    $memo = json_decode($coaKasKeluar->memo, true);
-                    
+                    $coaKasKeluar = DB::table('parameter')->where('grp', 'COA KAS GANTUNG')->where('subgrp', 'COA KAS GANTUNG')->first();
+
                     $content = new Request();
                     $content['group'] = $querysubgrppengeluaran->grp;
                     $content['subgroup'] = $querysubgrppengeluaran->subgrp;
@@ -534,8 +530,8 @@ class KasGantungHeaderController extends Controller
                             'nowarkat' => '',
                             'tgljatuhtempo' => '',
                             'nominal' => $request->nominal[$i],
-                            'coadebet' => $memo['JURNAL'],
-                            'coakredit' => $bank->coa,
+                            'coadebet' => $bank->coa,
+                            'coakredit' => $coaKasKeluar->text,
                             'keterangan' => $request->keterangan_detail[$i],
                             'bulanbeban' => '',
                             'modifiedby' =>  auth('api')->user()->name
@@ -578,125 +574,131 @@ class KasGantungHeaderController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Request $request, $id)
+    public function destroy(KasGantungHeader $kasgantungheader, Request $request)
     {
         DB::beginTransaction();
 
-        $getDetail = KasGantungDetail::lockForUpdate()->where('kasgantung_id', $id)->get();
-        $kasgantungheader = new KasGantungHeader();
-        $kasgantungheader = $kasgantungheader->lockAndDestroy($id);
+        try {
 
-        $getPengeluaranHeader = PengeluaranHeader::lockForUpdate()->where('nobukti', $kasgantungheader->pengeluaran_nobukti)->first();
-        $getPengeluaranDetail = PengeluaranDetail::lockForUpdate()->where('nobukti', $kasgantungheader->pengeluaran_nobukti)->get();
-        $getJurnalHeader = JurnalUmumHeader::lockForUpdate()->where('nobukti', $kasgantungheader->pengeluaran_nobukti)->first();
-        $getJurnalDetail = JurnalUmumDetail::lockForUpdate()->where('nobukti', $kasgantungheader->pengeluaran_nobukti)->get();
+            $getDetail = KasGantungDetail::from(DB::raw("kasgantungdetail with (readuncommitted)"))
+                ->where('kasgantung_id', $kasgantungheader->id)->get();
+            $getPengeluaranHeader = PengeluaranHeader::from(DB::raw("pengeluaranheader with (readuncommitted)"))
+                ->where('nobukti', $kasgantungheader->pengeluaran_nobukti)->first();
+            $getPengeluaranDetail = PengeluaranDetail::from(DB::raw("pengeluarandetail with (readuncommitted)"))
+                ->where('nobukti', $kasgantungheader->pengeluaran_nobukti)->get();
+            $getJurnalHeader = JurnalUmumHeader::from(DB::raw("jurnalumumheader with (readuncommitted)"))
+                ->where('nobukti', $kasgantungheader->pengeluaran_nobukti)->first();
+            $getJurnalDetail = JurnalUmumDetail::from(DB::raw("jurnalumumdetail with (readuncommitted)"))
+                ->where('nobukti', $kasgantungheader->pengeluaran_nobukti)->get();
 
-        PengeluaranHeader::where('nobukti', $kasgantungheader->pengeluaran_nobukti)->delete();
-        JurnalUmumHeader::where('nobukti', $kasgantungheader->pengeluaran_nobukti)->delete();
+            $isDelete = KasGantungHeader::where('id', $kasgantungheader->id)->delete();
+            PengeluaranHeader::where('nobukti', $kasgantungheader->pengeluaran_nobukti)->delete();
+            JurnalUmumHeader::where('nobukti', $kasgantungheader->pengeluaran_nobukti)->delete();
 
-        if ($kasgantungheader) {
-            $datalogtrail = [
-                'namatabel' => strtoupper($kasgantungheader->getTable()),
-                'postingdari' => 'DELETE KAS GANTUNG HEADER',
-                'idtrans' => $kasgantungheader->id,
-                'nobuktitrans' => $kasgantungheader->nobukti,
-                'aksi' => 'DELETE',
-                'datajson' => $kasgantungheader->toArray(),
-                'modifiedby' => auth('api')->user()->name
-            ];
+            if ($isDelete) {
+                $datalogtrail = [
+                    'namatabel' => strtoupper($kasgantungheader->getTable()),
+                    'postingdari' => 'DELETE KAS GANTUNG HEADER',
+                    'idtrans' => $kasgantungheader->id,
+                    'nobuktitrans' => $kasgantungheader->nobukti,
+                    'aksi' => 'DELETE',
+                    'datajson' => $kasgantungheader->toArray(),
+                    'modifiedby' => auth('api')->user()->name
+                ];
 
-            $data = new StoreLogTrailRequest($datalogtrail);
-            $storedLogTrail = app(LogTrailController::class)->store($data);
+                $data = new StoreLogTrailRequest($datalogtrail);
+                $storedLogTrail = app(LogTrailController::class)->store($data);
 
-            // DELETE KAS GANTUNG DETAIL
-            $logTrailKasgantungDetail = [
-                'namatabel' => 'KASGANTUNGDETAIL',
-                'postingdari' => 'DELETE KAS GANTUNG DETAIL',
-                'idtrans' => $storedLogTrail['id'],
-                'nobuktitrans' => $kasgantungheader->nobukti,
-                'aksi' => 'DELETE',
-                'datajson' => $getDetail->toArray(),
-                'modifiedby' => auth('api')->user()->name
-            ];
+                // DELETE KAS GANTUNG DETAIL
+                $logTrailKasgantungDetail = [
+                    'namatabel' => 'KASGANTUNGDETAIL',
+                    'postingdari' => 'DELETE KAS GANTUNG DETAIL',
+                    'idtrans' => $storedLogTrail['id'],
+                    'nobuktitrans' => $kasgantungheader->nobukti,
+                    'aksi' => 'DELETE',
+                    'datajson' => $getDetail->toArray(),
+                    'modifiedby' => auth('api')->user()->name
+                ];
 
-            $validatedLogTrailKasgantungDetail = new StoreLogTrailRequest($logTrailKasgantungDetail);
-            app(LogTrailController::class)->store($validatedLogTrailKasgantungDetail);
+                $validatedLogTrailKasgantungDetail = new StoreLogTrailRequest($logTrailKasgantungDetail);
+                app(LogTrailController::class)->store($validatedLogTrailKasgantungDetail);
 
-            // DELETE PENGELUARAN HEADER
-            $logTrailPengeluaranHeader = [
-                'namatabel' => 'PENGELUARANHEADER',
-                'postingdari' => 'DELETE PENGELUARAN HEADER DARI KAS GANTUNG',
-                'idtrans' => $getPengeluaranHeader->id,
-                'nobuktitrans' => $getPengeluaranHeader->nobukti,
-                'aksi' => 'DELETE',
-                'datajson' => $getPengeluaranHeader->toArray(),
-                'modifiedby' => auth('api')->user()->name
-            ];
+                // DELETE PENGELUARAN HEADER
+                $logTrailPengeluaranHeader = [
+                    'namatabel' => 'PENGELUARANHEADER',
+                    'postingdari' => 'DELETE PENGELUARAN HEADER DARI KAS GANTUNG',
+                    'idtrans' => $getPengeluaranHeader->id,
+                    'nobuktitrans' => $getPengeluaranHeader->nobukti,
+                    'aksi' => 'DELETE',
+                    'datajson' => $getPengeluaranHeader->toArray(),
+                    'modifiedby' => auth('api')->user()->name
+                ];
 
-            $validatedLogTrailPengeluaranHeader = new StoreLogTrailRequest($logTrailPengeluaranHeader);
-            $storedLogTrailPengeluaran = app(LogTrailController::class)->store($validatedLogTrailPengeluaranHeader);
+                $validatedLogTrailPengeluaranHeader = new StoreLogTrailRequest($logTrailPengeluaranHeader);
+                $storedLogTrailPengeluaran = app(LogTrailController::class)->store($validatedLogTrailPengeluaranHeader);
 
-            // DELETE PENGELUARAN DETAIL
-            $logTrailPengeluaranDetail = [
-                'namatabel' => 'PENGELUARANDETAIL',
-                'postingdari' => 'DELETE PENGELUARAN DETAIL DARI KAS GANTUNG',
-                'idtrans' => $storedLogTrailPengeluaran['id'],
-                'nobuktitrans' => $getPengeluaranHeader->nobukti,
-                'aksi' => 'DELETE',
-                'datajson' => $getPengeluaranDetail->toArray(),
-                'modifiedby' => auth('api')->user()->name
-            ];
+                // DELETE PENGELUARAN DETAIL
+                $logTrailPengeluaranDetail = [
+                    'namatabel' => 'PENGELUARANDETAIL',
+                    'postingdari' => 'DELETE PENGELUARAN DETAIL DARI KAS GANTUNG',
+                    'idtrans' => $storedLogTrailPengeluaran['id'],
+                    'nobuktitrans' => $getPengeluaranHeader->nobukti,
+                    'aksi' => 'DELETE',
+                    'datajson' => $getPengeluaranDetail->toArray(),
+                    'modifiedby' => auth('api')->user()->name
+                ];
 
-            $validatedLogTrailPengeluaranDetail = new StoreLogTrailRequest($logTrailPengeluaranDetail);
-            app(LogTrailController::class)->store($validatedLogTrailPengeluaranDetail);
+                $validatedLogTrailPengeluaranDetail = new StoreLogTrailRequest($logTrailPengeluaranDetail);
+                app(LogTrailController::class)->store($validatedLogTrailPengeluaranDetail);
 
-            // DELETE JURNAL HEADER
-            $logTrailJurnalHeader = [
-                'namatabel' => 'JURNALUMUMHEADER',
-                'postingdari' => 'DELETE JURNAL UMUM HEADER DARI KAS GANTUNG',
-                'idtrans' => $getJurnalHeader->id,
-                'nobuktitrans' => $getJurnalHeader->nobukti,
-                'aksi' => 'DELETE',
-                'datajson' => $getJurnalHeader->toArray(),
-                'modifiedby' => auth('api')->user()->name
-            ];
+                // DELETE JURNAL HEADER
+                $logTrailJurnalHeader = [
+                    'namatabel' => 'JURNALUMUMHEADER',
+                    'postingdari' => 'DELETE JURNAL UMUM HEADER DARI KAS GANTUNG',
+                    'idtrans' => $getJurnalHeader->id,
+                    'nobuktitrans' => $getJurnalHeader->nobukti,
+                    'aksi' => 'DELETE',
+                    'datajson' => $getJurnalHeader->toArray(),
+                    'modifiedby' => auth('api')->user()->name
+                ];
 
-            $validatedLogTrailJurnalHeader = new StoreLogTrailRequest($logTrailJurnalHeader);
-            $storedLogTrailJurnal = app(LogTrailController::class)->store($validatedLogTrailJurnalHeader);
+                $validatedLogTrailJurnalHeader = new StoreLogTrailRequest($logTrailJurnalHeader);
+                $storedLogTrailJurnal = app(LogTrailController::class)->store($validatedLogTrailJurnalHeader);
 
-            // DELETE JURNAL DETAIL
-            $logTrailJurnalDetail = [
-                'namatabel' => 'JURNALUMUMDETAIL',
-                'postingdari' => 'DELETE JURNAL UMUM DETAIL DARI KAS GANTUNG',
-                'idtrans' => $storedLogTrailJurnal['id'],
-                'nobuktitrans' => $getJurnalHeader->nobukti,
-                'aksi' => 'DELETE',
-                'datajson' => $getJurnalDetail->toArray(),
-                'modifiedby' => auth('api')->user()->name
-            ];
+                // DELETE JURNAL DETAIL
+                $logTrailJurnalDetail = [
+                    'namatabel' => 'JURNALUMUMDETAIL',
+                    'postingdari' => 'DELETE JURNAL UMUM DETAIL DARI KAS GANTUNG',
+                    'idtrans' => $storedLogTrailJurnal['id'],
+                    'nobuktitrans' => $getJurnalHeader->nobukti,
+                    'aksi' => 'DELETE',
+                    'datajson' => $getJurnalDetail->toArray(),
+                    'modifiedby' => auth('api')->user()->name
+                ];
 
-            $validatedLogTrailJurnalDetail = new StoreLogTrailRequest($logTrailJurnalDetail);
-            app(LogTrailController::class)->store($validatedLogTrailJurnalDetail);
+                $validatedLogTrailJurnalDetail = new StoreLogTrailRequest($logTrailJurnalDetail);
+                app(LogTrailController::class)->store($validatedLogTrailJurnalDetail);
 
-            DB::commit();
+                DB::commit();
 
-            $selected = $this->getPosition($kasgantungheader, $kasgantungheader->getTable(), true);
-            $kasgantungheader->position = $selected->position;
-            $kasgantungheader->id = $selected->id;
-            $kasgantungheader->page = ceil($kasgantungheader->position / ($request->limit ?? 10));
+                $selected = $this->getPosition($kasgantungheader, $kasgantungheader->getTable(), true);
+                $kasgantungheader->position = $selected->position;
+                $kasgantungheader->id = $selected->id;
+                $kasgantungheader->page = ceil($kasgantungheader->position / ($request->limit ?? 10));
+    
+                return response([
+                    'status' => true,
+                    'message' => 'Berhasil dihapus',
+                    'data' => $kasgantungheader
+                ]);
+            }
 
             return response([
-                'status' => true,
-                'message' => 'Berhasil dihapus',
-                'data' => $kasgantungheader
-            ]);
-        } else {
-            DB::rollBack();
-
-            return response([
-                'status' => false,
                 'message' => 'Gagal dihapus'
-            ]);
+            ], 500);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return response($th->getMessage());
         }
     }
 
@@ -734,6 +736,7 @@ class KasGantungHeaderController extends Controller
 
                 $detailLogPengeluaran[] = $detailPengeluaran['detail']['pengeluarandetail']->toArray();
                 $detailLogJurnal = array_merge($detailLogJurnal, $detailPengeluaran['detail']['jurnaldetail']);
+
             }
 
             $datalogtrail = [

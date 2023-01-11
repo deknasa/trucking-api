@@ -23,9 +23,11 @@ class HutangBayarDetailController extends Controller
             'forReport' => $request->forReport ?? false,
             'sortIndex' => $request->sortOrder ?? 'id',
             'sortOrder' => $request->sortOrder ?? 'asc',
+            'offset' => $request->offset ?? (($request->page - 1) * $request->limit),
+            'limit' => $request->limit ?? 10,
         ];
 
-
+        $totalRows = 0;
         try {
             $query = HutangBayarDetail::from(DB::raw("hutangbayardetail as detail with (readuncommitted)"));
 
@@ -78,12 +80,14 @@ class HutangBayarDetailController extends Controller
                     'alatbayar.namaalatbayar as alatbayar_id',
                 )
                     ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'detail.alatbayar_id', 'alatbayar.id');
-
+                    $totalRows =  $query->count();
+                    $query->skip($params['offset'])->take($params['limit']);
                 $hutangbayarDetail = $query->get();
             }
             return response([
-                'data' => $hutangbayarDetail
-
+                'data' => $hutangbayarDetail,
+                'total' => $params['limit'] > 0 ? ceil( $totalRows / $params['limit']) : 1,
+                "records" =>$totalRows ?? 0,
             ]);
         } catch (\Throwable $th) {
             return response([
