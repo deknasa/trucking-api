@@ -25,7 +25,6 @@ class StoreJurnalUmumHeaderRequest extends FormRequest
     {
         $rules = [
             'tglbukti' => 'required',
-            'keterangan' => 'required',
         ];
 
         $relatedRequests = [

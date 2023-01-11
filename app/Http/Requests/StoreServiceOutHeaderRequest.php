@@ -27,7 +27,6 @@ class StoreServiceOutHeaderRequest extends FormRequest
             'tglbukti' => 'required',
             'trado' => 'required',
             'tglkeluar' => 'required',
-            'keterangan' => 'required',
         ];
         $relatedRequests = [
             StoreServiceOutDetailRequest::class

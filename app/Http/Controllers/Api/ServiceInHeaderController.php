@@ -61,7 +61,6 @@ class ServiceInHeaderController extends Controller
             $servicein->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $servicein->trado_id = $request->trado_id;
             $servicein->tglmasuk = date('Y-m-d', strtotime($request->tglmasuk));
-            $servicein->keterangan = $request->keterangan;
             $servicein->statusformat =  $format->id;
             $servicein->modifiedby = auth('api')->user()->name;
 
@@ -170,7 +169,6 @@ class ServiceInHeaderController extends Controller
             $serviceinheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $serviceinheader->trado_id = $request->trado_id;
             $serviceinheader->tglmasuk = date('Y-m-d', strtotime($request->tglmasuk));
-            $serviceinheader->keterangan = $request->keterangan;
             $serviceinheader->modifiedby = auth('api')->user()->name;
 
             if ($serviceinheader->save()) {

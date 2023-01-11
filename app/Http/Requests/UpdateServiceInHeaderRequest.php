@@ -27,7 +27,6 @@ class UpdateServiceInHeaderRequest extends FormRequest
             'tglbukti' => 'required',
             'trado' => 'required',
             'tglmasuk' => 'required',
-            'keterangan' => 'required',
         ];
         $relatedRequests = [
             UpdateServiceInDetailRequest::class

@@ -75,7 +75,6 @@ class JurnalUmumHeaderController extends Controller
             }
 
             $jurnalumum->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
-            $jurnalumum->keterangan = $request->keterangan;
             $jurnalumum->postingdari = $request->postingdari ?? 'ENTRY JURNAL UMUM';
             $jurnalumum->statusapproval = $statusApproval->id ?? $request->statusapproval;
             $jurnalumum->userapproval = '';
@@ -238,7 +237,6 @@ class JurnalUmumHeaderController extends Controller
 
         try {
             $jurnalumumheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
-            $jurnalumumheader->keterangan = $request->keterangan;
             $jurnalumumheader->modifiedby = auth('api')->user()->name;
 
 

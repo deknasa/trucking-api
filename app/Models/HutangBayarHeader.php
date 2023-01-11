@@ -34,8 +34,8 @@ class HutangBayarHeader extends MyModel
                 'hutangbayarheader.id',
                 'hutangbayarheader.nobukti',
                 'hutangbayarheader.tglbukti',
-                'hutangbayarheader.keterangan',
                 'hutangbayarheader.pengeluaran_nobukti',
+                'hutangbayarheader.coa',
                 'hutangbayarheader.userapproval',
                 'statusapproval.memo as statusapproval',
                 DB::raw('(case when (year(hutangbayarheader.tglapproval) <= 2000) then null else hutangbayarheader.tglapproval end ) as tglapproval'),
@@ -49,12 +49,13 @@ class HutangBayarHeader extends MyModel
 
                 'bank.namabank as bank_id',
                 'supplier.namasupplier as supplier_id',
-                'pelanggan.namapelanggan as pelanggan_id'
+                'alatbayar.keterangan as alatbayar_id',
+                'hutangbayarheader.tglcair'
 
             )
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'hutangbayarheader.bank_id', 'bank.id')
             ->leftJoin(DB::raw("supplier with (readuncommitted)"), 'hutangbayarheader.supplier_id', 'supplier.id')
-            ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'hutangbayarheader.pelanggan_id', 'pelanggan.id')
+            ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'hutangbayarheader.alatbayar_id', 'alatbayar.id')
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'hutangbayarheader.statuscetak', 'statuscetak.id')
             ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'hutangbayarheader.statusapproval', 'statusapproval.id');
 
@@ -78,7 +79,6 @@ class HutangBayarHeader extends MyModel
                 'hutangbayarheader.id',
                 'hutangbayarheader.nobukti',
                 'hutangbayarheader.tglbukti',
-                'hutangbayarheader.keterangan',
                 'hutangbayarheader.modifiedby',
                 'hutangbayarheader.updated_at',
                 'hutangbayarheader.bank_id',
@@ -86,8 +86,6 @@ class HutangBayarHeader extends MyModel
                 'hutangbayarheader.statuscetak',
                 'hutangbayarheader.supplier_id',
                 'supplier.namasupplier as supplier',
-                'hutangbayarheader.pelanggan_id',
-                'pelanggan.namapelanggan as pelanggan',
                 'hutangbayarheader.pengeluaran_nobukti',
                 'hutangbayarheader.alatbayar_id',
                 'alatbayar.keterangan as alatbayar',
@@ -95,7 +93,6 @@ class HutangBayarHeader extends MyModel
             )
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'hutangbayarheader.bank_id', 'bank.id')
             ->leftJoin(DB::raw("supplier with (readuncommitted)"), 'hutangbayarheader.supplier_id', 'supplier.id')
-            ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'hutangbayarheader.pelanggan_id', 'pelanggan.id')
             ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'hutangbayarheader.alatbayar_id', 'alatbayar.id')
             ->where('hutangbayarheader.id', $id);
 
@@ -120,15 +117,14 @@ class HutangBayarHeader extends MyModel
                     "$this->table.id,
                 $this->table.nobukti,
                 $this->table.tglbukti,
-                $this->table.keterangan,
                 $this->table.pengeluaran_nobukti,
                 'bank.namabank as bank_id',
                 'supplier.namasupplier as supplier_id',
-                'akunpusat.coa as coa',
+                $this->table.coa,
                 'statusapproval.text as statusapproval',
                 $this->table.userapproval,
                 $this->table.tglapproval,
-                'statuscetak.momo as statuscetak',
+                'statuscetak.memo as statuscetak',
                 $this->table.userbukacetak,
                 $this->table.tglbukacetak,
                 $this->table.jumlahcetak,
@@ -140,7 +136,6 @@ class HutangBayarHeader extends MyModel
             )
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'hutangbayarheader.bank_id', 'bank.id')
             ->leftJoin(DB::raw("supplier with (readuncommitted)"), 'hutangbayarheader.supplier_id', 'supplier.id')
-            ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'hutangbayarheader.coa', 'akunpusat.coa')
             ->join(DB::raw("parameter as statuscetak with (readuncommitted)"), 'hutangbayarheader.statuscetak', 'statuscetak.id')
             ->join(DB::raw("parameter as statusapproval with (readuncommitted)"), 'hutangbayarheader.statusapproval', 'statusapproval.id');
     }
@@ -229,7 +224,6 @@ class HutangBayarHeader extends MyModel
             $table->bigInteger('id')->default('0');
             $table->string('nobukti', 1000)->default('');
             $table->date('tglbukti')->default('1900/1/1');
-            $table->longText('keterangan')->default('');
             $table->string('pengeluaran_nobukti')->default('0');
             $table->string('bank_id')->default('0');
             $table->string('supplier_id')->default('0');
@@ -252,7 +246,7 @@ class HutangBayarHeader extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'keterangan', 'pengeluaran_nobukti', 'bank_id', 'supplier_id', 'coa', 'statusapproval', 'userapproval', 'tglapproval', 'statuscetak', 'userbukacetak', 'tglbukacetak', 'jumlahcetak', 'modifiedby', 'created_at', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'pengeluaran_nobukti', 'bank_id', 'supplier_id', 'coa', 'statusapproval', 'userapproval', 'tglapproval', 'statuscetak', 'userbukacetak', 'tglbukacetak', 'jumlahcetak', 'modifiedby', 'created_at', 'updated_at'], $models);
 
 
         return  $temp;

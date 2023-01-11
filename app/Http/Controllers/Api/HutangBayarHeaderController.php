@@ -84,10 +84,8 @@ class HutangBayarHeaderController extends Controller
 
             $hutangbayarheader = new HutangBayarHeader();
             $hutangbayarheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
-            $hutangbayarheader->keterangan = $request->keterangan;
             $hutangbayarheader->bank_id = $request->bank_id;
             $hutangbayarheader->supplier_id = $request->supplier_id ?? '';
-            $hutangbayarheader->pelanggan_id = $request->pelanggan_id ?? '';
             $hutangbayarheader->coa = $memo['JURNAL'];
             $hutangbayarheader->pengeluaran_nobukti = '';
             $hutangbayarheader->statusapproval = $statusApproval->id ?? $request->statusapproval;
@@ -213,7 +211,6 @@ class HutangBayarHeaderController extends Controller
                 'nobukti' => $nobuktiPengeluaran,
                 'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
                 'pelanggan_id' => $hutang->pelanggan_id,
-                'keterangan' => $request->keterangan,
                 'statusjenistransaksi' => $jenisTransaksi->id,
                 'postingdari' => 'ENTRY HUTANG BAYAR',
                 'statusapproval' => $statusApproval->id,
@@ -342,10 +339,8 @@ class HutangBayarHeaderController extends Controller
             $memo = json_decode($getCoaDebet->memo, true);
 
             $hutangbayarheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
-            $hutangbayarheader->keterangan = $request->keterangan ?? '';
             $hutangbayarheader->bank_id = $request->bank_id;
             $hutangbayarheader->supplier_id = $request->supplier_id ?? '';
-            $hutangbayarheader->pelanggan_id = $request->pelanggan_id ?? '';
             $hutangbayarheader->alatbayar_id = $request->alatbayar_id;
             $hutangbayarheader->tglcair = date('Y-m-d', strtotime($request->tglcair));
             $hutangbayarheader->coa = $memo['JURNAL'];
@@ -461,7 +456,6 @@ class HutangBayarHeaderController extends Controller
                 'nobukti' => $nobuktiPengeluaran,
                 'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
                 'pelanggan_id' => $hutang->pelanggan_id,
-                'keterangan' => $request->keterangan,
                 'statusjenistransaksi' => $jenisTransaksi->id,
                 'postingdari' => 'ENTRY HUTANG BAYAR',
                 'statusapproval' => $statusApproval->id,

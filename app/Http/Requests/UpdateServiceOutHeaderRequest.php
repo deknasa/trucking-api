@@ -26,8 +26,7 @@ class UpdateServiceOutHeaderRequest extends FormRequest
         $rules = [
             'tglbukti' => 'required',
             'trado' => 'required',
-            'tglkeluar' => 'required',
-            'keterangan' => 'required',
+            'tglkeluar' => 'required'
         ];
         $relatedRequests = [
             UpdateServiceOutDetailRequest::class

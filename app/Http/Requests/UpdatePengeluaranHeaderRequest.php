@@ -25,7 +25,6 @@ class UpdatePengeluaranHeaderRequest extends FormRequest
     {
         $rules = [
             'pelanggan' => 'required',
-            'keterangan' => 'required',
             'cabang' => 'required',
             'statusjenistransaksi' => 'required',
             'dibayarke' => 'required',

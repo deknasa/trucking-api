@@ -33,10 +33,8 @@ class HutangHeader extends MyModel
                 'hutangheader.id',
                 'hutangheader.nobukti',
                 'hutangheader.tglbukti',
-                'hutangheader.keterangan',
 
                 'hutangheader.coa',
-                'pelanggan.namapelanggan as pelanggan_id',
                 'supplier.namasupplier as supplier_id',
                 'hutangheader.total',
                 'parameter.memo as statuscetak',
@@ -49,7 +47,6 @@ class HutangHeader extends MyModel
                 'hutangheader.updated_at'
             )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'hutangheader.statuscetak', 'parameter.id')
-            ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'hutangheader.pelanggan_id', 'pelanggan.id')
             ->leftJoin(DB::raw("supplier with (readuncommitted)"), 'hutangheader.supplier_id', 'supplier.id');
 
         $this->totalRows = $query->count();
@@ -72,9 +69,6 @@ class HutangHeader extends MyModel
                 'hutangheader.id',
                 'hutangheader.nobukti',
                 'hutangheader.tglbukti',
-                'hutangheader.keterangan',
-                'pelanggan.namapelanggan as pelanggan',
-                'pelanggan.id as pelanggan_id',
                 'supplier.namasupplier as supplier',
                 'supplier.id as supplier_id',
                 'hutangheader.statuscetak',
@@ -84,7 +78,6 @@ class HutangHeader extends MyModel
                 'hutangheader.updated_at'
             )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'hutangheader.statuscetak', 'parameter.id')
-            ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'hutangheader.pelanggan_id', 'pelanggan.id')
             ->leftJoin(DB::raw("supplier with (readuncommitted)"), 'hutangheader.supplier_id', 'supplier.id')
 
             ->where('hutangheader.id', $id);
@@ -158,9 +151,8 @@ class HutangHeader extends MyModel
                     "$this->table.id,
                  $this->table.nobukti,
                  $this->table.tglbukti,
-                 $this->table.keterangan,
                  $this->table.coa,
-                 'pelanggan.namapelanggan as pelanggan_id',
+                 'supplier.namasupplier as supplier_id',
                  $this->table.total,
                  'parameter.text as statuscetak',
                  $this->table.userbukacetak,
@@ -173,7 +165,7 @@ class HutangHeader extends MyModel
                 )
 
             )->leftJoin(DB::raw("parameter with (readuncommitted)"), 'hutangheader.statuscetak', 'parameter.id')
-            ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'hutangheader.pelanggan_id', 'pelanggan.id');
+            ->leftJoin(DB::raw("supplier with (readuncommitted)"), 'hutangheader.supplier_id', 'supplier.id');
     }
 
     public function createTemp(string $modelTable)
@@ -183,9 +175,8 @@ class HutangHeader extends MyModel
             $table->bigInteger('id')->default('0');
             $table->string('nobukti', 50)->unique();
             $table->date('tglbukti')->default('1900/1/1');
-            $table->longText('keterangan')->default('');
             $table->string('coa', 50)->default('');
-            $table->string('pelanggan_id', 50)->default('');
+            $table->string('supplier_id', 50)->default('');
             $table->double('total', 15, 2)->default(0);
             $table->string('statuscetak', 1000)->default('');
             $table->string('userbukacetak', 50)->default('');
@@ -203,7 +194,7 @@ class HutangHeader extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'keterangan', 'coa', 'pelanggan_id', 'total', 'statuscetak', 'userbukacetak', 'tglbukacetak', 'jumlahcetak', 'modifiedby', 'created_at', 'updated_at', 'statusformat'], $models);
+        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'coa', 'supplier_id', 'total', 'statuscetak', 'userbukacetak', 'tglbukacetak', 'jumlahcetak', 'modifiedby', 'created_at', 'updated_at', 'statusformat'], $models);
 
         return $temp;
     }
@@ -221,8 +212,8 @@ class HutangHeader extends MyModel
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statuscetak') {
                             $query = $query->where('parameter.text', '=', "$filters[data]");
-                        } else if ($filters['field'] == 'pelanggan_id') {
-                            $query = $query->where('pelanggan.namapelanggan', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'supplier_id') {
+                            $query = $query->where('supplier.namasupplier', 'LIKE', "%$filters[data]%");
                         } else {
                             $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
@@ -233,8 +224,8 @@ class HutangHeader extends MyModel
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statuscetak') {
                             $query = $query->where('parameter.text', '=', "$filters[data]");
-                        } else if ($filters['field'] == 'pelanggan_id') {
-                            $query = $query->where('pelanggan.namapelanggan', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'supplier_id') {
+                            $query = $query->where('supplier.namasupplier', 'LIKE', "%$filters[data]%");
                         } else {
                             $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }

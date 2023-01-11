@@ -44,7 +44,6 @@ class ServiceOutHeader extends MyModel
             'statuscetak.memo as statuscetak',
 
             'serviceoutheader.tglkeluar',
-            'serviceoutheader.keterangan',
             'serviceoutheader.modifiedby',
             'serviceoutheader.created_at',
             'serviceoutheader.updated_at'
@@ -78,7 +77,6 @@ class ServiceOutHeader extends MyModel
             'statuscetak.memo as statuscetak',
 
             'serviceoutheader.tglkeluar',
-            'serviceoutheader.keterangan',
             'serviceoutheader.modifiedby',
             'serviceoutheader.created_at',
             'serviceoutheader.updated_at'
@@ -102,7 +100,6 @@ class ServiceOutHeader extends MyModel
             $this->table.tglbukti,
             'trado.keterangan as trado_id',
             $this->table.tglkeluar,
-            $this->table.keterangan,
             'statuscetak.memo as statuscetak',
 
             $this->table.modifiedby,
@@ -125,7 +122,6 @@ class ServiceOutHeader extends MyModel
             $table->date('tglbukti')->default('1900/1/1');
             $table->string('trado_id')->default('');
             $table->date('tglkeluar')->default('1900/1/1');
-            $table->longText('keterangan')->default('');
             $table->string('statuscetak', 50)->default('');
 
             $table->string('modifiedby', 50)->default('');
@@ -139,7 +135,7 @@ class ServiceOutHeader extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti',  'trado_id','tglkeluar','keterangan','statuscetak', 'modifiedby', 'created_at', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti',  'trado_id','tglkeluar','statuscetak', 'modifiedby', 'created_at', 'updated_at'], $models);
 
 
         return  $temp;

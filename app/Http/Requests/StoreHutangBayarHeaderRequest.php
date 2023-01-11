@@ -25,10 +25,10 @@ class StoreHutangBayarHeaderRequest extends FormRequest
     {
         $rules = [
             'tglbukti' => 'required',
-            'keterangan' => 'required',
             'bank' => 'required',
             'tglcair' => 'required',
-            'alatbayar' => 'required'
+            'alatbayar' => 'required',
+            'supplier' => 'required'
         ];
         $relatedRequests = [
             StoreHutangBayarDetailRequest::class
