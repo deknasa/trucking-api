@@ -37,7 +37,10 @@ class HutangDetailController extends Controller
             'forReport' => $request->forReport ?? false,
             'sortIndex' => $request->sortOrder ?? 'id',
             'sortOrder' => $request->sortOrder ?? 'asc',
+            'offset' => $request->offset ?? (($request->page - 1) * $request->limit),
+            'limit' => $request->limit ?? 10,
         ];
+        $totalRows = 0;
         try {
             $query = HutangDetail::from(DB::raw("hutangdetail as detail with (readuncommitted)"));
 
@@ -76,11 +79,16 @@ class HutangDetailController extends Controller
                     'detail.total',
                     'detail.keterangan',
                 );
-
+                $totalRows =  $query->count();
+                $query->skip($params['offset'])->take($params['limit']);
                 $hutangDetail = $query->get();
             }
             return response([
-                'data' => $hutangDetail
+                'data' => $hutangDetail,
+                'attributes' => [
+                    'totalRows' => $totalRows ?? 0,
+                    'totalPages' => $params['limit'] > 0 ? ceil( $totalRows / $params['limit']) : 1
+                ]
             ]);
         } catch (\Throwable $th) {
             return response([

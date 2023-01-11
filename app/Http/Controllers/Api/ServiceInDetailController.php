@@ -23,8 +23,10 @@ class ServiceInDetailController extends Controller
             'forReport' => $request->forReport ?? false,
             'sortIndex' => $request->sortOrder ?? 'id',
             'sortOrder' => $request->sortOrder ?? 'asc',
+            'offset' => $request->offset ?? (($request->page - 1) * $request->limit),
+            'limit' => $request->limit ?? 10,
         ];
-
+        $totalRows = 0;
         try {
             $query = ServiceInDetail::from(DB::raw("serviceindetail as detail with (readuncommitted)"));
 
@@ -69,7 +71,8 @@ class ServiceInDetailController extends Controller
 
                 )
                     ->leftJoin('mekanik', 'detail.mekanik_id', 'mekanik.id');
-
+                    $totalRows =  $query->count();
+                    $query->skip($params['offset'])->take($params['limit']);
                 $serviceInDetail = $query->get();
             }
             $idUser = auth('api')->user()->id;
@@ -80,6 +83,10 @@ class ServiceInDetailController extends Controller
             return response([
                 'data' => $serviceInDetail,
                 'user' => $getuser,
+                'attributes' => [
+                    'totalRows' => $totalRows ?? 0,
+                    'totalPages' => $params['limit'] > 0 ? ceil( $totalRows / $params['limit']) : 1
+                ]
             ]);
 
             return response([

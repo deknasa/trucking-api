@@ -64,7 +64,6 @@ class ServiceOutHeaderController extends Controller
             $serviceout->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $serviceout->trado_id = $request->trado_id;
             $serviceout->tglkeluar = date('Y-m-d', strtotime($request->tglkeluar));
-            $serviceout->keterangan = $request->keterangan;
             $serviceout->statusformat =  $format->id;
             $serviceout->modifiedby = auth('api')->user()->name;
 
@@ -169,7 +168,6 @@ class ServiceOutHeaderController extends Controller
             $serviceoutheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $serviceoutheader->trado_id = $request->trado_id;
             $serviceoutheader->tglkeluar = date('Y-m-d', strtotime($request->tglkeluar));
-            $serviceoutheader->keterangan = $request->keterangan;
             $serviceoutheader->modifiedby = auth('api')->user()->name;
 
 

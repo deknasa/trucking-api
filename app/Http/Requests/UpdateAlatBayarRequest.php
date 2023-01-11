@@ -27,7 +27,7 @@ class UpdateAlatBayarRequest extends FormRequest
             'kodealatbayar' => 'required',
             'namaalatbayar' => 'required',
             'keterangan' => 'required',
-            'statuslangsunggcair' => 'required',
+            'statuslangsungcair' => 'required',
             'statusdefault' => 'required',
             'bank' => 'required',
         ];
@@ -38,7 +38,7 @@ class UpdateAlatBayarRequest extends FormRequest
         return [
             'kodealatbayar' => 'kode alat bayar',
             'namaalatbayar' => 'nama alat bayar',
-            'statuslangsunggcair' => 'status langsung cair',
+            'statuslangsungcair' => 'status langsung cair',
             'statusdefault' => 'statusdefault',
         ];
     }

@@ -103,7 +103,6 @@ class PengeluaranHeaderController extends Controller
 
             $pengeluaranHeader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $pengeluaranHeader->pelanggan_id = $request->pelanggan_id;
-            $pengeluaranHeader->keterangan = $request->keterangan ?? '';
             $pengeluaranHeader->statusjenistransaksi = $request->statusjenistransaksi ?? 0;
             $pengeluaranHeader->postingdari = $request->postingdari ?? 'ENTRY PENGELUARAN KAS/BANK';
             $pengeluaranHeader->statusapproval = $statusApproval->id ?? $request->statusapproval;
@@ -207,7 +206,6 @@ class PengeluaranHeaderController extends Controller
                         'tanpaprosesnobukti' => 1,
                         'nobukti' => $pengeluaranHeader->nobukti,
                         'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
-                        'keterangan' => $request->keterangan,
                         'postingdari' => "ENTRY PENGELUARAN KAS/BANK",
                         'statusapproval' => $statusApp->id,
                         'userapproval' => "",
@@ -269,7 +267,6 @@ class PengeluaranHeaderController extends Controller
                     'tanpaprosesnobukti' => 1,
                     'nobukti' => $pengeluaranHeader->nobukti,
                     'tglbukti' => $pengeluaranHeader->tglbukti,
-                    'keterangan' => $pengeluaranHeader->keterangan,
                     'postingdari' => "ENTRY PENGELUARAN DARI $pengeluaranHeader->postingdari",
                     'statusapproval' => $statusApp->id,
                     'userapproval' => "",
@@ -349,7 +346,6 @@ class PengeluaranHeaderController extends Controller
 
             $pengeluaranheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $pengeluaranheader->pelanggan_id = $request->pelanggan_id;
-            $pengeluaranheader->keterangan = $request->keterangan ?? '';
             $pengeluaranheader->statusjenistransaksi = $request->statusjenistransaksi ?? 0;
             $pengeluaranheader->statusapproval = $statusApproval->id ?? 0;
             $pengeluaranheader->statuscetak = $statusCetak->id ?? 0;
@@ -439,7 +435,6 @@ class PengeluaranHeaderController extends Controller
                     'tanpaprosesnobukti' => 1,
                     'nobukti' => $pengeluaranheader->nobukti,
                     'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
-                    'keterangan' => $request->keterangan,
                     'postingdari' => "ENTRY PENGELUARAN KAS/BANK",
                     'statusapproval' => $statusApp->id,
                     'userapproval' => "",

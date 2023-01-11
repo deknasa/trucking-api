@@ -26,8 +26,10 @@ class KasGantungDetailController extends Controller
             'forReport' => $request->forReport ?? false,
             'sortIndex' => $request->sortOrder ?? 'id',
             'sortOrder' => $request->sortOrder ?? 'asc',
+            'offset' => $request->offset ?? (($request->page - 1) * $request->limit),
+            'limit' => $request->limit ?? 10,
         ];
-
+        $totalRows = 0;
         try {
             $query = KasGantungDetail::from(DB::raw("kasgantungdetail as detail with (readuncommitted)"));
 
@@ -76,11 +78,17 @@ class KasGantungDetailController extends Controller
                     'detail.nobukti',
                     'akunpusat.keterangancoa as coa',
                 )->leftjoin(DB::raw("akunpusat with (readuncommitted)"),'detail.coa','akunpusat.coa');
+                $totalRows =  $query->count();
+                $query->skip($params['offset'])->take($params['limit']);
                 $kasgantungDetail = $query->get();
             }
 
             return response([
-                'data' => $kasgantungDetail
+                'data' => $kasgantungDetail,
+                'attributes' => [
+                    'totalRows' => $totalRows ?? 0,
+                    'totalPages' => $params['limit'] > 0 ? ceil( $totalRows / $params['limit']) : 1
+                ]
             ]);
         } catch (\Throwable $th) {
             return response([

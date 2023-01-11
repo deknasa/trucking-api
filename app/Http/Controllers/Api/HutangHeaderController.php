@@ -86,25 +86,25 @@ class HutangHeaderController extends Controller
             $memo = json_decode($getCoaDebet->memo, true);
 
             if ($proseslain == "") {
-                if ($request->supplier == '' && $request->pelanggan == '') {
-                    $query = Error::from(DB::raw("error with (readuncommitted)"))
-                        ->select('keterangan')
-                        ->where('kodeerror', '=', 'WISP')
-                        ->first();
-                    return response([
-                        'errors' => "$query->keterangan",
-                        'message' => "$query->keterangan",
-                    ], 500);
-                } else if ($request->supplier != '' && $request->pelanggan != '') {
-                    $query = Error::from(DB::raw("error with (readuncommitted)"))
-                        ->select('keterangan')
-                        ->where('kodeerror', '=', 'PSP')
-                        ->first();
-                    return response([
-                        'errors' => "$query->keterangan",
-                        'message' => "$query->keterangan",
-                    ], 500);
-                }
+                // if ($request->supplier == '' && $request->pelanggan == '') {
+                //     $query = Error::from(DB::raw("error with (readuncommitted)"))
+                //         ->select('keterangan')
+                //         ->where('kodeerror', '=', 'WISP')
+                //         ->first();
+                //     return response([
+                //         'errors' => "$query->keterangan",
+                //         'message' => "$query->keterangan",
+                //     ], 500);
+                // } else if ($request->supplier != '' && $request->pelanggan != '') {
+                //     $query = Error::from(DB::raw("error with (readuncommitted)"))
+                //         ->select('keterangan')
+                //         ->where('kodeerror', '=', 'PSP')
+                //         ->first();
+                //     return response([
+                //         'errors' => "$query->keterangan",
+                //         'message' => "$query->keterangan",
+                //     ], 500);
+                // }
                 $total = array_sum($request->total_detail);
                 $tglbukti = date('Y-m-d', strtotime($request->tglbukti));
                 $coa = $memo['JURNAL'];
@@ -116,10 +116,8 @@ class HutangHeaderController extends Controller
 
             $hutangHeader = new HutangHeader();
             $hutangHeader->tglbukti = $tglbukti;
-            $hutangHeader->keterangan = $request->keterangan ?? '';
             $hutangHeader->coa = $coa;
-            $hutangHeader->pelanggan_id = $request->pelanggan_id ?? '';
-            $hutangHeader->supplier_id = $request->supplier_id ?? '';
+            $hutangHeader->supplier_id = $request->supplier_id;
             $hutangHeader->postingdari = $request->postingdari ?? 'ENTRY HUTANG';
             $hutangHeader->statusformat = $format->id;
             $hutangHeader->statuscetak = $statusCetak->id;
@@ -211,7 +209,6 @@ class HutangHeaderController extends Controller
                 'tanpaprosesnobukti' => 1,
                 'nobukti' => $hutangHeader->nobukti,
                 'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
-                'keterangan' => $request->keterangan,
                 'postingdari' => "ENTRY HUTANG",
                 'statusapproval' => $statusApp->id,
                 'userapproval' => "",
@@ -358,25 +355,25 @@ class HutangHeaderController extends Controller
         try {
 
             if ($proseslain == "") {
-                if ($request->supplier == '' && $request->pelanggan == '') {
-                    $query = Error::from(DB::raw("error with (readuncommitted)"))
-                        ->select('keterangan')
-                        ->where('kodeerror', '=', 'WISP')
-                        ->first();
-                    return response([
-                        'errors' => "$query->keterangan",
-                        'message' => "$query->keterangan",
-                    ], 500);
-                } else if ($request->supplier != '' && $request->pelanggan != '') {
-                    $query = Error::from(DB::raw("error with (readuncommitted)"))
-                        ->select('keterangan')
-                        ->where('kodeerror', '=', 'PSP')
-                        ->first();
-                    return response([
-                        'errors' => "$query->keterangan",
-                        'message' => "$query->keterangan",
-                    ], 500);
-                }
+                // if ($request->supplier == '' && $request->pelanggan == '') {
+                //     $query = Error::from(DB::raw("error with (readuncommitted)"))
+                //         ->select('keterangan')
+                //         ->where('kodeerror', '=', 'WISP')
+                //         ->first();
+                //     return response([
+                //         'errors' => "$query->keterangan",
+                //         'message' => "$query->keterangan",
+                //     ], 500);
+                // } else if ($request->supplier != '' && $request->pelanggan != '') {
+                //     $query = Error::from(DB::raw("error with (readuncommitted)"))
+                //         ->select('keterangan')
+                //         ->where('kodeerror', '=', 'PSP')
+                //         ->first();
+                //     return response([
+                //         'errors' => "$query->keterangan",
+                //         'message' => "$query->keterangan",
+                //     ], 500);
+                // }
             }
 
             $getCoaDebet = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
@@ -384,25 +381,25 @@ class HutangHeaderController extends Controller
             $memo = json_decode($getCoaDebet->memo, true);
 
             if ($proseslain == "") {
-                if ($request->supplier == '' && $request->pelanggan == '') {
-                    $query = Error::from(DB::raw("error with (readuncommitted)"))
-                        ->select('keterangan')
-                        ->where('kodeerror', '=', 'WISP')
-                        ->first();
-                    return response([
-                        'errors' => "$query->keterangan",
-                        'message' => "$query->keterangan",
-                    ], 500);
-                } else if ($request->supplier != '' && $request->pelanggan != '') {
-                    $query = Error::from(DB::raw("error with (readuncommitted)"))
-                        ->select('keterangan')
-                        ->where('kodeerror', '=', 'PSP')
-                        ->first();
-                    return response([
-                        'errors' => "$query->keterangan",
-                        'message' => "$query->keterangan",
-                    ], 500);
-                }
+                // if ($request->supplier == '' && $request->pelanggan == '') {
+                //     $query = Error::from(DB::raw("error with (readuncommitted)"))
+                //         ->select('keterangan')
+                //         ->where('kodeerror', '=', 'WISP')
+                //         ->first();
+                //     return response([
+                //         'errors' => "$query->keterangan",
+                //         'message' => "$query->keterangan",
+                //     ], 500);
+                // } else if ($request->supplier != '' && $request->pelanggan != '') {
+                //     $query = Error::from(DB::raw("error with (readuncommitted)"))
+                //         ->select('keterangan')
+                //         ->where('kodeerror', '=', 'PSP')
+                //         ->first();
+                //     return response([
+                //         'errors' => "$query->keterangan",
+                //         'message' => "$query->keterangan",
+                //     ], 500);
+                // }
                 $total = array_sum($request->total_detail);
                 $coa = $memo['JURNAL'];
             } else {
@@ -412,10 +409,8 @@ class HutangHeaderController extends Controller
 
             $hutangheader = Hutangheader::lockForUpdate()->findOrFail($hutangheader->id);
             $hutangheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
-            $hutangheader->keterangan = $request->keterangan ?? '';
             $hutangheader->coa =$coa;
-            $hutangheader->pelanggan_id = $request->pelanggan_id ?? '';
-            $hutangheader->supplier_id = $request->supplier_id ?? '';
+            $hutangheader->supplier_id = $request->supplier_id;
             $hutangheader->total = array_sum($request->total_detail);
             $hutangheader->modifiedby = auth('api')->user()->name;
 
@@ -496,7 +491,6 @@ class HutangHeaderController extends Controller
                 'tanpaprosesnobukti' => 1,
                 'nobukti' => $hutangheader->nobukti,
                 'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
-                'keterangan' => $request->keterangan,
                 'postingdari' => "ENTRY HUTANG",
                 'statusapproval' => $statusApp->id,
                 'userapproval' => "",

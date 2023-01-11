@@ -26,8 +26,7 @@ class StoreServiceInHeaderRequest extends FormRequest
         $rules = [
             'tglbukti' => 'required',
             'trado' => 'required',
-            'tglmasuk' => 'required',
-            'keterangan' => 'required',
+            'tglmasuk' => 'required'
         ];
         $relatedRequests = [
             StoreServiceInDetailRequest::class

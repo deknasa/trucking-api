@@ -23,9 +23,11 @@ class HutangBayarDetailController extends Controller
             'forReport' => $request->forReport ?? false,
             'sortIndex' => $request->sortOrder ?? 'id',
             'sortOrder' => $request->sortOrder ?? 'asc',
+            'offset' => $request->offset ?? (($request->page - 1) * $request->limit),
+            'limit' => $request->limit ?? 10,
         ];
 
-
+        $totalRows = 0;
         try {
             $query = HutangBayarDetail::from(DB::raw("hutangbayardetail as detail with (readuncommitted)"));
 
@@ -52,7 +54,7 @@ class HutangBayarDetailController extends Controller
                     'pelanggan.namapelanggan as pelanggan',
                     'detail.nominal',
                     'detail.keterangan',
-                    'detail.tglcair',
+                    'header.tglcair',
                     'detail.potongan',
                     'detail.hutang_nobukti',
                     'alatbayar.namaalatbayar as alatbayar_id',
@@ -62,7 +64,7 @@ class HutangBayarDetailController extends Controller
                     ->leftJoin(DB::raw("bank with (readuncommitted)"), 'header.bank_id', 'bank.id')
                     ->leftJoin(DB::raw("supplier with (readuncommitted)"), 'header.supplier_id', 'supplier.id')
                     ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'header.pelanggan_id', 'pelanggan.id')
-                    ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'detail.alatbayar_id', 'alatbayar.id');
+                    ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'header.alatbayar_id', 'alatbayar.id');
 
 
                 $hutangbayarDetail = $query->get();
@@ -71,19 +73,18 @@ class HutangBayarDetailController extends Controller
                     'detail.nobukti',
                     'detail.nominal',
                     'detail.keterangan',
-                    'detail.tglcair',
                     'detail.potongan',
-                    'detail.hutang_nobukti',
-
-                    'alatbayar.namaalatbayar as alatbayar_id',
+                    'detail.hutang_nobukti'
                 )
                     ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'detail.alatbayar_id', 'alatbayar.id');
-
+                    $totalRows =  $query->count();
+                    $query->skip($params['offset'])->take($params['limit']);
                 $hutangbayarDetail = $query->get();
             }
             return response([
-                'data' => $hutangbayarDetail
-
+                'data' => $hutangbayarDetail,
+                'total' => $params['limit'] > 0 ? ceil( $totalRows / $params['limit']) : 1,
+                "records" =>$totalRows ?? 0,
             ]);
         } catch (\Throwable $th) {
             return response([
@@ -103,8 +104,6 @@ class HutangBayarDetailController extends Controller
             $hutangbayarDetail->nominal = $request->nominal;
             $hutangbayarDetail->hutang_nobukti = $request->hutang_nobukti;
             $hutangbayarDetail->cicilan = $request->cicilan;
-            $hutangbayarDetail->alatbayar_id = $request->alatbayar_id;
-            $hutangbayarDetail->tglcair = date('Y-m-d', strtotime($request->tglcair));
             $hutangbayarDetail->potongan = $request->potongan;
             $hutangbayarDetail->keterangan = $request->keterangan;
             $hutangbayarDetail->modifiedby = auth('api')->user()->name;

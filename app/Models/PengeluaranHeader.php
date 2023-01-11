@@ -40,7 +40,6 @@ class PengeluaranHeader extends MyModel
 
             'pelanggan.namapelanggan as pelanggan_id',
 
-            'pengeluaranheader.keterangan',
             'pengeluaranheader.postingdari',
             'pengeluaranheader.dibayarke',
             'cabang.namacabang as cabang_id',
@@ -90,7 +89,6 @@ class PengeluaranHeader extends MyModel
             'pengeluaranheader.tglbukti',
             'pengeluaranheader.pelanggan_id',
             'pelanggan.namapelanggan as pelanggan',
-            'pengeluaranheader.keterangan',
             'pengeluaranheader.cabang_id',
             'cabang.namacabang as cabang',
             'pengeluaranheader.statusjenistransaksi',
@@ -124,7 +122,6 @@ class PengeluaranHeader extends MyModel
                  $this->table.nobukti,
                  $this->table.tglbukti,
                  'pelanggan.namapelanggan as pelanggan_id',
-                 $this->table.keterangan,
                  $this->table.postingdari,
                  $this->table.dibayarke,
                  'cabang.namacabang as cabang_id',
@@ -160,7 +157,6 @@ class PengeluaranHeader extends MyModel
             $table->string('nobukti', 1000)->default('');
             $table->date('tglbukti')->default('');
             $table->string('pelanggan_id', 1000)->default('');
-            $table->string('keterangan', 1000)->default('');
             $table->string('postingdari', 1000)->default('');
             $table->string('dibayarke', 1000)->default('');
             $table->string('cabang_id', 1000)->default('');
@@ -185,7 +181,7 @@ class PengeluaranHeader extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti','pelanggan_id', 'keterangan', 'postingdari', 'dibayarke', 'cabang_id', 'bank_id','statusjenistransaksi','statusapproval','transferkeac','transferkean','transferkebank','statuscetak','userbukacetak','tglbukacetak','jumlahcetak', 'modifiedby','created_at', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti','pelanggan_id', 'postingdari', 'dibayarke', 'cabang_id', 'bank_id','statusjenistransaksi','statusapproval','transferkeac','transferkean','transferkebank','statuscetak','userbukacetak','tglbukacetak','jumlahcetak', 'modifiedby','created_at', 'updated_at'], $models);
 
         return $temp;
     }

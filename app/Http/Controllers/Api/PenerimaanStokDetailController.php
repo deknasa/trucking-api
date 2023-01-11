@@ -28,6 +28,8 @@ class PenerimaanStokDetailController extends Controller
     public function index(Request $request)
     {
         $params = [
+            'offset' => $request->offset ?? (($request->page - 1) * $request->limit),
+            'limit' => $request->limit ?? 10,
             'id' => $request->id,
             'penerimaanstokheader_id' => $request->penerimaanstokheader_id,
             'withHeader' => $request->withHeader ?? false,
@@ -36,7 +38,7 @@ class PenerimaanStokDetailController extends Controller
             'sortIndex' => $request->sortOrder ?? 'id',
             'sortOrder' => $request->sortOrder ?? 'asc',
         ];
-
+        $totalRows = 0;
         try {
             $query = PenerimaanStokDetail::from('penerimaanstokdetail as detail');
 
@@ -67,7 +69,7 @@ class PenerimaanStokDetailController extends Controller
                     'detail.vulkanisirke',
                     'detail.modifiedby',
                 );
-
+                $totalRows =  $query->count();
                 $penerimaanStokDetail = $query->get();
             } else {
                 $query->select(
@@ -85,15 +87,19 @@ class PenerimaanStokDetailController extends Controller
                     'detail.modifiedby',
                 )
                     // ->leftJoin('penerimaanstok','penerimaanstokheader.penerimaanstok_id','penerimaanstok.id')
-
                     ->leftJoin('penerimaanstokheader', 'detail.penerimaanstokheader_id', 'penerimaanstokheader.id')
                     ->leftJoin('stok', 'detail.stok_id', 'stok.id');
-
-                $penerimaanStokDetail = $query->get();
+                    $totalRows =  $query->count();
+                    $query->skip($params['offset'])->take($params['limit']);
+                    $penerimaanStokDetail = $query->get();
+                    
             }
-
             return response([
-                'data' => $penerimaanStokDetail
+                'data' => $penerimaanStokDetail,
+                'attributes' => [
+                    'totalRows' => $totalRows ?? 0,
+                    'totalPages' => $params['limit'] > 0 ? ceil( $totalRows / $params['limit']) : 1
+                ]
             ]);
         } catch (\Throwable $th) {
             return response([

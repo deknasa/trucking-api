@@ -32,15 +32,10 @@ class HutangBayarDetail extends MyModel
             'hutangbayardetail.nominal',
             'hutangbayardetail.hutang_nobukti',
             'hutangbayardetail.cicilan',
-            'hutangbayardetail.tglcair',
             'hutangbayardetail.potongan',
             'hutangbayardetail.keterangan',
-
-            'alatbayar.namaalatbayar as alatbayar',
-            'alatbayar.id as alatbayar_id',
            
         )
-            ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'hutangbayardetail.alatbayar_id', 'alatbayar.id')
 
             ->where('hutangbayar_id', '=', $id);
 
