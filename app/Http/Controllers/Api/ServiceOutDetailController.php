@@ -25,7 +25,10 @@ class ServiceOutDetailController extends Controller
             'forReport' => $request->forReport ?? false,
             'sortIndex' => $request->sortOrder ?? 'id',
             'sortOrder' => $request->sortOrder ?? 'asc',
+            'offset' => $request->offset ?? (($request->page - 1) * $request->limit),
+            'limit' => $request->limit ?? 10,
         ];
+        $totalRows = 0;
         try {
             $query = ServiceOutDetail::from(DB::raw("serviceoutdetail as detail with (readuncommitted)"));
 
@@ -60,6 +63,8 @@ class ServiceOutDetailController extends Controller
                     'detail.servicein_nobukti',
                     'detail.keterangan',
                 );
+                $totalRows =  $query->count();
+                $query->skip($params['offset'])->take($params['limit']);
                 $serviceOutDetail = $query->get();
             }
 
@@ -70,6 +75,10 @@ class ServiceOutDetailController extends Controller
             return response([
                 'data' => $serviceOutDetail,
                 'user' => $getuser,
+                'attributes' => [
+                    'totalRows' => $totalRows ?? 0,
+                    'totalPages' => $params['limit'] > 0 ? ceil( $totalRows / $params['limit']) : 1
+                ]
             ]);
         } catch (\Throwable $th) {
             return response([

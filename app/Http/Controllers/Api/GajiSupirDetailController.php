@@ -22,7 +22,10 @@ class GajiSupirDetailController extends Controller
             'forReport' => $request->forReport ?? false,
             'sortIndex' => $request->sortOrder ?? 'id',
             'sortOrder' => $request->sortOrder ?? 'asc',
+            'offset' => $request->offset ?? (($request->page - 1) * $request->limit),
+            'limit' => $request->limit ?? 10,
         ];
+        $totalRows = 0;
         try {
             $query = GajiSupirDetail::from(DB::raw("gajisupirdetail as detail with (readuncommitted)"));
 
@@ -76,10 +79,14 @@ class GajiSupirDetailController extends Controller
                 ->leftJoin(DB::raw("suratpengantar with (readuncommitted)"),'detail.suratpengantar_nobukti','suratpengantar.nobukti')
                 ->leftJoin(DB::raw("kota as dari with (readuncommitted)"),'suratpengantar.dari_id','dari.id')
                 ->leftJoin(DB::raw("kota as sampai with (readuncommitted)"),'suratpengantar.sampai_id','sampai.id');
+                $totalRows =  $query->count();
+                $query->skip($params['offset'])->take($params['limit']);
                 $gajisupirDetail = $query->get();
             }
             return response([
-                'data' => $gajisupirDetail
+                'data' => $gajisupirDetail,
+                'total' => $params['limit'] > 0 ? ceil( $totalRows / $params['limit']) : 1,
+                "records" =>$totalRows ?? 0,
             ]);
         } catch (\Throwable $th) {
             return response([

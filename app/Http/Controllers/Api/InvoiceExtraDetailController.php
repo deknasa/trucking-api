@@ -30,7 +30,10 @@ class InvoiceExtraDetailController extends Controller
             'forReport' => $request->forReport ?? false,
             'sortIndex' => $request->sortOrder ?? 'id',
             'sortOrder' => $request->sortOrder ?? 'asc',
+            'offset' => $request->offset ?? (($request->page - 1) * $request->limit),
+            'limit' => $request->limit ?? 10,
         ];
+        $totalRows = 0;
         try {
             $query = InvoiceExtraDetail::from('invoiceextradetail as detail');
 
@@ -57,7 +60,7 @@ class InvoiceExtraDetailController extends Controller
                 )
 
                 ->leftJoin('invoiceextraheader', 'detail.invoiceextra_id', 'invoiceextraheader.id');
-                $penerimaanStokDetail = $query->get();
+                $invoiceExtraDetail = $query->get();
             } else {
                 $query->select(
                     'detail.invoiceextra_id',
@@ -69,12 +72,17 @@ class InvoiceExtraDetailController extends Controller
                 )
 
                 ->leftJoin('invoiceextraheader', 'detail.invoiceextra_id', 'invoiceextraheader.id');
-                 
-                $penerimaanStokDetail = $query->get();
+                $totalRows =  $query->count();
+                $query->skip($params['offset'])->take($params['limit']);
+                $invoiceExtraDetail = $query->get();
             }
 
             return response([
-                'data' => $penerimaanStokDetail
+                'data' => $invoiceExtraDetail,
+                'attributes' => [
+                    'totalRows' => $totalRows ?? 0,
+                    'totalPages' => $params['limit'] > 0 ? ceil( $totalRows / $params['limit']) : 1
+                ]
             ]);
         } catch (\Throwable $th) {
             return response([

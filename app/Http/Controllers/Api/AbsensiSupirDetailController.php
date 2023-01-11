@@ -17,6 +17,7 @@ class AbsensiSupirDetailController extends Controller
 {
     public function index(Request $request)
     {
+
         $params = [
             'id' => $request->id,
             'absensi_id' => $request->absensi_id,
@@ -25,8 +26,10 @@ class AbsensiSupirDetailController extends Controller
             'forReport' => $request->forReport ?? false,
             'sortIndex' => $request->sortOrder ?? 'id',
             'sortOrder' => $request->sortOrder ?? 'asc',
+            'offset' => $request->offset ?? (($request->page - 1) * $request->limit),
+            'limit' => $request->limit ?? 10,
         ];
-
+        $totalRows = 0;
         try {
             $query = AbsensiSupirDetail::from(DB::raw("absensisupirdetail as detail with (readuncommitted)"));
 
@@ -81,6 +84,8 @@ class AbsensiSupirDetailController extends Controller
                 ->leftjoin(DB::raw("trado with (readuncommitted)"), 'trado.id','detail.trado_id')
                 ->leftjoin(DB::raw("supir with (readuncommitted)"), 'supir.id','detail.supir_id')
                 ->leftjoin(DB::raw("absentrado with (readuncommitted)"), 'absentrado.id','detail.absen_id');
+                $totalRows =  $query->count();
+                $query->skip($params['offset'])->take($params['limit']);
                 $absensiSupirDetail = $query->get();
             }
             $idUser = auth('api')->user()->id;
@@ -91,6 +96,9 @@ class AbsensiSupirDetailController extends Controller
             return response([
                 'data' => $absensiSupirDetail,
                 'user' => $getuser,
+                'total' => $params['limit'] > 0 ? ceil( $totalRows / $params['limit']) : 1,
+                "records" =>$totalRows
+                    
             ]);
         } catch (\Throwable $th) {
             return response([

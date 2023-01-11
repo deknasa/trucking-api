@@ -24,7 +24,10 @@ class ProsesGajiSupirDetailController extends Controller
             'forReport' => $request->forReport ?? false,
             'sortIndex' => $request->sortOrder ?? 'id',
             'sortOrder' => $request->sortOrder ?? 'asc',
+            'offset' => $request->offset ?? (($request->page - 1) * $request->limit),
+            'limit' => $request->limit ?? 10,
         ];
+        $totalRows = 0;
         try {
             $query = ProsesGajiSupirDetail::from(DB::raw("prosesgajisupirdetail as detail with (readuncommitted)"));
 
@@ -65,10 +68,14 @@ class ProsesGajiSupirDetailController extends Controller
                 )
                 ->leftJoin(DB::raw("supir with (readuncommitted)"),'detail.supir_id','supir.id')
                 ->leftJoin(DB::raw("trado with (readuncommitted)"),'detail.trado_id','trado.id');
+                $totalRows =  $query->count();
+                $query->skip($params['offset'])->take($params['limit']);
                 $prosesgajisupirDetail = $query->get();
             }
             return response([
-                'data' => $prosesgajisupirDetail
+                'data' => $prosesgajisupirDetail,
+                'total' => $params['limit'] > 0 ? ceil( $totalRows / $params['limit']) : 1,
+                "records" =>$totalRows ?? 0,
             ]);
         } catch (\Throwable $th) {
             return response([

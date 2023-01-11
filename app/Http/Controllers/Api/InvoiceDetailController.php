@@ -25,7 +25,10 @@ class InvoiceDetailController extends Controller
             'forExport' => $request->forExport ?? false,
             'sortIndex' => $request->sortOrder ?? 'id',
             'sortOrder' => $request->sortOrder ?? 'asc',
+            'offset' => $request->offset ?? (($request->page - 1) * $request->limit),
+            'limit' => $request->limit ?? 10,
         ];
+        $totalRows = 0;
         try {
             $query = InvoiceDetail::from(DB::raw("invoicedetail as detail with (readuncommitted)"));
 
@@ -91,13 +94,16 @@ class InvoiceDetailController extends Controller
                     'detail.orderantrucking_nobukti',
                     'detail.suratpengantar_nobukti',
                 );
-
+                $totalRows =  $query->count();
+                $query->skip($params['offset'])->take($params['limit']);
                 $invoiceDetail = $query->get();
             }
            
 
             return response([
-                'data' => $invoiceDetail
+                'data' => $invoiceDetail,
+                'total' => $params['limit'] > 0 ? ceil( $totalRows / $params['limit']) : 1,
+                "records" =>$totalRows ?? 0,
             ]);
         } catch (\Throwable $th) {
             return response([

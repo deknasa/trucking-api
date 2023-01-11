@@ -28,8 +28,10 @@ class PengembalianKasGantungDetailController extends Controller
             'forReport' => $request->forReport ?? false,
             'sortIndex' => $request->sortOrder ?? 'id',
             'sortOrder' => $request->sortOrder ?? 'asc',
+            'offset' => $request->offset ?? (($request->page - 1) * $request->limit),
+            'limit' => $request->limit ?? 10,
         ];
-        // return $params;
+        $totalRows = 0;
         try {
             $query = PengembalianKasGantungDetail::from('pengembaliankasgantungdetail as detail');
 
@@ -67,12 +69,17 @@ keterangan',
                 // ->leftJoin('pengeluaranstok','pengeluaranstokheader.pengeluaranstok_id','pengeluaranstok.id')
 
                 ->leftJoin('pengembaliankasgantungheader', 'detail.pengembaliankasgantung_id', 'pengembaliankasgantungheader.id');
-                 
+                $totalRows =  $query->count();
+                $query->skip($params['offset'])->take($params['limit']);
                 $pengembalianKasGantungDetail = $query->get();
             }
 
             return response([
-                'data' => $pengembalianKasGantungDetail
+                'data' => $pengembalianKasGantungDetail,
+                'attributes' => [
+                    'totalRows' => $totalRows ?? 0,
+                    'totalPages' => $params['limit'] > 0 ? ceil( $totalRows / $params['limit']) : 1
+                ]
             ]);
         } catch (\Throwable $th) {
             return response([

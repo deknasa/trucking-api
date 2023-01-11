@@ -16,6 +16,8 @@ class PenerimaanTruckingDetailController extends Controller
     
     public function index(Request $request)
     {
+                // return $request->limit;
+
         $params = [
             'id' => $request->id,
             'penerimaantruckingheader_id' => $request->penerimaantruckingheader_id,
@@ -24,7 +26,10 @@ class PenerimaanTruckingDetailController extends Controller
             'forReport' => $request->forReport ?? false,
             'sortIndex' => $request->sortOrder ?? 'id',
             'sortOrder' => $request->sortOrder ?? 'asc',
+            'offset' => $request->offset ?? (($request->page - 1) * $request->limit),
+            'limit' => $request->limit ?? 10,
         ];
+        $totalRows = 0;
         try {
             $query = PenerimaanTruckingDetail::from(DB::raw("penerimaantruckingdetail as detail with (readuncommitted)"));
 
@@ -67,11 +72,16 @@ class PenerimaanTruckingDetailController extends Controller
                     'detail.pengeluarantruckingheader_nobukti',
                 )
                 ->leftJoin(DB::raw("supir with (readuncommitted)"), 'detail.supir_id', 'supir.id');
-                
+                $totalRows =  $query->count();
+                    $query->skip($params['offset'])->take($params['limit']);
                 $penerimaanTruckingDetail = $query->get();
             }
             return response([
                 'data' => $penerimaanTruckingDetail,
+                'attributes' => [
+                    'totalRows' => $totalRows ?? 0,
+                    'totalPages' => $params['limit'] > 0 ? ceil( $totalRows / $params['limit']) : 1
+                ]
             ]);
         } catch (\Throwable $th) {
             return response([
