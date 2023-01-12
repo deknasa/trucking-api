@@ -19,13 +19,14 @@ class CreateUpahsupirTable extends Migration
 
         Schema::create('upahsupir', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('parent_id')->default('0');
+            $table->unsignedBigInteger('tarif_id')->default('0');
             $table->unsignedBigInteger('kotadari_id')->default('0');
             $table->unsignedBigInteger('kotasampai_id')->default('0');
             $table->double('jarak',15,2)->default('0');
             $table->unsignedBigInteger('zona_id')->default('0');
             $table->integer('statusaktif')->length(11)->default('0');
             $table->date('tglmulaiberlaku')->default('1900/1/1');
-            $table->date('tglakhirberlaku')->default('1900/1/1');
             $table->integer('statusluarkota')->length(11)->default('0');
             $table->longText('gambar')->default('');
             $table->string('modifiedby',50)->Default('');            
@@ -34,12 +35,17 @@ class CreateUpahsupirTable extends Migration
             $table->foreign('kotadari_id', 'upahsupir_kota_kotadari_id_foreign')->references('id')->on('kota');
             $table->foreign('kotasampai_id', 'upahsupir_kota_kotasampai_id_foreign')->references('id')->on('kota');
             $table->foreign('zona_id', 'upahsupir_kota_zona_id_foreign')->references('id')->on('zona');
+            $table->foreign('parent_id', 'upahsupir_upahsupir_upahsupir_id_foreign')->references('id')->on('upahsupir');
+            $table->foreign('tarif_id', 'upahsupir_tarif_tarif_id_foreign')->references('id')->on('tarif');
+
 
         });
 
         DB::statement("ALTER TABLE upahsupir NOCHECK CONSTRAINT upahsupir_kota_kotadari_id_foreign");
         DB::statement("ALTER TABLE upahsupir NOCHECK CONSTRAINT upahsupir_kota_kotasampai_id_foreign");
         DB::statement("ALTER TABLE upahsupir NOCHECK CONSTRAINT upahsupir_kota_zona_id_foreign");
+        DB::statement("ALTER TABLE upahsupir NOCHECK CONSTRAINT upahsupir_upahsupir_upahsupir_id_foreign");
+        DB::statement("ALTER TABLE upahsupir NOCHECK CONSTRAINT upahsupir_tarif_tarif_id_foreign");
     }
 
     /**
