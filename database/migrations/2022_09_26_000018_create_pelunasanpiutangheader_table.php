@@ -20,24 +20,43 @@ class CreatePelunasanpiutangheaderTable extends Migration
             $table->id();
             $table->string('nobukti',50)->unique();
             $table->date('tglbukti')->default('1900/1/1');
-            $table->longText('keterangan')->default('');
             $table->unsignedBigInteger('bank_id')->default('0');
             $table->unsignedBigInteger('agen_id')->default('0');
             $table->unsignedBigInteger('cabang_id')->default('0');
+            $table->unsignedBigInteger('alatbayar_id')->default('0');
+            $table->unsignedBigInteger('pelanggan_id')->default('0');
+            $table->string('penerimaangiro_nobukti',50)->default('');
+            $table->string('penerimaan_nobukti',50)->default('');
+            $table->string('notakredit_nobukti',50)->default('');
+            $table->string('notadebet_nobukti',50)->default('');
+            $table->date('tglcair')->default('1900/1/1');
+            $table->string('nowarkat',50)->default('');
             $table->unsignedBigInteger('statusformat')->default(0);
             $table->string('modifiedby',50)->default('');
             $table->timestamps();
 
             $table->foreign('bank_id', 'pelunasanpiutangheader_bank_bank_id_foreign')->references('id')->on('bank');
             $table->foreign('agen_id', 'pelunasanpiutangheader_agen_agen_id_foreign')->references('id')->on('agen');
+            // $table->foreign('pelanggan_id', 'pelunasanpiutangheader_pelanggan_pelanggan_id_foreign')->references('id')->on('pelanggan');
             $table->foreign('cabang_id', 'pelunasanpiutangheader_cabang_cabang_id_foreign')->references('id')->on('cabang');
+            $table->foreign('alatbayar_id', 'pelunasanpiutangheader_alatbayar_alatbayar_id_foreign')->references('id')->on('alatbayar');
+            // $table->foreign('penerimaangiro_nobukti', 'pelunasanpiutangheader_penerimaangiroheader_nobukti_foreign')->references('nobukti')->on('penerimaangiroheader');
+            // $table->foreign('penerimaan_nobukti', 'pelunasanpiutangheader_penerimaanheader_nobukti_foreign')->references('nobukti')->on('penerimaanheader');
+            // $table->foreign('notakredit_nobukti', 'pelunasanpiutangheader_notakredit_nobukti_foreign')->references('nobukti')->on('notakreditheader');
+            // $table->foreign('notadebet_nobukti', 'pelunasanpiutangheader_notadebet_nobukti_foreign')->references('nobukti')->on('notadebetheader');
 
 
         });
 
         DB::statement("ALTER TABLE pelunasanpiutangheader NOCHECK CONSTRAINT pelunasanpiutangheader_bank_bank_id_foreign");
         DB::statement("ALTER TABLE pelunasanpiutangheader NOCHECK CONSTRAINT pelunasanpiutangheader_agen_agen_id_foreign");
+        // DB::statement("ALTER TABLE pelunasanpiutangheader NOCHECK CONSTRAINT pelunasanpiutangheader_pelanggan_pelanggan_id_foreign");
         DB::statement("ALTER TABLE pelunasanpiutangheader NOCHECK CONSTRAINT pelunasanpiutangheader_cabang_cabang_id_foreign");
+        DB::statement("ALTER TABLE pelunasanpiutangheader NOCHECK CONSTRAINT pelunasanpiutangheader_alatbayar_alatbayar_id_foreign");
+        // DB::statement("ALTER TABLE pelunasanpiutangheader NOCHECK CONSTRAINT pelunasanpiutangheader_penerimaangiroheader_nobukti_foreign");
+        // DB::statement("ALTER TABLE pelunasanpiutangheader NOCHECK CONSTRAINT pelunasanpiutangheader_penerimaanheader_nobukti_foreign");
+        // DB::statement("ALTER TABLE pelunasanpiutangheader NOCHECK CONSTRAINT pelunasanpiutangheader_notakredit_nobukti_foreign");
+        // DB::statement("ALTER TABLE pelunasanpiutangheader NOCHECK CONSTRAINT pelunasanpiutangheader_notadebet_nobukti_foreign");
 
     }
 
