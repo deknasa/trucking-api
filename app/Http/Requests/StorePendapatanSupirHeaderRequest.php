@@ -26,7 +26,6 @@ class StorePendapatanSupirHeaderRequest extends FormRequest
         $rules = [
             'tglbukti' => 'required',
             'bank' => 'required',
-            'keterangan' => 'required',
             'tgldari' => 'required',
             'tglsampai' => 'required',
             'periode' => 'required'

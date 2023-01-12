@@ -23,11 +23,41 @@ class StoreInvoiceExtraHeaderRequest extends FormRequest
      */
     public function rules()
     {
-        return [
+        $rules = [
             "agen"=>"required",
             "pelanggan"=>"required",
-            "keterangan"=>"required",
             "tglbukti"=>"required",
         ];
+        
+        $relatedRequests = [
+            StoreInvoiceExtraDetailRequest::class
+        ];
+
+        foreach ($relatedRequests as $relatedRequest) {
+            $rules = array_merge(
+                $rules,
+                (new $relatedRequest)->rules()
+            );
+        }
+        
+        return $rules;
     }
+    
+    public function attributes()
+    {
+        $attributes = [
+            'nominal_detail.*' => 'Harga',
+            'keterangan_detail.*' => 'Keterangan',
+        ];
+        
+        return $attributes;
+    }
+
+    public function messages() 
+    {
+        return [
+            'nominal_detail.*.gt' => 'Harga Tidak Boleh Kosong dan Harus Lebih Besar Dari 0'
+        ];
+    }
+
 }

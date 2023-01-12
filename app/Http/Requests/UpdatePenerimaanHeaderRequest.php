@@ -27,7 +27,6 @@ class UpdatePenerimaanHeaderRequest extends FormRequest
             'tglbukti' => 'required',
             'diterimadari' => 'required',
             'pelanggan' => 'required',
-            'keterangan' => 'required',
             'tgllunas'  => 'required',
             'cabang' => 'required',
             'statuskas' => 'required',

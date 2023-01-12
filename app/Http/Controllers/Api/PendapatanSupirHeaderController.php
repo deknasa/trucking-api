@@ -62,7 +62,6 @@ class PendapatanSupirHeaderController extends Controller
 
             $pendapatanSupir->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $pendapatanSupir->bank_id  = $request->bank_id;
-            $pendapatanSupir->keterangan  = $request->keterangan;
             $pendapatanSupir->tgldari  = date('Y-m-d', strtotime($request->tgldari));
             $pendapatanSupir->tglsampai  = date('Y-m-d', strtotime($request->tglsampai));
             $pendapatanSupir->statusapproval  = $statusApp->id;
@@ -175,7 +174,6 @@ class PendapatanSupirHeaderController extends Controller
         try {
             $pendapatanSupirHeader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $pendapatanSupirHeader->bank_id = $request->bank_id;
-            $pendapatanSupirHeader->keterangan = $request->keterangan;
             $pendapatanSupirHeader->tgldari = date('Y-m-d', strtotime($request->tgldari));
             $pendapatanSupirHeader->tglsampai = date('Y-m-d', strtotime($request->tglsampai));
             $pendapatanSupirHeader->periode = date('Y-m-d', strtotime($request->periode));

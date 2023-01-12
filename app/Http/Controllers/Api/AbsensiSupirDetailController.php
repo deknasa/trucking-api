@@ -54,7 +54,6 @@ class AbsensiSupirDetailController extends Controller
                     'header.id as id_header',
                     'header.nobukti as nobukti_header',
                     'header.tglbukti as tgl_header',
-                    'header.keterangan as keterangan_header',
                     'header.kasgantung_nobukti as kasgantung_nobukti_header',
                     'header.nominal as nominal_header',
                     'trado.keterangan as trado',

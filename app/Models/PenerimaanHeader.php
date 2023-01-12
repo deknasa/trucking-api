@@ -43,7 +43,6 @@ class PenerimaanHeader extends MyModel
                 'penerimaanheader.tglbukti',
                 'pelanggan.namapelanggan as pelanggan_id',
                 'bank.namabank as bank_id',
-                'penerimaanheader.keterangan',
                 'penerimaanheader.postingdari',
                 'penerimaanheader.diterimadari',
                 DB::raw('(case when (year(penerimaanheader.tgllunas) <= 2000) then null else penerimaanheader.tgllunas end ) as tgllunas'),
@@ -212,7 +211,7 @@ class PenerimaanHeader extends MyModel
     public function findAll($id)
     {
         $data = PenerimaanHeader::from(DB::raw("penerimaanheader with (readuncommitted)"))
-            ->select('penerimaanheader.id', 'penerimaanheader.nobukti', 'penerimaanheader.tglbukti', 'penerimaanheader.pelanggan_id', 'pelanggan.namapelanggan as pelanggan', 'penerimaanheader.statuscetak', 'penerimaanheader.keterangan', 'penerimaanheader.diterimadari', 'penerimaanheader.tgllunas', 'penerimaanheader.cabang_id', 'cabang.namacabang as cabang', 'penerimaanheader.statuskas', 'penerimaanheader.bank_id', 'bank.namabank as bank')
+            ->select('penerimaanheader.id', 'penerimaanheader.nobukti', 'penerimaanheader.tglbukti', 'penerimaanheader.pelanggan_id', 'pelanggan.namapelanggan as pelanggan', 'penerimaanheader.statuscetak', 'penerimaanheader.diterimadari', 'penerimaanheader.tgllunas', 'penerimaanheader.cabang_id', 'cabang.namacabang as cabang', 'penerimaanheader.statuskas', 'penerimaanheader.bank_id', 'bank.namabank as bank')
             ->join(DB::raw("pelanggan with (readuncommitted)"), 'penerimaanheader.pelanggan_id', 'pelanggan.id')
             ->join(DB::raw("bank with (readuncommitted)"), 'penerimaanheader.bank_id', 'bank.id')
             ->join(DB::raw("cabang with (readuncommitted)"), 'penerimaanheader.cabang_id', 'cabang.id')
@@ -234,7 +233,6 @@ class PenerimaanHeader extends MyModel
             $this->table.tglbukti,
             pelanggan.namapelanggan as pelanggan_id,
             bank.namabank as bank_id,
-            $this->table.keterangan,
             $this->table.postingdari,
             $this->table.diterimadari,
             $this->table.tgllunas,
@@ -274,7 +272,6 @@ class PenerimaanHeader extends MyModel
             $table->date('tglbukti', 1000)->default('1900/1/1');
             $table->string('pelanggan_id', 1000)->default('');
             $table->string('bank_id', 1000)->default('');
-            $table->string('keterangan', 3000)->default('');
             $table->string('postingdari', 1000)->default('');
             $table->string('diterimadari', 1000)->default('');
             $table->date('tgllunas', 1000)->default('1900/1/1');
@@ -303,7 +300,7 @@ class PenerimaanHeader extends MyModel
         $this->sort($query);
         $models = $this->filter($query);
         DB::table($temp)->insertUsing([
-            'id', 'nobukti', 'tglbukti', 'pelanggan_id', 'bank_id', 'keterangan', 'postingdari', 'diterimadari', 'tgllunas', 'cabang_id',  'statuskas', 'statusapproval', 'userapproval', 'tglapproval', 'noresi', 'statusberkas', 'userberkas', 'tglberkas', 'statuscetak', 'userbukacetak', 'tglbukacetak', 'jumlahcetak', 'modifiedby', 'created_at', 'updated_at'
+            'id', 'nobukti', 'tglbukti', 'pelanggan_id', 'bank_id', 'postingdari', 'diterimadari', 'tgllunas', 'cabang_id',  'statuskas', 'statusapproval', 'userapproval', 'tglapproval', 'noresi', 'statusberkas', 'userberkas', 'tglberkas', 'statuscetak', 'userbukacetak', 'tglbukacetak', 'jumlahcetak', 'modifiedby', 'created_at', 'updated_at'
         ], $models);
 
 

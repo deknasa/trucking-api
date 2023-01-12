@@ -28,7 +28,6 @@ class UpdateGajiSupirHeaderRequest extends FormRequest
             'supir' => 'required',
             'tgldari' => 'required',
             'tglsampai' => 'required',
-            'keterangan' => 'required',
             'tglbukti' => 'required',
         ];
     }
@@ -37,7 +36,6 @@ class UpdateGajiSupirHeaderRequest extends FormRequest
         return [
             'tgldari' => 'Tanggal Dari',
             'tglsampai' => 'Tanggal Sampai',
-            'keterangan' => 'Keterangan',
             'tglbukti' => 'Tanggal Bukti'
         ];
     }

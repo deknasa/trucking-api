@@ -87,7 +87,6 @@ class AbsensiSupirHeaderController extends Controller
 
             $absensisupir->nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
             $absensisupir->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
-            $absensisupir->keterangan = $request->keterangan ?? '';
             $absensisupir->kasgantung_nobukti = $request->kasgantung_nobukti ?? '';
             $absensisupir->nominal = array_sum($request->uangjalan);
             $absensisupir->statusformat = $format->id;
@@ -174,7 +173,6 @@ class AbsensiSupirHeaderController extends Controller
                     'nobukti' => $nobuktiKasGantung,
                     'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
                     'penerima_id' => '',
-                    'keterangan' => $request->keterangan,
                     'bank_id' => '',
                     'pengeluaran_nobukti' => '',
                     'coakaskeluar' => '',
@@ -241,7 +239,6 @@ class AbsensiSupirHeaderController extends Controller
             $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
 
             $absensiSupirHeader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
-            $absensiSupirHeader->keterangan = $request->keterangan ?? '';
             $absensiSupirHeader->nominal = array_sum($request->uangjalan);
             $absensiSupirHeader->statuscetak = $statusCetak->id ?? 0;
             $absensiSupirHeader->modifiedby = auth('api')->user()->name;
@@ -329,7 +326,6 @@ class AbsensiSupirHeaderController extends Controller
                     'nobukti' => $nobuktiKasGantung,
                     'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
                     'penerima_id' => '',
-                    'keterangan' => $request->keterangan,
                     'bank_id' => '',
                     'pengeluaran_nobukti' => '',
                     'coakaskeluar' => '',

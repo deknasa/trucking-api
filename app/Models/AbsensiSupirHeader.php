@@ -38,7 +38,6 @@ class AbsensiSupirHeader extends MyModel
             'absensisupirheader.id',
             'absensisupirheader.nobukti',
             'absensisupirheader.tglbukti',
-            'absensisupirheader.keterangan',
             'absensisupirheader.kasgantung_nobukti',
             'absensisupirheader.nominal',
             DB::raw('(case when (year(absensisupirheader.tglbukacetak) <= 2000) then null else absensisupirheader.tglbukacetak end ) as tglbukacetak'),
@@ -73,7 +72,6 @@ class AbsensiSupirHeader extends MyModel
                 'absensisupirheader.nobukti',
                 'absensisupirheader.kasgantung_nobukti',
                 'absensisupirheader.tglbukti',
-                'absensisupirheader.keterangan',
                 'absensisupirheader.tglbukacetak',
                 'absensisupirheader.statuscetak',
                 'absensisupirheader.userbukacetak',
@@ -96,7 +94,6 @@ class AbsensiSupirHeader extends MyModel
             "$this->table.id,
             $this->table.nobukti,
             $this->table.tglbukti,
-            $this->table.keterangan,
             $this->table.kasgantung_nobukti,
             $this->table.nominal,
             'statuscetak.text as statuscetak',
@@ -120,7 +117,6 @@ class AbsensiSupirHeader extends MyModel
             $table->bigInteger('id')->default('0');
             $table->string('nobukti', 1000)->default('');
             $table->string('tglbukti', 1000)->default('');
-            $table->string('keterangan', 1000)->default('');
             $table->string('kasgantung_nobukti', 1000)->default('');
             $table->string('nominal', 1000)->default('');
             $table->string('statuscetak',1000)->default('');
@@ -143,7 +139,6 @@ class AbsensiSupirHeader extends MyModel
             'id',
             'nobukti',
             'tglbukti',
-            'keterangan',
             'kasgantung_nobukti',
             'nominal',
             'statuscetak',

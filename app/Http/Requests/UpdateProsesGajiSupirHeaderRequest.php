@@ -28,7 +28,6 @@ class UpdateProsesGajiSupirHeaderRequest extends FormRequest
             'periode' => 'required',
             'tgldari' => 'required',
             'tglsampai' => 'required',
-            'keterangan' => 'required',
             'tglbukti' => 'required',
         ];
     }
@@ -38,7 +37,6 @@ class UpdateProsesGajiSupirHeaderRequest extends FormRequest
             'periode' => 'Periode',
             'tgldari' => 'Tanggal Dari',
             'tglsampai' => 'Tanggal Sampai',
-            'keterangan' => 'Keterangan',
             'tglbukti' => 'Tanggal Bukti'
         ];
     }

@@ -29,7 +29,6 @@ class StorePiutangHeaderRequest extends FormRequest
                 'required',
                 new NotOffDay()
             ],
-            'keterangan' => 'required',
             'agen' => 'required',
         ];
 
@@ -50,7 +49,6 @@ class StorePiutangHeaderRequest extends FormRequest
     {
         $attributes = [
             'tglbukti' => 'Tanggal',
-            'keterangan' => 'Keterangan',
             'agen' => 'Agen',
             'nominal_detail.*' => 'Nominal',
             'keterangan_detail.*' => 'Keterangan',

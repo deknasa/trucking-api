@@ -67,7 +67,6 @@ class PenerimaanGiroHeaderController extends Controller
 
             $penerimaanGiro->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $penerimaanGiro->pelanggan_id = $request->pelanggan_id;
-            $penerimaanGiro->keterangan = $request->keterangan;
             $penerimaanGiro->postingdari = $request->postingdari ?? 'ENTRY PENERIMAAN GIRO';
             $penerimaanGiro->diterimadari = $request->diterimadari;
             $penerimaanGiro->tgllunas = date('Y-m-d', strtotime($request->tgllunas));
@@ -164,7 +163,6 @@ class PenerimaanGiroHeaderController extends Controller
                     'tanpaprosesnobukti' => 1,
                     'nobukti' => $penerimaanGiro->nobukti,
                     'tgl' => date('Y-m-d', strtotime($request->tglbukti)),
-                    'keterangan' => $request->keterangan,
                     'postingdari' => 'ENTRY PENERIMAAN GIRO',
                     'statusapproval' => $statusApp->id,
                     'userapproval' => "",
@@ -180,7 +178,7 @@ class PenerimaanGiroHeaderController extends Controller
                         [
                             'nobukti' => $penerimaanGiro->nobukti,
                             'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
-                            'coa' =>  $coadebet->text,
+                            'coa' =>  $memodebet['JURNAL'],
                             'nominal' => $request->nominal[$i],
                             'keterangan' => $request->keterangan_detail[$i],
                             'modifiedby' => auth('api')->user()->name,
@@ -189,7 +187,7 @@ class PenerimaanGiroHeaderController extends Controller
                         [
                             'nobukti' => $penerimaanGiro->nobukti,
                             'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
-                            'coa' =>  $coakredit->text,
+                            'coa' =>  $memokredit['JURNAL'],
                             'nominal' => -$request->nominal[$i],
                             'keterangan' => $request->keterangan_detail[$i],
                             'modifiedby' => auth('api')->user()->name,
@@ -247,7 +245,6 @@ class PenerimaanGiroHeaderController extends Controller
         try {
             $penerimaangiroheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $penerimaangiroheader->pelanggan_id = $request->pelanggan_id;
-            $penerimaangiroheader->keterangan = $request->keterangan;
             $penerimaangiroheader->diterimadari = $request->diterimadari;
             $penerimaangiroheader->tgllunas = date('Y-m-d', strtotime($request->tgllunas));
             $penerimaangiroheader->modifiedby = auth('api')->user()->name;
@@ -343,7 +340,6 @@ class PenerimaanGiroHeaderController extends Controller
                 'tanpaprosesnobukti' => 1,
                 'nobukti' => $penerimaangiroheader->nobukti,
                 'tgl' => date('Y-m-d', strtotime($request->tglbukti)),
-                'keterangan' => $request->keterangan,
                 'postingdari' => 'ENTRY PENERIMAAN GIRO',
                 'statusapproval' => $statusApp->id,
                 'userapproval' => "",
@@ -359,7 +355,7 @@ class PenerimaanGiroHeaderController extends Controller
                     [
                         'nobukti' => $penerimaangiroheader->nobukti,
                         'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
-                        'coa' =>  $coadebet->text,
+                        'coa' =>  $memodebet['JURNAL'],
                         'nominal' => $request->nominal[$i],
                         'keterangan' => $request->keterangan_detail[$i],
                         'modifiedby' => auth('api')->user()->name,
@@ -368,7 +364,7 @@ class PenerimaanGiroHeaderController extends Controller
                     [
                         'nobukti' => $penerimaangiroheader->nobukti,
                         'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
-                        'coa' =>  $coakredit->text,
+                        'coa' =>  $memokredit['JURNAL'],
                         'nominal' => -$request->nominal[$i],
                         'keterangan' => $request->keterangan_detail[$i],
                         'modifiedby' => auth('api')->user()->name,

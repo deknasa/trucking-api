@@ -70,7 +70,6 @@ class ProsesGajiSupirHeaderController extends Controller
                     ->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
 
                 $prosesgajisupirheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
-                $prosesgajisupirheader->keterangan = $request->keterangan;
                 $prosesgajisupirheader->tgldari = date('Y-m-d', strtotime($request->tgldari));
                 $prosesgajisupirheader->tglsampai = date('Y-m-d', strtotime($request->tglsampai));
                 $prosesgajisupirheader->statusapproval = $statusApproval->id ?? $request->statusapproval;;
@@ -205,7 +204,6 @@ class ProsesGajiSupirHeaderController extends Controller
         try {
 
             $prosesgajisupirheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
-            $prosesgajisupirheader->keterangan = $request->keterangan;
             $prosesgajisupirheader->tgldari = date('Y-m-d', strtotime($request->tgldari));
             $prosesgajisupirheader->tglsampai = date('Y-m-d', strtotime($request->tglsampai));
             $prosesgajisupirheader->periode = date('Y-m-d', strtotime($request->periode));

@@ -33,7 +33,6 @@ class PenerimaanGiroHeader extends MyModel
                 'penerimaangiroheader.id',
                 'penerimaangiroheader.nobukti',
                 'penerimaangiroheader.tglbukti',
-                'penerimaangiroheader.keterangan',
                 'pelanggan.namapelanggan as pelanggan_id',
                 'penerimaangiroheader.postingdari',
                 'penerimaangiroheader.diterimadari',
@@ -75,7 +74,6 @@ class PenerimaanGiroHeader extends MyModel
             $this->table.nobukti,
             $this->table.tglbukti,
             pelanggan.namapelanggan as pelanggan_id,
-            $this->table.keterangan,
             $this->table.postingdari,
             $this->table.diterimadari,
             $this->table.tgllunas,
@@ -105,7 +103,6 @@ class PenerimaanGiroHeader extends MyModel
                 'penerimaangiroheader.tglbukti',
                 'penerimaangiroheader.pelanggan_id',
                 'pelanggan.namapelanggan as pelanggan',
-                'penerimaangiroheader.keterangan',
                 'penerimaangiroheader.diterimadari',
                 'penerimaangiroheader.tgllunas',
                 'penerimaangiroheader.statuscetak'
@@ -166,7 +163,6 @@ class PenerimaanGiroHeader extends MyModel
             $table->string('nobukti', 1000)->default('');
             $table->date('tglbukti', 1000)->default('1900/1/1');
             $table->string('pelanggan_id', 1000)->default('');
-            $table->string('keterangan', 3000)->default('');
             $table->string('postingdari', 1000)->default('');
             $table->string('diterimadari', 1000)->default('');
             $table->date('tgllunas', 1000)->default('1900/1/1');
@@ -189,7 +185,7 @@ class PenerimaanGiroHeader extends MyModel
         $this->sort($query);
         $models = $this->filter($query);
         DB::table($temp)->insertUsing([
-            'id', 'nobukti', 'tglbukti', 'pelanggan_id', 'keterangan', 'postingdari', 'diterimadari', 'tgllunas', 'statusapproval', 'userapproval', 'tglapproval', 'statuscetak', 'userbukacetak', 'tglbukacetak', 'jumlahcetak', 'modifiedby', 'created_at', 'updated_at'
+            'id', 'nobukti', 'tglbukti', 'pelanggan_id', 'postingdari', 'diterimadari', 'tgllunas', 'statusapproval', 'userapproval', 'tglapproval', 'statuscetak', 'userbukacetak', 'tglbukacetak', 'jumlahcetak', 'modifiedby', 'created_at', 'updated_at'
         ], $models);
 
 

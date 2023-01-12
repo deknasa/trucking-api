@@ -33,7 +33,6 @@ class InvoiceHeader extends MyModel
                 'invoiceheader.id',
                 'invoiceheader.nobukti',
                 'invoiceheader.tglbukti',
-                'invoiceheader.keterangan',
                 'invoiceheader.nominal',
                 'invoiceheader.tglterima',
                 'invoiceheader.tgljatuhtempo',
@@ -98,7 +97,6 @@ class InvoiceHeader extends MyModel
                     "$this->table.id,
                  $this->table.nobukti,
                  $this->table.tglbukti,
-                 $this->table.keterangan,
                 $this->table.nominal,
                 $this->table.tglterima,
                 $this->table.tgljatuhtempo,
@@ -133,7 +131,6 @@ class InvoiceHeader extends MyModel
             $table->bigInteger('id')->default('0');
             $table->string('nobukti', 1000)->default('');
             $table->date('tglbukti')->default('');
-            $table->string('keterangan', 1000)->default('');
             $table->bigInteger('nominal')->default('0');
             $table->date('tglterima')->default('');
             $table->date('tgljatuhtempo')->default('');
@@ -159,7 +156,7 @@ class InvoiceHeader extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'keterangan', 'nominal', 'tglterima', 'tgljatuhtempo', 'agen_id', 'jenisorder_id', 'cabang_id', 'piutang_nobukti', 'statusapproval', 'userapproval', 'tglapproval', 'statuscetak', 'userbukacetak', 'tglbukacetak', 'jumlahcetak', 'modifiedby', 'created_at', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'nominal', 'tglterima', 'tgljatuhtempo', 'agen_id', 'jenisorder_id', 'cabang_id', 'piutang_nobukti', 'statusapproval', 'userapproval', 'tglapproval', 'statuscetak', 'userbukacetak', 'tglbukacetak', 'jumlahcetak', 'modifiedby', 'created_at', 'updated_at'], $models);
 
         return $temp;
     }

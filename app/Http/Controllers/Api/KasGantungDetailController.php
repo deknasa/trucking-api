@@ -54,7 +54,6 @@ class KasGantungDetailController extends Controller
                     'header.id as id',
                     'header.nobukti as nobukti_header',               
                     'header.tglbukti as tgl_header',
-                    'header.keterangan as keterangan_header',
                     'penerima.namapenerima as penerima_id',
                     'bank.namabank as bank_id',
                     'header.pengeluaran_nobukti',

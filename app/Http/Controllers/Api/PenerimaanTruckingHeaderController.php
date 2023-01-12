@@ -80,7 +80,6 @@ class PenerimaanTruckingHeaderController extends Controller
 
             $penerimaantruckingheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $penerimaantruckingheader->penerimaantrucking_id = $idpenerimaan;
-            $penerimaantruckingheader->keterangan = $request->keterangan;
             $penerimaantruckingheader->bank_id = $request->bank_id;
             $penerimaantruckingheader->coa = $request->coa;
             $penerimaantruckingheader->penerimaan_nobukti = $request->penerimaan_nobukti;
@@ -214,7 +213,6 @@ class PenerimaanTruckingHeaderController extends Controller
 
             $penerimaantruckingheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $penerimaantruckingheader->penerimaantrucking_id = $idpenerimaan;
-            $penerimaantruckingheader->keterangan = $request->keterangan;
             $penerimaantruckingheader->bank_id = $request->bank_id;
             $penerimaantruckingheader->coa = $request->coa;
             $penerimaantruckingheader->penerimaan_nobukti = $request->penerimaan_nobukti;

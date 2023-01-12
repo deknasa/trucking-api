@@ -53,7 +53,6 @@ class PenerimaanDetailController extends Controller
                     'header.nobukti',
                     'header.tglbukti',
                     'header.tgllunas',
-                    'header.keterangan',
                     'bank.namabank as bank',
                     'pelanggan.namapelanggan as pelanggan',
                     'detail.nowarkat',

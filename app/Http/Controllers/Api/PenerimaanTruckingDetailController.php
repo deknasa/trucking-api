@@ -50,7 +50,6 @@ class PenerimaanTruckingDetailController extends Controller
                     'header.tglbukti',
                     'header.coa',
                     'header.penerimaan_nobukti',
-                    'header.keterangan',
                     'bank.namabank as bank',
                     'penerimaantrucking.keterangan as penerimaantrucking',
                     'supir.namasupir as supir_id',

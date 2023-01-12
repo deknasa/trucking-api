@@ -44,7 +44,6 @@ class PenerimaanGiroDetailController extends Controller
                     'ph.namapelanggan as pelangganheader',
                     'header.tgllunas',
                     'header.diterimadari',
-                    'header.keterangan as keteranganheader',
                     'detail.nowarkat',
                     'detail.tgljatuhtempo',
                     'detail.coadebet',
@@ -89,13 +88,9 @@ class PenerimaanGiroDetailController extends Controller
                 
                 $pengeluaranTruckingDetail = $query->get();
             }
-            $idUser = auth('api')->user()->id;
-            $getuser = User::select('name','cabang.namacabang as cabang_id')
-            ->where('user.id',$idUser)->join('cabang','user.cabang_id','cabang.id')->first();
            
             return response([
-                'data' => $pengeluaranTruckingDetail,
-                'user' => $getuser,
+                'data' => $pengeluaranTruckingDetail
                 
             ]);
         } catch (\Throwable $th) {

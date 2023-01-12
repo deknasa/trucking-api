@@ -24,7 +24,10 @@ class UpdateInvoiceExtraDetailRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'nominal_detail' => 'required|array',
+            'nominal_detail.*' => 'required|numeric|gt:0',
+            'keterangan_detail' => 'required|array',
+            'keterangan_detail.*' => 'required'
         ];
     }
 }
