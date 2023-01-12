@@ -37,15 +37,11 @@ class CreateTarifTable extends Migration
             $table->foreign('container_id', 'tarif_container_container_id_foreign')->references('id')->on('container');
             $table->foreign('kota_id', 'tarif_kota_kota_id_foreign')->references('id')->on('kota');
             $table->foreign('zona_id', 'tarif_zona_zona_id_foreign')->references('id')->on('zona');
-            $table->foreign('tarif', 'tarif_tarif_tarif_id_foreign')->references('id')->on('tarif');
-            $table->foreign('upahsupir', 'tarif_upahsupir_upahsupir_id_foreign')->references('id')->on('upahsupir');
         });
 
         DB::statement("ALTER TABLE tarif NOCHECK CONSTRAINT tarif_container_container_id_foreign");
         DB::statement("ALTER TABLE tarif NOCHECK CONSTRAINT tarif_kota_kota_id_foreign");
         DB::statement("ALTER TABLE tarif NOCHECK CONSTRAINT tarif_zona_zona_id_foreign");
-        DB::statement("ALTER TABLE tarif NOCHECK CONSTRAINT tarif_tarif_tarif_id_foreign");
-        DB::statement("ALTER TABLE tarif NOCHECK CONSTRAINT tarif_upahsupir_upahsupir_id_foreign");
     }
 
     /**

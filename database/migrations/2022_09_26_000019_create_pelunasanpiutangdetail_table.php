@@ -42,8 +42,6 @@ class CreatePelunasanpiutangdetailTable extends Migration
         });
 
         
-        DB::statement("ALTER TABLE pelunasanpiutangdetail NOCHECK CONSTRAINT pelunasanpiutangdetail_pelanggan_pelanggan_id_foreign");
-        DB::statement("ALTER TABLE pelunasanpiutangdetail NOCHECK CONSTRAINT pelunasanpiutangdetail_agen_agen_id_foreign");
         DB::statement("ALTER TABLE pelunasanpiutangdetail NOCHECK CONSTRAINT pelunasanpiutangdetail_piutangheader_piutang_nobukti_foreign");
         DB::statement("ALTER TABLE pelunasanpiutangdetail NOCHECK CONSTRAINT pelunasanpiutangdetail_invoiceheader_invoice_nobukti_foreign");
         DB::statement("ALTER TABLE pelunasanpiutangdetail NOCHECK CONSTRAINT pelunasanpiutangdetail_akunpusat_coapotongan_foreign");

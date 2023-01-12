@@ -35,7 +35,6 @@ class CreateUpahsupirTable extends Migration
             $table->foreign('kotadari_id', 'upahsupir_kota_kotadari_id_foreign')->references('id')->on('kota');
             $table->foreign('kotasampai_id', 'upahsupir_kota_kotasampai_id_foreign')->references('id')->on('kota');
             $table->foreign('zona_id', 'upahsupir_kota_zona_id_foreign')->references('id')->on('zona');
-            $table->foreign('parent_id', 'upahsupir_upahsupir_upahsupir_id_foreign')->references('id')->on('upahsupir');
             $table->foreign('tarif_id', 'upahsupir_tarif_tarif_id_foreign')->references('id')->on('tarif');
 
 
@@ -44,7 +43,6 @@ class CreateUpahsupirTable extends Migration
         DB::statement("ALTER TABLE upahsupir NOCHECK CONSTRAINT upahsupir_kota_kotadari_id_foreign");
         DB::statement("ALTER TABLE upahsupir NOCHECK CONSTRAINT upahsupir_kota_kotasampai_id_foreign");
         DB::statement("ALTER TABLE upahsupir NOCHECK CONSTRAINT upahsupir_kota_zona_id_foreign");
-        DB::statement("ALTER TABLE upahsupir NOCHECK CONSTRAINT upahsupir_upahsupir_upahsupir_id_foreign");
         DB::statement("ALTER TABLE upahsupir NOCHECK CONSTRAINT upahsupir_tarif_tarif_id_foreign");
     }
 
