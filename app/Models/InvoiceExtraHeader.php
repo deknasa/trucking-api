@@ -63,7 +63,6 @@ class InvoiceExtraHeader extends MyModel
             $table->unsignedBigInteger('pelanggan_id')->default('0');
             $table->unsignedBigInteger('agen_id')->default('0');
             $table->double('nominal')->default('0');
-            $table->longText('keterangan')->default('');
             $table->integer('statusapproval')->length(11)->default('0');
             $table->string('userapproval', 50)->default('');
             $table->dateTime('tglapproval')->default('1900/1/1');
@@ -85,7 +84,6 @@ class InvoiceExtraHeader extends MyModel
                 "$this->table.pelanggan_id",
                 "$this->table.agen_id",
                 "$this->table.nominal",
-                "$this->table.keterangan",
                 "$this->table.statusapproval",
                 "$this->table.userapproval",
                 "$this->table.tglapproval",
@@ -103,7 +101,6 @@ class InvoiceExtraHeader extends MyModel
             'pelanggan_id',
             'agen_id',
             'nominal',
-            'keterangan',
             'statusapproval',
             'userapproval',
             'tglapproval',
@@ -126,15 +123,13 @@ class InvoiceExtraHeader extends MyModel
                 "$this->table.pelanggan_id",
                 "$this->table.agen_id",
                 "$this->table.nominal",
-                "$this->table.keterangan",
                 'parameter.memo as statusapproval',
                 "$this->table.userapproval",
                 "$this->table.tglapproval",
-                "$this->table.statusformat",
+                "$this->table.created_at",
+                "$this->table.updated_at",
                 "cetak.memo as statuscetak",
 
-                // "$this->table.statuscetak",
-                "cetak.text as statuscetak_text",
                 "$this->table.modifiedby",
                 "statusformat.memo as  statusformat_memo",
                 "pelanggan.namapelanggan as  pelanggan",

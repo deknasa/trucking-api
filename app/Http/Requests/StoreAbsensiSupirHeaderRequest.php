@@ -25,7 +25,6 @@ class StoreAbsensiSupirHeaderRequest extends FormRequest
     {
         $rules = [
             'tglbukti' => 'required|date',
-            'keterangan' => 'required',
         ];
 
         $relatedRequests = [
@@ -45,7 +44,6 @@ class StoreAbsensiSupirHeaderRequest extends FormRequest
     public function attributes() {
         return [
             'tglbukti' => 'Tanggal Bukti',
-            'keterangan' => 'Keterangan',
             'trado.*' => 'Trado',
             'uangjalan.*' => 'Uang Jalan',
             'supir.*' => 'Supir',

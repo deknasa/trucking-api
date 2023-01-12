@@ -66,7 +66,6 @@ class GajiSupirHeaderController extends Controller
                 $gajisupirheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
                 $gajisupirheader->supir_id = $request->supir_id;
                 $gajisupirheader->nominal = '';
-                $gajisupirheader->keterangan = $request->keterangan;
                 $gajisupirheader->tgldari = date('Y-m-d', strtotime($request->tgldari));
                 $gajisupirheader->tglsampai = date('Y-m-d', strtotime($request->tglsampai));
                 $gajisupirheader->total = '';
@@ -230,7 +229,6 @@ class GajiSupirHeaderController extends Controller
             $gajisupirheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $gajisupirheader->supir_id = $request->supir_id;
             $gajisupirheader->nominal = '';
-            $gajisupirheader->keterangan = $request->keterangan;
             $gajisupirheader->tgldari = date('Y-m-d', strtotime($request->tgldari));
             $gajisupirheader->tglsampai = date('Y-m-d', strtotime($request->tglsampai));
             $gajisupirheader->total = '';

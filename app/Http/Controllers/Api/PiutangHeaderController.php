@@ -84,7 +84,6 @@ class PiutangHeaderController extends Controller
             )->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
 
             $piutang->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
-            $piutang->keterangan = $request->keterangan;
             $piutang->postingdari = $request->postingdari ?? 'ENTRY PIUTANG';
             $piutang->invoice_nobukti = $request->invoice_nobukti ?? '';
             $piutang->modifiedby = auth('api')->user()->name;
@@ -189,7 +188,6 @@ class PiutangHeaderController extends Controller
                     'tanpaprosesnobukti' => 1,
                     'nobukti' => $piutang->nobukti,
                     'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
-                    'keterangan' => $request->keterangan,
                     'postingdari' => "ENTRY PIUTANG",
                     'statusapproval' => $statusApp->id,
                     'userapproval' => "",
@@ -251,7 +249,6 @@ class PiutangHeaderController extends Controller
                     'tanpaprosesnobukti' => 1,
                     'nobukti' => $piutang->nobukti,
                     'tglbukti' => $piutang->tglbukti,
-                    'keterangan' => $piutang->keterangan,
                     'postingdari' => "ENTRY PIUTANG DARI INVOICE",
                     'statusapproval' => $statusApp->id,
                     'userapproval' => "",
@@ -302,7 +299,6 @@ class PiutangHeaderController extends Controller
         try {
 
             $piutangHeader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
-            $piutangHeader->keterangan = $request->keterangan;
             $piutangHeader->postingdari = $request->postingdari ?? 'ENTRY PIUTANG';
             $piutangHeader->invoice_nobukti = $request->invoice_nobukti ?? '';
             $piutangHeader->modifiedby = auth('api')->user()->name;
@@ -383,7 +379,6 @@ class PiutangHeaderController extends Controller
                 'tanpaprosesnobukti' => 1,
                 'nobukti' => $piutangHeader->nobukti,
                 'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
-                'keterangan' => $request->keterangan,
                 'postingdari' => "ENTRY PIUTANG",
                 'statusapproval' => $statusApp->id,
                 'userapproval' => "",

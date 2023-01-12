@@ -33,7 +33,6 @@ class PendapatanSupirHeader extends MyModel
                 'pendapatansupirheader.nobukti',
                 'pendapatansupirheader.tglbukti',
                 'bank.namabank as bank_id',
-                'pendapatansupirheader.keterangan',
                 'pendapatansupirheader.tgldari',
                 'pendapatansupirheader.tglsampai',
                 'statusapproval.memo as statusapproval',
@@ -73,7 +72,6 @@ class PendapatanSupirHeader extends MyModel
                 'pendapatansupirheader.tglbukti',
                 'pendapatansupirheader.bank_id',
                 'bank.namabank as bank',
-                'pendapatansupirheader.keterangan',
                 'pendapatansupirheader.tgldari',
                 'pendapatansupirheader.tglsampai',
                 'pendapatansupirheader.periode',
@@ -97,7 +95,6 @@ class PendapatanSupirHeader extends MyModel
                  $this->table.nobukti,
                  $this->table.tglbukti,
                  'bank.namabank as bank_id', 
-                 $this->table.keterangan,
                  $this->table.tgldari,
                  $this->table.tglsampai,
                 'parameter.text as statusapproval',
@@ -126,7 +123,6 @@ class PendapatanSupirHeader extends MyModel
             $table->string('nobukti', 1000)->default('');
             $table->date('tglbukti')->default('');
             $table->string('bank_id', 1000)->default('');
-            $table->string('keterangan', 1000)->default('');
             $table->date('tgldari')->default('');
             $table->date('tglsampai')->default('');
             $table->string('statusapproval')->default('');
@@ -148,7 +144,7 @@ class PendapatanSupirHeader extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'bank_id', 'keterangan', 'tgldari', 'tglsampai', 'statusapproval', 'userapproval', 'tglapproval', 'statuscetak', 'userbukacetak', 'tglbukacetak', 'jumlahcetak', 'periode', 'modifiedby', 'created_at', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'bank_id', 'tgldari', 'tglsampai', 'statusapproval', 'userapproval', 'tglapproval', 'statuscetak', 'userbukacetak', 'tglbukacetak', 'jumlahcetak', 'periode', 'modifiedby', 'created_at', 'updated_at'], $models);
 
         return $temp;
     }

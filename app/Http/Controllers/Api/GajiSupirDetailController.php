@@ -45,7 +45,6 @@ class GajiSupirDetailController extends Controller
                     'header.id',
                     'header.nobukti',
                     'header.tglbukti',
-                    'header.keterangan as keterangan_header',
                     'header.nominal',
                     'supir.namasupir as supir',
                     'detail.suratpengantar_nobukti',

@@ -33,7 +33,6 @@ class PenerimaanTruckingHeader extends MyModel
             'penerimaantruckingheader.id',
             'penerimaantruckingheader.nobukti',
             'penerimaantruckingheader.tglbukti',
-            'penerimaantruckingheader.keterangan',
 
             'penerimaantrucking.keterangan as penerimaantrucking_id',
             'penerimaantruckingheader.penerimaan_nobukti',
@@ -73,7 +72,6 @@ class PenerimaanTruckingHeader extends MyModel
             'penerimaantruckingheader.tglbukti',
             'penerimaantruckingheader.penerimaantrucking_id',
             'penerimaantrucking.keterangan as penerimaantrucking',
-            'penerimaantruckingheader.keterangan',
             'penerimaantruckingheader.bank_id',
             'penerimaantruckingheader.statuscetak',
             'bank.namabank as bank',
@@ -102,7 +100,6 @@ class PenerimaanTruckingHeader extends MyModel
             $this->table.nobukti,
             $this->table.tglbukti,
             'penerimaantrucking.keterangan as penerimaantrucking_id',
-            $this->table.keterangan,
             'bank.namabank as bank_id',
             $this->table.coa,
             $this->table.penerimaan_nobukti,
@@ -128,7 +125,6 @@ class PenerimaanTruckingHeader extends MyModel
             $table->string('nobukti', 1000)->default('');
             $table->date('tglbukti')->default('');
             $table->string('penerimaantrucking_id', 1000)->default('');
-            $table->string('keterangan', 1000)->default('');
             $table->string('bank_id', 1000)->default('');
             $table->string('coa', 1000)->default('');
             $table->string('penerimaan_nobukti', 1000)->default('');
@@ -147,7 +143,7 @@ class PenerimaanTruckingHeader extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id','nobukti','tglbukti','penerimaantrucking_id','keterangan','bank_id','coa','penerimaan_nobukti','statuscetak','userbukacetak','tglbukacetak','jumlahcetak', 'modifiedby','created_at','updated_at'],$models);
+        DB::table($temp)->insertUsing(['id','nobukti','tglbukti','penerimaantrucking_id','bank_id','coa','penerimaan_nobukti','statuscetak','userbukacetak','tglbukacetak','jumlahcetak', 'modifiedby','created_at','updated_at'],$models);
 
 
         return  $temp;         

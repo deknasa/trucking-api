@@ -92,7 +92,6 @@ class PenerimaanHeaderController extends Controller
             $penerimaanHeader = new PenerimaanHeader();
             $penerimaanHeader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $penerimaanHeader->pelanggan_id = $request->pelanggan_id;
-            $penerimaanHeader->keterangan = $request->keterangan ?? '';
             $penerimaanHeader->postingdari = $request->postingdari ?? 'ENTRY PENERIMAAN KAS/BANK';
             $penerimaanHeader->diterimadari = $request->diterimadari ?? '';
             $penerimaanHeader->tgllunas = date('Y-m-d', strtotime($request->tgllunas));
@@ -188,7 +187,6 @@ class PenerimaanHeaderController extends Controller
                         'tanpaprosesnobukti' => 1,
                         'nobukti' => $penerimaanHeader->nobukti,
                         'tgl' => date('Y-m-d', strtotime($request->tglbukti)),
-                        'keterangan' => $request->keterangan,
                         'postingdari' => 'ENTRY PENERIMAAN KAS/BANK',
                         'statusapproval' => $statusApp->id,
                         'userapproval' => "",
@@ -303,7 +301,6 @@ class PenerimaanHeaderController extends Controller
 
             $penerimaanheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $penerimaanheader->pelanggan_id = $request->pelanggan_id;
-            $penerimaanheader->keterangan = $request->keterangan ?? '';
             $penerimaanheader->diterimadari = $request->diterimadari ?? '';
             $penerimaanheader->tgllunas = date('Y-m-d', strtotime($request->tgllunas));
             $penerimaanheader->cabang_id = $request->cabang_id ?? 0;
@@ -394,7 +391,6 @@ class PenerimaanHeaderController extends Controller
                     'tanpaprosesnobukti' => 1,
                     'nobukti' => $penerimaanheader->nobukti,
                     'tgl' => date('Y-m-d', strtotime($request->tglbukti)),
-                    'keterangan' => $request->keterangan,
                     'postingdari' => 'ENTRY PENERIMAAN KAS/BANK',
                     'statusapproval' => $statusApp->id,
                     'userapproval' => "",

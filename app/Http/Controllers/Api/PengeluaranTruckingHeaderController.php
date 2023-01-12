@@ -81,7 +81,6 @@ class PengeluaranTruckingHeaderController extends Controller
 
             $pengeluarantruckingheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $pengeluarantruckingheader->pengeluarantrucking_id = $request->pengeluarantrucking_id;
-            $pengeluarantruckingheader->keterangan = $request->keterangan;
             $pengeluarantruckingheader->bank_id = $request->bank_id;
             $pengeluarantruckingheader->statusposting = $statusPosting->id ?? 0;
             $pengeluarantruckingheader->coa = $request->coa;
@@ -228,7 +227,6 @@ class PengeluaranTruckingHeaderController extends Controller
             $pengeluarantruckingheader->nobukti = $nobukti;
             $pengeluarantruckingheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $pengeluarantruckingheader->pengeluarantrucking_id = $idpengeluaran;
-            $pengeluarantruckingheader->keterangan = $request->keterangan;
             $pengeluarantruckingheader->bank_id = $request->bank_id;
             $pengeluarantruckingheader->coa = $request->coa;
             $pengeluarantruckingheader->pengeluaran_nobukti = $request->pengeluaran_nobukti;

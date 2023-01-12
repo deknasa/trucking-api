@@ -32,7 +32,6 @@ class ProsesGajiSupirHeader extends MyModel
             'prosesgajisupirheader.id',
             'prosesgajisupirheader.nobukti',
             'prosesgajisupirheader.tglbukti',
-            'prosesgajisupirheader.keterangan',
             'prosesgajisupirheader.tgldari',
             'prosesgajisupirheader.tglsampai',
             'statusapproval.memo as statusapproval',
@@ -65,7 +64,7 @@ class ProsesGajiSupirHeader extends MyModel
     public function getRic($dari, $sampai) 
     {
         $query = GajiSupirHeader::from(DB::raw("gajisupirheader with (readuncommitted)"))
-                ->select('gajisupirheader.id','gajisupirheader.nobukti','gajisupirheader.tglbukti','supir.namasupir','gajisupirheader.keterangan','gajisupirheader.tgldari','gajisupirheader.tglsampai','gajisupirheader.nominal')
+                ->select('gajisupirheader.id','gajisupirheader.nobukti','gajisupirheader.tglbukti','supir.namasupir','gajisupirheader.tgldari','gajisupirheader.tglsampai','gajisupirheader.nominal')
                 ->leftJoin(DB::raw("supir with (readuncommitted)"),'gajisupirheader.supir_id','supir.id')
                 ->where('gajisupirheader.tglbukti','>=', $dari)
                 ->where('gajisupirheader.tglbukti','<=', $sampai);
@@ -81,7 +80,6 @@ class ProsesGajiSupirHeader extends MyModel
             'prosesgajisupirdetail.gajisupir_nobukti as nobukti',
             'gajisupirheader.tglbukti',
             'supir.namasupir',
-            'prosesgajisupirdetail.keterangan',
             'gajisupirheader.tgldari',
             'gajisupirheader.tglsampai',
             'gajisupirheader.nominal'
@@ -100,7 +98,6 @@ class ProsesGajiSupirHeader extends MyModel
             $this->table.id,
             $this->table.nobukti,
             $this->table.tglbukti,
-            $this->table.keterangan,
             $this->table.tgldari,
             $this->table.tglsampai,
             'statusapproval.text as statusapproval',
@@ -128,7 +125,6 @@ class ProsesGajiSupirHeader extends MyModel
             $table->bigInteger('id')->default('0');
             $table->string('nobukti', 1000)->default('');
             $table->date('tglbukti')->default('');
-            $table->string('keterangan', 1000)->default('');
             $table->date('tgldari')->default('');
             $table->date('tglsampai')->default('');
             $table->string('statusapproval', 1000)->default('');
@@ -150,7 +146,7 @@ class ProsesGajiSupirHeader extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id','nobukti','tglbukti','keterangan','tgldari','tglsampai','statusapproval','userapproval','tglapproval','statuscetak','userbukacetak','tglbukacetak','jumlahcetak','periode','modifiedby','created_at','updated_at'], $models);
+        DB::table($temp)->insertUsing(['id','nobukti','tglbukti','tgldari','tglsampai','statusapproval','userapproval','tglapproval','statuscetak','userbukacetak','tglbukacetak','jumlahcetak','periode','modifiedby','created_at','updated_at'], $models);
 
         return $temp;
     }

@@ -25,7 +25,6 @@ class StorePengeluaranTruckingHeaderRequest extends FormRequest
     {
         $rules = [
             'tglbukti' => 'required',
-            'keterangan' => 'required',
             'pengeluarantrucking' => 'required',
             'bank' => 'required',
             'coa' => 'required',

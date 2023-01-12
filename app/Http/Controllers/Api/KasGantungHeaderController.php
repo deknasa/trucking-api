@@ -108,7 +108,6 @@ class KasGantungHeaderController extends Controller
 
             $kasgantungHeader->tglbukti = date('Y-m-d', strtotime($request->tglbukti)) ?? '1900/1/1';
             $kasgantungHeader->penerima_id = $request->penerima_id ?? '';
-            $kasgantungHeader->keterangan = $request->keterangan ?? '';
             $kasgantungHeader->bank_id = $request->bank_id ?? 0;
             $kasgantungHeader->pengeluaran_nobukti = $request->pengeluaran_nobukti ?? $nobuktikaskeluar;
             $kasgantungHeader->coakaskeluar = $bank->coa ?? '';
@@ -273,7 +272,6 @@ class KasGantungHeaderController extends Controller
                             'nobukti' => $nobuktikaskeluar,
                             'tglbukti' => date('Y-m-d', strtotime($request->tglkaskeluar)),
                             'pelanggan_id' => 0,
-                            'keterangan' => $request->keterangan,
                             'statusjenistransaksi' => $jenisTransaksi->id,
                             'postingdari' => 'ENTRY KAS GANTUNG',
                             'statusapproval' => $statusApp->id,
@@ -289,6 +287,10 @@ class KasGantungHeaderController extends Controller
                             'modifiedby' =>  auth('api')->user()->name
                         ];
 
+                        $coakredit = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+                        ->where('grp', 'JURNAL KAS GANTUNG')->where('subgrp', 'DEBET')->first();
+                        $memo = json_decode($coakredit->memo, true);
+
                         $pengeluaranDetail = [];
                         for ($i = 0; $i < count($request->nominal); $i++) {
                             $detail = [];
@@ -302,7 +304,7 @@ class KasGantungHeaderController extends Controller
                                 'tgljatuhtempo' => '',
                                 'nominal' => $request->nominal[$i],
                                 'coadebet' => $bank->coa,
-                                'coakredit' => $coaKasKeluar->text,
+                                'coakredit' => $memo['JURNAL'],
                                 'keterangan' => $request->keterangan_detail[$i],
                                 'bulanbeban' => '',
                                 'modifiedby' =>  auth('api')->user()->name
@@ -344,7 +346,7 @@ class KasGantungHeaderController extends Controller
             ], 201);
         } catch (\Throwable $th) {
             DB::rollBack();
-            return response($th->getMessage());
+            throw $th;
         }
     }
 
@@ -377,7 +379,6 @@ class KasGantungHeaderController extends Controller
             /* Store header */
             $kasgantungheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $kasgantungheader->penerima_id = $request->penerima_id;
-            $kasgantungheader->keterangan = $request->keterangan ?? '';
             $kasgantungheader->bank_id = $request->bank_id ?? 0;
             $kasgantungheader->pengeluaran_nobukti = $request->pengeluaran_nobukti ?? '';
             $kasgantungheader->coakaskeluar = $bank->coa ?? '';
@@ -472,7 +473,9 @@ class KasGantungHeaderController extends Controller
                     $parameterController = new ParameterController;
                     $statusApp = $parameterController->getparameterid('STATUS APPROVAL', 'STATUS APPROVAL', 'NON APPROVAL');
 
-                    $coaKasKeluar = DB::table('parameter')->where('grp', 'COA KAS GANTUNG')->where('subgrp', 'COA KAS GANTUNG')->first();
+                    $coaKasKeluar = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+                    ->where('grp', 'JURNAL KAS GANTUNG')->where('subgrp', 'DEBET')->first();
+                    $memo = json_decode($coaKasKeluar->memo, true);
 
                     $content = new Request();
                     $content['group'] = $querysubgrppengeluaran->grp;
@@ -502,7 +505,6 @@ class KasGantungHeaderController extends Controller
                         'nobukti' => $nobuktikaskeluar,
                         'tglbukti' => date('Y-m-d', strtotime($request->tglkaskeluar)),
                         'pelanggan_id' => 0,
-                        'keterangan' => $request->keterangan,
                         'statusjenistransaksi' => $jenisTransaksi->id,
                         'postingdari' => 'ENTRY KAS GANTUNG',
                         'statusapproval' => $statusApp->id,
@@ -531,7 +533,7 @@ class KasGantungHeaderController extends Controller
                             'tgljatuhtempo' => '',
                             'nominal' => $request->nominal[$i],
                             'coadebet' => $bank->coa,
-                            'coakredit' => $coaKasKeluar->text,
+                            'coakredit' => $memo['JURNAL'],
                             'keterangan' => $request->keterangan_detail[$i],
                             'bulanbeban' => '',
                             'modifiedby' =>  auth('api')->user()->name

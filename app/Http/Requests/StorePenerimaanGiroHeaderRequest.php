@@ -26,7 +26,6 @@ class StorePenerimaanGiroHeaderRequest extends FormRequest
         $rules = [
             'tglbukti' => 'required',
             'pelanggan' => 'required',
-            'keterangan' => 'required',
             'diterimadari' => 'required',
             'tgllunas' => 'required'
         ];

@@ -33,7 +33,6 @@ class PengeluaranTruckingHeader extends MyModel
             'pengeluarantruckingheader.id',
             'pengeluarantruckingheader.nobukti',
             'pengeluarantruckingheader.tglbukti',
-            'pengeluarantruckingheader.keterangan',
             'pengeluarantruckingheader.modifiedby',
             'pengeluarantruckingheader.updated_at',
             'pengeluarantruckingheader.pengeluaran_nobukti',
@@ -73,7 +72,6 @@ class PengeluaranTruckingHeader extends MyModel
             'pengeluarantruckingheader.tglbukti',
             'pengeluarantruckingheader.pengeluarantrucking_id',
             'pengeluarantrucking.keterangan as pengeluarantrucking',
-            'pengeluarantruckingheader.keterangan',
             'pengeluarantruckingheader.statuscetak',
             'pengeluarantruckingheader.bank_id',
             'bank.namabank as bank',
@@ -102,7 +100,6 @@ class PengeluaranTruckingHeader extends MyModel
             $this->table.nobukti,
             $this->table.tglbukti,
             'pengeluarantrucking.keterangan as pengeluarantrucking_id',
-            $this->table.keterangan,
             'bank.namabank as bank_id',
             'statusposting.text as statusposting',
             'statuscetak.memo as statuscetak',
@@ -129,7 +126,6 @@ class PengeluaranTruckingHeader extends MyModel
             $table->string('nobukti', 1000)->default('');
             $table->date('tglbukti')->default('');
             $table->string('pengeluarantrucking_id', 1000)->default('');
-            $table->string('keterangan', 1000)->default('');
             $table->string('bank_id', 1000)->default('');
             $table->string('statusposting', 1000)->default('');
             $table->string('statuscetak',1000)->default('');
@@ -147,7 +143,7 @@ class PengeluaranTruckingHeader extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id','nobukti','tglbukti','pengeluarantrucking_id','keterangan','bank_id','statusposting','statuscetak','userbukacetak','tglbukacetak','coa','pengeluaran_nobukti','modifiedby','updated_at'],$models);
+        DB::table($temp)->insertUsing(['id','nobukti','tglbukti','pengeluarantrucking_id','bank_id','statusposting','statuscetak','userbukacetak','tglbukacetak','coa','pengeluaran_nobukti','modifiedby','updated_at'],$models);
 
 
         return  $temp;         

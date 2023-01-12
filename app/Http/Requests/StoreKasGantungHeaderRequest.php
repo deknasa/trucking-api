@@ -26,7 +26,6 @@ class StoreKasGantungHeaderRequest extends FormRequest
         $rules = [
             'tglbukti' => 'required',
             'penerima' => 'required',
-            'keterangan' => 'required',
             'bank' => 'required',
             'tglkaskeluar' => 'required',
         ];

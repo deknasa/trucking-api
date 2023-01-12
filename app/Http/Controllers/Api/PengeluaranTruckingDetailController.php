@@ -48,7 +48,6 @@ class PengeluaranTruckingDetailController extends Controller
                     'header.tglbukti',
                     'header.coa',
                     'header.pengeluaran_nobukti',
-                    'header.keterangan',
                     'bank.namabank as bank',
                     'pengeluarantrucking.keterangan as pengeluarantrucking',
                     'supir.namasupir as supir_id',

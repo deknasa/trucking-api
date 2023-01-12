@@ -48,7 +48,6 @@ class KasGantungHeader extends MyModel
                 'kasgantungheader.nobukti',
                 'kasgantungheader.tglbukti',
                 'penerima.namapenerima as penerima_id',
-                'kasgantungheader.keterangan',
                 'bank.namabank as bank_id',
                 'kasgantungheader.pengeluaran_nobukti',
                 'kasgantungheader.coakaskeluar',
@@ -88,7 +87,6 @@ class KasGantungHeader extends MyModel
                 'kasgantungheader.tglbukti',
                 'kasgantungheader.penerima_id',
                 'penerima.namapenerima as penerima',
-                'kasgantungheader.keterangan',
                 'kasgantungheader.bank_id',
                 'bank.namabank as bank',
                 'kasgantungheader.pengeluaran_nobukti',
@@ -123,7 +121,6 @@ class KasGantungHeader extends MyModel
             $this->table.nobukti,
             $this->table.tglbukti,
             'penerima.namapenerima as penerima_id',
-            $this->table.keterangan,
             'bank.namabank as bank_id',
             $this->table.pengeluaran_nobukti,
             $this->table.coakaskeluar,
@@ -150,7 +147,6 @@ class KasGantungHeader extends MyModel
             $table->string('nobukti', 1000)->default('');
             $table->date('tglbukti')->default('');
             $table->string('penerima_id', 1000)->default('');
-            $table->string('keterangan', 1000)->default('');
             $table->string('bank_id', 1000)->default('');
             $table->string('pengeluaran_nobukti', 1000)->default('');
             $table->string('coakaskeluar', 1000)->default('');
@@ -171,7 +167,7 @@ class KasGantungHeader extends MyModel
         $this->sort($query);
         $models = $this->filter($query);
 
-        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'penerima_id', 'keterangan', 'bank_id', 'pengeluaran_nobukti', 'coakaskeluar', 'tglkaskeluar', 'statuscetak', 'userbukacetak', 'tglbukacetak', 'jumlahcetak', 'modifiedby', 'created_at', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'penerima_id', 'bank_id', 'pengeluaran_nobukti', 'coakaskeluar', 'tglkaskeluar', 'statuscetak', 'userbukacetak', 'tglbukacetak', 'jumlahcetak', 'modifiedby', 'created_at', 'updated_at'], $models);
 
 
         return  $temp;

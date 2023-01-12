@@ -42,7 +42,6 @@ class PendapatanSupirDetailController extends Controller
                     'header.nobukti',
                     'header.tglbukti',
                     'bank.namabank as bank',
-                    'header.keterangan as keteranganheader',
                     'header.tgldari',
                     'header.tglsampai',
                     'header.periode',

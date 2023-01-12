@@ -63,13 +63,24 @@ class InvoiceExtraHeaderController extends Controller
             $content['table'] = 'invoiceextraheader';
             $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
 
+            $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                ->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
+            $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                ->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
+
             /* Store header */
             $invoiceExtraHeader = new InvoiceExtraHeader();
             $invoiceExtraHeader->tglbukti          = date('Y-m-d', strtotime($request->tglbukti));
-            $invoiceExtraHeader->keterangan = $request->keterangan;
             $invoiceExtraHeader->nominal    = $request->nominal;
             $invoiceExtraHeader->agen_id    = $request->agen_id;
-            $invoiceExtraHeader->pelanggan_id = $request->pelanggan_id;
+            $invoiceExtraHeader->pelanggan_id = $request->pelanggan_id;            
+            $invoiceExtraHeader->statusapproval = $statusApproval->id;
+            $invoiceExtraHeader->userapproval = '';
+            $invoiceExtraHeader->tglapproval = '';
+            $invoiceExtraHeader->statuscetak = $statusCetak->id;
+            $invoiceExtraHeader->statusformat = $format->id;
+            $invoiceExtraHeader->modifiedby = auth('api')->user()->name;
+
             TOP:
             $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
             $invoiceExtraHeader->nobukti = $nobukti;
@@ -159,7 +170,6 @@ class InvoiceExtraHeaderController extends Controller
                     'tanpaprosesnobukti' => 1,
                     'nobukti' => $piutang_nobukti,
                     'tglbukti' => date('Y-m-d', strtotime($invoiceExtraHeader->tglbukti)),
-                    'keterangan' => $invoiceExtraHeader->keterangan,
                     'postingdari' => "ENTRY INVOICE",
                     'nominal' => $invoiceExtraHeader->nominal,
                     'invoice_nobukti' => $invoiceExtraHeader->nobukti,
@@ -248,10 +258,10 @@ class InvoiceExtraHeaderController extends Controller
             /* Store header */
 
             $invoiceextraheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
-            $invoiceextraheader->keterangan = $request->keterangan;
             $invoiceextraheader->nominal    = $request->nominal;
             $invoiceextraheader->agen_id    = $request->agen_id;
             $invoiceextraheader->pelanggan_id = $request->pelanggan_id;
+            $invoiceextraheader->modifiedby = auth('api')->user()->name;
 
 
             if ($invoiceextraheader->save()) {
@@ -349,7 +359,6 @@ class InvoiceExtraHeaderController extends Controller
                     'tanpaprosesnobukti' => 1,
                     'nobukti' => $piutang_nobukti,
                     'tglbukti' => date('Y-m-d', strtotime($invoiceextraheader->tglbukti)),
-                    'keterangan' => $invoiceextraheader->keterangan,
                     'postingdari' => "ENTRY INVOICE",
                     'nominal' => $invoiceextraheader->nominal,
                     'invoice_nobukti' => $invoiceextraheader->nobukti,
@@ -423,7 +432,7 @@ class InvoiceExtraHeaderController extends Controller
                 'nobuktitrans' => $invoiceExtra->nobukti,
                 'aksi' => 'DELETE',
                 'datajson' => $invoiceExtra->toArray(),
-                'modifiedby' => $invoiceExtra->modifiedby
+                'modifiedby' => auth('api')->user()->name
             ];
 
             $validatedLogTrail = new StoreLogTrailRequest($logTrail);

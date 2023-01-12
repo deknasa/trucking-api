@@ -29,7 +29,6 @@ class UpdateInvoiceHeaderRequest extends FormRequest
             'jenisorder' => 'required',
             'cabang' => 'required',
             'tglbukti' => 'required',
-            'keterangan' => 'required',
         ];
         
         return $rules;
@@ -39,7 +38,6 @@ class UpdateInvoiceHeaderRequest extends FormRequest
     {
         $attributes = [
             'tglbukti' => 'Tanggal Bukti',
-            'keterangan' => 'Keterangan',
             'tglterima' => 'Tanggal Terima',
             'jenisorder' => 'Jenis Order'
         ];

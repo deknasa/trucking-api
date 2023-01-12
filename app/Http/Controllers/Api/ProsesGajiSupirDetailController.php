@@ -46,7 +46,6 @@ class ProsesGajiSupirDetailController extends Controller
                 $query->select(
                     'header.nobukti',
                     'header.tglbukti',
-                    'header.keterangan',
                     'supir.namasupir as supir_id',
                     'trado.keterangan as trado_id',
                     'detail.gajisupir_nobukti',

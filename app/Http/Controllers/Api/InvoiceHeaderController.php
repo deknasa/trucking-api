@@ -82,7 +82,6 @@ class InvoiceHeaderController extends Controller
 
                 $invoice = new InvoiceHeader();
                 $invoice->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
-                $invoice->keterangan = $request->keterangan;
                 $invoice->nominal = '';
                 $invoice->tglterima = date('Y-m-d', strtotime($request->tglterima));
                 $invoice->tgljatuhtempo = date('Y-m-d');
@@ -198,7 +197,6 @@ class InvoiceHeaderController extends Controller
                     'tanpaprosesnobukti' => 1,
                     'nobukti' => $piutang_nobukti,
                     'tglbukti' => date('Y-m-d', strtotime($invoice->tglbukti)),
-                    'keterangan' => $invoice->keterangan,
                     'postingdari' => "ENTRY INVOICE",
                     'nominal' => $invoice->nominal,
                     'invoice_nobukti' => $invoice->nobukti,
@@ -287,7 +285,6 @@ class InvoiceHeaderController extends Controller
         try {
 
             $invoiceheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
-            $invoiceheader->keterangan = $request->keterangan;
             $invoiceheader->nominal = '';
             $invoiceheader->tglterima = date('Y-m-d', strtotime($request->tglterima));
             $invoiceheader->agen_id = $request->agen_id;
@@ -402,7 +399,6 @@ class InvoiceHeaderController extends Controller
                 'tanpaprosesnobukti' => 1,
                 'nobukti' => $piutang_nobukti,
                 'tglbukti' => date('Y-m-d', strtotime($invoiceheader->tglbukti)),
-                'keterangan' => $invoiceheader->keterangan,
                 'postingdari' => "ENTRY INVOICE",
                 'nominal' => $invoiceheader->nominal,
                 'invoice_nobukti' => $invoiceheader->nobukti,
