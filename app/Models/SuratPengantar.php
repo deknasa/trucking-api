@@ -103,6 +103,160 @@ class SuratPengantar extends MyModel
         return $data;
     }
 
+    public function default()
+    {
+
+        $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempdefault, function ($table) {
+            $table->unsignedBigInteger('statuslongtrip')->default(0);
+            $table->unsignedBigInteger('statusperalihan')->default(0);
+            $table->unsignedBigInteger('statusritasiomset')->default(0);
+            $table->unsignedBigInteger('statusgudangsama')->default(0);
+            $table->unsignedBigInteger('statusbatalmuat')->default(0);
+        });
+
+        $status = Parameter::from(
+            db::Raw("parameter with (readuncommitted)")
+        )
+            ->select(
+                'memo',
+                'id'
+            )
+            ->where('grp', '=', 'STATUS LONGTRIP')
+            ->where('subgrp', '=', 'STATUS LONGTRIP');
+
+        $datadetail = json_decode($status->get(), true);
+
+        $iddefaultstatuslongtrip = 0;
+        foreach ($datadetail as $item) {
+            $memo = json_decode($item['memo'], true);
+            $default = $memo['DEFAULT'];
+            if ($default == "YA") {
+                $iddefaultstatuslongtrip = $item['id'];
+                break;
+            }
+        }
+
+        // PERALIHAN
+        $status = Parameter::from(
+            db::Raw("parameter with (readuncommitted)")
+        )
+            ->select(
+                'memo',
+                'id'
+            )
+            ->where('grp', '=', 'STATUS PERALIHAN')
+            ->where('subgrp', '=', 'STATUS PERALIHAN');
+
+        $datadetail = json_decode($status->get(), true);
+
+        $iddefaultstatusperalihan = 0;
+        foreach ($datadetail as $item) {
+            $memo = json_decode($item['memo'], true);
+            $default = $memo['DEFAULT'];
+
+            if ($default == "YA") {
+                $iddefaultstatusperalihan = $item['id'];
+                break;
+            }
+        }
+
+        // RITASI OMSET
+        $status = Parameter::from(
+            db::Raw("parameter with (readuncommitted)")
+        )
+            ->select(
+                'memo',
+                'id'
+            )
+            ->where('grp', '=', 'STATUS RITASI OMSET')
+            ->where('subgrp', '=', 'STATUS RITASI OMSET');
+
+        $datadetail = json_decode($status->get(), true);
+
+        $iddefaultstatusritasi = 0;
+        foreach ($datadetail as $item) {
+            $memo = json_decode($item['memo'], true);
+            $default = $memo['DEFAULT'];
+
+            if ($default == "YA") {
+                $iddefaultstatusritasi = $item['id'];
+                break;
+            }
+        }
+
+        // GUDANG SAMA
+        $status = Parameter::from(
+            db::Raw("parameter with (readuncommitted)")
+        )
+            ->select(
+                'memo',
+                'id'
+            )
+            ->where('grp', '=', 'STATUS GUDANG SAMA')
+            ->where('subgrp', '=', 'STATUS GUDANG SAMA');
+
+        $datadetail = json_decode($status->get(), true);
+
+        $iddefaultstatusgudang = 0;
+        foreach ($datadetail as $item) {
+            $memo = json_decode($item['memo'], true);
+            $default = $memo['DEFAULT'];
+
+            if ($default == "YA") {
+                $iddefaultstatusgudang = $item['id'];
+                break;
+            }
+        }
+        // BATAL MUAT
+        $status = Parameter::from(
+            db::Raw("parameter with (readuncommitted)")
+        )
+            ->select(
+                'memo',
+                'id'
+            )
+            ->where('grp', '=', 'STATUS BATAL MUAT')
+            ->where('subgrp', '=', 'STATUS BATAL MUAT');
+
+        $datadetail = json_decode($status->get(), true);
+
+        $iddefaultstatusbatal = 0;
+        foreach ($datadetail as $item) {
+            $memo = json_decode($item['memo'], true);
+            $default = $memo['DEFAULT'];
+
+            if ($default == "YA") {
+                $iddefaultstatusbatal = $item['id'];
+                break;
+            }
+        }
+        DB::table($tempdefault)->insert(
+            [
+                "statuslongtrip" => $iddefaultstatuslongtrip,
+                "statusperalihan" => $iddefaultstatusperalihan,
+                "statusritasiomset" => $iddefaultstatusritasi,
+                "statusgudangsama" => $iddefaultstatusgudang,
+                "statusbatalmuat" => $iddefaultstatusbatal,
+            ]
+        );
+
+        $query = DB::table($tempdefault)->from(
+            DB::raw($tempdefault)
+        )
+            ->select(
+                'statuslongtrip',
+                'statusperalihan',
+                'statusritasiomset',
+                'statusgudangsama',
+                'statusbatalmuat'
+            );
+
+        $data = $query->first();
+        
+        return $data;
+    }
+
     public function findAll($id)
     {
         // dd('find');

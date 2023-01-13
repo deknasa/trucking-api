@@ -34,6 +34,14 @@ class KelompokController extends Controller
         ]);
     }
 
+    public function default()
+    {
+        $kelompok = new Kelompok();
+        return response([
+            'status' => true,
+            'data' => $kelompok->default()
+        ]);
+    }
     /**
      * @ClassName 
      */

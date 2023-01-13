@@ -38,6 +38,15 @@ class SupplierController extends Controller
         ]);
     }
 
+    public function default()
+    {
+        $supplier = new Supplier();
+        return response([
+            'status' => true,
+            'data' => $supplier->default()
+        ]);
+    }
+    
     public function show($id)
     {
 

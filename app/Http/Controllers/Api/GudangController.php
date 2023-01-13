@@ -35,6 +35,15 @@ class GudangController extends Controller
         ]);
     }
 
+    public function default()
+    {
+        $gudang = new Gudang();
+        return response([
+            'status' => true,
+            'data' => $gudang->default()
+        ]);
+    }
+
     /**
      * @ClassName 
      */

@@ -271,7 +271,6 @@ class PengeluaranHeader extends MyModel
             $query = DB::table($this->table)->from(DB::raw("pengeluaranheader with (readuncommitted)"))
             ->select(
                 'pengeluaranheader.nobukti',
-                'pengeluaranheader.keterangan as keterangan_detail',
                 'pengeluaranheader.tglbukti',
                 DB::raw('SUM(pengeluarandetail.nominal) AS nominal')
             )

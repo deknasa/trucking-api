@@ -28,21 +28,21 @@ class Tarif extends MyModel
     public function get()
     {
         $this->setRequestParameters();
-
+        $tempUpahsupir = $this->tempUpahsupir();
         $query = Tarif::from(DB::raw("$this->table with (readuncommitted)"))
         ->select(
             'tarif.id',
+            'parent.tujuan as parent_id',
+            "$tempUpahsupir.kotasampai_id as upahsupir_id",
             'tarif.tujuan',
             'container.keterangan as container_id',
             'tarif.nominal',
             'parameter.memo as statusaktif',
-            'tarif.tujuanasal',
             'sistemton.memo as statussistemton',
             'kota.kodekota as kota_id',
             'zona.zona as zona_id',
             'tarif.nominalton',
             'tarif.tglmulaiberlaku',
-            'tarif.tglakhirberlaku',
             'p.memo as statuspenyesuaianharga',
             'tarif.modifiedby',
             'tarif.created_at',
@@ -52,6 +52,8 @@ class Tarif extends MyModel
             ->leftJoin(DB::raw("container with (readuncommitted)"), 'tarif.container_id', '=', 'container.id')
             ->leftJoin(DB::raw("kota with (readuncommitted)"), 'tarif.kota_id', '=', 'kota.id')
             ->leftJoin(DB::raw("zona with (readuncommitted)"), 'tarif.zona_id', '=', 'zona.id')
+            ->leftJoin(DB::raw("$tempUpahsupir with (readuncommitted)"), 'tarif.upahsupir_id', '=', "$tempUpahsupir.id")
+            ->leftJoin(DB::raw("tarif as parent with (readuncommitted)"), 'tarif.parent_id', '=', 'parent.id')
             ->leftJoin(DB::raw("parameter AS p with (readuncommitted)"), 'tarif.statuspenyesuaianharga', '=', 'p.id')
             ->leftJoin(DB::raw("parameter AS sistemton with (readuncommitted)"), 'tarif.statussistemton', '=', 'sistemton.id');
 
@@ -66,6 +68,21 @@ class Tarif extends MyModel
 
         return $data;
     }
+    public function tempUpahsupir(){
+        $tempUpahsupir = '##tempupah' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        $fetch = UpahSupir::from(DB::raw("upahsupir with (readuncommitted)"))
+            ->select('upahsupir.id as id','kota.keterangan as kotasampai_id')
+            ->leftJoin(DB::raw("kota with (readuncommitted)"), 'upahsupir.kotasampai_id','kota.id');
+
+        Schema::create($tempUpahsupir, function ($table) {
+            $table->bigInteger('id')->default('0');
+            $table->string('kotasampai_id', 200)->default('');
+
+        });
+        DB::table($tempUpahsupir)->insertUsing(['id', 'kotasampai_id'], $fetch);
+
+        return $tempUpahsupir;
+    }
 
     public function selectColumns($query)
     { //sesuaikan dengan createtemp
@@ -77,13 +94,11 @@ class Tarif extends MyModel
              container.keterangan as container_id,
              $this->table.nominal,
              parameter.text as statusaktif,
-             $this->table.tujuanasal,
              $this->table.statussistemton,
              kota.kodekota as kota_id,
              zona.zona as zona_id,
              $this->table.nominalton,
              $this->table.tglmulaiberlaku,
-             $this->table.tglakhirberlaku,
              p.text as statuspenyesuaianharga,
              $this->table.modifiedby,
              $this->table.created_at,
@@ -108,13 +123,11 @@ class Tarif extends MyModel
             $table->string('container_id')->default('0');
             $table->double('nominal', 15, 2)->default('0');
             $table->string('statusaktif')->default('0');
-            $table->string('tujuanasal', 300)->default('');
             $table->integer('statussistemton')->length(11)->default('0');
             $table->string('kota_id')->default('0');
-            $table->string('zona_id')->default('0');
+            $table->string('zona_id')->nullable();
             $table->double('nominalton', 15, 2)->default('0');
             $table->date('tglmulaiberlaku')->default('1900/1/1');
-            $table->date('tglakhirberlaku')->default('1900/1/1');
             $table->string('statuspenyesuaianharga')->default('0');
 
             $table->string('modifiedby', 50)->default('');
@@ -128,23 +141,125 @@ class Tarif extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id', 'tujuan', 'container_id', 'nominal', 'statusaktif', 'tujuanasal', 'statussistemton', 'kota_id', 'zona_id', 'nominalton', 'tglmulaiberlaku', 'tglakhirberlaku', 'statuspenyesuaianharga', 'modifiedby', 'created_at', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'tujuan', 'container_id', 'nominal', 'statusaktif',  'statussistemton', 'kota_id', 'zona_id', 'nominalton', 'tglmulaiberlaku', 'statuspenyesuaianharga', 'modifiedby', 'created_at', 'updated_at'], $models);
 
 
         return  $temp;
     }
 
-    public function findAll($id)
+    public function default()
     {
+
+        $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempdefault, function ($table) {
+            $table->unsignedBigInteger('statusaktif')->default(0);
+            $table->unsignedBigInteger('statussistemton')->default(0);
+            $table->unsignedBigInteger('statuspenyesuaianharga')->default(0);
+        });
+
+        $status = Parameter::from(
+            db::Raw("parameter with (readuncommitted)")
+        )
+            ->select(
+                'memo',
+                'id'
+            )
+            ->where('grp', '=', 'STATUS AKTIF')
+            ->where('subgrp', '=', 'STATUS AKTIF');
+
+        $datadetail = json_decode($status->get(), true);
+
+        $iddefaultstatusaktif = 0;
+        foreach ($datadetail as $item) {
+            $memo = json_decode($item['memo'], true);
+            $default = $memo['DEFAULT'];
+            if ($default == "YA") {
+                $iddefaultstatusaktif = $item['id'];
+                break;
+            }
+        }
+
+        $status = Parameter::from(
+            db::Raw("parameter with (readuncommitted)")
+        )
+            ->select(
+                'memo',
+                'id'
+            )
+            ->where('grp', '=', 'SISTEM TON')
+            ->where('subgrp', '=', 'SISTEM TON');
+
+        $datadetail = json_decode($status->get(), true);
+
+        $iddefaultstatussistemton = 0;
+        foreach ($datadetail as $item) {
+            $memo = json_decode($item['memo'], true);
+            $default = $memo['DEFAULT'];
+
+            if ($default == "YA") {
+                $iddefaultstatussistemton = $item['id'];
+                break;
+            }
+        }
+
+        $status = Parameter::from(
+            db::Raw("parameter with (readuncommitted)")
+        )
+            ->select(
+                'memo',
+                'id'
+            )
+            ->where('grp', '=', 'PENYESUAIAN HARGA')
+            ->where('subgrp', '=', 'PENYESUAIAN HARGA');
+
+        $datadetail = json_decode($status->get(), true);
+
+        $iddefaultstatuspenyesuaianharga = 0;
+        foreach ($datadetail as $item) {
+            $memo = json_decode($item['memo'], true);
+            $default = $memo['DEFAULT'];
+
+            if ($default == "YA") {
+                $iddefaultstatuspenyesuaianharga = $item['id'];
+                break;
+            }
+        }
+        DB::table($tempdefault)->insert(
+            ["statusaktif" => $iddefaultstatusaktif,
+            "statussistemton" => $iddefaultstatussistemton,
+            "statuspenyesuaianharga" => $iddefaultstatuspenyesuaianharga
+            ]
+        );
+
+        $query = DB::table($tempdefault)->from(
+            DB::raw($tempdefault)
+        )
+            ->select(
+                'statusaktif',
+                'statussistemton',
+                'statuspenyesuaianharga',
+            );
+
+        $data = $query->first();
+        
+        return $data;
+    }
+
+    public function findAll($id)
+    {        
+        $tempUpahsupir = (new static)->tempUpahsupir();
         $query = Tarif::from(DB::raw("tarif with (readuncommitted)"))
         ->select(
             'tarif.id',
+            'tarif.parent_id',
+            'parent.tujuan as parent',
+            'tarif.upahsupir_id',
+            "$tempUpahsupir.kotasampai_id as upahsupir",
             'tarif.tujuan',
             'tarif.container_id',
             'container.keterangan as container',
             'tarif.nominal',
             'tarif.statusaktif',
-            'tarif.tujuanasal',
             'tarif.statussistemton',
             
             'tarif.kota_id',
@@ -154,12 +269,13 @@ class Tarif extends MyModel
             
             'tarif.nominalton',
             'tarif.tglmulaiberlaku',
-            'tarif.tglakhirberlaku',
             'tarif.statuspenyesuaianharga',
         )
             ->leftJoin(DB::raw("container with (readuncommitted)"),'tarif.container_id','container.id')
             ->leftJoin(DB::raw("kota with (readuncommitted)"), 'tarif.kota_id', '=', 'kota.id')
             ->leftJoin(DB::raw("zona with (readuncommitted)"), 'tarif.zona_id', '=', 'zona.id')
+            ->leftJoin(DB::raw("tarif as parent with (readuncommitted)"), 'tarif.parent_id', '=', 'parent.id')
+            ->leftJoin(DB::raw("$tempUpahsupir with (readuncommitted)"), 'tarif.upahsupir_id', '=', "$tempUpahsupir.id")
 
             ->where('tarif.id', $id);
 

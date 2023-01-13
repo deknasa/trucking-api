@@ -36,7 +36,14 @@ class KotaController extends Controller
         ]);
     }
 
-
+    Public function default()
+    {
+        $kota = new Kota();
+        return response([
+            'status' => true,
+            'data' => $kota->default()
+        ]);
+    }
     /**
      * @ClassName 
      */

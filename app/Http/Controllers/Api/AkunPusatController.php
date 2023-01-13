@@ -29,6 +29,14 @@ class AkunPusatController extends Controller
             ]
         ]);
     }
+    public function default()
+    {
+        $akunPusat = new AkunPusat();
+        return response([
+            'status' => true,
+            'data' => $akunPusat->default()
+        ]);
+    }
 
     /**
      * @ClassName 

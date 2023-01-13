@@ -74,6 +74,77 @@ class OrderanTrucking extends MyModel
         return $data;
     }
 
+    public function default()
+    {
+
+        $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempdefault, function ($table) {
+            $table->unsignedBigInteger('statuslangsir')->default(0);
+            $table->unsignedBigInteger('statusperalihan')->default(0);
+        });
+
+        $status = Parameter::from(
+            db::Raw("parameter with (readuncommitted)")
+        )
+            ->select(
+                'memo',
+                'id'
+            )
+            ->where('grp', '=', 'STATUS LANGSIR')
+            ->where('subgrp', '=', 'STATUS LANGSIR');
+
+        $datadetail = json_decode($status->get(), true);
+
+        $iddefaultstatuslangsir = 0;
+        foreach ($datadetail as $item) {
+            $memo = json_decode($item['memo'], true);
+            $default = $memo['DEFAULT'];
+            if ($default == "YA") {
+                $iddefaultstatuslangsir = $item['id'];
+                break;
+            }
+        }
+
+        $status = Parameter::from(
+            db::Raw("parameter with (readuncommitted)")
+        )
+            ->select(
+                'memo',
+                'id'
+            )
+            ->where('grp', '=', 'STATUS PERALIHAN')
+            ->where('subgrp', '=', 'STATUS PERALIHAN');
+
+        $datadetail = json_decode($status->get(), true);
+
+        $iddefaultstatusperalihan = 0;
+        foreach ($datadetail as $item) {
+            $memo = json_decode($item['memo'], true);
+            $default = $memo['DEFAULT'];
+
+            if ($default == "YA") {
+                $iddefaultstatusperalihan = $item['id'];
+                break;
+            }
+        }
+
+        DB::table($tempdefault)->insert(
+            ["statuslangsir" => $iddefaultstatuslangsir,"statusperalihan" => $iddefaultstatusperalihan]
+        );
+
+        $query = DB::table($tempdefault)->from(
+            DB::raw($tempdefault)
+        )
+            ->select(
+                'statuslangsir',
+                'statusperalihan',
+            );
+
+        $data = $query->first();
+        
+        return $data;
+    }
+
     public function findAll($id)
     {
         $query = DB::table('orderantrucking')

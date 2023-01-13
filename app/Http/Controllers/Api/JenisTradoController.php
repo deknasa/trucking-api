@@ -33,6 +33,16 @@ class JenisTradoController extends Controller
             ]
         ]);
     }
+    
+    public function default()
+    {
+
+        $jenisTrado = new JenisTrado();
+        return response([
+            'status' => true,
+            'data' => $jenisTrado->default(),
+        ]);
+    }
     /**
      * @ClassName 
      */

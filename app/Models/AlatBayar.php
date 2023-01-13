@@ -59,6 +59,80 @@ class AlatBayar extends MyModel
 
         return $data;
     }
+    
+    public function default()
+    {
+
+        $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempdefault, function ($table) {
+            $table->unsignedBigInteger('statusdefault')->default(0);
+            $table->unsignedBigInteger('statuslangsungcair')->default(0);
+        });
+
+        // STATUS DEFAULT
+        $status = Parameter::from(
+            db::Raw("parameter with (readuncommitted)")
+        )
+            ->select(
+                'memo',
+                'id'
+            )
+            ->where('grp', '=', 'STATUS DEFAULT')
+            ->where('subgrp', '=', 'STATUS DEFAULT');
+
+        $datadetail = json_decode($status->get(), true);
+
+        $iddefaultstatusdefault = 0;
+        foreach ($datadetail as $item) {
+            $memo = json_decode($item['memo'], true);
+            $default = $memo['DEFAULT'];
+            if ($default == "YA") {
+                $iddefaultstatusdefault = $item['id'];
+                break;
+            }
+        }
+
+        //  STATUS LANGSUNG CAIR
+        $status = Parameter::from(
+            db::Raw("parameter with (readuncommitted)")
+        )
+            ->select(
+                'memo',
+                'id'
+            )
+            ->where('grp', '=', 'STATUS LANGSUNG CAIR')
+            ->where('subgrp', '=', 'STATUS LANGSUNG CAIR');
+
+        $datadetail = json_decode($status->get(), true);
+
+        $iddefaultstatuslangsung = 0;
+        foreach ($datadetail as $item) {
+            $memo = json_decode($item['memo'], true);
+            $default = $memo['DEFAULT'];
+
+            if ($default == "YA") {
+                $iddefaultstatuslangsung = $item['id'];
+                break;
+            }
+        }
+
+        DB::table($tempdefault)->insert(
+            ["statusdefault" => $iddefaultstatusdefault,"statuslangsungcair" => $iddefaultstatuslangsung]
+        );
+
+        $query = DB::table($tempdefault)->from(
+            DB::raw($tempdefault)
+        )
+            ->select(
+                'statusdefault',
+                'statuslangsungcair',
+            );
+
+        $data = $query->first();
+        
+        return $data;
+    }
+
     public function find($id)
     {
         $query = DB::table('alatbayar')

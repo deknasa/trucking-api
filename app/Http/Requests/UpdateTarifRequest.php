@@ -29,11 +29,9 @@ class UpdateTarifRequest extends FormRequest
             'nominal' => 'required|numeric|gt:0',
             'statusaktif' => 'required',
             'statussistemton' => 'required',
-            'zona' => 'required',
             'kota' => 'required',
             'nominalton' => 'integer|min:0',
             'tglmulaiberlaku' => 'required',
-            'tglakhirberlaku' => 'required',
             'statuspenyesuaianharga' => 'required',
         ];
     }
@@ -43,7 +41,6 @@ class UpdateTarifRequest extends FormRequest
         return [
             'statussistemton' => 'Status Sistem Ton',
             'tglmulaiberlaku' => 'Tanggal Mulai Berlaku',
-            'tglakhirberlaku' => 'Tanggal Akhir Berlaku',
             'statuspenyesuaianharga' => 'Status Penyesuaian Harga'
         ];
     }

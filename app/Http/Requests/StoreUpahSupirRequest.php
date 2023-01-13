@@ -26,12 +26,12 @@ class StoreUpahSupirRequest extends FormRequest
         $rules =  [
             'kotadari' => 'required',
             'kotasampai' => 'required',
-            'zona' => 'required',
+            // 'zona' => 'required',
             'jarak' => 'required|numeric|gt:0',
             'statusaktif' => 'required',
             'statusluarkota' => 'required',
             'tglmulaiberlaku' => 'required',
-            'tglakhirberlaku' => 'required',
+            // 'tglakhirberlaku' => 'required',
         ];
         $relatedRequests = [
             StoreUpahSupirRincianRequest::class

@@ -35,6 +35,16 @@ class MekanikController extends Controller
             ]
         ]);
     }
+
+    public function default()
+    {
+
+        $mekanik = new Mekanik();
+        return response([
+            'status' => true,
+            'data' => $mekanik->default(),
+        ]);
+    }
     /**
      * @ClassName 
      */

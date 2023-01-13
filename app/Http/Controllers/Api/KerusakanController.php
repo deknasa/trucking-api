@@ -35,6 +35,15 @@ class KerusakanController extends Controller
         ]);
     }
 
+    public function default()
+    {
+
+        $kerusakan = new Kerusakan();
+        return response([
+            'status' => true,
+            'data' => $kerusakan->default(),
+        ]);
+    }
 
     /**
      * @ClassName 

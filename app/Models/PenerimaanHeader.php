@@ -403,7 +403,6 @@ class PenerimaanHeader extends MyModel
             DB::raw($this->table . " with (readuncommitted)")
         )->select(
             'penerimaanheader.nobukti',
-            'penerimaanheader.keterangan as keterangan_detail',
             'penerimaanheader.tglbukti',
             DB::raw('SUM(penerimaandetail.nominal) AS nominal')
         )

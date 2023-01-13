@@ -30,6 +30,16 @@ class StatusContainerController extends Controller
         ]);
     }
 
+    public function default()
+    {
+
+        $statusContainer = new StatusContainer();
+        return response([
+            'status' => true,
+            'data' => $statusContainer->default(),
+        ]);
+    }
+
     public function show(StatusContainer $statusContainer)
     {
         return response([

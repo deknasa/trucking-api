@@ -34,6 +34,15 @@ class BankController extends Controller
             ]
         ]);
     }
+
+    public function default()
+    {
+        $bank = new Bank();
+        return response([
+            'status' => true,
+            'data' => $bank->default()
+        ]);
+    }
     /**
      * @ClassName 
      */

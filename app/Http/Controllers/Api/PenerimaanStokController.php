@@ -29,6 +29,14 @@ class PenerimaanStokController extends Controller
         ]);
     }
 
+    public function default()
+    {
+        $penerimaanStok = new PenerimaanStok();
+        return response([
+            'status' => true,
+            'data' => $penerimaanStok->default()
+        ]);
+    }
     /**
      * @ClassName 
      */
