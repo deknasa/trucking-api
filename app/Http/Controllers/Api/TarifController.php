@@ -37,6 +37,16 @@ class TarifController extends Controller
         ]);
     }
 
+    public function default()
+    {
+
+        $tarif = new Tarif();
+        return response([
+            'status' => true,
+            'data' => $tarif->default(),
+        ]);
+    }
+
 
     /**
      * @ClassName 
@@ -47,17 +57,17 @@ class TarifController extends Controller
 
         try {
             $tarif = new Tarif();
+            $tarif->parent_id = $request->parent_id ?? '';
+            $tarif->upahsupir_id = $request->upahsupir_id ?? '';
             $tarif->tujuan = $request->tujuan;
             $tarif->container_id = $request->container_id;
             $tarif->nominal = $request->nominal;
             $tarif->statusaktif = $request->statusaktif;
-            $tarif->tujuanasal = $request->tujuanasal;
             $tarif->statussistemton = $request->statussistemton;
             $tarif->kota_id = $request->kota_id;
-            $tarif->zona_id = $request->zona_id;
+            $tarif->zona_id = $request->zona_id ?? '';
             $tarif->nominalton = $request->nominalton;
             $tarif->tglmulaiberlaku = date('Y-m-d', strtotime($request->tglmulaiberlaku));
-            $tarif->tglakhirberlaku = date('Y-m-d', strtotime($request->tglakhirberlaku));
             $tarif->statuspenyesuaianharga = $request->statuspenyesuaianharga;
             $tarif->modifiedby = auth('api')->user()->name;
 
@@ -113,17 +123,17 @@ class TarifController extends Controller
         DB::beginTransaction();
 
         try {
+            $tarif->parent_id = $request->parent_id ?? '';
+            $tarif->upahsupir_id = $request->upahsupir_id ?? '';
             $tarif->tujuan = $request->tujuan;
             $tarif->container_id = $request->container_id;
             $tarif->nominal = $request->nominal;
             $tarif->statusaktif = $request->statusaktif;
-            $tarif->tujuanasal = $request->tujuanasal;
             $tarif->statussistemton = $request->statussistemton;
             $tarif->kota_id = $request->kota_id;
-            $tarif->zona_id = $request->zona_id;
+            $tarif->zona_id = $request->zona_id ?? '';
             $tarif->nominalton = $request->nominalton;
             $tarif->tglmulaiberlaku = date('Y-m-d', strtotime($request->tglmulaiberlaku));
-            $tarif->tglakhirberlaku = date('Y-m-d', strtotime($request->tglakhirberlaku));
             $tarif->statuspenyesuaianharga = $request->statuspenyesuaianharga;
             $tarif->modifiedby = auth('api')->user()->name;
 

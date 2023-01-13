@@ -735,6 +735,7 @@ use App\Http\Controllers\Api\ReportAllController;
 
     Route::get('tarif/combo', [TarifController::class, 'combo']);
     Route::get('tarif/field_length', [TarifController::class, 'fieldLength']);
+    Route::get('tarif/default', [TarifController::class, 'default']);
     Route::resource('tarif', TarifController::class);
 
     Route::get('orderantrucking/combo', [OrderanTruckingController::class, 'combo']);
