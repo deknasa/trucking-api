@@ -752,8 +752,11 @@ use App\Http\Controllers\Api\ReportAllController;
 
     Route::get('upahsupir/combo', [UpahSupirController::class, 'combo']);
     Route::get('upahsupir/field_length', [UpahSupirController::class, 'fieldLength']);
+    Route::get('upahsupir/default', [UpahSupirController::class, 'default']);
     Route::resource('upahsupir', UpahSupirController::class);
-
+    
+    Route::get('upahsupirrincian/setuprow', [UpahSupirRincianController::class, 'setUpRow']);
+    Route::get('upahsupirrincian/setuprowshow/{id}', [UpahSupirRincianController::class, 'setUpRowExcept']);
     Route::resource('upahsupirrincian', UpahSupirRincianController::class);
 
 
