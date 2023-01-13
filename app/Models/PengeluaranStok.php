@@ -61,6 +61,46 @@ class PengeluaranStok extends MyModel
         return $data;
     }
 
+    public function default()
+    {
+        
+        $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempdefault, function ($table) {
+            $table->unsignedBigInteger('statushitungstok')->default(0);
+        });
+
+        $statusaktif=Parameter::from (
+            db::Raw("parameter with (readuncommitted)")
+        )
+        ->select (
+            'memo',
+            'id'
+        )
+        ->where('grp','=','STATUS HITUNG STOK')
+        ->where('subgrp','=','STATUS HITUNG STOK');
+
+        $datadetail = json_decode($statusaktif->get(), true);
+
+        $iddefault=0;
+        foreach ($datadetail as $item) {
+            $memo = json_decode($item['memo'], true);
+            $default=$memo['DEFAULT'];
+            if ($default=="YA") {
+                $iddefault=$item['id'];
+                DB::table($tempdefault)->insert(["statushitungstok" => $iddefault]);
+            } 
+        }
+
+        $query=DB::table($tempdefault)->from(
+            DB::raw($tempdefault )
+        )
+            ->select(
+                'statushitungstok');
+
+        $data = $query->first();
+        // dd($data);
+        return $data;
+    }
     public function createTemp(string $modelTable)
     {
         $this->setRequestParameters();

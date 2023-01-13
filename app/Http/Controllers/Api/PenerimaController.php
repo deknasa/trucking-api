@@ -31,6 +31,14 @@ class PenerimaController extends Controller
         ]);
     }
 
+    public function default()
+    {
+        $penerima = new Penerima();
+        return response([
+            'status' => true,
+            'data' => $penerima->default()
+        ]);
+    }
     /**
      * @ClassName 
      */

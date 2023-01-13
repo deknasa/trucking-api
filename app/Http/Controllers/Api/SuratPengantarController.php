@@ -47,6 +47,14 @@ class SuratPengantarController extends Controller
         ]);
     }
 
+    public function default()
+    {
+        $suratPengantar = new SuratPengantar();
+        return response([
+            'status' => true,
+            'data' => $suratPengantar->default()
+        ]);
+    }
     /**
      * @ClassName 
      */

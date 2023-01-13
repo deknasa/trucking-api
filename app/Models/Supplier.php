@@ -74,6 +74,77 @@ class Supplier extends MyModel
         return $data;
     }
 
+    public function default()
+    {
+
+        $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempdefault, function ($table) {
+            $table->unsignedBigInteger('statusaktif')->default(0);
+            $table->unsignedBigInteger('statusdaftarharga')->default(0);
+        });
+
+        $status = Parameter::from(
+            db::Raw("parameter with (readuncommitted)")
+        )
+            ->select(
+                'memo',
+                'id'
+            )
+            ->where('grp', '=', 'STATUS AKTIF')
+            ->where('subgrp', '=', 'STATUS AKTIF');
+
+        $datadetail = json_decode($status->get(), true);
+
+        $iddefaultstatusaktif = 0;
+        foreach ($datadetail as $item) {
+            $memo = json_decode($item['memo'], true);
+            $default = $memo['DEFAULT'];
+            if ($default == "YA") {
+                $iddefaultstatusaktif = $item['id'];
+                break;
+            }
+        }
+
+        $status = Parameter::from(
+            db::Raw("parameter with (readuncommitted)")
+        )
+            ->select(
+                'memo',
+                'id'
+            )
+            ->where('grp', '=', 'STATUS DAFTAR HARGA')
+            ->where('subgrp', '=', 'STATUS DAFTAR HARGA');
+
+        $datadetail = json_decode($status->get(), true);
+
+        $iddefaultstatusdaftarharga = 0;
+        foreach ($datadetail as $item) {
+            $memo = json_decode($item['memo'], true);
+            $default = $memo['DEFAULT'];
+
+            if ($default == "YA") {
+                $iddefaultstatusdaftarharga = $item['id'];
+                break;
+            }
+        }
+
+        DB::table($tempdefault)->insert(
+            ["statusaktif" => $iddefaultstatusaktif,"statusdaftarharga" => $iddefaultstatusdaftarharga]
+        );
+
+        $query = DB::table($tempdefault)->from(
+            DB::raw($tempdefault)
+        )
+            ->select(
+                'statusaktif',
+                'statusdaftarharga',
+            );
+
+        $data = $query->first();
+        
+        return $data;
+    }
+
     public function find($id)
     {
         $query = DB::table('supplier')->select(

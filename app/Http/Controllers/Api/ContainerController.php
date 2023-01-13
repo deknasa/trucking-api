@@ -38,6 +38,16 @@ class ContainerController extends Controller
         ]);
     }
 
+    public function default()
+    {
+
+        $container = new Container();
+        return response([
+            'status' => true,
+            'data' => $container->default(),
+        ]);
+    }
+
 
     /**
      * @ClassName 

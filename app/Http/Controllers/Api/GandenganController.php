@@ -38,6 +38,15 @@ class GandenganController extends Controller
         ]);
     }
 
+    public function default()
+    {
+
+        $gandengan = new Gandengan();
+        return response([
+            'status' => true,
+            'data' => $gandengan->default(),
+        ]);
+    }
 
     /**
      * @ClassName 

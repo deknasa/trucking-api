@@ -30,6 +30,14 @@ class PengeluaranStokController extends Controller
         ]);
     }
 
+    public function default()
+    {
+        $pengeluaranStok = new PengeluaranStok();
+        return response([
+            'status' => true,
+            'data' => $pengeluaranStok->default()
+        ]);
+    }
     /**
      * @ClassName 
      */

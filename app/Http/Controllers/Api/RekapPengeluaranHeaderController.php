@@ -46,29 +46,28 @@ class RekapPengeluaranHeaderController extends Controller
             $subgroup = 'REKAP PENGELUARAN';
 
             $format = DB::table('parameter')
-                ->where('grp', $group )
+                ->where('grp', $group)
                 ->where('subgrp', $subgroup)
                 ->first();
             $content = new Request();
-            $content['group'] = $group ;
-            $content['subgroup'] = $subgroup ;
+            $content['group'] = $group;
+            $content['subgroup'] = $subgroup;
             $content['table'] = 'rekappengeluaranheader';
             $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
             $statusNonApproval = Parameter::where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
 
             $rekapPengeluaranHeader = new RekapPengeluaranHeader();
-            
-            $rekapPengeluaranHeader->tglbukti = date('Y-m-d',strtotime($request->tglbukti));
-            $rekapPengeluaranHeader->keterangan = $request->keterangan;
-            $rekapPengeluaranHeader->tgltransaksi  = date('Y-m-d',strtotime($request->tgltransaksi ));
+
+            $rekapPengeluaranHeader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
+            $rekapPengeluaranHeader->tgltransaksi  = date('Y-m-d', strtotime($request->tgltransaksi));
             $rekapPengeluaranHeader->bank_id = $request->bank_id;
             $rekapPengeluaranHeader->statusapproval = $statusNonApproval->id;
             $rekapPengeluaranHeader->userapproval = auth('api')->user()->name;
             $rekapPengeluaranHeader->statusformat = $format->id;
             $rekapPengeluaranHeader->modifiedby = auth('api')->user()->name;
             TOP:
-                $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
-                $rekapPengeluaranHeader->nobukti = $nobukti;
+            $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
+            $rekapPengeluaranHeader->nobukti = $nobukti;
 
             if ($rekapPengeluaranHeader->save()) {
                 $logTrail = [
@@ -82,11 +81,11 @@ class RekapPengeluaranHeaderController extends Controller
                 ];
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-                
+
                 /* Store detail */
-                
+
                 if ($request->pengeluaran_nobukti) {
-                    $rekapPengeluaranDetail = RekapPengeluaranDetail::where('rekappengeluaran_id',$rekapPengeluaranHeader->id)->lockForUpdate()->delete();
+                    $rekapPengeluaranDetail = RekapPengeluaranDetail::where('rekappengeluaran_id', $rekapPengeluaranHeader->id)->lockForUpdate()->delete();
 
                     $detaillog = [];
                     for ($i = 0; $i < count($request->pengeluaran_nobukti); $i++) {
@@ -99,11 +98,11 @@ class RekapPengeluaranHeaderController extends Controller
                             "keterangandetail" => $request->keterangan_detail[$i],
                             "modifiedby" => $rekapPengeluaranHeader->modifiedby = auth('api')->user()->name
                         ];
-                        
-                        $detaillog []=$datadetail;
+
+                        $detaillog[] = $datadetail;
                         $data = new StoreRekapPengeluaranDetailRequest($datadetail);
                         $rekapPengeluaranDetail = app(RekapPengeluaranDetailController::class)->store($data);
-    
+
                         if ($rekapPengeluaranDetail['error']) {
                             return response($rekapPengeluaranDetail, 422);
                         } else {
@@ -122,7 +121,7 @@ class RekapPengeluaranHeaderController extends Controller
                     ];
                     $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                     $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-                    
+
                     DB::commit();
                 }
             }
@@ -131,27 +130,25 @@ class RekapPengeluaranHeaderController extends Controller
             $selected = $this->getPosition($rekapPengeluaranHeader, $rekapPengeluaranHeader->getTable());
             $rekapPengeluaranHeader->position = $selected->position;
             $rekapPengeluaranHeader->page = ceil($rekapPengeluaranHeader->position / ($request->limit ?? 10));
-            
+
             if (isset($request->limit)) {
                 $rekapPengeluaranHeader->page = ceil($rekapPengeluaranHeader->position / $request->limit);
             }
-            
+
             return response([
                 'message' => 'Berhasil disimpan',
                 'data' => $rekapPengeluaranHeader
             ], 201);
-                    
-
-        }catch (\Throwable $th){
+        } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
             return response($th->getMessage());
         }
     }
-    public function show(RekapPengeluaranHeader $rekapPengeluaranHeader,$id)
+    public function show(RekapPengeluaranHeader $rekapPengeluaranHeader, $id)
     {
         $data = $rekapPengeluaranHeader->find($id);
-        
+
         return response([
             'status' => true,
             'data' => $data,
@@ -160,17 +157,17 @@ class RekapPengeluaranHeaderController extends Controller
     /**
      * @ClassName 
      */
-    public function update(UpdateRekapPengeluaranHeaderRequest $request, RekapPengeluaranHeader $rekapPengeluaranHeader,$id)
+    public function update(UpdateRekapPengeluaranHeaderRequest $request, RekapPengeluaranHeader $rekapPengeluaranHeader, $id)
     {
         DB::beginTransaction();
 
         try {
-            
+            $statusNonApproval = Parameter::where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
+
             $rekapPengeluaranHeader = RekapPengeluaranHeader::lockForUpdate()->findOrFail($id);
 
-            $rekapPengeluaranHeader->tglbukti = date('Y-m-d',strtotime($request->tglbukti));
-            $rekapPengeluaranHeader->keterangan = $request->keterangan;
-            $rekapPengeluaranHeader->tgltransaksi  = date('Y-m-d',strtotime($request->tgltransaksi ));
+            $rekapPengeluaranHeader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
+            $rekapPengeluaranHeader->tgltransaksi  = date('Y-m-d', strtotime($request->tgltransaksi));
             $rekapPengeluaranHeader->statusapproval = $statusNonApproval->id;
             $rekapPengeluaranHeader->userapproval = auth('api')->user()->name;
             $rekapPengeluaranHeader->bank_id = $request->bank_id;
@@ -188,11 +185,11 @@ class RekapPengeluaranHeaderController extends Controller
                 ];
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-                
+
                 /* Store detail */
-                
+
                 if ($request->pengeluaran_nobukti) {
-                    $rekapPengeluaranDetail = RekapPengeluaranDetail::where('rekappengeluaran_id',$rekapPengeluaranHeader->id)->lockForUpdate()->delete();
+                    $rekapPengeluaranDetail = RekapPengeluaranDetail::where('rekappengeluaran_id', $rekapPengeluaranHeader->id)->lockForUpdate()->delete();
 
                     $detaillog = [];
                     for ($i = 0; $i < count($request->pengeluaran_nobukti); $i++) {
@@ -205,11 +202,11 @@ class RekapPengeluaranHeaderController extends Controller
                             "keterangandetail" => $request->keterangan_detail[$i],
                             "modifiedby" => $rekapPengeluaranHeader->modifiedby = auth('api')->user()->name
                         ];
-                        
-                        $detaillog []=$datadetail;
+
+                        $detaillog[] = $datadetail;
                         $data = new StoreRekapPengeluaranDetailRequest($datadetail);
                         $rekapPengeluaranDetail = app(RekapPengeluaranDetailController::class)->store($data);
-    
+
                         if ($rekapPengeluaranDetail['error']) {
                             return response($rekapPengeluaranDetail, 422);
                         } else {
@@ -228,7 +225,7 @@ class RekapPengeluaranHeaderController extends Controller
                     ];
                     $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                     $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-                    
+
                     DB::commit();
                 }
             }
@@ -237,18 +234,16 @@ class RekapPengeluaranHeaderController extends Controller
             $selected = $this->getPosition($rekapPengeluaranHeader, $rekapPengeluaranHeader->getTable());
             $rekapPengeluaranHeader->position = $selected->position;
             $rekapPengeluaranHeader->page = ceil($rekapPengeluaranHeader->position / ($request->limit ?? 10));
-            
+
             if (isset($request->limit)) {
                 $rekapPengeluaranHeader->page = ceil($rekapPengeluaranHeader->position / $request->limit);
             }
-            
+
             return response([
                 'message' => 'Berhasil disimpan',
                 'data' => $rekapPengeluaranHeader
             ], 201);
-                    
-
-        }catch (\Throwable $th){
+        } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
             return response($th->getMessage());
@@ -260,53 +255,59 @@ class RekapPengeluaranHeaderController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(RekapPengeluaranHeader $rekapPengeluaranHeader,$id)
+    public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
-        $rekapPengeluaranHeader = RekapPengeluaranHeader::lockForUpdate()->findOrFail($id);
+        $getDetail = RekapPengeluaranDetail::lockForUpdate()->where('rekappengeluaran_id', $id)->get();
+        $rekapPengeluaranHeader = new RekapPengeluaranHeader();
+        $rekapPengeluaranHeader = $rekapPengeluaranHeader->lockAndDestroy($id);
+        if ($rekapPengeluaranHeader) {
+            $logTrail = [
+                'namatabel' => strtoupper($rekapPengeluaranHeader->getTable()),
+                'postingdari' => 'DELETE Rekap Pengeluaran Header',
+                'idtrans' => $id,
+                'nobuktitrans' => $rekapPengeluaranHeader->nobukti,
+                'aksi' => 'DELETE',
+                'datajson' => $rekapPengeluaranHeader->toArray(),
+                'modifiedby' => $rekapPengeluaranHeader->modifiedby
+            ];
 
-        try {
-            
-            $delete = RekapPengeluaranDetail::where('rekappengeluaran_id',$id)->lockForUpdate()->delete();
-            $delete = $rekapPengeluaranHeader->lockForUpdate()->delete();
-            if ($delete) {
-                $logTrail = [
-                    'namatabel' => strtoupper($rekapPengeluaranHeader->getTable()),
-                    'postingdari' => 'DELETE Rekap Pengeluaran Header',
-                    'idtrans' => $id,
-                    'nobuktitrans' => '',
-                    'aksi' => 'DELETE',
-                    'datajson' => $rekapPengeluaranHeader->toArray(),
-                    'modifiedby' => $rekapPengeluaranHeader->modifiedby
-                ];
+            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+            $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                app(LogTrailController::class)->store($validatedLogTrail);
+            // DELETE PENGELUARAN DETAIL
+            $logTrailPengeluaranDetail = [
+                'namatabel' => 'REKAPPENGELUARANDETAIL',
+                'postingdari' => 'DELETE REKAP PENGELUARAN DETAIL',
+                'idtrans' => $storedLogTrail['id'],
+                'nobuktitrans' => $rekapPengeluaranHeader->nobukti,
+                'aksi' => 'DELETE',
+                'datajson' => $getDetail->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ];
 
-                DB::commit();
+            $validatedLogTrailPengeluaranDetail = new StoreLogTrailRequest($logTrailPengeluaranDetail);
+            app(LogTrailController::class)->store($validatedLogTrailPengeluaranDetail);
+            DB::commit();
 
-                /* Set position and page */
-                $selected = $this->getPosition($rekapPengeluaranHeader, $rekapPengeluaranHeader->getTable(), true);
-                $rekapPengeluaranHeader->position = $selected->position;
-                $rekapPengeluaranHeader->id = $selected->id;
-                $rekapPengeluaranHeader->page = ceil($rekapPengeluaranHeader->position / ($selected->limit ?? 10));
+            /* Set position and page */
+            $selected = $this->getPosition($rekapPengeluaranHeader, $rekapPengeluaranHeader->getTable(), true);
+            $rekapPengeluaranHeader->position = $selected->position;
+            $rekapPengeluaranHeader->id = $selected->id;
+            $rekapPengeluaranHeader->page = ceil($rekapPengeluaranHeader->position / ($selected->limit ?? 10));
 
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil dihapus',
-                    'data' => $rekapPengeluaranHeader
-                ]);
-            } else {
-                DB::rollBack();
-
-                return response([
-                    'status' => false,
-                    'message' => 'Gagal dihapus'
-                ]);
-            }
-        } catch (\Throwable $th) {
+            return response([
+                'status' => true,
+                'message' => 'Berhasil dihapus',
+                'data' => $rekapPengeluaranHeader
+            ]);
+        } else {
             DB::rollBack();
-            return response($th->getMessage());
+
+            return response([
+                'status' => false,
+                'message' => 'Gagal dihapus'
+            ]);
         }
     }
     /**
@@ -361,7 +362,7 @@ class RekapPengeluaranHeaderController extends Controller
         $currentURL = url()->current();
         $previousURL = url()->previous();
         return response([
-            'data' => $pengeluaran->getRekapPengeluaranHeader($request->bank,date('Y-m-d', strtotime($request->tglbukti))),
+            'data' => $pengeluaran->getRekapPengeluaranHeader($request->bank, date('Y-m-d', strtotime($request->tglbukti))),
             'currentURL' => $currentURL,
             'previousURL' => $previousURL,
             'attributes' => [

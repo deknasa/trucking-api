@@ -33,6 +33,15 @@ class JenisOrderController extends Controller
             ]
         ]);
     }
+
+    public function default()
+    {
+        $jenisOrder = new JenisOrder();
+        return response([
+            'status' => true,
+            'data' => $jenisOrder->default()
+        ]);
+    }
     /**
      * @ClassName 
      */

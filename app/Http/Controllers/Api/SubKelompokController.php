@@ -31,6 +31,14 @@ class SubKelompokController extends Controller
         ]);
     }
 
+    public function default()
+    {
+        $subKelompok = new SubKelompok();
+        return response([
+            'status' => true,
+            'data' => $subKelompok->default()
+        ]);
+    }
     public function show($id)
     {
         $subKelompok = SubKelompok::select('subkelompok.*', 'kelompok.keterangan as kelompok')->leftJoin('kelompok', 'subkelompok.kelompok_id', 'kelompok.id')->where('subkelompok.id', $id)->first();

@@ -222,6 +222,7 @@ use App\Http\Controllers\Api\ReportAllController;
         Route::get('gandengan/field_length', [GandenganController::class, 'fieldLength']);
         Route::get('gandengan/combostatus', [GandenganController::class, 'combostatus']);
         Route::get('gandengan/getPosition2', [GandenganController::class, 'getPosition2']);
+        Route::get('gandengan/default', [GandenganController::class, 'default']);
         Route::resource('gandengan', GandenganController::class);
 
 
@@ -230,6 +231,7 @@ use App\Http\Controllers\Api\ReportAllController;
 
         Route::get('kota/combo', [KotaController::class, 'combo']);
         Route::get('kota/field_length', [KotaController::class, 'fieldLength']);
+        Route::get('kota/default', [KotaController::class, 'default']);
         Route::resource('kota', KotaController::class);
 
         Route::get('logtrail/detail', [LogTrailController::class, 'detail']);
@@ -239,41 +241,51 @@ use App\Http\Controllers\Api\ReportAllController;
         Route::get('trado/combo', [TradoController::class, 'combo']);
         Route::get('trado/field_length', [TradoController::class, 'fieldLength']);
         Route::post('trado/upload_image/{id}', [TradoController::class, 'uploadImage']);
+        Route::get('trado/default', [TradoController::class, 'default']);
         Route::resource('trado', TradoController::class);
 
         Route::get('absentrado/field_length', [AbsenTradoController::class, 'fieldLength']);
+        Route::get('absentrado/default', [AbsenTradoController::class, 'default']);
         Route::resource('absentrado', AbsenTradoController::class);
 
         Route::get('container/field_length', [ContainerController::class, 'fieldLength']);
         Route::get('container/combostatus', [ContainerController::class, 'combostatus']);
         Route::get('container/getPosition2', [ContainerController::class, 'getPosition2']);
+        Route::get('container/default', [ContainerController::class, 'default']);
         Route::resource('container', ContainerController::class);
 
         Route::get('bank/combo', [BankController::class, 'combo']);
         Route::get('bank/field_length', [BankController::class, 'fieldLength']);
+        Route::get('bank/default', [BankController::class, 'default']);
         Route::resource('bank', BankController::class);
 
         Route::get('alatbayar/combo', [AlatBayarController::class, 'combo']);
         Route::get('alatbayar/field_length', [AlatBayarController::class, 'fieldLength']);
+        Route::get('alatbayar/default', [AlatBayarController::class, 'default']);
         Route::resource('alatbayar', AlatBayarController::class);
 
         Route::get('bankpelanggan/combo', [BankPelangganController::class, 'combo']);
         Route::get('bankpelanggan/field_length', [BankPelangganController::class, 'fieldLength']);
+        Route::get('bankpelanggan/default', [BankPelangganController::class, 'default']);
         Route::resource('bankpelanggan', BankPelangganController::class);
 
         Route::get('jenisemkl/combo', [JenisEmklController::class, 'combo']);
         Route::get('jenisemkl/field_length', [JenisEmklController::class, 'fieldLength']);
+        Route::get('jenisemkl/default', [JenisEmklController::class, 'default']);
         Route::resource('jenisemkl', JenisEmklController::class);
 
         Route::get('jenisorder/combo', [JenisOrderController::class, 'combo']);
         Route::get('jenisorder/field_length', [JenisOrderController::class, 'fieldLength']);
+        Route::get('jenisorder/default', [JenisOrderController::class, 'default']);
         Route::resource('jenisorder', JenisOrderController::class);
 
         Route::get('jenistrado/combo', [JenisTradoController::class, 'combo']);
         Route::get('jenistrado/field_length', [JenisTradoController::class, 'fieldLength']);
+        Route::get('jenistrado/default', [JenisTradoController::class, 'default']);
         Route::resource('jenistrado', JenisTradoController::class);
 
         Route::get('akunpusat/field_length', [AkunPusatController::class, 'fieldLength']);
+        Route::get('akunpusat/default', [AkunPusatController::class, 'default']);
         Route::resource('akunpusat', AkunPusatController::class)->parameters(['akunpusat' => 'akunPusat']);
 
         Route::get('error/field_length', [ErrorController::class, 'fieldLength']);
@@ -352,35 +364,26 @@ use App\Http\Controllers\Api\ReportAllController;
         Route::get('supir/field_length', [SupirController::class, 'fieldLength']);
         Route::get('supir/getImage/{id}/{field}', [SupirController::class, 'getImage']);
         Route::post('supir/upload_image/{id}', [SupirController::class, 'uploadImage']);
+        Route::get('supir/default', [SupirController::class, 'default']);
         Route::resource('supir', SupirController::class);
-
-        Route::get('bank/combo', [BankController::class, 'combo']);
-        Route::get('bank/field_length', [BankController::class, 'fieldLength']);
-        Route::resource('bank', BankController::class);
-
-        Route::get('alatbayar/combo', [AlatBayarController::class, 'combo']);
-        Route::get('alatbayar/field_length', [AlatBayarController::class, 'fieldLength']);
-        Route::resource('alatbayar', AlatBayarController::class);
-
-        Route::get('bankpelanggan/combo', [BankPelangganController::class, 'combo']);
-        Route::get('bankpelanggan/field_length', [BankPelangganController::class, 'fieldLength']);
-        Route::resource('bankpelanggan', BankPelangganController::class);
 
         Route::get('subkelompok/export', [SubKelompokController::class, 'export']);
         Route::get('subkelompok/field_length', [SubKelompokController::class, 'fieldLength']);
+        Route::get('subkelompok/default', [SubKelompokController::class, 'default']);
         Route::resource('subkelompok', SubKelompokController::class)->parameters(['subkelompok' => 'subKelompok']);
 
         Route::get('supplier/export', [SupplierController::class, 'export']);
         Route::get('supplier/field_length', [SupplierController::class, 'fieldLength']);
+        Route::get('supplier/default', [SupplierController::class, 'default']);
         Route::resource('supplier', SupplierController::class);
-        
-        // Route::get('supplier/export', [SupplierController::class, 'export']);
-        // Route::get('supplier/field_length', [SupplierController::class, 'fieldLength']);
+                
+        Route::get('stok/default', [StokController::class, 'default']);
         Route::apiResource('stok', StokController::class);
 
 
         Route::get('penerima/export', [PenerimaController::class, 'export']);
         Route::get('penerima/field_length', [PenerimaController::class, 'fieldLength']);
+        Route::get('penerima/default', [PenerimaController::class, 'default']);
         Route::resource('penerima', PenerimaController::class);
 
         Route::get('pelanggan/export', [PelangganController::class, 'export']);
@@ -389,6 +392,7 @@ use App\Http\Controllers\Api\ReportAllController;
 
         Route::get('statuscontainer/export', [StatusContainerController::class, 'export']);
         Route::get('statuscontainer/field_length', [StatusContainerController::class, 'fieldLength']);
+        Route::get('statuscontainer/default', [StatusContainerController::class, 'default']);
         Route::resource('statuscontainer', StatusContainerController::class)->parameters(['statuscontainer' => 'statusContainer']);
 
         Route::get('penerimaantrucking/export', [PenerimaanTruckingController::class, 'export']);
@@ -430,6 +434,7 @@ use App\Http\Controllers\Api\ReportAllController;
 
         Route::get('penerimaanstok/field_length', [PenerimaanStokController::class,'fieldLength']);
         Route::get('penerimaanstok/export', [PenerimaanStokController::class,'export']);
+        Route::get('penerimaanstok/default', [PenerimaanStokController::class, 'default']);
         Route::apiResource('penerimaanstok', PenerimaanStokController::class);
         
         Route::get('penerimaanstokheader/{id}/printreport', [PenerimaanStokHeaderController::class,'printReport']);
@@ -438,6 +443,7 @@ use App\Http\Controllers\Api\ReportAllController;
 
         Route::get('pengeluaranstok/field_length', [PengeluaranStokController::class,'fieldLength']);
         // Route::get('pengeluaranstok/export', [PengeluaranStokController::class,'export']);
+        Route::get('pengeluaranstok/default', [PengeluaranStokController::class, 'default']);
         Route::apiResource('pengeluaranstok', PengeluaranStokController::class);
         
         Route::get('pengeluaranstokheader/{id}/printreport', [PengeluaranStokHeaderController::class,'printReport']);
@@ -612,6 +618,7 @@ use App\Http\Controllers\Api\ReportAllController;
         Route::get('suratpengantar/{id}/getTarifOmset', [SuratPengantarController::class, 'getTarifOmset']);
         Route::get('suratpengantar/{id}/getOrderanTrucking', [SuratPengantarController::class, 'getOrderanTrucking']);
         Route::get('suratpengantar/getGaji/{dari}/{sampai}/{container}/{statuscontainer}', [SuratPengantarController::class, 'getGaji']);
+        Route::get('suratpengantar/default', [SuratPengantarController::class, 'default']);
         Route::resource('suratpengantar', SuratPengantarController::class);
         
         Route::get('penerimaanheader/{id}/printreport', [PenerimaanHeaderController::class,'printReport']);
@@ -652,6 +659,7 @@ use App\Http\Controllers\Api\ReportAllController;
 
         
         Route::get('harilibur/field_length', [HariLiburController::class, 'fieldLength']);
+        Route::get('harilibur/default', [HariLiburController::class, 'default']);
         Route::resource('harilibur', HariLiburController::class);
 
         Route::get('jurnalumumpusatheader/grid', [JurnalUmumPusatHeaderController::class, 'grid']);
@@ -701,35 +709,43 @@ use App\Http\Controllers\Api\ReportAllController;
 
     Route::get('gudang/combo', [GudangController::class, 'combo']);
     Route::get('gudang/field_length', [GudangController::class, 'fieldLength']);
+    Route::get('gudang/default', [GudangController::class, 'default']);
     Route::resource('gudang', GudangController::class);
 
     Route::get('kategori/combo', [KategoriController::class, 'combo']);
     Route::get('kategori/field_length', [KategoriController::class, 'fieldLength']);
+    Route::get('kategori/default', [KategoriController::class, 'default']);
     Route::resource('kategori', KategoriController::class);
 
     Route::get('kelompok/combo', [KelompokController::class, 'combo']);
     Route::get('kelompok/field_length', [KelompokController::class, 'fieldLength']);
+    Route::get('kelompok/default', [KelompokController::class, 'default']);
     Route::resource('kelompok', KelompokController::class);
 
     Route::get('kerusakan/combo', [KerusakanController::class, 'combo']);
     Route::get('kerusakan/field_length', [KerusakanController::class, 'fieldLength']);
+    Route::get('kerusakan/default', [KerusakanController::class, 'default']);
     Route::resource('kerusakan', KerusakanController::class);
 
 
     Route::get('mandor/combo', [MandorController::class, 'combo']);
     Route::get('mandor/field_length', [MandorController::class, 'fieldLength']);
+    Route::get('mandor/default', [MandorController::class, 'default']);
     Route::resource('mandor', MandorController::class);
 
     Route::get('merk/combo', [MerkController::class, 'combo']);
     Route::get('merk/field_length', [MerkController::class, 'fieldLength']);
+    Route::get('merk/default', [MerkController::class, 'default']);
     Route::resource('merk', MerkController::class);
 
     Route::get('satuan/combo', [SatuanController::class, 'combo']);
     Route::get('satuan/field_length', [SatuanController::class, 'fieldLength']);
+    Route::get('satuan/default', [SatuanController::class, 'default']);
     Route::resource('satuan', SatuanController::class);
 
     Route::get('zona/combo', [ZonaController::class, 'combo']);
     Route::get('zona/field_length', [ZonaController::class, 'fieldLength']);
+    Route::get('zona/default', [ZonaController::class, 'default']);
     Route::resource('zona', ZonaController::class);
 
 
@@ -740,6 +756,7 @@ use App\Http\Controllers\Api\ReportAllController;
 
     Route::get('orderantrucking/combo', [OrderanTruckingController::class, 'combo']);
     Route::get('orderantrucking/field_length', [OrderanTruckingController::class, 'fieldLength']);
+    Route::get('orderantrucking/default', [OrderanTruckingController::class, 'default']);
     Route::resource('orderantrucking', OrderanTruckingController::class);
 
     Route::get('prosesabsensisupir/combo', [ProsesAbsensiSupirController::class, 'combo']);
@@ -748,6 +765,7 @@ use App\Http\Controllers\Api\ReportAllController;
 
     Route::get('mekanik/combo', [MekanikController::class, 'combo']);
     Route::get('mekanik/field_length', [MekanikController::class, 'fieldLength']);
+    Route::get('mekanik/default', [MekanikController::class, 'default']);
     Route::resource('mekanik', MekanikController::class);
 
     Route::get('upahsupir/combo', [UpahSupirController::class, 'combo']);
@@ -785,6 +803,7 @@ use App\Http\Controllers\Api\ReportAllController;
 
     Route::get('ritasi/combo', [RitasiController::class, 'combo']);
     Route::get('ritasi/field_length', [RitasiController::class, 'fieldLength']);
+    Route::get('ritasi/default', [RitasiController::class, 'default']);
     Route::resource('ritasi', RitasiController::class);
 
     Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');

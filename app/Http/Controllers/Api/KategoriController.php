@@ -35,7 +35,14 @@ class KategoriController extends Controller
         ]);
     }
 
-
+    public function default()
+    {
+        $kategori = new Kategori();
+        return response([
+            'status' => true,
+            'data' => $kategori->default()
+        ]);
+    }
     /**
      * @ClassName 
      */

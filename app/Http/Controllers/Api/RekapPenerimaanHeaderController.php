@@ -46,28 +46,27 @@ class RekapPenerimaanHeaderController extends Controller
             $subgroup = 'REKAP PENERIMAAN';
 
             $format = DB::table('parameter')
-                ->where('grp', $group )
+                ->where('grp', $group)
                 ->where('subgrp', $subgroup)
                 ->first();
             $content = new Request();
-            $content['group'] = $group ;
-            $content['subgroup'] = $subgroup ;
+            $content['group'] = $group;
+            $content['subgroup'] = $subgroup;
             $content['table'] = 'rekappenerimaanheader';
             $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
             $statusNonApproval = Parameter::where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
 
             $rekapPenerimaanHeader = new RekapPenerimaanHeader();
-            
-            $rekapPenerimaanHeader->tglbukti = date('Y-m-d',strtotime($request->tglbukti));
-            $rekapPenerimaanHeader->keterangan = $request->keterangan;
-            $rekapPenerimaanHeader->tgltransaksi  = date('Y-m-d',strtotime($request->tgltransaksi ));
+
+            $rekapPenerimaanHeader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
+            $rekapPenerimaanHeader->tgltransaksi  = date('Y-m-d', strtotime($request->tgltransaksi));
             $rekapPenerimaanHeader->bank_id = $request->bank_id;
             $rekapPenerimaanHeader->statusapproval = $statusNonApproval->id;
             $rekapPenerimaanHeader->statusformat = $format->id;
             $rekapPenerimaanHeader->modifiedby = auth('api')->user()->name;
             TOP:
-                $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
-                $rekapPenerimaanHeader->nobukti = $nobukti;
+            $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
+            $rekapPenerimaanHeader->nobukti = $nobukti;
 
             if ($rekapPenerimaanHeader->save()) {
                 $logTrail = [
@@ -81,11 +80,11 @@ class RekapPenerimaanHeaderController extends Controller
                 ];
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-                
+
                 /* Store detail */
-                
+
                 if ($request->penerimaan_nobukti) {
-                    $rekapPenerimaanDetail = RekapPenerimaanDetail::where('rekappenerimaan_id',$rekapPenerimaanHeader->id)->lockForUpdate()->delete();
+                    $rekapPenerimaanDetail = RekapPenerimaanDetail::where('rekappenerimaan_id', $rekapPenerimaanHeader->id)->lockForUpdate()->delete();
 
                     $detaillog = [];
                     for ($i = 0; $i < count($request->penerimaan_nobukti); $i++) {
@@ -98,11 +97,11 @@ class RekapPenerimaanHeaderController extends Controller
                             "keterangandetail" => $request->keterangan_detail[$i],
                             "modifiedby" => $rekapPenerimaanHeader->modifiedby = auth('api')->user()->name
                         ];
-                        
-                        $detaillog []=$datadetail;
+
+                        $detaillog[] = $datadetail;
                         $data = new StoreRekapPenerimaanDetailRequest($datadetail);
                         $rekapPenerimaanDetail = app(RekapPenerimaanDetailController::class)->store($data);
-    
+
                         if ($rekapPenerimaanDetail['error']) {
                             return response($rekapPenerimaanDetail, 422);
                         } else {
@@ -121,7 +120,7 @@ class RekapPenerimaanHeaderController extends Controller
                     ];
                     $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                     $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-                    
+
                     DB::commit();
                 }
             }
@@ -130,32 +129,30 @@ class RekapPenerimaanHeaderController extends Controller
             $selected = $this->getPosition($rekapPenerimaanHeader, $rekapPenerimaanHeader->getTable());
             $rekapPenerimaanHeader->position = $selected->position;
             $rekapPenerimaanHeader->page = ceil($rekapPenerimaanHeader->position / ($request->limit ?? 10));
-            
+
             if (isset($request->limit)) {
                 $rekapPenerimaanHeader->page = ceil($rekapPenerimaanHeader->position / $request->limit);
             }
-            
+
             return response([
                 'message' => 'Berhasil disimpan',
                 'data' => $rekapPenerimaanHeader
             ], 201);
-                    
-
-        }catch (\Throwable $th){
+        } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
             return response($th->getMessage());
         }
-        return response([
-            'message' => 'Berhasil gagal disimpan',
-            'data' => $notaKreditHeader
-        ], 422);
+        // return response([
+        //     'message' => 'Berhasil gagal disimpan',
+        //     'data' => $notaKreditHeader
+        // ], 422);
     }
 
-    public function show(RekapPenerimaanHeader $rekapPenerimaanHeader,$id)
+    public function show(RekapPenerimaanHeader $rekapPenerimaanHeader, $id)
     {
         $data = $rekapPenerimaanHeader->find($id);
-        
+
         return response([
             'status' => true,
             'data' => $data,
@@ -164,17 +161,17 @@ class RekapPenerimaanHeaderController extends Controller
     /**
      * @ClassName 
      */
-    public function update(UpdateRekapPenerimaanHeaderRequest $request, RekapPenerimaanHeader $rekapPenerimaanHeader,$id)
+    public function update(UpdateRekapPenerimaanHeaderRequest $request, RekapPenerimaanHeader $rekapPenerimaanHeader, $id)
     {
         DB::beginTransaction();
 
         try {
-            
+            $statusNonApproval = Parameter::where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
+
             $rekapPenerimaanHeader = RekapPenerimaanHeader::lockForUpdate()->findOrFail($id);
 
-            $rekapPenerimaanHeader->tglbukti = date('Y-m-d',strtotime($request->tglbukti));
-            $rekapPenerimaanHeader->keterangan = $request->keterangan;
-            $rekapPenerimaanHeader->tgltransaksi  = date('Y-m-d',strtotime($request->tgltransaksi ));
+            $rekapPenerimaanHeader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
+            $rekapPenerimaanHeader->tgltransaksi  = date('Y-m-d', strtotime($request->tgltransaksi));
             $rekapPenerimaanHeader->bank_id = $request->bank_id;
             $rekapPenerimaanHeader->statusapproval = $statusNonApproval->id;
             $rekapPenerimaanHeader->userapproval = auth('api')->user()->name;
@@ -192,11 +189,11 @@ class RekapPenerimaanHeaderController extends Controller
                 ];
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-                
+
                 /* Store detail */
-                
+
                 if ($request->penerimaan_nobukti) {
-                    $rekapPenerimaanDetail = RekapPenerimaanDetail::where('rekappenerimaan_id',$rekapPenerimaanHeader->id)->lockForUpdate()->delete();
+                    $rekapPenerimaanDetail = RekapPenerimaanDetail::where('rekappenerimaan_id', $rekapPenerimaanHeader->id)->lockForUpdate()->delete();
 
                     $detaillog = [];
                     for ($i = 0; $i < count($request->penerimaan_nobukti); $i++) {
@@ -209,11 +206,11 @@ class RekapPenerimaanHeaderController extends Controller
                             "keterangandetail" => $request->keterangan_detail[$i],
                             "modifiedby" => $rekapPenerimaanHeader->modifiedby = auth('api')->user()->name
                         ];
-                        
-                        $detaillog []=$datadetail;
+
+                        $detaillog[] = $datadetail;
                         $data = new StoreRekapPenerimaanDetailRequest($datadetail);
                         $rekapPenerimaanDetail = app(RekapPenerimaanDetailController::class)->store($data);
-    
+
                         if ($rekapPenerimaanDetail['error']) {
                             return response($rekapPenerimaanDetail, 422);
                         } else {
@@ -232,7 +229,7 @@ class RekapPenerimaanHeaderController extends Controller
                     ];
                     $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                     $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-                    
+
                     DB::commit();
                 }
             }
@@ -241,77 +238,82 @@ class RekapPenerimaanHeaderController extends Controller
             $selected = $this->getPosition($rekapPenerimaanHeader, $rekapPenerimaanHeader->getTable());
             $rekapPenerimaanHeader->position = $selected->position;
             $rekapPenerimaanHeader->page = ceil($rekapPenerimaanHeader->position / ($request->limit ?? 10));
-            
+
             if (isset($request->limit)) {
                 $rekapPenerimaanHeader->page = ceil($rekapPenerimaanHeader->position / $request->limit);
             }
-            
+
             return response([
                 'message' => 'Berhasil disimpan',
                 'data' => $rekapPenerimaanHeader
             ], 201);
-                    
-
-        }catch (\Throwable $th){
+        } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
             return response($th->getMessage());
         }
-        return response([
-            'message' => 'Berhasil gagal disimpan',
-            'data' => $notaKreditHeader
-        ], 422);
+        // return response([
+        //     'message' => 'Berhasil gagal disimpan',
+        //     'data' => $notaKreditHeader
+        // ], 422);
     }
     /**
      * @ClassName 
      */
-    public function destroy(RekapPenerimaanHeader $rekapPenerimaanHeader,$id)
+    public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
-        $rekapPenerimaanHeader = RekapPenerimaanHeader::lockForUpdate()->findOrFail($id);
+        $getDetail = RekapPenerimaanDetail::lockForUpdate()->where('rekappenerimaan_id', $id)->get();
+        $rekapPenerimaanHeader = new RekapPenerimaanHeader();
+        $rekapPenerimaanHeader = $rekapPenerimaanHeader->lockAndDestroy($id);
 
-        try {
-            
-            $delete = RekapPenerimaanDetail::where('rekappenerimaan_id',$id)->lockForUpdate()->delete();
-            $delete = $rekapPenerimaanHeader->lockForUpdate()->delete();
-            if ($delete) {
-                $logTrail = [
-                    'namatabel' => strtoupper($rekapPenerimaanHeader->getTable()),
-                    'postingdari' => 'DELETE Rekap Penerimaan Header',
-                    'idtrans' => $id,
-                    'nobuktitrans' => '',
-                    'aksi' => 'DELETE',
-                    'datajson' => $rekapPenerimaanHeader->toArray(),
-                    'modifiedby' => $rekapPenerimaanHeader->modifiedby
-                ];
+        if ($rekapPenerimaanHeader) {
+            $logTrail = [
+                'namatabel' => strtoupper($rekapPenerimaanHeader->getTable()),
+                'postingdari' => 'DELETE Rekap Penerimaan Header',
+                'idtrans' => $id,
+                'nobuktitrans' => '',
+                'aksi' => 'DELETE',
+                'datajson' => $rekapPenerimaanHeader->toArray(),
+                'modifiedby' => $rekapPenerimaanHeader->modifiedby
+            ];
 
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                app(LogTrailController::class)->store($validatedLogTrail);
+            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+            $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-                DB::commit();
+            // DELETE PENERIMAAN DETAIL
+            $logTrailPenerimaanDetail = [
+                'namatabel' => 'REKAPPENERIMAANDETAIL',
+                'postingdari' => 'DELETE REKAP PENERIMAAN DETAIL',
+                'idtrans' => $storedLogTrail['id'],
+                'nobuktitrans' => $rekapPenerimaanHeader->nobukti,
+                'aksi' => 'DELETE',
+                'datajson' => $getDetail->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ];
 
-                /* Set position and page */
-                $selected = $this->getPosition($rekapPenerimaanHeader, $rekapPenerimaanHeader->getTable(), true);
-                $rekapPenerimaanHeader->position = $selected->position;
-                $rekapPenerimaanHeader->id = $selected->id;
-                $rekapPenerimaanHeader->page = ceil($rekapPenerimaanHeader->position / ($request->limit ?? 10));
+            $validatedLogTrailPenerimaanDetail = new StoreLogTrailRequest($logTrailPenerimaanDetail);
+            app(LogTrailController::class)->store($validatedLogTrailPenerimaanDetail);
+            DB::commit();
 
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil dihapus',
-                    'data' => $rekapPenerimaanHeader
-                ]);
-            } else {
-                DB::rollBack();
+            /* Set position and page */
+            $selected = $this->getPosition($rekapPenerimaanHeader, $rekapPenerimaanHeader->getTable(), true);
+            $rekapPenerimaanHeader->position = $selected->position;
+            $rekapPenerimaanHeader->id = $selected->id;
+            $rekapPenerimaanHeader->page = ceil($rekapPenerimaanHeader->position / ($request->limit ?? 10));
 
-                return response([
-                    'status' => false,
-                    'message' => 'Gagal dihapus'
-                ]);
-            }
-        } catch (\Throwable $th) {
+            return response([
+                'status' => true,
+                'message' => 'Berhasil dihapus',
+                'data' => $rekapPenerimaanHeader
+            ]);
+        } else {
             DB::rollBack();
-            return response($th->getMessage());
+
+            return response([
+                'status' => false,
+                'message' => 'Gagal dihapus'
+            ]);
         }
     }
 
@@ -361,14 +363,14 @@ class RekapPenerimaanHeaderController extends Controller
         }
     }
 
-    
+
     public function getPenerimaan(Request $request)
     {
         $penerimaan = new PenerimaanHeader();
         $currentURL = url()->current();
         $previousURL = url()->previous();
         return response([
-            'data' => $penerimaan->getRekapPenerimaanHeader($request->bank,date('Y-m-d', strtotime($request->tglbukti))),
+            'data' => $penerimaan->getRekapPenerimaanHeader($request->bank, date('Y-m-d', strtotime($request->tglbukti))),
             'currentURL' => $currentURL,
             'previousURL' => $previousURL,
             'attributes' => [

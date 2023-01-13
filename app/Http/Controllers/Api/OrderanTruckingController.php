@@ -38,6 +38,14 @@ class OrderanTruckingController extends Controller
         ]);
     }
 
+    public function default()
+    {
+        $orderanTrucking = new OrderanTrucking();
+        return response([
+            'status' => true,
+            'data' => $orderanTrucking->default()
+        ]);
+    }
 
     /**
      * @ClassName 
