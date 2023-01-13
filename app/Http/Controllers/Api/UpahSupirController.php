@@ -52,12 +52,13 @@ class UpahSupirController extends Controller
             $upahsupir = new UpahSupir();
 
             $upahsupir->kotadari_id = $request->kotadari_id;
+            $upahsupir->parent_id = $request->parent_id ?? 0;
             $upahsupir->kotasampai_id = $request->kotasampai_id;
             $upahsupir->jarak = str_replace(',', '', str_replace('.', '', $request->jarak));
-            $upahsupir->zona_id = $request->zona_id;
+            $upahsupir->zona_id = ($request->zona_id == null) ? "" : $request->zona_id;
             $upahsupir->statusaktif = $request->statusaktif;
             $upahsupir->tglmulaiberlaku = date('Y-m-d', strtotime($request->tglmulaiberlaku));
-            $upahsupir->tglakhirberlaku = date('Y-m-d', strtotime($request->tglakhirberlaku));
+            // $upahsupir->tglakhirberlaku = ($request->tglakhirberlaku == null) ? "" : date('Y-m-d', strtotime($request->tglakhirberlaku));
             $upahsupir->statusluarkota = $request->statusluarkota;
 
             $upahsupir->modifiedby = auth('api')->user()->name;
@@ -170,12 +171,13 @@ class UpahSupirController extends Controller
 
         try {
             $upahsupir->kotadari_id = $request->kotadari_id;
+            $upahsupir->parent_id = $request->parent_id ?? 0;
             $upahsupir->kotasampai_id = $request->kotasampai_id;
             $upahsupir->jarak = str_replace(',', '', str_replace('.', '', $request->jarak));
-            $upahsupir->zona_id = $request->zona_id;
+            $upahsupir->zona_id = ($request->zona_id == null) ? "" : $request->zona_id;
             $upahsupir->statusaktif = $request->statusaktif;
             $upahsupir->tglmulaiberlaku = date('Y-m-d', strtotime($request->tglmulaiberlaku));
-            $upahsupir->tglakhirberlaku = date('Y-m-d', strtotime($request->tglakhirberlaku));
+            // $upahsupir->tglakhirberlaku = ($request->tglakhirberlaku == null) ? "" : date('Y-m-d', strtotime($request->tglakhirberlaku));
             $upahsupir->statusluarkota = $request->statusluarkota;
 
             $upahsupir->modifiedby = auth('api')->user()->name;
@@ -218,16 +220,16 @@ class UpahSupirController extends Controller
                     $data = new StoreUpahSupirRincianRequest($datadetail);
                     $datadetails = app(UpahSupirRincianController::class)->store($data);
 
-                    if ($datadetails['error']) {
-                        return response($datadetails, 422);
-                    } else {
+                    if (!$datadetails['error']) {
                         $iddetail = $datadetails['id'];
                         $tabeldetail = $datadetails['tabel'];
+                    } else {
+                        return response($datadetails, 422);
                     }
 
                     $detaillog[] = $datadetails['detail']->toArray();
                 }
-
+                // return response($datadetails['error'], 422);
                 $datalogtrail = [
                     'namatabel' => strtoupper($tabeldetail),
                     'postingdari' => 'EDIT UPAH SUPIR RINCIAN',
@@ -326,6 +328,16 @@ class UpahSupirController extends Controller
             ]);
         }
         throw $th;
+    }
+
+    public function default()
+    {
+
+        $UpahSupir = new UpahSupir();
+        return response([
+            'status' => true,
+            'data' => $UpahSupir->default(),
+        ]);
     }
 
 

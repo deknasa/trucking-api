@@ -42,13 +42,14 @@ class UpahSupir extends MyModel
         $query = DB::table($this->table)->from(DB::raw("upahsupir with (readuncommitted)"))
         ->select(
             'upahsupir.id',
+            'upahsupir.parent_id',
             'kotadari.keterangan as kotadari_id',
             'kotasampai.keterangan as kotasampai_id',
             'upahsupir.jarak',
             'zona.keterangan as zona_id',
             'parameter.memo as statusaktif',
             'upahsupir.tglmulaiberlaku',
-            'upahsupir.tglakhirberlaku',
+            // 'upahsupir.tglakhirberlaku',
             'statusluarkota.memo as statusluarkota',
             'upahsupir.gambar',
             'upahsupir.created_at',
@@ -77,6 +78,7 @@ class UpahSupir extends MyModel
 
         $query = DB::table('upahsupir')->select(
             'upahsupir.id',
+            'upahsupir.parent_id',
             'upahsupir.kotadari_id',
             'kotadari.keterangan as kotadari',
 
@@ -89,7 +91,7 @@ class UpahSupir extends MyModel
             'upahsupir.statusaktif',
 
             'upahsupir.tglmulaiberlaku',
-            'upahsupir.tglakhirberlaku',
+            // 'upahsupir.tglakhirberlaku',
             'upahsupir.statusluarkota',
             'statusluarkota.text as statusluarkotas',
             'upahsupir.gambar',
@@ -112,19 +114,90 @@ class UpahSupir extends MyModel
         return $this->hasMany(upahsupirRincian::class, 'upahsupir_id');
     }
 
+    public function default()
+    {
+        $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempdefault, function ($table) {
+            $table->unsignedBigInteger('statusaktif')->default(0);
+            $table->unsignedBigInteger('statusluarkota')->default(0);
+        });
+
+        $status = Parameter::from(
+            db::Raw("parameter with (readuncommitted)")
+        )
+            ->select(
+                'memo',
+                'id'
+            )
+            ->where('grp', '=', 'STATUS AKTIF')
+            ->where('subgrp', '=', 'STATUS AKTIF');
+
+        $datadetail = json_decode($status->get(), true);
+
+        $iddefaultstatusaktif = 0;
+        foreach ($datadetail as $item) {
+            $memo = json_decode($item['memo'], true);
+            $default = $memo['DEFAULT'];
+            if ($default == "YA") {
+                $iddefaultstatusaktif = $item['id'];
+                break;
+            }
+        }
+
+        $status = Parameter::from(
+            db::Raw("parameter with (readuncommitted)")
+        )
+            ->select(
+                'memo',
+                'id'
+            )
+            ->where('grp', '=', 'UPAH SUPIR LUAR KOTA')
+            ->where('subgrp', '=', 'UPAH SUPIR LUAR KOTA');
+
+        $datadetail = json_decode($status->get(), true);
+
+        $iddefaultstatusluarkota = 0;
+        foreach ($datadetail as $item) {
+            $memo = json_decode($item['memo'], true);
+            $default = $memo['DEFAULT'];
+
+            if ($default == "YA") {
+                $iddefaultstatusluarkota = $item['id'];
+                break;
+            }
+        }
+
+        DB::table($tempdefault)->insert(
+            ["statusaktif" => $iddefaultstatusaktif,"statusluarkota" => $iddefaultstatusluarkota]
+        );
+
+        $query = DB::table($tempdefault)->from(
+            DB::raw($tempdefault)
+        )
+            ->select(
+                'statusaktif',
+                'statusluarkota',
+            );
+
+        $data = $query->first();
+        
+        return $data;
+
+    }
+
     public function selectColumns($query)
     {
 
         return $query->select(
             DB::raw(
                 "$this->table.id,
+                '$this->table.parent_id',
                 kotadari.keterangan as kotadari_id,
                 kotasampai.keterangan as kotasampai_id,
                 zona.keterangan as zona_id,
                 $this->table.jarak,
                 $this->table.statusaktif,
                 $this->table.tglmulaiberlaku,
-                $this->table.tglakhirberlaku,
                 $this->table.statusluarkota,
 
                  $this->table.modifiedby,
@@ -144,13 +217,14 @@ class UpahSupir extends MyModel
         $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temp, function ($table) {
             $table->bigInteger('id')->default('0');
+            $table->string('parent_id')->default('0');
             $table->string('kotadari_id')->default('0');
             $table->string('kotasampai_id')->default('0');
             $table->string('zona_id')->default('0');
             $table->double('jarak', 15, 2)->default('0');
             $table->integer('statusaktif')->length(11)->default('0');
             $table->date('tglmulaiberlaku')->default('1900/1/1');
-            $table->date('tglakhirberlaku')->default('1900/1/1');
+            // $table->date('tglakhirberlaku')->default('1900/1/1');
             $table->integer('statusluarkota')->length(11)->default('0');
             $table->string('modifiedby', 50)->Default('');
             $table->dateTime('created_at')->default('1900/1/1');
@@ -163,7 +237,7 @@ class UpahSupir extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id', 'kotadari_id', 'kotasampai_id', 'zona_id','jarak', 'statusaktif', 'tglmulaiberlaku', 'tglakhirberlaku','statusluarkota', 'modifiedby', 'created_at', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'parent_id', 'kotadari_id', 'kotasampai_id', 'zona_id','jarak', 'statusaktif', 'tglmulaiberlaku','statusluarkota', 'modifiedby', 'created_at', 'updated_at'], $models);
 
         return $temp;
     }
