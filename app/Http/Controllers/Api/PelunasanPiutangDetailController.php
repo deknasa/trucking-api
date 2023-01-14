@@ -71,15 +71,11 @@ class PelunasanPiutangDetailController extends Controller
                     'detail.keterangan',
                     'detail.piutang_nobukti',
                     'detail.nominallebihbayar',
-                    'detail.penyesuaian',
-                    'detail.keteranganpenyesuaian',
-                    'detail.tgljt',
-                    'detail.invoice_nobukti',
-                    'pelanggan.namapelanggan as pelanggan_id',
-                    'agen.namaagen as agen_id',
-                )
-                    ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'detail.pelanggan_id', 'pelanggan.id')
-                    ->leftJoin(DB::raw("agen with (readuncommitted)"), 'detail.agen_id', 'agen.id');
+                    'detail.potongan',
+                    'detail.keteranganpotongan',
+                    'detail.coapotongan',
+                    'detail.invoice_nobukti'
+                );
                 $piutangDetail = $query->get();
             }
 
@@ -109,18 +105,13 @@ class PelunasanPiutangDetailController extends Controller
 
             $pelunasanpiutangdetail->pelunasanpiutang_id = $request->pelunasanpiutang_id;
             $pelunasanpiutangdetail->nobukti = $request->nobukti;
-            $pelunasanpiutangdetail->pelanggan_id = $request->pelanggan_id;
-            $pelunasanpiutangdetail->agen_id = $request->agen_id;
             $pelunasanpiutangdetail->nominal = $request->nominal;
             $pelunasanpiutangdetail->piutang_nobukti = $request->piutang_nobukti;
-            $pelunasanpiutangdetail->cicilan = $request->cicilan;
-            $pelunasanpiutangdetail->tglcair = $request->tglcair;
             $pelunasanpiutangdetail->keterangan = $request->keterangan;
-            $pelunasanpiutangdetail->tgljt = $request->tgljt;
-            $pelunasanpiutangdetail->penyesuaian = $request->penyesuaian;
-            $pelunasanpiutangdetail->coapenyesuaian = $request->coapenyesuaian;
+            $pelunasanpiutangdetail->potongan = $request->potongan;
+            $pelunasanpiutangdetail->coapotongan = $request->coapotongan;
             $pelunasanpiutangdetail->invoice_nobukti = $request->invoice_nobukti;
-            $pelunasanpiutangdetail->keteranganpenyesuaian = $request->keteranganpenyesuaian;
+            $pelunasanpiutangdetail->keteranganpotongan = $request->keteranganpotongan;
             $pelunasanpiutangdetail->nominallebihbayar = $request->nominallebihbayar;
             $pelunasanpiutangdetail->coalebihbayar = $request->coalebihbayar;
 

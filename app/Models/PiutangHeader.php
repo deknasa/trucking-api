@@ -34,7 +34,6 @@ class PiutangHeader extends MyModel
             'piutangheader.id',
             'piutangheader.nobukti',
             'piutangheader.tglbukti',
-            'piutangheader.keterangan',
             'piutangheader.postingdari',
             'piutangheader.nominal',
             'piutangheader.invoice_nobukti',
@@ -70,7 +69,7 @@ class PiutangHeader extends MyModel
             ->from(
                 DB::raw("piutangheader with (readuncommitted)")
             )
-            ->select(DB::raw("piutangheader.id as id,piutangheader.nobukti as nobukti,piutangheader.tglbukti, piutangheader.keterangan, piutangheader.invoice_nobukti, piutangheader.nominal, piutangheader.agen_id," . $temp . ".sisa"))
+            ->select(DB::raw("piutangheader.id as id,piutangheader.nobukti as nobukti,piutangheader.tglbukti, piutangheader.invoice_nobukti, piutangheader.nominal, piutangheader.agen_id," . $temp . ".sisa"))
             ->leftJoin(DB::raw("$temp with (readuncommitted)"), 'piutangheader.agen_id', $temp . ".agen_id")
             ->whereRaw("piutangheader.agen_id = $id")
             ->whereRaw("piutangheader.nobukti = $temp.nobukti")
@@ -125,7 +124,6 @@ class PiutangHeader extends MyModel
             'piutangheader.id',
             'piutangheader.nobukti',
             'piutangheader.tglbukti',
-            'piutangheader.keterangan',
             'piutangheader.postingdari',
             'piutangheader.nominal',
             'piutangheader.invoice_nobukti',
@@ -147,7 +145,6 @@ class PiutangHeader extends MyModel
                 "$this->table.id,
                  $this->table.nobukti,
                  $this->table.tglbukti,
-                 $this->table.keterangan,
                  $this->table.postingdari,
                  $this->table.nominal,
                  $this->table.invoice_nobukti,
@@ -166,7 +163,6 @@ class PiutangHeader extends MyModel
             $table->bigInteger('id')->default('0');
             $table->string('nobukti', 1000)->default('');
             $table->date('tglbukti')->default('');
-            $table->string('keterangan', 1000)->default('');
             $table->string('postingdari', 1000)->default('');
             $table->float('nominal')->default('');
             $table->string('invoice_nobukti')->default('');
@@ -181,7 +177,7 @@ class PiutangHeader extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'keterangan', 'postingdari', 'nominal', 'invoice_nobukti', 'agen_id', 'modifiedby', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'postingdari', 'nominal', 'invoice_nobukti', 'agen_id', 'modifiedby', 'updated_at'], $models);
 
         return $temp;
     }
