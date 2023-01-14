@@ -24,7 +24,9 @@ class UpdateRekapPenerimaanHeaderRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            "tglbukti"=>"required",
+            "tgltransaksi"=>"required",
+            "bank_id"=>"required",
         ];
     }
 }

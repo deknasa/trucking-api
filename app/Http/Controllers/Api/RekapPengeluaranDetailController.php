@@ -96,7 +96,7 @@ class RekapPengeluaranDetailController extends Controller
             "tgltransaksi" => 'required',
             "pengeluaran_nobukti" => 'required',
             "nominal" => 'required',
-            "keterangandetail" => 'required',
+            // "keterangandetail" => 'required',
             "modifiedby" => 'required',
          ], [
              "rekappengeluaran_id.required" => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
@@ -104,10 +104,10 @@ class RekapPengeluaranDetailController extends Controller
              "tgltransaksi.required" => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
              "pengeluaran_nobukti.required" => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
              "nominal.required" => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
-             "keterangandetail.required" => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
+            //  "keterangandetail.required" => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
              "modifiedby.required" => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
          ], [
-             'keterangandetail' => 'keterangan Detail',
+            //  'keterangandetail' => 'keterangan Detail',
             ],
          );
          if (!$validator->passes()) {
@@ -124,7 +124,7 @@ class RekapPengeluaranDetailController extends Controller
             $rekeapPengeluaranDetail->tgltransaksi =  date('Y-m-d',strtotime($request->tgltransaksi));
             $rekeapPengeluaranDetail->pengeluaran_nobukti = $request->pengeluaran_nobukti;
             $rekeapPengeluaranDetail->nominal = $request->nominal;
-            $rekeapPengeluaranDetail->keterangan = $request->keterangandetail;
+            // $rekeapPengeluaranDetail->keterangan = $request->keterangandetail;
             $rekeapPengeluaranDetail->modifiedby = $request->modifiedby;
             
             DB::commit();
