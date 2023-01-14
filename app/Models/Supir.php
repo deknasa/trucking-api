@@ -61,7 +61,7 @@ class Supir extends MyModel
                 'supir.keteranganresign',
                 'statusblacklist.memo as statusblacklist',
                 DB::raw('(case when (year(supir.tglberhentisupir) <= 2000) then null else supir.tglberhentisupir end ) as tglberhentisupir'),
-                
+
                 'supir.modifiedby',
                 'supir.created_at',
                 'supir.updated_at'
@@ -99,121 +99,80 @@ class Supir extends MyModel
         });
 
         // AKTIF
-        $status = Parameter::from(
+        $statusaktif = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
         )
             ->select(
-                'memo',
                 'id'
             )
             ->where('grp', '=', 'STATUS AKTIF')
-            ->where('subgrp', '=', 'STATUS AKTIF');
-
-        $datadetail = json_decode($status->get(), true);
-
-        $iddefaultstatusaktif = 0;
-        foreach ($datadetail as $item) {
-            $memo = json_decode($item['memo'], true);
-            $default = $memo['DEFAULT'];
-            if ($default == "YA") {
-                $iddefaultstatusaktif = $item['id'];
-                break;
-            }
-        }
+            ->where('subgrp', '=', 'STATUS AKTIF')
+            ->where('DEFAULT', '=', 'YA')
+            ->first();
+        $iddefaultstatusaktif = $statusaktif->id ?? 0;
 
         // STATUS ADA UPDATE GAMBAR
         $status = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
         )
             ->select(
-                'memo',
                 'id'
             )
             ->where('grp', '=', 'STATUS ADA UPDATE GAMBAR')
-            ->where('subgrp', '=', 'STATUS ADA UPDATE GAMBAR');
+            ->where('subgrp', '=', 'STATUS ADA UPDATE GAMBAR')
+            ->where('DEFAULT', '=', 'YA')
+            ->first();
 
-        $datadetail = json_decode($status->get(), true);
-
-        $iddefaultstatusUpdGambar = 0;
-        foreach ($datadetail as $item) {
-            $memo = json_decode($item['memo'], true);
-            $default = $memo['DEFAULT'];
-
-            if ($default == "YA") {
-                $iddefaultstatusUpdGambar = $item['id'];
-                break;
-            }
-        }
+        $iddefaultstatusUpdGambar = $status->id ?? 0;
 
         // STATUS LUAR KOTA
         $status = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
         )
             ->select(
-                'memo',
                 'id'
             )
             ->where('grp', '=', 'STATUS LUAR KOTA')
-            ->where('subgrp', '=', 'STATUS LUAR KOTA');
+            ->where('subgrp', '=', 'STATUS LUAR KOTA')
+            ->where('DEFAULT', '=', 'YA')
+            ->first();
 
-        $datadetail = json_decode($status->get(), true);
 
-        $iddefaultstatusLuarKota = 0;
-        foreach ($datadetail as $item) {
-            $memo = json_decode($item['memo'], true);
-            $default = $memo['DEFAULT'];
+        $iddefaultstatusLuarKota = $status->id ?? 0;
 
-            if ($default == "YA") {
-                $iddefaultstatusLuarKota = $item['id'];
-                break;
-            }
-        }
         // ZONA TERTENTU
         $status = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
         )
             ->select(
-                'memo',
                 'id'
             )
             ->where('grp', '=', 'ZONA TERTENTU')
-            ->where('subgrp', '=', 'ZONA TERTENTU');
+            ->where('subgrp', '=', 'ZONA TERTENTU')
+            ->where('DEFAULT', '=', 'YA')
+            ->first();
 
-        $datadetail = json_decode($status->get(), true);
 
-        $iddefaultstatusZonaTertentu = 0;
-        foreach ($datadetail as $item) {
-            $memo = json_decode($item['memo'], true);
-            $default = $memo['DEFAULT'];
+        $iddefaultstatusZonaTertentu = $status->id ?? 0;
 
-            if ($default == "YA") {
-                $iddefaultstatusZonaTertentu = $item['id'];
-                break;
-            }
-        }
         // BLACKLIST SUPIR
         $status = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
         )
             ->select(
-                'memo',
                 'id'
             )
             ->where('grp', '=', 'BLACKLIST SUPIR')
-            ->where('subgrp', '=', 'BLACKLIST SUPIR');
+            ->where('subgrp', '=', 'BLACKLIST SUPIR')
+            ->where('DEFAULT', '=', 'YA')
+            ->first();
 
-        $datadetail = json_decode($status->get(), true);
 
-        $iddefaultstatusBlacklist = 0;
-        foreach ($datadetail as $item) {
-            $memo = json_decode($item['memo'], true);
-            $default = $memo['DEFAULT'];
 
-            if ($default == "YA") {
-                $iddefaultstatusBlacklist = $item['id'];
-                break;
-            }
-        }
+        $iddefaultstatusBlacklist = $status->id ?? 0;
+
+
+
         DB::table($tempdefault)->insert(
             [
                 "statusaktif" => $iddefaultstatusaktif,
