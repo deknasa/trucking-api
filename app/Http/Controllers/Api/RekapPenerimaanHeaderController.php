@@ -42,8 +42,8 @@ class RekapPenerimaanHeaderController extends Controller
         DB::beginTransaction();
 
         try {
-            $group = 'REKAP PENERIMAAN';
-            $subgroup = 'REKAP PENERIMAAN';
+            $group = 'REKAP PENERIMAAN BUKTI';
+            $subgroup = 'REKAP PENERIMAAN BUKTI';
 
             $format = DB::table('parameter')
                 ->where('grp', $group)
@@ -94,7 +94,7 @@ class RekapPenerimaanHeaderController extends Controller
                             "tgltransaksi" => $request->tgltransaksi_detail[$i],
                             "penerimaan_nobukti" => $request->penerimaan_nobukti[$i],
                             "nominal" => $request->nominal[$i],
-                            "keterangandetail" => $request->keterangan_detail[$i],
+                            // "keterangandetail" => $request->keterangan_detail[$i],
                             "modifiedby" => $rekapPenerimaanHeader->modifiedby = auth('api')->user()->name
                         ];
 
