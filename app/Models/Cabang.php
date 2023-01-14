@@ -25,15 +25,15 @@ class Cabang extends MyModel
         $this->setRequestParameters();
 
         $query = Cabang::from(DB::raw("$this->table with (readuncommitted)"))
-        ->select(
-            'cabang.id',
-            'cabang.kodecabang',
-            'cabang.namacabang',
-            'parameter.memo as statusaktif',
-            'cabang.modifiedby',
-            'cabang.created_at',
-            'cabang.updated_at'
-        )
+            ->select(
+                'cabang.id',
+                'cabang.kodecabang',
+                'cabang.namacabang',
+                'parameter.memo as statusaktif',
+                'cabang.modifiedby',
+                'cabang.created_at',
+                'cabang.updated_at'
+            )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'cabang.statusaktif', 'parameter.id');
 
 
@@ -52,39 +52,63 @@ class Cabang extends MyModel
 
     public function default()
     {
-        
+
+        // $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        // Schema::create($tempdefault, function ($table) {
+        //     $table->unsignedBigInteger('statusaktif')->default(0);
+        // });
+
+        // $statusaktif=Parameter::from (
+        //     db::Raw("parameter with (readuncommitted)")
+        // )
+        // ->select (
+        //     'memo',
+        //     'id'
+        // )
+        // ->where('grp','=','STATUS AKTIF')
+        // ->where('subgrp','=','STATUS AKTIF');
+
+        // $datadetail = json_decode($statusaktif->get(), true);
+
+        // $iddefault=0;
+        // foreach ($datadetail as $item) {
+        //     $memo = json_decode($item['memo'], true);
+        //     $default=$memo['DEFAULT'];
+        //     if ($default=="YA") {
+        //         $iddefault=$item['id'];
+        //         DB::table($tempdefault)->insert(["statusaktif" => $iddefault]);
+        //     } 
+        // }
+
+
+
         $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdefault, function ($table) {
             $table->unsignedBigInteger('statusaktif')->default(0);
         });
 
-        $statusaktif=Parameter::from (
+        $statusaktif = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
         )
-        ->select (
-            'memo',
-            'id'
-        )
-        ->where('grp','=','STATUS AKTIF')
-        ->where('subgrp','=','STATUS AKTIF');
+            ->select(
+                'id'
+            )
+            ->where('grp', '=', 'STATUS AKTIF')
+            ->where('subgrp', '=', 'STATUS AKTIF')
+            ->where('DEFAULT', '=', 'YA')
+            ->first();
 
-        $datadetail = json_decode($statusaktif->get(), true);
+        DB::table($tempdefault)->insert(["statusaktif" => $statusaktif->id]);
 
-        $iddefault=0;
-        foreach ($datadetail as $item) {
-            $memo = json_decode($item['memo'], true);
-            $default=$memo['DEFAULT'];
-            if ($default=="YA") {
-                $iddefault=$item['id'];
-                DB::table($tempdefault)->insert(["statusaktif" => $iddefault]);
-            } 
-        }
 
-        $query=DB::table($tempdefault)->from(
-            DB::raw($tempdefault )
+
+
+        $query = DB::table($tempdefault)->from(
+            DB::raw($tempdefault)
         )
             ->select(
-                'statusaktif');
+                'statusaktif'
+            );
 
         $data = $query->first();
         // dd($data);
@@ -145,7 +169,7 @@ class Cabang extends MyModel
     {
         return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
     }
-    
+
     public function filter($query, $relationFields = [])
     {
         if (count($this->params['filters']) > 0 && @$this->params['filters']['rules'][0]['data'] != '') {
