@@ -22,7 +22,6 @@ class CreateServiceoutheaderTable extends Migration
             $table->date('tglbukti')->default('1900/1/1');
             $table->unsignedBigInteger('trado_id')->default('0');
             $table->date('tglkeluar')->default('1900/1/1');
-            $table->longText('keterangan')->default('');
             $table->unsignedBigInteger('statusformat')->default(0);  
             $table->integer('statuscetak')->Length(11)->default('0');
             $table->string('userbukacetak',50)->default('');
