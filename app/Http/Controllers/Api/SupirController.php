@@ -41,6 +41,16 @@ class SupirController extends Controller
         ]);
     }
 
+    public function default()
+    {
+
+        $supir = new Supir();
+        return response([
+            'status' => true,
+            'data' => $supir->default(),
+        ]);
+    }
+
     public function show($id)
     {
         $data = Supir::findAll($id);

@@ -193,12 +193,12 @@ class PenerimaanHeader extends MyModel
     {
         if ($table == 'giro') {
             $data = DB::table('penerimaangirodetail')->from(DB::raw("penerimaangirodetail with (readuncommitted)"))
-                ->select('id', 'nominal', 'tgljatuhtempo as tgljt', 'keterangan', 'invoice_nobukti', 'nobukti')
+                ->select('id', 'nominal', 'tgljatuhtempo as tgljt', 'invoice_nobukti', 'nobukti')
                 ->where('penerimaangiro_id', $id)
                 ->get();
         } else {
             $data = DB::table('pelunasanpiutangdetail')->from(DB::raw("pelunasanpiutangdetail with (readuncommitted)"))
-                ->select('id', 'nominal', 'tgljt', 'keterangan', 'invoice_nobukti', 'nobukti')
+                ->select('id', 'nominal', 'tgljt', 'invoice_nobukti', 'nobukti')
                 ->where('pelunasanpiutang_id', $id)
                 ->get();
         }
@@ -402,8 +402,8 @@ class PenerimaanHeader extends MyModel
         $query = DB::table($this->table)->from(
             DB::raw($this->table . " with (readuncommitted)")
         )->select(
+            'penerimaanheader.id',
             'penerimaanheader.nobukti',
-            'penerimaanheader.keterangan as keterangan_detail',
             'penerimaanheader.tglbukti',
             DB::raw('SUM(penerimaandetail.nominal) AS nominal')
         )
@@ -415,7 +415,7 @@ class PenerimaanHeader extends MyModel
                 WHERE penerimaan_nobukti = penerimaanheader.nobukti   
               )")
             ->leftJoin(DB::raw("penerimaandetail with (readuncommitted)"), 'penerimaanheader.id', 'penerimaandetail.penerimaan_id')
-            ->groupBy('penerimaanheader.nobukti', 'penerimaanheader.keterangan', 'penerimaanheader.tglbukti');
+            ->groupBy('penerimaanheader.nobukti', 'penerimaanheader.id', 'penerimaanheader.tglbukti');
         $data = $query->get();
 
         return $data;

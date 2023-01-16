@@ -33,6 +33,14 @@ class JenisEmklController extends Controller
         ]);
     }
 
+    public function default()
+    {
+        $jenisEmkl = new JenisEmkl();
+        return response([
+            'status' => true,
+            'data' => $jenisEmkl->default()
+        ]);
+    }
     /**
      * @ClassName 
      */

@@ -34,6 +34,14 @@ class StokController extends Controller
         ]);
     }
 
+    public function default()
+    {
+        $stok = new Stok();
+        return response([
+            'status' => true,
+            'data' => $stok->default()
+        ]);
+    }
     /**
      * @ClassName 
      */

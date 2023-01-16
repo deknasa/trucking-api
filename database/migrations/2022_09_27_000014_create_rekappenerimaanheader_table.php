@@ -22,7 +22,6 @@ class CreateRekappenerimaanheaderTable extends Migration
             $table->date('tglbukti')->default('1900/1/1');
             $table->unsignedBigInteger('bank_id')->default('0');
             $table->date('tgltransaksi')->default('1900/1/1');
-            $table->longText('keterangan')->default('');
             $table->integer('statusapproval')->length(11)->default('0');
             $table->string('userapproval',50)->default('');
             $table->date('tglapproval')->default('1900/1/1');

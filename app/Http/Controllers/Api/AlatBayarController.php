@@ -36,6 +36,15 @@ class AlatBayarController extends Controller
             ]
         ]);
     }
+
+    public function default()
+    {
+        $alatBayar = new AlatBayar();
+        return response([
+            'status' => true,
+            'data' => $alatBayar->default()
+        ]);
+    }
     /**
      * @ClassName 
      */

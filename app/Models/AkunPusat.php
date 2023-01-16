@@ -61,6 +61,159 @@ class AkunPusat extends MyModel
         return $data;
     }
 
+    public function default()
+    {
+
+        $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempdefault, function ($table) {
+            $table->unsignedBigInteger('statuscoa')->default(0);
+            $table->unsignedBigInteger('statusaccountpayable')->default(0);
+            $table->unsignedBigInteger('statuslabarugi')->default(0);
+            $table->unsignedBigInteger('statusneraca')->default(0);
+            $table->unsignedBigInteger('statusaktif')->default(0);
+        });
+        // COA
+        $status = Parameter::from(
+            db::Raw("parameter with (readuncommitted)")
+        )
+            ->select(
+                'memo',
+                'id'
+            )
+            ->where('grp', '=', 'STATUS COA')
+            ->where('subgrp', '=', 'STATUS COA');
+
+        $datadetail = json_decode($status->get(), true);
+
+        $iddefaultstatuscoa = 0;
+        foreach ($datadetail as $item) {
+            $memo = json_decode($item['memo'], true);
+            $default = $memo['DEFAULT'];
+            if ($default == "YA") {
+                $iddefaultstatuscoa = $item['id'];
+                break;
+            }
+        }
+
+        // statusaccountpayable
+        $status = Parameter::from(
+            db::Raw("parameter with (readuncommitted)")
+        )
+            ->select(
+                'memo',
+                'id'
+            )
+            ->where('grp', '=', 'STATUS ACCOUNT PAYABLE')
+            ->where('subgrp', '=', 'STATUS ACCOUNT PAYABLE');
+
+        $datadetail = json_decode($status->get(), true);
+
+        $iddefaultstatusaccountpayable = 0;
+        foreach ($datadetail as $item) {
+            $memo = json_decode($item['memo'], true);
+            $default = $memo['DEFAULT'];
+
+            if ($default == "YA") {
+                $iddefaultstatusaccountpayable = $item['id'];
+                break;
+            }
+        }
+        // statuslabarugi
+        $status = Parameter::from(
+            db::Raw("parameter with (readuncommitted)")
+        )
+            ->select(
+                'memo',
+                'id'
+            )
+            ->where('grp', '=', 'STATUS LABA RUGI')
+            ->where('subgrp', '=', 'STATUS LABA RUGI');
+
+        $datadetail = json_decode($status->get(), true);
+
+        $iddefaultstatuslabarugi = 0;
+        foreach ($datadetail as $item) {
+            $memo = json_decode($item['memo'], true);
+            $default = $memo['DEFAULT'];
+
+            if ($default == "YA") {
+                $iddefaultstatuslabarugi = $item['id'];
+                break;
+            }
+        }
+        // statusneraca
+        $status = Parameter::from(
+            db::Raw("parameter with (readuncommitted)")
+        )
+            ->select(
+                'memo',
+                'id'
+            )
+            ->where('grp', '=', 'STATUS NERACA')
+            ->where('subgrp', '=', 'STATUS NERACA');
+
+        $datadetail = json_decode($status->get(), true);
+
+        $iddefaultstatusneraca = 0;
+        foreach ($datadetail as $item) {
+            $memo = json_decode($item['memo'], true);
+            $default = $memo['DEFAULT'];
+
+            if ($default == "YA") {
+                $iddefaultstatusneraca = $item['id'];
+                break;
+            }
+        }
+
+        // statusaktif
+        $status = Parameter::from(
+            db::Raw("parameter with (readuncommitted)")
+        )
+            ->select(
+                'memo',
+                'id'
+            )
+            ->where('grp', '=', 'STATUS AKTIF')
+            ->where('subgrp', '=', 'STATUS AKTIF');
+
+        $datadetail = json_decode($status->get(), true);
+
+        $iddefaultstatusaktif = 0;
+        foreach ($datadetail as $item) {
+            $memo = json_decode($item['memo'], true);
+            $default = $memo['DEFAULT'];
+
+            if ($default == "YA") {
+                $iddefaultstatusaktif = $item['id'];
+                break;
+            }
+        }
+        DB::table($tempdefault)->insert(
+            [
+                "statuscoa" => $iddefaultstatuscoa,
+                "statusaccountpayable" => $iddefaultstatusaccountpayable,
+                "statuslabarugi" => $iddefaultstatuslabarugi,
+                "statusneraca" => $iddefaultstatusneraca,
+                "statusaktif" => $iddefaultstatusaktif,
+            ]
+        );
+
+        $query = DB::table($tempdefault)->from(
+            DB::raw($tempdefault)
+        )
+            ->select(
+                'statuscoa',
+                'statusaccountpayable',
+                'statuslabarugi',
+                'statusneraca',
+                'statusaktif'
+            );
+
+        $data = $query->first();
+        
+        return $data;
+    }
+
     public function selectColumns($query)
     {
         return $query->from(

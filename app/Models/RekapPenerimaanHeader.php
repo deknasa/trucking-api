@@ -177,13 +177,12 @@ class RekapPenerimaanHeader extends MyModel
             "$this->table.bank_id",
             "$this->table.tgltransaksi",
             "$this->table.keterangan",
-            "$this->table.statusapproval",
             "$this->table.userapproval",
             "$this->table.tglapproval",
             "$this->table.statusformat",
             "$this->table.modifiedby",
             "bank.namabank as bank",
-            "statusapproval.memo as  statusapproval_memo",
+            "statusapproval.memo as  statusapproval",
             "statuscetak.memo as  statuscetak",
 
         );

@@ -136,4 +136,31 @@ class UpahSupirRincianController extends Controller
             return response($th->getMessage());
         }
     }
+
+    public function setUpRow()
+    {
+        $upahSupirRincian = new UpahSupirRincian();
+
+        return response([
+            'status' => true,
+            'detail' => $upahSupirRincian->setUpRow()
+        ]);        
+    }
+    public function setUpRowExcept($id)
+    {
+        $upahSupirRincian = new UpahSupirRincian();
+        $rincian = $upahSupirRincian->where('upahsupir_id',$id)->get();
+        foreach ($rincian as $e) {
+            $data[] = [
+                 "container_id" => $e->container_id,
+                 "statuscontainer_id"=>$e->statuscontainer_id
+                ];
+        }
+        // return $data;
+        return response([
+            'status' => true,
+            'detail' => $upahSupirRincian->setUpRowExcept($data)
+        ]);        
+    }
+
 }

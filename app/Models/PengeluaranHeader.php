@@ -270,8 +270,8 @@ class PengeluaranHeader extends MyModel
     
             $query = DB::table($this->table)->from(DB::raw("pengeluaranheader with (readuncommitted)"))
             ->select(
+                'pengeluaranheader.id',
                 'pengeluaranheader.nobukti',
-                'pengeluaranheader.keterangan as keterangan_detail',
                 'pengeluaranheader.tglbukti',
                 DB::raw('SUM(pengeluarandetail.nominal) AS nominal')
             )
@@ -283,7 +283,7 @@ class PengeluaranHeader extends MyModel
                 WHERE pengeluaran_nobukti = pengeluaranheader.nobukti   
               )")
             ->leftJoin(DB::raw("pengeluarandetail with (readuncommitted)"), 'pengeluaranheader.id', 'pengeluarandetail.pengeluaran_id')
-            ->groupBy('pengeluaranheader.nobukti','pengeluaranheader.keterangan' ,'pengeluaranheader.tglbukti');
+            ->groupBy('pengeluaranheader.nobukti','pengeluaranheader.id' ,'pengeluaranheader.tglbukti');
             $data = $query->get();
                 
             return $data;

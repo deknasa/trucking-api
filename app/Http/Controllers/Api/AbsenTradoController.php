@@ -28,6 +28,15 @@ class AbsenTradoController extends Controller
             ]
         ]);
     }
+    
+    public function default()
+    {
+        $absenTrado = new AbsenTrado();
+        return response([
+            'status' => true,
+            'data' => $absenTrado->default()
+        ]);
+    }
 
     /**
      * @ClassName 

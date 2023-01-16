@@ -34,6 +34,14 @@ class SatuanController extends Controller
         ]);
     }
 
+    public function default()
+    {
+        $satuan = new Satuan();
+        return response([
+            'status' => true,
+            'data' => $satuan->default()
+        ]);
+    }
     /**
      * @ClassName 
      */

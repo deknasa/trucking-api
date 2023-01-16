@@ -23,49 +23,49 @@ class Trado extends MyModel
         $this->setRequestParameters();
 
         $query = Trado::from(DB::raw("$this->table with (readuncommitted)"))
-        ->select(
-            'trado.id',
-            'trado.keterangan',
-            'trado.kmawal',
-            'trado.kmakhirgantioli',
-            'trado.tglasuransimati',
-            'trado.merek',
-            'trado.norangka',
-            'trado.nomesin',
-            'trado.nama',
-            'trado.nostnk',
-            'trado.alamatstnk',
-            'trado.modifiedby',
-            'trado.updated_at',
-            'trado.created_at',
-            'trado.tglserviceopname',
-            'trado.keteranganprogressstandarisasi',
-            'trado.tglpajakstnk',
-            'trado.tglgantiakiterakhir',
-            'trado.tipe',
-            'trado.jenis',
-            'trado.isisilinder',
-            'trado.warna',
-            'trado.jenisbahanbakar',
-            'trado.jumlahsumbu',
-            'trado.jumlahroda',
-            'trado.model',
-            'trado.nobpkb',
-            'trado.jumlahbanserap',
-            'trado.photostnk',
-            'trado.photobpkb',
-            'trado.phototrado',
-            'parameter_statusaktif.memo as statusaktif',
-            'parameter_statusstandarisasi.memo as statusstandarisasi',
-            'parameter_statusjenisplat.memo as statusjenisplat',
-            'parameter_statusmutasi.memo as statusmutasi',
-            'parameter_statusvalidasikendaraan.memo as statusvalidasikendaraan',
-            'parameter_statusmobilstoring.memo as statusmobilstoring',
-            'parameter_statusappeditban.memo as statusappeditban',
-            'parameter_statuslewatvalidasi.memo as statuslewatvalidasi',
-            'mandor.namamandor as mandor_id',
-            'supir.namasupir as supir_id',
-        )
+            ->select(
+                'trado.id',
+                'trado.keterangan',
+                'trado.kmawal',
+                'trado.kmakhirgantioli',
+                'trado.tglasuransimati',
+                'trado.merek',
+                'trado.norangka',
+                'trado.nomesin',
+                'trado.nama',
+                'trado.nostnk',
+                'trado.alamatstnk',
+                'trado.modifiedby',
+                'trado.updated_at',
+                'trado.created_at',
+                'trado.tglserviceopname',
+                'trado.keteranganprogressstandarisasi',
+                'trado.tglpajakstnk',
+                'trado.tglgantiakiterakhir',
+                'trado.tipe',
+                'trado.jenis',
+                'trado.isisilinder',
+                'trado.warna',
+                'trado.jenisbahanbakar',
+                'trado.jumlahsumbu',
+                'trado.jumlahroda',
+                'trado.model',
+                'trado.nobpkb',
+                'trado.jumlahbanserap',
+                'trado.photostnk',
+                'trado.photobpkb',
+                'trado.phototrado',
+                'parameter_statusaktif.memo as statusaktif',
+                'parameter_statusstandarisasi.memo as statusstandarisasi',
+                'parameter_statusjenisplat.memo as statusjenisplat',
+                'parameter_statusmutasi.memo as statusmutasi',
+                'parameter_statusvalidasikendaraan.memo as statusvalidasikendaraan',
+                'parameter_statusmobilstoring.memo as statusmobilstoring',
+                'parameter_statusappeditban.memo as statusappeditban',
+                'parameter_statuslewatvalidasi.memo as statuslewatvalidasi',
+                'mandor.namamandor as mandor_id',
+                'supir.namasupir as supir_id',
+            )
             ->leftJoin(DB::raw("parameter as parameter_statusaktif with (readuncommitted)"), 'trado.statusaktif', 'parameter_statusaktif.id')
             ->leftJoin(DB::raw("parameter as parameter_statusjenisplat with (readuncommitted)"), 'trado.statusjenisplat', 'parameter_statusjenisplat.id')
             ->leftJoin(DB::raw("parameter as parameter_statusstandarisasi with (readuncommitted)"), 'trado.statusstandarisasi', 'parameter_statusstandarisasi.id')
@@ -89,6 +89,238 @@ class Trado extends MyModel
         return $data;
     }
 
+    public function default()
+    {
+
+        $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempdefault, function ($table) {
+            $table->unsignedBigInteger('statusaktif')->default(0);
+            $table->unsignedBigInteger('statusstandarisasi')->default(0);
+            $table->unsignedBigInteger('statusjenisplat')->default(0);
+            $table->unsignedBigInteger('statusmutasi')->default(0);
+            $table->unsignedBigInteger('statusvalidasikendaraan')->default(0);
+            $table->unsignedBigInteger('statusmobilstoring')->default(0);
+            $table->unsignedBigInteger('statusappeditban')->default(0);
+            $table->unsignedBigInteger('statuslewatvalidasi')->default(0);
+        });
+
+        // AKTIF
+        $status = Parameter::from(
+            db::Raw("parameter with (readuncommitted)")
+        )
+            ->select(
+                'memo',
+                'id'
+            )
+            ->where('grp', '=', 'STATUS AKTIF')
+            ->where('subgrp', '=', 'STATUS AKTIF');
+
+        $datadetail = json_decode($status->get(), true);
+
+        $iddefaultstatusaktif = 0;
+        foreach ($datadetail as $item) {
+            $memo = json_decode($item['memo'], true);
+            $default = $memo['DEFAULT'];
+            if ($default == "YA") {
+                $iddefaultstatusaktif = $item['id'];
+                break;
+            }
+        }
+
+        // STANDARISASI
+        $status = Parameter::from(
+            db::Raw("parameter with (readuncommitted)")
+        )
+            ->select(
+                'memo',
+                'id'
+            )
+            ->where('grp', '=', 'STATUS STANDARISASI')
+            ->where('subgrp', '=', 'STATUS STANDARISASI');
+
+        $datadetail = json_decode($status->get(), true);
+
+        $iddefaultstatuStandarisasi = 0;
+        foreach ($datadetail as $item) {
+            $memo = json_decode($item['memo'], true);
+            $default = $memo['DEFAULT'];
+
+            if ($default == "YA") {
+                $iddefaultstatuStandarisasi = $item['id'];
+                break;
+            }
+        }
+        // 	JENIS PLAT
+        $status = Parameter::from(
+            db::Raw("parameter with (readuncommitted)")
+        )
+            ->select(
+                'memo',
+                'id'
+            )
+            ->where('grp', '=', 'JENIS PLAT')
+            ->where('subgrp', '=', 'JENIS PLAT');
+
+        $datadetail = json_decode($status->get(), true);
+
+        $iddefaultstatusJenisPlat = 0;
+        foreach ($datadetail as $item) {
+            $memo = json_decode($item['memo'], true);
+            $default = $memo['DEFAULT'];
+
+            if ($default == "YA") {
+                $iddefaultstatusJenisPlat = $item['id'];
+                break;
+            }
+        }
+        //STATUS MUTASI
+        $status = Parameter::from(
+            db::Raw("parameter with (readuncommitted)")
+        )
+            ->select(
+                'memo',
+                'id'
+            )
+            ->where('grp', '=', 'STATUS MUTASI')
+            ->where('subgrp', '=', 'STATUS MUTASI');
+
+        $datadetail = json_decode($status->get(), true);
+
+        $iddefaultstatusMutasi = 0;
+        foreach ($datadetail as $item) {
+            $memo = json_decode($item['memo'], true);
+            $default = $memo['DEFAULT'];
+
+            if ($default == "YA") {
+                $iddefaultstatusMutasi = $item['id'];
+                break;
+            }
+        }
+        //STATUS VALIDASI KENDARAAN
+        $status = Parameter::from(
+            db::Raw("parameter with (readuncommitted)")
+        )
+            ->select(
+                'memo',
+                'id'
+            )
+            ->where('grp', '=', 'STATUS VALIDASI KENDARAAN')
+            ->where('subgrp', '=', 'STATUS VALIDASI KENDARAAN');
+
+        $datadetail = json_decode($status->get(), true);
+
+        $iddefaultstatusValKen = 0;
+        foreach ($datadetail as $item) {
+            $memo = json_decode($item['memo'], true);
+            $default = $memo['DEFAULT'];
+
+            if ($default == "YA") {
+                $iddefaultstatusValKen = $item['id'];
+                break;
+            }
+        }
+        //STATUS MOBIL STORING
+        $status = Parameter::from(
+            db::Raw("parameter with (readuncommitted)")
+        )
+            ->select(
+                'memo',
+                'id'
+            )
+            ->where('grp', '=', 'STATUS MOBIL STORING')
+            ->where('subgrp', '=', 'STATUS MOBIL STORING');
+
+        $datadetail = json_decode($status->get(), true);
+
+        $iddefaultstatusMobStoring = 0;
+        foreach ($datadetail as $item) {
+            $memo = json_decode($item['memo'], true);
+            $default = $memo['DEFAULT'];
+
+            if ($default == "YA") {
+                $iddefaultstatusMobStoring = $item['id'];
+                break;
+            }
+        }
+        //STATUS APPROVAL EDIT BAN
+        $status = Parameter::from(
+            db::Raw("parameter with (readuncommitted)")
+        )
+            ->select(
+                'memo',
+                'id'
+            )
+            ->where('grp', '=', 'STATUS APPROVAL EDIT BAN')
+            ->where('subgrp', '=', 'STATUS APPROVAL EDIT BAN');
+
+        $datadetail = json_decode($status->get(), true);
+
+        $iddefaultstatusAppedit = 0;
+        foreach ($datadetail as $item) {
+            $memo = json_decode($item['memo'], true);
+            $default = $memo['DEFAULT'];
+
+            if ($default == "YA") {
+                $iddefaultstatusAppedit = $item['id'];
+                break;
+            }
+        }
+        //STATUS LEWAT VALIDASI
+        $status = Parameter::from(
+            db::Raw("parameter with (readuncommitted)")
+        )
+            ->select(
+                'memo',
+                'id'
+            )
+            ->where('grp', '=', 'STATUS LEWAT VALIDASI')
+            ->where('subgrp', '=', 'STATUS LEWAT VALIDASI');
+
+        $datadetail = json_decode($status->get(), true);
+
+        $iddefaultstatusLewatVal = 0;
+        foreach ($datadetail as $item) {
+            $memo = json_decode($item['memo'], true);
+            $default = $memo['DEFAULT'];
+
+            if ($default == "YA") {
+                $iddefaultstatusLewatVal = $item['id'];
+                break;
+            }
+        }
+
+        DB::table($tempdefault)->insert(
+            [
+                "statusaktif" => $iddefaultstatusaktif,
+                "statusstandarisasi" => $iddefaultstatuStandarisasi,
+                "statusjenisplat" => $iddefaultstatusJenisPlat,
+                "statusmutasi" => $iddefaultstatusMutasi,
+                "statusvalidasikendaraan" => $iddefaultstatusValKen,
+                "statusmobilstoring" => $iddefaultstatusMobStoring,
+                "statusappeditban" => $iddefaultstatusAppedit,
+                "statuslewatvalidasi" => $iddefaultstatusLewatVal
+            ]
+        );
+
+        $query = DB::table($tempdefault)->from(
+            DB::raw($tempdefault)
+        )
+            ->select(
+                'statusaktif',
+                'statusstandarisasi',
+                'statusjenisplat',
+                'statusmutasi',
+                'statusvalidasikendaraan',
+                'statusmobilstoring',
+                'statusappeditban',
+                'statuslewatvalidasi'
+            );
+
+        $data = $query->first();
+
+        return $data;
+    }
+
     public function findAll($id)
     {
         $data = DB::table('trado')->select(
@@ -96,11 +328,11 @@ class Trado extends MyModel
             'mandor.namamandor as mandor',
             'supir.namasupir as supir'
         )
-        ->leftJoin(DB::raw("mandor with (readuncommitted)"),'trado.mandor_id','mandor.id')
-        ->leftJoin(DB::raw("supir with (readuncommitted)"),'trado.supir_id','supir.id')
-        ->where('trado.id',$id)
-        ->first();
-        
+            ->leftJoin(DB::raw("mandor with (readuncommitted)"), 'trado.mandor_id', 'mandor.id')
+            ->leftJoin(DB::raw("supir with (readuncommitted)"), 'trado.supir_id', 'supir.id')
+            ->where('trado.id', $id)
+            ->first();
+
         return $data;
     }
 

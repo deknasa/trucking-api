@@ -30,41 +30,42 @@ class Supir extends MyModel
     {
         $this->setRequestParameters();
         $query = Supir::from(DB::raw("$this->table with (readuncommitted)"))
-        ->select(
-            'supir.id',
-            'supir.namasupir',
-            'supir.tgllahir',
-            'supir.alamat',
-            'supir.kota',
-            'supir.telp',
-            'parameter.memo as statusaktif',
-            'supir.nominaldepositsa',
-            'supir.depositke',
-            'supir.nominalpinjamansaldoawal',
-            'supirlama.namasupir as supirold_id',
-            'supir.nosim',
-            'supir.tglterbitsim',
-            'supir.tglexpsim',
-            'supir.keterangan',
-            'supir.noktp',
-            'supir.nokk',
-            'statusadaupdategambar.memo as statusadaupdategambar',
-            'statusluarkota.memo as statusluarkota',
-            'statuszonatertentu.memo as statuszonatertentu',
-            'zona.keterangan as zona_id',
-            'supir.photosupir',
-            'supir.photoktp',
-            'supir.photosim',
-            'supir.photokk',
-            'supir.photoskck',
-            'supir.photodomisili',
-            'supir.keteranganresign',
-            'statusblacklist.memo as statusblacklist',
-            DB::raw("(case when year(isnull(supir.tglberhentisupir,'1900/1/1'))=1900 then null else supir.tglberhentisupir  end) as tglberhentisupir"),
-            'supir.modifiedby',
-            'supir.created_at',
-            'supir.updated_at'
-        )
+            ->select(
+                'supir.id',
+                'supir.namasupir',
+                'supir.tgllahir',
+                'supir.alamat',
+                'supir.kota',
+                'supir.telp',
+                'parameter.memo as statusaktif',
+                'supir.nominaldepositsa',
+                'supir.depositke',
+                'supir.nominalpinjamansaldoawal',
+                'supirlama.namasupir as supirold_id',
+                'supir.nosim',
+                'supir.tglterbitsim',
+                'supir.tglexpsim',
+                'supir.keterangan',
+                'supir.noktp',
+                'supir.nokk',
+                'statusadaupdategambar.memo as statusadaupdategambar',
+                'statusluarkota.memo as statusluarkota',
+                'statuszonatertentu.memo as statuszonatertentu',
+                'zona.keterangan as zona_id',
+                'supir.photosupir',
+                'supir.photoktp',
+                'supir.photosim',
+                'supir.photokk',
+                'supir.photoskck',
+                'supir.photodomisili',
+                'supir.keteranganresign',
+                'statusblacklist.memo as statusblacklist',
+                DB::raw('(case when (year(supir.tglberhentisupir) <= 2000) then null else supir.tglberhentisupir end ) as tglberhentisupir'),
+
+                'supir.modifiedby',
+                'supir.created_at',
+                'supir.updated_at'
+            )
             ->leftJoin(DB::raw("zona with (readuncommitted)"), 'supir.zona_id', 'zona.id')
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'supir.statusaktif', '=', 'parameter.id')
             ->leftJoin(DB::raw("parameter as statusadaupdategambar with (readuncommitted)"), 'supir.statusadaupdategambar', '=', 'statusadaupdategambar.id')
@@ -85,50 +86,163 @@ class Supir extends MyModel
         return $data;
     }
 
+    public function default()
+    {
+
+        $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempdefault, function ($table) {
+            $table->unsignedBigInteger('statusaktif')->default(0);
+            $table->unsignedBigInteger('statusadaupdategambar')->default(0);
+            $table->unsignedBigInteger('statusluarkota')->default(0);
+            $table->unsignedBigInteger('statuszonatertentu')->default(0);
+            $table->unsignedBigInteger('statusblacklist')->default(0);
+        });
+
+        // AKTIF
+        $statusaktif = Parameter::from(
+            db::Raw("parameter with (readuncommitted)")
+        )
+            ->select(
+                'id'
+            )
+            ->where('grp', '=', 'STATUS AKTIF')
+            ->where('subgrp', '=', 'STATUS AKTIF')
+            ->where('DEFAULT', '=', 'YA')
+            ->first();
+        $iddefaultstatusaktif = $statusaktif->id ?? 0;
+
+        // STATUS ADA UPDATE GAMBAR
+        $status = Parameter::from(
+            db::Raw("parameter with (readuncommitted)")
+        )
+            ->select(
+                'id'
+            )
+            ->where('grp', '=', 'STATUS ADA UPDATE GAMBAR')
+            ->where('subgrp', '=', 'STATUS ADA UPDATE GAMBAR')
+            ->where('DEFAULT', '=', 'YA')
+            ->first();
+
+        $iddefaultstatusUpdGambar = $status->id ?? 0;
+
+        // STATUS LUAR KOTA
+        $status = Parameter::from(
+            db::Raw("parameter with (readuncommitted)")
+        )
+            ->select(
+                'id'
+            )
+            ->where('grp', '=', 'STATUS LUAR KOTA')
+            ->where('subgrp', '=', 'STATUS LUAR KOTA')
+            ->where('DEFAULT', '=', 'YA')
+            ->first();
+
+
+        $iddefaultstatusLuarKota = $status->id ?? 0;
+
+        // ZONA TERTENTU
+        $status = Parameter::from(
+            db::Raw("parameter with (readuncommitted)")
+        )
+            ->select(
+                'id'
+            )
+            ->where('grp', '=', 'ZONA TERTENTU')
+            ->where('subgrp', '=', 'ZONA TERTENTU')
+            ->where('DEFAULT', '=', 'YA')
+            ->first();
+
+
+        $iddefaultstatusZonaTertentu = $status->id ?? 0;
+
+        // BLACKLIST SUPIR
+        $status = Parameter::from(
+            db::Raw("parameter with (readuncommitted)")
+        )
+            ->select(
+                'id'
+            )
+            ->where('grp', '=', 'BLACKLIST SUPIR')
+            ->where('subgrp', '=', 'BLACKLIST SUPIR')
+            ->where('DEFAULT', '=', 'YA')
+            ->first();
+
+
+
+        $iddefaultstatusBlacklist = $status->id ?? 0;
+
+
+
+        DB::table($tempdefault)->insert(
+            [
+                "statusaktif" => $iddefaultstatusaktif,
+                "statusadaupdategambar" => $iddefaultstatusUpdGambar,
+                "statusluarkota" => $iddefaultstatusLuarKota,
+                "statuszonatertentu" => $iddefaultstatusZonaTertentu,
+                "statusblacklist" => $iddefaultstatusBlacklist,
+            ]
+        );
+
+        $query = DB::table($tempdefault)->from(
+            DB::raw($tempdefault)
+        )
+            ->select(
+                'statusaktif',
+                'statusadaupdategambar',
+                'statusluarkota',
+                'statuszonatertentu',
+                'statusblacklist'
+            );
+
+        $data = $query->first();
+
+        return $data;
+    }
+
     public function findAll($id)
     {
         $data = Supir::from(DB::raw("supir with (readuncommitted)"))
-        ->select(
-            'supir.id',
-            'supir.namasupir',
-            'supir.alamat',
-            'supir.kota',
-            'supir.telp',
-            'supir.statusaktif',
-            'supir.nominaldepositsa',
-            'supir.depositke',
-            'supir.tglmasuk',
-            'supir.nominalpinjamansaldoawal',
-            'supir.supirold_id',
-            'supirlama.namasupir as supirold',
-            'supir.tglexpsim',
-            'supir.nosim',
-            'supir.keterangan',
-            'supir.noktp',
-            'supir.nokk',
-            'supir.statusadaupdategambar',
-            'supir.statusluarkota',
-            'supir.statuszonatertentu',
-            'supir.zona_id',
-            'zona.keterangan as zona',
-            'supir.angsuranpinjaman',
-            'supir.plafondeposito',
-            'supir.photosupir',
-            'supir.photoktp',
-            'supir.photosim',
-            'supir.photokk',
-            'supir.photoskck',
-            'supir.photodomisili',
-            'supir.keteranganresign',
-            'supir.statusblacklist',
-            'supir.tglberhentisupir',
-            'supir.tgllahir',
-            'supir.tglterbitsim',
+            ->select(
+                'supir.id',
+                'supir.namasupir',
+                'supir.alamat',
+                'supir.kota',
+                'supir.telp',
+                'supir.statusaktif',
+                'supir.nominaldepositsa',
+                'supir.depositke',
+                'supir.tglmasuk',
+                'supir.nominalpinjamansaldoawal',
+                'supir.supirold_id',
+                'supirlama.namasupir as supirold',
+                'supir.tglexpsim',
+                'supir.nosim',
+                'supir.keterangan',
+                'supir.noktp',
+                'supir.nokk',
+                'supir.statusadaupdategambar',
+                'supir.statusluarkota',
+                'supir.statuszonatertentu',
+                'supir.zona_id',
+                'zona.keterangan as zona',
+                'supir.angsuranpinjaman',
+                'supir.plafondeposito',
+                'supir.photosupir',
+                'supir.photoktp',
+                'supir.photosim',
+                'supir.photokk',
+                'supir.photoskck',
+                'supir.photodomisili',
+                'supir.keteranganresign',
+                'supir.statusblacklist',
+                'supir.tglberhentisupir',
+                'supir.tgllahir',
+                'supir.tglterbitsim',
 
-            'supir.modifiedby',
-            'supir.created_at',
-            'supir.updated_at'
-        )
+                'supir.modifiedby',
+                'supir.created_at',
+                'supir.updated_at'
+            )
 
             ->leftJoin(DB::raw("zona with (readuncommitted)"), 'supir.zona_id', 'zona.id')
             ->leftJoin(DB::raw("supir as supirlama with (readuncommitted)"), 'supir.supirold_id', '=', 'supirlama.id')
@@ -308,10 +422,9 @@ class Supir extends MyModel
                             $query = $query->where('statusblacklist.text', '=', $filters['data']);
                         } else if ($filters['field'] == 'zona_id') {
                             $query = $query->where('zona.zona', 'LIKE', "%$filters[data]%");
-                        }  else {
+                        } else {
                             $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
-
                     }
 
                     break;
@@ -329,7 +442,7 @@ class Supir extends MyModel
                             $query = $query->orWhere('statusblacklist.text', '=', $filters['data']);
                         } else if ($filters['field'] == 'zona_id') {
                             $query = $query->orWhere('zona.zona', 'LIKE', "%$filters[data]%");
-                        }  else {
+                        } else {
                             $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
                     }

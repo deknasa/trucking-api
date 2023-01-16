@@ -39,6 +39,14 @@ class RitasiController extends Controller
         ]);
     }
 
+    public function default()
+    {
+        $ritasi = new Ritasi();
+        return response([
+            'status' => true,
+            'data' => $ritasi->default()
+        ]);
+    }
     /**
      * @ClassName 
      */

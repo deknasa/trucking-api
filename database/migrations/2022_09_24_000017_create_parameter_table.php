@@ -24,6 +24,7 @@ class CreateParameterTable extends Migration
             $table->string('text', 255)->default('');
             $table->longText('memo')->default('');
             $table->integer('type')->length(11)->default(0);
+            $table->string('default', 255)->default('');
             $table->string('modifiedby', 50)->default('');
             
             $table->timestamps();

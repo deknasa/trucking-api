@@ -36,6 +36,14 @@ class BankPelangganController extends Controller
         ]);
     }
 
+    public function default()
+    {
+        $bankPelanggan = new BankPelanggan();
+        return response([
+            'status' => true,
+            'data' => $bankPelanggan->default()
+        ]);
+    }
     /**
      * @ClassName 
      */

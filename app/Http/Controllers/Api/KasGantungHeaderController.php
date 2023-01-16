@@ -303,8 +303,8 @@ class KasGantungHeaderController extends Controller
                                 'nowarkat' => '',
                                 'tgljatuhtempo' => '',
                                 'nominal' => $request->nominal[$i],
-                                'coadebet' => $bank->coa,
-                                'coakredit' => $memo['JURNAL'],
+                                'coadebet' => $memo['JURNAL'],
+                                'coakredit' => $bank->coa,
                                 'keterangan' => $request->keterangan_detail[$i],
                                 'bulanbeban' => '',
                                 'modifiedby' =>  auth('api')->user()->name
@@ -532,8 +532,8 @@ class KasGantungHeaderController extends Controller
                             'nowarkat' => '',
                             'tgljatuhtempo' => '',
                             'nominal' => $request->nominal[$i],
-                            'coadebet' => $bank->coa,
-                            'coakredit' => $memo['JURNAL'],
+                            'coadebet' => $memo['JURNAL'],
+                            'coakredit' => $bank->coa,
                             'keterangan' => $request->keterangan_detail[$i],
                             'bulanbeban' => '',
                             'modifiedby' =>  auth('api')->user()->name

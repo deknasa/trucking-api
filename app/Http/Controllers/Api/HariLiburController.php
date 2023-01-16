@@ -26,6 +26,15 @@ class HariLiburController extends Controller
             ]
         ]);
     }
+    
+    public function default()
+    {
+        $hariLibur = new HariLibur();
+        return response([
+            'status' => true,
+            'data' => $hariLibur->default(),
+        ]);
+    }
 
     /**
      * @ClassName 

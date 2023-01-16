@@ -33,6 +33,15 @@ class MandorController extends Controller
         ]);
     }
 
+    public function default()
+    {
+
+        $mandor = new Mandor();
+        return response([
+            'status' => true,
+            'data' => $mandor->default(),
+        ]);
+    }
     /**
      * @ClassName 
      */

@@ -34,6 +34,15 @@ class MerkController extends Controller
         ]);
     }
 
+    public function default() 
+    {
+        $merk = new Merk();
+        return response([
+            'status' => true,
+            'data' => $merk->default()
+        ]);
+    }
+
     /**
      * @ClassName 
      */

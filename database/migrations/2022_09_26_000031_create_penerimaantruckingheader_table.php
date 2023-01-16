@@ -21,7 +21,6 @@ class CreatePenerimaantruckingheaderTable extends Migration
             $table->string('nobukti',50)->unique();
             $table->date('tglbukti')->default('1900/1/1');            
             $table->unsignedBigInteger('penerimaantrucking_id')->default(0);
-            $table->longText('keterangan')->default('');
             $table->unsignedBigInteger('bank_id')->default('0');
             $table->string('coa',50)->default('');
             $table->string('penerimaan_nobukti',50)->default('');

@@ -41,6 +41,16 @@ class TradoController extends Controller
             ]
         ]);
     }
+    
+    public function default()
+    {
+
+        $trado = new Trado();
+        return response([
+            'status' => true,
+            'data' => $trado->default(),
+        ]);
+    }
     /**
      * @ClassName 
      */

@@ -97,7 +97,7 @@ class RekapPenerimaanDetailController extends Controller
             "tgltransaksi" => 'required',
             "penerimaan_nobukti" => 'required',
             "nominal" => 'required',
-            "keterangandetail" => 'required',
+            // "keterangandetail" => 'required',
             "modifiedby" => 'required',
          ], [
              "rekappenerimaan_id.required" => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
@@ -105,10 +105,10 @@ class RekapPenerimaanDetailController extends Controller
              "tgltransaksi.required" => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
              "penerimaan_nobukti.required" => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
              "nominal.required" => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
-             "keterangandetail.required" => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
+            //  "keterangandetail.required" => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
              "modifiedby.required" => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
          ], [
-             'keterangandetail' => 'keterangan Detail',
+            //  'keterangandetail' => 'keterangan Detail',
             ],
          );
          if (!$validator->passes()) {
@@ -125,7 +125,7 @@ class RekapPenerimaanDetailController extends Controller
             $rekeapPenerimaanDetail->tgltransaksi =  date('Y-m-d',strtotime($request->tgltransaksi));
             $rekeapPenerimaanDetail->penerimaan_nobukti = $request->penerimaan_nobukti;
             $rekeapPenerimaanDetail->nominal = $request->nominal;
-            $rekeapPenerimaanDetail->keterangan = $request->keterangandetail;
+            // $rekeapPenerimaanDetail->keterangan = $request->keterangandetail;
             $rekeapPenerimaanDetail->modifiedby = $request->modifiedby;
             
             DB::commit();

@@ -35,6 +35,14 @@ class ZonaController extends Controller
         ]);
     }
 
+    public function default()
+    {
+        $zona = new Zona();
+        return response([
+            'status' => true,
+            'data' => $zona->default()
+        ]);
+    }
     /**
      * @ClassName 
      */

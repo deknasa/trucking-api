@@ -25,7 +25,6 @@ class StoreRekapPengeluaranHeaderRequest extends FormRequest
     {
         return [
             "tglbukti"=>"required",
-            "keterangan"=>"required",
             "tgltransaksi"=>"required",
             "bank_id"=>"required",
         ];
