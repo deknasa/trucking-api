@@ -161,69 +161,41 @@ class Tarif extends MyModel
             db::Raw("parameter with (readuncommitted)")
         )
             ->select(
-                'memo',
                 'id'
             )
             ->where('grp', '=', 'STATUS AKTIF')
-            ->where('subgrp', '=', 'STATUS AKTIF');
+            ->where('subgrp', '=', 'STATUS AKTIF')
+            ->where('default', '=', 'YA')
+            ->first();
 
-        $datadetail = json_decode($status->get(), true);
-
-        $iddefaultstatusaktif = 0;
-        foreach ($datadetail as $item) {
-            $memo = json_decode($item['memo'], true);
-            $default = $memo['DEFAULT'];
-            if ($default == "YA") {
-                $iddefaultstatusaktif = $item['id'];
-                break;
-            }
-        }
+        $iddefaultstatusaktif = $status->id ?? 0;
 
         $status = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
         )
             ->select(
-                'memo',
                 'id'
             )
             ->where('grp', '=', 'SISTEM TON')
-            ->where('subgrp', '=', 'SISTEM TON');
+            ->where('subgrp', '=', 'SISTEM TON')
+            ->where('default', '=', 'YA')
+            ->first();
 
-        $datadetail = json_decode($status->get(), true);
-
-        $iddefaultstatussistemton = 0;
-        foreach ($datadetail as $item) {
-            $memo = json_decode($item['memo'], true);
-            $default = $memo['DEFAULT'];
-
-            if ($default == "YA") {
-                $iddefaultstatussistemton = $item['id'];
-                break;
-            }
-        }
+        $iddefaultstatussistemton = $status->id ?? 0;
 
         $status = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
         )
             ->select(
-                'memo',
                 'id'
             )
             ->where('grp', '=', 'PENYESUAIAN HARGA')
-            ->where('subgrp', '=', 'PENYESUAIAN HARGA');
+            ->where('subgrp', '=', 'PENYESUAIAN HARGA')
+            ->where('default', '=', 'YA')
+            ->first();
 
-        $datadetail = json_decode($status->get(), true);
-
-        $iddefaultstatuspenyesuaianharga = 0;
-        foreach ($datadetail as $item) {
-            $memo = json_decode($item['memo'], true);
-            $default = $memo['DEFAULT'];
-
-            if ($default == "YA") {
-                $iddefaultstatuspenyesuaianharga = $item['id'];
-                break;
-            }
-        }
+        $iddefaultstatuspenyesuaianharga = $status->id ?? 0;
+        
         DB::table($tempdefault)->insert(
             ["statusaktif" => $iddefaultstatusaktif,
             "statussistemton" => $iddefaultstatussistemton,

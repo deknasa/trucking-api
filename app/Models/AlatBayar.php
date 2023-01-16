@@ -74,47 +74,29 @@ class AlatBayar extends MyModel
             db::Raw("parameter with (readuncommitted)")
         )
             ->select(
-                'memo',
                 'id'
             )
             ->where('grp', '=', 'STATUS DEFAULT')
-            ->where('subgrp', '=', 'STATUS DEFAULT');
+            ->where('subgrp', '=', 'STATUS DEFAULT')
+            ->where('default', '=', 'YA')
+            ->first();
 
-        $datadetail = json_decode($status->get(), true);
-
-        $iddefaultstatusdefault = 0;
-        foreach ($datadetail as $item) {
-            $memo = json_decode($item['memo'], true);
-            $default = $memo['DEFAULT'];
-            if ($default == "YA") {
-                $iddefaultstatusdefault = $item['id'];
-                break;
-            }
-        }
-
+        $iddefaultstatusdefault = $status->id ?? 0;
+        
         //  STATUS LANGSUNG CAIR
         $status = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
         )
             ->select(
-                'memo',
                 'id'
             )
             ->where('grp', '=', 'STATUS LANGSUNG CAIR')
-            ->where('subgrp', '=', 'STATUS LANGSUNG CAIR');
+            ->where('subgrp', '=', 'STATUS LANGSUNG CAIR')
+            ->where('default', '=', 'YA')
+            ->first();
 
-        $datadetail = json_decode($status->get(), true);
-
-        $iddefaultstatuslangsung = 0;
-        foreach ($datadetail as $item) {
-            $memo = json_decode($item['memo'], true);
-            $default = $memo['DEFAULT'];
-
-            if ($default == "YA") {
-                $iddefaultstatuslangsung = $item['id'];
-                break;
-            }
-        }
+        $iddefaultstatuslangsung = $status->id ?? 0;
+        
 
         DB::table($tempdefault)->insert(
             ["statusdefault" => $iddefaultstatusdefault,"statuslangsungcair" => $iddefaultstatuslangsung]

@@ -89,46 +89,28 @@ class Agen extends MyModel
             db::Raw("parameter with (readuncommitted)")
         )
             ->select(
-                'memo',
                 'id'
             )
             ->where('grp', '=', 'STATUS AKTIF')
-            ->where('subgrp', '=', 'STATUS AKTIF');
+            ->where('subgrp', '=', 'STATUS AKTIF')
+            ->where('default','=','YA')
+            ->first();
 
-        $datadetail = json_decode($status->get(), true);
-
-        $iddefaultstatusaktif = 0;
-        foreach ($datadetail as $item) {
-            $memo = json_decode($item['memo'], true);
-            $default = $memo['DEFAULT'];
-            if ($default == "YA") {
-                $iddefaultstatusaktif = $item['id'];
-                break;
-            }
-        }
-
+        $iddefaultstatusaktif = $status->id ?? 0;
+        
         $status = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
         )
             ->select(
-                'memo',
                 'id'
             )
             ->where('grp', '=', 'STATUS TAS')
-            ->where('subgrp', '=', 'STATUS TAS');
+            ->where('subgrp', '=', 'STATUS TAS')
+            ->where('default','=','YA')
+            ->first();
 
-        $datadetail = json_decode($status->get(), true);
-
-        $iddefaultstatustas = 0;
-        foreach ($datadetail as $item) {
-            $memo = json_decode($item['memo'], true);
-            $default = $memo['DEFAULT'];
-
-            if ($default == "YA") {
-                $iddefaultstatustas = $item['id'];
-                break;
-            }
-        }
+        $iddefaultstatustas = $status->id ?? 0;
+        
 
         DB::table($tempdefault)->insert(
             ["statusaktif" => $iddefaultstatusaktif,"statustas" => $iddefaultstatustas]

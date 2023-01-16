@@ -109,185 +109,114 @@ class Trado extends MyModel
             db::Raw("parameter with (readuncommitted)")
         )
             ->select(
-                'memo',
                 'id'
             )
             ->where('grp', '=', 'STATUS AKTIF')
-            ->where('subgrp', '=', 'STATUS AKTIF');
+            ->where('subgrp', '=', 'STATUS AKTIF')
+            ->where('DEFAULT', '=', 'YA')
+            ->first();
 
         $datadetail = json_decode($status->get(), true);
 
-        $iddefaultstatusaktif = 0;
-        foreach ($datadetail as $item) {
-            $memo = json_decode($item['memo'], true);
-            $default = $memo['DEFAULT'];
-            if ($default == "YA") {
-                $iddefaultstatusaktif = $item['id'];
-                break;
-            }
-        }
+        $iddefaultstatusaktif = $status->id ?? 0;
 
         // STANDARISASI
         $status = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
         )
             ->select(
-                'memo',
                 'id'
             )
             ->where('grp', '=', 'STATUS STANDARISASI')
-            ->where('subgrp', '=', 'STATUS STANDARISASI');
+            ->where('subgrp', '=', 'STATUS STANDARISASI')
+            ->where("default", '=', 'YA')
+            ->first();
 
-        $datadetail = json_decode($status->get(), true);
+        $iddefaultstatuStandarisasi = $status->id ?? 0;
 
-        $iddefaultstatuStandarisasi = 0;
-        foreach ($datadetail as $item) {
-            $memo = json_decode($item['memo'], true);
-            $default = $memo['DEFAULT'];
-
-            if ($default == "YA") {
-                $iddefaultstatuStandarisasi = $item['id'];
-                break;
-            }
-        }
         // 	JENIS PLAT
         $status = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
         )
             ->select(
-                'memo',
                 'id'
             )
             ->where('grp', '=', 'JENIS PLAT')
-            ->where('subgrp', '=', 'JENIS PLAT');
+            ->where('subgrp', '=', 'JENIS PLAT')
+            ->where("default", '=', 'YA')
+            ->first();
 
-        $datadetail = json_decode($status->get(), true);
+        $iddefaultstatusJenisPlat = $status->id ?? 0;
 
-        $iddefaultstatusJenisPlat = 0;
-        foreach ($datadetail as $item) {
-            $memo = json_decode($item['memo'], true);
-            $default = $memo['DEFAULT'];
-
-            if ($default == "YA") {
-                $iddefaultstatusJenisPlat = $item['id'];
-                break;
-            }
-        }
         //STATUS MUTASI
         $status = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
         )
             ->select(
-                'memo',
                 'id'
             )
             ->where('grp', '=', 'STATUS MUTASI')
-            ->where('subgrp', '=', 'STATUS MUTASI');
+            ->where('subgrp', '=', 'STATUS MUTASI')
+            ->where('default', '=', 'YA')
+            ->first();
 
-        $datadetail = json_decode($status->get(), true);
-
-        $iddefaultstatusMutasi = 0;
-        foreach ($datadetail as $item) {
-            $memo = json_decode($item['memo'], true);
-            $default = $memo['DEFAULT'];
-
-            if ($default == "YA") {
-                $iddefaultstatusMutasi = $item['id'];
-                break;
-            }
-        }
+        $iddefaultstatusMutasi = $status->id ?? 0;
+        
         //STATUS VALIDASI KENDARAAN
         $status = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
         )
             ->select(
-                'memo',
                 'id'
             )
             ->where('grp', '=', 'STATUS VALIDASI KENDARAAN')
-            ->where('subgrp', '=', 'STATUS VALIDASI KENDARAAN');
+            ->where('subgrp', '=', 'STATUS VALIDASI KENDARAAN')
+            ->where('default', '=', 'YA')
+            ->first();
 
-        $datadetail = json_decode($status->get(), true);
+        $iddefaultstatusValKen = $status->id ?? 0;
 
-        $iddefaultstatusValKen = 0;
-        foreach ($datadetail as $item) {
-            $memo = json_decode($item['memo'], true);
-            $default = $memo['DEFAULT'];
-
-            if ($default == "YA") {
-                $iddefaultstatusValKen = $item['id'];
-                break;
-            }
-        }
         //STATUS MOBIL STORING
         $status = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
         )
             ->select(
-                'memo',
                 'id'
             )
             ->where('grp', '=', 'STATUS MOBIL STORING')
-            ->where('subgrp', '=', 'STATUS MOBIL STORING');
+            ->where('subgrp', '=', 'STATUS MOBIL STORING')
+            ->where('default', '=', 'YA')
+            ->first();
 
-        $datadetail = json_decode($status->get(), true);
+        $iddefaultstatusMobStoring = $status->id ?? 0;
 
-        $iddefaultstatusMobStoring = 0;
-        foreach ($datadetail as $item) {
-            $memo = json_decode($item['memo'], true);
-            $default = $memo['DEFAULT'];
-
-            if ($default == "YA") {
-                $iddefaultstatusMobStoring = $item['id'];
-                break;
-            }
-        }
         //STATUS APPROVAL EDIT BAN
         $status = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
         )
             ->select(
-                'memo',
                 'id'
             )
             ->where('grp', '=', 'STATUS APPROVAL EDIT BAN')
-            ->where('subgrp', '=', 'STATUS APPROVAL EDIT BAN');
+            ->where('subgrp', '=', 'STATUS APPROVAL EDIT BAN')
+            ->where('default', '=', 'YA')
+            ->first();
 
-        $datadetail = json_decode($status->get(), true);
-
-        $iddefaultstatusAppedit = 0;
-        foreach ($datadetail as $item) {
-            $memo = json_decode($item['memo'], true);
-            $default = $memo['DEFAULT'];
-
-            if ($default == "YA") {
-                $iddefaultstatusAppedit = $item['id'];
-                break;
-            }
-        }
+        $iddefaultstatusAppedit = $status->id ?? 0;
+         
         //STATUS LEWAT VALIDASI
         $status = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
         )
             ->select(
-                'memo',
                 'id'
             )
             ->where('grp', '=', 'STATUS LEWAT VALIDASI')
-            ->where('subgrp', '=', 'STATUS LEWAT VALIDASI');
+            ->where('subgrp', '=', 'STATUS LEWAT VALIDASI')
+            ->where('default', '=', 'YA')
+            ->first();
 
-        $datadetail = json_decode($status->get(), true);
-
-        $iddefaultstatusLewatVal = 0;
-        foreach ($datadetail as $item) {
-            $memo = json_decode($item['memo'], true);
-            $default = $memo['DEFAULT'];
-
-            if ($default == "YA") {
-                $iddefaultstatusLewatVal = $item['id'];
-                break;
-            }
-        }
+        $iddefaultstatusLewatVal = $status->id ?? 0;
 
         DB::table($tempdefault)->insert(
             [

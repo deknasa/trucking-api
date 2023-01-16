@@ -87,46 +87,28 @@ class OrderanTrucking extends MyModel
             db::Raw("parameter with (readuncommitted)")
         )
             ->select(
-                'memo',
                 'id'
             )
             ->where('grp', '=', 'STATUS LANGSIR')
-            ->where('subgrp', '=', 'STATUS LANGSIR');
+            ->where('subgrp', '=', 'STATUS LANGSIR')
+            ->where('default', '=', 'YA')
+            ->first();
 
-        $datadetail = json_decode($status->get(), true);
-
-        $iddefaultstatuslangsir = 0;
-        foreach ($datadetail as $item) {
-            $memo = json_decode($item['memo'], true);
-            $default = $memo['DEFAULT'];
-            if ($default == "YA") {
-                $iddefaultstatuslangsir = $item['id'];
-                break;
-            }
-        }
-
+        $iddefaultstatuslangsir = $status->id ?? 0;
+        
         $status = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
         )
             ->select(
-                'memo',
                 'id'
             )
             ->where('grp', '=', 'STATUS PERALIHAN')
-            ->where('subgrp', '=', 'STATUS PERALIHAN');
+            ->where('subgrp', '=', 'STATUS PERALIHAN')
+            ->where('default', '=', 'YA')
+            ->first();
 
-        $datadetail = json_decode($status->get(), true);
-
-        $iddefaultstatusperalihan = 0;
-        foreach ($datadetail as $item) {
-            $memo = json_decode($item['memo'], true);
-            $default = $memo['DEFAULT'];
-
-            if ($default == "YA") {
-                $iddefaultstatusperalihan = $item['id'];
-                break;
-            }
-        }
+        $iddefaultstatusperalihan = $status->id ?? 0;
+        
 
         DB::table($tempdefault)->insert(
             ["statuslangsir" => $iddefaultstatuslangsir,"statusperalihan" => $iddefaultstatusperalihan]

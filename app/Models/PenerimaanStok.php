@@ -76,24 +76,15 @@ class PenerimaanStok extends MyModel
             db::Raw("parameter with (readuncommitted)")
         )
         ->select (
-            'memo',
             'id'
         )
         ->where('grp','=','STATUS HITUNG STOK')
-        ->where('subgrp','=','STATUS HITUNG STOK');
-
-        $datadetail = json_decode($statusaktif->get(), true);
-
-        $iddefault=0;
-        foreach ($datadetail as $item) {
-            $memo = json_decode($item['memo'], true);
-            $default=$memo['DEFAULT'];
-            if ($default=="YA") {
-                $iddefault=$item['id'];
-                DB::table($tempdefault)->insert(["statushitungstok" => $iddefault]);
-            } 
-        }
-
+        ->where('subgrp','=','STATUS HITUNG STOK')
+        ->where('default','=','YA')
+        ->first();
+        
+        DB::table($tempdefault)->insert(["statushitungstok" => $statusaktif->id]);
+        
         $query=DB::table($tempdefault)->from(
             DB::raw($tempdefault )
         )
