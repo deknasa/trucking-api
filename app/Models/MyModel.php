@@ -60,4 +60,9 @@ class MyModel extends Model
     {
         return true;
     }
+
+    public function paginate($query)
+    {
+        return $query->skip($this->params['offset'])->take($this->params['limit']);
+    }
 }
