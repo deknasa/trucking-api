@@ -130,10 +130,10 @@ class UpahSupir extends MyModel
             )
             ->where('grp', '=', 'STATUS AKTIF')
             ->where('subgrp', '=', 'STATUS AKTIF')
-            ->where('DEFAULT', '=', 'YA')
+            ->where('default', '=', 'YA')
             ->first();
 
-        $iddefaultstatusaktif = $status->id;
+        $iddefaultstatusaktif = $status->id ?? 0;
 
         $status = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
@@ -143,9 +143,10 @@ class UpahSupir extends MyModel
             )
             ->where('grp', '=', 'UPAH SUPIR LUAR KOTA')
             ->where('subgrp', '=', 'UPAH SUPIR LUAR KOTA')
-            ->where('DEFAULT', '=', 'YA')
+            ->where('default', '=', 'YA')
             ->first();
 
+        $iddefaultstatusluarkota = $status->id ?? 0;
 
         $iddefaultstatusluarkota =  $status->id;
         DB::table($tempdefault)->insert(

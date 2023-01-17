@@ -41,6 +41,15 @@ class UpahRitasiController extends Controller
         ]);
     }
 
+    public function default()
+    {
+        $upahRitasi = new UpahRitasi();
+        return response([
+            'status' => true,
+            'data' => $upahRitasi->default()
+        ]);
+    }
+
     /**
      * @ClassName 
      */

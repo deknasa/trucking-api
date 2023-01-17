@@ -78,24 +78,14 @@ class Ritasi extends MyModel
             db::Raw("parameter with (readuncommitted)")
         )
         ->select (
-            'memo',
             'id'
         )
         ->where('grp','=','STATUS RITASI')
-        ->where('subgrp','=','STATUS RITASI');
-
-        $datadetail = json_decode($statusritasi->get(), true);
-
-        $iddefault=0;
-        foreach ($datadetail as $item) {
-            $memo = json_decode($item['memo'], true);
-            $default=$memo['DEFAULT'];
-            if ($default=="YA") {
-                $iddefault=$item['id'];
-                DB::table($tempdefault)->insert(["statusritasi" => $iddefault]);
-            } 
-        }
-
+        ->where('subgrp','=','STATUS RITASI')
+        ->where('default', '=', 'YA')
+        ->first();
+        DB::table($tempdefault)->insert(["statusritasi" => $statusritasi->id]);
+        
         $query=DB::table($tempdefault)->from(
             DB::raw($tempdefault )
         )

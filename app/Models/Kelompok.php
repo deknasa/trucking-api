@@ -63,24 +63,14 @@ class Kelompok extends MyModel
             db::Raw("parameter with (readuncommitted)")
         )
         ->select (
-            'memo',
-            'id'
+               'id'
         )
         ->where('grp','=','STATUS AKTIF')
-        ->where('subgrp','=','STATUS AKTIF');
-
-        $datadetail = json_decode($statusaktif->get(), true);
-
-        $iddefault=0;
-        foreach ($datadetail as $item) {
-            $memo = json_decode($item['memo'], true);
-            $default=$memo['DEFAULT'];
-            if ($default=="YA") {
-                $iddefault=$item['id'];
-                DB::table($tempdefault)->insert(["statusaktif" => $iddefault]);
-            } 
-        }
-
+        ->where('subgrp','=','STATUS AKTIF')
+        ->where('default', '=', 'YA')
+        ->first();
+        DB::table($tempdefault)->insert(["statusaktif" => $statusaktif->id]);
+        
         $query=DB::table($tempdefault)->from(
             DB::raw($tempdefault )
         )

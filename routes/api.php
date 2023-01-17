@@ -312,6 +312,7 @@ use App\Http\Controllers\Api\ReportAllController;
         Route::get('user/combostatus', [UserController::class, 'combostatus']);
         Route::get('user/combocabang', [UserController::class, 'combocabang']);
         Route::get('user/getuserid', [UserController::class, 'getuserid']);
+        Route::get('user/default', [UserController::class, 'default']);
         Route::resource('user', UserController::class);
 
         Route::get('menu/field_length', [MenuController::class, 'fieldLength']);
@@ -797,7 +798,7 @@ use App\Http\Controllers\Api\ReportAllController;
     Route::resource('suratpengantar', SuratPengantarController::class);
 
     Route::get('upahritasi/combo', [UpahRitasiController::class, 'combo']);
-    
+    Route::get('upahritasi/default', [UpahRitasiController::class, 'default']);    
     Route::get('upahritasi/comboluarkota', [UpahRitasiController::class, 'comboluarkota']);
     Route::get('upahritasi/field_length', [UpahRitasiController::class, 'fieldLength']);
     Route::resource('upahritasi', UpahRitasiController::class);

@@ -28,7 +28,6 @@ class UpdateUserRequest extends FormRequest
         return [
             'user' => 'required',
             'name' => 'required',
-            'cabang_id' => 'required',
             'karyawan_id' => 'required',
             'dashboard' => 'required',
             'statusaktif' => 'required',
@@ -41,7 +40,6 @@ class UpdateUserRequest extends FormRequest
             'user' => 'user',
             'name' => 'nama user',
             'password' => 'password',
-            'cabang_id' => 'cabang',
             'karyawan_id' => 'karyawan',
             'dashboard' => 'dashboard',
             'statusaktif' => 'status',

@@ -111,6 +111,59 @@ class UpahRitasi extends MyModel
         return $this->hasMany(upahritasiRincian::class, 'upahritasi_id');
     }
 
+
+    public function default()
+    {
+        $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempdefault, function ($table) {
+            $table->unsignedBigInteger('statusaktif')->default(0);
+            $table->unsignedBigInteger('statusluarkota')->default(0);
+        });
+
+        $status = Parameter::from(
+            db::Raw("parameter with (readuncommitted)")
+        )
+            ->select(
+                'id'
+            )
+            ->where('grp', '=', 'STATUS AKTIF')
+            ->where('subgrp', '=', 'STATUS AKTIF')
+            ->where('default', '=', 'YA')
+            ->first();
+
+        $iddefaultstatusaktif = $status->id ?? 0;
+        
+        $status = Parameter::from(
+            db::Raw("parameter with (readuncommitted)")
+        )
+            ->select(
+                'id'
+            )
+            ->where('grp', '=', 'UPAH SUPIR LUAR KOTA')
+            ->where('subgrp', '=', 'UPAH SUPIR LUAR KOTA')
+            ->where('default', '=', 'YA')
+            ->first();
+
+        $iddefaultstatusluarkota = $status->id ?? 0;
+
+        DB::table($tempdefault)->insert(
+            ["statusaktif" => $iddefaultstatusaktif,"statusluarkota" => $iddefaultstatusluarkota]
+        );
+
+        $query = DB::table($tempdefault)->from(
+            DB::raw($tempdefault)
+        )
+            ->select(
+                'statusaktif',
+                'statusluarkota',
+            );
+
+        $data = $query->first();
+        
+        return $data;
+
+    }
+    
     public function selectColumns($query)
     {
         return $query->select(

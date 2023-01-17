@@ -31,6 +31,14 @@ class UserController extends Controller
             ]
         ]);
     }
+    public function default()
+    {
+        $user = new User();
+        return response([
+            'status' => true,
+            'data' => $user->default()
+        ]);
+    }
 
     /**
      * @ClassName 
@@ -44,7 +52,7 @@ class UserController extends Controller
             $user->user = strtoupper($request->user);
             $user->name = strtoupper($request->name);
             $user->password = Hash::make($request->password);
-            $user->cabang_id = $request->cabang_id;
+            $user->cabang_id = $request->cabang_id ?? '';
             $user->karyawan_id = $request->karyawan_id;
             $user->dashboard = strtoupper($request->dashboard);
             $user->statusaktif = $request->statusaktif;
@@ -106,7 +114,7 @@ class UserController extends Controller
         try {
             $user->user = $request->user;
             $user->name = $request->name;
-            $user->cabang_id = $request->cabang_id;
+            $user->cabang_id = $request->cabang_id ?? '';
             $user->karyawan_id = $request->karyawan_id;
             $user->dashboard = $request->dashboard;
             $user->statusaktif = $request->statusaktif;
