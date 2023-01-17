@@ -40,22 +40,22 @@ class UpahSupir extends MyModel
         $this->setRequestParameters();
 
         $query = DB::table($this->table)->from(DB::raw("upahsupir with (readuncommitted)"))
-        ->select(
-            'upahsupir.id',
-            'upahsupir.parent_id',
-            'kotadari.keterangan as kotadari_id',
-            'kotasampai.keterangan as kotasampai_id',
-            'upahsupir.jarak',
-            'zona.keterangan as zona_id',
-            'parameter.memo as statusaktif',
-            'upahsupir.tglmulaiberlaku',
-            // 'upahsupir.tglakhirberlaku',
-            'statusluarkota.memo as statusluarkota',
-            'upahsupir.gambar',
-            'upahsupir.created_at',
-            'upahsupir.modifiedby',
-            'upahsupir.updated_at'
-        )
+            ->select(
+                'upahsupir.id',
+                'upahsupir.parent_id',
+                'kotadari.keterangan as kotadari_id',
+                'kotasampai.keterangan as kotasampai_id',
+                'upahsupir.jarak',
+                'zona.keterangan as zona_id',
+                'parameter.memo as statusaktif',
+                'upahsupir.tglmulaiberlaku',
+                // 'upahsupir.tglakhirberlaku',
+                'statusluarkota.memo as statusluarkota',
+                'upahsupir.gambar',
+                'upahsupir.created_at',
+                'upahsupir.modifiedby',
+                'upahsupir.updated_at'
+            )
             ->leftJoin(DB::raw("kota as kotadari with (readuncommitted)"), 'kotadari.id', '=', 'upahsupir.kotadari_id')
             ->leftJoin(DB::raw("kota as kotasampai with (readuncommitted)"), 'kotasampai.id', '=', 'upahsupir.kotasampai_id')
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'upahsupir.statusaktif', 'parameter.id')
@@ -126,49 +126,30 @@ class UpahSupir extends MyModel
             db::Raw("parameter with (readuncommitted)")
         )
             ->select(
-                'memo',
                 'id'
             )
             ->where('grp', '=', 'STATUS AKTIF')
-            ->where('subgrp', '=', 'STATUS AKTIF');
+            ->where('subgrp', '=', 'STATUS AKTIF')
+            ->where('DEFAULT', '=', 'YA')
+            ->first();
 
-        $datadetail = json_decode($status->get(), true);
-
-        $iddefaultstatusaktif = 0;
-        foreach ($datadetail as $item) {
-            $memo = json_decode($item['memo'], true);
-            $default = $memo['DEFAULT'];
-            if ($default == "YA") {
-                $iddefaultstatusaktif = $item['id'];
-                break;
-            }
-        }
+        $iddefaultstatusaktif = $status->id;
 
         $status = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
         )
             ->select(
-                'memo',
                 'id'
             )
             ->where('grp', '=', 'UPAH SUPIR LUAR KOTA')
-            ->where('subgrp', '=', 'UPAH SUPIR LUAR KOTA');
+            ->where('subgrp', '=', 'UPAH SUPIR LUAR KOTA')
+            ->where('DEFAULT', '=', 'YA')
+            ->first();
 
-        $datadetail = json_decode($status->get(), true);
 
-        $iddefaultstatusluarkota = 0;
-        foreach ($datadetail as $item) {
-            $memo = json_decode($item['memo'], true);
-            $default = $memo['DEFAULT'];
-
-            if ($default == "YA") {
-                $iddefaultstatusluarkota = $item['id'];
-                break;
-            }
-        }
-
+        $iddefaultstatusluarkota =  $status->id;
         DB::table($tempdefault)->insert(
-            ["statusaktif" => $iddefaultstatusaktif,"statusluarkota" => $iddefaultstatusluarkota]
+            ["statusaktif" => $iddefaultstatusaktif, "statusluarkota" => $iddefaultstatusluarkota]
         );
 
         $query = DB::table($tempdefault)->from(
@@ -180,9 +161,8 @@ class UpahSupir extends MyModel
             );
 
         $data = $query->first();
-        
-        return $data;
 
+        return $data;
     }
 
     public function selectColumns($query)
@@ -206,9 +186,9 @@ class UpahSupir extends MyModel
             )
 
         )
-        ->leftJoin(DB::raw("kota as kotadari with (readuncommitted)"), 'kotadari.id', '=', 'upahsupir.kotadari_id')
-        ->leftJoin(DB::raw("kota as kotasampai with (readuncommitted)"), 'kotasampai.id', '=', 'upahsupir.kotasampai_id')
-        ->leftJoin(DB::raw("zona with (readuncommitted)"), 'upahsupir.zona_id', 'zona.id');
+            ->leftJoin(DB::raw("kota as kotadari with (readuncommitted)"), 'kotadari.id', '=', 'upahsupir.kotadari_id')
+            ->leftJoin(DB::raw("kota as kotasampai with (readuncommitted)"), 'kotasampai.id', '=', 'upahsupir.kotasampai_id')
+            ->leftJoin(DB::raw("zona with (readuncommitted)"), 'upahsupir.zona_id', 'zona.id');
     }
 
     public function createTemp(string $modelTable)
@@ -237,7 +217,7 @@ class UpahSupir extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id', 'parent_id', 'kotadari_id', 'kotasampai_id', 'zona_id','jarak', 'statusaktif', 'tglmulaiberlaku','statusluarkota', 'modifiedby', 'created_at', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'parent_id', 'kotadari_id', 'kotasampai_id', 'zona_id', 'jarak', 'statusaktif', 'tglmulaiberlaku', 'statusluarkota', 'modifiedby', 'created_at', 'updated_at'], $models);
 
         return $temp;
     }
