@@ -24,7 +24,6 @@ class CreatePenerimaanheaderTable extends Migration
             $table->unsignedBigInteger('pelanggan_id')->default('0');
             $table->unsignedBigInteger('agen_id')->default('0');
             $table->unsignedBigInteger('bank_id')->default('0');
-            $table->longText('keterangan')->default('');
             $table->string('postingdari',50)->default('');
             $table->string('diterimadari',100)->default('');
             $table->date('tgllunas')->default('1900/1/1');

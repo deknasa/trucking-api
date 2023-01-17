@@ -21,7 +21,6 @@ class CreateabsensisupirheaderTable extends Migration
             $table->id();
             $table->string('nobukti', 50)->unique();
             $table->date('tglbukti')->default('1900/1/1');
-            $table->longText('keterangan', 8000)->default('');
             $table->string('kasgantung_nobukti', 50)->unique();
             $table->double('nominal',15,2)->default(0);
             $table->unsignedBigInteger('statusformat')->default(0);
