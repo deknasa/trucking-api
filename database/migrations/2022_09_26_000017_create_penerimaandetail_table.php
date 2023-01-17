@@ -46,7 +46,6 @@ class CreatePenerimaandetailTable extends Migration
         });
 
         DB::statement("ALTER TABLE penerimaandetail NOCHECK CONSTRAINT penerimaandetail_bank_bank_id_foreign");
-        DB::statement("ALTER TABLE penerimaandetail NOCHECK CONSTRAINT penerimaandetail_pelanggan_pelanggan_id_foreign");
         DB::statement("ALTER TABLE penerimaandetail NOCHECK CONSTRAINT penerimaandetail_bankpelanggan_bankpelanggan_id_foreign");
         DB::statement("ALTER TABLE penerimaandetail NOCHECK CONSTRAINT penerimaandetail_akunpusat_coadebet_foreign");
         DB::statement("ALTER TABLE penerimaandetail NOCHECK CONSTRAINT penerimaandetail_akunpusat_coakredit_foreign");
