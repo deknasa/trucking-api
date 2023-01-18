@@ -60,6 +60,32 @@ class ParameterTest extends TestCase
             ]);
     }
 
+    public function limits(): array
+    {
+        return [
+            [5, 5],
+            [10, 10],
+            [15, 15],
+            [20, 20],
+        ];
+    }
+
+    /**
+     * @dataProvider limits
+     */
+    public function test_can_paginate($requestedLimit, $expectedLimit)
+    {
+        $response = $this->actingAs($this->user, 'api')
+            ->getJson(route('parameter.index', [
+                'limit' => $requestedLimit
+            ]));
+
+        $response
+            ->assertHeader('Content-Type', 'application/json')
+            ->assertStatus(200)
+            ->assertJsonCount($expectedLimit, 'data');
+    }
+
     public function test_authenticate_show()
     {
         $response = $this->getJson(route('parameter.show', $this->existingParameter->id));

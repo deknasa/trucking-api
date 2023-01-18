@@ -21,6 +21,7 @@ class CreatePenerimaangiroheaderTable extends Migration
             $table->string('nobukti',50)->unique();
             $table->date('tglbukti')->default('1900/1/1');
             $table->unsignedBigInteger('pelanggan_id')->default('0');
+            $table->unsignedBigInteger('agen_id')->default('0');
             $table->string('postingdari',50)->default('');
             $table->string('diterimadari',100)->default('');
             $table->date('tgllunas')->default('1900/1/1');
@@ -38,11 +39,13 @@ class CreatePenerimaangiroheaderTable extends Migration
 
 
             $table->foreign('pelanggan_id', 'penerimaangiroheader_pelanggan_pelanggan_id_foreign')->references('id')->on('pelanggan');    
+            $table->foreign('agen_id', 'penerimaangiroheader_agen_agen_id_foreign')->references('id')->on('agen');    
             $table->foreign('cabang_id', 'penerimaangiroheader_cabang_cabang_id_foreign')->references('id')->on('cabang');    
         });
 
         DB::statement("ALTER TABLE penerimaangiroheader NOCHECK CONSTRAINT penerimaangiroheader_pelanggan_pelanggan_id_foreign");
         DB::statement("ALTER TABLE penerimaangiroheader NOCHECK CONSTRAINT penerimaangiroheader_cabang_cabang_id_foreign");
+        DB::statement("ALTER TABLE penerimaangiroheader NOCHECK CONSTRAINT penerimaangiroheader_agen_agen_id_foreign");
     }
 
     /**

@@ -25,11 +25,9 @@ class StorePelunasanPiutangHeaderRequest extends FormRequest
     {
         $rules = [
             'tglbukti' => 'required',
-            'keterangan' => 'required',
             'bank' => 'required',
-            'cabang' => 'required',
-            'pelanggan' => 'required',
-            'agendetail' => 'required',
+            'agen' => 'required',
+            'alatbayar' => 'required',
         ];
 
         $relatedRequests = [
@@ -50,11 +48,7 @@ class StorePelunasanPiutangHeaderRequest extends FormRequest
     {
         $attributes = [
             'tglbukti' => 'Tanggal Bukti',
-            'keterangan' => 'Keterangan',
-            'bank' => 'Bank',
-            'cabang' => 'Cabang',
-            'pelanggan' => 'Pelanggan',
-            'agendetail' => 'Agen Detail',
+            'alatbayar' => 'alat bayar',
             'bayarppd.*' => 'Nominal Bayar',
             'keterangandetailppd.*' => 'Keterangan Detail',
         ];

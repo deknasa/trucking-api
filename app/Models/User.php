@@ -102,7 +102,58 @@ class User extends Authenticatable
 
         return $data;
     }
+    public function default()
+    {
 
+        $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempdefault, function ($table) {
+            $table->unsignedBigInteger('karyawan_id')->default(0);
+            $table->unsignedBigInteger('statusaktif')->default(0);
+        });
+
+        $status = Parameter::from(
+            db::Raw("parameter with (readuncommitted)")
+        )
+            ->select(
+                'id'
+            )
+            ->where('grp', '=', 'STATUS KARYAWAN')
+            ->where('subgrp', '=', 'STATUS KARYAWAN')
+            ->where('default', '=', 'YA')
+            ->first();
+
+        $iddefaultstatuskaryawan = $status->id ?? 0;
+        
+        $status = Parameter::from(
+            db::Raw("parameter with (readuncommitted)")
+        )
+            ->select(
+                'id'
+            )
+            ->where('grp', '=', 'STATUS AKTIF')
+            ->where('subgrp', '=', 'STATUS AKTIF')
+            ->where('default', '=', 'YA')
+            ->first();
+
+        $iddefaultstatusaktif = $status->id ?? 0;
+        
+
+        DB::table($tempdefault)->insert(
+            ["karyawan_id" => $iddefaultstatuskaryawan,"statusaktif" => $iddefaultstatusaktif]
+        );
+
+        $query = DB::table($tempdefault)->from(
+            DB::raw($tempdefault)
+        )
+            ->select(
+                'karyawan_id',
+                'statusaktif',
+            );
+
+        $data = $query->first();
+        
+        return $data;
+    }
     public function selectColumns($query)
     {
         return $query->select(
@@ -128,7 +179,7 @@ class User extends Authenticatable
             $table->bigInteger('id')->default('0');
             $table->string('user', 255)->default('');
             $table->string('name', 255)->default('');
-            $table->string('cabang_id', 300)->default('');
+            $table->string('cabang_id', 300)->nullable();
             $table->bigInteger('karyawan_id')->length(11)->default('0');
             $table->string('dashboard', 255)->default('');
             $table->string('statusaktif', 300)->default('');
