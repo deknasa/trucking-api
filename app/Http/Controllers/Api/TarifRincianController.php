@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
 use App\Models\TarifRincian;
 use App\Http\Requests\StoreTarifRincianRequest;
 use App\Http\Requests\UpdateTarifRincianRequest;
@@ -109,9 +110,10 @@ class TarifRincianController extends Controller
             $tarifRincian->container_id = $request->container_id;
             $tarifRincian->nominal = $request->nominal;
             $tarifRincian->modifiedby = auth('api')->user()->name;
+
             
             $tarifRincian->save();
-            
+            // dd('test');
             DB::commit();
            
             return [
@@ -121,8 +123,10 @@ class TarifRincianController extends Controller
                 'tabel' => $tarifRincian->getTable(),
             ];
         } catch (\Throwable $th) {
+            // dd('test2');
             DB::rollBack();
-            return response($th->getMessage());
+            
+            throw $th;
         }
     }
 

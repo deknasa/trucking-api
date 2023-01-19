@@ -82,6 +82,7 @@ use App\Http\Controllers\Api\BankPelangganController;
     use App\Http\Controllers\Api\SatuanController;
     use App\Http\Controllers\Api\ZonaController;
     use App\Http\Controllers\Api\TarifController;
+    use App\Http\Controllers\Api\TarifRincianController;
     use App\Http\Controllers\Api\PengeluaranTruckingController;
     use App\Http\Controllers\Api\OrderanTruckingController;
     use App\Http\Controllers\Api\ProsesAbsensiSupirController;
@@ -754,6 +755,11 @@ use App\Http\Controllers\Api\ReportAllController;
     Route::get('tarif/field_length', [TarifController::class, 'fieldLength']);
     Route::get('tarif/default', [TarifController::class, 'default']);
     Route::resource('tarif', TarifController::class);
+
+    Route::get('tarifrincian/setuprow', [TarifRincianController::class, 'setUpRow']);
+    Route::get('tarifrincian/setuprowshow/{id}', [TarifRincianController::class, 'setUpRowExcept']);
+    Route::resource('tarifrincian', TarifRincianController::class);
+
 
     Route::get('orderantrucking/combo', [OrderanTruckingController::class, 'combo']);
     Route::get('orderantrucking/field_length', [OrderanTruckingController::class, 'fieldLength']);

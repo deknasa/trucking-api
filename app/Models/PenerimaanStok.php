@@ -37,9 +37,9 @@ class PenerimaanStok extends MyModel
             'penerimaanstok.kodepenerimaan',
             'penerimaanstok.keterangan',
             'penerimaanstok.coa',
-            'parameterstatusformat.memo as statusformat',
-            'parameterstatusformat.text as statusformattext',
-            'parameterstatusformat.id as statusformatid',
+            'parameterformat.memo as format',
+            'parameterformat.text as formattext',
+            'parameterformat.id as formatid',
             'parameterstatushitungstok.memo as statushitungstok',
             'parameterstatushitungstok.text as statushitungstoktext',
             'parameterstatushitungstok.id as statushitungstokid',
@@ -47,7 +47,7 @@ class PenerimaanStok extends MyModel
             'penerimaanstok.created_at',
             'penerimaanstok.updated_at'
         )
-            ->leftJoin(DB::raw("parameter as parameterstatusformat with (readuncommitted)"), 'penerimaanstok.statusformat', '=', 'parameterstatusformat.id')
+            ->leftJoin(DB::raw("parameter as parameterformat with (readuncommitted)"), 'penerimaanstok.format', '=', 'parameterformat.id')
             ->leftJoin(DB::raw("parameter as parameterstatushitungstok with (readuncommitted)"), 'penerimaanstok.statushitungstok', '=', 'parameterstatushitungstok.id');
 
         // $query = $this->selectColumns($query);
@@ -106,7 +106,7 @@ class PenerimaanStok extends MyModel
             $table->longText('kodepenerimaan')->default('');
             $table->longText('keterangan')->default('');
             $table->string('coa', 50)->default('');
-            $table->unsignedBigInteger('statusformat')->default(0);
+            $table->unsignedBigInteger('format')->default(0);
             $table->integer('statushitungstok')->length(11)->default(0);
             $table->string('modifiedby', 50)->default('');
             $table->increments('position');
@@ -124,7 +124,7 @@ class PenerimaanStok extends MyModel
             'kodepenerimaan',
             'keterangan',
             'coa',
-            'statusformat',
+            'format',
             'statushitungstok',
             'modifiedby',
             'created_at',
@@ -144,7 +144,7 @@ class PenerimaanStok extends MyModel
                 "$this->table.kodepenerimaan",
                 "$this->table.keterangan",
                 "$this->table.coa",
-                "$this->table.statusformat",
+                "$this->table.format",
                 "$this->table.statushitungstok",
                 "$this->table.modifiedby",
                 "$this->table.created_at",
@@ -165,10 +165,10 @@ class PenerimaanStok extends MyModel
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statushitungstok') {
                             $query = $query->where('parameterstatushitungstok.text', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'statusformattext') {
-                            $query = $query->where('parameterstatusformat.text', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'statusformatid') {
-                            $query = $query->where('parameterstatusformat.id', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'formattext') {
+                            $query = $query->where('parameterformat.text', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'formatid') {
+                            $query = $query->where('parameterformat.id', 'LIKE', "%$filters[data]%");
                         } else {
                             $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
@@ -179,10 +179,10 @@ class PenerimaanStok extends MyModel
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statushitungstok') {
                             $query = $query->orWhere('parameterstatushitungstok.text', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'statusformattext') {
-                            $query = $query->orWhere('parameterstatusformat.text', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'statusformatid') {
-                            $query = $query->orWhere('parameterstatusformat.id', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'formattext') {
+                            $query = $query->orWhere('parameterformat.text', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'formatid') {
+                            $query = $query->orWhere('parameterformat.id', 'LIKE', "%$filters[data]%");
                         } else {
                             $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }

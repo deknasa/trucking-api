@@ -21,6 +21,9 @@ class AkunPusat extends MyModel
 
     public function get()
     {
+
+        $level =request()->level ?? '';
+
         $this->setRequestParameters();
 
         $query = DB::table($this->table)->from(
@@ -48,6 +51,10 @@ class AkunPusat extends MyModel
             ->leftJoin(DB::raw("parameter as parameter_statusaccountpayable with (readuncommitted)"), 'akunpusat.statusaccountpayable', '=', 'parameter_statusaccountpayable.id')
             ->leftJoin(DB::raw("parameter as parameter_statusneraca with (readuncommitted)"), 'akunpusat.statusneraca', '=', 'parameter_statusneraca.id')
             ->leftJoin(DB::raw("parameter as parameter_statuslabarugi with (readuncommitted)"), 'akunpusat.statuslabarugi', '=', 'parameter_statuslabarugi.id');
+            if ($level!='') {
+                $query->where('akunpusat.level','=',$level);
+                // dd($query->get());
+            }
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;

@@ -27,7 +27,7 @@ class StorePengeluaranStokRequest extends FormRequest
             "kodepengeluaran" => "required",
             "keterangan" => "required",
             "coa"=>"required",
-            "statusformat" => "required",
+            "format" => "required",
             "statushitungstok" => "required"
         ];
     }

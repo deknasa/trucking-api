@@ -35,13 +35,10 @@ class Tarif extends MyModel
             'parent.tujuan as parent_id',
             "$tempUpahsupir.kotasampai_id as upahsupir_id",
             'tarif.tujuan',
-            'container.keterangan as container_id',
-            'tarif.nominal',
             'parameter.memo as statusaktif',
             'sistemton.memo as statussistemton',
             'kota.kodekota as kota_id',
             'zona.zona as zona_id',
-            'tarif.nominalton',
             'tarif.tglmulaiberlaku',
             'p.memo as statuspenyesuaianharga',
             'tarif.modifiedby',
@@ -49,7 +46,6 @@ class Tarif extends MyModel
             'tarif.updated_at'
         )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'tarif.statusaktif', '=', 'parameter.id')
-            ->leftJoin(DB::raw("container with (readuncommitted)"), 'tarif.container_id', '=', 'container.id')
             ->leftJoin(DB::raw("kota with (readuncommitted)"), 'tarif.kota_id', '=', 'kota.id')
             ->leftJoin(DB::raw("zona with (readuncommitted)"), 'tarif.zona_id', '=', 'zona.id')
             ->leftJoin(DB::raw("$tempUpahsupir with (readuncommitted)"), 'tarif.upahsupir_id', '=', "$tempUpahsupir.id")
@@ -91,13 +87,10 @@ class Tarif extends MyModel
             DB::raw(
                 "$this->table.id,
              $this->table.tujuan,
-             container.keterangan as container_id,
-             $this->table.nominal,
              parameter.text as statusaktif,
              $this->table.statussistemton,
              kota.kodekota as kota_id,
              zona.zona as zona_id,
-             $this->table.nominalton,
              $this->table.tglmulaiberlaku,
              p.text as statuspenyesuaianharga,
              $this->table.modifiedby,
@@ -108,7 +101,6 @@ class Tarif extends MyModel
 
         )
             ->leftJoin('parameter', 'tarif.statusaktif', '=', 'parameter.id')
-            ->leftJoin('container', 'tarif.container_id', '=', 'container.id')
             ->leftJoin('kota', 'tarif.kota_id', '=', 'kota.id')
             ->leftJoin('zona', 'tarif.zona_id', '=', 'zona.id')
             ->leftJoin('parameter AS p', 'tarif.statuspenyesuaianharga', '=', 'p.id');
@@ -120,16 +112,12 @@ class Tarif extends MyModel
         Schema::create($temp, function ($table) {
             $table->bigInteger('id')->default('0');
             $table->string('tujuan', 200)->default('');
-            $table->string('container_id')->default('0');
-            $table->double('nominal', 15, 2)->default('0');
             $table->string('statusaktif')->default('0');
             $table->integer('statussistemton')->length(11)->default('0');
             $table->string('kota_id')->default('0');
             $table->string('zona_id')->nullable();
-            $table->double('nominalton', 15, 2)->default('0');
             $table->date('tglmulaiberlaku')->default('1900/1/1');
             $table->string('statuspenyesuaianharga')->default('0');
-
             $table->string('modifiedby', 50)->default('');
             $table->dateTime('created_at')->default('1900/1/1');
             $table->dateTime('updated_at')->default('1900/1/1');
@@ -141,7 +129,7 @@ class Tarif extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id', 'tujuan', 'container_id', 'nominal', 'statusaktif',  'statussistemton', 'kota_id', 'zona_id', 'nominalton', 'tglmulaiberlaku', 'statuspenyesuaianharga', 'modifiedby', 'created_at', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'tujuan',  'statusaktif',  'statussistemton', 'kota_id', 'zona_id',  'tglmulaiberlaku', 'statuspenyesuaianharga', 'modifiedby', 'created_at', 'updated_at'], $models);
 
 
         return  $temp;
@@ -228,22 +216,15 @@ class Tarif extends MyModel
             'tarif.upahsupir_id',
             "$tempUpahsupir.kotasampai_id as upahsupir",
             'tarif.tujuan',
-            'tarif.container_id',
-            'container.keterangan as container',
-            'tarif.nominal',
             'tarif.statusaktif',
             'tarif.statussistemton',
-            
             'tarif.kota_id',
             'kota.keterangan as kota',
             'tarif.zona_id',
             'zona.keterangan as zona',
-            
-            'tarif.nominalton',
             'tarif.tglmulaiberlaku',
             'tarif.statuspenyesuaianharga',
         )
-            ->leftJoin(DB::raw("container with (readuncommitted)"),'tarif.container_id','container.id')
             ->leftJoin(DB::raw("kota with (readuncommitted)"), 'tarif.kota_id', '=', 'kota.id')
             ->leftJoin(DB::raw("zona with (readuncommitted)"), 'tarif.zona_id', '=', 'zona.id')
             ->leftJoin(DB::raw("tarif as parent with (readuncommitted)"), 'tarif.parent_id', '=', 'parent.id')

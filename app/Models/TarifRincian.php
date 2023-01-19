@@ -26,18 +26,21 @@ class TarifRincian extends MyModel
 
     public function getAll($id)
     {
-        $query = DB::table('tarifrincian')->from(DB::raw("tarifrincian with (readuncommitted)"))
-        ->select(
-            'tarifrincian.container_id',
-            'container.keterangan as container',
-            'tarifrincian.nominal',
-        )
-            ->leftJoin('container', 'container.id', 'tarifrincian.container_id')
-            ->where('upahsupir_id', '=', $id);
+        $query = DB::table('container')->from(DB::raw("container with (readuncommitted)"))
+            ->select(
+                'container.id as container_id',
+                'container.keterangan as container',
+                DB::raw("isnull(tarifrincian.nominal,0) as nominal"),
+            )
+            ->leftJoin('tarifrincian', function ($join)  use ($id) {
+                $join->on('tarifrincian.container_id', '=', 'container.id')
+                    ->where('tarifrincian.tarif_id', '=', $id);
+            });
 
 
         $data = $query->get();
 
+    
         return $data;
     }
 
@@ -73,22 +76,22 @@ class TarifRincian extends MyModel
         $except = DB::table($temp)->select(
             "$temp.id",
         );
-        for ($i=0; $i < count($rincian); $i++) { 
+        for ($i = 0; $i < count($rincian); $i++) {
             $except->orWhere(function ($query) use ($rincian, $i) {
                 $query->where('containerId', $rincian[$i]['container_id']);
             });
         }
-        
+
         foreach ($except->get() as $e) {
             $arr[] = $e->id;
         }
-        
+
         //select semua keluali
         $query = DB::table($temp)->select(
             "$temp.id",
             "$temp.container",
             "$temp.containerId as container_id"
-        )->whereNotIn('id',$arr);
+        )->whereNotIn('id', $arr);
 
         // ->whereRaw(" NOT EXIST  ( select $temp.statuscontainer, $temp.container from   [$temp]  WHERE (statuscontainer = 'empty' and container = '20`') or (statuscontainer = 'FULL' and container = '40`') ) ");
         // ->whereRaw("(statuscontainer = 'FULL' and container = '40`')");

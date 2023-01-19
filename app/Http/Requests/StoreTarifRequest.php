@@ -25,12 +25,9 @@ class StoreTarifRequest extends FormRequest
     {
         return [
             'tujuan' => 'required',
-            'container' => 'required',
-            'nominal' => 'required|numeric|gt:0',
             'statusaktif' => 'required',
             'statussistemton' => 'required',
             'kota' => 'required',
-            'nominalton' => 'integer|min:0',
             'tglmulaiberlaku' => 'required',
             'statuspenyesuaianharga' => 'required',
         ];

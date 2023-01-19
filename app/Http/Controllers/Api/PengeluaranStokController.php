@@ -50,7 +50,7 @@ class PengeluaranStokController extends Controller
             $pengeluaranStok->kodepengeluaran = $request->kodepengeluaran;
             $pengeluaranStok->keterangan = $request->keterangan;
             $pengeluaranStok->coa = $request->coa;
-            $pengeluaranStok->statusformat = $request->statusformat;
+            $pengeluaranStok->format = $request->format;
             $pengeluaranStok->statushitungstok = $request->statushitungstok;
             $pengeluaranStok->modifiedby = auth('api')->user()->name;
             $request->sortname = $request->sortname ?? 'id';
@@ -118,7 +118,7 @@ class PengeluaranStokController extends Controller
             $pengeluaranStok->kodepengeluaran = $request->kodepengeluaran;
             $pengeluaranStok->keterangan = $request->keterangan;
             $pengeluaranStok->coa = $request->coa;
-            $pengeluaranStok->statusformat = $request->statusformat;
+            $pengeluaranStok->format = $request->format;
             $pengeluaranStok->statushitungstok = $request->statushitungstok;
             $pengeluaranStok->modifiedby = auth('api')->user()->name;
             $request->sortname = $request->sortname ?? 'id';
@@ -249,7 +249,7 @@ class PengeluaranStokController extends Controller
             ],
             [
                 'label' => 'status format',
-                'index' => 'statusformat',
+                'index' => 'format',
             ],
             [
                 'label' => 'status hitung stok',

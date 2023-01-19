@@ -22,7 +22,7 @@ class CreatePengeluarantruckingTable extends Migration
             $table->longText('kodepengeluaran')->default('');            
             $table->longText('keterangan')->default('');            
             $table->string('coa',50)->default('');            
-            $table->unsignedBigInteger('statusformat')->default(0);          
+            $table->unsignedBigInteger('format')->default(0);          
             $table->string('modifiedby',50)->default('');              
             $table->timestamps();
 

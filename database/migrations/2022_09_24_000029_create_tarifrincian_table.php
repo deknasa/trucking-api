@@ -25,11 +25,11 @@ class CreateTarifrincianTable extends Migration
             $table->timestamps();
 
             $table->foreign('tarif_id', 'tarif_tarif_tarif_id_foreign')->references('id')->on('tarif')->onDelete('cascade');
-            $table->foreign('container_id', 'tarif_container_container_id_foreign')->references('id')->on('container');
+            $table->foreign('container_id', 'tarif_container2_container_id_foreign')->references('id')->on('container');
 
         });
 
-        DB::statement("ALTER TABLE tarifrincian NOCHECK CONSTRAINT tarif_container_container_id_foreign");
+        DB::statement("ALTER TABLE tarifrincian NOCHECK CONSTRAINT tarif_container2_container_id_foreign");
     }
 
     /**
