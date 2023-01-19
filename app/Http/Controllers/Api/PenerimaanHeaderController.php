@@ -91,7 +91,7 @@ class PenerimaanHeaderController extends Controller
 
             $penerimaanHeader = new PenerimaanHeader();
             $penerimaanHeader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
-            $penerimaanHeader->pelanggan_id = $request->pelanggan_id;
+            $penerimaanHeader->pelanggan_id = $request->pelanggan_id ?? 0;
             $penerimaanHeader->postingdari = $request->postingdari ?? 'ENTRY PENERIMAAN KAS/BANK';
             $penerimaanHeader->diterimadari = $request->diterimadari ?? '';
             $penerimaanHeader->tgllunas = date('Y-m-d', strtotime($request->tgllunas));
@@ -106,7 +106,7 @@ class PenerimaanHeaderController extends Controller
             $penerimaanHeader->statusformat = $querysubgrppenerimaan->statusformatpenerimaan;
             $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
             $penerimaanHeader->nobukti = $nobukti;
-
+    
             $penerimaanHeader->save();
 
             if ($tanpaprosesnobukti == 1) {
@@ -130,19 +130,17 @@ class PenerimaanHeaderController extends Controller
                 $detaillog = [];
 
                 for ($i = 0; $i < count($request->nominal_detail); $i++) {
-
-
+              
                     $datadetail = [
                         'penerimaan_id' => $penerimaanHeader->id,
                         'nobukti' => $penerimaanHeader->nobukti,
-                        'nowarkat' => $request->nowarkat[$i],
+                        'nowarkat' => $request->nowarkat[$i] ?? '',
                         'tgljatuhtempo' =>  date('Y-m-d', strtotime($request->tgljatuhtempo[$i])),
                         'nominal' => $request->nominal_detail[$i],
                         'coadebet' => $request->coadebet[$i],
                         'coakredit' => $querysubgrppenerimaan->coa,
                         'keterangan' => $request->keterangan_detail[$i],
                         'bank_id' => $penerimaanHeader->bank_id,
-                        'pelanggan_id' => $penerimaanHeader->pelanggan_id,
                         'invoice_nobukti' => $request->invoice_nobukti[$i] ?? '-',
                         'bankpelanggan_id' => $request->bankpelanggan_id[$i] ?? '',
                         'jenisbiaya' => $request->jenisbiaya[$i] ?? '',
@@ -152,16 +150,19 @@ class PenerimaanHeaderController extends Controller
                     ];
 
                     $data = new StorePenerimaanDetailRequest($datadetail);
+                    
                     $datadetails = app(PenerimaanDetailController::class)->store($data);
-
+                    
                     if ($datadetails['error']) {
                         return response($datadetails, 422);
                     } else {
                         $iddetail = $datadetails['id'];
                         $tabeldetail = $datadetails['tabel'];
                     }
+                    
                     $detaillog[] = $datadetails['detail']->toArray();
                 }
+               
 
                 $datalogtrail = [
                     'namatabel' => strtoupper($tabeldetail),
@@ -300,7 +301,7 @@ class PenerimaanHeaderController extends Controller
                 ->where('grp', 'STATUS BERKAS')->where('text', 'TIDAK ADA BERKAS')->first();
 
             $penerimaanheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
-            $penerimaanheader->pelanggan_id = $request->pelanggan_id;
+            $penerimaanheader->pelanggan_id = $request->pelanggan_id ?? 0 ;
             $penerimaanheader->diterimadari = $request->diterimadari ?? '';
             $penerimaanheader->tgllunas = date('Y-m-d', strtotime($request->tgllunas));
             $penerimaanheader->cabang_id = $request->cabang_id ?? 0;
@@ -311,6 +312,7 @@ class PenerimaanHeaderController extends Controller
             $penerimaanheader->statusberkas = $statusBerkas->id ?? 0;
             $penerimaanheader->modifiedby = auth('api')->user()->name;
 
+         
             if ($penerimaanheader->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($penerimaanheader->getTable()),
@@ -338,14 +340,13 @@ class PenerimaanHeaderController extends Controller
                 $datadetail = [
                     'penerimaan_id' => $penerimaanheader->id,
                     'nobukti' => $penerimaanheader->nobukti,
-                    'nowarkat' => $request->nowarkat[$i],
+                    'nowarkat' => $request->nowarkat[$i] ??  '',
                     'tgljatuhtempo' =>  date('Y-m-d', strtotime($request->tgljatuhtempo[$i])),
                     'nominal' => $request->nominal_detail[$i],
                     'coadebet' => $request->coadebet[$i],
                     'coakredit' => $querysubgrppenerimaan->coa,
                     'keterangan' => $request->keterangan_detail[$i],
                     'bank_id' => $penerimaanheader->bank_id,
-                    'pelanggan_id' => $penerimaanheader->pelanggan_id,
                     'invoice_nobukti' => $request->invoice_nobukti[$i] ?? '-',
                     'bankpelanggan_id' => $request->bankpelanggan_id[$i] ?? '',
                     'jenisbiaya' => $request->jenisbiaya[$i] ?? '',
