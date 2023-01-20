@@ -42,6 +42,7 @@ class PenerimaanHeader extends MyModel
                 'penerimaanheader.nobukti',
                 'penerimaanheader.tglbukti',
                 'pelanggan.namapelanggan as pelanggan_id',
+                'agen.namaagen as agen_id',
                 'bank.namabank as bank_id',
                 'penerimaanheader.postingdari',
                 'penerimaanheader.diterimadari',
@@ -67,6 +68,7 @@ class PenerimaanHeader extends MyModel
             ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'penerimaanheader.statusapproval', 'statusapproval.id')
             ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'penerimaanheader.pelanggan_id', 'pelanggan.id')
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'penerimaanheader.bank_id', 'bank.id')
+            ->leftJoin(DB::raw("agen with (readuncommitted)"), 'penerimaanheader.agen_id', 'agen.id')
             ->leftJoin(DB::raw("parameter as statuskas with (readuncommitted)"), 'penerimaanheader.statuskas', 'statuskas.id')
             ->leftJoin(DB::raw("parameter as statusberkas with (readuncommitted)"), 'penerimaanheader.statusberkas', 'statusberkas.id')
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'penerimaanheader.statuscetak', 'statuscetak.id')
@@ -212,9 +214,9 @@ class PenerimaanHeader extends MyModel
     {
         $data = PenerimaanHeader::from(DB::raw("penerimaanheader with (readuncommitted)"))
             ->select('penerimaanheader.id', 'penerimaanheader.nobukti', 'penerimaanheader.tglbukti', 'penerimaanheader.pelanggan_id', 'pelanggan.namapelanggan as pelanggan', 'penerimaanheader.statuscetak', 'penerimaanheader.diterimadari', 'penerimaanheader.tgllunas', 'penerimaanheader.cabang_id', 'cabang.namacabang as cabang', 'penerimaanheader.statuskas', 'penerimaanheader.bank_id', 'bank.namabank as bank')
-            ->join(DB::raw("pelanggan with (readuncommitted)"), 'penerimaanheader.pelanggan_id', 'pelanggan.id')
-            ->join(DB::raw("bank with (readuncommitted)"), 'penerimaanheader.bank_id', 'bank.id')
-            ->join(DB::raw("cabang with (readuncommitted)"), 'penerimaanheader.cabang_id', 'cabang.id')
+            ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'penerimaanheader.pelanggan_id', 'pelanggan.id')
+            ->leftJoin(DB::raw("bank with (readuncommitted)"), 'penerimaanheader.bank_id', 'bank.id')
+            ->leftJoin(DB::raw("cabang with (readuncommitted)"), 'penerimaanheader.cabang_id', 'cabang.id')
             ->where('penerimaanheader.id', $id)
             ->first();
 
@@ -270,12 +272,12 @@ class PenerimaanHeader extends MyModel
             $table->bigInteger('id')->default('0');
             $table->string('nobukti', 1000)->default('');
             $table->date('tglbukti', 1000)->default('1900/1/1');
-            $table->string('pelanggan_id', 1000)->default('');
+            $table->string('pelanggan_id', 1000)->nullable();
             $table->string('bank_id', 1000)->default('');
             $table->string('postingdari', 1000)->default('');
             $table->string('diterimadari', 1000)->default('');
             $table->date('tgllunas', 1000)->default('1900/1/1');
-            $table->string('cabang_id', 1000)->default('');
+            $table->string('cabang_id', 1000)->nullable();
             $table->string('statuskas', 1000)->default('');
             $table->string('statusapproval', 1000)->default('');
             $table->string('userapproval', 1000)->default('');

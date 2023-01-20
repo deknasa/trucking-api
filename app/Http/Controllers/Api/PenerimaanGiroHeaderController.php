@@ -45,28 +45,35 @@ class PenerimaanGiroHeaderController extends Controller
         DB::BeginTransaction();
         try {
 
-            $group = 'PENERIMAAN GIRO BUKTI';
-            $subgroup = 'PENERIMAAN GIRO BUKTI';
+            $tanpaprosesnobukti = $request->tanpaprosesnobukti ?? 0;
+            if ($tanpaprosesnobukti == 0) {
+                $group = 'PENERIMAAN GIRO BUKTI';
+                $subgroup = 'PENERIMAAN GIRO BUKTI';
 
-            $format = DB::table('parameter')
-                ->where('grp', $group)
-                ->where('subgrp', $subgroup)
-                ->first();
+                $format = DB::table('parameter')
+                    ->where('grp', $group)
+                    ->where('subgrp', $subgroup)
+                    ->first();
 
-            $content = new Request();
-            $content['group'] = $group;
-            $content['subgroup'] = $subgroup;
-            $content['table'] = 'penerimaangiroheader';
-            $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
+                $content = new Request();
+                $content['group'] = $group;
+                $content['subgroup'] = $subgroup;
+                $content['table'] = 'penerimaangiroheader';
+                $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
+
+                $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
+            }
 
             $penerimaanGiro = new PenerimaanGiroHeader();
+
             $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
                 ->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
             $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
                 ->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
 
             $penerimaanGiro->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
-            $penerimaanGiro->pelanggan_id = $request->pelanggan_id;
+            $penerimaanGiro->pelanggan_id = $request->pelanggan_id ?? '';
+            $penerimaanGiro->agen_id = $request->agen_id ?? '';
             $penerimaanGiro->postingdari = $request->postingdari ?? 'ENTRY PENERIMAAN GIRO';
             $penerimaanGiro->diterimadari = $request->diterimadari;
             $penerimaanGiro->tgllunas = date('Y-m-d', strtotime($request->tgllunas));
@@ -74,18 +81,17 @@ class PenerimaanGiroHeaderController extends Controller
             $penerimaanGiro->statusapproval = $request->statusapproval ?? $statusApproval->id;
             $penerimaanGiro->userapproval = '';
             $penerimaanGiro->tglapproval = '';
-            $penerimaanGiro->statusformat = $format->id;
+            $penerimaanGiro->statusformat = $request->statusformat ?? $format->id;
             $penerimaanGiro->statuscetak = $statusCetak->id;
             $penerimaanGiro->modifiedby = auth('api')->user()->name;
 
-            $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
-            $penerimaanGiro->nobukti = $nobukti;
+            $penerimaanGiro->nobukti = ($tanpaprosesnobukti == 0) ?  $nobukti : $request->nobukti;
 
             $penerimaanGiro->save();
 
             $logTrail = [
                 'namatabel' => strtoupper($penerimaanGiro->getTable()),
-                'postingdari' => 'ENTRY PENERIMAAN GIRO HEADER',
+                'postingdari' => $request->postingdari ?? 'ENTRY PENERIMAAN GIRO HEADER',
                 'idtrans' => $penerimaanGiro->id,
                 'nobuktitrans' => $penerimaanGiro->nobukti,
                 'aksi' => 'ENTRY',
@@ -101,28 +107,32 @@ class PenerimaanGiroHeaderController extends Controller
             $coakredit = Parameter::from(DB::raw("parameter with (readuncommitted)"))
                 ->select('memo')->where('grp', 'JURNAL PENERIMAAN GIRO')->where('subgrp', 'KREDIT')->first();
 
-                $memodebet = json_decode($coadebet->memo, true);                
-                $memokredit = json_decode($coakredit->memo, true);                
+            $memodebet = json_decode($coadebet->memo, true);
+            $memokredit = json_decode($coakredit->memo, true);
 
             $detaillog = [];
-            for ($i = 0; $i < count($request->nominal); $i++) {
+            if ($request->datadetail != '') {
+                $counter = $request->datadetail;
+            } else {
+                $counter = $request->nominal;
+            }
+            for ($i = 0; $i < count($counter); $i++) {
 
                 $datadetail = [
                     'penerimaangiro_id' => $penerimaanGiro->id,
                     'nobukti' => $penerimaanGiro->nobukti,
-                    'nowarkat' => $request->nowarkat[$i],
-                    'tgljatuhtempo' => date('Y-m-d', strtotime($request->tgljatuhtempo[$i])),
-                    'nominal' => $request->nominal[$i],
+                    'nowarkat' => ($request->datadetail != '') ? $request->nowarkat : $request->nowarkat[$i],
+                    'tgljatuhtempo' => ($request->datadetail != '') ? $penerimaanGiro->tglbukti : date('Y-m-d', strtotime($request->tgljatuhtempo[$i])),
+                    'nominal' => ($request->datadetail != '') ? $request->datadetail[$i]['nominal'] : $request->nominal[$i],
                     'coadebet' => $memodebet['JURNAL'],
                     'coakredit' => $memokredit['JURNAL'],
-                    'keterangan' => $request->keterangan_detail[$i],
-                    'bank_id' => $request->bank_id[$i],
-                    'pelanggan_id' => $penerimaanGiro->pelanggan_id,
-                    'invoice_nobukti' => $request->invoice_nobukti[$i] ?? '-',
+                    'keterangan' => ($request->datadetail != '') ? $request->datadetail[$i]['keterangan'] : $request->keterangan_detail[$i],
+                    'bank_id' => ($request->datadetail != '') ? $request->bank_id : $request->bank_id[$i],
+                    'invoice_nobukti' => ($request->datadetail != '') ? $request->datadetail[$i]['invoice_nobukti'] : $request->invoice_nobukti[$i] ?? '-',
                     'bankpelanggan_id' => $request->bankpelanggan_id[$i] ?? '',
                     'jenisbiaya' => $request->jenisbiaya[$i] ?? '',
-                    'pelunasanpiutang_nobukti' => $request->pelunasanpiutang_nobukti[$i] ?? '-',
-                    'bulanbeban' => date('Y-m-d', strtotime($request->bulanbeban[$i])) ?? '',
+                    'pelunasanpiutang_nobukti' => ($request->datadetail != '') ? $request->datadetail[$i]['nobukti'] : $request->pelunasanpiutang_nobukti[$i] ?? '-',
+                    'bulanbeban' => ($request->datadetail != '') ? '' : date('Y-m-d', strtotime($request->bulanbeban[$i])) ?? '',
                     'modifiedby' => $penerimaanGiro->modifiedby,
                 ];
 
@@ -143,7 +153,7 @@ class PenerimaanGiroHeaderController extends Controller
 
             $datalogtrail = [
                 'namatabel' => strtoupper($tabeldetail),
-                'postingdari' => 'ENTRY PENERIMAAN GIRO DETAIL',
+                'postingdari' => $request->postingdari ?? 'ENTRY PENERIMAAN GIRO DETAIL',
                 'idtrans' =>  $storedLogTrail['id'],
                 'nobuktitrans' => $penerimaanGiro->nobukti,
                 'aksi' => 'ENTRY',
@@ -162,8 +172,8 @@ class PenerimaanGiroHeaderController extends Controller
                 $jurnalHeader = [
                     'tanpaprosesnobukti' => 1,
                     'nobukti' => $penerimaanGiro->nobukti,
-                    'tgl' => date('Y-m-d', strtotime($request->tglbukti)),
-                    'postingdari' => 'ENTRY PENERIMAAN GIRO',
+                    'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
+                    'postingdari' => ($request->postingdari) ? 'ENTRY PENERIMAAN GIRO DARI '.$request->postingdari : 'ENTRY PENERIMAAN GIRO',
                     'statusapproval' => $statusApp->id,
                     'userapproval' => "",
                     'tglapproval' => "",
@@ -172,24 +182,24 @@ class PenerimaanGiroHeaderController extends Controller
                 ];
                 $jurnaldetail = [];
 
-                for ($i = 0; $i < count($request->nominal); $i++) {
+                for ($i = 0; $i < count($counter); $i++) {
                     $detail = [];
                     $jurnalDetail = [
                         [
                             'nobukti' => $penerimaanGiro->nobukti,
-                            'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
+                            'tglbukti' => date('Y-m-d', strtotime($penerimaanGiro->tglbukti)),
                             'coa' =>  $memodebet['JURNAL'],
-                            'nominal' => $request->nominal[$i],
-                            'keterangan' => $request->keterangan_detail[$i],
+                            'nominal' => ($request->datadetail != '') ? $request->datadetail[$i]['nominal'] : $request->nominal[$i],
+                            'keterangan' => ($request->datadetail != '') ? $request->datadetail[$i]['keterangan'] : $request->keterangan_detail[$i],
                             'modifiedby' => auth('api')->user()->name,
                             'baris' => $i,
                         ],
                         [
                             'nobukti' => $penerimaanGiro->nobukti,
-                            'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
+                            'tglbukti' => date('Y-m-d', strtotime($penerimaanGiro->tglbukti)),
                             'coa' =>  $memokredit['JURNAL'],
-                            'nominal' => -$request->nominal[$i],
-                            'keterangan' => $request->keterangan_detail[$i],
+                            'nominal' => ($request->datadetail != '') ? '-' . $request->datadetail[$i]['nominal'] : '-' . $request->nominal[$i],
+                            'keterangan' => ($request->datadetail != '') ? $request->datadetail[$i]['keterangan'] : $request->keterangan_detail[$i],
                             'modifiedby' => auth('api')->user()->name,
                             'baris' => $i,
                         ]
@@ -243,16 +253,25 @@ class PenerimaanGiroHeaderController extends Controller
         DB::beginTransaction();
 
         try {
-            $penerimaangiroheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
-            $penerimaangiroheader->pelanggan_id = $request->pelanggan_id;
-            $penerimaangiroheader->diterimadari = $request->diterimadari;
-            $penerimaangiroheader->tgllunas = date('Y-m-d', strtotime($request->tgllunas));
-            $penerimaangiroheader->modifiedby = auth('api')->user()->name;
+            $isUpdate = $request->isUpdate ?? 0;
+
+            if ($isUpdate == 0) {
+
+                $penerimaangiroheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
+                $penerimaangiroheader->pelanggan_id = $request->pelanggan_id;
+                $penerimaangiroheader->agen_id = $request->agen_id ?? '';
+                $penerimaangiroheader->diterimadari = $request->diterimadari;
+                $penerimaangiroheader->tgllunas = date('Y-m-d', strtotime($request->tgllunas));
+                $penerimaangiroheader->modifiedby = auth('api')->user()->name;
+            }else{
+                $penerimaangiroheader->agen_id = $request->agen_id;
+                $penerimaangiroheader->modifiedby = auth('api')->user()->name;
+            }
 
             if ($penerimaangiroheader->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($penerimaangiroheader->getTable()),
-                    'postingdari' => 'EDIT PENERIMAAN GIRO HEADER',
+                    'postingdari' => $request['postingdari'] ?? 'EDIT PENERIMAAN GIRO HEADER',
                     'idtrans' => $penerimaangiroheader->id,
                     'nobuktitrans' => $penerimaangiroheader->nobukti,
                     'aksi' => 'EDIT',
@@ -271,34 +290,32 @@ class PenerimaanGiroHeaderController extends Controller
             $coakredit = Parameter::from(DB::raw("parameter with (readuncommitted)"))
                 ->select('memo')->where('grp', 'JURNAL PENERIMAAN GIRO')->where('subgrp', 'KREDIT')->first();
 
-                $memodebet = json_decode($coadebet->memo, true);                
-                $memokredit = json_decode($coakredit->memo, true);   
+            $memodebet = json_decode($coadebet->memo, true);
+            $memokredit = json_decode($coakredit->memo, true);
 
+            if ($request->datadetail != '') {
+                $counter = $request->datadetail;
+            } else {
+                $counter = $request->nominal;
+            }
             $detaillog = [];
-            for ($i = 0; $i < count($request->nominal); $i++) {
-                $invoice = '-';
-                $pelunasanpiutang = '-';
-                if (isset($request->pelunasan_id[$i])) {
-                    $getLunas = DB::table('pelunasanpiutangdetail')->select('invoice_nobukti', 'nobukti')->where('id', $request->pelunasan_id[$i])->first();
-                    $invoice = $getLunas->invoice_nobukti;
-                    $pelunasanpiutang = $getLunas->nobukti;
-                }
+            for ($i = 0; $i < count($counter); $i++) {
+                
                 $datadetail = [
                     'penerimaangiro_id' => $penerimaangiroheader->id,
                     'nobukti' => $penerimaangiroheader->nobukti,
-                    'nowarkat' => $request->nowarkat[$i],
-                    'tgljatuhtempo' => date('Y-m-d', strtotime($request->tgljatuhtempo[$i])),
-                    'nominal' => $request->nominal[$i],
+                    'nowarkat' => ($request->datadetail != '') ? $request->nowarkat : $request->nowarkat[$i],
+                    'tgljatuhtempo' => ($request->datadetail != '') ? $penerimaangiroheader->tglbukti : date('Y-m-d', strtotime($request->tgljatuhtempo[$i])),
+                    'nominal' => ($request->datadetail != '') ? $request->datadetail[$i]['nominal'] : $request->nominal[$i],
                     'coadebet' => $memodebet['JURNAL'],
                     'coakredit' => $memokredit['JURNAL'],
-                    'keterangan' => $request->keterangan_detail[$i],
-                    'bank_id' => $request->bank_id[$i],
-                    'pelanggan_id' => $penerimaangiroheader->pelanggan_id,
-                    'invoice_nobukti' => $invoice,
+                    'keterangan' => ($request->datadetail != '') ? $request->datadetail[$i]['keterangan'] : $request->keterangan_detail[$i],
+                    'bank_id' => ($request->datadetail != '') ? $request->bank_id : $request->bank_id[$i],
+                    'invoice_nobukti' => ($request->datadetail != '') ? $request->datadetail[$i]['invoice_nobukti'] : '-',
                     'bankpelanggan_id' => $request->bankpelanggan_id[$i] ?? '',
                     'jenisbiaya' => $request->jenisbiaya[$i] ?? '',
-                    'pelunasanpiutang_nobukti' => $pelunasanpiutang,
-                    'bulanbeban' => date('Y-m-d', strtotime($request->bulanbeban[$i])) ?? '',
+                    'pelunasanpiutang_nobukti' => ($request->datadetail != '') ? $request->datadetail[$i]['nobukti'] : '-',
+                    'bulanbeban' => ($request->datadetail != '') ? '' : date('Y-m-d', strtotime($request->bulanbeban[$i])) ?? '',
                     'modifiedby' => $penerimaangiroheader->modifiedby,
                 ];
 
@@ -319,7 +336,7 @@ class PenerimaanGiroHeaderController extends Controller
 
             $datalogtrail = [
                 'namatabel' => strtoupper($tabeldetail),
-                'postingdari' => 'EDIT PENERIMAAN GIRO DETAIL',
+                'postingdari' => $request['postingdari'] ?? 'EDIT PENERIMAAN GIRO DETAIL',
                 'idtrans' =>  $storedLogTrail['id'],
                 'nobuktitrans' => $penerimaangiroheader->nobukti,
                 'aksi' => 'EDIT',
@@ -339,8 +356,8 @@ class PenerimaanGiroHeaderController extends Controller
             $jurnalHeader = [
                 'tanpaprosesnobukti' => 1,
                 'nobukti' => $penerimaangiroheader->nobukti,
-                'tgl' => date('Y-m-d', strtotime($request->tglbukti)),
-                'postingdari' => 'ENTRY PENERIMAAN GIRO',
+                'tglbukti' => ($request->datadetail != '') ? $penerimaangiroheader->tglbukti : date('Y-m-d', strtotime($request->tglbukti)),
+                'postingdari' => ($request->postingdari) ? 'EDIT PENERIMAAN GIRO DARI '.$request->postingdari : 'EDIT PENERIMAAN GIRO',
                 'statusapproval' => $statusApp->id,
                 'userapproval' => "",
                 'tglapproval' => "",
@@ -349,24 +366,24 @@ class PenerimaanGiroHeaderController extends Controller
             ];
             $jurnaldetail = [];
 
-            for ($i = 0; $i < count($request->nominal); $i++) {
+            for ($i = 0; $i < count($counter); $i++) {
                 $detail = [];
                 $jurnalDetail = [
                     [
                         'nobukti' => $penerimaangiroheader->nobukti,
-                        'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
+                        'tglbukti' => ($request->datadetail != '') ? $penerimaangiroheader->tglbukti : date('Y-m-d', strtotime($request->tglbukti)),
                         'coa' =>  $memodebet['JURNAL'],
-                        'nominal' => $request->nominal[$i],
-                        'keterangan' => $request->keterangan_detail[$i],
+                        'nominal' => ($request->datadetail != '') ? $request->datadetail[$i]['nominal'] : $request->nominal[$i],
+                        'keterangan' =>($request->datadetail != '') ? $request->datadetail[$i]['keterangan'] :  $request->keterangan_detail[$i],
                         'modifiedby' => auth('api')->user()->name,
                         'baris' => $i,
                     ],
                     [
                         'nobukti' => $penerimaangiroheader->nobukti,
-                        'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
+                        'tglbukti' => ($request->datadetail != '') ? $penerimaangiroheader->tglbukti : date('Y-m-d', strtotime($request->tglbukti)),
                         'coa' =>  $memokredit['JURNAL'],
-                        'nominal' => -$request->nominal[$i],
-                        'keterangan' => $request->keterangan_detail[$i],
+                        'nominal' => ($request->datadetail != '') ? '-'.$request->datadetail[$i]['nominal'] : '-'.$request->nominal[$i],
+                        'keterangan' => ($request->datadetail != '') ? $request->datadetail[$i]['keterangan'] : $request->keterangan_detail[$i],
                         'modifiedby' => auth('api')->user()->name,
                         'baris' => $i,
                     ]
@@ -567,7 +584,7 @@ class PenerimaanGiroHeaderController extends Controller
 
             $datalogtrail = [
                 'namatabel' => strtoupper($datadetails['tabel']),
-                'postingdari' => 'ENTRY PENERIMAAN GIRO',
+                'postingdari' => $header['postingdari'] ?? 'ENTRY PENERIMAAN GIRO',
                 'idtrans' => $jurnals->original['idlogtrail'],
                 'nobuktitrans' => $header['nobukti'],
                 'aksi' => 'ENTRY',

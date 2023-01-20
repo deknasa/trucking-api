@@ -50,6 +50,25 @@ class Parameter extends MyModel
         return $data;
     }
 
+    public function getcoa($filter)
+    {
+        $getcoa = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->select('memo')->where('kelompok', $filter)->get();
+        $jurnal = [];
+        foreach ($getcoa as $key => $coa) {
+            $a = 0;
+            $memo = json_decode($coa->memo, true);
+            
+            $ketcoa = AkunPusat::from(DB::raw("akunpusat with (readuncommitted)"))
+            ->select('keterangancoa')->where('coa', $memo['JURNAL'])->first();
+            $jurnal[] = [
+                'coa' => $memo['JURNAL'],
+                'keterangancoa' => $ketcoa->keterangancoa
+            ];
+        }
+         
+        return $jurnal;
+    }
     public function findAll($id)
     {
         $query = DB::table('parameter as A')->from(

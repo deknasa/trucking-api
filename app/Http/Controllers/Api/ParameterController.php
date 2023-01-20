@@ -218,6 +218,15 @@ class ParameterController extends Controller
         }
     }
 
+    public function getcoa(Request $request)
+    {
+        
+        $parameter = new Parameter();
+        return response([
+            'data' => $parameter->getcoa($request->filter)
+        ]);
+    }
+
     public function fieldLength()
     {
         $data = [];

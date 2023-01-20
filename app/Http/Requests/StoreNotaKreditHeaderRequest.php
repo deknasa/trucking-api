@@ -25,12 +25,8 @@ class StoreNotaKreditHeaderRequest extends FormRequest
     {
         return [
             "tglbukti"=>"required",
-            // "tglapproval"=>"required",
             "tgllunas"=>"required",
-            "pelunasanpiutang_nobukti"=>"required",
-            "keterangan"=>"required",
-            // "statusformat"=>"required",
-            // "statusapproval"=>"required",
+            "pelunasanpiutang_nobukti"=>"required"
         ];
     }
 }

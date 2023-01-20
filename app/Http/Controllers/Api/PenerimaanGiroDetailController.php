@@ -49,7 +49,6 @@ class PenerimaanGiroDetailController extends Controller
                     'detail.coadebet',
                     'detail.coakredit',
                     'bank.namabank as bank_id',
-                    'pelanggan.namapelanggan as pelanggan_id',
                     'bankpelanggan.namabank as bankpelanggan_id',
                     'detail.invoice_nobukti',
                     'detail.pelunasanpiutang_nobukti',
@@ -61,7 +60,6 @@ class PenerimaanGiroDetailController extends Controller
                 ->leftJoin(DB::raw("penerimaangiroheader as header with (readuncommitted)"),'header.id','detail.penerimaangiro_id')
                 ->leftJoin(DB::raw("pelanggan as ph with (readuncommitted)"), 'header.pelanggan_id', 'ph.id')
                 ->leftJoin(DB::raw("bank with (readuncommitted)"), 'detail.bank_id', 'bank.id')
-                ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'detail.pelanggan_id', 'pelanggan.id')
                 ->leftJoin(DB::raw("bankpelanggan with (readuncommitted)"), 'detail.bankpelanggan_id', 'bankpelanggan.id');
                 
                 $pengeluaranTruckingDetail = $query->get();
@@ -73,7 +71,6 @@ class PenerimaanGiroDetailController extends Controller
                     'detail.coadebet',
                     'detail.coakredit',
                     'bank.namabank as bank_id',
-                    'pelanggan.namapelanggan as pelanggan_id',
                     'bankpelanggan.namabank as bankpelanggan_id',
                     'detail.invoice_nobukti',
                     'detail.pelunasanpiutang_nobukti',
@@ -83,7 +80,6 @@ class PenerimaanGiroDetailController extends Controller
                     'detail.nominal'
                 )
                 ->leftJoin(DB::raw("bank with (readuncommitted)"), 'detail.bank_id', 'bank.id')
-                ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'detail.pelanggan_id', 'pelanggan.id')
                 ->leftJoin(DB::raw("bankpelanggan with (readuncommitted)"), 'detail.bankpelanggan_id', 'bankpelanggan.id');
                 
                 $pengeluaranTruckingDetail = $query->get();
@@ -117,7 +113,6 @@ class PenerimaanGiroDetailController extends Controller
             $penerimaangiroDetail->coakredit = $request->coakredit;
             $penerimaangiroDetail->keterangan = $request->keterangan;
             $penerimaangiroDetail->bank_id = $request->bank_id;
-            $penerimaangiroDetail->pelanggan_id = $request->pelanggan_id;
             $penerimaangiroDetail->invoice_nobukti = $request->invoice_nobukti;
             $penerimaangiroDetail->bankpelanggan_id = $request->bankpelanggan_id;
             $penerimaangiroDetail->jenisbiaya = $request->jenisbiaya;

@@ -24,8 +24,8 @@ class StorePenerimaanDetailRequest extends FormRequest
     public function rules()
     {
         return [
-            'coadebet' => 'required|array',
-            'coadebet.*' => 'required',
+            'coakredit' => 'required|array',
+            'coakredit.*' => 'required',
             'tgljatuhtempo' => 'required|array',
             'tgljatuhtempo.*' => 'required',
             'nowarkat' => 'required|array',

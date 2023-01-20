@@ -60,7 +60,6 @@ class PenerimaanDetailController extends Controller
                     'detail.nominal',
                     'detail.keterangan as keterangan_detail',
                     'bd.namabank as bank_detail',
-                    'pd.namapelanggan as pelanggan_detail',
                     'detail.invoice_nobukti',
                     'bpd.namabank as bankpelanggan_detail',
                     'detail.jenisbiaya',
@@ -73,7 +72,6 @@ class PenerimaanDetailController extends Controller
                     ->leftJoin(DB::raw("bank with (readuncommitted)"), 'bank.id', 'header.bank_id')
                     ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'pelanggan.id', 'header.pelanggan_id')
                     ->leftJoin(DB::raw("bank as bd with (readuncommitted)"), 'bd.id', '=', 'detail.bank_id')
-                    ->leftJoin(DB::raw("pelanggan as pd with (readuncommitted)"), 'pd.id', '=', 'detail.pelanggan_id')
                     ->leftJoin(DB::raw("bankpelanggan as bpd with (readuncommitted)"), 'bpd.id', '=', 'detail.bankpelanggan_id');
                 $penerimaanDetail = $query->get();
             } else {
@@ -84,7 +82,6 @@ class PenerimaanDetailController extends Controller
                     'detail.nominal',
                     'detail.keterangan',
                     'bank.namabank as bank_id',
-                    'pelanggan.namapelanggan as pelanggan_id', //
                     'detail.invoice_nobukti',
                     'bankpelanggan.namabank as bankpelanggan_id', ///
                     'detail.jenisbiaya',
@@ -96,7 +93,6 @@ class PenerimaanDetailController extends Controller
 
                 )
                     ->leftJoin(DB::raw("bank with (readuncommitted)"), 'bank.id', '=', 'detail.bank_id')
-                    ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'pelanggan.id', '=', 'detail.pelanggan_id')
                     ->leftJoin(DB::raw("bankpelanggan with (readuncommitted)"), 'bankpelanggan.id', '=', 'detail.bankpelanggan_id');
 
                     $totalRows =  $query->count();
@@ -133,7 +129,6 @@ class PenerimaanDetailController extends Controller
             $penerimaanDetail->coakredit = $request->coakredit;
             $penerimaanDetail->keterangan = $request->keterangan;
             $penerimaanDetail->bank_id = $request->bank_id;
-            $penerimaanDetail->pelanggan_id = $request->pelanggan_id;
             $penerimaanDetail->invoice_nobukti = $request->invoice_nobukti;
             $penerimaanDetail->bankpelanggan_id = $request->bankpelanggan_id;
             $penerimaanDetail->jenisbiaya = $request->jenisbiaya;
@@ -142,7 +137,6 @@ class PenerimaanDetailController extends Controller
             $penerimaanDetail->modifiedby = auth('api')->user()->name;
             
             $penerimaanDetail->save();
-            
 
             DB::commit();
 
