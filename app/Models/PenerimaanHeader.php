@@ -66,7 +66,6 @@ class PenerimaanHeader extends MyModel
             ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'penerimaanheader.pelanggan_id', 'pelanggan.id')
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'penerimaanheader.bank_id', 'bank.id')
             ->leftJoin(DB::raw("agen with (readuncommitted)"), 'penerimaanheader.agen_id', 'agen.id')
-            ->leftJoin(DB::raw("parameter as statuskas with (readuncommitted)"), 'penerimaanheader.statuskas', 'statuskas.id')
             ->leftJoin(DB::raw("parameter as statusberkas with (readuncommitted)"), 'penerimaanheader.statusberkas', 'statusberkas.id')
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'penerimaanheader.statuscetak', 'statuscetak.id');
 

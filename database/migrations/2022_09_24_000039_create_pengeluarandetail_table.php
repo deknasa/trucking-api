@@ -20,7 +20,6 @@ class CreatePengeluarandetailTable extends Migration
             $table->id();
             $table->unsignedBigInteger('pengeluaran_id')->default('0');
             $table->string('nobukti',50)->default('');
-            $table->unsignedBigInteger('alatbayar_id')->default('0');
             $table->string('nowarkat',50)->default('');
             $table->date('tgljatuhtempo')->default('1900/1/1');
             $table->double('nominal',15,2)->default('0');
@@ -33,14 +32,12 @@ class CreatePengeluarandetailTable extends Migration
 
 
             $table->foreign('pengeluaran_id', 'pengeluarandetail_pengeluaranheader_pengeluaran_id_foreign')->references('id')->on('pengeluaranheader')->onDelete('cascade');       
-            $table->foreign('alatbayar_id', 'pengeluarandetail_alatbayar_id_alatbayar_id_foreign')->references('id')->on('alatbayar');
             $table->foreign('coadebet', 'pengeluarandetail_akunpusat_coadebet_foreign')->references('coa')->on('akunpusat');
             $table->foreign('coakredit', 'pengeluarandetail_akunpusat_coakredit_foreign')->references('coa')->on('akunpusat');
 
 
         });
 
-        DB::statement("ALTER TABLE pengeluarandetail NOCHECK CONSTRAINT pengeluarandetail_alatbayar_id_alatbayar_id_foreign");
         DB::statement("ALTER TABLE pengeluarandetail NOCHECK CONSTRAINT pengeluarandetail_akunpusat_coadebet_foreign");
         DB::statement("ALTER TABLE pengeluarandetail NOCHECK CONSTRAINT pengeluarandetail_akunpusat_coakredit_foreign");
     }

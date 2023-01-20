@@ -42,9 +42,8 @@ class PengeluaranHeader extends MyModel
 
             'pengeluaranheader.postingdari',
             'pengeluaranheader.dibayarke',
-            'cabang.namacabang as cabang_id',
+            'alatbayar.namaalatbayar as alatbayar_id',
             'bank.namabank as bank_id',
-            'statusjenistransaksi.memo as statusjenistransaksi',
             'statusapproval.memo as statusapproval',
             DB::raw('(case when (year(pengeluaranheader.tglapproval) <= 2000) then null else pengeluaranheader.tglapproval end ) as tglapproval'),
             'pengeluaranheader.userapproval',
@@ -62,11 +61,10 @@ class PengeluaranHeader extends MyModel
 
         )
         ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'pengeluaranheader.pelanggan_id', 'pelanggan.id')
-        ->leftJoin(DB::raw("cabang with (readuncommitted)"), 'pengeluaranheader.cabang_id', 'cabang.id')
+        ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'pengeluaranheader.alatbayar_id', 'alatbayar.id')
         ->leftJoin(DB::raw("bank with (readuncommitted)"), 'pengeluaranheader.bank_id', 'bank.id')
         ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'pengeluaranheader.statusapproval', 'statusapproval.id')
-        ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'pengeluaranheader.statuscetak', 'statuscetak.id')
-        ->leftJoin(DB::raw("parameter as statusjenistransaksi with (readuncommitted)"), 'pengeluaranheader.statusjenistransaksi', 'statusjenistransaksi.id');
+        ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'pengeluaranheader.statuscetak', 'statuscetak.id');
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -89,9 +87,8 @@ class PengeluaranHeader extends MyModel
             'pengeluaranheader.tglbukti',
             'pengeluaranheader.pelanggan_id',
             'pelanggan.namapelanggan as pelanggan',
-            'pengeluaranheader.cabang_id',
-            'cabang.namacabang as cabang',
-            'pengeluaranheader.statusjenistransaksi',
+            'pengeluaranheader.alatbayar_id',
+            'alatbayar.namaalatbayar as alatbayar',
             'pengeluaranheader.statuscetak',
             'pengeluaranheader.dibayarke',
             'pengeluaranheader.bank_id',
@@ -105,7 +102,7 @@ class PengeluaranHeader extends MyModel
             'pengeluaranheader.tglbukacetak',
             )
         ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'pengeluaranheader.pelanggan_id', 'pelanggan.id')
-        ->leftJoin(DB::raw("cabang with (readuncommitted)"), 'pengeluaranheader.cabang_id', 'cabang.id')
+        ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'pengeluaranheader.alatbayar_id', 'alatbayar.id')
         ->leftJoin(DB::raw("bank with (readuncommitted)"), 'pengeluaranheader.bank_id', 'bank.id')
         ->where('pengeluaranheader.id',$id);
 
@@ -124,9 +121,8 @@ class PengeluaranHeader extends MyModel
                  'pelanggan.namapelanggan as pelanggan_id',
                  $this->table.postingdari,
                  $this->table.dibayarke,
-                 'cabang.namacabang as cabang_id',
+                 'alatbayar.namaalatbayar as alatbayar_id',
                  'bank.namabank as bank_id',
-                 'statusjenistransaksi.text as statusjenistransaksi',
                  'statusapproval.text as statusapproval',
                  $this->table.transferkeac,
                  $this->table.transferkean,
@@ -141,11 +137,10 @@ class PengeluaranHeader extends MyModel
             )
         )
         ->leftJoin('pelanggan', 'pengeluaranheader.pelanggan_id', 'pelanggan.id')
-        ->leftJoin('cabang', 'pengeluaranheader.cabang_id', 'cabang.id')
+        ->leftJoin('alatbayar', 'pengeluaranheader.alatbayar_id', 'alatbayar.id')
         ->leftJoin('bank', 'pengeluaranheader.bank_id', 'bank.id')
         ->leftJoin('parameter as statusapproval' , 'pengeluaranheader.statusapproval', 'statusapproval.id')
-        ->leftJoin('parameter as statuscetak' , 'pengeluaranheader.statuscetak', 'statuscetak.id')
-        ->leftJoin('parameter as statusjenistransaksi' , 'pengeluaranheader.statusjenistransaksi', 'statusjenistransaksi.id');
+        ->leftJoin('parameter as statuscetak' , 'pengeluaranheader.statuscetak', 'statuscetak.id');
 
     }
 
