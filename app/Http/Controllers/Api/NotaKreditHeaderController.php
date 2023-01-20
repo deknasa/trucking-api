@@ -41,40 +41,27 @@ class NotaKreditHeaderController extends Controller
         DB::beginTransaction();
 
         try {
-            $group = 'NOTA KREDIT BUKTI';
-            $subgroup = 'NOTA KREDIT BUKTI';
 
-            $format = DB::table('parameter')
-                ->where('grp', $group )
-                ->where('subgrp', $subgroup)
-                ->first();
-            $content = new Request();
-            $content['group'] = $group ;
-            $content['subgroup'] = $subgroup ;
-            $content['table'] = 'notakreditheader';
-            $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
             $notaKreditHeader = new NotaKreditHeader();
             
             $statusApproval = Parameter::where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
             $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
 
+            $notaKreditHeader->nobukti = $request->nobukti;
             $notaKreditHeader->pelunasanpiutang_nobukti = $request->pelunasanpiutang_nobukti;
+            $notaKreditHeader->agen_id = $request->agen_id;
             $notaKreditHeader->tglbukti = date('Y-m-d',strtotime($request->tglbukti));
-            $notaKreditHeader->keterangan = $request->keterangan;
             $notaKreditHeader->tgllunas = date('Y-m-d',strtotime($request->tgllunas));
-            $notaKreditHeader->statusformat = $format->id;
+            $notaKreditHeader->postingdari = $request->postingdari;
+            $notaKreditHeader->statusformat = $request->statusformat;
             $notaKreditHeader->statusApproval = $statusApproval->id;
             $notaKreditHeader->statuscetak = $statusCetak->id;
             $notaKreditHeader->modifiedby = auth('api')->user()->name;
-            TOP:
-                $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
-                $notaKreditHeader->nobukti = $nobukti;
-
 
             if ($notaKreditHeader->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($notaKreditHeader->getTable()),
-                    'postingdari' => 'ENTRY NOTA KREDIT HEADER',
+                    'postingdari' => $request->postingdari,
                     'idtrans' => $notaKreditHeader->id,
                     'nobuktitrans' => $notaKreditHeader->nobukti,
                     'aksi' => 'ENTRY',
@@ -85,22 +72,19 @@ class NotaKreditHeaderController extends Controller
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
                 
                 /* Store detail */
-                if ($request->pelunasanpiutangdetail_id) {
-                    $notaKreditDetail = NotaKreditDetail::where('notakredit_id',$notaKreditHeader->id)->lockForUpdate()->delete();
-
                     $detaillog = [];
-                    for ($i = 0; $i < count($request->pelunasanpiutangdetail_id); $i++) {
+                    for ($i = 0; $i < count($request->datadetail); $i++) {
                         $datadetail = [
                             "notakredit_id" => $notaKreditHeader->id,
                             "nobukti" =>  $notaKreditHeader->nobukti,
-                            "tglterima" => $request->deatail_tglcair_pelunasan[$i],
-                            "invoice_nobukti" => "",
-                            "nominal" => $request->deatail_nominal_pelunasan[$i],
-                            "nominalbayar" => $request->deatail_nominalbayar_pelunasan[$i],
-                            "penyesuaian" => $request->deatail_penyesuaian_pelunasan[$i],
-                            "keterangandetail" => $request->keterangandetail[$i],
-                            "coaadjust" => $request->deatail_coapenyesuaian_pelunasan[$i],
-                            "modifiedby" => $notaKreditHeader->modifiedby = auth('api')->user()->name
+                            "tglterima" => $notaKreditHeader->tglbukti,
+                            "invoice_nobukti" => $request->datadetail[$i]['invoice_nobukti'],
+                            "nominal" => $request->datadetail[$i]['nominalpiutang'],
+                            "nominalbayar" => $request->datadetail[$i]['nominal'],
+                            "penyesuaian" => $request->datadetail[$i]['potongan'],
+                            "keterangandetail" => $request->datadetail[$i]['keteranganpotongan'],
+                            "coaadjust" => $request->datadetail[$i]['coapotongan'],
+                            "modifiedby" => auth('api')->user()->name
                         ];
                         
                         
@@ -117,7 +101,7 @@ class NotaKreditHeaderController extends Controller
                     }
                     $datalogtrail = [
                         'namatabel' => strtoupper($tabeldetail),
-                        'postingdari' => 'ENTRY NOTA KREDIT DETAIL',
+                        'postingdari' => $request->postingdari,
                         'idtrans' =>  $storedLogTrail['id'],
                         'nobuktitrans' => $notaKreditHeader->nobukti,
                         'aksi' => 'ENTRY',
@@ -127,10 +111,9 @@ class NotaKreditHeaderController extends Controller
                     $validatedLogTrail = new StoreLogTrailRequest($datalogtrail);
                     $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
                     
-                    DB::commit();
-                }
             }
 
+            DB::commit();
             /* Set position and page */
             $selected = $this->getPosition($notaKreditHeader, $notaKreditHeader->getTable());
             $notaKreditHeader->position = $selected->position;
@@ -149,12 +132,7 @@ class NotaKreditHeaderController extends Controller
         }catch (\Throwable $th){
             DB::rollBack();
             throw $th;
-            return response($th->getMessage());
         }
-        return response([
-            'message' => 'Berhasil gagal disimpan',
-            'data' => $notaKreditHeader
-        ], 422);
     }
 
     public function show(NotaKreditHeader $notaKreditHeader,$id)

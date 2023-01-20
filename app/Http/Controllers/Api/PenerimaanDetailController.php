@@ -132,7 +132,6 @@ class PenerimaanDetailController extends Controller
             $penerimaanDetail->modifiedby = auth('api')->user()->name;
             
             $penerimaanDetail->save();
-            
 
             DB::commit();
 

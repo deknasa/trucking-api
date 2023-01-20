@@ -26,7 +26,6 @@ class StorePenerimaanHeaderRequest extends FormRequest
         $rules = [
             'tglbukti' => 'required',
             'diterimadari' => 'required',
-            // 'pelanggan' => 'required',
             'tgllunas'  => 'required',
             // 'cabang' => 'required',
             // 'statuskas' => 'required',
@@ -56,7 +55,7 @@ class StorePenerimaanHeaderRequest extends FormRequest
             'tgljatuhtempo.*' => 'tanggal jatuh tempo',
             'nominal_detail.*' => 'nominal',
             'keterangan_detail.*' => 'keterangan detail',
-            'coadebet.*' => 'coa debet'
+            'coakredit.*' => 'coa kredit'
         ];
     }
     public function messages()

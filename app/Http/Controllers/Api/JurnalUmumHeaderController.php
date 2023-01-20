@@ -79,7 +79,7 @@ class JurnalUmumHeaderController extends Controller
             $jurnalumum->statusapproval = $statusApproval->id ?? $request->statusapproval;
             $jurnalumum->userapproval = '';
             $jurnalumum->tglapproval = '';
-            $jurnalumum->statusformat =  $format->id ?? $request->statusformat;
+            $jurnalumum->statusformat = $request->statusformat ?? $format->id;
             $jurnalumum->modifiedby = auth('api')->user()->name;
 
             if ($tanpaprosesnobukti == 0) {

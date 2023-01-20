@@ -176,6 +176,7 @@ use App\Http\Controllers\Api\ReportAllController;
         Route::get('parameter/combo', [ParameterController::class, 'combo']);
         Route::get('parameter/comboapproval', [ParameterController::class, 'comboapproval']);
         Route::get('parameter/combolist', [ParameterController::class, 'combolist']);
+        Route::get('parameter/getcoa', [ParameterController::class, 'getcoa']);
         Route::resource('parameter', ParameterController::class);
 
         Route::get('absensisupirheader/{id}/detail', [AbsensiSupirHeaderController::class, 'detail'])->name('absensi.detail');

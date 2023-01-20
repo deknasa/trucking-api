@@ -184,7 +184,7 @@ class RekapPengeluaranHeader extends MyModel
             "$this->table.statusformat",
             "$this->table.modifiedby",
             "bank.namabank as bank",
-            "statusapproval.memo as  statusapproval_memo",
+            "statusapproval.memo as  statusapproval",
             "statuscetak.memo as  statuscetak",
 
         );

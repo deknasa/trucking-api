@@ -42,6 +42,7 @@ class PenerimaanHeader extends MyModel
                 'penerimaanheader.nobukti',
                 'penerimaanheader.tglbukti',
                 'pelanggan.namapelanggan as pelanggan_id',
+                'agen.namaagen as agen_id',
                 'bank.namabank as bank_id',
                 'penerimaanheader.postingdari',
                 'penerimaanheader.diterimadari',
@@ -64,6 +65,8 @@ class PenerimaanHeader extends MyModel
             ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'penerimaanheader.statusapproval', 'statusapproval.id')
             ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'penerimaanheader.pelanggan_id', 'pelanggan.id')
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'penerimaanheader.bank_id', 'bank.id')
+            ->leftJoin(DB::raw("agen with (readuncommitted)"), 'penerimaanheader.agen_id', 'agen.id')
+            ->leftJoin(DB::raw("parameter as statuskas with (readuncommitted)"), 'penerimaanheader.statuskas', 'statuskas.id')
             ->leftJoin(DB::raw("parameter as statusberkas with (readuncommitted)"), 'penerimaanheader.statusberkas', 'statusberkas.id')
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'penerimaanheader.statuscetak', 'statuscetak.id');
 
