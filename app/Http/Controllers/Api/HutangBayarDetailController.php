@@ -75,8 +75,8 @@ class HutangBayarDetailController extends Controller
                     'detail.keterangan',
                     'detail.potongan',
                     'detail.hutang_nobukti'
-                )
-                    ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'detail.alatbayar_id', 'alatbayar.id');
+                );
+                    // ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'detail.alatbayar_id', 'alatbayar.id');
                     $totalRows =  $query->count();
                     $query->skip($params['offset'])->take($params['limit']);
                 $hutangbayarDetail = $query->get();

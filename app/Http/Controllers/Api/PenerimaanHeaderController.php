@@ -265,14 +265,25 @@ class PenerimaanHeaderController extends Controller
 
                     $jurnaldetail = array_merge($jurnaldetail, $jurnalDetail);
                 }
-
-
                 $jurnal = $this->storeJurnal($jurnalHeader, $jurnaldetail);
 
 
                 if (!$jurnal['status']) {
                     throw new Exception($jurnal['message']);
                 }
+                DB::commit();
+                $tanpagetposition = $request->tanpagetposition ?? 0;
+                if ($tanpagetposition) {
+                    return response([
+                        'status' => true,
+                        'message' => 'Berhasil disimpan',
+                        'data' => $penerimaanHeader
+                    ], 201);
+                }
+                /* Set position and page */
+                $selected = $this->getPosition($penerimaanHeader, $penerimaanHeader->getTable());
+                $penerimaanHeader->position = $selected->position;
+                $penerimaanHeader->page = ceil($penerimaanHeader->position / ($request->limit ?? 10));
             }
 
             DB::commit();

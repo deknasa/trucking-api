@@ -36,7 +36,9 @@ class PengeluaranStokHeader extends MyModel
         ->leftJoin('trado','pengeluaranstokheader.trado_id','trado.id')
         ->leftJoin('supplier','pengeluaranstokheader.supplier_id','supplier.id')
         ->leftJoin('kerusakan','pengeluaranstokheader.kerusakan_id','kerusakan.id')
+        ->leftJoin('bank','pengeluaranstokheader.bank_id','bank.id')
         ->leftJoin('penerimaanstokheader as penerimaan' ,'pengeluaranstokheader.penerimaanstok_nobukti','penerimaan.nobukti')
+        ->leftJoin('penerimaanheader' ,'pengeluaranstokheader.penerimaan_nobukti','penerimaanheader.nobukti')
         ->leftJoin('pengeluaranstokheader as pengeluaran' ,'pengeluaranstokheader.pengeluaranstok_nobukti','pengeluaran.nobukti')
         // ->leftJoin('servicein','pengeluaranstokheader.servicein_nobukti','servicein.nobukti')
         ->leftJoin('supir','pengeluaranstokheader.supir_id','supir.id');
@@ -69,7 +71,30 @@ class PengeluaranStokHeader extends MyModel
                 ->orderBy($this->table . '.id', $this->params['sortOrder']);
         }
 
-        return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        switch ($this->params['sortIndex']) {
+            case 'pengeluaranstok':
+                return $query->orderBy('pengeluaranstok.kodepengeluaran', $this->params['sortOrder']);
+                break;
+            case 'gudang':
+                return $query->orderBy('gudang.gudang', $this->params['sortOrder']);
+                break;
+            case 'trado':
+                return $query->orderBy('trado.keterangan', $this->params['sortOrder']);
+                break;
+            case 'supplier':
+                return $query->orderBy('supplier.namasupplier', $this->params['sortOrder']);
+                break;
+            case 'kerusakan':
+                return $query->orderBy('kerusakan.keteragan', $this->params['sortOrder']);
+                break;
+            case 'supir':
+                return $query->orderBy('supir.namasupir', $this->params['sortOrder']);
+                break;
+                
+            default:
+            return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+                break;
+        }
     }
     public function filter($query, $relationFields = [])
     {
@@ -154,7 +179,6 @@ class PengeluaranStokHeader extends MyModel
             $table->bigInteger('id')->default('0');
             $table->string('nobukti',50)->unique();
             $table->date('tglbukti',50)->default('1900/1/1');
-            $table->longText('keterangan')->default('');
             $table->unsignedBigInteger('pengeluaranstok_id')->default(0);            
             $table->unsignedBigInteger('trado_id')->default('0');
             $table->unsignedBigInteger('gudang_id')->default('0');
@@ -162,9 +186,13 @@ class PengeluaranStokHeader extends MyModel
             $table->unsignedBigInteger('supplier_id')->default('0');
             $table->string('pengeluaranstok_nobukti',50)->default('');
             $table->string('penerimaanstok_nobukti',50)->default('');
+            $table->string('penerimaan_nobukti',50)->default('');
             $table->string('servicein_nobukti',50)->default('');
             $table->unsignedBigInteger('kerusakan_id')->default('0');
             $table->unsignedBigInteger('statusformat')->default(0);  
+            $table->unsignedBigInteger('statuspotongretur')->default(0);  
+            $table->unsignedBigInteger('bank_id')->default(0);  
+            $table->date('tglkasmasuk')->default('1900/1/1'); 
             $table->string('modifiedby',50)->default('');
             $table->increments('position');
             $table->dateTime('created_at')->default('1900/1/1');
@@ -176,7 +204,6 @@ class PengeluaranStokHeader extends MyModel
             "id",
             "nobukti",
             "tglbukti",
-            "keterangan",
             "pengeluaranstok_id",
             "trado_id",
             "gudang_id",
@@ -184,9 +211,13 @@ class PengeluaranStokHeader extends MyModel
             "supplier_id",
             "pengeluaranstok_nobukti",
             "penerimaanstok_nobukti",
+            "penerimaan_nobukti",
             "servicein_nobukti",
             "kerusakan_id",
             "statusformat",
+            "statuspotongretur",
+            "bank_id",
+            "tglkasmasuk",
             "modifiedby",
         );
         $query = $this->sort($query);
@@ -196,7 +227,6 @@ class PengeluaranStokHeader extends MyModel
             "id",
             "nobukti",
             "tglbukti",
-            "keterangan",
             "pengeluaranstok_id",
             "trado_id",
             "gudang_id",
@@ -204,9 +234,13 @@ class PengeluaranStokHeader extends MyModel
             "supplier_id",
             "pengeluaranstok_nobukti",
             "penerimaanstok_nobukti",
+            "penerimaan_nobukti",
             "servicein_nobukti",
             "kerusakan_id",
             "statusformat",
+            "statuspotongretur",
+            "bank_id",
+            "tglkasmasuk",
             "modifiedby",
         ], $models);
 
@@ -219,7 +253,6 @@ class PengeluaranStokHeader extends MyModel
             "$this->table.id",
             "$this->table.nobukti",
             "$this->table.tglbukti",
-            "$this->table.keterangan",
             "$this->table.pengeluaranstok_id",
             "$this->table.trado_id",
             "$this->table.gudang_id",
@@ -227,12 +260,17 @@ class PengeluaranStokHeader extends MyModel
             "$this->table.supplier_id",
             "$this->table.pengeluaranstok_nobukti",
             "$this->table.penerimaanstok_nobukti",
+            "$this->table.penerimaan_nobukti",
             "$this->table.servicein_nobukti",
             "$this->table.kerusakan_id",
             "$this->table.statuscetak",
             "$this->table.statusformat",
+            "$this->table.statuspotongretur",
+            "$this->table.bank_id",
+            "$this->table.tglkasmasuk",
             "$this->table.modifiedby",
             "kerusakan.keterangan as kerusakan",
+            "bank.namabank as bank",
             "pengeluaranstok.kodepengeluaran as pengeluaranstok",
             "trado.keterangan as trado",
             "gudang.gudang as gudang",
@@ -252,7 +290,9 @@ class PengeluaranStokHeader extends MyModel
         ->leftJoin('trado','pengeluaranstokheader.trado_id','trado.id')
         ->leftJoin('supplier','pengeluaranstokheader.supplier_id','supplier.id')
         ->leftJoin('kerusakan','pengeluaranstokheader.kerusakan_id','kerusakan.id')
+        ->leftJoin('bank','pengeluaranstokheader.bank_id','bank.id')
         ->leftJoin('penerimaanstokheader as penerimaan' ,'pengeluaranstokheader.penerimaanstok_nobukti','penerimaan.nobukti')
+        ->leftJoin('penerimaanheader','pengeluaranstokheader.penerimaan_nobukti','penerimaanheader.nobukti')
         ->leftJoin('pengeluaranstokheader as pengeluaran' ,'pengeluaranstokheader.pengeluaranstok_nobukti','pengeluaran.nobukti')
         // ->leftJoin('servicein','pengeluaranstokheader.servicein_nobukti','servicein.nobukti')
         ->leftJoin('supir','pengeluaranstokheader.supir_id','supir.id');
