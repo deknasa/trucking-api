@@ -151,12 +151,11 @@ class PengeluaranHeader extends MyModel
             $table->bigInteger('id')->default('0');
             $table->string('nobukti', 1000)->default('');
             $table->date('tglbukti')->default('');
-            $table->string('pelanggan_id', 1000)->default('');
+            $table->string('pelanggan_id', 1000)->nullable()->default('');
             $table->string('postingdari', 1000)->default('');
             $table->string('dibayarke', 1000)->default('');
-            $table->string('cabang_id', 1000)->default('');
+            $table->string('alatbayar_id', 1000)->default('');
             $table->string('bank_id', 1000)->default('');
-            $table->string('statusjenistransaksi', 1000)->default('');
             $table->string('statusapproval')->default('');
             $table->string('transferkeac')->default('');
             $table->string('transferkean')->default('');
@@ -176,7 +175,7 @@ class PengeluaranHeader extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti','pelanggan_id', 'postingdari', 'dibayarke', 'cabang_id', 'bank_id','statusjenistransaksi','statusapproval','transferkeac','transferkean','transferkebank','statuscetak','userbukacetak','tglbukacetak','jumlahcetak', 'modifiedby','created_at', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti','pelanggan_id', 'postingdari', 'dibayarke', 'alatbayar_id', 'bank_id','statusapproval','transferkeac','transferkean','transferkebank','statuscetak','userbukacetak','tglbukacetak','jumlahcetak', 'modifiedby','created_at', 'updated_at'], $models);
 
         return $temp;
     }
@@ -193,14 +192,12 @@ class PengeluaranHeader extends MyModel
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
                             if ($filters['field'] == 'statusapproval') {
                                 $query = $query->where('statusapproval.text', '=', "$filters[data]");
-                            } else if ($filters['field'] == 'statusjenistransaksi') {
-                                $query = $query->where('statusjenistransaksi.text', '=', "$filters[data]");
                             } else if ($filters['field'] == 'statuscetak') {
                                 $query = $query->where('statuscetak.text', '=', "$filters[data]");
                             } else if ($filters['field'] == 'pelanggan_id') {
                                 $query = $query->where('pelanggan.namapelanggan', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'cabang_id') {
-                                $query = $query->where('cabang.namacabang', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'alatbayar_id') {
+                                $query = $query->where('alatbayar.namaalatbayar', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'bank_id') {
                                 $query = $query->where('bank.namabank', 'LIKE', "%$filters[data]%");
                             } else {
@@ -213,14 +210,12 @@ class PengeluaranHeader extends MyModel
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
                             if ($filters['field'] == 'statusapproval') {
                                 $query = $query->orWhere('statusapproval.text', '=', "$filters[data]");
-                            } else if ($filters['field'] == 'statusjenistransaksi') {
-                                $query = $query->orWhere('statusjenistransaksi.text', '=', "$filters[data]");
                             } else if ($filters['field'] == 'statuscetak') {
                                 $query = $query->orWhere('statuscetak.text', '=', "$filters[data]");
                             } else if ($filters['field'] == 'pelanggan_id') {
                                 $query = $query->orWhere('pelanggan.namapelanggan', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'cabang_id') {
-                                $query = $query->orWhere('cabang.namacabang', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'alatbayar_id') {
+                                $query = $query->orWhere('alatbayar.namaalatbayar', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'bank_id') {
                                 $query = $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");
                             }else {

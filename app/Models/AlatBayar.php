@@ -29,6 +29,31 @@ class AlatBayar extends MyModel
     {
         $this->setRequestParameters();
 
+        $bank_id =request()->bank_id ?? 0;
+
+        $bank=Bank::from (
+            db::Raw("bank with (readuncommitted)")
+        )
+        ->select (
+            'tipe'
+        )
+        ->where('id','=',$bank_id)
+        ->first();   
+        
+        $tipe=$bank->tipe ?? '';
+
+        $statusdefault=Parameter::from (
+            db::Raw("parameter with (readuncommitted)")
+        )
+        ->select (
+            'id'
+        )
+        ->where('grp','=','STATUS DEFAULT')
+        ->where('subgrp','=','STATUS DEFAULT')
+        ->where('text','=','DEFAULT')
+        ->first();
+
+        $default =request()->statusdefault ?? 0;
         $query = DB::table($this->table)->from(
             DB::raw($this->table . " with (readuncommitted)")
         )
@@ -47,7 +72,12 @@ class AlatBayar extends MyModel
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'alatbayar.bank_id', 'bank.id')
             ->leftJoin(DB::raw("parameter as parameter_statuslangsungcair with (readuncommitted)"), 'alatbayar.statuslangsungcair', 'parameter_statuslangsungcair.id')
             ->leftJoin(DB::raw("parameter as parameter_statusdefault with (readuncommitted)"), 'alatbayar.statusdefault', 'parameter_statusdefault.id');
-
+        if ($default == $statusdefault->id) {
+            $query->where('alatbayar.statusdefault', '=', $statusdefault->id);
+        }
+        if ($tipe != "") {
+            $query->where('bank.tipe', '=', $tipe);
+        }        
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
@@ -59,7 +89,7 @@ class AlatBayar extends MyModel
 
         return $data;
     }
-    
+
     public function default()
     {
 
@@ -82,7 +112,7 @@ class AlatBayar extends MyModel
             ->first();
 
         $iddefaultstatusdefault = $status->id ?? 0;
-        
+
         //  STATUS LANGSUNG CAIR
         $status = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
@@ -96,10 +126,10 @@ class AlatBayar extends MyModel
             ->first();
 
         $iddefaultstatuslangsung = $status->id ?? 0;
-        
+
 
         DB::table($tempdefault)->insert(
-            ["statusdefault" => $iddefaultstatusdefault,"statuslangsungcair" => $iddefaultstatuslangsung]
+            ["statusdefault" => $iddefaultstatusdefault, "statuslangsungcair" => $iddefaultstatuslangsung]
         );
 
         $query = DB::table($tempdefault)->from(
@@ -111,7 +141,7 @@ class AlatBayar extends MyModel
             );
 
         $data = $query->first();
-        
+
         return $data;
     }
 

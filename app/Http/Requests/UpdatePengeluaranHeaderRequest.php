@@ -24,9 +24,7 @@ class UpdatePengeluaranHeaderRequest extends FormRequest
     public function rules()
     {
         $rules = [
-            'pelanggan' => 'required',
-            'cabang' => 'required',
-            'statusjenistransaksi' => 'required',
+            'alatbayar' => 'required',
             'dibayarke' => 'required',
             'bank' => 'required',
         ];
@@ -48,12 +46,11 @@ class UpdatePengeluaranHeaderRequest extends FormRequest
     public function attributes()
     {
         $attributes = [
-            'statusjenistransaksi' => 'Status Jenis Transaksi',
             'dibayarke' => 'Dibayar Ke',
             'transferkeac' => 'Transfer Ke Account',
             'transferkean' => 'Transfer Ke An.',
             'transferkebank' => 'Transfer Ke Bank',
-            'alatbayar.*' => 'Alat Bayar',
+            'alatbayar' => 'Alat Bayar',
             'nowarkat.*' => 'No Warkat',
             'tgljatuhtempo.*' => 'Tanggal Jatuh Tempo',
             'nominal_detail.*' => 'Nominal',

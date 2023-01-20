@@ -7,7 +7,6 @@ use App\Models\PengeluaranHeader;
 use App\Models\PengeluaranDetail;
 use App\Models\Parameter;
 use App\Models\Pelanggan;
-use App\Models\Cabang;
 use App\Models\Bank;
 use App\Models\AlatBayar;
 use App\Models\AkunPusat;
@@ -103,11 +102,10 @@ class PengeluaranHeaderController extends Controller
 
             $pengeluaranHeader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $pengeluaranHeader->pelanggan_id = $request->pelanggan_id;
-            $pengeluaranHeader->statusjenistransaksi = $request->statusjenistransaksi ?? 0;
             $pengeluaranHeader->postingdari = $request->postingdari ?? 'ENTRY PENGELUARAN KAS/BANK';
             $pengeluaranHeader->statusapproval = $statusApproval->id ?? $request->statusapproval;
             $pengeluaranHeader->dibayarke = $request->dibayarke ?? '';
-            $pengeluaranHeader->cabang_id = $request->cabang_id ?? 0;
+            $pengeluaranHeader->alatbayar_id = $request->alatbayar_id ?? 0;
             $pengeluaranHeader->bank_id = $request->bank_id ?? 0;
             $pengeluaranHeader->userapproval = $request->userapproval ?? '';
             $pengeluaranHeader->tglapproval = $request->tglapproval ?? '';
@@ -346,11 +344,10 @@ class PengeluaranHeaderController extends Controller
 
             $pengeluaranheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $pengeluaranheader->pelanggan_id = $request->pelanggan_id;
-            $pengeluaranheader->statusjenistransaksi = $request->statusjenistransaksi ?? 0;
             $pengeluaranheader->statusapproval = $statusApproval->id ?? 0;
             $pengeluaranheader->statuscetak = $statusCetak->id ?? 0;
             $pengeluaranheader->dibayarke = $request->dibayarke ?? '';
-            $pengeluaranheader->cabang_id = $request->cabang_id ?? 0;
+            $pengeluaranheader->alatbayar_id = $request->alatbayar_id ?? 0;
             $pengeluaranheader->bank_id = $request->bank_id ?? 0;
             $pengeluaranheader->transferkeac = $request->transferkeac ?? '';
             $pengeluaranheader->transferkean = $request->transferkean ?? '';
