@@ -49,7 +49,7 @@ class PenerimaanStokController extends Controller
             $penerimaanStok->kodepenerimaan = $request->kodepenerimaan;
             $penerimaanStok->keterangan = $request->keterangan;
             $penerimaanStok->coa = $request->coa;
-            $penerimaanStok->statusformat = $request->statusformat;
+            $penerimaanStok->format = $request->format;
             $penerimaanStok->statushitungstok = $request->statushitungstok;
             $penerimaanStok->modifiedby = auth('api')->user()->name;
             $request->sortname = $request->sortname ?? 'id';
@@ -125,7 +125,7 @@ class PenerimaanStokController extends Controller
             $penerimaanStok->kodepenerimaan = $request->kodepenerimaan;
             $penerimaanStok->keterangan = $request->keterangan;
             $penerimaanStok->coa = $request->coa;
-            $penerimaanStok->statusformat = $request->statusformat;
+            $penerimaanStok->format = $request->format;
             $penerimaanStok->statushitungstok = $request->statushitungstok;
             $penerimaanStok->modifiedby = auth('api')->user()->name;
             $request->sortname = $request->sortname ?? 'id';
@@ -255,7 +255,7 @@ class PenerimaanStokController extends Controller
             ],
             [
                 'label' => 'status format',
-                'index' => 'statusformat',
+                'index' => 'format',
             ],
             [
                 'label' => 'status hitung stok',

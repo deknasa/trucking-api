@@ -167,12 +167,11 @@ class PenerimaanHeaderController extends Controller
                 }
             } else {
                 for ($i = 0; $i < count($request->nominal_detail); $i++) {
-
-
+              
                     $datadetail = [
                         'penerimaan_id' => $penerimaanHeader->id,
                         'nobukti' => $penerimaanHeader->nobukti,
-                        'nowarkat' => $request->nowarkat[$i],
+                        'nowarkat' => $request->nowarkat[$i] ?? '',
                         'tgljatuhtempo' =>  date('Y-m-d', strtotime($request->tgljatuhtempo[$i])),
                         'nominal' => $request->nominal_detail[$i],
                         'coadebet' => $querysubgrppenerimaan->coa,
@@ -188,14 +187,16 @@ class PenerimaanHeaderController extends Controller
                     ];
 
                     $data = new StorePenerimaanDetailRequest($datadetail);
+                    
                     $datadetails = app(PenerimaanDetailController::class)->store($data);
-
+                    
                     if ($datadetails['error']) {
                         return response($datadetails, 422);
                     } else {
                         $iddetail = $datadetails['id'];
                         $tabeldetail = $datadetails['tabel'];
                     }
+                    
                     $detaillog[] = $datadetails['detail']->toArray();
                 }
             }
@@ -353,6 +354,7 @@ class PenerimaanHeaderController extends Controller
                 $penerimaanheader->agen_id = $request->agen_id;
             }
 
+         
             if ($penerimaanheader->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($penerimaanheader->getTable()),

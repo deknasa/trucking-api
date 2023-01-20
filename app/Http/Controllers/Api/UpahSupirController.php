@@ -46,6 +46,8 @@ class UpahSupirController extends Controller
      */
     public function store(StoreUpahSupirRequest $request)
     {
+
+
         DB::beginTransaction();
 
         try {

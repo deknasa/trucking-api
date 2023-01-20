@@ -27,8 +27,8 @@ class StorePenerimaanHeaderRequest extends FormRequest
             'tglbukti' => 'required',
             'diterimadari' => 'required',
             'tgllunas'  => 'required',
-            'cabang' => 'required',
-            'statuskas' => 'required',
+            // 'cabang' => 'required',
+            // 'statuskas' => 'required',
             'bank'   => 'required',
             // 'noresi' => 'required'
         ];
@@ -50,8 +50,8 @@ class StorePenerimaanHeaderRequest extends FormRequest
     {
         return [
             'tgllunas' => 'tanggal lunas',
-            'statuskas' => 'status kas',
-            'nowarkat.*' => 'no warkat',
+            // 'statuskas' => 'status kas',
+            // 'nowarkat.*' => 'no warkat',
             'tgljatuhtempo.*' => 'tanggal jatuh tempo',
             'nominal_detail.*' => 'nominal',
             'keterangan_detail.*' => 'keterangan detail',
