@@ -30,7 +30,6 @@ class CreatePenerimaandetailTable extends Migration
             $table->unsignedBigInteger('bank_id')->default('0');
             $table->string('invoice_nobukti',50)->default('');
             $table->unsignedBigInteger('bankpelanggan_id')->default('0');
-            $table->string('jenisbiaya',50)->default('');
             $table->string('pelunasanpiutang_nobukti',50)->default('');
             $table->date('bulanbeban')->default('1900/1/1');
             $table->string('modifiedby',50)->default('');

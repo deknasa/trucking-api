@@ -95,10 +95,7 @@ class PenerimaanHeaderController extends Controller
             $penerimaanHeader->postingdari = $request->postingdari ?? 'ENTRY PENERIMAAN KAS/BANK';
             $penerimaanHeader->diterimadari = $request->diterimadari ?? '';
             $penerimaanHeader->tgllunas = date('Y-m-d', strtotime($request->tgllunas));
-            $penerimaanHeader->cabang_id = $request->cabang_id ?? 0;
-            $penerimaanHeader->statuskas = $request->statuskas ?? 0;
             $penerimaanHeader->bank_id = $request->bank_id ?? '';
-            $penerimaanHeader->noresi = $request->noresi ?? '';
             $penerimaanHeader->statusapproval = $statusApproval->id;
             $penerimaanHeader->statusberkas = $statusBerkas->id;
             $penerimaanHeader->statuscetak = $statuscetak->id;
@@ -107,7 +104,9 @@ class PenerimaanHeaderController extends Controller
             $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
             $penerimaanHeader->nobukti = $nobukti;
     
+  
             $penerimaanHeader->save();
+           
 
             if ($tanpaprosesnobukti == 1) {
                 DB::commit();
@@ -143,7 +142,6 @@ class PenerimaanHeaderController extends Controller
                         'bank_id' => $penerimaanHeader->bank_id,
                         'invoice_nobukti' => $request->invoice_nobukti[$i] ?? '-',
                         'bankpelanggan_id' => $request->bankpelanggan_id[$i] ?? '',
-                        'jenisbiaya' => $request->jenisbiaya[$i] ?? '',
                         'pelunasanpiutang_nobukti' => $request->pelunasanpiutang_nobukti[$i] ?? '-',
                         'bulanbeban' => date('Y-m-d', strtotime($request->bulanbeban[$i])) ?? '',
                         'modifiedby' => auth('api')->user()->name,
@@ -241,8 +239,10 @@ class PenerimaanHeaderController extends Controller
                 DB::commit();
 
                 /* Set position and page */
+              
                 $selected = $this->getPosition($penerimaanHeader, $penerimaanHeader->getTable());
                 $penerimaanHeader->position = $selected->position;
+                
                 $penerimaanHeader->page = ceil($penerimaanHeader->position / ($request->limit ?? 10));
             }
 
@@ -304,10 +304,7 @@ class PenerimaanHeaderController extends Controller
             $penerimaanheader->pelanggan_id = $request->pelanggan_id ?? 0 ;
             $penerimaanheader->diterimadari = $request->diterimadari ?? '';
             $penerimaanheader->tgllunas = date('Y-m-d', strtotime($request->tgllunas));
-            $penerimaanheader->cabang_id = $request->cabang_id ?? 0;
-            $penerimaanheader->statuskas = $request->statuskas ?? 0;
             $penerimaanheader->bank_id = $request->bank_id ?? '';
-            $penerimaanheader->noresi = $request->noresi ?? '';
             $penerimaanheader->statusapproval = $statusApproval->id ?? 0;
             $penerimaanheader->statusberkas = $statusBerkas->id ?? 0;
             $penerimaanheader->modifiedby = auth('api')->user()->name;

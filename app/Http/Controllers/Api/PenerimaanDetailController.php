@@ -54,7 +54,6 @@ class PenerimaanDetailController extends Controller
                     'header.tglbukti',
                     'header.tgllunas',
                     'bank.namabank as bank',
-                    'pelanggan.namapelanggan as pelanggan',
                     'detail.nowarkat',
                     'detail.tgljatuhtempo',
                     'detail.nominal',
@@ -62,7 +61,6 @@ class PenerimaanDetailController extends Controller
                     'bd.namabank as bank_detail',
                     'detail.invoice_nobukti',
                     'bpd.namabank as bankpelanggan_detail',
-                    'detail.jenisbiaya',
                     'detail.bulanbeban',
                     'detail.coakredit',
                     'detail.coadebet',
@@ -70,7 +68,6 @@ class PenerimaanDetailController extends Controller
                 )
                     ->leftJoin(DB::raw("penerimaanheader as header with (readuncommitted)"), 'header.id', 'detail.penerimaan_id')
                     ->leftJoin(DB::raw("bank with (readuncommitted)"), 'bank.id', 'header.bank_id')
-                    ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'pelanggan.id', 'header.pelanggan_id')
                     ->leftJoin(DB::raw("bank as bd with (readuncommitted)"), 'bd.id', '=', 'detail.bank_id')
                     ->leftJoin(DB::raw("bankpelanggan as bpd with (readuncommitted)"), 'bpd.id', '=', 'detail.bankpelanggan_id');
                 $penerimaanDetail = $query->get();
@@ -84,7 +81,6 @@ class PenerimaanDetailController extends Controller
                     'bank.namabank as bank_id',
                     'detail.invoice_nobukti',
                     'bankpelanggan.namabank as bankpelanggan_id', ///
-                    'detail.jenisbiaya',
 
                     'detail.pelunasanpiutang_nobukti',
                     'detail.bulanbeban',
@@ -131,7 +127,6 @@ class PenerimaanDetailController extends Controller
             $penerimaanDetail->bank_id = $request->bank_id;
             $penerimaanDetail->invoice_nobukti = $request->invoice_nobukti;
             $penerimaanDetail->bankpelanggan_id = $request->bankpelanggan_id;
-            $penerimaanDetail->jenisbiaya = $request->jenisbiaya;
             $penerimaanDetail->pelunasanpiutang_nobukti = $request->pelunasanpiutang_nobukti;
             $penerimaanDetail->bulanbeban = $request->bulanbeban;
             $penerimaanDetail->modifiedby = auth('api')->user()->name;

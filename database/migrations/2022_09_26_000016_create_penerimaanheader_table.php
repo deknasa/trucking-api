@@ -27,12 +27,9 @@ class CreatePenerimaanheaderTable extends Migration
             $table->string('postingdari',50)->default('');
             $table->string('diterimadari',100)->default('');
             $table->date('tgllunas')->default('1900/1/1');
-            $table->unsignedBigInteger('cabang_id')->default('0');
-            $table->integer('statuskas')->length(11)->default('0');
             $table->integer('statusapproval')->length(11)->default('0');
             $table->string('userapproval',50)->default('');
             $table->date('tglapproval')->default('1900/1/1');
-            $table->string('noresi',50)->default('');
             $table->integer('statusberkas')->length(11)->default('0');
             $table->string('userberkas',50)->default('');
             $table->date('tglberkas')->default('1900/1/1');
@@ -46,14 +43,12 @@ class CreatePenerimaanheaderTable extends Migration
 
             $table->foreign('pelanggan_id', 'penerimaanheader_pelanggan_pelanggan_id_foreign')->references('id')->on('pelanggan');
             $table->foreign('agen_id', 'penerimaanheader_agen_agen_id_foreign')->references('id')->on('agen');
-            $table->foreign('cabang_id', 'penerimaanheader_cabang_cabang_id_foreign')->references('id')->on('cabang');
             $table->foreign('bank_id', 'penerimaanheader_bank_bank_id_foreign')->references('id')->on('bank');
 
         });
 
         DB::statement("ALTER TABLE penerimaanheader NOCHECK CONSTRAINT penerimaanheader_agen_agen_id_foreign");
         DB::statement("ALTER TABLE penerimaanheader NOCHECK CONSTRAINT penerimaanheader_pelanggan_pelanggan_id_foreign");
-        DB::statement("ALTER TABLE penerimaanheader NOCHECK CONSTRAINT penerimaanheader_cabang_cabang_id_foreign");
         DB::statement("ALTER TABLE penerimaanheader NOCHECK CONSTRAINT penerimaanheader_bank_bank_id_foreign");
 
     }
