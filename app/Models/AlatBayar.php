@@ -29,6 +29,7 @@ class AlatBayar extends MyModel
     {
         $this->setRequestParameters();
 
+        // dd(request()->all());
         $bank_id =request()->bank_id ?? 0;
 
         $bank=Bank::from (

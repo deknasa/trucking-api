@@ -31,6 +31,8 @@ class PengeluaranDetailController extends Controller
             'sortOrder' => $request->sortOrder ?? 'asc',
         ];
         try {
+
+           
             $query = PengeluaranDetail::from(DB::raw("pengeluarandetail as detail with (readuncommitted)"));
 
             if (isset($params['id'])) {
@@ -64,7 +66,7 @@ class PengeluaranDetailController extends Controller
                     'detail.tgljatuhtempo',
                     'detail.nominal',
                     'detail.keterangan',
-                    'detail.bulanbeban',
+                    DB::raw("(case when year(isnull(detail.bulanbeban,'1900/1/1'))=1900 then null else detail.bulanbeban end) as bulanbeban"),
                     'detail.coadebet',
                     'detail.coakredit',
                     'alatbayar.namaalatbayar as alatbayar_id'
@@ -77,6 +79,7 @@ class PengeluaranDetailController extends Controller
 
                 $pengeluaranDetail = $query->get();
             } else {
+
                 $query->select(
                     'detail.pengeluaran_id',
                     'detail.nobukti',
@@ -84,18 +87,16 @@ class PengeluaranDetailController extends Controller
                     'detail.tgljatuhtempo',
                     'detail.nominal',
                     'detail.keterangan',
-                    'detail.bulanbeban',
+                    DB::raw("(case when year(isnull(detail.bulanbeban,'1900/1/1'))=1900 then null else detail.bulanbeban end) as bulanbeban"),
                     'detail.coadebet',
                     'detail.coakredit',
-                    'alatbayar.namaalatbayar as alatbayar_id',
 
-                )
-                    ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'alatbayar.id', '=', 'pengeluaranheader.alatbayar_id');
+                );
 
                 $pengeluaranDetail = $query->get();
-                // dd{$pengeluaranDetail};
+                //  dd($pengeluaranDetail);
             }
-
+      
 
             return response([
                 'data' => $pengeluaranDetail

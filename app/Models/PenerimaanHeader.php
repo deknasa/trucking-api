@@ -26,6 +26,50 @@ class PenerimaanHeader extends MyModel
         'updated_at',
     ];
 
+
+    public function default()
+    {
+
+        $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempdefault, function ($table) {
+            $table->unsignedBigInteger('bank_id')->default(0);
+            $table->string('bank', 255)->default('');
+        });
+
+
+        $bank = DB::table('bank')->from(
+            DB::raw('bank with (readuncommitted)')
+        )
+            ->select(
+                'id as bank_id',
+                'namabank as bank',
+
+            )
+            ->where('tipe', '=', 'KAS')
+            ->first();
+
+
+        DB::table($tempdefault)->insert(
+            ["bank_id" => $bank->bank_id, "bank" => $bank->bank]
+        );
+
+        $query = DB::table($tempdefault)->from(
+            DB::raw($tempdefault)
+        )
+            ->select(
+                'bank_id',
+                'bank'
+            );
+
+        $data = $query->first();
+
+
+
+        $data = $query->first();
+
+        return $data;
+    }
+
     public function penerimaandetail()
     {
         return $this->hasMany(penerimaandetail::class, 'penerimaan_id');
@@ -207,13 +251,26 @@ class PenerimaanHeader extends MyModel
 
     public function findAll($id)
     {
+        // dd($id);
         $data = PenerimaanHeader::from(DB::raw("penerimaanheader with (readuncommitted)"))
-            ->select('penerimaanheader.id', 'penerimaanheader.nobukti', 'penerimaanheader.tglbukti', 'penerimaanheader.pelanggan_id', 'pelanggan.namapelanggan as pelanggan', 'penerimaanheader.statuscetak', 'penerimaanheader.diterimadari', 'penerimaanheader.tgllunas', 'penerimaanheader.bank_id', 'bank.namabank as bank')
-            ->join(DB::raw("pelanggan with (readuncommitted)"), 'penerimaanheader.pelanggan_id', 'pelanggan.id')
+            ->select(
+                'penerimaanheader.id', 
+                'penerimaanheader.nobukti', 
+                'penerimaanheader.tglbukti', 
+                'penerimaanheader.pelanggan_id', 
+                'pelanggan.namapelanggan as pelanggan', 
+                'penerimaanheader.statuscetak', 
+                'penerimaanheader.diterimadari', 
+                'penerimaanheader.tgllunas', 
+                'penerimaanheader.bank_id', 
+                'bank.namabank as bank'
+                )
+            ->leftjoin(DB::raw("pelanggan with (readuncommitted)"), 'penerimaanheader.pelanggan_id', 'pelanggan.id')
             ->join(DB::raw("bank with (readuncommitted)"), 'penerimaanheader.bank_id', 'bank.id')
-            ->where('penerimaanheader.id', $id)
+            ->where('penerimaanheader.id', '=',$id)
             ->first();
 
+            // dd($data);
         return $data;
     }
 

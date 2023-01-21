@@ -47,6 +47,18 @@ class PengeluaranHeaderController extends Controller
         ]);
     }
 
+    
+    public function default()
+    {
+
+
+        $pengeluaranheader = new PengeluaranHeader();
+        return response([
+            'status' => true,
+            'data' => $pengeluaranheader->default(),
+        ]);
+    }
+
     /**
      * @ClassName
      */
@@ -101,7 +113,7 @@ class PengeluaranHeaderController extends Controller
                 ->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
 
             $pengeluaranHeader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
-            $pengeluaranHeader->pelanggan_id = $request->pelanggan_id;
+            $pengeluaranHeader->pelanggan_id = $request->pelanggan_id ?? 0;
             $pengeluaranHeader->postingdari = $request->postingdari ?? 'ENTRY PENGELUARAN KAS/BANK';
             $pengeluaranHeader->statusapproval = $statusApproval->id ?? $request->statusapproval;
             $pengeluaranHeader->dibayarke = $request->dibayarke ?? '';
@@ -149,7 +161,6 @@ class PengeluaranHeaderController extends Controller
             $parameterController = new ParameterController;
             $statusApp = $parameterController->getparameterid('STATUS APPROVAL', 'STATUS APPROVAL', 'NON APPROVAL');
 
-
             if ($tanpaprosesnobukti == 0) {
                 $detaillog = [];
                 for ($i = 0; $i < count($request->nominal_detail); $i++) {
@@ -157,17 +168,15 @@ class PengeluaranHeaderController extends Controller
                     $datadetail = [
                         'pengeluaran_id' => $pengeluaranHeader->id,
                         'nobukti' => $pengeluaranHeader->nobukti,
-                        'alatbayar_id' => $request->alatbayar_id[$i],
                         'nowarkat' => $request->nowarkat[$i],
                         'tgljatuhtempo' =>  date('Y-m-d', strtotime($request->tgljatuhtempo[$i])),
                         'nominal' => $request->nominal_detail[$i],
                         'coadebet' => $request->coadebet[$i],
                         'coakredit' => $querysubgrppengeluaran->coa,
                         'keterangan' => $request->keterangan_detail[$i],
-                        'bulanbeban' =>  date('Y-m-d', strtotime($request->bulanbeban[$i])) ?? '',
+                        'bulanbeban' =>  date('Y-m-d', strtotime($request->bulanbeban[$i] ?? '1900/1/1')) ,
                         'modifiedby' => auth('api')->user()->name,
                     ];
-
 
                     $data = new StorePengeluaranDetailRequest($datadetail);
                     $datadetails = app(PengeluaranDetailController::class)->store($data);
@@ -343,7 +352,7 @@ class PengeluaranHeaderController extends Controller
 
 
             $pengeluaranheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
-            $pengeluaranheader->pelanggan_id = $request->pelanggan_id;
+            $pengeluaranheader->pelanggan_id = $request->pelanggan_id ?? 0;
             $pengeluaranheader->statusapproval = $statusApproval->id ?? 0;
             $pengeluaranheader->statuscetak = $statusCetak->id ?? 0;
             $pengeluaranheader->dibayarke = $request->dibayarke ?? '';
@@ -383,14 +392,13 @@ class PengeluaranHeaderController extends Controller
                 $datadetail = [
                     'pengeluaran_id' => $pengeluaranheader->id,
                     'nobukti' => $pengeluaranheader->nobukti,
-                    'alatbayar_id' => $request->alatbayar_id[$i],
                     'nowarkat' => $request->nowarkat[$i],
                     'tgljatuhtempo' =>  date('Y-m-d', strtotime($request->tgljatuhtempo[$i])),
                     'nominal' => $request->nominal_detail[$i],
                     'coadebet' => $request->coadebet[$i],
                     'coakredit' => $querysubgrppengeluaran->coa,
                     'keterangan' => $request->keterangan_detail[$i],
-                    'bulanbeban' =>  date('Y-m-d', strtotime($request->bulanbeban[$i])) ?? '',
+                    'bulanbeban' =>  date('Y-m-d', strtotime($request->bulanbeban[$i] ?? '1900/1/1')) ,
                     'modifiedby' => auth('api')->user()->name,
                 ];
 

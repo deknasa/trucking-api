@@ -45,6 +45,19 @@ class PenerimaanHeaderController extends Controller
         ]);
     }
 
+        
+    public function default()
+    {
+
+
+        $penerimaanheader = new PenerimaanHeader();
+        return response([
+            'status' => true,
+            'data' => $penerimaanheader->default(),
+        ]);
+    }
+
+
     /**
      * @ClassName
      */
@@ -145,7 +158,7 @@ class PenerimaanHeaderController extends Controller
                         'bankpelanggan_id' => '',
                         'jenisbiaya' => '',
                         'pelunasanpiutang_nobukti' => $request->datadetail[$i]['nobukti'],
-                        'bulanbeban' => '',
+                        'bulanbeban' =>  date('Y-m-d', strtotime($request->bulanbeban[$i] ?? '1900/1/1')) ,
                         'modifiedby' => auth('api')->user()->name,
                     ];
 
@@ -178,7 +191,7 @@ class PenerimaanHeaderController extends Controller
                         'invoice_nobukti' => $request->invoice_nobukti[$i] ?? '-',
                         'bankpelanggan_id' => $request->bankpelanggan_id[$i] ?? '',
                         'pelunasanpiutang_nobukti' => $request->pelunasanpiutang_nobukti[$i] ?? '-',
-                        'bulanbeban' => date('Y-m-d', strtotime($request->bulanbeban[$i])) ?? '',
+                        'bulanbeban' =>  date('Y-m-d', strtotime($request->bulanbeban[$i] ?? '1900/1/1')) ,
                         'modifiedby' => auth('api')->user()->name,
                     ];
 
@@ -405,7 +418,7 @@ class PenerimaanHeaderController extends Controller
                     'bankpelanggan_id' => ($isUpdate != 0) ? '' : $request->bankpelanggan_id[$i] ?? '',
                     'jenisbiaya' => ($isUpdate != 0) ? '' : $request->jenisbiaya[$i] ?? '',
                     'pelunasanpiutang_nobukti' => ($isUpdate != 0) ? $counter[$i]['nobukti'] : $request->pelunasanpiutang_nobukti[$i] ?? '-',
-                    'bulanbeban' => ($isUpdate != 0) ? '' : date('Y-m-d', strtotime($request->bulanbeban[$i])) ?? '',
+                    'bulanbeban' => ($isUpdate != 0) ? '' : date('Y-m-d', strtotime($request->bulanbeban[$i] ?? '1900/1/1')) ?? '',
                     'modifiedby' => auth('api')->user()->name,
                 ];
 

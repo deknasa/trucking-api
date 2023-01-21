@@ -26,13 +26,25 @@ class PenerimaanDetail extends MyModel
 
     public function findAll($id)
     {
-        $detail = PenerimaanDetail::from(
-            DB::raw( "penerimaandetail with (readuncommitted)")
-        )
-        ->select('penerimaandetail.coadebet','penerimaandetail.tgljatuhtempo','penerimaandetail.nowarkat','penerimaandetail.bankpelanggan_id', 'bankpelanggan.namabank as bankpelanggan', 'penerimaandetail.keterangan', 'penerimaandetail.nominal','penerimaandetail.invoice_nobukti','penerimaandetail.pelunasanpiutang_nobukti','penerimaandetail.bulanbeban')
-        ->leftJoin(DB::raw("bankpelanggan with (readuncommitted)"),'penerimaandetail.bankpelanggan_id','bankpelanggan.id')
-        ->where('penerimaandetail.penerimaan_id',$id)
-        ->get();
+        $detail = DB::table("penerimaandetail")
+            ->select(
+                'penerimaandetail.coadebet',
+                'penerimaandetail.tgljatuhtempo',
+                'penerimaandetail.nowarkat',
+                'penerimaandetail.bankpelanggan_id',
+                'bankpelanggan.namabank as bankpelanggan',
+                'penerimaandetail.keterangan',
+                'penerimaandetail.nominal',
+                'penerimaandetail.invoice_nobukti',
+                'penerimaandetail.pelunasanpiutang_nobukti',
+                // DB::raw("penerimaandetail.bulanbeban as bulanbeban"),
+                DB::raw("(case when year(cast(penerimaandetail.bulanbeban as datetime))='1900' then '' else format(penerimaandetail.bulanbeban,'yyyy-MM-dd') end) as bulanbeban"),
+            )
+            ->leftJoin(DB::raw("bankpelanggan with (readuncommitted)"), 'penerimaandetail.bankpelanggan_id', 'bankpelanggan.id')
+            ->where('penerimaandetail.penerimaan_id', $id)
+            ->get();
+
+        //  dd($detail);
 
         return $detail;
     }

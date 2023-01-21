@@ -562,6 +562,8 @@ use App\Http\Controllers\Api\ReportAllController;
         Route::get('rekappengeluaranheader/export', [RekapPengeluaranHeaderController::class, 'export']);
         Route::get('rekappengeluaranheader/{id}/getrekappengeluaran', [RekapPengeluaranHeaderController::class,'getRekapPengeluaran']);
         Route::post('rekappengeluaranheader/{id}/approval', [RekapPengeluaranHeaderController::class,'approval']);      
+        Route::get('gandengan/default', [GandenganController::class, 'default']);
+
         Route::resource('rekappengeluaranheader',RekapPengeluaranHeaderController::class);
         Route::resource('rekappengeluarandetail', RekapPengeluaranDetailController::class);
         
@@ -632,6 +634,8 @@ use App\Http\Controllers\Api\ReportAllController;
         Route::get('penerimaanheader/{id}/tarikPelunasan', [PenerimaanHeaderController::class, 'tarikPelunasan']);
         Route::get('penerimaanheader/{id}/{table}/getPelunasan', [PenerimaanHeaderController::class, 'getPelunasan']);
         Route::get('penerimaanheader/grid', [PenerimaanHeaderController::class, 'grid']);
+        Route::get('penerimaanheader/default', [PenerimaanHeaderController::class, 'default']);
+
         Route::resource('penerimaanheader', PenerimaanHeaderController::class);
 
         Route::resource('penerimaandetail', PenerimaanDetailController::class);
@@ -643,6 +647,7 @@ use App\Http\Controllers\Api\ReportAllController;
         Route::get('pengeluaranheader/field_length', [PengeluaranHeaderController::class, 'fieldLength']);
         Route::get('pengeluaranheader/combo', [PengeluaranHeaderController::class, 'combo']);
         Route::get('pengeluaranheader/grid', [PengeluaranHeaderController::class, 'grid']);
+        Route::get('pengeluaranheader/default', [PengeluaranHeaderController::class, 'default']);
         Route::post('pengeluaranheader/{id}/cekvalidasi', [PengeluaranHeaderController::class, 'cekvalidasi'])->name('pengeluaranheader.cekvalidasi');
         Route::resource('pengeluaranheader', PengeluaranHeaderController::class);
 

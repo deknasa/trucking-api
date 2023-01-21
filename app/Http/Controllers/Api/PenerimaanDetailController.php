@@ -61,7 +61,7 @@ class PenerimaanDetailController extends Controller
                     'bd.namabank as bank_detail',
                     'detail.invoice_nobukti',
                     'bpd.namabank as bankpelanggan_detail',
-                    'detail.bulanbeban',
+                    DB::raw("(case when year(isnull(detail.bulanbeban,'1900/1/1'))=1900 then null else detail.bulanbeban end) as bulanbeban"),
                     'detail.coakredit',
                     'detail.coadebet',
 
@@ -83,7 +83,7 @@ class PenerimaanDetailController extends Controller
                     'bankpelanggan.namabank as bankpelanggan_id', ///
 
                     'detail.pelunasanpiutang_nobukti',
-                    'detail.bulanbeban',
+                    DB::raw("(case when year(isnull(detail.bulanbeban,'1900/1/1'))=1900 then null else detail.bulanbeban end) as bulanbeban"),
                     'detail.coakredit',
                     'detail.coadebet',
 

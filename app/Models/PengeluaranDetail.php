@@ -27,7 +27,6 @@ class PengeluaranDetail extends MyModel
     {
         $query =  DB::table('pengeluarandetail')->from(DB::raw("pengeluarandetail with (readuncommitted)"))
         ->select(
-            'pengeluarandetail.alatbayar_id',
             'pengeluarandetail.nowarkat',
             'pengeluarandetail.tgljatuhtempo',
             'pengeluarandetail.keterangan',
