@@ -31,8 +31,19 @@ class Pelanggan extends MyModel
         $query = DB::table($this->table)->from(
             DB::raw($this->table . " with (readuncommitted)")
         )->select(
-            'pelanggan.*',
-        );
+            'pelanggan.kodepelanggan',
+            'pelanggan.namapelanggan',
+            'pelanggan.keterangan',
+            'pelanggan.telp',
+            'pelanggan.alamat',
+            'pelanggan.alamat2',
+            'pelanggan.kota',
+            'pelanggan.kodepos',
+            'pelanggan.modifiedby',
+            'parameter.memo as statusaktif',
+        )
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'pelanggan.statusaktif', 'parameter.id');
+
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -58,6 +69,7 @@ class Pelanggan extends MyModel
             $this->table.namapelanggan,
             $this->table.keterangan,
             $this->table.telp,
+            parameter.text as statusaktif,
             $this->table.alamat,
             $this->table.alamat2,
             $this->table.kota,
@@ -66,7 +78,7 @@ class Pelanggan extends MyModel
             $this->table.created_at,
             $this->table.updated_at"
                 )
-            );
+            )->leftJoin(DB::raw("parameter with (readuncommitted)"), 'pelanggan.statusaktif', '=', 'parameter.id');
     }
 
     public function createTemp(string $modelTable)
@@ -79,9 +91,10 @@ class Pelanggan extends MyModel
             $table->string('keterangan', 1000)->default('');
             $table->string('telp', 1000)->default('');
             $table->string('alamat', 1000)->default('');
-            $table->string('alamat2', 1000)->default('');
+            $table->string('alamat2', 1000)->nullable()->default('');
             $table->string('kota', 1000)->default('');
             $table->string('kodepos', 1000)->default('');
+            $table->string('statusaktif', 500)->default('');
             $table->string('modifiedby', 50)->default('');
             $table->dateTime('created_at')->default('1900/1/1');
             $table->dateTime('updated_at')->default('1900/1/1');
@@ -93,7 +106,7 @@ class Pelanggan extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id', 'kodepelanggan', 'namapelanggan', 'keterangan', 'telp', 'alamat', 'alamat2', 'kota', 'kodepos', 'modifiedby', 'created_at', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'kodepelanggan', 'namapelanggan', 'keterangan', 'telp', 'alamat', 'alamat2', 'kota', 'kodepos', 'modifiedby', 'statusaktif', 'created_at', 'updated_at'], $models);
 
 
         return  $temp;
@@ -104,6 +117,45 @@ class Pelanggan extends MyModel
         return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
     }
 
+    
+    public function default()
+    {
+
+
+
+
+        $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempdefault, function ($table) {
+            $table->unsignedBigInteger('statusaktif')->default(0);
+        });
+
+        $statusaktif = Parameter::from(
+            db::Raw("parameter with (readuncommitted)")
+        )
+            ->select(
+                'id'
+            )
+            ->where('grp', '=', 'STATUS AKTIF')
+            ->where('subgrp', '=', 'STATUS AKTIF')
+            ->where('DEFAULT', '=', 'YA')
+            ->first();
+
+        DB::table($tempdefault)->insert(["statusaktif" => $statusaktif->id]);
+
+
+
+
+        $query = DB::table($tempdefault)->from(
+            DB::raw($tempdefault)
+        )
+            ->select(
+                'statusaktif'
+            );
+
+        $data = $query->first();
+        // dd($data);
+        return $data;
+    }
     public function filter($query, $relationFields = [])
     {
         if (count($this->params['filters']) > 0 && @$this->params['filters']['rules'][0]['data'] != '') {

@@ -209,8 +209,8 @@ class PengeluaranStokHeaderController extends Controller
                         $coaKasMasuk = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('memo')->where('grp', 'JURNAL RETUR STOK')->where('subgrp', 'KREDIT')->first();
                         // return response([$detaillog[0]['harga']],422);
                         $memo = json_decode($coaKasMasuk->memo, true);
-                        $bank = Bank::select('coa', 'statusformatpenerimaan', 'tipe')->where('id', $pengeluaranStokHeader->bank_id)->first();
-                        $parameter = Parameter::where('id', $bank->statusformatpenerimaan)->first();
+                        $bank = Bank::select('coa', 'formatpenerimaan', 'tipe')->where('id', $pengeluaranStokHeader->bank_id)->first();
+                        $parameter = Parameter::where('id', $bank->formatpenerimaan)->first();
                         if ($bank->tipe == 'KAS') {
                             $statusKas = Parameter::where('grp', 'STATUS KAS')->where('text', 'KAS')->first();
                         }
@@ -222,10 +222,10 @@ class PengeluaranStokHeaderController extends Controller
                         ->select(
                             'parameter.grp',
                             'parameter.subgrp',
-                            'bank.statusformatpenerimaan',
+                            'bank.formatpenerimaan',
                             'bank.coa'
                         )
-                        ->join(DB::raw("parameter with (readuncommitted)"), 'bank.statusformatpenerimaan', 'parameter.id')
+                        ->join(DB::raw("parameter with (readuncommitted)"), 'bank.formatpenerimaan', 'parameter.id')
                         ->whereRaw("bank.id = $bankid")
                         ->first();
                         $pengeluaranStokHeader->coa = $querysubgrppenerimaan->coa;
@@ -525,8 +525,8 @@ class PengeluaranStokHeaderController extends Controller
                             $coaKasMasuk = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('memo')->where('grp', 'JURNAL RETUR STOK')->where('subgrp', 'KREDIT')->first();
                             // return response([$detaillog[0]['harga']],422);
                             $memo = json_decode($coaKasMasuk->memo, true);
-                            $bank = Bank::select('coa', 'statusformatpenerimaan', 'tipe')->where('id', $pengeluaranStokHeader->bank_id)->first();
-                            $parameter = Parameter::where('id', $bank->statusformatpenerimaan)->first();
+                            $bank = Bank::select('coa', 'formatpenerimaan', 'tipe')->where('id', $pengeluaranStokHeader->bank_id)->first();
+                            $parameter = Parameter::where('id', $bank->formatpenerimaan)->first();
                             if ($bank->tipe == 'KAS') {
                                 $statusKas = Parameter::where('grp', 'STATUS KAS')->where('text', 'KAS')->first();
                             }
@@ -538,10 +538,10 @@ class PengeluaranStokHeaderController extends Controller
                             ->select(
                                 'parameter.grp',
                                 'parameter.subgrp',
-                                'bank.statusformatpenerimaan',
+                                'bank.formatpenerimaan',
                                 'bank.coa'
                             )
-                            ->join(DB::raw("parameter with (readuncommitted)"), 'bank.statusformatpenerimaan', 'parameter.id')
+                            ->join(DB::raw("parameter with (readuncommitted)"), 'bank.formatpenerimaan', 'parameter.id')
                             ->whereRaw("bank.id = $bankid")
                             ->first();
                             $pengeluaranStokHeader->coa = $querysubgrppenerimaan->coa;

@@ -34,7 +34,7 @@ class StoreAgenRequest extends FormRequest
             "notelp" => "required",
             "nohp" => "required",
             "contactperson" => "required",
-            "top" => "required|numeric",
+            "top" => "required|numeric|gt:0",
             "statustas" => "required",
             "keteranganjenisemkl" => "required",
         ];
@@ -50,8 +50,32 @@ class StoreAgenRequest extends FormRequest
             "notelp" => "no telp",
             "nohp" => "no hp",
             "contactperson" => "contact person",
+            "top" => "top",
             "statustas" => "status tas",
             "keteranganjenisemkl" => "jenis emkl",
         ];
     }
+
+
+    public function messages()
+    {
+        $controller = new ErrorController;
+
+        return [
+            'kodeagen.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+            'namaagen.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+            'keterangan.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+            'statusaktif.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+            'namaperusahaan.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+            'alamat.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+            'notelp.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+            'nohp.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+            'contactperson.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+            'top.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+            'jenisusaha.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+            'statustas.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+            'keteranganjenisemkl.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+            'top.gt' => ':attribute' . ' ' . $controller->geterror('GT-ANGKA-0')->keterangan,
+        ];
+    }    
 }

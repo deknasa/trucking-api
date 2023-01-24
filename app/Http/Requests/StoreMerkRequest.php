@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Http\Controllers\Api\ErrorController;
 
 class StoreMerkRequest extends FormRequest
 {
@@ -34,7 +35,19 @@ class StoreMerkRequest extends FormRequest
     {
         return [
             'kodemerk' => 'kode merk',
+            'keterangan' => 'keterangan',
             'statusaktif' => 'statusaktif'
+        ];
+    }
+
+    public function messages()
+    {
+        $controller = new ErrorController;
+
+        return [
+            'kodemerk.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+            'keterangan.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+            'statusaktif.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
         ];
     }
 }

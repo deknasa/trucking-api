@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Http\Controllers\Api\ErrorController;
 
 class UpdateKategoriRequest extends FormRequest
 {
@@ -26,7 +27,7 @@ class UpdateKategoriRequest extends FormRequest
         return [
             'kodekategori' => 'required',
             'keterangan' => 'required',
-            'subkelompok_id' => 'required',
+            'subkelompok' => 'required',
             'statusaktif' => 'required'
         ];
     }
@@ -36,7 +37,21 @@ class UpdateKategoriRequest extends FormRequest
         return[
             'kodekategori' => 'kode kategori',
             'subkelompok' => 'sub kelompok',
+            'keterangan' => 'keterangan',
             'statusaktif' => 'status aktif'
         ];
     }
+
+
+    public function messages()
+    {
+        $controller = new ErrorController;
+
+        return [
+            'kodekategori.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+            'subkelompok.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+            'keterangan.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+            'statusaktif.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+        ];
+    }  
 }

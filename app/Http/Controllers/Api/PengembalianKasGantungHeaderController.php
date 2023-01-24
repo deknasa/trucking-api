@@ -75,10 +75,10 @@ class PengembalianKasGantungHeaderController extends Controller
                 ->select(
                     'parameter.grp',
                     'parameter.subgrp',
-                    'bank.statusformatpenerimaan',
+                    'bank.formatpenerimaan',
                     'bank.coa'
                 )
-                ->join(DB::raw("parameter with (readuncommitted)"), 'bank.statusformatpenerimaan', 'parameter.id')
+                ->join(DB::raw("parameter with (readuncommitted)"), 'bank.formatpenerimaan', 'parameter.id')
                 ->whereRaw("bank.id = $bankid")
                 ->first();
 
@@ -181,8 +181,8 @@ class PengembalianKasGantungHeaderController extends Controller
                     $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
                     //INSERT TO PENERIMAAN
 
-                    $bank = Bank::select('coa', 'statusformatpenerimaan', 'tipe')->where('id', $pengembalianKasGantungHeader->bank_id)->first();
-                    $parameter = Parameter::where('id', $bank->statusformatpenerimaan)->first();
+                    $bank = Bank::select('coa', 'formatpenerimaan', 'tipe')->where('id', $pengembalianKasGantungHeader->bank_id)->first();
+                    $parameter = Parameter::where('id', $bank->formatpenerimaan)->first();
 
                     $statusKas='';
                     if ($bank->tipe == 'KAS') {
@@ -327,10 +327,10 @@ class PengembalianKasGantungHeaderController extends Controller
             ->select(
                 'parameter.grp',
                 'parameter.subgrp',
-                'bank.statusformatpenerimaan',
+                'bank.formatpenerimaan',
                 'bank.coa'
             )
-            ->join(DB::raw("parameter with (readuncommitted)"), 'bank.statusformatpenerimaan', 'parameter.id')
+            ->join(DB::raw("parameter with (readuncommitted)"), 'bank.formatpenerimaan', 'parameter.id')
             ->whereRaw("bank.id = $bankid")
             ->first();
 
@@ -410,8 +410,8 @@ class PengembalianKasGantungHeaderController extends Controller
 
                         //INSERT TO PENERIMAAN
 
-                        $bank = Bank::select('coa', 'statusformatpenerimaan', 'tipe')->where('id', $pengembalianKasGantungHeader->bank_id)->first();
-                        $parameter = Parameter::where('id', $bank->statusformatpenerimaan)->first();
+                        $bank = Bank::select('coa', 'formatpenerimaan', 'tipe')->where('id', $pengembalianKasGantungHeader->bank_id)->first();
+                        $parameter = Parameter::where('id', $bank->formatpenerimaan)->first();
 
 
                         if ($bank->tipe == 'KAS') {

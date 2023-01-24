@@ -1,153 +1,153 @@
 <?php
 
-    use App\Http\Controllers\Api\AkunPusatController;
-    use App\Http\Controllers\Api\AbsensiSupirDetailController;
-    use App\Http\Controllers\Api\AbsensiSupirHeaderController;
+use App\Http\Controllers\Api\AkunPusatController;
+use App\Http\Controllers\Api\AbsensiSupirDetailController;
+use App\Http\Controllers\Api\AbsensiSupirHeaderController;
 
-    use App\Http\Controllers\Api\AbsensiSupirApprovalHeaderController;
-    use App\Http\Controllers\Api\AbsensiSupirApprovalDetailController;
-    
-    use App\Http\Controllers\Api\ApprovalTransaksiHeaderController;
-    use App\Http\Controllers\Api\ApprovalInvoiceHeaderController;
-    use App\Http\Controllers\Api\ApprovalBukaCetakController;
-    
-    use App\Http\Controllers\Api\AbsenTradoController;
-    use App\Http\Controllers\Api\CabangController;
-    use App\Http\Controllers\Api\GandenganController;
-    use App\Http\Controllers\Api\ParameterController;
-    use App\Http\Controllers\Api\SupirController;
-    use App\Http\Controllers\Api\TradoController;
-    use App\Http\Controllers\Api\RoleController;
-    use App\Http\Controllers\Api\UserController;
-    use App\Http\Controllers\Api\MenuController;
-    use App\Http\Controllers\Api\AcosController;
-    use App\Http\Controllers\Api\UserRoleController;
-    use App\Http\Controllers\Api\AclController;
-    use App\Http\Controllers\Api\AgenController;
-    use App\Http\Controllers\Api\AuthController;
-    use App\Http\Controllers\Api\UserAclController;
-    use App\Http\Controllers\Api\ErrorController;
-    use App\Http\Controllers\Api\LogTrailController;
-    use App\Http\Controllers\Controller;
-    use Illuminate\Http\Request;
-    use Illuminate\Support\Facades\Route;
-    use App\Http\Controllers\CustomValidationController;
-    use App\Http\Controllers\Api\ContainerController;
-    use App\Http\Controllers\Api\BankController;
-    use App\Http\Controllers\Api\AlatBayarController;
-    use App\Http\Controllers\Api\ApprovalHutangBayarController;
-    use App\Http\Controllers\Api\ApprovalNotaHeaderController;
+use App\Http\Controllers\Api\AbsensiSupirApprovalHeaderController;
+use App\Http\Controllers\Api\AbsensiSupirApprovalDetailController;
+
+use App\Http\Controllers\Api\ApprovalTransaksiHeaderController;
+use App\Http\Controllers\Api\ApprovalInvoiceHeaderController;
+use App\Http\Controllers\Api\ApprovalBukaCetakController;
+
+use App\Http\Controllers\Api\AbsenTradoController;
+use App\Http\Controllers\Api\CabangController;
+use App\Http\Controllers\Api\GandenganController;
+use App\Http\Controllers\Api\ParameterController;
+use App\Http\Controllers\Api\SupirController;
+use App\Http\Controllers\Api\TradoController;
+use App\Http\Controllers\Api\RoleController;
+use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\MenuController;
+use App\Http\Controllers\Api\AcosController;
+use App\Http\Controllers\Api\UserRoleController;
+use App\Http\Controllers\Api\AclController;
+use App\Http\Controllers\Api\AgenController;
+use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\UserAclController;
+use App\Http\Controllers\Api\ErrorController;
+use App\Http\Controllers\Api\LogTrailController;
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\CustomValidationController;
+use App\Http\Controllers\Api\ContainerController;
+use App\Http\Controllers\Api\BankController;
+use App\Http\Controllers\Api\AlatBayarController;
+use App\Http\Controllers\Api\ApprovalHutangBayarController;
+use App\Http\Controllers\Api\ApprovalNotaHeaderController;
 use App\Http\Controllers\Api\ApprovalPendapatanSupirController;
 use App\Http\Controllers\Api\BankPelangganController;
-    use App\Http\Controllers\Api\GajiSupirDetailController;
-    use App\Http\Controllers\Api\GajiSupirHeaderController;
-    use App\Http\Controllers\Api\JenisEmklController;
-    use App\Http\Controllers\Api\JenisOrderController;
-    use App\Http\Controllers\Api\JenisTradoController;
-    use App\Http\Controllers\Api\KasGantungDetailController;
-    use App\Http\Controllers\Api\KasGantungHeaderController;
-    
-    use App\Http\Controllers\Api\NotaDebetDetailController;
-    use App\Http\Controllers\Api\NotaDebetHeaderController;
-    
-    use App\Http\Controllers\Api\NotaKreditHeaderController;
-    use App\Http\Controllers\Api\NotaKreditDetailController;
+use App\Http\Controllers\Api\GajiSupirDetailController;
+use App\Http\Controllers\Api\GajiSupirHeaderController;
+use App\Http\Controllers\Api\JenisEmklController;
+use App\Http\Controllers\Api\JenisOrderController;
+use App\Http\Controllers\Api\JenisTradoController;
+use App\Http\Controllers\Api\KasGantungDetailController;
+use App\Http\Controllers\Api\KasGantungHeaderController;
 
-    use App\Http\Controllers\Api\PengembalianKasGantungHeaderController;
-    use App\Http\Controllers\Api\PengembalianKasGantungDetailController;
-    
-    use App\Http\Controllers\Api\PengembalianKasBankHeaderController;
-    use App\Http\Controllers\Api\PengembalianKasBankDetailController;
-    
-    use App\Http\Controllers\Api\RekapPengeluaranHeaderController;
-    use App\Http\Controllers\Api\RekapPengeluaranDetailController;
-    
-    use App\Http\Controllers\Api\RekapPenerimaanHeaderController;
-    use App\Http\Controllers\Api\RekapPenerimaanDetailController;
-    
-    use App\Http\Controllers\Api\GudangController;
-    use App\Http\Controllers\Api\PelangganController;
-    use App\Http\Controllers\Api\PenerimaController;
-    use App\Http\Controllers\Api\StatusContainerController;
-    use App\Http\Controllers\Api\KategoriController;
-    use App\Http\Controllers\Api\KelompokController;
-    use App\Http\Controllers\Api\KerusakanController;
-    use App\Http\Controllers\Api\SubKelompokController;
-    use App\Http\Controllers\Api\SupplierController;
-    use App\Http\Controllers\Api\StokController;
-    use App\Http\Controllers\Api\KotaController;
-    use App\Http\Controllers\Api\MandorController;
-    use App\Http\Controllers\Api\MerkController;
-    use App\Http\Controllers\Api\PenerimaanTruckingController;
-    use App\Http\Controllers\Api\SatuanController;
-    use App\Http\Controllers\Api\ZonaController;
-    use App\Http\Controllers\Api\TarifController;
-    use App\Http\Controllers\Api\TarifRincianController;
-    use App\Http\Controllers\Api\PengeluaranTruckingController;
-    use App\Http\Controllers\Api\OrderanTruckingController;
-    use App\Http\Controllers\Api\ProsesAbsensiSupirController;
-    use App\Http\Controllers\Api\MekanikController;
-    use App\Http\Controllers\Api\SuratPengantarController;
-    use App\Http\Controllers\Api\UpahSupirController;
-    use App\Http\Controllers\Api\UpahSupirRincianController;
-    use App\Http\Controllers\Api\UpahRitasiController;
-    use App\Http\Controllers\Api\UpahRitasiRincianController;
-    use App\Http\Controllers\Api\RitasiController;
-    use App\Http\Controllers\Api\ServiceInHeaderController;
-    use App\Http\Controllers\Api\ServiceInDetailController;
-    use App\Http\Controllers\Api\ServiceOutHeaderController;
-    use App\Http\Controllers\Api\ServiceOutDetailController;
-    use App\Http\Controllers\Api\PenerimaanHeaderController;
-    use App\Http\Controllers\Api\PenerimaanDetailController;
-    use App\Http\Controllers\Api\PengeluaranHeaderController;
-    use App\Http\Controllers\Api\PengeluaranDetailController;
-    use App\Http\Controllers\Api\PenerimaanTruckingHeaderController;
-    use App\Http\Controllers\Api\PenerimaanTruckingDetailController;
-    use App\Http\Controllers\Api\PenerimaanStokController;
-    use App\Http\Controllers\Api\PenerimaanStokHeaderController;
-    use App\Http\Controllers\Api\PenerimaanStokDetailController;
-    use App\Http\Controllers\Api\PengeluaranStokController;
-    use App\Http\Controllers\Api\PengeluaranStokDetailController;
-    use App\Http\Controllers\Api\PengeluaranStokDetailFifoController;
-    use App\Http\Controllers\Api\PengeluaranStokHeaderController;
-    use App\Http\Controllers\Api\JurnalUmumHeaderController;
-    use App\Http\Controllers\Api\JurnalUmumDetailController;
-    use App\Http\Controllers\Api\PengeluaranTruckingHeaderController;
-    use App\Http\Controllers\Api\PengeluaranTruckingDetailController;
-    use App\Http\Controllers\Api\PiutangHeaderController;
-    use App\Http\Controllers\Api\PiutangDetailController;
-    use App\Http\Controllers\Api\HutangHeaderController;
-    use App\Http\Controllers\Api\HutangDetailController;
-    use App\Http\Controllers\Api\PelunasanPiutangHeaderController;
-    use App\Http\Controllers\Api\PelunasanPiutangDetailController;
-    use App\Http\Controllers\Api\HutangBayarHeaderController;
-    use App\Http\Controllers\Api\HutangBayarDetailController;
-    use App\Http\Controllers\Api\InvoiceDetailController;
-    use App\Http\Controllers\Api\InvoiceHeaderController;
-    use App\Http\Controllers\Api\InvoiceExtraDetailController;
-    use App\Http\Controllers\Api\InvoiceExtraHeaderController;
-    use App\Http\Controllers\Api\ProsesGajiSupirHeaderController;
-    use App\Http\Controllers\Api\ProsesGajiSupirDetailController;
-    use App\Http\Controllers\Api\HariLiburController;
-    use App\Http\Controllers\Api\PenerimaanGiroDetailController;
-    use App\Http\Controllers\Api\PenerimaanGiroHeaderController;
-    use App\Http\Controllers\Api\JurnalUmumPusatDetailController;
-    use App\Http\Controllers\Api\JurnalUmumPusatHeaderController;
-    use App\Http\Controllers\Api\KartuStokController;
-    use App\Http\Controllers\Api\HistoriPenerimaanStokController;
-    use App\Http\Controllers\Api\HistoriPengeluaranStokController;
+use App\Http\Controllers\Api\NotaDebetDetailController;
+use App\Http\Controllers\Api\NotaDebetHeaderController;
+
+use App\Http\Controllers\Api\NotaKreditHeaderController;
+use App\Http\Controllers\Api\NotaKreditDetailController;
+
+use App\Http\Controllers\Api\PengembalianKasGantungHeaderController;
+use App\Http\Controllers\Api\PengembalianKasGantungDetailController;
+
+use App\Http\Controllers\Api\PengembalianKasBankHeaderController;
+use App\Http\Controllers\Api\PengembalianKasBankDetailController;
+
+use App\Http\Controllers\Api\RekapPengeluaranHeaderController;
+use App\Http\Controllers\Api\RekapPengeluaranDetailController;
+
+use App\Http\Controllers\Api\RekapPenerimaanHeaderController;
+use App\Http\Controllers\Api\RekapPenerimaanDetailController;
+
+use App\Http\Controllers\Api\GudangController;
+use App\Http\Controllers\Api\PelangganController;
+use App\Http\Controllers\Api\PenerimaController;
+use App\Http\Controllers\Api\StatusContainerController;
+use App\Http\Controllers\Api\KategoriController;
+use App\Http\Controllers\Api\KelompokController;
+use App\Http\Controllers\Api\KerusakanController;
+use App\Http\Controllers\Api\SubKelompokController;
+use App\Http\Controllers\Api\SupplierController;
+use App\Http\Controllers\Api\StokController;
+use App\Http\Controllers\Api\KotaController;
+use App\Http\Controllers\Api\MandorController;
+use App\Http\Controllers\Api\MerkController;
+use App\Http\Controllers\Api\PenerimaanTruckingController;
+use App\Http\Controllers\Api\SatuanController;
+use App\Http\Controllers\Api\ZonaController;
+use App\Http\Controllers\Api\TarifController;
+use App\Http\Controllers\Api\TarifRincianController;
+use App\Http\Controllers\Api\PengeluaranTruckingController;
+use App\Http\Controllers\Api\OrderanTruckingController;
+use App\Http\Controllers\Api\ProsesAbsensiSupirController;
+use App\Http\Controllers\Api\MekanikController;
+use App\Http\Controllers\Api\SuratPengantarController;
+use App\Http\Controllers\Api\UpahSupirController;
+use App\Http\Controllers\Api\UpahSupirRincianController;
+use App\Http\Controllers\Api\UpahRitasiController;
+use App\Http\Controllers\Api\UpahRitasiRincianController;
+use App\Http\Controllers\Api\RitasiController;
+use App\Http\Controllers\Api\ServiceInHeaderController;
+use App\Http\Controllers\Api\ServiceInDetailController;
+use App\Http\Controllers\Api\ServiceOutHeaderController;
+use App\Http\Controllers\Api\ServiceOutDetailController;
+use App\Http\Controllers\Api\PenerimaanHeaderController;
+use App\Http\Controllers\Api\PenerimaanDetailController;
+use App\Http\Controllers\Api\PengeluaranHeaderController;
+use App\Http\Controllers\Api\PengeluaranDetailController;
+use App\Http\Controllers\Api\PenerimaanTruckingHeaderController;
+use App\Http\Controllers\Api\PenerimaanTruckingDetailController;
+use App\Http\Controllers\Api\PenerimaanStokController;
+use App\Http\Controllers\Api\PenerimaanStokHeaderController;
+use App\Http\Controllers\Api\PenerimaanStokDetailController;
+use App\Http\Controllers\Api\PengeluaranStokController;
+use App\Http\Controllers\Api\PengeluaranStokDetailController;
+use App\Http\Controllers\Api\PengeluaranStokDetailFifoController;
+use App\Http\Controllers\Api\PengeluaranStokHeaderController;
+use App\Http\Controllers\Api\JurnalUmumHeaderController;
+use App\Http\Controllers\Api\JurnalUmumDetailController;
+use App\Http\Controllers\Api\PengeluaranTruckingHeaderController;
+use App\Http\Controllers\Api\PengeluaranTruckingDetailController;
+use App\Http\Controllers\Api\PiutangHeaderController;
+use App\Http\Controllers\Api\PiutangDetailController;
+use App\Http\Controllers\Api\HutangHeaderController;
+use App\Http\Controllers\Api\HutangDetailController;
+use App\Http\Controllers\Api\PelunasanPiutangHeaderController;
+use App\Http\Controllers\Api\PelunasanPiutangDetailController;
+use App\Http\Controllers\Api\HutangBayarHeaderController;
+use App\Http\Controllers\Api\HutangBayarDetailController;
+use App\Http\Controllers\Api\InvoiceDetailController;
+use App\Http\Controllers\Api\InvoiceHeaderController;
+use App\Http\Controllers\Api\InvoiceExtraDetailController;
+use App\Http\Controllers\Api\InvoiceExtraHeaderController;
+use App\Http\Controllers\Api\ProsesGajiSupirHeaderController;
+use App\Http\Controllers\Api\ProsesGajiSupirDetailController;
+use App\Http\Controllers\Api\HariLiburController;
+use App\Http\Controllers\Api\PenerimaanGiroDetailController;
+use App\Http\Controllers\Api\PenerimaanGiroHeaderController;
+use App\Http\Controllers\Api\JurnalUmumPusatDetailController;
+use App\Http\Controllers\Api\JurnalUmumPusatHeaderController;
+use App\Http\Controllers\Api\KartuStokController;
+use App\Http\Controllers\Api\HistoriPenerimaanStokController;
+use App\Http\Controllers\Api\HistoriPengeluaranStokController;
 use App\Http\Controllers\Api\LaporanBukuBesarController;
 use App\Http\Controllers\Api\LaporanKasBankController;
 use App\Http\Controllers\Api\ReportAllController;
-    use App\Http\Controllers\Api\PencairanGiroPengeluaranDetailController;
-    use App\Http\Controllers\Api\PencairanGiroPengeluaranHeaderController;
-    use App\Http\Controllers\Api\PendapatanSupirDetailController;
-    use App\Http\Controllers\Api\PendapatanSupirHeaderController;
-    use App\Http\Controllers\Api\ReportNeracaController;
-    use App\Http\Controllers\Api\StokPersediaanController;
-    use App\Http\Controllers\Api\TutupBukuController;
+use App\Http\Controllers\Api\PencairanGiroPengeluaranDetailController;
+use App\Http\Controllers\Api\PencairanGiroPengeluaranHeaderController;
+use App\Http\Controllers\Api\PendapatanSupirDetailController;
+use App\Http\Controllers\Api\PendapatanSupirHeaderController;
+use App\Http\Controllers\Api\ReportNeracaController;
+use App\Http\Controllers\Api\StokPersediaanController;
+use App\Http\Controllers\Api\TutupBukuController;
 
-    /*
+/*
     |--------------------------------------------------------------------------
     | API Routes
     |--------------------------------------------------------------------------
@@ -158,688 +158,690 @@ use App\Http\Controllers\Api\ReportAllController;
     |
     */
 
-    Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-        return $request->user();
-    });
-
-    Route::post('token', [AuthController::class, 'token']);
-
-    Route::get('supir/image/{field}/{filename}/{type}', [SupirController::class, 'getImage']);
-    Route::get('trado/image/{field}/{filename}/{type}', [TradoController::class, 'getImage']);
-    Route::get('stok/{filename}/{type}', [StokController::class, 'getImage']);
-    Route::get('upahsupir/{filename}/{type}', [UpahSupirController::class, 'getImage']);
-
-    route::middleware(['auth:api'])->group(function () {
-        Route::get('parameter/export', [ParameterController::class, 'export']);
-        Route::get('parameter/detail', [ParameterController::class, 'detail']);
-        Route::get('parameter/field_length', [ParameterController::class, 'fieldLength']);
-        Route::get('parameter/combo', [ParameterController::class, 'combo']);
-        Route::get('parameter/comboapproval', [ParameterController::class, 'comboapproval']);
-        Route::get('parameter/combolist', [ParameterController::class, 'combolist']);
-        Route::get('parameter/getcoa', [ParameterController::class, 'getcoa']);
-        Route::resource('parameter', ParameterController::class);
-
-        Route::get('absensisupirheader/{id}/detail', [AbsensiSupirHeaderController::class, 'detail'])->name('absensi.detail');
-        Route::get('absensisupirheader/no_bukti', [AbsensiSupirHeaderController::class, 'getNoBukti']);
-        Route::get('absensisupirheader/running_number', [AbsensiSupirHeaderController::class, 'getRunningNumber']);
-        Route::get('absensisupirheader/grid', [AbsensiSupirHeaderController::class, 'grid']);
-        Route::get('absensisupirheader/field_length', [AbsensiSupirHeaderController::class, 'fieldLength']);
-        Route::post('absensisupirheader/{id}/cekvalidasi', [AbsensiSupirHeaderController::class, 'cekvalidasi'])->name('absensisupirheader.cekvalidasi');
-        Route::apiResource('absensisupirheader', AbsensiSupirHeaderController::class)->parameter('absensisupirheader', 'absensiSupirHeader');
-        
-        Route::resource('absensisupirdetail', AbsensiSupirDetailController::class);
-        
-        Route::get('approvaltransaksiheader/combo', [ApprovalTransaksiHeaderController::class, 'combo']);
-        Route::apiResource('approvaltransaksiheader', ApprovalTransaksiHeaderController::class);
-        
-        Route::get('approvalinvoiceheader/combo', [ApprovalInvoiceHeaderController::class, 'combo']);
-        Route::resource('approvalinvoiceheader', ApprovalInvoiceHeaderController::class);
-        
-        Route::get('approvalbukacetak/combo', [ApprovalBukaCetakController::class, 'combo']);
-        Route::resource('approvalbukacetak', ApprovalBukaCetakController::class);
-        
-        Route::get('absensisupirapprovalheader/running_number', [AbsensiSupirApprovalHeaderController::class, 'getRunningNumber']);
-        Route::get('absensisupirapprovalheader/grid', [AbsensiSupirApprovalHeaderController::class, 'grid']);
-        Route::get('absensisupirapprovalheader/field_length', [AbsensiSupirApprovalHeaderController::class, 'fieldLength']);
-        Route::get('absensisupirapprovalheader/export', [AbsensiSupirApprovalHeaderController::class, 'export']);
-        Route::get('absensisupirapprovalheader/{absensi}/getabsensi', [AbsensiSupirApprovalHeaderController::class, 'getAbsensi']);
-        Route::get('absensisupirapprovalheader/{absensi}/getapproval', [AbsensiSupirApprovalHeaderController::class, 'getApproval']);
-        Route::post('absensisupirapprovalheader/{id}/cekvalidasi', [AbsensiSupirApprovalHeaderController::class, 'cekvalidasi'])->name('absensisupirapprovalheader.cekvalidasi');
-        Route::post('absensisupirapprovalheader/{id}/approval', [AbsensiSupirApprovalHeaderController::class,'approval']);
-        Route::apiResource('absensisupirapprovalheader', AbsensiSupirApprovalHeaderController::class);
-        Route::apiResource('absensisupirapprovaldetail', AbsensiSupirApprovalDetailController::class);
-
-        Route::get('agen/field_length', [AgenController::class, 'fieldLength']);
-        Route::get('agen/export', [AgenController::class, 'export'])->name('export');
-        Route::get('agen/default', [AgenController::class, 'default']);
-        Route::post('agen/{agen}/approval', [AgenController::class, 'approval'])->name('agen.approval');
-        Route::resource('agen', AgenController::class);
-
-        Route::get('cabang/field_length', [CabangController::class, 'fieldLength']);
-        Route::get('cabang/combostatus', [CabangController::class, 'combostatus']);
-        Route::get('cabang/default', [CabangController::class, 'default']);
-        Route::get('cabang/getPosition2', [CabangController::class, 'getPosition2']);
-        Route::resource('cabang', CabangController::class);
-
-        Route::get('gandengan/field_length', [GandenganController::class, 'fieldLength']);
-        Route::get('gandengan/combostatus', [GandenganController::class, 'combostatus']);
-        Route::get('gandengan/getPosition2', [GandenganController::class, 'getPosition2']);
-        Route::get('gandengan/default', [GandenganController::class, 'default']);
-        Route::resource('gandengan', GandenganController::class);
-
-
-        Route::get('acos/field_length', [AcosController::class, 'fieldLength']);
-        Route::resource('acos', AcosController::class);
-
-        Route::get('kota/combo', [KotaController::class, 'combo']);
-        Route::get('kota/field_length', [KotaController::class, 'fieldLength']);
-        Route::get('kota/default', [KotaController::class, 'default']);
-        Route::resource('kota', KotaController::class);
-
-        Route::get('logtrail/detail', [LogTrailController::class, 'detail']);
-        Route::get('logtrail/header', [LogTrailController::class, 'header']);
-        Route::resource('logtrail', LogTrailController::class);
-
-        Route::get('trado/combo', [TradoController::class, 'combo']);
-        Route::get('trado/field_length', [TradoController::class, 'fieldLength']);
-        Route::post('trado/upload_image/{id}', [TradoController::class, 'uploadImage']);
-        Route::get('trado/default', [TradoController::class, 'default']);
-        Route::resource('trado', TradoController::class);
-
-        Route::get('absentrado/field_length', [AbsenTradoController::class, 'fieldLength']);
-        Route::get('absentrado/default', [AbsenTradoController::class, 'default']);
-        Route::resource('absentrado', AbsenTradoController::class);
-
-        Route::get('container/field_length', [ContainerController::class, 'fieldLength']);
-        Route::get('container/combostatus', [ContainerController::class, 'combostatus']);
-        Route::get('container/getPosition2', [ContainerController::class, 'getPosition2']);
-        Route::get('container/default', [ContainerController::class, 'default']);
-        Route::resource('container', ContainerController::class);
-
-        Route::get('bank/combo', [BankController::class, 'combo']);
-        Route::get('bank/field_length', [BankController::class, 'fieldLength']);
-        Route::get('bank/default', [BankController::class, 'default']);
-        Route::resource('bank', BankController::class);
-
-        Route::get('alatbayar/combo', [AlatBayarController::class, 'combo']);
-        Route::get('alatbayar/field_length', [AlatBayarController::class, 'fieldLength']);
-        Route::get('alatbayar/default', [AlatBayarController::class, 'default']);
-        Route::resource('alatbayar', AlatBayarController::class);
-
-        Route::get('bankpelanggan/combo', [BankPelangganController::class, 'combo']);
-        Route::get('bankpelanggan/field_length', [BankPelangganController::class, 'fieldLength']);
-        Route::get('bankpelanggan/default', [BankPelangganController::class, 'default']);
-        Route::resource('bankpelanggan', BankPelangganController::class);
-
-        Route::get('jenisemkl/combo', [JenisEmklController::class, 'combo']);
-        Route::get('jenisemkl/field_length', [JenisEmklController::class, 'fieldLength']);
-        Route::get('jenisemkl/default', [JenisEmklController::class, 'default']);
-        Route::resource('jenisemkl', JenisEmklController::class);
-
-        Route::get('jenisorder/combo', [JenisOrderController::class, 'combo']);
-        Route::get('jenisorder/field_length', [JenisOrderController::class, 'fieldLength']);
-        Route::get('jenisorder/default', [JenisOrderController::class, 'default']);
-        Route::resource('jenisorder', JenisOrderController::class);
-
-        Route::get('jenistrado/combo', [JenisTradoController::class, 'combo']);
-        Route::get('jenistrado/field_length', [JenisTradoController::class, 'fieldLength']);
-        Route::get('jenistrado/default', [JenisTradoController::class, 'default']);
-        Route::resource('jenistrado', JenisTradoController::class);
-
-        Route::get('akunpusat/field_length', [AkunPusatController::class, 'fieldLength']);
-        Route::get('akunpusat/default', [AkunPusatController::class, 'default']);
-        Route::resource('akunpusat', AkunPusatController::class)->parameters(['akunpusat' => 'akunPusat']);
-
-        Route::get('error/field_length', [ErrorController::class, 'fieldLength']);
-        Route::get('error/geterror', [ErrorController::class, 'geterror']);
-        Route::get('error/export', [ErrorController::class, 'export'])->name('error.export');
-        Route::resource('error', ErrorController::class);
-
-        Route::get('role/getroleid', [RoleController::class, 'getroleid']);
-        Route::get('role/field_length', [RoleController::class, 'fieldLength']);
-        Route::get('role/export', [RoleController::class, 'export'])->name('role.export');
-        Route::resource('role', RoleController::class);
-
-        Route::get('cabang/field_length', [CabangController::class, 'fieldLength']);
-        Route::get('cabang/combostatus', [CabangController::class, 'combostatus']);
-        Route::get('cabang/getPosition2', [CabangController::class, 'getPosition2']);
-        Route::get('cabang/export', [CabangController::class, 'export'])->name('cabang.export');
-        Route::resource('cabang', CabangController::class);
-
-        Route::get('acos/field_length', [AcosController::class, 'fieldLength']);
-        Route::resource('acos', AcosController::class);
-
-        Route::get('user/field_length', [UserController::class, 'fieldLength']);
-        Route::get('user/export', [UserController::class, 'export'])->name('user.export');
-        Route::get('user/combostatus', [UserController::class, 'combostatus']);
-        Route::get('user/combocabang', [UserController::class, 'combocabang']);
-        Route::get('user/getuserid', [UserController::class, 'getuserid']);
-        Route::get('user/default', [UserController::class, 'default']);
-        Route::resource('user', UserController::class);
-
-        Route::get('menu/field_length', [MenuController::class, 'fieldLength']);
-        Route::get('menu/combomenuparent', [MenuController::class, 'combomenuparent']);
-        Route::get('menu/controller', [MenuController::class, 'listclassall']);
-        Route::get('menu/getdatanamaacos', [MenuController::class, 'getdatanamaacos']);
-        Route::get('menu/export', [MenuController::class, 'export'])->name('menu.export');
-        Route::resource('menu', MenuController::class);
-
-        Route::get('userrole/field_length', [UserRoleController::class, 'fieldLength']);
-        Route::get('userrole/detail', [UserRoleController::class, 'detail']);
-        Route::get('userrole/detaillist', [UserRoleController::class, 'detaillist']);
-        Route::get('userrole/combostatus', [UserRoleController::class, 'combostatus']);
-        Route::get('userrole/export', [UserRoleController::class, 'export'])->name('userrole.export');
-        Route::resource('userrole', UserRoleController::class);
-
-        Route::get('acl/field_length', [AclController::class, 'fieldLength']);
-        Route::get('acl/detail/{roleId}', [AclController::class, 'detail']);
-        Route::get('acl/detaillist', [AclController::class, 'detaillist']);
-        Route::get('acl/combostatus', [AclController::class, 'combostatus']);
-        Route::get('acl/export', [AclController::class, 'export'])->name('acl.export');
-        Route::resource('acl', AclController::class);
-
-        Route::get('useracl/field_length', [UserAclController::class, 'fieldLength']);
-        Route::get('useracl/detail', [UserAclController::class, 'detail']);
-        Route::get('useracl/detaillist', [UserAclController::class, 'detaillist']);
-        Route::get('useracl/combostatus', [UserAclController::class, 'combostatus']);
-        Route::get('useracl/export', [UserAclController::class, 'export'])->name('useracl.export');
-        Route::resource('useracl', UserAclController::class);
-
-        Route::get('logtrail/detail', [LogTrailController::class, 'detail']);
-        Route::get('logtrail/header', [LogTrailController::class, 'header']);
-        Route::resource('logtrail', LogTrailController::class);
-
-        Route::get('trado/combo', [TradoController::class, 'combo']);
-        Route::get('trado/field_length', [TradoController::class, 'fieldLength']);
-        Route::get('trado/getImage/{id}/{field}', [TradoController::class, 'getImage']);
-        Route::post('trado/upload_image/{id}', [TradoController::class, 'uploadImage']);
-        Route::resource('trado', TradoController::class);
-
-
-        Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
-
-        Route::get('container/field_length', [ContainerController::class, 'fieldLength']);
-        Route::get('container/combostatus', [ContainerController::class, 'combostatus']);
-        Route::get('container/getPosition2', [ContainerController::class, 'getPosition2']);
-        Route::resource('container', ContainerController::class);
-
-        Route::get('supir/combo', [SupirController::class, 'combo']);
-        Route::get('supir/field_length', [SupirController::class, 'fieldLength']);
-        Route::get('supir/getImage/{id}/{field}', [SupirController::class, 'getImage']);
-        Route::post('supir/upload_image/{id}', [SupirController::class, 'uploadImage']);
-        Route::get('supir/default', [SupirController::class, 'default']);
-        Route::resource('supir', SupirController::class);
-
-        Route::get('subkelompok/export', [SubKelompokController::class, 'export']);
-        Route::get('subkelompok/field_length', [SubKelompokController::class, 'fieldLength']);
-        Route::get('subkelompok/default', [SubKelompokController::class, 'default']);
-        Route::resource('subkelompok', SubKelompokController::class)->parameters(['subkelompok' => 'subKelompok']);
-
-        Route::get('supplier/export', [SupplierController::class, 'export']);
-        Route::get('supplier/field_length', [SupplierController::class, 'fieldLength']);
-        Route::get('supplier/default', [SupplierController::class, 'default']);
-        Route::resource('supplier', SupplierController::class);
-                
-        Route::get('stok/default', [StokController::class, 'default']);
-        Route::apiResource('stok', StokController::class);
-
-
-        Route::get('penerima/export', [PenerimaController::class, 'export']);
-        Route::get('penerima/field_length', [PenerimaController::class, 'fieldLength']);
-        Route::get('penerima/default', [PenerimaController::class, 'default']);
-        Route::resource('penerima', PenerimaController::class);
-
-        Route::get('pelanggan/export', [PelangganController::class, 'export']);
-        Route::get('pelanggan/field_length', [PelangganController::class, 'fieldLength']);
-        Route::resource('pelanggan', PelangganController::class);
-
-        Route::get('statuscontainer/export', [StatusContainerController::class, 'export']);
-        Route::get('statuscontainer/field_length', [StatusContainerController::class, 'fieldLength']);
-        Route::get('statuscontainer/default', [StatusContainerController::class, 'default']);
-        Route::resource('statuscontainer', StatusContainerController::class)->parameters(['statuscontainer' => 'statusContainer']);
-
-        Route::get('penerimaantrucking/export', [PenerimaanTruckingController::class, 'export']);
-        Route::get('penerimaantrucking/field_length', [PenerimaanTruckingController::class, 'fieldLength']);
-        Route::resource('penerimaantrucking', PenerimaanTruckingController::class)->parameters(['penerimaantrucking' => 'penerimaanTrucking']);
-
-        Route::get('pengeluarantrucking/export', [PengeluaranTruckingController::class, 'export']);
-        Route::get('pengeluarantrucking/field_length', [PengeluaranTruckingController::class, 'fieldLength']);
-        Route::resource('pengeluarantrucking', PengeluaranTruckingController::class)->parameters(['pengeluarantrucking' => 'pengeluaranTrucking']);
-
-
-        Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
-        Route::get('jurnalumumheader/no_bukti', [JurnalUmumHeaderController::class, 'getNoBukti']);
-        Route::post('jurnalumumheader/{id}/approval', [JurnalUmumHeaderController::class, 'approval'])->name('jurnalumumheader.approval');
-        Route::get('jurnalumumheader/combo', [JurnalUmumHeaderController::class, 'combo']);
-        Route::post('jurnalumumheader/{id}/cekapproval', [JurnalUmumHeaderController::class, 'cekapproval'])->name('jurnalumumheader.cekapproval');
-        Route::get('jurnalumumheader/grid', [JurnalUmumHeaderController::class, 'grid']);
-        Route::get('jurnalumumheader/field_length', [JurnalUmumHeaderController::class, 'fieldLength']);
-        Route::resource('jurnalumumheader', JurnalUmumHeaderController::class);
-        Route::resource('jurnalumumdetail', JurnalUmumDetailController::class);
-
-        Route::get('penerimaantruckingheader/{id}/printreport', [PenerimaanTruckingHeaderController::class,'printReport']);
-        Route::post('penerimaantruckingheader/{id}/cekvalidasi', [PenerimaanTruckingHeaderController::class, 'cekvalidasi'])->name('penerimaantruckingheader.cekvalidasi');     
-        Route::get('penerimaantruckingheader/no_bukti', [PenerimaanTruckingHeaderController::class, 'getNoBukti']);
-        Route::get('penerimaantruckingheader/combo', [PenerimaanTruckingHeaderController::class, 'combo']);
-        Route::get('penerimaantruckingheader/grid', [PenerimaanTruckingHeaderController::class, 'grid']);
-        Route::get('penerimaantruckingheader/field_length', [PenerimaanTruckingHeaderController::class, 'fieldLength']);
-        Route::resource('penerimaantruckingheader', PenerimaanTruckingHeaderController::class);
-        Route::resource('penerimaantruckingdetail', PenerimaanTruckingDetailController::class);
-
-        Route::get('pengeluarantruckingheader/{id}/printreport', [PengeluaranTruckingHeaderController::class,'printReport']);
-        Route::post('pengeluarantruckingheader/{id}/cekvalidasi', [PengeluaranTruckingHeaderController::class, 'cekvalidasi'])->name('pengeluarantruckingheader.cekvalidasi');     
-        Route::get('pengeluarantruckingheader/no_bukti', [PengeluaranTruckingHeaderController::class, 'getNoBukti']);
-        Route::get('pengeluarantruckingheader/combo', [PengeluaranTruckingHeaderController::class, 'combo']);
-        Route::get('pengeluarantruckingheader/grid', [PengeluaranTruckingHeaderController::class, 'grid']);
-        Route::get('pengeluarantruckingheader/field_length', [PengeluaranTruckingHeaderController::class, 'fieldLength']);
-        Route::resource('pengeluarantruckingheader', PengeluaranTruckingHeaderController::class);
-        Route::resource('pengeluarantruckingdetail', PengeluaranTruckingDetailController::class);
-
-        Route::get('penerimaanstok/field_length', [PenerimaanStokController::class,'fieldLength']);
-        Route::get('penerimaanstok/export', [PenerimaanStokController::class,'export']);
-        Route::get('penerimaanstok/default', [PenerimaanStokController::class, 'default']);
-        Route::apiResource('penerimaanstok', PenerimaanStokController::class);
-        
-        Route::get('penerimaanstokheader/{id}/printreport', [PenerimaanStokHeaderController::class,'printReport']);
-        Route::apiResource('penerimaanstokheader', PenerimaanStokHeaderController::class);
-        Route::apiResource('penerimaanstokdetail', PenerimaanStokDetailController::class);
-
-        Route::get('pengeluaranstok/field_length', [PengeluaranStokController::class,'fieldLength']);
-        // Route::get('pengeluaranstok/export', [PengeluaranStokController::class,'export']);
-        Route::get('pengeluaranstok/default', [PengeluaranStokController::class, 'default']);
-        Route::apiResource('pengeluaranstok', PengeluaranStokController::class);
-        
-        Route::get('pengeluaranstokheader/{id}/printreport', [PengeluaranStokHeaderController::class,'printReport']);
-        Route::apiResource('pengeluaranstokheader', PengeluaranStokHeaderController::class);
-        Route::apiResource('pengeluaranstokdetail', PengeluaranStokDetailController::class);
-
-                
-        Route::get('pengeluaranstok/field_length', [PengeluaranStokController::class,'fieldLength']);
-        // Route::get('pengeluaranstok/export', [PengeluaranStokController::class,'export']);
-        Route::post('invoiceextraheader/{id}/approval', [InvoiceExtraHeaderController::class,'approval']);
-        Route::get('invoiceextraheader/{id}/printreport', [InvoiceExtraHeaderController::class,'printReport']);
-        Route::resource('invoiceextraheader', InvoiceExtraHeaderController::class);
-        Route::resource('invoiceextradetail', InvoiceExtraDetailController::class);
-
-        Route::get('piutangheader/{id}/printreport', [PiutangHeaderController::class,'printReport']);
-        Route::post('piutangheader/{id}/cekvalidasi', [PiutangHeaderController::class, 'cekvalidasi'])->name('piutangheader.cekvalidasi');
-        Route::get('piutangheader/no_bukti', [PiutangHeaderController::class, 'getNoBukti']);
-        Route::get('piutangheader/grid', [PiutangHeaderController::class, 'grid']);
-        Route::get('piutangheader/field_length', [PiutangHeaderController::class, 'fieldLength']);
-        Route::apiResource('piutangheader', PiutangHeaderController::class)->parameters(['piutangheader' => 'piutangHeader']);
-        Route::apiResource('piutangdetail', PiutangDetailController::class);
-
-        Route::get('hutangheader/{id}/printreport', [HutangHeaderController::class,'printReport']);
-        Route::post('hutangheader/{id}/cekvalidasi', [HutangHeaderController::class, 'cekvalidasi'])->name('hutangheader.cekvalidasi');
-        Route::get('hutangheader/no_bukti', [HutangHeaderController::class, 'getNoBukti']);
-        Route::get('hutangheader/combo', [HutangHeaderController::class, 'combo']);
-        Route::get('hutangheader/grid', [HutangHeaderController::class, 'grid']);
-        Route::get('hutangheader/field_length', [HutangHeaderController::class, 'fieldLength']);
-        Route::resource('hutangheader', HutangHeaderController::class);
-        Route::resource('hutangdetail', HutangDetailController::class);
-
-        Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
-        Route::get('pelunasanpiutangheader/no_bukti', [PelunasanPiutangHeaderController::class, 'getNoBukti']);
-        Route::get('pelunasanpiutangheader/combo', [PelunasanPiutangHeaderController::class, 'combo']);
-        Route::get('pelunasanpiutangheader/{id}/getpiutang', [PelunasanPiutangHeaderController::class, 'getpiutang'])->name('pelunasanpiutangheader.getpiutang');
-        Route::get('pelunasanpiutangheader/{id}/{agenid}/getPelunasanPiutang', [PelunasanPiutangHeaderController::class, 'getPelunasanPiutang']);
-        Route::get('pelunasanpiutangheader/{id}/{agenid}/getDeletePelunasanPiutang', [PelunasanPiutangHeaderController::class, 'getDeletePelunasanPiutang']);
-        Route::get('pelunasanpiutangheader/grid', [PelunasanPiutangHeaderController::class, 'grid']);
-        Route::get('pelunasanpiutangheader/field_length', [PelunasanPiutangHeaderController::class, 'fieldLength']);
-        Route::resource('pelunasanpiutangheader', PelunasanPiutangHeaderController::class);
-        Route::resource('pelunasanpiutangdetail', PelunasanPiutangDetailController::class);
-
-        Route::get('hutangbayarheader/{id}/printreport', [HutangBayarHeaderController::class,'printReport']);
-        Route::post('hutangbayarheader/{id}/cekvalidasi', [HutangBayarHeaderController::class, 'cekvalidasi'])->name('hutangbayarheader.cekvalidasi');
-        Route::get('hutangbayarheader/no_bukti', [HutangBayarHeaderController::class, 'getNoBukti']);
-        Route::get('hutangbayarheader/field_length', [HutangBayarHeaderController::class, 'fieldLength']);
-        Route::get('hutangbayarheader/combo', [HutangBayarHeaderController::class, 'combo']);
-        Route::get('hutangbayarheader/{id}/{field}/getHutang', [HutangBayarHeaderController::class, 'getHutang'])->name('hutangbayarheader.getHutang'); 
-        Route::get('hutangbayarheader/comboapproval', [HutangBayarHeaderController::class, 'comboapproval']);
-        Route::post('hutangbayarheader/{id}/cekapproval', [HutangBayarHeaderController::class, 'cekapproval'])->name('hutangbayarheader.cekapproval');
-        Route::get('hutangbayarheader/{id}/{fieldid}/{field}/getPembayaran', [HutangBayarHeaderController::class, 'getPembayaran']);
-        Route::get('hutangbayarheader/grid', [HutangBayarHeaderController::class, 'grid']);
-        Route::resource('hutangbayarheader', HutangBayarHeaderController::class);
-        Route::resource('hutangbayardetail', HutangBayarDetailController::class);
-
-        Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
-        Route::get('serviceinheader/no_bukti', [ServiceInHeaderController::class, 'getNoBukti']);
-        Route::get('serviceinheader/combo', [ServiceInHeaderController::class, 'combo']);
-        Route::get('serviceinheader/grid', [ServiceInHeaderController::class, 'grid']);
-        Route::get('serviceinheader/field_length', [ServiceInHeaderController::class, 'fieldLength']);
-        Route::resource('serviceinheader', ServiceInHeaderController::class);
-        Route::resource('serviceindetail', ServiceInDetailController::class);
-
-        
-        Route::get('serviceoutheader/combo', [ServiceOutHeaderController::class, 'combo']);
-        Route::get('serviceoutheader/field_length', [ServiceOutHeaderController::class, 'fieldLength']);
-        Route::resource('serviceoutheader', ServiceOutHeaderController::class);
-        Route::resource('serviceoutdetail', ServiceOutDetailController::class);
-        
-        Route::post('kasgantungheader/{id}/cekvalidasi', [KasGantungHeaderController::class, 'cekvalidasi'])->name('kasgantungheader.cekvalidasi');
-        Route::get('kasgantungheader/{id}/printreport', [KasGantungHeaderController::class,'printReport']);
-        Route::get('kasgantungheader/combo', [KasGantungHeaderController::class, 'combo']);
-        Route::get('kasgantungheader/grid', [KasGantungHeaderController::class, 'grid']);
-        Route::post('kasgantungheader/{id}/cekvalidasi', [KasGantungHeaderController::class, 'cekvalidasi'])->name('kasgantungheader.cekvalidasi');
-        Route::get('kasgantungheader/field_length', [KasGantungHeaderController::class, 'fieldLength']);
-        Route::resource('kasgantungheader', KasGantungHeaderController::class);
-
-        Route::resource('kasgantungdetail', KasGantungDetailController::class);
-
-        Route::get('gajisupirheader/{id}/printreport', [GajiSupirHeaderController::class,'printReport']);
-        Route::post('gajisupirheader/{id}/cekvalidasi', [GajiSupirHeaderController::class, 'cekvalidasi'])->name('gajisupirheader.cekvalidasi');     
-        Route::get('gajisupirheader/no_bukti', [GajiSupirHeaderController::class, 'getNoBukti']);
-        Route::get('gajisupirheader/grid', [GajiSupirHeaderController::class, 'grid']);
-        Route::get('gajisupirheader/field_length', [GajiSupirHeaderController::class, 'fieldLength']);
-        Route::get('gajisupirheader/getTrip/{supirId}/{dari}/{sampai}', [GajiSupirHeaderController::class, 'getTrip']);
-        Route::post('gajisupirheader/noEdit', [GajiSupirHeaderController::class, 'noEdit']);
-        Route::get('gajisupirheader/{gajiId}/getEditTrip', [GajiSupirHeaderController::class, 'getEditTrip']);
-        Route::resource('gajisupirheader', GajiSupirHeaderController::class);
-        Route::resource('gajisupirdetail', GajiSupirDetailController::class);
-
-        Route::post('notakreditheader/{id}/cekvalidasi', [NotaKreditHeaderController::class, 'cekvalidasi'])->name('notakreditheader.cekvalidasi');
-        Route::get('notakreditheader/{id}/printreport', [NotaKreditHeaderController::class,'printReport']);
-        Route::get('notakreditheader/field_length', [NotaKreditHeaderController::class,'fieldLength']);
-        Route::get('notakreditheader/{id}/getpelunasan', [NotaKreditHeaderController::class,'getPelunasan']);
-        Route::get('notakreditheader/{id}/getnotakredit', [NotaKreditHeaderController::class,'getNotaKredit']);
-        Route::post('notakreditheader/{id}/approval', [NotaKreditHeaderController::class,'approval']);
-        Route::get('notakreditheader/export', [NotaKreditHeaderController::class, 'export']);
-        Route::resource('notakreditheader', NotaKreditHeaderController::class);
-        Route::resource('notakredit_detail', NotaKreditDetailController::class);
-        
-        Route::post('notadebetheader/{id}/cekvalidasi', [NotaDebetHeaderController::class, 'cekvalidasi'])->name('notadebetheader.cekvalidasi');
-        Route::get('notadebetheader/{id}/printreport', [NotaDebetHeaderController::class,'printReport']);
-        Route::get('notadebetheader/field_length', [NotaDebetHeaderController::class,'fieldLength']);
-        Route::get('notadebetheader/{id}/getpelunasan', [NotaDebetHeaderController::class,'getPelunasan']);
-        Route::get('notadebetheader/{id}/getnotadebet', [NotaDebetHeaderController::class,'getNotaDebet']);
-        Route::post('notadebetheader/{id}/approval', [NotaDebetHeaderController::class,'approval']);
-        Route::get('notadebetheader/export', [NotaDebetHeaderController::class, 'export']);
-        Route::resource('notadebetheader',NotaDebetHeaderController::class);
-        Route::resource('notadebet_detail', NotaDebetDetailController::class);
-        
-        Route::get('rekappengeluaranheader/field_length', [RekapPengeluaranHeaderController::class,'fieldLength']);
-        Route::get('rekappengeluaranheader/getpengeluaran', [RekapPengeluaranHeaderController::class,'getPengeluaran']);
-        Route::get('rekappengeluaranheader/export', [RekapPengeluaranHeaderController::class, 'export']);
-        Route::get('rekappengeluaranheader/{id}/getrekappengeluaran', [RekapPengeluaranHeaderController::class,'getRekapPengeluaran']);
-        Route::post('rekappengeluaranheader/{id}/approval', [RekapPengeluaranHeaderController::class,'approval']);      
-        Route::get('gandengan/default', [GandenganController::class, 'default']);
-
-        Route::resource('rekappengeluaranheader',RekapPengeluaranHeaderController::class);
-        Route::resource('rekappengeluarandetail', RekapPengeluaranDetailController::class);
-        
-        Route::get('rekappenerimaanheader/field_length', [RekapPenerimaanHeaderController::class,'fieldLength']);
-        Route::get('rekappenerimaanheader/getpenerimaan', [RekapPenerimaanHeaderController::class,'getPenerimaan']);
-        Route::get('rekappenerimaanheader/export', [RekapPenerimaanHeaderController::class, 'export']);
-        Route::get('rekappenerimaanheader/{id}/getrekappenerimaan', [RekapPenerimaanHeaderController::class,'getRekapPenerimaan']);
-        Route::post('rekappenerimaanheader/{id}/approval', [RekapPenerimaanHeaderController::class,'approval']);
-        Route::resource('rekappenerimaanheader',RekapPenerimaanHeaderController::class);
-        Route::resource('rekappenerimaandetail', RekapPenerimaanDetailController::class);
-        
-        Route::get('pengembaliankasgantungheader/field_length', [PengembalianKasGantungHeaderController::class,'fieldLength']);
-        Route::get('pengembaliankasgantungheader/getkasgantung', [PengembalianKasGantungHeaderController::class,'getKasGantung']);
-        Route::get('pengembaliankasgantungheader/getpengembalian/{id}', [PengembalianKasGantungHeaderController::class,'getPengembalian']);
-        Route::post('pengembaliankasgantungheader/{id}/cekvalidasi', [PengembalianKasGantungHeaderController::class, 'cekvalidasi'])->name('pengembaliankasgantungheader.cekvalidasi');
-        Route::resource('pengembaliankasgantungheader', PengembalianKasGantungHeaderController::class);
-        
-        Route::resource('pengembaliankasgantung_detail', PengembalianKasGantungDetailController::class);
-
-        Route::post('pengembaliankasbankheader/{id}/approval', [PengembalianKasBankHeaderController::class, 'approval'])->name('pengembaliankasbankheader.approval');
-        Route::get('pengembaliankasbankheader/no_bukti', [PengembalianKasBankHeaderController::class, 'getNoBukti']);
-        Route::get('pengembaliankasbankheader/field_length', [PengembalianKasBankHeaderController::class, 'fieldLength']);
-        Route::get('pengembaliankasbankheader/combo', [PengembalianKasBankHeaderController::class, 'combo']);
-        Route::post('pengembaliankasbankheader/{id}/approval', [PengembalianKasBankHeaderController::class,'approval']);
-        Route::get('pengembaliankasbankheader/grid', [PengembalianKasBankHeaderController::class, 'grid']);
-        Route::resource('pengembaliankasbankheader', PengembalianKasBankHeaderController::class);
-
-        Route::resource('pengembaliankasbankdetail', PengembalianKasBankDetailController::class);
-
-        Route::get('prosesgajisupirheader/{id}/printreport', [ProsesGajiSupirHeaderController::class,'printReport']);
-        Route::post('prosesgajisupirheader/{id}/cekvalidasi', [ProsesGajiSupirHeaderController::class, 'cekvalidasi'])->name('prosesgajisupirheader.cekvalidasi');     
-        Route::get('prosesgajisupirheader/no_bukti', [ProsesGajiSupirHeaderController::class, 'getNoBukti']);
-        Route::get('prosesgajisupirheader/grid', [ProsesGajiSupirHeaderController::class, 'grid']);
-        Route::get('prosesgajisupirheader/field_length', [ProsesGajiSupirHeaderController::class, 'fieldLength']);
-        Route::get('prosesgajisupirheader/getRic/{dari}/{sampai}', [ProsesGajiSupirHeaderController::class, 'getRic']);
-        Route::post('prosesgajisupirheader/noEdit', [ProsesGajiSupirHeaderController::class, 'noEdit']);
-        Route::get('prosesgajisupirheader/{id}/getEdit', [ProsesGajiSupirHeaderController::class, 'getEdit']);
-        Route::resource('prosesgajisupirheader', ProsesGajiSupirHeaderController::class);
-        Route::resource('prosesgajisupirdetail', ProsesGajiSupirDetailController::class);
-
-        Route::get('invoiceheader/{id}/printreport', [InvoiceHeaderController::class,'printReport']);
-        Route::get('invoiceheader/grid', [InvoiceHeaderController::class, 'grid']);
-        Route::get('invoiceheader/field_length', [InvoiceHeaderController::class, 'fieldLength']);
-        Route::get('invoiceheader/comboapproval', [InvoiceHeaderController::class, 'comboapproval']);
-        Route::get('invoiceheader/{id}/getEdit', [InvoiceHeaderController::class, 'getEdit']);
-        Route::get('invoiceheader/getSP', [InvoiceHeaderController::class, 'getSP']);
-        Route::post('invoiceheader/{id}/cekvalidasi', [InvoiceHeaderController::class, 'cekvalidasi'])->name('invoiceheader.cekvalidasi');
-        Route::resource('invoiceheader', InvoiceHeaderController::class);
-        Route::resource('invoicedetail', InvoiceDetailController::class);
-
-        Route::resource('tutupbuku', TutupBukuController::class);
-
-
-        Route::get('suratpengantar/combo', [SuratPengantarController::class, 'combo']);
-        Route::get('suratpengantar/field_length', [SuratPengantarController::class, 'fieldLength']);
-        Route::post('suratpengantar/cekUpahSupir', [SuratPengantarController::class, 'cekUpahSupir']);
-        Route::get('suratpengantar/{id}/getTarifOmset', [SuratPengantarController::class, 'getTarifOmset']);
-        Route::get('suratpengantar/{id}/getOrderanTrucking', [SuratPengantarController::class, 'getOrderanTrucking']);
-        Route::get('suratpengantar/getGaji/{dari}/{sampai}/{container}/{statuscontainer}', [SuratPengantarController::class, 'getGaji']);
-        Route::get('suratpengantar/default', [SuratPengantarController::class, 'default']);
-        Route::resource('suratpengantar', SuratPengantarController::class);
-        
-        Route::get('penerimaanheader/{id}/printreport', [PenerimaanHeaderController::class,'printReport']);
-        Route::post('penerimaanheader/{id}/approval', [PenerimaanHeaderController::class, 'approval'])->name('penerimaanheader.approval');
-        Route::post('penerimaanheader/{id}/cekvalidasi', [PenerimaanHeaderController::class, 'cekvalidasi'])->name('penerimaanheader.cekvalidasi');
-        Route::get('penerimaanheader/no_bukti', [PenerimaanHeaderController::class, 'getNoBukti']);
-        Route::get('penerimaanheader/combo', [PenerimaanHeaderController::class, 'combo']);
-        Route::get('penerimaanheader/{id}/tarikPelunasan', [PenerimaanHeaderController::class, 'tarikPelunasan']);
-        Route::get('penerimaanheader/{id}/{table}/getPelunasan', [PenerimaanHeaderController::class, 'getPelunasan']);
-        Route::get('penerimaanheader/grid', [PenerimaanHeaderController::class, 'grid']);
-        Route::get('penerimaanheader/default', [PenerimaanHeaderController::class, 'default']);
-
-        Route::resource('penerimaanheader', PenerimaanHeaderController::class);
-
-        Route::resource('penerimaandetail', PenerimaanDetailController::class);
-
-        //pengeluaran
-        Route::get('pengeluaranheader/{id}/printreport', [PengeluaranHeaderController::class,'printReport']);
-        Route::post('pengeluaranheader/{id}/approval', [PengeluaranHeaderController::class, 'approval'])->name('pengeluaranheader.approval');
-        Route::get('pengeluaranheader/no_bukti', [PengeluaranHeaderController::class, 'getNoBukti']);
-        Route::get('pengeluaranheader/field_length', [PengeluaranHeaderController::class, 'fieldLength']);
-        Route::get('pengeluaranheader/combo', [PengeluaranHeaderController::class, 'combo']);
-        Route::get('pengeluaranheader/grid', [PengeluaranHeaderController::class, 'grid']);
-        Route::get('pengeluaranheader/default', [PengeluaranHeaderController::class, 'default']);
-        Route::post('pengeluaranheader/{id}/cekvalidasi', [PengeluaranHeaderController::class, 'cekvalidasi'])->name('pengeluaranheader.cekvalidasi');
-        Route::resource('pengeluaranheader', PengeluaranHeaderController::class);
-
-        Route::resource('pengeluarandetail', PengeluaranDetailController::class);
-        
-        Route::post('penerimaangiroheader/{id}/approval', [PenerimaanGiroHeaderController::class, 'approval'])->name('penerimaangiroheader.approval');   
-        Route::post('penerimaangiroheader/{id}/cekvalidasi', [PenerimaanGiroHeaderController::class, 'cekvalidasi'])->name('penerimaangiroheader.cekvalidasi');
-        Route::get('penerimaangiroheader/{id}/printreport', [PenerimaanGiroHeaderController::class,'printReport']);
-        Route::get('penerimaangiroheader/field_length', [PenerimaanGiroHeaderController::class, 'fieldLength']);
-        Route::get('penerimaangiroheader/combo', [PenerimaanGiroHeaderController::class, 'combo']);
-        Route::get('penerimaangiroheader/grid', [PenerimaanGiroHeaderController::class, 'grid']);
-        Route::get('penerimaangiroheader/{id}/tarikPelunasan', [PenerimaanGiroHeaderController::class, 'tarikPelunasan']);
-        Route::get('penerimaangiroheader/{id}/getPelunasan', [PenerimaanGiroHeaderController::class, 'getPelunasan']);
-        Route::resource('penerimaangiroheader', PenerimaanGiroHeaderController::class);
-
-        Route::resource('penerimaangirodetail', PenerimaanGiroDetailController::class);
-
-        
-        Route::get('harilibur/field_length', [HariLiburController::class, 'fieldLength']);
-        Route::get('harilibur/default', [HariLiburController::class, 'default']);
-        Route::resource('harilibur', HariLiburController::class);
-
-        Route::get('jurnalumumpusatheader/grid', [JurnalUmumPusatHeaderController::class, 'grid']);
-        Route::get('jurnalumumpusatheader/field_length', [JurnalUmumPusatHeaderController::class, 'fieldLength']);
-        Route::resource('jurnalumumpusatheader', JurnalUmumPusatHeaderController::class);
-        Route::resource('jurnalumumpusatdetail', JurnalUmumPusatDetailController::class);
-        
-        Route::get('reportall/report', [ReportAllController::class, 'report'])->name('reportall.report');
-        Route::resource('reportall', ReportAllController::class);
-
-        Route::get('reportneraca/report', [ReportNeracaController::class, 'report'])->name('reportneraca.report');
-        Route::resource('reportneraca', ReportNeracaController::class);
-        
-        Route::get('pencairangiropengeluaranheader/grid', [PencairanGiroPengeluaranHeaderController::class, 'grid']);
-        Route::get('pencairangiropengeluaranheader/field_length', [PencairanGiroPengeluaranHeaderController::class, 'fieldLength']);
-        Route::delete('pencairangiropengeluaranheader', [PencairanGiroPengeluaranHeaderController::class, 'destroy']);
-        Route::resource('pencairangiropengeluaranheader', PencairanGiroPengeluaranHeaderController::class);
-        Route::resource('pencairangiropengeluarandetail', PencairanGiroPengeluaranDetailController::class);
-
-        Route::get('approvalnotaheader/combo', [ApprovalNotaHeaderController::class, 'combo']);
-        Route::resource('approvalnotaheader', ApprovalNotaHeaderController::class);
-        Route::resource('approvalhutangbayar', ApprovalHutangBayarController::class);
-        
-        
-        Route::get('pendapatansupirheader/{id}/printreport', [PendapatanSupirHeaderController::class,'printReport']);
-        Route::post('pendapatansupirheader/{id}/cekvalidasi', [PendapatanSupirHeaderController::class, 'cekvalidasi'])->name('pendapatansupirheader.cekvalidasi');     
-        Route::resource('pendapatansupirheader', PendapatanSupirHeaderController::class)->parameters(['pendapatansupirheader' => 'pendapatanSupirHeader']);
-        Route::resource('pendapatansupirdetail', PendapatanSupirDetailController::class);
-        
-        Route::resource('approvalpendapatansupir', ApprovalPendapatanSupirController::class);
-        Route::resource('stokpersediaan', StokPersediaanController::class);
-        Route::get('kartustok/report', [KartuStokController::class, 'report'])->name('kartustok.report');
-        Route::resource('kartustok', KartuStokController::class);
-        
-        Route::get('historipenerimaanstok/report', [HistoriPenerimaanStokController::class, 'report'])->name('historipenerimaanstok.report');
-        Route::resource('historipenerimaanstok', HistoriPenerimaanStokController::class);
-        
-        Route::get('historipengeluaranstok/report', [HistoriPengeluaranStokController::class, 'report'])->name('historipengeluaranstok.report');
-        Route::resource('historipengeluaranstok', HistoriPengeluaranStokController::class);
-        
-        Route::get('laporankasbank/report', [LaporanKasBankController::class, 'report'])->name('laporankasbank.report');
-        Route::resource('laporankasbank', LaporanKasBankController::class);
-        Route::get('laporanbukubesar/report', [LaporanBukuBesarController::class, 'report'])->name('laporanbukubesar.report');
-        Route::resource('laporanbukubesar', LaporanBukuBesarController::class);
-
-    });
-
-    Route::get('gudang/combo', [GudangController::class, 'combo']);
-    Route::get('gudang/field_length', [GudangController::class, 'fieldLength']);
-    Route::get('gudang/default', [GudangController::class, 'default']);
-    Route::resource('gudang', GudangController::class);
-
-    Route::get('kategori/combo', [KategoriController::class, 'combo']);
-    Route::get('kategori/field_length', [KategoriController::class, 'fieldLength']);
-    Route::get('kategori/default', [KategoriController::class, 'default']);
-    Route::resource('kategori', KategoriController::class);
-
-    Route::get('kelompok/combo', [KelompokController::class, 'combo']);
-    Route::get('kelompok/field_length', [KelompokController::class, 'fieldLength']);
-    Route::get('kelompok/default', [KelompokController::class, 'default']);
-    Route::resource('kelompok', KelompokController::class);
-
-    Route::get('kerusakan/combo', [KerusakanController::class, 'combo']);
-    Route::get('kerusakan/field_length', [KerusakanController::class, 'fieldLength']);
-    Route::get('kerusakan/default', [KerusakanController::class, 'default']);
-    Route::resource('kerusakan', KerusakanController::class);
-
-
-    Route::get('mandor/combo', [MandorController::class, 'combo']);
-    Route::get('mandor/field_length', [MandorController::class, 'fieldLength']);
-    Route::get('mandor/default', [MandorController::class, 'default']);
-    Route::resource('mandor', MandorController::class);
-
-    Route::get('merk/combo', [MerkController::class, 'combo']);
-    Route::get('merk/field_length', [MerkController::class, 'fieldLength']);
-    Route::get('merk/default', [MerkController::class, 'default']);
-    Route::resource('merk', MerkController::class);
-
-    Route::get('satuan/combo', [SatuanController::class, 'combo']);
-    Route::get('satuan/field_length', [SatuanController::class, 'fieldLength']);
-    Route::get('satuan/default', [SatuanController::class, 'default']);
-    Route::resource('satuan', SatuanController::class);
-
-    Route::get('zona/combo', [ZonaController::class, 'combo']);
-    Route::get('zona/field_length', [ZonaController::class, 'fieldLength']);
-    Route::get('zona/default', [ZonaController::class, 'default']);
-    Route::resource('zona', ZonaController::class);
-
-
-    Route::get('tarif/combo', [TarifController::class, 'combo']);
-    Route::get('tarif/field_length', [TarifController::class, 'fieldLength']);
-    Route::get('tarif/default', [TarifController::class, 'default']);
-    Route::resource('tarif', TarifController::class);
-
-    Route::get('tarifrincian/setuprow', [TarifRincianController::class, 'setUpRow']);
-    Route::get('tarifrincian/setuprowshow/{id}', [TarifRincianController::class, 'setUpRowExcept']);
-    Route::resource('tarifrincian', TarifRincianController::class);
-
-
-    Route::get('orderantrucking/combo', [OrderanTruckingController::class, 'combo']);
-    Route::get('orderantrucking/field_length', [OrderanTruckingController::class, 'fieldLength']);
-    Route::get('orderantrucking/default', [OrderanTruckingController::class, 'default']);
-    Route::resource('orderantrucking', OrderanTruckingController::class);
-
-    Route::get('prosesabsensisupir/combo', [ProsesAbsensiSupirController::class, 'combo']);
-    Route::get('prosesabsensisupir/field_length', [ProsesAbsensiSupirController::class, 'fieldLength']);
-    Route::resource('prosesabsensisupir', ProsesAbsensiSupirController::class);
-
-    Route::get('mekanik/combo', [MekanikController::class, 'combo']);
-    Route::get('mekanik/field_length', [MekanikController::class, 'fieldLength']);
-    Route::get('mekanik/default', [MekanikController::class, 'default']);
-    Route::resource('mekanik', MekanikController::class);
-
-    Route::get('upahsupir/combo', [UpahSupirController::class, 'combo']);
-    Route::get('upahsupir/field_length', [UpahSupirController::class, 'fieldLength']);
-    Route::get('upahsupir/default', [UpahSupirController::class, 'default']);
-    Route::resource('upahsupir', UpahSupirController::class);
-    
-    Route::get('upahsupirrincian/setuprow', [UpahSupirRincianController::class, 'setUpRow']);
-    Route::get('upahsupirrincian/setuprowshow/{id}', [UpahSupirRincianController::class, 'setUpRowExcept']);
-    Route::resource('upahsupirrincian', UpahSupirRincianController::class);
-
-
-
-    //Penerimaan trucking
-    // Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
-    // Route::get('penerimaantrucking/no_bukti', [PenerimaanTruckingHeaderController::class, 'getNoBukti']);
-    // Route::get('penerimaantrucking/combo', [PenerimaanTruckingHeaderController::class, 'combo']);
-    // Route::get('penerimaantrucking/grid', [PenerimaanTruckingHeaderController::class, 'grid']);
-    // Route::resource('penerimaantrucking', PenerimaanTruckingHeaderController::class);
-
-    // Route::resource('penerimaantruckingdetail', PenerimaanTruckingDetailController::class);
-
-    
+Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
+    return $request->user();
+});
+
+Route::post('token', [AuthController::class, 'token']);
+
+Route::get('supir/image/{field}/{filename}/{type}', [SupirController::class, 'getImage']);
+Route::get('trado/image/{field}/{filename}/{type}', [TradoController::class, 'getImage']);
+Route::get('stok/{filename}/{type}', [StokController::class, 'getImage']);
+Route::get('upahsupir/{filename}/{type}', [UpahSupirController::class, 'getImage']);
+
+route::middleware(['auth:api'])->group(function () {
+    Route::get('parameter/export', [ParameterController::class, 'export']);
+    Route::get('parameter/detail', [ParameterController::class, 'detail']);
+    Route::get('parameter/field_length', [ParameterController::class, 'fieldLength']);
+    Route::get('parameter/combo', [ParameterController::class, 'combo']);
+    Route::get('parameter/comboapproval', [ParameterController::class, 'comboapproval']);
+    Route::get('parameter/combolist', [ParameterController::class, 'combolist']);
+    Route::get('parameter/getcoa', [ParameterController::class, 'getcoa']);
+    Route::resource('parameter', ParameterController::class);
+
+    Route::get('absensisupirheader/{id}/detail', [AbsensiSupirHeaderController::class, 'detail'])->name('absensi.detail');
+    Route::get('absensisupirheader/no_bukti', [AbsensiSupirHeaderController::class, 'getNoBukti']);
+    Route::get('absensisupirheader/running_number', [AbsensiSupirHeaderController::class, 'getRunningNumber']);
+    Route::get('absensisupirheader/grid', [AbsensiSupirHeaderController::class, 'grid']);
+    Route::get('absensisupirheader/field_length', [AbsensiSupirHeaderController::class, 'fieldLength']);
+    Route::post('absensisupirheader/{id}/cekvalidasi', [AbsensiSupirHeaderController::class, 'cekvalidasi'])->name('absensisupirheader.cekvalidasi');
+    Route::apiResource('absensisupirheader', AbsensiSupirHeaderController::class)->parameter('absensisupirheader', 'absensiSupirHeader');
+
+    Route::resource('absensisupirdetail', AbsensiSupirDetailController::class);
+
+    Route::get('approvaltransaksiheader/combo', [ApprovalTransaksiHeaderController::class, 'combo']);
+    Route::apiResource('approvaltransaksiheader', ApprovalTransaksiHeaderController::class);
+
+    Route::get('approvalinvoiceheader/combo', [ApprovalInvoiceHeaderController::class, 'combo']);
+    Route::resource('approvalinvoiceheader', ApprovalInvoiceHeaderController::class);
+
+    Route::get('approvalbukacetak/combo', [ApprovalBukaCetakController::class, 'combo']);
+    Route::resource('approvalbukacetak', ApprovalBukaCetakController::class);
+
+    Route::get('absensisupirapprovalheader/running_number', [AbsensiSupirApprovalHeaderController::class, 'getRunningNumber']);
+    Route::get('absensisupirapprovalheader/grid', [AbsensiSupirApprovalHeaderController::class, 'grid']);
+    Route::get('absensisupirapprovalheader/field_length', [AbsensiSupirApprovalHeaderController::class, 'fieldLength']);
+    Route::get('absensisupirapprovalheader/export', [AbsensiSupirApprovalHeaderController::class, 'export']);
+    Route::get('absensisupirapprovalheader/{absensi}/getabsensi', [AbsensiSupirApprovalHeaderController::class, 'getAbsensi']);
+    Route::get('absensisupirapprovalheader/{absensi}/getapproval', [AbsensiSupirApprovalHeaderController::class, 'getApproval']);
+    Route::post('absensisupirapprovalheader/{id}/cekvalidasi', [AbsensiSupirApprovalHeaderController::class, 'cekvalidasi'])->name('absensisupirapprovalheader.cekvalidasi');
+    Route::post('absensisupirapprovalheader/{id}/approval', [AbsensiSupirApprovalHeaderController::class, 'approval']);
+    Route::apiResource('absensisupirapprovalheader', AbsensiSupirApprovalHeaderController::class);
+    Route::apiResource('absensisupirapprovaldetail', AbsensiSupirApprovalDetailController::class);
+
+    Route::get('agen/field_length', [AgenController::class, 'fieldLength']);
+    Route::get('agen/export', [AgenController::class, 'export'])->name('export');
+    Route::get('agen/default', [AgenController::class, 'default']);
+    Route::post('agen/{agen}/approval', [AgenController::class, 'approval'])->name('agen.approval');
+    Route::resource('agen', AgenController::class);
+
+    Route::get('cabang/field_length', [CabangController::class, 'fieldLength']);
+    Route::get('cabang/combostatus', [CabangController::class, 'combostatus']);
+    Route::get('cabang/default', [CabangController::class, 'default']);
+    Route::get('cabang/getPosition2', [CabangController::class, 'getPosition2']);
+    Route::resource('cabang', CabangController::class);
+
+    Route::get('gandengan/field_length', [GandenganController::class, 'fieldLength']);
+    Route::get('gandengan/combostatus', [GandenganController::class, 'combostatus']);
+    Route::get('gandengan/getPosition2', [GandenganController::class, 'getPosition2']);
+    Route::get('gandengan/default', [GandenganController::class, 'default']);
+    Route::resource('gandengan', GandenganController::class);
+
+
+    Route::get('acos/field_length', [AcosController::class, 'fieldLength']);
+    Route::resource('acos', AcosController::class);
+
+    Route::get('kota/combo', [KotaController::class, 'combo']);
+    Route::get('kota/field_length', [KotaController::class, 'fieldLength']);
+    Route::get('kota/default', [KotaController::class, 'default']);
+    Route::resource('kota', KotaController::class);
+
+    Route::get('logtrail/detail', [LogTrailController::class, 'detail']);
+    Route::get('logtrail/header', [LogTrailController::class, 'header']);
+    Route::resource('logtrail', LogTrailController::class);
+
+    Route::get('trado/combo', [TradoController::class, 'combo']);
+    Route::get('trado/field_length', [TradoController::class, 'fieldLength']);
+    Route::post('trado/upload_image/{id}', [TradoController::class, 'uploadImage']);
+    Route::get('trado/default', [TradoController::class, 'default']);
+    Route::resource('trado', TradoController::class);
+
+    Route::get('absentrado/field_length', [AbsenTradoController::class, 'fieldLength']);
+    Route::get('absentrado/default', [AbsenTradoController::class, 'default']);
+    Route::resource('absentrado', AbsenTradoController::class);
+
+    Route::get('container/field_length', [ContainerController::class, 'fieldLength']);
+    Route::get('container/combostatus', [ContainerController::class, 'combostatus']);
+    Route::get('container/getPosition2', [ContainerController::class, 'getPosition2']);
+    Route::get('container/default', [ContainerController::class, 'default']);
+    Route::resource('container', ContainerController::class);
+
+    Route::get('bank/combo', [BankController::class, 'combo']);
+    Route::get('bank/field_length', [BankController::class, 'fieldLength']);
+    Route::get('bank/default', [BankController::class, 'default']);
+    Route::resource('bank', BankController::class);
+
+    Route::get('alatbayar/combo', [AlatBayarController::class, 'combo']);
+    Route::get('alatbayar/field_length', [AlatBayarController::class, 'fieldLength']);
+    Route::get('alatbayar/default', [AlatBayarController::class, 'default']);
+    Route::resource('alatbayar', AlatBayarController::class);
+
+    Route::get('bankpelanggan/combo', [BankPelangganController::class, 'combo']);
+    Route::get('bankpelanggan/field_length', [BankPelangganController::class, 'fieldLength']);
+    Route::get('bankpelanggan/default', [BankPelangganController::class, 'default']);
+    Route::resource('bankpelanggan', BankPelangganController::class);
+
+    Route::get('jenisemkl/combo', [JenisEmklController::class, 'combo']);
+    Route::get('jenisemkl/field_length', [JenisEmklController::class, 'fieldLength']);
+    Route::get('jenisemkl/default', [JenisEmklController::class, 'default']);
+    Route::resource('jenisemkl', JenisEmklController::class);
+
+    Route::get('jenisorder/combo', [JenisOrderController::class, 'combo']);
+    Route::get('jenisorder/field_length', [JenisOrderController::class, 'fieldLength']);
+    Route::get('jenisorder/default', [JenisOrderController::class, 'default']);
+    Route::resource('jenisorder', JenisOrderController::class);
+
+    Route::get('jenistrado/combo', [JenisTradoController::class, 'combo']);
+    Route::get('jenistrado/field_length', [JenisTradoController::class, 'fieldLength']);
+    Route::get('jenistrado/default', [JenisTradoController::class, 'default']);
+    Route::resource('jenistrado', JenisTradoController::class);
+
+    Route::get('akunpusat/field_length', [AkunPusatController::class, 'fieldLength']);
+    Route::get('akunpusat/default', [AkunPusatController::class, 'default']);
+    Route::resource('akunpusat', AkunPusatController::class)->parameters(['akunpusat' => 'akunPusat']);
+
+    Route::get('error/field_length', [ErrorController::class, 'fieldLength']);
+    Route::get('error/geterror', [ErrorController::class, 'geterror']);
+    Route::get('error/export', [ErrorController::class, 'export'])->name('error.export');
+    Route::resource('error', ErrorController::class);
+
+    Route::get('role/getroleid', [RoleController::class, 'getroleid']);
+    Route::get('role/field_length', [RoleController::class, 'fieldLength']);
+    Route::get('role/export', [RoleController::class, 'export'])->name('role.export');
+    Route::resource('role', RoleController::class);
+
+    Route::get('cabang/field_length', [CabangController::class, 'fieldLength']);
+    Route::get('cabang/combostatus', [CabangController::class, 'combostatus']);
+    Route::get('cabang/getPosition2', [CabangController::class, 'getPosition2']);
+    Route::get('cabang/export', [CabangController::class, 'export'])->name('cabang.export');
+    Route::resource('cabang', CabangController::class);
+
+    Route::get('acos/field_length', [AcosController::class, 'fieldLength']);
+    Route::resource('acos', AcosController::class);
+
+    Route::get('user/field_length', [UserController::class, 'fieldLength']);
+    Route::get('user/export', [UserController::class, 'export'])->name('user.export');
+    Route::get('user/combostatus', [UserController::class, 'combostatus']);
+    Route::get('user/combocabang', [UserController::class, 'combocabang']);
+    Route::get('user/getuserid', [UserController::class, 'getuserid']);
+    Route::get('user/default', [UserController::class, 'default']);
+    Route::resource('user', UserController::class);
+
+    Route::get('menu/field_length', [MenuController::class, 'fieldLength']);
+    Route::get('menu/combomenuparent', [MenuController::class, 'combomenuparent']);
+    Route::get('menu/controller', [MenuController::class, 'listclassall']);
+    Route::get('menu/getdatanamaacos', [MenuController::class, 'getdatanamaacos']);
+    Route::get('menu/export', [MenuController::class, 'export'])->name('menu.export');
+    Route::resource('menu', MenuController::class);
+
+    Route::get('userrole/field_length', [UserRoleController::class, 'fieldLength']);
+    Route::get('userrole/detail', [UserRoleController::class, 'detail']);
+    Route::get('userrole/detaillist', [UserRoleController::class, 'detaillist']);
+    Route::get('userrole/combostatus', [UserRoleController::class, 'combostatus']);
+    Route::get('userrole/export', [UserRoleController::class, 'export'])->name('userrole.export');
+    Route::resource('userrole', UserRoleController::class);
+
+    Route::get('acl/field_length', [AclController::class, 'fieldLength']);
+    Route::get('acl/detail/{roleId}', [AclController::class, 'detail']);
+    Route::get('acl/detaillist', [AclController::class, 'detaillist']);
+    Route::get('acl/combostatus', [AclController::class, 'combostatus']);
+    Route::get('acl/export', [AclController::class, 'export'])->name('acl.export');
+    Route::resource('acl', AclController::class);
+
+    Route::get('useracl/field_length', [UserAclController::class, 'fieldLength']);
+    Route::get('useracl/detail', [UserAclController::class, 'detail']);
+    Route::get('useracl/detaillist', [UserAclController::class, 'detaillist']);
+    Route::get('useracl/combostatus', [UserAclController::class, 'combostatus']);
+    Route::get('useracl/export', [UserAclController::class, 'export'])->name('useracl.export');
+    Route::resource('useracl', UserAclController::class);
+
+    Route::get('logtrail/detail', [LogTrailController::class, 'detail']);
+    Route::get('logtrail/header', [LogTrailController::class, 'header']);
+    Route::resource('logtrail', LogTrailController::class);
+
+    Route::get('trado/combo', [TradoController::class, 'combo']);
+    Route::get('trado/field_length', [TradoController::class, 'fieldLength']);
+    Route::get('trado/getImage/{id}/{field}', [TradoController::class, 'getImage']);
+    Route::post('trado/upload_image/{id}', [TradoController::class, 'uploadImage']);
+    Route::resource('trado', TradoController::class);
+
+
+    Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
+
+    Route::get('container/field_length', [ContainerController::class, 'fieldLength']);
+    Route::get('container/combostatus', [ContainerController::class, 'combostatus']);
+    Route::get('container/getPosition2', [ContainerController::class, 'getPosition2']);
+    Route::resource('container', ContainerController::class);
+
+    Route::get('supir/combo', [SupirController::class, 'combo']);
+    Route::get('supir/field_length', [SupirController::class, 'fieldLength']);
+    Route::get('supir/getImage/{id}/{field}', [SupirController::class, 'getImage']);
+    Route::post('supir/upload_image/{id}', [SupirController::class, 'uploadImage']);
+    Route::get('supir/default', [SupirController::class, 'default']);
+    Route::resource('supir', SupirController::class);
+
+    Route::get('subkelompok/export', [SubKelompokController::class, 'export']);
+    Route::get('subkelompok/field_length', [SubKelompokController::class, 'fieldLength']);
+    Route::get('subkelompok/default', [SubKelompokController::class, 'default']);
+    Route::resource('subkelompok', SubKelompokController::class)->parameters(['subkelompok' => 'subKelompok']);
+
+    Route::get('supplier/export', [SupplierController::class, 'export']);
+    Route::get('supplier/field_length', [SupplierController::class, 'fieldLength']);
+    Route::get('supplier/default', [SupplierController::class, 'default']);
+    Route::resource('supplier', SupplierController::class);
+
+    Route::get('stok/default', [StokController::class, 'default']);
+    Route::apiResource('stok', StokController::class);
+
+
+    Route::get('penerima/export', [PenerimaController::class, 'export']);
+    Route::get('penerima/field_length', [PenerimaController::class, 'fieldLength']);
+    Route::get('penerima/default', [PenerimaController::class, 'default']);
+    Route::resource('penerima', PenerimaController::class);
+
+    Route::get('pelanggan/export', [PelangganController::class, 'export']);
+    Route::get('pelanggan/field_length', [PelangganController::class, 'fieldLength']);
+    Route::get('pelanggan/default', [PelangganController::class, 'default']);    
+    Route::get('pelanggan/combostatus', [PelangganController::class, 'combostatus']);
+
+    Route::resource('pelanggan', PelangganController::class);
+
+    Route::get('statuscontainer/export', [StatusContainerController::class, 'export']);
+    Route::get('statuscontainer/field_length', [StatusContainerController::class, 'fieldLength']);
+    Route::get('statuscontainer/default', [StatusContainerController::class, 'default']);
+    Route::resource('statuscontainer', StatusContainerController::class)->parameters(['statuscontainer' => 'statusContainer']);
+
+    Route::get('penerimaantrucking/export', [PenerimaanTruckingController::class, 'export']);
+    Route::get('penerimaantrucking/field_length', [PenerimaanTruckingController::class, 'fieldLength']);
+    Route::resource('penerimaantrucking', PenerimaanTruckingController::class)->parameters(['penerimaantrucking' => 'penerimaanTrucking']);
+
+    Route::get('pengeluarantrucking/export', [PengeluaranTruckingController::class, 'export']);
+    Route::get('pengeluarantrucking/field_length', [PengeluaranTruckingController::class, 'fieldLength']);
+    Route::resource('pengeluarantrucking', PengeluaranTruckingController::class)->parameters(['pengeluarantrucking' => 'pengeluaranTrucking']);
+
+
+    Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
+    Route::get('jurnalumumheader/no_bukti', [JurnalUmumHeaderController::class, 'getNoBukti']);
+    Route::post('jurnalumumheader/{id}/approval', [JurnalUmumHeaderController::class, 'approval'])->name('jurnalumumheader.approval');
+    Route::get('jurnalumumheader/combo', [JurnalUmumHeaderController::class, 'combo']);
+    Route::post('jurnalumumheader/{id}/cekapproval', [JurnalUmumHeaderController::class, 'cekapproval'])->name('jurnalumumheader.cekapproval');
+    Route::get('jurnalumumheader/grid', [JurnalUmumHeaderController::class, 'grid']);
+    Route::get('jurnalumumheader/field_length', [JurnalUmumHeaderController::class, 'fieldLength']);
+    Route::resource('jurnalumumheader', JurnalUmumHeaderController::class);
+    Route::resource('jurnalumumdetail', JurnalUmumDetailController::class);
+
+    Route::get('penerimaantruckingheader/{id}/printreport', [PenerimaanTruckingHeaderController::class, 'printReport']);
+    Route::post('penerimaantruckingheader/{id}/cekvalidasi', [PenerimaanTruckingHeaderController::class, 'cekvalidasi'])->name('penerimaantruckingheader.cekvalidasi');
+    Route::get('penerimaantruckingheader/no_bukti', [PenerimaanTruckingHeaderController::class, 'getNoBukti']);
+    Route::get('penerimaantruckingheader/combo', [PenerimaanTruckingHeaderController::class, 'combo']);
+    Route::get('penerimaantruckingheader/grid', [PenerimaanTruckingHeaderController::class, 'grid']);
+    Route::get('penerimaantruckingheader/field_length', [PenerimaanTruckingHeaderController::class, 'fieldLength']);
+    Route::resource('penerimaantruckingheader', PenerimaanTruckingHeaderController::class);
+    Route::resource('penerimaantruckingdetail', PenerimaanTruckingDetailController::class);
+
+    Route::get('pengeluarantruckingheader/{id}/printreport', [PengeluaranTruckingHeaderController::class, 'printReport']);
+    Route::post('pengeluarantruckingheader/{id}/cekvalidasi', [PengeluaranTruckingHeaderController::class, 'cekvalidasi'])->name('pengeluarantruckingheader.cekvalidasi');
+    Route::get('pengeluarantruckingheader/no_bukti', [PengeluaranTruckingHeaderController::class, 'getNoBukti']);
+    Route::get('pengeluarantruckingheader/combo', [PengeluaranTruckingHeaderController::class, 'combo']);
+    Route::get('pengeluarantruckingheader/grid', [PengeluaranTruckingHeaderController::class, 'grid']);
+    Route::get('pengeluarantruckingheader/field_length', [PengeluaranTruckingHeaderController::class, 'fieldLength']);
+    Route::resource('pengeluarantruckingheader', PengeluaranTruckingHeaderController::class);
+    Route::resource('pengeluarantruckingdetail', PengeluaranTruckingDetailController::class);
+
+    Route::get('penerimaanstok/field_length', [PenerimaanStokController::class, 'fieldLength']);
+    Route::get('penerimaanstok/export', [PenerimaanStokController::class, 'export']);
+    Route::get('penerimaanstok/default', [PenerimaanStokController::class, 'default']);
+    Route::apiResource('penerimaanstok', PenerimaanStokController::class);
+
+    Route::get('penerimaanstokheader/{id}/printreport', [PenerimaanStokHeaderController::class, 'printReport']);
+    Route::apiResource('penerimaanstokheader', PenerimaanStokHeaderController::class);
+    Route::apiResource('penerimaanstokdetail', PenerimaanStokDetailController::class);
+
+    Route::get('pengeluaranstok/field_length', [PengeluaranStokController::class, 'fieldLength']);
+    // Route::get('pengeluaranstok/export', [PengeluaranStokController::class,'export']);
+    Route::get('pengeluaranstok/default', [PengeluaranStokController::class, 'default']);
+    Route::apiResource('pengeluaranstok', PengeluaranStokController::class);
+
+    Route::get('pengeluaranstokheader/{id}/printreport', [PengeluaranStokHeaderController::class, 'printReport']);
+    Route::apiResource('pengeluaranstokheader', PengeluaranStokHeaderController::class);
+    Route::apiResource('pengeluaranstokdetail', PengeluaranStokDetailController::class);
+
+
+    Route::get('pengeluaranstok/field_length', [PengeluaranStokController::class, 'fieldLength']);
+    // Route::get('pengeluaranstok/export', [PengeluaranStokController::class,'export']);
+    Route::post('invoiceextraheader/{id}/approval', [InvoiceExtraHeaderController::class, 'approval']);
+    Route::get('invoiceextraheader/{id}/printreport', [InvoiceExtraHeaderController::class, 'printReport']);
+    Route::resource('invoiceextraheader', InvoiceExtraHeaderController::class);
+    Route::resource('invoiceextradetail', InvoiceExtraDetailController::class);
+
+    Route::get('piutangheader/{id}/printreport', [PiutangHeaderController::class, 'printReport']);
+    Route::post('piutangheader/{id}/cekvalidasi', [PiutangHeaderController::class, 'cekvalidasi'])->name('piutangheader.cekvalidasi');
+    Route::get('piutangheader/no_bukti', [PiutangHeaderController::class, 'getNoBukti']);
+    Route::get('piutangheader/grid', [PiutangHeaderController::class, 'grid']);
+    Route::get('piutangheader/field_length', [PiutangHeaderController::class, 'fieldLength']);
+    Route::apiResource('piutangheader', PiutangHeaderController::class)->parameters(['piutangheader' => 'piutangHeader']);
+    Route::apiResource('piutangdetail', PiutangDetailController::class);
+
+    Route::get('hutangheader/{id}/printreport', [HutangHeaderController::class, 'printReport']);
+    Route::post('hutangheader/{id}/cekvalidasi', [HutangHeaderController::class, 'cekvalidasi'])->name('hutangheader.cekvalidasi');
+    Route::get('hutangheader/no_bukti', [HutangHeaderController::class, 'getNoBukti']);
+    Route::get('hutangheader/combo', [HutangHeaderController::class, 'combo']);
+    Route::get('hutangheader/grid', [HutangHeaderController::class, 'grid']);
+    Route::get('hutangheader/field_length', [HutangHeaderController::class, 'fieldLength']);
+    Route::resource('hutangheader', HutangHeaderController::class);
+    Route::resource('hutangdetail', HutangDetailController::class);
+
+    Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
+    Route::get('pelunasanpiutangheader/no_bukti', [PelunasanPiutangHeaderController::class, 'getNoBukti']);
+    Route::get('pelunasanpiutangheader/combo', [PelunasanPiutangHeaderController::class, 'combo']);
+    Route::get('pelunasanpiutangheader/{id}/getpiutang', [PelunasanPiutangHeaderController::class, 'getpiutang'])->name('pelunasanpiutangheader.getpiutang');
+    Route::get('pelunasanpiutangheader/{id}/{agenid}/getPelunasanPiutang', [PelunasanPiutangHeaderController::class, 'getPelunasanPiutang']);
+    Route::get('pelunasanpiutangheader/{id}/{agenid}/getDeletePelunasanPiutang', [PelunasanPiutangHeaderController::class, 'getDeletePelunasanPiutang']);
+    Route::get('pelunasanpiutangheader/grid', [PelunasanPiutangHeaderController::class, 'grid']);
+    Route::get('pelunasanpiutangheader/field_length', [PelunasanPiutangHeaderController::class, 'fieldLength']);
+    Route::resource('pelunasanpiutangheader', PelunasanPiutangHeaderController::class);
+    Route::resource('pelunasanpiutangdetail', PelunasanPiutangDetailController::class);
+
+    Route::get('hutangbayarheader/{id}/printreport', [HutangBayarHeaderController::class, 'printReport']);
+    Route::post('hutangbayarheader/{id}/cekvalidasi', [HutangBayarHeaderController::class, 'cekvalidasi'])->name('hutangbayarheader.cekvalidasi');
+    Route::get('hutangbayarheader/no_bukti', [HutangBayarHeaderController::class, 'getNoBukti']);
+    Route::get('hutangbayarheader/field_length', [HutangBayarHeaderController::class, 'fieldLength']);
+    Route::get('hutangbayarheader/combo', [HutangBayarHeaderController::class, 'combo']);
+    Route::get('hutangbayarheader/{id}/{field}/getHutang', [HutangBayarHeaderController::class, 'getHutang'])->name('hutangbayarheader.getHutang');
+    Route::get('hutangbayarheader/comboapproval', [HutangBayarHeaderController::class, 'comboapproval']);
+    Route::post('hutangbayarheader/{id}/cekapproval', [HutangBayarHeaderController::class, 'cekapproval'])->name('hutangbayarheader.cekapproval');
+    Route::get('hutangbayarheader/{id}/{fieldid}/{field}/getPembayaran', [HutangBayarHeaderController::class, 'getPembayaran']);
+    Route::get('hutangbayarheader/grid', [HutangBayarHeaderController::class, 'grid']);
+    Route::resource('hutangbayarheader', HutangBayarHeaderController::class);
+    Route::resource('hutangbayardetail', HutangBayarDetailController::class);
+
+    Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
+    Route::get('serviceinheader/no_bukti', [ServiceInHeaderController::class, 'getNoBukti']);
+    Route::get('serviceinheader/combo', [ServiceInHeaderController::class, 'combo']);
+    Route::get('serviceinheader/grid', [ServiceInHeaderController::class, 'grid']);
+    Route::get('serviceinheader/field_length', [ServiceInHeaderController::class, 'fieldLength']);
+    Route::resource('serviceinheader', ServiceInHeaderController::class);
+    Route::resource('serviceindetail', ServiceInDetailController::class);
+
+
+    Route::get('serviceoutheader/combo', [ServiceOutHeaderController::class, 'combo']);
+    Route::get('serviceoutheader/field_length', [ServiceOutHeaderController::class, 'fieldLength']);
+    Route::resource('serviceoutheader', ServiceOutHeaderController::class);
+    Route::resource('serviceoutdetail', ServiceOutDetailController::class);
+
+    Route::post('kasgantungheader/{id}/cekvalidasi', [KasGantungHeaderController::class, 'cekvalidasi'])->name('kasgantungheader.cekvalidasi');
+    Route::get('kasgantungheader/{id}/printreport', [KasGantungHeaderController::class, 'printReport']);
+    Route::get('kasgantungheader/combo', [KasGantungHeaderController::class, 'combo']);
+    Route::get('kasgantungheader/grid', [KasGantungHeaderController::class, 'grid']);
+    Route::post('kasgantungheader/{id}/cekvalidasi', [KasGantungHeaderController::class, 'cekvalidasi'])->name('kasgantungheader.cekvalidasi');
+    Route::get('kasgantungheader/field_length', [KasGantungHeaderController::class, 'fieldLength']);
+    Route::resource('kasgantungheader', KasGantungHeaderController::class);
+
+    Route::resource('kasgantungdetail', KasGantungDetailController::class);
+
+    Route::get('gajisupirheader/{id}/printreport', [GajiSupirHeaderController::class, 'printReport']);
+    Route::post('gajisupirheader/{id}/cekvalidasi', [GajiSupirHeaderController::class, 'cekvalidasi'])->name('gajisupirheader.cekvalidasi');
+    Route::get('gajisupirheader/no_bukti', [GajiSupirHeaderController::class, 'getNoBukti']);
+    Route::get('gajisupirheader/grid', [GajiSupirHeaderController::class, 'grid']);
+    Route::get('gajisupirheader/field_length', [GajiSupirHeaderController::class, 'fieldLength']);
+    Route::get('gajisupirheader/getTrip/{supirId}/{dari}/{sampai}', [GajiSupirHeaderController::class, 'getTrip']);
+    Route::post('gajisupirheader/noEdit', [GajiSupirHeaderController::class, 'noEdit']);
+    Route::get('gajisupirheader/{gajiId}/getEditTrip', [GajiSupirHeaderController::class, 'getEditTrip']);
+    Route::resource('gajisupirheader', GajiSupirHeaderController::class);
+    Route::resource('gajisupirdetail', GajiSupirDetailController::class);
+
+    Route::post('notakreditheader/{id}/cekvalidasi', [NotaKreditHeaderController::class, 'cekvalidasi'])->name('notakreditheader.cekvalidasi');
+    Route::get('notakreditheader/{id}/printreport', [NotaKreditHeaderController::class, 'printReport']);
+    Route::get('notakreditheader/field_length', [NotaKreditHeaderController::class, 'fieldLength']);
+    Route::get('notakreditheader/{id}/getpelunasan', [NotaKreditHeaderController::class, 'getPelunasan']);
+    Route::get('notakreditheader/{id}/getnotakredit', [NotaKreditHeaderController::class, 'getNotaKredit']);
+    Route::post('notakreditheader/{id}/approval', [NotaKreditHeaderController::class, 'approval']);
+    Route::get('notakreditheader/export', [NotaKreditHeaderController::class, 'export']);
+    Route::resource('notakreditheader', NotaKreditHeaderController::class);
+    Route::resource('notakredit_detail', NotaKreditDetailController::class);
+
+    Route::post('notadebetheader/{id}/cekvalidasi', [NotaDebetHeaderController::class, 'cekvalidasi'])->name('notadebetheader.cekvalidasi');
+    Route::get('notadebetheader/{id}/printreport', [NotaDebetHeaderController::class, 'printReport']);
+    Route::get('notadebetheader/field_length', [NotaDebetHeaderController::class, 'fieldLength']);
+    Route::get('notadebetheader/{id}/getpelunasan', [NotaDebetHeaderController::class, 'getPelunasan']);
+    Route::get('notadebetheader/{id}/getnotadebet', [NotaDebetHeaderController::class, 'getNotaDebet']);
+    Route::post('notadebetheader/{id}/approval', [NotaDebetHeaderController::class, 'approval']);
+    Route::get('notadebetheader/export', [NotaDebetHeaderController::class, 'export']);
+    Route::resource('notadebetheader', NotaDebetHeaderController::class);
+    Route::resource('notadebet_detail', NotaDebetDetailController::class);
+
+    Route::get('rekappengeluaranheader/field_length', [RekapPengeluaranHeaderController::class, 'fieldLength']);
+    Route::get('rekappengeluaranheader/getpengeluaran', [RekapPengeluaranHeaderController::class, 'getPengeluaran']);
+    Route::get('rekappengeluaranheader/export', [RekapPengeluaranHeaderController::class, 'export']);
+    Route::get('rekappengeluaranheader/{id}/getrekappengeluaran', [RekapPengeluaranHeaderController::class, 'getRekapPengeluaran']);
+    Route::post('rekappengeluaranheader/{id}/approval', [RekapPengeluaranHeaderController::class, 'approval']);
+    Route::get('gandengan/default', [GandenganController::class, 'default']);
+
+    Route::resource('rekappengeluaranheader', RekapPengeluaranHeaderController::class);
+    Route::resource('rekappengeluarandetail', RekapPengeluaranDetailController::class);
+
+    Route::get('rekappenerimaanheader/field_length', [RekapPenerimaanHeaderController::class, 'fieldLength']);
+    Route::get('rekappenerimaanheader/getpenerimaan', [RekapPenerimaanHeaderController::class, 'getPenerimaan']);
+    Route::get('rekappenerimaanheader/export', [RekapPenerimaanHeaderController::class, 'export']);
+    Route::get('rekappenerimaanheader/{id}/getrekappenerimaan', [RekapPenerimaanHeaderController::class, 'getRekapPenerimaan']);
+    Route::post('rekappenerimaanheader/{id}/approval', [RekapPenerimaanHeaderController::class, 'approval']);
+    Route::resource('rekappenerimaanheader', RekapPenerimaanHeaderController::class);
+    Route::resource('rekappenerimaandetail', RekapPenerimaanDetailController::class);
+
+    Route::get('pengembaliankasgantungheader/field_length', [PengembalianKasGantungHeaderController::class, 'fieldLength']);
+    Route::get('pengembaliankasgantungheader/getkasgantung', [PengembalianKasGantungHeaderController::class, 'getKasGantung']);
+    Route::get('pengembaliankasgantungheader/getpengembalian/{id}', [PengembalianKasGantungHeaderController::class, 'getPengembalian']);
+    Route::post('pengembaliankasgantungheader/{id}/cekvalidasi', [PengembalianKasGantungHeaderController::class, 'cekvalidasi'])->name('pengembaliankasgantungheader.cekvalidasi');
+    Route::resource('pengembaliankasgantungheader', PengembalianKasGantungHeaderController::class);
+
+    Route::resource('pengembaliankasgantung_detail', PengembalianKasGantungDetailController::class);
+
+    Route::post('pengembaliankasbankheader/{id}/approval', [PengembalianKasBankHeaderController::class, 'approval'])->name('pengembaliankasbankheader.approval');
+    Route::get('pengembaliankasbankheader/no_bukti', [PengembalianKasBankHeaderController::class, 'getNoBukti']);
+    Route::get('pengembaliankasbankheader/field_length', [PengembalianKasBankHeaderController::class, 'fieldLength']);
+    Route::get('pengembaliankasbankheader/combo', [PengembalianKasBankHeaderController::class, 'combo']);
+    Route::post('pengembaliankasbankheader/{id}/approval', [PengembalianKasBankHeaderController::class, 'approval']);
+    Route::get('pengembaliankasbankheader/grid', [PengembalianKasBankHeaderController::class, 'grid']);
+    Route::resource('pengembaliankasbankheader', PengembalianKasBankHeaderController::class);
+
+    Route::resource('pengembaliankasbankdetail', PengembalianKasBankDetailController::class);
+
+    Route::get('prosesgajisupirheader/{id}/printreport', [ProsesGajiSupirHeaderController::class, 'printReport']);
+    Route::post('prosesgajisupirheader/{id}/cekvalidasi', [ProsesGajiSupirHeaderController::class, 'cekvalidasi'])->name('prosesgajisupirheader.cekvalidasi');
+    Route::get('prosesgajisupirheader/no_bukti', [ProsesGajiSupirHeaderController::class, 'getNoBukti']);
+    Route::get('prosesgajisupirheader/grid', [ProsesGajiSupirHeaderController::class, 'grid']);
+    Route::get('prosesgajisupirheader/field_length', [ProsesGajiSupirHeaderController::class, 'fieldLength']);
+    Route::get('prosesgajisupirheader/getRic/{dari}/{sampai}', [ProsesGajiSupirHeaderController::class, 'getRic']);
+    Route::post('prosesgajisupirheader/noEdit', [ProsesGajiSupirHeaderController::class, 'noEdit']);
+    Route::get('prosesgajisupirheader/{id}/getEdit', [ProsesGajiSupirHeaderController::class, 'getEdit']);
+    Route::resource('prosesgajisupirheader', ProsesGajiSupirHeaderController::class);
+    Route::resource('prosesgajisupirdetail', ProsesGajiSupirDetailController::class);
+
+    Route::get('invoiceheader/{id}/printreport', [InvoiceHeaderController::class, 'printReport']);
+    Route::get('invoiceheader/grid', [InvoiceHeaderController::class, 'grid']);
+    Route::get('invoiceheader/field_length', [InvoiceHeaderController::class, 'fieldLength']);
+    Route::get('invoiceheader/comboapproval', [InvoiceHeaderController::class, 'comboapproval']);
+    Route::get('invoiceheader/{id}/getEdit', [InvoiceHeaderController::class, 'getEdit']);
+    Route::get('invoiceheader/getSP', [InvoiceHeaderController::class, 'getSP']);
+    Route::post('invoiceheader/{id}/cekvalidasi', [InvoiceHeaderController::class, 'cekvalidasi'])->name('invoiceheader.cekvalidasi');
+    Route::resource('invoiceheader', InvoiceHeaderController::class);
+    Route::resource('invoicedetail', InvoiceDetailController::class);
+
+    Route::resource('tutupbuku', TutupBukuController::class);
 
 
     Route::get('suratpengantar/combo', [SuratPengantarController::class, 'combo']);
     Route::get('suratpengantar/field_length', [SuratPengantarController::class, 'fieldLength']);
-    Route::get('suratpengantar/get_gaji', [SuratPengantarController::class, 'getGaji']);
+    Route::post('suratpengantar/cekUpahSupir', [SuratPengantarController::class, 'cekUpahSupir']);
+    Route::get('suratpengantar/{id}/getTarifOmset', [SuratPengantarController::class, 'getTarifOmset']);
+    Route::get('suratpengantar/{id}/getOrderanTrucking', [SuratPengantarController::class, 'getOrderanTrucking']);
+    Route::get('suratpengantar/getGaji/{dari}/{sampai}/{container}/{statuscontainer}', [SuratPengantarController::class, 'getGaji']);
+    Route::get('suratpengantar/default', [SuratPengantarController::class, 'default']);
     Route::resource('suratpengantar', SuratPengantarController::class);
 
-    Route::get('upahritasi/combo', [UpahRitasiController::class, 'combo']);
-    Route::get('upahritasi/default', [UpahRitasiController::class, 'default']);    
-    Route::get('upahritasi/comboluarkota', [UpahRitasiController::class, 'comboluarkota']);
-    Route::get('upahritasi/field_length', [UpahRitasiController::class, 'fieldLength']);
-    Route::resource('upahritasi', UpahRitasiController::class);
+    Route::get('penerimaanheader/{id}/printreport', [PenerimaanHeaderController::class, 'printReport']);
+    Route::post('penerimaanheader/{id}/approval', [PenerimaanHeaderController::class, 'approval'])->name('penerimaanheader.approval');
+    Route::post('penerimaanheader/{id}/cekvalidasi', [PenerimaanHeaderController::class, 'cekvalidasi'])->name('penerimaanheader.cekvalidasi');
+    Route::get('penerimaanheader/no_bukti', [PenerimaanHeaderController::class, 'getNoBukti']);
+    Route::get('penerimaanheader/combo', [PenerimaanHeaderController::class, 'combo']);
+    Route::get('penerimaanheader/{id}/tarikPelunasan', [PenerimaanHeaderController::class, 'tarikPelunasan']);
+    Route::get('penerimaanheader/{id}/{table}/getPelunasan', [PenerimaanHeaderController::class, 'getPelunasan']);
+    Route::get('penerimaanheader/grid', [PenerimaanHeaderController::class, 'grid']);
+    Route::get('penerimaanheader/default', [PenerimaanHeaderController::class, 'default']);
 
-    Route::resource('upahritasirincian', UpahRitasiRincianController::class);
-
-    Route::get('ritasi/combo', [RitasiController::class, 'combo']);
-    Route::get('ritasi/field_length', [RitasiController::class, 'fieldLength']);
-    Route::get('ritasi/default', [RitasiController::class, 'default']);
-    Route::resource('ritasi', RitasiController::class);
-
-    Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
-    Route::post('penerimaan/{id}/approval', [PenerimaanHeaderController::class, 'approval'])->name('penerimaan.approval');
-    Route::get('penerimaan/no_bukti', [PenerimaanHeaderController::class, 'getNoBukti']);
-    Route::get('penerimaan/combo', [PenerimaanHeaderController::class, 'combo']);
-    Route::get('penerimaan/grid', [PenerimaanHeaderController::class, 'grid']);
-    Route::resource('penerimaan', PenerimaanHeaderController::class);
+    Route::resource('penerimaanheader', PenerimaanHeaderController::class);
 
     Route::resource('penerimaandetail', PenerimaanDetailController::class);
 
     //pengeluaran
-    Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
-    Route::post('pengeluaran/{id}/approval', [PengeluaranHeaderController::class, 'approval'])->name('pengeluaran.approval');
-    Route::get('pengeluaran/no_bukti', [PengeluaranHeaderController::class, 'getNoBukti']);
-    Route::get('pengeluaran/combo', [PengeluaranHeaderController::class, 'combo']);
-    Route::get('pengeluaran/grid', [PengeluaranHeaderController::class, 'grid']);
-    Route::resource('pengeluaran', PengeluaranHeaderController::class);
+    Route::get('pengeluaranheader/{id}/printreport', [PengeluaranHeaderController::class, 'printReport']);
+    Route::post('pengeluaranheader/{id}/approval', [PengeluaranHeaderController::class, 'approval'])->name('pengeluaranheader.approval');
+    Route::get('pengeluaranheader/no_bukti', [PengeluaranHeaderController::class, 'getNoBukti']);
+    Route::get('pengeluaranheader/field_length', [PengeluaranHeaderController::class, 'fieldLength']);
+    Route::get('pengeluaranheader/combo', [PengeluaranHeaderController::class, 'combo']);
+    Route::get('pengeluaranheader/grid', [PengeluaranHeaderController::class, 'grid']);
+    Route::get('pengeluaranheader/default', [PengeluaranHeaderController::class, 'default']);
+    Route::post('pengeluaranheader/{id}/cekvalidasi', [PengeluaranHeaderController::class, 'cekvalidasi'])->name('pengeluaranheader.cekvalidasi');
+    Route::resource('pengeluaranheader', PengeluaranHeaderController::class);
 
     Route::resource('pengeluarandetail', PengeluaranDetailController::class);
+
+    Route::post('penerimaangiroheader/{id}/approval', [PenerimaanGiroHeaderController::class, 'approval'])->name('penerimaangiroheader.approval');
+    Route::post('penerimaangiroheader/{id}/cekvalidasi', [PenerimaanGiroHeaderController::class, 'cekvalidasi'])->name('penerimaangiroheader.cekvalidasi');
+    Route::get('penerimaangiroheader/{id}/printreport', [PenerimaanGiroHeaderController::class, 'printReport']);
+    Route::get('penerimaangiroheader/field_length', [PenerimaanGiroHeaderController::class, 'fieldLength']);
+    Route::get('penerimaangiroheader/combo', [PenerimaanGiroHeaderController::class, 'combo']);
+    Route::get('penerimaangiroheader/grid', [PenerimaanGiroHeaderController::class, 'grid']);
+    Route::get('penerimaangiroheader/{id}/tarikPelunasan', [PenerimaanGiroHeaderController::class, 'tarikPelunasan']);
+    Route::get('penerimaangiroheader/{id}/getPelunasan', [PenerimaanGiroHeaderController::class, 'getPelunasan']);
+    Route::resource('penerimaangiroheader', PenerimaanGiroHeaderController::class);
+
+    Route::resource('penerimaangirodetail', PenerimaanGiroDetailController::class);
+
+
+    Route::get('harilibur/field_length', [HariLiburController::class, 'fieldLength']);
+    Route::get('harilibur/default', [HariLiburController::class, 'default']);
+    Route::resource('harilibur', HariLiburController::class);
+
+    Route::get('jurnalumumpusatheader/grid', [JurnalUmumPusatHeaderController::class, 'grid']);
+    Route::get('jurnalumumpusatheader/field_length', [JurnalUmumPusatHeaderController::class, 'fieldLength']);
+    Route::resource('jurnalumumpusatheader', JurnalUmumPusatHeaderController::class);
+    Route::resource('jurnalumumpusatdetail', JurnalUmumPusatDetailController::class);
+
+    Route::get('reportall/report', [ReportAllController::class, 'report'])->name('reportall.report');
+    Route::resource('reportall', ReportAllController::class);
+
+    Route::get('reportneraca/report', [ReportNeracaController::class, 'report'])->name('reportneraca.report');
+    Route::resource('reportneraca', ReportNeracaController::class);
+
+    Route::get('pencairangiropengeluaranheader/grid', [PencairanGiroPengeluaranHeaderController::class, 'grid']);
+    Route::get('pencairangiropengeluaranheader/field_length', [PencairanGiroPengeluaranHeaderController::class, 'fieldLength']);
+    Route::delete('pencairangiropengeluaranheader', [PencairanGiroPengeluaranHeaderController::class, 'destroy']);
+    Route::resource('pencairangiropengeluaranheader', PencairanGiroPengeluaranHeaderController::class);
+    Route::resource('pencairangiropengeluarandetail', PencairanGiroPengeluaranDetailController::class);
+
+    Route::get('approvalnotaheader/combo', [ApprovalNotaHeaderController::class, 'combo']);
+    Route::resource('approvalnotaheader', ApprovalNotaHeaderController::class);
+    Route::resource('approvalhutangbayar', ApprovalHutangBayarController::class);
+
+
+    Route::get('pendapatansupirheader/{id}/printreport', [PendapatanSupirHeaderController::class, 'printReport']);
+    Route::post('pendapatansupirheader/{id}/cekvalidasi', [PendapatanSupirHeaderController::class, 'cekvalidasi'])->name('pendapatansupirheader.cekvalidasi');
+    Route::resource('pendapatansupirheader', PendapatanSupirHeaderController::class)->parameters(['pendapatansupirheader' => 'pendapatanSupirHeader']);
+    Route::resource('pendapatansupirdetail', PendapatanSupirDetailController::class);
+
+    Route::resource('approvalpendapatansupir', ApprovalPendapatanSupirController::class);
+    Route::resource('stokpersediaan', StokPersediaanController::class);
+    Route::get('kartustok/report', [KartuStokController::class, 'report'])->name('kartustok.report');
+    Route::resource('kartustok', KartuStokController::class);
+
+    Route::get('historipenerimaanstok/report', [HistoriPenerimaanStokController::class, 'report'])->name('historipenerimaanstok.report');
+    Route::resource('historipenerimaanstok', HistoriPenerimaanStokController::class);
+
+    Route::get('historipengeluaranstok/report', [HistoriPengeluaranStokController::class, 'report'])->name('historipengeluaranstok.report');
+    Route::resource('historipengeluaranstok', HistoriPengeluaranStokController::class);
+
+    Route::get('laporankasbank/report', [LaporanKasBankController::class, 'report'])->name('laporankasbank.report');
+    Route::resource('laporankasbank', LaporanKasBankController::class);
+    Route::get('laporanbukubesar/report', [LaporanBukuBesarController::class, 'report'])->name('laporanbukubesar.report');
+    Route::resource('laporanbukubesar', LaporanBukuBesarController::class);
+});
+
+Route::get('gudang/combo', [GudangController::class, 'combo']);
+Route::get('gudang/field_length', [GudangController::class, 'fieldLength']);
+Route::get('gudang/default', [GudangController::class, 'default']);
+Route::resource('gudang', GudangController::class);
+
+Route::get('kategori/combo', [KategoriController::class, 'combo']);
+Route::get('kategori/field_length', [KategoriController::class, 'fieldLength']);
+Route::get('kategori/default', [KategoriController::class, 'default']);
+Route::resource('kategori', KategoriController::class);
+
+Route::get('kelompok/combo', [KelompokController::class, 'combo']);
+Route::get('kelompok/field_length', [KelompokController::class, 'fieldLength']);
+Route::get('kelompok/default', [KelompokController::class, 'default']);
+Route::resource('kelompok', KelompokController::class);
+
+Route::get('kerusakan/combo', [KerusakanController::class, 'combo']);
+Route::get('kerusakan/field_length', [KerusakanController::class, 'fieldLength']);
+Route::get('kerusakan/default', [KerusakanController::class, 'default']);
+Route::resource('kerusakan', KerusakanController::class);
+
+
+Route::get('mandor/combo', [MandorController::class, 'combo']);
+Route::get('mandor/field_length', [MandorController::class, 'fieldLength']);
+Route::get('mandor/default', [MandorController::class, 'default']);
+Route::resource('mandor', MandorController::class);
+
+Route::get('merk/combo', [MerkController::class, 'combo']);
+Route::get('merk/field_length', [MerkController::class, 'fieldLength']);
+Route::get('merk/default', [MerkController::class, 'default']);
+Route::resource('merk', MerkController::class);
+
+Route::get('satuan/combo', [SatuanController::class, 'combo']);
+Route::get('satuan/field_length', [SatuanController::class, 'fieldLength']);
+Route::get('satuan/default', [SatuanController::class, 'default']);
+Route::resource('satuan', SatuanController::class);
+
+Route::get('zona/combo', [ZonaController::class, 'combo']);
+Route::get('zona/field_length', [ZonaController::class, 'fieldLength']);
+Route::get('zona/default', [ZonaController::class, 'default']);
+Route::resource('zona', ZonaController::class);
+
+
+Route::get('tarif/combo', [TarifController::class, 'combo']);
+Route::get('tarif/field_length', [TarifController::class, 'fieldLength']);
+Route::get('tarif/default', [TarifController::class, 'default']);
+Route::resource('tarif', TarifController::class);
+
+Route::get('tarifrincian/setuprow', [TarifRincianController::class, 'setUpRow']);
+Route::get('tarifrincian/setuprowshow/{id}', [TarifRincianController::class, 'setUpRowExcept']);
+Route::resource('tarifrincian', TarifRincianController::class);
+
+
+Route::get('orderantrucking/combo', [OrderanTruckingController::class, 'combo']);
+Route::get('orderantrucking/field_length', [OrderanTruckingController::class, 'fieldLength']);
+Route::get('orderantrucking/default', [OrderanTruckingController::class, 'default']);
+Route::resource('orderantrucking', OrderanTruckingController::class);
+
+Route::get('prosesabsensisupir/combo', [ProsesAbsensiSupirController::class, 'combo']);
+Route::get('prosesabsensisupir/field_length', [ProsesAbsensiSupirController::class, 'fieldLength']);
+Route::resource('prosesabsensisupir', ProsesAbsensiSupirController::class);
+
+Route::get('mekanik/combo', [MekanikController::class, 'combo']);
+Route::get('mekanik/field_length', [MekanikController::class, 'fieldLength']);
+Route::get('mekanik/default', [MekanikController::class, 'default']);
+Route::resource('mekanik', MekanikController::class);
+
+Route::get('upahsupir/combo', [UpahSupirController::class, 'combo']);
+Route::get('upahsupir/field_length', [UpahSupirController::class, 'fieldLength']);
+Route::get('upahsupir/default', [UpahSupirController::class, 'default']);
+Route::resource('upahsupir', UpahSupirController::class);
+
+Route::get('upahsupirrincian/setuprow', [UpahSupirRincianController::class, 'setUpRow']);
+Route::get('upahsupirrincian/setuprowshow/{id}', [UpahSupirRincianController::class, 'setUpRowExcept']);
+Route::resource('upahsupirrincian', UpahSupirRincianController::class);
+
+
+
+//Penerimaan trucking
+// Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
+// Route::get('penerimaantrucking/no_bukti', [PenerimaanTruckingHeaderController::class, 'getNoBukti']);
+// Route::get('penerimaantrucking/combo', [PenerimaanTruckingHeaderController::class, 'combo']);
+// Route::get('penerimaantrucking/grid', [PenerimaanTruckingHeaderController::class, 'grid']);
+// Route::resource('penerimaantrucking', PenerimaanTruckingHeaderController::class);
+
+// Route::resource('penerimaantruckingdetail', PenerimaanTruckingDetailController::class);
+
+
+
+
+Route::get('suratpengantar/combo', [SuratPengantarController::class, 'combo']);
+Route::get('suratpengantar/field_length', [SuratPengantarController::class, 'fieldLength']);
+Route::get('suratpengantar/get_gaji', [SuratPengantarController::class, 'getGaji']);
+Route::resource('suratpengantar', SuratPengantarController::class);
+
+Route::get('upahritasi/combo', [UpahRitasiController::class, 'combo']);
+Route::get('upahritasi/default', [UpahRitasiController::class, 'default']);
+Route::get('upahritasi/comboluarkota', [UpahRitasiController::class, 'comboluarkota']);
+Route::get('upahritasi/field_length', [UpahRitasiController::class, 'fieldLength']);
+Route::resource('upahritasi', UpahRitasiController::class);
+
+Route::resource('upahritasirincian', UpahRitasiRincianController::class);
+
+Route::get('ritasi/combo', [RitasiController::class, 'combo']);
+Route::get('ritasi/field_length', [RitasiController::class, 'fieldLength']);
+Route::get('ritasi/default', [RitasiController::class, 'default']);
+Route::resource('ritasi', RitasiController::class);
+
+Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
+Route::post('penerimaan/{id}/approval', [PenerimaanHeaderController::class, 'approval'])->name('penerimaan.approval');
+Route::get('penerimaan/no_bukti', [PenerimaanHeaderController::class, 'getNoBukti']);
+Route::get('penerimaan/combo', [PenerimaanHeaderController::class, 'combo']);
+Route::get('penerimaan/grid', [PenerimaanHeaderController::class, 'grid']);
+Route::resource('penerimaan', PenerimaanHeaderController::class);
+
+Route::resource('penerimaandetail', PenerimaanDetailController::class);
+
+//pengeluaran
+Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
+Route::post('pengeluaran/{id}/approval', [PengeluaranHeaderController::class, 'approval'])->name('pengeluaran.approval');
+Route::get('pengeluaran/no_bukti', [PengeluaranHeaderController::class, 'getNoBukti']);
+Route::get('pengeluaran/combo', [PengeluaranHeaderController::class, 'combo']);
+Route::get('pengeluaran/grid', [PengeluaranHeaderController::class, 'grid']);
+Route::resource('pengeluaran', PengeluaranHeaderController::class);
+
+Route::resource('pengeluarandetail', PengeluaranDetailController::class);
 
     //Penerimaan trucking
     // Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');

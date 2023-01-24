@@ -79,11 +79,11 @@ class PengeluaranHeaderController extends Controller
                     ->select(
                         'parameter.grp',
                         'parameter.subgrp',
-                        'bank.statusformatpengeluaran',
+                        'bank.formatpengeluaran',
                         'bank.coa',
                         'bank.tipe'
                     )
-                    ->join(DB::raw("parameter with (readuncommitted)"), 'bank.statusformatpengeluaran', 'parameter.id')
+                    ->join(DB::raw("parameter with (readuncommitted)"), 'bank.formatpengeluaran', 'parameter.id')
                     ->whereRaw("bank.id = $bankid")
                     ->first();
 
@@ -124,7 +124,7 @@ class PengeluaranHeaderController extends Controller
             $pengeluaranHeader->transferkeac = $request->transferkeac ?? '';
             $pengeluaranHeader->transferkean = $request->transferkean ?? '';
             $pengeluaranHeader->transferkebank = $request->transferkebank ?? '';
-            $pengeluaranHeader->statusformat = $querysubgrppengeluaran->statusformatpengeluaran ?? $request->statusformat;
+            $pengeluaranHeader->statusformat = $querysubgrppengeluaran->formatpengeluaran ?? $request->statusformat;
             $pengeluaranHeader->statuscetak = $statusCetak->id;
             $pengeluaranHeader->userbukacetak = '';
             $pengeluaranHeader->tglbukacetak = '';
@@ -330,11 +330,11 @@ class PengeluaranHeaderController extends Controller
                 ->select(
                     'parameter.grp',
                     'parameter.subgrp',
-                    'bank.statusformatpengeluaran',
+                    'bank.formatpengeluaran',
                     'bank.coa',
                     'bank.tipe'
                 )
-                ->join(DB::raw("parameter with (readuncommitted)"), 'bank.statusformatpengeluaran', 'parameter.id')
+                ->join(DB::raw("parameter with (readuncommitted)"), 'bank.formatpengeluaran', 'parameter.id')
                 ->whereRaw("bank.id = $bankid")
                 ->first();
 

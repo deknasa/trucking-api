@@ -76,11 +76,11 @@ class PenerimaanHeaderController extends Controller
                 ->select(
                     'parameter.grp',
                     'parameter.subgrp',
-                    'bank.statusformatpenerimaan',
+                    'bank.formatpenerimaan',
                     'bank.coa',
                     'bank.tipe'
                 )
-                ->join(DB::raw("parameter with (readuncommitted)"), 'bank.statusformatpenerimaan', 'parameter.id')
+                ->join(DB::raw("parameter with (readuncommitted)"), 'bank.formatpenerimaan', 'parameter.id')
                 ->whereRaw("bank.id = $bankid")
                 ->first();
 
@@ -117,7 +117,7 @@ class PenerimaanHeaderController extends Controller
             $penerimaanHeader->statusberkas = $statusBerkas->id;
             $penerimaanHeader->statuscetak = $statuscetak->id;
             $penerimaanHeader->modifiedby = auth('api')->user()->name;
-            $penerimaanHeader->statusformat = $request->statusformat ?? $querysubgrppenerimaan->statusformatpenerimaan;
+            $penerimaanHeader->statusformat = $request->statusformat ?? $querysubgrppenerimaan->formatpenerimaan;
             if ($tanpaprosesnobukti == 0) {
                 $penerimaanHeader->nobukti = $nobukti;
             } else {
@@ -348,11 +348,11 @@ class PenerimaanHeaderController extends Controller
                     ->select(
                         'parameter.grp',
                         'parameter.subgrp',
-                        'bank.statusformatpenerimaan',
+                        'bank.formatpenerimaan',
                         'bank.coa',
                         'bank.tipe'
                     )
-                    ->join(DB::raw("parameter with (readuncommitted)"), 'bank.statusformatpenerimaan', 'parameter.id')
+                    ->join(DB::raw("parameter with (readuncommitted)"), 'bank.formatpenerimaan', 'parameter.id')
                     ->whereRaw("bank.id = $bankid")
                     ->first();
 

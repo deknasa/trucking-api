@@ -90,11 +90,11 @@ class PelunasanPiutangHeaderController extends Controller
                         ->select(
                             'parameter.grp',
                             'parameter.subgrp',
-                            'bank.statusformatpenerimaan',
+                            'bank.formatpenerimaan',
                             'bank.coa',
                             'bank.tipe'
                         )
-                        ->join(DB::raw("parameter with (readuncommitted)"), 'bank.statusformatpenerimaan', 'parameter.id')
+                        ->join(DB::raw("parameter with (readuncommitted)"), 'bank.formatpenerimaan', 'parameter.id')
                         ->whereRaw("bank.id = $request->bank_id")
                         ->first();
                     $tipeKas = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS KAS')->where('text', 'KAS')->first();
@@ -282,7 +282,7 @@ class PelunasanPiutangHeaderController extends Controller
                         'statuskas' => $statusKas,
                         'bank_id' => $request->bank_id,
                         'noresi' => '',
-                        'statusformat' => $querysubgrppenerimaan->statusformatpenerimaan,
+                        'statusformat' => $querysubgrppenerimaan->formatpenerimaan,
                         'modifiedby' => auth('api')->user()->name,
                         'datadetail' => $detaillog,
                         'nowarkat' => $pelunasanpiutangheader->nowarkat,

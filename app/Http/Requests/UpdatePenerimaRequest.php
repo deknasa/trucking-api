@@ -3,6 +3,8 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Rules\NotInKarakter_;
+use App\Http\Controllers\Api\ErrorController;
 
 class UpdatePenerimaRequest extends FormRequest
 {
@@ -25,8 +27,8 @@ class UpdatePenerimaRequest extends FormRequest
     {
         return [
             'namapenerima' => 'required',
-            'npwp' => 'required',
-            'noktp' => 'required',
+            'npwp' => ['required',new NotInKarakter_()],
+            'noktp' => ['required',new NotInKarakter_()],
             'statusaktif' => 'required|int',
             'statuskaryawan' => 'required|int',
         ];
@@ -42,4 +44,17 @@ class UpdatePenerimaRequest extends FormRequest
             'statuskaryawan' => 'status karyawan',
         ];
     }
+
+    public function messages()
+    {
+        $controller = new ErrorController;
+
+        return [
+            'namapenerima.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+            'npwp.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+            'noktp.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+            'statusaktif.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+            'statuskaryawan.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,         
+        ];
+    }  
 }

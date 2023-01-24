@@ -83,6 +83,9 @@ class Agen extends MyModel
         Schema::create($tempdefault, function ($table) {
             $table->unsignedBigInteger('statusaktif')->default(0);
             $table->unsignedBigInteger('statustas')->default(0);
+            $table->unsignedBigInteger('jenisemkl')->default(0);
+            $table->string('keteranganjenisemkl', 255)->default('');
+
         });
 
         $status = Parameter::from(
@@ -112,8 +115,19 @@ class Agen extends MyModel
         $iddefaultstatustas = $status->id ?? 0;
         
 
+        $jenisemkl = DB::table('jenisemkl')->from(
+            DB::raw('jenisemkl with (readuncommitted)')
+        )
+            ->select(
+                'id as jenisemkl',
+                'kodejenisemkl as keteranganjenisemkl',
+
+            )
+            ->where('kodejenisemkl', '=', 'TAS')
+            ->first();        
         DB::table($tempdefault)->insert(
-            ["statusaktif" => $iddefaultstatusaktif,"statustas" => $iddefaultstatustas]
+            ["statusaktif" => $iddefaultstatusaktif,"statustas" => $iddefaultstatustas,
+            "jenisemkl" => $jenisemkl->jenisemkl,"keteranganjenisemkl" => $jenisemkl->keteranganjenisemkl]
         );
 
         $query = DB::table($tempdefault)->from(
@@ -122,6 +136,8 @@ class Agen extends MyModel
             ->select(
                 'statusaktif',
                 'statustas',
+                'jenisemkl',
+                'keteranganjenisemkl',
             );
 
         $data = $query->first();

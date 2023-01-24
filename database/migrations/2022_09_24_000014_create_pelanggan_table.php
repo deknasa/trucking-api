@@ -29,6 +29,7 @@ class CreatePelangganTable extends Migration
             $table->string('kota',200)->default('');
             $table->string('kodepos',50)->default('');
             $table->string('modifiedby',50)->default('');
+            $table->integer('statusaktif')->length(11)->default(0);                
             $table->timestamps();
         });
     }
