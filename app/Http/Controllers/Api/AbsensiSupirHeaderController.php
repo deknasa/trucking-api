@@ -38,6 +38,18 @@ class AbsensiSupirHeaderController extends Controller
         ]);
     }
 
+
+    public function default()
+    {
+
+        $absensisupirdetail = new AbsensiSupirDetail();
+
+        return response([
+            'status' => true,
+            'detail' => $absensisupirdetail->getAll(0),
+        ]);
+    }    
+
     public function show($id)
     {
         $data = AbsensiSupirHeader::findAll($id);
