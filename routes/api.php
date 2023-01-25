@@ -817,6 +817,8 @@ Route::get('upahritasi/comboluarkota', [UpahRitasiController::class, 'comboluark
 Route::get('upahritasi/field_length', [UpahRitasiController::class, 'fieldLength']);
 Route::resource('upahritasi', UpahRitasiController::class);
 
+Route::get('upahritasirincian/setuprow', [UpahRitasiRincianController::class, 'setUpRow']);
+Route::get('upahritasirincian/setuprowshow/{id}', [UpahRitasiRincianController::class, 'setUpRowExcept']);
 Route::resource('upahritasirincian', UpahRitasiRincianController::class);
 
 Route::get('ritasi/combo', [RitasiController::class, 'combo']);

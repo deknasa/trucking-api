@@ -26,12 +26,9 @@ class StoreUpahRitasiRequest extends FormRequest
         $rules =  [
             'kotadari' => 'required',
             'kotasampai' => 'required',
-            'zona' => 'required',
             'jarak' => 'required|numeric|gt:0',
             'statusaktif' => 'required',
-            'statusluarkota' => 'required',
             'tglmulaiberlaku' => 'required',
-            'tglakhirberlaku' => 'required',
         ];
         $relatedRequests = [
             StoreUpahRitasiRincianRequest::class
@@ -53,11 +50,8 @@ class StoreUpahRitasiRequest extends FormRequest
             'kotadari' => 'kota dari',
             'kotasampai' => 'kota sampai',
             'statusaktif' => 'status aktif',
-            'statusluarkota' => 'status luar kota',
             'tglmulaiberlaku' => 'tanggal mulai berlaku',
-            'tglakhirberlaku' => 'tanggal akhir berlaku',
             'container.*' => 'container',
-            'statuscontainer.*' => 'container',
             'nominalsupir.*' => 'nominal supir',
         ];
     }

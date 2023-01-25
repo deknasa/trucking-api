@@ -26,8 +26,6 @@ class StoreUpahRitasiRincianRequest extends FormRequest
         return [
             'container' => 'required|array',
             'container.*' => 'required',
-            'statuscontainer' => 'required|array',
-            'statuscontainer.*' => 'required',
             'nominalsupir' => 'required|array',
             'nominalsupir.*' => 'required|numeric|gt:0',
         ];

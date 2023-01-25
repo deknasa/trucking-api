@@ -30,21 +30,70 @@ class UpahRitasiRincian extends MyModel
         ->select(
             'upahritasirincian.container_id',
             'container.keterangan as container',
-            'upahritasirincian.statuscontainer_id',
-            'statuscontainer.keterangan as statuscontainer',
             'upahritasirincian.nominalsupir',
-            'upahritasirincian.nominalkenek',
-            'upahritasirincian.nominalkomisi',
-            'upahritasirincian.nominaltol',
             'upahritasirincian.liter',
         )
             ->leftJoin('container', 'container.id', 'upahritasirincian.container_id')
-            ->leftJoin('statuscontainer', 'statuscontainer.id', 'upahritasirincian.statuscontainer_id')
             ->where('upahritasi_id', '=', $id);
 
 
         $data = $query->get();
 
         return $data;
+    }
+
+    public function setUpRow()
+    {
+        $query = DB::table('container')->select(
+            'container.keterangan as container',
+            'container.id as container_id'
+        );
+
+        return $query->get();
+    }
+    public function setUpRowExcept($rincian)
+    {
+        $data = DB::table('container')->select(
+            'container.keterangan as container',
+            'container.id as container_id'
+        );
+        $temp = '##tempcrossjoin' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+
+        Schema::create($temp, function ($table) {
+            $table->increments('id');
+            $table->string('container')->default('');
+            $table->string('containerId')->default('0');
+        });
+
+        DB::table($temp)->insertUsing([
+            "container",
+            "containerId"
+        ], $data);
+
+        //select yang sudah ada
+        $except = DB::table($temp)->select(
+            "$temp.id",
+        );
+        for ($i = 0; $i < count($rincian); $i++) {
+            $except->orWhere(function ($query) use ($rincian, $i) {
+                $query->where('containerId', $rincian[$i]['container_id']);
+            });
+        }
+
+        foreach ($except->get() as $e) {
+            $arr[] = $e->id;
+        }
+
+        //select semua keluali
+        $query = DB::table($temp)->select(
+            "$temp.id",
+            "$temp.container",
+            "$temp.containerId as container_id"
+        )->whereNotIn('id', $arr);
+
+        // ->whereRaw(" NOT EXIST  ( select $temp.statuscontainer, $temp.container from   [$temp]  WHERE (statuscontainer = 'empty' and container = '20`') or (statuscontainer = 'FULL' and container = '40`') ) ");
+        // ->whereRaw("(statuscontainer = 'FULL' and container = '40`')");
+
+        return $query->get();
     }
 }
