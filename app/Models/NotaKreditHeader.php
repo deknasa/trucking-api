@@ -231,8 +231,7 @@ class NotaKreditHeader extends MyModel
     public function findAll($id)
     {
         $this->setRequestParameters();
-
-        $query = DB::table($this->table);
+        $query = NotaKreditHeader::from(DB::raw("notakreditheader with (readuncommitted)"));
         $query = $this->selectColumns($query)
         ->leftJoin('parameter','notakreditheader.statusapproval','parameter.id')
         ->leftJoin('parameter as statuscetak','notakreditheader.statuscetak','statuscetak.id')

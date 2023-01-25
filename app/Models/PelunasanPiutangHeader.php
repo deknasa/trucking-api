@@ -168,8 +168,7 @@ class PelunasanPiutangHeader extends MyModel
                     WHERE pelunasanpiutangdetail.piutang_nobukti= piutangheader.nobukti) AS sisa")
             )
             ->leftJoin(DB::raw("piutangheader with (readuncommitted)"), 'pelunasanpiutangdetail.piutang_nobukti', 'piutangheader.nobukti')
-            ->whereRaw("pelunasanpiutangdetail.pelunasanpiutang_id = $id")
-            ->whereRaw("pelunasanpiutangdetail.agen_id = $agenId");
+            ->whereRaw("pelunasanpiutangdetail.pelunasanpiutang_id = $id");
 
         $data = $query->get();
         return $data;

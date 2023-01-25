@@ -244,6 +244,7 @@ class ParameterSeeder extends Seeder
         parameter::create(['grp' => 'JURNAL POTONGAN', 'subgrp' => 'DEBET', 'kelompok' => 'JURNAL POTONGAN', 'text' => 'DEBET', 'memo' => '{"MEMO":"JURNAL POTONGAN","SINGKATAN":"JPD","WARNA":"#28A745","JURNAL":"06.03.01.01"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => 'YA',]);
         parameter::create(['grp' => 'JURNAL POTONGAN PPH', 'subgrp' => 'DEBET', 'kelompok' => 'JURNAL POTONGAN', 'text' => 'DEBET', 'memo' => '{"MEMO":"JURNAL POTONGAN PPH","SINGKATAN":"JPK","WARNA":"#6C757D","JURNAL":"06.03.03.02"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => 'TIDAK',]);
         parameter::create(['grp' => 'JURNAL RETUR STOK', 'subgrp' => 'KREDIT', 'kelompok' => '', 'text' => 'KREDIT', 'memo' => '{"MEMO":"JURNAL RETUR STOK","SINGKATAN":"JRTB","WARNA":"#28A745","JURNAL":"01.01.02.33"}', 'type' => '0', 'modifiedby' => '1', 'default' => '',]);
+        parameter::create(['grp' => 'JURNAL PENERIMAAN DARI PELUNASAN', 'subgrp' => 'KREDIT', 'kelompok' => '', 'text' => 'KREDIT', 'memo' => '{"MEMO":"JURNAL PENERIMAAN DARI PELUNASAN","SINGKATAN":"JPDP","WARNA":"#28A745","JURNAL":"07.02.01.59"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
 
     }
 }

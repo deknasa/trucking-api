@@ -23,6 +23,7 @@ class AkunPusat extends MyModel
     {
 
         $level =request()->level ?? '';
+        $potongan = request()->potongan ?? '';
 
         $this->setRequestParameters();
 
@@ -55,6 +56,11 @@ class AkunPusat extends MyModel
                 $query->where('akunpusat.level','=',$level);
                 // dd($query->get());
             }
+            if($potongan!='') {
+                $temp = implode(',', $this->TempParameter());
+                
+                $query->whereRaw("akunpusat.coa in ($temp)");
+            }
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -68,6 +74,16 @@ class AkunPusat extends MyModel
         return $data;
     }
 
+    public function TempParameter()
+    {
+        $parameter = Parameter::from(DB::raw("parameter with (readuncommitted)"))->select('memo')->where('kelompok', 'JURNAL POTONGAN')->get();
+        $coa = [];
+        foreach($parameter as $key => $value){
+            $memo = json_decode($value->memo, true);
+            $coa[] = "'".$memo['JURNAL']."'";
+        }
+        return $coa;
+    }
     public function default()
     {
 
