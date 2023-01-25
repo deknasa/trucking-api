@@ -240,7 +240,7 @@ class NotaDebetHeader extends MyModel
     {
         $this->setRequestParameters();
 
-        $query = DB::table($this->table);
+        $query = NotaDebetHeader::from(DB::raw("notadebetheader with (readuncommitted)"));
         $query = $this->selectColumns($query)
             ->leftJoin('parameter', 'notadebetheader.statusapproval', 'parameter.id')
             ->leftJoin('parameter as statuscetak', 'notadebetheader.statuscetak', 'statuscetak.id')

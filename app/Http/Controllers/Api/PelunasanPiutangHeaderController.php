@@ -16,6 +16,8 @@ use App\Http\Requests\StoreNotaDebetHeaderRequest;
 use App\Http\Requests\StoreNotaKreditHeaderRequest;
 use App\Http\Requests\StorePenerimaanGiroHeaderRequest;
 use App\Http\Requests\StorePenerimaanHeaderRequest;
+use App\Http\Requests\UpdateNotaDebetDetailRequest;
+use App\Http\Requests\UpdateNotaDebetHeaderRequest;
 use App\Http\Requests\UpdateNotaKreditHeaderRequest;
 use App\Http\Requests\UpdatePenerimaanGiroHeaderRequest;
 use App\Http\Requests\UpdatePenerimaanHeaderRequest;
@@ -27,6 +29,7 @@ use App\Models\Cabang;
 use App\Models\Bank;
 use App\Models\Error;
 use App\Models\JurnalUmumHeader;
+use App\Models\NotaDebetHeader;
 use App\Models\NotaKreditHeader;
 use App\Models\Parameter;
 use App\Models\Pelanggan;
@@ -145,7 +148,7 @@ class PelunasanPiutangHeaderController extends Controller
                         break;
                     }
                 }
-                
+
                 $notadebet = false;
                 foreach ($request->nominallebihbayarppd as $value) {
                     if ($value != '0') {
@@ -244,13 +247,13 @@ class PelunasanPiutangHeaderController extends Controller
                         $tabeldetail = $datadetails['tabel'];
                     }
 
-                    if($request->potonganppd[$i] > 0){
+                    if ($request->potonganppd[$i] > 0) {
                         $detailNotaKredit[] = $datadetail;
                     }
-                    if($request->nominallebihbayarppd[$i] > 0){
+                    if ($request->nominallebihbayarppd[$i] > 0) {
                         $detailNotaDebet[] = $datadetail;
                     }
-                    
+
                     $detaillog[] = $datadetails['detail']->toArray();
                 }
 
@@ -275,7 +278,7 @@ class PelunasanPiutangHeaderController extends Controller
                         'tglbukti' => $request->tglbukti,
                         'pelanggan_id' => 0,
                         'agen_id' => $request->agen_id,
-                        'postingdari' => 'PELUNASAN PIUTANG',
+                        'postingdari' => 'ENTRY PELUNASAN PIUTANG',
                         'diterimadari' => $request->agen,
                         'tgllunas' => $request->tglbukti,
                         'cabang_id' => 0,
@@ -299,7 +302,7 @@ class PelunasanPiutangHeaderController extends Controller
                         'tglbukti' => $request->tglbukti,
                         'pelanggan_id' => 0,
                         'agen_id' => $request->agen_id,
-                        'postingdari' => 'PELUNASAN PIUTANG',
+                        'postingdari' => 'ENTRY PELUNASAN PIUTANG',
                         'diterimadari' => $request->agen,
                         'tgllunas' => $request->tglbukti,
                         'cabang_id' => 0,
@@ -315,7 +318,7 @@ class PelunasanPiutangHeaderController extends Controller
                     app(PenerimaanGiroHeaderController::class)->store($penerimaanGiro);
                 }
 
-                
+
                 if ($notakredit) {
                     $group = 'NOTA KREDIT BUKTI';
                     $subgroup = 'NOTA KREDIT BUKTI';
@@ -338,7 +341,7 @@ class PelunasanPiutangHeaderController extends Controller
                         'nobukti' => $nobuktiNotaKredit,
                         'tglbukti' => $request->tglbukti,
                         'pelunasanpiutang_nobukti' => $pelunasanpiutangheader->nobukti,
-                        'postingdari' => 'PELUNASAN PIUTANG',
+                        'postingdari' => 'ENTRY PELUNASAN PIUTANG',
                         'tgllunas' => $request->tglbukti,
                         'agen_id' => $request->agen_id,
                         'statusformat' => $formatNota->id,
@@ -350,7 +353,7 @@ class PelunasanPiutangHeaderController extends Controller
                     $notaKredit = new StoreNotaKreditHeaderRequest($notaKreditHeader);
                     app(NotaKreditHeaderController::class)->store($notaKredit);
                 }
-                
+
                 if ($notadebet) {
                     $group = 'NOTA DEBET BUKTI';
                     $subgroup = 'NOTA DEBET BUKTI';
@@ -373,7 +376,7 @@ class PelunasanPiutangHeaderController extends Controller
                         'nobukti' => $nobuktiNotaDebet,
                         'tglbukti' => $request->tglbukti,
                         'pelunasanpiutang_nobukti' => $pelunasanpiutangheader->nobukti,
-                        'postingdari' => 'PELUNASAN PIUTANG',
+                        'postingdari' => 'ENTRY PELUNASAN PIUTANG',
                         'tgllunas' => $request->tglbukti,
                         'agen_id' => $request->agen_id,
                         'statusformat' => $formatNota->id,
@@ -464,6 +467,8 @@ class PelunasanPiutangHeaderController extends Controller
 
 
                 $detaillog = [];
+                $detailNotaKredit = [];
+                $detailNotaDebet = [];
                 for ($i = 0; $i < count($request->piutang_id); $i++) {
                     $idpiutang = $request->piutang_id[$i];
                     $piutang = PiutangHeader::where('id', $idpiutang)->first();
@@ -487,13 +492,9 @@ class PelunasanPiutangHeaderController extends Controller
                     $datadetail = [
                         'pelunasanpiutang_id' => $pelunasanpiutangheader->id,
                         'nobukti' => $pelunasanpiutangheader->nobukti,
-                        'agen_id' => $request->agen_id,
                         'nominal' => $request->bayarppd[$i],
                         'piutang_nobukti' => $piutang->nobukti,
-                        'cicilan' => '',
-                        'tglcair' => $piutang->tglbukti,
                         'keterangan' => $request->keterangandetailppd[$i] ?? '',
-                        'tgljt' => $piutang->tglbukti,
                         'potongan' => $request->potonganppd[$i] ?? '',
                         'coapotongan' => $request->coapotonganppd[$i]  ?? '',
                         'invoice_nobukti' => $piutang->invoice_nobukti,
@@ -501,6 +502,7 @@ class PelunasanPiutangHeaderController extends Controller
                         'nominallebihbayar' => $request->nominallebihbayarppd[$i] ?? '',
                         'coalebihbayar' => $getNominalLebih->coa ?? '',
                         'modifiedby' => $pelunasanpiutangheader->modifiedby,
+                        'nominalpiutang' => $piutang->nominal,
                     ];
 
                     //STORE
@@ -513,6 +515,14 @@ class PelunasanPiutangHeaderController extends Controller
                         $iddetail = $datadetails['id'];
                         $tabeldetail = $datadetails['tabel'];
                     }
+
+                    if ($request->potonganppd[$i] > 0) {
+                        $detailNotaKredit[] = $datadetail;
+                    }
+                    if ($request->nominallebihbayarppd[$i] > 0) {
+                        $detailNotaDebet[] = $datadetail;
+                    }
+
                     $detaillog[] = $datadetails['detail']->toArray();
                 }
 
@@ -532,7 +542,7 @@ class PelunasanPiutangHeaderController extends Controller
 
                 if ($request->penerimaan_nobukti != '-') {
                     $get = PenerimaanHeader::from(DB::raw("penerimaanheader with (readuncommitted)"))
-                        ->select('penerimaanheader.id','penerimaanheader.tglbukti', 'penerimaanheader.bank_id', 'penerimaandetail.coadebet')
+                        ->select('penerimaanheader.id', 'penerimaanheader.tglbukti', 'penerimaanheader.bank_id', 'penerimaandetail.coadebet')
                         ->leftJoin(DB::raw('penerimaandetail with (readuncommitted)'), 'penerimaanheader.nobukti', 'penerimaandetail.nobukti')
                         ->where('penerimaanheader.nobukti', $request->penerimaan_nobukti)->first();
                     $penerimaanHeader = [
@@ -552,13 +562,13 @@ class PelunasanPiutangHeaderController extends Controller
                     $newPenerimaan = $newPenerimaan->findAll($get->id);
                     $penerimaan = new UpdatePenerimaanHeaderRequest($penerimaanHeader);
                     app(PenerimaanHeaderController::class)->update($penerimaan, $newPenerimaan);
-                } 
+                }
 
                 if ($request->penerimaangiro_nobukti != '-') {
-                    
+
                     $get = PenerimaanGiroHeader::from(DB::raw("penerimaangiroheader with (readuncommitted)"))
-                    ->select('id')
-                    ->where('nobukti', $request->penerimaangiro_nobukti)->first();
+                        ->select('id')
+                        ->where('nobukti', $request->penerimaangiro_nobukti)->first();
                     $penerimaanGiroHeader = [
                         'isUpdate' => 1,
                         'agen_id' => $request->agen_id,
@@ -577,19 +587,17 @@ class PelunasanPiutangHeaderController extends Controller
                 }
             }
 
-            
+
             if ($request->notakredit_nobukti != '-') {
-                    
+
                 $get = NotaKreditHeader::from(DB::raw("notakreditheader with (readuncommitted)"))
-                ->select('id')
-                ->where('nobukti', $request->notakredit_nobukti)->first();
+                    ->select('id')
+                    ->where('nobukti', $request->notakredit_nobukti)->first();
                 $notaKreditHeader = [
                     'isUpdate' => 1,
                     'agen_id' => $request->agen_id,
                     'postingdari' => 'EDIT PELUNASAN PIUTANG',
-                    'datadetail' => $detaillog,
-                    'nowarkat' => $pelunasanpiutangheader->nowarkat,
-                    'bank_id' => $pelunasanpiutangheader->bank_id
+                    'datadetail' => $detailNotaKredit
 
                 ];
 
@@ -599,7 +607,26 @@ class PelunasanPiutangHeaderController extends Controller
                 $notakredit = new UpdateNotaKreditHeaderRequest($notaKreditHeader);
                 app(NotaKreditHeaderController::class)->update($notakredit, $newNotaKredit);
             }
-        
+            if ($request->notadebet_nobukti != '-') {
+
+                $get = NotaDebetHeader::from(DB::raw("notadebetheader with (readuncommitted)"))
+                    ->select('id')
+                    ->where('nobukti', $request->notadebet_nobukti)->first();
+                $notaDebetHeader = [
+                    'isUpdate' => 1,
+                    'agen_id' => $request->agen_id,
+                    'postingdari' => 'EDIT PELUNASAN PIUTANG',
+                    'datadetail' => $detailNotaDebet
+
+                ];
+
+                $newNotaDebet = new NotaDebetHeader();
+                $newNotaDebet = $newNotaDebet->findAll($get->id);
+
+                $notadebet = new UpdateNotaDebetHeaderRequest($notaDebetHeader);
+                app(NotaDebetHeaderController::class)->update($notadebet, $newNotaDebet);
+            }
+
 
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
@@ -634,6 +661,7 @@ class PelunasanPiutangHeaderController extends Controller
 
         $getDetail = PelunasanPiutangDetail::where('pelunasanpiutang_id', $id)->get();
 
+        $request['postingdari'] = "DELETE PELUNASAN PIUTANG";
         $pelunasanpiutangheader = new PelunasanPiutangHeader();
         $pelunasanpiutangheader = $pelunasanpiutangheader->lockAndDestroy($id);
 
@@ -665,6 +693,25 @@ class PelunasanPiutangHeaderController extends Controller
 
             $validatedLogTrailPiutangDetail = new StoreLogTrailRequest($logTrailPiutangDetail);
             app(LogTrailController::class)->store($validatedLogTrailPiutangDetail);
+
+            if ($pelunasanpiutangheader->penerimaan_nobukti != '-') {
+                $getPenerimaan = PenerimaanHeader::from(DB::raw("penerimaanheader with (readuncommitted)"))->where('nobukti', $pelunasanpiutangheader->penerimaan_nobukti)->first();
+                app(PenerimaanHeaderController::class)->destroy($request, $getPenerimaan->id);
+            }
+            if ($pelunasanpiutangheader->penerimaangiro_nobukti != '-') {
+                $getGiro = PenerimaanGiroHeader::from(DB::raw("penerimaangiroheader with (readuncommitted)"))->where('nobukti', $pelunasanpiutangheader->penerimaangiro_nobukti)->first();
+                app(PenerimaanGiroHeaderController::class)->destroy($request, $getGiro->id);
+            }
+
+            if ($pelunasanpiutangheader->notakredit_nobukti != '-') {
+                $getNotaKredit = NotaKreditHeader::from(DB::raw("notakreditheader with (readuncommitted)"))->where('nobukti', $pelunasanpiutangheader->notakredit_nobukti)->first();
+                app(NotaKreditHeaderController::class)->destroy($request, $getNotaKredit->id);
+            }
+
+            if ($pelunasanpiutangheader->notadebet_nobukti != '-') {
+                $getNotaDebet = NotaDebetHeader::from(DB::raw("notadebetheader with (readuncommitted)"))->where('nobukti', $pelunasanpiutangheader->notadebet_nobukti)->first();
+                app(NotaDebetHeaderController::class)->destroy($request, $getNotaDebet->id);
+            }
 
             DB::commit();
 

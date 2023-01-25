@@ -23,6 +23,7 @@ class AkunPusat extends MyModel
     {
 
         $level =request()->level ?? '';
+        $potongan = request()->potongan ?? '';
 
         $aktif = request()->aktif ?? '';
         
@@ -57,6 +58,11 @@ class AkunPusat extends MyModel
                 $query->where('akunpusat.level','=',$level);
                 // dd($query->get());
             }
+            if($potongan!='') {
+                $temp = implode(',', $this->TempParameter());
+                
+                $query->whereRaw("akunpusat.coa in ($temp)");
+            }
 
             if ($aktif == 'AKTIF') {
                 $statusaktif=Parameter::from(
@@ -81,6 +87,16 @@ class AkunPusat extends MyModel
         return $data;
     }
 
+    public function TempParameter()
+    {
+        $parameter = Parameter::from(DB::raw("parameter with (readuncommitted)"))->select('memo')->where('kelompok', 'JURNAL POTONGAN')->get();
+        $coa = [];
+        foreach($parameter as $key => $value){
+            $memo = json_decode($value->memo, true);
+            $coa[] = "'".$memo['JURNAL']."'";
+        }
+        return $coa;
+    }
     public function default()
     {
 

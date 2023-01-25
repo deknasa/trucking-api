@@ -444,7 +444,7 @@ class PenerimaanGiroHeaderController extends Controller
         if ($penerimaanGiro) {
             $datalogtrail = [
                 'namatabel' => strtoupper($penerimaanGiro->getTable()),
-                'postingdari' => 'DELETE PENERIMAAN GIRO HEADER',
+                'postingdari' => $request['postingdari'] ?? 'DELETE PENERIMAAN GIRO HEADER',
                 'idtrans' => $penerimaanGiro->id,
                 'nobuktitrans' => $penerimaanGiro->nobukti,
                 'aksi' => 'DELETE',
@@ -458,7 +458,7 @@ class PenerimaanGiroHeaderController extends Controller
             // DELETE PENERIMAANGIRO DETAIL
             $logTrailPenerimaanGiroDetail = [
                 'namatabel' => 'PENERIMAANGIRODETAIL',
-                'postingdari' => 'DELETE PENERIMAAN GIRO DETAIL',
+                'postingdari' => $request['postingdari'] ?? 'DELETE PENERIMAAN GIRO DETAIL',
                 'idtrans' => $storedLogTrail['id'],
                 'nobuktitrans' => $penerimaanGiro->nobukti,
                 'aksi' => 'DELETE',
@@ -472,7 +472,7 @@ class PenerimaanGiroHeaderController extends Controller
             // DELETE JURNAL HEADER
             $logTrailJurnalHeader = [
                 'namatabel' => 'JURNALUMUMHEADER',
-                'postingdari' => 'DELETE JURNAL UMUM HEADER DARI PENERIMAAN GIRO',
+                'postingdari' => $request['postingdari'] ?? 'DELETE JURNAL UMUM HEADER DARI PENERIMAAN GIRO',
                 'idtrans' => $getJurnalHeader->id,
                 'nobuktitrans' => $getJurnalHeader->nobukti,
                 'aksi' => 'DELETE',
@@ -488,7 +488,7 @@ class PenerimaanGiroHeaderController extends Controller
 
             $logTrailJurnalDetail = [
                 'namatabel' => 'JURNALUMUMDETAIL',
-                'postingdari' => 'DELETE JURNAL UMUM DETAIL DARI PENERIMAAN GIRO',
+                'postingdari' => $request['postingdari'] ?? 'DELETE JURNAL UMUM DETAIL DARI PENERIMAAN GIRO',
                 'idtrans' => $storedLogTrailJurnal['id'],
                 'nobuktitrans' => $getJurnalHeader->nobukti,
                 'aksi' => 'DELETE',

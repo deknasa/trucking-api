@@ -46,7 +46,7 @@ class NotaDebetHeaderController extends Controller
 
             $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
             $statusApproval = Parameter::where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
-            
+
 
             $notaDebetHeader->pelunasanpiutang_nobukti = $request->pelunasanpiutang_nobukti;
             $notaDebetHeader->agen_id = $request->agen_id;
@@ -57,12 +57,13 @@ class NotaDebetHeaderController extends Controller
             $notaDebetHeader->statuscetak = $statusCetak->id;
             $notaDebetHeader->modifiedby = auth('api')->user()->name;
             $notaDebetHeader->nobukti = $request->nobukti;
+            $notaDebetHeader->postingdari = $request->postingdari;
 
 
             if ($notaDebetHeader->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($notaDebetHeader->getTable()),
-                    'postingdari' => 'ENTRY NOTA DEBET HEADER',
+                    'postingdari' => $request->postingdari,
                     'idtrans' => $notaDebetHeader->id,
                     'nobuktitrans' => $notaDebetHeader->nobukti,
                     'aksi' => 'ENTRY',
@@ -73,46 +74,45 @@ class NotaDebetHeaderController extends Controller
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
                 /* Store detail */
-                    $detaillog = [];
-                    for ($i = 0; $i < count($request->datadetail); $i++) {
-                        $datadetail = [
-                            "notadebet_id" => $notaDebetHeader->id,
-                            "nobukti" =>  $notaDebetHeader->nobukti,
-                            "tglterima" => $notaDebetHeader->tglbukti,
-                            "invoice_nobukti" => $request->datadetail[$i]['invoice_nobukti'],
-                            "nominal" => $request->datadetail[$i]['nominalpiutang'],
-                            "nominalbayar" => $request->datadetail[$i]['nominal'],
-                            "lebihbayar" => $request->datadetail[$i]['nominallebihbayar'],
-                            "keterangandetail" => '-',
-                            "coalebihbayar" => $request->datadetail[$i]['coalebihbayar'],
-                            "modifiedby" => $notaDebetHeader->modifiedby
-                        ];
+                $detaillog = [];
+                for ($i = 0; $i < count($request->datadetail); $i++) {
+                    $datadetail = [
+                        "notadebet_id" => $notaDebetHeader->id,
+                        "nobukti" =>  $notaDebetHeader->nobukti,
+                        "tglterima" => $notaDebetHeader->tglbukti,
+                        "invoice_nobukti" => $request->datadetail[$i]['invoice_nobukti'],
+                        "nominal" => $request->datadetail[$i]['nominalpiutang'],
+                        "nominalbayar" => $request->datadetail[$i]['nominal'],
+                        "lebihbayar" => $request->datadetail[$i]['nominallebihbayar'],
+                        "keterangandetail" => '-',
+                        "coalebihbayar" => $request->datadetail[$i]['coalebihbayar'],
+                        "modifiedby" => $notaDebetHeader->modifiedby
+                    ];
 
-                        $data = new StoreNotaDebetDetailRequest($datadetail);
-                        $notaDebetDetail = app(NotaDebetDetailController::class)->store($data);
+                    $data = new StoreNotaDebetDetailRequest($datadetail);
+                    $notaDebetDetail = app(NotaDebetDetailController::class)->store($data);
 
-                        if ($notaDebetDetail['error']) {
-                            return response($notaDebetDetail, 422);
-                        } else {
-                            $iddetail = $notaDebetDetail['id'];
-                            $tabeldetail = $notaDebetDetail['tabel'];
-                        }
-
-                        $detaillog[] = $notaDebetDetail['data']->toArray();
+                    if ($notaDebetDetail['error']) {
+                        return response($notaDebetDetail, 422);
+                    } else {
+                        $iddetail = $notaDebetDetail['id'];
+                        $tabeldetail = $notaDebetDetail['tabel'];
                     }
 
-                    $datalogtrail = [
-                        'namatabel' => strtoupper($tabeldetail),
-                        'postingdari' => 'ENTRY NOTA DEBET DETAIL',
-                        'idtrans' =>  $storedLogTrail['id'],
-                        'nobuktitrans' => $notaDebetHeader->nobukti,
-                        'aksi' => 'ENTRY',
-                        'datajson' => $detaillog,
-                        'modifiedby' => auth('api')->user()->name,
-                    ];
-                    $validatedLogTrail = new StoreLogTrailRequest($datalogtrail);
-                    $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+                    $detaillog[] = $notaDebetDetail['data']->toArray();
+                }
 
+                $datalogtrail = [
+                    'namatabel' => strtoupper($tabeldetail),
+                    'postingdari' => $request->postingdari,
+                    'idtrans' =>  $storedLogTrail['id'],
+                    'nobuktitrans' => $notaDebetHeader->nobukti,
+                    'aksi' => 'ENTRY',
+                    'datajson' => $detaillog,
+                    'modifiedby' => auth('api')->user()->name,
+                ];
+                $validatedLogTrail = new StoreLogTrailRequest($datalogtrail);
+                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
             }
 
             DB::commit();
@@ -132,12 +132,7 @@ class NotaDebetHeaderController extends Controller
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
-            return response($th->getMessage());
         }
-        return response([
-            'message' => 'Berhasil gagal disimpan',
-            'data' => $notaDebetHeader
-        ], 422);
     }
 
     public function show(NotaDebetHeader $notaDebetHeader, $id)
@@ -159,17 +154,13 @@ class NotaDebetHeaderController extends Controller
     {
         try {
 
-            $notadebetheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
-            $notadebetheader->tgllunas = date('Y-m-d', strtotime($request->tgllunas));
-            $notadebetheader->pelunasanpiutang_nobukti = $request->pelunasanpiutang_nobukti;
-            $notadebetheader->keterangan = $request->keterangan;
-            $notadebetheader->postingdari = "NOTA DEBET HEADER";
+            $notadebetheader->agen_id = $request->agen_id;
             $notadebetheader->modifiedby = auth('api')->user()->name;
 
             if ($notadebetheader->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($notadebetheader->getTable()),
-                    'postingdari' => 'EDIT NOTA DEBET HEADER',
+                    'postingdari' => $request->postingdari,
                     'idtrans' => $notadebetheader->id,
                     'nobuktitrans' => $notadebetheader->nobukti,
                     'aksi' => 'EDIT',
@@ -180,50 +171,48 @@ class NotaDebetHeaderController extends Controller
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
                 /* Store detail */
-                if ($request->pelunasanpiutangdetail_id) {
-                    $notaDebetDetail = NotaDebetDetail::where('notadebet_id', $notadebetheader->id)->lockForUpdate()->delete();
+                $notaDebetDetail = NotaDebetDetail::where('notadebet_id', $notadebetheader->id)->lockForUpdate()->delete();
 
-                    $detaillog = [];
-                    for ($i = 0; $i < count($request->pelunasanpiutangdetail_id); $i++) {
-                        $datadetail = [
-                            "notadebet_id" => $notadebetheader->id,
-                            "nobukti" =>  $notadebetheader->nobukti,
-                            "tglterima" => $request->deatail_tglcair_pelunasan[$i],
-                            "invoice_nobukti" => "",
-                            "nominal" => $request->deatail_nominal_pelunasan[$i],
-                            "nominalbayar" => $request->deatail_nominalbayar_pelunasan[$i],
-                            "lebihbayar" => $request->deatail_lebihbayar_pelunasan[$i],
-                            "keterangandetail" => $request->keterangandetail[$i],
-                            "coalebihbayar" => $request->deatail_coalebihbayar_pelunasan[$i],
-                            "modifiedby" => $notadebetheader->modifiedby = auth('api')->user()->name
-                        ];
-
-
-                        $data = new StoreNotaDebetDetailRequest($datadetail);
-                        $notaDebetDetail = app(NotaDebetDetailController::class)->store($data);
-                        // $detaillog []=$datadetail;
-                        if ($notaDebetDetail['error']) {
-                            return response($notaDebetDetail, 422);
-                        } else {
-                            $iddetail = $notaDebetDetail['id'];
-                            $tabeldetail = $notaDebetDetail['tabel'];
-                            $detaillog[] = $notaDebetDetail['data']->toArray();
-                        }
-                    }
-                    $datalogtrail = [
-                        'namatabel' => strtoupper($tabeldetail),
-                        'postingdari' => 'EDIT NOTA DEBET DETAIL',
-                        'idtrans' =>  $storedLogTrail['id'],
-                        'nobuktitrans' => $notadebetheader->nobukti,
-                        'aksi' => 'EDIT',
-                        'datajson' => $detaillog,
-                        'modifiedby' => auth('api')->user()->name,
+                $detaillog = [];
+                for ($i = 0; $i < count($request->datadetail); $i++) {
+                    $datadetail = [
+                        "notadebet_id" => $notadebetheader->id,
+                        "nobukti" =>  $notadebetheader->nobukti,
+                        "tglterima" => $notadebetheader->tglbukti,
+                        "invoice_nobukti" => $request->datadetail[$i]['invoice_nobukti'],
+                        "nominal" => $request->datadetail[$i]['nominalpiutang'],
+                        "nominalbayar" => $request->datadetail[$i]['nominal'],
+                        "lebihbayar" => $request->datadetail[$i]['nominallebihbayar'],
+                        "keterangandetail" => '-',
+                        "coalebihbayar" => $request->datadetail[$i]['coalebihbayar'],
+                        "modifiedby" => $notadebetheader->modifiedby
                     ];
-                    $validatedLogTrail = new StoreLogTrailRequest($datalogtrail);
-                    $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-                    DB::commit();
+
+                    $data = new StoreNotaDebetDetailRequest($datadetail);
+                    $notaDebetDetail = app(NotaDebetDetailController::class)->store($data);
+                    // $detaillog []=$datadetail;
+                    if ($notaDebetDetail['error']) {
+                        return response($notaDebetDetail, 422);
+                    } else {
+                        $iddetail = $notaDebetDetail['id'];
+                        $tabeldetail = $notaDebetDetail['tabel'];
+                        $detaillog[] = $notaDebetDetail['data']->toArray();
+                    }
                 }
+                $datalogtrail = [
+                    'namatabel' => strtoupper($tabeldetail),
+                    'postingdari' => $request->postingdari,
+                    'idtrans' =>  $storedLogTrail['id'],
+                    'nobuktitrans' => $notadebetheader->nobukti,
+                    'aksi' => 'EDIT',
+                    'datajson' => $detaillog,
+                    'modifiedby' => auth('api')->user()->name,
+                ];
+                $validatedLogTrail = new StoreLogTrailRequest($datalogtrail);
+                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+
+                DB::commit();
             }
 
             /* Set position and page */
@@ -242,12 +231,7 @@ class NotaDebetHeaderController extends Controller
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
-            return response($th->getMessage());
         }
-        return response([
-            'message' => 'Berhasil gagal disimpan',
-            'data' => $notadebetheader
-        ], 422);
     }
 
     /**
@@ -264,7 +248,7 @@ class NotaDebetHeaderController extends Controller
         if ($notaDebetHeader) {
             $logTrail = [
                 'namatabel' => strtoupper($notaDebetHeader->getTable()),
-                'postingdari' => 'DELETE NOTA DEBET ',
+                'postingdari' => $request['postingdari'] ?? 'DELETE NOTA DEBET ',
                 'idtrans' => $notaDebetHeader->id,
                 'nobuktitrans' => $notaDebetHeader->nobukti,
                 'aksi' => 'DELETE',
@@ -278,7 +262,7 @@ class NotaDebetHeaderController extends Controller
             // DELETE NOTA DEBET DETAIL
             $logTrailNotaDebetDetail = [
                 'namatabel' => 'NOTADEBETDETAIL',
-                'postingdari' => 'DELETE NOTA DEBET DETAIL',
+                'postingdari' => $request['postingdari'] ?? 'DELETE NOTA DEBET DETAIL',
                 'idtrans' => $storedLogTrail['id'],
                 'nobuktitrans' => $notaDebetHeader->nobukti,
                 'aksi' => 'DELETE',
@@ -401,7 +385,7 @@ class NotaDebetHeaderController extends Controller
             return response($data);
         }
     }
-    
+
     public function printReport($id)
     {
         DB::beginTransaction();
@@ -415,7 +399,7 @@ class NotaDebetHeaderController extends Controller
                 $notadebet->statuscetak = $statusSudahCetak->id;
                 $notadebet->tglbukacetak = date('Y-m-d H:i:s');
                 $notadebet->userbukacetak = auth('api')->user()->name;
-                $notadebet->jumlahcetak = $notadebet->jumlahcetak+1;
+                $notadebet->jumlahcetak = $notadebet->jumlahcetak + 1;
 
                 if ($notadebet->save()) {
                     $logTrail = [
@@ -427,10 +411,10 @@ class NotaDebetHeaderController extends Controller
                         'datajson' => $notadebet->toArray(),
                         'modifiedby' => auth('api')->user()->name
                     ];
-    
+
                     $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                     $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-    
+
                     DB::commit();
                 }
             }
@@ -442,6 +426,5 @@ class NotaDebetHeaderController extends Controller
         } catch (\Throwable $th) {
             throw $th;
         }
-        
     }
 }

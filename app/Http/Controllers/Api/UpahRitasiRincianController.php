@@ -55,7 +55,6 @@ class UpahRitasiRincianController extends Controller
                     'header.tglakhirberlaku',
                     'statusluarkota.text as statusluarkota',
                     'container.keterangan as container_id',
-                    'statuscontainer.keterangan as statuscontainer_id',
                     'detail.nominalsupir',
                     'detail.nominalkenek',
                     'detail.nominalkomisi',
@@ -67,22 +66,19 @@ class UpahRitasiRincianController extends Controller
                     ->leftJoin(DB::raw("kota as kotasampai with (readuncommitted)"), 'kotasampai.id', '=', 'header.kotasampai_id')
                     ->leftJoin(DB::raw("zona with (readuncommitted)"), 'header.zona_id', 'zona.id')
                     ->leftJoin(DB::raw("parameter as statusluarkota with (readuncommitted)"), 'header.statusluarkota', 'statusluarkota.id')
-                    ->leftJoin(DB::raw("container with (readuncommitted)"), 'container.id', 'detail.container_id')
-                    ->leftJoin(DB::raw("statuscontainer with (readuncommitted)"), 'statuscontainer.id', 'detail.statuscontainer_id');
+                    ->leftJoin(DB::raw("container with (readuncommitted)"), 'container.id', 'detail.container_id');
 
                 $upahritasi = $query->get();
             } else {
                 $query->select(
                     'container.keterangan as container_id',
-                    'statuscontainer.keterangan as statuscontainer_id',
                     'detail.nominalsupir',
-                    'detail.nominalkenek',
-                    'detail.nominalkomisi',
-                    'detail.nominaltol',
+                    // 'detail.nominalkenek',
+                    // 'detail.nominalkomisi',
+                    // 'detail.nominaltol',
                     'detail.liter',
                 )
-                    ->leftJoin(DB::raw("container with (readuncommitted)"), 'container.id', 'detail.container_id')
-                    ->leftJoin(DB::raw("statuscontainer with (readuncommitted)"), 'statuscontainer.id', 'detail.statuscontainer_id');
+                    ->leftJoin(DB::raw("container with (readuncommitted)"), 'container.id', 'detail.container_id');
 
                 $upahritasi = $query->get();
             }
@@ -112,11 +108,7 @@ class UpahRitasiRincianController extends Controller
 
             $upahritasirincian->upahritasi_id = $request->upahritasi_id;
             $upahritasirincian->container_id = $request->container_id;
-            $upahritasirincian->statuscontainer_id = $request->statuscontainer_id;
             $upahritasirincian->nominalsupir = $request->nominalsupir;
-            $upahritasirincian->nominalkenek = $request->nominalkenek;
-            $upahritasirincian->nominalkomisi = $request->nominalkomisi;
-            $upahritasirincian->nominaltol = $request->nominaltol;
             $upahritasirincian->liter = $request->liter;
             $upahritasirincian->modifiedby = auth('api')->user()->name;
             
@@ -136,4 +128,30 @@ class UpahRitasiRincianController extends Controller
         }        
     }
 
+    public function setUpRow()
+    {
+        $upahRitasiRincian = new UpahRitasiRincian();
+
+        return response([
+            'status' => true,
+            'detail' => $upahRitasiRincian->setUpRow()
+        ]);        
+    }
+    public function setUpRowExcept($id)
+    {
+        $upahRitasiRincian = new UpahRitasiRincian();
+        $rincian = $upahRitasiRincian->where('upahsupir_id',$id)->get();
+        foreach ($rincian as $e) {
+            $data[] = [
+                 "container_id" => $e->container_id,
+                 "statuscontainer_id"=>$e->statuscontainer_id
+                ];
+        }
+        // return $data;
+        return response([
+            'status' => true,
+            'detail' => $upahRitasiRincian->setUpRowExcept($data)
+        ]);        
+    }
+    
 }
