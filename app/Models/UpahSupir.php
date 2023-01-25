@@ -39,6 +39,9 @@ class UpahSupir extends MyModel
     {
         $this->setRequestParameters();
 
+        
+        $aktif = request()->aktif ?? '';
+
         $query = DB::table($this->table)->from(DB::raw("upahsupir with (readuncommitted)"))
             ->select(
                 'upahsupir.id',
@@ -61,6 +64,16 @@ class UpahSupir extends MyModel
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'upahsupir.statusaktif', 'parameter.id')
             ->leftJoin(DB::raw("parameter as statusluarkota with (readuncommitted)"), 'upahsupir.statusluarkota', 'statusluarkota.id')
             ->leftJoin(DB::raw("zona with (readuncommitted)"), 'upahsupir.zona_id', 'zona.id');
+            if ($aktif == 'AKTIF') {
+                $statusaktif = Parameter::from(
+                    DB::raw("parameter with (readuncommitted)")
+                )
+                    ->where('grp', '=', 'STATUS AKTIF')
+                    ->where('text', '=', 'AKTIF')
+                    ->first();
+    
+                $query->where('upahsupir.statusaktif', '=', $statusaktif->id);
+            }
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;

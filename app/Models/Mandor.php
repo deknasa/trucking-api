@@ -22,6 +22,8 @@ class Mandor extends MyModel
     {
         $this->setRequestParameters();
 
+        $aktif = request()->aktif ?? '';
+
         $query = Mandor::from(DB::raw("mandor with (readuncommitted)"))
             ->select(
                 'mandor.id',
@@ -33,6 +35,17 @@ class Mandor extends MyModel
                 'mandor.updated_at'
             )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'mandor.statusaktif', '=', 'parameter.id');
+            if ($aktif == 'AKTIF') {
+                $statusaktif = Parameter::from(
+                    DB::raw("parameter with (readuncommitted)")
+                )
+                    ->where('grp', '=', 'STATUS AKTIF')
+                    ->where('text', '=', 'AKTIF')
+                    ->first();
+    
+                $query->where('mandor.statusaktif', '=', $statusaktif->id);
+            }
+    
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;

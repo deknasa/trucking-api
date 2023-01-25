@@ -28,6 +28,9 @@ class Tarif extends MyModel
     public function get()
     {
         $this->setRequestParameters();
+
+        $aktif = request()->aktif ?? '';
+
         $tempUpahsupir = $this->tempUpahsupir();
         $query = Tarif::from(DB::raw("$this->table with (readuncommitted)"))
         ->select(
@@ -52,6 +55,17 @@ class Tarif extends MyModel
             ->leftJoin(DB::raw("tarif as parent with (readuncommitted)"), 'tarif.parent_id', '=', 'parent.id')
             ->leftJoin(DB::raw("parameter AS p with (readuncommitted)"), 'tarif.statuspenyesuaianharga', '=', 'p.id')
             ->leftJoin(DB::raw("parameter AS sistemton with (readuncommitted)"), 'tarif.statussistemton', '=', 'sistemton.id');
+
+            if ($aktif == 'AKTIF') {
+                $statusaktif = Parameter::from(
+                    DB::raw("parameter with (readuncommitted)")
+                )
+                    ->where('grp', '=', 'STATUS AKTIF')
+                    ->where('text', '=', 'AKTIF')
+                    ->first();
+    
+                $query->where('tarif.statusaktif', '=', $statusaktif->id);
+            }
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;

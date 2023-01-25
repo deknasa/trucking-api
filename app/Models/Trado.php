@@ -22,6 +22,8 @@ class Trado extends MyModel
     {
         $this->setRequestParameters();
 
+        $aktif = request()->aktif ?? '';
+
         $query = Trado::from(DB::raw("$this->table with (readuncommitted)"))
             ->select(
                 'trado.id',
@@ -76,6 +78,17 @@ class Trado extends MyModel
             ->leftJoin(DB::raw("parameter as parameter_statuslewatvalidasi with (readuncommitted)"), 'trado.statuslewatvalidasi', 'parameter_statuslewatvalidasi.id')
             ->leftJoin(DB::raw("mandor with (readuncommitted)"), 'trado.mandor_id', 'mandor.id')
             ->leftJoin(DB::raw("supir with (readuncommitted)"), 'trado.supir_id', 'supir.id');
+        if ($aktif == 'AKTIF') {
+            $statusaktif=Parameter::from(
+                DB::raw("parameter with (readuncommitted)")
+            )
+            ->where('grp','=','STATUS AKTIF')
+            ->where('text','=','AKTIF')
+            ->first();
+
+            $query ->where('trado.statusaktif','=',$statusaktif->id);
+        }
+
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -161,7 +174,7 @@ class Trado extends MyModel
             ->first();
 
         $iddefaultstatusMutasi = $status->id ?? 0;
-        
+
         //STATUS VALIDASI KENDARAAN
         $status = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
@@ -203,7 +216,7 @@ class Trado extends MyModel
             ->first();
 
         $iddefaultstatusAppedit = $status->id ?? 0;
-         
+
         //STATUS LEWAT VALIDASI
         $status = Parameter::from(
             db::Raw("parameter with (readuncommitted)")

@@ -27,6 +27,8 @@ class Satuan extends MyModel
     {
         $this->setRequestParameters();
 
+        $aktif = request()->aktif ?? '';
+
         $query = DB::table($this->table)->select(
             'satuan.id',
             'satuan.satuan',
@@ -36,6 +38,17 @@ class Satuan extends MyModel
             'satuan.updated_at'
         )
             ->leftJoin('parameter', 'satuan.statusaktif', '=', 'parameter.id');
+
+            if ($aktif == 'AKTIF') {
+                $statusaktif = Parameter::from(
+                    DB::raw("parameter with (readuncommitted)")
+                )
+                    ->where('grp', '=', 'STATUS AKTIF')
+                    ->where('text', '=', 'AKTIF')
+                    ->first();
+    
+                $query->where('satuan.statusaktif', '=', $statusaktif->id);
+            }
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
