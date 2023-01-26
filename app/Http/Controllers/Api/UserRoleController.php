@@ -24,255 +24,27 @@ use App\Http\Controllers\Api\ParameterController;
 class UserRoleController extends Controller
 {
     /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    /**
      * @ClassName 
      */
     public function index()
     {
-        $params = [
-            'offset' => request()->offset ?? ((request()->page - 1) * request()->limit),
-            'limit' => request()->limit ?? 10,
-            'filters' => json_decode(request()->filters, true) ?? [],
-            'sortIndex' => request()->sortIndex ?? 'id',
-            'sortOrder' => request()->sortOrder ?? 'asc',
-        ];
-
-        $temp = '##temp' . rand(1, 10000);
-
-        Schema::create($temp, function ($table) {
-            $table->id();
-            $table->bigInteger('user_id')->default('0');
-            $table->bigInteger('id_')->default('0');
-            $table->string('modifiedby', 30)->default('');
-            $table->dateTime('created_at')->default('1900/1/1');
-            $table->dateTime('updated_at')->default('1900/1/1');
-
-            $table->index('user_id');
-        });
-
-        $query = UserRole::select(
-            DB::raw("userrole.user_id as user_id,
-                        min(userrole.id) as id_,
-                        max(userrole.modifiedby) as modifiedby,
-                        max(userrole.created_at) as created_at,
-                            max(userrole.updated_at) as updated_at")
-        )
-            ->Join('user', 'userrole.user_id', '=', 'user.id')
-            ->groupby('userrole.user_id');
-
-
-        DB::table($temp)->insertUsing(['user_id', 'id_', 'modifiedby', 'created_at', 'updated_at'], $query);
-
-        $totalRows = DB::table($temp)
-            ->count();
-        $totalPages = ceil($totalRows / $params['limit']);
-
-        /* Sorting */
-        if ($params['sortIndex'] == 'user') {
-            $query = DB::table($temp)
-                ->select(
-                    $temp . '.user_id as user_id',
-                    $temp . '.id_ as id',
-                    'user.user as user',
-                    'user.name as name',
-                    $temp . '.modifiedby as modifiedby',
-                    $temp . '.updated_at as updated_at'
-                )
-                ->Join('user', 'user.id', '=', $temp . '.user_id')
-                ->orderBy('user.name', $params['sortOrder']);
-        } else {
-            $query = DB::table($temp)
-                ->select(
-                    $temp . '.user_id as user_id',
-                    $temp . '.id_ as id',
-                    'user.user as user',
-                    'user.name as name',
-                    $temp . '.modifiedby as modifiedby',
-                    $temp . '.updated_at as updated_at'
-                )
-                ->Join('user', 'user.id', '=', $temp . '.user_id')
-                ->orderBy($temp . '.' . $params['sortIndex'], $params['sortOrder']);
-        }
-
-
-
-        /* Searching */
-        if (count($params['filters']) > 0 && @$params['filters']['rules'][0]['data'] != '') {
-            switch ($params['filters']['groupOp']) {
-                case "AND":
-                    foreach ($params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'user') {
-                            $query = $query->where('user.user', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'name') {
-                            $query = $query->where('user.name', 'LIKE', "%$filters[data]%");
-                        } else {
-                            $query = $query->where($filters['field'], 'LIKE', "%$filters[data]%");
-                        }
-                    }
-
-                    break;
-                case "OR":
-                    foreach ($params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'user') {
-                            $query = $query->orWhere('user.user', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'name') {
-                            $query = $query->orWhere('user.name', 'LIKE', "%$filters[data]%");
-                        } else {
-                            $query = $query->orWhere($filters['field'], 'LIKE', "%$filters[data]%");
-                        }
-                    }
-
-                    break;
-                default:
-
-                    break;
-            }
-
-
-            $totalRows = count($query->get());
-
-            $totalPages = ceil($totalRows / $params['limit']);
-        }
-
-        /* Paging */
-        $query = $query->skip($params['offset'])
-            ->take($params['limit']);
-
-        $userroles = $query->get();
-
-        /* Set attributes */
-        $attributes = [
-            'totalRows' => $totalRows,
-            'totalPages' => $totalPages
-        ];
+        $user = new User();
 
         return response([
-            'status' => true,
-            'data' => $userroles,
-            'attributes' => $attributes,
-            'params' => $params
+            'data' => $user->get(),
+            'attributes' => [
+                'totalRows' => $user->totalRows,
+                'totalPages' => $user->totalPages
+            ]
         ]);
     }
 
     public function detail()
     {
-        $params = [
-            'offset' => request()->offset ?? ((request()->page - 1) * request()->limit),
-            'limit' => request()->limit ?? 10,
-            'filters' => json_decode(request()->filters, true) ?? [],
-            'sortIndex' => request()->sortIndex ?? 'id',
-            'sortOrder' => request()->sortOrder ?? 'asc',
-        ];
-
-
-        $totalRows = UserRole::count();
-        $totalPages = ceil($totalRows / $params['limit']);
-
-        /* Sorting */
-        if ($params['sortIndex'] == 'id') {
-            $query = UserRole::select(
-                'userrole.id',
-                'user.user as user',
-                'role.rolename as rolename',
-                'userrole.modifiedby',
-                'userrole.created_at',
-                'userrole.updated_at'
-            )
-                ->Join('user', 'userrole.user_id', '=', 'user.id')
-                ->Join('role', 'userrole.role_id', '=', 'role.id')
-                ->where('userrole.user_id', '=', request()->user_id)
-                ->orderBy('userrole.id', $params['sortOrder']);
-        } else {
-            if ($params['sortOrder'] == 'asc') {
-                $query = UserRole::select(
-                    'userrole.id',
-                    'user.user as user',
-                    'role.rolename as rolename',
-                    'userrole.modifiedby',
-                    'userrole.created_at',
-                    'userrole.updated_at'
-                )
-                    ->Join('user', 'userrole.user_id', '=', 'user.id')
-                    ->Join('role', 'userrole.role_id', '=', 'role.id')
-                    ->orderBy($params['sortIndex'], $params['sortOrder'])
-                    ->where('userrole.user_id', '=', request()->user_id)
-                    ->orderBy('userrole.id', $params['sortOrder']);
-            } else {
-                $query = UserRole::select(
-                    'userrole.id',
-                    'user.user as user',
-                    'role.rolename as rolename',
-                    'userrole.modifiedby',
-                    'userrole.created_at',
-                    'userrole.updated_at'
-                )
-                    ->Join('user', 'userrole.user_id', '=', 'user.id')
-                    ->Join('role', 'userrole.role_id', '=', 'role.id')
-                    ->where('userrole.user_id', '=', request()->user_id)
-                    ->orderBy($params['sortIndex'], $params['sortOrder'])
-                    ->orderBy('userrole.id', 'asc');
-            }
-        }
-
-
-        /* Searching */
-        if (count($params['filters']) > 0 && @$params['filters']['rules'][0]['data'] != '') {
-            switch ($params['filters']['groupOp']) {
-                case "AND":
-                    foreach ($params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'user') {
-                            $query = $query->where('user.user', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'rolename') {
-                            $query = $query->where('role.rolename', 'LIKE', "%$filters[data]%");
-                        } else {
-                            $query = $query->where($filters['field'], 'LIKE', "%$filters[data]%");
-                        }
-                    }
-
-                    break;
-                case "OR":
-                    foreach ($params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'user') {
-                            $query = $query->orWhere('user.user', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'rolename') {
-                            $query = $query->orWhere('role.rolename', 'LIKE', "%$filters[data]%");
-                        } else {
-                            $query = $query->orWhere($filters['field'], 'LIKE', "%$filters[data]%");
-                        }
-                    }
-
-                    break;
-                default:
-
-                    break;
-            }
-
-            $totalRows = count($query->get());
-
-            $totalPages = ceil($totalRows / $params['limit']);
-        }
-
-        /* Paging */
-        $query = $query->skip($params['offset'])
-            ->take($params['limit']);
-
-        $userroles = $query->get();
-
-        /* Set attributes */
-        $attributes = [
-            'totalRows' => $totalRows,
-            'totalPages' => $totalPages
-        ];
+        $user = User::findOrFail(request()->user_id);
 
         return response([
-            'status' => true,
-            'data' => $userroles,
-            'attributes' => $attributes,
-            'params' => $params
+            'data' => $user->roles
         ]);
     }
 
@@ -284,60 +56,98 @@ class UserRoleController extends Controller
         DB::beginTransaction();
 
         try {
-            $controller = new ParameterController;
-            $dataaktif = $controller->getparameterid('STATUS AKTIF', 'STATUS AKTIF', 'AKTIF');
-            $aktif = $dataaktif->id;
+            $user = User::findOrFail($request->user_id);
+            $user->roles()->detach();
 
-            for ($i = 0; $i < count($request->role_id); $i++) {
-                $userrole = new UserRole();
-                $userrole->user_id = $request->user_id;
-                $userrole->role_id = $request->role_id[$i]  ?? 0;
-                $userrole->modifiedby = auth('api')->user()->name;
+            foreach ($request->role_ids as $roleId) {
+                $userRole = new UserRole();
+                $userRole->user_id = $request->user_id;
+                $userRole->role_id = $roleId;
+                $userRole->modifiedby = auth('api')->user()->name;
 
-                if ($request->status[$i] == $aktif) {
-                    if ($userrole->save()) {
-                        $logTrail = [
-                            'namatabel' => strtoupper($userrole->getTable()),
-                            'postingdari' => 'ENTRY USER ROLE',
-                            'idtrans' => $userrole->id,
-                            'nobuktitrans' => $userrole->id,
-                            'aksi' => 'ENTRY',
-                            'datajson' => $userrole->toArray(),
-                            'modifiedby' => $userrole->modifiedby
-                        ];
+                if ($userRole->save()) {
+                    $logTrail = [
+                        'namatabel' => strtoupper($userRole->getTable()),
+                        'postingdari' => 'ENTRY JURNAL USER ROLE',
+                        'idtrans' =>  $userRole->id,
+                        'nobuktitrans' => $userRole->id,
+                        'aksi' => 'ENTRY',
+                        'datajson' => $userRole->toArray(),
+                        'modifiedby' => $userRole->modifiedby,
+                    ];
 
-                        $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                        $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
-                        DB::commit();
-                    }
+                    $logTrailRequest = new StoreLogTrailRequest($logTrail);
+                    app(LogTrailController::class)->store($logTrailRequest);
                 }
             }
 
-            /* Set position and page */
-            // $del = 0;
-            // $data = $this->getid($request->user_id, $request, $del) ?? 0;
-
-            // $userrole->position = $data->id ?? 0;
-            // $userrole->id = $data->row ?? 0;
-
-            // if (isset($request->limit)) {
-            //     $userrole->page = ceil($userrole->position / $request->limit);
-            // }
-
-            /* Set position and page */
-            $selected = $this->getPosition($userrole, $userrole->getTable());
-            $userrole->position = $selected->position;
-            $userrole->page = ceil($userrole->position / ($request->limit ?? 10));
+            DB::commit();
 
             return response([
-                'status' => true,
-                'message' => 'Berhasil disimpan',
-                'data' => $userrole
-            ]);
+                'message' => 'Stored successfully',
+                'user' => $user->load('roles')
+            ], 201);
         } catch (\Throwable $th) {
+            DB::rollBack();
+
             throw $th;
         }
+
+        // try {
+        //     $controller = new ParameterController;
+        //     $dataaktif = $controller->getparameterid('STATUS AKTIF', 'STATUS AKTIF', 'AKTIF');
+        //     $aktif = $dataaktif->id;
+
+        //     for ($i = 0; $i < count($request->role_id); $i++) {
+        //         $userrole = new UserRole();
+        //         $userrole->user_id = $request->user_id;
+        //         $userrole->role_id = $request->role_id[$i]  ?? 0;
+        //         $userrole->modifiedby = auth('api')->user()->name;
+
+        //         if ($request->status[$i] == $aktif) {
+        //             if ($userrole->save()) {
+        //                 $logTrail = [
+        //                     'namatabel' => strtoupper($userrole->getTable()),
+        //                     'postingdari' => 'ENTRY USER ROLE',
+        //                     'idtrans' => $userrole->id,
+        //                     'nobuktitrans' => $userrole->id,
+        //                     'aksi' => 'ENTRY',
+        //                     'datajson' => $userrole->toArray(),
+        //                     'modifiedby' => $userrole->modifiedby
+        //                 ];
+
+        //                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+        //                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+
+        //                 DB::commit();
+        //             }
+        //         }
+        //     }
+
+        //     /* Set position and page */
+        //     // $del = 0;
+        //     // $data = $this->getid($request->user_id, $request, $del) ?? 0;
+
+        //     // $userrole->position = $data->id ?? 0;
+        //     // $userrole->id = $data->row ?? 0;
+
+        //     // if (isset($request->limit)) {
+        //     //     $userrole->page = ceil($userrole->position / $request->limit);
+        //     // }
+
+        //     /* Set position and page */
+        //     $selected = $this->getPosition($userrole, $userrole->getTable());
+        //     $userrole->position = $selected->position;
+        //     $userrole->page = ceil($userrole->position / ($request->limit ?? 10));
+
+        //     return response([
+        //         'status' => true,
+        //         'message' => 'Berhasil disimpan',
+        //         'data' => $userrole
+        //     ]);
+        // } catch (\Throwable $th) {
+        //     throw $th;
+        // }
     }
 
     public function show(UserRole $userrole)
@@ -400,7 +210,7 @@ class UserRoleController extends Controller
             ]);
         } catch (\Throwable $th) {
             DB::rollBack();
-            
+
             throw $th;
         }
     }
@@ -454,7 +264,7 @@ class UserRoleController extends Controller
             }
         } catch (\Throwable $th) {
             DB::rollBack();
-            
+
             throw $th;
         }
     }

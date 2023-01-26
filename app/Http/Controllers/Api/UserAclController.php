@@ -36,131 +36,131 @@ class UserAclController extends Controller
      */
     public function index()
     {
-        // $params = [
-        //     'offset' => request()->offset ?? ((request()->page - 1) * request()->limit),
-        //     'limit' => request()->limit ?? 10,
-        //     'filters' => json_decode(request()->filters, true) ?? [],
-        //     'sortIndex' => request()->sortIndex ?? 'id',
-        //     'sortOrder' => request()->sortOrder ?? 'asc',
-        // ];
+        $params = [
+            'offset' => request()->offset ?? ((request()->page - 1) * request()->limit),
+            'limit' => request()->limit ?? 10,
+            'filters' => json_decode(request()->filters, true) ?? [],
+            'sortIndex' => request()->sortIndex ?? 'id',
+            'sortOrder' => request()->sortOrder ?? 'asc',
+        ];
 
-        // $temp = '##temp' . rand(1, 10000);
-        // Schema::create($temp, function ($table) {
-        //     $table->id();
-        //     $table->bigInteger('user_id')->default('0');
-        //     $table->bigInteger('id_')->default('0');
-        //     $table->string('modifiedby', 30)->default('');
-        //     $table->dateTime('created_at')->default('1900/1/1');
-        //     $table->dateTime('updated_at')->default('1900/1/1');
+        $temp = '##temp' . rand(1, 10000);
+        Schema::create($temp, function ($table) {
+            $table->id();
+            $table->bigInteger('user_id')->default('0');
+            $table->bigInteger('id_')->default('0');
+            $table->string('modifiedby', 30)->default('');
+            $table->dateTime('created_at')->default('1900/1/1');
+            $table->dateTime('updated_at')->default('1900/1/1');
 
-        //     $table->index('user_id');
-        // });
+            $table->index('user_id');
+        });
 
-        // $query = DB::table((new UserAcl)->getTable())->select(
-        //     DB::raw("useracl.user_id as user_id,
-        //                 min(useracl.id) as id_,
-        //                 max(useracl.modifiedby) as modifiedby,
-        //                 max(useracl.created_at) as created_at,
-        //                     max(useracl.updated_at) as updated_at")
-        // )
-        //     ->Join('user', 'useracl.user_id', '=', 'user.id')
-        //     ->groupby('useracl.user_id');
-
-
-        // DB::table($temp)->insertUsing(['user_id', 'id_', 'modifiedby', 'created_at', 'updated_at'], $query);
-
-        // $totalRows = DB::table($temp)->count();
-        // $totalPages = ceil($totalRows / $params['limit']);
-
-        // /* Sorting */
-        // if ($params['sortIndex'] == 'user') {
-        //     $query = DB::table($temp)
-        //         ->select(
-        //             $temp . '.user_id as user_id',
-        //             $temp . '.id_ as id',
-        //             'user.user as user',
-        //             $temp . '.modifiedby as modifiedby',
-        //             $temp . '.updated_at as updated_at'
-        //         )
-        //         ->Join('user', 'user.id', '=', $temp . '.user_id')
-        //         ->orderBy('user.user', $params['sortOrder']);
-        // } else {
-        //     $query = DB::table($temp)
-        //         ->select(
-        //             $temp . '.user_id as user_id',
-        //             $temp . '.id_ as id',
-        //             'user.user as user',
-        //             $temp . '.modifiedby as modifiedby',
-        //             $temp . '.updated_at as updated_at'
-        //         )
-        //         ->Join('user', 'user.id', '=', $temp . '.user_id')
-        //         ->orderBy($temp . '.' . $params['sortIndex'], $params['sortOrder']);
-        // }
+        $query = DB::table((new UserAcl)->getTable())->select(
+            DB::raw("useracl.user_id as user_id,
+                        min(useracl.id) as id_,
+                        max(useracl.modifiedby) as modifiedby,
+                        max(useracl.created_at) as created_at,
+                            max(useracl.updated_at) as updated_at")
+        )
+            ->Join('user', 'useracl.user_id', '=', 'user.id')
+            ->groupby('useracl.user_id');
 
 
-        // /* Searching */
-        // if (count($params['filters']) > 0 && @$params['filters']['rules'][0]['data'] != '') {
-        //     switch ($params['filters']['groupOp']) {
-        //         case "AND":
-        //             foreach ($params['filters']['rules'] as $index => $filters) {
-        //                 if ($filters['field'] == 'user') {
-        //                     $query = $query->where('user.user', 'LIKE', "%$filters[data]%");
-        //                 } else {
-        //                     $query = $query->where('user.' . $filters['field'], 'LIKE', "%$filters[data]%");
-        //                 }
-        //             }
+        DB::table($temp)->insertUsing(['user_id', 'id_', 'modifiedby', 'created_at', 'updated_at'], $query);
 
-        //             break;
-        //         case "OR":
-        //             foreach ($params['filters']['rules'] as $index => $filters) {
-        //                 if ($filters['field'] == 'user') {
-        //                     $query = $query->orWhere('user.user', 'LIKE', "%$filters[data]%");
-        //                 } else {
-        //                     $query = $query->orWhere('user.' . $filters['field'], 'LIKE', "%$filters[data]%");
-        //                 }
-        //             }
+        $totalRows = DB::table($temp)->count();
+        $totalPages = ceil($totalRows / $params['limit']);
 
-        //             break;
-        //         default:
+        /* Sorting */
+        if ($params['sortIndex'] == 'user') {
+            $query = DB::table($temp)
+                ->select(
+                    $temp . '.user_id as user_id',
+                    $temp . '.id_ as id',
+                    'user.user as user',
+                    $temp . '.modifiedby as modifiedby',
+                    $temp . '.updated_at as updated_at'
+                )
+                ->Join('user', 'user.id', '=', $temp . '.user_id')
+                ->orderBy('user.user', $params['sortOrder']);
+        } else {
+            $query = DB::table($temp)
+                ->select(
+                    $temp . '.user_id as user_id',
+                    $temp . '.id_ as id',
+                    'user.user as user',
+                    $temp . '.modifiedby as modifiedby',
+                    $temp . '.updated_at as updated_at'
+                )
+                ->Join('user', 'user.id', '=', $temp . '.user_id')
+                ->orderBy($temp . '.' . $params['sortIndex'], $params['sortOrder']);
+        }
 
-        //             break;
-        //     }
+
+        /* Searching */
+        if (count($params['filters']) > 0 && @$params['filters']['rules'][0]['data'] != '') {
+            switch ($params['filters']['groupOp']) {
+                case "AND":
+                    foreach ($params['filters']['rules'] as $index => $filters) {
+                        if ($filters['field'] == 'user') {
+                            $query = $query->where('user.user', 'LIKE', "%$filters[data]%");
+                        } else {
+                            $query = $query->where('user.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                        }
+                    }
+
+                    break;
+                case "OR":
+                    foreach ($params['filters']['rules'] as $index => $filters) {
+                        if ($filters['field'] == 'user') {
+                            $query = $query->orWhere('user.user', 'LIKE', "%$filters[data]%");
+                        } else {
+                            $query = $query->orWhere('user.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                        }
+                    }
+
+                    break;
+                default:
+
+                    break;
+            }
 
 
 
-        //     $totalRows = count($query->get());
+            $totalRows = count($query->get());
 
-        //     $totalPages = ceil($totalRows / $params['limit']);
-        // }
+            $totalPages = ceil($totalRows / $params['limit']);
+        }
 
-        // /* Paging */
-        // $query = $query->skip($params['offset'])
-        //     ->take($params['limit']);
+        /* Paging */
+        $query = $query->skip($params['offset'])
+            ->take($params['limit']);
 
-        // $useracl = $query->get();
+        $useracl = $query->get();
 
-        // /* Set attributes */
-        // $attributes = [
-        //     'totalRows' => $totalRows,
-        //     'totalPages' => $totalPages
-        // ];
-
-        // return response([
-        //     'status' => true,
-        //     'data' => $useracl,
-        //     'attributes' => $attributes,
-        //     'params' => $params
-        // ]);
-
-        $userAcl = new UserAcl();
+        /* Set attributes */
+        $attributes = [
+            'totalRows' => $totalRows,
+            'totalPages' => $totalPages
+        ];
 
         return response([
-            'data' => $userAcl->get(),
-            'attributes' => [
-                'totalRows' => $userAcl->totalRows,
-                'totalPages' => $userAcl->totalPages
-            ]
+            'status' => true,
+            'data' => $useracl,
+            'attributes' => $attributes,
+            'params' => $params
         ]);
+
+        // $userAcl = new UserAcl();
+
+        // return response([
+        //     'data' => $userAcl->get(),
+        //     'attributes' => [
+        //         'totalRows' => $userAcl->totalRows,
+        //         'totalPages' => $userAcl->totalPages
+        //     ]
+        // ]);
     }
 
     public function detail()

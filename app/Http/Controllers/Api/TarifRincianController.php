@@ -145,38 +145,41 @@ class TarifRincianController extends Controller
         }
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\TarifRincian  $tarifRincian
-     * @return \Illuminate\Http\Response
-     */
-    public function show(TarifRincian $tarifRincian)
+    public function update(StoreTarifRincianRequest $request)
     {
-        //
-    }
+        DB::beginTransaction();
+       
+        try {
+            $tarifRincian = new TarifRincian();
+            if ($request->detail_id !== "null") {
+                $tarifRincian = TarifRincian::find($request->detail_id);
+            }
+            $tarifRincian->tarif_id = $request->tarif_id;
+            $tarifRincian->container_id = $request->container_id;
+            $tarifRincian->nominal = $request->nominal;
+            $tarifRincian->modifiedby = auth('api')->user()->name;
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\TarifRincian  $tarifRincian
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(TarifRincian $tarifRincian)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \App\Http\Requests\UpdateTarifRincianRequest  $request
-     * @param  \App\Models\TarifRincian  $tarifRincian
-     * @return \Illuminate\Http\Response
-     */
-    public function update(UpdateTarifRincianRequest $request, TarifRincian $tarifRincian)
-    {
-        //
+            // return [
+            //     'error' => true,
+            //     'asd' => $tarifRincian
+                
+            // ];
+            $tarifRincian->save();
+            // dd('test');
+            DB::commit();
+           
+            return [
+                'error' => false,
+                'detail' => $tarifRincian,
+                'id' => $tarifRincian->id,
+                'tabel' => $tarifRincian->getTable(),
+            ];
+        } catch (\Throwable $th) {
+            // dd('test2');
+            DB::rollBack();
+            
+            throw $th;
+        }
     }
 
     /**

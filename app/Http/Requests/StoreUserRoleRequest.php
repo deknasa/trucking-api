@@ -25,19 +25,16 @@ class StoreUserRoleRequest extends FormRequest
     public function rules()
     {
         return [
-            // 'user_id' => 'required|exists:user,id',
-            'role_id' => 'required|array',
-            'role_id.*' => 'required|int|exists:role,id',
-            'status' => 'required|array',
-            'status.*' => 'required|int'
+            'role_ids' => 'required|array',
+            'role_ids.*' => 'required|int|exists:role,id',
         ];
     }
 
     public function attributes()
     {
         return [
-            // 'user_id' => 'user',
-            'role_id' => 'role',
+            'role_ids' => 'role',
+            'role_ids.*' => 'role',
         ];
     }
 }
