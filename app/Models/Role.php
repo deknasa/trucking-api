@@ -117,4 +117,9 @@ class Role extends MyModel
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
+
+    public function users()
+    {
+        return $this->belongsToMany(User::class);
+    }
 }

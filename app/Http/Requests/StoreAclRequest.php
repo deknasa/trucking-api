@@ -25,16 +25,16 @@ class StoreAclRequest extends FormRequest
     public function rules()
     {
         return [
-            'aco_id' => 'required',
-            'role_id' => 'required',
+            'aco_ids' => 'required|array',
+            'aco_ids.*' => 'required|int|exists:acos,id|distinct',
         ];
     }
 
     public function attributes()
     {
         return [
-            'aco_id' => 'aco id',
-            'role_id' => 'role id',
+            'aco_ids' => 'aco',
+            'aco_ids.*' => 'aco',
         ];
     }
 }

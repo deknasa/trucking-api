@@ -6,14 +6,18 @@ use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreAclRequest;
+use App\Http\Requests\StoreUserRoleRequest;
 use App\Models\User;
 use App\Models\Parameter;
 use App\Models\Cabang;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Database\QueryException;
+use Illuminate\Http\Response;
+
 class UserController extends Controller
 {
     /**
@@ -38,6 +42,98 @@ class UserController extends Controller
             'status' => true,
             'data' => $user->default()
         ]);
+    }
+
+    public function getRoles(User $user): JsonResponse
+    {
+        return response()->json([
+            'data' => $user->roles
+        ]);
+    }
+
+    public function storeRoles(StoreUserRoleRequest $request, User $user): JsonResponse
+    {
+        DB::beginTransaction();
+
+        try {
+            $user->roles()->detach();
+
+            foreach ($request->role_ids as $role_id) {
+                $user->roles()->attach($role_id, [
+                    'modifiedby' => auth('api')->user()->name
+                ]);
+            }
+
+            $logTrail = [
+                'namatabel' => strtoupper($user->getTable()),
+                'postingdari' => 'ENTRY USER ROLE',
+                'idtrans' => $user->id,
+                'nobuktitrans' => $user->id,
+                'aksi' => 'ENTRY',
+                'datajson' => $user->load('roles')->toArray(),
+                'modifiedby' => $user->modifiedby
+            ];
+
+            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+            $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Berhasil disimpan',
+                'user' => $user->load('roles')
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+
+            throw $th;
+        }
+    }
+
+    public function getAcls(User $user): JsonResponse
+    {
+        return response()->json([
+            'data' => $user->acls
+        ]);
+    }
+
+    public function storeAcls(StoreAclRequest $request, User $user): JsonResponse
+    {
+        DB::beginTransaction();
+
+        try {
+            $user->acls()->detach();
+
+            foreach ($request->aco_ids as $aco_id) {
+                $user->acls()->attach($aco_id, [
+                    'modifiedby' => auth('api')->user()->name
+                ]);
+            }
+
+            $logTrail = [
+                'namatabel' => strtoupper($user->getTable()),
+                'postingdari' => 'ENTRY USER ACL',
+                'idtrans' => $user->id,
+                'nobuktitrans' => $user->id,
+                'aksi' => 'ENTRY',
+                'datajson' => $user->load('acls')->toArray(),
+                'modifiedby' => $user->modifiedby
+            ];
+
+            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+            $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Berhasil disimpan',
+                'user' => $user->load('acls')
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+
+            throw $th;
+        }
     }
 
     /**
@@ -100,7 +196,7 @@ class UserController extends Controller
     {
         return response([
             'status' => true,
-            'data' => $user
+            'data' => $user->load('roles')
         ]);
     }
 

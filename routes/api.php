@@ -225,7 +225,6 @@ use App\Http\Controllers\Api\ReportAllController;
         Route::get('gandengan/default', [GandenganController::class, 'default']);
         Route::resource('gandengan', GandenganController::class);
 
-
         Route::get('acos/field_length', [AcosController::class, 'fieldLength']);
         Route::resource('acos', AcosController::class);
 
@@ -304,15 +303,16 @@ use App\Http\Controllers\Api\ReportAllController;
         Route::get('cabang/export', [CabangController::class, 'export'])->name('cabang.export');
         Route::resource('cabang', CabangController::class);
 
-        Route::get('acos/field_length', [AcosController::class, 'fieldLength']);
-        Route::resource('acos', AcosController::class);
-
         Route::get('user/field_length', [UserController::class, 'fieldLength']);
         Route::get('user/export', [UserController::class, 'export'])->name('user.export');
         Route::get('user/combostatus', [UserController::class, 'combostatus']);
         Route::get('user/combocabang', [UserController::class, 'combocabang']);
         Route::get('user/getuserid', [UserController::class, 'getuserid']);
         Route::get('user/default', [UserController::class, 'default']);
+        Route::get('user/{user}/role', [UserController::class, 'getRoles']);
+        Route::post('user/{user}/role', [UserController::class, 'storeRoles']);
+        Route::get('user/{user}/acl', [UserController::class, 'getAcls']);
+        Route::post('user/{user}/acl', [UserController::class, 'storeAcls']);
         Route::resource('user', UserController::class);
 
         Route::get('menu/field_length', [MenuController::class, 'fieldLength']);

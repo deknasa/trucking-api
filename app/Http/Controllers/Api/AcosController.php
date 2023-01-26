@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use App\Http\Controllers\Controller;
+use App\Models\Aco;
 use Illuminate\Support\Facades\Validator;
 
 class AcosController extends Controller
@@ -32,7 +33,9 @@ class AcosController extends Controller
      */
     public function index()
     {
-        //
+        return response()->json([
+            'data' => Aco::all()
+        ]);
     }
 
     /**
