@@ -27,6 +27,9 @@ class CreateProsesuangjalansupirdetailTable extends Migration
             $table->unsignedBigInteger('pengeluarantrucking_bank_id')->default(0);
             $table->date('pengeluarantrucking_tglbukti')->default('1900/1/1');
             $table->string('pengeluarantrucking_nobukti', 50)->default('');
+            $table->unsignedBigInteger('pengembaliankasgantung_bank_id')->default(0);
+            $table->date('pengembaliankasgantung_tglbukti')->default('1900/1/1');
+            $table->string('pengembaliankasgantung_nobukti', 50)->default('');
             $table->unsignedBigInteger('statusprosesuangjalan')->default(0);
             $table->double('nominal', 15, 2)->default('0');
             $table->longText('keterangan')->default('');
@@ -36,14 +39,18 @@ class CreateProsesuangjalansupirdetailTable extends Migration
             $table->foreign('prosesuangjalansupir_id', 'prosesuangjalansupirdetail_jurnalumumheader_jurnalumum_id_foreign')->references('id')->on('jurnalumumheader')->onDelete('cascade');
             $table->foreign('penerimaantrucking_bank_id', 'prosesuangjalansupirdetail_penerimaanbank_bank_id_foreign')->references('id')->on('bank');
             $table->foreign('pengeluarantrucking_bank_id', 'prosesuangjalansupirdetail_pengeluaranbank_bank_id_foreign')->references('id')->on('bank');
+            $table->foreign('pengembaliankasgantung_bank_id', 'prosesuangjalansupirdetail_pengembaliankasgantung_bank_id_foreign')->references('id')->on('bank');
             $table->foreign('penerimaantrucking_nobukti', 'prosesuangjalansupirdetail_penerimaantrucking_nobukti_foreign')->references('nobukti')->on('penerimaantruckingheader');
             $table->foreign('pengeluarantrucking_nobukti', 'prosesuangjalansupirdetail_pengeluarantrucking_nobukti_foreign')->references('nobukti')->on('pengeluarantruckingheader');
+            $table->foreign('pengembaliankasgantung_nobukti', 'prosesuangjalansupirdetail_pengembaliankasgantung_nobukti_foreign')->references('nobukti')->on('pengeluarantruckingheader');
         });
 
         DB::statement("ALTER TABLE prosesuangjalansupirdetail NOCHECK CONSTRAINT prosesuangjalansupirdetail_penerimaanbank_bank_id_foreign");
         DB::statement("ALTER TABLE prosesuangjalansupirdetail NOCHECK CONSTRAINT prosesuangjalansupirdetail_pengeluaranbank_bank_id_foreign");
+        DB::statement("ALTER TABLE prosesuangjalansupirdetail NOCHECK CONSTRAINT prosesuangjalansupirdetail_pengembaliankasgantung_bank_id_foreign");
         DB::statement("ALTER TABLE prosesuangjalansupirdetail NOCHECK CONSTRAINT prosesuangjalansupirdetail_penerimaantrucking_nobukti_foreign");
         DB::statement("ALTER TABLE prosesuangjalansupirdetail NOCHECK CONSTRAINT prosesuangjalansupirdetail_pengeluarantrucking_nobukti_foreign");
+        DB::statement("ALTER TABLE prosesuangjalansupirdetail NOCHECK CONSTRAINT prosesuangjalansupirdetail_pengembaliankasgantung_nobukti_foreign");
     }
 
     /**
