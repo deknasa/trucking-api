@@ -640,7 +640,25 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('penerimaanheader/grid', [PenerimaanHeaderController::class, 'grid']);
     Route::get('penerimaanheader/default', [PenerimaanHeaderController::class, 'default']);
 
+<<<<<<< Updated upstream
     Route::resource('penerimaanheader', PenerimaanHeaderController::class);
+=======
+    Route::get('upahritasirincian/setuprow', [UpahRitasiRincianController::class, 'setUpRow']);
+    Route::get('upahritasirincian/setuprowshow/{id}', [UpahRitasiRincianController::class, 'setUpRowExcept']);
+    Route::resource('upahritasirincian', UpahRitasiRincianController::class);
+
+    Route::get('ritasi/combo', [RitasiController::class, 'combo']);
+    Route::get('ritasi/field_length', [RitasiController::class, 'fieldLength']);
+    Route::get('ritasi/default', [RitasiController::class, 'default']);
+    Route::resource('ritasi', RitasiController::class);
+
+    Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
+    Route::post('penerimaan/{id}/approval', [PenerimaanHeaderController::class, 'approval'])->name('penerimaan.approval');
+    Route::get('penerimaan/no_bukti', [PenerimaanHeaderController::class, 'getNoBukti']);
+    Route::get('penerimaan/combo', [PenerimaanHeaderController::class, 'combo']);
+    Route::get('penerimaan/grid', [PenerimaanHeaderController::class, 'grid']);
+    Route::resource('penerimaan', PenerimaanHeaderController::class);
+>>>>>>> Stashed changes
 
     Route::resource('penerimaandetail', PenerimaanDetailController::class);
 
