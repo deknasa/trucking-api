@@ -140,7 +140,7 @@ class UpahRitasiRincianController extends Controller
     public function setUpRowExcept($id)
     {
         $upahRitasiRincian = new UpahRitasiRincian();
-        $rincian = $upahRitasiRincian->where('upahsupir_id',$id)->get();
+        $rincian = $upahRitasiRincian->where('upahritasi_id',$id)->get();
         foreach ($rincian as $e) {
             $data[] = [
                  "container_id" => $e->container_id,

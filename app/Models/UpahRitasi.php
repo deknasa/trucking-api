@@ -42,6 +42,7 @@ class UpahRitasi extends MyModel
                 'kotadari.keterangan as kotadari_id',
                 'kotasampai.keterangan as kotasampai_id',
                 'upahritasi.jarak',
+                'upahritasi.parent_id',
                 // 'zona.keterangan as zona_id',
                 'parameter.text as statusaktif',
                 'upahritasi.tglmulaiberlaku',
@@ -81,6 +82,7 @@ class UpahRitasi extends MyModel
                 'kotasampai.keterangan as kotasampai',
 
                 'upahritasi.jarak',
+                'upahritasi.parent_id',
                 // 'upahritasi.zona_id',
                 // 'zona.keterangan as zona',
 
