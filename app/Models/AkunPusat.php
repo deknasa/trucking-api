@@ -25,6 +25,8 @@ class AkunPusat extends MyModel
         $level =request()->level ?? '';
         $potongan = request()->potongan ?? '';
 
+        $aktif = request()->aktif ?? '';
+        
         $this->setRequestParameters();
 
         $query = DB::table($this->table)->from(
@@ -60,6 +62,17 @@ class AkunPusat extends MyModel
                 $temp = implode(',', $this->TempParameter());
                 
                 $query->whereRaw("akunpusat.coa in ($temp)");
+            }
+
+            if ($aktif == 'AKTIF') {
+                $statusaktif=Parameter::from(
+                    DB::raw("parameter with (readuncommitted)")
+                )
+                ->where('grp','=','STATUS AKTIF')
+                ->where('text','=','AKTIF')
+                ->first();
+    
+                $query ->where('akunpusat.statusaktif','=',$statusaktif->id);
             }
 
         $this->totalRows = $query->count();

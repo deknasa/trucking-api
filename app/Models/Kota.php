@@ -27,19 +27,33 @@ class Kota extends MyModel
     {
         $this->setRequestParameters();
 
+        $aktif = request()->aktif ?? '';
+
         $query = Kota::from(DB::raw("$this->table with (readuncommitted)"))
-        ->select(
-            'kota.id',
-            'kota.kodekota',
-            'kota.keterangan',
-            'zona.zona as zona_id',
-            'parameter.memo as statusaktif',
-            'kota.modifiedby',
-            'kota.created_at',
-            'kota.updated_at'
-        )
+            ->select(
+                'kota.id',
+                'kota.kodekota',
+                'kota.keterangan',
+                'zona.zona as zona_id',
+                'parameter.memo as statusaktif',
+                'kota.modifiedby',
+                'kota.created_at',
+                'kota.updated_at'
+            )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'kota.statusaktif', '=', 'parameter.id')
             ->leftJoin(DB::raw("zona with (readuncommitted)"), 'kota.zona_id', '=', 'zona.id');
+
+        if ($aktif == 'AKTIF') {
+            $statusaktif = Parameter::from(
+                DB::raw("parameter with (readuncommitted)")
+            )
+                ->where('grp', '=', 'STATUS AKTIF')
+                ->where('text', '=', 'AKTIF')
+                ->first();
+
+            $query->where('kota.statusaktif', '=', $statusaktif->id);
+        }
+
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -55,30 +69,31 @@ class Kota extends MyModel
 
     public function default()
     {
-        
+
         $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdefault, function ($table) {
             $table->unsignedBigInteger('statusaktif')->default(0);
         });
 
-        $statusaktif=Parameter::from (
+        $statusaktif = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
         )
-        ->select (
-            'memo',
-            'id'
-        )
-        ->where('grp','=','STATUS AKTIF')
-        ->where('subgrp','=','STATUS AKTIF')
-        ->where('default', '=', 'YA')
-        ->first();
-        
+            ->select(
+                'memo',
+                'id'
+            )
+            ->where('grp', '=', 'STATUS AKTIF')
+            ->where('subgrp', '=', 'STATUS AKTIF')
+            ->where('default', '=', 'YA')
+            ->first();
+
         DB::table($tempdefault)->insert(["statusaktif" => $statusaktif->id]);
-        $query=DB::table($tempdefault)->from(
-            DB::raw($tempdefault )
+        $query = DB::table($tempdefault)->from(
+            DB::raw($tempdefault)
         )
             ->select(
-                'statusaktif');
+                'statusaktif'
+            );
 
         $data = $query->first();
         // dd($data);
@@ -86,10 +101,10 @@ class Kota extends MyModel
     }
     public function findAll($id)
     {
-    
+
         $query = Kota::from(DB::raw("kota with (readuncommitted)"))
-        ->select(DB::raw('kota.*, zona.zona as zona'))
-        ->join(DB::raw("zona with (readuncommitted)"),'kota.zona_id','zona.id')->whereRaw("kota.id = $id");
+            ->select(DB::raw('kota.*, zona.zona as zona'))
+            ->join(DB::raw("zona with (readuncommitted)"), 'kota.zona_id', 'zona.id')->whereRaw("kota.id = $id");
 
         $data = $query->first();
         return $data;
@@ -101,7 +116,7 @@ class Kota extends MyModel
             DB::raw($this->table . " with (readuncommitted)")
         )->select(
             DB::raw(
-            "$this->table.id,
+                "$this->table.id,
             $this->table.kodekota,
             $this->table.keterangan,
             'zona.zona',
@@ -111,10 +126,9 @@ class Kota extends MyModel
             $this->table.updated_at"
             )
         )
-        
-        ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'kota.statusaktif', '=', 'parameter.id')
-        ->leftJoin(DB::raw("zona with (readuncommitted)"), 'kota.zona_id', '=', 'zona.id');
 
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'kota.statusaktif', '=', 'parameter.id')
+            ->leftJoin(DB::raw("zona with (readuncommitted)"), 'kota.zona_id', '=', 'zona.id');
     }
 
     public function createTemp(string $modelTable)
@@ -137,11 +151,10 @@ class Kota extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id','kodekota','keterangan','zona','statusaktif','modifiedby','created_at','updated_at'],$models);
+        DB::table($temp)->insertUsing(['id', 'kodekota', 'keterangan', 'zona', 'statusaktif', 'modifiedby', 'created_at', 'updated_at'], $models);
 
 
-        return  $temp;         
-
+        return  $temp;
     }
 
     public function sort($query)
@@ -160,7 +173,7 @@ class Kota extends MyModel
                         } else if ($filters['field'] == 'zona_id') {
                             $query = $query->where('zona.zona', 'LIKE', "%$filters[data]%");
                         } else {
-                            $query = $query->where('kota.'.$filters['field'], 'LIKE', "%$filters[data]%");
+                            $query = $query->where('kota.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
                     }
 
@@ -172,7 +185,7 @@ class Kota extends MyModel
                         } else if ($filters['field'] == 'zona_id') {
                             $query = $query->orWhere('zona.zona', 'LIKE', "%$filters[data]%");
                         } else {
-                            $query = $query->orWhere('kota.'.$filters['field'], 'LIKE', "%$filters[data]%");
+                            $query = $query->orWhere('kota.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
                     }
 

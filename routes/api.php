@@ -184,6 +184,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('absensisupirheader/running_number', [AbsensiSupirHeaderController::class, 'getRunningNumber']);
     Route::get('absensisupirheader/grid', [AbsensiSupirHeaderController::class, 'grid']);
     Route::get('absensisupirheader/field_length', [AbsensiSupirHeaderController::class, 'fieldLength']);
+    Route::get('absensisupirheader/default', [AbsensiSupirHeaderController::class, 'default']);    
     Route::post('absensisupirheader/{id}/cekvalidasi', [AbsensiSupirHeaderController::class, 'cekvalidasi'])->name('absensisupirheader.cekvalidasi');
     Route::apiResource('absensisupirheader', AbsensiSupirHeaderController::class)->parameter('absensisupirheader', 'absensiSupirHeader');
 

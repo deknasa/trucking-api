@@ -36,6 +36,8 @@ class Agen extends MyModel
     {
         $this->setRequestParameters();
 
+        $aktif = request()->aktif ?? '';
+        
         $query = Agen::from(DB::raw("$this->table with (readuncommitted)"))
             ->select(
                 'agen.id',
@@ -62,7 +64,17 @@ class Agen extends MyModel
             ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'agen.statusapproval', 'statusapproval.id')
             ->leftJoin(DB::raw("parameter as statustas with (readuncommitted)"), 'agen.statustas', 'statustas.id');
 
-
+            if ($aktif == 'AKTIF') {
+                $statusaktif=Parameter::from(
+                    DB::raw("parameter with (readuncommitted)")
+                )
+                ->where('grp','=','STATUS AKTIF')
+                ->where('text','=','AKTIF')
+                ->first();
+    
+                $query ->where('agen.statusaktif','=',$statusaktif->id);
+            }
+    
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;

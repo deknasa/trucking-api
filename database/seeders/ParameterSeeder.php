@@ -245,6 +245,10 @@ class ParameterSeeder extends Seeder
         parameter::create(['grp' => 'JURNAL POTONGAN PPH', 'subgrp' => 'DEBET', 'kelompok' => 'JURNAL POTONGAN', 'text' => 'DEBET', 'memo' => '{"MEMO":"JURNAL POTONGAN PPH","SINGKATAN":"JPK","WARNA":"#6C757D","JURNAL":"06.03.03.02"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => 'TIDAK',]);
         parameter::create(['grp' => 'JURNAL RETUR STOK', 'subgrp' => 'KREDIT', 'kelompok' => '', 'text' => 'KREDIT', 'memo' => '{"MEMO":"JURNAL RETUR STOK","SINGKATAN":"JRTB","WARNA":"#28A745","JURNAL":"01.01.02.33"}', 'type' => '0', 'modifiedby' => '1', 'default' => '',]);
         parameter::create(['grp' => 'JURNAL PENERIMAAN DARI PELUNASAN', 'subgrp' => 'KREDIT', 'kelompok' => '', 'text' => 'KREDIT', 'memo' => '{"MEMO":"JURNAL PENERIMAAN DARI PELUNASAN","SINGKATAN":"JPDP","WARNA":"#28A745","JURNAL":"07.02.01.59"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'STATUS PROSES UANG JALAN', 'subgrp' => 'STATUS PROSES UANG JALAN', 'kelompok' => '', 'text' => 'TRANSFER', 'memo' => '{"MEMO":"TRANSFER PROSES UANG JALAN","SINGKATAN":"TPUJ","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'STATUS PROSES UANG JALAN', 'subgrp' => 'STATUS PROSES UANG JALAN', 'kelompok' => '', 'text' => 'ADJUST TRANSFER', 'memo' => '{"MEMO":"ADJUST TRANSFER PROSES UANG JALAN","SINGKATAN":"ATPUJ","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'STATUS PROSES UANG JALAN', 'subgrp' => 'STATUS PROSES UANG JALAN', 'kelompok' => '', 'text' => 'PENGEMBALIAN PINJAMAN', 'memo' => '{"MEMO":"PENGEMBALIAN PINJAMAN TRANSFER PROSES UANG JALAN","SINGKATAN":"ATPUJ","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'STATUS PROSES UANG JALAN', 'subgrp' => 'STATUS PROSES UANG JALAN', 'kelompok' => '', 'text' => 'DEPOSITO SUPIR', 'memo' => '{"MEMO":"DEPOSITO SUPIR PROSES UANG JALAN","SINGKATAN":"ATPUJ","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
 
     }
 }

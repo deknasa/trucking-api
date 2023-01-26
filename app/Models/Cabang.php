@@ -24,6 +24,8 @@ class Cabang extends MyModel
     {
         $this->setRequestParameters();
 
+        $aktif = request()->aktif ?? '';
+
         $query = Cabang::from(DB::raw("$this->table with (readuncommitted)"))
             ->select(
                 'cabang.id',
@@ -36,7 +38,16 @@ class Cabang extends MyModel
             )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'cabang.statusaktif', 'parameter.id');
 
-
+            if ($aktif == 'AKTIF') {
+                $statusaktif=Parameter::from(
+                    DB::raw("parameter with (readuncommitted)")
+                )
+                ->where('grp','=','STATUS AKTIF')
+                ->where('text','=','AKTIF')
+                ->first();
+    
+                $query ->where('cabang.statusaktif','=',$statusaktif->id);
+            }
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;

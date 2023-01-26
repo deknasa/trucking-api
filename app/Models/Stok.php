@@ -27,6 +27,9 @@ class Stok extends MyModel
     {
         $this->setRequestParameters();
 
+        $aktif = request()->aktif ?? '';
+
+
         $query = DB::table($this->table)->select(
             'stok.id',
             'stok.namastok',
@@ -51,6 +54,17 @@ class Stok extends MyModel
             ->leftJoin('kategori','stok.kategori_id', 'kategori.id')
             ->leftJoin('parameter', 'stok.statusaktif', 'parameter.id')
             ->leftJoin('merk','stok.merk_id', 'merk.id');
+
+            if ($aktif == 'AKTIF') {
+                $statusaktif = Parameter::from(
+                    DB::raw("parameter with (readuncommitted)")
+                )
+                    ->where('grp', '=', 'STATUS AKTIF')
+                    ->where('text', '=', 'AKTIF')
+                    ->first();
+    
+                $query->where('stok.statusaktif', '=', $statusaktif->id);
+            }
             
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;

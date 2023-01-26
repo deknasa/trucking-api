@@ -28,7 +28,7 @@ class AlatBayar extends MyModel
     public function get()
     {
         $this->setRequestParameters();
-
+        $aktif = request()->aktif ?? '';
         // dd(request()->all());
         $bank_id =request()->bank_id ?? 0;
 
@@ -81,6 +81,18 @@ class AlatBayar extends MyModel
         if ($tipe != "") {
             $query->where('bank.tipe', '=', $tipe);
         }        
+
+        if ($aktif == 'AKTIF') {
+            $statusaktif=Parameter::from(
+                DB::raw("parameter with (readuncommitted)")
+            )
+            ->where('grp','=','STATUS AKTIF')
+            ->where('text','=','AKTIF')
+            ->first();
+
+            $query ->where('alatbayar.statusaktif','=',$statusaktif->id);
+        }
+
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
