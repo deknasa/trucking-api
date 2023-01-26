@@ -640,9 +640,6 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('penerimaanheader/grid', [PenerimaanHeaderController::class, 'grid']);
     Route::get('penerimaanheader/default', [PenerimaanHeaderController::class, 'default']);
 
-<<<<<<< Updated upstream
-    Route::resource('penerimaanheader', PenerimaanHeaderController::class);
-=======
     Route::get('upahritasirincian/setuprow', [UpahRitasiRincianController::class, 'setUpRow']);
     Route::get('upahritasirincian/setuprowshow/{id}', [UpahRitasiRincianController::class, 'setUpRowExcept']);
     Route::resource('upahritasirincian', UpahRitasiRincianController::class);
@@ -658,7 +655,6 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('penerimaan/combo', [PenerimaanHeaderController::class, 'combo']);
     Route::get('penerimaan/grid', [PenerimaanHeaderController::class, 'grid']);
     Route::resource('penerimaan', PenerimaanHeaderController::class);
->>>>>>> Stashed changes
 
     Route::resource('penerimaandetail', PenerimaanDetailController::class);
 
@@ -784,6 +780,7 @@ Route::get('tarif/default', [TarifController::class, 'default']);
 Route::resource('tarif', TarifController::class);
 
 Route::get('tarifrincian/setuprow', [TarifRincianController::class, 'setUpRow']);
+Route::get('tarifrincian/get', [TarifRincianController::class, 'get']);
 Route::get('tarifrincian/setuprowshow/{id}', [TarifRincianController::class, 'setUpRowExcept']);
 Route::resource('tarifrincian', TarifRincianController::class);
 

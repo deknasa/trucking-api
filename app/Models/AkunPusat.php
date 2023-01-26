@@ -22,11 +22,11 @@ class AkunPusat extends MyModel
     public function get()
     {
 
-        $level =request()->level ?? '';
+        $level = request()->level ?? '';
         $potongan = request()->potongan ?? '';
 
         $aktif = request()->aktif ?? '';
-        
+
         $this->setRequestParameters();
 
         $query = DB::table($this->table)->from(
@@ -40,46 +40,49 @@ class AkunPusat extends MyModel
                 'akunpusat.level',
                 'akunpusat.parent',
                 'akunpusat.coamain',
-                'akunpusat.modifiedby',
-                'akunpusat.created_at',
-                'akunpusat.updated_at',
                 'parameter_statusaktif.memo as statusaktif',
                 'parameter_statuscoa.memo as statuscoa',
                 'parameter_statusaccountpayable.memo as statusaccountpayable',
                 'parameter_statusneraca.memo as statusneraca',
-                'parameter_statuslabarugi.memo as statuslabarugi'
-            )
+                'parameter_statuslabarugi.memo as statuslabarugi',
+                'akunpusat.modifiedby',
+                'akunpusat.created_at',
+                'akunpusat.updated_at',                )
+
             ->leftJoin(DB::raw("parameter as parameter_statusaktif with (readuncommitted)"), 'akunpusat.statusaktif', '=', 'parameter_statusaktif.id')
             ->leftJoin(DB::raw("parameter as parameter_statuscoa with (readuncommitted)"), 'akunpusat.statuscoa', '=', 'parameter_statuscoa.id')
             ->leftJoin(DB::raw("parameter as parameter_statusaccountpayable with (readuncommitted)"), 'akunpusat.statusaccountpayable', '=', 'parameter_statusaccountpayable.id')
             ->leftJoin(DB::raw("parameter as parameter_statusneraca with (readuncommitted)"), 'akunpusat.statusneraca', '=', 'parameter_statusneraca.id')
             ->leftJoin(DB::raw("parameter as parameter_statuslabarugi with (readuncommitted)"), 'akunpusat.statuslabarugi', '=', 'parameter_statuslabarugi.id');
-            if ($level!='') {
-                $query->where('akunpusat.level','=',$level);
-                // dd($query->get());
-            }
-            if($potongan!='') {
-                $temp = implode(',', $this->TempParameter());
-                
-                $query->whereRaw("akunpusat.coa in ($temp)");
-            }
 
-            if ($aktif == 'AKTIF') {
-                $statusaktif=Parameter::from(
-                    DB::raw("parameter with (readuncommitted)")
-                )
-                ->where('grp','=','STATUS AKTIF')
-                ->where('text','=','AKTIF')
-                ->first();
-    
-                $query ->where('akunpusat.statusaktif','=',$statusaktif->id);
-            }
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
         $this->sort($query);
         $this->filter($query);
+
+        if ($level != '') {
+            $query->where('akunpusat.level', '=', $level);
+            // dd($query->get());
+        }
+        if ($potongan != '') {
+            $temp = implode(',', $this->TempParameter());
+
+            $query->whereRaw("akunpusat.coa in ($temp)");
+        }
+
+        if ($aktif == 'AKTIF') {
+            $statusaktif = Parameter::from(
+                DB::raw("parameter with (readuncommitted)")
+            )
+                ->where('grp', '=', 'STATUS AKTIF')
+                ->where('text', '=', 'AKTIF')
+                ->first();
+
+            $query->where('akunpusat.statusaktif', '=', $statusaktif->id);
+        }
+
         $this->paginate($query);
 
         $data = $query->get();
@@ -91,9 +94,9 @@ class AkunPusat extends MyModel
     {
         $parameter = Parameter::from(DB::raw("parameter with (readuncommitted)"))->select('memo')->where('kelompok', 'JURNAL POTONGAN')->get();
         $coa = [];
-        foreach($parameter as $key => $value){
+        foreach ($parameter as $key => $value) {
             $memo = json_decode($value->memo, true);
-            $coa[] = "'".$memo['JURNAL']."'";
+            $coa[] = "'" . $memo['JURNAL'] . "'";
         }
         return $coa;
     }
@@ -117,11 +120,11 @@ class AkunPusat extends MyModel
             )
             ->where('grp', '=', 'STATUS COA')
             ->where('subgrp', '=', 'STATUS COA')
-            ->where('default','=','YA')
+            ->where('default', '=', 'YA')
             ->first();
 
         $iddefaultstatuscoa = $status->id ?? 0;
-        
+
         // statusaccountpayable
         $status = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
@@ -131,11 +134,11 @@ class AkunPusat extends MyModel
             )
             ->where('grp', '=', 'STATUS ACCOUNT PAYABLE')
             ->where('subgrp', '=', 'STATUS ACCOUNT PAYABLE')
-            ->where('default','=','YA')
+            ->where('default', '=', 'YA')
             ->first();
 
         $iddefaultstatusaccountpayable = $status->id ?? 0;
-        
+
         // statuslabarugi
         $status = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
@@ -163,7 +166,7 @@ class AkunPusat extends MyModel
             ->first();
 
         $iddefaultstatusneraca = $status->id ?? 0;
-        
+
         // statusaktif
         $status = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
@@ -177,7 +180,7 @@ class AkunPusat extends MyModel
             ->first();
 
         $iddefaultstatusaktif = $status->id ?? 0;
-        
+
         DB::table($tempdefault)->insert(
             [
                 "statuscoa" => $iddefaultstatuscoa,
@@ -200,7 +203,7 @@ class AkunPusat extends MyModel
             );
 
         $data = $query->first();
-        
+
         return $data;
     }
 
@@ -298,6 +301,10 @@ class AkunPusat extends MyModel
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statusaktif') {
                             $query = $query->orWhere('parameter_statusaktif.text', '=', $filters['data']);
+                        } elseif ($filters['field'] == 'id') {
+                            $query = $query->orWhereRaw("(akunpusat.id like '%$filters[data]%'");
+                        } elseif ($filters['field'] == 'updated_at') {
+                            $query = $query->orWhereRaw("format(akunpusat.updated_at,'dd-MM-yyyy HH:mm:ss') like '%$filters[data]%')");                                  
                         } else if ($filters['field'] == 'statuscoa') {
                             $query = $query->orWhere('parameter_statuscoa.text', '=', "$filters[data]");
                         } else if ($filters['field'] == 'statusaccountpayable') {

@@ -20,11 +20,25 @@ class AbsenTrado extends MyModel
 
         $query = AbsenTrado::from(DB::raw("$this->table with (readuncommitted)"))
             ->select(
-                'absentrado.*',
+                'absentrado.id',
+                'absentrado.kodeabsen',
+                'absentrado.keterangan',
                 'parameter.memo as statusaktif',
+                'absentrado.modifiedby',
+                'absentrado.created_at',
+                'absentrado.updated_at',
             )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'absentrado.statusaktif', '=', 'parameter.id');
 
+                  
+      
+
+
+        $this->totalRows = $query->count();
+        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+
+        $this->sort($query);
+        $this->filter($query);
         if ($aktif == 'AKTIF') {
             $statusaktif = Parameter::from(
                 DB::raw("parameter with (readuncommitted)")
@@ -36,12 +50,6 @@ class AbsenTrado extends MyModel
             $query->where('absentrado.statusaktif', '=', $statusaktif->id);
         }
 
-
-        $this->totalRows = $query->count();
-        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
-
-        $this->sort($query);
-        $this->filter($query);
         $this->paginate($query);
 
         $data = $query->get();
@@ -147,6 +155,10 @@ class AbsenTrado extends MyModel
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statusaktif') {
                             $query = $query->orWhere('parameter.text', '=', $filters['data']);
+                        } elseif ($filters['field'] == 'id') {
+                            $query = $query->orWhereRaw("(absentrado.id like '%$filters[data]%'");
+                        } elseif ($filters['field'] == 'updated_at') {
+                            $query = $query->orWhereRaw("format(absentrado.updated_at,'dd-MM-yyyy HH:mm:ss') like '%$filters[data]%')");                            
                         } else {
                             $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }

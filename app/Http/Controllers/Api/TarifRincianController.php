@@ -88,6 +88,21 @@ class TarifRincianController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+
+     public function get()
+     {
+         $tarifrincian = new TarifRincian();
+ 
+         return response([
+             'data' => $tarifrincian->get(),
+             'attributes' => [
+                 'totalRows' => $tarifrincian->totalRows,
+                 'totalPages' => $tarifrincian->totalPages
+             ]
+         ]);
+     }
+
+    
     public function create()
     {
         //

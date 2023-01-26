@@ -424,6 +424,7 @@ class ParameterController extends Controller
 
         $data = $query->get();
 
+
         // $datajson[$index]['updated_at']
         return response([
             'data' => $data

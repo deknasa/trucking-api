@@ -33,6 +33,7 @@ class Pelanggan extends MyModel
         $query = DB::table($this->table)->from(
             DB::raw($this->table . " with (readuncommitted)")
         )->select(
+            'pelanggan.id',
             'pelanggan.kodepelanggan',
             'pelanggan.namapelanggan',
             'pelanggan.keterangan',
