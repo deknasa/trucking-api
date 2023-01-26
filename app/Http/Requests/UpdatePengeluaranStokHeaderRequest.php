@@ -24,7 +24,10 @@ class UpdatePengeluaranStokHeaderRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            "tglbukti"=> "required", 
+            "pengeluaranstok" => "required",
+            "pengeluaranstok_id" => "required",
+            "modifiedby"=> "string", 
         ];
     }
 }

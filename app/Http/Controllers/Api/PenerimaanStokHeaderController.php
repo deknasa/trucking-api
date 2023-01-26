@@ -64,6 +64,7 @@ class PenerimaanStokHeaderController extends Controller
                 ->where('id', $idpenerimaan)
                 ->first();
             // dd($fetchFormat);
+            return response([$idpenerimaan],422);
             $statusformat = $fetchFormat->statusformat;
 
             $fetchGrp = Parameter::where('id', $statusformat)->first();

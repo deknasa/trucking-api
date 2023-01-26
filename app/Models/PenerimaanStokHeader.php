@@ -31,6 +31,7 @@ class PenerimaanStokHeader extends MyModel
 
         $spb = Parameter::where('grp', 'SPB STOK')->where('subgrp', 'SPB STOK')->first();
         $po = Parameter::where('grp', 'PO STOK')->where('subgrp', 'PO STOK')->first();
+        $rtb = Parameter::where('grp', 'RETUR STOK')->where('subgrp', 'RETUR STOK')->first();
 
         $query = DB::table($this->table);
         $query = $this->selectColumns($query)
@@ -46,6 +47,17 @@ class PenerimaanStokHeader extends MyModel
             $query->where('penerimaanstokheader.penerimaanstok_id','=',$po->text);
             $query->whereRaw("isnull(pobeli.nobukti,'')=''");
             // dd($query->get());
+        }
+
+        if (request()->supplier_id) {
+            // $query->leftJoin('penerimaanstokheader as pobeli','penerimaanstokheader.penerimaanstok_nobukti','pobeli.nobukti');
+            $query->where('penerimaanstokheader.supplier_id','=',request()->supplier_id);
+            // $query->whereRaw("isnull(pobeli.nobukti,'')=''");
+            // dd($query->get());
+        }
+        if (request()->pengeluaranstok_id == $rtb->text) {
+            //jika retur cari penerimaan hanya
+            $query->where('penerimaanstokheader.penerimaanstok_id','=',$spb->text);
         }
 
         $this->totalRows = $query->count();

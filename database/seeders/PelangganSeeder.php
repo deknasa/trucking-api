@@ -17,6 +17,6 @@ class PelangganSeeder extends Seeder
         DB::statement("delete Pelanggan");
         DB::statement("DBCC CHECKIDENT ('Pelanggan', RESEED, 1);");
 
-        Pelanggan::create([ 'kodepelanggan' => '3 POWER', 'namapelanggan' => '3 POWER', 'keterangan' => '', 'telp' => '082161573038', 'alamat' => 'JLN. PERDAMAIAN NO 10', 'alamat2' => '', 'kota' => 'MEDAN', 'kodepos' => '20221', 'modifiedby' => 'ADMIN',]);
+        Pelanggan::create([ 'kodepelanggan' => '3 POWER', 'namapelanggan' => '3 POWER', 'statusaktif' => '1', 'keterangan' => '', 'telp' => '082161573038', 'alamat' => 'JLN. PERDAMAIAN NO 10', 'alamat2' => '', 'kota' => 'MEDAN', 'kodepos' => '20221', 'modifiedby' => 'ADMIN',]);
     }
 }

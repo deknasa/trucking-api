@@ -60,14 +60,12 @@ class UpahRitasiController extends Controller
         try {
             $upahritasi = new UpahRitasi();
 
+            $upahritasi->parent_id = $request->parent_id;
             $upahritasi->kotadari_id = $request->kotadari_id;
             $upahritasi->kotasampai_id = $request->kotasampai_id;
             $upahritasi->jarak = str_replace(',', '', str_replace('.', '', $request->jarak));
-            $upahritasi->zona_id = $request->zona_id;
             $upahritasi->statusaktif = $request->statusaktif;
             $upahritasi->tglmulaiberlaku = date('Y-m-d', strtotime($request->tglmulaiberlaku));
-            $upahritasi->tglakhirberlaku = date('Y-m-d', strtotime($request->tglakhirberlaku));
-            $upahritasi->statusluarkota = $request->statusluarkota;
 
             $upahritasi->modifiedby = auth('api')->user()->name;
 
@@ -89,11 +87,7 @@ class UpahRitasiController extends Controller
                     $datadetail = [
                         'upahritasi_id' => $upahritasi->id,
                         'container_id' => $request->container_id[$i],
-                        'statuscontainer_id' => $request->statuscontainer_id[$i],
                         'nominalsupir' => $request->nominalsupir[$i],
-                        'nominalkenek' => $request->nominalkenek[$i] ?? 0,
-                        'nominalkomisi' => $request->nominalkomisi[$i] ?? 0,
-                        'nominaltol' =>  $request->nominaltol[$i] ?? 0,
                         'liter' => $request->liter[$i] ?? 0,
                         'modifiedby' => $upahritasi->modifiedby,
                     ];
@@ -170,14 +164,12 @@ class UpahRitasiController extends Controller
         DB::beginTransaction();
 
         try {
+            $upahritasi->parent_id = $request->parent_id;
             $upahritasi->kotadari_id = $request->kotadari_id;
             $upahritasi->kotasampai_id = $request->kotasampai_id;
             $upahritasi->jarak = str_replace(',', '', str_replace('.', '', $request->jarak));
-            $upahritasi->zona_id = $request->zona_id;
             $upahritasi->statusaktif = $request->statusaktif;
             $upahritasi->tglmulaiberlaku = date('Y-m-d', strtotime($request->tglmulaiberlaku));
-            $upahritasi->tglakhirberlaku = date('Y-m-d', strtotime($request->tglakhirberlaku));
-            $upahritasi->statusluarkota = $request->statusluarkota;
 
             $upahritasi->modifiedby = auth('api')->user()->name;
 
@@ -201,11 +193,7 @@ class UpahRitasiController extends Controller
                     $datadetail = [
                         'upahritasi_id' => $upahritasi->id,
                         'container_id' => $request->container_id[$i],
-                        'statuscontainer_id' => $request->statuscontainer_id[$i],
                         'nominalsupir' => $request->nominalsupir[$i],
-                        'nominalkenek' => $request->nominalkenek[$i] ?? 0,
-                        'nominalkomisi' => $request->nominalkomisi[$i] ?? 0,
-                        'nominaltol' =>  $request->nominaltol[$i] ?? 0,
                         'liter' => $request->liter[$i] ?? 0,
                         'modifiedby' => $upahritasi->modifiedby,
                     ];
@@ -317,6 +305,7 @@ class UpahRitasiController extends Controller
             ]);
         }
     }
+    
 
     public function combo(Request $request)
     {

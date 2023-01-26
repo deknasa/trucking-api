@@ -28,8 +28,8 @@ class UpdatePenerimaanHeaderRequest extends FormRequest
             'diterimadari' => 'required',
             'pelanggan' => 'required',
             'tgllunas'  => 'required',
-            'cabang' => 'required',
-            'statuskas' => 'required',
+            // 'cabang' => 'required',
+            // 'statuskas' => 'required',
             'bank'   => 'required',
             // 'noresi' => 'required'
         ];
@@ -51,12 +51,12 @@ class UpdatePenerimaanHeaderRequest extends FormRequest
     {
         return [
             'tgllunas' => 'tanggal lunas',
-            'statuskas' => 'status kas',
-            'nowarkat.*' => 'no warkat',
+            // 'statuskas' => 'status kas',
+            // 'nowarkat.*' => 'no warkat',
             'tgljatuhtempo.*' => 'tanggal jatuh tempo',
             'nominal_detail.*' => 'nominal',
             'keterangan_detail.*' => 'keterangan detail',
-            'coadebet.*' => 'coa debet'
+            'coakredit.*' => 'coa kredit'
         ];
     }
     public function messages()

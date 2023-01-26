@@ -36,9 +36,9 @@ class PengeluaranStok extends MyModel
             'pengeluaranstok.kodepengeluaran',
             'pengeluaranstok.keterangan',
             'pengeluaranstok.coa',
-            'parameterstatusformat.memo as statusformat',
-            'parameterstatusformat.text as statusformattext',
-            'parameterstatusformat.id as statusformatid',
+            'parameterformat.memo as format',
+            'parameterformat.text as formattext',
+            'parameterformat.id as formatid',
             'parameterstatushitungstok.memo as statushitungstok',
             'parameterstatushitungstok.text as statushitungstoktext',
             'parameterstatushitungstok.id as statushitungstokid',            
@@ -46,7 +46,7 @@ class PengeluaranStok extends MyModel
             'pengeluaranstok.created_at',
             'pengeluaranstok.updated_at'
         )
-        ->leftJoin('parameter as parameterstatusformat', 'pengeluaranstok.statusformat', '=', 'parameterstatusformat.id')
+        ->leftJoin('parameter as parameterformat', 'pengeluaranstok.format', '=', 'parameterformat.id')
         ->leftJoin('parameter as parameterstatushitungstok', 'pengeluaranstok.statushitungstok', '=', 'parameterstatushitungstok.id');
 
         $this->totalRows = $query->count();
@@ -102,7 +102,7 @@ class PengeluaranStok extends MyModel
             $table->longText('kodepengeluaran')->default('');
             $table->longText('keterangan')->default('');
             $table->string('coa',50)->default('');
-            $table->unsignedBigInteger('statusformat')->default(0);
+            $table->unsignedBigInteger('format')->default(0);
             $table->integer('statushitungstok')->length(11)->default(0);
             $table->string('modifiedby', 50)->default('');
             $table->increments('position');
@@ -121,7 +121,7 @@ class PengeluaranStok extends MyModel
             'kodepengeluaran',
             'keterangan',
             'coa',
-            'statusformat',
+            'format',
             'statushitungstok',
             'modifiedby',
             'created_at',
@@ -138,7 +138,7 @@ class PengeluaranStok extends MyModel
             "$this->table.kodepengeluaran",
             "$this->table.keterangan",
             "$this->table.coa",
-            "$this->table.statusformat",
+            "$this->table.format",
             "$this->table.statushitungstok",
             "$this->table.modifiedby",
             "$this->table.created_at",

@@ -27,7 +27,7 @@ class UpdatePenerimaanStokRequest extends FormRequest
             "kodepenerimaan" => "required",
             "keterangan" => "required",
             "coa"=>"required",
-            "statusformat" => "required",
+            "format" => "required",
             "statushitungstok" => "required"
         ];
     }

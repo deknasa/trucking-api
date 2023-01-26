@@ -147,9 +147,9 @@ class HutangBayarHeaderController extends Controller
 
             //INSERT TO PENGELUARAN
             $bank = Bank::from(DB::raw("bank with (readuncommitted)"))
-                ->select('coa', 'statusformatpengeluaran', 'tipe')->where('id', $hutangbayarheader->bank_id)->first();
+                ->select('coa', 'formatpengeluaran', 'tipe')->where('id', $hutangbayarheader->bank_id)->first();
 
-            $parameter = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('id', $bank->statusformatpengeluaran)->first();
+            $parameter = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('id', $bank->formatpengeluaran)->first();
 
 
             if ($bank->tipe == 'KAS') {
@@ -418,9 +418,9 @@ class HutangBayarHeaderController extends Controller
             $request->sortorder = $request->sortorder ?? 'asc';
 
             //INSERT TO PENGELUARAN
-            $bank = Bank::select('coa', 'statusformatpengeluaran', 'tipe')->where('id', $hutangbayarheader->bank_id)->first();
+            $bank = Bank::select('coa', 'formatpengeluaran', 'tipe')->where('id', $hutangbayarheader->bank_id)->first();
             $parameter = Parameter::from(DB::raw("parameter with (readuncommitted)"))
-                ->where('id', $bank->statusformatpengeluaran)->first();
+                ->where('id', $bank->formatpengeluaran)->first();
 
             $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
                 ->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();

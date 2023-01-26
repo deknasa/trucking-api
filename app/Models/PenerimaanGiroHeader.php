@@ -34,6 +34,7 @@ class PenerimaanGiroHeader extends MyModel
                 'penerimaangiroheader.nobukti',
                 'penerimaangiroheader.tglbukti',
                 'pelanggan.namapelanggan as pelanggan_id',
+                'agen.namaagen as agen_id',
                 'penerimaangiroheader.postingdari',
                 'penerimaangiroheader.diterimadari',
                 'penerimaangiroheader.tgllunas',
@@ -49,6 +50,7 @@ class PenerimaanGiroHeader extends MyModel
                 'penerimaangiroheader.updated_at'
             )
             ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'penerimaangiroheader.pelanggan_id', 'pelanggan.id')
+            ->leftJoin(DB::raw("agen with (readuncommitted)"), 'penerimaangiroheader.agen_id', 'agen.id')
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'penerimaangiroheader.statuscetak', 'statuscetak.id')
             ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'penerimaangiroheader.statusapproval', 'statusapproval.id');
         $this->totalRows = $query->count();
@@ -96,7 +98,7 @@ class PenerimaanGiroHeader extends MyModel
 
     public function findAll($id)
     {
-        $query = DB::table('penerimaangiroheader')->from(DB::raw("penerimaangiroheader with (readuncommitted)"))
+        $data = PenerimaanGiroHeader::from(DB::raw("penerimaangiroheader with (readuncommitted)"))
             ->select(
                 'penerimaangiroheader.id',
                 'penerimaangiroheader.nobukti',
@@ -108,9 +110,8 @@ class PenerimaanGiroHeader extends MyModel
                 'penerimaangiroheader.statuscetak'
             )
             ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'penerimaangiroheader.pelanggan_id', 'pelanggan.id')
-            ->where('penerimaangiroheader.id', $id);
-
-        $data = $query->first();
+            ->where('penerimaangiroheader.id', $id)
+            ->first();
 
         return $data;
     }
@@ -162,7 +163,7 @@ class PenerimaanGiroHeader extends MyModel
             $table->bigInteger('id')->default('0');
             $table->string('nobukti', 1000)->default('');
             $table->date('tglbukti', 1000)->default('1900/1/1');
-            $table->string('pelanggan_id', 1000)->default('');
+            $table->string('pelanggan_id', 1000)->nullable();
             $table->string('postingdari', 1000)->default('');
             $table->string('diterimadari', 1000)->default('');
             $table->date('tgllunas', 1000)->default('1900/1/1');

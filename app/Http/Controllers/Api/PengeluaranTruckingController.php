@@ -41,7 +41,7 @@ class PengeluaranTruckingController extends Controller
             $pengeluaranTrucking->kodepengeluaran = $request->kodepengeluaran;
             $pengeluaranTrucking->keterangan = $request->keterangan;
             $pengeluaranTrucking->coa = $request->coa;
-            $pengeluaranTrucking->statusformat = $request->statusformat;
+            $pengeluaranTrucking->format = $request->format;
             $pengeluaranTrucking->modifiedby = auth('api')->user()->name;
 
             TOP:
@@ -100,7 +100,7 @@ class PengeluaranTruckingController extends Controller
             $pengeluaranTrucking->kodepengeluaran = $request->kodepengeluaran;
             $pengeluaranTrucking->keterangan = $request->keterangan;
             $pengeluaranTrucking->coa = $request->coa;
-            $pengeluaranTrucking->statusformat = $request->statusformat;
+            $pengeluaranTrucking->format = $request->format;
             $pengeluaranTrucking->modifiedby = auth('api')->user()->name;
 
             if ($pengeluaranTrucking->save()) {
@@ -209,7 +209,7 @@ class PengeluaranTruckingController extends Controller
             ],
             [
                 'label' => 'Format Bukti',
-                'index' => 'statusformat',
+                'index' => 'format',
             ],
         ];
 
@@ -246,7 +246,7 @@ class PengeluaranTruckingController extends Controller
             $table->string('kodepengeluaran', 300)->default('');
             $table->string('keterangan', 300)->default('');
             $table->string('coa', 300)->default('');
-            $table->string('statusformat', 300)->default('');
+            $table->string('format', 300)->default('');
             $table->string('modifiedby', 30)->default('');
             $table->dateTime('created_at')->default('1900/1/1');
             $table->dateTime('updated_at')->default('1900/1/1');
@@ -260,7 +260,7 @@ class PengeluaranTruckingController extends Controller
                 'pengeluarantrucking.kodepengeluaran',
                 'pengeluarantrucking.keterangan',
                 'pengeluarantrucking.coa',
-                'pengeluarantrucking.statusformat',
+                'pengeluarantrucking.format',
                 'pengeluarantrucking.modifiedby',
                 'pengeluarantrucking.created_at',
                 'pengeluarantrucking.updated_at'
@@ -273,7 +273,7 @@ class PengeluaranTruckingController extends Controller
                     'pengeluarantrucking.kodepengeluaran',
                     'pengeluarantrucking.keterangan',
                     'pengeluarantrucking.coa',
-                    'pengeluarantrucking.statusformat',
+                    'pengeluarantrucking.format',
                     'pengeluarantrucking.modifiedby',
                     'pengeluarantrucking.created_at',
                     'pengeluarantrucking.updated_at'
@@ -286,7 +286,7 @@ class PengeluaranTruckingController extends Controller
                     'pengeluarantrucking.kodepengeluaran',
                     'pengeluarantrucking.keterangan',
                     'pengeluarantrucking.coa',
-                    'pengeluarantrucking.statusformat',
+                    'pengeluarantrucking.format',
                     'pengeluarantrucking.modifiedby',
                     'pengeluarantrucking.created_at',
                     'pengeluarantrucking.updated_at'
@@ -303,7 +303,7 @@ class PengeluaranTruckingController extends Controller
             'kodepengeluaran',
             'keterangan',
             'coa',
-            'statusformat',
+            'format',
             'modifiedby',
             'created_at',
             'updated_at'

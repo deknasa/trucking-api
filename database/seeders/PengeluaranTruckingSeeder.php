@@ -19,7 +19,7 @@ class PengeluaranTruckingSeeder extends Seeder
             'kodepengeluaran' => 'PJT',
             'keterangan' => 'PINJAMAN SUPIR',
             'coa' => '01.05.02.02',
-            'formatbukti' => '#PJT #9999#/#R#/#Y',
+            'format' => '#PJT #9999#/#R#/#Y',
             'modifiedby' => 'ADMIN',
         ]);
 
@@ -27,7 +27,7 @@ class PengeluaranTruckingSeeder extends Seeder
             'kodepengeluaran' => 'BLS',
             'keterangan' => 'BIAYA LAIN SUPIR',
             'coa' => '',
-            'formatbukti' => '#BLS #9999#/#R#/#Y',
+            'format' => '#BLS #9999#/#R#/#Y',
             'modifiedby' => 'ADMIN',
         ]);
 

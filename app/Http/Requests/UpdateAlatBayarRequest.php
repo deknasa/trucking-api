@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Http\Controllers\Api\ErrorController;
 
 class UpdateAlatBayarRequest extends FormRequest
 {
@@ -29,6 +30,7 @@ class UpdateAlatBayarRequest extends FormRequest
             'keterangan' => 'required',
             'statuslangsungcair' => 'required',
             'statusdefault' => 'required',
+            'statusaktif' => 'required',
             'bank' => 'required',
         ];
     }
@@ -39,7 +41,27 @@ class UpdateAlatBayarRequest extends FormRequest
             'kodealatbayar' => 'kode alat bayar',
             'namaalatbayar' => 'nama alat bayar',
             'statuslangsungcair' => 'status langsung cair',
-            'statusdefault' => 'statusdefault',
+            'statusdefault' => 'status default',
+            'statusaktif' => 'status aktif',
+            'keterangan' => 'keterangan',
+            'bank' => 'nama bank',
         ];
     }
+
+    
+    public function messages()
+    {
+        $controller = new ErrorController;
+
+        return [
+            'kodealatbayar.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+            'namaalatbayar.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+            'statuslangsungcair.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+            'statusdefault.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+            'statusaktif.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+            'keterangan.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+            'bank.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+           
+        ];
+    }  
 }

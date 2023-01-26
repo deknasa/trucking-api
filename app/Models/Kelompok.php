@@ -28,6 +28,8 @@ class Kelompok extends MyModel
     {
         $this->setRequestParameters();
 
+        $aktif = request()->aktif ?? '';
+
         $query = Kelompok::from(DB::raw("$this->table with (readuncommitted)"))
             ->select(
                 'kelompok.id',
@@ -39,6 +41,17 @@ class Kelompok extends MyModel
                 'kelompok.updated_at'
             )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'kelompok.statusaktif', '=', 'parameter.id');
+
+            if ($aktif == 'AKTIF') {
+                $statusaktif = Parameter::from(
+                    DB::raw("parameter with (readuncommitted)")
+                )
+                    ->where('grp', '=', 'STATUS AKTIF')
+                    ->where('text', '=', 'AKTIF')
+                    ->first();
+    
+                $query->where('kelompok.statusaktif', '=', $statusaktif->id);
+            }            
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;

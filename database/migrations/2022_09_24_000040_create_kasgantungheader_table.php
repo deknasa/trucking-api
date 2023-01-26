@@ -22,7 +22,6 @@ class CreateKasgantungheaderTable extends Migration
             $table->string('nobukti',50)->unique();
             $table->date('tglbukti')->default('1900/1/1');
             $table->unsignedBigInteger('penerima_id')->default('0');
-            $table->longText('keterangan')->default('');
             $table->unsignedBigInteger('bank_id')->default('0');
             $table->string('pengeluaran_nobukti',50)->default('');
             $table->string('coakaskeluar',50)->default('');

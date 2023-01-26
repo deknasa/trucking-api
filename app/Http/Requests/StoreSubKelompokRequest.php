@@ -3,6 +3,8 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Http\Controllers\Api\ErrorController;
+
 
 class StoreSubKelompokRequest extends FormRequest
 {
@@ -25,8 +27,8 @@ class StoreSubKelompokRequest extends FormRequest
     {
         return [
             'kodesubkelompok' => 'required',
+            'kelompok' => 'required',
             'keterangan' => 'required',
-            'kelompok_id' => 'required|numeric',
             'statusaktif' => 'required|numeric',
         ];
     }
@@ -35,8 +37,21 @@ class StoreSubKelompokRequest extends FormRequest
     {
         return [
             'kodesubkelompok' => 'kode subkelompok',
-            'kelompok_id' => 'kelompok',
+            'kelompok' => 'kelompok',
+            'keterangan' => 'keterangan',
             'statusaktif' => 'status aktif',
+        ];
+    }
+
+    public function messages()
+    {
+        $controller = new ErrorController;
+
+        return [
+            'kodesubkelompok.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+            'kelompok.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+            'keterangan.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+            'statusaktif.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
         ];
     }
 }

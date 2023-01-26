@@ -31,6 +31,8 @@ class PengeluaranDetailController extends Controller
             'sortOrder' => $request->sortOrder ?? 'asc',
         ];
         try {
+
+           
             $query = PengeluaranDetail::from(DB::raw("pengeluarandetail as detail with (readuncommitted)"));
 
             if (isset($params['id'])) {
@@ -64,19 +66,20 @@ class PengeluaranDetailController extends Controller
                     'detail.tgljatuhtempo',
                     'detail.nominal',
                     'detail.keterangan',
-                    'detail.bulanbeban',
+                    DB::raw("(case when year(isnull(detail.bulanbeban,'1900/1/1'))=1900 then null else detail.bulanbeban end) as bulanbeban"),
                     'detail.coadebet',
                     'detail.coakredit',
                     'alatbayar.namaalatbayar as alatbayar_id'
 
                 )
-                    ->leftJoin(DB::raw("pengeluaranheader as header with (readuncommitted)"),'header.id','detail.pengeluaran_id')
+                    ->leftJoin(DB::raw("pengeluaranheader as header with (readuncommitted)"), 'header.id', 'detail.pengeluaran_id')
                     ->leftJoin(DB::raw("bank with (readuncommitted)"), 'bank.id', '=', 'header.bank_id')
                     ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'pelanggan.id', '=', 'header.pelanggan_id')
-                    ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'alatbayar.id', '=', 'detail.alatbayar_id');
+                    ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'alatbayar.id', '=', 'pengeluaranheader.alatbayar_id');
 
-                    $pengeluaranDetail = $query->get();
+                $pengeluaranDetail = $query->get();
             } else {
+
                 $query->select(
                     'detail.pengeluaran_id',
                     'detail.nobukti',
@@ -84,19 +87,17 @@ class PengeluaranDetailController extends Controller
                     'detail.tgljatuhtempo',
                     'detail.nominal',
                     'detail.keterangan',
-                    'detail.bulanbeban',
+                    DB::raw("(case when year(isnull(detail.bulanbeban,'1900/1/1'))=1900 then null else detail.bulanbeban end) as bulanbeban"),
                     'detail.coadebet',
                     'detail.coakredit',
-                    'alatbayar.namaalatbayar as alatbayar_id',
 
-                )
-                    ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'alatbayar.id', '=', 'detail.alatbayar_id');
+                );
 
                 $pengeluaranDetail = $query->get();
-                // dd{$pengeluaranDetail};
+                //  dd($pengeluaranDetail);
             }
-            
-           
+      
+
             return response([
                 'data' => $pengeluaranDetail
             ]);
@@ -108,14 +109,13 @@ class PengeluaranDetailController extends Controller
     public function store(StorePengeluaranDetailRequest $request)
     {
         DB::beginTransaction();
-      
+
 
         try {
             $pengeluaranDetail = new PengeluaranDetail();
 
             $pengeluaranDetail->pengeluaran_id = $request->pengeluaran_id;
             $pengeluaranDetail->nobukti = $request->nobukti;
-            $pengeluaranDetail->alatbayar_id = $request->alatbayar_id ?? '';
             $pengeluaranDetail->nowarkat = $request->nowarkat ?? '';
             $pengeluaranDetail->tgljatuhtempo = $request->tgljatuhtempo ?? '';
             $pengeluaranDetail->nominal = $request->nominal ?? '';
@@ -127,14 +127,14 @@ class PengeluaranDetailController extends Controller
             $pengeluaranDetail->save();
 
             $datadetail = $pengeluaranDetail;
-            if($request->entridetail == 1) {
+            if ($request->entridetail == 1) {
                 $nobukti = $pengeluaranDetail->nobukti;
                 $getBaris = DB::table('jurnalumumdetail')->from(
                     DB::raw("jurnalumumdetail with (readuncommitted)")
                 )->select('baris')->where('nobukti', $nobukti)->orderByDesc('baris')->first();
 
-      
-             
+
+
 
                 if (is_null($getBaris)) {
                     $baris = 0;
@@ -143,7 +143,7 @@ class PengeluaranDetailController extends Controller
                 }
                 $detailLogJurnal = [];
                 for ($x = 0; $x <= 1; $x++) {
-                    
+
                     if ($x == 1) {
                         $jurnaldetail = [
                             'jurnalumum_id' => $request->jurnal_id,
@@ -170,7 +170,7 @@ class PengeluaranDetailController extends Controller
                     $detail = new StoreJurnalUmumDetailRequest($jurnaldetail);
                     $detailJurnal = app(JurnalUmumDetailController::class)->store($detail);
 
-                    
+
                     $detailLogJurnal[] = $detailJurnal['detail']->toArray();
                 }
 

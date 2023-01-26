@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\QueryException;
+use App\Models\Parameter;
 
 class PelangganController extends Controller
 {
@@ -30,6 +31,17 @@ class PelangganController extends Controller
         ]);
     }
 
+    
+    public function default()
+    {
+
+        $pelanggan = new Pelanggan();
+        return response([
+            'status' => true,
+            'data' => $pelanggan->default(),
+        ]);
+    }
+
     /**
      * @ClassName 
      */
@@ -43,11 +55,12 @@ class PelangganController extends Controller
             $pelanggan->namapelanggan = $request->namapelanggan;
             $pelanggan->telp = $request->telp;
             $pelanggan->alamat = $request->alamat;
-            $pelanggan->alamat2 = $request->alamat2;
+            $pelanggan->alamat2 = $request->alamat2 ?? '';
             $pelanggan->kota = $request->kota;
             $pelanggan->kodepos = $request->kodepos;
             $pelanggan->keterangan = $request->keterangan;
             $pelanggan->modifiedby = auth('api')->user()->name;
+            $pelanggan->statusaktif = $request->statusaktif;
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
 
@@ -105,10 +118,11 @@ class PelangganController extends Controller
             $pelanggan->namapelanggan = $request->namapelanggan;
             $pelanggan->telp = $request->telp;
             $pelanggan->alamat = $request->alamat;
-            $pelanggan->alamat2 = $request->alamat2;
+            $pelanggan->alamat2 = $request->alamat2 ?? '';
             $pelanggan->kota = $request->kota;
             $pelanggan->kodepos = $request->kodepos;
             $pelanggan->keterangan = $request->keterangan;
+            $pelanggan->statusaktif = $request->statusaktif;            
             $pelanggan->modifiedby = auth('api')->user()->name;
 
             if ($pelanggan->save()) {
@@ -228,6 +242,10 @@ class PelangganController extends Controller
                 'index' => 'namapelanggan',
             ],
             [
+                'label' => 'Status Aktif',
+                'index' => 'statusaktif',
+            ],
+            [
                 'label' => 'Telp',
                 'index' => 'telp',
             ],
@@ -254,5 +272,49 @@ class PelangganController extends Controller
         ];
 
         $this->toExcel('Pelanggan', $pelanggans, $columns);
+    }
+
+    
+    public function combostatus(Request $request)
+    {
+
+        $params = [
+            'status' => $request->status ?? '',
+            'grp' => $request->grp ?? '',
+            'subgrp' => $request->subgrp ?? '',
+        ];
+        $temp = '##temp' . rand(1, 10000);
+        if ($params['status'] == 'entry') {
+            $query = Parameter::select('id', 'text as keterangan')
+                ->where('grp', "=", $params['grp'])
+                ->where('subgrp', "=", $params['subgrp']);
+        } else {
+            Schema::create($temp, function ($table) {
+                $table->integer('id')->length(11)->default(0);
+                $table->string('parameter', 50)->default(0);
+                $table->string('param', 50)->default(0);
+            });
+
+            DB::table($temp)->insert(
+                [
+                    'id' => '0',
+                    'parameter' => 'ALL',
+                    'param' => '',
+                ]
+            );
+
+            $queryall = Parameter::select('id', 'text as parameter', 'text as param')
+                ->where('grp', "=", $params['grp'])
+                ->where('subgrp', "=", $params['subgrp']);
+
+            $query = DB::table($temp)
+                ->unionAll($queryall);
+        }
+
+        $data = $query->get();
+
+        return response([
+            'data' => $data
+        ]);
     }
 }

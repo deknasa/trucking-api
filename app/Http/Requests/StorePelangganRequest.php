@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Controllers\Api\ErrorController;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StorePelangganRequest extends FormRequest
@@ -28,10 +29,11 @@ class StorePelangganRequest extends FormRequest
             'namapelanggan' => 'required',
             'telp' => 'required',
             'alamat' => 'required',
-            'alamat2' => 'required',
             'kota' => 'required',
             'kodepos' => 'required',
             'keterangan' => 'required',
+            'statusaktif' => 'required',
+            
         ];
     }
 
@@ -41,6 +43,29 @@ class StorePelangganRequest extends FormRequest
             'kodepelanggan' => 'kode pelanggan',
             'namapelanggan' => 'nama pelanggan',
             'kodepos' => 'kode pos',
+            'telp' => 'no telpon',
+            'alamat' => 'alamat',
+            'kota' => 'kota', 
+            'keterangan' => 'keterangan',           
+            'statusaktif' => 'status aktif',  
         ];
     }
+
+    public function messages()
+    {
+        $controller = new ErrorController;
+
+        return [
+            'kodepelanggan.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+            'namapelanggan.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+            'kodepos.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+            'telp.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+            'alamat.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+            'kota.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+            'keterangan.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+            'statusaktif.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+        ];
+    }  
+
+
 }

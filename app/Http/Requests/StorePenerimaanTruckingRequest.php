@@ -27,7 +27,7 @@ class StorePenerimaanTruckingRequest extends FormRequest
             'kodepenerimaan' => 'required',
             'keterangan' => 'required',
             'coa' => 'required',
-            'statusformat' => 'required',
+            'format' => 'required',
         ];
     }
 
@@ -37,7 +37,7 @@ class StorePenerimaanTruckingRequest extends FormRequest
             'kodepenerimaan' => 'Kode Penerimaan',
             'keterangan' => 'Keterangan',
             'coa' => 'COA',
-            'statusformat' => 'Format Bukti',
+            'format' => 'Format Bukti',
         ];
     }
 }

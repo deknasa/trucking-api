@@ -29,15 +29,14 @@ class UpahRitasi extends MyModel
         return $this->belongsTo(Kota::class, 'kota_id');
     }
 
-    public function zona()
-    {
-        return $this->belongsTo(Zona::class, 'zona_id');
-    }
+    
 
 
     public function get()
     {
         $this->setRequestParameters();
+
+        $aktif = request()->aktif ?? '';
 
         $query = DB::table($this->table)->from(DB::raw("upahritasi with (readuncommitted)"))
             ->select(
@@ -45,21 +44,33 @@ class UpahRitasi extends MyModel
                 'kotadari.keterangan as kotadari_id',
                 'kotasampai.keterangan as kotasampai_id',
                 'upahritasi.jarak',
-                'zona.keterangan as zona_id',
+                'upahritasi.parent_id',
+                // 'zona.keterangan as zona_id',
                 'parameter.text as statusaktif',
                 'upahritasi.tglmulaiberlaku',
-                'upahritasi.tglakhirberlaku',
-                'statusluarkota.text as statusluarkota',
+                // 'upahritasi.tglakhirberlaku',
+                // 'statusluarkota.text as statusluarkota',
                 'upahritasi.created_at',
                 'upahritasi.modifiedby',
                 'upahritasi.updated_at'
             )
             ->leftJoin(DB::raw("kota as kotadari with (readuncommitted)"), 'kotadari.id', '=', 'upahritasi.kotadari_id')
             ->leftJoin(DB::raw("kota as kotasampai with (readuncommitted)"), 'kotasampai.id', '=', 'upahritasi.kotasampai_id')
-            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'upahritasi.statusaktif', 'parameter.id')
-            ->leftJoin(DB::raw("parameter as statusluarkota with (readuncommitted)"), 'upahritasi.statusluarkota', 'statusluarkota.id')
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'upahritasi.statusaktif', 'parameter.id');
+            // ->leftJoin(DB::raw("parameter as statusluarkota with (readuncommitted)"), 'upahritasi.statusluarkota', 'statusluarkota.id');
 
-            ->leftJoin(DB::raw("zona with (readuncommitted)"), 'upahritasi.zona_id', 'zona.id');
+            // ->leftJoin(DB::raw("zona with (readuncommitted)"), 'upahritasi.zona_id', 'zona.id');
+
+            if ($aktif == 'AKTIF') {
+                $statusaktif = Parameter::from(
+                    DB::raw("parameter with (readuncommitted)")
+                )
+                    ->where('grp', '=', 'STATUS AKTIF')
+                    ->where('text', '=', 'AKTIF')
+                    ->first();
+    
+                $query->where('upahritasi.statusaktif', '=', $statusaktif->id);
+            }
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -84,23 +95,24 @@ class UpahRitasi extends MyModel
                 'kotasampai.keterangan as kotasampai',
 
                 'upahritasi.jarak',
-                'upahritasi.zona_id',
-                'zona.keterangan as zona',
+                'upahritasi.parent_id',
+                // 'upahritasi.zona_id',
+                // 'zona.keterangan as zona',
 
                 'upahritasi.statusaktif',
 
                 'upahritasi.tglmulaiberlaku',
-                'upahritasi.tglakhirberlaku',
-                'upahritasi.statusluarkota',
-                'statusluarkota.text as statusluarkotas',
+                // 'upahritasi.tglakhirberlaku',
+                // 'upahritasi.statusluarkota',
+                // 'statusluarkota.text as statusluarkotas',
 
                 'upahritasi.modifiedby',
                 'upahritasi.updated_at'
             )
             ->leftJoin(DB::raw("kota as kotadari with (readuncommitted)"), 'kotadari.id', '=', 'upahritasi.kotadari_id')
             ->leftJoin(DB::raw("kota as kotasampai with (readuncommitted)"), 'kotasampai.id', '=', 'upahritasi.kotasampai_id')
-            ->leftJoin(DB::raw("zona with (readuncommitted)"), 'upahritasi.zona_id', 'zona.id')
-            ->leftJoin(DB::raw("parameter as statusluarkota with (readuncommitted)"), 'upahritasi.statusluarkota', 'statusluarkota.id')
+            // ->leftJoin(DB::raw("zona with (readuncommitted)"), 'upahritasi.zona_id', 'zona.id')
+            // ->leftJoin(DB::raw("parameter as statusluarkota with (readuncommitted)"), 'upahritasi.statusluarkota', 'statusluarkota.id')
             ->where('upahritasi.id', $id);
 
         $data = $query->first();
@@ -117,7 +129,7 @@ class UpahRitasi extends MyModel
         $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdefault, function ($table) {
             $table->unsignedBigInteger('statusaktif')->default(0);
-            $table->unsignedBigInteger('statusluarkota')->default(0);
+            // $table->unsignedBigInteger('statusluarkota')->default(0);
         });
 
         $status = Parameter::from(
@@ -144,18 +156,15 @@ class UpahRitasi extends MyModel
             ->where('default', '=', 'YA')
             ->first();
 
-        $iddefaultstatusluarkota = $status->id ?? 0;
+        // $iddefaultstatusluarkota = $status->id ?? 0;
 
-        DB::table($tempdefault)->insert(
-            ["statusaktif" => $iddefaultstatusaktif,"statusluarkota" => $iddefaultstatusluarkota]
-        );
+        
 
         $query = DB::table($tempdefault)->from(
             DB::raw($tempdefault)
         )
             ->select(
                 'statusaktif',
-                'statusluarkota',
             );
 
         $data = $query->first();
@@ -171,12 +180,9 @@ class UpahRitasi extends MyModel
                 "$this->table.id,
                 kotadari.keterangan as kotadari_id,
                 kotasampai.keterangan as kotasampai_id,
-                zona.keterangan as zona_id,
                 $this->table.jarak,
                 $this->table.statusaktif,
                 $this->table.tglmulaiberlaku,
-                $this->table.tglakhirberlaku,
-                $this->table.statusluarkota,
 
                  $this->table.modifiedby,
                  $this->table.created_at,
@@ -185,8 +191,8 @@ class UpahRitasi extends MyModel
 
         )
             ->leftJoin(DB::raw("kota as kotadari with (readuncommitted)"), 'kotadari.id', '=', 'upahritasi.kotadari_id')
-            ->leftJoin(DB::raw("kota as kotasampai with (readuncommitted)"), 'kotasampai.id', '=', 'upahritasi.kotasampai_id')
-            ->leftJoin(DB::raw("zona with (readuncommitted)"), 'upahritasi.zona_id', 'zona.id');
+            ->leftJoin(DB::raw("kota as kotasampai with (readuncommitted)"), 'kotasampai.id', '=', 'upahritasi.kotasampai_id');
+            // ->leftJoin(DB::raw("zona with (readuncommitted)"), 'upahritasi.zona_id', 'zona.id');
     }
 
     public function createTemp(string $modelTable)
@@ -196,12 +202,12 @@ class UpahRitasi extends MyModel
             $table->bigInteger('id')->default('0');
             $table->string('kotadari_id')->default('0');
             $table->string('kotasampai_id')->default('0');
-            $table->string('zona_id')->default('0');
+            // $table->string('zona_id')->default('0');
             $table->double('jarak', 15, 2)->default('0');
             $table->integer('statusaktif')->length(11)->default('0');
             $table->date('tglmulaiberlaku')->default('1900/1/1');
-            $table->date('tglakhirberlaku')->default('1900/1/1');
-            $table->integer('statusluarkota')->length(11)->default('0');
+            // $table->date('tglakhirberlaku')->default('1900/1/1');
+            // $table->integer('statusluarkota')->length(11)->default('0');
             $table->string('modifiedby', 50)->Default('');
             $table->dateTime('created_at')->default('1900/1/1');
             $table->dateTime('updated_at')->default('1900/1/1');
@@ -213,7 +219,7 @@ class UpahRitasi extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id', 'kotadari_id', 'kotasampai_id', 'zona_id', 'jarak', 'statusaktif', 'tglmulaiberlaku', 'tglakhirberlaku', 'statusluarkota', 'modifiedby', 'created_at', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'kotadari_id', 'kotasampai_id', 'jarak', 'statusaktif', 'tglmulaiberlaku',  'modifiedby', 'created_at', 'updated_at'], $models);
 
         return $temp;
     }
@@ -231,14 +237,14 @@ class UpahRitasi extends MyModel
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statusaktif') {
                             $query = $query->where('parameter.text', '=', $filters['data']);
-                        } elseif ($filters['field'] == 'statusluarkota') {
-                            $query = $query->where('statusluarkota.text', '=', $filters['data']);
+                        // } elseif ($filters['field'] == 'statusluarkota') {
+                        //     $query = $query->where('statusluarkota.text', '=', $filters['data']);
                         } else if ($filters['field'] == 'kotadari_id') {
                             $query = $query->where('kotadari.keterangan', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'kotasampai_id') {
                             $query = $query->where('kotasampai.keterangan', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'zona_id') {
-                            $query = $query->where('zona.keterangan', 'LIKE', "%$filters[data]%");
+                        // } else if ($filters['field'] == 'zona_id') {
+                        //     $query = $query->where('zona.keterangan', 'LIKE', "%$filters[data]%");
                         } else {
                             $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
@@ -249,14 +255,14 @@ class UpahRitasi extends MyModel
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statusaktif') {
                             $query = $query->orWhere('parameter.text', '=', $filters['data']);
-                        } elseif ($filters['field'] == 'statusluarkota') {
-                            $query = $query->orWhere('statusluarkota.text', '=', $filters['data']);
+                        // } elseif ($filters['field'] == 'statusluarkota') {
+                            // $query = $query->orWhere('statusluarkota.text', '=', $filters['data']);
                         } else if ($filters['field'] == 'kotadari_id') {
                             $query = $query->orWhere('kotadari.keterangan', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'kotasampai_id') {
                             $query = $query->orWhere('kotasampai.keterangan', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'zona_id') {
-                            $query = $query->orWhere('zona.keterangan', 'LIKE', "%$filters[data]%");
+                        // } else if ($filters['field'] == 'zona_id') {
+                        //     $query = $query->orWhere('zona.keterangan', 'LIKE', "%$filters[data]%");
                         } else {
                             $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }

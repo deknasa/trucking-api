@@ -78,10 +78,10 @@ class KasGantungHeaderController extends Controller
                     ->select(
                         'parameter.grp',
                         'parameter.subgrp',
-                        'bank.statusformatpengeluaran',
+                        'bank.formatpengeluaran',
                         'bank.coa'
                     )
-                    ->join(DB::raw("parameter with (readuncommitted)"), 'bank.statusformatpengeluaran', 'parameter.id')
+                    ->join(DB::raw("parameter with (readuncommitted)"), 'bank.formatpengeluaran', 'parameter.id')
                     ->whereRaw("bank.id = $bankid")
                     ->first();
 
@@ -283,7 +283,7 @@ class KasGantungHeaderController extends Controller
                             'transferkeac' => '',
                             'transferkean' => '',
                             'trasnferkebank' => '',
-                            'statusformat' => $querysubgrppengeluaran->statusformatpengeluaran,
+                            'statusformat' => $querysubgrppengeluaran->formatpengeluaran,
                             'modifiedby' =>  auth('api')->user()->name
                         ];
 
@@ -463,10 +463,10 @@ class KasGantungHeaderController extends Controller
                         ->select(
                             'parameter.grp',
                             'parameter.subgrp',
-                            'bank.statusformatpengeluaran',
+                            'bank.formatpengeluaran',
                             'bank.coa'
                         )
-                        ->join(DB::raw("parameter with (readuncommitted)"), 'bank.statusformatpengeluaran', 'parameter.id')
+                        ->join(DB::raw("parameter with (readuncommitted)"), 'bank.formatpengeluaran', 'parameter.id')
                         ->whereRaw("bank.id = $bankid")
                         ->first();
 
@@ -516,7 +516,7 @@ class KasGantungHeaderController extends Controller
                         'transferkeac' => '',
                         'transferkean' => '',
                         'trasnferkebank' => '',
-                        'statusformat' => $querysubgrppengeluaran->statusformatpengeluaran,
+                        'statusformat' => $querysubgrppengeluaran->formatpengeluaran,
                         'modifiedby' =>  auth('api')->user()->name
                     ];
 

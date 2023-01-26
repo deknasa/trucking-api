@@ -20,6 +20,8 @@ class CreateNotakreditheaderTable extends Migration
             $table->id();
             $table->string('nobukti',50)->unique();
             $table->string('pelunasanpiutang_nobukti',50)->default('');
+            $table->unsignedBigInteger('pelanggan_id')->default('0');
+            $table->unsignedBigInteger('agen_id')->default('0');            
             $table->date('tglbukti')->default('1900/1/1');
             $table->string('postingdari',50)->default('');
             $table->integer('statusapproval')->length(11)->default('0');

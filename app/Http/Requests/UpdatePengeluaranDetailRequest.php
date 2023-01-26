@@ -24,10 +24,6 @@ class UpdatePengeluaranDetailRequest extends FormRequest
     public function rules()
     {
         return [
-            'alatbayar' => 'required|array',    
-            'alatbayar.*' => 'required',
-            'nowarkat' => 'required|array',
-            'nowarkat.*' => 'required',
             'tgljatuhtempo' => 'required|array',
             'tgljatuhtempo.*' => 'required',
             'nominal_detail' => 'required|array',

@@ -38,6 +38,10 @@ class PelunasanPiutangHeader extends MyModel
                 'pelunasanpiutangheader.modifiedby',
                 'pelunasanpiutangheader.updated_at',
                 'pelunasanpiutangheader.created_at',
+                'pelunasanpiutangheader.penerimaan_nobukti',
+                'pelunasanpiutangheader.penerimaangiro_nobukti',
+                'pelunasanpiutangheader.notadebet_nobukti',
+                'pelunasanpiutangheader.notakredit_nobukti',
 
                 'bank.namabank as bank_id',
                 'agen.namaagen as agen_id',
@@ -164,8 +168,7 @@ class PelunasanPiutangHeader extends MyModel
                     WHERE pelunasanpiutangdetail.piutang_nobukti= piutangheader.nobukti) AS sisa")
             )
             ->leftJoin(DB::raw("piutangheader with (readuncommitted)"), 'pelunasanpiutangdetail.piutang_nobukti', 'piutangheader.nobukti')
-            ->whereRaw("pelunasanpiutangdetail.pelunasanpiutang_id = $id")
-            ->whereRaw("pelunasanpiutangdetail.agen_id = $agenId");
+            ->whereRaw("pelunasanpiutangdetail.pelunasanpiutang_id = $id");
 
         $data = $query->get();
         return $data;
@@ -254,6 +257,11 @@ class PelunasanPiutangHeader extends MyModel
                 'pelunasanpiutangheader.bank_id',
                 'pelunasanpiutangheader.alatbayar_id',
                 'pelunasanpiutangheader.agen_id',
+                'pelunasanpiutangheader.penerimaan_nobukti',
+                'pelunasanpiutangheader.penerimaangiro_nobukti',
+                'pelunasanpiutangheader.notakredit_nobukti',
+                'pelunasanpiutangheader.notadebet_nobukti',
+                'pelunasanpiutangheader.nowarkat',
 
                 'bank.namabank as bank',
                 'alatbayar.namaalatbayar as alatbayar',

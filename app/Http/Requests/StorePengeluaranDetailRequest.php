@@ -24,9 +24,7 @@ class StorePengeluaranDetailRequest extends FormRequest
     public function rules()
     {
         return [
-            'alatbayar' => 'required|array',    
-            'alatbayar.*' => 'required',
-            'nowarkat' => 'required|array',
+
             'tgljatuhtempo' => 'required|array',
             'tgljatuhtempo.*' => 'required',
             'nominal_detail' => 'required|array',

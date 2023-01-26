@@ -27,6 +27,8 @@ class Bank extends MyModel
     {
         $this->setRequestParameters();
 
+        $aktif = request()->aktif ?? '';
+
         $query = DB::table($this->table)->from(
             DB::raw($this->table . " with (readuncommitted)")
         )
@@ -37,15 +39,26 @@ class Bank extends MyModel
                 'bank.coa',
                 'bank.tipe',
                 'parameter.memo as statusaktif',
-                'statusformatpenerimaan.memo as statusformatpenerimaan',
-                'statusformatpengeluaran.memo as statusformatpengeluaran',
+                'formatpenerimaan.memo as formatpenerimaan',
+                'formatpengeluaran.memo as formatpengeluaran',
                 'bank.modifiedby',
                 'bank.created_at',
                 'bank.updated_at'
             )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'bank.statusaktif', '=', 'parameter.id')
-            ->leftJoin(DB::raw("parameter as statusformatpenerimaan with (readuncommitted)"), 'bank.statusformatpenerimaan', '=', 'statusformatpenerimaan.id')
-            ->leftJoin(DB::raw("parameter as statusformatpengeluaran with (readuncommitted)"), 'bank.statusformatpengeluaran', '=', 'statusformatpengeluaran.id');
+            ->leftJoin(DB::raw("parameter as formatpenerimaan with (readuncommitted)"), 'bank.formatpenerimaan', '=', 'formatpenerimaan.id')
+            ->leftJoin(DB::raw("parameter as formatpengeluaran with (readuncommitted)"), 'bank.formatpengeluaran', '=', 'formatpengeluaran.id');
+
+            if ($aktif == 'AKTIF') {
+                $statusaktif=Parameter::from(
+                    DB::raw("parameter with (readuncommitted)")
+                )
+                ->where('grp','=','STATUS AKTIF')
+                ->where('text','=','AKTIF')
+                ->first();
+    
+                $query ->where('bank.statusaktif','=',$statusaktif->id);
+            }
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -101,8 +114,8 @@ class Bank extends MyModel
                 'bank.coa',
                 'bank.tipe',
                 'bank.statusaktif',
-                'bank.statusformatpenerimaan',
-                'bank.statusformatpengeluaran',
+                'bank.formatpenerimaan',
+                'bank.formatpengeluaran',
 
             )
             ->where('bank.id', $id);
@@ -124,16 +137,16 @@ class Bank extends MyModel
             $this->table.coa,
             $this->table.tipe,
             parameter.text as statusaktif,
-            statusformatpenerimaan.text as statusformatpenerimaan,
-            statusformatpengeluaran.text as statusformatpengeluaran,
+            formatpenerimaan.text as formatpenerimaan,
+            formatpengeluaran.text as formatpengeluaran,
             $this->table.modifiedby,
             $this->table.created_at,
             $this->table.updated_at"
                 )
             )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'bank.statusaktif', '=', 'parameter.id')
-            ->leftJoin(DB::raw("parameter as statusformatpenerimaan with (readuncommitted)"), 'bank.statusformatpenerimaan', '=', 'statusformatpenerimaan.id')
-            ->leftJoin(DB::raw("parameter as statusformatpengeluaran with (readuncommitted)"), 'bank.statusformatpengeluaran', '=', 'statusformatpengeluaran.id');
+            ->leftJoin(DB::raw("parameter as formatpenerimaan with (readuncommitted)"), 'bank.formatpenerimaan', '=', 'formatpenerimaan.id')
+            ->leftJoin(DB::raw("parameter as formatpengeluaran with (readuncommitted)"), 'bank.formatpengeluaran', '=', 'formatpengeluaran.id');
     }
 
     public function createTemp(string $modelTable)
@@ -146,8 +159,8 @@ class Bank extends MyModel
             $table->string('coa', 1000)->default('');
             $table->string('tipe', 1000)->default('');
             $table->string('statusaktif', 1000)->default('');
-            $table->string('statusformatpenerimaan', 1000)->default('');
-            $table->string('statusformatpengeluaran', 1000)->default('');
+            $table->string('formatpenerimaan', 1000)->default('');
+            $table->string('formatpengeluaran', 1000)->default('');
             $table->string('modifiedby', 50)->default('');
             $table->dateTime('created_at')->default('1900/1/1');
             $table->dateTime('updated_at')->default('1900/1/1');
@@ -159,7 +172,7 @@ class Bank extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id', 'kodebank', 'namabank', 'coa', 'tipe', 'statusaktif', 'statusformatpenerimaan', 'statusformatpengeluaran', 'modifiedby', 'created_at', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'kodebank', 'namabank', 'coa', 'tipe', 'statusaktif', 'formatpenerimaan', 'formatpengeluaran', 'modifiedby', 'created_at', 'updated_at'], $models);
 
 
         return  $temp;
@@ -180,10 +193,10 @@ class Bank extends MyModel
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statusaktif') {
                             $query = $query->where('parameter.text', '=', $filters['data']);
-                        } else if ($filters['field'] == 'statusformatpenerimaan') {
-                            $query = $query->where('statusformatpenerimaan.text', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'statusformatpengeluaran') {
-                            $query = $query->where('statusformatpengeluaran.text', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'formatpenerimaan') {
+                            $query = $query->where('formatpenerimaan.text', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'formatpengeluaran') {
+                            $query = $query->where('formatpengeluaran.text', 'LIKE', "%$filters[data]%");
                         } else {
                             $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
@@ -194,10 +207,10 @@ class Bank extends MyModel
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statusaktif') {
                             $query = $query->orWhere('parameter.text', '=', $filters['data']);
-                        } else if ($filters['field'] == 'statusformatpenerimaan') {
-                            $query = $query->orWhere('statusformatpenerimaan.text', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'statusformatpengeluaran') {
-                            $query = $query->orWhere('statusformatpengeluaran.text', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'formatpenerimaan') {
+                            $query = $query->orWhere('formatpenerimaan.text', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'formatpengeluaran') {
+                            $query = $query->orWhere('formatpengeluaran.text', 'LIKE', "%$filters[data]%");
                         } else {
                             $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }

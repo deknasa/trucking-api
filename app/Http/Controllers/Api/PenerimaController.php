@@ -44,8 +44,9 @@ class PenerimaController extends Controller
      */
     public function store(StorePenerimaRequest $request)
     {
-        DB::beginTransaction();
 
+        DB::beginTransaction();
+// dd($request->npwp);
         try {
             $penerima = new Penerima();
             $penerima->namapenerima = $request->namapenerima;

@@ -27,8 +27,6 @@ class PengeluaranDetail extends MyModel
     {
         $query =  DB::table('pengeluarandetail')->from(DB::raw("pengeluarandetail with (readuncommitted)"))
         ->select(
-            'pengeluarandetail.alatbayar_id',
-            'alatbayar.namaalatbayar as alatbayar',
             'pengeluarandetail.nowarkat',
             'pengeluarandetail.tgljatuhtempo',
             'pengeluarandetail.keterangan',
@@ -36,7 +34,6 @@ class PengeluaranDetail extends MyModel
             'pengeluarandetail.coadebet',
             'pengeluarandetail.bulanbeban'
         )
-        ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'pengeluarandetail.alatbayar_id', 'alatbayar.id')
         ->where('pengeluarandetail.pengeluaran_id',$id);
 
         $data = $query->get();

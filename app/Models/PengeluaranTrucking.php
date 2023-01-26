@@ -34,12 +34,12 @@ class PengeluaranTrucking extends MyModel
             'pengeluarantrucking.kodepengeluaran',
             'pengeluarantrucking.keterangan',
             'pengeluarantrucking.coa',
-            'parameter.memo as statusformat',
+            'parameter.memo as format',
             'pengeluarantrucking.created_at',
             'pengeluarantrucking.modifiedby',
             'pengeluarantrucking.updated_at'
         )
-            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'pengeluarantrucking.statusformat', 'parameter.id');
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'pengeluarantrucking.format', 'parameter.id');
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -60,12 +60,12 @@ class PengeluaranTrucking extends MyModel
                  $this->table.kodepengeluaran,
                  $this->table.keterangan,
                  $this->table.coa,
-                 parameter.text as statusformat,
+                 parameter.text as format,
                  $this->table.modifiedby,
                  $this->table.created_at,
                  $this->table.updated_at"
             )
-        )->join('parameter','pengeluarantrucking.statusformat','parameter.id');
+        )->join('parameter','pengeluarantrucking.format','parameter.id');
     }
 
     public function createTemp(string $modelTable)
@@ -76,7 +76,7 @@ class PengeluaranTrucking extends MyModel
             $table->string('kodepengeluaran', 1000)->default('');
             $table->string('keterangan', 1000)->default('');
             $table->string('coa', 1000)->default('');
-            $table->string('statusformat', 1000)->default('');
+            $table->string('format', 1000)->default('');
             $table->string('modifiedby', 1000)->default('');
             $table->dateTime('created_at')->default('1900/1/1');
             $table->dateTime('updated_at')->default('1900/1/1');
@@ -88,7 +88,7 @@ class PengeluaranTrucking extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id', 'kodepengeluaran', 'keterangan','coa', 'statusformat', 'modifiedby','created_at', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'kodepengeluaran', 'keterangan','coa', 'format', 'modifiedby','created_at', 'updated_at'], $models);
 
         return $temp;
     }
@@ -104,7 +104,7 @@ class PengeluaranTrucking extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'statusformat') {
+                        if ($filters['field'] == 'format') {
                             $query = $query->where('parameter.text', 'LIKE', "%$filters[data]%");
                         }else{
                             $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
@@ -114,7 +114,7 @@ class PengeluaranTrucking extends MyModel
                     break;
                 case "OR":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'statusformat') {
+                        if ($filters['field'] == 'format') {
                             $query = $query->orWhere('parameter.text', 'LIKE', "%$filters[data]%");
                         }else{
                             $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");

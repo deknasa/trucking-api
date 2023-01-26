@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\Validator;
 
 class AlatBayarController extends Controller
 {
@@ -51,15 +52,30 @@ class AlatBayarController extends Controller
     public function store(StoreAlatBayarRequest $request)
     {
         DB::beginTransaction();
-        try {            
+        // dd($request->all());
+        try {
             $statusCair = Parameter::where('grp', 'STATUS LANGSUNG CAIR')->where('text', 'TIDAK LANGSUNG CAIR')->first();
-            
+            $controller = new ErrorController;
             if ($request->statuslangsungcair == $statusCair->id) {
-                
-                $request->validate([
-                    'coa' => 'required',
-                ]);
+
+
+                $request->validate(
+                    [
+                        'coa' => [
+                            "required"
+                        ]
+                    ],
+                    [
+                        'coa.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
+
+                    ],
+                    [
+                        'coa' => 'kode perkiraan',
+                    ],
+                );
             }
+
+
             $alatbayar = new AlatBayar();
             $alatbayar->kodealatbayar = $request->kodealatbayar;
             $alatbayar->namaalatbayar = $request->namaalatbayar;
@@ -68,6 +84,7 @@ class AlatBayarController extends Controller
             $alatbayar->statusdefault = $request->statusdefault;
             $alatbayar->bank_id = $request->bank_id;
             $alatbayar->coa = $request->coa ?? '';
+            $alatbayar->statusaktif = $request->statusaktif;
             $alatbayar->modifiedby = auth('api')->user()->name;
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
@@ -102,7 +119,7 @@ class AlatBayarController extends Controller
             ], 201);
         } catch (\Throwable $th) {
             DB::rollBack();
-            
+
             throw $th;
         }
     }
@@ -124,11 +141,22 @@ class AlatBayarController extends Controller
         DB::beginTransaction();
         try {
             $statusCair = Parameter::where('grp', 'STATUS LANGSUNG CAIR')->where('text', 'TIDAK LANGSUNG CAIR')->first();
-            
+
             if ($request->statuslangsungcair == $statusCair->id) {
-                $request->validate([
-                    'coa' => 'required',
-                ]);
+                $request->validate(
+                    [
+                        'coa' => [
+                            "required"
+                        ]
+                    ],
+                    [
+                        'coa.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
+
+                    ],
+                    [
+                        'coa' => 'kode perkiraan',
+                    ],
+                );
             }
             $alatbayar->kodealatbayar = $request->kodealatbayar;
             $alatbayar->namaalatbayar = $request->namaalatbayar;
@@ -137,6 +165,7 @@ class AlatBayarController extends Controller
             $alatbayar->statusdefault = $request->statusdefault;
             $alatbayar->bank_id = $request->bank_id;
             $alatbayar->coa = $request->coa ?? '';
+            $alatbayar->statusaktif = $request->statusaktif;
             $alatbayar->modifiedby = auth('api')->user()->name;
 
             if ($alatbayar->save()) {
@@ -222,6 +251,7 @@ class AlatBayarController extends Controller
         $data = [
             'langsungcair' => Parameter::where(['grp' => 'status langsung cair'])->get(),
             'statusdefault' => Parameter::where(['grp' => 'status default'])->get(),
+            'statusaktif' => Parameter::where(['grp' => 'status aktif'])->get(),
             'bank' => Bank::all(),
         ];
 

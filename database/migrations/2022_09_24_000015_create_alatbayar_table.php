@@ -26,6 +26,7 @@ class CreatealatbayarTable extends Migration
             $table->integer('statusdefault')->length(11)->default(0);
             $table->string('coa', 50)->default('');
             $table->unsignedBigInteger('bank_id')->default(0);
+            $table->integer('statusaktif')->length(11)->default(0);                
             $table->string('modifiedby', 50)->default('');
             $table->timestamps();
 

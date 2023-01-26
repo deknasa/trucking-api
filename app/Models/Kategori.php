@@ -27,6 +27,8 @@ class Kategori extends MyModel
     {
         $this->setRequestParameters();
 
+        $aktif = request()->aktif ?? '';
+
         $query = Kategori::from(DB::raw("$this->table with (readuncommitted)"))
             ->select(
                 'kategori.id',
@@ -40,6 +42,16 @@ class Kategori extends MyModel
             )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'kategori.statusaktif', '=', 'parameter.id')
             ->leftJoin(DB::raw("subkelompok AS p with (readuncommitted)"), 'kategori.subkelompok_id', '=', 'p.id');
+            if ($aktif == 'AKTIF') {
+                $statusaktif = Parameter::from(
+                    DB::raw("parameter with (readuncommitted)")
+                )
+                    ->where('grp', '=', 'STATUS AKTIF')
+                    ->where('text', '=', 'AKTIF')
+                    ->first();
+    
+                $query->where('kategori.statusaktif', '=', $statusaktif->id);
+            }
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;

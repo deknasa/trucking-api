@@ -26,16 +26,16 @@ class StoreAbsensiSupirDetailRequest extends FormRequest
         return [
             'trado' => 'required|array',
             'trado.*' => 'required',
-            'supir' => 'required|array',
-            'supir.*' => 'required',
-            'uangjalan' => 'required|array',
-            'uangjalan.*' => 'required|numeric|gt:0',
-            // 'absen' => 'required|array',
-            // 'absen.*' => 'required',
-            'jam' => 'required|array',
-            'jam.*' => 'required',
-            'keterangan_detail' => 'required|array',
-            'keterangan_detail.*' => 'required',
+            // 'supir' => 'required|array',
+            // 'supir.*' => 'required',
+            // 'uangjalan' => 'required|array',
+            // 'uangjalan.*' => 'required|numeric|gt:0',
+            // // 'absen' => 'required|array',
+            // // 'absen.*' => 'required',
+            // 'jam' => 'required|array',
+            // 'jam.*' => 'required',
+            // 'keterangan_detail' => 'required|array',
+            // 'keterangan_detail.*' => 'required',
         ];
     }
 

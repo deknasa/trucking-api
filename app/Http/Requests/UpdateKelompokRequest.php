@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Http\Controllers\Api\ErrorController;
 
 class UpdateKelompokRequest extends FormRequest
 {
@@ -34,7 +35,19 @@ class UpdateKelompokRequest extends FormRequest
     {
         return[
             'kodekelompok' => 'kode kelompok',
-            'statusaktif' => 'status aktif'
+            'statusaktif' => 'status aktif',
+            'keterangan' => 'keterangan',
+        ];
+    }
+
+    public function messages()
+    {
+        $controller = new ErrorController;
+
+        return [
+            'kodekelompok.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+            'keterangan.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+            'statusaktif.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
         ];
     }
 }

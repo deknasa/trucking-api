@@ -24,12 +24,12 @@ class StorePenerimaanDetailRequest extends FormRequest
     public function rules()
     {
         return [
-            'coadebet' => 'required|array',
-            'coadebet.*' => 'required',
+            'coakredit' => 'required|array',
+            'coakredit.*' => 'required',
             'tgljatuhtempo' => 'required|array',
             'tgljatuhtempo.*' => 'required',
-            'nowarkat' => 'required|array',
-            'nowarkat.*' => 'required',
+            // 'nowarkat' => 'required|array',
+            // 'nowarkat.*' => 'required',
             'nominal_detail' => 'required|array',
             'nominal_detail.*' => 'required|numeric|gt:0',
             'keterangan_detail' => 'required|array',

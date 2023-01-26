@@ -7,7 +7,6 @@ use App\Models\PengeluaranHeader;
 use App\Models\PengeluaranDetail;
 use App\Models\Parameter;
 use App\Models\Pelanggan;
-use App\Models\Cabang;
 use App\Models\Bank;
 use App\Models\AlatBayar;
 use App\Models\AkunPusat;
@@ -48,6 +47,18 @@ class PengeluaranHeaderController extends Controller
         ]);
     }
 
+    
+    public function default()
+    {
+
+
+        $pengeluaranheader = new PengeluaranHeader();
+        return response([
+            'status' => true,
+            'data' => $pengeluaranheader->default(),
+        ]);
+    }
+
     /**
      * @ClassName
      */
@@ -68,11 +79,11 @@ class PengeluaranHeaderController extends Controller
                     ->select(
                         'parameter.grp',
                         'parameter.subgrp',
-                        'bank.statusformatpengeluaran',
+                        'bank.formatpengeluaran',
                         'bank.coa',
                         'bank.tipe'
                     )
-                    ->join(DB::raw("parameter with (readuncommitted)"), 'bank.statusformatpengeluaran', 'parameter.id')
+                    ->join(DB::raw("parameter with (readuncommitted)"), 'bank.formatpengeluaran', 'parameter.id')
                     ->whereRaw("bank.id = $bankid")
                     ->first();
 
@@ -102,19 +113,18 @@ class PengeluaranHeaderController extends Controller
                 ->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
 
             $pengeluaranHeader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
-            $pengeluaranHeader->pelanggan_id = $request->pelanggan_id;
-            $pengeluaranHeader->statusjenistransaksi = $request->statusjenistransaksi ?? 0;
+            $pengeluaranHeader->pelanggan_id = $request->pelanggan_id ?? 0;
             $pengeluaranHeader->postingdari = $request->postingdari ?? 'ENTRY PENGELUARAN KAS/BANK';
             $pengeluaranHeader->statusapproval = $statusApproval->id ?? $request->statusapproval;
             $pengeluaranHeader->dibayarke = $request->dibayarke ?? '';
-            $pengeluaranHeader->cabang_id = $request->cabang_id ?? 0;
+            $pengeluaranHeader->alatbayar_id = $request->alatbayar_id ?? 0;
             $pengeluaranHeader->bank_id = $request->bank_id ?? 0;
             $pengeluaranHeader->userapproval = $request->userapproval ?? '';
             $pengeluaranHeader->tglapproval = $request->tglapproval ?? '';
             $pengeluaranHeader->transferkeac = $request->transferkeac ?? '';
             $pengeluaranHeader->transferkean = $request->transferkean ?? '';
             $pengeluaranHeader->transferkebank = $request->transferkebank ?? '';
-            $pengeluaranHeader->statusformat = $querysubgrppengeluaran->statusformatpengeluaran ?? $request->statusformat;
+            $pengeluaranHeader->statusformat = $querysubgrppengeluaran->formatpengeluaran ?? $request->statusformat;
             $pengeluaranHeader->statuscetak = $statusCetak->id;
             $pengeluaranHeader->userbukacetak = '';
             $pengeluaranHeader->tglbukacetak = '';
@@ -151,7 +161,6 @@ class PengeluaranHeaderController extends Controller
             $parameterController = new ParameterController;
             $statusApp = $parameterController->getparameterid('STATUS APPROVAL', 'STATUS APPROVAL', 'NON APPROVAL');
 
-
             if ($tanpaprosesnobukti == 0) {
                 $detaillog = [];
                 for ($i = 0; $i < count($request->nominal_detail); $i++) {
@@ -159,17 +168,15 @@ class PengeluaranHeaderController extends Controller
                     $datadetail = [
                         'pengeluaran_id' => $pengeluaranHeader->id,
                         'nobukti' => $pengeluaranHeader->nobukti,
-                        'alatbayar_id' => $request->alatbayar_id[$i],
                         'nowarkat' => $request->nowarkat[$i],
                         'tgljatuhtempo' =>  date('Y-m-d', strtotime($request->tgljatuhtempo[$i])),
                         'nominal' => $request->nominal_detail[$i],
                         'coadebet' => $request->coadebet[$i],
                         'coakredit' => $querysubgrppengeluaran->coa,
                         'keterangan' => $request->keterangan_detail[$i],
-                        'bulanbeban' =>  date('Y-m-d', strtotime($request->bulanbeban[$i])) ?? '',
+                        'bulanbeban' =>  date('Y-m-d', strtotime($request->bulanbeban[$i] ?? '1900/1/1')) ,
                         'modifiedby' => auth('api')->user()->name,
                     ];
-
 
                     $data = new StorePengeluaranDetailRequest($datadetail);
                     $datadetails = app(PengeluaranDetailController::class)->store($data);
@@ -323,11 +330,11 @@ class PengeluaranHeaderController extends Controller
                 ->select(
                     'parameter.grp',
                     'parameter.subgrp',
-                    'bank.statusformatpengeluaran',
+                    'bank.formatpengeluaran',
                     'bank.coa',
                     'bank.tipe'
                 )
-                ->join(DB::raw("parameter with (readuncommitted)"), 'bank.statusformatpengeluaran', 'parameter.id')
+                ->join(DB::raw("parameter with (readuncommitted)"), 'bank.formatpengeluaran', 'parameter.id')
                 ->whereRaw("bank.id = $bankid")
                 ->first();
 
@@ -345,12 +352,11 @@ class PengeluaranHeaderController extends Controller
 
 
             $pengeluaranheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
-            $pengeluaranheader->pelanggan_id = $request->pelanggan_id;
-            $pengeluaranheader->statusjenistransaksi = $request->statusjenistransaksi ?? 0;
+            $pengeluaranheader->pelanggan_id = $request->pelanggan_id ?? 0;
             $pengeluaranheader->statusapproval = $statusApproval->id ?? 0;
             $pengeluaranheader->statuscetak = $statusCetak->id ?? 0;
             $pengeluaranheader->dibayarke = $request->dibayarke ?? '';
-            $pengeluaranheader->cabang_id = $request->cabang_id ?? 0;
+            $pengeluaranheader->alatbayar_id = $request->alatbayar_id ?? 0;
             $pengeluaranheader->bank_id = $request->bank_id ?? 0;
             $pengeluaranheader->transferkeac = $request->transferkeac ?? '';
             $pengeluaranheader->transferkean = $request->transferkean ?? '';
@@ -386,14 +392,13 @@ class PengeluaranHeaderController extends Controller
                 $datadetail = [
                     'pengeluaran_id' => $pengeluaranheader->id,
                     'nobukti' => $pengeluaranheader->nobukti,
-                    'alatbayar_id' => $request->alatbayar_id[$i],
                     'nowarkat' => $request->nowarkat[$i],
                     'tgljatuhtempo' =>  date('Y-m-d', strtotime($request->tgljatuhtempo[$i])),
                     'nominal' => $request->nominal_detail[$i],
                     'coadebet' => $request->coadebet[$i],
                     'coakredit' => $querysubgrppengeluaran->coa,
                     'keterangan' => $request->keterangan_detail[$i],
-                    'bulanbeban' =>  date('Y-m-d', strtotime($request->bulanbeban[$i])) ?? '',
+                    'bulanbeban' =>  date('Y-m-d', strtotime($request->bulanbeban[$i] ?? '1900/1/1')) ,
                     'modifiedby' => auth('api')->user()->name,
                 ];
 

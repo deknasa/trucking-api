@@ -59,7 +59,6 @@ class NotaKreditHeader extends MyModel
             $table->string('nobukti',50)->unique();
             $table->string('pelunasanpiutang_nobukti',50)->default('');
             $table->date('tglbukti')->default('1900/1/1');
-            $table->longText('keterangan')->default('');
             $table->string('postingdari',50)->default('');
             $table->integer('statusapproval')->length(11)->default('0');
             $table->date('tgllunas')->default('1900/1/1');
@@ -78,7 +77,6 @@ class NotaKreditHeader extends MyModel
             "nobukti",
             "pelunasanpiutang_nobukti",
             "tglbukti",
-            "keterangan",
             "postingdari",
             "statusapproval",
             "tgllunas",
@@ -95,7 +93,6 @@ class NotaKreditHeader extends MyModel
             "nobukti",
             "pelunasanpiutang_nobukti",
             "tglbukti",
-            "keterangan",
             "postingdari",
             "statusapproval",
             "tgllunas",
@@ -114,7 +111,6 @@ class NotaKreditHeader extends MyModel
             "$this->table.nobukti",
             "$this->table.pelunasanpiutang_nobukti",
             "$this->table.tglbukti",
-            "$this->table.keterangan",
             "$this->table.postingdari",
             "$this->table.statusapproval",
             "$this->table.tgllunas",
@@ -235,8 +231,7 @@ class NotaKreditHeader extends MyModel
     public function findAll($id)
     {
         $this->setRequestParameters();
-
-        $query = DB::table($this->table);
+        $query = NotaKreditHeader::from(DB::raw("notakreditheader with (readuncommitted)"));
         $query = $this->selectColumns($query)
         ->leftJoin('parameter','notakreditheader.statusapproval','parameter.id')
         ->leftJoin('parameter as statuscetak','notakreditheader.statuscetak','statuscetak.id')

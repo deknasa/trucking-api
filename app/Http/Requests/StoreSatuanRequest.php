@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Http\Controllers\Api\ErrorController;
 
 class StoreSatuanRequest extends FormRequest
 {
@@ -26,6 +27,24 @@ class StoreSatuanRequest extends FormRequest
         return [
             'satuan' => 'required',
             'statusaktif' => 'required',
+        ];
+    }
+
+    public function attributes()
+    {
+        return [
+            'satuan' => 'satuan',
+            'statusaktif' => 'status aktif',
+        ];
+    }
+
+    public function messages()
+    {
+        $controller = new ErrorController;
+
+        return [
+            'satuan.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+            'statusaktif.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
         ];
     }
 }

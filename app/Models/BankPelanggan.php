@@ -27,6 +27,8 @@ class BankPelanggan extends MyModel
     {
         $this->setRequestParameters();
 
+        $aktif = request()->aktif ?? '';
+
         $query = DB::table($this->table)->from(
             DB::raw($this->table . " with (readuncommitted)")
         )
@@ -41,6 +43,17 @@ class BankPelanggan extends MyModel
                 'bankpelanggan.updated_at'
             )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'bankpelanggan.statusaktif', '=', 'parameter.id');
+
+            if ($aktif == 'AKTIF') {
+                $statusaktif=Parameter::from(
+                    DB::raw("parameter with (readuncommitted)")
+                )
+                ->where('grp','=','STATUS AKTIF')
+                ->where('text','=','AKTIF')
+                ->first();
+    
+                $query ->where('bankpelanggan.statusaktif','=',$statusaktif->id);
+            }
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;

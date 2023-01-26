@@ -21,8 +21,8 @@ class BankFactory extends Factory
             'coa' => $this->faker->randomElement(AkunPusat::all()->pluck('coa')),
             'tipe' => $this->faker->word(),
             'statusaktif' => $this->faker->randomElement(Parameter::where('grp', 'STATUS AKTIF')->get()),
-            'statusformatpenerimaan' => $this->faker->randomElement(Parameter::where('grp', 'PENERIMAAN KAS')->get()),
-            'statusformatpengeluaran' => $this->faker->randomElement(Parameter::where('grp', 'PENGELUARAN KAS')->get()),
+            'formatpenerimaan' => $this->faker->randomElement(Parameter::where('grp', 'PENERIMAAN KAS')->get()),
+            'formatpengeluaran' => $this->faker->randomElement(Parameter::where('grp', 'PENGELUARAN KAS')->get()),
         ];
     }
 }
