@@ -60,7 +60,7 @@ class UpahRitasiController extends Controller
         try {
             $upahritasi = new UpahRitasi();
 
-            $upahritasi->parent_id = $request->parent_id;
+            $upahritasi->parent_id = $request->parent_id ?? 0;
             $upahritasi->kotadari_id = $request->kotadari_id;
             $upahritasi->kotasampai_id = $request->kotasampai_id;
             $upahritasi->jarak = str_replace(',', '', str_replace('.', '', $request->jarak));
@@ -164,7 +164,7 @@ class UpahRitasiController extends Controller
         DB::beginTransaction();
 
         try {
-            $upahritasi->parent_id = $request->parent_id;
+            $upahritasi->parent_id = $request->parent_id ?? 0;
             $upahritasi->kotadari_id = $request->kotadari_id;
             $upahritasi->kotasampai_id = $request->kotasampai_id;
             $upahritasi->jarak = str_replace(',', '', str_replace('.', '', $request->jarak));

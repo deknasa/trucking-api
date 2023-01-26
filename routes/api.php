@@ -645,14 +645,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('penerimaanheader/default', [PenerimaanHeaderController::class, 'default']);
 
     Route::resource('penerimaanheader', PenerimaanHeaderController::class);
-    // Route::get('upahritasirincian/setuprow', [UpahRitasiRincianController::class, 'setUpRow']);
-    // Route::get('upahritasirincian/setuprowshow/{id}', [UpahRitasiRincianController::class, 'setUpRowExcept']);
-    // Route::resource('upahritasirincian', UpahRitasiRincianController::class);
-
-    // Route::get('ritasi/combo', [RitasiController::class, 'combo']);
-    // Route::get('ritasi/field_length', [RitasiController::class, 'fieldLength']);
-    // Route::get('ritasi/default', [RitasiController::class, 'default']);
-    // Route::resource('ritasi', RitasiController::class);
+    Route::resource('penerimaandetail', PenerimaanDetailController::class);
 
     // Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
     // Route::post('penerimaan/{id}/approval', [PenerimaanHeaderController::class, 'approval'])->name('penerimaan.approval');
@@ -661,7 +654,20 @@ route::middleware(['auth:api'])->group(function () {
     // Route::get('penerimaan/grid', [PenerimaanHeaderController::class, 'grid']);
     // Route::resource('penerimaan', PenerimaanHeaderController::class);
 
-    Route::resource('penerimaandetail', PenerimaanDetailController::class);
+    Route::get('upahritasi/combo', [UpahRitasiController::class, 'combo']);
+    Route::get('upahritasi/default', [UpahRitasiController::class, 'default']);
+    Route::get('upahritasi/comboluarkota', [UpahRitasiController::class, 'comboluarkota']);
+    Route::get('upahritasi/field_length', [UpahRitasiController::class, 'fieldLength']);
+    Route::resource('upahritasi', UpahRitasiController::class);
+
+    Route::get('upahritasirincian/setuprow', [UpahRitasiRincianController::class, 'setUpRow']);
+    Route::get('upahritasirincian/setuprowshow/{id}', [UpahRitasiRincianController::class, 'setUpRowExcept']);
+    Route::resource('upahritasirincian', UpahRitasiRincianController::class);
+
+    Route::get('ritasi/combo', [RitasiController::class, 'combo']);
+    Route::get('ritasi/field_length', [RitasiController::class, 'fieldLength']);
+    Route::get('ritasi/default', [RitasiController::class, 'default']);
+    Route::resource('ritasi', RitasiController::class);
 
     //pengeluaran
     Route::get('pengeluaranheader/{id}/printreport', [PengeluaranHeaderController::class, 'printReport']);
@@ -831,20 +837,6 @@ Route::get('suratpengantar/field_length', [SuratPengantarController::class, 'fie
 Route::get('suratpengantar/get_gaji', [SuratPengantarController::class, 'getGaji']);
 Route::resource('suratpengantar', SuratPengantarController::class);
 
-Route::get('upahritasi/combo', [UpahRitasiController::class, 'combo']);
-Route::get('upahritasi/default', [UpahRitasiController::class, 'default']);
-Route::get('upahritasi/comboluarkota', [UpahRitasiController::class, 'comboluarkota']);
-Route::get('upahritasi/field_length', [UpahRitasiController::class, 'fieldLength']);
-Route::resource('upahritasi', UpahRitasiController::class);
-
-Route::get('upahritasirincian/setuprow', [UpahRitasiRincianController::class, 'setUpRow']);
-Route::get('upahritasirincian/setuprowshow/{id}', [UpahRitasiRincianController::class, 'setUpRowExcept']);
-Route::resource('upahritasirincian', UpahRitasiRincianController::class);
-
-Route::get('ritasi/combo', [RitasiController::class, 'combo']);
-Route::get('ritasi/field_length', [RitasiController::class, 'fieldLength']);
-Route::get('ritasi/default', [RitasiController::class, 'default']);
-Route::resource('ritasi', RitasiController::class);
 
 Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
 Route::post('penerimaan/{id}/approval', [PenerimaanHeaderController::class, 'approval'])->name('penerimaan.approval');

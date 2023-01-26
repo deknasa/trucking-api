@@ -28,6 +28,7 @@ class TarifRincian extends MyModel
     {
         $query = DB::table('container')->from(DB::raw("container with (readuncommitted)"))
             ->select(
+                'tarifrincian.id as id',
                 'container.id as container_id',
                 'container.keterangan as container',
                 DB::raw("isnull(tarifrincian.nominal,0) as nominal"),
