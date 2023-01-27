@@ -30,31 +30,31 @@ class AlatBayar extends MyModel
         $this->setRequestParameters();
         $aktif = request()->aktif ?? '';
         // dd(request()->all());
-        $bank_id =request()->bank_id ?? 0;
+        $bank_id = request()->bank_id ?? 0;
 
-        $bank=Bank::from (
+        $bank = Bank::from(
             db::Raw("bank with (readuncommitted)")
         )
-        ->select (
-            'tipe'
-        )
-        ->where('id','=',$bank_id)
-        ->first();   
-        
-        $tipe=$bank->tipe ?? '';
+            ->select(
+                'tipe'
+            )
+            ->where('id', '=', $bank_id)
+            ->first();
 
-        $statusdefault=Parameter::from (
+        $tipe = $bank->tipe ?? '';
+
+        $statusdefault = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
         )
-        ->select (
-            'id'
-        )
-        ->where('grp','=','STATUS DEFAULT')
-        ->where('subgrp','=','STATUS DEFAULT')
-        ->where('text','=','DEFAULT')
-        ->first();
+            ->select(
+                'id'
+            )
+            ->where('grp', '=', 'STATUS DEFAULT')
+            ->where('subgrp', '=', 'STATUS DEFAULT')
+            ->where('text', '=', 'DEFAULT')
+            ->first();
 
-        $default =request()->statusdefault ?? 0;
+        $default = request()->statusdefault ?? 0;
         $query = DB::table($this->table)->from(
             DB::raw($this->table . " with (readuncommitted)")
         )
@@ -65,7 +65,7 @@ class AlatBayar extends MyModel
                 'alatbayar.keterangan',
                 'parameter_statuslangsungcair.memo as statuslangsungcair',
                 'parameter_statusdefault.memo as statusdefault',
-                'parameter.memo as statusaktif',                
+                'parameter.memo as statusaktif',
                 'bank.namabank as bank_id',
                 'alatbayar.modifiedby',
                 'alatbayar.created_at',
@@ -75,29 +75,31 @@ class AlatBayar extends MyModel
             ->leftJoin(DB::raw("parameter as parameter_statuslangsungcair with (readuncommitted)"), 'alatbayar.statuslangsungcair', 'parameter_statuslangsungcair.id')
             ->leftJoin(DB::raw("parameter as parameter_statusdefault with (readuncommitted)"), 'alatbayar.statusdefault', 'parameter_statusdefault.id')
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'alatbayar.statusaktif', 'parameter.id');
-        if ($default == $statusdefault->id) {
-            $query->where('alatbayar.statusdefault', '=', $statusdefault->id);
-        }
-        if ($tipe != "") {
-            $query->where('bank.tipe', '=', $tipe);
-        }        
-
-        if ($aktif == 'AKTIF') {
-            $statusaktif=Parameter::from(
-                DB::raw("parameter with (readuncommitted)")
-            )
-            ->where('grp','=','STATUS AKTIF')
-            ->where('text','=','AKTIF')
-            ->first();
-
-            $query ->where('alatbayar.statusaktif','=',$statusaktif->id);
-        }
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
         $this->sort($query);
         $this->filter($query);
+        if ($default == $statusdefault->id) {
+            $query->where('alatbayar.statusdefault', '=', $statusdefault->id);
+        }
+        if ($tipe != "") {
+            $query->where('bank.tipe', '=', $tipe);
+        }
+
+        if ($aktif == 'AKTIF') {
+            $statusaktif = Parameter::from(
+                DB::raw("parameter with (readuncommitted)")
+            )
+                ->where('grp', '=', 'STATUS AKTIF')
+                ->where('text', '=', 'AKTIF')
+                ->first();
+
+            $query->where('alatbayar.statusaktif', '=', $statusaktif->id);
+        }
+
+
         $this->paginate($query);
 
         $data = $query->get();
@@ -155,11 +157,13 @@ class AlatBayar extends MyModel
             ->where('DEFAULT', '=', 'YA')
             ->first();
 
-            $iddefaultstatusaktif = $statusaktif->id ?? 0;            
+        $iddefaultstatusaktif = $statusaktif->id ?? 0;
 
         DB::table($tempdefault)->insert(
-            ["statusdefault" => $iddefaultstatusdefault, "statuslangsungcair" => $iddefaultstatuslangsung,
-             "statusaktif" => $iddefaultstatusaktif]
+            [
+                "statusdefault" => $iddefaultstatusdefault, "statuslangsungcair" => $iddefaultstatuslangsung,
+                "statusaktif" => $iddefaultstatusaktif
+            ]
         );
 
         $query = DB::table($tempdefault)->from(
@@ -226,7 +230,6 @@ class AlatBayar extends MyModel
             ->leftJoin(DB::raw("parameter as parameter_statuslangsungcair with (readuncommitted)"), 'alatbayar.statuslangsungcair', 'parameter_statuslangsungcair.id')
             ->leftJoin(DB::raw("parameter as parameter_statusdefault with (readuncommitted)"), 'alatbayar.statusdefault', 'parameter_statusdefault.id')
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'alatbayar.statusaktif', 'parameter.id');
-
     }
 
     public function createTemp(string $modelTable)
@@ -252,7 +255,7 @@ class AlatBayar extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id', 'kodealatbayar', 'namaalatbayar', 'keterangan', 'statuslangsungcair', 'statusdefault','statusaktif', 'bank_id', 'modifiedby', 'created_at', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'kodealatbayar', 'namaalatbayar', 'keterangan', 'statuslangsungcair', 'statusdefault', 'statusaktif', 'bank_id', 'modifiedby', 'created_at', 'updated_at'], $models);
 
         return $temp;
     }
@@ -284,6 +287,10 @@ class AlatBayar extends MyModel
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statuslangsungcair') {
                             $query = $query->orWhere('parameter_statuslangsungcair.text', '=', "$filters[data]");
+                        } elseif ($filters['field'] == 'id') {
+                            $query = $query->orWhereRaw("(alatbayar.id like '%$filters[data]%'");
+                        } elseif ($filters['field'] == 'updated_at') {
+                            $query = $query->orWhereRaw("format(alatbayar.updated_at,'dd-MM-yyyy HH:mm:ss') like '%$filters[data]%')");
                         } else if ($filters['field'] == 'statusdefault') {
                             $query = $query->orWhere('parameter_statusdefault.text', '=', "$filters[data]");
                         } else if ($filters['field'] == 'bank_id') {

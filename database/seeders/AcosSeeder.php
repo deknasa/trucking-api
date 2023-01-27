@@ -359,5 +359,9 @@ class AcosSeeder extends Seeder
         Acos::create(['class' => 'historipenerimaanstok', 'method' => 'report', 'nama' => 'report HistoriPenerimaanStokController', 'modifiedby' => 'ADMIN',]);
         Acos::create(['class' => 'historipengeluaranstok', 'method' => 'index', 'nama' => 'index HistoriPengeluaranStokController', 'modifiedby' => 'ADMIN',]);
         Acos::create(['class' => 'historipengeluaranstok', 'method' => 'report', 'nama' => 'report HistoriPengeluaranStokController', 'modifiedby' => 'ADMIN',]);
+        Acos::create(['class' => 'mandorabsensisupir', 'method' => 'index', 'nama' => 'index MandorAbsensiSupirController', 'modifiedby' => 'ADMIN',]);
+        Acos::create(['class' => 'mandorabsensisupir', 'method' => 'store', 'nama' => 'store MandorAbsensiSupirController', 'modifiedby' => 'ADMIN',]);
+        Acos::create(['class' => 'mandorabsensisupir', 'method' => 'update', 'nama' => 'update MandorAbsensiSupirController', 'modifiedby' => 'ADMIN',]);
+        Acos::create(['class' => 'mandorabsensisupir', 'method' => 'destroy', 'nama' => 'destroy MandorAbsensiSupirController', 'modifiedby' => 'ADMIN',]);
     }
 }

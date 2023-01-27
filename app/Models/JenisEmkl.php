@@ -40,6 +40,14 @@ class JenisEmkl extends MyModel
                 'jenisemkl.updated_at'
             )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'jenisemkl.statusaktif', '=', 'parameter.id');
+
+
+        $this->totalRows = $query->count();
+        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+
+        $this->sort($query);
+        $this->filter($query);
+
         if ($aktif == 'AKTIF') {
             $statusaktif = Parameter::from(
                 DB::raw("parameter with (readuncommitted)")
@@ -50,12 +58,6 @@ class JenisEmkl extends MyModel
 
             $query->where('jenisemkl.statusaktif', '=', $statusaktif->id);
         }
-
-        $this->totalRows = $query->count();
-        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
-
-        $this->sort($query);
-        $this->filter($query);
         $this->paginate($query);
 
         $data = $query->get();
@@ -174,13 +176,13 @@ class JenisEmkl extends MyModel
                         if ($filters['field'] == 'statusaktif') {
                             $query = $query->where('parameter.text', 'LIKE', "%$filters[data]%");
                         } elseif ($filters['field'] == 'id') {
-                            $query = $query->orWhere('jenisemkl.id', 'LIKE', "%$filters[data]%");
+                            $query = $query->orWhereRaw("(jenisemkl.id like '%$filters[data]%'");
+                        } elseif ($filters['field'] == 'updated_at') {
+                            $query = $query->orWhereRaw("format(jenisemkl.updated_at,'dd-MM-yyyy HH:mm:ss') like '%$filters[data]%')");
                         } elseif ($filters['field'] == 'modifiedby') {
                             $query = $query->orWhere('jenisemkl.modifiedby', 'LIKE', "%$filters[data]%");
                         } elseif ($filters['field'] == 'created_at') {
                             $query = $query->orWhere('jenisemkl.created_at', 'LIKE', "%$filters[data]%");
-                        } elseif ($filters['field'] == 'updated_at') {
-                            $query = $query->orWhere('jenisemkl.updated_at', 'LIKE', "%$filters[data]%");
                         } else {
                             $query = $query->orWhere($filters['field'], 'LIKE', "%$filters[data]%");
                         }

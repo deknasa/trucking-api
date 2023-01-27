@@ -42,6 +42,12 @@ class Gudang extends MyModel
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'gudang.statusaktif', '=', 'parameter.id');
 
 
+
+        $this->totalRows = $query->count();
+        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+
+        $this->sort($query);
+        $this->filter($query);
         if ($aktif == 'AKTIF') {
             $statusaktif = Parameter::from(
                 DB::raw("parameter with (readuncommitted)")
@@ -53,11 +59,6 @@ class Gudang extends MyModel
             $query->where('gudang.statusaktif', '=', $statusaktif->id);
         }
 
-        $this->totalRows = $query->count();
-        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
-
-        $this->sort($query);
-        $this->filter($query);
         $this->paginate($query);
 
         $data = $query->get();
@@ -165,6 +166,10 @@ class Gudang extends MyModel
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statusaktif') {
                             $query = $query->orWhere('parameter.text', 'LIKE', "%$filters[data]%");
+                        } elseif ($filters['field'] == 'id') {
+                            $query = $query->orWhereRaw("(gudang.id like '%$filters[data]%'");
+                        } elseif ($filters['field'] == 'updated_at') {
+                            $query = $query->orWhereRaw("format(gudang.updated_at,'dd-MM-yyyy HH:mm:ss') like '%$filters[data]%')");
                         } else {
                             $query = $query->orWhere('gudang.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }

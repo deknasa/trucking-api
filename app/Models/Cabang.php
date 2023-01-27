@@ -38,22 +38,25 @@ class Cabang extends MyModel
             )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'cabang.statusaktif', 'parameter.id');
 
-            if ($aktif == 'AKTIF') {
-                $statusaktif=Parameter::from(
-                    DB::raw("parameter with (readuncommitted)")
-                )
-                ->where('grp','=','STATUS AKTIF')
-                ->where('text','=','AKTIF')
-                ->first();
-    
-                $query ->where('cabang.statusaktif','=',$statusaktif->id);
-            }
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
         $this->sort($query);
         $this->filter($query);
+
+        if ($aktif == 'AKTIF') {
+            $statusaktif = Parameter::from(
+                DB::raw("parameter with (readuncommitted)")
+            )
+                ->where('grp', '=', 'STATUS AKTIF')
+                ->where('text', '=', 'AKTIF')
+                ->first();
+
+            $query->where('cabang.statusaktif', '=', $statusaktif->id);
+        }
+
+
         $this->paginate($query);
 
         $data = $query->get();
@@ -199,6 +202,10 @@ class Cabang extends MyModel
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statusaktif') {
                             $query = $query->orWhere('parameter.text', '=', $filters['data']);
+                        } elseif ($filters['field'] == 'id') {
+                            $query = $query->orWhereRaw("(cabang.id like '%$filters[data]%'");
+                        } elseif ($filters['field'] == 'updated_at') {
+                            $query = $query->orWhereRaw("format(cabang.updated_at,'dd-MM-yyyy HH:mm:ss') like '%$filters[data]%')");
                         } else {
                             $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }

@@ -38,7 +38,6 @@ class Trado extends MyModel
                 'trado.nostnk',
                 'trado.alamatstnk',
                 'trado.modifiedby',
-                'trado.updated_at',
                 'trado.created_at',
                 'trado.tglserviceopname',
                 'trado.keteranganprogressstandarisasi',
@@ -67,6 +66,7 @@ class Trado extends MyModel
                 'parameter_statuslewatvalidasi.memo as statuslewatvalidasi',
                 'mandor.namamandor as mandor_id',
                 'supir.namasupir as supir_id',
+                'trado.updated_at',                
             )
             ->leftJoin(DB::raw("parameter as parameter_statusaktif with (readuncommitted)"), 'trado.statusaktif', 'parameter_statusaktif.id')
             ->leftJoin(DB::raw("parameter as parameter_statusjenisplat with (readuncommitted)"), 'trado.statusjenisplat', 'parameter_statusjenisplat.id')
@@ -78,6 +78,13 @@ class Trado extends MyModel
             ->leftJoin(DB::raw("parameter as parameter_statuslewatvalidasi with (readuncommitted)"), 'trado.statuslewatvalidasi', 'parameter_statuslewatvalidasi.id')
             ->leftJoin(DB::raw("mandor with (readuncommitted)"), 'trado.mandor_id', 'mandor.id')
             ->leftJoin(DB::raw("supir with (readuncommitted)"), 'trado.supir_id', 'supir.id');
+       
+
+        $this->totalRows = $query->count();
+        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+
+        $this->sort($query);
+        $this->filter($query);
         if ($aktif == 'AKTIF') {
             $statusaktif=Parameter::from(
                 DB::raw("parameter with (readuncommitted)")
@@ -89,12 +96,6 @@ class Trado extends MyModel
             $query ->where('trado.statusaktif','=',$statusaktif->id);
         }
 
-
-        $this->totalRows = $query->count();
-        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
-
-        $this->sort($query);
-        $this->filter($query);
         $this->paginate($query);
 
         $data = $query->get();
@@ -449,6 +450,10 @@ class Trado extends MyModel
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statusaktif') {
                             $query = $query->orWhere('parameter_statusaktif.text', '=', $filters['data']);
+                        } elseif ($filters['field'] == 'id') {
+                            $query = $query->orWhereRaw("(trado.id like '%$filters[data]%'");
+                        } elseif ($filters['field'] == 'updated_at') {
+                            $query = $query->orWhereRaw("format(trado.updated_at,'dd-MM-yyyy HH:mm:ss') like '%$filters[data]%')");                            
                         } else if ($filters['field'] == 'statusstandarisasi') {
                             $query = $query->orWhere('parameter_statusstandarisasi.text', '=', $filters['data']);
                         } else if ($filters['field'] == 'statusjenisplat') {
