@@ -35,7 +35,7 @@ class AbsensiSupirApprovalHeader extends MyModel
             'absensisupirapprovalheader.nobukti',
             'absensisupirapprovalheader.tglbukti',
             'absensisupirapprovalheader.absensisupir_nobukti',
-            'absensisupirapprovalheader.keterangan',
+            // 'absensisupirapprovalheader.keterangan',
             'statusapproval.memo as statusapproval',
             db::raw("(case when year(isnull(absensisupirapprovalheader.tglapproval,'1900/1/1'))=1900 then null else absensisupirapprovalheader.tglapproval end) as tglapproval"),
             'absensisupirapprovalheader.userapproval',
@@ -82,7 +82,7 @@ class AbsensiSupirApprovalHeader extends MyModel
             $table->string('nobukti', 50)->unique();
             $table->date('tglbukti')->default('1900/1/1');
             $table->string('absensisupir_nobukti', 50)->default('');
-            $table->longText('keterangan')->default('');
+            // $table->longText('keterangan')->default('');
             $table->string('statusapproval', 1000)->default('');
             $table->dateTime('tglapproval')->default('1900/1/1');
             $table->string('userapproval', 200)->default('');
@@ -112,7 +112,7 @@ class AbsensiSupirApprovalHeader extends MyModel
             'nobukti',
             'tglbukti',
             'absensisupir_nobukti',
-            'keterangan',
+            // 'keterangan',
             'statusapproval',
             'tglapproval',
             'userapproval',
@@ -142,7 +142,6 @@ class AbsensiSupirApprovalHeader extends MyModel
                 $this->table.nobukti,
                 $this->table.tglbukti,
                 $this->table.absensisupir_nobukti,
-                $this->table.keterangan,
                 'statusapproval.text as statusapproval',
                 $this->table.tglapproval,
                 $this->table.userapproval,

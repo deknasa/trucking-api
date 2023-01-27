@@ -96,7 +96,7 @@ class AbsensiSupirApprovalHeaderController extends Controller
             /* Store header */
             $absensiSupirApprovalHeader->tglbukti =  date('Y-m-d', strtotime($request->tglbukti));
             $absensiSupirApprovalHeader->absensisupir_nobukti =  $request->absensisupir_nobukti;
-            $absensiSupirApprovalHeader->keterangan =  $request->keterangan;
+            // $absensiSupirApprovalHeader->keterangan =  $request->keterangan;
             $absensiSupirApprovalHeader->statusapproval =  4;
             $absensiSupirApprovalHeader->statusformat =  $format->id;
             $absensiSupirApprovalHeader->pengeluaran_nobukti = $request->pengeluaran_nobukti ?? '0';
@@ -127,7 +127,7 @@ class AbsensiSupirApprovalHeaderController extends Controller
 
                 $dataKasgantung = [
                     "tglbukti" => $kasgantung->tglbukti,
-                    "keterangan" => $absensiSupirApprovalHeader->keterangan,
+                    // "keterangan" => $absensiSupirApprovalHeader->keterangan,
                     "bank_id" => $bank->id,
                     "penerima_id" => $kasgantung->penerima_id,
                     "coakaskeluar" => $coakaskeluar,
@@ -139,6 +139,7 @@ class AbsensiSupirApprovalHeaderController extends Controller
 
                 $data = new StoreKasGantungHeaderRequest($dataKasgantung);
                 $kasgantungStore = app(KasGantungHeaderController::class)->update($data, $kasgantung);
+                // return response($kasgantungStore,442);
                 $kasgantung = $kasgantungStore->original['data'];
 
 
@@ -211,7 +212,7 @@ class AbsensiSupirApprovalHeaderController extends Controller
                         'tanpaprosesnobukti' => 1,
                         'nobukti' => $absensiSupirApprovalHeader->nobukti,
                         'tglbukti' => date('Y-m-d', strtotime($absensiSupirApprovalHeader->tglbukti)),
-                        'keterangan' => $absensiSupirApprovalHeader->keterangan,
+                        // 'keterangan' => $absensiSupirApprovalHeader->keterangan,
                         'postingdari' => 'ENTRY ABSENSI SUPIR APPROVAL DETAIL',
                         'statusapproval' => $absensiSupirApprovalHeader->statusapproval,
                         'userapproval' => "",
@@ -226,7 +227,7 @@ class AbsensiSupirApprovalHeaderController extends Controller
                             'tglbukti' => date('Y-m-d', strtotime($absensiSupirApprovalHeader->tglbukti)),
                             'coa' =>  $memodebet['JURNAL'],
                             'nominal' => $total,
-                            'keterangan' => $request->keterangan,
+                            // 'keterangan' => $request->keterangan,
                             'modifiedby' => auth('api')->user()->name,
                             'baris' => $i,
                         ], [
@@ -234,7 +235,7 @@ class AbsensiSupirApprovalHeaderController extends Controller
                             'tglbukti' => date('Y-m-d', strtotime($absensiSupirApprovalHeader->tglbukti)),
                             'coa' =>  $kasgantung->coakaskeluar,
                             'nominal' => -$total,
-                            'keterangan' => $request->keterangan,
+                            // 'keterangan' => $request->keterangan,
                             'modifiedby' => auth('api')->user()->name,
                             'baris' => $i,
                         ]
@@ -332,7 +333,7 @@ class AbsensiSupirApprovalHeaderController extends Controller
             /* Store header */
             $absensiSupirApprovalHeader->tglbukti =  date('Y-m-d', strtotime($request->tglbukti));
             $absensiSupirApprovalHeader->absensisupir_nobukti =  $request->absensisupir_nobukti;
-            $absensiSupirApprovalHeader->keterangan =  $request->keterangan;
+            // $absensiSupirApprovalHeader->keterangan =  $request->keterangan;
             $absensiSupirApprovalHeader->statusapproval =  4;
             $absensiSupirApprovalHeader->statusformat =  $format->id;
             $absensiSupirApprovalHeader->pengeluaran_nobukti = $kasgantung->pengeluaran_nobukti ?? '0';
@@ -358,7 +359,7 @@ class AbsensiSupirApprovalHeaderController extends Controller
 
                 $dataKasgantung = [
                     "tglbukti" => $kasgantung->tglbukti,
-                    "keterangan" => $absensiSupirApprovalHeader->keterangan,
+                    // "keterangan" => $absensiSupirApprovalHeader->keterangan,
                     "bank_id" => $bank->id,
                     "penerima_id" => $kasgantung->penerima_id,
                     "coakaskeluar" => $coakaskeluar,
@@ -473,8 +474,8 @@ class AbsensiSupirApprovalHeaderController extends Controller
         $absensiSupirApprovalHeader = $absensiSupirApprovalHeader->lockAndDestroy($id);
 
         $pengeluaran = $absensiSupirApprovalHeader->pengeluaran_nobukti;
-
         $kasGantung = KasGantungHeader::where('pengeluaran_nobukti', $pengeluaran)->first();
+        // return response($kasGantung,422);
         $kasGantung->pengeluaran_nobukti = '';
         $kasGantung->coakaskeluar = '';
         $kasGantung->kasgantungDetail()->update(['coa' => '']);

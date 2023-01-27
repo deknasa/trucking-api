@@ -178,8 +178,11 @@ class AbsensiSupirHeader extends MyModel
     WHERE absensisupirapprovalheader.absensisupir_nobukti = absensisupirheader.nobukti 
           )")
             ->where('absensi_id', $id);
-        $data = $query->get();
+        //     $this->totalRows = $query->count();
+        // $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
+
+        $data = $query->get();
         return $data;
     }
 

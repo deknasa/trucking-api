@@ -24,7 +24,7 @@ class UpdateAbsensiSupirApprovalHeaderRequest extends FormRequest
     public function rules()
     {
         return [
-            "keterangan"=>"required",
+            // "keterangan"=>"required",
             "absensisupir_nobukti"=>"required",
             "tglbukti"=>"required",
         ];
