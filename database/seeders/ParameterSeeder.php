@@ -249,6 +249,10 @@ class ParameterSeeder extends Seeder
         parameter::create(['grp' => 'STATUS PROSES UANG JALAN', 'subgrp' => 'STATUS PROSES UANG JALAN', 'kelompok' => '', 'text' => 'ADJUST TRANSFER', 'memo' => '{"MEMO":"ADJUST TRANSFER PROSES UANG JALAN","SINGKATAN":"ATPUJ","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'STATUS PROSES UANG JALAN', 'subgrp' => 'STATUS PROSES UANG JALAN', 'kelompok' => '', 'text' => 'PENGEMBALIAN PINJAMAN', 'memo' => '{"MEMO":"PENGEMBALIAN PINJAMAN TRANSFER PROSES UANG JALAN","SINGKATAN":"ATPUJ","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'STATUS PROSES UANG JALAN', 'subgrp' => 'STATUS PROSES UANG JALAN', 'kelompok' => '', 'text' => 'DEPOSITO SUPIR', 'memo' => '{"MEMO":"DEPOSITO SUPIR PROSES UANG JALAN","SINGKATAN":"ATPUJ","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
-
+        parameter::create(['grp' => 'PROSES UANG JALAN BUKTI', 'subgrp' => 'PROSES UANG JALAN BUKTI', 'kelompok' => '', 'text' => '#PUJ #9999#/#R#/#Y', 'memo' => '{"MEMO":"PROSES UANG JALAN BUKTI","SINGKATAN":"#PUJ #9999#/#R#/#Y","WARNA":"#28A745"}', 'type' => '118', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'JURNAL PENGELUARAN PROSES UANG JALAN', 'subgrp' => 'DEBET', 'kelompok' => '', 'text' => 'DEBET', 'memo' => '{"MEMO":"JURNAL PENGELUARAN PROSES UANG JALAN","SINGKATAN":"JPPUJ","WARNA":"#28A745","JURNAL":"03.02.02.02"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'JURNAL PENERIMAAN PROSES UANG JALAN', 'subgrp' => 'KREDIT', 'kelompok' => '', 'text' => 'KREDIT', 'memo' => '{"MEMO":"JURNAL PENERIMAAN PROSES UANG JALAN","SINGKATAN":"JPPUJ","WARNA":"#28A745","JURNAL":"03.02.02.02"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'JURNAL PENERIMAAN DEPOSITO', 'subgrp' => 'KREDIT', 'kelompok' => '', 'text' => 'KREDIT', 'memo' => '{"MEMO":"JURNAL PENERIMAAN DEPOSITO","SINGKATAN":"JPD","WARNA":"#28A745","JURNAL":"01.04.02.01"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        
     }
 }

@@ -36,7 +36,7 @@ class CreateProsesuangjalansupirdetailTable extends Migration
             $table->string('modifiedby', 50)->default('');
             $table->timestamps();
 
-            $table->foreign('prosesuangjalansupir_id', 'prosesuangjalansupirdetail_jurnalumumheader_jurnalumum_id_foreign')->references('id')->on('jurnalumumheader')->onDelete('cascade');
+            $table->foreign('prosesuangjalansupir_id', 'prosesuangjalansupirdetail_jurnalumumheader_jurnalumum_id_foreign')->references('id')->on('prosesuangjalansupirheader')->onDelete('cascade');
             $table->foreign('penerimaantrucking_bank_id', 'prosesuangjalansupirdetail_penerimaanbank_bank_id_foreign')->references('id')->on('bank');
             $table->foreign('pengeluarantrucking_bank_id', 'prosesuangjalansupirdetail_pengeluaranbank_bank_id_foreign')->references('id')->on('bank');
             $table->foreign('pengembaliankasgantung_bank_id', 'prosesuangjalansupirdetail_pengembaliankasgantung_bank_id_foreign')->references('id')->on('bank');

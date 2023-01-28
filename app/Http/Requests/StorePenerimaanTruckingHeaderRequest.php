@@ -27,7 +27,6 @@ class StorePenerimaanTruckingHeaderRequest extends FormRequest
             'tglbukti' => 'required',
             'penerimaantrucking' => 'required',
             'bank' => 'required',
-            'coa' => 'required',
             'penerimaan_nobukti' => 'required',
         ];
         $relatedRequests = [

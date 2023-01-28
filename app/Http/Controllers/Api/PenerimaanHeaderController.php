@@ -154,14 +154,14 @@ class PenerimaanHeaderController extends Controller
                         'nowarkat' => $request->nowarkat,
                         'tgljatuhtempo' => $penerimaanHeader->tglbukti,
                         'nominal' => $request->datadetail[$i]['nominal'],
-                        'coadebet' => $request->coadebet,
-                        'coakredit' => $memo['JURNAL'],
+                        'coadebet' => $request->coadebet ?? $request->datadetail[$i]['coadebet'],
+                        'coakredit' => $request->datadetail[$i]['coakredit'] ?? $memo['JURNAL'],
                         'keterangan' => $request->datadetail[$i]['keterangan'],
                         'bank_id' => $penerimaanHeader->bank_id,
                         'invoice_nobukti' => $request->datadetail[$i]['invoice_nobukti'],
                         'bankpelanggan_id' => '',
                         'jenisbiaya' => '',
-                        'pelunasanpiutang_nobukti' => $request->datadetail[$i]['nobukti'],
+                        'pelunasanpiutang_nobukti' => $request->datadetail[$i]['nobukti'] ?? '',
                         'bulanbeban' =>  date('Y-m-d', strtotime($request->bulanbeban[$i] ?? '1900/1/1')),
                         'modifiedby' => auth('api')->user()->name,
                     ];
@@ -237,7 +237,7 @@ class PenerimaanHeaderController extends Controller
                     'tanpaprosesnobukti' => 1,
                     'nobukti' => $penerimaanHeader->nobukti,
                     'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
-                    'postingdari' => ($request->postingdari) ? 'PENERIMAAN KAS/BANK DARI ' . $request->postingdari : 'ENTRY PENERIMAAN KAS/BANK',
+                    'postingdari' => $request->postingdari ?? 'ENTRY PENERIMAAN KAS/BANK',
                     'statusapproval' => $statusApp->id,
                     'userapproval' => "",
                     'tglapproval' => "",
@@ -253,7 +253,6 @@ class PenerimaanHeaderController extends Controller
                 }
                 for ($i = 0; $i < count($counter); $i++) {
                     $detail = [];
-
                     $jurnalDetail = [
                         [
                             'nobukti' => $penerimaanHeader->nobukti,

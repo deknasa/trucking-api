@@ -143,6 +143,8 @@ use App\Http\Controllers\Api\PencairanGiroPengeluaranDetailController;
 use App\Http\Controllers\Api\PencairanGiroPengeluaranHeaderController;
 use App\Http\Controllers\Api\PendapatanSupirDetailController;
 use App\Http\Controllers\Api\PendapatanSupirHeaderController;
+use App\Http\Controllers\Api\ProsesUangJalanSupirDetailController;
+use App\Http\Controllers\Api\ProsesUangJalanSupirHeaderController;
 use App\Http\Controllers\Api\ReportNeracaController;
 use App\Http\Controllers\Api\StokPersediaanController;
 use App\Http\Controllers\Api\TutupBukuController;
@@ -731,6 +733,18 @@ route::middleware(['auth:api'])->group(function () {
     Route::resource('laporankasbank', LaporanKasBankController::class);
     Route::get('laporanbukubesar/report', [LaporanBukuBesarController::class, 'report'])->name('laporanbukubesar.report');
     Route::resource('laporanbukubesar', LaporanBukuBesarController::class);
+
+    Route::post('prosesuangjalansupirheader/{id}/approval', [ProsesUangJalanSupirHeaderController::class, 'approval'])->name('prosesuangjalansupirheader.approval');
+    Route::post('prosesuangjalansupirheader/{id}/cekvalidasi', [ProsesUangJalanSupirHeaderController::class, 'cekvalidasi'])->name('prosesuangjalansupirheader.cekvalidasi');
+    Route::get('prosesuangjalansupirheader/{id}/printreport', [ProsesUangJalanSupirHeaderController::class, 'printReport']);
+    Route::get('prosesuangjalansupirheader/field_length', [ProsesUangJalanSupirHeaderController::class, 'fieldLength']);
+    Route::get('prosesuangjalansupirheader/combo', [ProsesUangJalanSupirHeaderController::class, 'combo']);
+    Route::get('prosesuangjalansupirheader/grid', [ProsesUangJalanSupirHeaderController::class, 'grid']);
+    Route::get('prosesuangjalansupirheader/{id}/tarikPelunasan', [ProsesUangJalanSupirHeaderController::class, 'tarikPelunasan']);
+    Route::get('prosesuangjalansupirheader/{id}/getPelunasan', [ProsesUangJalanSupirHeaderController::class, 'getPelunasan']);
+    Route::resource('prosesuangjalansupirheader', ProsesUangJalanSupirHeaderController::class);
+
+    Route::resource('prosesuangjalansupirdetail', ProsesUangJalanSupirDetailController::class);
 });
 
 Route::get('gudang/combo', [GudangController::class, 'combo']);

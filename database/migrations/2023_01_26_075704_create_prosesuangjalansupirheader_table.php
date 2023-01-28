@@ -27,7 +27,8 @@ class CreateProsesuangjalansupirheaderTable extends Migration
             $table->integer('statusapproval')->length(11)->default('0');
             $table->string('userapproval',50)->default('');
             $table->dateTime('tglapproval')->default('1900/1/1');
-            $table->unsignedBigInteger('statusformat')->default(0);                     
+            $table->unsignedBigInteger('statusformat')->default(0);    
+            $table->string('modifiedby',50)->default('');                 
             $table->timestamps();
 
             $table->foreign('trado_id', 'prosesuangjalansupirheader_trado_trado_id_foreign')->references('id')->on('trado');            

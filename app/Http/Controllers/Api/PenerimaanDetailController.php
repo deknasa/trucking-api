@@ -118,7 +118,7 @@ class PenerimaanDetailController extends Controller
 
             $penerimaanDetail->penerimaan_id = $request->penerimaan_id;
             $penerimaanDetail->nobukti = $request->nobukti;
-            $penerimaanDetail->nowarkat = $request->nowarkat;
+            $penerimaanDetail->nowarkat = $request->nowarkat ?? '';
             $penerimaanDetail->tgljatuhtempo = $request->tgljatuhtempo;
             $penerimaanDetail->nominal = $request->nominal;
             $penerimaanDetail->coadebet = $request->coadebet;
@@ -143,7 +143,7 @@ class PenerimaanDetailController extends Controller
             ];
         } catch (\Throwable $th) {
             DB::rollBack();
-            return response($th->getMessage());
+            throw $th;
         }
     }
 }

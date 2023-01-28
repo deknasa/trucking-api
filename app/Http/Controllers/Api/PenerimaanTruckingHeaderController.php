@@ -55,47 +55,55 @@ class PenerimaanTruckingHeaderController extends Controller
 
         try {
 
-            $idpenerimaan = $request->penerimaantrucking_id;
-            $fetchFormat =  DB::table('penerimaantrucking')
-                ->where('id', $idpenerimaan)
-                ->first();
-            $statusformat = $fetchFormat->statusformat;
+            $tanpaprosesnobukti = $request->tanpaprosesnobukti ?? 0;
 
-            $fetchGrp = Parameter::where('id', $statusformat)->first();
+            if ($tanpaprosesnobukti == 0) {
 
-            $format = DB::table('parameter')
-                ->where('grp', $fetchGrp->grp)
-                ->where('subgrp', $fetchGrp->subgrp)
-                ->first();
+                $idpenerimaan = $request->penerimaantrucking_id;
+                $fetchFormat =  DB::table('penerimaantrucking')
+                    ->where('id', $idpenerimaan)
+                    ->first();
+                $statusformat = $fetchFormat->format;
 
-            $content = new Request();
-            $content['group'] = $fetchGrp->grp;
-            $content['subgroup'] = $fetchGrp->subgrp;
-            $content['table'] = 'penerimaantruckingheader';
-            $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
+                $fetchGrp = Parameter::where('id', $statusformat)->first();
+
+                $format = DB::table('parameter')
+                    ->where('grp', $fetchGrp->grp)
+                    ->where('subgrp', $fetchGrp->subgrp)
+                    ->first();
+
+                $content = new Request();
+                $content['group'] = $fetchGrp->grp;
+                $content['subgroup'] = $fetchGrp->subgrp;
+                $content['table'] = 'penerimaantruckingheader';
+                $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
+            }
 
             $penerimaantruckingheader = new PenerimaanTruckingHeader();
             $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
                 ->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
 
             $penerimaantruckingheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
-            $penerimaantruckingheader->penerimaantrucking_id = $idpenerimaan;
+            $penerimaantruckingheader->penerimaantrucking_id = $request->penerimaantrucking_id ?? $idpenerimaan;
             $penerimaantruckingheader->bank_id = $request->bank_id;
             $penerimaantruckingheader->coa = $request->coa;
             $penerimaantruckingheader->penerimaan_nobukti = $request->penerimaan_nobukti;
-            $penerimaantruckingheader->statusformat =  $format->id;
-            $penerimaantruckingheader->statuscetak =  $statusCetak->id;
+            $penerimaantruckingheader->statusformat = $request->statusformat ?? $format->id;
+            $penerimaantruckingheader->statuscetak = $statusCetak->id;
             $penerimaantruckingheader->modifiedby = auth('api')->user()->name;
 
-            $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
-            $penerimaantruckingheader->nobukti = $nobukti;
-
+            if ($tanpaprosesnobukti == 0) {
+                $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
+                $penerimaantruckingheader->nobukti = $nobukti;
+            } else {
+                $penerimaantruckingheader->nobukti = $request->nobukti;
+            }
             $penerimaantruckingheader->save();
 
 
             $logTrail = [
                 'namatabel' => strtoupper($penerimaantruckingheader->getTable()),
-                'postingdari' => 'ENTRY PENERIMAAN TRUCKING HEADER',
+                'postingdari' => $request->postingdari ?? 'ENTRY PENERIMAAN TRUCKING HEADER',
                 'idtrans' => $penerimaantruckingheader->id,
                 'nobuktitrans' => $penerimaantruckingheader->nobukti,
                 'aksi' => 'ENTRY',
@@ -109,15 +117,19 @@ class PenerimaanTruckingHeaderController extends Controller
             /* Store detail */
 
             $detaillog = [];
-
-            for ($i = 0; $i < count($request->nominal); $i++) {
+            if ($request->datadetail != '') {
+                $counter = $request->datadetail;
+            } else {
+                $counter = $request->nominal;
+            }
+            for ($i = 0; $i < count($counter); $i++) {
 
                 $datadetail = [
                     'penerimaantruckingheader_id' => $penerimaantruckingheader->id,
                     'nobukti' => $penerimaantruckingheader->nobukti,
-                    'supir_id' => $request->supir_id[$i],
-                    'pengeluarantruckingheader_nobukti' => $request->pengeluarantruckingheader_nobukti[$i] ?? '',
-                    'nominal' => $request->nominal[$i],
+                    'supir_id' => ($counter != '') ? $counter[$i]['supir_id']  :  $request->supir_id[$i],
+                    'pengeluarantruckingheader_nobukti' => ($counter != '') ? '' : $request->pengeluarantruckingheader_nobukti[$i] ?? '',
+                    'nominal' => ($counter != '') ? $counter[$i]['nominal']  : $request->nominal[$i],
                     'modifiedby' => $penerimaantruckingheader->modifiedby,
                 ];
                 //STORE 
@@ -138,7 +150,7 @@ class PenerimaanTruckingHeaderController extends Controller
             }
             $datalogtrail = [
                 'namatabel' => strtoupper($tabeldetail),
-                'postingdari' => 'ENTRY PENERIMAAN TRUCKING DETAIL',
+                'postingdari' => $request->postingdari ?? 'ENTRY PENERIMAAN TRUCKING DETAIL',
                 'idtrans' =>  $storedLogTrail['id'],
                 'nobuktitrans' => $penerimaantruckingheader->nobukti,
                 'aksi' => 'ENTRY',
@@ -169,7 +181,6 @@ class PenerimaanTruckingHeaderController extends Controller
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
-            return response($th->getMessage());
         }
     }
 
