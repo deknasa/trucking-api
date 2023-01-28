@@ -64,16 +64,7 @@ class Agen extends MyModel
             ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'agen.statusapproval', 'statusapproval.id')
             ->leftJoin(DB::raw("parameter as statustas with (readuncommitted)"), 'agen.statustas', 'statustas.id');
 
-            if ($aktif == 'AKTIF') {
-                $statusaktif=Parameter::from(
-                    DB::raw("parameter with (readuncommitted)")
-                )
-                ->where('grp','=','STATUS AKTIF')
-                ->where('text','=','AKTIF')
-                ->first();
-    
-                $query ->where('agen.statusaktif','=',$statusaktif->id);
-            }
+   
     
 
         $this->totalRows = $query->count();
@@ -81,6 +72,17 @@ class Agen extends MyModel
 
         $this->sort($query);
         $this->filter($query);
+
+        if ($aktif == 'AKTIF') {
+            $statusaktif=Parameter::from(
+                DB::raw("parameter with (readuncommitted)")
+            )
+            ->where('grp','=','STATUS AKTIF')
+            ->where('text','=','AKTIF')
+            ->first();
+
+            $query ->where('agen.statusaktif','=',$statusaktif->id);
+        }        
         $this->paginate($query);
 
         $data = $query->get();
@@ -179,9 +181,9 @@ class Agen extends MyModel
             "$this->table.tglapproval",
             "parameter_statustas.text as statustas",
             "jenisemkl.keterangan as jenisemkl",
+            "$this->table.modifiedby",
             "$this->table.created_at",
             "$this->table.updated_at",
-            "$this->table.modifiedby",
         )
             ->leftJoin(DB::raw("parameter as parameter_statusaktif with (readuncommitted)"), "agen.statusaktif", "parameter_statusaktif.id")
             ->leftJoin(DB::raw("parameter as parameter_statusapproval with (readuncommitted)"), "agen.statusapproval", "parameter_statusapproval.id")
@@ -241,9 +243,9 @@ class Agen extends MyModel
             'tglapproval',
             'statustas',
             'jenisemkl',
+            'modifiedby',
             'created_at',
             'updated_at',
-            'modifiedby'
         ], $models);
 
         return  $temp;
@@ -276,6 +278,10 @@ class Agen extends MyModel
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statusaktif') {
                             $query = $query->orWhere('parameter_statusaktif.text', '=', $filters['data']);
+                        } elseif ($filters['field'] == 'id') {
+                            $query = $query->orWhereRaw("(agen.id like '%$filters[data]%'");
+                        } elseif ($filters['field'] == 'updated_at') {
+                            $query = $query->orWhereRaw("format(agen.updated_at,'dd-MM-yyyy HH:mm:ss') like '%$filters[data]%')");                            
                         } else if ($filters['field'] == 'statusapproval') {
                             $query = $query->orWhere('parameter_statusapproval.text', '=', $filters['data']);
                         } else if ($filters['field'] == 'statustas') {

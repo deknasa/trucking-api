@@ -31,7 +31,7 @@ class Supir extends MyModel
         $this->setRequestParameters();
 
         $aktif = request()->aktif ?? '';
-                
+
         $query = Supir::from(DB::raw("$this->table with (readuncommitted)"))
             ->select(
                 'supir.id',
@@ -77,22 +77,23 @@ class Supir extends MyModel
             ->leftJoin(DB::raw("parameter as statusblacklist with (readuncommitted)"), 'supir.statusblacklist', '=', 'statusblacklist.id')
             ->leftJoin(DB::raw("supir as supirlama with (readuncommitted)"), 'supir.supirold_id', '=', 'supirlama.id');
 
-            if ($aktif == 'AKTIF') {
-                $statusaktif = Parameter::from(
-                    DB::raw("parameter with (readuncommitted)")
-                )
-                    ->where('grp', '=', 'STATUS AKTIF')
-                    ->where('text', '=', 'AKTIF')
-                    ->first();
-    
-                $query->where('supir.statusaktif', '=', $statusaktif->id);
-            }
+
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
         $this->sort($query);
         $this->filter($query);
+        if ($aktif == 'AKTIF') {
+            $statusaktif = Parameter::from(
+                DB::raw("parameter with (readuncommitted)")
+            )
+                ->where('grp', '=', 'STATUS AKTIF')
+                ->where('text', '=', 'AKTIF')
+                ->first();
+
+            $query->where('supir.statusaktif', '=', $statusaktif->id);
+        }
         $this->paginate($query);
 
         $data = $query->get();
@@ -446,6 +447,10 @@ class Supir extends MyModel
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statusaktif') {
                             $query = $query->orWhere('parameter.text', '=', $filters['data']);
+                        } elseif ($filters['field'] == 'id') {
+                            $query = $query->orWhereRaw("(supir.id like '%$filters[data]%'");
+                        } elseif ($filters['field'] == 'updated_at') {
+                            $query = $query->orWhereRaw("format(supir.updated_at,'dd-MM-yyyy HH:mm:ss') like '%$filters[data]%')");
                         } else if ($filters['field'] == 'statusadaupdategambar') {
                             $query = $query->orWhere('statusadaupdategambar.text', '=', $filters['data']);
                         } else if ($filters['field'] == 'statusluarkota') {

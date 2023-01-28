@@ -14,6 +14,7 @@ use App\Models\Supir;
 use App\Models\Agen;
 use App\Models\JenisOrder;
 use App\Models\Tarif;
+use App\Models\TarifRincian;
 use App\Models\Kota;
 use App\Models\Parameter;
 use App\Http\Requests\StoreSuratPengantarRequest;
@@ -61,6 +62,8 @@ class SuratPengantarController extends Controller
     public function store(StoreSuratPengantarRequest $request)
     {
         DB::beginTransaction();
+
+
 
         try {
             $format = DB::table('parameter')
@@ -422,8 +425,11 @@ class SuratPengantarController extends Controller
 
     public function getTarifOmset($id)
     {
+  
+        $tarifrincian = new TarifRincian();
+        $omset=$tarifrincian->getid($id);
+       
 
-        $omset = Tarif::find($id);
         return response([
             "dataTarif" => $omset
         ]);

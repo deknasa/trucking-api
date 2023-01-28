@@ -42,6 +42,13 @@ class Merk extends MyModel
         )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'merk.statusaktif', '=', 'parameter.id');
 
+
+
+        $this->totalRows = $query->count();
+        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+
+        $this->sort($query);
+        $this->filter($query);
         if ($aktif == 'AKTIF') {
             $statusaktif = Parameter::from(
                 DB::raw("parameter with (readuncommitted)")
@@ -52,12 +59,6 @@ class Merk extends MyModel
 
             $query->where('merk.statusaktif', '=', $statusaktif->id);
         }
-
-        $this->totalRows = $query->count();
-        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
-
-        $this->sort($query);
-        $this->filter($query);
         $this->paginate($query);
 
         $data = $query->get();
@@ -164,6 +165,10 @@ class Merk extends MyModel
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statusaktif') {
                             $query = $query->orWhere('parameter.text', '=', "$filters[data]");
+                        } elseif ($filters['field'] == 'id') {
+                            $query = $query->orWhereRaw("(merk.id like '%$filters[data]%'");
+                        } elseif ($filters['field'] == 'updated_at') {
+                            $query = $query->orWhereRaw("format(merk.updated_at,'dd-MM-yyyy HH:mm:ss') like '%$filters[data]%')");
                         } else {
                             $query = $query->orWhere('merk.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }

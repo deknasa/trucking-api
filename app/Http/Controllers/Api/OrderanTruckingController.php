@@ -17,6 +17,7 @@ use App\Models\Agen;
 use App\Models\JenisOrder;
 use App\Models\Pelanggan;
 use App\Models\Tarif;
+use App\Models\TarifRincian;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Http;
 
@@ -54,6 +55,7 @@ class OrderanTruckingController extends Controller
     {
         DB::beginTransaction();
 
+      
         try {
             $group = 'ORDERANTRUCKING';
             $subgroup = 'ORDERANTRUCKING';
@@ -74,7 +76,7 @@ class OrderanTruckingController extends Controller
             $orderanTrucking->agen_id = $request->agen_id;
             $orderanTrucking->jenisorder_id = $request->jenisorder_id;
             $orderanTrucking->pelanggan_id = $request->pelanggan_id;
-            $orderanTrucking->tarif_id = $request->tarif_id;
+            $orderanTrucking->tarif_id = $request->tarifrincian_id;
             $orderanTrucking->nojobemkl = $request->nojobemkl;
             $orderanTrucking->nocont = $request->nocont;
             $orderanTrucking->noseal = $request->noseal;
@@ -86,8 +88,8 @@ class OrderanTruckingController extends Controller
             $orderanTrucking->modifiedby = auth('api')->user()->name;
             $orderanTrucking->statusformat = $format->id;
 
-            $tarif = Tarif::find($request->tarif_id);
-            $orderanTrucking->nominal = $tarif->nominal;
+            $tarifrincian = TarifRincian::find($request->tarifrincian_id);
+            $orderanTrucking->nominal = $tarifrincian->nominal;
 
             $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
             $orderanTrucking->nobukti = $nobukti;
@@ -149,7 +151,7 @@ class OrderanTruckingController extends Controller
             $orderantrucking->agen_id = $request->agen_id;
             $orderantrucking->jenisorder_id = $request->jenisorder_id;
             $orderantrucking->pelanggan_id = $request->pelanggan_id;
-            $orderantrucking->tarif_id = $request->tarif_id;
+            $orderantrucking->tarif_id = $request->tarifrincian_id;
             $orderantrucking->nojobemkl = $request->nojobemkl;
             $orderantrucking->nocont = $request->nocont;
             $orderantrucking->noseal = $request->noseal;
@@ -160,8 +162,8 @@ class OrderanTruckingController extends Controller
             $orderantrucking->statusperalihan = $request->statusperalihan;
             $orderantrucking->modifiedby = auth('api')->user()->name;
 
-            $tarif = Tarif::find($request->tarif_id);
-            $orderantrucking->nominal = $tarif->nominal;
+            $tarifrincian = TarifRincian::find($request->tarifrincian_id);
+            $orderantrucking->nominal = $tarifrincian->nominal;
 
             if ($orderantrucking->save()) {
                 $logTrail = [

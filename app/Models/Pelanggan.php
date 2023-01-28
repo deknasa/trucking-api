@@ -33,6 +33,7 @@ class Pelanggan extends MyModel
         $query = DB::table($this->table)->from(
             DB::raw($this->table . " with (readuncommitted)")
         )->select(
+            'pelanggan.id',
             'pelanggan.kodepelanggan',
             'pelanggan.namapelanggan',
             'pelanggan.keterangan',
@@ -43,24 +44,27 @@ class Pelanggan extends MyModel
             'pelanggan.kodepos',
             'pelanggan.modifiedby',
             'parameter.memo as statusaktif',
+            'mekanik.created_at',
+            'mekanik.updated_at'            
         )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'pelanggan.statusaktif', 'parameter.id');
-            if ($aktif == 'AKTIF') {
-                $statusaktif = Parameter::from(
-                    DB::raw("parameter with (readuncommitted)")
-                )
-                    ->where('grp', '=', 'STATUS AKTIF')
-                    ->where('text', '=', 'AKTIF')
-                    ->first();
-    
-                $query->where('pelanggan.statusaktif', '=', $statusaktif->id);
-            }
+
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
         $this->sort($query);
         $this->filter($query);
+        if ($aktif == 'AKTIF') {
+            $statusaktif = Parameter::from(
+                DB::raw("parameter with (readuncommitted)")
+            )
+                ->where('grp', '=', 'STATUS AKTIF')
+                ->where('text', '=', 'AKTIF')
+                ->first();
+
+            $query->where('pelanggan.statusaktif', '=', $statusaktif->id);
+        }
         $this->paginate($query);
 
         $data = $query->get();
@@ -128,7 +132,7 @@ class Pelanggan extends MyModel
         return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
     }
 
-    
+
     public function default()
     {
 
@@ -179,7 +183,13 @@ class Pelanggan extends MyModel
                     break;
                 case "OR":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                        if ($filters['field'] == 'id') {
+                            $query = $query->orWhereRaw("(pelanggan.id like '%$filters[data]%'");
+                        } elseif ($filters['field'] == 'updated_at') {
+                            $query = $query->orWhereRaw("format(pelanggan.updated_at,'dd-MM-yyyy HH:mm:ss') like '%$filters[data]%')");
+                        } else {
+                            $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                        }
                     }
 
                     break;

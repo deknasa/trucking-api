@@ -29,7 +29,7 @@ class StoreOrderanTruckingRequest extends FormRequest
             'agen' => 'required',
             'jenisorder' => 'required',
             'pelanggan' => 'required',
-            'tarif' => 'required',
+            'tarifrincian' => 'required',
             'nojobemkl' => 'required',
             'nocont' => 'required',
             'noseal' => 'required',

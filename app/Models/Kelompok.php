@@ -42,22 +42,23 @@ class Kelompok extends MyModel
             )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'kelompok.statusaktif', '=', 'parameter.id');
 
-            if ($aktif == 'AKTIF') {
-                $statusaktif = Parameter::from(
-                    DB::raw("parameter with (readuncommitted)")
-                )
-                    ->where('grp', '=', 'STATUS AKTIF')
-                    ->where('text', '=', 'AKTIF')
-                    ->first();
-    
-                $query->where('kelompok.statusaktif', '=', $statusaktif->id);
-            }            
+              
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
         $this->sort($query);
         $this->filter($query);
+        if ($aktif == 'AKTIF') {
+            $statusaktif = Parameter::from(
+                DB::raw("parameter with (readuncommitted)")
+            )
+                ->where('grp', '=', 'STATUS AKTIF')
+                ->where('text', '=', 'AKTIF')
+                ->first();
+
+            $query->where('kelompok.statusaktif', '=', $statusaktif->id);
+        }          
         $this->paginate($query);
 
         $data = $query->get();
@@ -161,6 +162,10 @@ class Kelompok extends MyModel
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statusaktif') {
                             $query = $query->orWhere('parameter.text', '=', "$filters[data]");
+                        } elseif ($filters['field'] == 'id') {
+                            $query = $query->orWhereRaw("(kelompok.id like '%$filters[data]%'");
+                        } elseif ($filters['field'] == 'updated_at') {
+                            $query = $query->orWhereRaw("format(kelompok.updated_at,'dd-MM-yyyy HH:mm:ss') like '%$filters[data]%')");
                         } else {
                             $query = $query->orWhere('kelompok.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }

@@ -39,29 +39,31 @@ class Penerima extends MyModel
                 'penerima.npwp',
                 'penerima.noktp',
                 'penerima.modifiedby',
-                'penerima.updated_at',
                 'parameter_statusaktif.memo as statusaktif',
                 'parameter_statuskaryawan.memo as statuskaryawan',
+                'mekanik.created_at',
+                'mekanik.updated_at'
             )
             ->leftJoin(DB::raw("parameter as parameter_statusaktif with (readuncommitted)"), 'penerima.statusaktif', '=', 'parameter_statusaktif.id')
             ->leftJoin(DB::raw("parameter as parameter_statuskaryawan with (readuncommitted)"), 'penerima.statuskaryawan', '=', 'parameter_statuskaryawan.id');
 
-            if ($aktif == 'AKTIF') {
-                $statusaktif = Parameter::from(
-                    DB::raw("parameter with (readuncommitted)")
-                )
-                    ->where('grp', '=', 'STATUS AKTIF')
-                    ->where('text', '=', 'AKTIF')
-                    ->first();
-    
-                $query->where('penerima.statusaktif', '=', $statusaktif->id);
-            }
+
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
         $this->sort($query);
         $this->filter($query);
+        if ($aktif == 'AKTIF') {
+            $statusaktif = Parameter::from(
+                DB::raw("parameter with (readuncommitted)")
+            )
+                ->where('grp', '=', 'STATUS AKTIF')
+                ->where('text', '=', 'AKTIF')
+                ->first();
+
+            $query->where('penerima.statusaktif', '=', $statusaktif->id);
+        }
         $this->paginate($query);
 
         $data = $query->get();
@@ -89,7 +91,7 @@ class Penerima extends MyModel
             ->first();
 
         $iddefaultstatusaktif = $status->id ?? 0;
-        
+
         $status = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
         )
@@ -102,10 +104,10 @@ class Penerima extends MyModel
             ->first();
 
         $iddefaultstatuskaryawan = $status->id ?? 0;
-        
+
 
         DB::table($tempdefault)->insert(
-            ["statusaktif" => $iddefaultstatusaktif,"statuskaryawan" => $iddefaultstatuskaryawan]
+            ["statusaktif" => $iddefaultstatusaktif, "statuskaryawan" => $iddefaultstatuskaryawan]
         );
 
         $query = DB::table($tempdefault)->from(
@@ -117,7 +119,7 @@ class Penerima extends MyModel
             );
 
         $data = $query->first();
-        
+
         return $data;
     }
 
@@ -195,6 +197,10 @@ class Penerima extends MyModel
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statusaktif') {
                             $query = $query->where('parameter_statusaktif.text', '=', $filters['data']);
+                        } elseif ($filters['field'] == 'id') {
+                            $query = $query->orWhereRaw("(penerima.id like '%$filters[data]%'");
+                        } elseif ($filters['field'] == 'updated_at') {
+                            $query = $query->orWhereRaw("format(penerima.updated_at,'dd-MM-yyyy HH:mm:ss') like '%$filters[data]%')");
                         } else if ($filters['field'] == 'statuskaryawan') {
                             $query = $query->where('parameter_statuskaryawan.text', '=', "$filters[data]");
                         } else {

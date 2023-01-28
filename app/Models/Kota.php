@@ -43,6 +43,14 @@ class Kota extends MyModel
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'kota.statusaktif', '=', 'parameter.id')
             ->leftJoin(DB::raw("zona with (readuncommitted)"), 'kota.zona_id', '=', 'zona.id');
 
+
+
+
+        $this->totalRows = $query->count();
+        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+
+        $this->sort($query);
+        $this->filter($query);
         if ($aktif == 'AKTIF') {
             $statusaktif = Parameter::from(
                 DB::raw("parameter with (readuncommitted)")
@@ -53,13 +61,6 @@ class Kota extends MyModel
 
             $query->where('kota.statusaktif', '=', $statusaktif->id);
         }
-
-
-        $this->totalRows = $query->count();
-        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
-
-        $this->sort($query);
-        $this->filter($query);
         $this->paginate($query);
 
         $data = $query->get();
@@ -182,6 +183,10 @@ class Kota extends MyModel
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statusaktif') {
                             $query = $query->orWhere('parameter.text', '=', "$filters[data]");
+                        } elseif ($filters['field'] == 'id') {
+                            $query = $query->orWhereRaw("(kota.id like '%$filters[data]%'");
+                        } elseif ($filters['field'] == 'updated_at') {
+                            $query = $query->orWhereRaw("format(kota.updated_at,'dd-MM-yyyy HH:mm:ss') like '%$filters[data]%')");
                         } else if ($filters['field'] == 'zona_id') {
                             $query = $query->orWhere('zona.zona', 'LIKE', "%$filters[data]%");
                         } else {

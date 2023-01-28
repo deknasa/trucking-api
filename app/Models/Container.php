@@ -29,7 +29,7 @@ class Container extends MyModel
         $this->setRequestParameters();
 
         $aktif = request()->aktif ?? '';
-        
+
         $query = Container::from(DB::raw("$this->table with (readuncommitted)"))
             ->select(
                 'container.id',
@@ -42,22 +42,23 @@ class Container extends MyModel
             )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'container.statusaktif', '=', 'parameter.id');
 
-            if ($aktif == 'AKTIF') {
-                $statusaktif=Parameter::from(
-                    DB::raw("parameter with (readuncommitted)")
-                )
-                ->where('grp','=','STATUS AKTIF')
-                ->where('text','=','AKTIF')
-                ->first();
-    
-                $query ->where('container.statusaktif','=',$statusaktif->id);
-            }
+
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
         $this->sort($query);
         $this->filter($query);
+        if ($aktif == 'AKTIF') {
+            $statusaktif = Parameter::from(
+                DB::raw("parameter with (readuncommitted)")
+            )
+                ->where('grp', '=', 'STATUS AKTIF')
+                ->where('text', '=', 'AKTIF')
+                ->first();
+
+            $query->where('container.statusaktif', '=', $statusaktif->id);
+        }
         $this->paginate($query);
 
         $data = $query->get();
@@ -66,30 +67,31 @@ class Container extends MyModel
     }
     public function default()
     {
-        
+
         $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdefault, function ($table) {
             $table->unsignedBigInteger('statusaktif')->default(0);
         });
 
-        $statusaktif=Parameter::from (
+        $statusaktif = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
         )
-        ->select (
-            'id'
-        )
-        ->where('grp','=','STATUS AKTIF')
-        ->where('subgrp','=','STATUS AKTIF')
-        ->where('default', '=', 'YA')
-        ->first();
+            ->select(
+                'id'
+            )
+            ->where('grp', '=', 'STATUS AKTIF')
+            ->where('subgrp', '=', 'STATUS AKTIF')
+            ->where('default', '=', 'YA')
+            ->first();
 
         DB::table($tempdefault)->insert(["statusaktif" => $statusaktif->id]);
 
-        $query=DB::table($tempdefault)->from(
-            DB::raw($tempdefault )
+        $query = DB::table($tempdefault)->from(
+            DB::raw($tempdefault)
         )
             ->select(
-                'statusaktif');
+                'statusaktif'
+            );
 
         $data = $query->first();
         // dd($data);
@@ -174,13 +176,13 @@ class Container extends MyModel
                         if ($filters['field'] == 'statusaktif') {
                             $query = $query->orWhere('parameter.text', 'LIKE', "%$filters[data]%");
                         } elseif ($filters['field'] == 'id') {
-                            $query = $query->orWhere('container.id', 'LIKE', "%$filters[data]%");
+                            $query = $query->orWhereRaw("(container.id like '%$filters[data]%'");
+                        } elseif ($filters['field'] == 'updated_at') {
+                            $query = $query->orWhereRaw("format(container.updated_at,'dd-MM-yyyy HH:mm:ss') like '%$filters[data]%')");
                         } elseif ($filters['field'] == 'modifiedby') {
                             $query = $query->orWhere('container.modifiedby', 'LIKE', "%$filters[data]%");
                         } elseif ($filters['field'] == 'created_at') {
                             $query = $query->orWhere('container.created_at', 'LIKE', "%$filters[data]%");
-                        } elseif ($filters['field'] == 'updated_at') {
-                            $query = $query->orWhere('container.updated_at', 'LIKE', "%$filters[data]%");
                         } else {
                             $query = $query->orWhere($filters['field'], 'LIKE', "%$filters[data]%");
                         }

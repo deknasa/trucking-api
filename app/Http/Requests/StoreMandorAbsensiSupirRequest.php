@@ -3,9 +3,8 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use App\Http\Controllers\Api\ErrorController;
 
-class StoreUserRoleRequest extends FormRequest
+class StoreMandorAbsensiSupirRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -14,7 +13,7 @@ class StoreUserRoleRequest extends FormRequest
      */
     public function authorize()
     {
-        return true;
+        return false;
     }
 
     /**
@@ -25,16 +24,7 @@ class StoreUserRoleRequest extends FormRequest
     public function rules()
     {
         return [
-            'role_ids' => 'required|array',
-            'role_ids.*' => 'required|int|exists:role,id',
-        ];
-    }
-
-    public function attributes()
-    {
-        return [
-            'role_ids' => 'role',
-            'role_ids.*' => 'role',
+            //
         ];
     }
 }

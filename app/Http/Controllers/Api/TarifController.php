@@ -198,20 +198,21 @@ class TarifController extends Controller
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 $storedLogTrail=app(LogTrailController::class)->store($validatedLogTrail);
 
-                TarifRincian::where('tarif_id', $tarif->id)->delete();
+                // TarifRincian::where('tarif_id', $tarif->id)->delete();
 
                 $detaillog = [];
                 for ($i = 0; $i < count($request->container_id); $i++) {
 
                     $datadetail = [
                         'tarif_id' => $tarif->id,
+                        'detail_id' => $request->detail_id[$i],
                         'container_id' => $request->container_id[$i],
                         'nominal' => $request->nominal[$i],
                         'modifiedby' => auth('api')->user()->name,
                     ];
                     
                     $data = new StoreTarifRincianRequest($datadetail);           
-                    $datadetails = app(TarifRincianController::class)->store($data);
+                    $datadetails = app(TarifRincianController::class)->update($data);
                     if ($datadetails['error']) {
                         return response($datadetails, 422);
                     } else {
@@ -221,8 +222,9 @@ class TarifController extends Controller
 
 
                     $detaillog[] = $datadetails['detail']->toArray();
+                    // $detaillog[] = $data->all();
                 }
-
+                // return response($detaillog,422);
                 $datalogtrail = [
                     'namatabel' => strtoupper($tabeldetail),
                     'postingdari' => 'ENTRY UPAH SUPIR RINCIAN',

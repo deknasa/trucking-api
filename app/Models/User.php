@@ -255,4 +255,24 @@ class User extends Authenticatable
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
+
+    public function roles()
+    {
+        return $this->belongsToMany(Role::class, 'userrole')->withTimestamps();
+    }
+
+    public function acls()
+    {
+        return $this->belongsToMany(Aco::class, 'useracl')
+        ->withTimestamps()
+        ->select(
+            'acos.id',
+            'acos.class',
+            'acos.method',
+            'acos.nama',
+            'acos.modifiedby',
+            'useracl.created_at',
+            'useracl.updated_at'
+        );
+    }
 }

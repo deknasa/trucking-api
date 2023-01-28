@@ -47,30 +47,31 @@ class Stok extends MyModel
             'merk.keterangan as merk',
             'stok.created_at',
             'stok.updated_at',
-            )
-            ->leftJoin('jenistrado','stok.jenistrado_id', 'jenistrado.id')
-            ->leftJoin('kelompok','stok.kelompok_id', 'kelompok.id')
-            ->leftJoin('subkelompok','stok.subkelompok_id', 'subkelompok.id')
-            ->leftJoin('kategori','stok.kategori_id', 'kategori.id')
+        )
+            ->leftJoin('jenistrado', 'stok.jenistrado_id', 'jenistrado.id')
+            ->leftJoin('kelompok', 'stok.kelompok_id', 'kelompok.id')
+            ->leftJoin('subkelompok', 'stok.subkelompok_id', 'subkelompok.id')
+            ->leftJoin('kategori', 'stok.kategori_id', 'kategori.id')
             ->leftJoin('parameter', 'stok.statusaktif', 'parameter.id')
-            ->leftJoin('merk','stok.merk_id', 'merk.id');
+            ->leftJoin('merk', 'stok.merk_id', 'merk.id');
 
-            if ($aktif == 'AKTIF') {
-                $statusaktif = Parameter::from(
-                    DB::raw("parameter with (readuncommitted)")
-                )
-                    ->where('grp', '=', 'STATUS AKTIF')
-                    ->where('text', '=', 'AKTIF')
-                    ->first();
-    
-                $query->where('stok.statusaktif', '=', $statusaktif->id);
-            }
-            
+
+
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
         $this->sort($query);
         $this->filter($query);
+        if ($aktif == 'AKTIF') {
+            $statusaktif = Parameter::from(
+                DB::raw("parameter with (readuncommitted)")
+            )
+                ->where('grp', '=', 'STATUS AKTIF')
+                ->where('text', '=', 'AKTIF')
+                ->first();
+
+            $query->where('stok.statusaktif', '=', $statusaktif->id);
+        }
         $this->paginate($query);
 
         $data = $query->get();
@@ -80,30 +81,31 @@ class Stok extends MyModel
 
     public function default()
     {
-        
+
         $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdefault, function ($table) {
             $table->unsignedBigInteger('statusaktif')->default(0);
         });
 
-        $statusaktif=Parameter::from (
+        $statusaktif = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
         )
-        ->select (
-            'id'
-        )
-        ->where('grp','=','STATUS AKTIF')
-        ->where('subgrp','=','STATUS AKTIF')
-        ->where('default','=','YA')
-        ->first();
+            ->select(
+                'id'
+            )
+            ->where('grp', '=', 'STATUS AKTIF')
+            ->where('subgrp', '=', 'STATUS AKTIF')
+            ->where('default', '=', 'YA')
+            ->first();
 
         DB::table($tempdefault)->insert(["statusaktif" => $statusaktif->id]);
 
-        $query=DB::table($tempdefault)->from(
-            DB::raw($tempdefault )
+        $query = DB::table($tempdefault)->from(
+            DB::raw($tempdefault)
         )
             ->select(
-                'statusaktif');
+                'statusaktif'
+            );
 
         $data = $query->first();
         // dd($data);
@@ -132,13 +134,13 @@ class Stok extends MyModel
             'kategori.keterangan as kategori',
             'merk.keterangan as merk',
         )
-        ->leftJoin('jenistrado','stok.jenistrado_id', 'jenistrado.id')
-        ->leftJoin('kelompok','stok.kelompok_id', 'kelompok.id')
-        ->leftJoin('subkelompok','stok.subkelompok_id', 'subkelompok.id')
-        ->leftJoin('kategori','stok.kategori_id', 'kategori.id')
-        ->leftJoin('merk','stok.merk_id', 'merk.id')
-        ->where('stok.id',$id)
-        ->first();
+            ->leftJoin('jenistrado', 'stok.jenistrado_id', 'jenistrado.id')
+            ->leftJoin('kelompok', 'stok.kelompok_id', 'kelompok.id')
+            ->leftJoin('subkelompok', 'stok.subkelompok_id', 'subkelompok.id')
+            ->leftJoin('kategori', 'stok.kategori_id', 'kategori.id')
+            ->leftJoin('merk', 'stok.merk_id', 'merk.id')
+            ->where('stok.id', $id)
+            ->first();
 
         return $data;
     }
@@ -153,10 +155,10 @@ class Stok extends MyModel
             $table->unsignedBigInteger('subkelompok_id')->default('0');
             $table->unsignedBigInteger('kategori_id')->default('0');
             $table->unsignedBigInteger('merk_id')->default('0');
-            $table->string('namastok',200)->default('');
+            $table->string('namastok', 200)->default('');
             $table->integer('statusaktif')->length(11)->default('0');
-            $table->double('qtymin',15,2)->default('0');
-            $table->double('qtymax',15,2)->default('0');
+            $table->double('qtymin', 15, 2)->default('0');
+            $table->double('qtymax', 15, 2)->default('0');
             $table->longText('keterangan')->default('');
             $table->longText('gambar')->default('');
             $table->longText('namaterpusat')->default('');
@@ -207,7 +209,7 @@ class Stok extends MyModel
             'created_at',
             'updated_at'
         ], $models);
-        
+
         return  $temp;
     }
 
@@ -233,7 +235,7 @@ class Stok extends MyModel
                         } else if ($filters['field'] == 'merk') {
                             $query = $query->where('merk.keterangan', '=', "$filters[data]");
                         } else {
-                            $query = $query->where($this->table . '.' .$filters['field'], 'LIKE', "%$filters[data]%");
+                            $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
                     }
 
@@ -242,6 +244,10 @@ class Stok extends MyModel
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'jenistrado') {
                             $query = $query->orWhere('jenistrado.keterangan', '=', "$filters[data]");
+                        } elseif ($filters['field'] == 'id') {
+                            $query = $query->orWhereRaw("(stok.id like '%$filters[data]%'");
+                        } elseif ($filters['field'] == 'updated_at') {
+                            $query = $query->orWhereRaw("format(stok.updated_at,'dd-MM-yyyy HH:mm:ss') like '%$filters[data]%')");
                         } else if ($filters['field'] == 'kelompok') {
                             $query = $query->orWhere('kelompok.keterangan', '=', "$filters[data]");
                         } else if ($filters['field'] == 'subkelompok') {
@@ -251,7 +257,7 @@ class Stok extends MyModel
                         } else if ($filters['field'] == 'merk') {
                             $query = $query->orWhere('merk.keterangan', '=', "$filters[data]");
                         } else {
-                            $query = $query->orWhere($this->table . '.' .$filters['field'], 'LIKE', "%$filters[data]%");
+                            $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
                     }
 
@@ -272,5 +278,4 @@ class Stok extends MyModel
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
-
 }
