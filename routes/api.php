@@ -102,6 +102,7 @@ use App\Http\Controllers\Api\PenerimaanDetailController;
 use App\Http\Controllers\Api\PengeluaranHeaderController;
 use App\Http\Controllers\Api\PengeluaranDetailController;
 use App\Http\Controllers\Api\PenerimaanTruckingHeaderController;
+use App\Http\Controllers\Api\MandorAbsensiSupirController;
 use App\Http\Controllers\Api\PenerimaanTruckingDetailController;
 use App\Http\Controllers\Api\PenerimaanStokController;
 use App\Http\Controllers\Api\PenerimaanStokHeaderController;
@@ -818,6 +819,8 @@ Route::resource('orderantrucking', OrderanTruckingController::class);
 Route::get('prosesabsensisupir/combo', [ProsesAbsensiSupirController::class, 'combo']);
 Route::get('prosesabsensisupir/field_length', [ProsesAbsensiSupirController::class, 'fieldLength']);
 Route::resource('prosesabsensisupir', ProsesAbsensiSupirController::class);
+
+Route::resource('mandorabsensisupir', MandorAbsensiSupirController::class);
 
 Route::get('mekanik/combo', [MekanikController::class, 'combo']);
 Route::get('mekanik/field_length', [MekanikController::class, 'fieldLength']);

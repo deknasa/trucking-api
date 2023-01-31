@@ -4,8 +4,116 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
-class MandorAbsensiSupir extends Model
+class MandorAbsensiSupir extends MyModel
 {
     use HasFactory;
+
+    protected $table = 'absensisupirdetail';
+
+
+   
+
+    public function get()
+    {
+        $this->setRequestParameters();
+        $trado = DB::table('trado')
+        ->select(
+            'trado.id as id',
+            'trado.keterangan as trado_id',
+            DB::raw('null as supir_id'),
+            DB::raw('null as absen_id'),
+            DB::raw('null as keterangan'),
+            DB::raw('null as jam'),
+            DB::raw('null as tglbukti'))
+        ->whereNotExists(function ($query) {
+            $query->select(DB::raw(1))
+                  ->from('absensisupirdetail')
+                  ->whereRaw('trado.id = absensisupirdetail.trado_id')
+                  ->where('absensisupirheader.tglbukti',date('Y-m-d',strtotime('now')))
+                  ->leftJoin('absensisupirheader','absensisupirdetail.absensi_id','absensisupirheader.id');
+
+        });
+        $absensisupirdetail = DB::table('absensisupirdetail')
+        ->select(
+            'trado.id as id',
+            'trado.keterangan as trado_id',
+            'supir.namasupir as supir_id',
+            'absentrado.keterangan as absen_id',
+            'absensisupirdetail.keterangan',
+            'absensisupirdetail.jam',
+            'absensisupirheader.tglbukti')
+        ->where('absensisupirheader.tglbukti',date('Y-m-d',strtotime('now')))
+        ->leftJoin(DB::raw("absensisupirheader with (readuncommitted)"),'absensisupirdetail.absensi_id','absensisupirheader.id')
+        ->leftJoin(DB::raw("trado with (readuncommitted)"),'absensisupirdetail.trado_id','trado.id')
+        ->leftJoin(DB::raw("absentrado with (readuncommitted)"),'absensisupirdetail.absen_id','absentrado.id')
+        ->leftJoin(DB::raw("supir with (readuncommitted)"),'absensisupirdetail.supir_id','supir.id');
+        $query = $absensisupirdetail->union($trado);
+        
+        $this->totalRows = $query->count();
+        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+        // $this->sort($query);
+        // $this->paginate($query);
+        
+        $data = $query->get();
+
+        return $data;
+
+
+    }
+
+    public function getAll($id)
+    {
+        return $id;
+    }
+    public function isAbsen($id)
+    {
+        $absensisupirdetail = DB::table('absensisupirdetail')
+        ->select(
+            'absensisupirdetail.id as id',
+            'trado.id as trado_id',
+            'trado.keterangan as trado',
+            'supir.id as supir_id',
+            'supir.namasupir as supir',
+            'absentrado.id as absen_id',
+            'absentrado.keterangan as absen',
+            'absensisupirdetail.keterangan',
+            'absensisupirdetail.jam',
+            'absensisupirheader.tglbukti')
+        ->where('absensisupirdetail.trado_id',$id)
+        ->where('absensisupirheader.tglbukti',date('Y-m-d',strtotime('now')))
+        ->leftJoin(DB::raw("absensisupirheader with (readuncommitted)"),'absensisupirdetail.absensi_id','absensisupirheader.id')
+        ->leftJoin(DB::raw("trado with (readuncommitted)"),'absensisupirdetail.trado_id','trado.id')
+        ->leftJoin(DB::raw("absentrado with (readuncommitted)"),'absensisupirdetail.absen_id','absentrado.id')
+        ->leftJoin(DB::raw("supir with (readuncommitted)"),'absensisupirdetail.supir_id','supir.id');
+        return $absensisupirdetail->first();
+    }
+
+    public function getTrado($id)
+    {
+        $absensisupirdetail = DB::table('trado')
+        ->select(
+            DB::raw('null as id'),
+            'trado.id as trado_id',
+            'trado.keterangan as trado',
+            DB::raw('null as supir_id'),
+            DB::raw('null as absen_id'),
+            DB::raw('null as keterangan'),
+            DB::raw('null as jam'),
+            DB::raw('null as tglbukti')
+        )->where('trado.id',$id);
+        return $absensisupirdetail->first();
+    }
+    
+
+    public function sort($query)
+    {
+        return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+    }
+    public function paginate($query)
+    {
+        return $query->skip($this->params['offset'])->take($this->params['limit']);
+    }
+        
 }

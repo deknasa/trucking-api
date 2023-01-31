@@ -13,7 +13,7 @@ class StoreMandorAbsensiSupirRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +24,8 @@ class StoreMandorAbsensiSupirRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'trado' => 'required',
+            'trado_id' => 'required',
         ];
     }
 }
