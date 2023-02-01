@@ -193,6 +193,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::post('absensisupirheader/{id}/cekvalidasi', [AbsensiSupirHeaderController::class, 'cekvalidasi'])->name('absensisupirheader.cekvalidasi');
     Route::apiResource('absensisupirheader', AbsensiSupirHeaderController::class)->parameter('absensisupirheader', 'absensiSupirHeader');
 
+    Route::get('absensisupirdetail/get', [AbsensiSupirDetailController::class,'getDetailAbsensi']);
     Route::resource('absensisupirdetail', AbsensiSupirDetailController::class);
 
     Route::get('approvaltransaksiheader/combo', [ApprovalTransaksiHeaderController::class, 'combo']);
@@ -825,6 +826,7 @@ Route::get('prosesabsensisupir/field_length', [ProsesAbsensiSupirController::cla
 Route::resource('prosesabsensisupir', ProsesAbsensiSupirController::class);
 
 Route::resource('mandorabsensisupir', MandorAbsensiSupirController::class);
+Route::get('mandortrip/history', [MandorTripController::class,'getHistoryList']);
 Route::resource('mandortrip', MandorTripController::class);
 
 Route::get('mekanik/combo', [MekanikController::class, 'combo']);

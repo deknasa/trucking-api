@@ -5,6 +5,8 @@ use App\Http\Controllers\Controller;
 
 use App\Models\MandorTrip;
 use App\Models\SuratPengantar;
+use App\Models\UpahSupir;
+use App\Models\UpahSupirRincian;
 use App\Http\Requests\StoreMandorTripRequest;
 use App\Http\Requests\UpdateMandorTripRequest;
 use Illuminate\Support\Facades\DB;
@@ -23,16 +25,7 @@ class MandorTripController extends Controller
         //
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
-
+    
     /**
      * @ClassName 
      */
@@ -53,7 +46,9 @@ class MandorTripController extends Controller
             $content['table'] = 'suratpengantar';
             $content['tgl'] = $tglbukti;
     
-    
+            $upahsupir = UpahSupir::where('kotadari_id', $request->dari_id)->where('kotasampai_id', $request->sampai_id)->first();
+            $upahsupirRincian = UpahSupirRincian::where('upahsupir_id', $upahsupir->id)->where('container_id', $request->container_id)->where('statuscontainer_id', $request->statuscontainer_id)->first();
+
             $suratPengantar = new SuratPengantar();
     
             $suratPengantar->tglbukti = $tglbukti;
@@ -64,14 +59,17 @@ class MandorTripController extends Controller
             $suratPengantar->gudang = $request->gudang;
             
             $suratPengantar->jenisorder_id = $request->jenisorder_id;
-            // $suratPengantar->lokasibongkarmuat = $request->lokasibongkarmuat;
             $suratPengantar->pelanggan_id = $request->pelanggan_id;
             $suratPengantar->sampai_id = $request->sampai_id;
             $suratPengantar->statuscontainer_id = $request->statuscontainer_id;
             $suratPengantar->statusgudangsama = $request->statusgudangsama;
             $suratPengantar->statuslongtrip = $request->statuslongtrip;
-            // $suratPengantar->tarifrincian_id = $request->tarifrincian_id;
             $suratPengantar->trado_id = $request->trado_id;
+            $suratPengantar->upah_id = $upahsupir->id;
+            $suratPengantar->supir_id = $request->supir_id;
+            $suratPengantar->gajisupir = $upahsupirRincian->nominalsupir;
+            $suratPengantar->gajikenek = $upahsupirRincian->nominalkenek;
+
             $suratPengantar->modifiedby = auth('api')->user()->name;
             $suratPengantar->statusformat = $format->id;
     
@@ -92,15 +90,19 @@ class MandorTripController extends Controller
        
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\MandorTrip  $mandorTrip
-     * @return \Illuminate\Http\Response
+   /**
+     * @ClassName 
      */
-    public function show(MandorTrip $mandorTrip)
+    public function getHistoryList(Request $request)//list history 
     {
-        //
+        $suratPengantar = new SuratPengantar();
+        return response([
+            'data' => $suratPengantar->getHistory(),
+            'attributes' => [
+                'totalRows' => $suratPengantar->totalRows,
+                'totalPages' => $suratPengantar->totalPages
+            ]
+        ]);
     }
 
     /**

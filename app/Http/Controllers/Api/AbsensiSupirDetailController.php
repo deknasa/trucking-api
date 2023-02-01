@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreAbsensiSupirDetailRequest;
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Models\AbsensiSupirDetail;
+use App\Models\AbsensiSupirHeader;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -77,6 +78,9 @@ class AbsensiSupirDetailController extends Controller
                     'absentrado.kodeabsen as status',
                     'detail.keterangan as keterangan_detail',
                     'detail.jam',
+                    'detail.id',
+                    'detail.trado_id',
+                    'detail.supir_id',
                     'detail.uangjalan',
                     'detail.absensi_id'
                 )
@@ -137,6 +141,23 @@ class AbsensiSupirDetailController extends Controller
             DB::rollBack();
             return response($th->getMessage());
         }
+    }
+
+
+    public function getDetailAbsensi()
+    {
+        $tglbukti= date('Y-m-d', strtotime('now'));
+        $absensiSupirHeader = AbsensiSupirHeader::where('tglbukti',$tglbukti)->first();
+        if (!$absensiSupirHeader) {
+            return response([
+                'data' => [],
+                'total' => 0,
+                "records" => 0,
+            ]);
+        }
+        $request = new Request(['absensi_id' => $absensiSupirHeader->id]);
+        
+        return $this->index($request);
     }
 
     public function update(Request $request, AbsensiSupirDetail $absensiSupirDetail)
