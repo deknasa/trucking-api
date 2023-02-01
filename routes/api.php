@@ -150,6 +150,7 @@ use App\Http\Controllers\Api\ProsesUangJalanSupirHeaderController;
 use App\Http\Controllers\Api\ReportNeracaController;
 use App\Http\Controllers\Api\StokPersediaanController;
 use App\Http\Controllers\Api\TutupBukuController;
+use App\Http\Controllers\OrderanEmklController;
 
 /*
     |--------------------------------------------------------------------------
@@ -188,7 +189,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('absensisupirheader/running_number', [AbsensiSupirHeaderController::class, 'getRunningNumber']);
     Route::get('absensisupirheader/grid', [AbsensiSupirHeaderController::class, 'grid']);
     Route::get('absensisupirheader/field_length', [AbsensiSupirHeaderController::class, 'fieldLength']);
-    Route::get('absensisupirheader/default', [AbsensiSupirHeaderController::class, 'default']);    
+    Route::get('absensisupirheader/default', [AbsensiSupirHeaderController::class, 'default']);
     Route::post('absensisupirheader/{id}/cekvalidasi', [AbsensiSupirHeaderController::class, 'cekvalidasi'])->name('absensisupirheader.cekvalidasi');
     Route::apiResource('absensisupirheader', AbsensiSupirHeaderController::class)->parameter('absensisupirheader', 'absensiSupirHeader');
 
@@ -314,17 +315,17 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('acos/field_length', [AcosController::class, 'fieldLength']);
     Route::resource('acos', AcosController::class);
 
-        Route::get('user/field_length', [UserController::class, 'fieldLength']);
-        Route::get('user/export', [UserController::class, 'export'])->name('user.export');
-        Route::get('user/combostatus', [UserController::class, 'combostatus']);
-        Route::get('user/combocabang', [UserController::class, 'combocabang']);
-        Route::get('user/getuserid', [UserController::class, 'getuserid']);
-        Route::get('user/default', [UserController::class, 'default']);
-        Route::get('user/{user}/role', [UserController::class, 'getRoles']);
-        Route::post('user/{user}/role', [UserController::class, 'storeRoles']);
-        Route::get('user/{user}/acl', [UserController::class, 'getAcls']);
-        Route::post('user/{user}/acl', [UserController::class, 'storeAcls']);
-        Route::resource('user', UserController::class);
+    Route::get('user/field_length', [UserController::class, 'fieldLength']);
+    Route::get('user/export', [UserController::class, 'export'])->name('user.export');
+    Route::get('user/combostatus', [UserController::class, 'combostatus']);
+    Route::get('user/combocabang', [UserController::class, 'combocabang']);
+    Route::get('user/getuserid', [UserController::class, 'getuserid']);
+    Route::get('user/default', [UserController::class, 'default']);
+    Route::get('user/{user}/role', [UserController::class, 'getRoles']);
+    Route::post('user/{user}/role', [UserController::class, 'storeRoles']);
+    Route::get('user/{user}/acl', [UserController::class, 'getAcls']);
+    Route::post('user/{user}/acl', [UserController::class, 'storeAcls']);
+    Route::resource('user', UserController::class);
 
     Route::get('menu/field_length', [MenuController::class, 'fieldLength']);
     Route::get('menu/combomenuparent', [MenuController::class, 'combomenuparent']);
@@ -400,7 +401,7 @@ route::middleware(['auth:api'])->group(function () {
 
     Route::get('pelanggan/export', [PelangganController::class, 'export']);
     Route::get('pelanggan/field_length', [PelangganController::class, 'fieldLength']);
-    Route::get('pelanggan/default', [PelangganController::class, 'default']);    
+    Route::get('pelanggan/default', [PelangganController::class, 'default']);
     Route::get('pelanggan/combostatus', [PelangganController::class, 'combostatus']);
 
     Route::resource('pelanggan', PelangganController::class);
@@ -757,6 +758,8 @@ route::middleware(['auth:api'])->group(function () {
     Route::resource('prosesuangjalansupirheader', ProsesUangJalanSupirHeaderController::class);
 
     Route::resource('prosesuangjalansupirdetail', ProsesUangJalanSupirDetailController::class);
+
+    Route::get('/orderanemkl', [OrderanEmklController::class, 'index']);
 });
 
 Route::get('gudang/combo', [GudangController::class, 'combo']);
