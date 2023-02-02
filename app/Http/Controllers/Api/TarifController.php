@@ -373,6 +373,7 @@ class TarifController extends Controller
                     'tujuan' => $sheet->getCell('A' . $row)->getValue(),
                     '20`' => $sheet->getCell('B' . $row)->getValue(),
                     '40`' => $sheet->getCell('C' . $row)->getValue(),
+                    'tglberlaku' => $sheet->getCell('D' . $row)->getValue(),
                     'modifiedby' => auth('api')->user()->name
                 ];
                 $startcount++;
