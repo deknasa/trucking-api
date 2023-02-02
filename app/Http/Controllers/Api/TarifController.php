@@ -349,6 +349,11 @@ class TarifController extends Controller
 
     public function import(Request $request)
     {
+
+
+
+
+
         $request->validate(
             [
                 'fileImport' => 'required|file|mimes:xls,xlsx'
@@ -373,15 +378,17 @@ class TarifController extends Controller
                     'tujuan' => $sheet->getCell('A' . $row)->getValue(),
                     '20`' => $sheet->getCell('B' . $row)->getValue(),
                     '40`' => $sheet->getCell('C' . $row)->getValue(),
-                    'tglberlaku' => $sheet->getCell('D' . $row)->getValue(),
+                    'tglberlaku' => date('Y-m-d',strtotime($sheet->getCell('D' . $row)->getFormattedValue())),
                     'modifiedby' => auth('api')->user()->name
                 ];
                 $startcount++;
             }
 
+            $tarifrincian = new TarifRincian();
+
             return response([
-                "status" => true,
-                "data" => $data
+                'status' => true,
+                'data' => $tarifrincian->updateharga($data),
             ]);
         } catch (\Throwable $th) {
             DB::rollBack();

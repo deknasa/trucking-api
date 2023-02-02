@@ -45,6 +45,34 @@ class TarifRincian extends MyModel
         return $data;
     }
 
+    public function updateharga($data)
+    {
+
+        // $data=json_encode($data);
+        // $data=json_decode($data,true);
+        
+        $tempdata = '##tempdata' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempdata, function ($table) {
+            $table->string('kolomA',2000)->default('');
+            $table->string('kolomB',2000)->default('');
+            $table->string('kolomC', 2000)->default('');
+            $table->string('kolomD', 2000)->default('');
+        });
+
+        $datadetail = $data;
+
+        foreach ($datadetail as $item) {
+            $temp=new $tempdata;
+            $temp->kolomA=$item['tujuan'];
+            $temp->kolomA=$item['20`'];
+            $temp->kolomA=$item['40`'];
+            $temp->kolomA=$item['tglberlaku'];
+            $temp->save();
+        }
+
+dd($data);
+    }
+
     public function listpivot()
     {
 
@@ -54,7 +82,6 @@ class TarifRincian extends MyModel
             $table->unsignedBigInteger('container_id')->default(0);
             $table->string('container', 1000)->default('');
             $table->double('nominal', 15, 2)->default(0);
-
         });
 
         $query = DB::table('container')->from(DB::raw("container with (readuncommitted)"))
@@ -78,7 +105,7 @@ class TarifRincian extends MyModel
 
         $tempdatagroup = '##tempdatagroup' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdatagroup, function ($table) {
-            $table->string('container',100)->default('');
+            $table->string('container', 100)->default('');
         });
 
         $querydatagroup =  DB::table($tempdata)->from(
@@ -116,7 +143,7 @@ class TarifRincian extends MyModel
             $a = $a + 1;
         }
 
-      
+
         $statement = ' select b.tujuan,A.* from (select id,' . $columnid . ' from 
          (
             select A.id,A.container,A.nominal
