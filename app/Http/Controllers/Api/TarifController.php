@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\QueryException;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class TarifController extends Controller
 {
@@ -109,8 +110,8 @@ class TarifController extends Controller
                         'nominal' => $request->nominal[$i],
                         'modifiedby' => auth('api')->user()->name,
                     ];
-                    
-                    $data = new StoreTarifRincianRequest($datadetail);           
+
+                    $data = new StoreTarifRincianRequest($datadetail);
                     $datadetails = app(TarifRincianController::class)->store($data);
                     if ($datadetails['error']) {
                         return response($datadetails, 422);
@@ -207,7 +208,7 @@ class TarifController extends Controller
                 ];
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail=app(LogTrailController::class)->store($validatedLogTrail);
+                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
                 // TarifRincian::where('tarif_id', $tarif->id)->delete();
 
@@ -221,8 +222,8 @@ class TarifController extends Controller
                         'nominal' => $request->nominal[$i],
                         'modifiedby' => auth('api')->user()->name,
                     ];
-                    
-                    $data = new StoreTarifRincianRequest($datadetail);           
+
+                    $data = new StoreTarifRincianRequest($datadetail);
                     $datadetails = app(TarifRincianController::class)->update($data);
                     if ($datadetails['error']) {
                         return response($datadetails, 422);
@@ -344,5 +345,46 @@ class TarifController extends Controller
         return response([
             'data' => $data
         ]);
+    }
+
+    public function import(Request $request)
+    {
+        $request->validate(
+            [
+                'fileImport' => 'required|file|mimes:xls,xlsx'
+            ],
+            [
+                'fileImport.mimes' => 'file import ' . app(ErrorController::class)->geterror('FXLS')->keterangan,
+            ]
+        );
+
+        $the_file = $request->file('fileImport');
+        try {
+            $spreadsheet = IOFactory::load($the_file->getRealPath());
+            $sheet        = $spreadsheet->getActiveSheet();
+            $row_limit    = $sheet->getHighestDataRow();
+            $column_limit = $sheet->getHighestDataColumn();
+            $row_range    = range(2, $row_limit);
+            $column_range = range('A', $column_limit);
+            $startcount = 2;
+            $data = array();
+            foreach ($row_range as $row) {
+                $data[] = [
+                    'tujuan' => $sheet->getCell('A' . $row)->getValue(),
+                    '20`' => $sheet->getCell('B' . $row)->getValue(),
+                    '40`' => $sheet->getCell('C' . $row)->getValue(),
+                    'modifiedby' => auth('api')->user()->name
+                ];
+                $startcount++;
+            }
+
+            return response([
+                "status" => true,
+                "data" => $data
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
     }
 }

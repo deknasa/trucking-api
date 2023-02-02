@@ -47,5 +47,6 @@ class ErrorSeeder extends Seeder
         Error::create(['kodeerror' => 'TSF', 'keterangan' => 'ISIAN TIDAK SESUAI FORMAT', 'modifiedby' => 'ADMIN',]);
         Error::create(['kodeerror' => 'NBPT', 'keterangan' => 'NOMINAL BAYAR TIDAK BOLEH MELEBIHI NOMINAL PINJAMAN', 'modifiedby' => 'ADMIN',]);
         Error::create(['kodeerror' => 'NTC', 'keterangan' => 'NILAI TIDAK COCOK', 'modifiedby' => 'ADMIN',]);
+        Error::create(['kodeerror' => 'FXLS', 'keterangan' => 'HARUS BERTIPE XLS ATAU XLSX', 'modifiedby' => 'ADMIN',]);
     }
 }
