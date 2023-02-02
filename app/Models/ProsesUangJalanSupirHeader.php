@@ -61,6 +61,50 @@ class ProsesUangJalanSupirHeader extends MyModel
         return $data;
     }
 
+    public function getPinjaman($supirId)
+    {
+        $pjt = PengeluaranTrucking::from(DB::raw("pengeluarantrucking with (readuncommitted)"))->where('kodepengeluaran', 'PJT')->first();
+        $query = PengeluaranTruckingDetail::from(DB::raw("pengeluarantruckingdetail with (readuncommitted)"))
+            ->select(
+                DB::raw("
+                    pengeluarantruckingheader.id, pengeluarantruckingdetail.nobukti, pengeluarantruckingheader.tglbukti, supir.namasupir, pengeluarantruckingdetail.nominal as jlhpinjaman,
+                    (SELECT (penerimaantruckingdetail.nominal)
+                    FROM penerimaantruckingdetail 
+                    WHERE penerimaantruckingdetail.pengeluarantruckingheader_nobukti= pengeluarantruckingheader.nobukti) AS totalbayar,
+                    (SELECT (pengeluarantruckingdetail.nominal - coalesce(SUM(penerimaantruckingdetail.nominal),0))
+                        FROM penerimaantruckingdetail 
+                        WHERE penerimaantruckingdetail.pengeluarantruckingheader_nobukti= pengeluarantruckingheader.nobukti) AS sisa 
+                ")
+            )
+            ->leftJoin(DB::raw("pengeluarantruckingheader with (readuncommitted)"), 'pengeluarantruckingheader.nobukti', 'pengeluarantruckingdetail.nobukti')
+            ->leftJoin(DB::raw("supir with (readuncommitted)"), 'pengeluarantruckingdetail.supir_id', 'supir.id')
+            ->where('pengeluarantruckingdetail.supir_id', $supirId)
+            ->where('pengeluarantruckingheader.pengeluarantrucking_id', $pjt->id)
+            ->get();
+
+        return $query;
+
+    }
+    
+    public function findAll($id)
+    {
+        $query = ProsesUangJalanSupirHeader::from(DB::raw("prosesuangjalansupirheader with (readuncommitted)"))    
+            ->select(
+                'prosesuangjalansupirheader.id',
+                'prosesuangjalansupirheader.nobukti',
+                'prosesuangjalansupirheader.tglbukti',
+                'prosesuangjalansupirheader.absensisupir_nobukti as absensisupir',
+                'prosesuangjalansupirheader.supir_id',
+                'supir.namasupir as supir',
+                'prosesuangjalansupirheader.trado_id',
+                'trado.keterangan as trado'
+            )
+            ->leftJoin(DB::raw("supir with (readuncommitted)"), 'prosesuangjalansupirheader.supir_id', 'supir.id')
+            ->leftJoin(DB::raw("trado with (readuncommitted)"), 'prosesuangjalansupirheader.trado_id', 'trado.id')
+            ->where('prosesuangjalansupirheader.id', $id);
+
+            return $query->first();
+    }
     public function selectColumns($query)
     {
         return $query->select(

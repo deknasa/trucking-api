@@ -253,6 +253,7 @@ class ParameterSeeder extends Seeder
         parameter::create(['grp' => 'JURNAL PENGELUARAN PROSES UANG JALAN', 'subgrp' => 'DEBET', 'kelompok' => '', 'text' => 'DEBET', 'memo' => '{"MEMO":"JURNAL PENGELUARAN PROSES UANG JALAN","SINGKATAN":"JPPUJ","WARNA":"#28A745","JURNAL":"03.02.02.02"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'JURNAL PENERIMAAN PROSES UANG JALAN', 'subgrp' => 'KREDIT', 'kelompok' => '', 'text' => 'KREDIT', 'memo' => '{"MEMO":"JURNAL PENERIMAAN PROSES UANG JALAN","SINGKATAN":"JPPUJ","WARNA":"#28A745","JURNAL":"03.02.02.02"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'JURNAL PENERIMAAN DEPOSITO', 'subgrp' => 'KREDIT', 'kelompok' => '', 'text' => 'KREDIT', 'memo' => '{"MEMO":"JURNAL PENERIMAAN DEPOSITO","SINGKATAN":"JPD","WARNA":"#28A745","JURNAL":"01.04.02.01"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'JURNAL PENERIMAAN PINJAMAN', 'subgrp' => 'KREDIT', 'kelompok' => '', 'text' => 'KREDIT', 'memo' => '{"MEMO":"JURNAL PENERIMAAN PINJAMAN","SINGKATAN":"JPJ","WARNA":"#28A745","JURNAL":"01.05.02.02"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         
     }
 }

@@ -65,7 +65,7 @@ class PengeluaranTruckingHeader extends MyModel
 
     public function findAll($id)
     {
-        $query = DB::table('pengeluarantruckingheader')->from(DB::raw("pengeluarantruckingheader with (readuncommitted)"))
+        $query = PengeluaranTruckingHeader::from(DB::raw("pengeluarantruckingheader with (readuncommitted)"))
         ->select(
             'pengeluarantruckingheader.id',
             'pengeluarantruckingheader.nobukti',

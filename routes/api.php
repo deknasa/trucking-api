@@ -511,7 +511,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('hutangbayarheader/{id}/{field}/getHutang', [HutangBayarHeaderController::class, 'getHutang'])->name('hutangbayarheader.getHutang');
     Route::get('hutangbayarheader/comboapproval', [HutangBayarHeaderController::class, 'comboapproval']);
     Route::post('hutangbayarheader/{id}/cekapproval', [HutangBayarHeaderController::class, 'cekapproval'])->name('hutangbayarheader.cekapproval');
-    Route::get('hutangbayarheader/{id}/{fieldid}/{field}/getPembayaran', [HutangBayarHeaderController::class, 'getPembayaran']);
+    Route::get('hutangbayarheader/{id}/{supplierId}/getPembayaran', [HutangBayarHeaderController::class, 'getPembayaran']);
     Route::get('hutangbayarheader/grid', [HutangBayarHeaderController::class, 'grid']);
     Route::resource('hutangbayarheader', HutangBayarHeaderController::class);
     Route::resource('hutangbayardetail', HutangBayarDetailController::class);
@@ -755,7 +755,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('prosesuangjalansupirheader/combo', [ProsesUangJalanSupirHeaderController::class, 'combo']);
     Route::get('prosesuangjalansupirheader/grid', [ProsesUangJalanSupirHeaderController::class, 'grid']);
     Route::get('prosesuangjalansupirheader/{id}/tarikPelunasan', [ProsesUangJalanSupirHeaderController::class, 'tarikPelunasan']);
-    Route::get('prosesuangjalansupirheader/{id}/getPelunasan', [ProsesUangJalanSupirHeaderController::class, 'getPelunasan']);
+    Route::get('prosesuangjalansupirheader/{supirid}/getPinjaman', [ProsesUangJalanSupirHeaderController::class, 'getPinjaman']);
     Route::resource('prosesuangjalansupirheader', ProsesUangJalanSupirHeaderController::class);
 
     Route::resource('prosesuangjalansupirdetail', ProsesUangJalanSupirDetailController::class);

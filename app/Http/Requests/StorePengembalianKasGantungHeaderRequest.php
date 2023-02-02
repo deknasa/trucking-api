@@ -24,8 +24,8 @@ class StorePengembalianKasGantungHeaderRequest extends FormRequest
     public function rules()
     {
         return [
-            "pelanggan_id" => "required",
-            "pelanggan" => "required",
+            // "pelanggan_id" => "required",
+            // "pelanggan" => "required",
             "bank_id" => "required",
             "bank" => "required",
             "keterangan" => "required",
