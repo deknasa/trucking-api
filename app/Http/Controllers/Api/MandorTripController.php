@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\MandorTrip;
 use App\Models\SuratPengantar;
 use App\Models\UpahSupir;
+use App\Models\Tarifrincian;
 use App\Models\UpahSupirRincian;
 use App\Http\Requests\StoreMandorTripRequest;
 use App\Http\Requests\UpdateMandorTripRequest;
@@ -98,6 +99,17 @@ class MandorTripController extends Controller
         $suratPengantar = new SuratPengantar();
         return response([
             'data' => $suratPengantar->getHistory(),
+            'attributes' => [
+                'totalRows' => $suratPengantar->totalRows,
+                'totalPages' => $suratPengantar->totalPages
+            ]
+        ]);
+    }
+    public function getListTrip(Request $request)//list history 
+    {
+        $suratPengantar = new SuratPengantar();
+        return response([
+            'data' => $suratPengantar->getListTrip(),
             'attributes' => [
                 'totalRows' => $suratPengantar->totalRows,
                 'totalPages' => $suratPengantar->totalPages

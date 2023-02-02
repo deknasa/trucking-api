@@ -322,7 +322,7 @@ class SuratPengantar extends MyModel
 
     public function getHistory()
     {
-
+        $this->setRequestParameters();
         $query = DB::table($this->table)->select(
             'suratpengantar.id',
             'suratpengantar.jobtrucking',
@@ -393,6 +393,78 @@ class SuratPengantar extends MyModel
         $data = $query->get();
 
         return $data;
+    }
+    public function getListTrip()
+    {
+        $this->setRequestParameters();
+        $query = DB::table($this->table)->select(
+            'suratpengantar.id',
+            'suratpengantar.jobtrucking',
+            'suratpengantar.nobukti',
+            'suratpengantar.tglbukti',
+            'suratpengantar.nosp',
+            'suratpengantar.tglsp',
+            'suratpengantar.nojob',
+            'pelanggan.namapelanggan as pelanggan_id',
+            'suratpengantar.keterangan',
+            'kotadari.keterangan as dari_id',
+            'kotasampai.keterangan as sampai_id',
+            'suratpengantar.gajisupir',
+            'suratpengantar.jarak',
+            'agen.namaagen as agen_id',
+            'jenisorder.keterangan as jenisorder_id',
+            'container.keterangan as container_id',
+            'suratpengantar.nocont',
+            'suratpengantar.noseal',
+            'statuscontainer.keterangan as statuscontainer_id',
+            'suratpengantar.gudang',
+            'trado.keterangan as trado_id',
+            'supir.namasupir as supir_id',
+            'gandengan.keterangan as gandengan_id',
+            'statuslongtrip.memo as statuslongtrip',
+            'statusperalihan.memo as statusperalihan',
+            'statusritasiomset.memo as statusritasiomset',
+            'tarif.tujuan as tarif_id',
+            'mandortrado.namamandor as mandortrado_id',
+            'mandorsupir.namamandor as mandorsupir_id',
+            'statusgudangsama.memo as statusgudangsama',
+            'statusbatalmuat.memo as statusbatalmuat',
+            'suratpengantar.modifiedby',
+            'suratpengantar.created_at',
+            'suratpengantar.updated_at'
+
+        )
+        
+        ->leftJoin('pelanggan', 'suratpengantar.pelanggan_id', 'pelanggan.id')
+        ->leftJoin('kota as kotadari', 'kotadari.id', '=', 'suratpengantar.dari_id')
+            ->leftJoin('kota as kotasampai', 'kotasampai.id', '=', 'suratpengantar.sampai_id')
+            ->leftJoin('agen', 'suratpengantar.agen_id', 'agen.id')
+            ->leftJoin('jenisorder', 'suratpengantar.jenisorder_id','jenisorder.id')
+            ->leftJoin('container', 'suratpengantar.container_id','container.id')
+            ->leftJoin('statuscontainer', 'suratpengantar.statuscontainer_id','statuscontainer.id')
+            ->leftJoin('trado', 'suratpengantar.trado_id', 'trado.id')
+            ->leftJoin('supir', 'suratpengantar.supir_id', 'supir.id')
+            ->leftJoin('gandengan', 'suratpengantar.gandengan_id', 'gandengan.id')
+            ->leftJoin('parameter as statuslongtrip','suratpengantar.statuslongtrip','statuslongtrip.id')
+            ->leftJoin('parameter as statusperalihan','suratpengantar.statusperalihan','statusperalihan.id')
+            ->leftJoin('parameter as statusritasiomset','suratpengantar.statusritasiomset','statusritasiomset.id')
+            ->leftJoin('parameter as statusgudangsama','suratpengantar.statusgudangsama','statusgudangsama.id')
+            ->leftJoin('parameter as statusbatalmuat','suratpengantar.statusbatalmuat','statusbatalmuat.id')
+            ->leftJoin('mandor as mandortrado', 'suratpengantar.mandortrado_id','mandortrado.id')
+            ->leftJoin('mandor as mandorsupir', 'suratpengantar.mandorsupir_id','mandorsupir.id')
+            ->leftJoin('tarif', 'suratpengantar.tarif_id', 'tarif.id')
+            ->where('suratpengantar.tglbukti', date('Y-m-d',strtotime('now')) );
+
+            $this->totalRows = $query->count();
+            $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+    
+            $this->sort($query);
+            $this->filter($query);
+            $this->paginate($query);
+    
+            $data = $query->get();
+    
+            return $data;
     }
 
 
