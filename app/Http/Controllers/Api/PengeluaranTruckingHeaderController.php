@@ -95,7 +95,7 @@ class PengeluaranTruckingHeaderController extends Controller
             if ($tanpaprosesnobukti == 0) {
                 $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
                 $pengeluarantruckingheader->nobukti = $nobukti;
-            }else{
+            } else {
                 $pengeluarantruckingheader->nobukti = $request->nobukti;
             }
             $pengeluarantruckingheader->save();
@@ -126,9 +126,9 @@ class PengeluaranTruckingHeaderController extends Controller
                 $datadetail = [
                     'pengeluarantruckingheader_id' => $pengeluarantruckingheader->id,
                     'nobukti' => $pengeluarantruckingheader->nobukti,
-                    'supir_id' => ($counter != '') ? $counter[$i]['supir_id']  :  $request->supir_id[$i],
-                    'penerimaantruckingheader_nobukti' => ($counter != '') ? '' :  $request->penerimaantruckingheader_nobukti[$i] ?? '',
-                    'nominal' => ($counter != '') ? $counter[$i]['nominal']  :  $request->nominal[$i],
+                    'supir_id' => ($request->datadetail != '') ? $request->datadetail[$i]['supir_id']  :  $request->supir_id[$i],
+                    'penerimaantruckingheader_nobukti' => ($request->datadetail != '') ? '' :  $request->penerimaantruckingheader_nobukti[$i] ?? '',
+                    'nominal' => ($request->datadetail != '') ? $request->datadetail[$i]['nominal']  :  $request->nominal[$i],
                     'modifiedby' => $pengeluarantruckingheader->modifiedby,
                 ];
 
@@ -212,96 +212,103 @@ class PengeluaranTruckingHeaderController extends Controller
 
         try {
 
-            $idpengeluaran = $request->pengeluarantrucking_id;
-            $fetchFormat =  DB::table('pengeluarantrucking')
-                ->where('id', $idpengeluaran)
-                ->first();
-            $statusformat = $fetchFormat->statusformat;
+            $isUpdate = $request->isUpdate ?? 0;
+            if ($isUpdate == 0) {
 
-            $fetchGrp = Parameter::where('id', $statusformat)->first();
+                $idpengeluaran = $request->pengeluarantrucking_id;
+                $fetchFormat =  DB::table('pengeluarantrucking')
+                    ->where('id', $idpengeluaran)
+                    ->first();
+                $statusformat = $fetchFormat->statusformat;
 
-            $format = DB::table('parameter')
-                ->where('grp', $fetchGrp->grp)
-                ->where('subgrp', $fetchGrp->subgrp)
-                ->first();
+                $fetchGrp = Parameter::where('id', $statusformat)->first();
 
-            $content = new Request();
-            $content['group'] = $fetchGrp->grp;
-            $content['subgroup'] = $fetchGrp->subgrp;
-            $content['table'] = 'pengeluarantruckingheader';
-            $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
+                $format = DB::table('parameter')
+                    ->where('grp', $fetchGrp->grp)
+                    ->where('subgrp', $fetchGrp->subgrp)
+                    ->first();
 
-
-            $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
-            $pengeluarantruckingheader->nobukti = $nobukti;
-            $pengeluarantruckingheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
-            $pengeluarantruckingheader->pengeluarantrucking_id = $idpengeluaran;
-            $pengeluarantruckingheader->bank_id = $request->bank_id;
-            $pengeluarantruckingheader->coa = $request->coa;
-            $pengeluarantruckingheader->pengeluaran_nobukti = $request->pengeluaran_nobukti;
-            $pengeluarantruckingheader->statusformat =  $format->id;
-            $pengeluarantruckingheader->modifiedby = auth('api')->user()->name;
+                $content = new Request();
+                $content['group'] = $fetchGrp->grp;
+                $content['subgroup'] = $fetchGrp->subgrp;
+                $content['table'] = 'pengeluarantruckingheader';
+                $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
 
 
-            if ($pengeluarantruckingheader->save()) {
-
-                $logTrail = [
-                    'namatabel' => strtoupper($pengeluarantruckingheader->getTable()),
-                    'postingdari' => 'EDIT PENGELUARAN TRUCKING HEADER',
-                    'idtrans' => $pengeluarantruckingheader->id,
-                    'nobuktitrans' => $pengeluarantruckingheader->nobukti,
-                    'aksi' => 'EDIT',
-                    'datajson' => $pengeluarantruckingheader->toArray(),
-                    'modifiedby' => $pengeluarantruckingheader->modifiedby
-                ];
-
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-                PengeluaranTruckingDetail::where('pengeluarantruckingheader_id', $pengeluarantruckingheader->id)->lockForUpdate()->delete();
-
-                /* Store detail */
-
-                $detaillog = [];
-
-                for ($i = 0; $i < count($request->nominal); $i++) {
-                    $datadetail = [
-                        'pengeluarantruckingheader_id' => $pengeluarantruckingheader->id,
-                        'nobukti' => $pengeluarantruckingheader->nobukti,
-                        'supir_id' => $request->supir_id[$i],
-                        'penerimaantruckingheader_nobukti' => $request->penerimaantruckingheader_nobukti[$i] ?? '',
-                        'nominal' => $request->nominal[$i],
-                        'modifiedby' => $pengeluarantruckingheader->modifiedby,
-                    ];
-
-                    //STORE 
-                    $data = new StorePengeluaranTruckingDetailRequest($datadetail);
-                    $datadetails = app(PengeluaranTruckingDetailController::class)->store($data);
-
-                    if ($datadetails['error']) {
-                        return response($datadetails, 422);
-                    } else {
-                        $iddetail = $datadetails['id'];
-                        $tabeldetail = $datadetails['tabel'];
-                    }
-
-                    $detaillog[] = $datadetails['detail']->toArray();
-                }
-                $datalogtrail = [
-                    'namatabel' => strtoupper($tabeldetail),
-                    'postingdari' => 'EDIT PENGELUARAN TRUCKING DETAIL',
-                    'idtrans' =>  $storedLogTrail['id'],
-                    'nobuktitrans' => $pengeluarantruckingheader->nobukti,
-                    'aksi' => 'EDIT',
-                    'datajson' => $detaillog,
-                    'modifiedby' => $request->modifiedby,
-                ];
-
-                $data = new StoreLogTrailRequest($datalogtrail);
-
-                app(LogTrailController::class)->store($data);
+                $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
+                $pengeluarantruckingheader->nobukti = $nobukti;
+                $pengeluarantruckingheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
+                $pengeluarantruckingheader->pengeluarantrucking_id = $idpengeluaran;
+                $pengeluarantruckingheader->bank_id = $request->bank_id;
+                $pengeluarantruckingheader->coa = $request->coa;
+                $pengeluarantruckingheader->pengeluaran_nobukti = $request->pengeluaran_nobukti;
+                $pengeluarantruckingheader->statusformat =  $format->id;
+                $pengeluarantruckingheader->modifiedby = auth('api')->user()->name;
+                $pengeluarantruckingheader->save();
             }
+
+            $logTrail = [
+                'namatabel' => strtoupper($pengeluarantruckingheader->getTable()),
+                'postingdari' => 'EDIT PENGELUARAN TRUCKING HEADER',
+                'idtrans' => $pengeluarantruckingheader->id,
+                'nobuktitrans' => $pengeluarantruckingheader->nobukti,
+                'aksi' => 'EDIT',
+                'datajson' => $pengeluarantruckingheader->toArray(),
+                'modifiedby' => $pengeluarantruckingheader->modifiedby
+            ];
+
+
+            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+
+            $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+            PengeluaranTruckingDetail::where('pengeluarantruckingheader_id', $pengeluarantruckingheader->id)->delete();
+
+            /* Store detail */
+
+            $detaillog = [];
+            if ($request->datadetail != '') {
+                $counter = $request->datadetail;
+            } else {
+                $counter = $request->nominal_detail;
+            }
+
+            for ($i = 0; $i < count($counter); $i++) {
+                $datadetail = [
+                    'pengeluarantruckingheader_id' => $pengeluarantruckingheader->id,
+                    'nobukti' => $pengeluarantruckingheader->nobukti,
+                    'supir_id' => ($request->datadetail != '') ? $request->datadetail[$i]['supir_id'] : $request->supir_id[$i],
+                    'penerimaantruckingheader_nobukti' => ($request->datadetail != '') ? $request->datadetail[$i]['penerimaantruckingheader_nobukti'] : $request->penerimaantruckingheader_nobukti[$i] ?? '',
+                    'nominal' => ($request->datadetail != '') ? $request->datadetail[$i]['nominal'] : $request->nominal[$i],
+                    'modifiedby' => $pengeluarantruckingheader->modifiedby,
+                ];
+
+                //STORE 
+                $data = new StorePengeluaranTruckingDetailRequest($datadetail);
+                $datadetails = app(PengeluaranTruckingDetailController::class)->store($data);
+
+                if ($datadetails['error']) {
+                    return response($datadetails, 422);
+                } else {
+                    $iddetail = $datadetails['id'];
+                    $tabeldetail = $datadetails['tabel'];
+                }
+
+                $detaillog[] = $datadetails['detail']->toArray();
+            }
+            $datalogtrail = [
+                'namatabel' => strtoupper($tabeldetail),
+                'postingdari' => $request->postingdari ?? 'EDIT PENGELUARAN TRUCKING DETAIL',
+                'idtrans' =>  $storedLogTrail['id'],
+                'nobuktitrans' => $pengeluarantruckingheader->nobukti,
+                'aksi' => 'EDIT',
+                'datajson' => $detaillog,
+                'modifiedby' => $request->modifiedby,
+            ];
+
+            $data = new StoreLogTrailRequest($datalogtrail);
+
+            app(LogTrailController::class)->store($data);
+
 
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
@@ -341,7 +348,7 @@ class PengeluaranTruckingHeaderController extends Controller
         if ($pengeluaranTrucking) {
             $logTrail = [
                 'namatabel' => strtoupper($pengeluaranTrucking->getTable()),
-                'postingdari' => 'DELETE PENGELUARAN TRUCKING HEADER',
+                'postingdari' => $request->postingdari ?? 'DELETE PENGELUARAN TRUCKING HEADER',
                 'idtrans' => $pengeluaranTrucking->id,
                 'nobuktitrans' => $pengeluaranTrucking->nobukti,
                 'aksi' => 'DELETE',
@@ -355,7 +362,7 @@ class PengeluaranTruckingHeaderController extends Controller
             // DELETE PENGELUARAN TRUCKING DETAIL
             $logTrailPengeluaranTruckingDetail = [
                 'namatabel' => 'PENGELUARANTRUCKINGDETAIL',
-                'postingdari' => 'DELETE PENGELUARAN TRUCKING DETAIL',
+                'postingdari' => $request->postingdari ?? 'DELETE PENGELUARAN TRUCKING DETAIL',
                 'idtrans' => $storedLogTrail['id'],
                 'nobuktitrans' => $pengeluaranTrucking->nobukti,
                 'aksi' => 'DELETE',

@@ -161,7 +161,7 @@ class PenerimaanHeaderController extends Controller
                         'invoice_nobukti' => $request->datadetail[$i]['invoice_nobukti'],
                         'bankpelanggan_id' => '',
                         'jenisbiaya' => '',
-                        'pelunasanpiutang_nobukti' => $request->datadetail[$i]['nobukti'] ?? '',
+                        'pelunasanpiutang_nobukti' => $request->pelunasanpiutang_nobukti ?? '',
                         'bulanbeban' =>  date('Y-m-d', strtotime($request->bulanbeban[$i] ?? '1900/1/1')),
                         'modifiedby' => auth('api')->user()->name,
                     ];
@@ -372,25 +372,28 @@ class PenerimaanHeaderController extends Controller
                 $penerimaanheader->statusapproval = $statusApproval->id ?? 0;
                 $penerimaanheader->statusberkas = $statusBerkas->id ?? 0;
                 $penerimaanheader->modifiedby = auth('api')->user()->name;
+                $penerimaanheader->save();
             } else {
-                $penerimaanheader->agen_id = $request->agen_id;
+                if ($request->from != 'prosesuangjalansupir') {
+
+                    $penerimaanheader->agen_id = $request->agen_id;
+                    $penerimaanheader->save();
+                }
             }
 
 
-            if ($penerimaanheader->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($penerimaanheader->getTable()),
-                    'postingdari' => $request['postingdari'] ?? 'EDIT PENERIMAAN HEADER',
-                    'idtrans' => $penerimaanheader->id,
-                    'nobuktitrans' => $penerimaanheader->nobukti,
-                    'aksi' => 'EDIT',
-                    'datajson' => $penerimaanheader->toArray(),
-                    'modifiedby' => $penerimaanheader->modifiedby
-                ];
+            $logTrail = [
+                'namatabel' => strtoupper($penerimaanheader->getTable()),
+                'postingdari' => $request['postingdari'] ?? 'EDIT PENERIMAAN HEADER',
+                'idtrans' => $penerimaanheader->id,
+                'nobuktitrans' => $penerimaanheader->nobukti,
+                'aksi' => 'EDIT',
+                'datajson' => $penerimaanheader->toArray(),
+                'modifiedby' => $penerimaanheader->modifiedby
+            ];
 
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-            }
+            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+            $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
             /* Delete existing detail */
             $penerimaanheader->penerimaanDetail()->delete();
@@ -401,9 +404,13 @@ class PenerimaanHeaderController extends Controller
 
             if ($request->datadetail != '') {
                 $counter = $request->datadetail;
-                $getCoaKredit = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
-                    ->where('grp', 'JURNAL PENERIMAAN DARI PELUNASAN')->where('subgrp', 'KREDIT')->first();
-                $memo = json_decode($getCoaKredit->memo, true);
+
+                if($request->from != 'prosesuangjalansupir'){
+                    $getCoaKredit = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+                        ->where('grp', 'JURNAL PENERIMAAN DARI PELUNASAN')->where('subgrp', 'KREDIT')->first();
+                    $memo = json_decode($getCoaKredit->memo, true);
+
+                }
             } else {
                 $counter = $request->nominal_detail;
             }
@@ -414,16 +421,16 @@ class PenerimaanHeaderController extends Controller
                     'penerimaan_id' => $penerimaanheader->id,
                     'nobukti' => $penerimaanheader->nobukti,
                     'nowarkat' => ($isUpdate != 0) ? $request->nowarkat : $request->nowarkat[$i],
-                    'tgljatuhtempo' => ($isUpdate != 0) ? $request->tglbukti : date('Y-m-d', strtotime($request->tgljatuhtempo[$i])),
+                    'tgljatuhtempo' => ($isUpdate != 0) ? $penerimaanheader->tglbukti : date('Y-m-d', strtotime($request->tgljatuhtempo[$i])),
                     'nominal' => ($isUpdate != 0) ? $counter[$i]['nominal'] : $request->nominal_detail[$i],
-                    'coadebet' => ($isUpdate != 0) ? $request->coadebet : $querysubgrppenerimaan->coa,
-                    'coakredit' => ($isUpdate != 0) ? $memo['JURNAL'] : $request->coakredit[$i],
+                    'coadebet' => ($isUpdate != 0) ? $counter[$i]['coadebet'] ?? $request->coadebet : $querysubgrppenerimaan->coa,
+                    'coakredit' => ($isUpdate != 0) ? $counter[$i]['coakredit'] ?? $memo['JURNAL'] : $request->coakredit[$i],
                     'keterangan' => ($isUpdate != 0) ? $counter[$i]['keterangan'] : $request->keterangan_detail[$i],
                     'bank_id' => ($isUpdate != 0) ? $request->bank_id : $penerimaanheader->bank_id,
                     'invoice_nobukti' => ($isUpdate != 0) ? $counter[$i]['invoice_nobukti'] : $request->invoice_nobukti[$i] ?? '-',
                     'bankpelanggan_id' => ($isUpdate != 0) ? '' : $request->bankpelanggan_id[$i] ?? '',
                     'jenisbiaya' => ($isUpdate != 0) ? '' : $request->jenisbiaya[$i] ?? '',
-                    'pelunasanpiutang_nobukti' => ($isUpdate != 0) ? $counter[$i]['nobukti'] : $request->pelunasanpiutang_nobukti[$i] ?? '-',
+                    'pelunasanpiutang_nobukti' => ($isUpdate != 0) ? $request->pelunasanpiutang_nobukti : $request->pelunasanpiutang_nobukti[$i] ?? '-',
                     'bulanbeban' => ($isUpdate != 0) ? '' : date('Y-m-d', strtotime($request->bulanbeban[$i] ?? '1900/1/1')) ?? '',
                     'modifiedby' => auth('api')->user()->name,
                 ];
@@ -465,7 +472,7 @@ class PenerimaanHeaderController extends Controller
                     'tanpaprosesnobukti' => 1,
                     'nobukti' => $penerimaanheader->nobukti,
                     'tglbukti' => ($isUpdate != 0) ? $penerimaanheader->tglbukti : date('Y-m-d', strtotime($request->tglbukti)),
-                    'postingdari' => ($request->postingdari) ? 'PENERIMAAN KAS/BANK DARI ' . $request->postingdari : 'EDIT PENERIMAAN KAS/BANK',
+                    'postingdari' => $request->postingdari ?? 'EDIT PENERIMAAN KAS/BANK',
                     'statusapproval' => $statusApp->id,
                     'userapproval' => "",
                     'tglapproval' => "",
@@ -476,12 +483,11 @@ class PenerimaanHeaderController extends Controller
 
                 for ($i = 0; $i < count($counter); $i++) {
                     $detail = [];
-
                     $jurnalDetail = [
                         [
                             'nobukti' => $penerimaanheader->nobukti,
                             'tglbukti' => ($isUpdate != 0) ? $penerimaanheader->tglbukti : date('Y-m-d', strtotime($request->tglbukti)),
-                            'coa' => ($isUpdate != 0) ? $request->coadebet : $querysubgrppenerimaan->coa,
+                            'coa' => ($isUpdate != 0) ? $counter[$i]['coadebet'] ?? $request->coadebet : $querysubgrppenerimaan->coa,
                             'nominal' => ($isUpdate != 0) ? $counter[$i]['nominal'] : $request->nominal_detail[$i],
                             'keterangan' => ($isUpdate != 0) ? $counter[$i]['keterangan'] : $request->keterangan_detail[$i],
                             'modifiedby' => auth('api')->user()->name,
@@ -490,7 +496,7 @@ class PenerimaanHeaderController extends Controller
                         [
                             'nobukti' => $penerimaanheader->nobukti,
                             'tglbukti' => ($isUpdate != 0) ? $penerimaanheader->tglbukti : date('Y-m-d', strtotime($request->tglbukti)),
-                            'coa' =>  $request->coakredit[$i] ?? '-',
+                            'coa' => ($isUpdate != 0) ? $counter[$i]['coakredit'] ?? '-' : $request->coakredit[$i] ?? '-',
                             'nominal' => ($isUpdate != 0) ? '-' . $counter[$i]['nominal'] : -$request->nominal_detail[$i],
                             'keterangan' => ($isUpdate != 0) ? $counter[$i]['keterangan'] : $request->keterangan_detail[$i],
                             'modifiedby' => auth('api')->user()->name,

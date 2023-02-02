@@ -127,9 +127,9 @@ class PenerimaanTruckingHeaderController extends Controller
                 $datadetail = [
                     'penerimaantruckingheader_id' => $penerimaantruckingheader->id,
                     'nobukti' => $penerimaantruckingheader->nobukti,
-                    'supir_id' => ($counter != '') ? $counter[$i]['supir_id']  :  $request->supir_id[$i],
-                    'pengeluarantruckingheader_nobukti' => ($counter != '') ? '' : $request->pengeluarantruckingheader_nobukti[$i] ?? '',
-                    'nominal' => ($counter != '') ? $counter[$i]['nominal']  : $request->nominal[$i],
+                    'supir_id' => ($request->datadetail != '') ? $request->datadetail[$i]['supir_id']  :  $request->supir_id[$i],
+                    'pengeluarantruckingheader_nobukti' => ($request->datadetail != '') ? $request->datadetail[$i]['pengeluarantruckingheader_nobukti'] : $request->pengeluarantruckingheader_nobukti[$i] ?? '',
+                    'nominal' => ($request->datadetail != '') ? $request->datadetail[$i]['nominal']  : $request->nominal[$i],
                     'modifiedby' => $penerimaantruckingheader->modifiedby,
                 ];
                 //STORE 
@@ -208,90 +208,97 @@ class PenerimaanTruckingHeaderController extends Controller
 
         try {
 
-            $idpenerimaan = $request->penerimaantrucking_id;
-            $fetchFormat =  DB::table('penerimaantrucking')
-                ->where('id', $idpenerimaan)
-                ->first();
+            $isUpdate = $request->isUpdate ?? 0;
+            if ($isUpdate == 0) {
+                $idpenerimaan = $request->penerimaantrucking_id;
+                $fetchFormat =  DB::table('penerimaantrucking')
+                    ->where('id', $idpenerimaan)
+                    ->first();
 
-            $statusformat = $fetchFormat->statusformat;
+                $statusformat = $fetchFormat->statusformat;
 
-            $fetchGrp = Parameter::where('id', $statusformat)->first();
+                $fetchGrp = Parameter::where('id', $statusformat)->first();
 
-            $format = DB::table('parameter')
-                ->where('grp', $fetchGrp->grp)
-                ->where('subgrp', $fetchGrp->subgrp)
-                ->first();
+                $format = DB::table('parameter')
+                    ->where('grp', $fetchGrp->grp)
+                    ->where('subgrp', $fetchGrp->subgrp)
+                    ->first();
 
-            $penerimaantruckingheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
-            $penerimaantruckingheader->penerimaantrucking_id = $idpenerimaan;
-            $penerimaantruckingheader->bank_id = $request->bank_id;
-            $penerimaantruckingheader->coa = $request->coa;
-            $penerimaantruckingheader->penerimaan_nobukti = $request->penerimaan_nobukti;
-            $penerimaantruckingheader->statusformat =  $format->id;
-            $penerimaantruckingheader->modifiedby = auth('api')->user()->name;
+                $penerimaantruckingheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
+                $penerimaantruckingheader->penerimaantrucking_id = $idpenerimaan;
+                $penerimaantruckingheader->bank_id = $request->bank_id;
+                $penerimaantruckingheader->coa = $request->coa;
+                $penerimaantruckingheader->penerimaan_nobukti = $request->penerimaan_nobukti;
+                $penerimaantruckingheader->statusformat =  $format->id;
+                $penerimaantruckingheader->modifiedby = auth('api')->user()->name;
+
+                $penerimaantruckingheader->save();
+            }
 
 
-            if ($penerimaantruckingheader->save()) {
+            $logTrail = [
+                'namatabel' => strtoupper($penerimaantruckingheader->getTable()),
+                'postingdari' => $request->postingdari ?? 'EDIT PENERIMAAN TRUCKING HEADER',
+                'idtrans' => $penerimaantruckingheader->id,
+                'nobuktitrans' => $penerimaantruckingheader->nobukti,
+                'aksi' => 'EDIT',
+                'datajson' => $penerimaantruckingheader->toArray(),
+                'modifiedby' => $penerimaantruckingheader->modifiedby
+            ];
 
-                $logTrail = [
-                    'namatabel' => strtoupper($penerimaantruckingheader->getTable()),
-                    'postingdari' => 'EDIT PENERIMAAN TRUCKING HEADER',
-                    'idtrans' => $penerimaantruckingheader->id,
-                    'nobuktitrans' => $penerimaantruckingheader->nobukti,
-                    'aksi' => 'EDIT',
-                    'datajson' => $penerimaantruckingheader->toArray(),
-                    'modifiedby' => $penerimaantruckingheader->modifiedby
+
+
+            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+
+            $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+
+
+            PenerimaanTruckingDetail::where('penerimaantruckingheader_id', $penerimaantruckingheader->id)->lockForUpdate()->delete();
+
+            /* Store detail */
+
+            $detaillog = [];
+            if ($request->datadetail != '') {
+                $counter = $request->datadetail;
+            } else {
+                $counter = $request->nominal;
+            }
+            for ($i = 0; $i < count($counter); $i++) {
+                $datadetail = [
+                    'penerimaantruckingheader_id' => $penerimaantruckingheader->id,
+                    'nobukti' => $penerimaantruckingheader->nobukti,
+                    'supir_id' => ($request->datadetail != '') ? $request->datadetail[$i]['supir_id'] : $request->supir_id[$i],
+                    'pengeluarantruckingheader_nobukti' => ($request->datadetail != '') ? $request->datadetail[$i]['pengeluarantruckingheader_nobukti'] : $request->pengeluarantruckingheader_nobukti[$i] ?? '',
+                    'nominal' => ($request->datadetail != '') ? $request->datadetail[$i]['nominal'] : $request->nominal[$i],
+                    'modifiedby' => $penerimaantruckingheader->modifiedby,
                 ];
+                //STORE 
+                $data = new StorePenerimaanTruckingDetailRequest($datadetail);
+                $datadetails = app(PenerimaanTruckingDetailController::class)->store($data);
 
-
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
-
-                PenerimaanTruckingDetail::where('penerimaantruckingheader_id', $penerimaantruckingheader->id)->lockForUpdate()->delete();
-
-                /* Store detail */
-
-                $detaillog = [];
-
-                for ($i = 0; $i < count($request->nominal); $i++) {
-                    $datadetail = [
-                        'penerimaantruckingheader_id' => $penerimaantruckingheader->id,
-                        'nobukti' => $penerimaantruckingheader->nobukti,
-                        'supir_id' => $request->supir_id[$i],
-                        'pengeluarantruckingheader_nobukti' => $request->pengeluarantruckingheader_nobukti[$i] ?? '',
-                        'nominal' => $request->nominal[$i],
-                        'modifiedby' => $penerimaantruckingheader->modifiedby,
-                    ];
-                    //STORE 
-                    $data = new StorePenerimaanTruckingDetailRequest($datadetail);
-                    $datadetails = app(PenerimaanTruckingDetailController::class)->store($data);
-
-                    if ($datadetails['error']) {
-                        return response($datadetails, 422);
-                    } else {
-                        $iddetail = $datadetails['id'];
-                        $tabeldetail = $datadetails['tabel'];
-                    }
-
-                    $detaillog[] = $datadetails['detail']->toArray();
+                if ($datadetails['error']) {
+                    return response($datadetails, 422);
+                } else {
+                    $iddetail = $datadetails['id'];
+                    $tabeldetail = $datadetails['tabel'];
                 }
 
-                $datalogtrail = [
-                    'namatabel' => strtoupper($tabeldetail),
-                    'postingdari' => 'EDIT PENERIMAAN TRUCKING DETAIL',
-                    'idtrans' =>  $storedLogTrail['id'],
-                    'nobuktitrans' => $penerimaantruckingheader->nobukti,
-                    'aksi' => 'EDIT',
-                    'datajson' => $detaillog,
-                    'modifiedby' => $request->modifiedby,
-                ];
-
-                $data = new StoreLogTrailRequest($datalogtrail);
-                app(LogTrailController::class)->store($data);
+                $detaillog[] = $datadetails['detail']->toArray();
             }
+
+            $datalogtrail = [
+                'namatabel' => strtoupper($tabeldetail),
+                'postingdari' => $request->postingdari ?? 'EDIT PENERIMAAN TRUCKING DETAIL',
+                'idtrans' =>  $storedLogTrail['id'],
+                'nobuktitrans' => $penerimaantruckingheader->nobukti,
+                'aksi' => 'EDIT',
+                'datajson' => $detaillog,
+                'modifiedby' => $request->modifiedby,
+            ];
+
+            $data = new StoreLogTrailRequest($datalogtrail);
+            app(LogTrailController::class)->store($data);
+
 
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
@@ -332,7 +339,7 @@ class PenerimaanTruckingHeaderController extends Controller
         if ($penerimaanTrucking) {
             $logTrail = [
                 'namatabel' => strtoupper($penerimaanTrucking->getTable()),
-                'postingdari' => 'DELETE PENERIMAAN TRUCKING HEADER',
+                'postingdari' => $request->postingdari ?? 'DELETE PENERIMAAN TRUCKING HEADER',
                 'idtrans' => $penerimaanTrucking->id,
                 'nobuktitrans' => $penerimaanTrucking->nobukti,
                 'aksi' => 'DELETE',
@@ -346,7 +353,7 @@ class PenerimaanTruckingHeaderController extends Controller
             // DELETE PENERIMAAN TRUCKING DETAIL
             $logTrailPenerimaanTruckingDetail = [
                 'namatabel' => 'PENERIMAANTRUCKINGDETAIL',
-                'postingdari' => 'DELETE PENERIMAAN TRUCKING DETAIL',
+                'postingdari' => $request->postingdari ?? 'DELETE PENERIMAAN TRUCKING DETAIL',
                 'idtrans' => $storedLogTrail['id'],
                 'nobuktitrans' => $penerimaanTrucking->nobukti,
                 'aksi' => 'DELETE',

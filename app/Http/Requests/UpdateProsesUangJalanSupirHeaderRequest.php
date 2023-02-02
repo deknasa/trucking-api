@@ -13,7 +13,7 @@ class UpdateProsesUangJalanSupirHeaderRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +24,9 @@ class UpdateProsesUangJalanSupirHeaderRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'keterangantransfer' => 'required|array',
+            'keterangantransfer.*' => 'required',
+            'keteranganadjust' => 'required'
         ];
     }
 }

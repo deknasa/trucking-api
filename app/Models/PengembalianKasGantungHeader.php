@@ -307,7 +307,7 @@ class PengembalianKasGantungHeader extends MyModel
     {
         $this->setRequestParameters();
 
-        $query = DB::table($this->table);
+        $query = PengembalianKasGantungHeader::from(DB::raw("pengembaliankasgantungheader with (readuncommitted)"));
         $query = $this->selectColumns($query)
         ->leftJoin('pelanggan','pengembaliankasgantungheader.pelanggan_id','pelanggan.id')
         ->leftJoin('bank','pengembaliankasgantungheader.bank_id','bank.id')

@@ -289,7 +289,8 @@ class PelunasanPiutangHeaderController extends Controller
                         'modifiedby' => auth('api')->user()->name,
                         'datadetail' => $detaillog,
                         'nowarkat' => $pelunasanpiutangheader->nowarkat,
-                        'coadebet' => $querysubgrppenerimaan->coa
+                        'coadebet' => $querysubgrppenerimaan->coa,
+                        'pelunasanpiutang_nobukti' => $pelunasanpiutangheader->nobukti
 
                     ];
 
@@ -555,7 +556,8 @@ class PelunasanPiutangHeaderController extends Controller
                         'bank_id' => $get->bank_id,
                         'agen_id' => $pelunasanpiutangheader->agen_id,
                         'id' => $get->id,
-                        'postingdari' => 'EDIT PELUNASAN PIUTANG'
+                        'postingdari' => 'EDIT PELUNASAN PIUTANG',
+                        'pelunasanpiutang_nobukti' => $pelunasanpiutangheader->nobukti
 
                     ];
                     $newPenerimaan = new PenerimaanHeader();

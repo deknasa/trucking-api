@@ -44,6 +44,8 @@ class Pelanggan extends MyModel
             'pelanggan.kodepos',
             'pelanggan.modifiedby',
             'parameter.memo as statusaktif',
+            'pelanggan.created_at',
+            'pelanggan.updated_at'            
         )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'pelanggan.statusaktif', 'parameter.id');
 

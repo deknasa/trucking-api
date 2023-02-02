@@ -140,11 +140,11 @@ class HutangBayarHeader extends MyModel
             ->join(DB::raw("parameter as statusapproval with (readuncommitted)"), 'hutangbayarheader.statusapproval', 'statusapproval.id');
     }
 
-    public function getPembayaran($id, $fieldId, $field)
+    public function getPembayaran($id, $supplierId)
     {
         $this->setRequestParameters();
 
-        $tempHutang = $this->createTempHutang($fieldId, $field);
+        $tempHutang = $this->createTempHutang($supplierId);
         $tempPembayaran = $this->createTempPembayaran($id);
 
 
@@ -166,16 +166,16 @@ class HutangBayarHeader extends MyModel
         return $data;
     }
 
-    public function createTempHutang($fieldId, $field)
+    public function createTempHutang($supplierId)
     {
         $temp = '##tempHutang' . rand(1, 10000);
 
 
         $fetch = DB::table('hutangheader')->from(DB::raw("hutangheader with (readuncommitted)"))
-            ->select(DB::raw("hutangheader.id,hutangheader.nobukti,hutangheader.tglbukti,hutangheader.$field,hutangheader.total as nominalhutang, (SELECT (hutangheader.total - COALESCE(SUM(hutangbayardetail.nominal),0)) FROM hutangbayardetail WHERE hutangbayardetail.hutang_nobukti= hutangheader.nobukti) AS sisa"))
+            ->select(DB::raw("hutangheader.id,hutangheader.nobukti,hutangheader.tglbukti,hutangheader.supplier_id,hutangheader.total as nominalhutang, (SELECT (hutangheader.total - COALESCE(SUM(hutangbayardetail.nominal),0)) FROM hutangbayardetail WHERE hutangbayardetail.hutang_nobukti= hutangheader.nobukti) AS sisa"))
             ->leftJoin(DB::raw("hutangbayardetail with (readuncommitted)"), 'hutangheader.nobukti', 'hutangbayardetail.hutang_nobukti')
-            ->whereRaw("hutangheader.$field = $fieldId")
-            ->groupBy('hutangheader.id', 'hutangheader.nobukti', 'hutangheader.'.$field , 'hutangheader.total', 'hutangheader.tglbukti');
+            ->whereRaw("hutangheader.supplier_id = $supplierId")
+            ->groupBy('hutangheader.id', 'hutangheader.nobukti', 'hutangheader.supplier_id' , 'hutangheader.total', 'hutangheader.tglbukti');
 
         Schema::create($temp, function ($table) {
             $table->bigInteger('id');
