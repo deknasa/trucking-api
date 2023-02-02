@@ -2,10 +2,16 @@
 
 namespace App\Models;
 
+use App\Http\Controllers\Api\TarifController;
+use App\Http\Controllers\Api\TarifRincianController;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use App\Http\Requests\StoreTarifRequest;
+use App\Http\Requests\StoreTarifRincianRequest;
+
+
 
 class TarifRincian extends MyModel
 {
@@ -48,29 +54,59 @@ class TarifRincian extends MyModel
     public function updateharga($data)
     {
 
-        // $data=json_encode($data);
-        // $data=json_decode($data,true);
-        
-        $tempdata = '##tempdata' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-        Schema::create($tempdata, function ($table) {
-            $table->string('kolomA',2000)->default('');
-            $table->string('kolomB',2000)->default('');
-            $table->string('kolomC', 2000)->default('');
-            $table->string('kolomD', 2000)->default('');
-        });
 
-        $datadetail = $data;
 
-        foreach ($datadetail as $item) {
-            $temp=new $tempdata;
-            $temp->kolomA=$item['tujuan'];
-            $temp->kolomA=$item['20`'];
-            $temp->kolomA=$item['40`'];
-            $temp->kolomA=$item['tglberlaku'];
-            $temp->save();
+
+
+
+        // dd($datadetail);
+        foreach ($data as $item) {
+
+           
+            $querydetail = DB::table('container')
+                ->from(
+                    DB::raw("container  with (readuncommitted)")
+                )
+                ->select(
+                    'id'
+                )
+                ->orderBy('id', 'Asc');
+            $datadetail = json_decode($querydetail->get(), true);
+            $a = 0;
+            $container_id=[];
+            $nominal=[];
+
+            foreach ($datadetail as $itemdetail) {
+                $a = $a + 1;
+                $kolom = 'kolom' . $a;
+
+                    $container_id[]= $itemdetail['id'];
+                    $nominal[] = $item[$kolom];
+             
+            }
+            $tarifRequest = [
+                'tujuan' => $item['tujuan'],
+                'tglmulaiberlaku' => $item['tglberlaku'],
+                'modifiedby' => $item['modifiedby'],
+                'parent_id' => 0,
+                'upahsupir_id' => 0,
+                'statusaktif' =>  1,
+                'statussistemton' => 4,
+                'kota_id' => 0,
+                'zona_id' => 0,
+                'statuspenyesuaianharga' => 7,
+                'container_id' => $container_id,
+                'nominal' => $nominal,
+            ];
+     
+            $tarif = new StoreTarifRequest($tarifRequest);
+            app(TarifController::class)->store($tarif);
         }
 
-dd($data);
+   
+
+     
+        return $data;
     }
 
     public function listpivot()

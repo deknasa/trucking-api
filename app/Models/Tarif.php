@@ -128,7 +128,7 @@ class Tarif extends MyModel
             $table->string('tujuan', 200)->default('');
             $table->string('statusaktif')->default('0');
             $table->integer('statussistemton')->length(11)->default('0');
-            $table->string('kota_id')->default('0');
+            $table->string('kota_id')->nullable()->default('0');
             $table->string('zona_id')->nullable();
             $table->date('tglmulaiberlaku')->default('1900/1/1');
             $table->string('statuspenyesuaianharga')->default('0');

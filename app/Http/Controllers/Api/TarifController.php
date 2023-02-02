@@ -87,6 +87,8 @@ class TarifController extends Controller
             $tarif->modifiedby = auth('api')->user()->name;
 
             if ($tarif->save()) {
+
+              
                 $logTrail = [
                     'namatabel' => strtoupper($tarif->getTable()),
                     'postingdari' => 'ENTRY TARIF',
@@ -96,10 +98,10 @@ class TarifController extends Controller
                     'datajson' => $tarif->toArray(),
                     'modifiedby' => $tarif->modifiedby
                 ];
-
+               
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
+            
                 // dd(count($request->container_id));
                 $detaillog = [];
                 for ($i = 0; $i < count($request->container_id); $i++) {
@@ -373,17 +375,22 @@ class TarifController extends Controller
             $column_range = range('A', $column_limit);
             $startcount = 2;
             $data = array();
+            
+            $a=0;
             foreach ($row_range as $row) {
+              
                 $data[] = [
-                    'tujuan' => $sheet->getCell('A' . $row)->getValue(),
-                    '20`' => $sheet->getCell('B' . $row)->getValue(),
-                    '40`' => $sheet->getCell('C' . $row)->getValue(),
-                    'tglberlaku' => date('Y-m-d',strtotime($sheet->getCell('D' . $row)->getFormattedValue())),
+                    'tujuan' => $sheet->getCell($this->kolomexcel(1) . $row)->getValue(),
+                    'tglberlaku' => date('Y-m-d',strtotime($sheet->getCell($this->kolomexcel(2) . $row)->getFormattedValue())),
+                    'kolom1' => $sheet->getCell($this->kolomexcel(3)  . $row)->getValue(),
+                    'kolom2' => $sheet->getCell($this->kolomexcel(4)  . $row)->getValue(),
                     'modifiedby' => auth('api')->user()->name
                 ];
                 $startcount++;
             }
 
+
+            
             $tarifrincian = new TarifRincian();
 
             return response([
@@ -394,5 +401,15 @@ class TarifController extends Controller
             DB::rollBack();
             throw $th;
         }
+    }
+
+    private function kolomexcel($kolom)
+    {
+        if ($kolom>=27 and $kolom<=52) {
+            $hasil='A'.chr(38+$kolom);
+        } else  {
+            $hasil=chr(64+$kolom);
+        }
+        return $hasil;
     }
 }
