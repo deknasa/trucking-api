@@ -34,6 +34,7 @@ class HandleTokenExpiration
             $response = $next($request);
         }
 
+        return $next($request);
         return $response;
     }
 
