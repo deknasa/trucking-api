@@ -808,6 +808,7 @@ Route::resource('zona', ZonaController::class);
 Route::get('tarif/combo', [TarifController::class, 'combo']);
 Route::get('tarif/field_length', [TarifController::class, 'fieldLength']);
 Route::get('tarif/default', [TarifController::class, 'default']);
+Route::get('tarif/listpivot', [TarifController::class, 'listpivot']);
 Route::resource('tarif', TarifController::class);
 
 Route::get('tarifrincian/setuprow', [TarifRincianController::class, 'setUpRow']);

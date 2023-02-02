@@ -45,6 +45,95 @@ class TarifRincian extends MyModel
         return $data;
     }
 
+    public function listpivot()
+    {
+
+        $tempdata = '##tempdata' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempdata, function ($table) {
+            $table->unsignedBigInteger('id')->default(0);
+            $table->unsignedBigInteger('container_id')->default(0);
+            $table->string('container', 1000)->default('');
+            $table->double('nominal', 15, 2)->default(0);
+
+        });
+
+        $query = DB::table('container')->from(DB::raw("container with (readuncommitted)"))
+            ->select(
+                'tarif.id as id',
+                'container.id as container_id',
+                'container.keterangan as container',
+                DB::raw("isnull(tarifrincian.nominal,0) as nominal"),
+            )
+            ->leftJoin(DB::raw("tarifrincian with (readuncommitted)"), 'container.id', '=', 'tarifrincian.container_id')
+            ->leftJoin(DB::raw("tarif with (readuncommitted)"), 'tarif.id', '=', 'tarifrincian.tarif_id');
+
+
+        DB::table($tempdata)->insertUsing([
+            'id',
+            'container_id',
+            'container',
+            'nominal',
+        ], $query);
+
+
+        $tempdatagroup = '##tempdatagroup' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempdatagroup, function ($table) {
+            $table->string('container',100)->default('');
+        });
+
+        $querydatagroup =  DB::table($tempdata)->from(
+            DB::raw($tempdata)
+        )
+            ->select(
+                'container',
+            )
+            ->groupBy('container');
+
+        DB::table($tempdatagroup)->insertUsing([
+            'container',
+        ], $querydatagroup);
+
+
+        $queryloop = DB::table($tempdatagroup)->from(
+            DB::raw($tempdatagroup)
+        )
+            ->select(
+                'container',
+            )
+            ->orderBy('container', 'asc')
+            ->get();
+        // dd('test');
+        $columnid = '';
+        $a = 0;
+        $datadetail = json_decode($queryloop, true);
+        foreach ($datadetail as $item) {
+            if ($a == 0) {
+                $columnid = $columnid . '[' . $item['container'] . ']';
+            } else {
+                $columnid = $columnid . ',[' . $item['container'] . ']';
+            }
+
+            $a = $a + 1;
+        }
+
+      
+        $statement = ' select b.tujuan,A.* from (select id,' . $columnid . ' from 
+         (
+            select A.id,A.container,A.nominal
+            from ' . $tempdata . ' A) as SourceTable
+            Pivot (
+                max(nominal)
+                for container in (' . $columnid . ')
+                ) as PivotTable)A
+                inner join tarif b with (readuncommitted) on A.id=B.id
+        ';
+
+        $data = DB::select(DB::raw($statement));
+
+
+        return $data;
+    }
+
     public function get()
     {
         $this->setRequestParameters();
@@ -102,7 +191,7 @@ class TarifRincian extends MyModel
             $query->where('tarifrincian.container_id', '=', $container_id);
         }
 
-    
+
         // dd($query->toSql());
         $this->paginate($query);
 
@@ -163,7 +252,7 @@ class TarifRincian extends MyModel
 
 
                 case "AND":
-                    foreach ($this->params['filters']['rules'] as $index => $filters) {                         
+                    foreach ($this->params['filters']['rules'] as $index => $filters) {
 
                         if ($filters['field'] == 'statusaktif') {
                             $query = $query->where('parameter.text', '=', "$filters[data]");

@@ -52,6 +52,17 @@ class TarifController extends Controller
         ]);
     }
 
+    public function listpivot()
+    {
+
+        $tarifrincian = new TarifRincian();
+
+        return response([
+            'status' => true,
+            'data' => $tarifrincian->listpivot(),
+        ]);
+    }
+
 
     /**
      * @ClassName 
