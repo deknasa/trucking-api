@@ -664,7 +664,8 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('upahritasi/default', [UpahRitasiController::class, 'default']);
     Route::get('upahritasi/comboluarkota', [UpahRitasiController::class, 'comboluarkota']);
     Route::get('upahritasi/field_length', [UpahRitasiController::class, 'fieldLength']);
-    Route::get('upahritasi/listpivot', [UpahRitasiController::class, 'listpivot']);    
+    Route::get('upahritasi/listpivot', [UpahRitasiController::class, 'listpivot']);
+    Route::post('upahritasi/import', [UpahRitasiController::class, 'import']);
     Route::resource('upahritasi', UpahRitasiController::class);
 
     Route::get('upahritasirincian/setuprow', [UpahRitasiRincianController::class, 'setUpRow']);

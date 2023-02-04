@@ -21,6 +21,7 @@ use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class UpahRitasiController extends Controller
 {
@@ -50,8 +51,17 @@ class UpahRitasiController extends Controller
         ]);
     }
 
+    public function listpivot(Request $request)
+    {
+        $dari = date('Y-m-d', strtotime($request->dari));
+        $sampai = date('Y-m-d', strtotime($request->sampai));
+        $upahritasirincian = new UpahRitasiRincian();
 
-
+        return response([
+            'status' => true,
+            'data' => $upahritasirincian->listpivot($dari, $sampai)
+        ]);
+    }
 
     /**
      * @ClassName 
@@ -380,5 +390,65 @@ class UpahRitasiController extends Controller
         return response([
             'data' => $data
         ]);
+    }
+    
+    public function import(Request $request)
+    {
+        $request->validate(
+            [
+                'fileImport' => 'required|file|mimes:xls,xlsx'
+            ],
+            [
+                'fileImport.mimes' => 'file import ' . app(ErrorController::class)->geterror('FXLS')->keterangan,
+            ]
+        );
+
+        $the_file = $request->file('fileImport');
+        try {
+            $spreadsheet = IOFactory::load($the_file->getRealPath());
+            $sheet        = $spreadsheet->getActiveSheet();
+            $row_limit    = $sheet->getHighestDataRow();
+            $column_limit = $sheet->getHighestDataColumn();
+            $row_range    = range(2, $row_limit);
+            $column_range = range('A', $column_limit);
+            $startcount = 2;
+            $data = array();
+            
+            $a=0;
+            foreach ($row_range as $row) {
+                $data[] = [
+                    'kotadari' => $sheet->getCell('A' . $row)->getValue(),
+                    'kotasampai' => $sheet->getCell('B' . $row)->getValue(),
+                    'jarak' => $sheet->getCell('C' . $row)->getValue(),
+                    'tglmulaiberlaku' => date('Y-m-d',strtotime($sheet->getCell($this->kolomexcel(4) . $row)->getFormattedValue())),
+                    'kolom1' => $sheet->getCell($this->kolomexcel(5)  . $row)->getValue(),
+                    'kolom2' => $sheet->getCell($this->kolomexcel(6)  . $row)->getValue(),
+                    'liter1' => $sheet->getCell($this->kolomexcel(7)  . $row)->getValue(),
+                    'liter2' => $sheet->getCell($this->kolomexcel(8)  . $row)->getValue(),
+                    'modifiedby' => auth('api')->user()->name
+                ];
+                $startcount++;
+            }
+ 
+            $upahRitasiRincian = new UpahRitasiRincian();
+
+            return response([
+                'status' => true,
+                'data' => $upahRitasiRincian->updateharga($data),
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
+    }
+    
+    private function kolomexcel($kolom)
+    {
+        if ($kolom>=27 and $kolom<=52) {
+            $hasil='A'.chr(38+$kolom);
+        } else  {
+            $hasil=chr(64+$kolom);
+        }
+        return $hasil;
     }
 }

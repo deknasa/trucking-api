@@ -41,8 +41,8 @@ class Penerima extends MyModel
                 'penerima.modifiedby',
                 'parameter_statusaktif.memo as statusaktif',
                 'parameter_statuskaryawan.memo as statuskaryawan',
-                'mekanik.created_at',
-                'mekanik.updated_at'
+                'penerima.created_at',
+                'penerima.updated_at'
             )
             ->leftJoin(DB::raw("parameter as parameter_statusaktif with (readuncommitted)"), 'penerima.statusaktif', '=', 'parameter_statusaktif.id')
             ->leftJoin(DB::raw("parameter as parameter_statuskaryawan with (readuncommitted)"), 'penerima.statuskaryawan', '=', 'parameter_statuskaryawan.id');

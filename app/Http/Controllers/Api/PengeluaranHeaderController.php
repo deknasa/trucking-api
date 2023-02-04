@@ -234,7 +234,7 @@ class PengeluaranHeaderController extends Controller
                         [
                             'nobukti' => $pengeluaranHeader->nobukti,
                             'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
-                            'coa' => ($request->datadetail != '') ? '-' : $request->coadebet[$i],
+                            'coa' => ($request->datadetail != '') ? $request->datadetail[$i]['coadebet'] ?? '-' : $request->coadebet[$i],
                             'nominal' => ($request->datadetail != '') ? $request->datadetail[$i]['nominal'] : $request->nominal_detail[$i],
                             'keterangan' => ($request->datadetail != '') ? $request->datadetail[$i]['keterangan'] : $request->keterangan_detail[$i],
                             'modifiedby' => auth('api')->user()->name,
@@ -371,6 +371,12 @@ class PengeluaranHeaderController extends Controller
                 $pengeluaranheader->transferkebank = $request->transferkebank ?? '';
                 $pengeluaranheader->modifiedby = auth('api')->user()->name;
                 $pengeluaranheader->save();
+            }else{
+                $from = $request->from ?? '';
+                if($from != 'prosesuangjalansupir'){
+                    $pengeluaranheader->dibayarke = $request->dibayarke ?? '';
+                    $pengeluaranheader->save();
+                }
             }
 
 

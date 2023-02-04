@@ -24,11 +24,7 @@ class UpdateKasGantungHeaderRequest extends FormRequest
     public function rules()
     {
         $rules = [
-            'tglbukti' => 'required',
             'penerima' => 'required',
-            'keterangan' => 'required',
-            'bank' => 'required',
-            'tglkaskeluar' => 'required',
         ];
         $relatedRequests = [
             UpdateKasGantungDetailRequest::class

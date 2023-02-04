@@ -417,7 +417,8 @@ class HutangBayarHeaderController extends Controller
             $coaDebetpembelian = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL PEMBAYARAN HUTANG PEMBELIAN STOK')->where('subgrp', 'DEBET')->first();
             $memo = json_decode($coaDebet->memo, true);
             $memopembelian = json_decode($coaDebetpembelian->memo, true);
-
+            $supplierName = Supplier::from(DB::raw("supplier with (readuncommitted)"))->where('id', $request->supplier_id)->first();
+            
 
             for ($i = 0; $i < count($request->hutang_id); $i++) {
                 $hutang = HutangHeader::from(DB::raw("hutangheader with (readuncommitted)"))
@@ -478,6 +479,7 @@ class HutangBayarHeaderController extends Controller
 
             $pengeluaranHeader = [
                 'isUpdate' => 1,
+                'dibayarke' => $supplierName->namasupplier,
                 'postingdari' => 'EDIT HUTANG BAYAR',
                 'modifiedby' => auth('api')->user()->name,
                 'datadetail' => $pengeluaranDetail
