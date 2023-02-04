@@ -50,6 +50,18 @@ class UpahRitasiController extends Controller
         ]);
     }
 
+    public function listpivot()
+    {
+
+        $upahritasirincian = new UpahRitasiRincian();
+
+        return response([
+            'status' => true,
+            'data' => $upahritasirincian->listpivot(),
+        ]);
+    }
+
+
     /**
      * @ClassName 
      */
