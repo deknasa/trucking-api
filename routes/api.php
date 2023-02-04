@@ -11,6 +11,10 @@ use App\Http\Controllers\Api\ApprovalTransaksiHeaderController;
 use App\Http\Controllers\Api\ApprovalInvoiceHeaderController;
 use App\Http\Controllers\Api\ApprovalBukaCetakController;
 
+use App\Http\Controllers\Api\HistoryTripController;
+use App\Http\Controllers\Api\ListTripController;
+use App\Http\Controllers\Api\InputTripController;
+
 use App\Http\Controllers\Api\AbsenTradoController;
 use App\Http\Controllers\Api\CabangController;
 use App\Http\Controllers\Api\GandenganController;
@@ -830,9 +834,14 @@ Route::get('prosesabsensisupir/field_length', [ProsesAbsensiSupirController::cla
 Route::resource('prosesabsensisupir', ProsesAbsensiSupirController::class);
 
 Route::resource('mandorabsensisupir', MandorAbsensiSupirController::class);
-Route::get('mandortrip/history', [MandorTripController::class,'getHistoryList']);
-Route::get('mandortrip/list', [MandorTripController::class,'getListTrip']);
+
+Route::get('historytrip', [HistoryTripController::class,'index']);
+Route::get('listtrip', [ListTripController::class,'index']);
+Route::post('inputtrip', [InputTripController::class,'store']);
+// Route::get('mandortrip/history', [MandorTripController::class,'getHistoryList']);
+// Route::get('mandortrip/list', [MandorTripController::class,'getListTrip']);
 Route::resource('mandortrip', MandorTripController::class);
+
 
 Route::get('mekanik/combo', [MekanikController::class, 'combo']);
 Route::get('mekanik/field_length', [MekanikController::class, 'fieldLength']);
