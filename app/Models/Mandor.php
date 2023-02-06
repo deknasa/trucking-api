@@ -60,6 +60,27 @@ class Mandor extends MyModel
         return $data;
     }
 
+    public function cekvalidasihapus($id)
+    {
+        $mandor = DB::table('trado')
+            ->from(
+                DB::raw("trado as a with (readuncommitted)")
+            )
+            ->select(
+                'a.mandor_id'
+            )
+            ->where('a.mandor_id', '=', $id)
+            ->first();
+        if (isset($mandor)) {
+            $data = true;
+            goto selesai;
+        }
+
+
+        $data=false;
+        selesai:
+        return $data;
+    }
     public function default()
     {
 

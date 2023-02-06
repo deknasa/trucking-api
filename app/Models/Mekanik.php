@@ -23,6 +23,28 @@ class Mekanik extends MyModel
     //     'updated_at' => 'date:d-m-Y H:i:s'
     // ];  
 
+    public function cekvalidasihapus($id)
+    {
+        $serviceIn = DB::table('serviceindetail')
+            ->from(
+                DB::raw("serviceindetail as a with (readuncommitted)")
+            )
+            ->select(
+                'a.mekanik_id'
+            )
+            ->where('a.mekanik_id', '=', $id)
+            ->first();
+        if (isset($serviceIn)) {
+            $data = true;
+            goto selesai;
+        }
+
+
+        $data=false;
+        selesai:
+        return $data;
+    }
+
     public function get()
     {
         $this->setRequestParameters();

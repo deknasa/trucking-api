@@ -25,6 +25,42 @@ class Supplier extends MyModel
         'updated_at',
     ];
 
+    public function cekvalidasihapus($id)
+    {
+        $hutang = DB::table('hutangheader')
+            ->from(
+                DB::raw("hutangheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.supplier_id'
+            )
+            ->where('a.supplier_id', '=', $id)
+            ->first();
+        if (isset($hutang)) {
+            $data = true;
+            goto selesai;
+        }
+
+        $hutangBayar = DB::table('hutangbayarheader')
+            ->from(
+                DB::raw("hutangbayarheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.supplier_id'
+            )
+            ->where('a.supplier_id', '=', $id)
+            ->first();
+        if (isset($hutangBayar)) {
+            $data = true;
+            goto selesai;
+        }
+
+
+        $data=false;
+        selesai:
+        return $data;
+    }
+
     public function get()
     {
         $this->setRequestParameters();

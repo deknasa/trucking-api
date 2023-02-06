@@ -25,6 +25,40 @@ class Tarif extends MyModel
         'updated_at',
     ];
 
+    public function cekvalidasihapus($id)
+    {
+        $orderanTrucking = DB::table('orderantrucking')
+            ->from(
+                DB::raw("orderantrucking as a with (readuncommitted)")
+            )
+            ->select(
+                'a.tarif_id'
+            )
+            ->where('a.tarif_id', '=', $id)
+            ->first();
+        if (isset($orderanTrucking)) {
+            $data = true;
+            goto selesai;
+        }
+        $suratPengantar = DB::table('suratpengantar')
+            ->from(
+                DB::raw("suratpengantar as a with (readuncommitted)")
+            )
+            ->select(
+                'a.tarif_id'
+            )
+            ->where('a.tarif_id', '=', $id)
+            ->first();
+        if (isset($suratPengantar)) {
+            $data = true;
+            goto selesai;
+        }
+
+
+        $data=false;
+        selesai:
+        return $data;
+    }
     public function get()
     {
         $this->setRequestParameters();

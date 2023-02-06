@@ -38,6 +38,37 @@ class SupplierController extends Controller
         ]);
     }
 
+    public function cekValidasi($id) {
+        $supplier = new Supplier();
+        $cekdata=$supplier->cekvalidasihapus($id);
+
+        if ($cekdata==true) {
+            $query = DB::table('error')
+            ->select('keterangan')
+            ->where('kodeerror', '=', 'SATL')
+            ->get();
+        $keterangan = $query['0'];
+
+            $data = [
+                'status' => false,
+                'message' => $keterangan,
+                'errors' => '',
+                'kondisi' => $cekdata
+            ];
+
+            return response($data);
+         
+        } else {
+            $data = [
+                'status' => false,
+                'message' => '',
+                'errors' => '',
+                'kondisi' => $cekdata
+            ];
+
+            return response($data); 
+        }
+    }
     public function default()
     {
         $supplier = new Supplier();

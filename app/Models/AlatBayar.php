@@ -25,6 +25,67 @@ class AlatBayar extends MyModel
         'updated_at',
     ];
 
+    public function cekvalidasihapus($id)
+    {
+        $pengeluaranHeader = DB::table('pengeluaranheader')
+            ->from(
+                DB::raw("pengeluaranheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.alatbayar_id'
+            )
+            ->where('a.alatbayar_id', '=', $id)
+            ->first();
+        if (isset($pengeluaranHeader)) {
+            $data = true;
+            goto selesai;
+        }
+
+        $pelunasanPiutang = DB::table('pelunasanpiutangheader')
+            ->from(
+                DB::raw("pelunasanpiutangheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.alatbayar_id'
+            )
+            ->where('a.alatbayar_id', '=', $id)
+            ->first();
+        if (isset($pelunasanPiutang)) {
+            $data = true;
+            goto selesai;
+        }
+        $hutangBayar = DB::table('hutangbayarheader')
+            ->from(
+                DB::raw("hutangbayarheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.alatbayar_id'
+            )
+            ->where('a.alatbayar_id', '=', $id)
+            ->first();
+        if (isset($hutangBayar)) {
+            $data = true;
+            goto selesai;
+        }
+        $pencairanGiroPengeluaran = DB::table('pencairangiropengeluarandetail')
+            ->from(
+                DB::raw("pencairangiropengeluarandetail as a with (readuncommitted)")
+            )
+            ->select(
+                'a.alatbayar_id'
+            )
+            ->where('a.alatbayar_id', '=', $id)
+            ->first();
+        if (isset($pencairanGiroPengeluaran)) {
+            $data = true;
+            goto selesai;
+        }
+
+
+        $data=false;
+        selesai:
+        return $data;
+    }
     public function get()
     {
         $this->setRequestParameters();

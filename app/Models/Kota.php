@@ -23,6 +23,75 @@ class Kota extends MyModel
         'updated_at',
     ];
 
+    public function cekvalidasihapus($id)
+    {
+        $tarif = DB::table('tarif')
+            ->from(
+                DB::raw("tarif as a with (readuncommitted)")
+            )
+            ->select(
+                'a.kota_id'
+            )
+            ->where('a.kota_id', '=', $id)
+            ->first();
+        if (isset($tarif)) {
+            $data = true;
+            goto selesai;
+        }
+        
+        $suratpengantar = DB::table('suratpengantar')
+            ->from(
+                DB::raw("suratpengantar as a with (readuncommitted)")
+            )
+            ->select(
+                'a.dari_id',
+                'a.sampai_id'
+            )
+            ->where('a.dari_id', '=', $id)
+            ->where('a.sampai_id', '=', $id)
+            ->first();
+        if (isset($suratpengantar)) {
+            $data = true;
+            goto selesai;
+        }
+
+        $upahSupir = DB::table('upahsupir')
+            ->from(
+                DB::raw("upahsupir as a with (readuncommitted)")
+            )
+            ->select(
+                'a.kotadari_id'
+            )
+            ->where('a.kotadari_id', '=', $id)
+            ->where('a.kotasampai_id', '=', $id)
+            ->first();
+        if (isset($upahSupir)) {
+            $data = true;
+            goto selesai;
+        }
+
+        $upahRitasi = DB::table('upahritasi')
+            ->from(
+                DB::raw("upahritasi as a with (readuncommitted)")
+            )
+            ->select(
+                'a.kotadari_id'
+            )
+            ->where('a.kotadari_id', '=', $id)
+            ->where('a.kotasampai_id', '=', $id)
+            ->first();
+        if (isset($upahRitasi)) {
+            $data = true;
+            goto selesai;
+        }
+
+
+
+
+        $data = false;
+        selesai:
+        return $data;
+    }
     public function get()
     {
         $this->setRequestParameters();

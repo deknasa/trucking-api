@@ -23,6 +23,141 @@ class Bank extends MyModel
         'updated_at' => 'date:d-m-Y H:i:s'
     ];
 
+    public function cekvalidasihapus($id)
+    {
+        $pengeluaranHeader = DB::table('pengeluaranheader')
+            ->from(
+                DB::raw("pengeluaranheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.bank_id'
+            )
+            ->where('a.bank_id', '=', $id)
+            ->first();
+        if (isset($pengeluaranHeader)) {
+            $data = true;
+            goto selesai;
+        }
+
+        $penerimaanHeader = DB::table('penerimaanheader')
+            ->from(
+                DB::raw("penerimaanheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.bank_id'
+            )
+            ->where('a.bank_id', '=', $id)
+            ->first();
+        if (isset($penerimaanHeader)) {
+            $data = true;
+            goto selesai;
+        }
+        $kasgantungHeader = DB::table('kasgantungheader')
+            ->from(
+                DB::raw("kasgantungheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.bank_id'
+            )
+            ->where('a.bank_id', '=', $id)
+            ->first();
+        if (isset($kasgantungHeader)) {
+            $data = true;
+            goto selesai;
+        }
+
+        $penerimaanGiroDetail = DB::table('penerimaangirodetail')
+            ->from(
+                DB::raw("penerimaangirodetail as a with (readuncommitted)")
+            )
+            ->select(
+                'a.bank_id'
+            )
+            ->where('a.bank_id', '=', $id)
+            ->first();
+        if (isset($penerimaanGiroDetail)) {
+            $data = true;
+            goto selesai;
+        }
+
+        $rekapPenerimaanHeader = DB::table('rekappenerimaanheader')
+            ->from(
+                DB::raw("rekappenerimaanheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.bank_id'
+            )
+            ->where('a.bank_id', '=', $id)
+            ->first();
+        if (isset($rekapPenerimaanHeader)) {
+            $data = true;
+            goto selesai;
+        }
+
+        $rekapPengeluaranHeader = DB::table('rekappengeluaranheader')
+            ->from(
+                DB::raw("rekappengeluaranheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.bank_id'
+            )
+            ->where('a.bank_id', '=', $id)
+            ->first();
+        if (isset($rekapPengeluaranHeader)) {
+            $data = true;
+            goto selesai;
+        }
+        $pelunasanPiutang = DB::table('pelunasanpiutangheader')
+            ->from(
+                DB::raw("pelunasanpiutangheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.bank_id'
+            )
+            ->where('a.bank_id', '=', $id)
+            ->first();
+        if (isset($pelunasanPiutang)) {
+            $data = true;
+            goto selesai;
+        }
+
+        $hutangBayar = DB::table('hutangbayarheader')
+            ->from(
+                DB::raw("hutangbayarheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.bank_id'
+            )
+            ->where('a.bank_id', '=', $id)
+            ->first();
+        if (isset($hutangBayar)) {
+            $data = true;
+            goto selesai;
+        }
+
+        $alatBayar = DB::table('alatbayar')
+            ->from(
+                DB::raw("alatbayar as a with (readuncommitted)")
+            )
+            ->select(
+                'a.bank_id'
+            )
+            ->where('a.bank_id', '=', $id)
+            ->first();
+        if (isset($alatBayar)) {
+            $data = true;
+            goto selesai;
+        }
+
+
+
+
+
+        $data=false;
+        selesai:
+        return $data;
+    }
+
     public function get()
     {
         $this->setRequestParameters();

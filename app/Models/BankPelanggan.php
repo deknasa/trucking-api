@@ -23,6 +23,42 @@ class BankPelanggan extends MyModel
         'updated_at' => 'date:d-m-Y H:i:s'
     ];
 
+    public function cekvalidasihapus($id)
+    {
+        $penerimaanDetail = DB::table('penerimaandetail')
+            ->from(
+                DB::raw("penerimaandetail as a with (readuncommitted)")
+            )
+            ->select(
+                'a.bankpelanggan_id'
+            )
+            ->where('a.bankpelanggan_id', '=', $id)
+            ->first();
+        if (isset($penerimaanDetail)) {
+            $data = true;
+            goto selesai;
+        }
+
+        $penerimaanGiroDetail = DB::table('penerimaangirodetail')
+            ->from(
+                DB::raw("penerimaangirodetail as a with (readuncommitted)")
+            )
+            ->select(
+                'a.bankpelanggan_id'
+            )
+            ->where('a.bankpelanggan_id', '=', $id)
+            ->first();
+        if (isset($penerimaanGiroDetail)) {
+            $data = true;
+            goto selesai;
+        }
+
+
+        $data=false;
+        selesai:
+        return $data;
+    }
+
     public function get()
     {
         $this->setRequestParameters();

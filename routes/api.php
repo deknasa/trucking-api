@@ -245,6 +245,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('kota/combo', [KotaController::class, 'combo']);
     Route::get('kota/field_length', [KotaController::class, 'fieldLength']);
     Route::get('kota/default', [KotaController::class, 'default']);
+    Route::post('kota/{id}/cekValidasi', [KotaController::class, 'cekValidasi'])->name('kota.cekValidasi');
     Route::resource('kota', KotaController::class);
 
     Route::get('logtrail/detail', [LogTrailController::class, 'detail']);
@@ -267,21 +268,25 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('container/combostatus', [ContainerController::class, 'combostatus']);
     Route::get('container/getPosition2', [ContainerController::class, 'getPosition2']);
     Route::get('container/default', [ContainerController::class, 'default']);
+    Route::post('container/{id}/cekValidasi', [ContainerController::class, 'cekValidasi'])->name('container.cekValidasi');
     Route::resource('container', ContainerController::class);
 
     Route::get('bank/combo', [BankController::class, 'combo']);
     Route::get('bank/field_length', [BankController::class, 'fieldLength']);
     Route::get('bank/default', [BankController::class, 'default']);
+    Route::post('bank/{id}/cekValidasi', [BankController::class, 'cekValidasi'])->name('bank.cekValidasi');
     Route::resource('bank', BankController::class);
 
     Route::get('alatbayar/combo', [AlatBayarController::class, 'combo']);
     Route::get('alatbayar/field_length', [AlatBayarController::class, 'fieldLength']);
     Route::get('alatbayar/default', [AlatBayarController::class, 'default']);
+    Route::post('alatbayar/{id}/cekValidasi', [AlatBayarController::class, 'cekValidasi'])->name('alatbayar.cekValidasi');
     Route::resource('alatbayar', AlatBayarController::class);
 
     Route::get('bankpelanggan/combo', [BankPelangganController::class, 'combo']);
     Route::get('bankpelanggan/field_length', [BankPelangganController::class, 'fieldLength']);
     Route::get('bankpelanggan/default', [BankPelangganController::class, 'default']);
+    Route::post('bankpelanggan/{id}/cekValidasi', [BankPelangganController::class, 'cekValidasi'])->name('bankpelanggan.cekValidasi');
     Route::resource('bankpelanggan', BankPelangganController::class);
 
     Route::get('jenisemkl/combo', [JenisEmklController::class, 'combo']);
@@ -396,6 +401,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('supplier/export', [SupplierController::class, 'export']);
     Route::get('supplier/field_length', [SupplierController::class, 'fieldLength']);
     Route::get('supplier/default', [SupplierController::class, 'default']);
+    Route::post('supplier/{id}/cekValidasi', [SupplierController::class, 'cekValidasi'])->name('supplier.cekValidasi');
     Route::resource('supplier', SupplierController::class);
 
     Route::get('stok/default', [StokController::class, 'default']);
@@ -417,6 +423,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('statuscontainer/export', [StatusContainerController::class, 'export']);
     Route::get('statuscontainer/field_length', [StatusContainerController::class, 'fieldLength']);
     Route::get('statuscontainer/default', [StatusContainerController::class, 'default']);
+    Route::post('statuscontainer/{id}/cekValidasi', [StatusContainerController::class, 'cekValidasi'])->name('statuscontainer.cekValidasi');
     Route::resource('statuscontainer', StatusContainerController::class)->parameters(['statuscontainer' => 'statusContainer']);
 
     Route::get('penerimaantrucking/export', [PenerimaanTruckingController::class, 'export']);
@@ -796,6 +803,7 @@ Route::resource('kerusakan', KerusakanController::class);
 Route::get('mandor/combo', [MandorController::class, 'combo']);
 Route::get('mandor/field_length', [MandorController::class, 'fieldLength']);
 Route::get('mandor/default', [MandorController::class, 'default']);
+Route::post('mandor/{id}/cekValidasi', [MandorController::class, 'cekValidasi'])->name('mandor.cekValidasi');
 Route::resource('mandor', MandorController::class);
 
 Route::get('merk/combo', [MerkController::class, 'combo']);
@@ -811,6 +819,7 @@ Route::resource('satuan', SatuanController::class);
 Route::get('zona/combo', [ZonaController::class, 'combo']);
 Route::get('zona/field_length', [ZonaController::class, 'fieldLength']);
 Route::get('zona/default', [ZonaController::class, 'default']);
+Route::post('zona/{id}/cekValidasi', [ZonaController::class, 'cekValidasi'])->name('zona.cekValidasi');
 Route::resource('zona', ZonaController::class);
 
 
@@ -819,6 +828,7 @@ Route::get('tarif/field_length', [TarifController::class, 'fieldLength']);
 Route::get('tarif/default', [TarifController::class, 'default']);
 Route::get('tarif/listpivot', [TarifController::class, 'listpivot']);
 Route::post('tarif/import', [TarifController::class, 'import']);
+Route::post('tarif/{id}/cekValidasi', [TarifController::class, 'cekValidasi'])->name('tarif.cekValidasi');
 Route::resource('tarif', TarifController::class);
 
 Route::get('tarifrincian/setuprow', [TarifRincianController::class, 'setUpRow']);
@@ -849,6 +859,7 @@ Route::resource('mandortrip', MandorTripController::class);
 Route::get('mekanik/combo', [MekanikController::class, 'combo']);
 Route::get('mekanik/field_length', [MekanikController::class, 'fieldLength']);
 Route::get('mekanik/default', [MekanikController::class, 'default']);
+Route::post('mekanik/{id}/cekValidasi', [MekanikController::class, 'cekValidasi'])->name('mekanik.cekValidasi');
 Route::resource('mekanik', MekanikController::class);
 
 Route::get('upahsupir/combo', [UpahSupirController::class, 'combo']);

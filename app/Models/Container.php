@@ -19,10 +19,98 @@ class Container extends MyModel
         'updated_at',
     ];
 
-    // protected $casts = [
-    //     'created_at' => 'date:d-m-Y H:i:s',
-    //     'updated_at' => 'date:d-m-Y H:i:s'
-    // ];
+    protected $casts = [
+        'created_at' => 'date:d-m-Y H:i:s',
+        'updated_at' => 'date:d-m-Y H:i:s'
+    ];
+
+    public function cekvalidasihapus($id)
+    {
+        // cek sudah ada container
+
+
+        $tarif = DB::table('tarifrincian')
+            ->from(
+                DB::raw("tarifrincian as a with (readuncommitted)")
+            )
+            ->select(
+                'a.container_id'
+            )
+            ->where('a.container_id', '=', $id)
+            ->first();
+
+        if (isset($tarif)) {
+            $data = true;
+            goto selesai;
+        }
+
+        $upahSupir = DB::table('upahsupirrincian')
+            ->from(
+                DB::raw("upahsupirrincian as a with (readuncommitted)")
+            )
+            ->select(
+                'a.container_id'
+            )
+            ->where('a.container_id', '=', $id)
+            ->first();
+
+        if (isset($upahSupir)) {
+            $data = true;
+            goto selesai;
+        }
+
+        $upahRitasi = DB::table('upahritasirincian')
+            ->from(
+                DB::raw("upahritasirincian as a with (readuncommitted)")
+            )
+            ->select(
+                'a.container_id'
+            )
+            ->where('a.container_id', '=', $id)
+            ->first();
+            
+        if (isset($upahRitasi)) {
+            $data = true;
+            goto selesai;
+        }
+        
+        $suratPengantar = DB::table('suratpengantar')
+            ->from(
+                DB::raw("suratpengantar as a with (readuncommitted)")
+            )
+            ->select(
+                'a.container_id'
+            )
+            ->where('a.container_id', '=', $id)
+            ->first();
+            
+        if (isset($suratPengantar)) {
+            $data = true;
+            goto selesai;
+        }
+
+        $orderanTrucking = DB::table('orderantrucking')
+            ->from(
+                DB::raw("orderantrucking as a with (readuncommitted)")
+            )
+            ->select(
+                'a.container_id'
+            )
+            ->where('a.container_id', '=', $id)
+            ->first();
+            
+        if (isset($orderanTrucking)) {
+            $data = true;
+            goto selesai;
+        }
+
+
+
+        $data = false;
+        selesai:
+        return $data;
+    }
+
 
     public function get()
     {

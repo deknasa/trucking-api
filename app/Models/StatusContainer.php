@@ -20,6 +20,41 @@ class StatusContainer extends MyModel
         'updated_at',
     ];
 
+    public function cekvalidasihapus($id)
+    {
+        $upahSupirRincian = DB::table('upahsupirrincian')
+            ->from(
+                DB::raw("upahsupirrincian as a with (readuncommitted)")
+            )
+            ->select(
+                'a.statuscontainer_id'
+            )
+            ->where('a.statuscontainer_id', '=', $id)
+            ->first();
+        if (isset($upahSupirRincian)) {
+            $data = true;
+            goto selesai;
+        }
+
+        $suratPengantar = DB::table('suratpengantar')
+            ->from(
+                DB::raw("suratpengantar as a with (readuncommitted)")
+            )
+            ->select(
+                'a.statuscontainer_id'
+            )
+            ->where('a.statuscontainer_id', '=', $id)
+            ->first();
+        if (isset($suratPengantar)) {
+            $data = true;
+            goto selesai;
+        }
+
+
+        $data=false;
+        selesai:
+        return $data;
+    }
     public function get()
     {
         $this->setRequestParameters();

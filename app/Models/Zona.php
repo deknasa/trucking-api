@@ -19,6 +19,41 @@ class Zona extends MyModel
         'updated_at',
     ];
 
+    public function cekvalidasihapus($id)
+    {
+        $supir = DB::table('supir')
+            ->from(
+                DB::raw("supir as a with (readuncommitted)")
+            )
+            ->select(
+                'a.zona_id'
+            )
+            ->where('a.zona_id', '=', $id)
+            ->first();
+        if (isset($supir)) {
+            $data = true;
+            goto selesai;
+        }
+
+        $tarif = DB::table('tarif')
+            ->from(
+                DB::raw("tarif as a with (readuncommitted)")
+            )
+            ->select(
+                'a.zona_id'
+            )
+            ->where('a.zona_id', '=', $id)
+            ->first();
+        if (isset($tarif)) {
+            $data = true;
+            goto selesai;
+        }
+
+
+        $data = false;
+        selesai:
+        return $data;
+    }
     public function get()
     {
         $this->setRequestParameters();

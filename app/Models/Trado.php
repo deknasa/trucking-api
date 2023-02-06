@@ -36,8 +36,36 @@ class Trado extends MyModel
             goto selesai;
         }
 
+        $serviceOut = DB::table('serviceoutheader')
+            ->from(
+                DB::raw("serviceoutheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.trado_id'
+            )
+            ->where('a.trado_id', '=', $id)
+            ->first();
+        if (isset($serviceOut)) {
+            $data = true;
+            goto selesai;
+        }
+        
+        $suratPengantar = DB::table('suratpengantar')
+            ->from(
+                DB::raw("suratpengantar as a with (readuncommitted)")
+            )
+            ->select(
+                'a.trado_id'
+            )
+            ->where('a.trado_id', '=', $id)
+            ->first();
+        if (isset($suratPengantar)) {
+            $data = true;
+            goto selesai;
+        }
 
-        $data=false;
+
+        $data = false;
         selesai:
 
         return $data;
