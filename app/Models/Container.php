@@ -40,7 +40,11 @@ class Container extends MyModel
             ->first();
 
         if (isset($tarif)) {
-            $data = true;
+             $data = [
+                'kondisi' => true,
+                'keterangan' => 'Tarif',
+            ];
+
             goto selesai;
         }
 
@@ -55,7 +59,11 @@ class Container extends MyModel
             ->first();
 
         if (isset($upahSupir)) {
-            $data = true;
+             $data = [
+                'kondisi' => true,
+                'keterangan' => 'Upah Supir',
+            ];
+
             goto selesai;
         }
 
@@ -70,7 +78,11 @@ class Container extends MyModel
             ->first();
             
         if (isset($upahRitasi)) {
-            $data = true;
+             $data = [
+                'kondisi' => true,
+                'keterangan' => 'Upah Ritasi',
+            ];
+
             goto selesai;
         }
         
@@ -85,7 +97,11 @@ class Container extends MyModel
             ->first();
             
         if (isset($suratPengantar)) {
-            $data = true;
+             $data = [
+                'kondisi' => true,
+                'keterangan' => 'Surat Pengantar',
+            ];
+
             goto selesai;
         }
 
@@ -100,13 +116,20 @@ class Container extends MyModel
             ->first();
             
         if (isset($orderanTrucking)) {
-            $data = true;
+             $data = [
+                'kondisi' => true,
+                'keterangan' => 'Orderan Trucking',
+            ];
+
             goto selesai;
         }
 
 
+        $data = [
+            'kondisi' => false,
+            'keterangan' => '',
+        ];
 
-        $data = false;
         selesai:
         return $data;
     }

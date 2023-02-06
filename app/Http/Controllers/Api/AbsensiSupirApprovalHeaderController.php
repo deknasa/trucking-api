@@ -136,6 +136,7 @@ class AbsensiSupirApprovalHeaderController extends Controller
                     'nominal' => $details['nominal'],
                     'approvalabsensisupir' => true,
                     'absensisupirapprovalheader_id' => $absensiSupirApprovalHeader->id,
+                    'from' => "approvalabsensi"
                 ];
 
 

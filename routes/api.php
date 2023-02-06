@@ -224,6 +224,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('agen/export', [AgenController::class, 'export'])->name('export');
     Route::get('agen/default', [AgenController::class, 'default']);
     Route::post('agen/{agen}/approval', [AgenController::class, 'approval'])->name('agen.approval');
+    Route::post('agen/{id}/cekValidasi', [AgenController::class, 'cekValidasi'])->name('agen.cekValidasi');
     Route::resource('agen', AgenController::class);
 
     Route::get('cabang/field_length', [CabangController::class, 'fieldLength']);
@@ -236,6 +237,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('gandengan/combostatus', [GandenganController::class, 'combostatus']);
     Route::get('gandengan/getPosition2', [GandenganController::class, 'getPosition2']);
     Route::get('gandengan/default', [GandenganController::class, 'default']);
+    Route::post('gandengan/{id}/cekValidasi', [GandenganController::class, 'cekValidasi'])->name('gandengan.cekValidasi');
     Route::resource('gandengan', GandenganController::class);
 
 
@@ -292,16 +294,19 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('jenisemkl/combo', [JenisEmklController::class, 'combo']);
     Route::get('jenisemkl/field_length', [JenisEmklController::class, 'fieldLength']);
     Route::get('jenisemkl/default', [JenisEmklController::class, 'default']);
+    Route::post('jenisemkl/{id}/cekValidasi', [JenisEmklController::class, 'cekValidasi'])->name('jenisemkl.cekValidasi');
     Route::resource('jenisemkl', JenisEmklController::class);
 
     Route::get('jenisorder/combo', [JenisOrderController::class, 'combo']);
     Route::get('jenisorder/field_length', [JenisOrderController::class, 'fieldLength']);
     Route::get('jenisorder/default', [JenisOrderController::class, 'default']);
+    Route::post('jenisorder/{id}/cekValidasi', [JenisOrderController::class, 'cekValidasi'])->name('jenisorder.cekValidasi');
     Route::resource('jenisorder', JenisOrderController::class);
 
     Route::get('jenistrado/combo', [JenisTradoController::class, 'combo']);
     Route::get('jenistrado/field_length', [JenisTradoController::class, 'fieldLength']);
     Route::get('jenistrado/default', [JenisTradoController::class, 'default']);
+    Route::post('jenistrado/{id}/cekValidasi', [JenisTradoController::class, 'cekValidasi'])->name('jenistrado.cekValidasi');
     Route::resource('jenistrado', JenisTradoController::class);
 
     Route::get('akunpusat/field_length', [AkunPusatController::class, 'fieldLength']);
@@ -396,6 +401,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('subkelompok/export', [SubKelompokController::class, 'export']);
     Route::get('subkelompok/field_length', [SubKelompokController::class, 'fieldLength']);
     Route::get('subkelompok/default', [SubKelompokController::class, 'default']);
+    Route::post('subkelompok/{id}/cekValidasi', [SubKelompokController::class, 'cekValidasi'])->name('subkelompok.cekValidasi');
     Route::resource('subkelompok', SubKelompokController::class)->parameters(['subkelompok' => 'subKelompok']);
 
     Route::get('supplier/export', [SupplierController::class, 'export']);
@@ -405,17 +411,20 @@ route::middleware(['auth:api'])->group(function () {
     Route::resource('supplier', SupplierController::class);
 
     Route::get('stok/default', [StokController::class, 'default']);
+    Route::post('stok/{id}/cekValidasi', [StokController::class, 'cekValidasi'])->name('stok.cekValidasi');
     Route::apiResource('stok', StokController::class);
 
 
     Route::get('penerima/export', [PenerimaController::class, 'export']);
     Route::get('penerima/field_length', [PenerimaController::class, 'fieldLength']);
     Route::get('penerima/default', [PenerimaController::class, 'default']);
+    Route::post('penerima/{id}/cekValidasi', [PenerimaController::class, 'cekValidasi'])->name('penerima.cekValidasi');
     Route::resource('penerima', PenerimaController::class);
 
     Route::get('pelanggan/export', [PelangganController::class, 'export']);
     Route::get('pelanggan/field_length', [PelangganController::class, 'fieldLength']);
     Route::get('pelanggan/default', [PelangganController::class, 'default']);
+    Route::post('pelanggan/{id}/cekValidasi', [PelangganController::class, 'cekValidasi'])->name('pelanggan.cekValidasi');
     Route::get('pelanggan/combostatus', [PelangganController::class, 'combostatus']);
 
     Route::resource('pelanggan', PelangganController::class);
@@ -428,10 +437,12 @@ route::middleware(['auth:api'])->group(function () {
 
     Route::get('penerimaantrucking/export', [PenerimaanTruckingController::class, 'export']);
     Route::get('penerimaantrucking/field_length', [PenerimaanTruckingController::class, 'fieldLength']);
+    Route::post('penerimaantrucking/{id}/cekValidasi', [PenerimaanTruckingController::class, 'cekValidasi'])->name('penerimaantrucking.cekValidasi');
     Route::resource('penerimaantrucking', PenerimaanTruckingController::class)->parameters(['penerimaantrucking' => 'penerimaanTrucking']);
 
     Route::get('pengeluarantrucking/export', [PengeluaranTruckingController::class, 'export']);
     Route::get('pengeluarantrucking/field_length', [PengeluaranTruckingController::class, 'fieldLength']);
+    Route::post('pengeluarantrucking/{id}/cekValidasi', [PengeluaranTruckingController::class, 'cekValidasi'])->name('pengeluarantrucking.cekValidasi');
     Route::resource('pengeluarantrucking', PengeluaranTruckingController::class)->parameters(['pengeluarantrucking' => 'pengeluaranTrucking']);
 
 
@@ -466,6 +477,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('penerimaanstok/field_length', [PenerimaanStokController::class, 'fieldLength']);
     Route::get('penerimaanstok/export', [PenerimaanStokController::class, 'export']);
     Route::get('penerimaanstok/default', [PenerimaanStokController::class, 'default']);
+    Route::post('penerimaanstok/{id}/cekValidasi', [PenerimaanStokController::class, 'cekValidasi'])->name('penerimaanstok.cekValidasi');
     Route::apiResource('penerimaanstok', PenerimaanStokController::class);
 
     Route::get('penerimaanstokheader/{id}/printreport', [PenerimaanStokHeaderController::class, 'printReport']);
@@ -475,6 +487,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('pengeluaranstok/field_length', [PengeluaranStokController::class, 'fieldLength']);
     // Route::get('pengeluaranstok/export', [PengeluaranStokController::class,'export']);
     Route::get('pengeluaranstok/default', [PengeluaranStokController::class, 'default']);
+    Route::post('pengeluaranstok/{id}/cekValidasi', [PengeluaranStokController::class, 'cekValidasi'])->name('pengeluaranstok.cekValidasi');
     Route::apiResource('pengeluaranstok', PengeluaranStokController::class);
 
     Route::get('pengeluaranstokheader/{id}/printreport', [PengeluaranStokHeaderController::class, 'printReport']);
@@ -782,21 +795,25 @@ route::middleware(['auth:api'])->group(function () {
 Route::get('gudang/combo', [GudangController::class, 'combo']);
 Route::get('gudang/field_length', [GudangController::class, 'fieldLength']);
 Route::get('gudang/default', [GudangController::class, 'default']);
+Route::post('gudang/{id}/cekValidasi', [GudangController::class, 'cekValidasi'])->name('gudang.cekValidasi');
 Route::resource('gudang', GudangController::class);
 
 Route::get('kategori/combo', [KategoriController::class, 'combo']);
 Route::get('kategori/field_length', [KategoriController::class, 'fieldLength']);
 Route::get('kategori/default', [KategoriController::class, 'default']);
+Route::post('kategori/{id}/cekValidasi', [KategoriController::class, 'cekValidasi'])->name('kategori.cekValidasi');
 Route::resource('kategori', KategoriController::class);
 
 Route::get('kelompok/combo', [KelompokController::class, 'combo']);
 Route::get('kelompok/field_length', [KelompokController::class, 'fieldLength']);
 Route::get('kelompok/default', [KelompokController::class, 'default']);
+Route::post('kelompok/{id}/cekValidasi', [KelompokController::class, 'cekValidasi'])->name('kelompok.cekValidasi');
 Route::resource('kelompok', KelompokController::class);
 
 Route::get('kerusakan/combo', [KerusakanController::class, 'combo']);
 Route::get('kerusakan/field_length', [KerusakanController::class, 'fieldLength']);
 Route::get('kerusakan/default', [KerusakanController::class, 'default']);
+Route::post('kerusakan/{id}/cekValidasi', [KerusakanController::class, 'cekValidasi'])->name('kerusakan.cekValidasi');
 Route::resource('kerusakan', KerusakanController::class);
 
 
@@ -809,6 +826,7 @@ Route::resource('mandor', MandorController::class);
 Route::get('merk/combo', [MerkController::class, 'combo']);
 Route::get('merk/field_length', [MerkController::class, 'fieldLength']);
 Route::get('merk/default', [MerkController::class, 'default']);
+Route::post('merk/{id}/cekValidasi', [MerkController::class, 'cekValidasi'])->name('merk.cekValidasi');
 Route::resource('merk', MerkController::class);
 
 Route::get('satuan/combo', [SatuanController::class, 'combo']);
@@ -840,6 +858,7 @@ Route::resource('tarifrincian', TarifRincianController::class);
 Route::get('orderantrucking/combo', [OrderanTruckingController::class, 'combo']);
 Route::get('orderantrucking/field_length', [OrderanTruckingController::class, 'fieldLength']);
 Route::get('orderantrucking/default', [OrderanTruckingController::class, 'default']);
+Route::post('orderantrucking/{id}/cekValidasi', [OrderanTruckingController::class, 'cekValidasi'])->name('orderantrucking.cekValidasi');
 Route::resource('orderantrucking', OrderanTruckingController::class);
 
 Route::get('prosesabsensisupir/combo', [ProsesAbsensiSupirController::class, 'combo']);
@@ -885,6 +904,7 @@ Route::resource('upahsupirrincian', UpahSupirRincianController::class);
 Route::get('suratpengantar/combo', [SuratPengantarController::class, 'combo']);
 Route::get('suratpengantar/field_length', [SuratPengantarController::class, 'fieldLength']);
 Route::get('suratpengantar/get_gaji', [SuratPengantarController::class, 'getGaji']);
+Route::post('suratpengantar/{id}/cekValidasi', [SuratPengantarController::class, 'cekValidasi'])->name('suratpengantar.cekValidasi');
 Route::resource('suratpengantar', SuratPengantarController::class);
 
 

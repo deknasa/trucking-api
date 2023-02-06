@@ -32,14 +32,15 @@ class MandorController extends Controller
             ]
         ]);
     }
-
+  
     public function cekValidasi($id) {
-        $mandor = new Mandor();
+        $mandor= new Mandor();
         $cekdata=$mandor->cekvalidasihapus($id);
-
-        if ($cekdata==true) {
+        if ($cekdata['kondisi']==true) {
             $query = DB::table('error')
-            ->select('keterangan')
+            ->select(
+                DB::raw("ltrim(rtrim(keterangan))+' (".$cekdata['keterangan'].")' as keterangan")
+                )
             ->where('kodeerror', '=', 'SATL')
             ->get();
         $keterangan = $query['0'];
@@ -48,7 +49,7 @@ class MandorController extends Controller
                 'status' => false,
                 'message' => $keterangan,
                 'errors' => '',
-                'kondisi' => $cekdata
+                'kondisi' => $cekdata['kondisi'],
             ];
 
             return response($data);
@@ -58,12 +59,13 @@ class MandorController extends Controller
                 'status' => false,
                 'message' => '',
                 'errors' => '',
-                'kondisi' => $cekdata
+                'kondisi' => $cekdata['kondisi'],
             ];
 
             return response($data); 
         }
     }
+    
 
     public function default()
     {

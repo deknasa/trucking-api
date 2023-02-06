@@ -32,10 +32,49 @@ class Trado extends MyModel
             ->where('a.trado_id', '=', $id)
             ->first();
         if (isset($absen)) {
-            $data = true;
+             $data = [
+                'kondisi' => true,
+                'keterangan' => 'Absensi Supir',
+            ];
+
             goto selesai;
         }
 
+        $penerimaanStok = DB::table('penerimaanstokheader')
+            ->from(
+                DB::raw("penerimaanstokheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.trado_id'
+            )
+            ->where('a.trado_id', '=', $id)
+            ->first();
+        if (isset($penerimaanStok)) {
+             $data = [
+                'kondisi' => true,
+                'keterangan' => 'Penerimaan Stok',
+            ];
+
+            goto selesai;
+        }
+        $pengeluaranStok = DB::table('pengeluaranstokheader')
+            ->from(
+                DB::raw("pengeluaranstokheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.trado_id'
+            )
+            ->where('a.trado_id', '=', $id)
+            ->first();
+        if (isset($pengeluaranStok)) {
+             $data = [
+                'kondisi' => true,
+                'keterangan' => 'Pengeluaran Stok',
+            ];
+
+            goto selesai;
+        }
+        
         $serviceOut = DB::table('serviceoutheader')
             ->from(
                 DB::raw("serviceoutheader as a with (readuncommitted)")
@@ -46,7 +85,11 @@ class Trado extends MyModel
             ->where('a.trado_id', '=', $id)
             ->first();
         if (isset($serviceOut)) {
-            $data = true;
+             $data = [
+                'kondisi' => true,
+                'keterangan' => 'Service Out',
+            ];
+
             goto selesai;
         }
         
@@ -60,7 +103,45 @@ class Trado extends MyModel
             ->where('a.trado_id', '=', $id)
             ->first();
         if (isset($suratPengantar)) {
-            $data = true;
+             $data = [
+                'kondisi' => true,
+                'keterangan' => 'Surat Pengantar',
+            ];
+
+            goto selesai;
+        }
+        $serviceIn = DB::table('serviceinheader')
+            ->from(
+                DB::raw("serviceinheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.trado_id'
+            )
+            ->where('a.trado_id', '=', $id)
+            ->first();
+        if (isset($serviceIn)) {
+             $data = [
+                'kondisi' => true,
+                'keterangan' => 'Service In',
+            ];
+
+            goto selesai;
+        }
+        $ritasi = DB::table('ritasi')
+            ->from(
+                DB::raw("ritasi as a with (readuncommitted)")
+            )
+            ->select(
+                'a.trado_id'
+            )
+            ->where('a.trado_id', '=', $id)
+            ->first();
+        if (isset($ritasi)) {
+             $data = [
+                'kondisi' => true,
+                'keterangan' => 'Ritasi',
+            ];
+
             goto selesai;
         }
 

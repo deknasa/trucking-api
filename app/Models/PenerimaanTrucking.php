@@ -24,6 +24,38 @@ class PenerimaanTrucking extends MyModel
         'updated_at',
     ];   
 
+    public function cekvalidasihapus($id)
+    {     
+
+        $penerimaanTrucking = DB::table('penerimaantruckingheader')
+            ->from(
+                DB::raw("penerimaantruckingheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.penerimaantrucking_id'
+            )
+            ->where('a.penerimaantrucking_id', '=', $id)
+            ->first();
+        if (isset($penerimaanTrucking)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Penerimaan Trucking',
+            ];
+
+            
+            goto selesai;
+        }
+
+
+        $data = [
+            'kondisi' => false,
+            'keterangan' => '',
+        ];
+ 
+        selesai:
+        return $data;
+    }
+    
     public function get()
     {
         $this->setRequestParameters();

@@ -37,12 +37,13 @@ class BankPelangganController extends Controller
     }
 
     public function cekValidasi($id) {
-        $bankPelanggan = new BankPelanggan();
+        $bankPelanggan= new BankPelanggan();
         $cekdata=$bankPelanggan->cekvalidasihapus($id);
-
-        if ($cekdata==true) {
+        if ($cekdata['kondisi']==true) {
             $query = DB::table('error')
-            ->select('keterangan')
+            ->select(
+                DB::raw("ltrim(rtrim(keterangan))+' (".$cekdata['keterangan'].")' as keterangan")
+                )
             ->where('kodeerror', '=', 'SATL')
             ->get();
         $keterangan = $query['0'];
@@ -51,7 +52,7 @@ class BankPelangganController extends Controller
                 'status' => false,
                 'message' => $keterangan,
                 'errors' => '',
-                'kondisi' => $cekdata
+                'kondisi' => $cekdata['kondisi'],
             ];
 
             return response($data);
@@ -61,7 +62,7 @@ class BankPelangganController extends Controller
                 'status' => false,
                 'message' => '',
                 'errors' => '',
-                'kondisi' => $cekdata
+                'kondisi' => $cekdata['kondisi'],
             ];
 
             return response($data); 

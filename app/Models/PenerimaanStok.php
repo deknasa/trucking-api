@@ -23,7 +23,37 @@ class PenerimaanStok extends MyModel
         'created_at',
         'updated_at',
     ];
+    public function cekvalidasihapus($id)
+    {     
 
+        $penerimaanStok = DB::table('penerimaanstokheader')
+            ->from(
+                DB::raw("penerimaanstokheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.penerimaanstok_id'
+            )
+            ->where('a.penerimaanstok_id', '=', $id)
+            ->first();
+        if (isset($penerimaanStok)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Penerimaan Stok',
+            ];
+
+            
+            goto selesai;
+        }
+
+
+        $data = [
+            'kondisi' => false,
+            'keterangan' => '',
+        ];
+ 
+        selesai:
+        return $data;
+    }
     public function get()
     {
         $this->setRequestParameters();

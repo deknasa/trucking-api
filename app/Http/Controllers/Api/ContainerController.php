@@ -41,10 +41,11 @@ class ContainerController extends Controller
     public function cekValidasi($id) {
         $container= new Container();
         $cekdata=$container->cekvalidasihapus($id);
-
-        if ($cekdata==true) {
+        if ($cekdata['kondisi']==true) {
             $query = DB::table('error')
-            ->select('keterangan')
+            ->select(
+                DB::raw("ltrim(rtrim(keterangan))+' (".$cekdata['keterangan'].")' as keterangan")
+                )
             ->where('kodeerror', '=', 'SATL')
             ->get();
         $keterangan = $query['0'];
@@ -53,7 +54,7 @@ class ContainerController extends Controller
                 'status' => false,
                 'message' => $keterangan,
                 'errors' => '',
-                'kondisi' => $cekdata
+                'kondisi' => $cekdata['kondisi'],
             ];
 
             return response($data);
@@ -63,13 +64,13 @@ class ContainerController extends Controller
                 'status' => false,
                 'message' => '',
                 'errors' => '',
-                'kondisi' => $cekdata
+                'kondisi' => $cekdata['kondisi'],
             ];
 
             return response($data); 
         }
     }
-
+    
     public function default()
     {
 

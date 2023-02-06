@@ -31,7 +31,11 @@ class Zona extends MyModel
             ->where('a.zona_id', '=', $id)
             ->first();
         if (isset($supir)) {
-            $data = true;
+           
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Supir',
+            ];
             goto selesai;
         }
 
@@ -45,12 +49,18 @@ class Zona extends MyModel
             ->where('a.zona_id', '=', $id)
             ->first();
         if (isset($tarif)) {
-            $data = true;
+           
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Tarif',
+            ];
             goto selesai;
         }
 
-
-        $data = false;
+        $data = [
+            'kondisi' => false,
+            'keterangan' => '',
+        ];
         selesai:
         return $data;
     }

@@ -22,7 +22,38 @@ class JenisEmkl extends MyModel
     //     'created_at' => 'date:d-m-Y H:i:s',
     //     'updated_at' => 'date:d-m-Y H:i:s'
     // ];
+    public function cekvalidasihapus($id)
+    {     
 
+        $agen = DB::table('agen')
+            ->from(
+                DB::raw("agen as a with (readuncommitted)")
+            )
+            ->select(
+                'a.jenisemkl'
+            )
+            ->where('a.jenisemkl', '=', $id)
+            ->first();
+        if (isset($agen)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Agen',
+            ];
+
+            
+            goto selesai;
+        }
+
+
+        $data = [
+            'kondisi' => false,
+            'keterangan' => '',
+        ];
+ 
+        selesai:
+        return $data;
+    }
+    
     public function get()
     {
         $this->setRequestParameters();

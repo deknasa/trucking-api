@@ -32,7 +32,10 @@ class StatusContainer extends MyModel
             ->where('a.statuscontainer_id', '=', $id)
             ->first();
         if (isset($upahSupirRincian)) {
-            $data = true;
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Upah Supir',
+            ];
             goto selesai;
         }
 
@@ -46,12 +49,17 @@ class StatusContainer extends MyModel
             ->where('a.statuscontainer_id', '=', $id)
             ->first();
         if (isset($suratPengantar)) {
-            $data = true;
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Surat Pengantar',
+            ];
             goto selesai;
         }
 
-
-        $data=false;
+        $data = [
+            'kondisi' => false,
+            'keterangan' => '',
+        ];
         selesai:
         return $data;
     }

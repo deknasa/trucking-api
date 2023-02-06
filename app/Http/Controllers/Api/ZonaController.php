@@ -36,12 +36,13 @@ class ZonaController extends Controller
     }
 
     public function cekValidasi($id) {
-        $zona = new Zona();
+        $zona= new Zona();
         $cekdata=$zona->cekvalidasihapus($id);
-
-        if ($cekdata==true) {
+        if ($cekdata['kondisi']==true) {
             $query = DB::table('error')
-            ->select('keterangan')
+            ->select(
+                DB::raw("ltrim(rtrim(keterangan))+' (".$cekdata['keterangan'].")' as keterangan")
+                )
             ->where('kodeerror', '=', 'SATL')
             ->get();
         $keterangan = $query['0'];
@@ -50,7 +51,7 @@ class ZonaController extends Controller
                 'status' => false,
                 'message' => $keterangan,
                 'errors' => '',
-                'kondisi' => $cekdata
+                'kondisi' => $cekdata['kondisi'],
             ];
 
             return response($data);
@@ -60,12 +61,13 @@ class ZonaController extends Controller
                 'status' => false,
                 'message' => '',
                 'errors' => '',
-                'kondisi' => $cekdata
+                'kondisi' => $cekdata['kondisi'],
             ];
 
             return response($data); 
         }
     }
+    
     public function default()
     {
         $zona = new Zona();

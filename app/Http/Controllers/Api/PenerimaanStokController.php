@@ -28,7 +28,38 @@ class PenerimaanStokController extends Controller
             ]
         ]);
     }
+    public function cekValidasi($id) {
+        $penerimaanStok= new PenerimaanStok();
+        $cekdata=$penerimaanStok->cekvalidasihapus($id);
+        if ($cekdata['kondisi']==true) {
+            $query = DB::table('error')
+            ->select(
+                DB::raw("ltrim(rtrim(keterangan))+' (".$cekdata['keterangan'].")' as keterangan")
+                )
+            ->where('kodeerror', '=', 'SATL')
+            ->get();
+        $keterangan = $query['0'];
 
+            $data = [
+                'status' => false,
+                'message' => $keterangan,
+                'errors' => '',
+                'kondisi' => $cekdata['kondisi'],
+            ];
+
+            return response($data);
+         
+        } else {
+            $data = [
+                'status' => false,
+                'message' => '',
+                'errors' => '',
+                'kondisi' => $cekdata['kondisi'],
+            ];
+
+            return response($data); 
+        }
+    }
     public function default()
     {
         $penerimaanStok = new PenerimaanStok();

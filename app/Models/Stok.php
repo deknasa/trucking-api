@@ -23,6 +23,58 @@ class Stok extends MyModel
         'created_at',
         'updated_at',
     ];
+
+    public function cekvalidasihapus($id)
+    {
+
+        $pengeluaranStok = DB::table('pengeluaranstokdetail')
+            ->from(
+                DB::raw("pengeluaranstokdetail as a with (readuncommitted)")
+            )
+            ->select(
+                'a.stok_id'
+            )
+            ->where('a.stok_id', '=', $id)
+            ->first();
+        if (isset($pengeluaranStok)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Pengeluaran Stok',
+            ];
+
+
+            goto selesai;
+        }
+
+        $penerimaanStok = DB::table('penerimaanstokdetail')
+            ->from(
+                DB::raw("penerimaanstokdetail as a with (readuncommitted)")
+            )
+            ->select(
+                'a.stok_id'
+            )
+            ->where('a.stok_id', '=', $id)
+            ->first();
+        if (isset($penerimaanStok)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Penerimaan Stok',
+            ];
+
+
+            goto selesai;
+        }
+
+
+        $data = [
+            'kondisi' => false,
+            'keterangan' => '',
+        ];
+
+        selesai:
+        return $data;
+    }
+
     public function get()
     {
         $this->setRequestParameters();

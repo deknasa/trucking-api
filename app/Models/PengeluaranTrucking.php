@@ -23,6 +23,38 @@ class PengeluaranTrucking extends MyModel
         'created_at',
         'updated_at',
     ];
+
+    public function cekvalidasihapus($id)
+    {     
+
+        $pengeluaranTrucking = DB::table('pengeluarantruckingheader')
+            ->from(
+                DB::raw("pengeluarantruckingheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.pengeluarantrucking_id'
+            )
+            ->where('a.pengeluarantrucking_id', '=', $id)
+            ->first();
+        if (isset($pengeluaranTrucking)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Pengeluaran Trucking',
+            ];
+
+            
+            goto selesai;
+        }
+
+
+        $data = [
+            'kondisi' => false,
+            'keterangan' => '',
+        ];
+ 
+        selesai:
+        return $data;
+    }
     
     public function get()
     {

@@ -37,7 +37,10 @@ class Supplier extends MyModel
             ->where('a.supplier_id', '=', $id)
             ->first();
         if (isset($hutang)) {
-            $data = true;
+             $data = [
+                'kondisi' => true,
+                'keterangan' => 'Hutang',
+            ];
             goto selesai;
         }
 
@@ -51,12 +54,50 @@ class Supplier extends MyModel
             ->where('a.supplier_id', '=', $id)
             ->first();
         if (isset($hutangBayar)) {
-            $data = true;
+             $data = [
+                'kondisi' => true,
+                'keterangan' => 'Hutang Bayar',
+            ];
+            goto selesai;
+        }
+        $penerimaanStok = DB::table('penerimaanstokheader')
+            ->from(
+                DB::raw("penerimaanstokheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.supplier_id'
+            )
+            ->where('a.supplier_id', '=', $id)
+            ->first();
+        if (isset($penerimaanStok)) {
+             $data = [
+                'kondisi' => true,
+                'keterangan' => 'Penerimaan Stok',
+            ];
+            goto selesai;
+        }
+        $pengeluaranStok = DB::table('pengeluaranstokheader')
+            ->from(
+                DB::raw("pengeluaranstokheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.supplier_id'
+            )
+            ->where('a.supplier_id', '=', $id)
+            ->first();
+        if (isset($pengeluaranStok)) {
+             $data = [
+                'kondisi' => true,
+                'keterangan' => 'Pengeluaran Stok',
+            ];
             goto selesai;
         }
 
 
-        $data=false;
+        $data = [
+            'kondisi' => false,
+            'keterangan' => '',
+        ];
         selesai:
         return $data;
     }

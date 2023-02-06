@@ -19,7 +19,73 @@ class Gandengan extends MyModel
         'updated_at',
     ];
 
+    public function cekvalidasihapus($id)
+    {
+        // cek sudah ada absensi
+      
 
+        $pengeluaranStok = DB::table('pengeluaranstokheader')
+            ->from(
+                DB::raw("pengeluaranstokheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.gandengan_id'
+            )
+            ->where('a.gandengan_id', '=', $id)
+            ->first();
+        if (isset($pengeluaranStok)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Pengeluaran Stok',
+            ];
+            goto selesai;
+        }
+        $penerimaanStok = DB::table('penerimaanstokheader')
+            ->from(
+                DB::raw("penerimaanstokheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.gandengan_id'
+            )
+            ->where('a.gandengan_id', '=', $id)
+            ->first();
+        if (isset($penerimaanStok)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Penerimaan Stok',
+            ];
+            goto selesai;
+        }
+
+
+        $suratPengantar = DB::table('suratpengantar')
+            ->from(
+                DB::raw("suratpengantar as a with (readuncommitted)")
+            )
+            ->select(
+                'a.gandengan_id'
+            )
+            ->where('a.gandengan_id', '=', $id)
+            ->first();
+        if (isset($suratPengantar)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Surat Pengantar',
+            ];
+            goto selesai;
+        }
+
+
+
+
+        $data = [
+            'kondisi' => false,
+            'keterangan' => '',
+        ];
+ 
+        selesai:
+        return $data;
+    }
 
     public function get()
     {

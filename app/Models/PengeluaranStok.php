@@ -23,6 +23,38 @@ class PengeluaranStok extends MyModel
         'created_at',
         'updated_at',
     ];
+    
+    public function cekvalidasihapus($id)
+    {     
+
+        $pengeluaranStok = DB::table('pengeluaranstokheader')
+            ->from(
+                DB::raw("pengeluaranstokheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.pengeluaranstok_id'
+            )
+            ->where('a.pengeluaranstok_id', '=', $id)
+            ->first();
+        if (isset($pengeluaranStok)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Pengeluaran Stok',
+            ];
+
+            
+            goto selesai;
+        }
+
+
+        $data = [
+            'kondisi' => false,
+            'keterangan' => '',
+        ];
+ 
+        selesai:
+        return $data;
+    }
 
     public function get()
     {

@@ -24,6 +24,56 @@ class SubKelompok extends MyModel
         'created_at',
         'updated_at',
     ];
+    public function cekvalidasihapus($id)
+    {     
+
+        $stok = DB::table('stok')
+            ->from(
+                DB::raw("stok as a with (readuncommitted)")
+            )
+            ->select(
+                'a.subkelompok_id'
+            )
+            ->where('a.subkelompok_id', '=', $id)
+            ->first();
+        if (isset($stok)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Stok',
+            ];
+
+            
+            goto selesai;
+        }
+        $kategori = DB::table('kategori')
+            ->from(
+                DB::raw("kategori as a with (readuncommitted)")
+            )
+            ->select(
+                'a.subkelompok_id'
+            )
+            ->where('a.subkelompok_id', '=', $id)
+            ->first();
+        if (isset($kategori)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Kategori',
+            ];
+
+            
+            goto selesai;
+        }
+
+
+
+        $data = [
+            'kondisi' => false,
+            'keterangan' => '',
+        ];
+ 
+        selesai:
+        return $data;
+    }
 
     public function get()
     {

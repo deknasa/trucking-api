@@ -24,6 +24,38 @@ class Penerima extends MyModel
         'updated_at',
     ];
 
+    public function cekvalidasihapus($id)
+    {     
+
+        $kasGantung = DB::table('kasgantungheader')
+            ->from(
+                DB::raw("kasgantungheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.penerima_id'
+            )
+            ->where('a.penerima_id', '=', $id)
+            ->first();
+        if (isset($kasGantung)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Kas Gantung',
+            ];
+
+            
+            goto selesai;
+        }
+
+
+        $data = [
+            'kondisi' => false,
+            'keterangan' => '',
+        ];
+ 
+        selesai:
+        return $data;
+    }
+
     public function get()
     {
         $this->setRequestParameters();

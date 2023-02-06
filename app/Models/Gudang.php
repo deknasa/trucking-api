@@ -23,7 +23,72 @@ class Gudang extends MyModel
     //     'created_at' => 'date:d-m-Y H:i:s',
     //     'updated_at' => 'date:d-m-Y H:i:s'
     // ]; 
+    public function cekvalidasihapus($id)
+    {     
 
+        $penerimaanStok = DB::table('penerimaanstokheader')
+            ->from(
+                DB::raw("penerimaanstokheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.gudang_id'
+            )
+            ->where('a.gudang_id', '=', $id)
+            ->first();
+        if (isset($penerimaanStok)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Penerimaan Stok',
+            ];
+
+            
+            goto selesai;
+        }
+
+        $pengeluaranStok = DB::table('pengeluaranstokheader')
+            ->from(
+                DB::raw("pengeluaranstokheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.gudang_id'
+            )
+            ->where('a.gudang_id', '=', $id)
+            ->first();
+        if (isset($pengeluaranStok)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Pengeluaran Stok',
+            ];
+
+            
+            goto selesai;
+        }
+        $stok = DB::table('stok')
+            ->from(
+                DB::raw("stok as a with (readuncommitted)")
+            )
+            ->select(
+                'a.gudang_id'
+            )
+            ->where('a.gudang_id', '=', $id)
+            ->first();
+        if (isset($stok)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Stok',
+            ];
+
+            
+            goto selesai;
+        }
+        $data = [
+            'kondisi' => false,
+            'keterangan' => '',
+        ];
+ 
+        selesai:
+        return $data;
+    }
     public function get()
     {
         $this->setRequestParameters();

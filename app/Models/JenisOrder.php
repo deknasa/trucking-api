@@ -22,7 +22,71 @@ class JenisOrder extends MyModel
     //     'created_at' => 'date:d-m-Y H:i:s',
     //     'updated_at' => 'date:d-m-Y H:i:s'
     // ]; 
+    public function cekvalidasihapus($id)
+    {     
 
+        $orderanTrucking = DB::table('orderantrucking')
+            ->from(
+                DB::raw("orderantrucking as a with (readuncommitted)")
+            )
+            ->select(
+                'a.jenisorder_id'
+            )
+            ->where('a.jenisorder_id', '=', $id)
+            ->first();
+        if (isset($orderanTrucking)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Orderan Trucking',
+            ];
+            goto selesai;
+        }
+
+        $suratPengantar = DB::table('suratpengantar')
+            ->from(
+                DB::raw("suratpengantar as a with (readuncommitted)")
+            )
+            ->select(
+                'a.jenisorder_id'
+            )
+            ->where('a.jenisorder_id', '=', $id)
+            ->first();
+        if (isset($suratPengantar)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Surat Pengantar',
+            ];
+            goto selesai;
+        }
+
+        $invoiceHeader = DB::table('invoiceheader')
+            ->from(
+                DB::raw("invoiceheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.jenisorder_id'
+            )
+            ->where('a.jenisorder_id', '=', $id)
+            ->first();
+        if (isset($invoiceHeader)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Invoice',
+            ];
+            goto selesai;
+        }
+
+
+
+        $data = [
+            'kondisi' => false,
+            'keterangan' => '',
+        ];
+ 
+        selesai:
+        return $data;
+    }
+    
     public function get()
     {
         $this->setRequestParameters();

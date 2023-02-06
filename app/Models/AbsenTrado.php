@@ -27,12 +27,18 @@ class AbsenTrado extends MyModel
             ->where('a.absen_id', '=', $id)
             ->first();
         if (isset($absen)) {
-            $data = true;
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Absensi Supir',
+            ];
             goto selesai;
         }
 
 
-        $data=false;  
+        $data = [
+            'kondisi' => false,
+            'keterangan' => '',
+        ];
         selesai:
 
         return $data;

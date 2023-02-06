@@ -24,6 +24,119 @@ class Pelanggan extends MyModel
         'updated_at',
     ];
 
+    public function cekvalidasihapus($id)
+    {     
+
+        $penerimaan = DB::table('penerimaanheader')
+            ->from(
+                DB::raw("penerimaanheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.pelanggan_id'
+            )
+            ->where('a.pelanggan_id', '=', $id)
+            ->first();
+        if (isset($penerimaan)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Penerimaan Kas/Bank',
+            ];            
+            goto selesai;
+        }
+
+        $pengeluaran = DB::table('pengeluaranheader')
+            ->from(
+                DB::raw("pengeluaranheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.pelanggan_id'
+            )
+            ->where('a.pelanggan_id', '=', $id)
+            ->first();
+        if (isset($pengeluaran)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Pengeluaran Kas/Bank',
+            ];            
+            goto selesai;
+        }
+
+        $penerimaanGiro = DB::table('penerimaangiroheader')
+            ->from(
+                DB::raw("penerimaangiroheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.pelanggan_id'
+            )
+            ->where('a.pelanggan_id', '=', $id)
+            ->first();
+        if (isset($penerimaanGiro)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Penerimaan Giro',
+            ];            
+            goto selesai;
+        }
+
+        $orderanTrucking = DB::table('orderantrucking')
+            ->from(
+                DB::raw("orderantrucking as a with (readuncommitted)")
+            )
+            ->select(
+                'a.pelanggan_id'
+            )
+            ->where('a.pelanggan_id', '=', $id)
+            ->first();
+        if (isset($orderanTrucking)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Orderan Trucking',
+            ];            
+            goto selesai;
+        }
+        $suratPengantar = DB::table('suratpengantar')
+            ->from(
+                DB::raw("suratpengantar as a with (readuncommitted)")
+            )
+            ->select(
+                'a.pelanggan_id'
+            )
+            ->where('a.pelanggan_id', '=', $id)
+            ->first();
+        if (isset($suratPengantar)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Surat Pengantar',
+            ];            
+            goto selesai;
+        }
+        $invoiceExtra = DB::table('invoiceextraheader')
+            ->from(
+                DB::raw("invoiceextraheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.pelanggan_id'
+            )
+            ->where('a.pelanggan_id', '=', $id)
+            ->first();
+        if (isset($invoiceExtra)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Invoice Extra',
+            ];            
+            goto selesai;
+        }
+
+
+        $data = [
+            'kondisi' => false,
+            'keterangan' => '',
+        ];
+ 
+        selesai:
+        return $data;
+    }
+
     public function get()
     {
         $this->setRequestParameters();

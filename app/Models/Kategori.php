@@ -23,6 +23,37 @@ class Kategori extends MyModel
         'updated_at' => 'date:d-m-Y H:i:s'
     ];
 
+    public function cekvalidasihapus($id)
+    {     
+
+        $stok = DB::table('stok')
+            ->from(
+                DB::raw("stok as a with (readuncommitted)")
+            )
+            ->select(
+                'a.kategori_id'
+            )
+            ->where('a.kategori_id', '=', $id)
+            ->first();
+        if (isset($stok)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Stok',
+            ];
+
+            
+            goto selesai;
+        }
+
+
+        $data = [
+            'kondisi' => false,
+            'keterangan' => '',
+        ];
+ 
+        selesai:
+        return $data;
+    }
     public function get()
     {
         $this->setRequestParameters();

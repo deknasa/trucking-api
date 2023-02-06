@@ -39,6 +39,118 @@ class Supir extends MyModel
             goto selesai;
         }
 
+        $gajiSupir = DB::table('gajisupirheader')
+            ->from(
+                DB::raw("gajisupirheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.supir_id'
+            )
+            ->where('a.supir_id', '=', $id)
+            ->first();
+        if (isset($gajiSupir)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Gaji Supir',
+            ];
+
+            goto selesai;
+        }
+
+        $trado = DB::table('trado')
+            ->from(
+                DB::raw("trado as a with (readuncommitted)")
+            )
+            ->select(
+                'a.supir_id'
+            )
+            ->where('a.supir_id', '=', $id)
+            ->first();
+        if (isset($trado)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Trado',
+            ];
+
+            goto selesai;
+        }
+
+        $suratPengantar = DB::table('suratpengantar')
+            ->from(
+                DB::raw("suratpengantar as a with (readuncommitted)")
+            )
+            ->select(
+                'a.supir_id'
+            )
+            ->where('a.supir_id', '=', $id)
+            ->first();
+        if (isset($suratPengantar)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Surat Pengantar',
+            ];
+
+            goto selesai;
+        }
+
+        $penerimaanTrucking = DB::table('penerimaantruckingdetail')
+            ->from(
+                DB::raw("penerimaantruckingdetail as a with (readuncommitted)")
+            )
+            ->select(
+                'a.supir_id'
+            )
+            ->where('a.supir_id', '=', $id)
+            ->first();
+        if (isset($penerimaanTrucking)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Penerimaan Trucking',
+            ];
+
+            goto selesai;
+        }
+
+
+        $pengeluaranTrucking = DB::table('pengeluarantruckingdetail')
+            ->from(
+                DB::raw("pengeluarantruckingdetail as a with (readuncommitted)")
+            )
+            ->select(
+                'a.supir_id'
+            )
+            ->where('a.supir_id', '=', $id)
+            ->first();
+        if (isset($pengeluaranTrucking)) {
+             $data = [
+                'kondisi' => true,
+                'keterangan' => 'Pengeluaran Trucking',
+            ];
+
+            goto selesai;
+        }
+
+
+        $ritasi = DB::table('ritasi')
+            ->from(
+                DB::raw("ritasi as a with (readuncommitted)")
+            )
+            ->select(
+                'a.supir_id'
+            )
+            ->where('a.supir_id', '=', $id)
+            ->first();
+        if (isset($ritasi)) {
+             $data = [
+                'kondisi' => true,
+                'keterangan' => 'Ritasi',
+            ];
+
+            goto selesai;
+        }
+
+
+
 
         $data = [
             'kondisi' => false,

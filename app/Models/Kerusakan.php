@@ -22,7 +22,37 @@ class Kerusakan extends MyModel
     //     'created_at' => 'date:d-m-Y H:i:s',
     //     'updated_at' => 'date:d-m-Y H:i:s'
     // ]; 
+    public function cekvalidasihapus($id)
+    {     
 
+        $pengeluaranStok = DB::table('pengeluaranstokheader')
+            ->from(
+                DB::raw("pengeluaranstokheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.kerusakan_id'
+            )
+            ->where('a.kerusakan_id', '=', $id)
+            ->first();
+        if (isset($pengeluaranStok)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Pengeluaran Stok',
+            ];
+
+            
+            goto selesai;
+        }
+
+
+        $data = [
+            'kondisi' => false,
+            'keterangan' => '',
+        ];
+ 
+        selesai:
+        return $data;
+    }
     public function get()
     {
         $this->setRequestParameters();

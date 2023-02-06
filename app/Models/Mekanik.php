@@ -22,9 +22,9 @@ class Mekanik extends MyModel
     //     'created_at' => 'date:d-m-Y H:i:s',
     //     'updated_at' => 'date:d-m-Y H:i:s'
     // ];  
-
     public function cekvalidasihapus($id)
-    {
+    {     
+
         $serviceIn = DB::table('serviceindetail')
             ->from(
                 DB::raw("serviceindetail as a with (readuncommitted)")
@@ -35,12 +35,21 @@ class Mekanik extends MyModel
             ->where('a.mekanik_id', '=', $id)
             ->first();
         if (isset($serviceIn)) {
-            $data = true;
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Service In',
+            ];
+
+            
             goto selesai;
         }
 
 
-        $data=false;
+        $data = [
+            'kondisi' => false,
+            'keterangan' => '',
+        ];
+ 
         selesai:
         return $data;
     }

@@ -37,7 +37,10 @@ class Tarif extends MyModel
             ->where('a.tarif_id', '=', $id)
             ->first();
         if (isset($orderanTrucking)) {
-            $data = true;
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Orderan Trucking',
+            ];
             goto selesai;
         }
         $suratPengantar = DB::table('suratpengantar')
@@ -50,12 +53,18 @@ class Tarif extends MyModel
             ->where('a.tarif_id', '=', $id)
             ->first();
         if (isset($suratPengantar)) {
-            $data = true;
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Surat Pengantar',
+            ];
             goto selesai;
         }
 
 
-        $data=false;
+        $data = [
+            'kondisi' => false,
+            'keterangan' => '',
+        ];
         selesai:
         return $data;
     }

@@ -35,7 +35,10 @@ class BankPelanggan extends MyModel
             ->where('a.bankpelanggan_id', '=', $id)
             ->first();
         if (isset($penerimaanDetail)) {
-            $data = true;
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Penerimaan',
+            ];
             goto selesai;
         }
 
@@ -49,12 +52,18 @@ class BankPelanggan extends MyModel
             ->where('a.bankpelanggan_id', '=', $id)
             ->first();
         if (isset($penerimaanGiroDetail)) {
-            $data = true;
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Penerimaan Giro',
+            ];
             goto selesai;
         }
 
 
-        $data=false;
+        $data = [
+            'kondisi' => false,
+            'keterangan' => '',
+        ];
         selesai:
         return $data;
     }

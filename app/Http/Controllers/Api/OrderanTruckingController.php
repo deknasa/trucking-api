@@ -39,6 +39,38 @@ class OrderanTruckingController extends Controller
         ]);
     }
 
+    public function cekValidasi($id) {
+        $orderanTrucking= new OrderanTrucking();
+        $cekdata=$orderanTrucking->cekvalidasihapus($id);
+        if ($cekdata['kondisi']==true) {
+            $query = DB::table('error')
+            ->select(
+                DB::raw("ltrim(rtrim(keterangan))+' (".$cekdata['keterangan'].")' as keterangan")
+                )
+            ->where('kodeerror', '=', 'SATL')
+            ->get();
+        $keterangan = $query['0'];
+
+            $data = [
+                'status' => false,
+                'message' => $keterangan,
+                'errors' => '',
+                'kondisi' => $cekdata['kondisi'],
+            ];
+
+            return response($data);
+         
+        } else {
+            $data = [
+                'status' => false,
+                'message' => '',
+                'errors' => '',
+                'kondisi' => $cekdata['kondisi'],
+            ];
+
+            return response($data); 
+        }
+    }
     public function default()
     {
         $orderanTrucking = new OrderanTrucking();

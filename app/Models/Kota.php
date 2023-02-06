@@ -35,7 +35,10 @@ class Kota extends MyModel
             ->where('a.kota_id', '=', $id)
             ->first();
         if (isset($tarif)) {
-            $data = true;
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Tarif',
+            ];
             goto selesai;
         }
         
@@ -51,7 +54,10 @@ class Kota extends MyModel
             ->where('a.sampai_id', '=', $id)
             ->first();
         if (isset($suratpengantar)) {
-            $data = true;
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Surat Pengantar',
+            ];
             goto selesai;
         }
 
@@ -60,13 +66,17 @@ class Kota extends MyModel
                 DB::raw("upahsupir as a with (readuncommitted)")
             )
             ->select(
-                'a.kotadari_id'
+                'a.kotadari_id',
+                'a.kotasampai_id',
             )
             ->where('a.kotadari_id', '=', $id)
             ->where('a.kotasampai_id', '=', $id)
             ->first();
         if (isset($upahSupir)) {
-            $data = true;
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Upah Supir',
+            ];
             goto selesai;
         }
 
@@ -75,20 +85,24 @@ class Kota extends MyModel
                 DB::raw("upahritasi as a with (readuncommitted)")
             )
             ->select(
-                'a.kotadari_id'
+                'a.kotadari_id',
+                'a.kotasampai_id'
             )
             ->where('a.kotadari_id', '=', $id)
             ->where('a.kotasampai_id', '=', $id)
             ->first();
         if (isset($upahRitasi)) {
-            $data = true;
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Upah Ritasi',
+            ];
             goto selesai;
         }
 
-
-
-
-        $data = false;
+        $data = [
+            'kondisi' => false,
+            'keterangan' => '',
+        ];
         selesai:
         return $data;
     }

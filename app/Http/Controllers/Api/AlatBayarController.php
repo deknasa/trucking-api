@@ -39,12 +39,13 @@ class AlatBayarController extends Controller
     }
 
     public function cekValidasi($id) {
-        $alatBayar = new AlatBayar();
+        $alatBayar= new AlatBayar();
         $cekdata=$alatBayar->cekvalidasihapus($id);
-
-        if ($cekdata==true) {
+        if ($cekdata['kondisi']==true) {
             $query = DB::table('error')
-            ->select('keterangan')
+            ->select(
+                DB::raw("ltrim(rtrim(keterangan))+' (".$cekdata['keterangan'].")' as keterangan")
+                )
             ->where('kodeerror', '=', 'SATL')
             ->get();
         $keterangan = $query['0'];
@@ -53,7 +54,7 @@ class AlatBayarController extends Controller
                 'status' => false,
                 'message' => $keterangan,
                 'errors' => '',
-                'kondisi' => $cekdata
+                'kondisi' => $cekdata['kondisi'],
             ];
 
             return response($data);
@@ -63,12 +64,13 @@ class AlatBayarController extends Controller
                 'status' => false,
                 'message' => '',
                 'errors' => '',
-                'kondisi' => $cekdata
+                'kondisi' => $cekdata['kondisi'],
             ];
 
             return response($data); 
         }
     }
+
     public function default()
     {
         $alatBayar = new AlatBayar();

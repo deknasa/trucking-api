@@ -37,7 +37,10 @@ class AlatBayar extends MyModel
             ->where('a.alatbayar_id', '=', $id)
             ->first();
         if (isset($pengeluaranHeader)) {
-            $data = true;
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Pengeluaran',
+            ];
             goto selesai;
         }
 
@@ -51,7 +54,10 @@ class AlatBayar extends MyModel
             ->where('a.alatbayar_id', '=', $id)
             ->first();
         if (isset($pelunasanPiutang)) {
-            $data = true;
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Pelunasan Piutang',
+            ];
             goto selesai;
         }
         $hutangBayar = DB::table('hutangbayarheader')
@@ -64,7 +70,10 @@ class AlatBayar extends MyModel
             ->where('a.alatbayar_id', '=', $id)
             ->first();
         if (isset($hutangBayar)) {
-            $data = true;
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Hutang Bayar',
+            ];
             goto selesai;
         }
         $pencairanGiroPengeluaran = DB::table('pencairangiropengeluarandetail')
@@ -77,12 +86,18 @@ class AlatBayar extends MyModel
             ->where('a.alatbayar_id', '=', $id)
             ->first();
         if (isset($pencairanGiroPengeluaran)) {
-            $data = true;
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Pencairan Giro Pengeluaran',
+            ];
             goto selesai;
         }
 
 
-        $data=false;
+        $data = [
+            'kondisi' => false,
+            'keterangan' => '',
+        ];
         selesai:
         return $data;
     }

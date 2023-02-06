@@ -59,10 +59,10 @@ class Mandor extends MyModel
 
         return $data;
     }
-
     public function cekvalidasihapus($id)
-    {
-        $mandor = DB::table('trado')
+    {     
+
+        $trado = DB::table('trado')
             ->from(
                 DB::raw("trado as a with (readuncommitted)")
             )
@@ -71,13 +71,22 @@ class Mandor extends MyModel
             )
             ->where('a.mandor_id', '=', $id)
             ->first();
-        if (isset($mandor)) {
-            $data = true;
+        if (isset($trado)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Trado',
+            ];
+
+            
             goto selesai;
         }
 
 
-        $data=false;
+        $data = [
+            'kondisi' => false,
+            'keterangan' => '',
+        ];
+ 
         selesai:
         return $data;
     }
