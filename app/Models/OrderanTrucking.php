@@ -74,6 +74,7 @@ class OrderanTrucking extends MyModel
         return $data;
     }
 
+
     public function default()
     {
 
