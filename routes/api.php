@@ -841,9 +841,6 @@ Route::resource('mandorabsensisupir', MandorAbsensiSupirController::class);
 Route::get('historytrip', [HistoryTripController::class,'index']);
 Route::get('listtrip', [ListTripController::class,'index']);
 Route::post('inputtrip', [InputTripController::class,'store']);
-// Route::get('mandortrip/history', [MandorTripController::class,'getHistoryList']);
-// Route::get('mandortrip/list', [MandorTripController::class,'getListTrip']);
-Route::resource('mandortrip', MandorTripController::class);
 
 
 Route::get('mekanik/combo', [MekanikController::class, 'combo']);
