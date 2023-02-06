@@ -368,8 +368,12 @@ class KasGantungHeaderController extends Controller
         DB::beginTransaction();
 
         try {
-            
-            $bank = Bank::lockForUpdate()->findOrFail($kasgantungheader->bank_id);
+            $bank_id = $kasgantungheader->bank_id;
+            if($request->from == "AbsensiSupirApprovalHeader"){
+                $bank_id = $request->bank_id;
+            }
+            $bank = Bank::lockForUpdate()->findOrFail($bank_id);
+
             /* Edit header */
 
             $kasgantungheader->penerima_id = $request->penerima_id;
@@ -443,10 +447,10 @@ class KasGantungHeaderController extends Controller
 
 
 
-
+// return DB::table('parameter')->where('grp', 'JURNAL KAS GANTUNG')->where('subgrp', 'DEBET')->first();
             $coakredit = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
                 ->where('grp', 'JURNAL KAS GANTUNG')->where('subgrp', 'DEBET')->first();
-            $memo = json_decode($coakredit->memo, true);
+            $memo =  json_decode($coakredit->memo,true);
             $penerima = Penerima::from(DB::raw("penerima with (readuncommitted)"))->where("id", $request->penerima_id)->first();
 
         
@@ -471,7 +475,7 @@ class KasGantungHeaderController extends Controller
                 // $total += $nominal;
                 $pengeluaranDetail[] = $detail;
             }
-
+            
             $pengeluaranHeader = [
                 'dibayarke' => $penerima->namapenerima ?? '',
                 'bank_id' =>$kasgantungheader->bank_id ?? 0,
@@ -485,14 +489,64 @@ class KasGantungHeaderController extends Controller
                 'absensisupirapprovalheader_id' => $request->absensisupirapprovalheader_id ?? 0,
                 'coakaskeluar' => $request->coakaskeluar ?? 0,
             ];
-
+            if ($bank->tipe == 'KAS') {
+                $jenisTransaksi = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                    ->where('grp', 'JENIS TRANSAKSI')->where('text', 'KAS')->first();
+            }
+            if ($bank->tipe == 'BANK') {
+                $jenisTransaksi = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                    ->where('grp', 'JENIS TRANSAKSI')->where('text', 'BANK')->first();
+            }
          
        
             // dd($pengeluaranHeader);
-            return response(PengeluaranHeader::where('nobukti', $kasgantungheader->pengeluaran_nobukti)->get(),422);
+        // return response(PengeluaranHeader::where('nobukti', $kasgantungheader->pengeluaran_nobukti)->get(),422);
             $get = PengeluaranHeader::from(DB::raw("pengeluaranheader with (readuncommitted)"))->where('nobukti', $kasgantungheader->pengeluaran_nobukti)->first();
             $approvalabsensisupir=$request->approvalabsensisupir ?? false;
-            if ($approvalabsensisupir==true) {
+            $request->from = $request->from ?? false;
+            $bank = Bank::lockForUpdate()->findOrFail($bank_id);
+            if ($request->from == "AbsensiSupirApprovalHeader") {
+                $querysubgrppengeluaran = DB::table('bank')->from(DB::raw("bank with (readuncommitted)"))
+                    ->select(
+                        'parameter.grp',
+                        'parameter.subgrp',
+                        'bank.formatpengeluaran',
+                        'bank.coa'
+                    )
+                    ->join(DB::raw("parameter with (readuncommitted)"), 'bank.formatpengeluaran', 'parameter.id')
+                    ->whereRaw("bank.id = $request->bank_id")
+                    ->first();
+                $contentKasgantung = new Request();
+                $contentKasgantung['group'] = $querysubgrppengeluaran->grp;
+                $contentKasgantung['subgroup'] = $querysubgrppengeluaran->subgrp;
+                $contentKasgantung['table'] = 'pengeluaranheader';
+                $contentKasgantung['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
+                $parameterController = new ParameterController;
+
+                $statusApp = $parameterController->getparameterid('STATUS APPROVAL', 'STATUS APPROVAL', 'NON APPROVAL');
+
+                $nobuktikaskeluar = app(Controller::class)->getRunningNumber($contentKasgantung)->original['data'];
+                $pengeluaranHeader = [
+                    'tanpaprosesnobukti' => 1,
+                    'nobukti' => $nobuktikaskeluar,
+                    'tglbukti' => date('Y-m-d', strtotime($request->tglkaskeluar)),
+                    'pelanggan_id' => 0,
+                    'statusjenistransaksi' => $jenisTransaksi->id,
+                    'postingdari' => 'ENTRY KAS GANTUNG',
+                    'statusapproval' => $statusApp->id,
+                    'dibayarke' => $penerima->namapenerima ?? 0,
+                    'cabang_id' => 1, // masih manual karena belum di catat di session
+                    'bank_id' => $bank->id,
+                    'userapproval' => "",
+                    'tglapproval' => "",
+                    'transferkeac' => '',
+                    'transferkean' => '',
+                    'trasnferkebank' => '',
+                    'statusformat' => $querysubgrppengeluaran->formatpengeluaran,
+                    'modifiedby' =>  auth('api')->user()->name,
+                    'datadetail' => $pengeluaranDetail
+                ];
+    
                 $pengeluaran = new StorePengeluaranHeaderRequest($pengeluaranHeader);              
                 app(PengeluaranHeaderController::class)->store($pengeluaran);
          
@@ -504,7 +558,6 @@ class KasGantungHeaderController extends Controller
     
             }
 
-       
             DB::commit();
 
             /* Set position and page */

@@ -136,6 +136,7 @@ class AbsensiSupirApprovalHeaderController extends Controller
                     'nominal' => $details['nominal'],
                     'approvalabsensisupir' => true,
                     'absensisupirapprovalheader_id' => $absensiSupirApprovalHeader->id,
+                    "from" =>"AbsensiSupirApprovalHeader"
                 ];
 
 
@@ -143,7 +144,6 @@ class AbsensiSupirApprovalHeaderController extends Controller
                 // dump($data);
                 $kasgantungStore = app(KasGantungHeaderController::class)->update($data, $kasgantung);
 
-                return response($kasgantungStore,442);
                 $kasgantung = $kasgantungStore->original['data'];
 
 
@@ -394,9 +394,10 @@ class AbsensiSupirApprovalHeaderController extends Controller
                     "tglkaskeluar" => $request->tglbukti,
                     'keterangan_detail' => $details['keterangan'],
                     'nominal' => $details['nominal'],
+                    "from" =>"AbsensiSupirApprovalHeader"
                 ];
 
-                $data = new StoreKasGantungHeaderRequest($dataKasgantung);
+                $data = new UpdateKasGantungHeaderRequest($dataKasgantung);
                 $kasgantungStore = app(KasGantungHeaderController::class)->update($data, $kasgantung);
                 $kasgantung = $kasgantungStore->original['data'];
 
