@@ -179,13 +179,22 @@ class AbsensiSupirHeaderController extends Controller
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
 
+                $bank=DB::table('bank')
+                    ->from (
+                        DB::raw("bank with (readuncommitted)")
+                    )
+                    ->select (
+                        'id'
+                    )
+                    ->where('tipe','=','KAS')
+                    ->first();
 
                 $kasGantungHeader = [
                     'tanpaprosesnobukti' => 1,
                     'nobukti' => $nobuktiKasGantung,
                     'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
                     'penerima_id' => '',
-                    'bank_id' => '',
+                    'bank_id' => $bank->id ?? 0,
                     'pengeluaran_nobukti' => '',
                     'coakaskeluar' => '',
                     'postingdari' => 'ENTRY ABSENSI SUPIR',

@@ -20,6 +20,7 @@ use App\Http\Requests\StoreAbsensiSupirApprovalDetailRequest;
 use App\Http\Requests\StoreJurnalUmumDetailRequest;
 use App\Http\Requests\StoreJurnalUmumHeaderRequest;
 use App\Http\Requests\StoreKasGantungHeaderRequest;
+use App\Http\Requests\UpdateKasGantungHeaderRequest;
 use App\Http\Requests\StoreLogTrailRequest;
 
 use Illuminate\Http\Request;
@@ -92,7 +93,6 @@ class AbsensiSupirApprovalHeaderController extends Controller
             $absensiSupirApprovalHeader = new AbsensiSupirApprovalHeader();
             $absensisupir = DB::table('absensisupirheader')->where('nobukti', $request->absensisupir)->first();
             $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
-
             /* Store header */
             $absensiSupirApprovalHeader->tglbukti =  date('Y-m-d', strtotime($request->tglbukti));
             $absensiSupirApprovalHeader->absensisupir_nobukti =  $request->absensisupir_nobukti;
@@ -114,7 +114,6 @@ class AbsensiSupirApprovalHeaderController extends Controller
                 $bank = DB::table('bank')->where('coa', $coakaskeluar)->first();
                 // $kasgantung = DB::table('kasgantungheader')->where('nobukti', $request->kasgantung_nobukti)->first();
                 $kasgantung = KasGantungHeader::where('nobukti', $request->kasgantung_nobukti)->first();
-                // dd($kasgantung);
                 $kasgantungdetail = DB::table('kasgantungdetail')->where('nobukti', $request->kasgantung_nobukti)->get();
                 $details = [];
                 $total = 0;
@@ -135,10 +134,14 @@ class AbsensiSupirApprovalHeaderController extends Controller
                     "tglkaskeluar" => $request->tglbukti,
                     'keterangan_detail' => $details['keterangan'],
                     'nominal' => $details['nominal'],
+                    'approvalabsensisupir' => true,
                 ];
 
-                $data = new StoreKasGantungHeaderRequest($dataKasgantung);
+
+                $data = new UpdateKasGantungHeaderRequest($dataKasgantung);
+                // dump($data);
                 $kasgantungStore = app(KasGantungHeaderController::class)->update($data, $kasgantung);
+
                 // return response($kasgantungStore,442);
                 $kasgantung = $kasgantungStore->original['data'];
 
@@ -278,12 +281,15 @@ class AbsensiSupirApprovalHeaderController extends Controller
     public function show(AbsensiSupirApprovalHeader $absensiSupirApprovalHeader, $id)
     {
         $data = $absensiSupirApprovalHeader->find($id);
-        // $detail = NotaDebetHeaderDetail::findAll($id);
+        $detail = AbsensiSupirApprovalDetail::getAll($id);
+
+        // dd($detail);
+        //  $detail = NotaDebetHeaderDetail::findAll($id);
 
         return response([
             'status' => true,
             'data' => $data,
-            // 'detail' => $detail
+            'detail' => $detail
         ]);
     }
     /**
@@ -466,8 +472,9 @@ class AbsensiSupirApprovalHeaderController extends Controller
      */
     public function destroy(Request $request, $id)
     {
+
         DB::beginTransaction();
-        
+
         $getDetail = AbsensiSupirApprovalDetail::lockForUpdate()->where('absensisupirapproval_id', $id)->get();
 
         $absensiSupirApprovalHeader = new AbsensiSupirApprovalHeader();
@@ -488,7 +495,7 @@ class AbsensiSupirApprovalHeaderController extends Controller
 
         PengeluaranHeader::where('nobukti', $absensiSupirApprovalHeader->pengeluaran_nobukti)->delete();
         JurnalUmumHeader::where('nobukti', $absensiSupirApprovalHeader->pengeluaran_nobukti)->delete();
-       
+
         if ($absensiSupirApprovalHeader) {
             $logTrail = [
                 'namatabel' => strtoupper($absensiSupirApprovalHeader->getTable()),
@@ -507,7 +514,7 @@ class AbsensiSupirApprovalHeaderController extends Controller
             $logTrailAbsensiApprovalDetail = [
                 'namatabel' => 'ABSENSISUPIRAPPROVALDETAIL',
                 'postingdari' => 'DELETE ABSENSI SUPIR APPROVAL DETAIL',
-                'idtrans' => $storedLogTrail['id'],
+                'idtrans' => $storedLogTrail['id'] ?? '',
                 'nobuktitrans' => $absensiSupirApprovalHeader->nobukti,
                 'aksi' => 'DELETE',
                 'datajson' => $getDetail->toArray(),
@@ -516,63 +523,69 @@ class AbsensiSupirApprovalHeaderController extends Controller
 
             $validatedLogTrailAbsensiApprovalDetail = new StoreLogTrailRequest($logTrailAbsensiApprovalDetail);
             app(LogTrailController::class)->store($validatedLogTrailAbsensiApprovalDetail);
-            
-            // DELETE PENGELUARAN HEADER
-            $logTrailPengeluaranHeader = [
-                'namatabel' => 'PENGELUARAN',
-                'postingdari' => 'DELETE PENGELUARAN HEADER DARI ABSENSI SUPIR APPROVAL',
-                'idtrans' => $getPengeluaranHeader->id,
-                'nobuktitrans' => $getPengeluaranHeader->nobukti,
-                'aksi' => 'DELETE',
-                'datajson' => $getPengeluaranHeader->toArray(),
-                'modifiedby' => auth('api')->user()->name
-            ];
 
-            $validatedLogTrailPengeluaranHeader = new StoreLogTrailRequest($logTrailPengeluaranHeader);
-            $storedLogTrailPengeluaran = app(LogTrailController::class)->store($validatedLogTrailPengeluaranHeader);
+            // DELETE PENGELUARAN HEADER
+            if (isset($getPengeluaranHeader)) {
+                $logTrailPengeluaranHeader = [
+                    'namatabel' => 'PENGELUARAN',
+                    'postingdari' => 'DELETE PENGELUARAN HEADER DARI ABSENSI SUPIR APPROVAL',
+                    'idtrans' => $getPengeluaranHeader->id ?? '',
+                    'nobuktitrans' => $getPengeluaranHeader->nobukti ?? '',
+                    'aksi' => 'DELETE',
+                    'datajson' => $getPengeluaranHeader->toArray() ?? [],
+                    'modifiedby' => auth('api')->user()->name
+                ];
+                // dd($logTrailPengeluaranHeader['datajson']);
+                $validatedLogTrailPengeluaranHeader = new StoreLogTrailRequest($logTrailPengeluaranHeader);
+                $storedLogTrailPengeluaran = app(LogTrailController::class)->store($validatedLogTrailPengeluaranHeader);
+            }
 
             // DELETE PENGELUARAN DETAIL
-            $logTrailPengeluaranDetail = [
-                'namatabel' => 'PENGELUARANDETAIL',
-                'postingdari' => 'DELETE PENGELUARAN DETAIL DARI ABSENSI SUPIR APPROVAL',
-                'idtrans' => $storedLogTrailPengeluaran['id'],
-                'nobuktitrans' => $getPengeluaranHeader->nobukti,
-                'aksi' => 'DELETE',
-                'datajson' => $getPengeluaranDetail->toArray(),
-                'modifiedby' => auth('api')->user()->name
-            ];
+            if (isset($getPengeluaranDetail)) {
 
-            $validatedLogTrailPengeluaranDetail = new StoreLogTrailRequest($logTrailPengeluaranDetail);
-            app(LogTrailController::class)->store($validatedLogTrailPengeluaranDetail);
+                $logTrailPengeluaranDetail = [
+                    'namatabel' => 'PENGELUARANDETAIL',
+                    'postingdari' => 'DELETE PENGELUARAN DETAIL DARI ABSENSI SUPIR APPROVAL',
+                    'idtrans' => $storedLogTrailPengeluaran['id'] ?? '',
+                    'nobuktitrans' => $getPengeluaranHeader->nobukti ?? '',
+                    'aksi' => 'DELETE',
+                    'datajson' => $getPengeluaranDetail->toArray(),
+                    'modifiedby' => auth('api')->user()->name
+                ];
 
+                $validatedLogTrailPengeluaranDetail = new StoreLogTrailRequest($logTrailPengeluaranDetail);
+                app(LogTrailController::class)->store($validatedLogTrailPengeluaranDetail);
+            }
             // DELETE JURNAL HEADER
-            $logTrailJurnalHeader = [
-                'namatabel' => 'JURNALUMUMHEADER',
-                'postingdari' => 'DELETE JURNAL UMUM HEADER DARI ABSENSI SUPIR APPROVAL',
-                'idtrans' => $getJurnalHeader->id,
-                'nobuktitrans' => $getJurnalHeader->nobukti,
-                'aksi' => 'DELETE',
-                'datajson' => $getJurnalHeader->toArray(),
-                'modifiedby' => auth('api')->user()->name
-            ];
+            if (isset($getJurnalHeader)) {
+                $logTrailJurnalHeader = [
+                    'namatabel' => 'JURNALUMUMHEADER',
+                    'postingdari' => 'DELETE JURNAL UMUM HEADER DARI ABSENSI SUPIR APPROVAL',
+                    'idtrans' => $getJurnalHeader->id ?? '',
+                    'nobuktitrans' => $getJurnalHeader->nobukti ?? '',
+                    'aksi' => 'DELETE',
+                    'datajson' => $getJurnalHeader->toArray(),
+                    'modifiedby' => auth('api')->user()->name
+                ];
 
-            $validatedLogTrailJurnalHeader = new StoreLogTrailRequest($logTrailJurnalHeader);
-            $storedLogTrailJurnal = app(LogTrailController::class)->store($validatedLogTrailJurnalHeader);
-
+                $validatedLogTrailJurnalHeader = new StoreLogTrailRequest($logTrailJurnalHeader);
+                $storedLogTrailJurnal = app(LogTrailController::class)->store($validatedLogTrailJurnalHeader);
+            }
             // DELETE JURNAL DETAIL
-            $logTrailJurnalDetail = [
-                'namatabel' => 'JURNALUMUMDETAIL',
-                'postingdari' => 'DELETE JURNAL UMUM DETAIL DARI ABSENSI SUPIR APPROVAL',
-                'idtrans' => $storedLogTrailJurnal['id'],
-                'nobuktitrans' => $getJurnalHeader->nobukti,
-                'aksi' => 'DELETE',
-                'datajson' => $getJurnalDetail->toArray(),
-                'modifiedby' => auth('api')->user()->name
-            ];
+            if (isset($getJurnalDetail)) {
+                $logTrailJurnalDetail = [
+                    'namatabel' => 'JURNALUMUMDETAIL',
+                    'postingdari' => 'DELETE JURNAL UMUM DETAIL DARI ABSENSI SUPIR APPROVAL',
+                    'idtrans' => $storedLogTrailJurnal['id'] ?? '',
+                    'nobuktitrans' => $getJurnalHeader->nobukti ?? '',
+                    'aksi' => 'DELETE',
+                    'datajson' => $getJurnalDetail->toArray(),
+                    'modifiedby' => auth('api')->user()->name
+                ];
 
-            $validatedLogTrailJurnalDetail = new StoreLogTrailRequest($logTrailJurnalDetail);
-            app(LogTrailController::class)->store($validatedLogTrailJurnalDetail);
-
+                $validatedLogTrailJurnalDetail = new StoreLogTrailRequest($logTrailJurnalDetail);
+                app(LogTrailController::class)->store($validatedLogTrailJurnalDetail);
+            }
             DB::commit();
 
             $selected = $this->getPosition($absensiSupirApprovalHeader, $absensiSupirApprovalHeader->getTable(), true);

@@ -194,6 +194,7 @@ class AbsensiSupirApprovalHeader extends MyModel
             ->where('absensisupirdetail.nobukti', $nobukti);
         $data = $query->get();
 
+    
         return $data;
     }
 

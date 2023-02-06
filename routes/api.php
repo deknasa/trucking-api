@@ -255,10 +255,12 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('trado/field_length', [TradoController::class, 'fieldLength']);
     Route::post('trado/upload_image/{id}', [TradoController::class, 'uploadImage']);
     Route::get('trado/default', [TradoController::class, 'default']);
+    Route::post('trado/{id}/cekValidasi', [TradoController::class, 'cekValidasi'])->name('trado.cekValidasi');
     Route::resource('trado', TradoController::class);
 
     Route::get('absentrado/field_length', [AbsenTradoController::class, 'fieldLength']);
     Route::get('absentrado/default', [AbsenTradoController::class, 'default']);
+    Route::post('absentrado/{id}/cekValidasi', [AbsenTradoController::class, 'cekValidasi'])->name('absentrado.cekValidasi');
     Route::resource('absentrado', AbsenTradoController::class);
 
     Route::get('container/field_length', [ContainerController::class, 'fieldLength']);
@@ -383,6 +385,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('supir/getImage/{id}/{field}', [SupirController::class, 'getImage']);
     Route::post('supir/upload_image/{id}', [SupirController::class, 'uploadImage']);
     Route::get('supir/default', [SupirController::class, 'default']);
+    Route::post('supir/{id}/cekValidasi', [SupirController::class, 'cekValidasi'])->name('supir.cekValidasi');
     Route::resource('supir', SupirController::class);
 
     Route::get('subkelompok/export', [SubKelompokController::class, 'export']);

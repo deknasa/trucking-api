@@ -15,6 +15,31 @@ class Supir extends MyModel
 
     protected $table = 'supir';
 
+    public function cekvalidasihapus($id)
+    {
+        // cek sudah ada absensi
+      
+
+        $absen = DB::table('absensisupirdetail')
+            ->from(
+                DB::raw("absensisupirdetail as a with (readuncommitted)")
+            )
+            ->select(
+                'a.supir_id'
+            )
+            ->where('a.supir_id', '=', $id)
+            ->first();
+        if (isset($absen)) {
+            $data = true;
+            goto selesai;
+        }
+
+
+        $data=false;
+        selesai:
+        return $data;
+    }
+
     protected $guarded = [
         'id',
         'created_at',

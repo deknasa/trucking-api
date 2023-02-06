@@ -64,14 +64,15 @@ class PengeluaranHeaderController extends Controller
      */
     public function store(StorePengeluaranHeaderRequest $request)
     {
+    //    dd($request->all());
         DB::beginTransaction();
-
+      
         try {
             /* Store header */
 
             $tanpaprosesnobukti = $request->tanpaprosesnobukti ?? 0;
 
-
+            // dd($request->bank_id);
             if ($tanpaprosesnobukti == 0) {
                 $content = new Request();
                 $bankid = $request->bank_id;
@@ -112,6 +113,7 @@ class PengeluaranHeaderController extends Controller
             $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
                 ->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
 
+               
             $pengeluaranHeader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $pengeluaranHeader->pelanggan_id = $request->pelanggan_id ?? 0;
             $pengeluaranHeader->postingdari = $request->postingdari ?? 'ENTRY PENGELUARAN KAS/BANK';
@@ -262,6 +264,10 @@ class PengeluaranHeaderController extends Controller
                     throw new Exception($jurnal['message']);
                 }
 
+                $approvalabsensisupir=$request->approvalabsensisupir ?? false;
+                if ($approvalabsensisupir==true) {
+
+                }
 
                 DB::commit();
                 /* Set position and page */

@@ -13,6 +13,32 @@ class AbsenTrado extends MyModel
 
     protected $table = 'absentrado';
 
+    public function cekvalidasihapus($id)
+    {
+        // cek sudah ada absensi
+
+        $absen = DB::table('absensisupirdetail')
+            ->from(
+                DB::raw("absensisupirdetail as a with (readuncommitted)")
+            )
+            ->select(
+                'a.absen_id'
+            )
+            ->where('a.absen_id', '=', $id)
+            ->first();
+        if (isset($absen)) {
+            $data = true;
+            goto selesai;
+        }
+
+
+        $data=false;  
+        selesai:
+
+        return $data;
+    }
+
+
     public function get()
     {
         $this->setRequestParameters();

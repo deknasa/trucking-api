@@ -18,6 +18,33 @@ class Parameter extends MyModel
         'updated_at',
     ];
 
+    public function getdefaultparameter($data) {
+        $grp=$data['grp'] ?? '';
+        $subgrp=$data['subgrp'] ?? '';
+
+
+        $query=DB::table('parameter')
+            ->from (
+                DB::raw("parameter with (readuncommitted)")
+            )
+            ->select (
+                'id'
+            )
+            ->Where('grp','=',$grp)
+            ->Where('subgrp','=',$subgrp)
+            ->Where('default','=','YA')
+            ->first();
+
+            if (isset( $query)) {
+                $data= $query->id;
+            }  else  {
+                $data=0;
+            }
+            
+            return $data;
+
+    }
+
     public function get()
     {
         $this->setRequestParameters();
@@ -31,6 +58,7 @@ class Parameter extends MyModel
                 'parameter.kelompok',
                 'parameter.text',
                 'parameter.memo',
+                'parameter.default',
                 'parameter.modifiedby',
                 'parameter.created_at',
                 'parameter.updated_at',
@@ -74,7 +102,7 @@ class Parameter extends MyModel
         $query = DB::table('parameter as A')->from(
             DB::raw("parameter as A with (readuncommitted)")
         )
-            ->select('A.id', 'A.grp', 'A.subgrp', 'A.kelompok', 'A.text', 'A.memo', 'A.type', 'B.grp as grup')
+            ->select('A.id', 'A.grp', 'A.subgrp', 'A.kelompok', 'A.text', 'A.memo', 'A.default', 'A.type', 'B.grp as grup')
             ->leftJoin(DB::raw("parameter as B with (readuncommitted)"), 'A.type', 'B.id')
             ->where('A.id', $id);
 
@@ -94,6 +122,7 @@ class Parameter extends MyModel
                 "$this->table.text",
                 "$this->table.memo",
                 "$this->table.kelompok",
+                "$this->table.default",
                 DB::raw("case when parameter.type = 0 then '' else B.grp end as type"),
                 "$this->table.created_at",
                 "$this->table.updated_at",
@@ -114,6 +143,7 @@ class Parameter extends MyModel
             $table->string('text', 500)->default('');
             $table->longText('memo')->default('');
             $table->string('kelompok', 1000)->default('');
+            $table->string('default', 1000)->default('');
             $table->string('type', 1000)->default('');
             $table->dateTime('created_at')->default('1900/1/1');
             $table->dateTime('updated_at')->default('1900/1/1');
@@ -133,6 +163,7 @@ class Parameter extends MyModel
             'text',
             'memo',
             'kelompok',
+            'default',
             'type',
             'created_at',
             'updated_at',

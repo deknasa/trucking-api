@@ -42,6 +42,38 @@ class TradoController extends Controller
         ]);
     }
     
+    public function cekValidasi($id) {
+        $trado= new Trado();
+        $cekdata=$trado->cekvalidasihapus($id);
+
+        if ($cekdata==true) {
+            $query = DB::table('error')
+            ->select('keterangan')
+            ->where('kodeerror', '=', 'SATL')
+            ->get();
+        $keterangan = $query['0'];
+
+            $data = [
+                'status' => false,
+                'message' => $keterangan,
+                'errors' => '',
+                'kondisi' => $cekdata
+            ];
+
+            return response($data);
+         
+        } else {
+            $data = [
+                'status' => false,
+                'message' => '',
+                'errors' => '',
+                'kondisi' => $cekdata
+            ];
+
+            return response($data); 
+        }
+    }
+
     public function default()
     {
 
@@ -346,6 +378,8 @@ class TradoController extends Controller
      */
     public function destroy(Request $request, $id)
     {
+       
+
         DB::beginTransaction();
 
         $trado = new Trado();

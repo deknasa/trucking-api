@@ -29,6 +29,7 @@ class TarifController extends Controller
      */
     public function index()
     {
+
         $tarif = new Tarif();
 
         return response([
@@ -381,22 +382,41 @@ class TarifController extends Controller
               
                 $data[] = [
                     'tujuan' => $sheet->getCell($this->kolomexcel(1) . $row)->getValue(),
-                    'tglberlaku' => date('Y-m-d',strtotime($sheet->getCell($this->kolomexcel(2) . $row)->getFormattedValue())),
-                    'kolom1' => $sheet->getCell($this->kolomexcel(3)  . $row)->getValue(),
-                    'kolom2' => $sheet->getCell($this->kolomexcel(4)  . $row)->getValue(),
+                    'tglmulaiberlaku' => date('Y-m-d',strtotime($sheet->getCell($this->kolomexcel(2) . $row)->getFormattedValue())),
+                    'kota' => $sheet->getCell($this->kolomexcel(3) . $row)->getValue(),
+                    'kolom1' => $sheet->getCell($this->kolomexcel(4)  . $row)->getValue(),
+                    'kolom2' => $sheet->getCell($this->kolomexcel(5)  . $row)->getValue(),
                     'modifiedby' => auth('api')->user()->name
                 ];
                 $startcount++;
             }
 
-
-            
             $tarifrincian = new TarifRincian();
 
-            return response([
-                'status' => true,
-                'data' => $tarifrincian->updateharga($data),
-            ]);
+            $cekdata=$tarifrincian->cekupdateharga($data);
+            if ($cekdata==true) {
+                $query = DB::table('error')
+                ->select('keterangan')
+                ->where('kodeerror', '=', 'SPI')
+                ->get();
+            $keterangan = $query['0'];
+
+                $data = [
+                    'message' => $keterangan,
+                    'errors' => '',
+                    'kondisi' => $cekdata
+                ];
+    
+                return response($data);
+            } else {
+                return response([
+                    'status' => true,
+                    'data' => $tarifrincian->updateharga($data),
+                    'kondisi' => $cekdata
+                ]);
+    
+            }
+
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;

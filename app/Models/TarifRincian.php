@@ -13,6 +13,7 @@ use App\Http\Requests\StoreTarifRincianRequest;
 
 
 
+
 class TarifRincian extends MyModel
 {
     use HasFactory;
@@ -51,10 +52,62 @@ class TarifRincian extends MyModel
         return $data;
     }
 
+    public function cekupdateharga($data)
+    {
+        $tempdata = '##tempdata' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempdata, function ($table) {
+            $table->string('tujuan', 1000)->default('');
+            $table->date('tglmulaiberlaku')->default('1900/1/1');
+            $table->string('kota', 1000)->default('');
+        });
+
+
+
+
+
+        foreach ($data as $item) {
+            $values = array(
+                'tujuan' => $item['tujuan'],
+                'tglmulaiberlaku' => $item['tglmulaiberlaku'],
+                'kota' => $item['kota']
+            );
+            DB::table($tempdata)->insert($values);
+        }
+
+        $temptgl = '##temptgl' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($temptgl, function ($table) {
+            $table->date('tglmulaiberlaku')->default('1900/1/1');
+        });
+
+        $querytgl = DB::table('tarif')
+            ->from(DB::raw("tarif with (readuncommitted)"))
+            ->select(
+                'tglmulaiberlaku'
+            )
+            ->groupBy('tglmulaiberlaku');
+
+        DB::table($temptgl)->insertUsing(['tglmulaiberlaku'], $querytgl);
+
+
+        $query = DB::table($tempdata)
+            ->from(DB::raw($tempdata . " as a"))
+            ->select(
+                'a.tglmulaiberlaku'
+            )
+            ->join(DB::raw($temptgl . " as b"), 'a.tglmulaiberlaku', 'b.tglmulaiberlaku')
+            ->first();
+
+
+        if (isset($query)) {
+            $kondisi = true;
+        } else {
+            $kondisi = false;
+        }
+
+        return $kondisi;
+    }
     public function updateharga($data)
     {
-
-
 
 
 
@@ -62,7 +115,7 @@ class TarifRincian extends MyModel
         // dd($datadetail);
         foreach ($data as $item) {
 
-           
+
             $querydetail = DB::table('container')
                 ->from(
                     DB::raw("container  with (readuncommitted)")
@@ -73,39 +126,65 @@ class TarifRincian extends MyModel
                 ->orderBy('id', 'Asc');
             $datadetail = json_decode($querydetail->get(), true);
             $a = 0;
-            $container_id=[];
-            $nominal=[];
+            $container_id = [];
+            $nominal = [];
 
             foreach ($datadetail as $itemdetail) {
                 $a = $a + 1;
                 $kolom = 'kolom' . $a;
 
-                    $container_id[]= $itemdetail['id'];
-                    $nominal[] = $item[$kolom];
-             
+                $container_id[] = $itemdetail['id'];
+                $nominal[] = $item[$kolom];
             }
+
+            $querykota = DB::table('kota')
+                ->from(DB::raw("kota with (readuncommitted)"))
+                ->select('id')
+                ->where('kodekota', '=', $item['kota'])
+                ->first();
+
+
+            $parameter = new Parameter();
+            $logrequest = [
+                'grp' => 'STATUS AKTIF',
+                'subgrp' => 'STATUS AKTIF',
+            ];
+            $statusaktif = $parameter->getdefaultparameter($logrequest);
+            $logrequest = [
+                'grp' => 'SISTEM TON',
+                'subgrp' => 'SISTEM TON',
+            ];
+            $statussistemton = $parameter->getdefaultparameter($logrequest);
+
+            $logrequest = [
+                'grp' => 'PENYESUAIAN HARGA',
+                'subgrp' => 'PENYESUAIAN HARGA',
+            ];
+            $statuspenyesuaianharga = $parameter->getdefaultparameter($logrequest);
+
+
             $tarifRequest = [
                 'tujuan' => $item['tujuan'],
-                'tglmulaiberlaku' => $item['tglberlaku'],
+                'tglmulaiberlaku' => $item['tglmulaiberlaku'],
                 'modifiedby' => $item['modifiedby'],
                 'parent_id' => 0,
                 'upahsupir_id' => 0,
-                'statusaktif' =>  1,
-                'statussistemton' => 4,
-                'kota_id' => 0,
+                'statusaktif' =>  $statusaktif,
+                'statussistemton' => $statussistemton,
+                'kota_id' => $querykota->id ?? 0,
                 'zona_id' => 0,
-                'statuspenyesuaianharga' => 7,
+                'statuspenyesuaianharga' => $statuspenyesuaianharga,
                 'container_id' => $container_id,
                 'nominal' => $nominal,
             ];
-     
+
             $tarif = new StoreTarifRequest($tarifRequest);
             app(TarifController::class)->store($tarif);
         }
 
-   
 
-     
+
+
         return $data;
     }
 
@@ -180,16 +259,17 @@ class TarifRincian extends MyModel
         }
 
 
-        $statement = ' select b.tujuan,A.* from (select id,' . $columnid . ' from 
+        $statement = " select b.tujuan as [Tujuan],cast(format(isnull(b.tglmulaiberlaku,'1900/1/1'),'yyyy/MM/dd') as date) as [Tgl Mulai Berlaku],isnull(C.kodekota,'') as [Kota],A.* from (select " . $columnid . ",id from 
          (
-            select A.id,A.container,A.nominal
-            from ' . $tempdata . ' A) as SourceTable
+            select A.container,A.nominal,A.id
+            from " . $tempdata . " A) as SourceTable
             Pivot (
                 max(nominal)
-                for container in (' . $columnid . ')
+                for container in (" . $columnid . ")
                 ) as PivotTable)A
                 inner join tarif b with (readuncommitted) on A.id=B.id
-        ';
+                left outer join kota c with (readuncommitted) on b.kota_id=c.id
+        ";
 
         $data = DB::select(DB::raw($statement));
 

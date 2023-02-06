@@ -36,6 +36,8 @@ class ParameterController extends Controller
         ]);
     }
 
+
+
     /**
      * @ClassName
      */
@@ -49,6 +51,7 @@ class ParameterController extends Controller
             $parameter->subgrp = $request->subgrp;
             $parameter->text = $request->text;
             $parameter->kelompok = $request->kelompok ?? '';
+            $parameter->default = $request->default ?? '';
             $parameter->type = $request->type ?? 0;
             $parameter->modifiedby = auth('api')->user()->name;
 
@@ -101,6 +104,8 @@ class ParameterController extends Controller
     public function show($id)
     {
         $parameter = new Parameter();
+
+
         return response([
             'status' => true,
             'data' => $parameter->findAll($id)
@@ -119,6 +124,7 @@ class ParameterController extends Controller
             $parameter->subgrp = $request->subgrp;
             $parameter->text = $request->text;
             $parameter->kelompok = $request->kelompok ?? '';
+            $parameter->default = $request->default ?? '';
             $parameter->type = $request->type ?? 0;
             $parameter->modifiedby = auth('api')->user()->name;
 
