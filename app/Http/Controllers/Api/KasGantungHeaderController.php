@@ -489,8 +489,8 @@ class KasGantungHeaderController extends Controller
          
        
             // dd($pengeluaranHeader);
+            return response(PengeluaranHeader::where('nobukti', $kasgantungheader->pengeluaran_nobukti)->get(),422);
             $get = PengeluaranHeader::from(DB::raw("pengeluaranheader with (readuncommitted)"))->where('nobukti', $kasgantungheader->pengeluaran_nobukti)->first();
-           
             $approvalabsensisupir=$request->approvalabsensisupir ?? false;
             if ($approvalabsensisupir==true) {
                 $pengeluaran = new StorePengeluaranHeaderRequest($pengeluaranHeader);              

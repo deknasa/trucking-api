@@ -75,7 +75,6 @@ class AbsensiSupirHeaderController extends Controller
     public function store(StoreAbsensiSupirHeaderRequest $request)
     {
         DB::beginTransaction();
-
         try {
 
             $group = 'ABSENSI';
@@ -395,7 +394,6 @@ class AbsensiSupirHeaderController extends Controller
             ]);
         } catch (\Throwable $th) {
             DB::rollBack();
-
             throw $th;
         }
     }
