@@ -143,7 +143,7 @@ class AbsensiSupirApprovalHeaderController extends Controller
                 // dump($data);
                 $kasgantungStore = app(KasGantungHeaderController::class)->update($data, $kasgantung);
 
-                // return response($kasgantungStore,442);
+                return response($kasgantungStore,442);
                 $kasgantung = $kasgantungStore->original['data'];
 
 

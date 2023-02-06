@@ -60,6 +60,7 @@ class MandorAbsensiSupirController extends Controller
                 $absensiSupir->nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
                 $absensiSupir->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
                 $absensiSupir->statusformat = $format->id;
+                $absensiSupir->modifiedby = auth('api')->user()->name;
 
 
                 $noBuktiKasgantungRequest = new Request();
@@ -107,7 +108,8 @@ class MandorAbsensiSupirController extends Controller
                     throw new \Throwable($kasGantung['message']);
                 }
             }
-
+            $absensiSupir->modifiedby = auth('api')->user()->name;
+            $absensiSupir->save();
             $absensiSupirDetail = AbsensiSupirDetail::where('absensi_id', $absensiSupir->id)->where('trado_id',$request->trado_id)->delete();
             $datadetail = [
                 'absensi_id' => $absensiSupir->id,
