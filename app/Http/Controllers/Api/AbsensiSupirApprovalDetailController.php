@@ -62,7 +62,7 @@ class AbsensiSupirApprovalDetailController extends Controller
                 ->leftJoin('trado', 'detail.trado_id', 'trado.id')
                 ->leftJoin('supir as supirutama', 'detail.supir_id', 'supirutama.id')
                 ->leftJoin('supir as supirserap', 'detail.supirserap_id', 'supirserap.id');
-                $penerimaanStokDetail = $query->get();
+                $absensiSupirApprovalDetail = $query->get();
             } else {
                 $query->select(
                     'detail.absensisupirapproval_id',
@@ -83,11 +83,11 @@ class AbsensiSupirApprovalDetailController extends Controller
                 ->leftJoin('supir as supirserap', 'detail.supirserap_id', 'supirserap.id');
                 $totalRows =  $query->count();
                 $query->skip($params['offset'])->take($params['limit']);
-                $penerimaanStokDetail = $query->get();
+                $absensiSupirApprovalDetail = $query->get();
             }
             
             return response([
-                'data' => $penerimaanStokDetail,
+                'data' => $absensiSupirApprovalDetail,
                 'total' => $params['limit'] > 0 ? ceil( $totalRows / $params['limit']) : 1,
                 "records" =>$totalRows ?? 0,
             ]);

@@ -27,12 +27,24 @@ class AbsensiSupirApprovalDetail extends MyModel
 
     public function getAll($id)
     {
-        $query = DB::table('absensisupirapprovaldetail')->from(DB::raw("absensisupirapprovaldetail as a with (readuncommitted)"))
+        $query = DB::table('absensisupirapprovaldetail')->from(DB::raw("absensisupirapprovaldetail as detail with (readuncommitted)"))
             ->select(
-                'a.supir_id',
-                'a.trado_id',
+                'detail.absensisupirapproval_id',
+                    'detail.nobukti',
+                    'detail.trado_id',
+                    'detail.supir_id',
+                    'detail.supirserap_id',
+                    'detail.modifiedby',
+                    'trado.keterangan as trado',
+                    'supirutama.namasupir as supir',
+                    'supirserap.namasupir as supirserap',
+
             )
-            ->where('a.absensisupirapproval_id', '=', $id);
+            ->leftJoin('absensisupirapprovalheader', 'detail.absensisupirapproval_id', 'absensisupirapprovalheader.id')
+            ->leftJoin('trado', 'detail.trado_id', 'trado.id')
+            ->leftJoin('supir as supirutama', 'detail.supir_id', 'supirutama.id')
+            ->leftJoin('supir as supirserap', 'detail.supirserap_id', 'supirserap.id')
+            ->where('detail.absensisupirapproval_id', '=', $id);
         $data = $query->get();
 
 
