@@ -135,6 +135,7 @@ class AbsensiSupirApprovalHeaderController extends Controller
                     'keterangan_detail' => $details['keterangan'],
                     'nominal' => $details['nominal'],
                     'approvalabsensisupir' => true,
+                    'absensisupirapprovalheader_id' => $absensiSupirApprovalHeader->id,
                 ];
 
 
@@ -244,6 +245,25 @@ class AbsensiSupirApprovalHeaderController extends Controller
                         ]
                     ];
                 }
+
+                $queryabsen = DB::table('absensisupirapproval')
+                    ->from(
+                        DB::raw("absensisupirheader a with (readuncommitted)")
+                    )
+                    ->select(
+                        'b.pengeluaran_nobukti',
+                        'b.tglkaskeluar'
+                    )
+                    ->join(DB::raw("kasgantungheader b"), 'a.kasgantung_nobukti', 'b.nobukti')
+                    ->first();
+                if (isset($queryabsen)) {
+                    $absensisupirapprovalheader  = AbsensiSupirApprovalHeader::lockForUpdate()->where("id", $absensiSupirApprovalHeader->id)
+                        ->firstorFail();
+                    $absensisupirapprovalheader->pengeluaran_nobukti = $queryabsen->pengeluaran_nobukti;
+                    $absensisupirapprovalheader->tglkaskeluar = $queryabsen->tglkaskeluar;
+                    $absensisupirapprovalheader->save();
+                }
+
                 DB::commit();
             }
             /* Set position and page */

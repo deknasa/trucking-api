@@ -482,8 +482,10 @@ class KasGantungHeaderController extends Controller
                 'datadetail' => $pengeluaranDetail,
                 'approvalabsensisupir' => $request->approvalabsensisupir ?? false,
                 'kasgantungheader_id' => $kasgantungheader->id ?? 0,
+                'absensisupirapprovalheader_id' => $request->absensisupirapprovalheader_id ?? 0,
+                'coakaskeluar' => $request->coakaskeluar ?? 0,
             ];
-         
+
          
        
             // dd($pengeluaranHeader);
