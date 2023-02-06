@@ -110,7 +110,7 @@ class AbsensiSupirDetailController extends Controller
         }
     }
 
-    public function store(Request $request)
+    public function store(StoreAbsensiSupirDetailRequest $request)
     {
         DB::beginTransaction();
 
