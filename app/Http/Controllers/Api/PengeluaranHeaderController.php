@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\AbsensiSupirApprovalHeader;
+use App\Models\KasGantungHeader;
 use App\Models\PengeluaranHeader;
 use App\Models\PengeluaranDetail;
 use App\Models\Parameter;
@@ -64,9 +66,9 @@ class PengeluaranHeaderController extends Controller
      */
     public function store(StorePengeluaranHeaderRequest $request)
     {
-    //    dd($request->all());
+        //    dd($request->all());
         DB::beginTransaction();
-      
+
         try {
             /* Store header */
 
@@ -113,7 +115,7 @@ class PengeluaranHeaderController extends Controller
             $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
                 ->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
 
-               
+
             $pengeluaranHeader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $pengeluaranHeader->pelanggan_id = $request->pelanggan_id ?? 0;
             $pengeluaranHeader->postingdari = $request->postingdari ?? 'ENTRY PENGELUARAN KAS/BANK';
@@ -264,9 +266,17 @@ class PengeluaranHeaderController extends Controller
                     throw new Exception($jurnal['message']);
                 }
 
-                $approvalabsensisupir=$request->approvalabsensisupir ?? false;
-                if ($approvalabsensisupir==true) {
+                $approvalabsensisupir = $request->approvalabsensisupir ?? false;
+                if ($approvalabsensisupir == true) {
 
+                  
+
+                    $kasgantungheader  = KasGantungHeader::lockForUpdate()->where("id", $request->kasgantungheader_id)
+                        ->firstorFail();
+                    $kasgantungheader->pengeluaran_nobukti = $pengeluaranHeader->nobukti;
+                    $kasgantungheader->coakaskeluar = $request->coakaskeluar;
+                    $kasgantungheader->tglkaskeluar = $request->tglbukti;
+                    $kasgantungheader->save();
                 }
 
                 DB::commit();
@@ -377,9 +387,9 @@ class PengeluaranHeaderController extends Controller
                 $pengeluaranheader->transferkebank = $request->transferkebank ?? '';
                 $pengeluaranheader->modifiedby = auth('api')->user()->name;
                 $pengeluaranheader->save();
-            }else{
+            } else {
                 $from = $request->from ?? '';
-                if($from != 'prosesuangjalansupir'){
+                if ($from != 'prosesuangjalansupir') {
                     $pengeluaranheader->dibayarke = $request->dibayarke ?? '';
                     $pengeluaranheader->save();
                 }
