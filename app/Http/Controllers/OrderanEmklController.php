@@ -10,6 +10,7 @@ class OrderanEmklController extends Controller
 {
     public function index(Request $request)
     {
+
         $response = Http::accept('application/json')
             ->withToken(session('access_token'))
             ->get(config('emkl.api.url') . '/orderanemkl', [

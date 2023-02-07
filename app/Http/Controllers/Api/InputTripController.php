@@ -14,6 +14,14 @@ use App\Http\Requests\StoreMandorTripRequest;
 
 class InputTripController extends Controller
 {
+
+     /**
+     * @ClassName 
+     */
+    public function index()
+    {
+     
+    }
    /**
      * @ClassName 
      */
