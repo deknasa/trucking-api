@@ -23,6 +23,135 @@ class Agen extends MyModel
         'updated_at',
     ];
 
+    public function cekvalidasihapus($id)
+    {     
+
+        $suratPengantar = DB::table('suratpengantar')
+            ->from(
+                DB::raw("suratpengantar as a with (readuncommitted)")
+            )
+            ->select(
+                'a.agen_id'
+            )
+            ->where('a.agen_id', '=', $id)
+            ->first();
+        if (isset($suratPengantar)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Surat Pengantar',
+            ];
+            goto selesai;
+        }
+        $orderanTrucking = DB::table('orderantrucking')
+            ->from(
+                DB::raw("orderantrucking as a with (readuncommitted)")
+            )
+            ->select(
+                'a.agen_id'
+            )
+            ->where('a.agen_id', '=', $id)
+            ->first();
+        if (isset($orderanTrucking)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Orderan Trucking',
+            ];
+            goto selesai;
+        }
+        $piutang = DB::table('piutangheader')
+            ->from(
+                DB::raw("piutangheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.agen_id'
+            )
+            ->where('a.agen_id', '=', $id)
+            ->first();
+        if (isset($piutang)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Stok',
+            ];
+            goto selesai;
+        }
+        $pelunasanPiutang = DB::table('pelunasanpiutangheader')
+            ->from(
+                DB::raw("pelunasanpiutangheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.agen_id'
+            )
+            ->where('a.agen_id', '=', $id)
+            ->first();
+        if (isset($pelunasanPiutang)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Pelunasan Piutang',
+            ];
+            goto selesai;
+        }
+
+        $invoice = DB::table('invoiceheader')
+            ->from(
+                DB::raw("invoiceheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.agen_id'
+            )
+            ->where('a.agen_id', '=', $id)
+            ->first();
+        if (isset($invoice)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Invoice',
+            ];
+            goto selesai;
+        }
+
+        $invoiceExtra = DB::table('invoiceextraheader')
+            ->from(
+                DB::raw("invoiceextraheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.agen_id'
+            )
+            ->where('a.agen_id', '=', $id)
+            ->first();
+        if (isset($invoiceExtra)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Invoice Extra',
+            ];
+            goto selesai;
+        }
+
+        $penerimaanGiro = DB::table('penerimaangiroheader')
+            ->from(
+                DB::raw("penerimaangiroheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.agen_id'
+            )
+            ->where('a.agen_id', '=', $id)
+            ->first();
+        if (isset($penerimaanGiro)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Penerimaan Giro',
+            ];
+            goto selesai;
+        }
+
+
+        $data = [
+            'kondisi' => false,
+            'keterangan' => '',
+        ];
+ 
+        selesai:
+        return $data;
+    }
+    
     public function isDeletable()
     {
         $statusApproval = Parameter::from(

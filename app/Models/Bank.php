@@ -35,7 +35,10 @@ class Bank extends MyModel
             ->where('a.bank_id', '=', $id)
             ->first();
         if (isset($pengeluaranHeader)) {
-            $data = true;
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Pengeluaran',
+            ];
             goto selesai;
         }
 
@@ -49,7 +52,10 @@ class Bank extends MyModel
             ->where('a.bank_id', '=', $id)
             ->first();
         if (isset($penerimaanHeader)) {
-            $data = true;
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Penerimaan',
+            ];
             goto selesai;
         }
         $kasgantungHeader = DB::table('kasgantungheader')
@@ -62,7 +68,10 @@ class Bank extends MyModel
             ->where('a.bank_id', '=', $id)
             ->first();
         if (isset($kasgantungHeader)) {
-            $data = true;
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Kas Gantung',
+            ];
             goto selesai;
         }
 
@@ -76,7 +85,10 @@ class Bank extends MyModel
             ->where('a.bank_id', '=', $id)
             ->first();
         if (isset($penerimaanGiroDetail)) {
-            $data = true;
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Penerimaan Giro',
+            ];
             goto selesai;
         }
 
@@ -90,7 +102,10 @@ class Bank extends MyModel
             ->where('a.bank_id', '=', $id)
             ->first();
         if (isset($rekapPenerimaanHeader)) {
-            $data = true;
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Rekap Penerimaan',
+            ];
             goto selesai;
         }
 
@@ -104,7 +119,42 @@ class Bank extends MyModel
             ->where('a.bank_id', '=', $id)
             ->first();
         if (isset($rekapPengeluaranHeader)) {
-            $data = true;
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Rekap Pengeluaran',
+            ];
+            goto selesai;
+        }
+        $penerimaanTrucking = DB::table('penerimaantruckingheader')
+            ->from(
+                DB::raw("penerimaantruckingheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.bank_id'
+            )
+            ->where('a.bank_id', '=', $id)
+            ->first();
+        if (isset($penerimaanTrucking)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Penerimaan Trucking',
+            ];
+            goto selesai;
+        }
+        $pengeluaranTrucking = DB::table('pengeluarantruckingheader')
+            ->from(
+                DB::raw("pengeluarantruckingheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.bank_id'
+            )
+            ->where('a.bank_id', '=', $id)
+            ->first();
+        if (isset($pengeluaranTrucking)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Pengeluaran Trucking',
+            ];
             goto selesai;
         }
         $pelunasanPiutang = DB::table('pelunasanpiutangheader')
@@ -117,7 +167,10 @@ class Bank extends MyModel
             ->where('a.bank_id', '=', $id)
             ->first();
         if (isset($pelunasanPiutang)) {
-            $data = true;
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Pelunasan Piutang',
+            ];
             goto selesai;
         }
 
@@ -131,7 +184,27 @@ class Bank extends MyModel
             ->where('a.bank_id', '=', $id)
             ->first();
         if (isset($hutangBayar)) {
-            $data = true;
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Hutang Bayar',
+            ];
+            goto selesai;
+        }
+
+        $pengeluaranStok = DB::table('pengeluaranstokheader')
+            ->from(
+                DB::raw("pengeluaranstokheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.bank_id'
+            )
+            ->where('a.bank_id', '=', $id)
+            ->first();
+        if (isset($pengeluaranStok)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Pengeluaran Stok',
+            ];
             goto selesai;
         }
 
@@ -145,15 +218,18 @@ class Bank extends MyModel
             ->where('a.bank_id', '=', $id)
             ->first();
         if (isset($alatBayar)) {
-            $data = true;
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Alat Bayar',
+            ];
             goto selesai;
         }
 
 
-
-
-
-        $data=false;
+        $data = [
+            'kondisi' => false,
+            'keterangan' => '',
+        ];
         selesai:
         return $data;
     }
