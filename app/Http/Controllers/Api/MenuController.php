@@ -60,6 +60,7 @@ class MenuController extends Controller
                     ];
 
                     $data = new StoreAcosRequest($dataacos);
+
                     $dataaco = app(AcosController::class)->store($data);
 
                     if ($dataaco['error']) {
@@ -505,6 +506,7 @@ class MenuController extends Controller
 
     public function listFolderFiles($controller)
     {
+ 
         $dir = base_path('app/http') . '/controllers/api/';
         $ffs = scandir($dir);
         unset($ffs[0], $ffs[1]);
@@ -518,11 +520,12 @@ class MenuController extends Controller
                 $classes = $this->get_php_classes(file_get_contents($dir . '/' . $ff));
                 foreach ($classes as $class) {
                     if ($class == $controller) {
-
+                  
 
                         if (!class_exists($class)) {
                             include_once($dir . $ff);
                         }
+                        
                         $methods = $this->get_class_methods($class, true);
 
                         foreach ($methods as $method) {
@@ -538,6 +541,7 @@ class MenuController extends Controller
                 }
             }
         }
+         
         return $data ?? '';
     }
 
@@ -614,7 +618,6 @@ class MenuController extends Controller
         $comment = $obj->getMethod($method)->getDocComment();
         //define the regular expression pattern to use for string matching
         $pattern = "#(@[a-zA-Z]+\s*[a-zA-Z0-9, ()_].*)#";
-
         //perform the regular expression on the string provided
         preg_match_all($pattern, $comment, $matches, PREG_PATTERN_ORDER);
         $comments = [];

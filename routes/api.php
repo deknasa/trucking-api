@@ -790,6 +790,8 @@ route::middleware(['auth:api'])->group(function () {
     Route::resource('prosesuangjalansupirdetail', ProsesUangJalanSupirDetailController::class);
 
     Route::get('/orderanemkl', [OrderanEmklController::class, 'index'])->middleware('handle-token');
+    Route::get('/orderanemkl/{job}/getTglJob', [OrderanEmklController::class, 'getTglJob'])->middleware('handle-token');;
+
 });
 
 Route::get('gudang/combo', [GudangController::class, 'combo']);

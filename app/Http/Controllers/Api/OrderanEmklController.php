@@ -18,4 +18,13 @@ class OrderanEmklController extends Controller
 
         return response()->json($response->json(), $response->status());
     }
+
+    public function getTglJob($job)
+    {
+        $response = Http::accept('application/json')
+            ->withToken(session('access_token'))
+            ->get(config('emkl.api.url') . '/orderanemkl/getTglJob', $job);
+
+        return response()->json($response->json(), $response->status());
+    }    
 }
