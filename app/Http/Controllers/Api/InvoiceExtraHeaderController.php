@@ -11,6 +11,7 @@ use App\Models\InvoiceExtraHeader;
 use App\Models\PiutangHeader;
 use App\Models\JurnalUmumHeader;
 use App\Models\JurnalUmumDetail;
+use App\Models\Error;
 use App\Models\PiutangDetail;
 use App\Http\Requests\StoreInvoiceExtraHeaderRequest;
 use App\Http\Requests\UpdateInvoiceExtraHeaderRequest;
@@ -559,6 +560,57 @@ class InvoiceExtraHeaderController extends Controller
             ]);
         } catch (\Throwable $th) {
             throw $th;
+        }
+    }
+
+    public function cekvalidasi($id)
+    {
+        $pengeluaran = InvoiceExtraHeader::findOrFail($id);
+        $status = $pengeluaran->statusapproval;
+        $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
+        $statusdatacetak = $pengeluaran->statuscetak;
+        $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
+
+        if ($status == $statusApproval->id) {
+            $query = Error::from(DB::raw("error with (readuncommitted)"))
+                ->select('keterangan')
+                ->whereRaw("kodeerror = 'SAP'")
+                ->get();
+            $keterangan = $query['0'];
+            $data = [
+                'message' => $keterangan,
+                'errors' => 'sudah approve',
+                'kodestatus' => '1',
+                'kodenobukti' => '1'
+            ];
+
+            return response($data);
+        } else if ($statusdatacetak == $statusCetak->id) {
+            $query = Error::from(DB::raw("error with (readuncommitted)"))
+                ->select('keterangan')
+                ->whereRaw("kodeerror = 'SDC'")
+                ->get();
+            $keterangan = $query['0'];
+            $data = [
+                'message' => $keterangan,
+                'errors' => 'sudah cetak',
+                'kodestatus' => '1',
+                'kodenobukti' => '1'
+            ];
+
+            return response($data);
+        } else {
+
+            $data = [
+                'message' => '',
+                'errors' => 'belum approve',
+                'kodestatus' => '0',
+                'kodenobukti' => '1'
+            ];
+
+            return response($data);
         }
     }
 

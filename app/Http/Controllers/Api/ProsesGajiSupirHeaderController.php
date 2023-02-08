@@ -117,7 +117,7 @@ class ProsesGajiSupirHeaderController extends Controller
                         'supir_id' => $ric->supir_id,
                         'trado_id' => $sp->trado_id,
                         'nominal' => $ric->nominal,
-                        'keterangan' => $ric->keterangan,
+                        'keterangan' => $ric->keterangan??'',
                         'modifiedby' => $prosesgajisupirheader->modifiedby,
                     ];
 
