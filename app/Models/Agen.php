@@ -216,7 +216,8 @@ class Agen extends MyModel
 
         $data = $query->get();
 
-        return $data;
+        // dd($$query->toSql());
+;        return $data;
     }
 
     public function default()
@@ -392,7 +393,7 @@ class Agen extends MyModel
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statusaktif') {
-                            $query = $query->where('parameter_statusaktif.text', '=', $filters['data']);
+                            $query = $query->where('parameter.text', '=', $filters['data']);
                         } else if ($filters['field'] == 'statusapproval') {
                             $query = $query->where('parameter_statusapproval.text', '=', $filters['data']);
                         } else if ($filters['field'] == 'statustas') {
@@ -406,7 +407,7 @@ class Agen extends MyModel
                 case "OR":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statusaktif') {
-                            $query = $query->orWhere('parameter_statusaktif.text', '=', $filters['data']);
+                            $query = $query->orWhere('parameter.text', '=', $filters['data']);
                         } elseif ($filters['field'] == 'id') {
                             $query = $query->orWhereRaw("(agen.id like '%$filters[data]%'");
                         } elseif ($filters['field'] == 'updated_at') {

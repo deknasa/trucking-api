@@ -861,6 +861,7 @@ Route::get('orderantrucking/combo', [OrderanTruckingController::class, 'combo'])
 Route::get('orderantrucking/field_length', [OrderanTruckingController::class, 'fieldLength']);
 Route::get('orderantrucking/default', [OrderanTruckingController::class, 'default']);
 Route::post('orderantrucking/{id}/cekValidasi', [OrderanTruckingController::class, 'cekValidasi'])->name('orderantrucking.cekValidasi');
+Route::get('orderantrucking/{id}/getagentas', [OrderanTruckingController::class, 'getagentas']);
 Route::resource('orderantrucking', OrderanTruckingController::class);
 
 Route::get('prosesabsensisupir/combo', [ProsesAbsensiSupirController::class, 'combo']);
