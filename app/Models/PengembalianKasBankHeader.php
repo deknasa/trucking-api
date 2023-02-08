@@ -34,7 +34,6 @@ class PengembalianKasBankHeader extends MyModel
             'pengembaliankasbankheader.tglbukti',
             'pengembaliankasbankheader.pengeluaran_nobukti',
 
-            'pengembaliankasbankheader.keterangan',
             'pengembaliankasbankheader.postingdari',
             'pengembaliankasbankheader.dibayarke',
             'cabang.namacabang as cabang',
@@ -82,7 +81,6 @@ class PengembalianKasBankHeader extends MyModel
             'pengembaliankasbankheader.tglbukti',
             'pengembaliankasbankheader.pengeluaran_nobukti',
 
-            'pengembaliankasbankheader.keterangan',
             'pengembaliankasbankheader.postingdari',
             'pengembaliankasbankheader.dibayarke',
             'cabang.namacabang as cabang',
@@ -123,7 +121,6 @@ class PengembalianKasBankHeader extends MyModel
                  $this->table.nobukti,
                  $this->table.tglbukti,
                  $this->table.pengeluaran_nobukti,
-                 $this->table.keterangan,
                  $this->table.postingdari,
                  $this->table.dibayarke,
                  'cabang.namacabang as cabang_id',
@@ -156,7 +153,6 @@ class PengembalianKasBankHeader extends MyModel
             $table->string('nobukti', 1000)->default('');
             $table->date('tglbukti')->default('');
             $table->string('pengeluaran_nobukti', 1000)->default('');
-            $table->string('keterangan', 1000)->default('');
             $table->string('postingdari', 1000)->default('');
             $table->string('dibayarke', 1000)->default('');
             $table->string('cabang_id', 1000)->default('');
@@ -177,7 +173,6 @@ class PengembalianKasBankHeader extends MyModel
         'nobukti',
         'tglbukti',
         'pengeluaran_nobukti',
-        'keterangan',
         'postingdari',
         'dibayarke',
         'cabang_id',
@@ -197,7 +192,6 @@ class PengembalianKasBankHeader extends MyModel
             'nobukti',
             'tglbukti',
             'pengeluaran_nobukti',
-            'keterangan',
             'postingdari',
             'dibayarke',
             'cabang_id',

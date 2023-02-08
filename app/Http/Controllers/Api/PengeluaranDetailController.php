@@ -56,7 +56,6 @@ class PengeluaranDetailController extends Controller
                     'header.nobukti',
                     'header.tglbukti',
                     'header.dibayarke',
-                    'header.keterangan as keteranganheader',
                     'header.transferkeac',
                     'header.transferkean',
                     'header.transferkebank',
@@ -75,7 +74,7 @@ class PengeluaranDetailController extends Controller
                     ->leftJoin(DB::raw("pengeluaranheader as header with (readuncommitted)"), 'header.id', 'detail.pengeluaran_id')
                     ->leftJoin(DB::raw("bank with (readuncommitted)"), 'bank.id', '=', 'header.bank_id')
                     ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'pelanggan.id', '=', 'header.pelanggan_id')
-                    ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'alatbayar.id', '=', 'pengeluaranheader.alatbayar_id');
+                    ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'alatbayar.id', '=', 'header.alatbayar_id');
 
                 $pengeluaranDetail = $query->get();
             } else {

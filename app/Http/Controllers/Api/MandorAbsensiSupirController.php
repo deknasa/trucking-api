@@ -7,6 +7,7 @@ use App\Models\MandorAbsensiSupir;
 use App\Models\AbsensiSupirHeader;
 use App\Models\AbsensiSupirDetail;
 use App\Models\Trado;
+use App\Models\Parameter;
 use App\Http\Requests\StoreMandorAbsensiSupirRequest;
 use App\Http\Requests\StoreAbsensiSupirHeaderRequest;
 use App\Http\Requests\StoreAbsensiSupirDetailRequest;
@@ -56,12 +57,15 @@ class MandorAbsensiSupirController extends Controller
                 $content['subgroup'] = $subgroup;
                 $content['table'] = 'absensisupirheader';
                 $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
+                
+                $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
 
                 $absensiSupir->nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
                 $absensiSupir->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
                 $absensiSupir->statusformat = $format->id;
                 $absensiSupir->modifiedby = auth('api')->user()->name;
-
+                $absensiSupir->statuscetak = $statusCetak->id ?? 0;
+    
 
                 $noBuktiKasgantungRequest = new Request();
                 $noBuktiKasgantungRequest['group'] = 'KAS GANTUNG';

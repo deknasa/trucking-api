@@ -220,7 +220,10 @@ class SuratPengantarController extends Controller
             $orderanTrucking = OrderanTrucking::where('nobukti', $request->jobtrucking)->first();
             $upahsupir = UpahSupir::where('kotadari_id', $request->dari_id)->where('kotasampai_id', $request->sampai_id)->first();
 
-            $tarif = Tarif::find($orderanTrucking->tarif_id);
+            // $tarif = Tarif::find($orderanTrucking->tarif_id);
+            $tarif = TarifRincian::where('tarif_id',$orderanTrucking->tarif_id)->where('container_id',$request->container_id)->first();
+
+            // return response($tarif,422);
             $trado = Trado::find($request->trado_id);
             $upahsupirRincian = UpahSupirRincian::where('upahsupir_id', $upahsupir->id)->where('container_id', $request->container_id)->where('statuscontainer_id', $request->statuscontainer_id)->first();
 

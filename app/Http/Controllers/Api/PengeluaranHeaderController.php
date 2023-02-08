@@ -794,9 +794,9 @@ class PengeluaranHeaderController extends Controller
             ->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
 
         if ($status == $statusApproval->id) {
-            $query = Error::from(DB::raw("error as (readuncommitted)"))
+            $query = Error::from(DB::raw("error with (readuncommitted)"))
                 ->select('keterangan')
-                ->where('kodeerror', '=', 'SAP')
+                ->whereRaw("kodeerror = 'SAP'")
                 ->get();
             $keterangan = $query['0'];
             $data = [
@@ -808,9 +808,9 @@ class PengeluaranHeaderController extends Controller
 
             return response($data);
         } else if ($statusdatacetak == $statusCetak->id) {
-            $query = Error::from(DB::raw("error as (readuncommitted)"))
+            $query = Error::from(DB::raw("error with (readuncommitted)"))
                 ->select('keterangan')
-                ->where('kodeerror', '=', 'SDC')
+                ->whereRaw("kodeerror = 'SDC'")
                 ->get();
             $keterangan = $query['0'];
             $data = [

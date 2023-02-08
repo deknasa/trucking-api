@@ -47,7 +47,6 @@ class ApprovalHutangBayar extends MyModel
                 'hutangbayarheader.id',
                 'hutangbayarheader.nobukti',
                 'hutangbayarheader.tglbukti',
-                'hutangbayarheader.keterangan',
                 'hutangbayarheader.coa',
                 'hutangbayarheader.pengeluaran_nobukti',
                 'bank.namabank as bank_id',

@@ -149,7 +149,7 @@ class PengembalianKasGantungHeaderController extends Controller
                 if ($request->datadetail != '') {
                     $counter = $request->datadetail;
                 } else {
-                    $counter = $request->nominal;
+                    $counter = $request->kasgantungdetail_id;
                 }
                 for ($i = 0; $i < count($counter); $i++) {
                     if ($request->datadetail != '') {
