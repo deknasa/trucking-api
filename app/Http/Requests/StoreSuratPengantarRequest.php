@@ -38,7 +38,7 @@ class StoreSuratPengantarRequest extends FormRequest
             'statusritasiomset' => 'required',
             'statusgudangsama' => 'required',
             'cabang' => 'required',
-            'qtyton' => 'required|numeric|gt:0',
+            // 'qtyton' => 'required|numeric|gt:0',
             'gudang' => 'required',
             'statusbatalmuat' => 'required',
             // 'totalton' => 'required|numeric|gt:0',
@@ -55,17 +55,17 @@ class StoreSuratPengantarRequest extends FormRequest
             'statuslongtrip' => 'status longtrip',
             'statusgudangsama' => 'status gudangsama',
             'statusritasiomset' => 'status ritasi omset',
-            'qtyton' => 'QTY ton',
+            // 'qtyton' => 'QTY ton',
             'statusbatalmuat' => 'status batal muat'
             
 
         ];
     }
 
-    public function messages()
-    {
-        return [
-            'qtyton.gt' => 'QTY Ton tidak boleh kosong',
-        ];
-    }
+    // public function messages()
+    // {
+    //     return [
+    //         'qtyton.gt' => 'QTY Ton tidak boleh kosong',
+    //     ];
+    // }
 }

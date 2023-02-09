@@ -363,5 +363,7 @@ class AcosSeeder extends Seeder
         Acos::create(['class' => 'mandorabsensisupir', 'method' => 'store', 'nama' => 'store MandorAbsensiSupirController', 'modifiedby' => 'ADMIN',]);
         Acos::create(['class' => 'mandorabsensisupir', 'method' => 'update', 'nama' => 'update MandorAbsensiSupirController', 'modifiedby' => 'ADMIN',]);
         Acos::create(['class' => 'mandorabsensisupir', 'method' => 'destroy', 'nama' => 'destroy MandorAbsensiSupirController', 'modifiedby' => 'ADMIN',]);
+        Acos::create(['class' => 'inputtrip', 'method' => 'index', 'nama' => 'index InputTripController', 'modifiedby' => 'ADMIN',]);
+        Acos::create(['class' => 'inputtrip', 'method' => 'store', 'nama' => 'store InputTripController', 'modifiedby' => 'ADMIN',]);
     }
 }

@@ -132,7 +132,7 @@ class SuratPengantarController extends Controller
             $suratpengantar->jarak = $upahsupir->jarak;
             $suratpengantar->nosptagihlain = $request->nosptagihlain ?? '';
             $suratpengantar->liter = $upahsupirRincian->liter ?? 0;
-            $suratpengantar->qtyton = $request->qtyton;
+            $suratpengantar->qtyton = $request->qtyton ?? 0;
             $suratpengantar->totalton = $tarif->nominalton * $request->qtyton;
             $suratpengantar->mandorsupir_id = $trado->mandor_id;
             $suratpengantar->mandortrado_id = $trado->mandor_id;
@@ -274,7 +274,7 @@ class SuratPengantarController extends Controller
             $suratpengantar->jarak = $upahsupir->jarak;
             $suratpengantar->nosptagihlain = $request->nosptagihlain ?? '';
             $suratpengantar->liter = $upahsupirRincian->liter ?? 0;
-            $suratpengantar->qtyton = $request->qtyton;
+            $suratpengantar->qtyton = $request->qtyton ?? 0;
             $suratpengantar->totalton = $tarif->nominalton * $request->qtyton;
             $suratpengantar->mandorsupir_id = $trado->mandor_id;
             $suratpengantar->mandortrado_id = $trado->mandor_id;
@@ -429,8 +429,9 @@ class SuratPengantarController extends Controller
     public function getTarifOmset($id)
     {
   
+        $iddata=$id ??0;
         $tarifrincian = new TarifRincian();
-        $omset=$tarifrincian->getid($id);
+        $omset=$tarifrincian->getid($iddata);
        
 
         return response([
