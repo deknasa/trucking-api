@@ -85,7 +85,7 @@ class OrderanTrucking extends MyModel
             ->where('agen.id', $id)
             ->first();
 
-            // dd($data);
+          
         return $data;
     }
     public function default()
