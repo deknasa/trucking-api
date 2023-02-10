@@ -35,7 +35,7 @@ class GajiSupirHeader extends MyModel
                 'gajisupirheader.nobukti',
                 'gajisupirheader.tglbukti',
                 'supir.namasupir as supir_id',
-                'gajisupirheader.keterangan',
+                // 'gajisupirheader.keterangan',
                 'gajisupirheader.nominal',
                 'gajisupirheader.tgldari',
                 'gajisupirheader.tglsampai',
@@ -144,7 +144,6 @@ class GajiSupirHeader extends MyModel
             $this->table.nobukti,
             $this->table.tglbukti,
             'supir.namasupir as supir_id',
-            $this->table.keterangan,
             $this->table.nominal,
             $this->table.tgldari,
             $this->table.tglsampai,
@@ -170,7 +169,6 @@ class GajiSupirHeader extends MyModel
             $table->string('nobukti', 1000)->default('');
             $table->date('tglbukti')->default('');
             $table->string('supir_id', 1000)->default('');
-            $table->string('keterangan', 1000)->default('');
             $table->bigInteger('nominal')->default('0');
             $table->date('tgldari')->default('');
             $table->date('tglsampai')->default('');
@@ -190,7 +188,7 @@ class GajiSupirHeader extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'supir_id', 'keterangan', 'nominal', 'tgldari', 'tglsampai', 'total', 'statuscetak', 'userbukacetak', 'tglbukacetak', 'jumlahcetak', 'modifiedby', 'created_at', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'supir_id',  'nominal', 'tgldari', 'tglsampai', 'total', 'statuscetak', 'userbukacetak', 'tglbukacetak', 'jumlahcetak', 'modifiedby', 'created_at', 'updated_at'], $models);
 
         return $temp;
     }

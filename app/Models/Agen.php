@@ -216,7 +216,8 @@ class Agen extends MyModel
 
         $data = $query->get();
 
-        return $data;
+        // dd($$query->toSql());
+;        return $data;
     }
 
     public function default()
@@ -392,11 +393,11 @@ class Agen extends MyModel
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statusaktif') {
-                            $query = $query->where('parameter_statusaktif.text', '=', $filters['data']);
+                            $query = $query->where('parameter.text', '=', $filters['data']);
                         } else if ($filters['field'] == 'statusapproval') {
-                            $query = $query->where('parameter_statusapproval.text', '=', $filters['data']);
+                            $query = $query->where('statusapproval.text', '=', $filters['data']);
                         } else if ($filters['field'] == 'statustas') {
-                            $query = $query->where('parameter_statustas.text', '=', $filters['data']);
+                            $query = $query->where('statustas.text', '=', $filters['data']);
                         } else {
                             $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
@@ -406,15 +407,15 @@ class Agen extends MyModel
                 case "OR":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statusaktif') {
-                            $query = $query->orWhere('parameter_statusaktif.text', '=', $filters['data']);
+                            $query = $query->orWhere('parameter.text', '=', $filters['data']);
                         } elseif ($filters['field'] == 'id') {
                             $query = $query->orWhereRaw("(agen.id like '%$filters[data]%'");
                         } elseif ($filters['field'] == 'updated_at') {
                             $query = $query->orWhereRaw("format(agen.updated_at,'dd-MM-yyyy HH:mm:ss') like '%$filters[data]%')");                            
                         } else if ($filters['field'] == 'statusapproval') {
-                            $query = $query->orWhere('parameter_statusapproval.text', '=', $filters['data']);
+                            $query = $query->orWhere('statusapproval.text', '=', $filters['data']);
                         } else if ($filters['field'] == 'statustas') {
-                            $query = $query->orWhere('parameter_statustas.text', '=', $filters['data']);
+                            $query = $query->orWhere('statustas.text', '=', $filters['data']);
                         } else {
                             $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }

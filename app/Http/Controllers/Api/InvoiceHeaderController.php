@@ -842,7 +842,7 @@ class InvoiceHeaderController extends Controller
         if ($status == $statusApproval->id) {
             $query = Error::from(DB::raw("error with (readuncommitted)"))
                 ->select('keterangan')
-                ->whereRaw("kodeerror = SAP")
+                ->whereRaw("kodeerror = 'SAP'")
                 ->get();
             $keterangan = $query['0'];
             $data = [
@@ -856,7 +856,7 @@ class InvoiceHeaderController extends Controller
         } else if ($statusdatacetak == $statusCetak->id) {
             $query = Error::from(DB::raw("error with (readuncommitted)"))
                 ->select('keterangan')
-                ->whereRaw("kodeerror = SDC")
+                ->whereRaw("kodeerror = 'SDC'")
                 ->get();
             $keterangan = $query['0'];
             $data = [

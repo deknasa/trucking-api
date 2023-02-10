@@ -348,6 +348,9 @@ class TarifRincian extends MyModel
     public function getid($id)
     {
 
+    if ($id=='undefined') {
+        $id=0;
+    }
         $query = Tarif::from(DB::raw("$this->table with (readuncommitted)"))
             ->select(
                 'tarif.id',

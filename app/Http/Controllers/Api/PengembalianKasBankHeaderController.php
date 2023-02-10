@@ -9,6 +9,7 @@ use Exception;
 use App\Http\Controllers\Controller;
 use App\Models\PengembalianKasBankHeader;
 use App\Models\PengeluaranHeader;
+use App\Models\Error;
 use App\Models\PengeluaranDetail;
 use App\Models\JurnalUmumHeader;
 use App\Models\JurnalUmumDetail;
@@ -68,7 +69,6 @@ class PengembalianKasBankHeaderController extends Controller
 
             $pengembalianKasBankHeader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $pengembalianKasBankHeader->pengeluaran_nobukti = $request->pengeluaran_nobukti;
-            $pengembalianKasBankHeader->keterangan = $request->keterangan ?? '';
             $pengembalianKasBankHeader->statusjenistransaksi = $request->statusjenistransaksi ?? 0;
             $pengembalianKasBankHeader->postingdari = $request->postingdari ?? 'ENTRY PENGEMBALIAN KAS BANK';
             $pengembalianKasBankHeader->statusapproval = $statusApproval->id ;
@@ -151,7 +151,7 @@ class PengembalianKasBankHeaderController extends Controller
                     "tglbukti" => $pengembalianKasBankHeader->tglbukti,
                     "pelanggan_id" => 1,
                     // "pelanggan_id" => $pengeluaran->pelanggan_id,
-                    "keterangan" => $pengembalianKasBankHeader->keterangan,
+                    // "keterangan" => $pengembalianKasBankHeader->keterangan,
                     "statusjenistransaksi" => $pengembalianKasBankHeader->statusjenistransaksi,
                     "postingdari" => $pengembalianKasBankHeader->postingdari,
                     "statusapproval" => $pengembalianKasBankHeader->statusapproval,
@@ -638,6 +638,57 @@ class PengembalianKasBankHeaderController extends Controller
             ]);
         } catch (\Throwable $th) {
             throw $th;
+        }
+    }
+    
+    public function cekvalidasi($id)
+    {
+        $pengeluaran = PengembalianKasBankHeader::find($id);
+        $status = $pengeluaran->statusapproval;
+        $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
+        $statusdatacetak = $pengeluaran->statuscetak;
+        $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
+
+        if ($status == $statusApproval->id) {
+            $query = Error::from(DB::raw("error with (readuncommitted)"))
+                ->select('keterangan')
+                ->whereRaw("kodeerror = 'SAP'")
+                ->get();
+            $keterangan = $query['0'];
+            $data = [
+                'message' => $keterangan,
+                'errors' => 'sudah approve',
+                'kodestatus' => '1',
+                'kodenobukti' => '1'
+            ];
+
+            return response($data);
+        } else if ($statusdatacetak == $statusCetak->id) {
+            $query = Error::from(DB::raw("error with (readuncommitted)"))
+                ->select('keterangan')
+                ->whereRaw("kodeerror = 'SDC'")
+                ->get();
+            $keterangan = $query['0'];
+            $data = [
+                'message' => $keterangan,
+                'errors' => 'sudah cetak',
+                'kodestatus' => '1',
+                'kodenobukti' => '1'
+            ];
+
+            return response($data);
+        } else {
+
+            $data = [
+                'message' => '',
+                'errors' => 'belum approve',
+                'kodestatus' => '0',
+                'kodenobukti' => '1'
+            ];
+
+            return response($data);
         }
     }
     

@@ -311,4 +311,13 @@ class OrderanTruckingController extends Controller
             'data' => $data
         ]);
     }
+
+    public function getagentas($id)
+    {
+
+        $orderantrucking = new OrderanTrucking();
+        return response([
+            "data" => $orderantrucking->getagentas($id)
+        ]);
+    }
 }

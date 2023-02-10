@@ -74,7 +74,20 @@ class OrderanTrucking extends MyModel
         return $data;
     }
 
+    public function getagentas($id)
+    {
+        $data = DB::table('agen')
+            ->from(DB::raw("agen with (readuncommitted)"))
+            ->select(
+                DB::raw("(case when jenisemkl.kodejenisemkl='TAS' then 1 else 0 end)  as statustas")
+                )
+            ->join('jenisemkl', 'jenisemkl.id', 'agen.jenisemkl')
+            ->where('agen.id', $id)
+            ->first();
 
+          
+        return $data;
+    }
     public function default()
     {
 
@@ -96,7 +109,7 @@ class OrderanTrucking extends MyModel
             ->first();
 
         $iddefaultstatuslangsir = $status->id ?? 0;
-        
+
         $status = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
         )
@@ -109,10 +122,10 @@ class OrderanTrucking extends MyModel
             ->first();
 
         $iddefaultstatusperalihan = $status->id ?? 0;
-        
+
 
         DB::table($tempdefault)->insert(
-            ["statuslangsir" => $iddefaultstatuslangsir,"statusperalihan" => $iddefaultstatusperalihan]
+            ["statuslangsir" => $iddefaultstatuslangsir, "statusperalihan" => $iddefaultstatusperalihan]
         );
 
         $query = DB::table($tempdefault)->from(
@@ -124,7 +137,7 @@ class OrderanTrucking extends MyModel
             );
 
         $data = $query->first();
-        
+
         return $data;
     }
 

@@ -132,7 +132,7 @@ class SuratPengantarController extends Controller
             $suratpengantar->jarak = $upahsupir->jarak;
             $suratpengantar->nosptagihlain = $request->nosptagihlain ?? '';
             $suratpengantar->liter = $upahsupirRincian->liter ?? 0;
-            $suratpengantar->qtyton = $request->qtyton;
+            $suratpengantar->qtyton = $request->qtyton ?? 0;
             $suratpengantar->totalton = $tarif->nominalton * $request->qtyton;
             $suratpengantar->mandorsupir_id = $trado->mandor_id;
             $suratpengantar->mandortrado_id = $trado->mandor_id;
@@ -220,7 +220,10 @@ class SuratPengantarController extends Controller
             $orderanTrucking = OrderanTrucking::where('nobukti', $request->jobtrucking)->first();
             $upahsupir = UpahSupir::where('kotadari_id', $request->dari_id)->where('kotasampai_id', $request->sampai_id)->first();
 
-            $tarif = Tarif::find($orderanTrucking->tarif_id);
+            // $tarif = Tarif::find($orderanTrucking->tarif_id);
+            $tarif = TarifRincian::where('tarif_id',$orderanTrucking->tarif_id)->where('container_id',$request->container_id)->first();
+
+            // return response($tarif,422);
             $trado = Trado::find($request->trado_id);
             $upahsupirRincian = UpahSupirRincian::where('upahsupir_id', $upahsupir->id)->where('container_id', $request->container_id)->where('statuscontainer_id', $request->statuscontainer_id)->first();
 
@@ -271,7 +274,7 @@ class SuratPengantarController extends Controller
             $suratpengantar->jarak = $upahsupir->jarak;
             $suratpengantar->nosptagihlain = $request->nosptagihlain ?? '';
             $suratpengantar->liter = $upahsupirRincian->liter ?? 0;
-            $suratpengantar->qtyton = $request->qtyton;
+            $suratpengantar->qtyton = $request->qtyton ?? 0;
             $suratpengantar->totalton = $tarif->nominalton * $request->qtyton;
             $suratpengantar->mandorsupir_id = $trado->mandor_id;
             $suratpengantar->mandortrado_id = $trado->mandor_id;
@@ -426,8 +429,9 @@ class SuratPengantarController extends Controller
     public function getTarifOmset($id)
     {
   
+        $iddata=$id ??0;
         $tarifrincian = new TarifRincian();
-        $omset=$tarifrincian->getid($id);
+        $omset=$tarifrincian->getid($iddata);
        
 
         return response([

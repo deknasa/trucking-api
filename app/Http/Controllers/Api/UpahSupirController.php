@@ -44,6 +44,18 @@ class UpahSupirController extends Controller
     /**
      * @ClassName 
      */
+
+    
+     public function listpivot()
+     {
+ 
+         $upahsupirrincian = new UpahSupirRincian();
+ 
+         return response([
+             'status' => true,
+             'data' => $upahsupirrincian->listpivot(),
+         ]);
+     }
     public function store(StoreUpahSupirRequest $request)
     {
 
