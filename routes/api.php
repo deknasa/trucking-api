@@ -505,6 +505,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::post('penerimaanstok/{id}/cekValidasi', [PenerimaanStokController::class, 'cekValidasi'])->name('penerimaanstok.cekValidasi');
     Route::apiResource('penerimaanstok', PenerimaanStokController::class);
     
+    Route::get('penerimaanstokheader/field_length', [PenerimaanStokHeaderController::class, 'fieldLength']);
     Route::get('penerimaanstokheader/{id}/printreport', [PenerimaanStokHeaderController::class, 'printReport']);
     Route::post('penerimaanstokheader/{id}/cekvalidasi', [PenerimaanStokHeaderController::class, 'cekValidasi'])->name('penerimaanstokheader.cekValidasi');
     Route::apiResource('penerimaanstokheader', PenerimaanStokHeaderController::class);

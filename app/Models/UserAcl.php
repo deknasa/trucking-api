@@ -57,15 +57,15 @@ class UserAcl extends MyModel
         return $query->select(
             DB::raw(
                 "$this->table.id,
-            acos.id as acos_id,
-            [user].id as acos_id,
+            acos.id as aco_id,
+            [user].id as aco_id,
 
             $this->table.modifiedby,
             $this->table.created_at,
             $this->table.updated_at"
             )
         )
-            ->leftJoin('acos', 'useracl.acos_id', 'acos.id')
+            ->leftJoin('acos', 'useracl.aco_id', 'acos.id')
             ->leftJoin('[user]', 'useracl.[user].id', '[user].id');
     }
 
