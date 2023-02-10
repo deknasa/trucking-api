@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Requests;
+use App\Http\Controllers\Api\ErrorController;
 
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -37,5 +38,39 @@ class StoreMandorTripRequest extends FormRequest
             "statuslongtrip" => "required",
             "trado_id" => "required",
         ];
+
+
     }
+    public function attributes()
+    {
+        return [
+            "agen_id"=>"agen",
+            "container_id"=>"container",
+            "dari_id"=>"dari",
+            "gandengan_id"=>"gandengan",
+            "jenisorder_id"=>"jenisorder",
+            "pelanggan_id"=>"pelanggan",
+            "sampai_id"=>"sampai",
+            "statuscontainer_id"=>"statuscontainer",
+            "trado_id"=>"trado",
+        ];
+    }
+
+    public function messages()
+    {
+        $controller = new ErrorController;
+
+        return [
+            "agen_id.required"=>":attribute".' '.$controller->geterror('WI')->keterangan,
+            "container_id.required"=>":attribute".' '.$controller->geterror('WI')->keterangan,
+            "dari_id.required"=>":attribute".' '.$controller->geterror('WI')->keterangan,
+            "gandengan_id.required"=>":attribute".' '.$controller->geterror('WI')->keterangan,
+            "jenisorder_id.required"=>":attribute".' '.$controller->geterror('WI')->keterangan,
+            "pelanggan_id.required"=>":attribute".' '.$controller->geterror('WI')->keterangan,
+            "sampai_id.required"=>":attribute".' '.$controller->geterror('WI')->keterangan,
+            "statuscontainer_id.required"=>":attribute".' '.$controller->geterror('WI')->keterangan,
+            "trado_id.required"=>":attribute".' '.$controller->geterror('WI')->keterangan,
+
+        ];
+    }  
 }

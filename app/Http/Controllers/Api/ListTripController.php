@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\API;
+namespace App\Http\Controllers\Api;
 
 use App\Models\SuratPengantar;
 use App\Models\UpahSupir;
@@ -14,7 +14,7 @@ use App\Http\Requests\StoreMandorTripRequest;
 class ListTripController extends Controller
 {
     /**
-     * @ClassName 
+     * @ClassName
      */
     public function index(Request $request)//list history 
     {
