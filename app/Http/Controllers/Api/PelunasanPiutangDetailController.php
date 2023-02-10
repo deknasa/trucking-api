@@ -73,9 +73,10 @@ class PelunasanPiutangDetailController extends Controller
                     'detail.nominallebihbayar',
                     'detail.potongan',
                     'detail.keteranganpotongan',
-                    'detail.coapotongan',
+                    'akunpusat.keterangancoa as coapotongan',
                     'detail.invoice_nobukti'
-                );
+                )
+                ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'detail.coapotongan', 'akunpusat.coa');
                 $piutangDetail = $query->get();
             }
 
