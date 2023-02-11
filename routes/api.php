@@ -589,7 +589,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::resource('serviceoutheader', ServiceOutHeaderController::class);
     Route::resource('serviceoutdetail', ServiceOutDetailController::class);
 
-    Route::post('kasgantungheader/{id}/cekvalidasi', [KasGantungHeaderController::class, 'cekvalidasi'])->name('kasgantungheader.cekvalidasi');
+    Route::post('kasgantungheader/{id}/cekValidasiAksi', [KasGantungHeaderController::class, 'cekValidasiAksi'])->name('kasgantungheader.cekValidasiAksi');
     Route::get('kasgantungheader/{id}/printreport', [KasGantungHeaderController::class, 'printReport']);
     Route::get('kasgantungheader/combo', [KasGantungHeaderController::class, 'combo']);
     Route::get('kasgantungheader/grid', [KasGantungHeaderController::class, 'grid']);
@@ -654,6 +654,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('pengembaliankasgantungheader/field_length', [PengembalianKasGantungHeaderController::class, 'fieldLength']);
     Route::get('pengembaliankasgantungheader/getkasgantung', [PengembalianKasGantungHeaderController::class, 'getKasGantung']);
     Route::get('pengembaliankasgantungheader/getpengembalian/{id}', [PengembalianKasGantungHeaderController::class, 'getPengembalian']);
+    Route::get('pengembaliankasgantungheader/default', [PengembalianKasGantungHeaderController::class, 'default']);
     Route::post('pengembaliankasgantungheader/{id}/cekvalidasi', [PengembalianKasGantungHeaderController::class, 'cekvalidasi'])->name('pengembaliankasgantungheader.cekvalidasi');
     Route::resource('pengembaliankasgantungheader', PengembalianKasGantungHeaderController::class);
 

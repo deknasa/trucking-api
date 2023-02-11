@@ -39,6 +39,50 @@ class KasGantungHeader extends MyModel
     // }
 
     
+    public function cekvalidasiaksi($nobukti)
+    {
+        $absensiSupir = DB::table('absensisupirheader')
+            ->from(
+                DB::raw("absensisupirheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.kasgantung_nobukti'
+            )
+            ->where('a.kasgantung_nobukti', '=', $nobukti)
+            ->first();
+        if (isset($absensiSupir)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Absensi Supir',
+            ];
+            goto selesai;
+        }
+        $pengembalianKasgantung = DB::table('pengembaliankasgantungdetail')
+            ->from(
+                DB::raw("pengembaliankasgantungdetail as a with (readuncommitted)")
+            )
+            ->select(
+                'a.kasgantung_nobukti'
+            )
+            ->where('a.kasgantung_nobukti', '=', $nobukti)
+            ->first();
+        if (isset($pengembalianKasgantung)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Pengembalian Kas Gantung',
+            ];
+            goto selesai;
+        }
+
+        
+        $data = [
+            'kondisi' => false,
+            'keterangan' => '',
+        ];
+        selesai:
+        return $data;
+    }
+
     public function default()
     {
 

@@ -53,8 +53,7 @@ class PengembalianKasGantungDetailController extends Controller
                     'detail.nobukti',
                     'detail.nominal',
                     'detail.keterangan',
-                    'detail.coa
-keterangan',
+                    'detail.coa',
                 );
 
                 $pengembalianKasGantungDetail = $query->get();
@@ -62,13 +61,14 @@ keterangan',
                 $query->select(
                     'detail.pengembaliankasgantung_id',
                     'detail.nobukti',
+                    'detail.kasgantung_nobukti',
                     'detail.nominal',
                     'detail.keterangan',
-                    'detail.coa',
+                    'akunpusat.keterangancoa as coa',
                 )
                 // ->leftJoin('pengeluaranstok','pengeluaranstokheader.pengeluaranstok_id','pengeluaranstok.id')
 
-                ->leftJoin('pengembaliankasgantungheader', 'detail.pengembaliankasgantung_id', 'pengembaliankasgantungheader.id');
+                ->leftJoin('akunpusat', 'detail.coa', 'akunpusat.coa');
                 $totalRows =  $query->count();
                 $query->skip($params['offset'])->take($params['limit']);
                 $pengembalianKasGantungDetail = $query->get();

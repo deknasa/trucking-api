@@ -28,10 +28,8 @@ class StorePengembalianKasGantungHeaderRequest extends FormRequest
             // "pelanggan" => "required",
             "bank_id" => "required",
             "bank" => "required",
-            "keterangan" => "required",
-            // "coa" => "required",
-            // "statusformat" => "required",
-            // "statushitungstok" => "required"
+            "tgldari" => "required",
+            "tglsampai" => "required",
         ];
     }
 }
