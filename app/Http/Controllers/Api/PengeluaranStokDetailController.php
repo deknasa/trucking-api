@@ -153,9 +153,14 @@ class PengeluaranStokDetailController extends Controller
                 if ($pengeluaranstokheader->pengeluaranstok_id == $spk->text) {
 
                     $datahitungstok = PengeluaranStok::select('statushitungstok as statushitungstok_id')
-                        ->where('statusformat', '=', $pengeluaranstokheader->statusformat)
+                        ->where('format', '=', $pengeluaranstokheader->statusformat)
                         ->first();
-    
+                        // return [
+                        //     'error' => true,
+                        //     'asda' => $pengeluaranstokheader->statusformat,
+                        //     'ads' => $datahitungstok,
+                            
+                        // ];
                     $statushitungstok = Parameter::where('grp', 'STATUS HITUNG STOK')->where('text', 'HITUNG STOK')->first();
                     if ($datahitungstok->statushitungstok_id == $statushitungstok->id) {
                         $stokpersediaan  = StokPersediaan::lockForUpdate()->where("stok_id", $request->stok_id)
@@ -180,9 +185,9 @@ class PengeluaranStokDetailController extends Controller
                 
                 
                
-                DB::commit();
-                if ($pengeluaranStokDetail->save()) {
-
+                
+             $pengeluaranStokDetail->save();
+                    
                     $spk = Parameter::where('grp', 'SPK STOK')->where('subgrp', 'SPK STOK')->first();
                     if ($pengeluaranstokheader->pengeluaranstok_id == $spk->text) {
     
@@ -193,13 +198,16 @@ class PengeluaranStokDetailController extends Controller
                         }
                     }
 
+                    DB::commit();
+
+
                     return [
                         'error' => false,
                         'id' => $pengeluaranStokDetail->id,
                         'tabel' => $pengeluaranStokDetail->getTable(),
                         'detail' => $pengeluaranStokDetail
                     ];
-                }
+                
             } catch (\Throwable $th) {
                 throw $th;
                 DB::rollBack();
