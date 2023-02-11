@@ -83,15 +83,16 @@ class PengeluaranDetailController extends Controller
                     'detail.pengeluaran_id',
                     'detail.nobukti',
                     'detail.nowarkat',
-                    'detail.tgljatuhtempo',
                     'detail.nominal',
                     'detail.keterangan',
                     DB::raw("(case when year(isnull(detail.bulanbeban,'1900/1/1'))=1900 then null else detail.bulanbeban end) as bulanbeban"),
-                    'detail.coadebet',
-                    'detail.coakredit',
+                    DB::raw("(case when year(isnull(detail.tgljatuhtempo,'1900/1/1'))=1900 then null else detail.tgljatuhtempo end) as tgljatuhtempo"),
+                    'debet.keterangancoa as coadebet',
+                    'kredit.keterangancoa as coakredit',
 
-                );
-
+                )
+                ->leftJoin(DB::raw("akunpusat as debet with (readuncommitted)"), 'detail.coadebet', 'debet.coa')
+                ->leftJoin(DB::raw("akunpusat as kredit with (readuncommitted)"), 'detail.coakredit', 'kredit.coa');
                 $pengeluaranDetail = $query->get();
                 //  dd($pengeluaranDetail);
             }

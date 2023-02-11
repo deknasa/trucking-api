@@ -239,6 +239,7 @@ class Bank extends MyModel
         $this->setRequestParameters();
 
         $aktif = request()->aktif ?? '';
+        $tipe = request()->tipe ?? '';
 
         $query = DB::table($this->table)->from(
             DB::raw($this->table . " with (readuncommitted)")
@@ -276,6 +277,9 @@ class Bank extends MyModel
                 ->first();
 
             $query->where('bank.statusaktif', '=', $statusaktif->id);
+        }
+        if($tipe == 'KAS'){
+            $query->where('bank.tipe', '=', 'KAS');
         }
 
         $this->paginate($query);

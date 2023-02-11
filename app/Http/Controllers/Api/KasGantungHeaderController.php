@@ -45,6 +45,15 @@ class KasGantungHeaderController extends Controller
             ]
         ]);
     }
+    
+    public function default()
+    {
+        $kasgantungHeader = new KasGantungHeader();
+        return response([
+            'status' => true,
+            'data' => $kasgantungHeader->default(),
+        ]);
+    }
 
     /**
      * @ClassName 
@@ -113,7 +122,7 @@ class KasGantungHeaderController extends Controller
             $kasgantungHeader->pengeluaran_nobukti = $request->pengeluaran_nobukti ?? $nobuktikaskeluar;
             $kasgantungHeader->coakaskeluar = $bank->coa ?? '';
             $kasgantungHeader->postingdari = $request->postingdari ?? 'ENTRY KAS GANTUNG';
-            $kasgantungHeader->tglkaskeluar = date('Y-m-d', strtotime($request->tglkaskeluar)) ?? '1900/1/1';
+            $kasgantungHeader->tglkaskeluar = date('Y-m-d', strtotime($request->tglbukti));
             $kasgantungHeader->modifiedby = auth('api')->user()->name;
             $kasgantungHeader->statusformat = $format->id ?? $request->statusformat;
             $kasgantungHeader->statuscetak = $statusCetak->id ?? 0;
@@ -281,7 +290,7 @@ class KasGantungHeaderController extends Controller
                             $detail = [
                                 'entriluar' => 1,
                                 'nobukti' => $nobuktikaskeluar,
-                                'tglbukti' => date('Y-m-d', strtotime($request->tglkaskeluar)),
+                                'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
                                 'alatbayar_id' => 2,
                                 'nowarkat' => '',
                                 'tgljatuhtempo' => '',
@@ -299,7 +308,7 @@ class KasGantungHeaderController extends Controller
                         $pengeluaranHeader = [
                             'tanpaprosesnobukti' => 1,
                             'nobukti' => $nobuktikaskeluar,
-                            'tglbukti' => date('Y-m-d', strtotime($request->tglkaskeluar)),
+                            'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
                             'pelanggan_id' => 0,
                             'statusjenistransaksi' => $jenisTransaksi->id,
                             'postingdari' => 'ENTRY KAS GANTUNG',

@@ -50,5 +50,6 @@ class ErrorSeeder extends Seeder
         Error::create([ 'kodeerror' => 'FXLS', 'keterangan' => 'HARUS BERTIPE XLS ATAU XLSX', 'modifiedby' => 'ADMIN',]);
         Error::create([ 'kodeerror' => 'SATL', 'keterangan' => 'PROSES TIDAK BISA LANJUT KARENA SUDAH DIPAKAI DI TRANSAKSI LAIN', 'modifiedby' => 'ADMIN',]);
         Error::create([ 'kodeerror' => 'STM', 'keterangan' => 'SISA BAYAR TIDAK BOLEH MINUS', 'modifiedby' => 'ADMIN',]);
+        Error::create([ 'kodeerror' => 'TDT', 'keterangan' => 'TRANSAKSI BERASAL DARI INPUTAN TRANSAKSI LAIN', 'modifiedby' => 'ADMIN',]);
     }
 }

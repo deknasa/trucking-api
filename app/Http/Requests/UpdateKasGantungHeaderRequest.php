@@ -23,9 +23,7 @@ class UpdateKasGantungHeaderRequest extends FormRequest
      */
     public function rules()
     {
-        $rules = [
-            'penerima' => 'required',
-        ];
+        $rules = [];
         $relatedRequests = [
             UpdateKasGantungDetailRequest::class
         ];
@@ -44,7 +42,6 @@ class UpdateKasGantungHeaderRequest extends FormRequest
     {
         $attributes = [
             'tglbukti' => 'Tanggal Bukti',
-            'tglkaskeluar' => 'Tanggal Kas Keluar',
             'nominal.*' => 'Nominal',
             'keterangan_detail.*' => 'Keterangan',
         ];

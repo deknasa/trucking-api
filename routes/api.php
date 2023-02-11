@@ -536,6 +536,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('piutangheader/no_bukti', [PiutangHeaderController::class, 'getNoBukti']);
     Route::get('piutangheader/grid', [PiutangHeaderController::class, 'grid']);
     Route::get('piutangheader/field_length', [PiutangHeaderController::class, 'fieldLength']);
+    Route::post('piutangheader/{id}/cekValidasiAksi', [PiutangHeaderController::class, 'cekValidasiAksi'])->name('piutangheader.cekValidasiAksi');
     Route::apiResource('piutangheader', PiutangHeaderController::class)->parameters(['piutangheader' => 'piutangHeader']);
     Route::apiResource('piutangdetail', PiutangDetailController::class);
 
@@ -592,6 +593,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('kasgantungheader/{id}/printreport', [KasGantungHeaderController::class, 'printReport']);
     Route::get('kasgantungheader/combo', [KasGantungHeaderController::class, 'combo']);
     Route::get('kasgantungheader/grid', [KasGantungHeaderController::class, 'grid']);
+    Route::get('kasgantungheader/default', [KasGantungHeaderController::class, 'default']);
     Route::post('kasgantungheader/{id}/cekvalidasi', [KasGantungHeaderController::class, 'cekvalidasi'])->name('kasgantungheader.cekvalidasi');
     Route::get('kasgantungheader/field_length', [KasGantungHeaderController::class, 'fieldLength']);
     Route::resource('kasgantungheader', KasGantungHeaderController::class);
