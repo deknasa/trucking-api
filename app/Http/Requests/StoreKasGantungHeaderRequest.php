@@ -25,9 +25,7 @@ class StoreKasGantungHeaderRequest extends FormRequest
     {
         $rules = [
             'tglbukti' => 'required',
-            'penerima' => 'required',
             'bank' => 'required',
-            'tglkaskeluar' => 'required',
         ];
         $relatedRequests = [
             StoreKasGantungDetailRequest::class
@@ -47,7 +45,6 @@ class StoreKasGantungHeaderRequest extends FormRequest
     {
         $attributes = [
             'tglbukti' => 'Tanggal Bukti',
-            'tglkaskeluar' => 'Tanggal Kas Keluar',
             'nominal.*' => 'Nominal',
             'keterangan_detail.*' => 'Keterangan',
         ];

@@ -256,6 +256,13 @@ class ParameterSeeder extends Seeder
         parameter::create(['grp' => 'JURNAL PENERIMAAN PINJAMAN', 'subgrp' => 'KREDIT', 'kelompok' => '', 'text' => 'KREDIT', 'memo' => '{"MEMO":"JURNAL PENERIMAAN PINJAMAN","SINGKATAN":"JPJ","WARNA":"#28A745","JURNAL":"01.05.02.02"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'STATUS DEFAULT PARAMETER', 'subgrp' => 'STATUS DEFAULT PARAMETER', 'kelompok' => '', 'text' => 'YA', 'memo' => '{"MEMO":"DEFAULT","SINGKATAN":"D","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => 'YA',]);
         parameter::create(['grp' => 'STATUS DEFAULT PARAMETER', 'subgrp' => 'STATUS DEFAULT PARAMETER', 'kelompok' => '', 'text' => 'TIDAK', 'memo' => '{"MEMO":"BUKAN DEFAULT","SINGKATAN":"BD","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'JENIS KARYAWAN', 'subgrp' => 'JENIS KARYAWAN', 'kelompok' => '', 'text' => 'SUPIR', 'memo' => '{"MEMO":"SUPIR","SINGKATAN":"S","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => 'YA',]);
+        parameter::create(['grp' => 'JENIS KARYAWAN', 'subgrp' => 'JENIS KARYAWAN', 'kelompok' => '', 'text' => 'KARYAWAN', 'memo' => '{"MEMO":"KARYAWAN","SINGKATAN":"K","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'STATUS KEMBALI', 'subgrp' => 'STATUS KEMBALI', 'kelompok' => '', 'text' => 'SUDAH DIKEMBALIKAN', 'memo' => '{"MEMO":"SUDAH DIKEMBALIKAN","SINGKATAN":"SD","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => 'YA',]);
+        parameter::create(['grp' => 'STATUS KEMBALI', 'subgrp' => 'STATUS KEMBALI', 'kelompok' => '', 'text' => 'BELUM DIKEMBALIKAN', 'memo' => '{"MEMO":"BELUM DIKEMBALIKAN","SINGKATAN":BD","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'STATUS KEMBALI', 'subgrp' => 'STATUS KEMBALI', 'kelompok' => '', 'text' => 'SEMUA', 'memo' => '{"MEMO":"SEMUA","SINGKATAN":"S","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'TYPE PEMOTONGAN', 'subgrp' => 'TYPE PEMOTONGAN', 'kelompok' => '', 'text' => 'DEPOSITO', 'memo' => '{"MEMO":"DEPOSITO","SINGKATAN":"D","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => 'YA',]);
+        parameter::create(['grp' => 'TYPE PEMOTONGAN', 'subgrp' => 'TYPE PEMOTONGAN', 'kelompok' => '', 'text' => 'PINJAMAN', 'memo' => '{"MEMO":"PINJAMAN","SINGKATAN":P","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         
     }
 }

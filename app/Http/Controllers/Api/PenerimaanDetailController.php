@@ -84,11 +84,13 @@ class PenerimaanDetailController extends Controller
 
                     'detail.pelunasanpiutang_nobukti',
                     DB::raw("(case when year(isnull(detail.bulanbeban,'1900/1/1'))=1900 then null else detail.bulanbeban end) as bulanbeban"),
-                    'detail.coakredit',
-                    'detail.coadebet',
+                    'a.keterangancoa as coadebet',
+                    'b.keterangancoa as coakredit',
 
                 )
                     ->leftJoin(DB::raw("bank with (readuncommitted)"), 'bank.id', '=', 'detail.bank_id')
+                    ->leftJoin(DB::raw("akunpusat as a with (readuncommitted)"), 'a.coa', '=', 'detail.coadebet')
+                    ->leftJoin(DB::raw("akunpusat as b with (readuncommitted)"), 'b.coa', '=', 'detail.coakredit')
                     ->leftJoin(DB::raw("bankpelanggan with (readuncommitted)"), 'bankpelanggan.id', '=', 'detail.bankpelanggan_id');
 
                     $totalRows =  $query->count();

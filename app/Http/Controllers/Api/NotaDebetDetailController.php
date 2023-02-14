@@ -72,7 +72,7 @@ class NotaDebetDetailController extends Controller
                     "detail.nominalbayar",
                     "detail.lebihbayar",
                     "detail.keterangan",
-                    "detail.coalebihbayar",
+                    "akunpusat.keterangancoa as coalebihbayar",
                     "detail.modifiedby"
                 )
                 // ->leftJoin('pengeluaranstok','pengeluaranstokheader.pengeluaranstok_id','pengeluaranstok.id')
@@ -95,20 +95,7 @@ class NotaDebetDetailController extends Controller
     public function store(StoreNotaDebetDetailRequest $request)
     {
         DB::beginTransaction();
-        $validator = Validator::make($request->all(), [
-            'keterangandetail' => 'required',
-         ], [
-             'keterangandetail.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
-              ], [
-             'keterangandetail' => 'keterangan Detail',
-            ],
-         );         
-         if (!$validator->passes()) {
-            return [
-                'error' => true,
-                'errors' => $validator->messages()
-            ];
-        }
+        
         try {
 
             $notaDebetDetail = new NotaDebetDetail();

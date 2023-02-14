@@ -59,6 +59,33 @@ class PiutangHeader extends MyModel
 
         return $data;
     }
+    public function cekvalidasiaksi($nobukti)
+    {
+        $pelunasanPiutang = DB::table('pelunasanpiutangdetail')
+            ->from(
+                DB::raw("pelunasanpiutangdetail as a with (readuncommitted)")
+            )
+            ->select(
+                'a.piutang_nobukti'
+            )
+            ->where('a.piutang_nobukti', '=', $nobukti)
+            ->first();
+        if (isset($pelunasanPiutang)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Pelunasan Piutang',
+            ];
+            goto selesai;
+        }
+
+        
+        $data = [
+            'kondisi' => false,
+            'keterangan' => '',
+        ];
+        selesai:
+        return $data;
+    }
 
     public function getPiutang($id)
     {

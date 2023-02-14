@@ -24,6 +24,44 @@ class PengembalianKasGantungHeader extends MyModel
         'updated_at',
     ];
 
+    public function default()
+    {
+
+        $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempdefault, function ($table) {
+            $table->unsignedBigInteger('bank_id')->default(0);
+            $table->string('bank', 255)->default('');
+        });
+
+
+        $bank = DB::table('bank')->from(
+            DB::raw('bank with (readuncommitted)')
+        )
+            ->select(
+                'id as bank_id',
+                'namabank as bank',
+
+            )
+            ->where('tipe', '=', 'KAS')
+            ->first();
+
+        DB::table($tempdefault)->insert(
+            ["bank_id" => $bank->bank_id, "bank" => $bank->bank]
+        );
+
+        $query = DB::table($tempdefault)->from(
+            DB::raw($tempdefault)
+        )
+            ->select(
+                'bank_id',
+                'bank',
+            );
+
+        $data = $query->first();
+
+        return $data;
+    }
+
     public function get()
     {
         $this->setRequestParameters();
@@ -39,10 +77,9 @@ class PengembalianKasGantungHeader extends MyModel
             DB::raw('(case when (year(pengembaliankasgantungheader.tgldari) <= 2000) then null else pengembaliankasgantungheader.tgldari end ) as tgldari'),
             DB::raw('(case when (year(pengembaliankasgantungheader.tglsampai) <= 2000) then null else pengembaliankasgantungheader.tglsampai end ) as tglsampai'),
             'pengembaliankasgantungheader.penerimaan_nobukti',
-            'pengembaliankasgantungheader.coakasmasuk',
+            'akunpusat.keterangancoa as coa',
             'pengembaliankasgantungheader.postingdari',
             DB::raw('(case when (year(pengembaliankasgantungheader.tglkasmasuk) <= 2000) then null else pengembaliankasgantungheader.tglkasmasuk end ) as tglkasmasuk'),
-            'statusformat.memo as statusformat',
             DB::raw('(case when (year(pengembaliankasgantungheader.tglbukacetak) <= 2000) then null else pengembaliankasgantungheader.tglbukacetak end ) as tglbukacetak'),
             'statuscetak.memo as statuscetak',
             'pengembaliankasgantungheader.userbukacetak',
@@ -52,9 +89,9 @@ class PengembalianKasGantungHeader extends MyModel
             'pengembaliankasgantungheader.updated_at'
 
         )
+        ->leftJoin('akunpusat', 'pengembaliankasgantungheader.coakasmasuk', 'akunpusat.coa')
         ->leftJoin('pelanggan', 'pengembaliankasgantungheader.pelanggan_id', 'pelanggan.id')
         ->leftJoin('bank', 'pengembaliankasgantungheader.bank_id', 'bank.id')
-        ->leftJoin('parameter as statusformat' , 'pengembaliankasgantungheader.statusformat', 'statusformat.id')
         ->leftJoin('parameter as statuscetak' , 'pengembaliankasgantungheader.statuscetak', 'statuscetak.id');
 
 

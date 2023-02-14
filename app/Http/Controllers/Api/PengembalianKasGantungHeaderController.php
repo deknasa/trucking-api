@@ -46,6 +46,15 @@ class PengembalianKasGantungHeaderController extends Controller
         ]);
     }
 
+    public function default()
+    {
+        $pengembaliankasgantung = new PengembalianKasGantungHeader();
+        return response([
+            'status' => true,
+            'data' => $pengembaliankasgantung->default(),
+        ]);
+    }
+
     /**
      * @ClassName 
      */
@@ -105,7 +114,7 @@ class PengembalianKasGantungHeaderController extends Controller
             $pengembalianKasGantungHeader->penerimaan_nobukti = '';
             $pengembalianKasGantungHeader->coakasmasuk = $querysubgrppenerimaan->coa;
             $pengembalianKasGantungHeader->postingdari = $request->postingdari ?? "Pengembalian Kas Gantung";
-            $pengembalianKasGantungHeader->tglkasmasuk = date('Y-m-d', strtotime($request->tglkasmasuk)) ?? date('Y-m-d', strtotime($request->tglbukti));
+            $pengembalianKasGantungHeader->tglkasmasuk = date('Y-m-d', strtotime($request->tglbukti));
             $pengembalianKasGantungHeader->statusformat = $format->id;
             $pengembalianKasGantungHeader->statuscetak = $statusCetak->id ?? 0;
             $pengembalianKasGantungHeader->modifiedby = auth('api')->user()->name;
@@ -265,7 +274,7 @@ class PengembalianKasGantungHeaderController extends Controller
                     'bank_id' => $pengembalianKasGantungHeader->bank_id,
                     'postingdari' => $request->postingdari ?? 'PENGEMBALIAN KAS GANTUNG',
                     'diterimadari' => $request->diterimadari ?? 'PENGEMBALIAN KAS GANTUNG',
-                    'tgllunas' => date('Y-m-d', strtotime($request->tglkasmasuk)) ?? date('Y-m-d', strtotime($request->tglbukti)),
+                    'tgllunas' => date('Y-m-d', strtotime($request->tglbukti)),
                     'statusformat' => $format->id,
                     'modifiedby' => auth('api')->user()->name,
                     'datadetail' => $penerimaanDetail
@@ -354,7 +363,6 @@ class PengembalianKasGantungHeaderController extends Controller
 
                 $pengembalianKasGantungHeader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
                 $pengembalianKasGantungHeader->pelanggan_id = $request->pelanggan_id;
-                $pengembalianKasGantungHeader->keterangan = $request->keterangan;
                 $pengembalianKasGantungHeader->bank_id = $request->bank_id;
                 $pengembalianKasGantungHeader->tgldari = date('Y-m-d', strtotime($request->tgldari));
                 $pengembalianKasGantungHeader->tglsampai = date('Y-m-d', strtotime($request->tglsampai));
@@ -363,7 +371,7 @@ class PengembalianKasGantungHeaderController extends Controller
                 $pengembalianKasGantungHeader->postingdari = $request->postingdari ?? '';
                 $pengembalianKasGantungHeader->statuscetak = $statusCetak->id ?? 0;
                 $pengembalianKasGantungHeader->modifiedby = auth('api')->user()->name;
-                $pengembalianKasGantungHeader->tglkasmasuk = date('Y-m-d', strtotime($request->tglkasmasuk));
+                $pengembalianKasGantungHeader->tglkasmasuk = date('Y-m-d', strtotime($request->tglbukti));
                 $pengembalianKasGantungHeader->save();
             }
 
@@ -752,6 +760,7 @@ class PengembalianKasGantungHeaderController extends Controller
             'data' => $data
         ]);
     }
+    
     //untuk create
     public function getKasGantung(Request $request)
     {

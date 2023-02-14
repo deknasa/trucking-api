@@ -157,7 +157,7 @@ class PenerimaanStokDetailController extends Controller
         try {
             $stok= Stok::where('id', $request->stok_id)->first();
             $stokreuse = Parameter::where('grp', 'STATUS REUSE')->where('subgrp', 'STATUS REUSE')->where('text', 'REUSE')->first();
-
+            
             if ($stok->statusreuse==$stokreuse->id) {
                 $reuse=true;
             } else {
@@ -165,14 +165,14 @@ class PenerimaanStokDetailController extends Controller
             }
 
             $spb = Parameter::where('grp', 'SPB STOK')->where('subgrp', 'SPB STOK')->first();
-           
+            
 
             if ($penerimaanstokheader->penerimaanstok_id == $spb->text) {
 
                 $datahitungstok = PenerimaanStok::select('statushitungstok as statushitungstok_id')
-                    ->where('statusformat', '=', $penerimaanstokheader->statusformat)
+                    ->where('format', '=', $penerimaanstokheader->statusformat)
                     ->first();
-
+                    
                 $statushitungstok = Parameter::where('grp', 'STATUS HITUNG STOK')->where('text', 'HITUNG STOK')->first();
                 if ($datahitungstok->statushitungstok_id == $statushitungstok->id) {
                     $stokpersediaan  = StokPersediaan::lockForUpdate()->where("stok_id", $request->stok_id)

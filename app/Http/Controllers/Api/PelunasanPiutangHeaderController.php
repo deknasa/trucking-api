@@ -69,6 +69,37 @@ class PelunasanPiutangHeaderController extends Controller
         try {
             if ($request->piutang_id != '') {
 
+                for ($i = 0; $i < count($request->piutang_id); $i++) {
+
+                    $cekSisa = PiutangHeader::from(DB::raw("piutangheader with (readuncommitted)"))->select('nominal')->first();
+
+                    if ($request->bayarppd[$i] > $cekSisa->nominal) {
+                        if ($request->nominallebihbayarppd[$i] == 0) {
+
+                            $query =  Error::from(DB::raw("error with (readuncommitted)"))->select('keterangan')->where('kodeerror', '=', 'WI')
+                                ->first();
+                            return response([
+                                'errors' => [
+                                    "nominallebihbayarppd.$i" =>
+                                    [$i => "nominal lebih bayar $query->keterangan"]
+                                ],
+                                'message' => "The given data was invalid.",
+                            ], 422);
+                        } else {
+                            $query =  Error::from(DB::raw("error with (readuncommitted)"))->select('keterangan')->where('kodeerror', '=', 'STM')
+                                ->first();
+                            return response([
+                                'errors' => [
+                                    "bayarppd.$i" =>
+                                    [$i => "$query->keterangan"]
+                                ],
+                                'message' => "The given data was invalid.",
+                            ], 422);
+                        }
+                    }
+                }
+
+
                 $group = 'PELUNASAN PIUTANG BUKTI';
                 $subgroup = 'PELUNASAN PIUTANG BUKTI';
 
@@ -352,7 +383,7 @@ class PelunasanPiutangHeaderController extends Controller
                     ];
 
                     $notaKredit = new StoreNotaKreditHeaderRequest($notaKreditHeader);
-                    app(NotaKreditHeaderController::class)->store($notaKredit);
+                    $tes = app(NotaKreditHeaderController::class)->store($notaKredit);
                 }
 
                 if ($notadebet) {
@@ -447,6 +478,36 @@ class PelunasanPiutangHeaderController extends Controller
 
         try {
 
+            for ($i = 0; $i < count($request->piutang_id); $i++) {
+
+                $cekSisa = PiutangHeader::from(DB::raw("piutangheader with (readuncommitted)"))->select('nominal')->first();
+
+                if ($request->bayarppd[$i] > $cekSisa->nominal) {
+                    if ($request->nominallebihbayarppd[$i] == 0) {
+
+                        $query =  Error::from(DB::raw("error with (readuncommitted)"))->select('keterangan')->where('kodeerror', '=', 'WI')
+                            ->first();
+                        return response([
+                            'errors' => [
+                                "nominallebihbayarppd.$i" =>
+                                [$i => "nominal lebih bayar $query->keterangan"]
+                            ],
+                            'message' => "The given data was invalid.",
+                        ], 422);
+                    } else {
+                        $query =  Error::from(DB::raw("error with (readuncommitted)"))->select('keterangan')->where('kodeerror', '=', 'STM')
+                            ->first();
+                        return response([
+                            'errors' => [
+                                "bayarppd.$i" =>
+                                [$i => "$query->keterangan"]
+                            ],
+                            'message' => "The given data was invalid.",
+                        ], 422);
+                    }
+                }
+            }
+
             $pelunasanpiutangheader->agen_id = $request->agen_id;
 
             if ($pelunasanpiutangheader->save()) {
@@ -479,7 +540,8 @@ class PelunasanPiutangHeaderController extends Controller
                             ->first();
                         return response([
                             'errors' => [
-                                "bayarppd.$i" => "$query->keterangan"
+                                "bayarppd.$i" =>
+                                [$i => "$query->keterangan"]
                             ],
                             'message' => "$query->keterangan",
                         ], 422);
@@ -589,6 +651,22 @@ class PelunasanPiutangHeaderController extends Controller
                 }
             }
 
+            $notakredit = false;
+            foreach ($request->potonganppd as $value) {
+                if ($value != '0') {
+                    $notakredit = true;
+                    break;
+                }
+            }
+
+            $notadebet = false;
+            foreach ($request->nominallebihbayarppd as $value) {
+                if ($value != '0') {
+                    $notadebet = true;
+                    break;
+                }
+            }
+
 
             if ($request->notakredit_nobukti != '-') {
 
@@ -608,6 +686,41 @@ class PelunasanPiutangHeaderController extends Controller
 
                 $notakredit = new UpdateNotaKreditHeaderRequest($notaKreditHeader);
                 app(NotaKreditHeaderController::class)->update($notakredit, $newNotaKredit);
+            }else{
+                if ($notakredit) {
+                    $group = 'NOTA KREDIT BUKTI';
+                    $subgroup = 'NOTA KREDIT BUKTI';
+
+                    $formatNota = DB::table('parameter')
+                        ->where('grp', $group)
+                        ->where('subgrp', $subgroup)
+                        ->first();
+                    $notaKreditRequest = new Request();
+                    $notaKreditRequest['group'] = $group;
+                    $notaKreditRequest['subgroup'] = $subgroup;
+                    $notaKreditRequest['table'] = 'notakreditheader';
+                    $notaKreditRequest['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
+                    $nobuktiNotaKredit = app(Controller::class)->getRunningNumber($notaKreditRequest)->original['data'];
+
+                    $pelunasanpiutangheader->notakredit_nobukti = $nobuktiNotaKredit;
+                    $pelunasanpiutangheader->save();
+
+                    $notaKreditHeader = [
+                        'nobukti' => $nobuktiNotaKredit,
+                        'tglbukti' => $pelunasanpiutangheader->tglbukti,
+                        'pelunasanpiutang_nobukti' => $pelunasanpiutangheader->nobukti,
+                        'postingdari' => 'EDIT PELUNASAN PIUTANG',
+                        'tgllunas' => $pelunasanpiutangheader->tglbukti,
+                        'agen_id' => $request->agen_id,
+                        'statusformat' => $formatNota->id,
+                        'modifiedby' => auth('api')->user()->name,
+                        'datadetail' => $detailNotaKredit
+
+                    ];
+
+                    $notaKredit = new StoreNotaKreditHeaderRequest($notaKreditHeader);
+                    $tes = app(NotaKreditHeaderController::class)->store($notaKredit);
+                }
             }
             if ($request->notadebet_nobukti != '-') {
 
@@ -627,6 +740,41 @@ class PelunasanPiutangHeaderController extends Controller
 
                 $notadebet = new UpdateNotaDebetHeaderRequest($notaDebetHeader);
                 app(NotaDebetHeaderController::class)->update($notadebet, $newNotaDebet);
+            }else{
+                if ($notadebet) {
+                    $group = 'NOTA DEBET BUKTI';
+                    $subgroup = 'NOTA DEBET BUKTI';
+
+                    $formatNota = DB::table('parameter')
+                        ->where('grp', $group)
+                        ->where('subgrp', $subgroup)
+                        ->first();
+                    $notaDebetRequest = new Request();
+                    $notaDebetRequest['group'] = $group;
+                    $notaDebetRequest['subgroup'] = $subgroup;
+                    $notaDebetRequest['table'] = 'notadebetheader';
+                    $notaDebetRequest['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
+                    $nobuktiNotaDebet = app(Controller::class)->getRunningNumber($notaDebetRequest)->original['data'];
+
+                    $pelunasanpiutangheader->notadebet_nobukti = $nobuktiNotaDebet;
+                    $pelunasanpiutangheader->save();
+
+                    $notaDebetHeader = [
+                        'nobukti' => $nobuktiNotaDebet,
+                        'tglbukti' => $pelunasanpiutangheader->tglbukti,
+                        'pelunasanpiutang_nobukti' => $pelunasanpiutangheader->nobukti,
+                        'postingdari' => 'EDIT PELUNASAN PIUTANG',
+                        'tgllunas' => $pelunasanpiutangheader->tglbukti,
+                        'agen_id' => $request->agen_id,
+                        'statusformat' => $formatNota->id,
+                        'modifiedby' => auth('api')->user()->name,
+                        'datadetail' => $detailNotaDebet
+
+                    ];
+
+                    $notaDebet = new StoreNotaDebetHeaderRequest($notaDebetHeader);
+                    app(NotaDebetHeaderController::class)->store($notaDebet);
+                }
             }
 
 

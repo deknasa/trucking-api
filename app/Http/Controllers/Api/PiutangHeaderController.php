@@ -627,6 +627,60 @@ class PiutangHeaderController extends Controller
         }
     }
 
+    
+    public function cekValidasiAksi($id) {
+        $piutangHeader= new PiutangHeader();
+        $nobukti = PiutangHeader::from(DB::raw("piutangheader"))->where('id', $id)->first();
+        $cekdata=$piutangHeader->cekvalidasiaksi($nobukti->nobukti);
+        if ($cekdata['kondisi']==true) {
+            $query = DB::table('error')
+            ->select(
+                DB::raw("ltrim(rtrim(keterangan))+' (".$cekdata['keterangan'].")' as keterangan")
+                )
+            ->where('kodeerror', '=', 'SATL')
+            ->get();
+        $keterangan = $query['0'];
+
+            $data = [
+                'status' => false,
+                'message' => $keterangan,
+                'errors' => '',
+                'kondisi' => $cekdata['kondisi'],
+            ];
+
+            return response($data);
+         
+        } else {
+            $invoice = $nobukti->invoice_nobukti ?? false;
+            if($invoice){
+                $query = DB::table('error')
+                ->select(
+                    DB::raw("ltrim(rtrim(keterangan))+' (".$nobukti['postingdari'].")' as keterangan")
+                    )
+                ->where('kodeerror', '=', 'TDT')
+                ->get();
+            $keterangan = $query['0'];
+    
+                $data = [
+                    'status' => false,
+                    'message' => $keterangan,
+                    'errors' => '',
+                    'kondisi' => true,
+                ];
+               
+            }else{
+
+                $data = [
+                    'status' => false,
+                    'message' => '',
+                    'errors' => '',
+                    'kondisi' => $cekdata['kondisi'],
+                ];
+            }
+
+            return response($data); 
+        }
+    }
     public function cekvalidasi($id)
     {
         $pengeluaran = PiutangHeader::find($id);

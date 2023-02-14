@@ -43,6 +43,12 @@ use App\Http\Controllers\Api\ApprovalHutangBayarController;
 use App\Http\Controllers\Api\ApprovalNotaHeaderController;
 use App\Http\Controllers\Api\ApprovalPendapatanSupirController;
 use App\Http\Controllers\Api\BankPelangganController;
+use App\Http\Controllers\Api\ExportLaporanDepositoController;
+use App\Http\Controllers\Api\ExportLaporanKasGantungController;
+use App\Http\Controllers\Api\ExportLaporanStokController;
+use App\Http\Controllers\Api\ExportPemakaianBarangController;
+use App\Http\Controllers\Api\ExportPembelianBarangController;
+use App\Http\Controllers\Api\ExportPengeluaranBarangController;
 use App\Http\Controllers\Api\GajiSupirDetailController;
 use App\Http\Controllers\Api\GajiSupirHeaderController;
 use App\Http\Controllers\Api\JenisEmklController;
@@ -143,7 +149,26 @@ use App\Http\Controllers\Api\KartuStokController;
 use App\Http\Controllers\Api\HistoriPenerimaanStokController;
 use App\Http\Controllers\Api\HistoriPengeluaranStokController;
 use App\Http\Controllers\Api\LaporanBukuBesarController;
+use App\Http\Controllers\Api\LaporanDepositoSupirController;
+use App\Http\Controllers\Api\LaporanEstimasiKasGantungController;
+use App\Http\Controllers\Api\LaporanHistoryPinjamanController;
+use App\Http\Controllers\Api\LaporanHutangBBMController;
+use App\Http\Controllers\Api\LaporanKartuHutangPrediksiController;
 use App\Http\Controllers\Api\LaporanKasBankController;
+use App\Http\Controllers\Api\LaporanKasGantungController;
+use App\Http\Controllers\Api\LaporanKeteranganPinjamanSupirController;
+use App\Http\Controllers\Api\LaporanKlaimPJTSupirController;
+use App\Http\Controllers\Api\LaporanPemotonganPinjamanDepositoController;
+use App\Http\Controllers\Api\LaporanPemotonganPinjamanPerEBSController;
+use App\Http\Controllers\Api\LaporanPinjamanSupirController;
+use App\Http\Controllers\Api\LaporanPinjamanSupirKaryawanController;
+use App\Http\Controllers\Api\LaporanRekapSumbanganController;
+use App\Http\Controllers\Api\LaporanRitasiGandenganController;
+use App\Http\Controllers\Api\LaporanRitasiTradoController;
+use App\Http\Controllers\Api\LaporanSupirLebihDariTradoController;
+use App\Http\Controllers\Api\LaporanTripGandenganDetailController;
+use App\Http\Controllers\Api\LaporanTripTradoController;
+use App\Http\Controllers\Api\LaporanUangJalanController;
 use App\Http\Controllers\Api\OrderanEmklController;
 use App\Http\Controllers\Api\ReportAllController;
 use App\Http\Controllers\Api\PencairanGiroPengeluaranDetailController;
@@ -483,6 +508,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::post('penerimaanstok/{id}/cekValidasi', [PenerimaanStokController::class, 'cekValidasi'])->name('penerimaanstok.cekValidasi');
     Route::apiResource('penerimaanstok', PenerimaanStokController::class);
     
+    Route::get('penerimaanstokheader/field_length', [PenerimaanStokHeaderController::class, 'fieldLength']);
     Route::get('penerimaanstokheader/{id}/printreport', [PenerimaanStokHeaderController::class, 'printReport']);
     Route::post('penerimaanstokheader/{id}/cekvalidasi', [PenerimaanStokHeaderController::class, 'cekValidasi'])->name('penerimaanstokheader.cekValidasi');
     Route::apiResource('penerimaanstokheader', PenerimaanStokHeaderController::class);
@@ -513,6 +539,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('piutangheader/no_bukti', [PiutangHeaderController::class, 'getNoBukti']);
     Route::get('piutangheader/grid', [PiutangHeaderController::class, 'grid']);
     Route::get('piutangheader/field_length', [PiutangHeaderController::class, 'fieldLength']);
+    Route::post('piutangheader/{id}/cekValidasiAksi', [PiutangHeaderController::class, 'cekValidasiAksi'])->name('piutangheader.cekValidasiAksi');
     Route::apiResource('piutangheader', PiutangHeaderController::class)->parameters(['piutangheader' => 'piutangHeader']);
     Route::apiResource('piutangdetail', PiutangDetailController::class);
 
@@ -565,10 +592,11 @@ route::middleware(['auth:api'])->group(function () {
     Route::resource('serviceoutheader', ServiceOutHeaderController::class);
     Route::resource('serviceoutdetail', ServiceOutDetailController::class);
 
-    Route::post('kasgantungheader/{id}/cekvalidasi', [KasGantungHeaderController::class, 'cekvalidasi'])->name('kasgantungheader.cekvalidasi');
+    Route::post('kasgantungheader/{id}/cekValidasiAksi', [KasGantungHeaderController::class, 'cekValidasiAksi'])->name('kasgantungheader.cekValidasiAksi');
     Route::get('kasgantungheader/{id}/printreport', [KasGantungHeaderController::class, 'printReport']);
     Route::get('kasgantungheader/combo', [KasGantungHeaderController::class, 'combo']);
     Route::get('kasgantungheader/grid', [KasGantungHeaderController::class, 'grid']);
+    Route::get('kasgantungheader/default', [KasGantungHeaderController::class, 'default']);
     Route::post('kasgantungheader/{id}/cekvalidasi', [KasGantungHeaderController::class, 'cekvalidasi'])->name('kasgantungheader.cekvalidasi');
     Route::get('kasgantungheader/field_length', [KasGantungHeaderController::class, 'fieldLength']);
     Route::resource('kasgantungheader', KasGantungHeaderController::class);
@@ -629,6 +657,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('pengembaliankasgantungheader/field_length', [PengembalianKasGantungHeaderController::class, 'fieldLength']);
     Route::get('pengembaliankasgantungheader/getkasgantung', [PengembalianKasGantungHeaderController::class, 'getKasGantung']);
     Route::get('pengembaliankasgantungheader/getpengembalian/{id}', [PengembalianKasGantungHeaderController::class, 'getPengembalian']);
+    Route::get('pengembaliankasgantungheader/default', [PengembalianKasGantungHeaderController::class, 'default']);
     Route::post('pengembaliankasgantungheader/{id}/cekvalidasi', [PengembalianKasGantungHeaderController::class, 'cekvalidasi'])->name('pengembaliankasgantungheader.cekvalidasi');
     Route::resource('pengembaliankasgantungheader', PengembalianKasGantungHeaderController::class);
 
@@ -801,6 +830,59 @@ route::middleware(['auth:api'])->group(function () {
     Route::resource('prosesuangjalansupirdetail', ProsesUangJalanSupirDetailController::class);
 
     Route::get('/orderanemkl', [OrderanEmklController::class, 'index'])->middleware('handle-token');
+    
+    Route::get('laporandepositosupir/report', [LaporanDepositoSupirController::class, 'report'])->name('laporandepositosupir.report');
+    Route::resource('laporandepositosupir', LaporanDepositoSupirController::class);
+    Route::get('laporanpinjamansupir/report', [LaporanPinjamanSupirController::class, 'report'])->name('laporanpinjamansupir.report');
+    Route::resource('laporanpinjamansupir', LaporanPinjamanSupirController::class);
+    Route::get('laporanketeranganpinjamansupir/report', [LaporanKeteranganPinjamanSupirController::class, 'report'])->name('laporanketeranganpinjamansupir.report');
+    Route::resource('laporanketeranganpinjamansupir', LaporanKeteranganPinjamanSupirController::class);
+    Route::get('laporankasgantung/report', [LaporanKasGantungController::class, 'report'])->name('laporankasgantung.report');
+    Route::resource('laporankasgantung', LaporanKasGantungController::class);
+    Route::get('laporanhutangbbm/report', [LaporanHutangBBMController::class, 'report'])->name('laporanhutangbbm.report');
+    Route::resource('laporanhutangbbm', LaporanHutangBBMController::class);
+    Route::get('laporanestimasikasgantung/report', [LaporanEstimasiKasGantungController::class, 'report'])->name('laporanestimasikasgantung.report');
+    Route::resource('laporanestimasikasgantung', LaporanEstimasiKasGantungController::class);
+    Route::get('laporantriptrado/report', [LaporanTripTradoController::class, 'report'])->name('laporantriptrado.report');
+    Route::resource('laporantriptrado', LaporanTripTradoController::class);
+    Route::get('laporankartuhutangprediksi/report', [LaporanKartuHutangPrediksiController::class, 'report'])->name('laporankartuhutangprediksi.report');
+    Route::resource('laporankartuhutangprediksi', LaporanKartuHutangPrediksiController::class);
+    Route::get('laporantripgandengandetail/report', [LaporanTripGandenganDetailController::class, 'report'])->name('laporantripgandengandetail.report');
+    Route::resource('laporantripgandengandetail', LaporanTripGandenganDetailController::class);
+    Route::get('laporanuangjalan/report', [LaporanUangJalanController::class, 'report'])->name('laporanuangjalan.report');
+    Route::resource('laporanuangjalan', LaporanUangJalanController::class);
+    Route::get('laporanpinjamansupirkaryawan/report', [LaporanPinjamanSupirKaryawanController::class, 'report'])->name('laporanpinjamansupirkaryawan.report');
+    Route::resource('laporanpinjamansupirkaryawan', LaporanPinjamanSupirKaryawanController::class);
+    Route::get('laporanpemotonganpinjamanperebs/report', [LaporanPemotonganPinjamanPerEBSController::class, 'report'])->name('laporanpemotonganpinjamanperebs.report');
+    Route::resource('laporanpemotonganpinjamanperebs', LaporanPemotonganPinjamanPerEBSController::class);
+    Route::get('laporansupirlebihdaritrado/report', [LaporanSupirLebihDariTradoController::class, 'report'])->name('laporansupirlebihdaritrado.report');
+    Route::resource('laporansupirlebihdaritrado', LaporanSupirLebihDariTradoController::class);
+    Route::get('laporanpemotonganpinjdepo/report', [LaporanPemotonganPinjamanDepositoController::class, 'report'])->name('laporanpemotonganpinjdepo.report');
+    Route::resource('laporanpemotonganpinjdepo', LaporanPemotonganPinjamanDepositoController::class);
+    Route::get('laporanrekapsumbangan/report', [LaporanRekapSumbanganController::class, 'report'])->name('laporanrekapsumbangan.report');
+    Route::resource('laporanrekapsumbangan', LaporanRekapSumbanganController::class);
+    Route::get('laporanklaimpjtsupir/report', [LaporanKlaimPJTSupirController::class, 'report'])->name('laporanklaimpjtsupir.report');
+    Route::resource('laporanklaimpjtsupir', LaporanKlaimPJTSupirController::class);
+    
+    Route::get('exportpengeluaranbarang/export', [ExportPengeluaranBarangController::class, 'export'])->name('exportpengeluaranbarang.export');
+    Route::resource('exportpengeluaranbarang', ExportPengeluaranBarangController::class);
+    Route::get('exportpembelianbarang/export', [ExportPembelianBarangController::class, 'export'])->name('exportpembelianbarang.export');
+    Route::resource('exportpembelianbarang', ExportPembelianBarangController::class);
+    Route::get('exportlaporandeposito/export', [ExportLaporanDepositoController::class, 'export'])->name('exportlaporandeposito.export');
+    Route::resource('exportlaporandeposito', ExportLaporanDepositoController::class);
+    Route::get('exportlaporankasgantung/export', [ExportLaporanKasGantungController::class, 'export'])->name('exportlaporankasgantung.export');
+    Route::resource('exportlaporankasgantung', ExportLaporanKasGantungController::class);
+    Route::get('exportlaporanstok/export', [ExportLaporanStokController::class, 'export'])->name('exportlaporanstok.export');
+    Route::resource('exportlaporanstok', ExportLaporanStokController::class);
+    Route::get('laporanritasitrado/export', [LaporanRitasiTradoController::class, 'export'])->name('laporanritasitrado.export');
+    Route::resource('laporanritasitrado', LaporanRitasiTradoController::class);
+    Route::get('laporanritasigandengan/export', [LaporanRitasiGandenganController::class, 'export'])->name('laporanritasigandengan.export');
+    Route::resource('laporanritasigandengan', LaporanRitasiGandenganController::class);
+    Route::get('laporanhistorypinjaman/export', [LaporanHistoryPinjamanController::class, 'export'])->name('laporanhistorypinjaman.export');
+    Route::resource('laporanhistorypinjaman', LaporanHistoryPinjamanController::class);
+    Route::get('exportpemakaianbarang/export', [ExportPemakaianBarangController::class, 'export'])->name('exportpemakaianbarang.export');
+    Route::resource('exportpemakaianbarang', ExportPemakaianBarangController::class);
+    
     Route::get('/orderanemkl/getTglJob', [OrderanEmklController::class, 'getTglJob'])->middleware('handle-token');;
 
 });

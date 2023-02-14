@@ -38,6 +38,89 @@ class KasGantungHeader extends MyModel
     //     return $this->belongsTo(Penerima::class, 'penerima_id');
     // }
 
+    
+    public function cekvalidasiaksi($nobukti)
+    {
+        $absensiSupir = DB::table('absensisupirheader')
+            ->from(
+                DB::raw("absensisupirheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.kasgantung_nobukti'
+            )
+            ->where('a.kasgantung_nobukti', '=', $nobukti)
+            ->first();
+        if (isset($absensiSupir)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Absensi Supir',
+            ];
+            goto selesai;
+        }
+        $pengembalianKasgantung = DB::table('pengembaliankasgantungdetail')
+            ->from(
+                DB::raw("pengembaliankasgantungdetail as a with (readuncommitted)")
+            )
+            ->select(
+                'a.kasgantung_nobukti'
+            )
+            ->where('a.kasgantung_nobukti', '=', $nobukti)
+            ->first();
+        if (isset($pengembalianKasgantung)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Pengembalian Kas Gantung',
+            ];
+            goto selesai;
+        }
+
+        
+        $data = [
+            'kondisi' => false,
+            'keterangan' => '',
+        ];
+        selesai:
+        return $data;
+    }
+
+    public function default()
+    {
+
+        $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempdefault, function ($table) {
+            $table->unsignedBigInteger('bank_id')->default(0);
+            $table->string('bank', 255)->default('');
+        });
+
+
+        $bank = DB::table('bank')->from(
+            DB::raw('bank with (readuncommitted)')
+        )
+            ->select(
+                'id as bank_id',
+                'namabank as bank',
+
+            )
+            ->where('tipe', '=', 'KAS')
+            ->first();
+
+        DB::table($tempdefault)->insert(
+            ["bank_id" => $bank->bank_id, "bank" => $bank->bank]
+        );
+
+        $query = DB::table($tempdefault)->from(
+            DB::raw($tempdefault)
+        )
+            ->select(
+                'bank_id',
+                'bank',
+            );
+
+        $data = $query->first();
+
+        return $data;
+    }
+
     public function get()
     {
         $this->setRequestParameters();
