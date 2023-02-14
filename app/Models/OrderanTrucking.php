@@ -25,6 +25,38 @@ class OrderanTrucking extends MyModel
         'updated_at' => 'date:d-m-Y H:i:s'
     ];
 
+    public function cekvalidasihapus($nobukti)
+    {     
+
+        $suratPengantar = DB::table('suratpengantar')
+            ->from(
+                DB::raw("suratpengantar as a with (readuncommitted)")
+            )
+            ->select(
+                'a.jobtrucking'
+            )
+            ->where('a.jobtrucking', '=', $nobukti)
+            ->first();
+        if (isset($suratPengantar)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Surat Pengantar',
+            ];
+
+            
+            goto selesai;
+        }
+
+
+        $data = [
+            'kondisi' => false,
+            'keterangan' => '',
+        ];
+ 
+        selesai:
+        return $data;
+    }
+
     public function get()
     {
         $this->setRequestParameters();
@@ -159,8 +191,8 @@ class OrderanTrucking extends MyModel
                 'jenisorder.keterangan as jenisorder',
                 'orderantrucking.pelanggan_id',
                 'pelanggan.namapelanggan as pelanggan',
-                'orderantrucking.tarif_id',
-                'tarif.tujuan as tarif',
+                'orderantrucking.tarif_id as tarifrincian_id',
+                'tarif.tujuan as tarifrincian',
                 'orderantrucking.nominal',
                 'orderantrucking.nojobemkl',
                 'orderantrucking.nocont',

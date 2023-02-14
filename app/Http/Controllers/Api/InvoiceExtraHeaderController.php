@@ -74,7 +74,7 @@ class InvoiceExtraHeaderController extends Controller
             $invoiceExtraHeader->tglbukti          = date('Y-m-d', strtotime($request->tglbukti));
             $invoiceExtraHeader->nominal    = $request->nominal;
             $invoiceExtraHeader->agen_id    = $request->agen_id;
-            $invoiceExtraHeader->pelanggan_id = $request->pelanggan_id;            
+            // $invoiceExtraHeader->pelanggan_id = $request->pelanggan_id;            
             $invoiceExtraHeader->statusapproval = $statusApproval->id;
             $invoiceExtraHeader->userapproval = '';
             $invoiceExtraHeader->tglapproval = '';
@@ -261,7 +261,7 @@ class InvoiceExtraHeaderController extends Controller
             $invoiceextraheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $invoiceextraheader->nominal    = $request->nominal;
             $invoiceextraheader->agen_id    = $request->agen_id;
-            $invoiceextraheader->pelanggan_id = $request->pelanggan_id;
+            // $invoiceextraheader->pelanggan_id = $request->pelanggan_id;
             $invoiceextraheader->modifiedby = auth('api')->user()->name;
 
 

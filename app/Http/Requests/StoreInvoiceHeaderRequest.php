@@ -27,7 +27,6 @@ class StoreInvoiceHeaderRequest extends FormRequest
             'tglterima' => 'required',
             'agen' => 'required',
             'jenisorder' => 'required',
-            'cabang' => 'required',
             'tglbukti' => 'required',
         ];
 

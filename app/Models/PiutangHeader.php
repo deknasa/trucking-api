@@ -147,7 +147,7 @@ class PiutangHeader extends MyModel
 
     public function findUpdate($id)
     {
-        $data = DB::table('piutangheader')->select(
+        $data = PiutangHeader::from(DB::raw("piutangheader with (readuncommitted)"))->select(
             'piutangheader.id',
             'piutangheader.nobukti',
             'piutangheader.tglbukti',
