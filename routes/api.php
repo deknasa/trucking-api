@@ -214,6 +214,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::resource('parameter', ParameterController::class);
 
     Route::get('absensisupirheader/{id}/detail', [AbsensiSupirHeaderController::class, 'detail'])->name('absensi.detail');
+    Route::post('absensisupirheader/{id}/cekValidasiAksi', [AbsensiSupirHeaderController::class, 'cekValidasiAksi'])->name('absensisupirheader.cekValidasiAksi');
     Route::get('absensisupirheader/no_bukti', [AbsensiSupirHeaderController::class, 'getNoBukti']);
     Route::get('absensisupirheader/running_number', [AbsensiSupirHeaderController::class, 'getRunningNumber']);
     Route::get('absensisupirheader/grid', [AbsensiSupirHeaderController::class, 'grid']);

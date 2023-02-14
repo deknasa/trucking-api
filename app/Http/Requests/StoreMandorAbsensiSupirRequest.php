@@ -26,6 +26,8 @@ class StoreMandorAbsensiSupirRequest extends FormRequest
         return [
             'trado' => 'required',
             'trado_id' => 'required',
+            'supir' => 'required',
+            'jam' => 'required',
         ];
     }
 }

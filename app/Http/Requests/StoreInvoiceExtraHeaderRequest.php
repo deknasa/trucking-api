@@ -25,7 +25,7 @@ class StoreInvoiceExtraHeaderRequest extends FormRequest
     {
         $rules = [
             "agen"=>"required",
-            "pelanggan"=>"required",
+            // "pelanggan"=>"required",
             "tglbukti"=>"required",
         ];
         

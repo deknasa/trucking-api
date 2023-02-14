@@ -75,13 +75,11 @@ class InvoiceHeader extends MyModel
         $query = InvoiceHeader::from(DB::raw("invoiceheader with (readuncommitted)"))
             ->select(
                 'invoiceheader.*',
-                'cabang.namacabang as cabang',
                 'agen.namaagen as agen',
                 'jenisorder.keterangan as jenisorder'
             )
             ->leftJoin(DB::raw("agen with (readuncommitted)"), 'invoiceheader.agen_id', 'agen.id')
             ->leftJoin(DB::raw("jenisorder with (readuncommitted)"), 'invoiceheader.jenisorder_id', 'jenisorder.id')
-            ->leftJoin(DB::raw("cabang with (readuncommitted)"), 'invoiceheader.cabang_id', 'cabang.id')
             ->where('invoiceheader.id', $id);
         $data = $query->first();
         return $data;

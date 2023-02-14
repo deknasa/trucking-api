@@ -41,7 +41,7 @@ class AbsensiSupirApprovalHeader extends MyModel
             'absensisupirapprovalheader.userapproval',
             'statusformat.memo as statusformat',
             'absensisupirapprovalheader.pengeluaran_nobukti',
-            'absensisupirapprovalheader.coakaskeluar',
+            'akunpusat.keterangancoa as coakaskeluar',
             'absensisupirapprovalheader.postingdari',
             db::raw("(case when year(isnull(absensisupirapprovalheader.tglkaskeluar,'1900/1/1'))=1900 then null else absensisupirapprovalheader.tglkaskeluar end) as tglkaskeluar"),
             'statuscetak.memo as statuscetak',
@@ -52,6 +52,7 @@ class AbsensiSupirApprovalHeader extends MyModel
             'absensisupirapprovalheader.updated_at',
             'absensisupirapprovalheader.created_at',
         )
+            ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'absensisupirapprovalheader.coakaskeluar', 'akunpusat.coa')
             ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'absensisupirapprovalheader.statusapproval', 'statusapproval.id')
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'absensisupirapprovalheader.statuscetak', 'statuscetak.id')
             ->leftJoin(DB::raw("parameter as statusformat with (readuncommitted)"), 'absensisupirapprovalheader.statusformat', 'statusformat.id');

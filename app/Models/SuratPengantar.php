@@ -213,7 +213,8 @@ class SuratPengantar extends MyModel
     public function findAll($id)
     {
         // dd('find');
-        $data = DB::table('suratpengantar')->select(
+        $data = SuratPengantar::from(DB::raw("suratpengantar with (readuncommitted)"))
+        ->select(
             'suratpengantar.id',
             'suratpengantar.nobukti',
             'suratpengantar.tglbukti',
@@ -250,8 +251,9 @@ class SuratPengantar extends MyModel
             'agen.namaagen as agen',
             'suratpengantar.jenisorder_id',
             'jenisorder.keterangan as jenisorder',
-            'suratpengantar.tarif_id',
-            'tarif.tujuan as tarif',
+            'suratpengantar.tarif_id as tarifrincian_id',
+            'tarif.tujuan as tarifrincian',
+            'suratpengantar.nominalperalihan',
             'suratpengantar.nojob',
             'suratpengantar.nojob2',
             'suratpengantar.cabang_id',

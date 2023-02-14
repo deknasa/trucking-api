@@ -12,10 +12,12 @@ use App\Http\Controllers\Controller;
 use App\Models\LogTrail;
 use App\Models\Parameter;
 use App\Http\Requests\StoreLogTrailRequest;
+use App\Http\Requests\UpdateSuratPengantarRequest;
 use App\Models\Container;
 use App\Models\Agen;
 use App\Models\JenisOrder;
 use App\Models\Pelanggan;
+use App\Models\SuratPengantar;
 use App\Models\Tarif;
 use App\Models\TarifRincian;
 use Illuminate\Support\Facades\Schema;
@@ -39,17 +41,19 @@ class OrderanTruckingController extends Controller
         ]);
     }
 
-    public function cekValidasi($id) {
-        $orderanTrucking= new OrderanTrucking();
-        $cekdata=$orderanTrucking->cekvalidasihapus($id);
-        if ($cekdata['kondisi']==true) {
+    public function cekValidasi($id)
+    {
+        $orderanTrucking = new OrderanTrucking();
+        $nobukti = OrderanTrucking::from(DB::raw("orderantrucking"))->where('id', $id)->first();
+        $cekdata = $orderanTrucking->cekvalidasihapus($nobukti->nobukti);
+        if ($cekdata['kondisi'] == true) {
             $query = DB::table('error')
-            ->select(
-                DB::raw("ltrim(rtrim(keterangan))+' (".$cekdata['keterangan'].")' as keterangan")
+                ->select(
+                    DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
                 )
-            ->where('kodeerror', '=', 'SATL')
-            ->get();
-        $keterangan = $query['0'];
+                ->where('kodeerror', '=', 'SATL')
+                ->get();
+            $keterangan = $query['0'];
 
             $data = [
                 'status' => false,
@@ -59,7 +63,6 @@ class OrderanTruckingController extends Controller
             ];
 
             return response($data);
-         
         } else {
             $data = [
                 'status' => false,
@@ -68,7 +71,7 @@ class OrderanTruckingController extends Controller
                 'kondisi' => $cekdata['kondisi'],
             ];
 
-            return response($data); 
+            return response($data);
         }
     }
     public function default()
@@ -89,7 +92,7 @@ class OrderanTruckingController extends Controller
     {
         DB::beginTransaction();
 
-      
+
         try {
             $group = 'ORDERANTRUCKING';
             $subgroup = 'ORDERANTRUCKING';
@@ -196,7 +199,7 @@ class OrderanTruckingController extends Controller
             $orderantrucking->statusperalihan = $request->statusperalihan;
             $orderantrucking->modifiedby = auth('api')->user()->name;
 
-            $tarifrincian = TarifRincian::find($request->tarifrincian_id);
+            $tarifrincian = TarifRincian::from(DB::raw("tarifrincian"))->where('tarif_id',$request->tarifrincian_id)->where('container_id', $request->container_id)->first();
             $orderantrucking->nominal = $tarifrincian->nominal;
 
             if ($orderantrucking->save()) {
@@ -212,6 +215,23 @@ class OrderanTruckingController extends Controller
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
+                $get = SuratPengantar::from(DB::raw("suratpengantar with (readuncommitted)"))
+                    ->select('id','nominalperalihan','qtyton')
+                    ->where('jobtrucking', $orderantrucking->nobukti)->first();
+
+                $suratPengantar = [
+                    'proseslain' => '1',
+                    'jobtrucking' => $orderantrucking->nobukti,
+                    'nominalperalihan' => $get->nominalperalihan,
+                    'qtyton' => $get->qtyton,
+                    'postingdari' => 'EDIT ORDERAN TRUCKING'
+                ];
+                $newSuratPengantar = new SuratPengantar();
+                $newSuratPengantar = $newSuratPengantar->findAll($get->id);
+
+                $sp = new UpdateSuratPengantarRequest($suratPengantar);
+                app(SuratPengantarController::class)->update($sp, $newSuratPengantar);
+
                 DB::commit();
             }
             /* Set position and page */

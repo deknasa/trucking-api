@@ -26,7 +26,6 @@ class UpdateSuratPengantarRequest extends FormRequest
         return [
             'jobtrucking' => 'required',
             'tglbukti' => 'required',
-            'keterangan' => 'required',
             'dari' => 'required',
             'sampai' => 'required',
             'statusperalihan' => 'required',
@@ -35,9 +34,7 @@ class UpdateSuratPengantarRequest extends FormRequest
             'supir' => 'required',
             'statuslongtrip' => 'required',
             'nosp' => 'required',
-            'statusritasiomset' => 'required',
             'statusgudangsama' => 'required',
-            'cabang' => 'required',
             // 'qtyton' => 'required|numeric|gt:0',
             'gudang' => 'required',
             'statusbatalmuat' => 'required',
@@ -54,7 +51,6 @@ class UpdateSuratPengantarRequest extends FormRequest
             'statuscontainer' => 'status container',
             'statuslongtrip' => 'status longtrip',
             'statusgudangsama' => 'status gudangsama',
-            'statusritasiomset' => 'status ritasi omset',
             // 'qtyton' => 'QTY ton',
             'statusbatalmuat' => 'status batal muat'
             

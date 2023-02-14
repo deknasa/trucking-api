@@ -28,6 +28,35 @@ class AbsensiSupirHeader extends MyModel
     {
         return $this->hasMany(AbsensiSupirDetail::class, 'absensi_id');
     }
+    
+    
+    public function cekvalidasiaksi($nobukti)
+    {
+        $absensiSupir = DB::table('absensisupirapprovalheader')
+            ->from(
+                DB::raw("absensisupirapprovalheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.absensisupir_nobukti'
+            )
+            ->where('a.absensisupir_nobukti', '=', $nobukti)
+            ->first();
+        if (isset($absensiSupir)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Absensi Supir Posting',
+            ];
+            goto selesai;
+        }
+
+        
+        $data = [
+            'kondisi' => false,
+            'keterangan' => '',
+        ];
+        selesai:
+        return $data;
+    }
 
     public function get()
     {
