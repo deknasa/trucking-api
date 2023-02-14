@@ -263,6 +263,8 @@ class ParameterSeeder extends Seeder
         parameter::create(['grp' => 'STATUS KEMBALI', 'subgrp' => 'STATUS KEMBALI', 'kelompok' => '', 'text' => 'SEMUA', 'memo' => '{"MEMO":"SEMUA","SINGKATAN":"S","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'TYPE PEMOTONGAN', 'subgrp' => 'TYPE PEMOTONGAN', 'kelompok' => '', 'text' => 'DEPOSITO', 'memo' => '{"MEMO":"DEPOSITO","SINGKATAN":"D","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => 'YA',]);
         parameter::create(['grp' => 'TYPE PEMOTONGAN', 'subgrp' => 'TYPE PEMOTONGAN', 'kelompok' => '', 'text' => 'PINJAMAN', 'memo' => '{"MEMO":"PINJAMAN","SINGKATAN":P","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'STATUS GEROBAK', 'subgrp' => 'STATUS GEROBAK', 'kelompok' => '', 'text' => 'GEROBAK', 'memo' => '{"MEMO":"GEROBAK","SINGKATAN":"G","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'STATUS GEROBAK', 'subgrp' => 'STATUS GEROBAK', 'kelompok' => '', 'text' => 'BUKAN GEROBAK', 'memo' => '{"MEMO":"BUKAN GEROBAK","SINGKATAN":"BG","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => 'YA',]);
         
     }
 }

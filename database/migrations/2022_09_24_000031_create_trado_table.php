@@ -20,6 +20,7 @@ class CreateTradoTable extends Migration
             $table->id();
             $table->longText('keterangan')->default('');
             $table->integer('statusaktif')->length(11)->default(0);
+            $table->integer('statusgerobak')->length(11)->default(0);
             $table->double('kmawal', 15,2)->default(0);
             $table->double('kmakhirgantioli', 15,2)->default(0);
             $table->date('tglakhirgantioli')->default('1900/1/1');
