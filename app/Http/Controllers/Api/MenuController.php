@@ -45,7 +45,6 @@ class MenuController extends Controller
     public function store(StoreMenuRequest $request)
     {
         DB::beginTransaction();
-
         try {
             $class = $this->listFolderFiles($request['controller']);
             if ($class <> '') {
@@ -145,7 +144,7 @@ class MenuController extends Controller
                         ->first();
 
                     $arrayangka = array('1', '2', '3', '4', '5', '6', '7', '8', '9');
-                    $kodeakhir =$list->menukode;;
+                    $kodeakhir = $list->menukode;;
                     if (in_array($kodeakhir, $arrayangka)) {
 
                         $menukode = $list->menukode + 1;
@@ -235,31 +234,56 @@ class MenuController extends Controller
      */
     public function update(UpdateMenuRequest $request, Menu $menu)
     {
+
+        $query = DB::table('menu')
+            ->from(
+                DB::raw("menu a with (readuncommitted)")
+            )
+            ->select(
+                DB::raw("trim(replace(b.nama,'index ','')) as controller")
+            )
+            ->join(DB::raw("acos b with(readuncommitted)"), 'a.aco_id', 'b.id')
+            ->where('a.id', '=', $request->id)
+            ->first();
+        $controller = $query->controller;
         DB::beginTransaction();
 
         try {
-            $class = $this->listFolderFiles($request['controller']);
-
+            $class = $this->listFolderFiles($controller);
             if ($class <> '') {
 
                 foreach ($class as $value) {
                     $namaclass = str_replace('controller', '', strtolower($value['class']));
-                    if (Acos::select('id')
-                        ->where('class', '=', $namaclass)
-                        ->exists()
-                    ) {
-                        $dataacos = [
-                            'class' => $namaclass,
-                            'method' => $value['method'],
-                            'nama' => $value['name'],
-                            'modifiedby' => auth('api')->user()->name,
-                        ];
+                    $queryacos = DB::table('acos')
+                        ->from(
+                            db::raw("acos a with(readuncommitted)")
+                        )
+                        ->select(
+                            'a.id'
+                        )
+                        ->where('a.class', '=', $namaclass)
+                        ->where('a.method', '=', $value['method'])
+                        ->where('a.nama', '=', $value['name'])
+                        ->first();
 
-                        $data = new StoreAcosRequest($dataacos);
-                        $dataaco = app(AcosController::class)->store($data);
+                    if (!isset($queryacos)) {
+                        if (Acos::select('id')
+                            ->where('class', '=', $namaclass)
+                            ->exists()
+                        ) {
+                            $dataacos = [
+                                'class' => $namaclass,
+                                'method' => $value['method'],
+                                'nama' => $value['name'],
+                                'modifiedby' => auth('api')->user()->name,
+                            ];
 
-                        if ($dataaco['error']) {
-                            return response($dataaco, 422);
+                            $data = new StoreAcosRequest($dataacos);
+                            $dataaco = app(AcosController::class)->store($data);
+
+                            if ($dataaco['error']) {
+                                return response($dataaco, 422);
+                            }
                         }
                     }
                 }
@@ -351,7 +375,7 @@ class MenuController extends Controller
             $menu->position = $selected->position;
             $menu->id = $selected->id;
             $menu->page = ceil($menu->position / ($request->limit ?? 10));
-    
+
             return response([
                 'status' => true,
                 'message' => 'Berhasil dihapus',
@@ -506,7 +530,7 @@ class MenuController extends Controller
 
     public function listFolderFiles($controller)
     {
- 
+
         $dir = base_path('app/http') . '/controllers/api/';
         $ffs = scandir($dir);
         unset($ffs[0], $ffs[1]);
@@ -520,12 +544,12 @@ class MenuController extends Controller
                 $classes = $this->get_php_classes(file_get_contents($dir . '/' . $ff));
                 foreach ($classes as $class) {
                     if ($class == $controller) {
-                  
+
 
                         if (!class_exists($class)) {
                             include_once($dir . $ff);
                         }
-                        
+
                         $methods = $this->get_class_methods($class, true);
 
                         foreach ($methods as $method) {
@@ -541,7 +565,7 @@ class MenuController extends Controller
                 }
             }
         }
-         
+
         return $data ?? '';
     }
 
