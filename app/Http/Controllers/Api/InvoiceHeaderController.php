@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\DB;
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Http\Requests\StorePiutangDetailRequest;
 use App\Http\Requests\StorePiutangHeaderRequest;
+use App\Http\Requests\UpdatePiutangHeaderRequest;
 use App\Models\Error;
 use App\Models\InvoiceDetail;
 use App\Models\JurnalUmumDetail;
@@ -351,22 +352,7 @@ class InvoiceHeaderController extends Controller
                 $detaillog[] = $datadetails['detail']->toArray();
             }
 
-            $group = 'PIUTANG BUKTI';
-            $subgroup = 'PIUTANG BUKTI';
-            $format = DB::table('parameter')
-                ->where('grp', $group)
-                ->where('subgrp', $subgroup)
-                ->first();
-
-            $nobuktiPiutang = new Request();
-            $nobuktiPiutang['group'] = 'PIUTANG BUKTI';
-            $nobuktiPiutang['subgroup'] = 'PIUTANG BUKTI';
-            $nobuktiPiutang['table'] = 'piutangheader';
-            $nobuktiPiutang['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
-
-            $piutang_nobukti = app(Controller::class)->getRunningNumber($nobuktiPiutang)->original['data'];
-
-            $invoiceheader->piutang_nobukti = $piutang_nobukti;
+            
             $invoiceheader->nominal = $total;
             $invoiceheader->save();
 
@@ -409,7 +395,6 @@ class InvoiceHeaderController extends Controller
 
                 $detail = [
                     'entriluar' => 1,
-                    'nobukti' => $piutang_nobukti,
                     'nominal' => $orderantrucking->nominal,
                     'keterangan' => $SP->keterangan,
                     'invoice_nobukti' => $invoiceheader->nobukti,
@@ -420,24 +405,19 @@ class InvoiceHeaderController extends Controller
             }
 
             $piutangHeader = [
-                'tanpaprosesnobukti' => 1,
+                'proseslain' => 1,
                 'tglbukti' => date('Y-m-d', strtotime($invoiceheader->tglbukti)),
-                'postingdari' => "ENTRY INVOICE",
+                'postingdari' => "EDIT INVOICE",
                 'nominal' => $invoiceheader->nominal,
                 'agen_id' => $invoiceheader->agen_id,
+                'datadetail' => $piutangDetail
             ];
             
             $get = PiutangHeader::from(DB::raw("piutangheader with (readuncommitted)"))->where('nobukti', $invoiceheader->piutang_nobukti)->first();
             $newPiutang = new PiutangHeader();
-            $newPiutang = $newPiutang->findAll($get->id);
-            $pengeluaran = new UpdatePengeluaranHeaderRequest($pengeluaranHeader);
-            app(PengeluaranHeaderController::class)->update($pengeluaran, $newPiutang);
-
-            // $piutang = $this->storePiutang($piutangHeader, $piutangDetail);
-
-            // if (!$piutang['status']) {
-            //     throw new \Throwable($piutang['message']);
-            // }
+            $newPiutang = $newPiutang->findUpdate($get->id);
+            $piutang = new UpdatePiutangHeaderRequest($piutangHeader);
+            app(PiutangHeaderController::class)->update($piutang, $newPiutang);
 
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';

@@ -274,15 +274,16 @@ class PiutangHeaderController extends Controller
 
         try {
 
+            $proseslain = $request->proseslain ?? 0;
             $piutangHeader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $piutangHeader->modifiedby = auth('api')->user()->name;
             $piutangHeader->agen_id = $request->agen_id;
-            $piutangHeader->nominal = array_sum($request->nominal_detail);
+            $piutangHeader->nominal = ($proseslain != 0) ? $request->nominal : array_sum($request->nominal_detail);
 
             if ($piutangHeader->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($piutangHeader->getTable()),
-                    'postingdari' => 'EDIT PIUTANG HEADER',
+                    'postingdari' => $request->postingdari ?? 'EDIT PIUTANG HEADER',
                     'idtrans' => $piutangHeader->id,
                     'nobuktitrans' => $piutangHeader->nobukti,
                     'aksi' => 'EDIT',
@@ -297,16 +298,21 @@ class PiutangHeaderController extends Controller
                 /* Store detail */
 
                 $detaillog = [];
-                for ($i = 0; $i < count($request->nominal_detail); $i++) {
-
+                if ($request->datadetail != '') {
+                    $counter = $request->datadetail;
+                } else {
+                    $counter = $request->nominal_detail;
+                }
+                for ($i = 0; $i < count($counter); $i++) {
                     $datadetail = [
                         'piutang_id' => $piutangHeader->id,
                         'nobukti' => $piutangHeader->nobukti,
-                        'nominal' => $request->nominal_detail[$i],
-                        'keterangan' => $request->keterangan_detail[$i],
-                        'invoice_nobukti' => $request->invoice_nobukti[$i] ?? '',
+                        'nominal' => ($request->datadetail != '') ? $request->datadetail[$i]['nominal'] : $request->nominal_detail[$i],
+                        'keterangan' => ($request->datadetail != '') ? $request->datadetail[$i]['keterangan'] : $request->keterangan_detail[$i],
+                        'invoice_nobukti' => ($request->datadetail != '') ? $request->datadetail[$i]['invoice_nobukti'] : '',
                         'modifiedby' => $piutangHeader->modifiedby,
                     ];
+    
 
                     //STORE
 
@@ -325,7 +331,7 @@ class PiutangHeaderController extends Controller
 
                 $datalogtrail = [
                     'namatabel' => strtoupper($tabeldetail),
-                    'postingdari' => 'EDIT PIUTANG DETAIL',
+                    'postingdari' => $request->postingdari ?? 'EDIT PIUTANG DETAIL',
                     'idtrans' =>  $storedLogTrail['id'],
                     'nobuktitrans' => $piutangHeader->nobukti,
                     'aksi' => 'EDIT',
@@ -353,7 +359,7 @@ class PiutangHeaderController extends Controller
                 'tanpaprosesnobukti' => 1,
                 'nobukti' => $piutangHeader->nobukti,
                 'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
-                'postingdari' => "ENTRY PIUTANG",
+                'postingdari' => $request->postingdari ?? "ENTRY PIUTANG",
                 'statusapproval' => $statusApp->id,
                 'userapproval' => "",
                 'tglapproval' => "",
@@ -363,7 +369,7 @@ class PiutangHeaderController extends Controller
 
             $jurnaldetail = [];
 
-            for ($i = 0; $i < count($request->nominal_detail); $i++) {
+            for ($i = 0; $i < count($counter); $i++) {
                 $detail = [];
 
                 foreach ($coapiutang as $key => $coa) {
@@ -374,16 +380,16 @@ class PiutangHeaderController extends Controller
                         [
                             'nobukti' => $piutangHeader->nobukti,
                             'tglbukti' => date('Y-m-d', strtotime($piutangHeader->tglbukti)),
-                            'keterangan' => $request->keterangan_detail[$i],
+                            'keterangan' => ($request->datadetail != '') ? $request->datadetail[$i]['keterangan'] : $request->keterangan_detail[$i],
                             'modifiedby' => auth('api')->user()->name,
                             'baris' => $i,
                         ]
                     ];
                     if ($coa->subgrp == 'DEBET') {
-                        $jurnalDetail[$a]['nominal'] = $request->nominal_detail[$i];
+                        $jurnalDetail[$a]['nominal'] = ($request->datadetail != '') ? $request->datadetail[$i]['nominal'] : $request->nominal_detail[$i];
                         $jurnalDetail[$a]['coa'] = $memo['JURNAL'];
                     } else {
-                        $jurnalDetail[$a]['nominal'] = '-' . $request->nominal_detail[$i];
+                        $jurnalDetail[$a]['nominal'] = ($request->datadetail != '') ? -$request->datadetail[$i]['nominal'] : '-' . $request->nominal_detail[$i];
                         $jurnalDetail[$a]['coa'] = $memo['JURNAL'];
                     }
 
