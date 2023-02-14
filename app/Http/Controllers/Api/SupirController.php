@@ -41,6 +41,30 @@ class SupirController extends Controller
         ]);
     }
 
+     /**
+     * @ClassName 
+     */
+    public function approvalBlackListSupir()
+    {
+
+    }
+
+     /**
+     * @ClassName 
+     */
+    public function approvalSupirLuarKota()
+    {
+
+    }
+
+     /**
+     * @ClassName 
+     */
+    public function approvalSupirResign()
+    {
+
+    }
+
     
     public function cekValidasi($id) {
         $supir= new Supir();

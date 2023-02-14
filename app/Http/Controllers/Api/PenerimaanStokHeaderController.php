@@ -61,28 +61,22 @@ class PenerimaanStokHeaderController extends Controller
             ]);
 
             $idpenerimaan = $request->penerimaanstok_id;
-            $fetchFormat =  DB::table('penerimaanstok')
-                ->where('id', $idpenerimaan)
-                ->first();
-            // dd($fetchFormat);
-            return response([$idpenerimaan],422);
-            $statusformat = $fetchFormat->statusformat;
+            $fetchFormat =  Penerimaanstok::where('id', $idpenerimaan)->first();
 
+            $statusformat = $fetchFormat->format;
             $fetchGrp = Parameter::where('id', $statusformat)->first();
 
-            $format = DB::table('parameter')
-                ->where('grp', $fetchGrp->grp)
-                ->where('subgrp', $fetchGrp->subgrp)
-                ->first();
             $content = new Request();
             $content['group'] = $fetchGrp->grp;
             $content['subgroup'] = $fetchGrp->subgrp;
             $content['table'] = 'penerimaanstokheader';
             $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
+
             $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
 
+            
             $spb = Parameter::where('grp', 'SPB STOK')->where('subgrp', 'SPB STOK')->first();
-
+            
             $hutang_nobukti = "";
             if ($request->penerimaanstok_id == $spb->text) {
                 $gudangkantor = Parameter::where('grp', 'GUDANG KANTOR')->where('subgrp', 'GUDANG KANTOR')->first();
@@ -111,7 +105,7 @@ class PenerimaanStokHeaderController extends Controller
             $penerimaanStokHeader->hutang_nobukti    = ($request->hutang_nobukti == null) ? $hutang_nobukti : $request->hutang_nobukti;
             $penerimaanStokHeader->keterangan        = ($request->keterangan == null) ? "" : $request->keterangan;
             $penerimaanStokHeader->coa               = ($request->coa == null) ? "" : $request->coa;
-            $penerimaanStokHeader->statusformat      = ($request->statusformat_id == null) ? "" : $request->statusformat_id;
+            $penerimaanStokHeader->statusformat      = $statusformat;
             $penerimaanStokHeader->penerimaanstok_id = ($request->penerimaanstok_id == null) ? "" : $request->penerimaanstok_id;
             $penerimaanStokHeader->gudang_id         = ($request->gudang_id == null) ? "" : $request->gudang_id;
             $penerimaanStokHeader->trado_id          = ($request->trado_id == null) ? "" : $request->trado_id;
@@ -270,10 +264,16 @@ class PenerimaanStokHeaderController extends Controller
     public function update(UpdatePenerimaanStokHeaderRequest $request, PenerimaanStokHeader $penerimaanStokHeader, $id)
     {
         try {
+            
             $request->validate([
                 "supplier" => Rule::requiredIf($request->penerimaanstok_id == '3')
             ]);
             /* Store header */
+            $idpenerimaan = $request->penerimaanstok_id;
+            $fetchFormat =  Penerimaanstok::where('id', $idpenerimaan)->first();
+
+            $statusformat = $fetchFormat->format;
+            $fetchGrp = Parameter::where('id', $statusformat)->first();
             $penerimaanStokHeader = PenerimaanStokHeader::lockForUpdate()->findOrFail($id);
 
             $penerimaanStokHeader->tglbukti          = date('Y-m-d', strtotime($request->tglbukti));
@@ -283,7 +283,7 @@ class PenerimaanStokHeaderController extends Controller
             $penerimaanStokHeader->hutang_nobukti    = ($request->hutang_nobukti == null) ? "" : $request->hutang_nobukti;
             $penerimaanStokHeader->keterangan        = ($request->keterangan == null) ? "" : $request->keterangan;
             $penerimaanStokHeader->coa               = ($request->coa == null) ? "" : $request->coa;
-            $penerimaanStokHeader->statusformat      = ($request->statusformat_id == null) ? "" : $request->statusformat_id;
+            $penerimaanStokHeader->statusformat      = ($statusformat == null) ? "" : $statusformat;
             $penerimaanStokHeader->penerimaanstok_id = ($request->penerimaanstok_id == null) ? "" : $request->penerimaanstok_id;
             $penerimaanStokHeader->gudang_id         = ($request->gudang_id == null) ? "" : $request->gudang_id;
             $penerimaanStokHeader->trado_id          = ($request->trado_id == null) ? "" : $request->trado_id;
@@ -309,7 +309,7 @@ class PenerimaanStokHeaderController extends Controller
 
                 /*Update  di stok persediaan*/
                 $datahitungstok = PenerimaanStok::select('statushitungstok as statushitungstok_id')
-                    ->where('statusformat', '=', $request->statusformat_id)
+                    ->where('format', '=', $penerimaanStokHeader->statusformat)
                     ->first();
 
                 $statushitungstok = Parameter::where('grp', 'STATUS HITUNG STOK')->where('text', 'HITUNG STOK')->first();
@@ -406,8 +406,8 @@ class PenerimaanStokHeaderController extends Controller
                         ->where('grp', 'JURNAL HUTANG PEMBELIAN STOK')->where('subgrp', 'KREDIT')->first();
                     $memoKredit = json_decode($getCoaKredit->memo, true);
 
-                    $hutangHeader=HutangHeader::where('nobukti','=',$request->hutang_nobukti)->first();
-                    // dd($hutangHeader);
+                    $hutangHeader=HutangHeader::where('nobukti','=',$penerimaanStokHeader->hutang_nobukti  )->first();
+                    // return response($hutangHeader,422);
 
                     $hutangRequest = [
                         'proseslain' => 'PEMBELIAN STOK',
@@ -468,7 +468,7 @@ class PenerimaanStokHeaderController extends Controller
 
         /*Update  di stok persediaan*/
         $datahitungstok = PenerimaanStok::select('statushitungstok as statushitungstok_id')
-            ->where('statusformat', '=', $penerimaanStokHeader->statusformat)
+            ->where('format', '=', $penerimaanStokHeader->statusformat)
             ->first();
 
         $statushitungstok = Parameter::where('grp', 'STATUS HITUNG STOK')->where('text', 'HITUNG STOK')->first();

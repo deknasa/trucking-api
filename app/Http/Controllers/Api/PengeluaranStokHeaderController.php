@@ -57,18 +57,15 @@ class PengeluaranStokHeaderController extends Controller
         try {
 
             $idpenerimaan = $request->pengeluaranstok_id;
-            $fetchFormat =  DB::table('pengeluaranstok')
-                ->where('id', $idpenerimaan)
-                ->first();
+            $fetchFormat =  Pengeluaranstok::where('id', $idpenerimaan)->first();
             // dd($fetchFormat);
-            $statusformat = $fetchFormat->statusformat;
+            $statusformat = $fetchFormat->format;
 
             $fetchGrp = Parameter::where('id', $statusformat)->first();
-
-            $format = DB::table('parameter')
-                ->where('grp', $fetchGrp->grp)
-                ->where('subgrp', $fetchGrp->subgrp)
-                ->first();
+// return response([$fetchFormat],422);
+// die();
+            $format = Parameter::where('grp', $fetchGrp->grp)->where('subgrp', $fetchGrp->subgrp)->first();
+           
             $content = new Request();
             $content['group'] = $fetchGrp->grp;
             $content['subgroup'] = $fetchGrp->subgrp;
@@ -97,7 +94,7 @@ class PengeluaranStokHeaderController extends Controller
             $pengeluaranStokHeader->penerimaanstok_nobukti  = ($request->penerimaanstok_nobukti == null) ? "" : $request->penerimaanstok_nobukti;
             $pengeluaranStokHeader->servicein_nobukti    = ($request->servicein_nobukti == null) ? "" : $request->servicein_nobukti;
             $pengeluaranStokHeader->kerusakan_id         = ($request->kerusakan_id == null) ? "" : $request->kerusakan_id;
-            $pengeluaranStokHeader->statusformat      = ($request->statusformat_id == null) ? "" : $request->statusformat_id;
+            $pengeluaranStokHeader->statusformat      = ($statusformat == null) ? "" : $statusformat;
             $pengeluaranStokHeader->statuspotongretur      = ($request->statuspotongretur == null) ? "" : $request->statuspotongretur;
             $pengeluaranStokHeader->bank_id      = ($request->bank_id == null) ? "" : $request->bank_id;
             $pengeluaranStokHeader->tglkasmasuk      = date('Y-m-d', strtotime($request->tglkasmasuk));
@@ -353,7 +350,13 @@ class PengeluaranStokHeaderController extends Controller
 
 
             $pengeluaranStokHeader = PengeluaranStokHeader::where('id', $id)->first();
+            
+            $idpenerimaan = $request->pengeluaranstok_id;
+            $fetchFormat =  Pengeluaranstok::where('id', $idpenerimaan)->first();
+            // dd($fetchFormat);
+            $statusformat = $fetchFormat->format;
 
+            $fetchGrp = Parameter::where('id', $statusformat)->first();
 
 
             $spk = Parameter::where('grp', 'SPK STOK')->where('subgrp', 'SPK STOK')->first();
@@ -398,7 +401,7 @@ class PengeluaranStokHeaderController extends Controller
             $pengeluaranStokHeader->penerimaanstok_nobukti  = ($request->penerimaanstok_nobukti == null) ? "" : $request->penerimaanstok_nobukti;
             $pengeluaranStokHeader->servicein_nobukti    = ($request->servicein_nobukti == null) ? "" : $request->servicein_nobukti;
             $pengeluaranStokHeader->kerusakan_id         = ($request->kerusakan_id == null) ? "" : $request->supir_id;
-            $pengeluaranStokHeader->statusformat      = ($request->statusformat_id == null) ? "" : $request->statusformat_id;
+            $pengeluaranStokHeader->statusformat      = ($statusformat == null) ? "" : $statusformat;
             $pengeluaranStokHeader->statuspotongretur      = ($request->statuspotongretur == null) ? "" : $request->statuspotongretur;
             $pengeluaranStokHeader->bank_id      = ($request->bank_id == null) ? "" : $request->bank_id;
             $pengeluaranStokHeader->tglkasmasuk      = date('Y-m-d', strtotime($request->tglkasmasuk));
