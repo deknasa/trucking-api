@@ -18,7 +18,6 @@ class AcosSeeder extends Seeder
         DB::statement("delete Acos");
         DB::statement("DBCC CHECKIDENT ('Acos', RESEED, 1);");
 
-
         Acos::create(['class' => 'parameter', 'method' => 'index', 'nama' => 'index ParameterController', 'modifiedby' => 'ADMIN',]);
         Acos::create(['class' => 'parameter', 'method' => 'store', 'nama' => 'store ParameterController', 'modifiedby' => 'ADMIN',]);
         Acos::create(['class' => 'parameter', 'method' => 'update', 'nama' => 'update ParameterController', 'modifiedby' => 'ADMIN',]);
@@ -365,5 +364,18 @@ class AcosSeeder extends Seeder
         Acos::create(['class' => 'mandorabsensisupir', 'method' => 'destroy', 'nama' => 'destroy MandorAbsensiSupirController', 'modifiedby' => 'ADMIN',]);
         Acos::create(['class' => 'inputtrip', 'method' => 'index', 'nama' => 'index InputTripController', 'modifiedby' => 'ADMIN',]);
         Acos::create(['class' => 'inputtrip', 'method' => 'store', 'nama' => 'store InputTripController', 'modifiedby' => 'ADMIN',]);
+        Acos::create(['class' => 'supir', 'method' => 'approvalBlackListSupir', 'nama' => 'approvalBlackListSupir SupirController', 'modifiedby' => 'ADMIN',]);
+        Acos::create(['class' => 'supir', 'method' => 'approvalSupirLuarKota', 'nama' => 'approvalSupirLuarKota SupirController', 'modifiedby' => 'ADMIN',]);
+        Acos::create(['class' => 'supir', 'method' => 'approvalSupirResign', 'nama' => 'approvalSupirResign SupirController', 'modifiedby' => 'ADMIN',]);
+        Acos::create(['class' => 'listtrip', 'method' => 'index', 'nama' => 'index ListTripController', 'modifiedby' => 'ADMIN',]);
+        Acos::create(['class' => 'historytrip', 'method' => 'index', 'nama' => 'index HistoryTripController', 'modifiedby' => 'ADMIN',]);
+        Acos::create(['class' => 'prosesuangjalansupirheader', 'method' => 'index', 'nama' => 'index ProsesUangJalanSupirHeaderController', 'modifiedby' => 'ADMIN',]);
+        Acos::create(['class' => 'prosesuangjalansupirheader', 'method' => 'store', 'nama' => 'store ProsesUangJalanSupirHeaderController', 'modifiedby' => 'ADMIN',]);
+        Acos::create(['class' => 'prosesuangjalansupirheader', 'method' => 'update', 'nama' => 'update ProsesUangJalanSupirHeaderController', 'modifiedby' => 'ADMIN',]);
+        Acos::create(['class' => 'prosesuangjalansupirheader', 'method' => 'destroy', 'nama' => 'destroy ProsesUangJalanSupirHeaderController', 'modifiedby' => 'ADMIN',]);
+        Acos::create(['class' => 'cabang', 'method' => 'report', 'nama' => 'report CabangController', 'modifiedby' => 'ADMIN',]);
+        Acos::create(['class' => 'cabang', 'method' => 'export', 'nama' => 'export CabangController', 'modifiedby' => 'ADMIN',]);
+        Acos::create(['class' => 'gandengan', 'method' => 'report', 'nama' => 'report GandenganController', 'modifiedby' => 'ADMIN',]);
+        Acos::create(['class' => 'gandengan', 'method' => 'export', 'nama' => 'export GandenganController', 'modifiedby' => 'ADMIN',]);
     }
 }

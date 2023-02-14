@@ -38,6 +38,12 @@ class GandenganController extends Controller
         ]);
     }
 
+       /**
+     * @ClassName 
+     */
+    public function report()
+    {
+    }
     public function cekValidasi($id) {
         $gandengan= new Gandengan();
         $cekdata=$gandengan->cekvalidasihapus($id);
@@ -344,7 +350,9 @@ class GandenganController extends Controller
         }
     }
 
-
+   /**
+     * @ClassName 
+     */
     public function export()
     {
         $response = $this->index();
