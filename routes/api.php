@@ -256,6 +256,8 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('cabang/field_length', [CabangController::class, 'fieldLength']);
     Route::get('cabang/combostatus', [CabangController::class, 'combostatus']);
     Route::get('cabang/default', [CabangController::class, 'default']);
+    Route::get('cabang/report', [CabangController::class, 'report']);
+    Route::get('cabang/export', [CabangController::class, 'export']);
     Route::get('cabang/getPosition2', [CabangController::class, 'getPosition2']);
     Route::resource('cabang', CabangController::class);
 
@@ -263,6 +265,8 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('gandengan/combostatus', [GandenganController::class, 'combostatus']);
     Route::get('gandengan/getPosition2', [GandenganController::class, 'getPosition2']);
     Route::get('gandengan/default', [GandenganController::class, 'default']);
+    Route::get('gandengan/report', [GandenganController::class, 'report']);
+    Route::get('gandengan/export', [GandenganController::class, 'export']);
     Route::post('gandengan/{id}/cekValidasi', [GandenganController::class, 'cekValidasi'])->name('gandengan.cekValidasi');
     Route::resource('gandengan', GandenganController::class);
 
