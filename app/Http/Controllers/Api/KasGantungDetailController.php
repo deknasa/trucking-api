@@ -5,98 +5,26 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\KasGantungDetail;
 use App\Http\Requests\StoreKasGantungDetailRequest;
-use App\Http\Requests\StorePengeluaranDetailRequest;
-use App\Http\Requests\UpdateKasGantungDetailRequest;
-use App\Models\PengeluaranHeader;
-use App\Models\User;
-use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class KasGantungDetailController extends Controller
 {
 
-    public function index(Request $request)
+    public function index(): JsonResponse
     {
-        $params = [
-            'id' => $request->id,
-            'kasgantung_id' => $request->kasgantung_id,
-            'withHeader' => $request->withHeader ?? false,
-            'whereIn' => $request->whereIn,
-            'forReport' => $request->forReport ?? false,
-            'sortIndex' => $request->sortOrder ?? 'id',
-            'sortOrder' => $request->sortOrder ?? 'asc',
-            'offset' => $request->offset ?? (($request->page - 1) * $request->limit),
-            'limit' => $request->limit ?? 10,
-        ];
-        $totalRows = 0;
-        try {
-            $query = KasGantungDetail::from(DB::raw("kasgantungdetail as detail with (readuncommitted)"));
+        $kasGantungDetail = new KasGantungDetail();
 
-            if (isset($params['id'])) {
-                $query->where('detail.id', $params['id']);
-            }
-
-            if (isset($params['kasgantung_id'])) {
-                $query->where('detail.kasgantung_id', $params['kasgantung_id']);
-            }
-
-            if ($params['withHeader']) {
-                $query->join('kasgantungheader', 'kasgantungheader.id', 'detail.kasgantung_id');
-            }
-
-            if ($params['whereIn'] > 0) {
-                $query->whereIn('kasgantung_id', $params['whereIn']);
-            }
-
-            if ($params['forReport']) {
-                $query->select(
-                    'header.id as id',
-                    'header.nobukti as nobukti_header',               
-                    'header.tglbukti as tgl_header',
-                    'penerima.namapenerima as penerima_id',
-                    'bank.namabank as bank_id',
-                    'header.pengeluaran_nobukti',
-                    'header.coakaskeluar',
-                    'header.tglkaskeluar',
-                    'detail.keterangan as keterangan_detail',
-                    'detail.nominal',
-                    'detail.coa',
-                    'detail.kasgantung_id'
-                )
-                    ->leftjoin(DB::raw("kasgantungheader as header with (readuncommitted)"), 'header.id', 'detail.kasgantung_id')
-                    ->leftjoin(DB::raw("penerima with (readuncommitted)"),'header.penerima_id','penerima.id')
-                    ->leftjoin(DB::raw("bank with (readuncommitted)"),'header.bank_id','bank.id');
-
-                $kasgantungDetail = $query->get();
-            } else {
-                // $query->with('trado', 'supir', 'absenTrado');
-                $query->select(
-                    'detail.keterangan',
-                    'detail.nominal',
-                    'detail.nobukti',
-                    'akunpusat.keterangancoa as coa',
-                )->leftjoin(DB::raw("akunpusat with (readuncommitted)"),'detail.coa','akunpusat.coa');
-                $totalRows =  $query->count();
-                $query->skip($params['offset'])->take($params['limit']);
-                $kasgantungDetail = $query->get();
-            }
-
-            return response([
-                'data' => $kasgantungDetail,
-                'attributes' => [
-                    'totalRows' => $totalRows ?? 0,
-                    'totalPages' => $params['limit'] > 0 ? ceil( $totalRows / $params['limit']) : 1
-                ]
-            ]);
-        } catch (\Throwable $th) {
-            return response([
-                'message' => $th->getMessage()
-            ]);
-        }
+        return response()->json([
+            'data' => $kasGantungDetail->get(),
+            'attributes' => [
+                'totalRows' => $kasGantungDetail->totalRows,
+                'totalPages' => $kasGantungDetail->totalPages,
+                'totalNominal' => $kasGantungDetail->totalNominal
+            ]
+        ]);
     }
-
-
 
     public function store(StoreKasGantungDetailRequest $request)
     {
@@ -163,8 +91,8 @@ class KasGantungDetailController extends Controller
             }
         } catch (\Throwable $th) {
             DB::rollBack();
-            return response($th->getMessage());
-        }        
+            
+            throw $th;
+        }
     }
-
 }
