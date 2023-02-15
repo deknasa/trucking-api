@@ -534,6 +534,10 @@ class AbsensiSupirHeaderController extends Controller
         }
     }
 
+    public function approval($id){
+        return $id;
+    }
+
 
     public function cekvalidasi($id)
     {

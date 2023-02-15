@@ -221,6 +221,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('absensisupirheader/field_length', [AbsensiSupirHeaderController::class, 'fieldLength']);
     Route::get('absensisupirheader/default', [AbsensiSupirHeaderController::class, 'default']);
     Route::post('absensisupirheader/{id}/cekvalidasi', [AbsensiSupirHeaderController::class, 'cekvalidasi'])->name('absensisupirheader.cekvalidasi');
+    Route::post('absensisupirheader/{id}/approval', [AbsensiSupirHeaderController::class, 'approval'])->name('absensisupirheader.cekvalidasi');
     Route::apiResource('absensisupirheader', AbsensiSupirHeaderController::class)->parameter('absensisupirheader', 'absensiSupirHeader');
 
     Route::get('absensisupirdetail/get', [AbsensiSupirDetailController::class,'getDetailAbsensi']);
@@ -425,9 +426,9 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('supir/getImage/{id}/{field}', [SupirController::class, 'getImage']);
     Route::post('supir/upload_image/{id}', [SupirController::class, 'uploadImage']);
     Route::get('supir/default', [SupirController::class, 'default']);
-    Route::get('supir/approvalBlackListSupir', [SupirController::class, 'approvalBlackListSupir']);
-    Route::get('supir/approvalSupirLuarKota', [SupirController::class, 'approvalSupirLuarKota']);
-    Route::get('supir/approvalSupirResign', [SupirController::class, 'approvalSupirResign']);
+    Route::post('supir/{id}/approvalblacklist', [SupirController::class, 'approvalBlackListSupir']);
+    Route::post('supir/{id}/approvalluarkota', [SupirController::class, 'approvalSupirLuarKota']);
+    Route::post('supir/{id}/approvalresign', [SupirController::class, 'approvalSupirResign']);
     Route::post('supir/{id}/cekValidasi', [SupirController::class, 'cekValidasi'])->name('supir.cekValidasi');
     Route::resource('supir', SupirController::class);
 

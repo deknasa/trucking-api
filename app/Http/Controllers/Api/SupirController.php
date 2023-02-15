@@ -44,25 +44,140 @@ class SupirController extends Controller
      /**
      * @ClassName 
      */
-    public function approvalBlackListSupir()
+    public function approvalBlackListSupir($id)
     {
+        
+        DB::beginTransaction();
+        try{
+            $supir = Supir::lockForUpdate()->findOrFail($id);
+            $statusBlackList = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'BLACKLIST SUPIR')->where('text', '=', 'SUPIR BLACKLIST')->first();
+            $statusBukanBlackList = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'BLACKLIST SUPIR')->where('text', '=', 'BUKAN SUPIR BLACKLIST')->first();
+            
+            if ($supir->statusblacklist == $statusBlackList->id) {
+                $supir->statusblacklist = $statusBukanBlackList->id;
+                $aksi = $statusBukanBlackList->text;
+            } else {
+                $supir->statusblacklist = $statusBlackList->id;
+                $aksi = $statusBlackList->text;
+            }
+    
+            if ($supir->save()) {
+                $logTrail = [
+                    'namatabel' => strtoupper($supir->getTable()),
+                    'postingdari' => 'APPROVED BLACKLIST SUPIR',
+                    'idtrans' => $supir->id,
+                    'nobuktitrans' => $supir->id,
+                    'aksi' => $aksi,
+                    'datajson' => $supir->toArray(),
+                    'modifiedby' => auth('api')->user()->name
+                ];
+    
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+    
+                DB::commit();
+            }
 
+            return response([
+                'message' => 'Berhasil'
+            ]);
+
+        }catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
+    }
+
+
+     /**
+     * @ClassName 
+     */
+    public function approvalSupirLuarKota($id)
+    {
+        DB::beginTransaction();
+        try{
+            $supir = Supir::lockForUpdate()->findOrFail($id);
+            $statusLuarKota = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS LUAR KOTA')->where('text', '=', 'BOLEH LUAR KOTA')->first();
+            $statusBukanLuarKota = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS LUAR KOTA')->where('text', '=', 'TIDAK BOLEH LUAR KOTA')->first();
+            
+            if ($supir->statusluarkota == $statusLuarKota->id) {
+                $supir->statusluarkota = $statusBukanLuarKota->id;
+                $aksi = $statusBukanLuarKota->text;
+            } else {
+                $supir->statusluarkota = $statusLuarKota->id;
+                $aksi = $statusLuarKota->text;
+            }
+    
+            if ($supir->save()) {
+                $logTrail = [
+                    'namatabel' => strtoupper($supir->getTable()),
+                    'postingdari' => 'APPROVED SUPIR LUAR KOTA',
+                    'idtrans' => $supir->id,
+                    'nobuktitrans' => $supir->id,
+                    'aksi' => $aksi,
+                    'datajson' => $supir->toArray(),
+                    'modifiedby' => auth('api')->user()->name
+                ];
+    
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+    
+                DB::commit();
+            }
+
+            return response([
+                'message' => 'Berhasil'
+            ]);
+
+        }catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
     }
 
      /**
      * @ClassName 
      */
-    public function approvalSupirLuarKota()
+    public function approvalSupirResign(Request $request,$id)
     {
+        DB::beginTransaction();
+        try{
+            $supir = Supir::lockForUpdate()->findOrFail($id);
+            $tanggalberhenti = date('Y-m-d', strtotime("1900-01-01"));
+            $aksi = "UNAPPROVED SUPIR RESIGN";
+            
+            if ($request->tanggalberhenti) {
+                $tanggalberhenti = date('Y-m-d', strtotime($request->tanggalberhenti));
+                $aksi = "APPROVED SUPIR RESIGN";
+            }
+            
+            $supir->tglberhentisupir = $tanggalberhenti;
+    
+            if ($supir->save()) {
+                $logTrail = [
+                    'namatabel' => strtoupper($supir->getTable()),
+                    'postingdari' => 'APPROVED SUPIR RESIGN',
+                    'idtrans' => $supir->id,
+                    'nobuktitrans' => $supir->id,
+                    'aksi' => $aksi,
+                    'datajson' => $supir->toArray(),
+                    'modifiedby' => auth('api')->user()->name
+                ];
+    
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+    
+                DB::commit();
+            }
 
-    }
+            return response([
+                'message' => 'Berhasil'
+            ]);
 
-     /**
-     * @ClassName 
-     */
-    public function approvalSupirResign()
-    {
-
+        }catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
     }
 
     
