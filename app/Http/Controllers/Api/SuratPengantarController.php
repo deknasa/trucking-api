@@ -445,6 +445,40 @@ class SuratPengantarController extends Controller
         }
     }
 
+    public function cekValidasi($id)
+    {
+        $suratPengantar = new SuratPengantar();
+        $nobukti = SuratPengantar::from(DB::raw("suratpengantar"))->where('id', $id)->first();
+        $cekdata = $suratPengantar->cekvalidasihapus($nobukti->nobukti, $nobukti->jobtrucking);
+        if ($cekdata['kondisi'] == true) {
+            $query = DB::table('error')
+                ->select(
+                    DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
+                )
+                ->where('kodeerror', '=', 'SATL')
+                ->get();
+            $keterangan = $query['0'];
+
+            $data = [
+                'status' => false,
+                'message' => $keterangan,
+                'errors' => '',
+                'kondisi' => $cekdata['kondisi'],
+            ];
+
+            return response($data);
+        } else {
+            $data = [
+                'status' => false,
+                'message' => '',
+                'errors' => '',
+                'kondisi' => $cekdata['kondisi'],
+            ];
+
+            return response($data);
+        }
+    }
+
     public function getTarifOmset($id)
     {
 

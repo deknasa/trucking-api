@@ -94,6 +94,27 @@ class OrderanTruckingController extends Controller
 
 
         try {
+            $orderantrucking = new OrderanTrucking();
+            $statusTas = $orderantrucking->getagentas($request->agen_id);
+            if($statusTas->statustas == 1) {
+                $request->validate([
+                    'nojobemkl' => 'required'
+                ]);
+            }else{
+                $request->validate([
+                    'nocont' => 'required',
+                    'noseal' => 'required'
+                ]);
+            }
+
+            $container = Container::find($request->container_id);
+            if($container->kodecontainer == '2X20`') {
+                $request->validate([
+                    'nocont2' => 'required',
+                    'noseal2' => 'required'
+                ]);
+            }
+
             $group = 'ORDERANTRUCKING';
             $subgroup = 'ORDERANTRUCKING';
             $format = DB::table('parameter')
@@ -114,7 +135,7 @@ class OrderanTruckingController extends Controller
             $orderanTrucking->jenisorder_id = $request->jenisorder_id;
             $orderanTrucking->pelanggan_id = $request->pelanggan_id;
             $orderanTrucking->tarif_id = $request->tarifrincian_id;
-            $orderanTrucking->nojobemkl = $request->nojobemkl;
+            $orderanTrucking->nojobemkl = $request->nojobemkl ?? '';
             $orderanTrucking->nocont = $request->nocont;
             $orderanTrucking->noseal = $request->noseal;
             $orderanTrucking->nojobemkl2 = $request->nojobemkl2 ?? '';
@@ -183,13 +204,25 @@ class OrderanTruckingController extends Controller
     {
         DB::beginTransaction();
         try {
+            $orderanTrucking = new OrderanTrucking();
+            $statusTas = $orderanTrucking->getagentas($request->agen_id);
+            if($statusTas->statustas == 1) {
+                $request->validate([
+                    'nojobemkl' => 'required'
+                ]);
+            }else{
+                $request->validate([
+                    'nocont' => 'required',
+                    'noseal' => 'required'
+                ]);
+            }
             $orderantrucking->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $orderantrucking->container_id = $request->container_id;
             $orderantrucking->agen_id = $request->agen_id;
             $orderantrucking->jenisorder_id = $request->jenisorder_id;
             $orderantrucking->pelanggan_id = $request->pelanggan_id;
             $orderantrucking->tarif_id = $request->tarifrincian_id;
-            $orderantrucking->nojobemkl = $request->nojobemkl;
+            $orderantrucking->nojobemkl = $request->nojobemkl ?? '';
             $orderantrucking->nocont = $request->nocont;
             $orderantrucking->noseal = $request->noseal;
             $orderantrucking->nojobemkl2 = $request->nojobemkl2 ?? '';
@@ -338,6 +371,14 @@ class OrderanTruckingController extends Controller
         $orderantrucking = new OrderanTrucking();
         return response([
             "data" => $orderantrucking->getagentas($id)
+        ]);
+    }
+    public function getcont($id)
+    {
+
+        $orderantrucking = new OrderanTrucking();
+        return response([
+            "data" => $orderantrucking->getcont($id)
         ]);
     }
 }

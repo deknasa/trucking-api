@@ -90,32 +90,27 @@ class TradoController extends Controller
     {
         DB::beginTransaction();
         try {
+            $statusStandarisasi = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS STANDARISASI')->where('default', 'YA')->first();
+            $statusMutasi = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS MUTASI')->where('default', 'YA')->first();
+            $statusValidasi = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS VALIDASI KENDARAAN')->where('default', 'YA')->first();
+            $statusMobStoring = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS MOBIL STORING')->where('default', 'YA')->first();
+            $statusAppeditban = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS APPROVAL EDIT BAN')->where('default', 'YA')->first();
+            $statusLewatValidasi = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS LEWAT VALIDASI')->where('default', 'YA')->first();
             $trado = new Trado();
             $trado->keterangan = $request->keterangan;
             $trado->statusaktif = $request->statusaktif;
-            $trado->kmawal = str_replace(',', '', $request->kmawal);
-            $trado->kmakhirgantioli = str_replace(',', '', $request->kmakhirgantioli);
-            $trado->tglakhirgantioli = date('Y-m-d', strtotime($request->tglakhirgantioli));
-            $trado->tglstnkmati = date('Y-m-d', strtotime($request->tglstnkmati));
-            $trado->tglasuransimati = date('Y-m-d', strtotime($request->tglasuransimati));
             $trado->tahun = $request->tahun;
-            $trado->akhirproduksi = $request->akhirproduksi;
             $trado->merek = $request->merek;
             $trado->norangka = $request->norangka;
             $trado->nomesin = $request->nomesin;
             $trado->nama = $request->nama;
             $trado->nostnk = $request->nostnk;
             $trado->alamatstnk = $request->alamatstnk;
-            $trado->tglstandarisasi = date('Y-m-d', strtotime($request->tglstandarisasi));
-            $trado->tglserviceopname = date('Y-m-d', strtotime($request->tglserviceopname));
-            $trado->statusstandarisasi = $request->statusstandarisasi;
-            $trado->keteranganprogressstandarisasi = $request->keteranganprogressstandarisasi;
+            $trado->statusstandarisasi = $statusStandarisasi->id;
             $trado->statusjenisplat = $request->statusjenisplat;
-            $trado->tglspeksimati = date('Y-m-d', strtotime($request->tglspeksimati));
+            $trado->statusmutasi = $statusMutasi->id;
             $trado->tglpajakstnk = date('Y-m-d', strtotime($request->tglpajakstnk));
-            $trado->tglgantiakiterakhir = date('Y-m-d', strtotime($request->tglgantiakiterakhir));
-            $trado->statusmutasi = $request->statusmutasi;
-            $trado->statusvalidasikendaraan = $request->statusvalidasikendaraan;
+            $trado->statusvalidasikendaraan = $statusValidasi->id;
             $trado->tipe = $request->tipe;
             $trado->jenis = $request->jenis;
             $trado->isisilinder =  str_replace(',', '', $request->isisilinder);
@@ -125,12 +120,13 @@ class TradoController extends Controller
             $trado->jumlahroda = $request->jumlahroda;
             $trado->model = $request->model;
             $trado->nobpkb = $request->nobpkb;
-            $trado->statusmobilstoring = $request->statusmobilstoring;
+            $trado->statusmobilstoring = $statusMobStoring->id;
             $trado->mandor_id = $request->mandor_id;
             $trado->supir_id = $request->supir_id;
             $trado->jumlahbanserap = $request->jumlahbanserap;
-            $trado->statusappeditban = $request->statusappeditban;
-            $trado->statuslewatvalidasi = $request->statuslewatvalidasi;
+            $trado->statusgerobak = $request->statusgerobak;
+            $trado->statusappeditban = $statusAppeditban->id;
+            $trado->statuslewatvalidasi = $statusLewatValidasi->id;
             $trado->modifiedby = auth('api')->user()->name;
 
             $trado->photostnk = $this->storeFiles($request->photostnk, 'stnk');
@@ -233,31 +229,17 @@ class TradoController extends Controller
         try {
             $trado->keterangan = $request->keterangan;
             $trado->statusaktif = $request->statusaktif;
-            $trado->kmawal = str_replace(',', '', $request->kmawal);
-            $trado->kmakhirgantioli = str_replace(',', '', $request->kmakhirgantioli);
-            $trado->tglakhirgantioli = date('Y-m-d', strtotime($request->tglakhirgantioli));
-            $trado->tglstnkmati = date('Y-m-d', strtotime($request->tglstnkmati));
-            $trado->tglasuransimati = date('Y-m-d', strtotime($request->tglasuransimati));
             $trado->tahun = $request->tahun;
-            $trado->akhirproduksi = $request->akhirproduksi;
             $trado->merek = $request->merek;
             $trado->norangka = $request->norangka;
             $trado->nomesin = $request->nomesin;
             $trado->nama = $request->nama;
             $trado->nostnk = $request->nostnk;
             $trado->alamatstnk = $request->alamatstnk;
-            $trado->tglstandarisasi = date('Y-m-d', strtotime($request->tglstandarisasi));
-            $trado->tglserviceopname = date('Y-m-d', strtotime($request->tglserviceopname));
-            $trado->statusstandarisasi = $request->statusstandarisasi;
-            $trado->keteranganprogressstandarisasi = $request->keteranganprogressstandarisasi;
             $trado->statusjenisplat = $request->statusjenisplat;
-            $trado->tglspeksimati = date('Y-m-d', strtotime($request->tglspeksimati));
-            $trado->tglpajakstnk = date('Y-m-d', strtotime($request->tglpajakstnk));
-            $trado->tglgantiakiterakhir = date('Y-m-d', strtotime($request->tglgantiakiterakhir));
-            $trado->statusmutasi = $request->statusmutasi;
-            $trado->statusvalidasikendaraan = $request->statusvalidasikendaraan;
             $trado->tipe = $request->tipe;
             $trado->jenis = $request->jenis;
+            $trado->tglpajakstnk = date('Y-m-d', strtotime($request->tglpajakstnk));
             $trado->isisilinder =  str_replace(',', '', $request->isisilinder);
             $trado->warna = $request->warna;
             $trado->jenisbahanbakar = $request->jenisbahanbakar;
@@ -265,12 +247,10 @@ class TradoController extends Controller
             $trado->jumlahroda = $request->jumlahroda;
             $trado->model = $request->model;
             $trado->nobpkb = $request->nobpkb;
-            $trado->statusmobilstoring = $request->statusmobilstoring;
             $trado->mandor_id = $request->mandor_id;
             $trado->supir_id = $request->supir_id;
             $trado->jumlahbanserap = $request->jumlahbanserap;
-            $trado->statusappeditban = $request->statusappeditban;
-            $trado->statuslewatvalidasi = $request->statuslewatvalidasi;
+            $trado->statusgerobak = $request->statusgerobak;
 
             $this->deleteFiles($trado);
 

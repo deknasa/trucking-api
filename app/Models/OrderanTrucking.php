@@ -48,6 +48,26 @@ class OrderanTrucking extends MyModel
         }
 
 
+        $invoice = DB::table('invoicedetail')
+            ->from(
+                DB::raw("invoicedetail as a with (readuncommitted)")
+            )
+            ->select(
+                'a.orderantrucking_nobukti'
+            )
+            ->where('a.orderantrucking_nobukti', '=', $nobukti)
+            ->first();
+        if (isset($invoice)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'invoice',
+            ];
+
+            
+            goto selesai;
+        }
+
+
         $data = [
             'kondisi' => false,
             'keterangan' => '',
@@ -59,6 +79,7 @@ class OrderanTrucking extends MyModel
 
     public function get()
     {
+        
         $this->setRequestParameters();
         $query = DB::table($this->table)->from(
             DB::raw($this->table . " with (readuncommitted)")
@@ -115,6 +136,20 @@ class OrderanTrucking extends MyModel
                 )
             ->join('jenisemkl', 'jenisemkl.id', 'agen.jenisemkl')
             ->where('agen.id', $id)
+            ->first();
+
+          
+        return $data;
+    }
+    
+    public function getcont($id)
+    {
+        $data = DB::table('container')
+            ->from(DB::raw("container with (readuncommitted)"))
+            ->select(
+                DB::raw("(case when kodecontainer='2X20`' then 1 else 0 end)  as kodecontainer")
+                )
+            ->where('container.id', $id)
             ->first();
 
           

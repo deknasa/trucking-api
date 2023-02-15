@@ -119,7 +119,7 @@ class InvoiceHeaderController extends Controller
 
                     $allSP = "";
                     foreach ($getSP as $value) {
-                        $allSP = $allSP . $value->nobukti . ', ';
+                        $allSP = $allSP . $value->nobukti . ',';
                     }
                     $datadetail = [
                         'invoice_id' => $invoice->id,
@@ -325,7 +325,7 @@ class InvoiceHeaderController extends Controller
 
                 $allSP = "";
                 foreach ($getSP as $value) {
-                    $allSP = $allSP . $value->nobukti . ', ';
+                    $allSP = $allSP . $value->nobukti . ',';
                 }
 
                 $datadetail = [

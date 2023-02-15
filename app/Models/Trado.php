@@ -146,7 +146,10 @@ class Trado extends MyModel
         }
 
 
-        $data = false;
+        $data = [
+            'kondisi' => false,
+            'keterangan' => '',
+        ];
         selesai:
 
         return $data;
@@ -163,7 +166,7 @@ class Trado extends MyModel
                 'trado.keterangan',
                 'trado.kmawal',
                 'trado.kmakhirgantioli',
-                'trado.tglasuransimati',
+                DB::raw("(case when year(isnull(trado.tglasuransimati,'1900/1/1'))=1900 then null else trado.tglasuransimati end) as tglasuransimati"),
                 'trado.merek',
                 'trado.norangka',
                 'trado.nomesin',
@@ -172,10 +175,10 @@ class Trado extends MyModel
                 'trado.alamatstnk',
                 'trado.modifiedby',
                 'trado.created_at',
-                'trado.tglserviceopname',
+                DB::raw("(case when year(isnull(trado.tglserviceopname,'1900/1/1'))=1900 then null else trado.tglserviceopname end) as tglserviceopname"),
                 'trado.keteranganprogressstandarisasi',
                 'trado.tglpajakstnk',
-                'trado.tglgantiakiterakhir',
+                DB::raw("(case when year(isnull(trado.tglgantiakiterakhir,'1900/1/1'))=1900 then null else trado.tglgantiakiterakhir end) as tglgantiakiterakhir"),
                 'trado.tipe',
                 'trado.jenis',
                 'trado.isisilinder',
@@ -242,13 +245,8 @@ class Trado extends MyModel
         $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdefault, function ($table) {
             $table->unsignedBigInteger('statusaktif')->default(0);
-            $table->unsignedBigInteger('statusstandarisasi')->default(0);
+            $table->unsignedBigInteger('statusgerobak')->default(0);
             $table->unsignedBigInteger('statusjenisplat')->default(0);
-            $table->unsignedBigInteger('statusmutasi')->default(0);
-            $table->unsignedBigInteger('statusvalidasikendaraan')->default(0);
-            $table->unsignedBigInteger('statusmobilstoring')->default(0);
-            $table->unsignedBigInteger('statusappeditban')->default(0);
-            $table->unsignedBigInteger('statuslewatvalidasi')->default(0);
         });
 
         // AKTIF
@@ -267,19 +265,19 @@ class Trado extends MyModel
 
         $iddefaultstatusaktif = $status->id ?? 0;
 
-        // STANDARISASI
+        // GEROBAK
         $status = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
         )
             ->select(
                 'id'
             )
-            ->where('grp', '=', 'STATUS STANDARISASI')
-            ->where('subgrp', '=', 'STATUS STANDARISASI')
+            ->where('grp', '=', 'STATUS GEROBAK')
+            ->where('subgrp', '=', 'STATUS GEROBAK')
             ->where("default", '=', 'YA')
             ->first();
 
-        $iddefaultstatuStandarisasi = $status->id ?? 0;
+        $iddefaultstatusGerobak = $status->id ?? 0;
 
         // 	JENIS PLAT
         $status = Parameter::from(
@@ -295,86 +293,12 @@ class Trado extends MyModel
 
         $iddefaultstatusJenisPlat = $status->id ?? 0;
 
-        //STATUS MUTASI
-        $status = Parameter::from(
-            db::Raw("parameter with (readuncommitted)")
-        )
-            ->select(
-                'id'
-            )
-            ->where('grp', '=', 'STATUS MUTASI')
-            ->where('subgrp', '=', 'STATUS MUTASI')
-            ->where('default', '=', 'YA')
-            ->first();
-
-        $iddefaultstatusMutasi = $status->id ?? 0;
-
-        //STATUS VALIDASI KENDARAAN
-        $status = Parameter::from(
-            db::Raw("parameter with (readuncommitted)")
-        )
-            ->select(
-                'id'
-            )
-            ->where('grp', '=', 'STATUS VALIDASI KENDARAAN')
-            ->where('subgrp', '=', 'STATUS VALIDASI KENDARAAN')
-            ->where('default', '=', 'YA')
-            ->first();
-
-        $iddefaultstatusValKen = $status->id ?? 0;
-
-        //STATUS MOBIL STORING
-        $status = Parameter::from(
-            db::Raw("parameter with (readuncommitted)")
-        )
-            ->select(
-                'id'
-            )
-            ->where('grp', '=', 'STATUS MOBIL STORING')
-            ->where('subgrp', '=', 'STATUS MOBIL STORING')
-            ->where('default', '=', 'YA')
-            ->first();
-
-        $iddefaultstatusMobStoring = $status->id ?? 0;
-
-        //STATUS APPROVAL EDIT BAN
-        $status = Parameter::from(
-            db::Raw("parameter with (readuncommitted)")
-        )
-            ->select(
-                'id'
-            )
-            ->where('grp', '=', 'STATUS APPROVAL EDIT BAN')
-            ->where('subgrp', '=', 'STATUS APPROVAL EDIT BAN')
-            ->where('default', '=', 'YA')
-            ->first();
-
-        $iddefaultstatusAppedit = $status->id ?? 0;
-
-        //STATUS LEWAT VALIDASI
-        $status = Parameter::from(
-            db::Raw("parameter with (readuncommitted)")
-        )
-            ->select(
-                'id'
-            )
-            ->where('grp', '=', 'STATUS LEWAT VALIDASI')
-            ->where('subgrp', '=', 'STATUS LEWAT VALIDASI')
-            ->where('default', '=', 'YA')
-            ->first();
-
-        $iddefaultstatusLewatVal = $status->id ?? 0;
 
         DB::table($tempdefault)->insert(
             [
                 "statusaktif" => $iddefaultstatusaktif,
-                "statusstandarisasi" => $iddefaultstatuStandarisasi,
+                "statusgerobak" => $iddefaultstatusGerobak,
                 "statusjenisplat" => $iddefaultstatusJenisPlat,
-                "statusmutasi" => $iddefaultstatusMutasi,
-                "statusvalidasikendaraan" => $iddefaultstatusValKen,
-                "statusmobilstoring" => $iddefaultstatusMobStoring,
-                "statusappeditban" => $iddefaultstatusAppedit,
-                "statuslewatvalidasi" => $iddefaultstatusLewatVal
             ]
         );
 
@@ -383,13 +307,8 @@ class Trado extends MyModel
         )
             ->select(
                 'statusaktif',
-                'statusstandarisasi',
+                'statusgerobak',
                 'statusjenisplat',
-                'statusmutasi',
-                'statusvalidasikendaraan',
-                'statusmobilstoring',
-                'statusappeditban',
-                'statuslewatvalidasi'
             );
 
         $data = $query->first();
