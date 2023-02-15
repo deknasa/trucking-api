@@ -75,6 +75,124 @@ class PenerimaanHeader extends MyModel
         return $this->hasMany(penerimaandetail::class, 'penerimaan_id');
     }
 
+    public function cekvalidasiaksi($nobukti)
+    {
+        $rekap = DB::table('rekappenerimaandetail')
+            ->from(
+                DB::raw("rekappenerimaandetail as a with (readuncommitted)")
+            )
+            ->select(
+                'a.penerimaan_nobukti'
+            )
+            ->where('a.penerimaan_nobukti', '=', $nobukti)
+            ->first();
+        if (isset($rekap)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Rekap Penerimaan',
+                'kodeerror' => 'SATL'
+            ];
+            goto selesai;
+        }
+
+        $pelunasanPiutang = DB::table('pelunasanpiutangheader')
+            ->from(
+                DB::raw("pelunasanpiutangheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.penerimaan_nobukti'
+            )
+            ->where('a.penerimaan_nobukti', '=', $nobukti)
+            ->first();
+        if (isset($pelunasanPiutang)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Pelunasan Piutang',
+                'kodeerror' => 'TDT'
+            ];
+            goto selesai;
+        }
+
+        $penerimaanTrucking = DB::table('penerimaantruckingheader')
+            ->from(
+                DB::raw("penerimaantruckingheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.penerimaan_nobukti'
+            )
+            ->where('a.penerimaan_nobukti', '=', $nobukti)
+            ->first();
+        if (isset($penerimaanTrucking)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'penerimaan trucking',
+                'kodeerror' => 'SATL'
+            ];
+            goto selesai;
+        }
+
+        $pengembalianKasgantung = DB::table('pengembaliankasgantungheader')
+            ->from(
+                DB::raw("pengembaliankasgantungheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.penerimaan_nobukti'
+            )
+            ->where('a.penerimaan_nobukti', '=', $nobukti)
+            ->first();
+        if (isset($pengembalianKasgantung)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'pengembalian kas gantung',
+                'kodeerror' => 'TDT'
+            ];
+            goto selesai;
+        }
+        $prosesUangjalan = DB::table('prosesuangjalansupirdetail')
+            ->from(
+                DB::raw("prosesuangjalansupirdetail as a with (readuncommitted)")
+            )
+            ->select(
+                'a.penerimaantrucking_nobukti'
+            )
+            ->where('a.penerimaantrucking_nobukti', '=', $nobukti)
+            ->first();
+        if (isset($prosesUangjalan)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'proses uang jalan supir',
+                'kodeerror' => 'TDT'
+            ];
+            goto selesai;
+        }
+
+        $pengeluaranStok = DB::table('pengeluaranstokheader')
+            ->from(
+                DB::raw("pengeluaranstokheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.penerimaan_nobukti'
+            )
+            ->where('a.penerimaan_nobukti', '=', $nobukti)
+            ->first();
+        if (isset($pengeluaranStok)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'pengeluaran stok',
+                'kodeerror' => 'TDT'
+            ];
+            goto selesai;
+        }
+
+
+        $data = [
+            'kondisi' => false,
+            'keterangan' => '',
+        ];
+        selesai:
+        return $data;
+    }
+
     public function get()
     {
         $this->setRequestParameters();
@@ -254,23 +372,23 @@ class PenerimaanHeader extends MyModel
         // dd($id);
         $data = PenerimaanHeader::from(DB::raw("penerimaanheader with (readuncommitted)"))
             ->select(
-                'penerimaanheader.id', 
-                'penerimaanheader.nobukti', 
-                'penerimaanheader.tglbukti', 
-                'penerimaanheader.pelanggan_id', 
-                'pelanggan.namapelanggan as pelanggan', 
-                'penerimaanheader.statuscetak', 
-                'penerimaanheader.diterimadari', 
-                'penerimaanheader.tgllunas', 
-                'penerimaanheader.bank_id', 
+                'penerimaanheader.id',
+                'penerimaanheader.nobukti',
+                'penerimaanheader.tglbukti',
+                'penerimaanheader.pelanggan_id',
+                'pelanggan.namapelanggan as pelanggan',
+                'penerimaanheader.statuscetak',
+                'penerimaanheader.diterimadari',
+                'penerimaanheader.tgllunas',
+                'penerimaanheader.bank_id',
                 'bank.namabank as bank'
-                )
+            )
             ->leftjoin(DB::raw("pelanggan with (readuncommitted)"), 'penerimaanheader.pelanggan_id', 'pelanggan.id')
             ->join(DB::raw("bank with (readuncommitted)"), 'penerimaanheader.bank_id', 'bank.id')
-            ->where('penerimaanheader.id', '=',$id)
+            ->where('penerimaanheader.id', '=', $id)
             ->first();
 
-            // dd($data);
+        // dd($data);
         return $data;
     }
 
@@ -442,6 +560,7 @@ class PenerimaanHeader extends MyModel
             'penerimaanheader.id',
             'penerimaanheader.nobukti',
             'penerimaanheader.tglbukti',
+            'penerimaandetail.keterangan as keterangan_detail',
             DB::raw('SUM(penerimaandetail.nominal) AS nominal')
         )
             ->where('penerimaanheader.bank_id', $bank)
@@ -452,7 +571,7 @@ class PenerimaanHeader extends MyModel
                 WHERE penerimaan_nobukti = penerimaanheader.nobukti   
               )")
             ->leftJoin(DB::raw("penerimaandetail with (readuncommitted)"), 'penerimaanheader.id', 'penerimaandetail.penerimaan_id')
-            ->groupBy('penerimaanheader.nobukti', 'penerimaanheader.id', 'penerimaanheader.tglbukti');
+            ->groupBy('penerimaanheader.nobukti', 'penerimaanheader.id', 'penerimaanheader.tglbukti','penerimaandetail.keterangan');
         $data = $query->get();
 
         return $data;

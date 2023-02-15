@@ -553,6 +553,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('hutangheader/no_bukti', [HutangHeaderController::class, 'getNoBukti']);
     Route::get('hutangheader/combo', [HutangHeaderController::class, 'combo']);
     Route::get('hutangheader/grid', [HutangHeaderController::class, 'grid']);
+    Route::post('hutangheader/{id}/cekValidasiAksi', [HutangHeaderController::class, 'cekValidasiAksi'])->name('hutangheader.cekValidasiAksi');
     Route::get('hutangheader/field_length', [HutangHeaderController::class, 'fieldLength']);
     Route::resource('hutangheader', HutangHeaderController::class);
     Route::resource('hutangdetail', HutangDetailController::class);
@@ -715,6 +716,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('penerimaanheader/{id}/printreport', [PenerimaanHeaderController::class, 'printReport']);
     Route::post('penerimaanheader/{id}/approval', [PenerimaanHeaderController::class, 'approval'])->name('penerimaanheader.approval');
     Route::post('penerimaanheader/{id}/cekvalidasi', [PenerimaanHeaderController::class, 'cekvalidasi'])->name('penerimaanheader.cekvalidasi');
+    Route::post('penerimaanheader/{id}/cekValidasiAksi', [PenerimaanHeaderController::class, 'cekValidasiAksi'])->name('penerimaanheader.cekValidasiAksi');
     Route::get('penerimaanheader/no_bukti', [PenerimaanHeaderController::class, 'getNoBukti']);
     Route::get('penerimaanheader/combo', [PenerimaanHeaderController::class, 'combo']);
     Route::get('penerimaanheader/{id}/tarikPelunasan', [PenerimaanHeaderController::class, 'tarikPelunasan']);
@@ -757,6 +759,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('pengeluaranheader/combo', [PengeluaranHeaderController::class, 'combo']);
     Route::get('pengeluaranheader/grid', [PengeluaranHeaderController::class, 'grid']);
     Route::get('pengeluaranheader/default', [PengeluaranHeaderController::class, 'default']);
+    Route::post('pengeluaranheader/{id}/cekValidasiAksi', [PengeluaranHeaderController::class, 'cekValidasiAksi'])->name('pengeluaranheader.cekValidasiAksi');
     Route::post('pengeluaranheader/{id}/cekvalidasi', [PengeluaranHeaderController::class, 'cekvalidasi'])->name('pengeluaranheader.cekvalidasi');
     Route::resource('pengeluaranheader', PengeluaranHeaderController::class);
 
@@ -764,6 +767,7 @@ route::middleware(['auth:api'])->group(function () {
 
     Route::post('penerimaangiroheader/{id}/approval', [PenerimaanGiroHeaderController::class, 'approval'])->name('penerimaangiroheader.approval');
     Route::post('penerimaangiroheader/{id}/cekvalidasi', [PenerimaanGiroHeaderController::class, 'cekvalidasi'])->name('penerimaangiroheader.cekvalidasi');
+    Route::post('penerimaangiroheader/{id}/cekValidasiAksi', [PenerimaanGiroHeaderController::class, 'cekValidasiAksi'])->name('penerimaangiroheader.cekValidasiAksi');
     Route::get('penerimaangiroheader/{id}/printreport', [PenerimaanGiroHeaderController::class, 'printReport']);
     Route::get('penerimaangiroheader/field_length', [PenerimaanGiroHeaderController::class, 'fieldLength']);
     Route::get('penerimaangiroheader/combo', [PenerimaanGiroHeaderController::class, 'combo']);

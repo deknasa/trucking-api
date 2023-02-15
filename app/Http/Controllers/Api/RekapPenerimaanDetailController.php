@@ -125,7 +125,7 @@ class RekapPenerimaanDetailController extends Controller
             $rekeapPenerimaanDetail->tgltransaksi =  date('Y-m-d',strtotime($request->tgltransaksi));
             $rekeapPenerimaanDetail->penerimaan_nobukti = $request->penerimaan_nobukti;
             $rekeapPenerimaanDetail->nominal = $request->nominal;
-            // $rekeapPenerimaanDetail->keterangan = $request->keterangandetail;
+            $rekeapPenerimaanDetail->keterangan = $request->keterangandetail;
             $rekeapPenerimaanDetail->modifiedby = $request->modifiedby;
             
             DB::commit();

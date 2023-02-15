@@ -42,9 +42,8 @@ class PencairanGiroPengeluaranDetailController extends Controller
                 
             } else {
                 $query->select(
-                    'detail.nobukti','detail.nowarkat','alatbayar.keterangan as alatbayar_id', 'detail.tgljatuhtempo', 'detail.nominal','detail.coadebet','detail.coakredit','detail.keterangan','detail.bulanbeban'
-                )
-                ->leftJoin(DB::raw("alatbayar with (readuncommitted)"),'detail.alatbayar_id','alatbayar.id');
+                    'detail.nobukti','detail.nowarkat','detail.tgljatuhtempo', 'detail.nominal','detail.coadebet','detail.coakredit','detail.keterangan','detail.bulanbeban'
+                );
                 
                 $pengeluaranDetail = $query->get();
             }

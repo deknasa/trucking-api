@@ -68,8 +68,8 @@ class PenerimaanGiroDetailController extends Controller
                     'detail.nobukti',
                     'detail.nowarkat',
                     'detail.tgljatuhtempo',
-                    'detail.coadebet',
-                    'detail.coakredit',
+                    'coadebet.keterangancoa as coadebet',
+                    'coakredit.keterangancoa as coakredit',
                     'bank.namabank as bank_id',
                     'bankpelanggan.namabank as bankpelanggan_id',
                     'detail.invoice_nobukti',
@@ -79,6 +79,8 @@ class PenerimaanGiroDetailController extends Controller
                     'detail.keterangan',
                     'detail.nominal'
                 )
+                ->leftJoin(DB::raw("akunpusat as coadebet with (readuncommitted)"), 'detail.coadebet', 'coadebet.coa')
+                ->leftJoin(DB::raw("akunpusat as coakredit with (readuncommitted)"), 'detail.coakredit', 'coakredit.coa')
                 ->leftJoin(DB::raw("bank with (readuncommitted)"), 'detail.bank_id', 'bank.id')
                 ->leftJoin(DB::raw("bankpelanggan with (readuncommitted)"), 'detail.bankpelanggan_id', 'bankpelanggan.id');
                 

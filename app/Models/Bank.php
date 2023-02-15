@@ -240,6 +240,7 @@ class Bank extends MyModel
 
         $aktif = request()->aktif ?? '';
         $tipe = request()->tipe ?? '';
+        $bankId = request()->bankId ?? 0;
 
         $query = DB::table($this->table)->from(
             DB::raw($this->table . " with (readuncommitted)")
@@ -248,7 +249,7 @@ class Bank extends MyModel
                 'bank.id',
                 'bank.kodebank',
                 'bank.namabank',
-                'bank.coa',
+                'akunpusat.keterangancoa as coa',
                 'bank.tipe',
                 'parameter.memo as statusaktif',
                 'formatpenerimaan.memo as formatpenerimaan',
@@ -257,6 +258,7 @@ class Bank extends MyModel
                 'bank.created_at',
                 'bank.updated_at'
             )
+            ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'bank.coa', '=', 'akunpusat.coa')
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'bank.statusaktif', '=', 'parameter.id')
             ->leftJoin(DB::raw("parameter as formatpenerimaan with (readuncommitted)"), 'bank.formatpenerimaan', '=', 'formatpenerimaan.id')
             ->leftJoin(DB::raw("parameter as formatpengeluaran with (readuncommitted)"), 'bank.formatpengeluaran', '=', 'formatpengeluaran.id');
@@ -280,6 +282,9 @@ class Bank extends MyModel
         }
         if($tipe == 'KAS'){
             $query->where('bank.tipe', '=', 'KAS');
+        }
+        if($bankId != 0){
+            $query->where('bank.id', '=', $bankId);
         }
 
         $this->paginate($query);

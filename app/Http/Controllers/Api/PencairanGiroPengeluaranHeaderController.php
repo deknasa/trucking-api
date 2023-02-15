@@ -66,7 +66,7 @@ class PencairanGiroPengeluaranHeaderController extends Controller
 
                 $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
                 $pengeluaran = PengeluaranHeader::from(DB::raw("pengeluaranheader with (readuncommitted)"))
-                    ->select('nobukti', 'keterangan')->where('id', $request->pengeluaranId[$i])->first();
+                    ->select('nobukti','alatbayar_id')->where('id', $request->pengeluaranId[$i])->first();
 
                 $cekPencairan = PencairanGiroPengeluaranHeader::lockForUpdate()->where('pengeluaran_nobukti', $pengeluaran->nobukti)->first();
 
@@ -139,7 +139,6 @@ class PencairanGiroPengeluaranHeaderController extends Controller
 
                     $pencairanGiro->nobukti = $nobukti;
                     $pencairanGiro->tglbukti = date('Y-m-d');
-                    $pencairanGiro->keterangan = $pengeluaran->keterangan;
                     $pencairanGiro->pengeluaran_nobukti = $pengeluaran->nobukti;
                     $pencairanGiro->statusapproval = $statusApproval->id;
                     $pencairanGiro->userapproval = '';
@@ -166,7 +165,6 @@ class PencairanGiroPengeluaranHeaderController extends Controller
                         'tanpaprosesnobukti' => 1,
                         'nobukti' => $pencairanGiro->nobukti,
                         'tglbukti' => date('Y-m-d', strtotime($pencairanGiro->tglbukti)),
-                        'keterangan' => $pencairanGiro->keterangan,
                         'postingdari' => "ENTRY PENCAIRAN GIRO PENGELUARAN",
                         'statusapproval' => $statusApproval->id,
                         'userapproval' => "",
@@ -184,7 +182,7 @@ class PencairanGiroPengeluaranHeaderController extends Controller
                         $datadetail = [
                             'pencairangiropengeluaran_id' => $pencairanGiro->id,
                             'nobukti' => $pencairanGiro->nobukti,
-                            'alatbayar_id' => $value->alatbayar_id,
+                            'alatbayar_id' => $pengeluaran->alatbayar_id,
                             'nowarkat' => $value->nowarkat,
                             'tgljatuhtempo' => $value->tgljatuhtempo,
                             'nominal' => $value->nominal,

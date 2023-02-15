@@ -836,6 +836,42 @@ class PenerimaanHeaderController extends Controller
         }
     }
 
+    
+    public function cekValidasiAksi($id)
+    {
+        $penerimaanHeader = new PenerimaanHeader();
+        $nobukti = PenerimaanHeader::from(DB::raw("penerimaanheader"))->where('id', $id)->first();
+        $cekdata = $penerimaanHeader->cekvalidasiaksi($nobukti->nobukti);
+        if ($cekdata['kondisi'] == true) {
+            $query = DB::table('error')
+                ->select(
+                    DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
+                )
+                ->where('kodeerror', '=', $cekdata['kodeerror'])
+                ->get();
+            $keterangan = $query['0'];
+
+            $data = [
+                'status' => false,
+                'message' => $keterangan,
+                'errors' => '',
+                'kondisi' => $cekdata['kondisi'],
+            ];
+
+            return response($data);
+        } else {
+
+                $data = [
+                    'status' => false,
+                    'message' => '',
+                    'errors' => '',
+                    'kondisi' => $cekdata['kondisi'],
+                ];
+
+            return response($data);
+        }
+    }
+
     public function printReport($id)
     {
         DB::beginTransaction();

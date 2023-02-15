@@ -23,6 +23,51 @@ class HutangHeader extends MyModel
         'created_at',
         'updated_at',
     ];
+    
+    public function cekvalidasiaksi($nobukti)
+    {
+        $hutangBayar = DB::table('hutangbayardetail')
+            ->from(
+                DB::raw("hutangbayardetail as a with (readuncommitted)")
+            )
+            ->select(
+                'a.hutang_nobukti'
+            )
+            ->where('a.hutang_nobukti', '=', $nobukti)
+            ->first();
+        if (isset($hutangBayar)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Pembayaran Hutang',
+            ];
+            goto selesai;
+        }
+
+        $penerimaanStok = DB::table('penerimaanstokheader')
+            ->from(
+                DB::raw("penerimaanstokheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.hutang_nobukti'
+            )
+            ->where('a.hutang_nobukti', '=', $nobukti)
+            ->first();
+        if (isset($penerimaanStok)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Penerimaan Stok',
+            ];
+            goto selesai;
+        }
+
+        
+        $data = [
+            'kondisi' => false,
+            'keterangan' => '',
+        ];
+        selesai:
+        return $data;
+    }
 
     public function get()
     {
@@ -34,7 +79,7 @@ class HutangHeader extends MyModel
                 'hutangheader.nobukti',
                 'hutangheader.tglbukti',
 
-                'hutangheader.coa',
+                'akunpusat.keterangancoa as coa',
                 'supplier.namasupplier as supplier_id',
                 'hutangheader.total',
                 'parameter.memo as statuscetak',
@@ -47,6 +92,7 @@ class HutangHeader extends MyModel
                 'hutangheader.updated_at'
             )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'hutangheader.statuscetak', 'parameter.id')
+            ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'hutangheader.coa', 'akunpusat.coa')
             ->leftJoin(DB::raw("supplier with (readuncommitted)"), 'hutangheader.supplier_id', 'supplier.id');
 
         $this->totalRows = $query->count();
@@ -214,6 +260,8 @@ class HutangHeader extends MyModel
                             $query = $query->where('parameter.text', '=', "$filters[data]");
                         } else if ($filters['field'] == 'supplier_id') {
                             $query = $query->where('supplier.namasupplier', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'coa') {
+                            $query = $query->where('akunpusat.keterangancoa', 'LIKE', "%$filters[data]%");
                         } else {
                             $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
@@ -226,6 +274,8 @@ class HutangHeader extends MyModel
                             $query = $query->where('parameter.text', '=', "$filters[data]");
                         } else if ($filters['field'] == 'supplier_id') {
                             $query = $query->where('supplier.namasupplier', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'coa') {
+                            $query = $query->where('akunpusat.keterangancoa', 'LIKE', "%$filters[data]%");
                         } else {
                             $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }

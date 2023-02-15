@@ -35,7 +35,7 @@ class HutangBayarHeader extends MyModel
                 'hutangbayarheader.nobukti',
                 'hutangbayarheader.tglbukti',
                 'hutangbayarheader.pengeluaran_nobukti',
-                'hutangbayarheader.coa',
+                'akunpusat.keterangancoa as coa',
                 'hutangbayarheader.userapproval',
                 'statusapproval.memo as statusapproval',
                 DB::raw('(case when (year(hutangbayarheader.tglapproval) <= 2000) then null else hutangbayarheader.tglapproval end ) as tglapproval'),
@@ -53,6 +53,7 @@ class HutangBayarHeader extends MyModel
                 'hutangbayarheader.tglcair'
 
             )
+            ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'hutangbayarheader.coa', 'akunpusat.coa')
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'hutangbayarheader.bank_id', 'bank.id')
             ->leftJoin(DB::raw("supplier with (readuncommitted)"), 'hutangbayarheader.supplier_id', 'supplier.id')
             ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'hutangbayarheader.alatbayar_id', 'alatbayar.id')

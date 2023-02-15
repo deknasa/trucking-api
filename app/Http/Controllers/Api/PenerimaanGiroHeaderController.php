@@ -715,4 +715,39 @@ class PenerimaanGiroHeaderController extends Controller
             return response($data);
         }
     }
+      
+    public function cekValidasiAksi($id)
+    {
+        $penerimaanGiro = new PenerimaanGiroHeader();
+        $nobukti = PenerimaanGiroHeader::from(DB::raw("penerimaangiroheader"))->where('id', $id)->first();
+        $cekdata = $penerimaanGiro->cekvalidasiaksi($nobukti->nobukti);
+        if ($cekdata['kondisi'] == true) {
+            $query = DB::table('error')
+                ->select(
+                    DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
+                )
+                ->where('kodeerror', '=', $cekdata['kodeerror'])
+                ->get();
+            $keterangan = $query['0'];
+
+            $data = [
+                'status' => false,
+                'message' => $keterangan,
+                'errors' => '',
+                'kondisi' => $cekdata['kondisi'],
+            ];
+
+            return response($data);
+        } else {
+
+                $data = [
+                    'status' => false,
+                    'message' => '',
+                    'errors' => '',
+                    'kondisi' => $cekdata['kondisi'],
+                ];
+
+            return response($data);
+        }
+    }
 }
