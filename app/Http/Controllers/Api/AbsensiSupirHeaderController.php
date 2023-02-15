@@ -38,6 +38,15 @@ class AbsensiSupirHeaderController extends Controller
         ]);
     }
 
+     /**
+     * @ClassName 
+     */
+    public function approvalEditAbsensi($id)
+    {
+
+    }
+
+   
 
     public function default()
     {
