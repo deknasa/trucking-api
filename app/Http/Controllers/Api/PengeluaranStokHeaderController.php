@@ -680,7 +680,7 @@ class PengeluaranStokHeaderController extends Controller
             foreach ($datastokdetail as $item) {
 
                 $reset = $this->resethpp($pengeluaranStokHeader->id, $item['stok_id'], true);
-
+                // return  $reset;
 
                 if (!$reset['status']) {
                     throw new \Throwable($reset['message']);
@@ -1023,8 +1023,8 @@ class PengeluaranStokHeaderController extends Controller
                         "modifiedby" => $item['modifiedby'],
                     ];
                     $datafifo = new StorePengeluaranStokDetailFifoRequest($datadetailfifo);
-                    app(PengeluaranStokDetailFifoController::class)->store($datafifo);
-
+                    $as = app(PengeluaranStokDetailFifoController::class)->store($datafifo);
+                    // return $as;
                     $datastokpersediaan  = StokPersediaan::lockForUpdate()->where("stok_id", $stok_id)
                         ->where("gudang_id", $gudangkantor->text)
                         ->firstorFail();

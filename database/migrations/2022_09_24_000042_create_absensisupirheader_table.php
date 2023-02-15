@@ -28,6 +28,10 @@ class CreateabsensisupirheaderTable extends Migration
             $table->string('userbukacetak',50)->default('');
             $table->date('tglbukacetak')->default('1900/1/1');
             $table->integer('jumlahcetak')->Length(11)->default('0');
+            $table->integer('statuseditabsensi')->Length(11)->default('0');
+            $table->integer('statusapprovaleditabsensi')->Length(11)->default('0');
+            $table->string('userapprovaleditabsensi',50)->default('');
+            $table->date('tglapprovaleditabsensi')->default('1900/1/1');
             $table->string('modifiedby', 50)->default('');
             $table->timestamps();
 
