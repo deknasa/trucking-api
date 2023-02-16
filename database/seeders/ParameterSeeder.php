@@ -267,6 +267,7 @@ class ParameterSeeder extends Seeder
         parameter::create(['grp' => 'STATUS GEROBAK', 'subgrp' => 'STATUS GEROBAK', 'kelompok' => '', 'text' => 'BUKAN GEROBAK', 'memo' => '{"MEMO":"BUKAN GEROBAK","SINGKATAN":"BG","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => 'YA',]);
         parameter::create(['grp' => 'STATUS EDIT ABSENSI', 'subgrp' => 'STATUS EDIT ABSENSI', 'kelompok' => '', 'text' => 'BOLEH EDIT ABSENSI', 'memo' => '{"MEMO":"BOLEH EDIT ABSENSI","SINGKATAN":"BEA","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'STATUS EDIT ABSENSI', 'subgrp' => 'STATUS EDIT ABSENSI', 'kelompok' => '', 'text' => 'TIDAK BOLEH EDIT ABSENSI', 'memo' => '{"MEMO":"TIDAK BOLEH EDIT ABSENSI","SINGKATAN":"TBEA","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => 'YA',]);
+        parameter::create(['grp' => 'PEMUTIHAN SUPIR BUKTI', 'subgrp' => 'PEMUTIHAN SUPIR BUKTI', 'kelompok' => '', 'text' => '#SPT #9999#/#R#/#Y', 'memo' => '{"MEMO":"ENTRY PEMUTIHAN SUPIR","SINGKATAN":"9999#/#R#/#Y","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => '1', 'default' => '',]);
         
     }
 }
