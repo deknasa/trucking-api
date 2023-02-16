@@ -96,7 +96,7 @@ class RekapPengeluaranHeaderController extends Controller
                             "tgltransaksi" => $request->tgltransaksi_detail[$i],
                             "pengeluaran_nobukti" => $request->pengeluaran_nobukti[$i],
                             "nominal" => $request->nominal[$i],
-                            // "keterangandetail" => $request->keterangan_detail[$i],
+                            "keterangan" => $request->keterangan_detail[$i],
                             "modifiedby" => $rekapPengeluaranHeader->modifiedby = auth('api')->user()->name
                         ];
 
@@ -200,7 +200,7 @@ class RekapPengeluaranHeaderController extends Controller
                             "tgltransaksi" => $request->tgltransaksi_detail[$i],
                             "pengeluaran_nobukti" => $request->pengeluaran_nobukti[$i],
                             "nominal" => $request->nominal[$i],
-                            // "keterangandetail" => $request->keterangan_detail[$i],
+                            "keterangan" => $request->keterangan_detail[$i],
                             "modifiedby" => $rekapPengeluaranHeader->modifiedby = auth('api')->user()->name
                         ];
 

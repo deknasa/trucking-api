@@ -29,6 +29,141 @@ class PengeluaranHeader extends MyModel
         return $this->hasMany(pengeluarandetail::class, 'pengeluaran_id');
     }
 
+    public function cekvalidasiaksi($nobukti)
+    {
+        $rekap = DB::table('rekappengeluarandetail')
+            ->from(
+                DB::raw("rekappengeluarandetail as a with (readuncommitted)")
+            )
+            ->select(
+                'a.pengeluaran_nobukti'
+            )
+            ->where('a.pengeluaran_nobukti', '=', $nobukti)
+            ->first();
+        if (isset($rekap)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Rekap Pengeluaran',
+                'kodeerror' => 'SATL'
+            ];
+            goto selesai;
+        }
+        $hutangBayar = DB::table('hutangbayarheader')
+        ->from(
+            DB::raw("hutangbayarheader as a with (readuncommitted)")
+        )
+        ->select(
+            'a.pengeluaran_nobukti'
+        )
+        ->where('a.pengeluaran_nobukti', '=', $nobukti)
+        ->first();
+    if (isset($hutangBayar)) {
+        $data = [
+            'kondisi' => true,
+            'keterangan' => 'Pembayaran Hutang',
+            'kodeerror' => 'TDT'
+        ];
+        goto selesai;
+    }
+
+        $kasGantung = DB::table('kasgantungheader')
+            ->from(
+                DB::raw("kasgantungheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.pengeluaran_nobukti'
+            )
+            ->where('a.pengeluaran_nobukti', '=', $nobukti)
+            ->first();
+        if (isset($kasGantung)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'kas gantung',
+                'kodeerror' => 'TDT'
+            ];
+            goto selesai;
+        }
+        $absensiApproval = DB::table('absensisupirapprovalheader')
+            ->from(
+                DB::raw("absensisupirapprovalheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.pengeluaran_nobukti'
+            )
+            ->where('a.pengeluaran_nobukti', '=', $nobukti)
+            ->first();
+        if (isset($absensiApproval)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Absensi Supir posting',
+                'kodeerror' => 'TDT'
+            ];
+            goto selesai;
+        }
+        
+        $prosesUangjalan = DB::table('prosesuangjalansupirdetail')
+            ->from(
+                DB::raw("prosesuangjalansupirdetail as a with (readuncommitted)")
+            )
+            ->select(
+                'a.pengeluarantrucking_nobukti'
+            )
+            ->where('a.pengeluarantrucking_nobukti', '=', $nobukti)
+            ->first();
+        if (isset($prosesUangjalan)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'proses uang jalan supir',
+                'kodeerror' => 'TDT'
+            ];
+            goto selesai;
+        }
+
+        $pengeluaranTrucking = DB::table('pengeluarantruckingheader')
+            ->from(
+                DB::raw("pengeluarantruckingheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.pengeluaran_nobukti'
+            )
+            ->where('a.pengeluaran_nobukti', '=', $nobukti)
+            ->first();
+        if (isset($pengeluaranTrucking)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'pengeluaran trucking',
+                'kodeerror' => 'SATL'
+            ];
+            goto selesai;
+        }
+
+        $pengembalianKasbank = DB::table('pengembaliankasbankheader')
+            ->from(
+                DB::raw("pengembaliankasbankheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.pengeluaran_nobukti'
+            )
+            ->where('a.pengeluaran_nobukti', '=', $nobukti)
+            ->first();
+        if (isset($pengembalianKasbank)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'pengembalian kas/bank',
+                'kodeerror' => 'TDT'
+            ];
+            goto selesai;
+        }
+
+        
+        $data = [
+            'kondisi' => false,
+            'keterangan' => '',
+        ];
+        selesai:
+        return $data;
+    }
+
     public function get()
     {
         $this->setRequestParameters();
@@ -336,6 +471,7 @@ class PengeluaranHeader extends MyModel
                 'pengeluaranheader.id',
                 'pengeluaranheader.nobukti',
                 'pengeluaranheader.tglbukti',
+                'pengeluarandetail.keterangan as keterangan_detail',
                 DB::raw('SUM(pengeluarandetail.nominal) AS nominal')
             )
             ->where('pengeluaranheader.bank_id', $bank)
@@ -346,7 +482,7 @@ class PengeluaranHeader extends MyModel
                 WHERE pengeluaran_nobukti = pengeluaranheader.nobukti   
               )")
             ->leftJoin(DB::raw("pengeluarandetail with (readuncommitted)"), 'pengeluaranheader.id', 'pengeluarandetail.pengeluaran_id')
-            ->groupBy('pengeluaranheader.nobukti', 'pengeluaranheader.id', 'pengeluaranheader.tglbukti');
+            ->groupBy('pengeluaranheader.nobukti', 'pengeluaranheader.id', 'pengeluaranheader.tglbukti','pengeluarandetail.keterangan');
         $data = $query->get();
 
         return $data;

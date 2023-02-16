@@ -143,7 +143,7 @@ class HutangHeaderController extends Controller
 
             $logTrail = [
                 'namatabel' => strtoupper($hutangHeader->getTable()),
-                'postingdari' => 'ENTRY HUTANG HEADER',
+                'postingdari' => $request->postingdari ?? 'ENTRY HUTANG HEADER',
                 'idtrans' => $hutangHeader->id,
                 'nobuktitrans' => $hutangHeader->nobukti,
                 'aksi' => 'ENTRY',
@@ -182,7 +182,7 @@ class HutangHeaderController extends Controller
 
             $datalogtrail = [
                 'namatabel' => strtoupper($tabeldetail),
-                'postingdari' => 'ENTRY HUTANG DETAIL',
+                'postingdari' => $request->postingdari ?? 'ENTRY HUTANG DETAIL',
                 'idtrans' =>  $storedLogTrail['id'],
                 'nobuktitrans' => $hutangHeader->nobukti,
                 'aksi' => 'ENTRY',
@@ -801,6 +801,40 @@ class HutangHeaderController extends Controller
                 'kodestatus' => '0',
                 'kodenobukti' => '1'
             ];
+
+            return response($data);
+        }
+    }
+    public function cekValidasiAksi($id)
+    {
+        $hutangHeader = new HutangHeader();
+        $nobukti = HutangHeader::from(DB::raw("hutangheader"))->where('id', $id)->first();
+        $cekdata = $hutangHeader->cekvalidasiaksi($nobukti->nobukti);
+        if ($cekdata['kondisi'] == true) {
+            $query = DB::table('error')
+                ->select(
+                    DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
+                )
+                ->where('kodeerror', '=', 'SATL')
+                ->get();
+            $keterangan = $query['0'];
+
+            $data = [
+                'status' => false,
+                'message' => $keterangan,
+                'errors' => '',
+                'kondisi' => $cekdata['kondisi'],
+            ];
+
+            return response($data);
+        } else {
+
+                $data = [
+                    'status' => false,
+                    'message' => '',
+                    'errors' => '',
+                    'kondisi' => $cekdata['kondisi'],
+                ];
 
             return response($data);
         }

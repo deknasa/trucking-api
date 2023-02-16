@@ -180,12 +180,14 @@ class RekapPengeluaranHeader extends MyModel
             "$this->table.keterangan",
             "$this->table.statusapproval",
             "$this->table.userapproval",
-            "$this->table.tglapproval",
+            DB::raw('(case when (year(rekappengeluaranheader.tglapproval) <= 2000) then null else rekappengeluaranheader.tglapproval end ) as tglapproval'),
             "$this->table.statusformat",
             "$this->table.modifiedby",
             "bank.namabank as bank",
             "statusapproval.memo as  statusapproval",
             "statuscetak.memo as  statuscetak",
+            "$this->table.created_at",
+            "$this->table.updated_at",
 
         );
     }

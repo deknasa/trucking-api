@@ -142,7 +142,8 @@ class AlatBayar extends MyModel
                 'parameter_statuslangsungcair.memo as statuslangsungcair',
                 'parameter_statusdefault.memo as statusdefault',
                 'parameter.memo as statusaktif',
-                'bank.namabank as bank_id',
+                'alatbayar.bank_id',
+                'bank.namabank as bank',
                 'alatbayar.modifiedby',
                 'alatbayar.created_at',
                 'alatbayar.updated_at'
@@ -351,7 +352,7 @@ class AlatBayar extends MyModel
                             $query = $query->where('parameter_statuslangsungcair.text', '=', "$filters[data]");
                         } else if ($filters['field'] == 'statusdefault') {
                             $query = $query->where('parameter_statusdefault.text', '=', "$filters[data]");
-                        } else if ($filters['field'] == 'bank_id') {
+                        } else if ($filters['field'] == 'bank') {
                             $query = $query->where('bank.namabank', 'LIKE', "%$filters[data]%");
                         } else {
                             $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
@@ -369,7 +370,7 @@ class AlatBayar extends MyModel
                             $query = $query->orWhereRaw("format(alatbayar.updated_at,'dd-MM-yyyy HH:mm:ss') like '%$filters[data]%')");
                         } else if ($filters['field'] == 'statusdefault') {
                             $query = $query->orWhere('parameter_statusdefault.text', '=', "$filters[data]");
-                        } else if ($filters['field'] == 'bank_id') {
+                        } else if ($filters['field'] == 'bank') {
                             $query = $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");
                         } else {
                             $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");

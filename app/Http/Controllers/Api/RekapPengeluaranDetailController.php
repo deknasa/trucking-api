@@ -124,7 +124,7 @@ class RekapPengeluaranDetailController extends Controller
             $rekeapPengeluaranDetail->tgltransaksi =  date('Y-m-d',strtotime($request->tgltransaksi));
             $rekeapPengeluaranDetail->pengeluaran_nobukti = $request->pengeluaran_nobukti;
             $rekeapPengeluaranDetail->nominal = $request->nominal;
-            // $rekeapPengeluaranDetail->keterangan = $request->keterangandetail;
+            $rekeapPengeluaranDetail->keterangan = $request->keterangan;
             $rekeapPengeluaranDetail->modifiedby = $request->modifiedby;
             
             DB::commit();

@@ -24,6 +24,37 @@ class PenerimaanGiroHeader extends MyModel
         'updated_at',
     ];
 
+    
+    public function cekvalidasiaksi($nobukti)
+    {
+       
+
+        $pelunasanPiutang = DB::table('pelunasanpiutangheader')
+            ->from(
+                DB::raw("pelunasanpiutangheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.penerimaangiro_nobukti'
+            )
+            ->where('a.penerimaangiro_nobukti', '=', $nobukti)
+            ->first();
+        if (isset($pelunasanPiutang)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Pelunasan Piutang',
+                'kodeerror' => 'TDT'
+            ];
+            goto selesai;
+        }
+
+        $data = [
+            'kondisi' => false,
+            'keterangan' => '',
+        ];
+        selesai:
+        return $data;
+    }
+
     public function get()
     {
         $this->setRequestParameters();
