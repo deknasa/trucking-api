@@ -126,7 +126,7 @@ class PenerimaanHeader extends MyModel
             $data = [
                 'kondisi' => true,
                 'keterangan' => 'penerimaan trucking',
-                'kodeerror' => 'SATL'
+                'kodeerror' => 'TDT'
             ];
             goto selesai;
         }

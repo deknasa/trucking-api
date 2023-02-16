@@ -633,12 +633,10 @@ class PengembalianKasGantungHeaderController extends Controller
             $validatedLogTrailPengembalianKasGantungDetail = new StoreLogTrailRequest($logTrailPengembalianKasGantungDetail);
             app(LogTrailController::class)->store($validatedLogTrailPengembalianKasGantungDetail);
 
-            foreach ($getDetail as $key) {
-                $getPenerimaan = PenerimaanHeader::from(DB::raw("penerimaanheader with (readuncommitted)"))->where('nobukti', $key->penerimaan_nobukti)->first();
+                $getPenerimaan = PenerimaanHeader::from(DB::raw("penerimaanheader with (readuncommitted)"))->where('nobukti', $pengembalianKasGantungHeader->penerimaan_nobukti)->first();
                 if ($getPenerimaan != null) {
                     app(PenerimaanHeaderController::class)->destroy($request, $getPenerimaan->id);
                 }
-            }
             DB::commit();
 
             $selected = $this->getPosition($pengembalianKasGantungHeader, $pengembalianKasGantungHeader->getTable(), true);

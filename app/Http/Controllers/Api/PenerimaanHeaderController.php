@@ -376,7 +376,7 @@ class PenerimaanHeaderController extends Controller
             } else {
                 if ($request->from != 'prosesuangjalansupir') {
 
-                    $penerimaanheader->agen_id = $request->agen_id;
+                    $penerimaanheader->agen_id = $request->agen_id ?? '';
                     $penerimaanheader->save();
                 }
             }
@@ -389,7 +389,7 @@ class PenerimaanHeaderController extends Controller
                 'nobuktitrans' => $penerimaanheader->nobukti,
                 'aksi' => 'EDIT',
                 'datajson' => $penerimaanheader->toArray(),
-                'modifiedby' => $penerimaanheader->modifiedby
+                'modifiedby' => auth('api')->user()->name,
             ];
 
             $validatedLogTrail = new StoreLogTrailRequest($logTrail);
@@ -430,7 +430,7 @@ class PenerimaanHeaderController extends Controller
                     'invoice_nobukti' => ($isUpdate != 0) ? $counter[$i]['invoice_nobukti'] : $request->invoice_nobukti[$i] ?? '-',
                     'bankpelanggan_id' => ($isUpdate != 0) ? '' : $request->bankpelanggan_id[$i] ?? '',
                     'jenisbiaya' => ($isUpdate != 0) ? '' : $request->jenisbiaya[$i] ?? '',
-                    'pelunasanpiutang_nobukti' => ($isUpdate != 0) ? $request->pelunasanpiutang_nobukti : $request->pelunasanpiutang_nobukti[$i] ?? '-',
+                    'pelunasanpiutang_nobukti' => ($isUpdate != 0) ? $request->pelunasanpiutang_nobukti ?? '' : $request->pelunasanpiutang_nobukti[$i] ?? '-',
                     'bulanbeban' => ($isUpdate != 0) ? '' : date('Y-m-d', strtotime($request->bulanbeban[$i] ?? '1900/1/1')) ?? '',
                     'modifiedby' => auth('api')->user()->name,
                 ];

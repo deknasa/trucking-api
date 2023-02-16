@@ -132,7 +132,7 @@ class PengeluaranHeader extends MyModel
             $data = [
                 'kondisi' => true,
                 'keterangan' => 'pengeluaran trucking',
-                'kodeerror' => 'SATL'
+                'kodeerror' => 'TDT'
             ];
             goto selesai;
         }

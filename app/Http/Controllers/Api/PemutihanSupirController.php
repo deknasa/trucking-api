@@ -1,72 +1,46 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
 use App\Models\PemutihanSupir;
 use App\Http\Requests\StorePemutihanSupirRequest;
 use App\Http\Requests\UpdatePemutihanSupirRequest;
+use Illuminate\Support\Facades\DB;
 
 class PemutihanSupirController extends Controller
 {
     /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
+     * @ClassName
      */
     public function index()
     {
-        //
+        $pemutihanSupir = new PemutihanSupir();
+        return response([
+            'data' => $pemutihanSupir->get(),
+            'attributes' => [
+                'totalRows' => $pemutihanSupir->totalRows,
+                'totalPages' => $pemutihanSupir->totalPages
+            ]
+        ]);
     }
 
     /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \App\Http\Requests\StorePemutihanSupirRequest  $request
-     * @return \Illuminate\Http\Response
+     * @ClassName
      */
     public function store(StorePemutihanSupirRequest $request)
     {
         //
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\PemutihanSupir  $pemutihanSupir
-     * @return \Illuminate\Http\Response
-     */
+
     public function show(PemutihanSupir $pemutihanSupir)
     {
         //
     }
 
     /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\PemutihanSupir  $pemutihanSupir
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(PemutihanSupir $pemutihanSupir)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \App\Http\Requests\UpdatePemutihanSupirRequest  $request
-     * @param  \App\Models\PemutihanSupir  $pemutihanSupir
-     * @return \Illuminate\Http\Response
+     * @ClassName
      */
     public function update(UpdatePemutihanSupirRequest $request, PemutihanSupir $pemutihanSupir)
     {
@@ -74,13 +48,24 @@ class PemutihanSupirController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\PemutihanSupir  $pemutihanSupir
-     * @return \Illuminate\Http\Response
+     * @ClassName
      */
     public function destroy(PemutihanSupir $pemutihanSupir)
     {
         //
+    }
+    
+    public function fieldLength()
+    {
+        $data = [];
+        $columns = DB::connection()->getDoctrineSchemaManager()->listTableDetails('pemutihansupir')->getColumns();
+
+        foreach ($columns as $index => $column) {
+            $data[$index] = $column->getLength();
+        }
+
+        return response([
+            'data' => $data
+        ]);
     }
 }
