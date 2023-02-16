@@ -421,7 +421,7 @@ class PengeluaranTruckingHeaderController extends Controller
         $getDetail = PengeluaranTruckingDetail::lockForUpdate()->where('pengeluarantruckingheader_id', $id)->get();
 
         
-        $request['postingdari'] = "DELETE PENGELUARAN TRUCKING";
+        $request['postingdari'] =  $request->postingdari ?? "DELETE PENGELUARAN TRUCKING";
         $pengeluaranTrucking = new PengeluaranTruckingHeader();
         $pengeluaranTrucking = $pengeluaranTrucking->lockAndDestroy($id);
         if ($pengeluaranTrucking) {

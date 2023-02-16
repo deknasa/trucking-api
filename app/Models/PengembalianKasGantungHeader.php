@@ -24,6 +24,36 @@ class PengembalianKasGantungHeader extends MyModel
         'updated_at',
     ];
 
+    
+    public function cekvalidasiaksi($nobukti)
+    {
+
+        $prosesUangJalan = DB::table('prosesuangjalansupirdetail')
+            ->from(
+                DB::raw("prosesuangjalansupirdetail as a with (readuncommitted)")
+            )
+            ->select(
+                'a.pengembaliankasgantung_nobukti'
+            )
+            ->where('a.pengembaliankasgantung_nobukti', '=', $nobukti)
+            ->first();
+        if (isset($prosesUangJalan)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Proses Uang Jalan Supir',
+                'kodeerror' => 'TDT'
+            ];
+            goto selesai;
+        }
+
+        $data = [
+            'kondisi' => false,
+            'keterangan' => '',
+        ];
+        selesai:
+        return $data;
+    }
+
     public function default()
     {
 

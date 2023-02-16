@@ -381,7 +381,7 @@ class PenerimaanTruckingHeaderController extends Controller
             $penerimaanHeader = [
                 'isUpdate' => 1,
                 'datadetail' => $penerimaanDetail,
-                'postingdari' => 'EDIT PENERIMAAN TRUCKING',
+                'postingdari' => $request->postingdari ?? 'EDIT PENERIMAAN TRUCKING',
                 'nowarkat' => '',
                 'bank_id' => $penerimaantruckingheader->bank_id,
 
@@ -424,7 +424,7 @@ class PenerimaanTruckingHeaderController extends Controller
 
         $getDetail = PenerimaanTruckingDetail::lockForUpdate()->where('penerimaantruckingheader_id', $id)->get();
 
-        $request['postingdari'] = "DELETE PENERIMAAN TRUCKING";
+        $request['postingdari'] = $request->postingdari ?? "DELETE PENERIMAAN TRUCKING";
         $penerimaanTrucking = new PenerimaanTruckingHeader();
         $penerimaanTrucking = $penerimaanTrucking->lockAndDestroy($id);
 
