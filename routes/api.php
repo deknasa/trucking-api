@@ -225,7 +225,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('absensisupirheader/default', [AbsensiSupirHeaderController::class, 'default']);
     Route::post('absensisupirheader/{id}/cekvalidasi', [AbsensiSupirHeaderController::class, 'cekvalidasi'])->name('absensisupirheader.cekvalidasi');
     Route::post('absensisupirheader/{id}/approval', [AbsensiSupirHeaderController::class, 'approval'])->name('absensisupirheader.approval');
-    Route::post('absensisupirheader/{id}/approvalEditAbsensi', [SupirController::class, 'approvalEditAbsensi']);
+    Route::post('absensisupirheader/{id}/approvalEditAbsensi', [AbsensiSupirHeaderController::class, 'approvalEditAbsensi']);
 
     Route::apiResource('absensisupirheader', AbsensiSupirHeaderController::class)->parameter('absensisupirheader', 'absensiSupirHeader');
 

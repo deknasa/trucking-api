@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Rules\DateAllowedAbsen;
 
 class StoreAbsensiSupirHeaderRequest extends FormRequest
 {
@@ -24,8 +25,12 @@ class StoreAbsensiSupirHeaderRequest extends FormRequest
     public function rules()
     {
         $rules = [
-            'tglbukti' => 'required|date',
+            'tglbukti' => [
+                'required',
+                new DateAllowedAbsen()
+            ],
         ];
+        
 
         $relatedRequests = [
             StoreAbsensiSupirDetailRequest::class

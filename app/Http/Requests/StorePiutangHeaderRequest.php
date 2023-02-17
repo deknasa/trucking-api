@@ -2,7 +2,7 @@
 
 namespace App\Http\Requests;
 
-use App\Rules\NotOffDay;
+use App\Rules\DateAllowedAbsen;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StorePiutangHeaderRequest extends FormRequest
@@ -27,7 +27,7 @@ class StorePiutangHeaderRequest extends FormRequest
         $rules = [
             'tglbukti' => [
                 'required',
-                new NotOffDay()
+                new DateAllowedAbsen()
             ],
             'agen' => 'required',
         ];
