@@ -28,7 +28,6 @@ class UpdatePenerimaanTruckingHeaderRequest extends FormRequest
             'penerimaantrucking' => 'required',
             'bank' => 'required',
             'coa' => 'required',
-            'penerimaan_nobukti' => 'required',
         ];
         $relatedRequests = [
             UpdatePenerimaanTruckingDetailRequest::class
@@ -49,7 +48,6 @@ class UpdatePenerimaanTruckingHeaderRequest extends FormRequest
             
             'tglbukti' => 'Tgl Bukti',
             'penerimaantrucking' => 'Kode Penerimaan',
-            'penerimaan_nobukti' => 'Nobukti Penerimaan',
             'supir.*' => 'Supir'
         ];
     }

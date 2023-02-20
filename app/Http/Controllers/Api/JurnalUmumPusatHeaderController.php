@@ -51,7 +51,6 @@ class JurnalUmumPusatHeaderController extends Controller
 
                     $jurnalUmumPusat->nobukti = $get->nobukti;
                     $jurnalUmumPusat->tglbukti = $get->tglbukti;
-                    $jurnalUmumPusat->keterangan = $get->keterangan;
                     $jurnalUmumPusat->postingdari = $get->postingdari;
                     $jurnalUmumPusat->statusapproval = $request->approve;
                     $jurnalUmumPusat->userapproval = auth('api')->user()->name;

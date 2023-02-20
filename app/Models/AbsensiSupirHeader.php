@@ -103,6 +103,7 @@ class AbsensiSupirHeader extends MyModel
                 'absensisupirheader.tglbukti',
                 'absensisupirheader.tglbukacetak',
                 'absensisupirheader.statuscetak',
+                'absensisupirheader.statusapprovaleditabsensi',
                 'absensisupirheader.userbukacetak',
                 'absensisupirheader.jumlahcetak',
     
@@ -255,4 +256,56 @@ class AbsensiSupirHeader extends MyModel
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
+
+    public function todayValidation($id){
+        $query = DB::table('absensisupirheader')->from(DB::raw("absensisupirheader with (readuncommitted)"))
+        ->select('tglbukti')
+        ->where('id',$id)
+        ->first();
+        $tglbukti = strtotime($query->tglbukti);
+        $today = strtotime('today');
+        if($tglbukti === $today) return true;
+        return false;
+    }
+    public function isApproved($nobukti){
+        $query = DB::table('absensisupirapprovalheader')
+        ->from(
+            DB::raw("absensisupirapprovalheader as a with (readuncommitted)")
+        )
+        ->select(
+            'a.absensisupir_nobukti'
+        )
+        ->where('a.absensisupir_nobukti', '=', $nobukti)
+        ->first();
+        //jika ada return false
+        if (empty($absensiSupir)) return true;
+        return false;
+    }
+    public function isEditAble($id){
+        $tidakBolehEdit = DB::table('absensisupirheader')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS EDIT ABSENSI')->where('default', 'YA')->first();
+
+        $query = DB::table('absensisupirheader')->from(DB::raw("absensisupirheader with (readuncommitted)"))
+        ->select('statusapprovaleditabsensi as statusedit')
+        ->where('id',$id)
+        ->first();
+
+        if($query->statusedit != $tidakBolehEdit->id) return true;
+        return false;
+    }
+
+    public function printValidation($id){
+
+        $statusCetak = DB::table('absensisupirheader')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
+
+        $query = DB::table('absensisupirheader')->from(DB::raw("absensisupirheader with (readuncommitted)"))
+        ->select('statuscetak')
+        ->where('id',$id)
+        ->first();
+
+        if($query->statuscetak != $statusCetak->id) return true;
+        return false;
+    }
+
+
+
 }

@@ -78,7 +78,6 @@ class JurnalUmumPusatHeader extends MyModel
                 'jurnalumumheader.id',
                 'jurnalumumheader.nobukti',
                 'jurnalumumheader.tglbukti',
-                'jurnalumumheader.keterangan',
                 'jurnalumumheader.postingdari',
                 'jurnalumumheader.userapproval',
                 'statusapproval.memo as statusapproval',
@@ -123,7 +122,6 @@ class JurnalUmumPusatHeader extends MyModel
                     "$this->anothertable.id,
             $this->anothertable.nobukti,
             $this->anothertable.tglbukti,
-            $this->anothertable.keterangan,
             $this->anothertable.postingdari,
             'statusapproval.text as statusapproval',
             $this->anothertable.userapproval,
@@ -143,7 +141,6 @@ class JurnalUmumPusatHeader extends MyModel
             $table->bigInteger('id')->default('0');
             $table->string('nobukti', 1000)->default('');
             $table->date('tglbukti')->default('');
-            $table->string('keterangan', 1000)->default('');
             $table->string('postingdari', 1000)->default('');
             $table->string('statusapproval', 1000)->default('');
             $table->string('userapproval', 1000)->default('');
@@ -159,7 +156,7 @@ class JurnalUmumPusatHeader extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'keterangan', 'postingdari', 'statusapproval', 'userapproval', 'tglapproval', 'modifiedby', 'created_at', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'postingdari', 'statusapproval', 'userapproval', 'tglapproval', 'modifiedby', 'created_at', 'updated_at'], $models);
 
 
         return  $temp;

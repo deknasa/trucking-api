@@ -28,7 +28,6 @@ class UpdatePengeluaranTruckingHeaderRequest extends FormRequest
             'pengeluarantrucking' => 'required',
             'bank' => 'required',
             'coa' => 'required',
-            'pengeluaran_nobukti' => 'required',
         ];
         $relatedRequests = [
             UpdatePengeluaranTruckingDetailRequest::class
@@ -50,7 +49,6 @@ class UpdatePengeluaranTruckingHeaderRequest extends FormRequest
             
             'tglbukti' => 'Tgl Bukti',
             'pengeluarantrucking' => 'Kode Pengeluaran',
-            'pengeluaran_nobukti' => 'Nobukti Pengeluaran',
             'supir.*' => 'Supir'
         ];
     }

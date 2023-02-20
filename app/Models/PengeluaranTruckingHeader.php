@@ -23,6 +23,35 @@ class PengeluaranTruckingHeader extends MyModel
         'created_at',
         'updated_at',
     ];  
+    
+    public function cekvalidasiaksi($nobukti)
+    {
+
+        $prosesUangJalan = DB::table('prosesuangjalansupirdetail')
+            ->from(
+                DB::raw("prosesuangjalansupirdetail as a with (readuncommitted)")
+            )
+            ->select(
+                'a.pengeluarantrucking_nobukti'
+            )
+            ->where('a.pengeluarantrucking_nobukti', '=', $nobukti)
+            ->first();
+        if (isset($prosesUangJalan)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Proses Uang Jalan Supir',
+                'kodeerror' => 'TDT'
+            ];
+            goto selesai;
+        }
+
+        $data = [
+            'kondisi' => false,
+            'keterangan' => '',
+        ];
+        selesai:
+        return $data;
+    }
 
     public function get()
     {
@@ -41,11 +70,12 @@ class PengeluaranTruckingHeader extends MyModel
             DB::raw('(case when (year(pengeluarantruckingheader.tglbukacetak) <= 2000) then null else pengeluarantruckingheader.tglbukacetak end ) as tglbukacetak'),
             'statuscetak.memo as statuscetak',
             'pengeluarantruckingheader.userbukacetak',
-            'pengeluarantruckingheader.coa',
+            'akunpusat.keterangancoa as coa',
             'statusposting.memo as statusposting'
         )
             ->leftJoin(DB::raw("pengeluarantrucking with (readuncommitted)"), 'pengeluarantruckingheader.pengeluarantrucking_id','pengeluarantrucking.id')
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'pengeluarantruckingheader.bank_id', 'bank.id')
+            ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'pengeluarantruckingheader.coa', 'akunpusat.coa')
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)") , 'pengeluarantruckingheader.statuscetak', 'statuscetak.id')
             ->leftJoin(DB::raw("parameter as statusposting with (readuncommitted)"), 'pengeluarantruckingheader.statusposting', 'statusposting.id');
             
@@ -72,7 +102,6 @@ class PengeluaranTruckingHeader extends MyModel
             'pengeluarantruckingheader.tglbukti',
             'pengeluarantruckingheader.pengeluarantrucking_id',
             'pengeluarantrucking.keterangan as pengeluarantrucking',
-            'pengeluarantruckingheader.statuscetak',
             'pengeluarantruckingheader.bank_id',
             'bank.namabank as bank',
             'pengeluarantruckingheader.statusposting',

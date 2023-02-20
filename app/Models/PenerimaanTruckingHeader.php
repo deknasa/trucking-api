@@ -24,6 +24,35 @@ class PenerimaanTruckingHeader extends MyModel
         'updated_at',
     ];  
 
+    public function cekvalidasiaksi($nobukti)
+    {
+
+        $prosesUangJalan = DB::table('prosesuangjalansupirdetail')
+            ->from(
+                DB::raw("prosesuangjalansupirdetail as a with (readuncommitted)")
+            )
+            ->select(
+                'a.penerimaantrucking_nobukti'
+            )
+            ->where('a.penerimaantrucking_nobukti', '=', $nobukti)
+            ->first();
+        if (isset($prosesUangJalan)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Proses Uang Jalan Supir',
+                'kodeerror' => 'TDT'
+            ];
+            goto selesai;
+        }
+
+        $data = [
+            'kondisi' => false,
+            'keterangan' => '',
+        ];
+        selesai:
+        return $data;
+    }
+
     public function get()
     {
         $this->setRequestParameters();
@@ -42,11 +71,13 @@ class PenerimaanTruckingHeader extends MyModel
             'parameter.memo as statuscetak',
             'penerimaantruckingheader.userbukacetak',
             'penerimaantruckingheader.jumlahcetak',
-            'penerimaantruckingheader.coa',
+            'akunpusat.keterangancoa as coa',
             'penerimaantruckingheader.modifiedby',
+            'penerimaantruckingheader.created_at',
             'penerimaantruckingheader.updated_at',
         )
             ->leftJoin(DB::raw("penerimaantrucking with (readuncommitted)"), 'penerimaantruckingheader.penerimaantrucking_id','penerimaantrucking.id')
+            ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'penerimaantruckingheader.coa','akunpusat.coa')
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'penerimaantruckingheader.statuscetak','parameter.id')
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'penerimaantruckingheader.bank_id', 'bank.id');
             
@@ -73,7 +104,6 @@ class PenerimaanTruckingHeader extends MyModel
             'penerimaantruckingheader.penerimaantrucking_id',
             'penerimaantrucking.keterangan as penerimaantrucking',
             'penerimaantruckingheader.bank_id',
-            'penerimaantruckingheader.statuscetak',
             'bank.namabank as bank',
             'penerimaantruckingheader.coa',
             'penerimaantruckingheader.penerimaan_nobukti'

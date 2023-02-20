@@ -18,83 +18,26 @@ use App\Models\JurnalUmumDetail;
 use App\Models\JurnalUmumHeader;
 use App\Models\Parameter;
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Validator;
 
 
 
 class HutangDetailController extends Controller
 {
-    /**
-     * @ClassName
-     */
-    public function index(Request $request)
+
+    public function index(): JsonResponse
     {
-        $params = [
-            'id' => $request->id,
-            'hutang_id' => $request->hutang_id,
-            'withHeader' => $request->withHeader ?? false,
-            'whereIn' => $request->whereIn ?? [],
-            'forReport' => $request->forReport ?? false,
-            'sortIndex' => $request->sortOrder ?? 'id',
-            'sortOrder' => $request->sortOrder ?? 'asc',
-            'offset' => $request->offset ?? (($request->page - 1) * $request->limit),
-            'limit' => $request->limit ?? 10,
-        ];
-        $totalRows = 0;
-        try {
-            $query = HutangDetail::from(DB::raw("hutangdetail as detail with (readuncommitted)"));
+        $hutangDetail = new HutangDetail();
 
-            if (isset($params['id'])) {
-                $query->where('detail.id', $params['id']);
-            }
-
-            if (isset($params['hutang_id'])) {
-                $query->where('detail.hutang_id', $params['hutang_id']);
-            }
-
-            if (count($params['whereIn']) > 0) {
-                $query->whereIn('hutang_id', $params['whereIn']);
-            }
-            if ($params['forReport']) {
-                $query->select(
-                    'header.nobukti',
-                    'header.tglbukti',
-                    'pelanggan.namapelanggan as pelanggan_id',
-                    'header.coa',
-                    'header.keterangan as keteranganheader',
-                    'header.total as totalheader',
-                    'supplier.namasupplier as supplier_id',
-                    'detail.tgljatuhtempo',
-                    'detail.total',
-                    'detail.keterangan'
-                )->leftJoin(DB::raw("hutangheader as header with (readuncommitted)"),'header.id','detail.hutang_id')
-                ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'header.pelanggan_id', 'pelanggan.id')
-                ->leftJoin(DB::raw("supplier with (readuncommitted)"), 'header.supplier_id', 'supplier.id');
-
-                $hutangDetail = $query->get();
-            } else {
-                $query->select(
-                    'detail.nobukti',
-                    'detail.tgljatuhtempo',
-                    'detail.total',
-                    'detail.keterangan',
-                );
-                $totalRows =  $query->count();
-                $query->skip($params['offset'])->take($params['limit']);
-                $hutangDetail = $query->get();
-            }
-            return response([
-                'data' => $hutangDetail,
-                'attributes' => [
-                    'totalRows' => $totalRows ?? 0,
-                    'totalPages' => $params['limit'] > 0 ? ceil( $totalRows / $params['limit']) : 1
-                ]
-            ]);
-        } catch (\Throwable $th) {
-            return response([
-                'message' => $th->getMessage()
-            ]);
-        }
+        return response()->json([
+            'data' => $hutangDetail->get(),
+            'attributes' => [
+                'totalRows' => $hutangDetail->totalRows,
+                'totalPages' => $hutangDetail->totalPages,
+                'totalNominal' => $hutangDetail->totalNominal
+            ]
+        ]);
     }
 
     public function store(StoreHutangDetailRequest $request)

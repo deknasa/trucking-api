@@ -85,8 +85,8 @@ class PengeluaranDetailController extends Controller
                     'detail.nowarkat',
                     'detail.nominal',
                     'detail.keterangan',
-                    DB::raw("(case when year(isnull(detail.bulanbeban,'1900/1/1'))=1900 then null else detail.bulanbeban end) as bulanbeban"),
-                    DB::raw("(case when year(isnull(detail.tgljatuhtempo,'1900/1/1'))=1900 then null else detail.tgljatuhtempo end) as tgljatuhtempo"),
+                    DB::raw("(case when year(isnull(detail.bulanbeban,'1900/1/1'))<2000 then null else detail.bulanbeban end) as bulanbeban"),
+                    DB::raw("(case when year(isnull(detail.tgljatuhtempo,'1900/1/1'))<2000 then null else detail.tgljatuhtempo end) as tgljatuhtempo"),
                     'debet.keterangancoa as coadebet',
                     'kredit.keterangancoa as coakredit',
 

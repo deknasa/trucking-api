@@ -123,6 +123,7 @@ class ProsesUangJalanSupirHeaderController extends Controller
                 return response([
                     'errors' => true,
                     'message' => "$query->keterangan",
+                    'total' => "$nilaiTransfer, $nilaiDeposit, $nilaiPinjaman",
                 ], 500);
             }
 
@@ -242,46 +243,6 @@ class ProsesUangJalanSupirHeaderController extends Controller
                     $tabeldetail = $datadetails['tabel'];
                 }
 
-                $getCoaDebet = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
-                    ->where('grp', 'JURNAL PENGELUARAN PROSES UANG JALAN')->where('subgrp', 'DEBET')->first();
-                $memo = json_decode($getCoaDebet->memo, true);
-
-                $alatbayar = AlatBayar::from(DB::raw("alatbayar with (readuncommitted)"))->where('bank_id', $bankid)->first();
-
-                $detailPengeluaran = [];
-                $detailPengeluaran[] = [
-                    'nobukti' => $nobuktiPengeluaran,
-                    'nowarkat' => '',
-                    'tgljatuhtempo' => date('Y-m-d', strtotime($request->tgltransfer[$i])),
-                    'nominal' => $request->nilaitransfer[$i],
-                    'coadebet' =>  $memo['JURNAL'],
-                    'coakredit' => $querysubgrppengeluaran->coa,
-                    'keterangan' => $request->keterangantransfer[$i]
-                ];
-
-                $pengeluaranHeader = [
-                    'tanpaprosesnobukti' => '1',
-                    'nobukti' =>  $nobuktiPengeluaran,
-                    'tglbukti' => date('Y-m-d', strtotime($request->tgltransfer[$i])),
-                    'pelanggan_id' => '',
-                    'postingdari' => 'ENTRY PROSES UANG JALAN SUPIR',
-                    'statusapproval' => $statusApproval->id,
-                    'dibayarke' => $namaSupir->namasupir,
-                    'alatbayar_id' => $alatbayar->id,
-                    'bank_id' => $bankid,
-                    'transferkeac' => '',
-                    'transferkean' => '',
-                    'transferkebank' => '',
-                    'statusformat' => $querysubgrppengeluaran->formatpengeluaran,
-                    'statuscetak' => $statusCetak->id,
-                    'modifiedby' => auth('api')->user()->name,
-                    'datadetail' => $detailPengeluaran
-
-                ];
-
-                $pengeluaran = new StorePengeluaranHeaderRequest($pengeluaranHeader);
-                app(PengeluaranHeaderController::class)->store($pengeluaran);
-
                 // PENGELUARAN TRUCKING HEADER
                 $fetchFormatBLS =  DB::table('pengeluarantrucking')
                     ->where('kodepengeluaran', 'BLS')
@@ -307,6 +268,7 @@ class ProsesUangJalanSupirHeaderController extends Controller
                     'supir_id' => $request->supir_id,
                     'penerimaantruckingheader_nobukti' => '',
                     'nominal' => $request->nilaitransfer[$i],
+                    'keterangan' => $request->keterangantransfer[$i]
                 ];
                 $pengeluaranTruckingHeader = [
                     'tanpaprosesnobukti' => 1,
@@ -478,41 +440,6 @@ class ProsesUangJalanSupirHeaderController extends Controller
                 $data = new StoreLogTrailRequest($datalogtrail);
                 app(LogTrailController::class)->store($data);
 
-                $getCoaKreditDPO = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
-                    ->where('grp', 'JURNAL PENERIMAAN DEPOSITO')->where('subgrp', 'KREDIT')->first();
-                $memoKreditDPO = json_decode($getCoaKreditDPO->memo, true);
-
-                $detailPenerimaanDeposit[] = [
-                    'nowarkat' => '',
-                    'tgljatuhtempo' => date('Y-m-d', strtotime($request->tgldeposit)),
-                    'nominal' => $request->nilaideposit,
-                    'coakredit' =>  $memoKreditDPO['JURNAL'],
-                    'coadebet' => $querysubgrppenerimaan->coa,
-                    'keterangan' => $request->keterangandeposit,
-                    'invoice_nobukti' => '',
-                    'pelunasanpiutang_nobukti' => ''
-                ];
-                $penerimaanHeader = [
-                    'tanpaprosesnobukti' => '1',
-                    'nobukti' => $nobuktiPenerimaan,
-                    'tglbukti' => date('Y-m-d', strtotime($request->tgldeposit)),
-                    'pelanggan_id' => '',
-                    'agen_id' => '',
-                    'postingdari' => 'ENTRY PROSES UANG JALAN SUPIR',
-                    'diterimadari' => $namaSupir->namasupir,
-                    'tgllunas' => date('Y-m-d', strtotime($request->tgldeposit)),
-                    'bank_id' => $bankidDeposit,
-                    'statusapproval' => $statusApproval->id,
-                    'statusberkas' => $statusBerkas->id,
-                    'statuscetak' => $statusCetak->id,
-                    'modifiedby' => auth('api')->user()->name,
-                    'statusformat' => $querysubgrppenerimaan->formatpenerimaan,
-                    'datadetail' => $detailPenerimaanDeposit
-
-                ];
-                $penerimaanDeposit = new StorePenerimaanHeaderRequest($penerimaanHeader);
-                app(PenerimaanHeaderController::class)->store($penerimaanDeposit);
-                // END PENERIMAAN KAS BANK DEPOSITO
 
                 // INSERT PENERIMAAN TRUCKING DEPOSITO
                 $fetchFormatDPO = PenerimaanTrucking::from(DB::raw("penerimaantrucking with (readuncommitted)"))
@@ -536,7 +463,8 @@ class ProsesUangJalanSupirHeaderController extends Controller
                 $penerimaanTruckingDetailDPO[] = [
                     'supir_id' => $request->supir_id,
                     'pengeluarantruckingheader_nobukti' => '',
-                    'nominal' => $request->nilaideposit
+                    'nominal' => $request->nilaideposit,
+                    'keterangan' => $request->keterangandeposit
                 ];
                 $penerimaanTruckingHeaderDPO = [
                     'tanpaprosesnobukti' => '1',
@@ -548,6 +476,7 @@ class ProsesUangJalanSupirHeaderController extends Controller
                     'penerimaan_nobukti' => $nobuktiPenerimaan,
                     'statusformat' => $formatDPO->id,
                     'postingdari' => 'ENTRY PROSES UANG JALAN',
+                    'diterimadari' => $namaSupir->namasupir,
                     'datadetail' => $penerimaanTruckingDetailDPO
                 ];
                 $penerimaanTruckingDeposit = new StorePenerimaanTruckingHeaderRequest($penerimaanTruckingHeaderDPO);
@@ -610,41 +539,6 @@ class ProsesUangJalanSupirHeaderController extends Controller
                         $tabeldetail = $datadetails['tabel'];
                     }
 
-                    $getCoaKreditPJP = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
-                        ->where('grp', 'JURNAL PENERIMAAN PINJAMAN')->where('subgrp', 'KREDIT')->first();
-                    $memoKreditPJP = json_decode($getCoaKreditPJP->memo, true);
-                    $detailPenerimaanPinjaman = [];
-                    $detailPenerimaanPinjaman[] = [
-                        'nowarkat' => '',
-                        'tgljatuhtempo' => date('Y-m-d', strtotime($request->tglbukti)),
-                        'nominal' => $request->nombayar[$i],
-                        'coakredit' =>  $memoKreditPJP['JURNAL'],
-                        'coadebet' => $queryPenerimaanPinjaman->coa,
-                        'keterangan' => $request->keteranganpinjaman[$i],
-                        'invoice_nobukti' => '',
-                        'pelunasanpiutang_nobukti' => ''
-                    ];
-                    $penerimaanHeader = [
-                        'tanpaprosesnobukti' => '1',
-                        'nobukti' => $nobuktiPenerimaanPinjaman,
-                        'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
-                        'pelanggan_id' => '',
-                        'agen_id' => '',
-                        'postingdari' => 'ENTRY PROSES UANG JALAN SUPIR',
-                        'diterimadari' => $namaSupir->namasupir,
-                        'tgllunas' => date('Y-m-d', strtotime($request->tglbukti)),
-                        'bank_id' => $bankidPengembalian,
-                        'statusapproval' => $statusApproval->id,
-                        'statusberkas' => $statusBerkas->id,
-                        'statuscetak' => $statusCetak->id,
-                        'modifiedby' => auth('api')->user()->name,
-                        'statusformat' => $queryPenerimaanPinjaman->formatpenerimaan,
-                        'datadetail' => $detailPenerimaanPinjaman
-
-                    ];
-                    $penerimaanPinjaman = new StorePenerimaanHeaderRequest($penerimaanHeader);
-                    app(PenerimaanHeaderController::class)->store($penerimaanPinjaman);
-
                     // PENERIMAAN TRUCKING HEADER
                     $fetchFormatPJP =  DB::table('penerimaantrucking')
                         ->where('kodepenerimaan', 'PJP')
@@ -670,6 +564,7 @@ class ProsesUangJalanSupirHeaderController extends Controller
                         'supir_id' => $request->supir_id,
                         'pengeluarantruckingheader_nobukti' => $request->pengeluarantruckingheader_nobukti[$i],
                         'nominal' => $request->nombayar[$i],
+                        'keterangan' => $request->keteranganpinjaman[$i]
                     ];
                     $penerimaanTruckingHeaderPJP = [
                         'tanpaprosesnobukti' => 1,
@@ -681,6 +576,7 @@ class ProsesUangJalanSupirHeaderController extends Controller
                         'penerimaan_nobukti' => $nobuktiPenerimaanPinjaman,
                         'statusformat' => $formatPJP->id,
                         'postingdari' => 'ENTRY PROSES UANG JALAN',
+                        'diterimadari' => $namaSupir->namasupir,
                         'datadetail' => $penerimaanTruckingDetailPJP
                     ];
 
@@ -765,37 +661,9 @@ class ProsesUangJalanSupirHeaderController extends Controller
 
             foreach ($detailTransfer as $key => $value) {
                 $pengeluarantrucking_nobukti = $value['pengeluarantrucking_nobukti'];
-                $pengeluarantrucking_bank_id = $value['pengeluarantrucking_bank_id'];
-
-                $getCoaDebet = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
-                    ->where('grp', 'JURNAL PENGELUARAN PROSES UANG JALAN')->where('subgrp', 'DEBET')->first();
-                $memo = json_decode($getCoaDebet->memo, true);
-                $getCoaKredit = Bank::from(DB::raw("bank with (readuncommitted)"))
-                    ->select('bank.coa')->whereRaw("bank.id = $pengeluarantrucking_bank_id")
+                $fetchFormatBLS =  DB::table('pengeluarantrucking')
+                    ->where('kodepengeluaran', 'BLS')
                     ->first();
-
-                $get = PengeluaranHeader::from(DB::raw("pengeluaranheader with (readuncommitted)"))->where('nobukti', $pengeluarantrucking_nobukti)->first();
-                $pengeluaranDetailTransfer = [];
-                $pengeluaranDetailTransfer[] = [
-                    'nowarkat' => '',
-                    'tgljatuhtempo' => date('Y-m-d', strtotime($value['pengeluarantrucking_tglbukti'])),
-                    'nominal' => $value['nominal'],
-                    'coadebet' => $memo['JURNAL'],
-                    'coakredit' => $getCoaKredit->coa,
-                    'nobukti' =>  $pengeluarantrucking_nobukti,
-                    'keterangan' => $request->keterangantransfer[$key]
-                ];
-                $pengeluaranTransfer = [
-                    'isUpdate' => 1,
-                    'from' => 'prosesuangjalansupir',
-                    'postingdari' => 'EDIT PROSES UANG JALAN SUPIR',
-                    'datadetail' => $pengeluaranDetailTransfer
-                ];
-
-                $newPengeluaran = new PengeluaranHeader();
-                $newPengeluaran = $newPengeluaran->findAll($get->id);
-                $pengeluaran = new UpdatePengeluaranHeaderRequest($pengeluaranTransfer);
-                app(PengeluaranHeaderController::class)->update($pengeluaran, $newPengeluaran);
 
                 $getPengeluaranTrucking = PengeluaranTruckingHeader::from(DB::raw("pengeluarantruckingheader with (readuncommitted)"))->where("pengeluaran_nobukti", $pengeluarantrucking_nobukti)->first();
                 $pengeluaranTruckingDetailTransfer = [];
@@ -803,11 +671,13 @@ class ProsesUangJalanSupirHeaderController extends Controller
                     'supir_id' => $prosesuangjalansupirheader->supir_id,
                     'penerimaantruckingheader_nobukti' => '',
                     'nominal' => $value['nominal'],
+                    'keterangan' => $request->keterangantransfer[$key]
                 ];
                 $pengeluaranTruckingTransfer = [
                     'isUpdate' => 1,
                     'postingdari' => 'EDIT PROSES UANG JALAN SUPIR',
-                    'datadetail' => $pengeluaranTruckingDetailTransfer
+                    'datadetail' => $pengeluaranTruckingDetailTransfer,
+                    'coa' => $fetchFormatBLS->coa,
                 ];
 
                 $newPengeluaranTrucking = new PengeluaranTruckingHeader();
@@ -859,48 +729,21 @@ class ProsesUangJalanSupirHeaderController extends Controller
             // UPDATE DEPOSITO
             $detailDeposito = $detail->deposito($id);
             if ($detailDeposito != null) {
-
-                $getCoaKreditDPO = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
-                    ->where('grp', 'JURNAL PENERIMAAN DEPOSITO')->where('subgrp', 'KREDIT')->first();
-                $memoKreditDPO = json_decode($getCoaKreditDPO->memo, true);
-                $getCoaDebetDPO = Bank::from(DB::raw("bank with (readuncommitted)"))
-                    ->select('bank.coa')->whereRaw("bank.id = $detailDeposito->bank_iddeposit")
-                    ->first();
-                $detailPenerimaanDeposit[] = [
-                    'nowarkat' => '',
-                    'tgljatuhtempo' => $detailDeposito->tgldeposit,
-                    'coadebet' => $getCoaDebetDPO->coa,
-                    'coakredit' => $memoKreditDPO['JURNAL'],
-                    'nominal' => $detailDeposito->nilaideposit,
-                    'keterangan' => $request->keterangandeposit,
-                    'invoice_nobukti' => '',
-                ];
-
-                $penerimaanDeposit = [
-                    'isUpdate' => 1,
-                    'from' => 'prosesuangjalansupir',
-                    'bank_id' => $detailDeposito->bank_iddeposit,
-                    'pelunasanpiutang_nobukti' => '',
-                    'postingdari' => 'EDIT PROSES UANG JALAN SUPIR',
-                    'datadetail' => $detailPenerimaanDeposit
-                ];
-
-                $getPenerimaanHeader = PenerimaanHeader::from(DB::raw("penerimaanheader with (readuncommitted)"))->where("nobukti", $detailDeposito->penerimaandeposit_nobukti)->first();
-                $newPenerimaanHeader = new PenerimaanHeader();
-                $newPenerimaanHeader = $newPenerimaanHeader->findAll($getPenerimaanHeader->id);
-                $penerimaan = new UpdatePenerimaanHeaderRequest($penerimaanDeposit);
-                app(PenerimaanHeaderController::class)->update($penerimaan, $newPenerimaanHeader);
-
+                $fetchFormatDPO = PenerimaanTrucking::from(DB::raw("penerimaantrucking with (readuncommitted)"))
+                ->where('kodepenerimaan', 'DPO')
+                ->first();
                 $getPenerimaanTruckingDPO = PenerimaanTruckingHeader::from(DB::raw("penerimaantruckingheader with (readuncommitted)"))->where("penerimaan_nobukti", $detailDeposito->penerimaandeposit_nobukti)->first();
                 $penerimaanTruckingDetailDPO = [];
                 $penerimaanTruckingDetailDPO[] = [
                     'supir_id' => $prosesuangjalansupirheader->supir_id,
                     'pengeluarantruckingheader_nobukti' => '',
                     'nominal' => $detailDeposito->nilaideposit,
+                    'keterangan' => $request->keterangandeposit
                 ];
                 $penerimaanTruckingDPO = [
                     'isUpdate' => 1,
-                    'postingdari' => 'EDIT PROSES UANG JALAN SUPIR',
+                    'postingdari' => 'EDIT PROSES UANG JALAN SUPIR',                    
+                    'coa' => $fetchFormatDPO->coa,
                     'datadetail' => $penerimaanTruckingDetailDPO
                 ];
 
@@ -983,18 +826,11 @@ class ProsesUangJalanSupirHeaderController extends Controller
                     app(PengembalianKasGantungHeaderController::class)->destroy($request, $getPengembalianKasgantung->id);
                 }
 
-                $getPenerimaan = PenerimaanHeader::from(DB::raw("penerimaanheader with (readuncommitted)"))->where('nobukti', $key->penerimaantrucking_nobukti)->first();
-                if ($getPenerimaan != null) {
-                    app(PenerimaanHeaderController::class)->destroy($request, $getPenerimaan->id);
-                }
                 $getPenerimaanTrucking = PenerimaanTruckingHeader::from(DB::raw("penerimaantruckingheader with (readuncommitted)"))->where('penerimaan_nobukti', $key->penerimaantrucking_nobukti)->first();
                 if ($getPenerimaanTrucking != null) {
                     app(PenerimaanTruckingHeaderController::class)->destroy($request, $getPenerimaanTrucking->id);
                 }
-                $getPengeluaran = PengeluaranHeader::from(DB::raw("pengeluaranheader with (readuncommitted)"))->where('nobukti', $key->pengeluarantrucking_nobukti)->first();
-                if ($getPengeluaran != null) {
-                    app(PengeluaranHeaderController::class)->destroy($request, $getPengeluaran->id);
-                }
+
                 $getPengeluaranTrucking = PengeluaranTruckingHeader::from(DB::raw("pengeluarantruckingheader with (readuncommitted)"))->where('pengeluaran_nobukti', $key->pengeluarantrucking_nobukti)->first();
                 if ($getPengeluaranTrucking != null) {
                     app(PengeluaranTruckingHeaderController::class)->destroy($request, $getPengeluaranTrucking->id);

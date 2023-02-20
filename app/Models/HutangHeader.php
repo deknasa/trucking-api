@@ -39,6 +39,7 @@ class HutangHeader extends MyModel
             $data = [
                 'kondisi' => true,
                 'keterangan' => 'Pembayaran Hutang',
+                'kodeerror' => 'SATL'
             ];
             goto selesai;
         }
@@ -56,6 +57,7 @@ class HutangHeader extends MyModel
             $data = [
                 'kondisi' => true,
                 'keterangan' => 'Penerimaan Stok',
+                'kodeerror' => 'TDT'
             ];
             goto selesai;
         }

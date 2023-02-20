@@ -4,6 +4,8 @@ use App\Http\Controllers\Api\AkunPusatController;
 use App\Http\Controllers\Api\AbsensiSupirDetailController;
 use App\Http\Controllers\Api\AbsensiSupirHeaderController;
 
+use App\Http\Controllers\Api\BukaAbsensiController;
+
 use App\Http\Controllers\Api\AbsensiSupirApprovalHeaderController;
 use App\Http\Controllers\Api\AbsensiSupirApprovalDetailController;
 
@@ -170,6 +172,7 @@ use App\Http\Controllers\Api\LaporanTripGandenganDetailController;
 use App\Http\Controllers\Api\LaporanTripTradoController;
 use App\Http\Controllers\Api\LaporanUangJalanController;
 use App\Http\Controllers\Api\OrderanEmklController;
+use App\Http\Controllers\Api\PemutihanSupirController;
 use App\Http\Controllers\Api\ReportAllController;
 use App\Http\Controllers\Api\PencairanGiroPengeluaranDetailController;
 use App\Http\Controllers\Api\PencairanGiroPengeluaranHeaderController;
@@ -222,12 +225,13 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('absensisupirheader/default', [AbsensiSupirHeaderController::class, 'default']);
     Route::post('absensisupirheader/{id}/cekvalidasi', [AbsensiSupirHeaderController::class, 'cekvalidasi'])->name('absensisupirheader.cekvalidasi');
     Route::post('absensisupirheader/{id}/approval', [AbsensiSupirHeaderController::class, 'approval'])->name('absensisupirheader.approval');
-    Route::post('absensisupirheader/{id}/approvalEditAbsensi', [SupirController::class, 'approvalEditAbsensi']);
+    Route::post('absensisupirheader/{id}/approvalEditAbsensi', [AbsensiSupirHeaderController::class, 'approvalEditAbsensi']);
 
     Route::apiResource('absensisupirheader', AbsensiSupirHeaderController::class)->parameter('absensisupirheader', 'absensiSupirHeader');
 
     Route::get('absensisupirdetail/get', [AbsensiSupirDetailController::class,'getDetailAbsensi']);
     Route::resource('absensisupirdetail', AbsensiSupirDetailController::class);
+    Route::resource('bukaabsensi', BukaAbsensiController::class);
 
     Route::get('approvaltransaksiheader/combo', [ApprovalTransaksiHeaderController::class, 'combo']);
     Route::apiResource('approvaltransaksiheader', ApprovalTransaksiHeaderController::class);
@@ -493,6 +497,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::resource('jurnalumumdetail', JurnalUmumDetailController::class);
 
     Route::get('penerimaantruckingheader/{id}/printreport', [PenerimaanTruckingHeaderController::class, 'printReport']);
+    Route::post('penerimaantruckingheader/{id}/cekValidasiAksi', [PenerimaanTruckingHeaderController::class, 'cekValidasiAksi'])->name('penerimaantruckingheader.cekValidasiAksi');
     Route::post('penerimaantruckingheader/{id}/cekvalidasi', [PenerimaanTruckingHeaderController::class, 'cekvalidasi'])->name('penerimaantruckingheader.cekvalidasi');
     Route::get('penerimaantruckingheader/no_bukti', [PenerimaanTruckingHeaderController::class, 'getNoBukti']);
     Route::get('penerimaantruckingheader/combo', [PenerimaanTruckingHeaderController::class, 'combo']);
@@ -502,6 +507,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::resource('penerimaantruckingdetail', PenerimaanTruckingDetailController::class);
 
     Route::get('pengeluarantruckingheader/{id}/printreport', [PengeluaranTruckingHeaderController::class, 'printReport']);
+    Route::post('pengeluarantruckingheader/{id}/cekValidasiAksi', [PengeluaranTruckingHeaderController::class, 'cekValidasiAksi'])->name('pengeluarantruckingheader.cekValidasiAksi');
     Route::post('pengeluarantruckingheader/{id}/cekvalidasi', [PengeluaranTruckingHeaderController::class, 'cekvalidasi'])->name('pengeluarantruckingheader.cekvalidasi');
     Route::get('pengeluarantruckingheader/no_bukti', [PengeluaranTruckingHeaderController::class, 'getNoBukti']);
     Route::get('pengeluarantruckingheader/combo', [PengeluaranTruckingHeaderController::class, 'combo']);
@@ -667,6 +673,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('pengembaliankasgantungheader/getkasgantung', [PengembalianKasGantungHeaderController::class, 'getKasGantung']);
     Route::get('pengembaliankasgantungheader/getpengembalian/{id}', [PengembalianKasGantungHeaderController::class, 'getPengembalian']);
     Route::get('pengembaliankasgantungheader/default', [PengembalianKasGantungHeaderController::class, 'default']);
+    Route::post('pengembaliankasgantungheader/{id}/cekValidasiAksi', [PengembalianKasGantungHeaderController::class, 'cekValidasiAksi'])->name('pengembaliankasgantungheader.cekValidasiAksi');
     Route::post('pengembaliankasgantungheader/{id}/cekvalidasi', [PengembalianKasGantungHeaderController::class, 'cekvalidasi'])->name('pengembaliankasgantungheader.cekvalidasi');
     Route::resource('pengembaliankasgantungheader', PengembalianKasGantungHeaderController::class);
 
@@ -836,7 +843,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('prosesuangjalansupirheader/combo', [ProsesUangJalanSupirHeaderController::class, 'combo']);
     Route::get('prosesuangjalansupirheader/grid', [ProsesUangJalanSupirHeaderController::class, 'grid']);
     Route::get('prosesuangjalansupirheader/{id}/tarikPelunasan', [ProsesUangJalanSupirHeaderController::class, 'tarikPelunasan']);
-    Route::get('prosesuangjalansupirheader/{id}/getPelunasan', [ProsesUangJalanSupirHeaderController::class, 'getPelunasan']);
+    Route::get('prosesuangjalansupirheader/{id}/getPinjaman', [ProsesUangJalanSupirHeaderController::class, 'getPinjaman']);
     Route::resource('prosesuangjalansupirheader', ProsesUangJalanSupirHeaderController::class);
 
     Route::resource('prosesuangjalansupirdetail', ProsesUangJalanSupirDetailController::class);
@@ -895,7 +902,11 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('exportpemakaianbarang/export', [ExportPemakaianBarangController::class, 'export'])->name('exportpemakaianbarang.export');
     Route::resource('exportpemakaianbarang', ExportPemakaianBarangController::class);
     
-    Route::get('/orderanemkl/getTglJob', [OrderanEmklController::class, 'getTglJob'])->middleware('handle-token');;
+    Route::get('/orderanemkl/getTglJob', [OrderanEmklController::class, 'getTglJob'])->middleware('handle-token');
+    
+    Route::get('pemutihansupir/field_length', [PemutihanSupirController::class, 'fieldLength']);
+    Route::resource('pemutihansupir', PemutihanSupirController::class);
+
 
 });
 

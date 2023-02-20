@@ -43,7 +43,49 @@ class AbsensiSupirHeaderController extends Controller
      */
     public function approvalEditAbsensi($id)
     {
+        DB::beginTransaction();
+        try{
+            $absensiSupirHeader = AbsensiSupirHeader::lockForUpdate()->findOrFail($id);
 
+            $statusBolehEdit = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS EDIT ABSENSI')->where('text', '=', 'BOLEH EDIT ABSENSI')->first();
+            $statusTidakBolehEdit = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS EDIT ABSENSI')->where('text', '=', 'TIDAK BOLEH EDIT ABSENSI')->first();
+            // statusapprovaleditabsensi,tglapprovaleditabsensi,userapprovaleditabsensi 
+            if ($absensiSupirHeader->statusapprovaleditabsensi == $statusBolehEdit->id) {
+                $absensiSupirHeader->statusapprovaleditabsensi = $statusTidakBolehEdit->id;
+                $aksi = $statusTidakBolehEdit->text;
+            } else {
+                $absensiSupirHeader->statusapprovaleditabsensi = $statusBolehEdit->id;
+                $aksi = $statusBolehEdit->text;
+            }
+
+            $absensiSupirHeader->tglapprovaleditabsensi = date("Y-m-d",strtotime('today'));
+            $absensiSupirHeader->userapprovaleditabsensi = auth('api')->user()->name;
+
+            if ($absensiSupirHeader->save()) {
+                $logTrail = [
+                    'namatabel' => strtoupper($absensiSupirHeader->getTable()),
+                    'postingdari' => 'APPROVED SUPIR RESIGN',
+                    'idtrans' => $absensiSupirHeader->id,
+                    'nobuktitrans' => $absensiSupirHeader->id,
+                    'aksi' => $aksi,
+                    'datajson' => $absensiSupirHeader->toArray(),
+                    'modifiedby' => auth('api')->user()->name
+                ];
+    
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+    
+                DB::commit();
+            }
+
+            return response([
+                'message' => 'Berhasil'
+            ]);
+
+        }catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
     }
 
    
@@ -62,7 +104,7 @@ class AbsensiSupirHeaderController extends Controller
     public function show($id)
     {
         $data = AbsensiSupirHeader::findAll($id);
-        $detail = AbsensiSupirDetail::find($id);
+        $detail = AbsensiSupirDetail::getAll($id);
 
         return response([
             'status' => true,
@@ -83,9 +125,10 @@ class AbsensiSupirHeaderController extends Controller
      */
     public function store(StoreAbsensiSupirHeaderRequest $request)
     {
+        
         DB::beginTransaction();
         try {
-
+return $request->all();
             $group = 'ABSENSI';
             $subgroup = 'ABSENSI';
             $format = DB::table('parameter')
@@ -103,14 +146,17 @@ class AbsensiSupirHeaderController extends Controller
             /* Store header */
             $absensisupir = new AbsensiSupirHeader();
             $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
+            $statusEditAbsensi = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS EDIT ABSENSI')->where('default', 'YA')->first();
 
-
+            // $absensisupir->tglapprovaleditabsensi  = 
+            // $absensisupir->tglapprovaleditabsensi = 
             $absensisupir->nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
             $absensisupir->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $absensisupir->kasgantung_nobukti = $request->kasgantung_nobukti ?? '';
             $absensisupir->nominal = array_sum($request->uangjalan);
             $absensisupir->statusformat = $format->id;
             $absensisupir->statuscetak = $statusCetak->id ?? 0;
+            $absensisupir->statusapprovaleditabsensi  = $statusEditAbsensi->id;
             $absensisupir->modifiedby = auth('api')->user()->name;
 
             if ($absensisupir->save()) {
@@ -266,11 +312,15 @@ class AbsensiSupirHeaderController extends Controller
         try {
             /* Store header */
             $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
+            $statusEditAbsensi = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS EDIT ABSENSI')->where('default', 'YA')->first();
 
             $absensiSupirHeader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $absensiSupirHeader->nominal = array_sum($request->uangjalan);
             $absensiSupirHeader->statuscetak = $statusCetak->id ?? 0;
             $absensiSupirHeader->modifiedby = auth('api')->user()->name;
+            $absensiSupirHeader->statusapprovaleditabsensi  = $statusEditAbsensi->id;
+            $absensiSupirHeader->tglapprovaleditabsensi = date("Y-m-d",strtotime('today'));
+            $absensiSupirHeader->userapprovaleditabsensi = auth('api')->user()->name;
 
             if ($absensiSupirHeader->save()) {
                 /* Store Header LogTrail */
@@ -550,71 +600,121 @@ class AbsensiSupirHeaderController extends Controller
 
     public function cekvalidasi($id)
     {
-        $absensisupir = AbsensiSupirHeader::find($id);
-        $statusdatacetak = $absensisupir->statuscetak;
-        $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
+        $absensisupir = AbsensiSupirHeader::findOrFail($id);
+        
+        $passes = true;
 
-        if ($statusdatacetak == $statusCetak->id) {
-            $query = DB::table('error')
-                ->select('keterangan')
-                ->where('kodeerror', '=', 'SDC')
-                ->get();
+        //validasi Hari ini
+        $todayValidation = AbsensiSupirHeader::todayValidation($absensisupir->id);
+        if(!$todayValidation){
+            $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'SATL')->get();
             $keterangan = $query['0'];
             $data = [
                 'message' => $keterangan,
-                'errors' => 'sudah cetak',
+                'errors' => 'Tidak bisa edit di hari yang berbeda',
                 'kodestatus' => '1',
                 'kodenobukti' => '1'
             ];
-
-            return response($data);
-        } else {
+            $passes = false;
+            // return response($data);
+        }
+        
+        //validasi approval
+        $isApproved = AbsensiSupirHeader::isApproved($absensisupir->nobukti);
+        if(!$isApproved){
+            $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'SATL')->get();
+            $keterangan = $query['0'];
 
             $data = [
+                'message' => $keterangan,
+                'errors' => 'sudah approve',
+                'kodestatus' => '1',
+                'kodenobukti' => '1'
+            ];
+            $passes = false;
+            // return response($data);
+        }
+
+
+        
+        //validasi status edit
+        $passes = true;
+        $isEditAble = AbsensiSupirHeader::isEditAble($id);
+        if(!$isEditAble){
+            $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'SATL')->get();
+            $keterangan = $query['0'];
+
+            $data = [
+                'message' => $keterangan,
+                'errors' => 'status approve edit tidak boleh',
+                'kodestatus' => '1',
+                'kodenobukti' => '1'
+            ];
+            $passes = false;
+            // return response($data);
+        }
+
+        //validasi cetak
+        $printValidation = AbsensiSupirHeader::printValidation($id);
+        if(!$printValidation){
+            $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'SDC')->get();
+            $keterangan = $query['0'];
+            $data = [
+                'message' => $keterangan,
+                'errors' => 'status approve edit tidak boleh',
+                'kodestatus' => '1',
+                'kodenobukti' => '1'
+            ];
+            $passes = false;
+
+            // return response($data);
+        }
+        if(($todayValidation && $isApproved) || ($isEditAble && $printValidation)){
+            $data = [
                 'message' => '',
-                'errors' => 'belum approve',
+                'errors' => 'success',
                 'kodestatus' => '0',
                 'kodenobukti' => '1'
             ];
-
             return response($data);
         }
+            
+        return response($data);
     }
 
+    // public function cekValidasiAksi($id) {
+    //     $absensiSupirHeader= new AbsensiSupirHeader();
+    //     $nobukti = AbsensiSupirHeader::from(DB::raw("absensisupirheader"))->where('id', $id)->first();
+    //     $cekdata=$absensiSupirHeader->cekvalidasiaksi($nobukti->nobukti);
+    //     if ($cekdata['kondisi']==true) {
+    //         $query = DB::table('error')
+    //         ->select(
+    //             DB::raw("ltrim(rtrim(keterangan))+' (".$cekdata['keterangan'].")' as keterangan")
+    //             )
+    //         ->where('kodeerror', '=', 'SATL')
+    //         ->get();
+    //     $keterangan = $query['0'];
 
-    public function cekValidasiAksi($id) {
-        $absensiSupirHeader= new AbsensiSupirHeader();
-        $nobukti = AbsensiSupirHeader::from(DB::raw("absensisupirheader"))->where('id', $id)->first();
-        $cekdata=$absensiSupirHeader->cekvalidasiaksi($nobukti->nobukti);
-        if ($cekdata['kondisi']==true) {
-            $query = DB::table('error')
-            ->select(
-                DB::raw("ltrim(rtrim(keterangan))+' (".$cekdata['keterangan'].")' as keterangan")
-                )
-            ->where('kodeerror', '=', 'SATL')
-            ->get();
-        $keterangan = $query['0'];
+    //         $data = [
+    //             'status' => false,
+    //             'message' => $keterangan,
+    //             'errors' => '',
+    //             'kondisi' => $cekdata['kondisi'],
+    //         ];
 
-            $data = [
-                'status' => false,
-                'message' => $keterangan,
-                'errors' => '',
-                'kondisi' => $cekdata['kondisi'],
-            ];
-
-            return response($data);
+    //         return response($data);
          
-        } else {
-                $data = [
-                    'status' => false,
-                    'message' => '',
-                    'errors' => '',
-                    'kondisi' => $cekdata['kondisi'],
-                ];
+    //     } else {
+    //             $data = [
+    //                 'status' => false,
+    //                 'message' => '',
+    //                 'errors' => '',
+    //                 'kondisi' => $cekdata['kondisi'],
+    //             ];
 
-            return response($data); 
-        }
-    }
+    //         return response($data); 
+    //     }
+    // }
     public function fieldLength()
     {
         $data = [];
