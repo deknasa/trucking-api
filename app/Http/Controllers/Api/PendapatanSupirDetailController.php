@@ -7,72 +7,24 @@ use App\Models\PendapatanSupirDetail;
 use App\Http\Requests\StorePendapatanSupirDetailRequest;
 use App\Http\Requests\UpdatePendapatanSupirDetailRequest;
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class PendapatanSupirDetailController extends Controller
 {
-    public function index(Request $request)
+    public function index(): JsonResponse
     {
-        $params = [
-            'id' => $request->id,
-            'pendapatansupir_id' => $request->pendapatansupir_id,
-            'withHeader' => $request->withHeader ?? false,
-            'whereIn' => $request->whereIn ?? [],
-            'forReport' => $request->forReport ?? false,
-            'sortIndex' => $request->sortOrder ?? 'id',
-            'sortOrder' => $request->sortOrder ?? 'asc',
-        ];
-        try {
-            $query = PendapatanSupirDetail::from(DB::raw("pendapatansupirdetail as detail with (readuncommitted)"));
+        $pendapatanSupir = new PendapatanSupirDetail();
 
-            if (isset($params['id'])) {
-                $query->where('detail.id', $params['id']);
-            }
-
-            if (isset($params['pendapatansupir_id'])) {
-                $query->where('detail.pendapatansupir_id', $params['pendapatansupir_id']);
-            }
-
-            if (count($params['whereIn']) > 0) {
-                $query->whereIn('pendapatansupir_id', $params['whereIn']);
-            }
-            if ($params['forReport']) {
-                $query->select(
-                    'header.nobukti',
-                    'header.tglbukti',
-                    'bank.namabank as bank',
-                    'header.tgldari',
-                    'header.tglsampai',
-                    'header.periode',
-                    'supir.namasupir as supir_id',
-                    'detail.keterangan',
-                    'detail.nominal'
-                ) 
-                ->leftJoin(DB::raw("pendapatansupirheader as header with (readuncommitted)"),'header.id','detail.pendapatansupir_id')
-                ->leftJoin(DB::raw("bank with (readuncommitted)"), 'header.bank_id', 'bank.id')
-                ->leftJoin(DB::raw("supir with (readuncommitted)"), 'detail.supir_id', 'supir.id');
-                
-                $pendapatanSupirDetail = $query->get();
-            } else {
-                $query->select(
-                    'detail.nobukti',
-                    'supir.namasupir as supir_id',
-                    'detail.keterangan',
-                    'detail.nominal'
-                )
-                ->leftJoin(DB::raw("supir with (readuncommitted)"), 'detail.supir_id', 'supir.id');
-                $pendapatanSupirDetail = $query->get();
-            }
-            return response([
-                'data' => $pendapatanSupirDetail,
-                
-            ]);
-        } catch (\Throwable $th) {
-            return response([
-                'message' => $th->getMessage()
-            ]);
-        }
+        return response()->json([
+            'data' => $pendapatanSupir->get(),
+            'attributes' => [
+                'totalRows' => $pendapatanSupir->totalRows,
+                'totalPages' => $pendapatanSupir->totalPages,
+                'totalNominal' => $pendapatanSupir->totalNominal
+            ]
+        ]);
     }
 
    

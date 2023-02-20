@@ -815,7 +815,7 @@ class HutangHeaderController extends Controller
                 ->select(
                     DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
                 )
-                ->where('kodeerror', '=', 'SATL')
+                ->where('kodeerror', '=', $cekdata['kodeerror'])
                 ->get();
             $keterangan = $query['0'];
 
