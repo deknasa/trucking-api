@@ -904,6 +904,8 @@ route::middleware(['auth:api'])->group(function () {
     
     Route::get('/orderanemkl/getTglJob', [OrderanEmklController::class, 'getTglJob'])->middleware('handle-token');
     
+    Route::get('pemutihansupir/{supirId}/getdatapemutihan', [PemutihanSupirController::class, 'getDataPemutihan'])->name('pemutihansupir.getDataPemutihan');;
+    Route::post('pemutihansupir/{id}/cekvalidasi', [PemutihanSupirController::class, 'cekvalidasi'])->name('pemutihansupir.cekvalidasi');
     Route::get('pemutihansupir/field_length', [PemutihanSupirController::class, 'fieldLength']);
     Route::resource('pemutihansupir', PemutihanSupirController::class);
 
