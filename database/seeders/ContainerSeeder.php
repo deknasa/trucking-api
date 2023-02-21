@@ -18,8 +18,9 @@ class ContainerSeeder extends Seeder
     {
         DB::statement("delete Container");
         DB::statement("DBCC CHECKIDENT ('Container', RESEED, 1);");
-        
+
         container::create(['kodecontainer' => '20`', 'keterangan' => '20`', 'statusaktif' => '1', 'modifiedby' => 'ADMIN',]);
         container::create(['kodecontainer' => '40`', 'keterangan' => '40`', 'statusaktif' => '1', 'modifiedby' => 'ADMIN',]);
+        container::create(['kodecontainer' => '2X20`', 'keterangan' => '2X20`', 'statusaktif' => '1', 'modifiedby' => 'ADMIN',]);
     }
 }
