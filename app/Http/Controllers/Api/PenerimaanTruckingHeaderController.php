@@ -61,10 +61,20 @@ class PenerimaanTruckingHeaderController extends Controller
 
             if ($tanpaprosesnobukti == 0) {
 
+
                 $idpenerimaan = $request->penerimaantrucking_id;
                 $fetchFormat =  DB::table('penerimaantrucking')
                     ->where('id', $idpenerimaan)
                     ->first();
+
+                if($fetchFormat->kodepenerimaan == 'PJP'){
+                    $request->validate([
+                        'pengeluarantruckingheader_nobukti' => 'required|array',
+                        'pengeluarantruckingheader_nobukti.*' => 'required'
+                    ],[
+                        'pengeluarantruckingheader_nobukti.*.required' => 'pengeluaran trucking ' . app(ErrorController::class)->geterror('WI')->keterangan,
+                    ]);
+                }
                 $statusformat = $fetchFormat->format;
 
                 $fetchGrp = Parameter::where('id', $statusformat)->first();
