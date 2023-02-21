@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Rules\MandorAbsensiSupirInputSupirValidasiTrado ;
 
 class StoreMandorAbsensiSupirRequest extends FormRequest
 {
@@ -27,7 +28,16 @@ class StoreMandorAbsensiSupirRequest extends FormRequest
             'trado' => 'required',
             'trado_id' => 'required',
             'supir' => 'required',
+            'supir_id' => ['required',new MandorAbsensiSupirInputSupirValidasiTrado()],
             'jam' => 'required',
         ];
     }
+
+    public function attributes()
+    {
+        return [
+            'supir_id' => 'supir',
+        ];
+    }
+
 }

@@ -267,7 +267,9 @@ class UpahRitasiRincian extends MyModel
     {
         $query = DB::table('container')->select(
             'container.keterangan as container',
-            'container.id as container_id'
+            'container.id as container_id',
+            db::Raw("0 as nominalsupir"),
+            db::Raw("0 as liter"),            
         );
 
         return $query->get();

@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Rules\MandorAbsensiSupirEditSupirValidasiTrado ;
 
 class UpdateMandorAbsensiSupirRequest extends FormRequest
 {
@@ -13,7 +14,7 @@ class UpdateMandorAbsensiSupirRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +25,18 @@ class UpdateMandorAbsensiSupirRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'trado' => 'required',
+            'trado_id' => 'required',
+            'supir' => 'required',
+            'supir_id' => ['required',new MandorAbsensiSupirEditSupirValidasiTrado()],
+            'jam' => 'required',
+        ];
+    }
+
+    public function attributes()
+    {
+        return [
+            'supir_id' => 'supir',
         ];
     }
 }

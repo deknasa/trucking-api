@@ -91,29 +91,33 @@ class OrderanTruckingController extends Controller
     public function store(StoreOrderanTruckingRequest $request)
     {
         DB::beginTransaction();
-
-
+// dd($request->all());
+        $inputtripmandor=$request->inputtripmandor ?? '';
         try {
             $orderantrucking = new OrderanTrucking();
             $statusTas = $orderantrucking->getagentas($request->agen_id);
-            if($statusTas->statustas == 1) {
-                $request->validate([
-                    'nojobemkl' => 'required'
-                ]);
-            }else{
-                $request->validate([
-                    'nocont' => 'required',
-                    'noseal' => 'required'
-                ]);
+            if  ($inputtripmandor=='') {
+                if($statusTas->statustas == 1) {
+                    $request->validate([
+                        'nojobemkl' => 'required'
+                    ]);
+                }else{
+                    $request->validate([
+                        'nocont' => 'required',
+                        'noseal' => 'required'
+                    ]);
+                }
+
+                $container = Container::find($request->container_id);
+                if($container->kodecontainer == '2X20`') {
+                    $request->validate([
+                        'nocont2' => 'required',
+                        'noseal2' => 'required'
+                    ]);
+                }
+        
             }
 
-            $container = Container::find($request->container_id);
-            if($container->kodecontainer == '2X20`') {
-                $request->validate([
-                    'nocont2' => 'required',
-                    'noseal2' => 'required'
-                ]);
-            }
 
             $group = 'ORDERANTRUCKING';
             $subgroup = 'ORDERANTRUCKING';

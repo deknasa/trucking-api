@@ -97,6 +97,7 @@ use App\Http\Controllers\Api\TarifController;
 use App\Http\Controllers\Api\TarifRincianController;
 use App\Http\Controllers\Api\PengeluaranTruckingController;
 use App\Http\Controllers\Api\OrderanTruckingController;
+use App\Http\Controllers\Api\JobTruckingController;
 use App\Http\Controllers\Api\ProsesAbsensiSupirController;
 use App\Http\Controllers\Api\MekanikController;
 use App\Http\Controllers\Api\SuratPengantarController;
@@ -982,6 +983,9 @@ Route::post('orderantrucking/{id}/cekValidasi', [OrderanTruckingController::clas
 Route::get('orderantrucking/{id}/getagentas', [OrderanTruckingController::class, 'getagentas']);
 Route::get('orderantrucking/{id}/getcont', [OrderanTruckingController::class, 'getcont']);
 Route::resource('orderantrucking', OrderanTruckingController::class);
+
+Route::resource('jobtrucking', JobTruckingController::class);
+
 
 Route::get('prosesabsensisupir/combo', [ProsesAbsensiSupirController::class, 'combo']);
 Route::get('prosesabsensisupir/field_length', [ProsesAbsensiSupirController::class, 'fieldLength']);
