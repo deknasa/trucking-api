@@ -28,8 +28,6 @@ class UpdateUpahSupirRincianRequest extends FormRequest
             'container.*' => 'required',
             'statuscontainer' => 'required|array',
             'statuscontainer.*' => 'required',
-            'nominalsupir' => 'required|array',
-            'nominalsupir.*' => 'required|numeric|gt:0',
         ];
     }
 }

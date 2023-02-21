@@ -23,6 +23,7 @@ class CreateSupirTable extends Migration
             $table->string('kota', 100)->default('');
             $table->string('telp', 30)->default('');
             $table->integer('statusaktif')->length(11)->default(0);
+            $table->string('pemutihansupir_nobukti', 50)->default('');
             $table->double('nominaldepositsa', 15,2)->default(0);
             $table->BigInteger('depositke')->default(0);
             $table->date('tglmasuk')->default('1900/1/1');
