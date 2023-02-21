@@ -56,7 +56,6 @@ class PemutihanSupir extends MyModel
 
     public function getDataPemutihan($supirId)
     {
-
         $kodePJT = PengeluaranTrucking::where('kodepengeluaran', 'PJT')->first();
         $kodePJP = PenerimaanTrucking::where('kodepenerimaan', 'PJP')->first();
         $pjt = PengeluaranTruckingHeader::from(DB::raw("pengeluarantruckingheader with (readuncommitted)"))
