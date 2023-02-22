@@ -122,4 +122,19 @@ class Role extends MyModel
     {
         return $this->belongsToMany(User::class);
     }
+    
+    public function acls()
+    {
+        return $this->belongsToMany(Aco::class, 'acl')
+        ->withTimestamps()
+        ->select(
+            'acos.id',
+            'acos.class',
+            'acos.method',
+            'acos.nama',
+            'acos.modifiedby',
+            'acl.created_at',
+            'acl.updated_at'
+        );
+    }
 }

@@ -9,7 +9,9 @@ use App\Models\Role;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreAclRequest;
 use Illuminate\Database\QueryException;
+use Illuminate\Http\JsonResponse;
 
 class RoleController extends Controller
 {
@@ -178,6 +180,52 @@ class RoleController extends Controller
                 'status' => true,
                 'message' => 'Berhasil dihapus',
                 'data' => $role
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+
+            throw $th;
+        }
+    }
+
+    
+    public function getAcls(Role $role): JsonResponse
+    {
+        return response()->json([
+            'data' => $role->acls
+        ]);
+    }
+    public function storeAcls(StoreAclRequest $request, Role $role): JsonResponse
+    {
+        DB::beginTransaction();
+
+        try {
+            $role->acls()->detach();
+
+            foreach ($request->aco_ids as $aco_id) {
+                $role->acls()->attach($aco_id, [
+                    'modifiedby' => auth('api')->user()->name
+                ]);
+            }
+
+            $logTrail = [
+                'namatabel' => strtoupper($role->getTable()),
+                'postingdari' => 'ENTRY ROLE ACL',
+                'idtrans' => $role->id,
+                'nobuktitrans' => $role->id,
+                'aksi' => 'ENTRY',
+                'datajson' => $role->load('acls')->toArray(),
+                'modifiedby' => $role->modifiedby
+            ];
+
+            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+            $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Berhasil disimpan',
+                'user' => $role->load('acls')
             ]);
         } catch (\Throwable $th) {
             DB::rollBack();
