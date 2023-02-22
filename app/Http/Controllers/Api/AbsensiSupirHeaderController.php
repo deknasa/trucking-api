@@ -128,7 +128,6 @@ class AbsensiSupirHeaderController extends Controller
         
         DB::beginTransaction();
         try {
-return $request->all();
             $group = 'ABSENSI';
             $subgroup = 'ABSENSI';
             $format = DB::table('parameter')
