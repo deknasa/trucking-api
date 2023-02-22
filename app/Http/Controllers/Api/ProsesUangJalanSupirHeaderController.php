@@ -315,8 +315,6 @@ class ProsesUangJalanSupirHeaderController extends Controller
                 'tglbukti' => date('Y-m-d', strtotime($request->tgladjust)),
                 'pelanggan_id' => '',
                 'bank_id' => $request->bank_idadjust,
-                'tgldari' => '',
-                'tglsampai' => '',
                 'postingdari' => 'ENTRY PROSES UANG JALAN SUPIR',
                 'tglkasmasuk' => date('Y-m-d', strtotime($request->tgladjust)),
                 'modifiedby' => auth('api')->user()->name,

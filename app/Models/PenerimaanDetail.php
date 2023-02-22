@@ -28,7 +28,7 @@ class PenerimaanDetail extends MyModel
     {
         $detail = DB::table("penerimaandetail")
             ->select(
-                'penerimaandetail.coadebet',
+                'penerimaandetail.coakredit',
                 'penerimaandetail.tgljatuhtempo',
                 'penerimaandetail.nowarkat',
                 'penerimaandetail.bankpelanggan_id',

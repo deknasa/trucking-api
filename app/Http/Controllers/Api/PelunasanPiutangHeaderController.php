@@ -71,7 +71,7 @@ class PelunasanPiutangHeaderController extends Controller
 
                 for ($i = 0; $i < count($request->piutang_id); $i++) {
 
-                    $cekSisa = PiutangHeader::from(DB::raw("piutangheader with (readuncommitted)"))->select('nominal')->first();
+                    $cekSisa = PiutangHeader::from(DB::raw("piutangheader with (readuncommitted)"))->select('nominal')->where('id', $request->piutang_id[$i])->first();
 
                     if ($request->bayarppd[$i] > $cekSisa->nominal) {
                         if ($request->nominallebihbayarppd[$i] == 0) {
@@ -303,7 +303,7 @@ class PelunasanPiutangHeaderController extends Controller
 
                 if ($request->alatbayar_id != $alatbayarGiro->id) {
 
-                    $penerimaanHeader = [
+                   $penerimaanHeader = [
                         'tanpaprosesnobukti' => 1,
                         'nobukti' => $nobuktiPenerimaan,
                         'tglbukti' => $request->tglbukti,
@@ -480,7 +480,7 @@ class PelunasanPiutangHeaderController extends Controller
 
             for ($i = 0; $i < count($request->piutang_id); $i++) {
 
-                $cekSisa = PiutangHeader::from(DB::raw("piutangheader with (readuncommitted)"))->select('nominal')->first();
+                $cekSisa = PiutangHeader::from(DB::raw("piutangheader with (readuncommitted)"))->select('nominal')->where('id',$request->piutang_id[$i])->first();
 
                 if ($request->bayarppd[$i] > $cekSisa->nominal) {
                     if ($request->nominallebihbayarppd[$i] == 0) {

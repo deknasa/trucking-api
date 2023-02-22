@@ -32,7 +32,7 @@ class PengeluaranDetail extends MyModel
             'pengeluarandetail.keterangan',
             'pengeluarandetail.nominal',
             'pengeluarandetail.coadebet',
-            'pengeluarandetail.bulanbeban'
+            DB::raw("(case when year(cast(pengeluarandetail.bulanbeban as datetime))='1900' then '' else format(pengeluarandetail.bulanbeban,'yyyy-MM-dd') end) as bulanbeban"),
         )
         ->where('pengeluarandetail.pengeluaran_id',$id);
 
