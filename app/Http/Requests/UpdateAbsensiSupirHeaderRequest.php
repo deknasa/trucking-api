@@ -3,6 +3,8 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Rules\DateAllowedAbsen;
+use App\Rules\DateTutupBuku;
 
 class UpdateAbsensiSupirHeaderRequest extends FormRequest
 {
@@ -24,7 +26,11 @@ class UpdateAbsensiSupirHeaderRequest extends FormRequest
     public function rules()
     {
         $rules = [
-            'tglbukti' => 'required|date',
+            'tglbukti' => [
+                'required',
+                new DateAllowedAbsen(),
+                new DateTutupBuku()
+            ],
         ];
 
         $relatedRequests = [

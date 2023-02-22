@@ -50,6 +50,7 @@ class StorePelunasanPiutangHeaderRequest extends FormRequest
             'tglbukti' => 'Tanggal Bukti',
             'alatbayar' => 'alat bayar',
             'bayarppd.*' => 'Nominal Bayar',
+            'keterangandetailppd.*' => 'keterangan'
         ];
         
         return $attributes;
