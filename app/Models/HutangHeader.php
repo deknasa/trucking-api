@@ -73,6 +73,27 @@ class HutangHeader extends MyModel
 
     public function get()
     {
+
+        $tempbayar = '##tempbayar' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempbayar, function ($table) {
+            $table->string('hutang_nobukti', 100)->default('');
+            $table->double('nominal',15,2)->default(0);
+        });
+
+        $query=DB::table('hutangbayardetail') ->from(
+            DB::raw("hutangbayardetail as a with (readuncommitted)")
+        )
+        ->select(
+            'a.hutang_nobukti',
+            DB::raw("sum(a.nominal+a.potongan) as nominal")
+        )
+        ->groupby('hutang_nobukti');
+
+        DB::table($tempbayar)->insertUsing([
+            'hutang_nobukti',
+            'nominal',
+        ], $query);    
+
         $this->setRequestParameters();
 
         $query = DB::table($this->table)->from(DB::raw("hutangheader with (readuncommitted)"))
@@ -84,6 +105,9 @@ class HutangHeader extends MyModel
                 'akunpusat.keterangancoa as coa',
                 'supplier.namasupplier as supplier_id',
                 'hutangheader.total',
+                DB::raw("isnull(c.nominal,0) as nominalbayar"),
+                DB::raw("hutangheader.total-isnull(c.nominal,0) as sisahutang"),
+    
                 'parameter.memo as statuscetak',
                 'hutangheader.userbukacetak',
                 'hutangheader.jumlahcetak',
@@ -95,7 +119,9 @@ class HutangHeader extends MyModel
             )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'hutangheader.statuscetak', 'parameter.id')
             ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'hutangheader.coa', 'akunpusat.coa')
-            ->leftJoin(DB::raw("supplier with (readuncommitted)"), 'hutangheader.supplier_id', 'supplier.id');
+            ->leftJoin(DB::raw("supplier with (readuncommitted)"), 'hutangheader.supplier_id', 'supplier.id')
+            ->leftJoin(DB::raw($tempbayar ." as c"), 'hutangheader.nobukti', 'c.hutang_nobukti');
+
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
