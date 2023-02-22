@@ -28,6 +28,8 @@ class StorePelunasanPiutangDetailRequest extends FormRequest
             return [
                 'bayarppd' => 'required|array',
                 'bayarppd.*' => 'required|numeric|gt:0',
+                'keterangandetailppd' => 'required|array',
+                'keterangandetailppd.*' => 'required'
                 
             ];
        

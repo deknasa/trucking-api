@@ -60,6 +60,24 @@ class HutangBayarHeaderController extends Controller
 
         try {
             /* Store header */
+            for ($i = 0; $i < count($request->hutang_id); $i++) {
+
+                $cekSisa = HutangHeader::from(DB::raw("hutangheader with (readuncommitted)"))->select('total')->where('id', $request->hutang_id[$i])->first();
+
+              
+                $byrPotongan = $request->bayar[$i] + $request->potongan[$i];
+                if($byrPotongan > $cekSisa->total){
+                    $query =  Error::from(DB::raw("error with (readuncommitted)"))->select('keterangan')->where('kodeerror', '=', 'STM')
+                            ->first();
+                        return response([
+                            'errors' => [
+                                "bayar.$i" =>
+                                [$i => "$query->keterangan"]
+                            ],
+                            'message' => "The given data was invalid.",
+                        ], 422);
+                }
+            }
 
             $group = 'PEMBAYARAN HUTANG BUKTI';
             $subgroup = 'PEMBAYARAN HUTANG BUKTI';
@@ -334,6 +352,24 @@ class HutangBayarHeaderController extends Controller
 
         try {
 
+            for ($i = 0; $i < count($request->hutang_id); $i++) {
+
+                $cekSisa = HutangHeader::from(DB::raw("hutangheader with (readuncommitted)"))->select('total')->where('id', $request->hutang_id[$i])->first();
+
+              
+                $byrPotongan = $request->bayar[$i] + $request->potongan[$i];
+                if($byrPotongan > $cekSisa->total){
+                    $query =  Error::from(DB::raw("error with (readuncommitted)"))->select('keterangan')->where('kodeerror', '=', 'STM')
+                            ->first();
+                        return response([
+                            'errors' => [
+                                "bayar.$i" =>
+                                [$i => "$query->keterangan"]
+                            ],
+                            'message' => "The given data was invalid.",
+                        ], 422);
+                }
+            }
             $hutangbayarheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $hutangbayarheader->supplier_id = $request->supplier_id ?? '';
             $hutangbayarheader->tglcair = date('Y-m-d', strtotime($request->tglcair));

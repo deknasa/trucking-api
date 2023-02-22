@@ -97,6 +97,19 @@ class PelunasanPiutangHeaderController extends Controller
                             ], 422);
                         }
                     }
+
+                    $byrPotongan = $request->bayarppd[$i] + $request->potonganppd[$i];
+                    if($byrPotongan > $cekSisa->nominal){
+                        $query =  Error::from(DB::raw("error with (readuncommitted)"))->select('keterangan')->where('kodeerror', '=', 'STM')
+                                ->first();
+                            return response([
+                                'errors' => [
+                                    "bayarppd.$i" =>
+                                    [$i => "$query->keterangan"]
+                                ],
+                                'message' => "The given data was invalid.",
+                            ], 422);
+                    }
                 }
 
 
@@ -506,6 +519,27 @@ class PelunasanPiutangHeaderController extends Controller
                         ], 422);
                     }
                 }
+                $byrPotongan = $request->bayarppd[$i] + $request->potonganppd[$i];
+                if($byrPotongan > $cekSisa->nominal){
+                    $query =  Error::from(DB::raw("error with (readuncommitted)"))->select('keterangan')->where('kodeerror', '=', 'STM')
+                            ->first();
+                        return response([
+                            'errors' => [
+                                "bayarppd.$i" =>
+                                [$i => "$query->keterangan"]
+                            ],
+                            'message' => "The given data was invalid. ok",
+                        ], 422);
+                }
+
+                // if($request->potonganppd[$i] > 0){
+                //     $request->validate([
+                //         'coapotonganppd' => 'required|array',
+                //         'coapotonganppd.*' => 'required',
+                //         'keteranganpotonganppd' => 'required|array',
+                //         'keteranganpotonganppd.*' => 'required',
+                //     ]);
+                // }
             }
 
             $pelunasanpiutangheader->agen_id = $request->agen_id;

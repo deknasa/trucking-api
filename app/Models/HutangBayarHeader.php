@@ -150,7 +150,7 @@ class HutangBayarHeader extends MyModel
 
 
         $hutang = DB::table("$tempHutang as A")->from(DB::raw("$tempHutang as A with (readuncommitted)"))
-            ->select(DB::raw("A.id as id,null as hutangbayar_id,A.nobukti as hutang_nobukti, A.tglbukti as tglbukti, null as bayar, null as keterangan, null as potongan, A.nominalhutang, A.sisa as sisa"))
+            ->select(DB::raw("A.id as id,null as hutangbayar_id,A.nobukti as hutang_nobukti, A.tglbukti as tglbukti, null as bayar, null as potongan, A.nominalhutang, A.sisa as sisa"))
             // ->distinct("A.nobukti")
             ->leftJoin(DB::raw("$tempPembayaran as B with (readuncommitted)"), "A.nobukti", "B.hutang_nobukti")
             ->whereRaw("isnull(b.hutang_nobukti,'') = ''")
@@ -158,7 +158,7 @@ class HutangBayarHeader extends MyModel
 
 
         $pembayaran = DB::table($tempPembayaran)->from(DB::raw("$tempPembayaran with (readuncommitted)"))
-            ->select(DB::raw("id,hutangbayar_id,hutang_nobukti,tglbukti,bayar,keterangan,potongan,nominalhutang,sisa"))
+            ->select(DB::raw("id,hutangbayar_id,hutang_nobukti,tglbukti,bayar,potongan,nominalhutang,sisa"))
             ->unionAll($hutang);
 
 
@@ -197,7 +197,7 @@ class HutangBayarHeader extends MyModel
         $tempo = '##tempPembayaran' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
         $fetch = DB::table('hutangbayardetail as hbd')->from(DB::raw("hutangbayardetail as hbd with (readuncommitted)"))
-            ->select(DB::raw("hutangheader.id,hbd.hutangbayar_id,hbd.hutang_nobukti,hutangheader.tglbukti,hbd.nominal as bayar, hbd.keterangan,hbd.potongan,hutangheader.total as nominalhutang, (SELECT (hutangheader.total - SUM(hutangbayardetail.nominal)) FROM hutangbayardetail WHERE hutangbayardetail.hutang_nobukti= hutangheader.nobukti) AS sisa"))
+            ->select(DB::raw("hutangheader.id,hbd.hutangbayar_id,hbd.hutang_nobukti,hutangheader.tglbukti,hbd.nominal as bayar, hbd.potongan,hutangheader.total as nominalhutang, (SELECT (hutangheader.total - SUM(hutangbayardetail.nominal)) FROM hutangbayardetail WHERE hutangbayardetail.hutang_nobukti= hutangheader.nobukti) AS sisa"))
             ->leftJoin(DB::raw("hutangheader with (readuncommitted)"), 'hbd.hutang_nobukti', 'hutangheader.nobukti')
             ->whereRaw("hbd.hutangbayar_id = $id");
 

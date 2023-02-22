@@ -589,7 +589,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('hutangbayarheader/{id}/{field}/getHutang', [HutangBayarHeaderController::class, 'getHutang'])->name('hutangbayarheader.getHutang');
     Route::get('hutangbayarheader/comboapproval', [HutangBayarHeaderController::class, 'comboapproval']);
     Route::post('hutangbayarheader/{id}/cekapproval', [HutangBayarHeaderController::class, 'cekapproval'])->name('hutangbayarheader.cekapproval');
-    Route::get('hutangbayarheader/{id}/{fieldid}/{field}/getPembayaran', [HutangBayarHeaderController::class, 'getPembayaran']);
+    Route::get('hutangbayarheader/{id}/{fieldid}/getPembayaran', [HutangBayarHeaderController::class, 'getPembayaran']);
     Route::get('hutangbayarheader/grid', [HutangBayarHeaderController::class, 'grid']);
     Route::resource('hutangbayarheader', HutangBayarHeaderController::class);
     Route::resource('hutangbayardetail', HutangBayarDetailController::class);
