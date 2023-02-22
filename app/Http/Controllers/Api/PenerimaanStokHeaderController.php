@@ -112,6 +112,11 @@ class PenerimaanStokHeaderController extends Controller
             $penerimaanStokHeader->supplier_id         = ($request->supplier_id == null) ? "" : $request->supplier_id;
             $penerimaanStokHeader->gudangdari_id     = ($request->gudangdari_id == null) ? "" : $request->gudangdari_id;
             $penerimaanStokHeader->gudangke_id       = ($request->gudangke_id == null) ? "" : $request->gudangke_id;
+            $penerimaanStokHeader->tradodari_id     = ($request->tradodari_id == null) ? "" : $request->tradodari_id;
+            $penerimaanStokHeader->tradoke_id       = ($request->tradoke_id == null) ? "" : $request->tradoke_id;
+            $penerimaanStokHeader->gandengandari_id     = ($request->gandengandari_id == null) ? "" : $request->gandengandari_id;
+            $penerimaanStokHeader->gandenganke_id       = ($request->gandenganke_id == null) ? "" : $request->gandenganke_id;
+            $penerimaanStokHeader->gandengan_id       = ($request->gandengan_id == null) ? "" : $request->gandengan_id;
             $penerimaanStokHeader->modifiedby        = auth('api')->user()->name;
             $penerimaanStokHeader->statuscetak        = $statusCetak->id;
             $request->sortname                 = $request->sortname ?? 'id';
@@ -290,6 +295,11 @@ class PenerimaanStokHeaderController extends Controller
             $penerimaanStokHeader->supplier_id         = ($request->supplier_id == null) ? "" : $request->supplier_id;
             $penerimaanStokHeader->gudangdari_id     = ($request->gudangdari_id == null) ? "" : $request->gudangdari_id;
             $penerimaanStokHeader->gudangke_id       = ($request->gudangke_id == null) ? "" : $request->gudangke_id;
+            $penerimaanStokHeader->tradodari_id     = ($request->tradodari_id == null) ? "" : $request->tradodari_id;
+            $penerimaanStokHeader->tradoke_id       = ($request->tradoke_id == null) ? "" : $request->tradoke_id;
+            $penerimaanStokHeader->gandengandari_id     = ($request->gandengandari_id == null) ? "" : $request->gandengandari_id;
+            $penerimaanStokHeader->gandenganke_id       = ($request->gandenganke_id == null) ? "" : $request->gandenganke_id;
+            $penerimaanStokHeader->gandengan_id       = ($request->gandengan_id == null) ? "" : $request->gandengan_id;
             $penerimaanStokHeader->modifiedby        = auth('api')->user()->name;
             $request->sortname                 = $request->sortname ?? 'id';
             $request->sortorder                = $request->sortorder ?? 'asc';
