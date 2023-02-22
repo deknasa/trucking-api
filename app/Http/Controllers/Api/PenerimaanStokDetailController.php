@@ -94,8 +94,6 @@ class PenerimaanStokDetailController extends Controller
             }
 
             $spb = Parameter::where('grp', 'SPB STOK')->where('subgrp', 'SPB STOK')->first();
-            
-
             if ($penerimaanstokheader->penerimaanstok_id == $spb->text) {
 
                 $datahitungstok = PenerimaanStok::select('statushitungstok as statushitungstok_id')
@@ -108,6 +106,35 @@ class PenerimaanStokDetailController extends Controller
                         ->where("gudang_id", $penerimaanstokheader->gudang_id)->firstorFail();
                 }
             }
+
+            $kor = Parameter::where('grp', 'KOR STOK')->where('subgrp', 'KOR STOK')->first();
+            if ($penerimaanstokheader->penerimaanstok_id == $kor->text) {
+
+                $datahitungstok = PenerimaanStok::select('statushitungstok as statushitungstok_id')
+                    ->where('format', '=', $penerimaanstokheader->statusformat)
+                    ->first();
+                    
+                $statushitungstok = Parameter::where('grp', 'STATUS HITUNG STOK')->where('text', 'HITUNG STOK')->first();
+                if ($datahitungstok->statushitungstok_id == $statushitungstok->id) {
+                    $stokpersediaan  = StokPersediaan::lockForUpdate()->where("stok_id", $request->stok_id)
+                        ->where("gudang_id", $penerimaanstokheader->gudang_id)->firstorFail();
+                }
+            }   
+            
+
+            $reuse = Parameter::where('grp', 'REUSE STOK')->where('subgrp', 'REUSE STOK')->first();
+            if ($penerimaanstokheader->penerimaanstok_id == $reuse->text) {
+
+                $datahitungstok = PenerimaanStok::select('statushitungstok as statushitungstok_id')
+                    ->where('format', '=', $penerimaanstokheader->statusformat)
+                    ->first();
+                    
+                $statushitungstok = Parameter::where('grp', 'STATUS HITUNG STOK')->where('text', 'HITUNG STOK')->first();
+                if ($datahitungstok->statushitungstok_id == $statushitungstok->id) {
+                    $stokpersediaan  = StokPersediaan::lockForUpdate()->where("stok_id", $request->stok_id)
+                        ->where("gudang_id", $penerimaanstokheader->gudang_id)->firstorFail();
+                }
+            }              
 
             $pg = Parameter::where('grp', 'PG STOK')->where('subgrp', 'PG STOK')->first();
             if ($penerimaanstokheader->penerimaanstok_id == $pg->text and $reuse==true) {
@@ -154,6 +181,26 @@ class PenerimaanStokDetailController extends Controller
                         $stokpersediaan->save();
                     }
                 }
+
+                $kor = Parameter::where('grp', 'KOR STOK')->where('subgrp', 'KOR STOK')->first();
+                if ($penerimaanstokheader->penerimaanstok_id == $kor->text) {
+
+                    if ($datahitungstok->statushitungstok_id == $statushitungstok->id) {
+
+                        $stokpersediaan->qty += $request->qty;
+                        $stokpersediaan->save();
+                    }
+                }
+
+                $reuse = Parameter::where('grp', 'REUSE STOK')->where('subgrp', 'REUSE STOK')->first();
+                if ($penerimaanstokheader->penerimaanstok_id == $reuse->text) {
+
+                    if ($datahitungstok->statushitungstok_id == $statushitungstok->id) {
+
+                        $stokpersediaan->qty += $request->qty;
+                        $stokpersediaan->save();
+                    }
+                }                
 
                 if ($penerimaanstokheader->penerimaanstok_id == $pg->text  and $reuse==true ) {
                     if ($datahitungstok->statushitungstok_id == $statushitungstok->id) {
