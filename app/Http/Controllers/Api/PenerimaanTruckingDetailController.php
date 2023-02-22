@@ -16,77 +16,14 @@ class PenerimaanTruckingDetailController extends Controller
     
     public function index(Request $request)
     {
-                // return $request->limit;
-
-        $params = [
-            'id' => $request->id,
-            'penerimaantruckingheader_id' => $request->penerimaantruckingheader_id,
-            'withHeader' => $request->withHeader ?? false,
-            'whereIn' => $request->whereIn ?? [],
-            'forReport' => $request->forReport ?? false,
-            'sortIndex' => $request->sortOrder ?? 'id',
-            'sortOrder' => $request->sortOrder ?? 'asc',
-            'offset' => $request->offset ?? (($request->page - 1) * $request->limit),
-            'limit' => $request->limit ?? 10,
-        ];
-        $totalRows = 0;
-        try {
-            $query = PenerimaanTruckingDetail::from(DB::raw("penerimaantruckingdetail as detail with (readuncommitted)"));
-
-            if (isset($params['id'])) {
-                $query->where('detail.id', $params['id']);
-            }
-
-            if (isset($params['penerimaantruckingheader_id'])) {
-                $query->where('detail.penerimaantruckingheader_id', $params['penerimaantruckingheader_id']);
-            }
-
-            if (count($params['whereIn']) > 0) {
-                $query->whereIn('penerimaantruckingheader_id', $params['whereIn']);
-            }
-            if ($params['forReport']) {
-                $query->select(
-                    'header.nobukti',
-                    'header.tglbukti',
-                    'header.coa',
-                    'header.penerimaan_nobukti',
-                    'bank.namabank as bank',
-                    'penerimaantrucking.keterangan as penerimaantrucking',
-                    'supir.namasupir as supir_id',
-                    'detail.pengeluarantruckingheader_nobukti',
-                    'detail.nominal'
-                )
-                ->leftJoin(DB::raw("penerimaantruckingheader as header with (readuncommitted)"),'header.id','detail.penerimaantruckingheader_id')
-                ->leftJoin(DB::raw("penerimaantrucking with (readuncommitted)"), 'header.penerimaantrucking_id','penerimaantrucking.id')
-                ->leftJoin(DB::raw("bank with (readuncommitted)"), 'header.bank_id', 'bank.id')
-                ->leftJoin(DB::raw("supir with (readuncommitted)"), 'detail.supir_id', 'supir.id');
-
-                $penerimaanTruckingDetail = $query->get();
-            } else {
-                $query->select(
-                    'detail.nobukti',
-                    'detail.nominal',
-
-                    'supir.namasupir as supir_id',
-                    'detail.pengeluarantruckingheader_nobukti',
-                )
-                ->leftJoin(DB::raw("supir with (readuncommitted)"), 'detail.supir_id', 'supir.id');
-                $totalRows =  $query->count();
-                    $query->skip($params['offset'])->take($params['limit']);
-                $penerimaanTruckingDetail = $query->get();
-            }
-            return response([
-                'data' => $penerimaanTruckingDetail,
-                'attributes' => [
-                    'totalRows' => $totalRows ?? 0,
-                    'totalPages' => $params['limit'] > 0 ? ceil( $totalRows / $params['limit']) : 1
-                ]
-            ]);
-        } catch (\Throwable $th) {
-            return response([
-                'message' => $th->getMessage()
-            ]);
-        }
+        $penerimaanTruckingDetail = new PenerimaanTruckingDetail();
+        return response([
+            'data' => $penerimaanTruckingDetail->get(),
+            'attributes' => [
+                'totalRows' => $penerimaanTruckingDetail->totalRows,
+                'totalPages' => $penerimaanTruckingDetail->totalPages
+            ]
+        ]);
     }
 
 
