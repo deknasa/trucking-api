@@ -18,7 +18,7 @@ class PenerimaanTruckingSeeder extends Seeder
             'kodepenerimaan' => 'DPO',
             'keterangan' => 'DEPOSITO SUPIR',
             'coa' => '01.04.02.01',
-            'format' => '#DPO #9999#/#R#/#Y',
+            'format' => '126',
             'modifiedby' => 'ADMIN',
         ]);
      
@@ -26,7 +26,7 @@ class PenerimaanTruckingSeeder extends Seeder
             'kodepenerimaan' => 'PJP',
             'keterangan' => 'PENGEMBALIAN PINJAMAN SUPIR',
             'coa' => '01.05.02.02',
-            'format' => '#PJP #9999#/#R#/#Y',
+            'format' => '125',
             'modifiedby' => 'ADMIN',
         ]);
 

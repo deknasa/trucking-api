@@ -17,85 +17,17 @@ class AbsensiSupirApprovalDetailController extends Controller
 {
     public function index(Request $request)
     {
-        $params = [
-            'id' => $request->id,
-            'absensisupirapproval_id' => $request->absensisupirapproval_id,
-            'withHeader' => $request->withHeader ?? false,
-            'whereIn' => $request->whereIn ?? [],
-            'forReport' => $request->forReport ?? false,
-            'sortIndex' => $request->sortOrder ?? 'id',
-            'sortOrder' => $request->sortOrder ?? 'asc',
-            'offset' => $request->offset ?? (($request->page - 1) * $request->limit),
-            'limit' => $request->limit ?? 10,
-        ];
-        $totalRows = 0;
-        try {
-            $query = AbsensiSupirApprovalDetail::from('absensisupirapprovaldetail as detail');
+        $absensiSupirApprovalDetail = new AbsensiSupirApprovalDetail();
 
-            if (isset($params['id'])) {
-                $query->where('detail.id', $params['id']);
-            }
-
-            if (isset($params['absensisupirapproval_id'])) {
-                $query->where('detail.absensisupirapproval_id', $params['absensisupirapproval_id']);
-            }
-
-            if (count($params['whereIn']) > 0) {
-                $query->whereIn('absensisupirapproval_id', $params['whereIn']);
-            }
-
-            if ($params['forReport']) {
-                $query->select(
-                    'detail.absensisupirapproval_id',
-                    'detail.nobukti',
-                    'detail.trado_id',
-                    'detail.supir_id',
-                    'detail.supirserap_id',
-                    'detail.modifiedby',
-                    'trado.keterangan as trado',
-                    'supirutama.namasupir as supir',
-                    'supirserap.namasupir as supirserap',
-
-                )
-
-                ->leftJoin('absensisupirapprovalheader', 'detail.absensisupirapproval_id', 'absensisupirapprovalheader.id')
-                ->leftJoin('trado', 'detail.trado_id', 'trado.id')
-                ->leftJoin('supir as supirutama', 'detail.supir_id', 'supirutama.id')
-                ->leftJoin('supir as supirserap', 'detail.supirserap_id', 'supirserap.id');
-                $absensiSupirApprovalDetail = $query->get();
-            } else {
-                $query->select(
-                    'detail.absensisupirapproval_id',
-                    'detail.nobukti',
-                    'detail.trado_id',
-                    'detail.supir_id',
-                    'detail.supirserap_id',
-                    'detail.modifiedby',
-                    'trado.keterangan as trado',
-                    'supirutama.namasupir as supir',
-                    'supirserap.namasupir as supirserap',
-
-                )
-
-                ->leftJoin('absensisupirapprovalheader', 'detail.absensisupirapproval_id', 'absensisupirapprovalheader.id')
-                ->leftJoin('trado', 'detail.trado_id', 'trado.id')
-                ->leftJoin('supir as supirutama', 'detail.supir_id', 'supirutama.id')
-                ->leftJoin('supir as supirserap', 'detail.supirserap_id', 'supirserap.id');
-                $totalRows =  $query->count();
-                $query->skip($params['offset'])->take($params['limit']);
-                $absensiSupirApprovalDetail = $query->get();
-            }
-            
-            return response([
-                'data' => $absensiSupirApprovalDetail,
-                'total' => $params['limit'] > 0 ? ceil( $totalRows / $params['limit']) : 1,
-                "records" =>$totalRows ?? 0,
+        return response()->json([
+            'data' => $absensiSupirApprovalDetail->get(),
+            'attributes' => [
+                'totalRows' => $absensiSupirApprovalDetail->totalRows,
+                'totalPages' => $absensiSupirApprovalDetail->totalPages,
+                'totalNominal' => $absensiSupirApprovalDetail->totalNominal
+            ]
             ]);
-        } catch (\Throwable $th) {
-            return response([
-                'message' => $th->getMessage()
-            ]);
-        }
+        
         
     }
 

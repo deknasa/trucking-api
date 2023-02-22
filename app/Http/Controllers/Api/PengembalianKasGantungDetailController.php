@@ -20,72 +20,15 @@ class PengembalianKasGantungDetailController extends Controller
 {
     public function index(Request $request)
     {
-        $params = [
-            'id' => $request->id,
-            'pengembaliankasgantung_id' => $request->pengembaliankasgantung_id,
-            'withHeader' => $request->withHeader ?? false,
-            'whereIn' => $request->whereIn ?? [],
-            'forReport' => $request->forReport ?? false,
-            'sortIndex' => $request->sortOrder ?? 'id',
-            'sortOrder' => $request->sortOrder ?? 'asc',
-            'offset' => $request->offset ?? (($request->page - 1) * $request->limit),
-            'limit' => $request->limit ?? 10,
-        ];
-        $totalRows = 0;
-        try {
-            $query = PengembalianKasGantungDetail::from('pengembaliankasgantungdetail as detail');
-
-            if (isset($params['id'])) {
-                $query->where('detail.id', $params['id']);
-            }
-
-            if (isset($params['pengembaliankasgantung_id'])) {
-                $query->where('detail.pengembaliankasgantung_id', $params['pengembaliankasgantung_id']);
-            }
-
-            if (count($params['whereIn']) > 0) {
-                $query->whereIn('pengembaliankasgantung_id', $params['whereIn']);
-            }
-
-            if ($params['forReport']) {
-                $query->select(
-                    'detail.pengembaliankasgantung_id',
-                    'detail.nobukti',
-                    'detail.nominal',
-                    'detail.keterangan',
-                    'detail.coa',
-                );
-
-                $pengembalianKasGantungDetail = $query->get();
-            } else {
-                $query->select(
-                    'detail.pengembaliankasgantung_id',
-                    'detail.nobukti',
-                    'detail.kasgantung_nobukti',
-                    'detail.nominal',
-                    'detail.keterangan',
-                    'akunpusat.keterangancoa as coa',
-                )
-                // ->leftJoin('pengeluaranstok','pengeluaranstokheader.pengeluaranstok_id','pengeluaranstok.id')
-
-                ->leftJoin('akunpusat', 'detail.coa', 'akunpusat.coa');
-                $totalRows =  $query->count();
-                $query->skip($params['offset'])->take($params['limit']);
-                $pengembalianKasGantungDetail = $query->get();
-            }
-
+            $pengembalianKasGantungDetail = new PengembalianKasGantungDetail();
             return response([
-                'data' => $pengembalianKasGantungDetail,
+                'data' => $pengembalianKasGantungDetail->get(),
                 'attributes' => [
-                    'totalRows' => $totalRows ?? 0,
-                    'totalPages' => $params['limit'] > 0 ? ceil( $totalRows / $params['limit']) : 1
+                    'totalRows' => $pengembalianKasGantungDetail->totalRows,
+                    'totalPages' => $pengembalianKasGantungDetail->totalPages
                 ]
             ]);
-        } catch (\Throwable $th) {
-            return response([
-                'message' => $th->getMessage()
-            ]);
-        }
+        
     }
 
     /**

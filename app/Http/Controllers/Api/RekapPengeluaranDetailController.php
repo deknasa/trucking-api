@@ -19,70 +19,16 @@ class RekapPengeluaranDetailController extends Controller
 {
     public function index(Request $request)
     {
-        $params = [
-            'id' => $request->id,
-            'rekappengeluaran_id' => $request->rekappengeluaran_id,
-            'withHeader' => $request->withHeader ?? false,
-            'whereIn' => $request->whereIn ?? [],
-            'forReport' => $request->forReport ?? false,
-            'sortIndex' => $request->sortOrder ?? 'id',
-            'sortOrder' => $request->sortOrder ?? 'asc',
-        ];
-        try {
-            $query = RekapPengeluaranDetail::from('rekappengeluarandetail as detail');
 
-            if (isset($params['id'])) {
-                $query->where('detail.id', $params['id']);
-            }
+        $rekapPengeluaranDetail = new RekapPengeluaranDetail ();
 
-            if (isset($params['rekappengeluaran_id'])) {
-                $query->where('detail.rekappengeluaran_id', $params['rekappengeluaran_id']);
-            }
-
-            if (count($params['whereIn']) > 0) {
-                $query->whereIn('rekappengeluaran_id', $params['whereIn']);
-            }
-
-            if ($params['forReport']) {
-                $query->select(
-                    "detail.id",
-                    "detail.rekappengeluaran_id",
-                    "detail.nobukti",
-                    "detail.pengeluaran_nobukti",
-                    "detail.tgltransaksi",
-                    "detail.nominal",
-                    "detail.keterangan",
-                    "detail.modifiedby",
-                );
-
-                $notadebet = $query->get();
-            } else {
-                
-                $query->select(
-                    "detail.id",
-                    "detail.rekappengeluaran_id",
-                    "detail.nobukti",
-                    "detail.pengeluaran_nobukti",
-                    "detail.tgltransaksi",
-                    "detail.nominal",
-                    "detail.keterangan",
-                    "detail.modifiedby",
-                )
-                // ->leftJoin('pengeluaranstok','pengeluaranstokheader.pengeluaranstok_id','pengeluaranstok.id')
-
-                ->leftJoin('rekappengeluaranheader', 'detail.rekappengeluaran_id', 'rekappengeluaranheader.id')
-                ->leftJoin('pengeluaranheader', 'detail.pengeluaran_nobukti', 'pengeluaranheader.nobukti');
-                $notadebet = $query->get();
-            }
-
-            return response([
-                'data' => $notadebet
-            ]);
-        } catch (\Throwable $th) {
-            return response([
-                'message' => $th->getMessage()
-            ]);
-        }
+        return response([
+            'data' => $rekapPengeluaranDetail->get(),
+            'attributes' => [
+                'totalRows' => $rekapPengeluaranDetail->totalRows ,
+                'totalPages' => $rekapPengeluaranDetail->totalPages ,
+            ]
+        ]);
     }
 
     

@@ -52,6 +52,7 @@ class StorePenerimaanGiroHeaderRequest extends FormRequest
             'tgljatuhtempo.*' => 'Tanggal jatuh tempo',
             'keterangan_detail.*' => 'Keterangan',
             'bank.*' => 'bank',
+            'nowarkat.*' => 'nowarkat',
         ];
     }
 

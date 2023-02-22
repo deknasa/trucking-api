@@ -24,88 +24,18 @@ class PengembalianKasBankDetailController extends Controller
      */
     public function index(Request $request)
     {
-        $params = [
-            'id' => $request->id,
-            'pengembaliankasbank_id' => $request->pengembaliankasbank_id,
-            'withHeader' => $request->withHeader ?? false,
-            'whereIn' => $request->whereIn ?? [],
-            'forReport' => $request->forReport ?? false,
-            'sortIndex' => $request->sortOrder ?? 'id',
-            'sortOrder' => $request->sortOrder ?? 'asc',
-        ];
-        try {
-            $query = PengembalianKasBankDetail::from('pengembaliankasbankdetail as detail');
 
-            if (isset($params['id'])) {
-                $query->where('detail.id', $params['id']);
-            }
+        $pengembalianKasBankDetail = new PengembalianKasBankDetail();
 
-            if (isset($params['pengembaliankasbank_id'])) {
-                $query->where('detail.pengembaliankasbank_id', $params['pengembaliankasbank_id']);
-            }
-
-            if ($params['withHeader']) {
-                $query->join('pengeluaranheader', 'pengeluaranheader.id', 'detail.pengembaliankasbank_id');
-            }
-
-            if (count($params['whereIn']) > 0) {
-                $query->whereIn('pengembaliankasbank_id', $params['whereIn']);
-            }
-
-            if ($params['forReport']) {
-                $query->select(
-                    'header.nobukti',
-                    'header.tglbukti',
-                    'header.dibayarke',
-                    'header.keterangan as keteranganheader',
-                    'header.transferkeac',
-                    'header.transferkean',
-                    'header.transferkebank',
-                    
-                    'bank.namabank as bank',
-                    'detail.nowarkat',
-                    'detail.tgljatuhtempo',
-                    'detail.nominal',
-                    'detail.keterangan',
-                    'detail.bulanbeban',
-                    'detail.coadebet',
-                    'detail.coakredit',
-                    'alatbayar.namaalatbayar as alatbayar_id'
-
-                )
-                    ->join('pengeluaranheader as header','header.id','detail.pengembaliankasbank_id')
-                    ->leftJoin('bank', 'bank.id', '=', 'header.bank_id')
-                    
-                    ->leftJoin('alatbayar', 'alatbayar.id', '=', 'detail.alatbayar_id');
-
-                    $pengeluaranDetail = $query->get();
-            } else {
-                $query->select(
-                    'detail.pengembaliankasbank_id',
-                    'detail.nobukti',
-                    'detail.nowarkat',
-                    'detail.tgljatuhtempo',
-                    'detail.nominal',
-                    'detail.keterangan',
-                    'detail.bulanbeban',
-                    'detail.coadebet',
-                    'detail.coakredit',
-                    'alatbayar.namaalatbayar as alatbayar_id',
-
-                )
-                    ->leftJoin('alatbayar', 'alatbayar.id', '=', 'detail.alatbayar_id');
-
-                $pengeluaranDetail = $query->get();
-            }
-            
-           
-            return response([
-                'data' => $pengeluaranDetail,
-                
-            ]);
-        } catch (\Throwable $th) {
-            throw $th;
-        }
+        return response([
+            'data' => $pengembalianKasBankDetail->get(),
+            'attributes' => [
+                'totalRows' => $pengembalianKasBankDetail->totalRows,
+                'totalPages' => $pengembalianKasBankDetail->totalPages
+            ]
+        ]);
+    
+        
     }
 
     public function store(StorePengembalianKasBankDetailRequest $request)

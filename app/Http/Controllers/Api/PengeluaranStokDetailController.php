@@ -27,79 +27,14 @@ class PengeluaranStokDetailController extends Controller
      */
     public function index(Request $request)
     {
-        $params = [
-            'id' => $request->id,
-            'pengeluaranstokheader_id' => $request->pengeluaranstokheader_id,
-            'withHeader' => $request->withHeader ?? false,
-            'whereIn' => $request->whereIn ?? [],
-            'forReport' => $request->forReport ?? false,
-            'sortIndex' => $request->sortOrder ?? 'id',
-            'sortOrder' => $request->sortOrder ?? 'asc',
-        ];
-        // return $params;
-        try {
-            $query = PengeluaranStokDetail::from('pengeluaranstokdetail as detail');
-
-            if (isset($params['id'])) {
-                $query->where('detail.id', $params['id']);
-            }
-
-            if (isset($params['pengeluaranstokheader_id'])) {
-                $query->where('detail.pengeluaranstokheader_id', $params['pengeluaranstokheader_id']);
-            }
-
-            if (count($params['whereIn']) > 0) {
-                $query->whereIn('pengeluaranstokheader_id', $params['whereIn']);
-            }
-
-            if ($params['forReport']) {
-                $query->select(
-                    'detail.pengeluaranstokheader_id',
-                    'detail.nobukti',
-                    'stok.namastok as stok',
-                    'detail.stok_id',
-                    'detail.qty',
-                    'detail.harga',
-                    'detail.persentasediscount',
-                    'detail.nominaldiscount',
-                    'detail.total',
-                    'detail.keterangan',
-                    'detail.vulkanisirke',
-                    'detail.modifiedby',
-                );
-
-                $pengeluaranStokDetail = $query->get();
-            } else {
-                $query->select(
-                    'detail.pengeluaranstokheader_id',
-                    'detail.nobukti',
-                    'detail.stok_id',
-                    'stok.namastok as stok',
-                    'detail.qty',
-                    'detail.harga',
-                    'detail.persentasediscount',
-                    'detail.nominaldiscount',
-                    'detail.total',
-                    'detail.keterangan',
-                    'detail.vulkanisirke',
-                    'detail.modifiedby',
-                )
-                // ->leftJoin('pengeluaranstok','pengeluaranstokheader.pengeluaranstok_id','pengeluaranstok.id')
-
-                ->leftJoin('pengeluaranstokheader', 'detail.pengeluaranstokheader_id', 'pengeluaranstokheader.id')
-                ->leftJoin('stok', 'detail.stok_id', 'stok.id');       
-                 
-                $pengeluaranStokDetail = $query->get();
-            }
-
-            return response([
-                'data' => $pengeluaranStokDetail
-            ]);
-        } catch (\Throwable $th) {
-            return response([
-                'message' => $th->getMessage()
-            ]);
-        }
+        $pengeluaranStokDetail = new PengeluaranStokDetail();
+        return response([
+            'data' => $pengeluaranStokDetail->get(),
+            'attributes' => [
+                'totalRows' => $pengeluaranStokDetail->totalRows,
+                'totalPages' => $pengeluaranStokDetail->totalPages
+            ]
+        ]);
     }
     /**
      * @ClassName 

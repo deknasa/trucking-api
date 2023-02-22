@@ -28,8 +28,6 @@ class UpdatePenerimaanDetailRequest extends FormRequest
             'coakredit.*' => 'required',
             'tgljatuhtempo' => 'required|array',
             'tgljatuhtempo.*' => 'required',
-            'nowarkat' => 'required|array',
-            'nowarkat.*' => 'required',
             'nominal_detail' => 'required|array',
             'nominal_detail.*' => 'required|numeric|gt:0',
             'keterangan_detail' => 'required|array',

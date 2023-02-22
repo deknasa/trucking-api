@@ -27,7 +27,8 @@ class PenerimaanGiroDetail extends MyModel
     {
         $detail = DB::table('penerimaangirodetail')->from(DB::raw("penerimaangirodetail with (readuncommitted)"))
         ->select(
-            'penerimaangirodetail.nowarkat','penerimaangirodetail.tgljatuhtempo','penerimaangirodetail.nominal','penerimaangirodetail.coadebet','penerimaangirodetail.keterangan','penerimaangirodetail.bank_id','bank.namabank as bank', 'penerimaangirodetail.pelanggan_id','pelanggan.namapelanggan as pelanggan', 'penerimaangirodetail.invoice_nobukti', 'penerimaangirodetail.bankpelanggan_id','bankpelanggan.namabank as bankpelanggan','penerimaangirodetail.pelunasanpiutang_nobukti','penerimaangirodetail.bulanbeban','penerimaangirodetail.jenisbiaya'
+            'penerimaangirodetail.nowarkat','penerimaangirodetail.tgljatuhtempo','penerimaangirodetail.nominal','penerimaangirodetail.coadebet','penerimaangirodetail.keterangan','penerimaangirodetail.bank_id','bank.namabank as bank', 'penerimaangirodetail.pelanggan_id','pelanggan.namapelanggan as pelanggan', 'penerimaangirodetail.invoice_nobukti', 'penerimaangirodetail.bankpelanggan_id','bankpelanggan.namabank as bankpelanggan','penerimaangirodetail.pelunasanpiutang_nobukti','penerimaangirodetail.jenisbiaya',
+            DB::raw("(case when year(cast(penerimaangirodetail.bulanbeban as datetime))<='2000' then '' else format(penerimaangirodetail.bulanbeban,'yyyy-MM-dd') end) as bulanbeban"),
         )
         ->leftJoin(DB::raw("bank with (readuncommitted)"),'penerimaangirodetail.bank_id','bank.id')
         ->leftJoin(DB::raw("pelanggan with (readuncommitted)"),'penerimaangirodetail.pelanggan_id','pelanggan.id')
@@ -59,7 +60,7 @@ class PenerimaanGiroDetail extends MyModel
                 $this->table . '.invoice_nobukti',
                 $this->table . '.pelunasanpiutang_nobukti',
                 $this->table . '.jenisbiaya',
-                $this->table . '.bulanbeban',
+                DB::raw("(case when year(cast(penerimaangirodetail.bulanbeban as datetime))<='2000' then '' else format(penerimaangirodetail.bulanbeban,'yyyy-MM-dd') end) as bulanbeban"),
                 $this->table . '.keterangan',
                 $this->table . '.nominal'
             ) 
@@ -81,7 +82,7 @@ class PenerimaanGiroDetail extends MyModel
                 $this->table . '.invoice_nobukti',
                 $this->table . '.pelunasanpiutang_nobukti',
                 $this->table . '.jenisbiaya',
-                $this->table . '.bulanbeban',
+                DB::raw("(case when year(cast(penerimaangirodetail.bulanbeban as datetime))<='2000' then '' else format(penerimaangirodetail.bulanbeban,'yyyy-MM-dd') end) as bulanbeban"),
                 $this->table . '.keterangan',
                 $this->table . '.nominal'
             )

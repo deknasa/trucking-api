@@ -17,74 +17,20 @@ class ServiceOutDetailController extends Controller
      */
     public function index(Request $request)
     {
-        $params = [
-            'id' => $request->id,
-            'serviceout_id' => $request->serviceout_id,
-            'withHeader' => $request->withHeader ?? false,
-            'whereIn' => $request->whereIn ?? [],
-            'forReport' => $request->forReport ?? false,
-            'sortIndex' => $request->sortOrder ?? 'id',
-            'sortOrder' => $request->sortOrder ?? 'asc',
-            'offset' => $request->offset ?? (($request->page - 1) * $request->limit),
-            'limit' => $request->limit ?? 10,
-        ];
-        $totalRows = 0;
-        try {
-            $query = ServiceOutDetail::from(DB::raw("serviceoutdetail as detail with (readuncommitted)"));
-
-            if (isset($params['id'])) {
-                $query->where('detail.id', $params['id']);
-            }
-
-            if (isset($params['serviceout_id'])) {
-                $query->where('detail.serviceout_id', $params['serviceout_id']);
-            }
-
-            if (count($params['whereIn']) > 0) {
-                $query->whereIn('serviceout_id', $params['whereIn']);
-            }
-            if ($params['forReport']) {
-                $query->select(
-                    'header.id as id_header',
-                    'header.nobukti as nobukti_header',
-                    'header.tglbukti as tgl_header',
-                    'header.keterangan as keterangan_header',
-                    'header.tglkeluar as tglkeluar',
-                    'trado.keterangan as trado_id',
-                    'detail.servicein_nobukti',
-                    'detail.keterangan',
-                )
-                    ->leftJoin(DB::raw("serviceoutheader as header with (readuncommitted)"), 'header.id', 'detail.serviceout_id')
-                    ->leftJoin(DB::raw("trado with (readuncommitted)"), 'header.trado_id', 'trado.id');
-
-                $serviceOutDetail = $query->get();
-            } else {
-                $query->select(
-                    'detail.servicein_nobukti',
-                    'detail.keterangan',
-                );
-                $totalRows =  $query->count();
-                $query->skip($params['offset'])->take($params['limit']);
-                $serviceOutDetail = $query->get();
-            }
-
-            $idUser = auth('api')->user()->id;
-            $getuser = User::select('name', 'cabang.namacabang as cabang_id')
-                ->where('user.id', $idUser)->join('cabang', 'user.cabang_id', 'cabang.id')->first();
+        $serviceOutDetail = new ServiceOutDetail();
+        $idUser = auth('api')->user()->id;
+        $getuser = User::select('name', 'cabang.namacabang as cabang_id')
+            ->where('user.id', $idUser)->join('cabang', 'user.cabang_id', 'cabang.id')->first();
 
             return response([
-                'data' => $serviceOutDetail,
+                'data' => $serviceOutDetail->get(),
                 'user' => $getuser,
                 'attributes' => [
-                    'totalRows' => $totalRows ?? 0,
-                    'totalPages' => $params['limit'] > 0 ? ceil( $totalRows / $params['limit']) : 1
+                    'totalRows' => $serviceOutDetail->totalRows,
+                    'totalPages' => $serviceOutDetail->totalPages,
                 ]
             ]);
-        } catch (\Throwable $th) {
-            return response([
-                'message' => $th->getMessage()
-            ]);
-        }
+        
     }
 
     /**

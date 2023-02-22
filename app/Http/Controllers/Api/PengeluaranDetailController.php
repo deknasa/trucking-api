@@ -21,89 +21,15 @@ class PengeluaranDetailController extends Controller
      */
     public function index(Request $request)
     {
-        $params = [
-            'id' => $request->id,
-            'pengeluaran_id' => $request->pengeluaran_id,
-            'withHeader' => $request->withHeader ?? false,
-            'whereIn' => $request->whereIn ?? [],
-            'forReport' => $request->forReport ?? false,
-            'sortIndex' => $request->sortOrder ?? 'id',
-            'sortOrder' => $request->sortOrder ?? 'asc',
-        ];
-        try {
+        $pengeluaranDetail = new PengeluaranDetail ();
 
-           
-            $query = PengeluaranDetail::from(DB::raw("pengeluarandetail as detail with (readuncommitted)"));
-
-            if (isset($params['id'])) {
-                $query->where('detail.id', $params['id']);
-            }
-
-            if (isset($params['pengeluaran_id'])) {
-                $query->where('detail.pengeluaran_id', $params['pengeluaran_id']);
-            }
-
-            if ($params['withHeader']) {
-                $query->join('pengeluaranheader', 'pengeluaranheader.id', 'detail.pengeluaran_id');
-            }
-
-            if (count($params['whereIn']) > 0) {
-                $query->whereIn('pengeluaran_id', $params['whereIn']);
-            }
-
-            if ($params['forReport']) {
-                $query->select(
-                    'header.nobukti',
-                    'header.tglbukti',
-                    'header.dibayarke',
-                    'header.transferkeac',
-                    'header.transferkean',
-                    'header.transferkebank',
-                    'pelanggan.namapelanggan as pelanggan',
-                    'bank.namabank as bank',
-                    'detail.nowarkat',
-                    'detail.tgljatuhtempo',
-                    'detail.nominal',
-                    'detail.keterangan',
-                    DB::raw("(case when year(isnull(detail.bulanbeban,'1900/1/1'))=1900 then null else detail.bulanbeban end) as bulanbeban"),
-                    'detail.coadebet',
-                    'detail.coakredit',
-                    'alatbayar.namaalatbayar as alatbayar_id'
-
-                )
-                    ->leftJoin(DB::raw("pengeluaranheader as header with (readuncommitted)"), 'header.id', 'detail.pengeluaran_id')
-                    ->leftJoin(DB::raw("bank with (readuncommitted)"), 'bank.id', '=', 'header.bank_id')
-                    ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'pelanggan.id', '=', 'header.pelanggan_id')
-                    ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'alatbayar.id', '=', 'header.alatbayar_id');
-
-                $pengeluaranDetail = $query->get();
-            } else {
-
-                $query->select(
-                    'detail.pengeluaran_id',
-                    'detail.nobukti',
-                    'detail.nowarkat',
-                    'detail.nominal',
-                    'detail.keterangan',
-                    DB::raw("(case when year(isnull(detail.bulanbeban,'1900/1/1'))<2000 then null else detail.bulanbeban end) as bulanbeban"),
-                    DB::raw("(case when year(isnull(detail.tgljatuhtempo,'1900/1/1'))<2000 then null else detail.tgljatuhtempo end) as tgljatuhtempo"),
-                    'debet.keterangancoa as coadebet',
-                    'kredit.keterangancoa as coakredit',
-
-                )
-                ->leftJoin(DB::raw("akunpusat as debet with (readuncommitted)"), 'detail.coadebet', 'debet.coa')
-                ->leftJoin(DB::raw("akunpusat as kredit with (readuncommitted)"), 'detail.coakredit', 'kredit.coa');
-                $pengeluaranDetail = $query->get();
-                //  dd($pengeluaranDetail);
-            }
-      
-
-            return response([
-                'data' => $pengeluaranDetail
-            ]);
-        } catch (\Throwable $th) {
-            throw $th;
-        }
+        return response([
+            'data' => $pengeluaranDetail->get(),
+            'attributes' => [
+                'totalRows' => $pengeluaranDetail->totalRows ,
+                'totalPages' => $pengeluaranDetail->totalPages ,
+            ]
+        ]);
     }
 
     public function store(StorePengeluaranDetailRequest $request)

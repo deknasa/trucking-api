@@ -17,7 +17,7 @@ class PengeluaranDetailSeeder extends Seeder
         PengeluaranDetail::create([
             'pengeluaran_id' => 1,
             'nobukti' => 'KBT 0001/II/2022',
-            'alatbayar_id' => 1,
+            // 'alatbayar_id' => 1,
             'nowarkat' => '',
             'tgljatuhtempo' => '2022-02-24',
             'nominal' => 250000,
@@ -32,7 +32,7 @@ class PengeluaranDetailSeeder extends Seeder
         PengeluaranDetail::create([
             'pengeluaran_id' => 2,
             'nobukti' => 'KBT 0001/III/2022',
-            'alatbayar_id' => 1,
+            // 'alatbayar_id' => 1,
             'nowarkat' => '',
             'tgljatuhtempo' => '2022-02-24',
             'nominal' => 10000,
@@ -46,7 +46,7 @@ class PengeluaranDetailSeeder extends Seeder
         PengeluaranDetail::create([
             'pengeluaran_id' => 3,
             'nobukti' => 'KBT 0001/IV/2022',
-            'alatbayar_id' => 1,
+            // 'alatbayar_id' => 1,
             'nowarkat' => '',
             'tgljatuhtempo' => '2022-04-8',
             'nominal' => 15000,
@@ -60,7 +60,7 @@ class PengeluaranDetailSeeder extends Seeder
         PengeluaranDetail::create([
             'pengeluaran_id' => 4,
             'nobukti' => 'KBT 0001/V/2022',
-            'alatbayar_id' => 1,
+            // 'alatbayar_id' => 1,
             'nowarkat' => '',
             'tgljatuhtempo' => '2022-05-31',
             'nominal' => 600000,
