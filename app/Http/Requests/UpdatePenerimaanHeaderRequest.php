@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Rules\DateTutupBuku;
 
 class UpdatePenerimaanHeaderRequest extends FormRequest
 {
@@ -24,7 +25,10 @@ class UpdatePenerimaanHeaderRequest extends FormRequest
     public function rules()
     {
         $rules = [
-            'tglbukti' => 'required',
+            'tglbukti' => [
+                'required',
+                new DateTutupBuku()
+            ],
             'diterimadari' => 'required',
             'pelanggan' => 'required',
             'tgllunas'  => 'required',
