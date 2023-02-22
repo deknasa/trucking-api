@@ -20,70 +20,17 @@ class RekapPenerimaanDetailController extends Controller
     
     public function index(Request $request)
     {
-        $params = [
-            'id' => $request->id,
-            'rekappenerimaan_id' => $request->rekappenerimaan_id,
-            'withHeader' => $request->withHeader ?? false,
-            'whereIn' => $request->whereIn ?? [],
-            'forReport' => $request->forReport ?? false,
-            'sortIndex' => $request->sortOrder ?? 'id',
-            'sortOrder' => $request->sortOrder ?? 'asc',
-        ];
-        try {
-            $query = RekapPenerimaanDetail::from('rekappenerimaandetail as detail');
+        
+           
+        $rekapPenerimaanDetail = new RekapPenerimaanDetail ();
 
-            if (isset($params['id'])) {
-                $query->where('detail.id', $params['id']);
-            }
-
-            if (isset($params['rekappenerimaan_id'])) {
-                $query->where('detail.rekappenerimaan_id', $params['rekappenerimaan_id']);
-            }
-
-            if (count($params['whereIn']) > 0) {
-                $query->whereIn('rekappenerimaan_id', $params['whereIn']);
-            }
-
-            if ($params['forReport']) {
-                $query->select(
-                    "detail.id",
-                    "detail.rekappenerimaan_id",
-                    "detail.nobukti",
-                    "detail.penerimaan_nobukti",
-                    "detail.tgltransaksi",
-                    "detail.nominal",
-                    "detail.keterangan",
-                    "detail.modifiedby",
-                );
-
-                $notadebet = $query->get();
-            } else {
-                
-                $query->select(
-                    "detail.id",
-                    "detail.rekappenerimaan_id",
-                    "detail.nobukti",
-                    "detail.penerimaan_nobukti",
-                    "detail.tgltransaksi",
-                    "detail.nominal",
-                    "detail.keterangan",
-                    "detail.modifiedby",
-                )
-                // ->leftJoin('penerimaanstok','penerimaanstokheader.penerimaanstok_id','penerimaanstok.id')
-
-                ->leftJoin('rekappenerimaanheader', 'detail.rekappenerimaan_id', 'rekappenerimaanheader.id')
-                ->leftJoin('penerimaanheader', 'detail.penerimaan_nobukti', 'penerimaanheader.nobukti');
-                $notadebet = $query->get();
-            }
-
-            return response([
-                'data' => $notadebet
-            ]);
-        } catch (\Throwable $th) {
-            return response([
-                'message' => $th->getMessage()
-            ]);
-        }
+        return response([
+            'data' => $rekapPenerimaanDetail->get(),
+            'attributes' => [
+                'totalRows' => $rekapPenerimaanDetail->totalRows ,
+                'totalPages' => $rekapPenerimaanDetail->totalPages ,
+            ]
+        ]);
     }
 
     

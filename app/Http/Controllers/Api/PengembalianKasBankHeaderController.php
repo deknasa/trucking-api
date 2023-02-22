@@ -187,7 +187,8 @@ class PengembalianKasBankHeaderController extends Controller
     
                     $pengeluaranDetail[] = $detail;
                 }
-                $pengeluaran = $this->storePengeluaran($pengeluaranHeader, $pengeluaranDetail);
+                $pengeluaranHeader["datadetail"]= $pengeluaranDetail;
+                $pengeluaran = $this->storePengeluaran($pengeluaranHeader,[]);
 
                 // return response([$pengeluaran], 422);
                 if (!$pengeluaran) {

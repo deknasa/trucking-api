@@ -17,97 +17,16 @@ class PenerimaanDetailController extends Controller
      */
     public function index(Request $request)
     {
-        $params = [
-            'id' => $request->id,
-            'penerimaan_id' => $request->penerimaan_id,
-            'withHeader' => $request->withHeader ?? false,
-            'whereIn' => $request->whereIn ?? [],
-            'forReport' => $request->forReport ?? false,
-            'sortIndex' => $request->sortOrder ?? 'id',
-            'sortOrder' => $request->sortOrder ?? 'asc',
-            'offset' => $request->offset ?? (($request->page - 1) * $request->limit),
-            'limit' => $request->limit ?? 10,
-        ];
-        $totalRows = 0;
-        try {
-            $query = PenerimaanDetail::from(DB::raw("penerimaandetail as detail with (readuncommitted)"));
+            $penerimaanDetail = new PenerimaanDetail ();
 
-            if (isset($params['id'])) {
-                $query->where('detail.id', $params['id']);
-            }
-
-            if (isset($params['penerimaan_id'])) {
-                $query->where('detail.penerimaan_id', $params['penerimaan_id']);
-            }
-
-            if ($params['withHeader']) {
-                $query->join('penerimaan', 'penerimaan.id', 'detail.penerimaan_id');
-            }
-
-            if (count($params['whereIn']) > 0) {
-                $query->whereIn('penerimaan_id', $params['whereIn']);
-            }
-
-            if ($params['forReport']) {
-                $query->select(
-                    'header.nobukti',
-                    'header.tglbukti',
-                    'header.tgllunas',
-                    'bank.namabank as bank',
-                    'detail.nowarkat',
-                    'detail.tgljatuhtempo',
-                    'detail.nominal',
-                    'detail.keterangan as keterangan_detail',
-                    'bd.namabank as bank_detail',
-                    'detail.invoice_nobukti',
-                    'bpd.namabank as bankpelanggan_detail',
-                    DB::raw("(case when year(isnull(detail.bulanbeban,'1900/1/1'))=1900 then null else detail.bulanbeban end) as bulanbeban"),
-                    'detail.coakredit',
-                    'detail.coadebet',
-
-                )
-                    ->leftJoin(DB::raw("penerimaanheader as header with (readuncommitted)"), 'header.id', 'detail.penerimaan_id')
-                    ->leftJoin(DB::raw("bank with (readuncommitted)"), 'bank.id', 'header.bank_id')
-                    ->leftJoin(DB::raw("bank as bd with (readuncommitted)"), 'bd.id', '=', 'detail.bank_id')
-                    ->leftJoin(DB::raw("bankpelanggan as bpd with (readuncommitted)"), 'bpd.id', '=', 'detail.bankpelanggan_id');
-                $penerimaanDetail = $query->get();
-            } else {
-                $query->select(
-                    'detail.nobukti',
-                    'detail.nowarkat',
-                    'detail.tgljatuhtempo',
-                    'detail.nominal',
-                    'detail.keterangan',
-                    'bank.namabank as bank_id',
-                    'detail.invoice_nobukti',
-                    'bankpelanggan.namabank as bankpelanggan_id', ///
-
-                    'detail.pelunasanpiutang_nobukti',
-                    DB::raw("(case when year(isnull(detail.bulanbeban,'1900/1/1'))=1900 then null else detail.bulanbeban end) as bulanbeban"),
-                    'a.keterangancoa as coadebet',
-                    'b.keterangancoa as coakredit',
-
-                )
-                    ->leftJoin(DB::raw("bank with (readuncommitted)"), 'bank.id', '=', 'detail.bank_id')
-                    ->leftJoin(DB::raw("akunpusat as a with (readuncommitted)"), 'a.coa', '=', 'detail.coadebet')
-                    ->leftJoin(DB::raw("akunpusat as b with (readuncommitted)"), 'b.coa', '=', 'detail.coakredit')
-                    ->leftJoin(DB::raw("bankpelanggan with (readuncommitted)"), 'bankpelanggan.id', '=', 'detail.bankpelanggan_id');
-
-                    $totalRows =  $query->count();
-                    $query->skip($params['offset'])->take($params['limit']);
-                $penerimaanDetail = $query->get();
-            }
-
+            
             return response([
-                'data' => $penerimaanDetail,
+                'data' => $penerimaanDetail->get(),
                 'attributes' => [
-                    'totalRows' => $totalRows ?? 0,
-                    'totalPages' => $params['limit'] > 0 ? ceil( $totalRows / $params['limit']) : 1
+                    'totalRows' => $penerimaanDetail->totalRows ,
+                    'totalPages' => $penerimaanDetail->totalPages ,
                 ]
             ]);
-        } catch (\Throwable $th) {
-            throw $th;
-        }
     }
 
     public function store(StorePenerimaanDetailRequest $request)

@@ -27,85 +27,14 @@ class PenerimaanStokDetailController extends Controller
      */
     public function index(Request $request)
     {
-        $params = [
-            'offset' => $request->offset ?? (($request->page - 1) * $request->limit),
-            'limit' => $request->limit ?? 10,
-            'id' => $request->id,
-            'penerimaanstokheader_id' => $request->penerimaanstokheader_id,
-            'withHeader' => $request->withHeader ?? false,
-            'whereIn' => $request->whereIn ?? [],
-            'forReport' => $request->forReport ?? false,
-            'sortIndex' => $request->sortOrder ?? 'id',
-            'sortOrder' => $request->sortOrder ?? 'asc',
-        ];
-        $totalRows = 0;
-        try {
-            $query = PenerimaanStokDetail::from('penerimaanstokdetail as detail');
-
-            if (isset($params['id'])) {
-                $query->where('detail.id', $params['id']);
-            }
-
-            if (isset($params['penerimaanstokheader_id'])) {
-                $query->where('detail.penerimaanstokheader_id', $params['penerimaanstokheader_id']);
-            }
-
-            if (count($params['whereIn']) > 0) {
-                $query->whereIn('penerimaanstokheader_id', $params['whereIn']);
-            }
-
-            if ($params['forReport']) {
-                $query->select(
-                    'detail.penerimaanstokheader_id',
-                    'detail.nobukti',
-                    'stok.namastok as stok',
-                    'detail.stok_id',
-                    'detail.qty',
-                    'detail.harga',
-                    'detail.persentasediscount',
-                    'detail.nominaldiscount',
-                    'detail.total',
-                    'detail.keterangan',
-                    'detail.vulkanisirke',
-                    'detail.modifiedby',
-                );
-                $totalRows =  $query->count();
-                $penerimaanStokDetail = $query->get();
-            } else {
-                $query->select(
-                    'detail.penerimaanstokheader_id',
-                    'detail.nobukti',
-                    'detail.stok_id',
-                    'stok.namastok as stok',
-                    'detail.qty',
-                    'detail.harga',
-                    'detail.persentasediscount',
-                    'detail.nominaldiscount',
-                    'detail.total',
-                    'detail.keterangan',
-                    'detail.vulkanisirke',
-                    'detail.modifiedby',
-                )
-                    // ->leftJoin('penerimaanstok','penerimaanstokheader.penerimaanstok_id','penerimaanstok.id')
-                    ->leftJoin('penerimaanstokheader', 'detail.penerimaanstokheader_id', 'penerimaanstokheader.id')
-                    ->leftJoin('stok', 'detail.stok_id', 'stok.id');
-                    $totalRows =  $query->count();
-                    $query->skip($params['offset'])->take($params['limit']);
-                    $penerimaanStokDetail = $query->get();
-                    
-            }
-            return response([
-                'data' => $penerimaanStokDetail,
-                'attributes' => [
-                    'totalRows' => $totalRows ?? 0,
-                    'totalPages' => $params['limit'] > 0 ? ceil( $totalRows / $params['limit']) : 1
-                ]
-            ]);
-        } catch (\Throwable $th) {
-            return response([
-                'message' => $th->getMessage()
-            ]);
-        }
+        $penerimaanStokDetail = new PenerimaanStokDetail();
+        return response([
+            'data' => $penerimaanStokDetail->get(),
+            'attributes' => [
+                'totalRows' => $penerimaanStokDetail->totalRows,
+                'totalPages' => $penerimaanStokDetail->totalPages
+            ]
+        ]);
     }
     /**
      * @ClassName 

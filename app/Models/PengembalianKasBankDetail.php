@@ -23,6 +23,66 @@ class PengembalianKasBankDetail extends MyModel
         'updated_at',
     ];
 
+    public function get()
+    {
+        $this->setRequestParameters();
+
+        $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"));
+
+        if (isset(request()->forReport) && request()->forReport) {
+
+            $query->select(
+                "header.nobukti",
+                "header.tglbukti",
+                "header.dibayarke",
+                "header.keterangan as keteranganheader",
+                "header.transferkeac",
+                "header.transferkean",
+                "header.transferkebank",
+                
+                "bank.namabank as bank",
+                "$this->table.nowarkat",
+                "$this->table.tgljatuhtempo",
+                "$this->table.nominal",
+                "$this->table.keterangan",
+                "$this->table.bulanbeban",
+                "$this->table.coadebet",
+                "$this->table.coakredit",
+                "alatbayar.namaalatbayar as alatbayar_id"
+
+            )
+            ->join("pengeluaranheader as header","header.id","$this->table.pengembaliankasbank_id")
+            ->leftJoin("bank", "bank.id", "=", "header.bank_id")
+            
+            ->leftJoin("alatbayar", "alatbayar.id", "=", "$this->table.alatbayar_id");
+            $query->where($this->table . ".pengembaliankasbank_id", "=", request()->pengembaliankasbank_id);
+
+        }else {
+            $query->select(
+                "$this->table.pengembaliankasbank_id",
+                "$this->table.nobukti",
+                "$this->table.nowarkat",
+                "$this->table.tgljatuhtempo",
+                "$this->table.nominal",
+                "$this->table.keterangan",
+                "$this->table.bulanbeban",
+                "$this->table.coadebet",
+                "$this->table.coakredit",
+                "alatbayar.namaalatbayar as alatbayar_id",
+
+            )
+            ->leftJoin("alatbayar", "alatbayar.id", "=", "$this->table.alatbayar_id");
+            
+            $query->where($this->table . ".pengembaliankasbank_id", "=", request()->pengembaliankasbank_id);
+            $this->totalRows = $query->count();
+            $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+
+            $this->sort($query);
+            $this->paginate($query);
+        }
+        return $query->get();
+    }
+
     public function getAll($id)
     {
         $query = DB::table('pengembaliankasbankdetail');
@@ -52,5 +112,15 @@ class PengembalianKasBankDetail extends MyModel
         $data = $query->where("pengembaliankasbank_id",$id)->get();
 
         return $data;
+    }
+
+    public function sort($query)
+    {
+        return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+    }
+
+    public function paginate($query)
+    {
+        return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
 }
