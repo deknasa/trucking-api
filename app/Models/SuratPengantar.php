@@ -33,6 +33,7 @@ class SuratPengantar extends MyModel
     public function cekvalidasihapus($nobukti, $jobtrucking)
     {
 
+
         $gajiSupir = DB::table('gajisupirdetail')
             ->from(
                 DB::raw("gajisupirdetail as a with (readuncommitted)")
@@ -42,6 +43,8 @@ class SuratPengantar extends MyModel
             )
             ->where('a.suratpengantar_nobukti', '=', $nobukti)
             ->first();
+
+
         if (isset($gajiSupir)) {
             $data = [
                 'kondisi' => true,
@@ -59,16 +62,23 @@ class SuratPengantar extends MyModel
 
         $status = InvoiceDetail::from(
             db::Raw("invoicedetail with (readuncommitted)")
-        )->select('suratpengantar_nobukti')->where('orderantrucking_nobukti', $jobtrucking)->first();
+        )->select('suratpengantar_nobukti')
+            ->where('orderantrucking_nobukti', $jobtrucking)->first();
 
-        $sp = explode(',', $status->suratpengantar_nobukti);
-        for ($i = 0; $i < count($sp); $i++) {
-            DB::table($tempinvdetail)->insert(
-                [
-                    "suratpengantar_nobukti" => $sp[$i]
-                ]
-            );
+
+        if (isset($status)) {
+            $sp = explode(',', $status->suratpengantar_nobukti);
+
+            for ($i = 0; $i < count($sp); $i++) {
+                DB::table($tempinvdetail)->insert(
+                    [
+                        "suratpengantar_nobukti" => $sp[$i]
+                    ]
+                );
+            }
         }
+
+
         $query = DB::table($tempinvdetail)->from(DB::raw($tempinvdetail))
             ->select(
                 'suratpengantar_nobukti',
@@ -88,7 +98,9 @@ class SuratPengantar extends MyModel
             'keterangan' => '',
         ];
 
+
         selesai:
+
         return $data;
     }
 
@@ -382,6 +394,27 @@ class SuratPengantar extends MyModel
 
             ->leftJoin('pelanggan', 'suratpengantar.pelanggan_id', 'pelanggan.id');
     }
+
+    public function getpelabuhan($id)
+    {
+        $data = DB::table('parameter')
+            ->from(DB::raw("parameter with (readuncommitted)"))
+            ->select(
+                'text as id'
+            )
+            ->where('grp', '=', 'PELABUHAN CABANG')
+            ->where('subgrp', '=', 'PELABUHAN CABANG')
+            ->where('text', '=', $id)
+            ->first();
+
+        if (isset($data)) {
+            $kondisi = [ 'status' => '0' ];
+        } else {
+            $kondisi = [ 'status' => '1' ];
+        }
+        return $kondisi;
+    }
+
 
     public function getHistory()
     {

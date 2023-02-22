@@ -43,14 +43,78 @@ class InputTripController extends Controller
             $content['table'] = 'suratpengantar';
             $content['tgl'] = $tglbukti;
 
-            $upahsupir = UpahSupir::where('kotadari_id', $request->dari_id)->where('kotasampai_id', $request->sampai_id)->first();
-            $upahsupirRincian = UpahSupirRincian::where('upahsupir_id', $upahsupir->id)->where('container_id', $request->container_id)->where('statuscontainer_id', $request->statuscontainer_id)->first();
+            $upahsupir = DB::table('upahsupir')->from(
+                DB::raw("upahsupir with (readuncommitted)")
+            )
+                ->select(
+                    'id'
+                )
+                ->where('kotadari_id', $request->dari_id)
+                ->where('kotasampai_id', $request->sampai_id)
+                ->first();
+            if (!isset($upahsupir)) {
+                $upahsupir = DB::table('upahsupir')->from(
+                    DB::raw("upahsupir with (readuncommitted)")
+                )
+                    ->select(
+                        'id'
+                    )
+                    ->where('kotasampai_id', $request->dari_id)
+                    ->where('kotadari_id', $request->sampai_id)
+                    ->first();
+            }
+            $upahsupirRincian = DB::table('UpahSupirRincian')->from(
+                DB::Raw("UpahSupirRincian with (readuncommitted)")
+            )
+                ->where('upahsupir_id', $upahsupir->id)
+                ->where('container_id', $request->container_id)
+                ->where('statuscontainer_id', $request->statuscontainer_id)
+                ->first();
 
             $jobtrucking = $request->jobtrucking ?? '';
 
+            $statuslangsir = DB::table('parameter')->from(
+                DB::raw("parameter as a with (readuncommitted)")
+            )
+                ->select(
+                    'a.id'
+                )
+                ->where('a.grp', '=', 'STATUS LANGSIR')
+                ->where('a.subgrp', '=', 'STATUS LANGSIR')
+                ->where('a.text', '=', 'BUKAN LANGSIR')
+                ->first();
+
+            $statusperalihan = DB::table('parameter')->from(
+                DB::raw("parameter as a with (readuncommitted)")
+            )
+                ->select(
+                    'a.id'
+                )
+                ->where('a.grp', '=', 'STATUS PERALIHAN')
+                ->where('a.subgrp', '=', 'STATUS PERALIHAN')
+                ->where('a.text', '=', 'BUKAN PERALIHAN')
+                ->first();
+
+            $statusbatalmuat = DB::table('parameter')->from(
+                DB::raw("parameter as a with (readuncommitted)")
+            )
+                ->select(
+                    'a.id'
+                )
+                ->where('a.grp', '=', 'STATUS BATAL MUAT')
+                ->where('a.subgrp', '=', 'STATUS BATAL MUAT')
+                ->where('a.text', '=', 'BUKAN BATAL MUAT')
+                ->first();
+
+                $tarifrincian = TarifRincian::find($request->tarifrincian_id);
+
             $suratPengantar = new SuratPengantar();
 
+            $suratPengantar->statusperalihan = $statusperalihan->id;
+            $suratPengantar->statusbatalmuat = $statusbatalmuat->id;
+
             $suratPengantar->tglbukti = $tglbukti;
+            $suratPengantar->tglsp = $tglbukti;
             $suratPengantar->agen_id = $request->agen_id;
             $suratPengantar->container_id = $request->container_id;
             $suratPengantar->dari_id = $request->dari_id;
@@ -69,6 +133,8 @@ class InputTripController extends Controller
             $suratPengantar->tarif_id = $request->tarifrincian_id;
             $suratPengantar->gajisupir = $upahsupirRincian->nominalsupir;
             $suratPengantar->gajikenek = $upahsupirRincian->nominalkenek;
+            $suratPengantar->omset = $tarifrincian->nominal;
+            $suratPengantar->totalomset = $tarifrincian->nominal;
 
             $suratPengantar->modifiedby = auth('api')->user()->name;
             $suratPengantar->statusformat = $format->id;
@@ -100,32 +166,12 @@ class InputTripController extends Controller
 
 
 
-            $tarifrincian = TarifRincian::find($request->tarifrincian_id);
+            
 
 
 
 
-            $statuslangsir = DB::table('parameter')->from(
-                DB::raw("parameter as a with (readuncommitted)")
-            )
-                ->select(
-                    'a.id'
-                )
-                ->where('a.grp', '=', 'STATUS LANGSIR')
-                ->where('a.subgrp', '=', 'STATUS LANGSIR')
-                ->where('a.text', '=', 'BUKAN LANGSIR')
-                ->first();
 
-            $statusperalihan = DB::table('parameter')->from(
-                DB::raw("parameter as a with (readuncommitted)")
-            )
-                ->select(
-                    'a.id'
-                )
-                ->where('a.grp', '=', 'STATUS PERALIHAN')
-                ->where('a.subgrp', '=', 'STATUS PERALIHAN')
-                ->where('a.text', '=', 'BUKAN PERALIHAN')
-                ->first();
 
             if ($jobtrucking == '') {
                 $orderan = [

@@ -91,17 +91,17 @@ class OrderanTruckingController extends Controller
     public function store(StoreOrderanTruckingRequest $request)
     {
         DB::beginTransaction();
-// dd($request->all());
-        $inputtripmandor=$request->inputtripmandor ?? '';
+        // dd($request->all());
+        $inputtripmandor = $request->inputtripmandor ?? '';
         try {
             $orderantrucking = new OrderanTrucking();
             $statusTas = $orderantrucking->getagentas($request->agen_id);
-            if  ($inputtripmandor=='') {
-                if($statusTas->statustas == 1) {
+            if ($inputtripmandor == '') {
+                if ($statusTas->statustas == 1) {
                     $request->validate([
                         'nojobemkl' => 'required'
                     ]);
-                }else{
+                } else {
                     $request->validate([
                         'nocont' => 'required',
                         'noseal' => 'required'
@@ -109,13 +109,12 @@ class OrderanTruckingController extends Controller
                 }
 
                 $container = Container::find($request->container_id);
-                if($container->kodecontainer == '2X20`') {
+                if ($container->kodecontainer == '2X20`') {
                     $request->validate([
                         'nocont2' => 'required',
                         'noseal2' => 'required'
                     ]);
                 }
-        
             }
 
 
@@ -210,11 +209,11 @@ class OrderanTruckingController extends Controller
         try {
             $orderanTrucking = new OrderanTrucking();
             $statusTas = $orderanTrucking->getagentas($request->agen_id);
-            if($statusTas->statustas == 1) {
+            if ($statusTas->statustas == 1) {
                 $request->validate([
                     'nojobemkl' => 'required'
                 ]);
-            }else{
+            } else {
                 $request->validate([
                     'nocont' => 'required',
                     'noseal' => 'required'
@@ -236,7 +235,7 @@ class OrderanTruckingController extends Controller
             $orderantrucking->statusperalihan = $request->statusperalihan;
             $orderantrucking->modifiedby = auth('api')->user()->name;
 
-            $tarifrincian = TarifRincian::from(DB::raw("tarifrincian"))->where('tarif_id',$request->tarifrincian_id)->where('container_id', $request->container_id)->first();
+            $tarifrincian = TarifRincian::from(DB::raw("tarifrincian"))->where('tarif_id', $request->tarifrincian_id)->where('container_id', $request->container_id)->first();
             $orderantrucking->nominal = $tarifrincian->nominal;
 
             if ($orderantrucking->save()) {
@@ -252,22 +251,32 @@ class OrderanTruckingController extends Controller
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
+
                 $get = SuratPengantar::from(DB::raw("suratpengantar with (readuncommitted)"))
-                    ->select('id','nominalperalihan','qtyton')
-                    ->where('jobtrucking', $orderantrucking->nobukti)->first();
+                    ->select('id', 'nominalperalihan', 'qtyton')
+                    ->where('jobtrucking', $orderantrucking->nobukti)->get();
 
-                $suratPengantar = [
-                    'proseslain' => '1',
-                    'jobtrucking' => $orderantrucking->nobukti,
-                    'nominalperalihan' => $get->nominalperalihan,
-                    'qtyton' => $get->qtyton,
-                    'postingdari' => 'EDIT ORDERAN TRUCKING'
-                ];
-                $newSuratPengantar = new SuratPengantar();
-                $newSuratPengantar = $newSuratPengantar->findAll($get->id);
+                $datadetail = json_decode($get, true);
+                foreach ($datadetail as $item) {
+                    $suratPengantar = [
+                        'proseslain' => '1',
+                        'jobtrucking' => $orderantrucking->nobukti,
+                        'nojob' =>  $request->nojobemkl ?? '',
+                        'nocont' =>  $request->nocont ?? '',
+                        'noseal' =>  $request->noseal ?? '',
+                        'nojob2' =>  $request->nojobemkl2 ?? '',
+                        'nocont2' =>  $request->nocont2 ?? '',
+                        'noseal2' =>  $request->noseal2 ?? '',
+                        'nominalperalihan' => $item['nominalperalihan'],
+                        'qtyton' => $item['qtyton'],
+                        'postingdari' => 'EDIT ORDERAN TRUCKING'
+                    ];
+                    $newSuratPengantar = new SuratPengantar();
+                    $newSuratPengantar = $newSuratPengantar->findAll($item['id']);
+                    $sp = new UpdateSuratPengantarRequest($suratPengantar);
+                    app(SuratPengantarController::class)->update($sp, $newSuratPengantar);
+                }
 
-                $sp = new UpdateSuratPengantarRequest($suratPengantar);
-                app(SuratPengantarController::class)->update($sp, $newSuratPengantar);
 
                 DB::commit();
             }

@@ -270,6 +270,7 @@ class ParameterSeeder extends Seeder
         parameter::create(['grp' => 'PEMUTIHAN SUPIR BUKTI', 'subgrp' => 'PEMUTIHAN SUPIR BUKTI', 'kelompok' => '', 'text' => '#SPT #9999#/#R#/#Y', 'memo' => '{"MEMO":"ENTRY PEMUTIHAN SUPIR","SINGKATAN":"9999#/#R#/#Y","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => '1', 'default' => '',]);
         parameter::create(['grp' => 'PENGELUARAN TRUCKING', 'subgrp' => 'PENGEMBALIAN DEPOSITO BUKTI', 'kelompok' => '', 'text' => '#PDT #9999#/#R#/#Y', 'memo' => '{"MEMO":"PENGEMBALIAN DEPOSITO BUKTI","SINGKATAN":"#PDT #9999#/#R#/#Y","WARNA":"#28A745"}', 'type' => '118', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'PELABUHAN CABANG', 'subgrp' => 'PELABUHAN CABANG', 'kelompok' => '', 'text' => '1', 'memo' => '{"MEMO":"BELAWAN","SINGKATAN":"BLW","WARNA":"#28A745"}', 'type' => '118', 'modifiedby' => 'ADMIN', 'default' => '',]);
-        
+        parameter::create(['grp' => 'TIDAK ADA TRIP', 'subgrp' => 'TIDAK ADA TRIP', 'kelompok' => '', 'text' => 'TIDAK ADA TRIP', 'memo' => '{"MEMO":"TIDAK ADA TRIP","SINGKATAN":"TAT","WARNA":"#28A745"}', 'type' => '', 'modifiedby' => 'ADMIN', 'default' => '',]);
+   
     }
 }

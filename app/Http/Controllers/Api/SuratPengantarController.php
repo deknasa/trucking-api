@@ -308,6 +308,10 @@ class SuratPengantarController extends Controller
                 $suratpengantar->container_id = $orderanTrucking->container_id;
                 $suratpengantar->nojob = $orderanTrucking->nojobemkl;
                 $suratpengantar->nojob2 = $orderanTrucking->nojobemkl2 ?? '';
+                $suratpengantar->nocont = $request->nocont ?? '';
+                $suratpengantar->nocont2 = $request->nocont2 ?? '';
+                $suratpengantar->noseal = $request->noseal ?? '';
+                $suratpengantar->noseal2 = $request->noseal2 ?? '';
                 $suratpengantar->omset = $tarif->nominal;
                 $suratpengantar->agen_id = $orderanTrucking->agen_id;
                 $suratpengantar->jenisorder_id = $orderanTrucking->jenisorder_id;
@@ -356,6 +360,15 @@ class SuratPengantarController extends Controller
             DB::rollBack();
             throw $th;
         }
+    }
+
+    public function getpelabuhan($id)
+    {
+
+        $suratpengantar = new SuratPengantar();
+        return response([
+            "data" => $suratpengantar->getpelabuhan($id)
+        ]);
     }
 
     /**
@@ -420,14 +433,30 @@ class SuratPengantarController extends Controller
 
     public function cekUpahSupir(Request $request)
     {
-        $upahSupir =  DB::table('upahsupir')
+        
+        $upahSupir =  DB::table('upahsupir')->from(
+            DB::raw("upahsupir with (readuncommitted)")
+        )
             ->select('upahsupirrincian.nominalsupir', 'upahsupirrincian.nominalkenek', 'upahsupirrincian.nominalkomisi')
-            ->join('upahsupirrincian', 'upahsupir.id', 'upahsupirrincian.upahsupir_id')
+            ->join(DB::raw("upahsupirrincian with (readuncommitted)"), 'upahsupir.id', 'upahsupirrincian.upahsupir_id')
             ->where('upahsupir.kotadari_id', $request->dari_id)
             ->where('upahsupir.kotasampai_id', $request->sampai_id)
             ->where('upahsupirrincian.container_id', $request->container_id)
             ->where('upahsupirrincian.statuscontainer_id', $request->statuscontainer_id)
             ->first();
+      
+        if (!isset($upahSupir)) {
+            $upahSupir =  DB::table('upahsupir')->from(
+                DB::raw("upahsupir with (readuncommitted)")
+            )
+                ->select('upahsupirrincian.nominalsupir', 'upahsupirrincian.nominalkenek', 'upahsupirrincian.nominalkomisi')
+                ->join(DB::raw("upahsupirrincian with (readuncommitted)"), 'upahsupir.id', 'upahsupirrincian.upahsupir_id')
+                ->where('upahsupir.kotasampai_id', $request->dari_id)
+                ->where('upahsupir.kotadari_id', $request->sampai_id)
+                ->where('upahsupirrincian.container_id', $request->container_id)
+                ->where('upahsupirrincian.statuscontainer_id', $request->statuscontainer_id)
+                ->first();
+        }
         if ($upahSupir != null) {
             $data = [
                 'message' => '',
@@ -447,8 +476,10 @@ class SuratPengantarController extends Controller
 
     public function cekValidasi($id)
     {
+     
         $suratPengantar = new SuratPengantar();
-        $nobukti = SuratPengantar::from(DB::raw("suratpengantar"))->where('id', $id)->first();
+        $nobukti = DB::table('SuratPengantar')->from(DB::raw("suratpengantar with (readuncommitted)"))
+        ->where('id', $id)->first();
         $cekdata = $suratPengantar->cekvalidasihapus($nobukti->nobukti, $nobukti->jobtrucking);
         if ($cekdata['kondisi'] == true) {
             $query = DB::table('error')
