@@ -271,6 +271,7 @@ class ParameterSeeder extends Seeder
         parameter::create(['grp' => 'PENGELUARAN TRUCKING', 'subgrp' => 'PENGEMBALIAN DEPOSITO BUKTI', 'kelompok' => '', 'text' => '#PDT #9999#/#R#/#Y', 'memo' => '{"MEMO":"PENGEMBALIAN DEPOSITO BUKTI","SINGKATAN":"#PDT #9999#/#R#/#Y","WARNA":"#28A745"}', 'type' => '118', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'PELABUHAN CABANG', 'subgrp' => 'PELABUHAN CABANG', 'kelompok' => '', 'text' => '1', 'memo' => '{"MEMO":"BELAWAN","SINGKATAN":"BLW","WARNA":"#28A745"}', 'type' => '118', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'TIDAK ADA TRIP', 'subgrp' => 'TIDAK ADA TRIP', 'kelompok' => '', 'text' => 'TIDAK ADA TRIP', 'memo' => '{"MEMO":"TIDAK ADA TRIP","SINGKATAN":"TAT","WARNA":"#28A745"}', 'type' => '', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'KOR MINUS STOK', 'subgrp' => 'KOR MINUS STOK', 'kelompok' => '', 'text' => '3', 'memo' => '{"MEMO":"KOR MINUS STOK","SINGKATAN":"3","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
    
     }
 }
