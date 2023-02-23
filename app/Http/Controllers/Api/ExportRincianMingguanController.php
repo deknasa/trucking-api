@@ -3,11 +3,11 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\ExportPemakaianBarang;
+use App\Models\ExportRincianMingguan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-class ExportPemakaianBarangController extends Controller
+class ExportRincianMingguanController extends Controller
 {
     /**
      * @ClassName
@@ -30,7 +30,7 @@ class ExportPemakaianBarangController extends Controller
     {
         $periode = $request->periode;
 
-        $report = ExportPemakaianBarang::getExport($periode);
+        $report = ExportRincianMingguan::getExport($periode);
         return response([
             'data' => $report
         ]);
