@@ -23,6 +23,9 @@ class LaporanSupirLebihDariTradoController extends Controller
         ]);
     }
 
+    /**
+     * @ClassName
+     */
     public function report(Request $request)
     {
         $sampai = $request->sampai;
