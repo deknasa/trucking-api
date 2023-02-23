@@ -380,5 +380,7 @@ class AcosSeeder extends Seeder
         acos::create(['class' => 'gandengan', 'method' => 'export', 'nama' => 'export GandenganController', 'modifiedby' => 'ADMIN',]);
         acos::create(['class' => 'tutupbuku', 'method' => 'index', 'nama' => 'index TutupBukuController', 'modifiedby' => 'ADMIN',]);
         acos::create(['class' => 'tutupbuku', 'method' => 'store', 'nama' => 'store TutupBukuController', 'modifiedby' => 'ADMIN',]);
+        acos::create(['class' => 'laporanbukubesar', 'method' => 'index', 'nama' => 'index LaporanBukuBesarController', 'modifiedby' => 'ADMIN',]);
+        acos::create(['class' => 'laporanbukubesar', 'method' => 'report', 'nama' => 'report LaporanBukuBesarController', 'modifiedby' => 'ADMIN',]);
     }
 }
