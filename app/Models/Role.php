@@ -136,5 +136,14 @@ class Role extends MyModel
             'acl.created_at',
             'acl.updated_at'
         );
+        
+        // $this->totalRows = $query->count();
+        
+        // $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+        // $sortIndex = request()->sortIndex ?? 'class';
+        // $query->orderBy('acos.' . $sortIndex, request()->sortOrder);
+        // $query->skip(request()->offset)->take(request()->limit);
+
+        // return $query;
     }
 }

@@ -246,11 +246,12 @@ class PenerimaanHeaderController extends Controller
 
                 if ($request->datadetail != '') {
                     $counter = $request->datadetail;
+                    $memo = json_decode($getCoaKredit->memo, true);
                 } else {
                     $counter = $request->nominal_detail;
                 }
                 
-                $memo = json_decode($getCoaKredit->memo, true);
+               
                 for ($i = 0; $i < count($counter); $i++) {
                     $detail = [];
                     $jurnalDetail = [
