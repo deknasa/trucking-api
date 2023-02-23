@@ -51,6 +51,7 @@ use App\Http\Controllers\Api\ExportLaporanStokController;
 use App\Http\Controllers\Api\ExportPemakaianBarangController;
 use App\Http\Controllers\Api\ExportPembelianBarangController;
 use App\Http\Controllers\Api\ExportPengeluaranBarangController;
+use App\Http\Controllers\Api\ExportRincianMingguanController;
 use App\Http\Controllers\Api\GajiSupirDetailController;
 use App\Http\Controllers\Api\GajiSupirHeaderController;
 use App\Http\Controllers\Api\JenisEmklController;
@@ -914,6 +915,8 @@ route::middleware(['auth:api'])->group(function () {
     Route::resource('pemutihansupir', PemutihanSupirController::class);
 
 
+    Route::get('exportrincianmingguan/export', [ExportRincianMingguanController::class, 'export'])->name('exportrincianmingguan.export');
+    Route::resource('exportrincianmingguan', ExportRincianMingguanController::class);
 });
 
 Route::get('gudang/combo', [GudangController::class, 'combo']);

@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Rules\DateTutupBuku;
 
 class StoreOrderanTruckingRequest extends FormRequest
 {
@@ -24,7 +25,10 @@ class StoreOrderanTruckingRequest extends FormRequest
     public function rules()
     {
         return [
-            'tglbukti' => 'required',
+            'tglbukti' => [
+                'required',
+                new DateTutupBuku()
+            ],
             'container' => 'required',
             'agen' => 'required',
             'jenisorder' => 'required',

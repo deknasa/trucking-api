@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Rules\DateTutupBuku;
 
 class StoreGajiSupirHeaderRequest extends FormRequest
 {
@@ -28,7 +29,10 @@ class StoreGajiSupirHeaderRequest extends FormRequest
             'supir' => 'required',
             'tgldari' => 'required',
             'tglsampai' => 'required',
-            'tglbukti' => 'required',
+            'tglbukti' => [
+                'required',
+                new DateTutupBuku()
+            ],
         ];
     }
 

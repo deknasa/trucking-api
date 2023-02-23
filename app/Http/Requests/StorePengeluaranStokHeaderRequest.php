@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Rules\DateTutupBuku;
 
 class StorePengeluaranStokHeaderRequest extends FormRequest
 {
@@ -24,7 +25,10 @@ class StorePengeluaranStokHeaderRequest extends FormRequest
     public function rules()
     {
         return [
-            "tglbukti"=> "required", 
+            "tglbukti" => [
+                "required",
+                new DateTutupBuku()
+            ],
             "pengeluaranstok" => "required",
             "pengeluaranstok_id" => "required",
             "modifiedby"=> "string", 

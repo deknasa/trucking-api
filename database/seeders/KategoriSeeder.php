@@ -26,5 +26,8 @@ class KategoriSeeder extends Seeder
         Kategori::create(['kodekategori' => 'RADIATOR', 'keterangan' => 'RADIATOR', 'subkelompok_id' => '3', 'statusaktif' => '1', 'modifiedby' => 'ADMIN',]);
         Kategori::create(['kodekategori' => 'SPAREPART', 'keterangan' => 'SPAREPART', 'subkelompok_id' => '4', 'statusaktif' => '1', 'modifiedby' => 'ADMIN',]);
         Kategori::create(['kodekategori' => 'BAN', 'keterangan' => 'BAN', 'subkelompok_id' => '5', 'statusaktif' => '1', 'modifiedby' => 'ADMIN',]);
+        Kategori::create(['kodekategori' => 'OLI MESIN', 'keterangan' => 'OLI MESIN', 'subkelompok_id' => '5', 'statusaktif' => '1', 'modifiedby' => 'ADMIN',]);
+        Kategori::create(['kodekategori' => 'OLI PERSNELING', 'keterangan' => 'OLI PERSNELING', 'subkelompok_id' => '5', 'statusaktif' => '1', 'modifiedby' => 'ADMIN',]);
+        Kategori::create(['kodekategori' => 'OLI GARDAN', 'keterangan' => 'OLI GARDAN', 'subkelompok_id' => '5', 'statusaktif' => '1', 'modifiedby' => 'ADMIN',]);
     }
 }

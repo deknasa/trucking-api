@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Rules\DateTutupBuku;
 
 class StoreProsesAbsensiSupirRequest extends FormRequest
 {
@@ -24,7 +25,10 @@ class StoreProsesAbsensiSupirRequest extends FormRequest
     public function rules()
     {
         return [
-            'tglbukti' => 'required',
+            "tglbukti" => [
+                "required",
+                new DateTutupBuku()
+            ],
             'keterangan' => 'required',
             'absensisupir_nobukti' => 'required|unique:prosesabsensisupir',
         ];

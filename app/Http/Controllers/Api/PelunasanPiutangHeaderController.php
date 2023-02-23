@@ -80,8 +80,7 @@ class PelunasanPiutangHeaderController extends Controller
                                 ->first();
                             return response([
                                 'errors' => [
-                                    "nominallebihbayarppd.$i" =>
-                                    [$i => "nominal lebih bayar $query->keterangan"]
+                                    "nominallebihbayarppd" => "sisa bayar minus. nominal lebih bayar $query->keterangan"
                                 ],
                                 'message' => "The given data was invalid.",
                             ], 422);
@@ -90,8 +89,7 @@ class PelunasanPiutangHeaderController extends Controller
                                 ->first();
                             return response([
                                 'errors' => [
-                                    "bayarppd.$i" =>
-                                    [$i => "$query->keterangan"]
+                                    "bayarppd" => "$query->keterangan"
                                 ],
                                 'message' => "The given data was invalid.",
                             ], 422);
@@ -104,8 +102,7 @@ class PelunasanPiutangHeaderController extends Controller
                                 ->first();
                             return response([
                                 'errors' => [
-                                    "bayarppd.$i" =>
-                                    [$i => "$query->keterangan"]
+                                    "bayarppd" => "$query->keterangan"
                                 ],
                                 'message' => "The given data was invalid.",
                             ], 422);
