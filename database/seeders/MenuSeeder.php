@@ -153,5 +153,6 @@ class MenuSeeder extends Seeder
         menu::create(['menuname' => 'PROSES UANG JALAN SUPIR', 'menuseq' => '100', 'menuparent' => '15', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '352', 'link' => '', 'menuexe' => '', 'menukode' => '29', 'modifiedby' => 'ADMIN',]);
         menu::create(['menuname' => 'TOOL', 'menuseq' => '100', 'menuparent' => '0', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '0', 'link' => '', 'menuexe' => '', 'menukode' => 'C', 'modifiedby' => 'ADMIN',]);
         menu::create(['menuname' => 'TUTUP BUKU', 'menuseq' => '100', 'menuparent' => '134', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '360', 'link' => '', 'menuexe' => '', 'menukode' => 'C1', 'modifiedby' => 'ADMIN',]);
+        menu::create(['menuname' => 'LAPORAN BUKU BESAR', 'menuseq' => '100', 'menuparent' => '94', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '362', 'link' => '', 'menuexe' => '', 'menukode' => '81', 'modifiedby' => 'ADMIN',]);
     }
 }

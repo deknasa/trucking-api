@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Rules\DateTutupBuku;
 
 class UpdateInvoiceHeaderRequest extends FormRequest
 {
@@ -27,7 +28,10 @@ class UpdateInvoiceHeaderRequest extends FormRequest
             'tglterima' => 'required',
             'agen' => 'required',
             'jenisorder' => 'required',
-            'tglbukti' => 'required',
+            "tglbukti" => [
+                "required",
+                new DateTutupBuku()
+            ],
         ];
         
         return $rules;

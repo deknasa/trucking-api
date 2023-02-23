@@ -25,13 +25,18 @@ class LaporanBukuBesarController extends Controller
         ]);
     }
 
+    /**
+     * @ClassName
+     */
     public function report(Request $request)
     {
+ 
+        $laporanbukubesar = new LaporanBukuBesar();
+
         $coadari_id = AkunPusat::find($request->coadari_id);
         $coasampai_id = AkunPusat::find($request->coasampai_id);
         $cabang_id = auth('api')->user()->cabang_id;
         $cabang = Cabang::find($cabang_id);
-        $report = LaporanBukuBesar::getReport();
         $dataHeader = [
             'coadari' => $coadari_id->coa,
             'coasampai' => $coasampai_id->coa,
@@ -42,7 +47,7 @@ class LaporanBukuBesarController extends Controller
             'cabang' => $cabang->namacabang
         ];
         return response([
-            'data' => $report,
+            'data' => $laporanbukubesar->getReport(),
             'dataheader' => $dataHeader
         ]);
     }

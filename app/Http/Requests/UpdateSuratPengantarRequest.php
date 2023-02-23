@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Rules\DateTutupBuku;
 
 class UpdateSuratPengantarRequest extends FormRequest
 {
@@ -25,7 +26,10 @@ class UpdateSuratPengantarRequest extends FormRequest
     {
         return [
             'jobtrucking' => 'required',
-            'tglbukti' => 'required',
+            "tglbukti" => [
+                "required",
+                new DateTutupBuku()
+            ],
             'dari' => 'required',
             'sampai' => 'required',
             'statusperalihan' => 'required',
