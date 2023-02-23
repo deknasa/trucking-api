@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Rules\DateTutupBuku;
 
 class UpdateAbsensiSupirApprovalHeaderRequest extends FormRequest
 {
@@ -26,7 +27,10 @@ class UpdateAbsensiSupirApprovalHeaderRequest extends FormRequest
         return [
             // "keterangan"=>"required",
             "absensisupir_nobukti"=>"required",
-            "tglbukti"=>"required",
+            "tglbukti" => [
+                "required",
+                new DateTutupBuku()
+            ],
         ];
     }
 }

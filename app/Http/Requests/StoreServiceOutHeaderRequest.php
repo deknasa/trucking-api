@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Rules\DateTutupBuku;
 
 class StoreServiceOutHeaderRequest extends FormRequest
 {
@@ -24,9 +25,15 @@ class StoreServiceOutHeaderRequest extends FormRequest
     public function rules()
     {
         $rules = [
-            'tglbukti' => 'required',
+            "tglbukti" => [
+                "required",
+                new DateTutupBuku()
+            ],
             'trado' => 'required',
-            'tglkeluar' => 'required',
+            "tglkeluar" => [
+                "required",
+                new DateTutupBuku()
+            ],
         ];
         $relatedRequests = [
             StoreServiceOutDetailRequest::class
