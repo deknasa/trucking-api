@@ -21,6 +21,7 @@ class CreateabsentradoTable extends Migration
             $table->string('kodeabsen', 100)->default('');
             $table->longText('keterangan')->default('');
             $table->integer('statusaktif')->length(11);
+            $table->longText('memo')->default('');
             $table->string('modifiedby', 30)->default('');
             $table->timestamps();
         });
