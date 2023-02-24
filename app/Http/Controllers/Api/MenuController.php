@@ -103,15 +103,16 @@ class MenuController extends Controller
                     $menukode = $list->menukode + 1;
                 } else {
 
-
+                   
                     if (Menu::select('menukode')
                         ->where('menuparent', '=', $request->menuparent)
-                        ->where(DB::raw('right(menukode,1)'), '<>', '9')
+                        ->where(DB::raw('right(menukode,1)'), '<>', 'Z')
                         ->exists()
                     ) {
+                   
                         $list = Menu::select('menukode')
                             ->where('menuparent', '=', $request->menuparent)
-                            ->where(DB::raw('right(menukode,1)'), '<>', '9')
+                            ->where(DB::raw('right(menukode,1)'), '<>', 'Z')
                             ->orderBy('menukode', 'desc')
                             ->first();
 
@@ -120,11 +121,16 @@ class MenuController extends Controller
                         if (in_array($kodeakhir, $arrayangka)) {
 
                             $menukode = $list->menukode + 1;
+                   
+                        } else if ($kodeakhir == '9') {
+                            $kodeawal = substr($list->menukode, 0, strlen($list->menukode) - 1);
+                            $menukode = $kodeawal .'A';
                         } else {
                             $kodeawal = substr($list->menukode, 0, strlen($list->menukode) - 1);
                             $menukode = $kodeawal . chr((ord($kodeakhir) + 1));
                         }
                     } else {
+                   
                         $list = Menu::select('menukode')
                             ->where('id', '=', $request->menuparent)
                             ->where(DB::raw('right(menukode,1)'), '<>', '9')
@@ -162,6 +168,7 @@ class MenuController extends Controller
                     } else {
                         $menukode = chr((ord($kodeakhir) + 1));
                     }
+                    
                 } else {
                     $list = Menu::select('menukode')
                         ->where('id', '=', $request->menuparent)
