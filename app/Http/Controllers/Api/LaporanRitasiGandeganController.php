@@ -22,7 +22,10 @@ class LaporanRitasiGandenganController extends Controller
             ]
         ]);
     }
-
+    
+    /**
+     * @ClassName
+     */
     public function export(Request $request)
     {
         $periode = $request->periode;
