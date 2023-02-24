@@ -23,12 +23,24 @@ class LaporanKasGantungController extends Controller
         ]);
     }
 
+    /**
+     * @ClassName
+     */
     public function report(Request $request)
     {
-        $sampai = $request->sampai;
-        $jenis = $request->jenis;
+        $periode = $request->periode;
 
-        $report = LaporanKasGantung::getReport($sampai, $jenis);
+        // $report = LaporanKasGantung::getReport($sampai, $jenis);
+        $report = [
+            [
+                'tanggal' => "24/2/2023",
+                "nobukti" => "KGT 0002/II/2023",
+                "keterangan" => "TES KETERANGAN I",
+                "debet" => "25412",
+                "kredit" => "351251",
+                "saldo" => "151511"
+            ]
+        ];
         return response([
             'data' => $report
         ]);

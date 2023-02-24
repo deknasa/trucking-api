@@ -30,7 +30,27 @@ class LaporanHutangBBMController extends Controller
     {
         $sampai = $request->sampai;
 
-        $report = LaporanHutangBBM::getReport($sampai);
+        // $report = LaporanHutangBBM::getReport($sampai);
+        $report = [
+            [
+                "tanggal" => "23/02/2023",
+                "keterangan" => "TES KETERANGAN 1",
+                "nominal" => "2151251",
+                "saldo" => "125153"
+            ],
+            [
+                "tanggal" => "23/02/2023",
+                "keterangan" => "TES KETERANGAN 2",
+                "nominal" => "6134151",
+                "saldo" => "263467312"
+            ],
+            [
+                "tanggal" => "23/02/2023",
+                "keterangan" => "TES KETERANGAN 3",
+                "nominal" => "7457246",
+                "saldo" => "1261631"
+            ],
+        ];
         return response([
             'data' => $report
         ]);

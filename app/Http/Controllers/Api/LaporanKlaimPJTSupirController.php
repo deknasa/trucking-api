@@ -30,8 +30,21 @@ class LaporanKlaimPJTSupirController extends Controller
     {
         $sampai = $request->sampai;
         $dari = $request->dari;
+        $kategori = $request->kategori;
 
-        $report = LaporanKlaimPJTSupir::getReport($sampai, $dari);
+        // $report = LaporanKlaimPJTSupir::getReport($sampai, $dari);
+        $report = [
+            [
+                'noklaim' => "1231",
+                'tanggal' => "23/2/2023",
+                'nilaiklaim' => '1242155',
+                'nobukti' => "PJT 0001/II/2023",
+                'keterangan' => "TES KETERANGAN PROIDENT REPREHENDE",
+                'bebanke' => '1',
+                'kodestok' => 'BAUT 12',
+                'keteranganstok' => 'TEMPORE NIHIL ET ET'
+            ]
+        ];
         return response([
             'data' => $report
         ]);

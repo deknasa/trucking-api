@@ -34,12 +34,9 @@ class LaporanKasBank extends MyModel
         )->select(
             'pengeluaranheader.id',
             'pengeluaranheader.nobukti',
-            'pengeluaranheader.keterangan',
             'bank.namabank',
-            'cabang.namacabang',
         )
         ->leftJoin(DB::raw("bank with (readuncommitted)"), 'pengeluaranheader.bank_id', 'bank.id')
-        ->leftJoin(DB::raw("cabang with (readuncommitted)"), 'pengeluaranheader.cabang_id', 'cabang.id')
         ->where('pengeluaranheader.bank_id', $bank_id);
 
         $data = $query->get();
