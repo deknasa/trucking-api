@@ -3,11 +3,10 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\LaporanKartuHutangPrediksi;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-class LaporanKartuHutangPrediksiController extends Controller
+class LaporanBanGudangSementaraController extends Controller
 {
     /**
      * @ClassName
@@ -26,22 +25,16 @@ class LaporanKartuHutangPrediksiController extends Controller
     /**
      * @ClassName
      */
-    public function report(Request $request)
+    public function report()
     {
-        $sampai = $request->sampai;
-        $dari = $request->dari;
-
-        // $report = LaporanKartuHutangPrediksi::getReport($sampai, $dari);
         $report = [
             [
-                "noebs" => 'BKT-M BCA 0003/II/2023',
+                "kodestok" => "BAUT 12",
+                'namastok' => 'BAUT 12',
+                'gudang' => 'GUDANG PIHAK KE-3',
+                'nobukti' => 'PG 00035/II/2023',
                 'tanggal' => '23/2/2023',
-                'nobukti' => '',
-                'keterangan' => 'TES KETERANGAN I',
-                'nominal' => '123412',
-                'bayar' => '0',
-                'saldo' => '214124124'
-
+                'jlhhari' => '23'
             ]
         ];
         return response([

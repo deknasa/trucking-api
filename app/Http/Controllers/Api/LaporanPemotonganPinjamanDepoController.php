@@ -7,7 +7,7 @@ use App\Models\LaporanPemotonganPinjamanDeposito;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-class LaporanPemotonganPinjamanDepositoController extends Controller
+class LaporanPemotonganPinjamanDepoController extends Controller
 {
     /**
      * @ClassName
@@ -31,7 +31,16 @@ class LaporanPemotonganPinjamanDepositoController extends Controller
         $sampai = $request->sampai;
         $dari = $request->dari;
 
-        $report = LaporanPemotonganPinjamanDeposito::getReport($sampai, $dari);
+        // $report = LaporanPemotonganPinjamanDeposito::getReport($sampai, $dari);
+        $report = [
+            [
+                "supir" => "LIBERTO",
+                'status' => '1',
+                'jumlah' => '515156',
+                'tanggal' => '23/2/2023',
+                'notransaksi' => 'KMT 00014/II/2023'
+            ]
+        ];
         return response([
             'data' => $report
         ]);

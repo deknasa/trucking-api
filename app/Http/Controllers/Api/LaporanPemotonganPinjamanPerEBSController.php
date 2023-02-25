@@ -31,7 +31,21 @@ class LaporanPemotonganPinjamanPerEBSController extends Controller
         $sampai = $request->sampai;
         $dari = $request->dari;
 
-        $report = LaporanPemotonganPinjamanPerEBS::getReport($sampai, $dari);
+        // $report = LaporanPemotonganPinjamanPerEBS::getReport($sampai, $dari);
+        $report = [
+            [
+                'nobukti' => 'EBS 0001/II/2023',
+                'tanggal' => '21/2/2023',
+                'nobk' => 'BK 2134 NMA',
+                'supir' => 'HERMAN',
+                'tgldari' => '22/2/2023',
+                'tglsampai' => '22/2/2023',
+                'pinjamansendiri' => '124124',
+                'ketpinjamansendiri' => 'Charge supir Syaiful atas Ban Masak yg Rusak Jebol Samping pada B 9949 JH dgn no ban 1100 - 06316109 ketebalan 4mm sebesar Rp.420.666 + Rp.500.000 (Biaya Vul 2), total keseluruhan Rp. 920.666 Dibulatk (PJT 0002/XII/2022) Pinjaman Supir Syaiful B 9949 JH untuk Biaya Perdamaian, Kepolisian dan Ibu Sidabutar atas Laka di  Tebing Tinggi(PJT 0062/XI/2022)',
+                'pinjamanbersama' => '124124',
+                'ketpinjamanbersama' => 'Charge bersama semua supir atas Ban yang meledak dgn no ban 1100 - 04924112 pada Gandengan T- 07 Panjang sebesar Rp.740.000,- dibagi 17 supir(PJT 0017/III/2018)'
+            ]
+        ];
         return response([
             'data' => $report
         ]);
