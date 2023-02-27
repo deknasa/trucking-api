@@ -24,7 +24,7 @@ class PiutangDetail extends MyModel
         'updated_at',
     ];
 
-   
+
     public function get()
     {
         $this->setRequestParameters();
@@ -39,12 +39,12 @@ class PiutangDetail extends MyModel
                 'header.keterangan as keterangan_header',
                 'header.invoice_nobukti as invoice_nobukti',
                 'agen.namaagen as agen_id',
-                 $this->table . '.keterangan as keterangan_detail',
-                 $this->table . '.nominal',
-                 $this->table . '.invoice_nobukti as invoice_nobukti_detail'
+                $this->table . '.keterangan as keterangan_detail',
+                $this->table . '.nominal',
+                $this->table . '.invoice_nobukti as invoice_nobukti_detail'
             )
                 ->leftJoin('piutangheader as header', 'header.id',  $this->table . '.piutang_id')
-                ->leftJoin('agen', 'header.agen_id','agen.id');
+                ->leftJoin('agen', 'header.agen_id', 'agen.id');
 
             $query->where($this->table . '.piutang_id', '=', request()->piutang_id);
         } else {
@@ -52,7 +52,8 @@ class PiutangDetail extends MyModel
                 $this->table . '.nobukti',
                 $this->table . '.keterangan',
                 $this->table . '.invoice_nobukti',
-                $this->table . '.nominal');
+                $this->table . '.nominal'
+            );
 
             $query->where($this->table . '.piutang_id', '=', request()->piutang_id);
 
@@ -60,16 +61,44 @@ class PiutangDetail extends MyModel
             $this->totalRows = $query->count();
             $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
-            $this->sort($query);
+            $this->sort($query, 'piutangdetail');
             $this->paginate($query);
         }
 
         return $query->get();
     }
 
-    public function sort($query)
+    public function getHistory()
     {
-        return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        $this->setRequestParameters();
+
+        $piutang = DB::table("piutangheader")->from(DB::raw("piutangheader with (readuncommitted)"))->where('id', request()->piutang_id)->first();
+        $query = DB::table("pelunasanpiutangdetail")->from(DB::raw("pelunasanpiutangdetail with (readuncommitted)"));
+
+        $query->select(
+            'pelunasanpiutangdetail.nobukti as nobukti_pelunasan',
+            'pelunasanpiutangdetail.piutang_nobukti',
+            'pelunasanpiutangdetail.keterangan',
+            'pelunasanpiutangdetail.invoice_nobukti',
+            'pelunasanpiutangdetail.nominal'
+        );
+
+        $query->where('pelunasanpiutangdetail.piutang_nobukti', '=', $piutang->nobukti);
+        
+        $this->totalNominal = $query->sum('nominal');
+        $this->totalRows = $query->count();
+        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+
+        $this->sort($query,'pelunasanpiutangdetail');
+        $this->paginate($query);
+
+
+        return $query->get();
+    }
+
+    public function sort($query, $table)
+    {
+        return $query->orderBy($table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
     }
 
     public function paginate($query)

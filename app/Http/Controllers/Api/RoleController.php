@@ -192,6 +192,7 @@ class RoleController extends Controller
     public function getAcls(Role $role): JsonResponse
     {
         return response()->json([
+            'role' => $role->rolename,
             'data' => $role->acls
         ]);
     }
