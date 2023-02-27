@@ -563,6 +563,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('piutangheader/field_length', [PiutangHeaderController::class, 'fieldLength']);
     Route::post('piutangheader/{id}/cekValidasiAksi', [PiutangHeaderController::class, 'cekValidasiAksi'])->name('piutangheader.cekValidasiAksi');
     Route::apiResource('piutangheader', PiutangHeaderController::class)->parameters(['piutangheader' => 'piutangHeader']);
+    Route::get('piutangdetail/history', [PiutangDetailController::class, 'history']);
     Route::apiResource('piutangdetail', PiutangDetailController::class);
 
     Route::get('hutangheader/{id}/printreport', [HutangHeaderController::class, 'printReport']);
