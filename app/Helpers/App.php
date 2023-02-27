@@ -27,7 +27,7 @@ class App
         $tempResult = '';
         $separatedResults = [];
 
-        $format=str_replace($staticSeparatorformat,"",$format);
+        $format = str_replace($staticSeparatorformat, "", $format);
 
         /**
          * Separate static and dynamic text
@@ -83,7 +83,7 @@ class App
                     break;
                 case is_numeric($dynamicText):
                     $dynamicText = str_replace(' ', '', $dynamicText);
-                    $dynamicTexts[$index] = sprintf('%0'. strlen($dynamicText) .'d', $lastRow + 1);
+                    $dynamicTexts[$index] = sprintf('%0' . strlen($dynamicText) . 'd', $lastRow + 1);
                     break;
                 default:
                     # code...
@@ -102,13 +102,13 @@ class App
                 $staticIterator++;
             } elseif ($separatedResult == $dynamicSeparator) {
                 $separatedResults[$index] = $dynamicTexts[$dynamicIterator];
-                
+
                 $dynamicIterator++;
             }
         }
-        
+
         $result = join($separatedResults);
-        
+
         return $result;
     }
 
@@ -163,28 +163,60 @@ class App
         return false;
     }
 
-    static function imageResize(string $path,string $from,string $uniqueName): array
+    static function imageResize(string $path, string $from, string $uniqueName): array
     {
-        $destinationMedium = $path."medium-".$uniqueName;
-        $destinationSmall = $path."small-".$uniqueName;
+        $destinationMedium = $path . "medium-" . $uniqueName;
+        $destinationSmall = $path . "small-" . $uniqueName;
 
-        $image_resize = Image::make($from); 
+        $image_resize = Image::make($from);
         $image_resize->backup();
         $image_resize->resize(500, 350, function ($constraint) {
             $constraint->aspectRatio();
         });
         $image_resize->save($destinationMedium);
-        
+
         $image_resize->reset();
         $image_resize->resize(40, 30, function ($constraint) {
             $constraint->aspectRatio();
         });
         $image_resize->save($destinationSmall);
 
-        $result=[];
-        $result[] = "medium-".$uniqueName;
-        $result[] = "small-".$uniqueName;
+        $result = [];
+        $result[] = "medium-" . $uniqueName;
+        $result[] = "small-" . $uniqueName;
 
         return $result;
+    }
+
+
+    function terbilang($satuan)
+    {
+        $huruf = array(
+            "", "satu", "dua", "tiga", "empat", "lima", "enam", "tujuh",
+            "delapan", "sembilan", "sepuluh", "sebelas"
+        );
+        
+        if ($satuan < 12)
+            return " " . $huruf[$satuan];
+        elseif ($satuan < 20)
+            return $this->terbilang($satuan - 10) . " belas";
+        elseif ($satuan < 100)
+            return $this->terbilang($satuan / 10) . " puluh" .
+                $this->terbilang($satuan % 10);
+        elseif ($satuan < 200)
+            return "seratus" . $this->terbilang($satuan - 100);
+        elseif ($satuan < 1000)
+            return $this->terbilang($satuan / 100) . " ratus" .
+                $this->terbilang($satuan % 100);
+        elseif ($satuan < 2000)
+            return "seribu" . $this->terbilang($satuan - 1000);
+        elseif ($satuan < 1000000)
+            return $this->terbilang($satuan / 1000) . " ribu" .
+                $this->terbilang($satuan % 1000);
+        elseif ($satuan < 1000000000)
+            return $this->terbilang($satuan / 1000000) . " juta" .
+                $this->terbilang($satuan % 1000000);
+        elseif ($satuan >= 1000000000)
+            echo "hasil terbilang tidak dapat di proses, nilai terlalu besar";
     }
 }
