@@ -136,7 +136,8 @@ class LaporanDepositoSupir extends MyModel
 
         $temprangedeposito = '##temprangedeposito' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temprangedeposito, function ($table) {
-            $table->double('nominal',15,2)->default(0);
+            $table->double('nominalawal', 15, 2)->default(0);
+            $table->double('nominalakhir', 15, 2)->default(0);
             $table->longtext('keterangan', 1000)->default('');
         });
 
@@ -144,19 +145,37 @@ class LaporanDepositoSupir extends MyModel
             DB::raw("parameter as a with (readuncommitted)")
         )
             ->select(
-                DB::raw("cast(a.text as money) as nominal"),
-                DB::raw("'' as keterangan")
+                DB::raw("cast(substring([text],1,charindex('-',[text])-1) as money) as nominalawal"),
+                DB::raw("cast(substring([text],charindex('-',[text])+1,20) as money) as nominalakhir"),
+                 DB::raw("'Keterangan Deposito '+format(cast(substring([text],1,charindex('-',[text])-1) as money),'#,#0')+' - '+format(cast(substring([text],charindex('-',[text])+1,20) as money),'#,#')  as keterangan"),
             )
             ->where('a.grp', '=', 'RANGE DEPOSITO SUPIR')
             ->where('a.subgrp', '=', 'RANGE DEPOSITO SUPIR')
-            ->OrderBy(DB::raw("cast(a.text as money)"),'Asc');
+            ->OrderBy('id', 'Asc');
 
-            dd($queryrangedeposito->get());
+        //    $ar= array_map(function($row){
+        //     // return $this->appHelper->terbilang($row->nominal);
+        //     return $this->terbilang($row->keterangan);
+        // },$queryrangedeposito->toArray());
+
+
+        DB::table($temprangedeposito)->insertUsing([
+            'nominalawal',
+            'nominalakhir',
+            'keterangan',
+        ], $queryrangedeposito);
+
 
         $tempsaldo = '##tempsaldo' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempsaldo, function ($table) {
             $table->unsignedBigInteger('supir_id')->default(0);
-            $table->double('nominal', 15, 2)->default('');
+            $table->string('namasupir',200)->default('');
+            $table->double('saldo', 15, 2)->default(0);
+            $table->double('deposito', 15, 2)->default(0);
+            $table->double('penarikan', 15, 2)->default(0);
+            $table->double('total', 15, 2)->default(0);
+            $table->longText('keterangan')->default('');
+            $table->double('cicil', 15, 2)->default(0);
         });
 
         $querysaldo = DB::table('supir')->from(
@@ -168,6 +187,7 @@ class LaporanDepositoSupir extends MyModel
                 DB::raw("(isnull(b.nominal,0)-isnull(a.nominal,0)) as saldo"),
                 DB::raw("isnull(b1.nominal,0) as deposito"),
                 DB::raw("isnull(a1.nominal,0) as penarikan"),
+                DB::raw("((isnull(b.nominal,0)-isnull(a.nominal,0))+isnull(b1.nominal,0))-isnull(a1.nominal,0) as total"),
                 DB::raw("'DEPOSITO SUPIR A/N '+ltrim(rtrim(c.namasupir)) as keterangan"),
                 DB::raw("(isnull(b.jumlah,0)+isnull(b1.jumlah,0))  as cicil"),
 
@@ -179,26 +199,40 @@ class LaporanDepositoSupir extends MyModel
             ->whereRaw(DB::raw("(isnull(b.nominal,0)-isnull(a.nominal,0))<>0 or isnull(b1.nominal,0)<>0 or isnull(a1.nominal,0)<>0"))
             ->orderBy('c.id', 'Asc');
 
+            DB::table($tempsaldo)->insertUsing([
+                'supir_id',
+                'namasupir',
+                'saldo',
+                'deposito',
+                'penarikan',
+                'total',
+                'keterangan',
+                'cicil',
+            ], $querysaldo);
 
+            $query=DB::table($tempsaldo)->from(
+                DB::raw($tempsaldo. " as a")
+            )
+            ->select (
+                'a.supir_id',
+                'a.namasupir',
+                'a.saldo',
+                'a.deposito',
+                'a.penarikan',
+                'a.total',
+                'a.keterangan',
+                'a.cicil',                
+                DB::raw("b.keterangan as keterangan")
+            )
+            ->join(DB::raw($temprangedeposito ." as b "), function ($join)  {
+                $join->on('a.total', '>=', 'b.nominalawal');
+                $join->on('a.total', '<=', 'b.nominalakhir');
+            });
 
-        dd($querysaldo->get());
-
-        // 
-        // $jenisKaryawan = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp','JENIS KARYAWAN')->where('id',$jenis)->first();
-        // $sampai = date("Y-m-d", strtotime($sampai));
-        // // data coba coba
-        // $query = DB::table('penerimaantruckingdetail')->from(
-        //     DB::raw("penerimaantruckingdetail with (readuncommitted)")
-        // )->select(
-        //     'penerimaantruckingdetail.id',
-        //     'supir.namasupir',
-        //     'penerimaantruckingdetail.nominal',
-        // )
-        // ->leftJoin(DB::raw("supir with (readuncommitted)"), 'penerimaantruckingdetail.supir_id', 'supir.id')
-        // ->leftJoin(DB::raw("penerimaantruckingheader with (readuncommitted)"), 'penerimaantruckingdetail.penerimaantruckingheader_id', 'penerimaantruckingheader.id')
-        // ->where('penerimaantruckingheader.tglbukti','<=',$sampai);
-
-        // $data = $query->get();
+            $data=$query->get();
+       
         return $data;
     }
+
+
 }
