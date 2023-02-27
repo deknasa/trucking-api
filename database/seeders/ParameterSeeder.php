@@ -272,10 +272,13 @@ class ParameterSeeder extends Seeder
         parameter::create(['grp' => 'PELABUHAN CABANG', 'subgrp' => 'PELABUHAN CABANG', 'kelompok' => '', 'text' => '1', 'memo' => '{"MEMO":"BELAWAN","SINGKATAN":"BLW","WARNA":"#28A745"}', 'type' => '118', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'TIDAK ADA TRIP', 'subgrp' => 'TIDAK ADA TRIP', 'kelompok' => '', 'text' => 'TIDAK ADA TRIP', 'memo' => '{"MEMO":"TIDAK ADA TRIP","SINGKATAN":"TAT","WARNA":"#28A745"}', 'type' => '', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'KOR MINUS STOK', 'subgrp' => 'KOR MINUS STOK', 'kelompok' => '', 'text' => '3', 'memo' => '{"MEMO":"KOR MINUS STOK","SINGKATAN":"3","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
-        parameter::create(['grp' => 'JENIS PEMAKAIAN BARANG', 'subgrp' => 'JENIS PEMAKAIAN BARANG', 'kelompok' => '', 'text' => 'OLI MESIN', 'memo' => '{"MEMO":"7,"SINGKATAN":"OM","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'JENIS PEMAKAIAN BARANG', 'subgrp' => 'JENIS PEMAKAIAN BARANG', 'kelompok' => '', 'text' => 'OLI MESIN', 'memo' => '{"MEMO":"7","SINGKATAN":"OM","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'JENIS PEMAKAIAN BARANG', 'subgrp' => 'JENIS PEMAKAIAN BARANG', 'kelompok' => '', 'text' => 'OLI PERSNELING', 'memo' => '{"MEMO":"8","SINGKATAN":"OP","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'JENIS PEMAKAIAN BARANG', 'subgrp' => 'JENIS PEMAKAIAN BARANG', 'kelompok' => '', 'text' => 'OLI GARDAN', 'memo' => '{"MEMO":"9","SINGKATAN":"OG","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'JENIS PEMAKAIAN BARANG', 'subgrp' => 'JENIS PEMAKAIAN BARANG', 'kelompok' => '', 'text' => 'SPAREPART', 'memo' => '{"MEMO":"5","SINGKATAN":"SP","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'RANGE DEPOSITO SUPIR', 'subgrp' => 'RANGE DEPOSITO SUPIR', 'kelompok' => '', 'text' => '999999', 'memo' => '{"MEMO":"RANGE DEPOSITO SUPIR","SINGKATAN":"RDS","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'RANGE DEPOSITO SUPIR', 'subgrp' => 'RANGE DEPOSITO SUPIR', 'kelompok' => '', 'text' => '1999999', 'memo' => '{"MEMO":"RANGE DEPOSITO SUPIR","SINGKATAN":"RDS","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'RANGE DEPOSITO SUPIR', 'subgrp' => 'RANGE DEPOSITO SUPIR', 'kelompok' => '', 'text' => '2999999', 'memo' => '{"MEMO":"RANGE DEPOSITO SUPIR","SINGKATAN":"RDS","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
    
     }
 }
