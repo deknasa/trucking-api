@@ -276,6 +276,8 @@ class ParameterSeeder extends Seeder
         parameter::create(['grp' => 'JENIS PEMAKAIAN BARANG', 'subgrp' => 'JENIS PEMAKAIAN BARANG', 'kelompok' => '', 'text' => 'OLI PERSNELING', 'memo' => '{"MEMO":"8","SINGKATAN":"OP","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'JENIS PEMAKAIAN BARANG', 'subgrp' => 'JENIS PEMAKAIAN BARANG', 'kelompok' => '', 'text' => 'OLI GARDAN', 'memo' => '{"MEMO":"9","SINGKATAN":"OG","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'JENIS PEMAKAIAN BARANG', 'subgrp' => 'JENIS PEMAKAIAN BARANG', 'kelompok' => '', 'text' => 'SPAREPART', 'memo' => '{"MEMO":"5","SINGKATAN":"SP","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'JENIS ORDERAN', 'subgrp' => 'JENIS ORDERAN', 'kelompok' => '', 'text' => 'MUATAN', 'memo' => '{"MEMO":"MUATAN","SINGKATAN":"M","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'JENIS ORDERAN', 'subgrp' => 'JENIS ORDERAN', 'kelompok' => '', 'text' => 'BONGKARAN', 'memo' => '{"MEMO":"BONGKARAN","SINGKATAN":"B","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
    
     }
 }
