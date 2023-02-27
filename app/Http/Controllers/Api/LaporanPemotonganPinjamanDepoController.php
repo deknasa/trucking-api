@@ -3,11 +3,11 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\LaporanRekapSumbangan;
+use App\Models\LaporanPemotonganPinjamanDeposito;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-class LaporanRekapSumbanganController extends Controller
+class LaporanPemotonganPinjamanDepoController extends Controller
 {
     /**
      * @ClassName
@@ -31,19 +31,14 @@ class LaporanRekapSumbanganController extends Controller
         $sampai = $request->sampai;
         $dari = $request->dari;
 
-        // $report = LaporanRekapSumbangan::getReport($sampai, $dari);
+        // $report = LaporanPemotonganPinjamanDeposito::getReport($sampai, $dari);
         $report = [
             [
-                'nobukti' => 'INV 0001/II/2023',
-                'container' => '2x20"',
-                'nominal' => '5125121',
-                'nobst' => 'BST 0001/II/2023'
-            ],
-            [
-                'nobukti' => 'INV 0002/II/2023',
-                'container' => '20"',
-                'nominal' => '912478',
-                'nobst' => 'BST 0002/II/2023'
+                "supir" => "LIBERTO",
+                'status' => '1',
+                'jumlah' => '515156',
+                'tanggal' => '23/2/2023',
+                'notransaksi' => 'KMT 00014/II/2023'
             ]
         ];
         return response([

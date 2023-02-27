@@ -279,6 +279,8 @@ class ParameterSeeder extends Seeder
         parameter::create(['grp' => 'RANGE DEPOSITO SUPIR', 'subgrp' => 'RANGE DEPOSITO SUPIR', 'kelompok' => '', 'text' => '999999', 'memo' => '{"MEMO":"RANGE DEPOSITO SUPIR","SINGKATAN":"RDS","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'RANGE DEPOSITO SUPIR', 'subgrp' => 'RANGE DEPOSITO SUPIR', 'kelompok' => '', 'text' => '1999999', 'memo' => '{"MEMO":"RANGE DEPOSITO SUPIR","SINGKATAN":"RDS","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'RANGE DEPOSITO SUPIR', 'subgrp' => 'RANGE DEPOSITO SUPIR', 'kelompok' => '', 'text' => '2999999', 'memo' => '{"MEMO":"RANGE DEPOSITO SUPIR","SINGKATAN":"RDS","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'JENIS ORDERAN', 'subgrp' => 'JENIS ORDERAN', 'kelompok' => '', 'text' => 'MUATAN', 'memo' => '{"MEMO":"MUATAN","SINGKATAN":"M","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'JENIS ORDERAN', 'subgrp' => 'JENIS ORDERAN', 'kelompok' => '', 'text' => 'BONGKARAN', 'memo' => '{"MEMO":"BONGKARAN","SINGKATAN":"B","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
    
     }
 }

@@ -3,11 +3,11 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\LaporanEstimasiKasGantung;
+use App\Models\ExportLaporanKasHarian;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-class LaporanEstimasiKasGantungController extends Controller
+class ExportLaporanKasHarianController extends Controller
 {
     /**
      * @ClassName
@@ -22,18 +22,19 @@ class LaporanEstimasiKasGantungController extends Controller
             ]
         ]);
     }
-    
+
     /**
      * @ClassName
      */
-    public function report(Request $request)
+    public function export(Request $request)
     {
         $sampai = $request->sampai;
         $jenis = $request->jenis;
 
-        $report = LaporanEstimasiKasGantung::getReport($sampai, $jenis);
+        $export = ExportLaporanKasHarian::getExport();
+        
         return response([
-            'data' => $report
+            'data' => $export
         ]);
     }
 }

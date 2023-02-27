@@ -3,11 +3,10 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\LaporanEstimasiKasGantung;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-class LaporanEstimasiKasGantungController extends Controller
+class LaporanBanGudangSementaraController extends Controller
 {
     /**
      * @ClassName
@@ -22,16 +21,22 @@ class LaporanEstimasiKasGantungController extends Controller
             ]
         ]);
     }
-    
+
     /**
      * @ClassName
      */
-    public function report(Request $request)
+    public function report()
     {
-        $sampai = $request->sampai;
-        $jenis = $request->jenis;
-
-        $report = LaporanEstimasiKasGantung::getReport($sampai, $jenis);
+        $report = [
+            [
+                "kodestok" => "BAUT 12",
+                'namastok' => 'BAUT 12',
+                'gudang' => 'GUDANG PIHAK KE-3',
+                'nobukti' => 'PG 00035/II/2023',
+                'tanggal' => '23/2/2023',
+                'jlhhari' => '23'
+            ]
+        ];
         return response([
             'data' => $report
         ]);

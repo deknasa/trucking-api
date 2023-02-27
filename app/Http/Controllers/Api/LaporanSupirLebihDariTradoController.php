@@ -31,7 +31,21 @@ class LaporanSupirLebihDariTradoController extends Controller
         $sampai = $request->sampai;
         $dari = $request->dari;
 
-        $report = LaporanSupirLebihDariTrado::getReport($sampai, $dari);
+        // $report = LaporanSupirLebihDariTrado::getReport($sampai, $dari);
+        $report = [
+            [
+                'supir' => 'HERMAN',
+                'trado' => 'BK 1252 AJS',
+                'tanggal' => '23/2/2023',
+                'ritasi' => '1'
+            ],[
+                'supir' => 'HERMAN',
+                'trado' => 'BK 2415 BNM',
+                'tanggal' => '23/2/2023',
+                'ritasi' => '2'
+            ],
+        ];
+        
         return response([
             'data' => $report
         ]);
