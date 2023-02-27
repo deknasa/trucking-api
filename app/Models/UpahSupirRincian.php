@@ -55,7 +55,12 @@ class UpahSupirRincian extends MyModel
             'statuscontainer.keterangan as statuscontainer',
             'statuscontainer.id as statuscontainer_id',
             'container.keterangan as container',
-            'container.id as container_id'
+            'container.id as container_id',
+            db::Raw("0 as nominalsupir"),
+            db::Raw("0 as nominalkenek"),
+            db::Raw("0 as nominalkomisi"),
+            db::Raw("0 as nominaltol"),
+            db::Raw("0 as liter")
         )
         ->crossJoin('container');
 

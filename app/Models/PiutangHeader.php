@@ -26,6 +26,28 @@ class PiutangHeader extends MyModel
 
     public function get()
     {
+      
+        $temppelunasan = '##temppelunasan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($temppelunasan, function ($table) {
+            $table->string('piutang_nobukti', 100)->default('');
+            $table->double('nominal',15,2)->default(0);
+        });
+
+        $query=DB::table('pelunasanpiutangdetail') ->from(
+            DB::raw("pelunasanpiutangdetail as a with (readuncommitted)")
+        )
+        ->select(
+            'a.piutang_nobukti',
+            DB::raw("sum(a.nominal+a.potongan) as nominal")
+        )
+        ->groupby('piutang_nobukti');
+
+        DB::table($temppelunasan)->insertUsing([
+            'piutang_nobukti',
+            'nominal',
+        ], $query);        
+        
+
         $this->setRequestParameters();
 
         $query = DB::table($this->table)->from(
@@ -36,6 +58,8 @@ class PiutangHeader extends MyModel
             'piutangheader.tglbukti',
             'piutangheader.postingdari',
             'piutangheader.nominal',
+            DB::raw("isnull(c.nominal,0) as nominalpelunasan"),
+            DB::raw("piutangheader.nominal-isnull(c.nominal,0) as sisapiutang"),
             'piutangheader.invoice_nobukti',
             'piutangheader.modifiedby',
             'piutangheader.updated_at',
@@ -43,10 +67,11 @@ class PiutangHeader extends MyModel
             'parameter.memo as statuscetak',
             DB::raw('(case when (year(piutangheader.tglbukacetak) <= 2000) then null else piutangheader.tglbukacetak end ) as tglbukacetak'),
             'piutangheader.userbukacetak',
-            'agen.namaagen as agen_id'
+            'agen.namaagen as agen_id',
         )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'piutangheader.statuscetak', 'parameter.id')
-            ->leftJoin(DB::raw("agen with (readuncommitted)"), 'piutangheader.agen_id', 'agen.id');
+            ->leftJoin(DB::raw("agen with (readuncommitted)"), 'piutangheader.agen_id', 'agen.id')
+            ->leftJoin(DB::raw($temppelunasan ." as c"), 'piutangheader.nobukti', 'c.piutang_nobukti');
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;

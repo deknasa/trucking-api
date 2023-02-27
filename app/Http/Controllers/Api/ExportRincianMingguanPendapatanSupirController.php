@@ -3,11 +3,11 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\LaporanPemotonganPinjamanDeposito;
+use App\Models\ExportRincianMingguanPendapatanSupir;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-class LaporanPemotonganPinjamanDepositoController extends Controller
+class ExportRincianMingguanPendapatanSupirController extends Controller
 {
     /**
      * @ClassName
@@ -23,12 +23,14 @@ class LaporanPemotonganPinjamanDepositoController extends Controller
         ]);
     }
 
-    public function report(Request $request)
+    /**
+     * @ClassName
+     */
+    public function export(Request $request)
     {
-        $sampai = $request->sampai;
-        $dari = $request->dari;
+        $periode = $request->periode;
 
-        $report = LaporanPemotonganPinjamanDeposito::getReport($sampai, $dari);
+        $report = ExportRincianMingguanPendapatanSupir::getExport($periode);
         return response([
             'data' => $report
         ]);

@@ -71,7 +71,7 @@ class PelunasanPiutangHeaderController extends Controller
 
                 for ($i = 0; $i < count($request->piutang_id); $i++) {
 
-                    $cekSisa = PiutangHeader::from(DB::raw("piutangheader with (readuncommitted)"))->select('nominal')->first();
+                    $cekSisa = PiutangHeader::from(DB::raw("piutangheader with (readuncommitted)"))->select('nominal')->where('id', $request->piutang_id[$i])->first();
 
                     if ($request->bayarppd[$i] > $cekSisa->nominal) {
                         if ($request->nominallebihbayarppd[$i] == 0) {
@@ -80,8 +80,7 @@ class PelunasanPiutangHeaderController extends Controller
                                 ->first();
                             return response([
                                 'errors' => [
-                                    "nominallebihbayarppd.$i" =>
-                                    [$i => "nominal lebih bayar $query->keterangan"]
+                                    "nominallebihbayarppd" => "sisa bayar minus. nominal lebih bayar $query->keterangan"
                                 ],
                                 'message' => "The given data was invalid.",
                             ], 422);
@@ -90,12 +89,23 @@ class PelunasanPiutangHeaderController extends Controller
                                 ->first();
                             return response([
                                 'errors' => [
-                                    "bayarppd.$i" =>
-                                    [$i => "$query->keterangan"]
+                                    "bayarppd" => "$query->keterangan"
                                 ],
                                 'message' => "The given data was invalid.",
                             ], 422);
                         }
+                    }
+
+                    $byrPotongan = $request->bayarppd[$i] + $request->potonganppd[$i];
+                    if($byrPotongan > $cekSisa->nominal){
+                        $query =  Error::from(DB::raw("error with (readuncommitted)"))->select('keterangan')->where('kodeerror', '=', 'STM')
+                                ->first();
+                            return response([
+                                'errors' => [
+                                    "bayarppd" => "$query->keterangan"
+                                ],
+                                'message' => "The given data was invalid.",
+                            ], 422);
                     }
                 }
 
@@ -303,7 +313,7 @@ class PelunasanPiutangHeaderController extends Controller
 
                 if ($request->alatbayar_id != $alatbayarGiro->id) {
 
-                    $penerimaanHeader = [
+                   $penerimaanHeader = [
                         'tanpaprosesnobukti' => 1,
                         'nobukti' => $nobuktiPenerimaan,
                         'tglbukti' => $request->tglbukti,
@@ -480,7 +490,7 @@ class PelunasanPiutangHeaderController extends Controller
 
             for ($i = 0; $i < count($request->piutang_id); $i++) {
 
-                $cekSisa = PiutangHeader::from(DB::raw("piutangheader with (readuncommitted)"))->select('nominal')->first();
+                $cekSisa = PiutangHeader::from(DB::raw("piutangheader with (readuncommitted)"))->select('nominal')->where('id',$request->piutang_id[$i])->first();
 
                 if ($request->bayarppd[$i] > $cekSisa->nominal) {
                     if ($request->nominallebihbayarppd[$i] == 0) {
@@ -506,6 +516,27 @@ class PelunasanPiutangHeaderController extends Controller
                         ], 422);
                     }
                 }
+                $byrPotongan = $request->bayarppd[$i] + $request->potonganppd[$i];
+                if($byrPotongan > $cekSisa->nominal){
+                    $query =  Error::from(DB::raw("error with (readuncommitted)"))->select('keterangan')->where('kodeerror', '=', 'STM')
+                            ->first();
+                        return response([
+                            'errors' => [
+                                "bayarppd.$i" =>
+                                [$i => "$query->keterangan"]
+                            ],
+                            'message' => "The given data was invalid. ok",
+                        ], 422);
+                }
+
+                // if($request->potonganppd[$i] > 0){
+                //     $request->validate([
+                //         'coapotonganppd' => 'required|array',
+                //         'coapotonganppd.*' => 'required',
+                //         'keteranganpotonganppd' => 'required|array',
+                //         'keteranganpotonganppd.*' => 'required',
+                //     ]);
+                // }
             }
 
             $pelunasanpiutangheader->agen_id = $request->agen_id;

@@ -214,7 +214,7 @@ class UpahSupir extends MyModel
             $table->string('parent_id')->default('0');
             $table->string('kotadari_id')->default('0');
             $table->string('kotasampai_id')->default('0');
-            $table->string('zona_id')->default('0');
+            $table->string('zona_id')->nullable()->default('0');
             $table->double('jarak', 15, 2)->default('0');
             $table->integer('statusaktif')->length(11)->default('0');
             $table->date('tglmulaiberlaku')->default('1900/1/1');

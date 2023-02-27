@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Rules\NotOffDay;
+use App\Rules\DateTutupBuku;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpdatePiutangHeaderRequest extends FormRequest
@@ -27,7 +28,8 @@ class UpdatePiutangHeaderRequest extends FormRequest
         $rules = [
             'tglbukti' => [
                 'required',
-                new NotOffDay()
+                new NotOffDay(),
+                new DateTutupBuku()
             ],
             'agen' => 'required',
         ];

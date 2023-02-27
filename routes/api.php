@@ -47,10 +47,13 @@ use App\Http\Controllers\Api\ApprovalPendapatanSupirController;
 use App\Http\Controllers\Api\BankPelangganController;
 use App\Http\Controllers\Api\ExportLaporanDepositoController;
 use App\Http\Controllers\Api\ExportLaporanKasGantungController;
+use App\Http\Controllers\Api\ExportLaporanKasHarianController;
 use App\Http\Controllers\Api\ExportLaporanStokController;
 use App\Http\Controllers\Api\ExportPemakaianBarangController;
 use App\Http\Controllers\Api\ExportPembelianBarangController;
 use App\Http\Controllers\Api\ExportPengeluaranBarangController;
+use App\Http\Controllers\Api\ExportRincianMingguanController;
+use App\Http\Controllers\Api\ExportRincianMingguanPendapatanSupirController;
 use App\Http\Controllers\Api\GajiSupirDetailController;
 use App\Http\Controllers\Api\GajiSupirHeaderController;
 use App\Http\Controllers\Api\JenisEmklController;
@@ -97,6 +100,7 @@ use App\Http\Controllers\Api\TarifController;
 use App\Http\Controllers\Api\TarifRincianController;
 use App\Http\Controllers\Api\PengeluaranTruckingController;
 use App\Http\Controllers\Api\OrderanTruckingController;
+use App\Http\Controllers\Api\JobTruckingController;
 use App\Http\Controllers\Api\ProsesAbsensiSupirController;
 use App\Http\Controllers\Api\MekanikController;
 use App\Http\Controllers\Api\SuratPengantarController;
@@ -150,6 +154,7 @@ use App\Http\Controllers\Api\JurnalUmumPusatHeaderController;
 use App\Http\Controllers\Api\KartuStokController;
 use App\Http\Controllers\Api\HistoriPenerimaanStokController;
 use App\Http\Controllers\Api\HistoriPengeluaranStokController;
+use App\Http\Controllers\Api\LaporanBanGudangSementaraController;
 use App\Http\Controllers\Api\LaporanBukuBesarController;
 use App\Http\Controllers\Api\LaporanDepositoSupirController;
 use App\Http\Controllers\Api\LaporanEstimasiKasGantungController;
@@ -160,6 +165,7 @@ use App\Http\Controllers\Api\LaporanKasBankController;
 use App\Http\Controllers\Api\LaporanKasGantungController;
 use App\Http\Controllers\Api\LaporanKeteranganPinjamanSupirController;
 use App\Http\Controllers\Api\LaporanKlaimPJTSupirController;
+use App\Http\Controllers\Api\LaporanPemotonganPinjamanDepoController;
 use App\Http\Controllers\Api\LaporanPemotonganPinjamanDepositoController;
 use App\Http\Controllers\Api\LaporanPemotonganPinjamanPerEBSController;
 use App\Http\Controllers\Api\LaporanPinjamanSupirController;
@@ -225,7 +231,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('absensisupirheader/default', [AbsensiSupirHeaderController::class, 'default']);
     Route::post('absensisupirheader/{id}/cekvalidasi', [AbsensiSupirHeaderController::class, 'cekvalidasi'])->name('absensisupirheader.cekvalidasi');
     Route::post('absensisupirheader/{id}/approval', [AbsensiSupirHeaderController::class, 'approval'])->name('absensisupirheader.approval');
-    Route::post('absensisupirheader/{id}/approvalEditAbsensi', [SupirController::class, 'approvalEditAbsensi']);
+    Route::post('absensisupirheader/{id}/approvalEditAbsensi', [AbsensiSupirHeaderController::class, 'approvalEditAbsensi']);
 
     Route::apiResource('absensisupirheader', AbsensiSupirHeaderController::class)->parameter('absensisupirheader', 'absensiSupirHeader');
 
@@ -358,6 +364,8 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('role/getroleid', [RoleController::class, 'getroleid']);
     Route::get('role/field_length', [RoleController::class, 'fieldLength']);
     Route::get('role/export', [RoleController::class, 'export'])->name('role.export');
+    Route::get('role/{role}/acl', [RoleController::class, 'getAcls']);
+    Route::post('role/{role}/acl', [RoleController::class, 'storeAcls']);
     Route::resource('role', RoleController::class);
 
     Route::get('cabang/field_length', [CabangController::class, 'fieldLength']);
@@ -586,7 +594,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('hutangbayarheader/{id}/{field}/getHutang', [HutangBayarHeaderController::class, 'getHutang'])->name('hutangbayarheader.getHutang');
     Route::get('hutangbayarheader/comboapproval', [HutangBayarHeaderController::class, 'comboapproval']);
     Route::post('hutangbayarheader/{id}/cekapproval', [HutangBayarHeaderController::class, 'cekapproval'])->name('hutangbayarheader.cekapproval');
-    Route::get('hutangbayarheader/{id}/{fieldid}/{field}/getPembayaran', [HutangBayarHeaderController::class, 'getPembayaran']);
+    Route::get('hutangbayarheader/{id}/{fieldid}/getPembayaran', [HutangBayarHeaderController::class, 'getPembayaran']);
     Route::get('hutangbayarheader/grid', [HutangBayarHeaderController::class, 'grid']);
     Route::resource('hutangbayarheader', HutangBayarHeaderController::class);
     Route::resource('hutangbayardetail', HutangBayarDetailController::class);
@@ -718,6 +726,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('suratpengantar/field_length', [SuratPengantarController::class, 'fieldLength']);
     Route::post('suratpengantar/cekUpahSupir', [SuratPengantarController::class, 'cekUpahSupir']);
     Route::get('suratpengantar/{id}/getTarifOmset', [SuratPengantarController::class, 'getTarifOmset']);
+    Route::get('suratpengantar/{id}/getpelabuhan', [SuratPengantarController::class, 'getpelabuhan']);
     Route::get('suratpengantar/{id}/getOrderanTrucking', [SuratPengantarController::class, 'getOrderanTrucking']);
     Route::get('suratpengantar/getGaji/{dari}/{sampai}/{container}/{statuscontainer}', [SuratPengantarController::class, 'getGaji']);
     Route::get('suratpengantar/default', [SuratPengantarController::class, 'default']);
@@ -876,8 +885,8 @@ route::middleware(['auth:api'])->group(function () {
     Route::resource('laporanpemotonganpinjamanperebs', LaporanPemotonganPinjamanPerEBSController::class);
     Route::get('laporansupirlebihdaritrado/report', [LaporanSupirLebihDariTradoController::class, 'report'])->name('laporansupirlebihdaritrado.report');
     Route::resource('laporansupirlebihdaritrado', LaporanSupirLebihDariTradoController::class);
-    Route::get('laporanpemotonganpinjdepo/report', [LaporanPemotonganPinjamanDepositoController::class, 'report'])->name('laporanpemotonganpinjdepo.report');
-    Route::resource('laporanpemotonganpinjdepo', LaporanPemotonganPinjamanDepositoController::class);
+    Route::get('laporanpemotonganpinjamandepo/report', [LaporanPemotonganPinjamanDepoController::class, 'report'])->name('laporanpemotonganpinjamandepo.report');
+    Route::resource('laporanpemotonganpinjamandepo', LaporanPemotonganPinjamanDepoController::class);
     Route::get('laporanrekapsumbangan/report', [LaporanRekapSumbanganController::class, 'report'])->name('laporanrekapsumbangan.report');
     Route::resource('laporanrekapsumbangan', LaporanRekapSumbanganController::class);
     Route::get('laporanklaimpjtsupir/report', [LaporanKlaimPJTSupirController::class, 'report'])->name('laporanklaimpjtsupir.report');
@@ -904,10 +913,20 @@ route::middleware(['auth:api'])->group(function () {
     
     Route::get('/orderanemkl/getTglJob', [OrderanEmklController::class, 'getTglJob'])->middleware('handle-token');
     
+    Route::get('pemutihansupir/{supirId}/getdatapemutihan', [PemutihanSupirController::class, 'getDataPemutihan'])->name('pemutihansupir.getDataPemutihan');;
+    Route::post('pemutihansupir/{id}/cekvalidasi', [PemutihanSupirController::class, 'cekvalidasi'])->name('pemutihansupir.cekvalidasi');
     Route::get('pemutihansupir/field_length', [PemutihanSupirController::class, 'fieldLength']);
     Route::resource('pemutihansupir', PemutihanSupirController::class);
 
 
+    Route::get('exportrincianmingguanpendapatan/export', [ExportRincianMingguanPendapatanSupirController::class, 'export'])->name('exportrincianmingguanpendapatan.export');
+    Route::resource('exportrincianmingguanpendapatan', ExportRincianMingguanPendapatanSupirController::class);
+    Route::get('laporanbangudangsementara/report', [LaporanBanGudangSementaraController::class, 'report'])->name('laporanbangudangsementara.report');
+    Route::resource('laporanbangudangsementara', LaporanBanGudangSementaraController::class);
+    Route::get('exportrincianmingguan/export', [ExportRincianMingguanController::class, 'export'])->name('exportrincianmingguan.export');
+    Route::resource('exportrincianmingguan', ExportRincianMingguanController::class);
+    Route::get('exportlaporankasharian/export', [ExportLaporanKasHarianController::class, 'export'])->name('exportlaporankasharian.export');
+    Route::resource('exportlaporankasharian', ExportLaporanKasHarianController::class);
 });
 
 Route::get('gudang/combo', [GudangController::class, 'combo']);
@@ -980,6 +999,9 @@ Route::post('orderantrucking/{id}/cekValidasi', [OrderanTruckingController::clas
 Route::get('orderantrucking/{id}/getagentas', [OrderanTruckingController::class, 'getagentas']);
 Route::get('orderantrucking/{id}/getcont', [OrderanTruckingController::class, 'getcont']);
 Route::resource('orderantrucking', OrderanTruckingController::class);
+
+Route::resource('jobtrucking', JobTruckingController::class);
+
 
 Route::get('prosesabsensisupir/combo', [ProsesAbsensiSupirController::class, 'combo']);
 Route::get('prosesabsensisupir/field_length', [ProsesAbsensiSupirController::class, 'fieldLength']);

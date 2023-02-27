@@ -41,6 +41,11 @@ class PenerimaanStokHeader extends MyModel
         ->leftJoin('parameter as statuscetak','penerimaanstokheader.statuscetak','statuscetak.id')
         ->leftJoin('penerimaanstok','penerimaanstokheader.penerimaanstok_id','penerimaanstok.id')
         ->leftJoin('trado','penerimaanstokheader.trado_id','trado.id')
+        ->leftJoin('trado as tradodari ','penerimaanstokheader.tradodari_id','tradodari.id')
+        ->leftJoin('trado as tradoke ','penerimaanstokheader.tradoke_id','tradoke.id')
+        ->leftJoin('gandengan as gandengandari ','penerimaanstokheader.gandengandari_id','gandengandari.id')
+        ->leftJoin('gandengan as gandenganke ','penerimaanstokheader.gandenganke_id','gandenganke.id')
+        ->leftJoin('gandengan as gandengan ','penerimaanstokheader.gandenganke_id','gandengan.id')
         ->leftJoin('supplier','penerimaanstokheader.supplier_id','supplier.id');
         if (request()->penerimaanstok_id==$spb->text) {
             $query->leftJoin('penerimaanstokheader as pobeli','penerimaanstokheader.penerimaanstok_nobukti','pobeli.nobukti');
@@ -84,6 +89,10 @@ class PenerimaanStokHeader extends MyModel
             "$this->table.pengeluaranstok_nobukti",
             "gudangs.gudang as gudang",
             "trado.keterangan as trado",
+            "tradodari.keterangan as tradodari",
+            "tradoke.keterangan as tradoke",
+            "gandengandari.keterangan as gandengandari",
+            "gandenganke.keterangan as gandenganke",
             "supplier.namasupplier as supplier",
             "$this->table.nobon",
             "$this->table.hutang_nobukti",
@@ -98,6 +107,11 @@ class PenerimaanStokHeader extends MyModel
             "penerimaanstokheader.gudangke_id",
             "penerimaanstokheader.penerimaanstok_id",
             "penerimaanstokheader.trado_id",
+            "penerimaanstokheader.tradoke_id",
+            "penerimaanstokheader.tradodari_id",
+            "penerimaanstokheader.gandenganke_id",
+            "penerimaanstokheader.gandengandari_id",
+            "penerimaanstokheader.gandengan_id",
             "penerimaanstokheader.supplier_id",
             "statuscetak.memo as  statuscetak",
             "statuscetak.id as  statuscetak_id",
@@ -297,7 +311,11 @@ class PenerimaanStokHeader extends MyModel
         ->leftJoin('gudang as dari','penerimaanstokheader.gudangdari_id','dari.id')
         ->leftJoin('gudang as ke','penerimaanstokheader.gudangke_id','ke.id')
         ->leftJoin('parameter as statuscetak','penerimaanstokheader.statuscetak','statuscetak.id')
-
+        ->leftJoin('trado as tradodari ','penerimaanstokheader.tradodari_id','tradodari.id')
+        ->leftJoin('trado as tradoke ','penerimaanstokheader.tradoke_id','tradoke.id')
+        ->leftJoin('gandengan as gandengandari ','penerimaanstokheader.gandengandari_id','gandengandari.id')
+        ->leftJoin('gandengan as gandenganke ','penerimaanstokheader.gandenganke_id','gandenganke.id')
+        ->leftJoin('gandengan as gandengan ','penerimaanstokheader.gandenganke_id','gandengan.id')
         ->leftJoin('penerimaanstok','penerimaanstokheader.penerimaanstok_id','penerimaanstok.id')
         ->leftJoin('trado','penerimaanstokheader.trado_id','trado.id')
         ->leftJoin('supplier','penerimaanstokheader.supplier_id','supplier.id');

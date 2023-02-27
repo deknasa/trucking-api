@@ -129,7 +129,6 @@ class UpahRitasi extends MyModel
         $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdefault, function ($table) {
             $table->unsignedBigInteger('statusaktif')->default(0);
-            // $table->unsignedBigInteger('statusluarkota')->default(0);
         });
 
         $status = Parameter::from(
@@ -143,22 +142,11 @@ class UpahRitasi extends MyModel
             ->where('default', '=', 'YA')
             ->first();
 
-        $iddefaultstatusaktif = $status->id ?? 0;
-        
-        $status = Parameter::from(
-            db::Raw("parameter with (readuncommitted)")
-        )
-            ->select(
-                'id'
-            )
-            ->where('grp', '=', 'UPAH SUPIR LUAR KOTA')
-            ->where('subgrp', '=', 'UPAH SUPIR LUAR KOTA')
-            ->where('default', '=', 'YA')
-            ->first();
-
-        // $iddefaultstatusluarkota = $status->id ?? 0;
-
-        
+  
+            $iddefaultstatusaktif = $status->id ?? 0;
+        DB::table($tempdefault)->insert(
+            ["statusaktif" => $iddefaultstatusaktif]
+        );
 
         $query = DB::table($tempdefault)->from(
             DB::raw($tempdefault)
@@ -168,7 +156,6 @@ class UpahRitasi extends MyModel
             );
 
         $data = $query->first();
-        
         return $data;
 
     }

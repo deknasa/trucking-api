@@ -18,7 +18,7 @@ class Supir extends MyModel
     public function cekvalidasihapus($id)
     {
         // cek sudah ada absensi
-      
+
 
         $absen = DB::table('absensisupirdetail')
             ->from(
@@ -35,7 +35,7 @@ class Supir extends MyModel
                 'keterangan' => 'Absensi Supir',
             ];
 
-            
+
             goto selesai;
         }
 
@@ -122,7 +122,7 @@ class Supir extends MyModel
             ->where('a.supir_id', '=', $id)
             ->first();
         if (isset($pengeluaranTrucking)) {
-             $data = [
+            $data = [
                 'kondisi' => true,
                 'keterangan' => 'Pengeluaran Trucking',
             ];
@@ -141,7 +141,7 @@ class Supir extends MyModel
             ->where('a.supir_id', '=', $id)
             ->first();
         if (isset($ritasi)) {
-             $data = [
+            $data = [
                 'kondisi' => true,
                 'keterangan' => 'Ritasi',
             ];
@@ -156,7 +156,7 @@ class Supir extends MyModel
             'kondisi' => false,
             'keterangan' => '',
         ];
- 
+
         selesai:
         return $data;
     }
@@ -186,6 +186,7 @@ class Supir extends MyModel
                 'supir.alamat',
                 'supir.kota',
                 'supir.telp',
+                'supir.pemutihansupir_nobukti',
                 'parameter.memo as statusaktif',
                 'supir.nominaldepositsa',
                 'supir.depositke',
@@ -360,6 +361,22 @@ class Supir extends MyModel
         return $data;
     }
 
+    public function cekPemutihan($ktp)
+    {
+        $pemutihan = PemutihanSupir::from(DB::raw("pemutihansupir with (readuncommitted)"))
+            ->select(DB::raw("supir.noktp"))
+            ->join(DB::raw("supir with (readuncommitted)"), 'pemutihansupir.supir_id', 'supir.id')
+            ->where('supir.noktp', $ktp)
+            ->first();
+
+        if ($pemutihan != null) {
+            $status = true;
+        } else {
+            $status = false;
+        }
+
+        return $status;
+    }
     public function findAll($id)
     {
         $data = Supir::from(DB::raw("supir with (readuncommitted)"))
@@ -370,6 +387,7 @@ class Supir extends MyModel
                 'supir.kota',
                 'supir.telp',
                 'supir.statusaktif',
+                'supir.pemutihansupir_nobukti',
                 'supir.nominaldepositsa',
                 'supir.depositke',
                 'supir.tglmasuk',
@@ -420,24 +438,22 @@ class Supir extends MyModel
             DB::raw(
                 "$this->table.id,
                 $this->table.namasupir,
+                $this->table.tgllahir,
                 $this->table.alamat,
                 $this->table.kota,
                 $this->table.telp,
-                $this->table.statusaktif,
-                supir.nominaldepositsa,
+                parameter.memo as statusaktif,
+                $this->table.nominaldepositsa,
                 $this->table.depositke,
-                $this->table.tglmasuk,
                 $this->table.nominalpinjamansaldoawal,
                 supir.namasupir as supirold_id,
-                $this->table.tglexpsim,
                 $this->table.nosim,
+                $this->table.tglexpsim,
+                $this->table.tglterbitsim,
                 $this->table.keterangan,
                 $this->table.noktp,
                 $this->table.nokk,
-                $this->table.statusadaupdategambar,
-                $this->table.statusluarkota,
-                $this->table.statuszonatertentu,
-                $this->table.zona_id,
+                statusluarkota.memo as statusluarkota,
                 $this->table.angsuranpinjaman,
                 $this->table.plafondeposito,
                 $this->table.photosupir,
@@ -446,11 +462,9 @@ class Supir extends MyModel
                 $this->table.photokk, 
                 $this->table.photoskck, 
                 $this->table.photodomisili, 
-                $this->table.keteranganresign,
-                $this->table.statusblacklist,
                 $this->table.tglberhentisupir,
-                $this->table.tgllahir,
-                $this->table.tglterbitsim,
+                statusblacklist.memo as statusblacklist,
+                $this->table.pemutihansupir_nobukti,
 
             $this->table.modifiedby,
             $this->table.created_at,
@@ -458,11 +472,9 @@ class Supir extends MyModel
             )
 
         )
-            ->leftJoin('zona', 'supir.zona_id', 'zona.id')
-            ->leftJoin('parameter as statusadaupdategambar', 'supir.statusadaupdategambar', '=', 'statusadaupdategambar.id')
-            ->leftJoin('parameter as statusluarkota', 'supir.statusluarkota', '=', 'statusluarkota.id')
-            ->leftJoin('parameter as statuszonatertentu', 'supir.statuszonatertentu', '=', 'statuszonatertentu.id')
-            ->leftJoin('parameter as statusblacklist', 'supir.statusblacklist', '=', 'statusblacklist.id')
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'supir.statusaktif', '=', 'parameter.id')
+            ->leftJoin(DB::raw("parameter as statusluarkota with (readuncommitted)"), 'supir.statusluarkota', '=', 'statusluarkota.id')
+            ->leftJoin(DB::raw("parameter as statusblacklist with (readuncommitted)"), 'supir.statusblacklist', '=', 'statusblacklist.id')
             ->leftJoin('supir as supirlama', 'supir.supirold_id', '=', 'supirlama.id');
     }
 
@@ -473,24 +485,22 @@ class Supir extends MyModel
         Schema::create($temp, function ($table) {
             $table->bigInteger('id')->default('0');
             $table->string('namasupir', 100)->default('');
+            $table->date('tgllahir')->default('1900/1/1');
             $table->string('alamat', 100)->default('');
             $table->string('kota', 100)->default('');
             $table->string('telp', 30)->default('');
-            $table->integer('statusaktif')->length(11)->default('0');
+            $table->longText('statusaktif')->default('');
             $table->double('nominaldepositsa', 15, 2)->default(0);
             $table->double('depositke', 15, 2)->default(0);
-            $table->date('tglmasuk')->default('1900/1/1');
             $table->double('nominalpinjamansaldoawal', 15, 2)->default(0);
             $table->string('supirold_id')->default(0);
-            $table->date('tglexpsim')->default('1900/1/1');
             $table->string('nosim', 30)->default('');
+            $table->date('tglexpsim')->default('1900/1/1');
+            $table->date('tglterbitsim')->default('1900/1/1');
             $table->longText('keterangan')->default('');
             $table->string('noktp', 30)->default('');
             $table->string('nokk', 30)->default('');
-            $table->string('statusadaupdategambar', 300)->default('')->nullable();
-            $table->string('statusluarkota', 300)->default('')->nullable();
-            $table->string('statuszonatertentu', 300)->default('')->nullable();
-            $table->unsignedBigInteger('zona_id')->default(0);
+            $table->longText('statusluarkota')->default('')->nullable();
             $table->double('angsuranpinjaman', 15, 2)->default(0);
             $table->double('plafondeposito', 15, 2)->default(0);
             $table->string('photosupir', 4000)->default('');
@@ -499,11 +509,9 @@ class Supir extends MyModel
             $table->string('photokk', 4000)->default('');
             $table->string('photoskck', 4000)->default('');
             $table->string('photodomisili', 4000)->default('');
-            $table->longText('keteranganresign')->default('');
-            $table->string('statusblacklist')->default(0);
             $table->date('tglberhentisupir')->default('1900/1/1');
-            $table->date('tgllahir')->default('1900/1/1');
-            $table->date('tglterbitsim')->default('1900/1/1');
+            $table->longText('statusblacklist',)->default('');
+            $table->string('pemutihansupir_nobukti')->default('');
 
             $table->string('modifiedby', 50)->default('');
             $table->dateTime('created_at')->default('1900/1/1');
@@ -519,24 +527,22 @@ class Supir extends MyModel
         DB::table($temp)->insertUsing([
             'id',
             'namasupir',
+            'tgllahir',
             'alamat',
             'kota',
             'telp',
             'statusaktif',
             'nominaldepositsa',
             'depositke',
-            'tglmasuk',
             'nominalpinjamansaldoawal',
             'supirold_id',
-            'tglexpsim',
             'nosim',
+            'tglexpsim',
+            'tglterbitsim',
             'keterangan',
             'noktp',
             'nokk',
-            'statusadaupdategambar',
             'statusluarkota',
-            'statuszonatertentu',
-            'zona_id',
             'angsuranpinjaman',
             'plafondeposito',
             'photosupir',
@@ -545,11 +551,9 @@ class Supir extends MyModel
             'photokk',
             'photoskck',
             'photodomisili',
-            'keteranganresign',
-            'statusblacklist',
             'tglberhentisupir',
-            'tgllahir',
-            'tglterbitsim',
+            'statusblacklist',
+            'pemutihansupir_nobukti',
             'modifiedby',
             'created_at',
             'updated_at'

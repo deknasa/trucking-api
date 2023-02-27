@@ -7,6 +7,7 @@ use App\Models\PengeluaranTruckingDetail;
 use App\Http\Requests\StorePengeluaranTruckingDetailRequest;
 use App\Http\Requests\UpdatePengeluaranTruckingDetailRequest;
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -14,78 +15,18 @@ use Illuminate\Support\Facades\Validator;
 class PengeluaranTruckingDetailController extends Controller
 {
     
-    public function index(Request $request)
+    public function index(): JsonResponse
     {
-        $params = [
-            'id' => $request->id,
-            'pengeluarantruckingheader_id' => $request->pengeluarantruckingheader_id,
-            'withHeader' => $request->withHeader ?? false,
-            'whereIn' => $request->whereIn ?? [],
-            'forReport' => $request->forReport ?? false,
-            'sortIndex' => $request->sortOrder ?? 'id',
-            'sortOrder' => $request->sortOrder ?? 'asc',
-            'offset' => $request->offset ?? (($request->page - 1) * $request->limit),
-            'limit' => $request->limit ?? 10,
-        ];
-        $totalRows = 0;
-        try {
-            $query = PengeluaranTruckingDetail::from(DB::raw("pengeluarantruckingdetail as detail with (readuncommitted)"));
+        $pengeluaranTrucking = new PengeluaranTruckingDetail();
 
-            if (isset($params['id'])) {
-                $query->where('detail.id', $params['id']);
-            }
-
-            if (isset($params['pengeluarantruckingheader_id'])) {
-                $query->where('detail.pengeluarantruckingheader_id', $params['pengeluarantruckingheader_id']);
-            }
-
-            if (count($params['whereIn']) > 0) {
-                $query->whereIn('pengeluarantruckingheader_id', $params['whereIn']);
-            }
-            if ($params['forReport']) {
-                $query->select(
-                    'header.nobukti',
-                    'header.tglbukti',
-                    'header.coa',
-                    'header.pengeluaran_nobukti',
-                    'bank.namabank as bank',
-                    'pengeluarantrucking.keterangan as pengeluarantrucking',
-                    'supir.namasupir as supir_id',
-                    'detail.penerimaantruckingheader_nobukti',
-                    'detail.nominal'
-                ) 
-                ->leftJoin(DB::raw("pengeluarantruckingheader as header with (readuncommitted)"),'header.id','detail.pengeluarantruckingheader_id')
-                ->leftJoin(DB::raw("pengeluarantrucking with (readuncommitted)"), 'header.pengeluarantrucking_id','pengeluarantrucking.id')
-                ->leftJoin(DB::raw("bank with (readuncommitted)"), 'header.bank_id', 'bank.id')
-                ->leftJoin(DB::raw("supir with (readuncommitted)"), 'detail.supir_id', 'supir.id');
-
-                $pengeluaranTruckingDetail = $query->get();
-            } else {
-                $query->select(
-                    'detail.nobukti',
-                    'detail.nominal',
-
-                    'supir.namasupir as supir_id',
-                    'detail.penerimaantruckingheader_nobukti',
-                )
-                ->leftJoin(DB::raw("supir with (readuncommitted)"), 'detail.supir_id', 'supir.id');
-                $totalRows =  $query->count();
-                $query->skip($params['offset'])->take($params['limit']);
-                $pengeluaranTruckingDetail = $query->get();
-            }
-
-            return response([
-                'data' => $pengeluaranTruckingDetail,
-                'attributes' => [
-                    'totalRows' => $totalRows ?? 0,
-                    'totalPages' => $params['limit'] > 0 ? ceil( $totalRows / $params['limit']) : 1
-                ]
-            ]);
-        } catch (\Throwable $th) {
-            return response([
-                'message' => $th->getMessage()
-            ]);
-        }
+        return response()->json([
+            'data' => $pengeluaranTrucking->get(),
+            'attributes' => [
+                'totalRows' => $pengeluaranTrucking->totalRows,
+                'totalPages' => $pengeluaranTrucking->totalPages,
+                'totalNominal' => $pengeluaranTrucking->totalNominal
+            ]
+        ]);
     }
 
 

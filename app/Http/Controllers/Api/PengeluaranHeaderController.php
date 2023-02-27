@@ -94,8 +94,8 @@ class PengeluaranHeaderController extends Controller
                 $content['subgroup'] = $querysubgrppengeluaran->subgrp;
                 $content['table'] = 'pengeluaranheader';
                 $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
-
-                if ($querysubgrppengeluaran->tipe == 'BANK') {
+                $alatBayar = AlatBayar::from(DB::raw("alatbayar with (readuncommitted)"))->where('kodealatbayar', 'TRANSFER')->first();
+                if ($querysubgrppengeluaran->tipe == 'BANK' && $alatBayar->id == $request->alatbayar_id) {
                     $request->validate([
                         'transferkeac' => 'required',
                         'transferkean' => 'required',
@@ -362,7 +362,8 @@ class PengeluaranHeaderController extends Controller
                     ->whereRaw("bank.id = $bankid")
                     ->first();
 
-                if ($querysubgrppengeluaran->tipe == 'BANK') {
+                $alatBayar = AlatBayar::from(DB::raw("alatbayar with (readuncommitted)"))->where('kodealatbayar', 'TRANSFER')->first();
+                if ($querysubgrppengeluaran->tipe == 'BANK' && $alatBayar->id == $request->alatbayar_id) {
                     $request->validate([
                         'transferkeac' => 'required',
                         'transferkean' => 'required',

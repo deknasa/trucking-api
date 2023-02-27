@@ -23,12 +23,30 @@ class LaporanTripGandenganDetailController extends Controller
         ]);
     }
 
+    /**
+     * @ClassName
+     */
     public function report(Request $request)
     {
+        $dari = $request->dari;
         $sampai = $request->sampai;
-        $jenis = $request->jenis;
+        $gandengandari_id = $request->gandengandari_id;
+        $gandengansampai_id = $request->gandengansampai_id;
 
-        $report = LaporanTripGandenganDetail::getReport($sampai, $jenis);
+        // $report = LaporanTripGandenganDetail::getReport($sampai, $jenis);
+        $report = [
+            [
+                'gandengan' => 'T2',
+                'tanggal' => '23/2/2023',
+                'nosp' => '2414215412',
+                'supir' => 'HERMAN',
+                'nocont' => '124512',
+                'noplat' => 'BK 2159 ABS',
+                'rute' => 'MEDAN-BELAWAN',
+                'cont' => '20',
+                'keterangan' => 'TES KETERANGAN RITASI'
+            ]
+        ];
         return response([
             'data' => $report
         ]);

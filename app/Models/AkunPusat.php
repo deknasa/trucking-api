@@ -21,13 +21,15 @@ class AkunPusat extends MyModel
 
     public function get()
     {
+        $this->setRequestParameters();
 
+        // dd(request()->offset);
         $level = request()->level ?? '';
         $potongan = request()->potongan ?? '';
 
         $aktif = request()->aktif ?? '';
 
-        $this->setRequestParameters();
+  
 
         $query = DB::table($this->table)->from(
             DB::raw($this->table . " with (readuncommitted)")
@@ -47,7 +49,8 @@ class AkunPusat extends MyModel
                 'parameter_statuslabarugi.memo as statuslabarugi',
                 'akunpusat.modifiedby',
                 'akunpusat.created_at',
-                'akunpusat.updated_at',                )
+                'akunpusat.updated_at',
+            )
 
             ->leftJoin(DB::raw("parameter as parameter_statusaktif with (readuncommitted)"), 'akunpusat.statusaktif', '=', 'parameter_statusaktif.id')
             ->leftJoin(DB::raw("parameter as parameter_statuscoa with (readuncommitted)"), 'akunpusat.statuscoa', '=', 'parameter_statuscoa.id')
@@ -63,15 +66,19 @@ class AkunPusat extends MyModel
         $this->filter($query);
 
         if ($level != '') {
-            $query->where('akunpusat.level', '=', $level);
-            // dd($query->get());
+            if ($level=='3') {
+                $query->whereRaw(DB::raw("right(akunpusat.coa,3)<>'.00'"));
+
+            } else {
+                $query->where('akunpusat.level', '=', $level);
+
+            }
         }
         if ($potongan != '') {
             $temp = implode(',', $this->TempParameter());
 
             $query->whereRaw("akunpusat.coa in ($temp)");
-        }
-
+        } 
         if ($aktif == 'AKTIF') {
             $statusaktif = Parameter::from(
                 DB::raw("parameter with (readuncommitted)")
@@ -304,7 +311,7 @@ class AkunPusat extends MyModel
                         } elseif ($filters['field'] == 'id') {
                             $query = $query->orWhereRaw("(akunpusat.id like '%$filters[data]%'");
                         } elseif ($filters['field'] == 'updated_at') {
-                            $query = $query->orWhereRaw("format(akunpusat.updated_at,'dd-MM-yyyy HH:mm:ss') like '%$filters[data]%')");                                  
+                            $query = $query->orWhereRaw("format(akunpusat.updated_at,'dd-MM-yyyy HH:mm:ss') like '%$filters[data]%')");
                         } else if ($filters['field'] == 'statuscoa') {
                             $query = $query->orWhere('parameter_statuscoa.text', '=', "$filters[data]");
                         } else if ($filters['field'] == 'statusaccountpayable') {

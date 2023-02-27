@@ -24,6 +24,63 @@ class AbsensiSupirDetail extends MyModel
     ];
 
 
+    public function get()
+    {
+        $this->setRequestParameters();
+
+        $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"));
+
+        if (isset(request()->forReport) && request()->forReport) {
+            $query->select(
+                "header.id as id_header",
+                "header.nobukti as nobukti_header",
+                "header.tglbukti as tgl_header",
+                "header.kasgantung_nobukti as kasgantung_nobukti_header",
+                "header.nominal as nominal_header",
+                "trado.keterangan as trado",
+                "supir.namasupir as supir",
+                // "absentrado.kodeabsen as status",
+                "$this->table.keterangan as keterangan_detail",
+                "$this->table.jam",
+                "$this->table.uangjalan",
+                "$this->table.absensi_id"
+            )
+                ->leftjoin(DB::raw("absensisupirheader as header with (readuncommitted)"), "header.id", "$this->table.absensi_id")
+                ->leftjoin(DB::raw("trado with (readuncommitted)"), "trado.id","$this->table.trado_id")
+                ->leftjoin(DB::raw("supir with (readuncommitted)"), "supir.id","$this->table.supir_id");
+                // ->leftjoin(DB::raw("absentrado with (readuncommitted)"), "absentrado.id","$this->table.absen_id");
+                $query->where($this->table . '.absensi_id', '=', request()->absensi_id);
+
+        } else {
+            $query->select(
+                "trado.keterangan as trado",
+                "supir.namasupir as supir",
+                "absentrado.kodeabsen as status",
+                "$this->table.keterangan as keterangan_detail",
+                "$this->table.jam",
+                "$this->table.id",
+                DB::raw("isnull($this->table.trado_id,0) as trado_id"),
+                DB::raw("isnull($this->table.supir_id,0) as supir_id"),
+                "$this->table.uangjalan",
+                DB::raw("isnull($this->table.absensi_id,0) as absensi_id"),
+                DB::raw("isnull($this->table.absen_id,0) as absen_id"),
+            )
+            ->leftjoin(DB::raw("trado with (readuncommitted)"), "trado.id","$this->table.trado_id")
+            ->leftjoin(DB::raw("supir with (readuncommitted)"), "supir.id","$this->table.supir_id")
+            ->leftjoin(DB::raw("absentrado with (readuncommitted)"), "absentrado.id","$this->table.absen_id");
+
+            $query->where($this->table . '.absensi_id', '=', request()->absensi_id);
+
+            $this->totalRows = $query->count();
+            $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+
+            $this->sort($query);
+            $this->paginate($query);
+        }
+        return $query->get();
+    }
+    
+
     public function getAll($id)
     {
  
@@ -96,5 +153,15 @@ class AbsensiSupirDetail extends MyModel
 
         $detail = $query->get();
         return $detail;
+    }
+
+    public function sort($query)
+    {
+        return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+    }
+
+    public function paginate($query)
+    {
+        return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
 }

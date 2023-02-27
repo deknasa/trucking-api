@@ -99,8 +99,7 @@ class PenerimaanHeaderController extends Controller
 
             $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
                 ->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
-            $statusBerkas = Parameter::from(DB::raw("parameter with (readuncommitted)"))
-                ->where('grp', 'STATUS BERKAS')->where('text', 'TIDAK ADA BERKAS')->first();
+           
             $statuscetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
                 ->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
 
@@ -114,7 +113,6 @@ class PenerimaanHeaderController extends Controller
             $penerimaanHeader->tgllunas = date('Y-m-d', strtotime($request->tgllunas));
             $penerimaanHeader->bank_id = $request->bank_id ?? '';
             $penerimaanHeader->statusapproval = $statusApproval->id;
-            $penerimaanHeader->statusberkas = $statusBerkas->id;
             $penerimaanHeader->statuscetak = $statuscetak->id;
             $penerimaanHeader->modifiedby = auth('api')->user()->name;
             $penerimaanHeader->statusformat = $request->statusformat ?? $querysubgrppenerimaan->formatpenerimaan;
@@ -248,9 +246,12 @@ class PenerimaanHeaderController extends Controller
 
                 if ($request->datadetail != '') {
                     $counter = $request->datadetail;
+                    $memo = json_decode($getCoaKredit->memo, true);
                 } else {
                     $counter = $request->nominal_detail;
                 }
+                
+               
                 for ($i = 0; $i < count($counter); $i++) {
                     $detail = [];
                     $jurnalDetail = [
@@ -266,7 +267,7 @@ class PenerimaanHeaderController extends Controller
                         [
                             'nobukti' => $penerimaanHeader->nobukti,
                             'tglbukti' => date('Y-m-d', strtotime($penerimaanHeader->tglbukti)),
-                            'coa' =>  $request->coakredit[$i] ?? '-',
+                            'coa' => ($request->datadetail != '') ? $request->datadetail[$i]['coakredit'] ?? $memo['JURNAL'] : $request->coakredit[$i] ?? '-',
                             'nominal' => ($request->datadetail != '') ? '-' . $request->datadetail[$i]['nominal'] : '-' . $request->nominal_detail[$i],
                             'keterangan' => ($request->datadetail != '') ? $request->datadetail[$i]['keterangan'] : $request->keterangan_detail[$i],
                             'modifiedby' => auth('api')->user()->name,
@@ -361,8 +362,6 @@ class PenerimaanHeaderController extends Controller
 
                 $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
                     ->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
-                $statusBerkas = Parameter::from(DB::raw("parameter with (readuncommitted)"))
-                    ->where('grp', 'STATUS BERKAS')->where('text', 'TIDAK ADA BERKAS')->first();
 
                 $penerimaanheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
                 $penerimaanheader->pelanggan_id = $request->pelanggan_id;
@@ -370,7 +369,6 @@ class PenerimaanHeaderController extends Controller
                 $penerimaanheader->tgllunas = date('Y-m-d', strtotime($request->tgllunas));
                 $penerimaanheader->bank_id = $request->bank_id ?? '';
                 $penerimaanheader->statusapproval = $statusApproval->id ?? 0;
-                $penerimaanheader->statusberkas = $statusBerkas->id ?? 0;
                 $penerimaanheader->modifiedby = auth('api')->user()->name;
                 $penerimaanheader->save();
             } else {
@@ -496,7 +494,7 @@ class PenerimaanHeaderController extends Controller
                         [
                             'nobukti' => $penerimaanheader->nobukti,
                             'tglbukti' => ($isUpdate != 0) ? $penerimaanheader->tglbukti : date('Y-m-d', strtotime($request->tglbukti)),
-                            'coa' => ($isUpdate != 0) ? $counter[$i]['coakredit'] ?? '-' : $request->coakredit[$i] ?? '-',
+                            'coa' => ($isUpdate != 0) ? $counter[$i]['coakredit'] ?? $memo['JURNAL'] : $request->coakredit[$i] ?? '-',
                             'nominal' => ($isUpdate != 0) ? '-' . $counter[$i]['nominal'] : -$request->nominal_detail[$i],
                             'keterangan' => ($isUpdate != 0) ? $counter[$i]['keterangan'] : $request->keterangan_detail[$i],
                             'modifiedby' => auth('api')->user()->name,

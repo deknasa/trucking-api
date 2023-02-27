@@ -60,7 +60,6 @@ class StoreUpahRitasiRequest extends FormRequest
     {
         return [
             'jarak.gt' => 'Jarak wajib di isi',
-            'nominalsupir.*.gt' => 'nominal supir wajib di isi',
         ];
     }
 }

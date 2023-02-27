@@ -108,23 +108,95 @@ class GudangController extends Controller
 
                 $param1 = $gudang->id;
                 $param2 = $gudang->modifiedby;
+
+                $statushitungstok=DB::table('parameter')->from(
+                    DB::raw("parameter with (readuncommitted)")
+                )
+                ->select(
+                    'id'
+                )
+                ->where('grp','=','STATUS HITUNG STOK')
+                ->where('subgrp','=','STATUS HITUNG STOK')
+                ->where('text','=','HITUNG STOK')
+                ->first();
+
+                $tempmasuk = '##tempmasuk' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+                Schema::create($tempmasuk, function ($table) {
+                    $table->unsignedBigInteger('stok_id')->default(0);
+                    $table->unsignedBigInteger('gudang_id')->default(0);
+                    $table->double('qty', 15,2)->default('');
+                });
+
+
+                $querymasuk=DB::table('penerimaanstokdetail')->from(
+                    DB::raw("penerimaanstokdetail as a with (readuncommitted)")
+                )
+                ->select (
+                    'a.stok_id',
+                    'b.gudang_id',
+                    DB::raw("sum(a.qty) as qty"),
+                )
+                ->join(DB::raw("penerimaanstokheader as b"),'a.penerimaanstokheader_id','b.id')
+                ->join(DB::raw("penerimaanstok as c"),'b.penerimaanstok_id','c.id')
+                ->where('c.statushitungstok','=',$statushitungstok->id)
+                ->whereRaw("isnull(b.gudang_id,0)<>0")
+                ->groupby('a.stok_id','b.gudang_id');
+
+                DB::table($tempmasuk)->insertUsing([
+                    'stok_id',
+                    'gudang_id',
+                    'qty',
+                ], $querymasuk);       
+                
+                $tempkeluar = '##tempkeluar' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+                Schema::create($tempkeluar, function ($table) {
+                    $table->unsignedBigInteger('stok_id')->default(0);
+                    $table->unsignedBigInteger('gudang_id')->default(0);
+                    $table->double('qty', 15,2)->default('');
+                });
+
+
+                $querykeluar=DB::table('pengeluaranstokdetail')->from(
+                    DB::raw("pengeluaranstokdetail as a with (readuncommitted)")
+                )
+                ->select (
+                    'a.stok_id',
+                    'b.gudang_id',
+                    DB::raw("sum(a.qty) as qty"),
+                )
+                ->join(DB::raw("pengeluaranstokheader as b"),'a.pengeluaranstokheader_id','b.id')
+                ->join(DB::raw("pengeluaranstok as c"),'b.pengeluaranstok_id','c.id')
+                ->where('c.statushitungstok','=',$statushitungstok->id)
+                ->whereRaw("isnull(b.gudang_id,0)<>0")
+                ->groupby('a.stok_id','b.gudang_id');
+
+                DB::table($tempkeluar)->insertUsing([
+                    'stok_id',
+                    'gudang_id',
+                    'qty',
+                ], $querykeluar);                     
+
                 $stokgudang = Stok::from(DB::raw("stok with (readuncommitted)"))
                     ->select(DB::raw(
                         "stok.id as stok_id,"
                             . $param1 . "  as gudang_id,
                     0 as trado_id,
                     0 as gandengan_id,
-                    0 as qty,'"
+                    (isnull(b.qty,0)-isnull(C.Qty,0)) as qty,'"
                             . $param2 . "' as modifiedby"
                     ))
                     ->leftjoin('stokpersediaan', function ($join) use ($param1) {
                         $join->on('stokpersediaan.stok_id', '=', 'stok.id');
                         $join->on('stokpersediaan.gudang_id', '=', DB::raw("'" . $param1 . "'"));
                     })
+                    ->leftjoin(DB::raw($tempmasuk. " as b"),'stok.id','b.stok_id')
+                    ->leftjoin(DB::raw($tempkeluar. " as c"),'stok.id','c.stok_id')
+
                     ->where(DB::raw("isnull(stokpersediaan.id,0)"), '=', 0);
 
 
 
+                    // dd($stokgudang->get());
                 $datadetail = json_decode($stokgudang->get(), true);
 
                 $dataexist = $stokgudang->exists();
@@ -215,22 +287,96 @@ class GudangController extends Controller
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 app(LogTrailController::class)->store($validatedLogTrail);
 
+
                 $param1 = $gudang->id;
                 $param2 = $gudang->modifiedby;
+                
+                $statushitungstok=DB::table('parameter')->from(
+                    DB::raw("parameter with (readuncommitted)")
+                )
+                ->select(
+                    'id'
+                )
+                ->where('grp','=','STATUS HITUNG STOK')
+                ->where('subgrp','=','STATUS HITUNG STOK')
+                ->where('text','=','HITUNG STOK')
+                ->first();
+
+                $tempmasuk = '##tempmasuk' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+                Schema::create($tempmasuk, function ($table) {
+                    $table->unsignedBigInteger('stok_id')->default(0);
+                    $table->unsignedBigInteger('gudang_id')->default(0);
+                    $table->double('qty', 15,2)->default('');
+                });
+
+
+                $querymasuk=DB::table('penerimaanstokdetail')->from(
+                    DB::raw("penerimaanstokdetail as a with (readuncommitted)")
+                )
+                ->select (
+                    'a.stok_id',
+                    'b.gudang_id',
+                    DB::raw("sum(a.qty) as qty"),
+                )
+                ->join(DB::raw("penerimaanstokheader as b"),'a.penerimaanstokheader_id','b.id')
+                ->join(DB::raw("penerimaanstok as c"),'b.penerimaanstok_id','c.id')
+                ->where('c.statushitungstok','=',$statushitungstok->id)
+                ->whereRaw("isnull(b.gudang_id,0)<>0")
+                ->groupby('a.stok_id','b.gudang_id');
+
+                DB::table($tempmasuk)->insertUsing([
+                    'stok_id',
+                    'gudang_id',
+                    'qty',
+                ], $querymasuk);       
+                
+                $tempkeluar = '##tempkeluar' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+                Schema::create($tempkeluar, function ($table) {
+                    $table->unsignedBigInteger('stok_id')->default(0);
+                    $table->unsignedBigInteger('gudang_id')->default(0);
+                    $table->double('qty', 15,2)->default('');
+                });
+
+
+                $querykeluar=DB::table('pengeluaranstokdetail')->from(
+                    DB::raw("pengeluaranstokdetail as a with (readuncommitted)")
+                )
+                ->select (
+                    'a.stok_id',
+                    'b.gudang_id',
+                    DB::raw("sum(a.qty) as qty"),
+                )
+                ->join(DB::raw("pengeluaranstokheader as b"),'a.pengeluaranstokheader_id','b.id')
+                ->join(DB::raw("pengeluaranstok as c"),'b.pengeluaranstok_id','c.id')
+                ->where('c.statushitungstok','=',$statushitungstok->id)
+                ->whereRaw("isnull(b.gudang_id,0)<>0")
+                ->groupby('a.stok_id','b.gudang_id');
+
+                DB::table($tempkeluar)->insertUsing([
+                    'stok_id',
+                    'gudang_id',
+                    'qty',
+                ], $querykeluar);                     
+
                 $stokgudang = Stok::from(DB::raw("stok with (readuncommitted)"))
                     ->select(DB::raw(
                         "stok.id as stok_id,"
                             . $param1 . "  as gudang_id,
                     0 as trado_id,
                     0 as gandengan_id,
-                    0 as qty,'"
+                    (isnull(b.qty,0)-isnull(C.Qty,0)) as qty,'"
                             . $param2 . "' as modifiedby"
                     ))
                     ->leftjoin('stokpersediaan', function ($join) use ($param1) {
                         $join->on('stokpersediaan.stok_id', '=', 'stok.id');
                         $join->on('stokpersediaan.gudang_id', '=', DB::raw("'" . $param1 . "'"));
                     })
+                    ->leftjoin(DB::raw($tempmasuk. " as b"),'stok.id','b.stok_id')
+                    ->leftjoin(DB::raw($tempkeluar. " as c"),'stok.id','c.stok_id')
+
                     ->where(DB::raw("isnull(stokpersediaan.id,0)"), '=', 0);
+
+
 
 
 

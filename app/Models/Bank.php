@@ -283,6 +283,9 @@ class Bank extends MyModel
         if($tipe == 'KAS'){
             $query->where('bank.tipe', '=', 'KAS');
         }
+        if($tipe == 'BANK'){
+            $query->where('bank.tipe', '=', 'BANK');
+        }
         if($bankId != 0){
             $query->where('bank.id', '=', $bankId);
         }

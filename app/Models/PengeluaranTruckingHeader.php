@@ -44,6 +44,25 @@ class PengeluaranTruckingHeader extends MyModel
             ];
             goto selesai;
         }
+        
+
+        $penerimaanTrucking = DB::table('penerimaantruckingdetail')
+            ->from(
+                DB::raw("penerimaantruckingdetail as a with (readuncommitted)")
+            )
+            ->select(
+                'a.pengeluarantruckingheader_nobukti'
+            )
+            ->where('a.pengeluarantruckingheader_nobukti', '=', $nobukti)
+            ->first();
+        if (isset($penerimaanTrucking)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Penerimaan Trucking',
+                'kodeerror' => 'SATL'
+            ];
+            goto selesai;
+        }
 
         $data = [
             'kondisi' => false,

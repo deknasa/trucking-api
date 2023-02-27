@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Rules\DateTutupBuku;
 
 class UpdatePelunasanPiutangHeaderRequest extends FormRequest
 {
@@ -24,7 +25,10 @@ class UpdatePelunasanPiutangHeaderRequest extends FormRequest
     public function rules()
     {
         $rules = [
-            'tglbukti' => 'required',
+            "tglbukti" => [
+                "required",
+                new DateTutupBuku()
+            ],
             'bank' => 'required',
             'agen' => 'required',
             'alatbayar' => 'required',
@@ -50,6 +54,7 @@ class UpdatePelunasanPiutangHeaderRequest extends FormRequest
             'tglbukti' => 'Tanggal Bukti',
             'alatbayar' => 'alat bayar',
             'bayarppd.*' => 'Nominal Bayar',
+            'keterangandetailppd.*' => 'keterangan'
         ];
         
         return $attributes;

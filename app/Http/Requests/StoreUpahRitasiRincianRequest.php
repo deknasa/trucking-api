@@ -26,8 +26,6 @@ class StoreUpahRitasiRincianRequest extends FormRequest
         return [
             'container' => 'required|array',
             'container.*' => 'required',
-            'nominalsupir' => 'required|array',
-            'nominalsupir.*' => 'required|numeric|gt:0',
         ];
     }
 }

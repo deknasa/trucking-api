@@ -207,12 +207,13 @@ class HutangBayarHeader extends MyModel
             $table->string('hutang_nobukti');
             $table->date('tglbukti')->default('');
             $table->bigInteger('bayar')->nullable();
+            $table->string('keterangan');
             $table->bigInteger('potongan')->default('0');
             $table->bigInteger('nominalhutang');
             $table->bigInteger('sisa')->nullable();
         });
 
-        $tes = DB::table($tempo)->insertUsing(['id', 'hutangbayar_id', 'hutang_nobukti', 'tglbukti', 'bayar',  'potongan', 'nominalhutang', 'sisa'], $fetch);
+        $tes = DB::table($tempo)->insertUsing(['id', 'hutangbayar_id', 'hutang_nobukti', 'tglbukti', 'bayar', 'keterangan',  'potongan', 'nominalhutang', 'sisa'], $fetch);
 
         return $tempo;
     }

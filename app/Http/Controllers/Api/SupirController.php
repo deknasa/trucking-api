@@ -11,6 +11,7 @@ use App\Http\Requests\UpdateSupirRequest;
 use App\Models\Supir;
 use App\Models\LogTrail;
 use App\Models\Parameter;
+use App\Models\PemutihanSupir;
 use App\Models\Zona;
 use Exception;
 use Illuminate\Http\Request;
@@ -243,7 +244,19 @@ class SupirController extends Controller
         DB::beginTransaction();
 
         try {
+
+
             $supir = new Supir();
+            $status = $supir->cekPemutihan($request->noktp);
+
+            if($status == true){
+                $request->validate([
+                    'pemutihansupir_nobukti' => 'required'
+                ],[
+                    'pemutihansupir_nobukti.required' =>'nobukti pemutihan supir ' . app(ErrorController::class)->geterror('WI')->keterangan,
+                ]);
+            }
+
             $depositke = str_replace(',', '', $request->depositke);
             $supir->namasupir = $request->namasupir;
             $supir->alamat = $request->alamat;
@@ -254,6 +267,7 @@ class SupirController extends Controller
             $supir->depositke = str_replace('.', '', $depositke) ?? 0;
             $supir->tglmasuk = date('Y-m-d', strtotime($request->tglmasuk));
             $supir->nominalpinjamansaldoawal = str_replace(',', '', $request->nominalpinjamansaldoawal) ?? 0;
+            $supir->pemutihansupir_nobukti = $request->pemutihansupir_nobukti ?? '';
             $supir->supirold_id = $request->supirold_id ?? 0;
             $supir->tglexpsim = date('Y-m-d', strtotime($request->tglexpsim));
             $supir->nosim = $request->nosim;
@@ -265,6 +279,16 @@ class SupirController extends Controller
             $supir->tgllahir = date('Y-m-d', strtotime($request->tgllahir));
             $supir->tglterbitsim = date('Y-m-d', strtotime($request->tglterbitsim));
             $supir->modifiedby = auth('api')->user()->name;
+
+            $statusAdaUpdateGambar = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS ADA UPDATE GAMBAR')->where('default', 'YA')->first();
+            $statusLuarKota = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS LUAR KOTA')->where('default', 'YA')->first();
+            $statusZonaTertentu = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'ZONA TERTENTU')->where('default', 'YA')->first();
+            $statusBlackList = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'BLACKLIST SUPIR')->where('default', 'YA')->first();
+            $supir->statusadaupdategambar = $statusAdaUpdateGambar->id;
+            $supir->statusluarkota = $statusLuarKota->id;
+            $supir->statuszonatertentu = $statusZonaTertentu->id;
+            $supir->statusblacklist = $statusBlackList->id;
+
             $supir->photosupir = $this->storeFiles($request->photosupir, 'supir');
             $supir->photoktp = $this->storeFiles($request->photoktp, 'ktp');
             $supir->photosim = $this->storeFiles($request->photosim, 'sim');
@@ -315,13 +339,23 @@ class SupirController extends Controller
         DB::beginTransaction();
 
         try {
+            $supirNew = new Supir();
+            $status = $supirNew->cekPemutihan($request->noktp);
 
+            if($status == true){
+                $request->validate([
+                    'pemutihansupir_nobukti' => 'required'
+                ],[
+                    'pemutihansupir_nobukti.required' =>'nobukti pemutihan supir ' . app(ErrorController::class)->geterror('WI')->keterangan,
+                ]);
+            }
             $depositke = str_replace(',', '', $request->depositke);
             $supir->namasupir = $request->namasupir;
             $supir->alamat = $request->alamat;
             $supir->kota = $request->kota;
             $supir->telp = $request->telp;
             $supir->statusaktif = $request->statusaktif;
+            $supir->pemutihansupir_nobukti = $request->pemutihansupir_nobukti ?? '';
             $supir->nominaldepositsa = str_replace(',', '', $request->nominaldepositsa) ?? 0;
             $supir->depositke = str_replace('.00', '', $depositke) ?? 0;
             $supir->tglmasuk = date('Y-m-d', strtotime($request->tglmasuk));

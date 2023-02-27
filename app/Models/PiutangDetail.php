@@ -24,79 +24,52 @@ class PiutangDetail extends MyModel
         'updated_at',
     ];
 
-    public function get($piutangId)
+   
+    public function get()
     {
         $this->setRequestParameters();
-        
-        $query = DB::table($this->table)->from(
-            DB::raw("piutangdetail with (readuncommitted)")
-        );
 
-        $this->selectColumns($query, $piutangId);
-        
-        $this->totalRows = $query->count();
-        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+        $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"));
 
-        $this->sort($query);
-        $this->filter($query);
-        $this->paginate($query);
+        if (isset(request()->forReport) && request()->forReport) {
+            $query->select(
+                'header.id as id_header',
+                'header.nobukti as nobukti_header',
+                'header.tglbukti as tgl_header',
+                'header.keterangan as keterangan_header',
+                'header.invoice_nobukti as invoice_nobukti',
+                'agen.namaagen as agen_id',
+                 $this->table . '.keterangan as keterangan_detail',
+                 $this->table . '.nominal',
+                 $this->table . '.invoice_nobukti as invoice_nobukti_detail'
+            )
+                ->leftJoin('piutangheader as header', 'header.id',  $this->table . '.piutang_id')
+                ->leftJoin('agen', 'header.agen_id','agen.id');
 
-        $data = $query->get();
+            $query->where($this->table . '.piutang_id', '=', request()->piutang_id);
+        } else {
+            $query->select(
+                $this->table . '.nobukti',
+                $this->table . '.keterangan',
+                $this->table . '.invoice_nobukti',
+                $this->table . '.nominal');
 
-        return $data;
-    }
+            $query->where($this->table . '.piutang_id', '=', request()->piutang_id);
 
+            $this->totalNominal = $query->sum('nominal');
+            $this->totalRows = $query->count();
+            $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
-    public function selectColumns($query, $piutangId)
-    {
-        return $query->select(
-            "$this->table.id",
-            "$this->table.nobukti",
-            "$this->table.keterangan",
-            "$this->table.nominal",
-            "$this->table.invoice_nobukti",
-        )->where('piutang_id', $piutangId);
+            $this->sort($query);
+            $this->paginate($query);
+        }
+
+        return $query->get();
     }
 
     public function sort($query)
     {
         return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
-    }
-
-    public function filter($query, $relationFields = [])
-    {
-        if (count($this->params['filters']) > 0 && @$this->params['filters']['rules'][0]['data'] != '') {
-            switch ($this->params['filters']['groupOp']) {
-                case "AND":
-                    foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'agen_id') {
-                            $query = $query->where('agen.namaagen', 'LIKE', "%$filters[data]%");
-                        } else {
-                            $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                        }
-                    }
-
-                    break;
-                case "OR":
-                    foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'agen_id') {
-                            $query = $query->orWhere('agen.namaagen', 'LIKE', "%$filters[data]%");
-                        } else {
-                            $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                        }
-                    }
-
-                    break;
-                default:
-
-                    break;
-            }
-
-            $this->totalRows = $query->count();
-            $this->totalPages = $this->params['limit'] > 0 ? ceil($this->totalRows / $this->params['limit']) : 1;
-        }
-
-        return $query;
     }
 
     public function paginate($query)

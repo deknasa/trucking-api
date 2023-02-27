@@ -23,12 +23,36 @@ class LaporanTripTradoController extends Controller
         ]);
     }
 
+    /**
+     * @ClassName
+     */
     public function report(Request $request)
     {
         $sampai = $request->sampai;
         $dari = $request->dari;
 
-        $report = LaporanTripTrado::getReport($sampai, $dari);
+        // $report = LaporanTripTrado::getReport($sampai, $dari);
+        $report = [
+            [
+                'nopol' => 'BK 2141 PK',
+                'tripfull' => '6',
+                'tripempty' => '4',
+                'supir' => 'HERMAN',
+                'full' => '2',
+                'empty' => '1',
+                'keterangan' => 'TES KETERANGAN'
+            ],
+            
+            [
+                'nopol' => 'BK 2415 ABS',
+                'tripfull' => '4',
+                'tripempty' => '3',
+                'supir' => 'ANDIKA',
+                'full' => '1',
+                'empty' => '2',
+                'keterangan' => 'TES KETERANGAN 2'
+            ]
+        ];
         return response([
             'data' => $report
         ]);

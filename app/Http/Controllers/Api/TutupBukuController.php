@@ -15,20 +15,29 @@ use Illuminate\Validation\Rule;
 
 class TutupBukuController extends Controller
 {
+    /**
+     * @ClassName
+     */
+    public function index()
+    {
+        $parameter = Parameter::where('grp', 'TUTUP BUKU')->where('subgrp', 'TUTUP BUKU')->first();
+
+        return response([
+            'data' => $parameter,
+        ]);
+    }
+
+    /**
+     * @ClassName
+     */
     public function store(Request $request)
     {
         DB::beginTransaction();
-        
+
         try {
-            $tglterakhir = date('Y-m-d', strtotime($request->tglterakhir));
             $tgltutupbuku = date('Y-m-d', strtotime($request->tgltutupbuku));
-            $parameter = Parameter::where('grp','TUTUP BUKU')->where('subgrp','TUTUP BUKU')->where('text',$tglterakhir)->first();
-            if (!$parameter) {
-                return response([
-                    'status' => false,
-                    'statusText' => 'Tanggal Terakhir Tutup Buku Salah !!! <br> Proses Tutup Buku Gagal !!!',
-                ],423);
-            }
+            $parameter = Parameter::where('grp', 'TUTUP BUKU')->where('subgrp', 'TUTUP BUKU')->first();
+            
             $parameter->text = $tgltutupbuku;
             $parameter->modifiedby = auth('api')->user()->name;
 

@@ -23,12 +23,25 @@ class LaporanKeteranganPinjamanSupirController extends Controller
         ]);
     }
 
+    /**
+     * @ClassName
+     */
     public function report(Request $request)
     {
-        $sampai = $request->sampai;
+        $periode = $request->periode;
         $jenis = $request->jenis;
 
-        $report = LaporanKeteranganPinjamanSupir::getReport($sampai, $jenis);
+        // $report = LaporanKeteranganPinjamanSupir::getReport($periode, $jenis);
+        $report = [
+            [
+                "tanggal" => "23/2/2023",
+                "nobukti" => "PJT 0001/II/2023",
+                "keterangan" => "Gaji Minus Supir Ady Gunawan BK 8747 BU Tgl. 08 Februari 2023",
+                "debet" => "215125",
+                "kredit" => "346436",
+                "saldo" => "1512512"
+            ]
+        ];
         return response([
             'data' => $report
         ]);
