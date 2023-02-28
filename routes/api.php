@@ -574,6 +574,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::post('hutangheader/{id}/cekValidasiAksi', [HutangHeaderController::class, 'cekValidasiAksi'])->name('hutangheader.cekValidasiAksi');
     Route::get('hutangheader/field_length', [HutangHeaderController::class, 'fieldLength']);
     Route::resource('hutangheader', HutangHeaderController::class);
+    Route::get('hutangdetail/history', [HutangDetailController::class, 'history']);
     Route::resource('hutangdetail', HutangDetailController::class);
 
     Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
