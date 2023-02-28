@@ -185,14 +185,13 @@ class PengeluaranStokHeaderController extends Controller
                     app(LogTrailController::class)->store($data);
                 }
 
-                /* Delete existing Jurnal */
-                PenerimaanDetail::where('nobukti', $pengeluaranStokHeader->penerimaan_nobukti)->delete();
-                PenerimaanHeader::where('nobukti', $pengeluaranStokHeader->penerimaan_nobukti)->delete();
-                JurnalUmumDetail::where('nobukti', $pengeluaranStokHeader->penerimaan_nobukti)->delete();
-                JurnalUmumHeader::where('nobukti', $pengeluaranStokHeader->penerimaan_nobukti)->delete();
+                
 
                 $rbt = Parameter::where('grp', 'PENGELUARAN STOK')->where('subgrp', 'RETUR BELI BUKTI')->first();
-                if ($request->statusformat_id == $rbt->id) {
+                $pengeluaranstok = PengeluaranStok::where('id',$request->pengeluaranstok_id)->first();
+                $statusformat = Parameter::where('id', $pengeluaranstok->format)->first();
+
+                if ($statusformat->id == $rbt->id) {
 
                     $potongKas = Parameter::where('grp', 'STATUS POTONG RETUR')->where('text', 'POSTING KE KAS/BANK')->first();
                     $potongHutang = Parameter::where('grp', 'STATUS POTONG RETUR')->where('text', 'POSTING HUTANG')->first();
@@ -509,8 +508,12 @@ class PengeluaranStokHeaderController extends Controller
 
                         $datafifo = new StorePengeluaranStokDetailFifoRequest($datadetailfifo);
                         $pengeluaranStokDetailFifo = app(PengeluaranStokDetailFifoController::class)->store($datafifo);
-
+                        if ($pengeluaranStokDetailFifo['error']) {
+                            return response($pengeluaranStokDetailFifo, 422);
+                        }
+                        
                         $reset = $this->resethppedit($pengeluaranStokHeader->id, $request->detail_stok_id[$i]);
+                        // return response($reset['status'], 422);
 
 
                         if (!$reset['status']) {
@@ -536,8 +539,11 @@ class PengeluaranStokHeaderController extends Controller
                     JurnalUmumDetail::where('nobukti', $pengeluaranStokHeader->penerimaan_nobukti)->delete();
                     JurnalUmumHeader::where('nobukti', $pengeluaranStokHeader->penerimaan_nobukti)->delete();
 
-                    $rbt = Parameter::where('grp', 'PENGELUARAN STOK')->where('subgrp', 'RETUR BELI BUKTI')->first();
-                    if ($request->statusformat_id == $rbt->id) {
+                     $rbt = Parameter::where('grp', 'PENGELUARAN STOK')->where('subgrp', 'RETUR BELI BUKTI')->first();
+                     $pengeluaranstok = PengeluaranStok::where('id',$request->pengeluaranstok_id)->first();
+                     $statusformat = Parameter::where('id', $pengeluaranstok->format)->first();
+                    //  return response($statusformat,422);
+                if ($statusformat->id == $rbt->id) {
 
                         $potongKas = Parameter::where('grp', 'STATUS POTONG RETUR')->where('text', 'POSTING KE KAS/BANK')->first();
                         $potongHutang = Parameter::where('grp', 'STATUS POTONG RETUR')->where('text', 'POSTING HUTANG')->first();
