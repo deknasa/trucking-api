@@ -222,6 +222,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('parameter/getcoa', [ParameterController::class, 'getcoa']);
     Route::resource('parameter', ParameterController::class);
 
+    Route::get('absensisupirheader/{id}/cekabsensi', [AbsensiSupirHeaderController::class, 'cekabsensi'])->name('absensi.cekabsensi');
     Route::get('absensisupirheader/{id}/detail', [AbsensiSupirHeaderController::class, 'detail'])->name('absensi.detail');
     Route::post('absensisupirheader/{id}/cekValidasiAksi', [AbsensiSupirHeaderController::class, 'cekValidasiAksi'])->name('absensisupirheader.cekValidasiAksi');
     Route::get('absensisupirheader/no_bukti', [AbsensiSupirHeaderController::class, 'getNoBukti']);

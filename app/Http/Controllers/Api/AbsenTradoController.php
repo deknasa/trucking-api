@@ -87,7 +87,15 @@ class AbsenTradoController extends Controller
             $absenTrado->modifiedby = auth('api')->user()->name;
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
+            $detailmemo = [];
+            for ($i = 0; $i < count($request->key); $i++) {
+                $datadetailmemo = [
+                    $request->key[$i] => $request->value[$i],
+                ];
+                $detailmemo = array_merge($detailmemo, $datadetailmemo);
+            }
 
+            $absenTrado->memo = json_encode($detailmemo);
             if ($absenTrado->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($absenTrado->getTable()),
@@ -141,7 +149,14 @@ class AbsenTradoController extends Controller
             $absentrado->keterangan = $request->keterangan;
             $absentrado->statusaktif = $request->statusaktif;
             $absentrado->modifiedby = auth('api')->user()->name;
-
+            $detailmemo = [];
+            for ($i = 0; $i < count($request->key); $i++) {
+                $datadetailmemo = [
+                    $request->key[$i] => $request->value[$i],
+                ];
+                $detailmemo = array_merge($detailmemo, $datadetailmemo);
+            }
+            $absentrado->memo = json_encode($detailmemo);
             if ($absentrado->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($absentrado->getTable()),
