@@ -40,6 +40,21 @@ class HutangDetailController extends Controller
         ]);
     }
 
+    public function history(): JsonResponse
+    {
+        $hutangDetail = new HutangDetail();
+
+        return response()->json([
+            'data' => $hutangDetail->getHistory(),
+            'attributes' => [
+                'totalRows' => $hutangDetail->totalRows,
+                'totalPages' => $hutangDetail->totalPages,
+                'totalNominal' => $hutangDetail->totalNominal
+            ]
+        ]);
+    }
+
+
     public function store(StoreHutangDetailRequest $request)
     {
         DB::beginTransaction();

@@ -20,6 +20,23 @@ class AbsensiSupirDetailController extends Controller
 {
     public function index(Request $request)
     {
+        $absensiSupirDetail = new AbsensiSupirDetail();
+
+        $idUser = auth('api')->user()->id;
+            $getuser = User::select('name', 'cabang.namacabang as cabang_id')
+                ->where('user.id', $idUser)->join('cabang', 'user.cabang_id', 'cabang.id')->first();
+
+
+            return response([
+                'data' => $absensiSupirDetail->get(),
+                'user' => $getuser,
+                'total' => $absensiSupirDetail->totalRows,
+                "records" => $absensiSupirDetail->totalPages
+
+            ]);
+    }
+    public function index2(Request $request)
+    {
 
         $tempsp = '##tempsp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempsp, function ($table) {

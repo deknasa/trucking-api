@@ -6,6 +6,8 @@ use DateTimeInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+
 
 class AbsensiSupirDetail extends MyModel
 {
@@ -23,14 +25,122 @@ class AbsensiSupirDetail extends MyModel
         'jam' => 'date:H:i:s',
     ];
 
-
-    public function get()
-    {
+    public function get(){
         $this->setRequestParameters();
 
+        $tempsp = '##tempsp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempsp, function ($table) {
+            $table->unsignedBigInteger('absensi_id')->default(0);
+            $table->unsignedBigInteger('trado_id')->default(0);
+            $table->unsignedBigInteger('supir_id')->default(0);
+            $table->date('tglabsensi')->default('1900/1/1');
+            $table->string('nobukti', 100)->default('');
+        });
+
+        $query=DB::table('absensisupirheader')->from(
+            DB::raw("absensisupirheader as a with(readuncommitted)")
+        )
+        ->select(
+            DB::raw("format(a.tglbukti,'yyyy/MM/dd') as tglbukti")
+        )
+        ->where('a.id','=',request()->absensi_id)
+        ->first();
+
+        $statustrip=DB::table("parameter")->from(
+            DB::raw("parameter with (readuncommitted)")
+        )
+        ->select (
+            'memo'
+        )
+        ->where('grp','=','TIDAK ADA TRIP')
+        ->where('subgrp','=','TIDAK ADA TRIP')
+        ->where('text','=','TIDAK ADA TRIP')
+        ->first();
+
+        $param1= $query->tglbukti;
+        $querysp=DB::table('absensisupirdetail')->from(
+            DB::raw("absensisupirdetail as a with (readuncommitted)")
+        ) ->select (
+            'a.absensi_id',
+            'a.trado_id',
+            'a.supir_id',
+            'c.tglbukti as tglabsensi',
+            'b.nobukti'
+        ) 
+        ->join(DB::raw("suratpengantar as b with(readuncommitted)"), function ($join) use ($param1) {
+            $join->on('a.supir_id', '=', 'b.supir_id');
+            $join->on('a.trado_id', '=', 'b.trado_id');
+            $join->on('b.tglbukti', '=', DB::raw("'" . $param1 . "'"));
+        })
+        ->join(DB::raw("absensisupirheader as c with (readuncommitted)"),'a.absensi_id','c.id')
+        ->where('c.id','=',request()->absensi_id);
+        // return $querysp->get();
+
+        // dd($querysp);
+        DB::table($tempsp)->insertUsing([
+            'absensi_id',
+            'trado_id',
+            'supir_id',
+            'tglabsensi',
+            'nobukti',
+        ], $querysp);        
+
+
+        $queryspgroup=DB::table($tempsp)
+        ->from(
+            DB::raw($tempsp . " as a")
+        )
+        ->select(
+            'a.trado_id',
+            'a.supir_id',
+           DB::raw("count(a.nobukti) as jumlah")   
+        )
+        ->groupBy('a.trado_id','a.supir_id');
+   
+
+        $tempspgroup = '##tempspgroup' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempspgroup, function ($table) {
+            $table->unsignedBigInteger('trado_id')->default(0);
+            $table->unsignedBigInteger('supir_id')->default(0);
+            $table->double('jumlah', 15, 2)->default(0);
+        });
+
+        DB::table($tempspgroup)->insertUsing([
+            'trado_id',
+            'supir_id',
+            'jumlah',
+        ], $queryspgroup);
+        
         $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"));
 
-        if (isset(request()->forReport) && request()->forReport) {
+
+        $params = [
+            "id" => request()->id,
+            "absensi_id" => request()->absensi_id,
+            "withHeader" => request()->withHeader ?? false,
+            "whereIn" => request()->whereIn ?? [],
+            "forReport" => request()->forReport ?? false,
+            // "notIndex" => iseet(request()->notIndex) ?  false : true,
+        ];
+            
+        // return  request()->id;
+            
+        if (isset($params["id"]) && !isset(request()->notIndex)) {
+            $query->where("$this->table.id", $params["id"]);
+        }
+
+        if (isset($params["absensi_id"])) {
+            $query->where("$this->table.absensi_id", $params["absensi_id"]);
+        }
+
+        if ($params["withHeader"]) {
+            $query->join("absensisupirheader", "absensisupirheader.id", "$this->table.absensi_id");
+        }
+
+        if (count($params["whereIn"]) > 0) {
+            $query->whereIn("absensi_id", $params["whereIn"]);
+        }
+        if ($params["forReport"]) {
             $query->select(
                 "header.id as id_header",
                 "header.nobukti as nobukti_header",
@@ -39,46 +149,63 @@ class AbsensiSupirDetail extends MyModel
                 "header.nominal as nominal_header",
                 "trado.keterangan as trado",
                 "supir.namasupir as supir",
-                // "absentrado.kodeabsen as status",
+                "absentrado.kodeabsen as status",
                 "$this->table.keterangan as keterangan_detail",
                 "$this->table.jam",
                 "$this->table.uangjalan",
-                "$this->table.absensi_id"
+                "$this->table.absensi_id",
+                DB::raw("isnull(c.jumlah,0) as jumlahtrip")
             )
-                ->leftjoin(DB::raw("absensisupirheader as header with (readuncommitted)"), "header.id", "$this->table.absensi_id")
-                ->leftjoin(DB::raw("trado with (readuncommitted)"), "trado.id","$this->table.trado_id")
-                ->leftjoin(DB::raw("supir with (readuncommitted)"), "supir.id","$this->table.supir_id");
-                // ->leftjoin(DB::raw("absentrado with (readuncommitted)"), "absentrado.id","$this->table.absen_id");
-                $query->where($this->table . '.absensi_id', '=', request()->absensi_id);
-
+            ->leftjoin(DB::raw("absensisupirheader as header with (readuncommitted)"), "header.id", "$this->table.absensi_id")
+            ->leftjoin(DB::raw("trado with (readuncommitted)"), "trado.id", "$this->table.trado_id")
+            ->leftjoin(DB::raw("supir with (readuncommitted)"), "supir.id", "$this->table.supir_id")
+            ->leftjoin(DB::raw("absentrado with (readuncommitted)"), "absentrado.id", "$this->table.absen_id")
+            ->leftjoin(DB::raw($tempspgroup." as c"), function ($join)  {
+                $join->on("$this->table.supir_id", "=", "c.supir_id");
+                $join->on("$this->table.trado_id", "=", "c.trado_id");
+            });
+            $absensiSupirDetail = $query->get();
         } else {
             $query->select(
                 "trado.keterangan as trado",
                 "supir.namasupir as supir",
                 "absentrado.kodeabsen as status",
+                "absentrado.keterangan as statusKeterangan",
+                "absentrado.memo as memo",
                 "$this->table.keterangan as keterangan_detail",
                 "$this->table.jam",
                 "$this->table.id",
-                DB::raw("isnull($this->table.trado_id,0) as trado_id"),
-                DB::raw("isnull($this->table.supir_id,0) as supir_id"),
+                "$this->table.trado_id",
+                "$this->table.supir_id",
                 "$this->table.uangjalan",
-                DB::raw("isnull($this->table.absensi_id,0) as absensi_id"),
-                DB::raw("isnull($this->table.absen_id,0) as absen_id"),
+                "$this->table.absensi_id",
+                DB::raw("isnull(c.jumlah,0) as jumlahtrip"),
+                DB::Raw("(case when isnull(c.jumlah,0)=0  and isnull(absentrado.kodeabsen,'')='' then ' $statustrip->memo ' else '' end) as statustrip")
             )
-            ->leftjoin(DB::raw("trado with (readuncommitted)"), "trado.id","$this->table.trado_id")
-            ->leftjoin(DB::raw("supir with (readuncommitted)"), "supir.id","$this->table.supir_id")
-            ->leftjoin(DB::raw("absentrado with (readuncommitted)"), "absentrado.id","$this->table.absen_id");
+                ->leftjoin(DB::raw("trado with (readuncommitted)"), "trado.id", "$this->table.trado_id")
+                ->leftjoin(DB::raw("supir with (readuncommitted)"), "supir.id", "$this->table.supir_id")
+                ->leftjoin(DB::raw("absentrado with (readuncommitted)"), "absentrado.id", "$this->table.absen_id")
+                ->leftjoin(DB::raw($tempspgroup." as c"), function ($join)  {
+                    $join->on("$this->table.supir_id", "=", "c.supir_id");
+                    $join->on("$this->table.trado_id", "=", "c.trado_id");
+                });
+    
+                $this->totalRows = $query->count();
+                $this->totalPages = $this->params['limit'] > 0 ? ceil($this->totalRows / $this->params['limit']) : 1;
+                $this->sort($query);
+                $this->paginate($query);
+                // $query->orderBy($this->params['sortIndex'], $this->params["sortOrder"]);
+                
+                $absensiSupirDetail = $query->get();
+            }
+            
+        return  $query->get();
 
-            $query->where($this->table . '.absensi_id', '=', request()->absensi_id);
+            
 
-            $this->totalRows = $query->count();
-            $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
-
-            $this->sort($query);
-            $this->paginate($query);
-        }
-        return $query->get();
     }
+
+
     
 
     public function getAll($id)

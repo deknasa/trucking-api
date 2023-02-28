@@ -80,16 +80,43 @@ class HutangDetail extends MyModel
             $this->totalRows = $query->count();
             $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
-            $this->sort($query);
+            $this->sort($query, $this->table);
             $this->paginate($query);
         }
 
         return $query->get();
     }
 
-    public function sort($query)
+    
+    public function getHistory()
     {
-        return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        $this->setRequestParameters();
+
+        $hutang = DB::table("hutangheader")->from(DB::raw("hutangheader with (readuncommitted)"))->where('id', request()->hutang_id)->first();
+        $query = DB::table("hutangbayardetail")->from(DB::raw("hutangbayardetail with (readuncommitted)"));
+
+        $query->select(
+            'hutangbayardetail.nobukti as nobukti_bayar',
+            'hutangbayardetail.hutang_nobukti',
+            'hutangbayardetail.keterangan',
+            'hutangbayardetail.nominal'
+        );
+
+        $query->where('hutangbayardetail.hutang_nobukti', '=', $hutang->nobukti);
+        
+        $this->totalNominal = $query->sum('nominal');
+        $this->totalRows = $query->count();
+        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+
+        $this->sort($query,'hutangbayardetail');
+        $this->paginate($query);
+
+
+        return $query->get();
+    }
+    public function sort($query, $table)
+    {
+        return $query->orderBy($table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
     }
 
     public function paginate($query)

@@ -681,6 +681,19 @@ class AbsensiSupirHeaderController extends Controller
         return response($data);
     }
 
+    public function cekabsensi(Request $request,$id){
+        // return $request;
+        $absensiSupirDetail = new AbsensiSupirDetail();
+        $absensiSupirHeader = new AbsensiSupirHeader();
+
+        return response([
+            'status' => true,
+            'data' => $absensiSupirHeader->findAll($id),
+            'detail' => $absensiSupirDetail->get(),
+            'absenTrado' => $absensiSupirHeader->getTradoAbsensi($id),
+        ]);
+    }
+
     // public function cekValidasiAksi($id) {
     //     $absensiSupirHeader= new AbsensiSupirHeader();
     //     $nobukti = AbsensiSupirHeader::from(DB::raw("absensisupirheader"))->where('id', $id)->first();
