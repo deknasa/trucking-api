@@ -31,7 +31,7 @@ class LaporanKasBank extends MyModel
 
         $dari = date('Y-m-d', strtotime(request()->dari)) ?? '1900/1/1';
         $sampai = date('Y-m-d', strtotime(request()->sampai)) ?? '1900/1/1';
-        $bank_id = request()->bank_id ?? '0';
+        $bank_id = request()->bankid ?? '0';
 
         $tempsaldo = '##tempsaldo' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempsaldo, function ($table) {
