@@ -136,6 +136,7 @@ class LaporanDepositoSupir extends MyModel
 
         $temprangedeposito = '##temprangedeposito' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temprangedeposito, function ($table) {
+            $table->unsignedBigInteger('id')->default(0);
             $table->double('nominalawal', 15, 2)->default(0);
             $table->double('nominalakhir', 15, 2)->default(0);
             $table->longtext('keterangan', 1000)->default('');
@@ -145,6 +146,7 @@ class LaporanDepositoSupir extends MyModel
             DB::raw("parameter as a with (readuncommitted)")
         )
             ->select(
+                'a.id',
                 DB::raw("cast(substring([text],1,charindex('-',[text])-1) as money) as nominalawal"),
                 DB::raw("cast(substring([text],charindex('-',[text])+1,20) as money) as nominalakhir"),
                  DB::raw("'Keterangan Deposito '+format(cast(substring([text],1,charindex('-',[text])-1) as money),'#,#0')+' - '+format(cast(substring([text],charindex('-',[text])+1,20) as money),'#,#')  as keterangan"),
@@ -160,6 +162,7 @@ class LaporanDepositoSupir extends MyModel
 
 
         DB::table($temprangedeposito)->insertUsing([
+            'id',
             'nominalawal',
             'nominalakhir',
             'keterangan',
@@ -214,6 +217,7 @@ class LaporanDepositoSupir extends MyModel
                 DB::raw($tempsaldo. " as a")
             )
             ->select (
+                'b.id',
                 'a.supir_id',
                 'a.namasupir',
                 'a.saldo',
@@ -222,7 +226,8 @@ class LaporanDepositoSupir extends MyModel
                 'a.total',
                 'a.keterangan',
                 'a.cicil',                
-                DB::raw("b.keterangan as keterangan")
+                DB::raw("b.keterangan as keterangan"),
+                DB::raw("'DEPOSITO SUPIR A/N '+trim(a.namasupir) as keterangandeposito")
             )
             ->join(DB::raw($temprangedeposito ." as b "), function ($join)  {
                 $join->on('a.total', '>=', 'b.nominalawal');
