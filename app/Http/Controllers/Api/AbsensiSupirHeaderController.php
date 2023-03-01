@@ -680,7 +680,9 @@ class AbsensiSupirHeaderController extends Controller
             
         return response($data);
     }
-
+    /**
+     * @ClassName 
+     */
     public function cekabsensi(Request $request,$id){
         // return $request;
         $absensiSupirDetail = new AbsensiSupirDetail();

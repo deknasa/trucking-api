@@ -237,7 +237,28 @@ class AbsenTradoController extends Controller
             ]);
         }
     }
+    public function detail()
+    {
+        $query = AbsenTrado::select('memo')->where('id', request()->id)->first();
 
+        $memo = json_decode($query->memo);
+
+        $array = [];
+        if ($memo != '') {
+
+            $i = 0;
+            foreach ($memo as $index => $value) {
+                $array[$i]['key'] = $index;
+                $array[$i]['value'] = $value;
+
+                $i++;
+            }
+        }
+
+        return response([
+            'data' => $array
+        ]);
+    }
     public function fieldLength()
     {
         $data = [];

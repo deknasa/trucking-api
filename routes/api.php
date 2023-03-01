@@ -309,6 +309,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('absentrado/default', [AbsenTradoController::class, 'default']);
     Route::post('absentrado/{id}/cekValidasi', [AbsenTradoController::class, 'cekValidasi'])->name('absentrado.cekValidasi');
     Route::resource('absentrado', AbsenTradoController::class);
+    Route::get('absentrado/detail', [AbsenTradoController::class, 'detail']);
 
     Route::get('container/field_length', [ContainerController::class, 'fieldLength']);
     Route::get('container/combostatus', [ContainerController::class, 'combostatus']);
@@ -731,6 +732,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::post('suratpengantar/cekUpahSupir', [SuratPengantarController::class, 'cekUpahSupir']);
     Route::get('suratpengantar/{id}/getTarifOmset', [SuratPengantarController::class, 'getTarifOmset']);
     Route::get('suratpengantar/{id}/getpelabuhan', [SuratPengantarController::class, 'getpelabuhan']);
+    Route::post('suratpengantar/{id}/batalmuat', [SuratPengantarController::class, 'approvalBatalMuat']);
     Route::get('suratpengantar/{id}/getOrderanTrucking', [SuratPengantarController::class, 'getOrderanTrucking']);
     Route::get('suratpengantar/getGaji/{dari}/{sampai}/{container}/{statuscontainer}', [SuratPengantarController::class, 'getGaji']);
     Route::get('suratpengantar/default', [SuratPengantarController::class, 'default']);
