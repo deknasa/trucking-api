@@ -28,8 +28,8 @@ class UpdatePengeluaranDetailRequest extends FormRequest
             'tgljatuhtempo.*' => 'required',
             'nominal_detail' => 'required|array',
             'nominal_detail.*' => 'required|numeric|gt:0',
-            'coadebet' => 'required|array',
-            'coadebet.*' => 'required',
+            'ketcoadebet' => 'required|array',
+            'ketcoadebet.*' => 'required',
             'keterangan_detail' => 'required|array',
             'keterangan_detail.*' => 'required'
         ];

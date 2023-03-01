@@ -47,8 +47,8 @@ class StoreJurnalUmumHeaderRequest extends FormRequest
     public function attributes()
     {
         $attributes = [
-            'coadebet_detail.*' => 'Coa Debet',
-            'coakredit_detail.*' => 'Coa Kredit',
+            'ketcoadebet_detail.*' => 'nama perkiraan (Debet)',
+            'ketcoakredit_detail.*' => 'nama perkiraan (Kredit)',
             'nominal_detail.*' => 'Nominal',
             'keterangan_detail.*' => 'Keterangan',
         ];

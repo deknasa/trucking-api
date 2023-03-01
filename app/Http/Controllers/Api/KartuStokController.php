@@ -32,6 +32,9 @@ class KartuStokController extends Controller
             ]);
     }
     
+    /**
+     * @ClassName
+     */
     public function report(Request $request)
     {
         $kartuStok = new KartuStok();
@@ -62,6 +65,42 @@ class KartuStokController extends Controller
         return response([
             'data' => $kartuStok->get(),
             'dataheader' => $report
+        ]);
+    }
+    
+    /**
+     * @ClassName
+     */
+    public function export(Request $request)
+    {
+        $kartuStok = new KartuStok();
+
+        $stokdari_id = Stok::find($request->stokdari_id);
+        $stoksampai_id = Stok::find($request->stoksampai_id);
+        $filter = Parameter::find($request->filter);
+        if($filter->text == 'GUDANG'){
+            $getdatafilter = Gudang::find($request->datafilter);
+            $datafilter =$getdatafilter->gudang;
+        } else if($filter->text == 'TRADO'){
+            $getdatafilter = Trado::find($request->datafilter);
+            $datafilter =$getdatafilter->keterangan;
+        } else if($filter->text == 'GANDENGAN'){
+            $getdatafilter = Gandengan::find($request->datafilter);
+            $datafilter =$getdatafilter->keterangan;
+        } 
+
+        $export = [
+            'stokdari' => $stokdari_id->namastok,
+            'stoksampai' => $stoksampai_id->namastok,
+            'dari' => $request->dari,
+            'sampai' => $request->sampai,
+            'filter' => $filter->text,
+            'datafilter' => $datafilter
+        ];
+
+        return response([
+            'data' => $kartuStok->get(),
+            'dataheader' => $export
         ]);
     }
 }

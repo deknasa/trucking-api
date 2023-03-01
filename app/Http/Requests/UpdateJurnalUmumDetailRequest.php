@@ -24,10 +24,10 @@ class UpdateJurnalUmumDetailRequest extends FormRequest
     public function rules()
     {
         return [
-            'coadebet_detail' => 'required|array',
-            'coadebet_detail.*' => 'required',
-            'coakredit_detail' => 'required|array',
-            'coakredit_detail.*' => 'required',
+            'ketcoadebet_detail' => 'required|array',
+            'ketcoadebet_detail.*' => 'required',
+            'ketcoakredit_detail' => 'required|array',
+            'ketcoakredit_detail.*' => 'required',
             'nominal_detail' => 'required|array',
             'nominal_detail.*' => 'required|numeric|gt:0',
             'keterangan_detail' => 'required|array',

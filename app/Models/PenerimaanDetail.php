@@ -93,6 +93,7 @@ class PenerimaanDetail extends MyModel
         $detail = DB::table("penerimaandetail")
             ->select(
                 'penerimaandetail.coakredit',
+                'akunpusat.keterangancoa as ketcoakredit',
                 'penerimaandetail.tgljatuhtempo',
                 'penerimaandetail.nowarkat',
                 'penerimaandetail.bankpelanggan_id',
@@ -101,10 +102,10 @@ class PenerimaanDetail extends MyModel
                 'penerimaandetail.nominal',
                 'penerimaandetail.invoice_nobukti',
                 'penerimaandetail.pelunasanpiutang_nobukti',
-                // DB::raw("penerimaandetail.bulanbeban as bulanbeban"),
                 DB::raw("(case when year(cast(penerimaandetail.bulanbeban as datetime))='1900' then '' else format(penerimaandetail.bulanbeban,'yyyy-MM-dd') end) as bulanbeban"),
             )
             ->leftJoin(DB::raw("bankpelanggan with (readuncommitted)"), 'penerimaandetail.bankpelanggan_id', 'bankpelanggan.id')
+            ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'penerimaandetail.coakredit', 'akunpusat.coa')
             ->where('penerimaandetail.penerimaan_id', $id)
             ->get();
 

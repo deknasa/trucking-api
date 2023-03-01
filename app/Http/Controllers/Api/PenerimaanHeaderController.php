@@ -321,9 +321,6 @@ class PenerimaanHeaderController extends Controller
 
     public function show($id)
     {
-        // $data = PenerimaanHeader::with(
-        //     'penerimaandetail',
-        // )->find($id);
         $data = PenerimaanHeader::findAll($id);
         $detail = PenerimaanDetail::findAll($id);
         return response([

@@ -501,6 +501,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('jurnalumumheader/combo', [JurnalUmumHeaderController::class, 'combo']);
     Route::post('jurnalumumheader/{id}/cekapproval', [JurnalUmumHeaderController::class, 'cekapproval'])->name('jurnalumumheader.cekapproval');
     Route::get('jurnalumumheader/grid', [JurnalUmumHeaderController::class, 'grid']);
+    Route::post('jurnalumumheader/copy', [JurnalUmumHeaderController::class, 'copy']);
     Route::get('jurnalumumheader/field_length', [JurnalUmumHeaderController::class, 'fieldLength']);
     Route::resource('jurnalumumheader', JurnalUmumHeaderController::class);
     Route::resource('jurnalumumdetail', JurnalUmumDetailController::class);
@@ -835,6 +836,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::resource('approvalpendapatansupir', ApprovalPendapatanSupirController::class);
     Route::resource('stokpersediaan', StokPersediaanController::class);
     Route::get('kartustok/report', [KartuStokController::class, 'report'])->name('kartustok.report');
+    Route::get('kartustok/export', [KartuStokController::class, 'export'])->name('kartustok.export');
     Route::resource('kartustok', KartuStokController::class);
 
     Route::get('historipenerimaanstok/report', [HistoriPenerimaanStokController::class, 'report'])->name('historipenerimaanstok.report');

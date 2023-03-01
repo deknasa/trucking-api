@@ -111,6 +111,26 @@ class JurnalUmumDetail extends MyModel
         return $jurnalUmumDetail->get();
     }
 
+    public function findAll($nobukti){
+        $query = JurnalUmumDetail::from(
+            DB::raw("jurnalumumdetail as A with (readuncommitted)")
+        )->select(['A.coa as coadebet','debet.keterangancoa as ketcoadebet', 'b.coa as coakredit','kredit.keterangancoa as ketcoakredit', 'A.nominal', 'A.keterangan'])
+            ->join(
+                DB::raw("(SELECT baris,coa FROM jurnalumumdetail WHERE nobukti='$nobukti' AND nominal<0) B"),
+                function ($join) {
+                    $join->on('A.baris', '=', 'B.baris');
+                }
+            )
+            ->join(DB::raw("akunpusat as debet with (readuncommitted)"), 'debet.coa','A.coa')
+            ->join(DB::raw("akunpusat as kredit with (readuncommitted)"), 'kredit.coa','B.coa')
+            ->where([
+                ['A.nobukti', '=', $nobukti],
+                ['A.nominal', '>=', '0']
+            ])
+            ->get();
+
+        return $query;
+    }
     public function sort($query)
     {
         return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);

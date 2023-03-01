@@ -60,7 +60,7 @@ class UpdatePenerimaanHeaderRequest extends FormRequest
             'tgljatuhtempo.*' => 'tanggal jatuh tempo',
             'nominal_detail.*' => 'nominal',
             'keterangan_detail.*' => 'keterangan detail',
-            'coakredit.*' => 'coa kredit'
+            'ketcoakredit.*' => 'nama perkiraan'
         ];
     }
     public function messages()

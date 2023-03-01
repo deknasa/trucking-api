@@ -31,6 +31,7 @@ class StorePenerimaanTruckingHeaderRequest extends FormRequest
             ],
             'penerimaantrucking' => 'required',
             'bank' => 'required',
+            'keterangancoa' => 'required'
         ];
         $relatedRequests = [
             StorePenerimaanTruckingDetailRequest::class
@@ -50,6 +51,7 @@ class StorePenerimaanTruckingHeaderRequest extends FormRequest
         return [
             
             'tglbukti' => 'Tgl Bukti',
+            'keterangancoa' => 'nama perkiraan',
             'penerimaantrucking' => 'Kode Penerimaan',
             'supir.*' => 'Supir'
         ];
