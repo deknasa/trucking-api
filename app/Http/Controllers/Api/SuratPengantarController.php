@@ -532,6 +532,49 @@ class SuratPengantarController extends Controller
         ]);
     }
 
+    public function approvalBatalMuat($id)
+    {
+        DB::beginTransaction();
+        try{
+            $suratPengantar = SuratPengantar::lockForUpdate()->findOrFail($id);
+
+            $statusBatalMuat = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS BATAL MUAT')->where('text', '=', 'BATAL MUAT')->first();
+            $statusBukanBatalMuat = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS BATAL MUAT')->where('text', '=', 'BUKAN BATAL MUAT')->first();
+            // statusapprovaleditabsensi,tglapprovaleditabsensi,userapprovaleditabsensi 
+            if ($suratPengantar->statusbatalmuat == $statusBatalMuat->id) {
+                $suratPengantar->statusbatalmuat = $statusBukanBatalMuat->id;
+                $aksi = $statusBukanBatalMuat->text;
+            } else {
+                $suratPengantar->statusbatalmuat = $statusBatalMuat->id;
+                $aksi = $statusBatalMuat->text;
+            }
+
+            if ($suratPengantar->save()) {
+                $logTrail = [
+                    'namatabel' => strtoupper($suratPengantar->getTable()),
+                    'postingdari' => 'APPROVED SUPIR RESIGN',
+                    'idtrans' => $suratPengantar->id,
+                    'nobuktitrans' => $suratPengantar->id,
+                    'aksi' => $aksi,
+                    'datajson' => $suratPengantar->toArray(),
+                    'modifiedby' => auth('api')->user()->name
+                ];
+    
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+    
+                DB::commit();
+            }
+
+            return response([
+                'message' => 'Berhasil'
+            ]);
+
+        }catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
+    }
 
     public function getGaji($dari, $sampai, $container, $statuscontainer)
     {
