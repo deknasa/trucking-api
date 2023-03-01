@@ -28,6 +28,7 @@ class PengeluaranDetailController extends Controller
             'attributes' => [
                 'totalRows' => $pengeluaranDetail->totalRows ,
                 'totalPages' => $pengeluaranDetail->totalPages ,
+                'totalNominal' => $pengeluaranDetail->totalNominal
             ]
         ]);
     }

@@ -72,15 +72,17 @@ class PengeluaranDetail extends MyModel
                 ->leftJoin(DB::raw("akunpusat as debet with (readuncommitted)"), "$this->table.coadebet", "debet.coa")
                 ->leftJoin(DB::raw("akunpusat as kredit with (readuncommitted)"), "$this->table.coakredit", "kredit.coa");
 
+            
+            $this->sort($query);
+
+            $query->where($this->table . ".pengeluaran_id", "=", request()->pengeluaran_id);
+            $this->filter($query);
+            
+            $this->totalNominal = $query->sum('nominal');
             $this->totalRows = $query->count();
             $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
-            $this->sort($query);
-            
-            $query->where($this->table . ".pengeluaran_id", "=", request()->pengeluaran_id);
-            $this->filter($query);
             $this->paginate($query);
-
         }
         return $query->get();
     }
