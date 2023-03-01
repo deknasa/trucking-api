@@ -40,7 +40,9 @@ class PiutangDetailController extends Controller
             'attributes' => [
                 'totalRows' => $piutangDetail->totalRows,
                 'totalPages' => $piutangDetail->totalPages,
-                'totalNominal' => $piutangDetail->totalNominal
+                'totalNominal' => $piutangDetail->totalNominal,
+                'totalPotongan' => $piutangDetail->totalPotongan,
+                'totalNominalLebih' => $piutangDetail->totalNominalLebih,
             ]
         ]);
     }

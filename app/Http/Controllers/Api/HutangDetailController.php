@@ -35,7 +35,7 @@ class HutangDetailController extends Controller
             'attributes' => [
                 'totalRows' => $hutangDetail->totalRows,
                 'totalPages' => $hutangDetail->totalPages,
-                'totalNominal' => $hutangDetail->totalNominal
+                'totalNominal' => $hutangDetail->totalNominal,
             ]
         ]);
     }
@@ -49,7 +49,8 @@ class HutangDetailController extends Controller
             'attributes' => [
                 'totalRows' => $hutangDetail->totalRows,
                 'totalPages' => $hutangDetail->totalPages,
-                'totalNominal' => $hutangDetail->totalNominal
+                'totalNominal' => $hutangDetail->totalNominal,
+                'totalPotongan' => $hutangDetail->totalPotongan
             ]
         ]);
     }
