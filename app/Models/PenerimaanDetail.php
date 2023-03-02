@@ -76,7 +76,8 @@ class PenerimaanDetail extends MyModel
                 ->leftJoin(DB::raw("akunpusat as b with (readuncommitted)"), "b.coa", "=", "$this->table.coakredit")
                 ->leftJoin(DB::raw("bankpelanggan with (readuncommitted)"), "bankpelanggan.id", "=", "$this->table.bankpelanggan_id");
                 $query->where($this->table . ".penerimaan_id", "=", request()->penerimaan_id);
-
+                $this->totalNominal = $query->sum('nominal');
+                $this->filter($query);
                 $this->totalRows = $query->count();
                 $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
     
@@ -114,6 +115,52 @@ class PenerimaanDetail extends MyModel
         return $detail;
     }
 
+    public function filter($query, $relationFields = [])
+    {
+        if (count($this->params['filters']) > 0 && @$this->params['filters']['rules'][0]['data'] != '') {
+            switch ($this->params['filters']['groupOp']) {
+                case "AND":
+                    $query->where(function ($query) {
+                        
+                        foreach ($this->params['filters']['rules'] as $index => $filters) {
+                            if ($filters['field'] == 'bank_id') {
+                                $query = $query->where('bank.namabank', 'LIKE', "%$filters[data]%");
+                            }else if ($filters['field'] == 'bankpelanggan_id') {
+                                $query = $query->where('bankpelanggan.namabank', 'LIKE', "%$filters[data]%");
+                            }else if ($filters['field'] == 'coadebet') {
+                                $query = $query->where('a.keterangancoa', 'LIKE', "%$filters[data]%");
+                            }else if ($filters['field'] == 'coakredit') {
+                                $query = $query->where('b.keterangancoa', 'LIKE', "%$filters[data]%");
+                            } else {
+                                $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            }
+                        }
+                    });
+
+                    break;
+                case "OR":
+                    $query->where(function ($query) {
+                        foreach ($this->params['filters']['rules'] as $index => $filters) {
+                            if ($filters['field'] == 'bank_id') {
+                                $query = $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");
+                            }else if ($filters['field'] == 'bankpelanggan_id') {
+                                $query = $query->orWhere('bankpelanggan.namabank', 'LIKE', "%$filters[data]%");
+                            }else if ($filters['field'] == 'coadebet') {
+                                $query = $query->orWhere('a.keterangancoa', 'LIKE', "%$filters[data]%");
+                            }else if ($filters['field'] == 'coakredit') {
+                                $query = $query->orWhere('b.keterangancoa', 'LIKE', "%$filters[data]%");
+                            } else {
+                                $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            }
+                        }
+                    });
+                    break;
+                default:
+
+                    break;
+            }
+        }
+    }
     
     public function sort($query)
     {

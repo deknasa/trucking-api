@@ -31,7 +31,9 @@ class PengembalianKasBankDetailController extends Controller
             'data' => $pengembalianKasBankDetail->get(),
             'attributes' => [
                 'totalRows' => $pengembalianKasBankDetail->totalRows,
-                'totalPages' => $pengembalianKasBankDetail->totalPages
+                'totalPages' => $pengembalianKasBankDetail->totalPages,
+                'totalNominal' => $pengembalianKasBankDetail->totalNominal
+
             ]
         ]);
     

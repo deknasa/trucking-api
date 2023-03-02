@@ -33,7 +33,9 @@ class PengeluaranStokDetailController extends Controller
             'data' => $pengeluaranStokDetail->get(),
             'attributes' => [
                 'totalRows' => $pengeluaranStokDetail->totalRows,
-                'totalPages' => $pengeluaranStokDetail->totalPages
+                'totalPages' => $pengeluaranStokDetail->totalPages,
+                'totalNominal' => $pengeluaranStokDetail->totalNominal
+
             ]
         ]);
     }

@@ -65,8 +65,38 @@ class RekapPengeluaranDetail extends MyModel
             )
             ->leftJoin("rekappengeluaranheader", "$this->table.rekappengeluaran_id", "rekappengeluaranheader.id")
             ->leftJoin("pengeluaranheader", "$this->table.pengeluaran_nobukti", "pengeluaranheader.nobukti");
+            $this->totalNominal = $query->sum('nominal');
+            $this->filter($query);
         }
         return $query->get();
+    }
+
+    public function filter($query, $relationFields = [])
+    {
+        if (count($this->params['filters']) > 0 && @$this->params['filters']['rules'][0]['data'] != '') {
+            switch ($this->params['filters']['groupOp']) {
+                case "AND":
+                    $query->where(function ($query) {
+                        
+                        foreach ($this->params['filters']['rules'] as $index => $filters) {
+                            $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                        }
+                    });
+
+                    break;
+                case "OR":
+                    $query->where(function ($query) {
+                        foreach ($this->params['filters']['rules'] as $index => $filters) {
+                            $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            
+                        }
+                    });
+                    break;
+                default:
+
+                    break;
+            }
+        }
     }
                 
     public function sort($query)

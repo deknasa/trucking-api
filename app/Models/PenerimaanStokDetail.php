@@ -70,7 +70,8 @@ class PenerimaanStokDetail extends MyModel
             )
             ->leftJoin("penerimaanstokheader", "$this->table.penerimaanstokheader_id", "penerimaanstokheader.id")
             ->leftJoin("stok", "$this->table.stok_id", "stok.id");
-
+            $this->totalNominal = $query->sum('total');
+            $this->filter($query);
             $this->totalRows = $query->count();
             $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
@@ -102,6 +103,39 @@ class PenerimaanStokDetail extends MyModel
         $data = $query->where("penerimaanstokheader_id",$id)->get();
 
         return $data;
+    }
+    public function filter($query, $relationFields = [])
+    {
+        if (count($this->params['filters']) > 0 && @$this->params['filters']['rules'][0]['data'] != '') {
+            switch ($this->params['filters']['groupOp']) {
+                case "AND":
+                    $query->where(function ($query) {
+                        foreach ($this->params['filters']['rules'] as $index => $filters) {
+                            if ($filters['field'] == 'stok') {
+                                $query = $query->where('stok.namastok', 'LIKE', "%$filters[data]%");
+                            } else {
+                                $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            }
+                        }
+                    });
+
+                    break;
+                case "OR":
+                    $query->where(function ($query) {
+                        foreach ($this->params['filters']['rules'] as $index => $filters) {
+                            if ($filters['field'] == 'stok') {
+                                $query = $query->orWhere('stok.namastok', 'LIKE', "%$filters[data]%");
+                            } else {
+                                $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            }
+                        }
+                    });
+                    break;
+                default:
+
+                    break;
+            }
+        }
     }        
     public function sort($query)
     {

@@ -25,6 +25,7 @@ class PenerimaanDetailController extends Controller
                 'attributes' => [
                     'totalRows' => $penerimaanDetail->totalRows ,
                     'totalPages' => $penerimaanDetail->totalPages ,
+                    'totalNominal' => $penerimaanDetail->totalNominal ,
                 ]
             ]);
     }

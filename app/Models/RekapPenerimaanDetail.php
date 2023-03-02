@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class RekapPenerimaanDetail extends MyModel
 {
@@ -55,7 +57,8 @@ class RekapPenerimaanDetail extends MyModel
             ->leftJoin('rekappenerimaanheader', "$this->table.rekappenerimaan_id", 'rekappenerimaanheader.id')
             ->leftJoin('penerimaanheader', "$this->table.penerimaan_nobukti", 'penerimaanheader.nobukti');
             $query->where($this->table . ".rekappenerimaan_id", "=", request()->rekappenerimaan_id);
-
+            $this->totalNominal = $query->sum('nominal');
+            $this->filter($query);
             $this->totalRows = $query->count();
             $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
@@ -63,6 +66,33 @@ class RekapPenerimaanDetail extends MyModel
             $this->paginate($query);
         }
         return $query->get();
+    }
+
+    public function filter($query, $relationFields = [])
+    {
+        if (count($this->params['filters']) > 0 && @$this->params['filters']['rules'][0]['data'] != '') {
+            switch ($this->params['filters']['groupOp']) {
+                case "AND":
+                    $query->where(function ($query) {
+                        
+                        foreach ($this->params['filters']['rules'] as $index => $filters) {
+                            $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                        }
+                    });
+
+                    break;
+                case "OR":
+                    $query->where(function ($query) {
+                        foreach ($this->params['filters']['rules'] as $index => $filters) {
+                            $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                        }
+                    });
+                    break;
+                default:
+
+                    break;
+            }
+        }
     }
                 
     public function sort($query)

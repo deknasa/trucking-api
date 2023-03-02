@@ -74,9 +74,10 @@ class PengembalianKasBankDetail extends MyModel
             ->leftJoin("alatbayar", "alatbayar.id", "=", "$this->table.alatbayar_id");
             
             $query->where($this->table . ".pengembaliankasbank_id", "=", request()->pengembaliankasbank_id);
+            $this->totalNominal = $query->sum('nominal');
+            $this->filter($query);
             $this->totalRows = $query->count();
             $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
-
             $this->sort($query);
             $this->paginate($query);
         }
@@ -112,6 +113,40 @@ class PengembalianKasBankDetail extends MyModel
         $data = $query->where("pengembaliankasbank_id",$id)->get();
 
         return $data;
+    }
+
+    public function filter($query, $relationFields = [])
+    {
+        if (count($this->params['filters']) > 0 && @$this->params['filters']['rules'][0]['data'] != '') {
+            switch ($this->params['filters']['groupOp']) {
+                case "AND":
+                    $query->where(function ($query) {
+                        foreach ($this->params['filters']['rules'] as $index => $filters) {
+                            if ($filters['field'] == 'alatbayar_id') {
+                                $query = $query->where('alatbayar.namaalatbayar', 'LIKE', "%$filters[data]%");
+                            } else {
+                                $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            }
+                        }
+                    });
+
+                    break;
+                case "OR":
+                    $query->where(function ($query) {
+                        foreach ($this->params['filters']['rules'] as $index => $filters) {
+                            if ($filters['field'] == 'alatbayar_id') {
+                                $query = $query->orWhere('alatbayar.namaalatbayar', 'LIKE', "%$filters[data]%");
+                            } else {
+                                $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            }
+                        }
+                    });
+                    break;
+                default:
+
+                    break;
+            }
+        }
     }
 
     public function sort($query)

@@ -191,10 +191,11 @@ class AbsensiSupirDetail extends MyModel
                 });
     
                 $this->totalRows = $query->count();
+                $this->totalNominal = $query->sum('uangjalan');
+                $this->filter($query);
                 $this->totalPages = $this->params['limit'] > 0 ? ceil($this->totalRows / $this->params['limit']) : 1;
                 $this->sort($query);
                 $this->paginate($query);
-                // $query->orderBy($this->params['sortIndex'], $this->params["sortOrder"]);
                 
                 $absensiSupirDetail = $query->get();
             }
@@ -282,6 +283,61 @@ class AbsensiSupirDetail extends MyModel
         return $detail;
     }
 
+    public function filter($query, $relationFields = [])
+    {
+        if (count($this->params['filters']) > 0 && @$this->params['filters']['rules'][0]['data'] != '') {
+            switch ($this->params['filters']['groupOp']) {
+                case "AND":
+                    $query->where(function ($query) {
+                        foreach ($this->params['filters']['rules'] as $index => $filters) {
+                            if ($filters['field'] == 'trado') {
+                                $query = $query->where('trado.keterangan', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'supir') {
+                                $query = $query->where('supir.namasupir', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'status') {
+                                $query = $query->where('absentrado.kodeabsen', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'statusKeterangan') {
+                                $query = $query->where('absentrado.keterangan', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'keterangan_detail') {
+                                $query = $query->where("$this->table.keterangan", 'LIKE', "%$filters[data]%");
+                            } else {
+                                $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            }
+                        }
+                    });
+
+                    break;
+                case "OR":
+                    $query->where(function ($query) {
+                        foreach ($this->params['filters']['rules'] as $index => $filters) {
+                            if ($filters['field'] == 'trado') {
+                                $query = $query->orWhere('trado.keterangan', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'supir') {
+                                $query = $query->orWhere('supir.namasupir', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'status') {
+                                $query = $query->orWhere('absentrado.kodeabsen', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'statusKeterangan') {
+                                $query = $query->orWhere('absentrado.keterangan', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'keterangan_detail') {
+                                $query = $query->orWhere("$this->table.keterangan", 'LIKE', "%$filters[data]%");
+                            } else {
+                                $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            }
+                        }
+                    });
+                    break;
+                default:
+
+                    break;
+            }
+
+
+            $this->totalRows = $query->count();
+            $this->totalPages = $this->params['limit'] > 0 ? ceil($this->totalRows / $this->params['limit']) : 1;
+        }
+
+        return $query;
+    }
     public function sort($query)
     {
         return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
