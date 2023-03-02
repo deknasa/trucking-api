@@ -47,12 +47,12 @@ class ApprovalHutangBayar extends MyModel
                 'hutangbayarheader.id',
                 'hutangbayarheader.nobukti',
                 'hutangbayarheader.tglbukti',
-                'hutangbayarheader.coa',
+                'akunpusat.keterangancoa as coa',
                 'hutangbayarheader.pengeluaran_nobukti',
                 'bank.namabank as bank_id',
                 'supplier.namasupplier as supplier_id',
                 'parameter.memo as statusapproval',
-                'hutangbayarheader.tglapproval',
+                DB::raw("(case when year(cast(hutangbayarheader.tglapproval as datetime))='1900' then '' else format(hutangbayarheader.tglapproval,'yyyy-MM-dd') end) as tglapproval"),
                 'hutangbayarheader.userapproval',
                 'hutangbayarheader.modifiedby',
                 'hutangbayarheader.created_at',
@@ -61,6 +61,7 @@ class ApprovalHutangBayar extends MyModel
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), "hutangbayarheader.statusapproval", "parameter.id")
             ->leftJoin(DB::raw("bank  with (readuncommitted)"), "hutangbayarheader.bank_id", "bank.id")
             ->leftJoin(DB::raw("supplier with (readuncommitted)"), "hutangbayarheader.supplier_id", "supplier.id")
+            ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), "hutangbayarheader.coa", "akunpusat.coa")
             ->whereRaw("hutangbayarheader.statusapproval = $approval")
             ->whereRaw("MONTH(hutangbayarheader.tglbukti) = $month")
             ->whereRaw("YEAR(hutangbayarheader.tglbukti) = $year");
