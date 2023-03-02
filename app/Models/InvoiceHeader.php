@@ -205,7 +205,7 @@ class InvoiceHeader extends MyModel
         $temp = $this->createTempSP($request);
 
         $query = InvoiceDetail::from(DB::raw("invoicedetail with (readuncommitted)"))
-            ->select(DB::raw("$temp.id,$temp.jobtrucking,sp.tglsp, sp.keterangan,jenisorder.keterangan as jenisorder_id, agen.namaagen as agen_id, sp.statuslongtrip, ot.statusperalihan, ot.nocont, tarif.tujuan as tarif_id, ot.nominal as omset"))
+            ->select(DB::raw("$temp.id,$temp.jobtrucking,sp.tglsp, sp.keterangan,jenisorder.keterangan as jenisorder_id, agen.namaagen as agen_id, sp.statuslongtrip, ot.statusperalihan, ot.nocont, tarif.tujuan as tarif_id, ot.nominal as omset, invoicedetail.nominalretribusi"))
 
             ->leftJoin(DB::raw("suratpengantar as sp with (readuncommitted)"), 'invoicedetail.orderantrucking_nobukti', 'sp.jobtrucking')
             ->Join(DB::raw("$temp with (readuncommitted)"), 'sp.id', "$temp.id")

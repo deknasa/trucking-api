@@ -73,6 +73,7 @@ class InvoiceDetail extends MyModel
                 $this->table . '.nobukti',
                 $this->table . '.keterangan',
                 $this->table . '.nominal',
+                $this->table . '.nominalretribusi',
                 $this->table . '.orderantrucking_nobukti',
                 $this->table . '.suratpengantar_nobukti',
             );
@@ -82,6 +83,7 @@ class InvoiceDetail extends MyModel
             $this->filter($query);
 
             $this->totalNominal = $query->sum('nominal');
+            $this->totalRetribusi = $query->sum('nominalretribusi');
             $this->totalRows = $query->count();
             $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 

@@ -113,7 +113,8 @@ class InvoiceHeaderController extends Controller
                         ->where('id', $request->sp_id[$i])->first();
                     $orderantrucking = OrderanTrucking::from(DB::raw("orderantrucking with (readuncommitted)"))
                         ->where('nobukti', $SP->jobtrucking)->first();
-                    $total = $total + $orderantrucking->nominal;
+                    $total = $total + $orderantrucking->nominal + $request->nominalretribusi[$i];
+
                     $getSP = SuratPengantar::from(DB::raw("suratpengantar with (readuncommitted)"))
                         ->where('jobtrucking', $SP->jobtrucking)->get();
 
@@ -125,6 +126,8 @@ class InvoiceHeaderController extends Controller
                         'invoice_id' => $invoice->id,
                         'nobukti' => $invoice->nobukti,
                         'nominal' => $orderantrucking->nominal,
+                        'nominalretribusi' => $request->nominalretribusi[$i],
+                        'total' => $orderantrucking->nominal + $request->nominalretribusi[$i],
                         'keterangan' => $SP->keterangan,
                         'orderantrucking_nobukti' => $SP->jobtrucking,
                         'suratpengantar_nobukti' => $allSP,
@@ -206,7 +209,7 @@ class InvoiceHeaderController extends Controller
                     $detail = [
                         'entriluar' => 1,
                         'nobukti' => $piutang_nobukti,
-                        'nominal' => $orderantrucking->nominal,
+                        'nominal' => $orderantrucking->nominal + $request->nominalretribusi[$i],
                         'keterangan' => $SP->keterangan,
                         'invoice_nobukti' => $invoice->nobukti,
                         'modifiedby' =>  auth('api')->user()->name
@@ -303,7 +306,7 @@ class InvoiceHeaderController extends Controller
             $invoiceheader->save();
 
             // $getPiutang = PiutangHeader::from(DB::raw("piutangheader with (readuncommitted)"))
-                // ->where('invoice_nobukti', $invoiceheader->nobukti)->first();
+            // ->where('invoice_nobukti', $invoiceheader->nobukti)->first();
 
             // JurnalUmumHeader::where('nobukti', $getPiutang->nobukti)->delete();
             // PiutangHeader::where('invoice_nobukti', $invoiceheader->nobukti)->delete();
@@ -319,7 +322,7 @@ class InvoiceHeaderController extends Controller
 
                 $orderantrucking = OrderanTrucking::from(DB::raw("orderantrucking with (readuncommitted)"))
                     ->where('nobukti', $SP->jobtrucking)->first();
-                $total = $total + $orderantrucking->nominal;
+                $total = $total + $orderantrucking->nominal + $request->nominalretribusi[$i];
                 $getSP = SuratPengantar::from(DB::raw("suratpengantar with (readuncommitted)"))
                     ->where('jobtrucking', $SP->jobtrucking)->get();
 
@@ -332,6 +335,8 @@ class InvoiceHeaderController extends Controller
                     'invoice_id' => $invoiceheader->id,
                     'nobukti' => $invoiceheader->nobukti,
                     'nominal' => $orderantrucking->nominal,
+                    'nominalretribusi' => $request->nominalretribusi[$i],
+                    'total' => $orderantrucking->nominal + $request->nominalretribusi[$i],
                     'keterangan' => $SP->keterangan,
                     'orderantrucking_nobukti' => $SP->jobtrucking,
                     'suratpengantar_nobukti' => $allSP,
@@ -352,7 +357,7 @@ class InvoiceHeaderController extends Controller
                 $detaillog[] = $datadetails['detail']->toArray();
             }
 
-            
+
             $invoiceheader->nominal = $total;
             $invoiceheader->save();
 
@@ -395,7 +400,7 @@ class InvoiceHeaderController extends Controller
 
                 $detail = [
                     'entriluar' => 1,
-                    'nominal' => $orderantrucking->nominal,
+                    'nominal' => $orderantrucking->nominal + $request->nominalretribusi[$i],
                     'keterangan' => $SP->keterangan,
                     'invoice_nobukti' => $invoiceheader->nobukti,
                     'modifiedby' =>  auth('api')->user()->name
@@ -412,7 +417,7 @@ class InvoiceHeaderController extends Controller
                 'agen_id' => $invoiceheader->agen_id,
                 'datadetail' => $piutangDetail
             ];
-            
+
             $get = PiutangHeader::from(DB::raw("piutangheader with (readuncommitted)"))->where('nobukti', $invoiceheader->piutang_nobukti)->first();
             $newPiutang = new PiutangHeader();
             $newPiutang = $newPiutang->findUpdate($get->id);
