@@ -96,7 +96,11 @@ class JurnalUmumPusatDetail extends MyModel
 
     public function sort($query)
     {
-        return $query->orderBy('jurnalumumdetail.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        if ($this->params['sortIndex'] == 'keterangancoa') {
+            return $query->orderBy('coa.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        } else {
+            return $query->orderBy('jurnalumumdetail.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        }
     }
 
     public function filter($query, $relationFields = [])

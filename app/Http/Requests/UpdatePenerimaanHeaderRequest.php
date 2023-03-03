@@ -30,7 +30,7 @@ class UpdatePenerimaanHeaderRequest extends FormRequest
                 new DateTutupBuku()
             ],
             'diterimadari' => 'required',
-            'pelanggan' => 'required',
+            // 'pelanggan' => 'required',
             'tgllunas'  => 'required',
             // 'cabang' => 'required',
             // 'statuskas' => 'required',
