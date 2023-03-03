@@ -65,8 +65,12 @@ class RekapPengeluaranDetail extends MyModel
             )
             ->leftJoin("rekappengeluaranheader", "$this->table.rekappengeluaran_id", "rekappengeluaranheader.id")
             ->leftJoin("pengeluaranheader", "$this->table.pengeluaran_nobukti", "pengeluaranheader.nobukti");
-            $this->totalNominal = $query->sum('nominal');
+            $this->sort($query);
             $this->filter($query);
+            $this->totalNominal = $query->sum('nominal');
+            $this->totalRows = $query->count();
+            $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+            $this->paginate($query);
         }
         return $query->get();
     }

@@ -124,13 +124,13 @@ class RekapPenerimaanHeader extends MyModel
             $table->unsignedBigInteger('bank_id')->default(0);
             $table->date('tgltransaksi')->default('1900/1/1');
             $table->integer('statusapproval')->length(11)->default('0');
+            $table->integer('statuscetak')->length(11)->default('0');
             $table->string('userapproval',50)->default('');
             $table->date('tglapproval')->default('1900/1/1');
-            $table->unsignedBigInteger('statusformat')->default(0);  
             $table->string('modifiedby',50)->default('');
-            $table->increments('position');
             $table->dateTime('created_at')->default('1900/1/1');
             $table->dateTime('updated_at')->default('1900/1/1');
+            $table->increments('position');
         });
 
         $query = DB::table($modelTable);
@@ -141,10 +141,12 @@ class RekapPenerimaanHeader extends MyModel
             "bank_id",
             "tgltransaksi",
             "statusapproval",
+            "statuscetak",
             "userapproval",
             "tglapproval",
-            "statusformat",
             "modifiedby",
+            "created_at",
+            "updated_at",
         );
         $query = $this->sort($query);
         $models = $this->filter($query);
@@ -156,10 +158,12 @@ class RekapPenerimaanHeader extends MyModel
             "bank_id",
             "tgltransaksi",
             "statusapproval",
+            "statuscetak",
             "userapproval",
             "tglapproval",
-            "statusformat",
             "modifiedby",
+            "created_at",
+            "updated_at",
         ], $models);
 
         return  $temp;
@@ -174,9 +178,12 @@ class RekapPenerimaanHeader extends MyModel
             "$this->table.bank_id",
             "$this->table.tgltransaksi",
             "$this->table.userapproval",
-            "$this->table.tglapproval",
+            
+            DB::raw("(case when year(isnull($this->table.tglapproval,'1900/1/1'))=1900 then null else $this->table.tglapproval end) as tglapproval"),
             "$this->table.statusformat",
             "$this->table.modifiedby",
+            "$this->table.created_at",
+            "$this->table.updated_at",
             "bank.namabank as bank",
             "statusapproval.memo as  statusapproval",
             "statuscetak.memo as  statuscetak",

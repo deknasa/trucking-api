@@ -105,10 +105,8 @@ class PenerimaanTruckingDetail extends MyModel
                     $query->where(function ($query) {
                         
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
-                            if ($filters['field'] == 'supir') {
+                            if ($filters['field'] == 'supir_id') {
                                 $query = $query->where('supir.namasupir', 'LIKE', "%$filters[data]%");
-                            }else if ($filters['field'] == 'supir_id') {
-                                $query = $query->where('supir.id', 'LIKE', "%$filters[data]%");
                             } else {
                                 $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }
@@ -119,10 +117,8 @@ class PenerimaanTruckingDetail extends MyModel
                 case "OR":
                     $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
-                            if ($filters['field'] == 'supir') {
+                            if ($filters['field'] == 'supir_id') {
                                 $query = $query->orWhere('supir.namasupir', 'LIKE', "%$filters[data]%");
-                            }else if ($filters['field'] == 'supir_id') {
-                                $query = $query->orWhere('supir.id', 'LIKE', "%$filters[data]%");
                             } else {
                                 $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }

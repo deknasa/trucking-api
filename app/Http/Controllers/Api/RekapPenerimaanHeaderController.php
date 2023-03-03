@@ -55,14 +55,17 @@ class RekapPenerimaanHeaderController extends Controller
             $content['subgroup'] = $subgroup;
             $content['table'] = 'rekappenerimaanheader';
             $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
-            $statusNonApproval = Parameter::where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
+            $statusNonApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
 
+            $statuscetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                ->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
             $rekapPenerimaanHeader = new RekapPenerimaanHeader();
 
             $rekapPenerimaanHeader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $rekapPenerimaanHeader->tgltransaksi  = date('Y-m-d', strtotime($request->tgltransaksi));
             $rekapPenerimaanHeader->bank_id = $request->bank_id;
             $rekapPenerimaanHeader->statusapproval = $statusNonApproval->id;
+            $rekapPenerimaanHeader->statuscetak = $statuscetak->id;
             $rekapPenerimaanHeader->statusformat = $format->id;
             $rekapPenerimaanHeader->modifiedby = auth('api')->user()->name;
             TOP:
@@ -167,15 +170,12 @@ class RekapPenerimaanHeaderController extends Controller
         DB::beginTransaction();
 
         try {
-            $statusNonApproval = Parameter::where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
 
             $rekapPenerimaanHeader = RekapPenerimaanHeader::lockForUpdate()->findOrFail($id);
 
             $rekapPenerimaanHeader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $rekapPenerimaanHeader->tgltransaksi  = date('Y-m-d', strtotime($request->tgltransaksi));
             $rekapPenerimaanHeader->bank_id = $request->bank_id;
-            $rekapPenerimaanHeader->statusapproval = $statusNonApproval->id;
-            $rekapPenerimaanHeader->userapproval = auth('api')->user()->name;
             $rekapPenerimaanHeader->modifiedby = auth('api')->user()->name;
 
             if ($rekapPenerimaanHeader->save()) {
@@ -273,7 +273,7 @@ class RekapPenerimaanHeaderController extends Controller
                 'namatabel' => strtoupper($rekapPenerimaanHeader->getTable()),
                 'postingdari' => 'DELETE Rekap Penerimaan Header',
                 'idtrans' => $id,
-                'nobuktitrans' => '',
+                'nobuktitrans' => $rekapPenerimaanHeader->nobukti,
                 'aksi' => 'DELETE',
                 'datajson' => $rekapPenerimaanHeader->toArray(),
                 'modifiedby' => $rekapPenerimaanHeader->modifiedby
