@@ -151,8 +151,6 @@ class PengembalianKasGantungHeaderController extends Controller
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
                 /* Store detail */
 
-                $penerimaanStokDetail = PengembalianKasGantungDetail::where('pengembaliankasgantung_id', $pengembalianKasGantungHeader->id)->lockForUpdate()->delete();
-
                 $detaillog = [];
 
                 if ($request->datadetail != '') {
@@ -192,6 +190,7 @@ class PengembalianKasGantungHeaderController extends Controller
                         $tabeldetail = $pengembalianKasGantungDetail['tabel'];
                     }
                 }
+
                 $datalogtrail = [
                     'namatabel' => strtoupper($tabeldetail),
                     'postingdari' => $request->postingdari ?? 'ENTRY PENGEMBALIAN KAS GANTUNG DETAIL',
@@ -268,6 +267,7 @@ class PengembalianKasGantungHeaderController extends Controller
 
                 $penerimaanHeader = [
                     'tanpaprosesnobukti' => 1,
+                    "tanpagetposition" => 1,
                     'nobukti' => $nobuktiPenerimaan,
                     'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
                     'pelanggan_id' => '',
@@ -282,11 +282,12 @@ class PengembalianKasGantungHeaderController extends Controller
                 // return response($penerimaanDetail,422);
                 // $penerimaan = $this->storePenerimaan($penerimaanHeader, $penerimaanDetail);
                 $penerimaan = new StorePenerimaanHeaderRequest($penerimaanHeader);
-                app(PenerimaanHeaderController::class)->store($penerimaan);
+                
+                $penerimaan = app(PenerimaanHeaderController::class)->store($penerimaan);
 
-                // if (!$penerimaan['status']) {
-                //     throw new \Throwable($penerimaan['message']);
-                // }
+                if (!$penerimaan->original['status']) {
+                    throw new \Throwable($penerimaan['message']);
+                }
 
 
                 DB::commit();
@@ -468,6 +469,7 @@ class PengembalianKasGantungHeaderController extends Controller
 
             $penerimaanHeader = [
                 'isUpdate' => 1,
+                "tanpagetposition" => 1,
                 'from' => $request->from ?? '',
                 'bank_id' => $pengembaliankasgantungheader->bank_id,
                 'postingdari' => $request->postingdari ?? 'EDIT PENGEMBALIAN KAS GANTUNG',
@@ -479,7 +481,10 @@ class PengembalianKasGantungHeaderController extends Controller
             $newPenerimaanHeader = new PenerimaanHeader();
             $newPenerimaanHeader = $newPenerimaanHeader->findAll($getPenerimaanHeader->id);
             $penerimaan = new UpdatePenerimaanHeaderRequest($penerimaanHeader);
-            app(PenerimaanHeaderController::class)->update($penerimaan, $newPenerimaanHeader);
+            $penerimaan = app(PenerimaanHeaderController::class)->update($penerimaan, $newPenerimaanHeader);
+            if (!$penerimaan->original['status']) {
+                throw new \Throwable($penerimaan['message']);
+            }
             DB::commit();
             /* Set position and page */
             $selected = $this->getPosition($pengembaliankasgantungheader, $pengembaliankasgantungheader->getTable());
