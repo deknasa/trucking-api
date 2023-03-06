@@ -733,6 +733,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('suratpengantar/{id}/getTarifOmset', [SuratPengantarController::class, 'getTarifOmset']);
     Route::get('suratpengantar/{id}/getpelabuhan', [SuratPengantarController::class, 'getpelabuhan']);
     Route::post('suratpengantar/{id}/batalmuat', [SuratPengantarController::class, 'approvalBatalMuat']);
+    Route::post('suratpengantar/{id}/edittujuan', [SuratPengantarController::class, 'approvalEditTujuan']);
     Route::get('suratpengantar/{id}/getOrderanTrucking', [SuratPengantarController::class, 'getOrderanTrucking']);
     Route::get('suratpengantar/getGaji/{dari}/{sampai}/{container}/{statuscontainer}', [SuratPengantarController::class, 'getGaji']);
     Route::get('suratpengantar/default', [SuratPengantarController::class, 'default']);

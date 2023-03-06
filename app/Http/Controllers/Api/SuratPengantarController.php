@@ -84,7 +84,7 @@ class SuratPengantarController extends Controller
             $tarifrincian = TarifRincian::from(DB::raw("tarifrincian with (readuncommitted)"))->where('tarif_id', $orderanTrucking->tarif_id)->where('container_id', $orderanTrucking->container_id)->first();
             $trado = Trado::find($request->trado_id);
             $upahsupirRincian = UpahSupirRincian::where('upahsupir_id', $upahsupir->id)->where('container_id', $request->container_id)->where('statuscontainer_id', $request->statuscontainer_id)->first();
-
+            $statusTidakBolehEditTujuan = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS EDIT TUJUAN')->where('text', '=', 'TIDAK BOLEH EDIT TUJUAN')->first();
             $suratpengantar = new SuratPengantar();
 
             $suratpengantar->jobtrucking = $request->jobtrucking;
@@ -145,6 +145,7 @@ class SuratPengantarController extends Controller
             $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
             $suratpengantar->nobukti = $nobukti;
 
+            $suratpengantar->statusedittujuan = $statusTidakBolehEditTujuan->id;
 
             if ($suratpengantar->save()) {
                 $logTrail = [
@@ -220,13 +221,16 @@ class SuratPengantarController extends Controller
             $prosesLain = $request->proseslain ?? 0;
             $orderanTrucking = OrderanTrucking::where('nobukti', $request->jobtrucking)->first();
 
-            // $tarif = Tarif::find($orderanTrucking->tarif_id);
+            $tarif = Tarif::find($orderanTrucking->tarif_id);
             $tarif = TarifRincian::where('tarif_id', $orderanTrucking->tarif_id)->where('container_id', $orderanTrucking->container_id)->first();
+            
+            $statusTidakBolehEditTujuan = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS EDIT TUJUAN')->where('text', '=', 'TIDAK BOLEH EDIT TUJUAN')->first();
 
             if ($prosesLain == 0) {
 
                 $upahsupir = UpahSupir::where('kotadari_id', $request->dari_id)->where('kotasampai_id', $request->sampai_id)->first();
 
+    
                 // return response($tarif,422);
                 $trado = Trado::find($request->trado_id);
                 $upahsupirRincian = UpahSupirRincian::where('upahsupir_id', $upahsupir->id)->where('container_id', $request->container_id)->where('statuscontainer_id', $request->statuscontainer_id)->first();
@@ -283,25 +287,28 @@ class SuratPengantarController extends Controller
                 $suratpengantar->statusbatalmuat = $request->statusbatalmuat;
                 $suratpengantar->gudang = $request->gudang;
                 $suratpengantar->modifiedby = auth('api')->user()->name;
-
+                $suratpengantar->statusedittujuan = $statusTidakBolehEditTujuan->id;
+                
                 $suratpengantar->save();
-                if ($request->nominal[0] != 0) {
-
-                    SuratPengantarBiayaTambahan::where('suratpengantar_id', $suratpengantar->id)->lockForUpdate()->delete();
-                    for ($i = 0; $i < count($request->nominal); $i++) {
-                        $suratpengantarbiayatambahan = new SuratPengantarBiayaTambahan();
-
-                        $suratpengantarbiayatambahan->suratpengantar_id = $suratpengantar->id;
-                        $suratpengantarbiayatambahan->keteranganbiaya = $request->keterangan_detail[$i];
-                        $suratpengantarbiayatambahan->nominal = $request->nominal[$i];
-                        $suratpengantarbiayatambahan->nominaltagih = $request->nominalTagih[$i];
-                        $suratpengantarbiayatambahan->modifiedby = auth('api')->user()->name;;
-                        $suratpengantarbiayatambahan->save();
-
-                        $suratpengantar->biayatambahan_id = $suratpengantarbiayatambahan->id;
-                        $suratpengantar->save();
+                if ($request->nominal) {
+                    if ($request->nominal[0] != 0) {
+                        SuratPengantarBiayaTambahan::where('suratpengantar_id', $suratpengantar->id)->lockForUpdate()->delete();
+                        for ($i = 0; $i < count($request->nominal); $i++) {
+                            $suratpengantarbiayatambahan = new SuratPengantarBiayaTambahan();
+        
+                            $suratpengantarbiayatambahan->suratpengantar_id = $suratpengantar->id;
+                            $suratpengantarbiayatambahan->keteranganbiaya = $request->keterangan_detail[$i];
+                            $suratpengantarbiayatambahan->nominal = $request->nominal[$i];
+                            $suratpengantarbiayatambahan->nominaltagih = $request->nominalTagih[$i];
+                            $suratpengantarbiayatambahan->modifiedby = auth('api')->user()->name;;
+                            $suratpengantarbiayatambahan->save();
+        
+                            $suratpengantar->biayatambahan_id = $suratpengantarbiayatambahan->id;
+                            $suratpengantar->save();
+                        }
                     }
                 }
+                
             } else {
 
                 $suratpengantar->pelanggan_id = $orderanTrucking->pelanggan_id;
@@ -480,6 +487,18 @@ class SuratPengantarController extends Controller
         $suratPengantar = new SuratPengantar();
         $nobukti = DB::table('SuratPengantar')->from(DB::raw("suratpengantar with (readuncommitted)"))
         ->where('id', $id)->first();
+        //validasi Hari ini
+        $todayValidation = SuratPengantar::todayValidation($nobukti->id);
+        $isEditAble = SuratPengantar::isEditAble($nobukti->id);
+        $edit =true;
+        if(!$todayValidation && !$isEditAble){
+            $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'SATL')->get();
+            $keterangan = $query['0'];
+            $edit = false;
+        }
+
+
+
         $cekdata = $suratPengantar->cekvalidasihapus($nobukti->nobukti, $nobukti->jobtrucking);
         if ($cekdata['kondisi'] == true) {
             $query = DB::table('error')
@@ -494,6 +513,7 @@ class SuratPengantarController extends Controller
                 'status' => false,
                 'message' => $keterangan,
                 'errors' => '',
+                'edit' => $edit,
                 'kondisi' => $cekdata['kondisi'],
             ];
 
@@ -503,6 +523,7 @@ class SuratPengantarController extends Controller
                 'status' => false,
                 'message' => '',
                 'errors' => '',
+                'edit' => $edit,
                 'kondisi' => $cekdata['kondisi'],
             ];
 
@@ -531,7 +552,9 @@ class SuratPengantarController extends Controller
             "data" => $suratPengantar->getOrderanTrucking($id)
         ]);
     }
-
+    /**
+     * @ClassName 
+     */
     public function approvalBatalMuat($id)
     {
         DB::beginTransaction();
@@ -552,7 +575,53 @@ class SuratPengantarController extends Controller
             if ($suratPengantar->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($suratPengantar->getTable()),
-                    'postingdari' => 'APPROVED SUPIR RESIGN',
+                    'postingdari' => 'APPROVED BATAL MUAT',
+                    'idtrans' => $suratPengantar->id,
+                    'nobuktitrans' => $suratPengantar->id,
+                    'aksi' => $aksi,
+                    'datajson' => $suratPengantar->toArray(),
+                    'modifiedby' => auth('api')->user()->name
+                ];
+    
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+    
+                DB::commit();
+            }
+
+            return response([
+                'message' => 'Berhasil'
+            ]);
+
+        }catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
+    }
+    /**
+     * @ClassName 
+     */
+    public function approvalEditTujuan($id)
+    {
+        DB::beginTransaction();
+        try{
+            $suratPengantar = SuratPengantar::lockForUpdate()->findOrFail($id);
+
+            $statusEditTujuan = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS EDIT TUJUAN')->where('text', '=', 'EDIT TUJUAN')->first();
+            $statusTidakBolehEditTujuan = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS EDIT TUJUAN')->where('text', '=', 'TIDAK BOLEH EDIT TUJUAN')->first();
+            // statusapprovaleditabsensi,tglapprovaleditabsensi,userapprovaleditabsensi 
+            if ($suratPengantar->statusedittujuan == $statusEditTujuan->id) {
+                $suratPengantar->statusedittujuan = $statusTidakBolehEditTujuan->id;
+                $aksi = $statusTidakBolehEditTujuan->text;
+            } else {
+                $suratPengantar->statusedittujuan = $statusEditTujuan->id;
+                $aksi = $statusEditTujuan->text;
+            }
+
+            if ($suratPengantar->save()) {
+                $logTrail = [
+                    'namatabel' => strtoupper($suratPengantar->getTable()),
+                    'postingdari' => 'APPROVED EDIT TUJUAN',
                     'idtrans' => $suratPengantar->id,
                     'nobuktitrans' => $suratPengantar->id,
                     'aksi' => $aksi,
