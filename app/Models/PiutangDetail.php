@@ -73,31 +73,38 @@ class PiutangDetail extends MyModel
         $this->setRequestParameters();
 
         $piutang = DB::table("piutangheader")->from(DB::raw("piutangheader with (readuncommitted)"))->where('id', request()->piutang_id)->first();
-        $query = DB::table("pelunasanpiutangdetail")->from(DB::raw("pelunasanpiutangdetail with (readuncommitted)"));
+        if($piutang != null){
 
-        $query->select(
-            'pelunasanpiutangdetail.nobukti as nobukti_pelunasan',
-            'pelunasanpiutangdetail.piutang_nobukti',
-            'pelunasanpiutangdetail.keterangan',
-            'pelunasanpiutangdetail.invoice_nobukti',
-            'pelunasanpiutangdetail.nominal',
-            'pelunasanpiutangdetail.potongan',
-            'pelunasanpiutangdetail.nominallebihbayar',
-        );
+            $query = DB::table("pelunasanpiutangdetail")->from(DB::raw("pelunasanpiutangdetail with (readuncommitted)"));
 
-        $query->where('pelunasanpiutangdetail.piutang_nobukti', '=', $piutang->nobukti);
-
-        $this->totalNominal = $query->sum('nominal');
-        $this->totalPotongan = $query->sum('potongan');
-        $this->totalNominalLebih = $query->sum('nominallebihbayar');
-        $this->totalRows = $query->count();
-        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
-
-        $this->sort($query, 'pelunasanpiutangdetail');
-        $this->paginate($query);
-
-
-        return $query->get();
+            $query->select(
+                'pelunasanpiutangdetail.nobukti as nobukti_pelunasan',
+                'pelunasanpiutangdetail.piutang_nobukti',
+                'pelunasanpiutangdetail.keterangan',
+                'pelunasanpiutangdetail.invoice_nobukti',
+                'pelunasanpiutangdetail.nominal',
+                'pelunasanpiutangdetail.potongan',
+                'pelunasanpiutangdetail.nominallebihbayar',
+            );
+    
+            $query->where('pelunasanpiutangdetail.piutang_nobukti', '=', $piutang->nobukti);
+    
+            $this->totalNominal = $query->sum('nominal');
+            $this->totalPotongan = $query->sum('potongan');
+            $this->totalNominalLebih = $query->sum('nominallebihbayar');
+            $this->totalRows = $query->count();
+            $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+    
+            $this->sort($query, 'pelunasanpiutangdetail');
+            $this->paginate($query);
+    
+    
+            return $query->get();
+        }else{
+            $this->totalNominal = 0;
+            $this->totalPotongan = 0;
+            $this->totalNominalLebih = 0;
+        }
     }
 
     public function sort($query, $table)

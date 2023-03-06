@@ -11,7 +11,7 @@ class PengembalianKasBankHeader extends MyModel
 {
     use HasFactory;
 
-    protected $table = 'PengembalianKasBankHeader';
+    protected $table = 'pengembaliankasbankheader';
 
     protected $casts = [
         'created_at' => 'date:d-m-Y H:i:s',
@@ -36,16 +36,16 @@ class PengembalianKasBankHeader extends MyModel
 
             'pengembaliankasbankheader.postingdari',
             'pengembaliankasbankheader.dibayarke',
-            'cabang.namacabang as cabang',
-            'pengembaliankasbankheader.cabang_id',
-            'bank.namabank as bank',
-            'pengembaliankasbankheader.bank_id',
+            'cabang.namacabang as cabang_id',
+            'bank.namabank as bank_id',
             
             'statusjenistransaksi.text as statusjenistransaksi',
-            'statusapproval.text as statusapproval',
+            'statusapproval.memo as statusapproval',
             'statuscetak.memo as statuscetak',
-            'pengembaliankasbankheader.tglapproval',
+            DB::raw("(case when year(isnull($this->table.tglapproval,'1900/1/1'))<2000 then null else $this->table.tglapproval end) as tglapproval"),
             'pengembaliankasbankheader.userapproval',
+            DB::raw("(case when year(isnull($this->table.tglbukacetak,'1900/1/1'))<2000 then null else $this->table.tglbukacetak end) as tglbukacetak"),
+            'pengembaliankasbankheader.userbukacetak',
             'pengembaliankasbankheader.transferkeac',
             'pengembaliankasbankheader.transferkean',
             'pengembaliankasbankheader.transferkebank',
@@ -83,13 +83,13 @@ class PengembalianKasBankHeader extends MyModel
 
             'pengembaliankasbankheader.postingdari',
             'pengembaliankasbankheader.dibayarke',
+            'alatbayar.namaalatbayar as alatbayar',
+            'pengembaliankasbankheader.alatbayar_id',
             'cabang.namacabang as cabang',
             'pengembaliankasbankheader.cabang_id',
             'bank.namabank as bank',
             'pengembaliankasbankheader.bank_id',
             
-            'pengembaliankasbankheader.statusjenistransaksi',
-            'statusapproval.text as statusapproval',
             'pengembaliankasbankheader.tglapproval',
             'pengembaliankasbankheader.userapproval',
             'pengembaliankasbankheader.transferkeac',
@@ -102,10 +102,8 @@ class PengembalianKasBankHeader extends MyModel
 
         )
         ->leftJoin('cabang', 'pengembaliankasbankheader.cabang_id', 'cabang.id')
+        ->leftJoin('alatbayar', 'pengembaliankasbankheader.alatbayar_id', 'alatbayar.id')
         ->leftJoin('bank', 'pengembaliankasbankheader.bank_id', 'bank.id')
-        ->leftJoin('parameter as statusapproval' , 'pengembaliankasbankheader.statusapproval', 'statusapproval.id')
-        ->leftJoin('parameter as statusjenistransaksi' , 'pengembaliankasbankheader.statusjenistransaksi', 'statusjenistransaksi.id')
-
         ->where('pengembaliankasbankheader.id',$id);
 
         $data = $query->first();
@@ -155,10 +153,10 @@ class PengembalianKasBankHeader extends MyModel
             $table->string('pengeluaran_nobukti', 1000)->default('');
             $table->string('postingdari', 1000)->default('');
             $table->string('dibayarke', 1000)->default('');
-            $table->string('cabang_id', 1000)->default('');
-            $table->string('bank_id', 1000)->default('');
-            $table->string('statusjenistransaksi', 1000)->default('');
-            $table->string('statusapproval')->default('');
+            $table->bigInteger('cabang_id')->default('0');
+            $table->bigInteger('bank_id')->default('0');
+            $table->bigInteger('statusjenistransaksi')->default('0');
+            $table->bigInteger('statusapproval')->default('0');
             $table->string('transferkeac')->default('');
             $table->string('transferkean')->default('');
             $table->string('transferkebank')->default('');
@@ -185,6 +183,7 @@ class PengembalianKasBankHeader extends MyModel
         'modifiedby',
         'created_at',
         'updated_at');
+
         $this->sort($query);
         $models = $this->filter($query);
         DB::table($temp)->insertUsing([

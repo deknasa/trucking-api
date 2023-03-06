@@ -28,6 +28,7 @@ class CreatePengembaliankasbankheaderTable extends Migration
             $table->string('dibayarke',250)->default('');
             $table->unsignedBigInteger('cabang_id')->default('0');
             $table->unsignedBigInteger('bank_id')->default('0');
+            $table->unsignedBigInteger('alatbayar_id')->default('0');
             $table->string('userapproval',50)->default('');
             $table->date('tglapproval')->default('1900/1/1');
             $table->string('transferkeac',100)->default('');
@@ -43,11 +44,13 @@ class CreatePengembaliankasbankheaderTable extends Migration
 
             $table->foreign('cabang_id', 'pengembaliankasbankheader_cabang_cabang_id_foreign')->references('id')->on('cabang');
             $table->foreign('bank_id', 'pengembaliankasbankheader_bank_bank_id_foreign')->references('id')->on('bank');            
+            $table->foreign('alatbayar_id', 'pengembaliankasbankheader_alatbayar_alatbayar_id_foreign')->references('id')->on('alatbayar');            
             $table->foreign('pengeluaran_nobukti', 'pengembaliankasbankheader_pengeluaranheader_pengeluaran_nobukti_foreign')->references('nobukti')->on('pengeluaranheader');            
         });
 
         DB::statement("ALTER TABLE pengembaliankasbankheader NOCHECK CONSTRAINT pengembaliankasbankheader_cabang_cabang_id_foreign");
         DB::statement("ALTER TABLE pengembaliankasbankheader NOCHECK CONSTRAINT pengembaliankasbankheader_bank_bank_id_foreign");        
+        DB::statement("ALTER TABLE pengembaliankasbankheader NOCHECK CONSTRAINT pengembaliankasbankheader_alatbayar_alatbayar_id_foreign");        
         DB::statement("ALTER TABLE pengembaliankasbankheader NOCHECK CONSTRAINT pengembaliankasbankheader_pengeluaranheader_pengeluaran_nobukti_foreign");        
     }
 

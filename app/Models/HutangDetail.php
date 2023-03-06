@@ -93,28 +93,35 @@ class HutangDetail extends MyModel
         $this->setRequestParameters();
 
         $hutang = DB::table("hutangheader")->from(DB::raw("hutangheader with (readuncommitted)"))->where('id', request()->hutang_id)->first();
-        $query = DB::table("hutangbayardetail")->from(DB::raw("hutangbayardetail with (readuncommitted)"));
+        if ($hutang != null) {
 
-        $query->select(
-            'hutangbayardetail.nobukti as nobukti_bayar',
-            'hutangbayardetail.hutang_nobukti',
-            'hutangbayardetail.keterangan',
-            'hutangbayardetail.nominal',
-            'hutangbayardetail.potongan',
-        );
+            $query = DB::table("hutangbayardetail")->from(DB::raw("hutangbayardetail with (readuncommitted)"));
 
-        $query->where('hutangbayardetail.hutang_nobukti', '=', $hutang->nobukti);
+            $query->select(
+                'hutangbayardetail.nobukti as nobukti_bayar',
+                'hutangbayardetail.hutang_nobukti',
+                'hutangbayardetail.keterangan',
+                'hutangbayardetail.nominal',
+                'hutangbayardetail.potongan',
+            );
 
-        $this->totalNominal = $query->sum('nominal');
-        $this->totalPotongan = $query->sum('potongan');
-        $this->totalRows = $query->count();
-        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+            $query->where('hutangbayardetail.hutang_nobukti', '=', $hutang->nobukti);
 
-        $this->sort($query, 'hutangbayardetail');
-        $this->paginate($query);
+            $this->totalNominal = $query->sum('nominal');
+            $this->totalPotongan = $query->sum('potongan');
+            $this->totalRows = $query->count();
+            $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+
+            $this->sort($query, 'hutangbayardetail');
+            $this->paginate($query);
 
 
-        return $query->get();
+            return $query->get();
+        }else{
+            $this->totalNominal = 0;
+            $this->totalPotongan =0;
+            $this->totalRows = 0;
+        }
     }
     public function sort($query, $table)
     {
