@@ -24,6 +24,9 @@ use App\Http\Requests\StorePengeluaranHeaderRequest;
 use App\Http\Requests\StorePengeluaranDetailRequest;
 use App\Http\Requests\StoreJurnalUmumHeaderRequest;
 use App\Http\Requests\StoreJurnalUmumDetailRequest;
+use App\Http\Requests\UpdatePengeluaranHeaderRequest;
+use App\Models\AlatBayar;
+use App\Models\Bank;
 
 class PengembalianKasBankHeaderController extends Controller
 {
@@ -55,28 +58,41 @@ class PengembalianKasBankHeaderController extends Controller
             $subgroup = 'PENGEMBALIAN KASBANK BUKTI';
 
             $format = DB::table('parameter')
-                ->where('grp', $group )
+                ->where('grp', $group)
                 ->where('subgrp', $subgroup)
                 ->first();
             $content = new Request();
-            $content['group'] = $group ;
-            $content['subgroup'] = $subgroup ;
+            $content['group'] = $group;
+            $content['subgroup'] = $subgroup;
             $content['table'] = 'pengembaliankasbankheader';
             $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
             $pengembalianKasBankHeader = new PengembalianKasBankHeader();
 
+            $bank = Bank::from(DB::raw("bank with (readuncommitted)"))->where('id', $request->bank_id)->first();
+
+            $jenisTransaksi = Bank::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JENIS TRANSAKSI')->where('text', $bank->tipe)->first();
             $statusApproval = Parameter::where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
+            $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                ->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
+            $alatBayar = AlatBayar::from(DB::raw("alatbayar with (readuncommitted)"))->where('kodealatbayar', 'TRANSFER')->first();
+            if ($bank->tipe == 'BANK' && $alatBayar->id == $request->alatbayar_id) {
+                $request->validate([
+                    'transferkeac' => 'required',
+                    'transferkean' => 'required',
+                    'transferkebank' => 'required',
+                ]);
+            }
 
             $pengembalianKasBankHeader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
-            $pengembalianKasBankHeader->pengeluaran_nobukti = $request->pengeluaran_nobukti;
-            $pengembalianKasBankHeader->statusjenistransaksi = $request->statusjenistransaksi ?? 0;
+            $pengembalianKasBankHeader->statusjenistransaksi = $jenisTransaksi->id;
+
             $pengembalianKasBankHeader->postingdari = $request->postingdari ?? 'ENTRY PENGEMBALIAN KAS BANK';
-            $pengembalianKasBankHeader->statusapproval = $statusApproval->id ;
+            $pengembalianKasBankHeader->statusapproval = $statusApproval->id;
+            $pengembalianKasBankHeader->statuscetak = $statusCetak->id;
             $pengembalianKasBankHeader->dibayarke = $request->dibayarke ?? '';
-            $pengembalianKasBankHeader->cabang_id = $request->cabang_id ?? 0;
-            $pengembalianKasBankHeader->bank_id = $request->bank_id ?? 0;
-            $pengembalianKasBankHeader->userapproval = $request->userapproval ?? '';
-            $pengembalianKasBankHeader->tglapproval = $request->tglapproval ?? '';
+            $pengembalianKasBankHeader->bank_id = $request->bank_id;
+            $pengembalianKasBankHeader->cabang_id = $request->cabang_id;
+            $pengembalianKasBankHeader->alatbayar_id = $request->alatbayar_id;
             $pengembalianKasBankHeader->transferkeac = $request->transferkeac ?? '';
             $pengembalianKasBankHeader->transferkean = $request->transferkean ?? '';
             $pengembalianKasBankHeader->transferkebank = $request->transferkebank ?? '';
@@ -84,144 +100,151 @@ class PengembalianKasBankHeaderController extends Controller
             $pengembalianKasBankHeader->modifiedby = auth('api')->user()->name;
 
             TOP:
-                $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
-                $pengembalianKasBankHeader->nobukti = $nobukti;
-
-            if ($pengembalianKasBankHeader->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($pengembalianKasBankHeader->getTable()),
-                    'postingdari' => 'ENTRY PENGEMBALIAN KAS BANK HEADER',
-                    'idtrans' => $pengembalianKasBankHeader->id,
-                    'nobuktitrans' => $pengembalianKasBankHeader->nobukti,
-                    'aksi' => 'ENTRY',
-                    'datajson' => $pengembalianKasBankHeader->toArray(),
-                    'modifiedby' => $pengembalianKasBankHeader->modifiedby
-                ];
-            
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-                /* Store detail */
-                $detaillog = [];
-                for ($i = 0; $i < count($request->nominal_detail); $i++) {
-
-                        
-                    $datadetail = [
-                        'pengembaliankasbank_id' => $pengembalianKasBankHeader->id,
-                        'nobukti' => $pengembalianKasBankHeader->nobukti,
-                        'alatbayar_id' => $request->alatbayar_id[$i],
-                        'nowarkat' => $request->nowarkat[$i],
-                        'tgljatuhtempo' =>  date('Y-m-d', strtotime($request->tgljatuhtempo[$i])),
-                        'nominal' => $request->nominal_detail[$i],
-                        'coadebet' => $request->coadebet[$i],
-                        'coakredit' => $request->coakredit[$i],
-                        'keterangan' => $request->keterangan_detail[$i],
-                        'bulanbeban' =>  date('Y-m-d', strtotime($request->bulanbeban[$i])),
-                        'modifiedby' => auth('api')->user()->name,
-                    ];
+            $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
+            $pengembalianKasBankHeader->nobukti = $nobukti;
+            $pengembalianKasBankHeader->save();
+            /* Store detail */
+            $detaillog = [];
+            for ($i = 0; $i < count($request->nominal_detail); $i++) {
 
 
-                    $data = new StorePengembalianKasBankDetailRequest($datadetail);
-                    $datadetails = app(PengembalianKasBankDetailController::class)->store($data);
-
-                    if ($datadetails['error']) {
-                        return response($datadetails, 422);
-                    } else {
-                        $iddetail = $datadetails['id'];
-                        $tabeldetail = $datadetails['tabel'];
-                    }
-                    $detaillog[] = $datadetail;
-                }
-                $datalogtrail = [
-                    'namatabel' => $tabeldetail,
-                    'postingdari' => 'ENTRY PENGEMBALIAN KAS BANK DETAIL',
-                    'idtrans' =>  $iddetail,
-                    'nobuktitrans' => $pengembalianKasBankHeader->nobukti,
-                    'aksi' => 'ENTRY',
-                    'datajson' => $detaillog,
+                $datadetail = [
+                    'pengembaliankasbank_id' => $pengembalianKasBankHeader->id,
+                    'nobukti' => $pengembalianKasBankHeader->nobukti,
+                    'nowarkat' => $request->nowarkat[$i],
+                    'tgljatuhtempo' =>  date('Y-m-d', strtotime($request->tgljatuhtempo[$i])),
+                    'nominal' => $request->nominal_detail[$i],
+                    'coadebet' => $request->coadebet[$i],
+                    'coakredit' => $request->coakredit[$i],
+                    'keterangan' => $request->keterangan_detail[$i],
+                    'bulanbeban' => date('Y-m-d', strtotime($request->bulanbeban[$i] ?? '1900/1/1')),
                     'modifiedby' => auth('api')->user()->name,
                 ];
-                
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-                
-                //SOTRE PENGELUARAN
-                $pengeluaranHeader = [
-                    'tanpaprosesnobukti' => 1,
-                    "nobukti" => $pengembalianKasBankHeader->nobukti,
-                    "tglbukti" => $pengembalianKasBankHeader->tglbukti,
-                    "pelanggan_id" => 1,
-                    // "pelanggan_id" => $pengeluaran->pelanggan_id,
-                    // "keterangan" => $pengembalianKasBankHeader->keterangan,
-                    "statusjenistransaksi" => $pengembalianKasBankHeader->statusjenistransaksi,
-                    "postingdari" => $pengembalianKasBankHeader->postingdari,
-                    "statusapproval" => $pengembalianKasBankHeader->statusapproval,
-                    "dibayarke" => $pengembalianKasBankHeader->dibayarke,
-                    "cabang_id" => $pengembalianKasBankHeader->cabang_id,
-                    "bank_id" => $pengembalianKasBankHeader->bank_id,
-                    "userapproval" => $pengembalianKasBankHeader->userapproval,
-                    "tglapproval" => $pengembalianKasBankHeader->tglapproval,
-                    "transferkeac" => $pengembalianKasBankHeader->transferkeac,
-                    "transferkean" => $pengembalianKasBankHeader->transferkean,
-                    "transferkebank" => $pengembalianKasBankHeader->transferkebank,
-                    "statusformat" => $pengembalianKasBankHeader->statusformat,
-                    "modifiedby" => $pengembalianKasBankHeader->modifiedby,
+
+
+                $data = new StorePengembalianKasBankDetailRequest($datadetail);
+                $datadetails = app(PengembalianKasBankDetailController::class)->store($data);
+
+                if ($datadetails['error']) {
+                    return response($datadetails, 422);
+                } else {
+                    $iddetail = $datadetails['id'];
+                    $tabeldetail = $datadetails['tabel'];
+                }
+                $detaillog[] = $datadetail;
+            }
+
+            $getFormatPengeluaran = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('id', $bank->formatpengeluaran)->first();
+
+            $group = $getFormatPengeluaran->grp;
+            $subgroup = $getFormatPengeluaran->subgrp;
+            $formatPengeluaran = DB::table('parameter')
+                ->where('grp', $group)
+                ->where('subgrp', $subgroup)
+                ->first();
+
+            $pengeluaranRequest = new Request();
+            $pengeluaranRequest['group'] = $group;
+            $pengeluaranRequest['subgroup'] = $subgroup;
+            $pengeluaranRequest['table'] = 'pengeluaranheader';
+            $pengeluaranRequest['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
+
+            $nobuktiPengeluaran = app(Controller::class)->getRunningNumber($pengeluaranRequest)->original['data'];
+
+            $pengembalianKasBankHeader->pengeluaran_nobukti = $nobuktiPengeluaran;
+            $pengembalianKasBankHeader->save();
+
+            $logTrail = [
+                'namatabel' => strtoupper($pengembalianKasBankHeader->getTable()),
+                'postingdari' => 'ENTRY PENGEMBALIAN KAS BANK HEADER',
+                'idtrans' => $pengembalianKasBankHeader->id,
+                'nobuktitrans' => $pengembalianKasBankHeader->nobukti,
+                'aksi' => 'ENTRY',
+                'datajson' => $pengembalianKasBankHeader->toArray(),
+                'modifiedby' => $pengembalianKasBankHeader->modifiedby
+            ];
+
+            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+            $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+
+            $datalogtrail = [
+                'namatabel' => $tabeldetail,
+                'postingdari' => 'ENTRY PENGEMBALIAN KAS BANK DETAIL',
+                'idtrans' =>  $storedLogTrail['id'],
+                'nobuktitrans' => $pengembalianKasBankHeader->nobukti,
+                'aksi' => 'ENTRY',
+                'datajson' => $detaillog,
+                'modifiedby' => auth('api')->user()->name,
+            ];
+
+            $validatedLogTrail = new StoreLogTrailRequest($datalogtrail);
+            app(LogTrailController::class)->store($validatedLogTrail);
+
+            $pengeluaranDetail = [];
+            for ($i = 0; $i < count($request->nominal_detail); $i++) {
+                $detail = [];
+
+                $detail = [
+                    'entriluar' => 1,
+                    'nobukti' =>  $nobuktiPengeluaran,
+                    'alatbayar_id' =>  $pengembalianKasBankHeader->alatbayar_id,
+                    'nowarkat' =>  $request->nowarkat[$i],
+                    'tgljatuhtempo' =>   date('Y-m-d', strtotime($request->tgljatuhtempo[$i])),
+                    'nominal' =>  $request->nominal_detail[$i],
+                    'coadebet' =>  $request->coadebet[$i],
+                    'coakredit' =>  $request->coakredit[$i],
+                    'keterangan' =>  $request->keterangan_detail[$i],
+                    'bulanbeban' =>  date('Y-m-d', strtotime($request->bulanbeban[$i] ?? '1900/1/1')),
+                    'modifiedby' =>  auth('api')->user()->name,
                 ];
 
-                $pengeluaranDetail = [];
-                for ($i = 0; $i < count($request->nominal_detail); $i++) {
-                    $detail = [];
-                    
-                    $detail = [
-                        'entriluar' => 1,
-                        'nobukti' =>  $pengembalianKasBankHeader->nobukti,
-                        'alatbayar_id' =>  $request->alatbayar_id[$i],
-                        'nowarkat' =>  $request->nowarkat[$i],
-                        'tgljatuhtempo' =>   date('Y-m-d', strtotime($request->tgljatuhtempo[$i])),
-                        'nominal' =>  $request->nominal_detail[$i],
-                        'coadebet' =>  $request->coadebet[$i],
-                        'coakredit' =>  $request->coakredit[$i],
-                        'keterangan' =>  $request->keterangan_detail[$i],
-                        'bulanbeban' =>   date('Y-m-d', strtotime($request->bulanbeban[$i])),
-                        'modifiedby' =>  auth('api')->user()->name,
-                    ];
-    
-                    $pengeluaranDetail[] = $detail;
-                }
-                $pengeluaranHeader["datadetail"]= $pengeluaranDetail;
-                $pengeluaran = $this->storePengeluaran($pengeluaranHeader,[]);
-
-                // return response([$pengeluaran], 422);
-                if (!$pengeluaran) {
-                    return response(['Error'], 422);
-                } 
-
-                DB::commit();
-                
-                /* Set position and page */
-                $selected = $this->getPosition($pengembalianKasBankHeader, $pengembalianKasBankHeader->getTable());
-                $pengembalianKasBankHeader->position = $selected->position;
-                $pengembalianKasBankHeader->page = ceil($pengembalianKasBankHeader->position / ($request->limit ?? 10));
-
-                if (isset($request->limit)) {
-                    $pengembalianKasBankHeader->page = ceil($pengembalianKasBankHeader->position / $request->limit);
-                }
-
-                return response([
-                    'message' => 'Berhasil disimpan',
-                    'data' => $pengembalianKasBankHeader
-                ], 201);
+                $pengeluaranDetail[] = $detail;
             }
-            return response($validatedLogTrail, 422);
+
+            //SOTRE PENGELUARAN
+            $pengeluaranHeader = [
+                'tanpaprosesnobukti' => 1,
+                "nobukti" => $nobuktiPengeluaran,
+                "tglbukti" => $pengembalianKasBankHeader->tglbukti,
+                "pelanggan_id" => 0,
+                "statusjenistransaksi" => $pengembalianKasBankHeader->statusjenistransaksi,
+                "postingdari" => $pengembalianKasBankHeader->postingdari,
+                "statusapproval" => $pengembalianKasBankHeader->statusapproval,
+                "dibayarke" => $pengembalianKasBankHeader->dibayarke,
+                "bank_id" => $pengembalianKasBankHeader->bank_id,
+                "userapproval" => $pengembalianKasBankHeader->userapproval,
+                "tglapproval" => $pengembalianKasBankHeader->tglapproval,
+                "transferkeac" => $pengembalianKasBankHeader->transferkeac,
+                "transferkean" => $pengembalianKasBankHeader->transferkean,
+                "transferkebank" => $pengembalianKasBankHeader->transferkebank,
+                "statusformat" => $formatPengeluaran->id,
+                "modifiedby" => $pengembalianKasBankHeader->modifiedby,
+                "datadetail" => $pengeluaranDetail
+            ];
+
+            $pengeluaran = new StorePengeluaranHeaderRequest($pengeluaranHeader);
+            app(PengeluaranHeaderController::class)->store($pengeluaran);
+
+
+            $request->sortname = $request->sortname ?? 'id';
+            $request->sortorder = $request->sortorder ?? 'asc';
+            DB::commit();
+            /* Set position and page */
+            $selected = $this->getPosition($pengembalianKasBankHeader, $pengembalianKasBankHeader->getTable());
+            $pengembalianKasBankHeader->position = $selected->position;
+            $pengembalianKasBankHeader->page = ceil($pengembalianKasBankHeader->position / ($request->limit ?? 10));
+
+
+            return response([
+                'message' => 'Berhasil disimpan',
+                'data' => $pengembalianKasBankHeader
+            ], 201);
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
         }
-        
     }
 
-    /**
-     * @ClassName 
-     */
     public function show(PengembalianKasBankHeader $pengembalianKasBankHeader, $id)
     {
         return response([
@@ -233,7 +256,7 @@ class PengembalianKasBankHeaderController extends Controller
     /**
      * @ClassName 
      */
-    public function update(Request $request, $id)
+    public function update(UpdatePengembalianKasBankHeaderRequest $request, $id)
     {
         DB::beginTransaction();
 
@@ -243,165 +266,146 @@ class PengembalianKasBankHeaderController extends Controller
             $subgroup = 'PENGEMBALIAN KASBANK BUKTI';
 
             $format = DB::table('parameter')
-                ->where('grp', $group )
+                ->where('grp', $group)
                 ->where('subgrp', $subgroup)
                 ->first();
             $content = new Request();
-            $content['group'] = $group ;
-            $content['subgroup'] = $subgroup ;
+            $content['group'] = $group;
+            $content['subgroup'] = $subgroup;
             $content['table'] = 'pengembaliankasbankheader';
             $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
             $pengembalianKasBankHeader = PengembalianKasBankHeader::lockForUpdate()->findOrFail($id);
 
+            $bank = Bank::from(DB::raw("bank with (readuncommitted)"))->where('id', $request->bank_id)->first();
+
+            $jenisTransaksi = Bank::from(DB::raw("parameter with (readuncommitted)"))->where('text', $bank->tipe)->first();
+            $alatBayar = AlatBayar::from(DB::raw("alatbayar with (readuncommitted)"))->where('kodealatbayar', 'TRANSFER')->first();
+            if ($bank->tipe == 'BANK' && $alatBayar->id == $request->alatbayar_id) {
+                $request->validate([
+                    'transferkeac' => 'required',
+                    'transferkean' => 'required',
+                    'transferkebank' => 'required',
+                ]);
+            }
             $pengembalianKasBankHeader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
-            $pengembalianKasBankHeader->pengeluaran_nobukti = $request->pengeluaran_nobukti;
-            $pengembalianKasBankHeader->keterangan = $request->keterangan ?? '';
-            $pengembalianKasBankHeader->statusjenistransaksi = $request->statusjenistransaksi ?? 0;
             $pengembalianKasBankHeader->postingdari = $request->postingdari ?? 'EDIT PENGEMBALIAN KAS BANK';
             $pengembalianKasBankHeader->dibayarke = $request->dibayarke ?? '';
             $pengembalianKasBankHeader->cabang_id = $request->cabang_id ?? 0;
-            $pengembalianKasBankHeader->bank_id = $request->bank_id ?? 0;
-            $pengembalianKasBankHeader->userapproval = $request->userapproval ?? '';
-            $pengembalianKasBankHeader->tglapproval = $request->tglapproval ?? '';
             $pengembalianKasBankHeader->transferkeac = $request->transferkeac ?? '';
             $pengembalianKasBankHeader->transferkean = $request->transferkean ?? '';
             $pengembalianKasBankHeader->transferkebank = $request->transferkebank ?? '';
             $pengembalianKasBankHeader->statusformat = $format->id;
             $pengembalianKasBankHeader->modifiedby = auth('api')->user()->name;
 
+            $pengembalianKasBankHeader->save();
+            $logTrail = [
+                'namatabel' => strtoupper($pengembalianKasBankHeader->getTable()),
+                'postingdari' => 'EDIT PENGEMBALIAN KAS BANK HEADER',
+                'idtrans' => $pengembalianKasBankHeader->id,
+                'nobuktitrans' => $pengembalianKasBankHeader->nobukti,
+                'aksi' => 'EDIT',
+                'datajson' => $pengembalianKasBankHeader->toArray(),
+                'modifiedby' => $pengembalianKasBankHeader->modifiedby
+            ];
 
-            if ($pengembalianKasBankHeader->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($pengembalianKasBankHeader->getTable()),
-                    'postingdari' => 'EDIT PENGEMBALIAN KAS BANK HEADER',
-                    'idtrans' => $pengembalianKasBankHeader->id,
-                    'nobuktitrans' => $pengembalianKasBankHeader->nobukti,
-                    'aksi' => 'EDIT',
-                    'datajson' => $pengembalianKasBankHeader->toArray(),
-                    'modifiedby' => $pengembalianKasBankHeader->modifiedby
-                ];
-            
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+            $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-                /* Delete existing detail */
-                PengembalianKasBankDetail::where('nobukti',$pengembalianKasBankHeader->nobukti)->lockForUpdate()->delete();
-                PengeluaranDetail::where('nobukti', $pengembalianKasBankHeader->nobukti)->lockForUpdate()->delete();
-                PengeluaranHeader::where('nobukti', $pengembalianKasBankHeader->nobukti)->lockForUpdate()->delete();
-                JurnalUmumDetail::where('nobukti', $pengembalianKasBankHeader->nobukti)->lockForUpdate()->delete();
-                JurnalUmumHeader::where('nobukti', $pengembalianKasBankHeader->nobukti)->lockForUpdate()->delete();
+            /* Delete existing detail */
+            PengembalianKasBankDetail::where('nobukti', $pengembalianKasBankHeader->nobukti)->lockForUpdate()->delete();
 
-                /* Store detail */
-                $detaillog = [];
-                for ($i = 0; $i < count($request->nominal_detail); $i++) {
-
-                        
-                    $datadetail = [
-                        'pengembaliankasbank_id' => $pengembalianKasBankHeader->id,
-                        'nobukti' => $pengembalianKasBankHeader->nobukti,
-                        'alatbayar_id' => $request->alatbayar_id[$i],
-                        'nowarkat' => $request->nowarkat[$i],
-                        'tgljatuhtempo' =>  date('Y-m-d', strtotime($request->tgljatuhtempo[$i])),
-                        'nominal' => $request->nominal_detail[$i],
-                        'coadebet' => $request->coadebet[$i],
-                        'coakredit' => $request->coakredit[$i],
-                        'keterangan' => $request->keterangan_detail[$i],
-                        'bulanbeban' =>  date('Y-m-d', strtotime($request->bulanbeban[$i])),
-                        'modifiedby' => auth('api')->user()->name,
-                    ];
+            /* Store detail */
+            $detaillog = [];
+            for ($i = 0; $i < count($request->nominal_detail); $i++) {
 
 
-                    $data = new StorePengembalianKasBankDetailRequest($datadetail);
-                    $datadetails = app(PengembalianKasBankDetailController::class)->store($data);
-
-                    if ($datadetails['error']) {
-                        return response($datadetails, 422);
-                    } else {
-                        $iddetail = $datadetails['id'];
-                        $tabeldetail = $datadetails['tabel'];
-                    }
-                    $detaillog[] = $datadetail;
-                }
-                $datalogtrail = [
-                    'namatabel' => $tabeldetail,
-                    'postingdari' => 'EDIT PENGEMBALIAN KAS BANK DETAIL',
-                    'idtrans' =>  $iddetail,
-                    'nobuktitrans' => $pengembalianKasBankHeader->nobukti,
-                    'aksi' => 'EDIT',
-                    'datajson' => $detaillog,
+                $datadetail = [
+                    'pengembaliankasbank_id' => $pengembalianKasBankHeader->id,
+                    'nobukti' => $pengembalianKasBankHeader->nobukti,
+                    'nowarkat' => $request->nowarkat[$i],
+                    'tgljatuhtempo' =>  date('Y-m-d', strtotime($request->tgljatuhtempo[$i])),
+                    'nominal' => $request->nominal_detail[$i],
+                    'coadebet' => $request->coadebet[$i],
+                    'coakredit' => $request->coakredit[$i],
+                    'keterangan' => $request->keterangan_detail[$i],
+                    'bulanbeban' =>  date('Y-m-d', strtotime($request->bulanbeban[$i] ?? '1900/1/1')),
                     'modifiedby' => auth('api')->user()->name,
                 ];
-                
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-                $statusApp = Parameter::where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
 
-                //SOTRE PENGELUARAN
-                $pengeluaranHeader = [
-                    'tanpaprosesnobukti' => 1,
-                    "nobukti" => $pengembalianKasBankHeader->nobukti,
-                    "tglbukti" => $pengembalianKasBankHeader->tglbukti,
-                    "pelanggan_id" => 1,
-                    // "pelanggan_id" => $pengeluaran->pelanggan_id,
-                    "keterangan" => $pengembalianKasBankHeader->keterangan,
-                    "statusjenistransaksi" => $pengembalianKasBankHeader->statusjenistransaksi,
-                    "postingdari" => $pengembalianKasBankHeader->postingdari,
-                    "statusapproval" => $pengembalianKasBankHeader->statusapproval,
-                    "dibayarke" => $pengembalianKasBankHeader->dibayarke,
-                    "cabang_id" => $pengembalianKasBankHeader->cabang_id,
-                    "bank_id" => $pengembalianKasBankHeader->bank_id,
-                    "userapproval" => $pengembalianKasBankHeader->userapproval,
-                    "tglapproval" => $pengembalianKasBankHeader->tglapproval,
-                    "transferkeac" => $pengembalianKasBankHeader->transferkeac,
-                    "transferkean" => $pengembalianKasBankHeader->transferkean,
-                    "transferkebank" => $pengembalianKasBankHeader->transferkebank,
-                    "statusformat" => $pengembalianKasBankHeader->statusformat,
-                    "modifiedby" => $pengembalianKasBankHeader->modifiedby,
-                ];
-                $nominal_total = 0;
-                $pengeluaranDetail = [];
-                for ($i = 0; $i < count($request->nominal_detail); $i++) {
-                    $detail = [];
-                    
-                    $detail = [
-                        'entriluar' => 1,
-                        'nobukti' =>  $pengembalianKasBankHeader->nobukti,
-                        'alatbayar_id' =>  $request->alatbayar_id[$i],
-                        'nowarkat' =>  $request->nowarkat[$i],
-                        'tgljatuhtempo' =>   date('Y-m-d', strtotime($request->tgljatuhtempo[$i])),
-                        'nominal' =>  $request->nominal_detail[$i],
-                        'coadebet' =>  $request->coadebet[$i],
-                        'coakredit' =>  $request->coakredit[$i],
-                        'keterangan' =>  $request->keterangan_detail[$i],
-                        'bulanbeban' =>   date('Y-m-d', strtotime($request->bulanbeban[$i])),
-                        'modifiedby' =>  auth('api')->user()->name,
-                    ];
-                    $nominal_total += $request->nominal_detail[$i];
-                    $pengeluaranDetail[] = $detail;
+
+                $data = new StorePengembalianKasBankDetailRequest($datadetail);
+                $datadetails = app(PengembalianKasBankDetailController::class)->store($data);
+
+                if ($datadetails['error']) {
+                    return response($datadetails, 422);
+                } else {
+                    $iddetail = $datadetails['id'];
+                    $tabeldetail = $datadetails['tabel'];
                 }
-                $pengeluaran = $this->storePengeluaran($pengeluaranHeader, $pengeluaranDetail);
-
-                if (!$pengeluaran) {
-                    return response(['Error'], 422);
-                } 
-                
-                DB::commit();
-                
-                /* Set position and page */
-                $selected = $this->getPosition($pengembalianKasBankHeader, $pengembalianKasBankHeader->getTable());
-                $pengembalianKasBankHeader->position = $selected->position;
-                $pengembalianKasBankHeader->page = ceil($pengembalianKasBankHeader->position / ($request->limit ?? 10));
-
-                if (isset($request->limit)) {
-                    $pengembalianKasBankHeader->page = ceil($pengembalianKasBankHeader->position / $request->limit);
-                }
-
-                return response([
-                    'message' => 'Berhasil disimpan',
-                    'data' => $pengembalianKasBankHeader
-                ], 201);
+                $detaillog[] = $datadetail;
             }
-            return response($validatedLogTrail, 422);
+            $datalogtrail = [
+                'namatabel' => $tabeldetail,
+                'postingdari' => 'EDIT PENGEMBALIAN KAS BANK DETAIL',
+                'idtrans' =>  $iddetail,
+                'nobuktitrans' => $pengembalianKasBankHeader->nobukti,
+                'aksi' => 'EDIT',
+                'datajson' => $detaillog,
+                'modifiedby' => auth('api')->user()->name,
+            ];
+
+            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+            $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+            $statusApp = Parameter::where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
+
+            $nominal_total = 0;
+            $pengeluaranDetail = [];
+            for ($i = 0; $i < count($request->nominal_detail); $i++) {
+                $detail = [];
+
+                $detail = [
+                    'entriluar' => 1,
+                    'nobukti' =>  $pengembalianKasBankHeader->nobukti,
+                    'nowarkat' =>  $request->nowarkat[$i],
+                    'tgljatuhtempo' =>   date('Y-m-d', strtotime($request->tgljatuhtempo[$i])),
+                    'nominal' =>  $request->nominal_detail[$i],
+                    'coadebet' =>  $request->coadebet[$i],
+                    'coakredit' =>  $request->coakredit[$i],
+                    'keterangan' =>  $request->keterangan_detail[$i],
+                    'bulanbeban' =>   date('Y-m-d', strtotime($request->bulanbeban[$i] ?? '1900/1/1')),
+                    'modifiedby' =>  auth('api')->user()->name,
+                ];
+                $nominal_total += $request->nominal_detail[$i];
+                $pengeluaranDetail[] = $detail;
+            }
+
+            //SOTRE PENGELUARAN
+            $pengeluaranHeader = [
+                'isUpdate' => 1,
+                'dibayarke' => $pengembalianKasBankHeader->dibayarke,
+                'transferkeacc' => $pengembalianKasBankHeader->transferkeacc,
+                'transferkean' => $pengembalianKasBankHeader->transferkean,
+                'transferkebank' => $pengembalianKasBankHeader->transferkebank,
+                'postingdari' => 'PENGEMBALIAN KAS/BANK',
+                'modifiedby' => auth('api')->user()->name,
+                'datadetail' => $pengeluaranDetail
+            ];
+            $get = PengeluaranHeader::from(DB::raw("pengeluaranheader with (readuncommitted)"))->where('nobukti', $pengembalianKasBankHeader->pengeluaran_nobukti)->first();
+
+            $newPengeluaran = new PengeluaranHeader();
+            $newPengeluaran = $newPengeluaran->findAll($get->id);
+            $pengeluaran = new UpdatePengeluaranHeaderRequest($pengeluaranHeader);
+            app(PengeluaranHeaderController::class)->update($pengeluaran, $newPengeluaran);
+            DB::commit();
+
+            $selected = $this->getPosition($pengembalianKasBankHeader, $pengembalianKasBankHeader->getTable());
+            $pengembalianKasBankHeader->position = $selected->position;
+            $pengembalianKasBankHeader->page = ceil($pengembalianKasBankHeader->position / ($request->limit ?? 10));
+
+            return response([
+                'message' => 'Berhasil disimpan',
+                'data' => $pengembalianKasBankHeader
+            ], 201);
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
@@ -417,17 +421,11 @@ class PengembalianKasBankHeaderController extends Controller
 
         $getDetail = PengembalianKasBankDetail::lockForUpdate()->where('pengembaliankasbank_id', $id)->get();
 
+        $request['postingdari'] = "DELETE PENGEMBALIAN KAS/BANK";
         $pengembalianKasBankHeader = new PengembalianKasBankHeader;
         $pengembalianKasBankHeader = $pengembalianKasBankHeader->lockAndDestroy($id);
 
-        $getPengeluaranHeader = PengeluaranHeader::lockForUpdate()->where('nobukti', $pengembalianKasBankHeader->pengeluaran_nobukti)->first();
-        $getPengeluaranDetail = PengeluaranDetail::lockForUpdate()->where('nobukti', $pengembalianKasBankHeader->pengeluaran_nobukti)->get();
-        $getJurnalHeader = JurnalUmumHeader::lockForUpdate()->where('nobukti', $pengembalianKasBankHeader->pengeluaran_nobukti)->first();
-        $getJurnalDetail = JurnalUmumDetail::lockForUpdate()->where('nobukti', $pengembalianKasBankHeader->pengeluaran_nobukti)->get();
-
-        PengeluaranHeader::where('nobukti', $pengembalianKasBankHeader->nobukti)->delete();
-        JurnalUmumHeader::where('nobukti', $pengembalianKasBankHeader->nobukti)->delete();
-
+       
         if ($pengembalianKasBankHeader) {
             $logTrail = [
                 'namatabel' => strtoupper($pengembalianKasBankHeader->getTable()),
@@ -456,64 +454,12 @@ class PengembalianKasBankHeaderController extends Controller
             $validatedLogTrailPengembalianKasbankDetail = new StoreLogTrailRequest($logTrailPengembalianKasbankDetail);
             app(LogTrailController::class)->store($validatedLogTrailPengembalianKasbankDetail);
 
-            // DELETE PENGELUARAN HEADER
-            $logTrailPengeluaranHeader = [
-                'namatabel' => 'PENGELUARANHEADER',
-                'postingdari' => 'DELETE PENGELUARAN HEADER DARI PENGEMBALIAN KAS BANK',
-                'idtrans' => $getPengeluaranHeader->id,
-                'nobuktitrans' => $getPengeluaranHeader->nobukti,
-                'aksi' => 'DELETE',
-                'datajson' => $getPengeluaranHeader->toArray(),
-                'modifiedby' => auth('api')->user()->name
-            ];
-
-            $validatedLogTrailPengeluaranHeader = new StoreLogTrailRequest($logTrailPengeluaranHeader);
-            $storedLogTrailPengeluaran = app(LogTrailController::class)->store($validatedLogTrailPengeluaranHeader);
-
-            // DELETE PENGELUARAN DETAIL
-            $logTrailPengeluaranDetail = [
-                'namatabel' => 'PENGELUARANDETAIL',
-                'postingdari' => 'DELETE PENGELUARAN DETAIL DARI PENGEMBALIAN KAS BANK',
-                'idtrans' => $storedLogTrailPengeluaran['id'],
-                'nobuktitrans' => $getPengeluaranHeader->nobukti,
-                'aksi' => 'DELETE',
-                'datajson' => $getPengeluaranDetail->toArray(),
-                'modifiedby' => auth('api')->user()->name
-            ];
-
-            $validatedLogTrailPengeluaranDetail = new StoreLogTrailRequest($logTrailPengeluaranDetail);
-            app(LogTrailController::class)->store($validatedLogTrailPengeluaranDetail);
-
-            // DELETE JURNAL HEADER
-            $logTrailJurnalHeader = [
-                'namatabel' => 'JURNALUMUMHEADER',
-                'postingdari' => 'DELETE JURNAL UMUM HEADER DARI PENGEMBALIAN KAS BANK',
-                'idtrans' => $getJurnalHeader->id,
-                'nobuktitrans' => $getJurnalHeader->nobukti,
-                'aksi' => 'DELETE',
-                'datajson' => $getJurnalHeader->toArray(),
-                'modifiedby' => auth('api')->user()->name
-            ];
-
-            $validatedLogTrailJurnalHeader = new StoreLogTrailRequest($logTrailJurnalHeader);
-            $storedLogTrailJurnal = app(LogTrailController::class)->store($validatedLogTrailJurnalHeader);
-
-            // DELETE JURNAL DETAIL
-            $logTrailJurnalDetail = [
-                'namatabel' => 'JURNALUMUMDETAIL',
-                'postingdari' => 'DELETE JURNAL UMUM DETAIL DARI PENGEMBALIAN KAS BANK',
-                'idtrans' => $storedLogTrailJurnal['id'],
-                'nobuktitrans' => $getJurnalHeader->nobukti,
-                'aksi' => 'DELETE',
-                'datajson' => $getJurnalDetail->toArray(),
-                'modifiedby' => auth('api')->user()->name
-            ];
-
-            $validatedLogTrailJurnalDetail = new StoreLogTrailRequest($logTrailJurnalDetail);
-            app(LogTrailController::class)->store($validatedLogTrailJurnalDetail);
+            $getPengeluaran = PengeluaranHeader::from(DB::raw("pengeluaranheader with (readuncommitted)"))->where('nobukti', $pengembalianKasBankHeader->pengeluaran_nobukti)->first();
+            app(PengeluaranHeaderController::class)->destroy($request, $getPengeluaran->id);
 
             DB::commit();
 
+            /* Set position and page */
             $selected = $this->getPosition($pengembalianKasBankHeader, $pengembalianKasBankHeader->getTable(), true);
             $pengembalianKasBankHeader->position = $selected->position;
             $pengembalianKasBankHeader->id = $selected->id;
@@ -531,70 +477,6 @@ class PengembalianKasBankHeaderController extends Controller
                 'status' => false,
                 'message' => 'Gagal dihapus'
             ]);
-        }
-    }
-
-    public function storePengeluaran($pengeluaranHeader,$pengeluaranDetail)
-    {
-        try {
-
-            
-            $pengeluaran = new StorePengeluaranHeaderRequest($pengeluaranHeader);
-            $header = app(PengeluaranHeaderController::class)->store($pengeluaran);
-            $nobukti = $pengeluaranHeader['nobukti'];
-            $fetchId = PengeluaranHeader::select('id')
-                ->whereRaw("nobukti = '$nobukti'")
-                ->first();
-            $id = $fetchId->id;
-            $details = [];
-            foreach ($pengeluaranDetail as $value) {
-                
-                $value['pengeluaran_id'] = $id;
-                $pengeluaranDetails = new StorePengeluaranDetailRequest($value);
-                $detail = app(PengeluaranDetailController::class)->store($pengeluaranDetails);
-                if ($detail['error']) {
-                    return response($detail, 422);
-                } else {
-                    $iddetail = $detail['id'];
-                    $tabeldetail = $detail['tabel'];
-                }
-                $details[] = $detail;
-
-            }
-
-            // return $details;
-            return [
-                'status' => true
-            ];
-
-        } catch (\Throwable $th) {
-            throw $th;
-            
-        }
-    }
-
-    private function storeJurnal($header, $detail)
-    {
-
-        try {
-            $jurnal = new StoreJurnalUmumHeaderRequest($header);
-            $jurnals = app(JurnalUmumHeaderController::class)->store($jurnal);
-          
-            foreach ($detail as $key => $value) {
-                $value['jurnalumum_id'] = $jurnals->original['data']['id'];
-                $jurnal = new StoreJurnalUmumDetailRequest($value);
-
-                app(JurnalUmumDetailController::class)->store($jurnal);
-            }
-
-            return [
-                'status' => true,
-            ];
-        } catch (\Exception $e) {
-            return [
-                'status' => false,
-                'message' => $e->getMessage(),
-            ];
         }
     }
 
@@ -641,7 +523,7 @@ class PengembalianKasBankHeaderController extends Controller
             throw $th;
         }
     }
-    
+
     public function cekvalidasi($id)
     {
         $pengeluaran = PengembalianKasBankHeader::find($id);
@@ -692,7 +574,7 @@ class PengembalianKasBankHeaderController extends Controller
             return response($data);
         }
     }
-    
+
     public function fieldLength()
     {
         $data = [];
