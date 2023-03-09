@@ -2,7 +2,7 @@
 
 namespace App\Http\Requests;
 use App\Http\Controllers\Api\ErrorController;
-
+use App\Rules\DateApprovalQuota;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreMandorTripRequest extends FormRequest
@@ -25,6 +25,10 @@ class StoreMandorTripRequest extends FormRequest
     public function rules()
     {
         return [
+            'tglbukti' => [
+                'required',
+                new DateApprovalQuota()
+            ],
             "agen_id" => "required",
             "container_id" => "required",
             "dari_id" => "required",
