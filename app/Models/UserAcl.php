@@ -3,8 +3,6 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 
 
 class UserAcl extends MyModel
@@ -24,77 +22,23 @@ class UserAcl extends MyModel
         'updated_at',
     ];
 
-    // public function get()
-    // {
-    //     $this->setRequestParameters();
-
-    //     $query = DB::table($this->table)->select(
-    //         DB::raw("role.rolename as rolename,
-    //                     acl.role_id as role_id,
-    //                     min(acl.id) as id_,
-    //                     max(acl.modifiedby) as modifiedby,
-    //                     max(acl.created_at) as created_at,
-    //                         max(acl.updated_at) as updated_at")
-    //     )
-    //         ->Join('role', 'acl.role_id', '=', 'role.id')
-    //         ->groupby('acl.role_id', 'role.rolename');
-
-    //     $this->totalRows = $query->count();
-    //     $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
-
-    //     $this->sort($query);
-    //     $this->filter($query);
-    //     $this->paginate($query);
-
-    //     $data = $query->get();
-
-    //     return $data;
-    // }
-
-    public function selectColumns($query)
-    { //sesuaikan dengan createtemp
-
-        return $query->select(
-            DB::raw(
-                "$this->table.id,
-            acos.id as aco_id,
-            [user].id as aco_id,
-
-            $this->table.modifiedby,
-            $this->table.created_at,
-            $this->table.updated_at"
-            )
-        )
-            ->leftJoin('acos', 'useracl.aco_id', 'acos.id')
-            ->leftJoin('[user]', 'useracl.[user].id', '[user].id');
-    }
-
-    public function createTemp(string $modelTable)
-    { //sesuaikan dengan column index
-        $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-        Schema::create($temp, function ($table) {
-            $table->bigInteger('id')->default('0');
-            $table->unsignedBigInteger('aco_id')->default('0');
-            $table->unsignedBigInteger('user_id')->default('0');
-            $table->string('modifiedby', 50)->default('');
-            $table->dateTime('created_at')->default('1900/1/1');
-            $table->dateTime('updated_at')->default('1900/1/1');
-            $table->increments('position');
-        });
-
+    public function get($query)
+    {
         $this->setRequestParameters();
-        $query = DB::table($modelTable);
-        $query = $this->selectColumns($query);
-        $this->sort($query);
-        $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id', 'aco_id', 'user_id', 'modifiedby', 'created_at', 'updated_at'], $models);
 
-        return  $temp;
+        $this->totalRows = $query->count();
+        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+
+        $this->sort($query);
+        $this->filter($query);
+        $this->paginate($query);
+
+        return $query->get();
     }
 
     public function sort($query)
     {
-        return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        return $query->orderBy($this->params['sortIndex'], $this->params['sortOrder']);
     }
 
     public function filter($query, $relationFields = [])
@@ -103,20 +47,22 @@ class UserAcl extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'rolename') {
-                            $query = $query->where('role.rolename', 'LIKE', "%$filters[data]%");
-                        } else {
-                            $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                        if ($filters['field']) {
+                            if (in_array($filters['field'], ['modifiedby', 'created_at', 'updated_at'])) {
+                                $query = $query->where('useracl.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            } else {
+                                $query = $query->where($filters['field'], 'LIKE', "%$filters[data]%");
+                            }
                         }
                     }
 
                     break;
                 case "OR":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'rolename') {
-                            $query = $query->orWhere('role.rolename', 'LIKE', "%$filters[data]%");
+                        if (in_array($filters['field'], ['modifiedby', 'created_at', 'updated_at'])) {
+                            $query = $query->orWhere('useracl.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         } else {
-                            $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            $query = $query->orWhere($filters['field'], 'LIKE', "%$filters[data]%");
                         }
                     }
 

@@ -385,8 +385,8 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('user/default', [UserController::class, 'default']);
     Route::get('user/{user}/role', [UserController::class, 'getRoles']);
     Route::post('user/{user}/role', [UserController::class, 'storeRoles']);
-    Route::get('user/{user}/acl', [UserController::class, 'getAcls']);
-    Route::post('user/{user}/acl', [UserController::class, 'storeAcls']);
+    Route::get('user/{user}/acl', [UserAclController::class, 'index']);
+    Route::post('user/{user}/acl', [UserAclController::class, 'store']);
     Route::resource('user', UserController::class);
 
     Route::get('menu/field_length', [MenuController::class, 'fieldLength']);
@@ -409,13 +409,6 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('acl/combostatus', [AclController::class, 'combostatus']);
     Route::get('acl/export', [AclController::class, 'export'])->name('acl.export');
     Route::resource('acl', AclController::class);
-
-    Route::get('useracl/field_length', [UserAclController::class, 'fieldLength']);
-    Route::get('useracl/detail', [UserAclController::class, 'detail']);
-    Route::get('useracl/detaillist', [UserAclController::class, 'detaillist']);
-    Route::get('useracl/combostatus', [UserAclController::class, 'combostatus']);
-    Route::get('useracl/export', [UserAclController::class, 'export'])->name('useracl.export');
-    Route::resource('useracl', UserAclController::class);
 
     Route::get('logtrail/detail', [LogTrailController::class, 'detail']);
     Route::get('logtrail/header', [LogTrailController::class, 'header']);
