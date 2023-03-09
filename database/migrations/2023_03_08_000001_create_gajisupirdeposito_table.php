@@ -27,12 +27,12 @@ class CreateGajisupirdepositoTable extends Migration
             $table->timestamps();
 
             $table->foreign('supir_id', 'gajisupirdeposito_supir_supir_id_foreign')->references('id')->on('supir');
-            $table->foreign('gajisupir_id', 'gajisupirdeposito_gajisupirheader_gajisupir_id_foreign')->references('id')->on('gajisupirheader')->onDelete('cascade');    
+            $table->foreign('gajisupir_id', 'gajisupirdeposito_gajisupirheader_gajisupir_id_foreign')->references('id')->on('gajisupirheader');    
 
         });
 
         DB::statement("ALTER TABLE gajisupirdeposito NOCHECK CONSTRAINT gajisupirdeposito_supir_supir_id_foreign");
-
+        DB::statement("ALTER TABLE gajisupirdeposito NOCHECK CONSTRAINT gajisupirdeposito_gajisupirheader_gajisupir_id_foreign");
     }
 
     /**
