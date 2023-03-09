@@ -90,52 +90,6 @@ class UserController extends Controller
         }
     }
 
-    public function getAcls(User $user): JsonResponse
-    {
-        return response()->json([
-            'data' => $user->acls
-        ]);
-    }
-
-    public function storeAcls(StoreAclRequest $request, User $user): JsonResponse
-    {
-        DB::beginTransaction();
-
-        try {
-            $user->acls()->detach();
-
-            foreach ($request->aco_ids as $aco_id) {
-                $user->acls()->attach($aco_id, [
-                    'modifiedby' => auth('api')->user()->name
-                ]);
-            }
-
-            $logTrail = [
-                'namatabel' => strtoupper($user->getTable()),
-                'postingdari' => 'ENTRY USER ACL',
-                'idtrans' => $user->id,
-                'nobuktitrans' => $user->id,
-                'aksi' => 'ENTRY',
-                'datajson' => $user->load('acls')->toArray(),
-                'modifiedby' => $user->modifiedby
-            ];
-
-            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-            $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
-            DB::commit();
-
-            return response()->json([
-                'message' => 'Berhasil disimpan',
-                'user' => $user->load('acls')
-            ]);
-        } catch (\Throwable $th) {
-            DB::rollBack();
-
-            throw $th;
-        }
-    }
-
     /**
      * @ClassName 
      */
