@@ -26,7 +26,6 @@ class StoreApprovalTransaksiHeaderRequest extends FormRequest
         return [
             'periode' => 'required',
             'approve' => 'required',
-            'transaksiId' => 'required',
             'transaksi' => 'required'
         ];
     }
@@ -34,7 +33,6 @@ class StoreApprovalTransaksiHeaderRequest extends FormRequest
     {
         return [
             'approve' => 'Proses Data',
-            'transaksiId' => 'Pilih transaksi'
         ];
     }
 }

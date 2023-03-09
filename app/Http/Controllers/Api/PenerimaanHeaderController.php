@@ -321,9 +321,6 @@ class PenerimaanHeaderController extends Controller
 
     public function show($id)
     {
-        // $data = PenerimaanHeader::with(
-        //     'penerimaandetail',
-        // )->find($id);
         $data = PenerimaanHeader::findAll($id);
         $detail = PenerimaanDetail::findAll($id);
         return response([
@@ -507,7 +504,6 @@ class PenerimaanHeaderController extends Controller
                 }
                 $jurnal = $this->storeJurnal($jurnalHeader, $jurnaldetail);
 
-
                 // if (!$jurnal['status'] AND @$jurnal['errorCode'] == 2601) {
                 //     goto ATAS;
                 // }
@@ -515,10 +511,17 @@ class PenerimaanHeaderController extends Controller
                 if (!$jurnal['status']) {
                     throw new Exception($jurnal['message']);
                 }
-
+                $tanpagetposition = $request->tanpagetposition ?? 0;
+                
 
                 DB::commit();
-
+                if ($tanpagetposition) {
+                    return response([
+                        'status' => true,
+                        'message' => 'Berhasil disimpan',
+                        'data' => $penerimaanheader
+                    ], 201);
+                }
                 /* Set position and page */
                 $selected = $this->getPosition($penerimaanheader, $penerimaanheader->getTable());
                 $penerimaanheader->position = $selected->position;

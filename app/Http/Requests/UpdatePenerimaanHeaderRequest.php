@@ -30,7 +30,7 @@ class UpdatePenerimaanHeaderRequest extends FormRequest
                 new DateTutupBuku()
             ],
             'diterimadari' => 'required',
-            'pelanggan' => 'required',
+            // 'pelanggan' => 'required',
             'tgllunas'  => 'required',
             // 'cabang' => 'required',
             // 'statuskas' => 'required',
@@ -60,7 +60,7 @@ class UpdatePenerimaanHeaderRequest extends FormRequest
             'tgljatuhtempo.*' => 'tanggal jatuh tempo',
             'nominal_detail.*' => 'nominal',
             'keterangan_detail.*' => 'keterangan detail',
-            'coakredit.*' => 'coa kredit'
+            'ketcoakredit.*' => 'nama perkiraan'
         ];
     }
     public function messages()

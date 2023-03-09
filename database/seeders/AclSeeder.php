@@ -15,6 +15,8 @@ class AclSeeder extends Seeder
      */
     public function run()
     {
+        DB::statement("delete Acl");
+        DB::statement("DBCC CHECKIDENT ('Acl', RESEED, 1);");
 
         acl::create(['aco_id' => '1', 'role_id' => '2', 'modifiedby' => 'ADMIN',]);
         acl::create(['aco_id' => '2', 'role_id' => '2', 'modifiedby' => 'ADMIN',]);
@@ -395,5 +397,26 @@ class AclSeeder extends Seeder
         acl::create(['aco_id' => '374', 'role_id' => '1', 'modifiedby' => 'ADMIN',]);
         acl::create(['aco_id' => '375', 'role_id' => '1', 'modifiedby' => 'ADMIN',]);
         acl::create(['aco_id' => '376', 'role_id' => '1', 'modifiedby' => 'ADMIN',]);
+        acl::create(['aco_id' => '377', 'role_id' => '1', 'modifiedby' => 'ADMIN',]);
+        acl::create(['aco_id' => '378', 'role_id' => '1', 'modifiedby' => 'ADMIN',]);
+        acl::create(['aco_id' => '379', 'role_id' => '1', 'modifiedby' => 'ADMIN',]);
+        acl::create(['aco_id' => '380', 'role_id' => '1', 'modifiedby' => 'ADMIN',]);
+        acl::create(['aco_id' => '381', 'role_id' => '1', 'modifiedby' => 'ADMIN',]);
+        acl::create(['aco_id' => '382', 'role_id' => '1', 'modifiedby' => 'ADMIN',]);
+        acl::create(['aco_id' => '383', 'role_id' => '1', 'modifiedby' => 'ADMIN',]);
+        acl::create(['aco_id' => '384', 'role_id' => '1', 'modifiedby' => 'ADMIN',]);
+        acl::create(['aco_id' => '385', 'role_id' => '1', 'modifiedby' => 'ADMIN',]);
+        acl::create(['aco_id' => '386', 'role_id' => '1', 'modifiedby' => 'ADMIN',]);
+        acl::create(['aco_id' => '387', 'role_id' => '1', 'modifiedby' => 'ADMIN',]);
+        acl::create(['aco_id' => '388', 'role_id' => '1', 'modifiedby' => 'ADMIN',]);
+        acl::create(['aco_id' => '389', 'role_id' => '1', 'modifiedby' => 'ADMIN',]);
+        acl::create(['aco_id' => '390', 'role_id' => '1', 'modifiedby' => 'ADMIN',]);
+        acl::create(['aco_id' => '391', 'role_id' => '1', 'modifiedby' => 'ADMIN',]);
+        acl::create(['aco_id' => '392', 'role_id' => '1', 'modifiedby' => 'ADMIN',]);
+        acl::create(['aco_id' => '393', 'role_id' => '1', 'modifiedby' => 'ADMIN',]);
+        acl::create(['aco_id' => '394', 'role_id' => '1', 'modifiedby' => 'ADMIN',]);
+        acl::create(['aco_id' => '395', 'role_id' => '1', 'modifiedby' => 'ADMIN',]);
+        acl::create(['aco_id' => '396', 'role_id' => '1', 'modifiedby' => 'ADMIN',]);
+        acl::create(['aco_id' => '397', 'role_id' => '1', 'modifiedby' => 'ADMIN',]);
     }
 }

@@ -24,7 +24,8 @@ class InvoiceDetailController extends Controller
             'attributes' => [
                 'totalRows' => $invoice->totalRows,
                 'totalPages' => $invoice->totalPages,
-                'totalNominal' => $invoice->totalNominal
+                'totalNominal' => $invoice->totalNominal,
+                'totalRetribusi' => $invoice->totalRetribusi,
             ]
         ]);
     }
@@ -42,6 +43,8 @@ class InvoiceDetailController extends Controller
             $invoiceDetail->invoice_id = $request->invoice_id;
             $invoiceDetail->nobukti = $request->nobukti;
             $invoiceDetail->nominal = $request->nominal;
+            $invoiceDetail->nominalretribusi = $request->nominalretribusi;
+            $invoiceDetail->total = $request->total;
             $invoiceDetail->keterangan = $request->keterangan;
             $invoiceDetail->orderantrucking_nobukti = $request->orderantrucking_nobukti;
             $invoiceDetail->suratpengantar_nobukti = $request->suratpengantar_nobukti;

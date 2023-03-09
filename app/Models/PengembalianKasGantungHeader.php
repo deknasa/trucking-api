@@ -253,9 +253,13 @@ class PengembalianKasGantungHeader extends MyModel
             SELECT pengembaliankasgantungdetail.kasgantung_nobukti 
             FROM pengembaliankasgantungdetail 
             WHERE pengembaliankasgantungdetail.kasgantung_nobukti = kasgantungdetail.nobukti
-            and pengembaliankasgantungdetail.nominal=kasgantungdetail.nominal
+            and pengembaliankasgantungdetail.nominal = kasgantungdetail.nominal
             and pengembaliankasgantung_id = ".$id."
           )")
+        ->whereRaw('pengembaliankasgantungdetail.kasgantung_nobukti = kasgantungdetail.nobukti')
+        ->whereRaw('pengembaliankasgantungdetail.nominal = kasgantungdetail.nominal')
+        ->whereRaw('pengembaliankasgantungdetail.pengembaliankasgantung_id = '. $id)
+          
           ->leftJoin('pengembaliankasgantungdetail', 'kasgantungdetail.nobukti', 'pengembaliankasgantungdetail.kasgantung_nobukti')
           ->leftJoin('pengembaliankasgantungheader', 'pengembaliankasgantungdetail.pengembaliankasgantung_id', 'pengembaliankasgantungheader.id')
           ->leftJoin('kasgantungheader', 'kasgantungdetail.kasgantung_id', 'kasgantungheader.id');

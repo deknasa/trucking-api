@@ -216,7 +216,21 @@ class AbsensiSupirHeader extends MyModel
         return $data;
     }
 
-
+    public function getTradoAbsensi($id)
+    {
+        $query = DB::table('absentrado')
+        ->select('absentrado.kodeabsen', DB::raw('COUNT(absensisupirdetail.absen_id) as jumlah'))
+        ->leftJoin('absensisupirdetail', function($join) use ($id) {
+            $join->on('absensisupirdetail.absen_id', '=', 'absentrado.id')
+            ->where('absensisupirdetail.absensi_id', '=',$id);
+        })
+        ->groupBy('absentrado.kodeabsen')
+        ->orderBy("absentrado.kodeabsen","asc")
+        ->get();
+        
+        return $query;
+    }
+        
     public function sort($query)
     {
         return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);

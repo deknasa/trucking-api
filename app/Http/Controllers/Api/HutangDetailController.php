@@ -35,10 +35,26 @@ class HutangDetailController extends Controller
             'attributes' => [
                 'totalRows' => $hutangDetail->totalRows,
                 'totalPages' => $hutangDetail->totalPages,
-                'totalNominal' => $hutangDetail->totalNominal
+                'totalNominal' => $hutangDetail->totalNominal,
             ]
         ]);
     }
+
+    public function history(): JsonResponse
+    {
+        $hutangDetail = new HutangDetail();
+
+        return response()->json([
+            'data' => $hutangDetail->getHistory(),
+            'attributes' => [
+                'totalRows' => $hutangDetail->totalRows,
+                'totalPages' => $hutangDetail->totalPages,
+                'totalNominal' => $hutangDetail->totalNominal,
+                'totalPotongan' => $hutangDetail->totalPotongan
+            ]
+        ]);
+    }
+
 
     public function store(StoreHutangDetailRequest $request)
     {

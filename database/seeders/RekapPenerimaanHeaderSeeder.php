@@ -20,7 +20,7 @@ class RekapPenerimaanHeaderSeeder extends Seeder
             'tglbukti' => '2022/5/31',
             'bank_id' => 1,
             'tgltransaksi' => '2022/5/31',
-            'keterangan' => 'REKAP PENERIMAAN KAS BANK',
+            // 'keterangan' => 'REKAP PENERIMAAN KAS BANK',
             'statusapproval' => 4,
             'userapproval' => '',
             'tglapproval' => '1900/1/1',

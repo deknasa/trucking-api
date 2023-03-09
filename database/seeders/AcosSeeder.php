@@ -394,5 +394,26 @@ class AcosSeeder extends Seeder
         acos::create(['class' => 'laporanketeranganpinjamansupir', 'method' => 'report', 'nama' => 'report LaporanKeteranganPinjamanSupirController', 'modifiedby' => 'ADMIN',]);
         acos::create(['class' => 'laporanklaimpjtsupir', 'method' => 'index', 'nama' => 'index LaporanKlaimPJTSupirController', 'modifiedby' => 'ADMIN',]);
         acos::create(['class' => 'laporanklaimpjtsupir', 'method' => 'report', 'nama' => 'report LaporanKlaimPJTSupirController', 'modifiedby' => 'ADMIN',]);
+        acos::create(['class' => 'laporanpemotonganpinjamandeposito', 'method' => 'index', 'nama' => 'index LaporanPemotonganPinjamanDepositoController', 'modifiedby' => 'ADMIN',]);
+        acos::create(['class' => 'laporanpemotonganpinjamandeposito', 'method' => 'report', 'nama' => 'report LaporanPemotonganPinjamanDepositoController', 'modifiedby' => 'ADMIN',]);
+        acos::create(['class' => 'laporanpemotonganpinjamanperebs', 'method' => 'index', 'nama' => 'index LaporanPemotonganPinjamanPerEBSController', 'modifiedby' => 'ADMIN',]);
+        acos::create(['class' => 'laporanpemotonganpinjamanperebs', 'method' => 'report', 'nama' => 'report LaporanPemotonganPinjamanPerEBSController', 'modifiedby' => 'ADMIN',]);
+        acos::create(['class' => 'laporanpinjamansupir', 'method' => 'index', 'nama' => 'index LaporanPinjamanSupirController', 'modifiedby' => 'ADMIN',]);
+        acos::create(['class' => 'laporanpinjamansupir', 'method' => 'report', 'nama' => 'report LaporanPinjamanSupirController', 'modifiedby' => 'ADMIN',]);
+        acos::create(['class' => 'laporanpinjamansupirkaryawan', 'method' => 'index', 'nama' => 'index LaporanPinjamanSupirKaryawanController', 'modifiedby' => 'ADMIN',]);
+        acos::create(['class' => 'laporanpinjamansupirkaryawan', 'method' => 'report', 'nama' => 'report LaporanPinjamanSupirKaryawanController', 'modifiedby' => 'ADMIN',]);
+        acos::create(['class' => 'laporanrekapsumbangan', 'method' => 'index', 'nama' => 'index LaporanRekapSumbanganController', 'modifiedby' => 'ADMIN',]);
+        acos::create(['class' => 'laporanrekapsumbangan', 'method' => 'report', 'nama' => 'report LaporanRekapSumbanganController', 'modifiedby' => 'ADMIN',]);
+        acos::create(['class' => 'laporanritasigandengan', 'method' => 'index', 'nama' => 'index LaporanRitasiGandenganController', 'modifiedby' => 'ADMIN',]);
+        acos::create(['class' => 'laporanritasitrado', 'method' => 'index', 'nama' => 'index LaporanRitasiTradoController', 'modifiedby' => 'ADMIN',]);
+        acos::create(['class' => 'laporanritasitrado', 'method' => 'export', 'nama' => 'export LaporanRitasiTradoController', 'modifiedby' => 'ADMIN',]);
+        acos::create(['class' => 'laporansupirlebihdaritrado', 'method' => 'index', 'nama' => 'index LaporanSupirLebihDariTradoController', 'modifiedby' => 'ADMIN',]);
+        acos::create(['class' => 'laporansupirlebihdaritrado', 'method' => 'report', 'nama' => 'report LaporanSupirLebihDariTradoController', 'modifiedby' => 'ADMIN',]);
+        acos::create(['class' => 'laporantripgandengandetail', 'method' => 'index', 'nama' => 'index LaporanTripGandenganDetailController', 'modifiedby' => 'ADMIN',]);
+        acos::create(['class' => 'laporantripgandengandetail', 'method' => 'report', 'nama' => 'report LaporanTripGandenganDetailController', 'modifiedby' => 'ADMIN',]);
+        acos::create(['class' => 'laporantriptrado', 'method' => 'index', 'nama' => 'index LaporanTripTradoController', 'modifiedby' => 'ADMIN',]);
+        acos::create(['class' => 'laporantriptrado', 'method' => 'report', 'nama' => 'report LaporanTripTradoController', 'modifiedby' => 'ADMIN',]);
+        acos::create(['class' => 'laporanuangjalan', 'method' => 'index', 'nama' => 'index LaporanUangJalanController', 'modifiedby' => 'ADMIN',]);
+        acos::create(['class' => 'laporankasbank', 'method' => 'report', 'nama' => 'report LaporanKasBankController', 'modifiedby' => 'ADMIN',]);
     }
 }

@@ -124,10 +124,12 @@ class PenerimaanTruckingHeader extends MyModel
             'penerimaantruckingheader.bank_id',
             'bank.namabank as bank',
             'penerimaantruckingheader.coa',
+            'akunpusat.keterangancoa',
             'penerimaantruckingheader.penerimaan_nobukti'
         )
             ->leftJoin(DB::raw("penerimaantrucking with (readuncommitted)"), 'penerimaantruckingheader.penerimaantrucking_id','penerimaantrucking.id')
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'penerimaantruckingheader.bank_id', 'bank.id')
+            ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'penerimaantruckingheader.coa', 'akunpusat.coa')
             ->where('penerimaantruckingheader.id', '=', $id);
             
 

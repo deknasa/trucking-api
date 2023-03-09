@@ -10,7 +10,7 @@ class PengembalianKasBankDetail extends MyModel
 {
     use HasFactory;
 
-    protected $table = 'PengembalianKasBankDetail';
+    protected $table = 'pengembaliankasbankdetail';
 
     protected $casts = [
         'created_at' => 'date:d-m-Y H:i:s',
@@ -39,7 +39,7 @@ class PengembalianKasBankDetail extends MyModel
                 "header.transferkeac",
                 "header.transferkean",
                 "header.transferkebank",
-                
+
                 "bank.namabank as bank",
                 "$this->table.nowarkat",
                 "$this->table.tgljatuhtempo",
@@ -51,13 +51,12 @@ class PengembalianKasBankDetail extends MyModel
                 "alatbayar.namaalatbayar as alatbayar_id"
 
             )
-            ->join("pengeluaranheader as header","header.id","$this->table.pengembaliankasbank_id")
-            ->leftJoin("bank", "bank.id", "=", "header.bank_id")
-            
-            ->leftJoin("alatbayar", "alatbayar.id", "=", "$this->table.alatbayar_id");
-            $query->where($this->table . ".pengembaliankasbank_id", "=", request()->pengembaliankasbank_id);
+                ->join("pengeluaranheader as header", "header.id", "$this->table.pengembaliankasbank_id")
+                ->leftJoin("bank", "bank.id", "=", "header.bank_id")
 
-        }else {
+                ->leftJoin("alatbayar", "alatbayar.id", "=", "$this->table.alatbayar_id");
+            $query->where($this->table . ".pengembaliankasbank_id", "=", request()->pengembaliankasbank_id);
+        } else {
             $query->select(
                 "$this->table.pengembaliankasbank_id",
                 "$this->table.nobukti",
@@ -65,18 +64,19 @@ class PengembalianKasBankDetail extends MyModel
                 "$this->table.tgljatuhtempo",
                 "$this->table.nominal",
                 "$this->table.keterangan",
-                "$this->table.bulanbeban",
-                "$this->table.coadebet",
-                "$this->table.coakredit",
-                "alatbayar.namaalatbayar as alatbayar_id",
+                DB::raw("(case when year(isnull($this->table.bulanbeban,'1900/1/1'))<2000 then null else $this->table.bulanbeban end) as bulanbeban"),
+                "debet.keterangancoa as coadebet",
+                "kredit.keterangancoa as coakredit",
 
             )
-            ->leftJoin("alatbayar", "alatbayar.id", "=", "$this->table.alatbayar_id");
-            
+                ->leftJoin(DB::raw("akunpusat as debet with (readuncommitted)"), "$this->table.coadebet", "debet.coa")
+                ->leftJoin(DB::raw("akunpusat as kredit with (readuncommitted)"), "$this->table.coakredit", "kredit.coa");
+
             $query->where($this->table . ".pengembaliankasbank_id", "=", request()->pengembaliankasbank_id);
+            $this->totalNominal = $query->sum('nominal');
+            $this->filter($query);
             $this->totalRows = $query->count();
             $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
-
             $this->sort($query);
             $this->paginate($query);
         }
@@ -87,31 +87,67 @@ class PengembalianKasBankDetail extends MyModel
     {
         $query = DB::table('pengembaliankasbankdetail');
         $query = $query->select(
-            'pengembaliankasbankheader.nobukti',
-                    'pengembaliankasbankheader.tglbukti',
-                    'pengembaliankasbankheader.dibayarke',
-                    'pengembaliankasbankheader.keterangan as keteranganheader',
-                    'pengembaliankasbankheader.transferkeac',
-                    'pengembaliankasbankheader.transferkean',
-                    'pengembaliankasbankheader.transferkebank',
-                    'bank.namabank as bank',
-                    'pengembaliankasbankdetail.nowarkat',
-                    'pengembaliankasbankdetail.tgljatuhtempo',
-                    'pengembaliankasbankdetail.nominal',
-                    'pengembaliankasbankdetail.keterangan',
-                    'pengembaliankasbankdetail.bulanbeban',
-                    'pengembaliankasbankdetail.coadebet',
-                    'pengembaliankasbankdetail.coakredit',
-                    'alatbayar.namaalatbayar as alatbayar',
-                    'pengembaliankasbankdetail.alatbayar_id'
-        )
-        ->leftJoin('pengembaliankasbankheader', 'pengembaliankasbankdetail.pengembaliankasbank_id', 'pengembaliankasbankheader.id')
-        ->leftJoin('bank', 'bank.id', '=', 'pengembaliankasbankheader.bank_id')
-        ->leftJoin('alatbayar', 'alatbayar.id', '=', 'pengembaliankasbankdetail.alatbayar_id');
+            'pengembaliankasbankdetail.nowarkat',
+            'pengembaliankasbankdetail.tgljatuhtempo',
+            'pengembaliankasbankdetail.nominal',
+            'pengembaliankasbankdetail.keterangan',
+            DB::raw("(case when year(isnull(pengembaliankasbankdetail.bulanbeban,'1900/1/1'))<2000 then null else pengembaliankasbankdetail.bulanbeban end) as bulanbeban"),
+                
+            'pengembaliankasbankdetail.coadebet',
+            'debet.keterangancoa as ketcoadebet',
+            'pengembaliankasbankdetail.coakredit',
+            'kredit.keterangancoa as ketcoakredit',
+        ) 
+        ->leftJoin(DB::raw("akunpusat as debet with (readuncommitted)"), "pengembaliankasbankdetail.coadebet", "debet.coa")
+        ->leftJoin(DB::raw("akunpusat as kredit with (readuncommitted)"), "pengembaliankasbankdetail.coakredit", "kredit.coa");
 
-        $data = $query->where("pengembaliankasbank_id",$id)->get();
+        $data = $query->where("pengembaliankasbank_id", $id)->get();
 
         return $data;
+    }
+
+    public function filter($query, $relationFields = [])
+    {
+        if (count($this->params['filters']) > 0 && @$this->params['filters']['rules'][0]['data'] != '') {
+            switch ($this->params['filters']['groupOp']) {
+                case "AND":
+                    $query->where(function ($query) {
+                        foreach ($this->params['filters']['rules'] as $index => $filters) {
+                            if ($filters['field'] == 'coadebet') {
+                                $query = $query->where('debet.keterangancoa', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'coakredit') {
+                                $query = $query->where('kredit.keterangancoa', 'LIKE', "%$filters[data]%");
+                            } else {
+                                $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            }
+                        }
+                    });
+
+                    break;
+                case "OR":
+                    $query->where(function ($query) {
+                        foreach ($this->params['filters']['rules'] as $index => $filters) {
+                            if ($filters['field'] == 'coadebet') {
+                                $query = $query->orWhere('debet.keterangancoa', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'coakredit') {
+                                $query = $query->orWhere('kredit.keterangancoa', 'LIKE', "%$filters[data]%");
+                            } else {
+                                $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            }
+                        }
+                    });
+                    break;
+                default:
+
+                    break;
+            }
+
+
+            $this->totalRows = $query->count();
+            $this->totalPages = $this->params['limit'] > 0 ? ceil($this->totalRows / $this->params['limit']) : 1;
+        }
+
+        return $query;
     }
 
     public function sort($query)

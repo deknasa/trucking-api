@@ -32,6 +32,8 @@ class LaporanKasBankController extends Controller
         $sampai = $request->sampai;
         $bank_id = $request->bankid;
 
+        $laporankasbank=new LaporanKasBank();
+
         // $report = LaporanKasBank::getReport($dari, $sampai, $bank_id);
         $report = [
             [
@@ -46,7 +48,7 @@ class LaporanKasBankController extends Controller
             ]
         ];
         return response([
-            'data' => $report
+            'data' => $laporankasbank->getReport($dari,$sampai, $bank_id) 
         ]);
     }
 }

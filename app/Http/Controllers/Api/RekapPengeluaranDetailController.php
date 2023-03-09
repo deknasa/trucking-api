@@ -27,6 +27,7 @@ class RekapPengeluaranDetailController extends Controller
             'attributes' => [
                 'totalRows' => $rekapPengeluaranDetail->totalRows ,
                 'totalPages' => $rekapPengeluaranDetail->totalPages ,
+                'totalNominal' => $rekapPengeluaranDetail->totalNominal ,
             ]
         ]);
     }

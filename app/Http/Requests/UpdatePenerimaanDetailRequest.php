@@ -24,8 +24,8 @@ class UpdatePenerimaanDetailRequest extends FormRequest
     public function rules()
     {
         return [
-            'coakredit' => 'required|array',
-            'coakredit.*' => 'required',
+            'ketcoakredit' => 'required|array',
+            'ketcoakredit.*' => 'required',
             'tgljatuhtempo' => 'required|array',
             'tgljatuhtempo.*' => 'required',
             'nominal_detail' => 'required|array',

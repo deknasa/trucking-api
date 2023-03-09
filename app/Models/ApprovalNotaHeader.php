@@ -55,7 +55,10 @@ class ApprovalNotaHeader extends MyModel
         )
             ->select(
                 DB::raw(" 
-                    $tabel.id,$tabel.nobukti, $tabel.pelunasanpiutang_nobukti, $tabel.tglbukti, $tabel.keterangan, $tabel.postingdari, parameter.memo as statusapproval, $tabel.tglapproval, $tabel.userapproval, $tabel.tgllunas, $tabel.modifiedby, $tabel.created_at, $tabel.updated_at
+                    $tabel.id,$tabel.nobukti, $tabel.pelunasanpiutang_nobukti, $tabel.tglbukti, $tabel.postingdari, parameter.memo as statusapproval,
+                    
+                (case when year(isnull($tabel.tglapproval,'1900/1/1'))<2000 then null else $tabel.tglapproval end) as tglapproval,
+                      $tabel.userapproval, $tabel.tgllunas, $tabel.modifiedby, $tabel.created_at, $tabel.updated_at
                 ")
             )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), "$tabel.statusapproval", "parameter.id")
@@ -85,9 +88,9 @@ class ApprovalNotaHeader extends MyModel
         return $query->from(
             DB::raw($this->table . " with (readuncommitted)")
         )
-        ->select(
-            DB::raw(
-                "$this->anothertable.id,
+            ->select(
+                DB::raw(
+                    "$this->anothertable.id,
             $this->anothertable.nobukti,
             $this->anothertable.tglbukti,
             $this->anothertable.keterangan,
@@ -98,8 +101,8 @@ class ApprovalNotaHeader extends MyModel
             $this->anothertable.modifiedby,
             $this->anothertable.created_at,
             $this->anothertable.updated_at"
+                )
             )
-        )
             ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'jurnalumumpusatheader.statusapproval', 'statusapproval.id');
     }
 

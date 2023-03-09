@@ -29,6 +29,28 @@ class SuratPengantar extends MyModel
     {
         return $this->hasMany(SuratPengantarBiayaTambahan::class, 'suratpengantar_id');
     }
+    public function todayValidation($id){
+        $query = DB::table('suratpengantar')->from(DB::raw("suratpengantar with (readuncommitted)"))
+        ->select('tglbukti')
+        ->where('id',$id)
+        ->first();
+        $tglbukti = strtotime($query->tglbukti);
+        $today = strtotime('today');
+        if($tglbukti === $today) return true;
+        return false;
+    }
+
+    public function isEditAble($id){
+        $tidakBolehEdit = DB::table('suratpengantar')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS EDIT TUJUAN')->where('default', 'YA')->first();
+
+        $query = DB::table('suratpengantar')->from(DB::raw("suratpengantar with (readuncommitted)"))
+        ->select('statusedittujuan as statusedit')
+        ->where('id',$id)
+        ->first();
+
+        if($query->statusedit != $tidakBolehEdit->id) return true;
+        return false;
+    }
 
     public function cekvalidasihapus($nobukti, $jobtrucking)
     {

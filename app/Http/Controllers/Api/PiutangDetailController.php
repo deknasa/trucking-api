@@ -31,6 +31,22 @@ class PiutangDetailController extends Controller
         ]);
     }
 
+    public function history(): JsonResponse
+    {
+        $piutangDetail = new PiutangDetail();
+
+        return response()->json([
+            'data' => $piutangDetail->getHistory(),
+            'attributes' => [
+                'totalRows' => $piutangDetail->totalRows,
+                'totalPages' => $piutangDetail->totalPages,
+                'totalNominal' => $piutangDetail->totalNominal,
+                'totalPotongan' => $piutangDetail->totalPotongan,
+                'totalNominalLebih' => $piutangDetail->totalNominalLebih,
+            ]
+        ]);
+    }
+
 
     public function store(StorePiutangDetailRequest $request)
     {

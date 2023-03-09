@@ -54,7 +54,7 @@ class StorePengeluaranHeaderRequest extends FormRequest
             'tgljatuhtempo.*' => 'Tanggal Jatuh Tempo',
             'nominal_detail.*' => 'Nominal',
             'keterangan_detail.*' => 'Keterangan',
-            'coadebet.*' => 'Coa Debet'
+            'ketcoadebet.*' => 'nama perkiraan'
         ];
         $relatedRequests = [
             StorePengeluaranDetailRequest::class

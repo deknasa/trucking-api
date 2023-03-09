@@ -174,14 +174,14 @@ class ProsesUangJalanSupirDetail extends MyModel
                 ->leftJoin(DB::raw("bank as pengembalianbank with (readuncommitted)"), 'pengembalianbank.id', '=', $this->table . '.pengembaliankasgantung_bank_id')
                 ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'parameter.id', '=', $this->table . '.statusprosesuangjalan');
 
-
+            $this->sort($query);
             $query->where($this->table . '.prosesuangjalansupir_id', '=', request()->prosesuangjalansupir_id);
+            $this->filter($query);
 
-            // $this->totalNominal = $query->sum('nominal');
+            $this->totalNominal = $query->sum('nominal');
             $this->totalRows = $query->count();
             $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
-            $this->sort($query);
             $this->paginate($query);
         }
 
@@ -193,6 +193,57 @@ class ProsesUangJalanSupirDetail extends MyModel
         return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
     }
 
+    public function filter($query, $relationFields = [])
+    {
+        if (count($this->params['filters']) > 0 && @$this->params['filters']['rules'][0]['data'] != '') {
+            switch ($this->params['filters']['groupOp']) {
+                case "AND":
+                    $query->where(function ($query) {
+                        foreach ($this->params['filters']['rules'] as $index => $filters) {
+                            if ($filters['field'] == 'penerimaantrucking_bank_id') {
+                                $query = $query->where('penerimaanbank.namabank', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'pengeluarantrucking_bank_id') {
+                                $query = $query->where('pengeluaranbank.namabank', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'pengembaliankasgantung_bank_id') {
+                                $query = $query->where('pengembalianbank.namabank', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'statusprosesuangjalan') {
+                                $query = $query->where('parameter.text', 'LIKE', "%$filters[data]%");
+                            } else {
+                                $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            }
+                        }
+                    });
+
+                    break;
+                case "OR":
+                    $query->where(function ($query) {
+                        foreach ($this->params['filters']['rules'] as $index => $filters) {
+                            if ($filters['field'] == 'penerimaantrucking_bank_id') {
+                                $query = $query->orWhere('penerimaanbank.namabank', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'pengeluarantrucking_bank_id') {
+                                $query = $query->orWhere('pengeluaranbank.namabank', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'pengembaliankasgantung_bank_id') {
+                                $query = $query->orWhere('pengembalianbank.namabank', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'statusprosesuangjalan') {
+                                $query = $query->orWhere('parameter.text', 'LIKE', "%$filters[data]%");
+                            } else {
+                                $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            }
+                        }
+                    });
+                    break;
+                default:
+
+                    break;
+            }
+
+
+            $this->totalRows = $query->count();
+            $this->totalPages = $this->params['limit'] > 0 ? ceil($this->totalRows / $this->params['limit']) : 1;
+        }
+
+        return $query;
+    }
     public function paginate($query)
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);

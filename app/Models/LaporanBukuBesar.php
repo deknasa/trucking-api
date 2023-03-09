@@ -67,6 +67,8 @@ class LaporanBukuBesar extends MyModel
             ->whereRaw(DB::raw("c.id <=" . $coadari_id . ")"))
             ->groupBy('b.coa');
 
+              
+
             // dd($querysaldoawal->get());
 
 

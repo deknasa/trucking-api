@@ -31,7 +31,9 @@ class PengembalianKasBankDetailController extends Controller
             'data' => $pengembalianKasBankDetail->get(),
             'attributes' => [
                 'totalRows' => $pengembalianKasBankDetail->totalRows,
-                'totalPages' => $pengembalianKasBankDetail->totalPages
+                'totalPages' => $pengembalianKasBankDetail->totalPages,
+                'totalNominal' => $pengembalianKasBankDetail->totalNominal
+
             ]
         ]);
     
@@ -41,37 +43,13 @@ class PengembalianKasBankDetailController extends Controller
     public function store(StorePengembalianKasBankDetailRequest $request)
     { 
         DB::beginTransaction();
-        $validator = Validator::make($request->all(), [
-            'alatbayar_id' => 'required',
-            'tgljatuhtempo' => 'required',
-            'nominal' => 'required',
-            'keterangan' => 'required',
-         ], [
-             'alatbayar_id.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
-             'tgljatuhtempo.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
-             'nominal.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
-             'keterangan.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
-              ], [
-             'alatbayar_id' => 'coa detail',
-             'tgljatuhtempo' => 'keterangandetail Detail',
-             'nominal' => 'coa detail',
-             'keterangan' => 'keterangandetail Detail',
-            ],
-         );         
-         if (!$validator->passes()) {
-            return [
-                'error' => true,
-                'errors' => $validator->messages()
-            ];
-        }
-
+       
         try {
             $pengembalianKasBankDetail = new PengembalianKasBankDetail();
             $entriLuar = $request->entriluar ?? 0;
 
             $pengembalianKasBankDetail->pengembaliankasbank_id = $request->pengembaliankasbank_id;
             $pengembalianKasBankDetail->nobukti = $request->nobukti;
-            $pengembalianKasBankDetail->alatbayar_id = $request->alatbayar_id ?? '';
             $pengembalianKasBankDetail->nowarkat = $request->nowarkat ?? '';
             $pengembalianKasBankDetail->tgljatuhtempo = $request->tgljatuhtempo ?? '';
             $pengembalianKasBankDetail->nominal = $request->nominal ?? '';

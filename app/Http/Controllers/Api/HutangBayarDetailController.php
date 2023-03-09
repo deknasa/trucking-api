@@ -23,7 +23,8 @@ class HutangBayarDetailController extends Controller
             'attributes' => [
                 'totalRows' => $hutangBayar->totalRows,
                 'totalPages' => $hutangBayar->totalPages,
-                'totalNominal' => $hutangBayar->totalNominal
+                'totalNominal' => $hutangBayar->totalNominal,
+                'totalPotongan' => $hutangBayar->totalPotongan,
             ]
         ]);
     }

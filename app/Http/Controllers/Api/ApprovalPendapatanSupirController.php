@@ -75,7 +75,6 @@ class ApprovalPendapatanSupirController extends Controller
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
-            return response($th->getMessage());
         }
     }
 }

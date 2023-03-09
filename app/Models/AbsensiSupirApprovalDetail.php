@@ -69,7 +69,7 @@ class AbsensiSupirApprovalDetail extends MyModel
             ->leftJoin("supir as supirserap", "$this->table.supirserap_id", "supirserap.id");
 
             $query->where( $this->table.".absensisupirapproval_id", "=", request()->absensisupirapproval_id);
-
+            $this->filter($query);
             $this->totalRows = $query->count();
             $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
             
@@ -115,5 +115,54 @@ class AbsensiSupirApprovalDetail extends MyModel
     public function paginate($query)
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
+    }
+
+    public function filter($query, $relationFields = [])
+    {
+        if (count($this->params['filters']) > 0 && @$this->params['filters']['rules'][0]['data'] != '') {
+            switch ($this->params['filters']['groupOp']) {
+                case "AND":
+                   
+                    $query->where(function ($query) {
+                        foreach ($this->params['filters']['rules'] as $index => $filters) {
+                            if ($filters['field'] == 'trado') {
+                                $query = $query->where('trado.keterangan', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'supir') {
+                                $query = $query->where('supirutama.namasupir', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'supirserap') {
+                                $query = $query->where('supirserap.namasupir', 'LIKE', "%$filters[data]%");
+                            } else {
+                                $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            }
+                        }
+                    });
+
+                    break;
+                case "OR":
+                    $query->where(function ($query) {
+                        foreach ($this->params['filters']['rules'] as $index => $filters) {
+                            if ($filters['field'] == 'trado') {
+                                $query = $query->orWhere('trado.keterangan', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'supir') {
+                                $query = $query->orWhere('supirutama.namasupir', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'supirserap') {
+                                $query = $query->orWhere('supirserap.namasupir', 'LIKE', "%$filters[data]%");
+                            } else {
+                                $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            }
+                        }
+                    });
+                    break;
+                default:
+
+                    break;
+            }
+
+
+            $this->totalRows = $query->count();
+            $this->totalPages = $this->params['limit'] > 0 ? ceil($this->totalRows / $this->params['limit']) : 1;
+        }
+
+        return $query;
     }
 }

@@ -31,21 +31,22 @@ class LaporanDepositoSupirController extends Controller
         $sampai = $request->sampai;
         $jenis = $request->jenis;
 
+        $laporandepositosupir=new LaporanDepositoSupir();
         // $report = LaporanDepositoSupir::getReport($sampai, $jenis);
-        $report = [
-            [
-                "nobukti" => "DPO 0001/II/2023",
-                "supir" => "HERMAN",
-                "keterangan" => "COBA KETERANGAN TES",
-                "nominal" => "2123112",
-                "nominal_deposito" => "2412312",
-                "penarikan" => "12312",
-                "total" => "123144",
-                "mencapai" => "LIMA JUTA"
-            ]
-        ];
+        // $report = [
+        //     [
+        //         "nobukti" => "DPO 0001/II/2023",
+        //         "supir" => "HERMAN",
+        //         "keterangan" => "COBA KETERANGAN TES",
+        //         "nominal" => "2123112",
+        //         "nominal_deposito" => "2412312",
+        //         "penarikan" => "12312",
+        //         "total" => "123144",
+        //         "mencapai" => "LIMA JUTA"
+        //     ]
+        // ];
         return response([
-            'data' => $report
+            'data' => $laporandepositosupir->getReport($sampai, $jenis)
         ]);
     }
 }

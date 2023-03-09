@@ -48,7 +48,6 @@ class ApprovalPendapatanSupir extends MyModel
                 'pendapatansupirheader.nobukti',
                 'pendapatansupirheader.tglbukti',
                 'bank.namabank as bank_id',
-                'pendapatansupirheader.keterangan',
                 'pendapatansupirheader.tgldari',
                 'pendapatansupirheader.tglsampai',
                 'parameter.memo as statusapproval',

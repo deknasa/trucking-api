@@ -22,7 +22,8 @@ class CreatePengeluarantruckingdetailTable extends Migration
             $table->string('nobukti',50)->default('');
             $table->unsignedBigInteger('supir_id')->default('0');
             $table->string('penerimaantruckingheader_nobukti',50)->default('');
-            $table->double('nominal',15,2)->default('0');
+            $table->double('nominal',15,2)->default('0');        
+            $table->longText('keterangan')->default('');    
             $table->string('modifiedby',50)->default('');                  
             $table->timestamps();
 

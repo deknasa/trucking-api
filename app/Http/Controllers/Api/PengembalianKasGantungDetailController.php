@@ -25,8 +25,9 @@ class PengembalianKasGantungDetailController extends Controller
                 'data' => $pengembalianKasGantungDetail->get(),
                 'attributes' => [
                     'totalRows' => $pengembalianKasGantungDetail->totalRows,
-                    'totalPages' => $pengembalianKasGantungDetail->totalPages
-                ]
+                    'totalPages' => $pengembalianKasGantungDetail->totalPages,
+                    'totalNominal' => $pengembalianKasGantungDetail->totalNominal
+                    ]
             ]);
         
     }

@@ -18,81 +18,19 @@ class NotaKreditDetailController extends Controller
 {
     
     public function index(Request $request)
-    {
-        $params = [
-            'id' => $request->id,
-            'notakredit_id' => $request->notakredit_id,
-            'withHeader' => $request->withHeader ?? false,
-            'whereIn' => $request->whereIn ?? [],
-            'forReport' => $request->forReport ?? false,
-            'sortIndex' => $request->sortOrder ?? 'id',
-            'sortOrder' => $request->sortOrder ?? 'asc',
-        ];
-        try {
-            $query = NotaKreditDetail::from('notakreditdetail as detail');
+    { 
+        $notaKreditDetail = new NotaKreditDetail();
 
-            if (isset($params['id'])) {
-                $query->where('detail.id', $params['id']);
-            }
-
-            if (isset($params['notakredit_id'])) {
-                $query->where('detail.notakredit_id', $params['notakredit_id']);
-            }
-
-            if (count($params['whereIn']) > 0) {
-                $query->whereIn('notakredit_id', $params['whereIn']);
-            }
-
-            if ($params['forReport']) {
-                $query->select(
-                    "header.nobukti as nobukti_header",
-                    "header.tglbukti",
-                    "header.keterangan as keterangan_header",
-                    "detail.id",
-                    "detail.notakredit_id",
-                    "detail.nobukti",
-                    "detail.tglterima",
-                    "detail.invoice_nobukti",
-                    "detail.nominal",
-                    "detail.nominalbayar",
-                    "detail.penyesuaian",
-                    "detail.keterangan",
-                    "detail.coaadjust",
-                    "detail.modifiedby"
-                )
-                ->leftJoin('notakreditheader as header', 'header.id', 'detail.notakredit_id');
-
-                $pengeluaranStokDetail = $query->get();
-            } else {
-                $query->select(
-                    "detail.id",
-                    "detail.notakredit_id",
-                    "detail.nobukti",
-                    "detail.tglterima",
-                    "detail.invoice_nobukti",
-                    "detail.nominal",
-                    "detail.nominalbayar",
-                    "detail.penyesuaian",
-                    "detail.keterangan",
-                    "akunpusat.keterangancoa as coaadjust",
-                    "detail.modifiedby"
-                )
-                // ->leftJoin('pengeluaranstok','pengeluaranstokheader.pengeluaranstok_id','pengeluaranstok.id')
-
-                ->leftJoin('notakreditheader', 'detail.notakredit_id', 'notakreditheader.id')
-                ->leftJoin('invoiceheader', 'detail.invoice_nobukti', 'invoiceheader.nobukti')
-                ->leftJoin('akunpusat', 'detail.coaadjust', 'akunpusat.coa');
-                $pengeluaranStokDetail = $query->get();
-            }
-
-            return response([
-                'data' => $pengeluaranStokDetail
-            ]);
-        } catch (\Throwable $th) {
-            return response([
-                'message' => $th->getMessage()
-            ]);
-        }
+        return response([
+            'data' => $notaKreditDetail->get(),
+            'attributes' => [
+                'totalRows' => $notaKreditDetail->totalRows ,
+                'totalPages' => $notaKreditDetail->totalPages ,
+                'totalNominal' => $notaKreditDetail->totalNominal,
+                'totalNominalBayar' => $notaKreditDetail->totalNominalBayar,
+                'totalPenyesuaian' => $notaKreditDetail->totalPenyesuaian,
+            ]
+        ]);
     }
 
     

@@ -25,7 +25,8 @@ class JurnalUmumPusatDetailController extends Controller
             'attributes' => [
                 'totalRows' => $jurnalUmumPusatDetail->totalRows,
                 'totalPages' => $jurnalUmumPusatDetail->totalPages,
-                'totalNominal' => $jurnalUmumPusatDetail->totalNominal
+                'totalNominalDebet' => $jurnalUmumPusatDetail->totalNominalDebet,
+                'totalNominalKredit' => $jurnalUmumPusatDetail->totalNominalKredit
             ]
         ]);
     }

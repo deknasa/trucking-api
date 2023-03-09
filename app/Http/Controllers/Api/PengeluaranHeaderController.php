@@ -269,7 +269,7 @@ class PengeluaranHeaderController extends Controller
                 $approvalabsensisupir = $request->approvalabsensisupir ?? false;
                 if ($approvalabsensisupir == true) {
 
-                  
+
 
                     $kasgantungheader  = KasGantungHeader::lockForUpdate()->where("id", $request->kasgantungheader_id)
                         ->firstorFail();
@@ -619,10 +619,13 @@ class PengeluaranHeaderController extends Controller
             app(LogTrailController::class)->store($validatedLogTrailJurnalDetail);
 
             DB::commit();
-            $selected = $this->getPosition($pengeluaranHeader, $pengeluaranHeader->getTable(), true);
-            $pengeluaranHeader->position = $selected->position;
-            $pengeluaranHeader->id = $selected->id;
-            $pengeluaranHeader->page = ceil($pengeluaranHeader->position / ($request->limit ?? 10));
+            if ($request->postingdari === null) {
+
+                $selected = $this->getPosition($pengeluaranHeader, $pengeluaranHeader->getTable(), true);
+                $pengeluaranHeader->position = $selected->position;
+                $pengeluaranHeader->id = $selected->id;
+                $pengeluaranHeader->page = ceil($pengeluaranHeader->position / ($request->limit ?? 10));
+            }
             return response([
                 'status' => true,
                 'message' => 'Berhasil dihapus',
@@ -834,7 +837,7 @@ class PengeluaranHeaderController extends Controller
             return response($data);
         }
     }
-    
+
     public function cekValidasiAksi($id)
     {
         $pengeluaranHeader = new PengeluaranHeader();
@@ -859,12 +862,12 @@ class PengeluaranHeaderController extends Controller
             return response($data);
         } else {
 
-                $data = [
-                    'status' => false,
-                    'message' => '',
-                    'errors' => '',
-                    'kondisi' => $cekdata['kondisi'],
-                ];
+            $data = [
+                'status' => false,
+                'message' => '',
+                'errors' => '',
+                'kondisi' => $cekdata['kondisi'],
+            ];
 
             return response($data);
         }

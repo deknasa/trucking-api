@@ -21,7 +21,8 @@ class PenerimaanTruckingDetailController extends Controller
             'data' => $penerimaanTruckingDetail->get(),
             'attributes' => [
                 'totalRows' => $penerimaanTruckingDetail->totalRows,
-                'totalPages' => $penerimaanTruckingDetail->totalPages
+                'totalPages' => $penerimaanTruckingDetail->totalPages,
+                'totalNominal' => $penerimaanTruckingDetail->totalNominal
             ]
         ]);
     }

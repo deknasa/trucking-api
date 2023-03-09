@@ -24,7 +24,7 @@ class PiutangDetail extends MyModel
         'updated_at',
     ];
 
-   
+
     public function get()
     {
         $this->setRequestParameters();
@@ -39,12 +39,12 @@ class PiutangDetail extends MyModel
                 'header.keterangan as keterangan_header',
                 'header.invoice_nobukti as invoice_nobukti',
                 'agen.namaagen as agen_id',
-                 $this->table . '.keterangan as keterangan_detail',
-                 $this->table . '.nominal',
-                 $this->table . '.invoice_nobukti as invoice_nobukti_detail'
+                $this->table . '.keterangan as keterangan_detail',
+                $this->table . '.nominal',
+                $this->table . '.invoice_nobukti as invoice_nobukti_detail'
             )
                 ->leftJoin('piutangheader as header', 'header.id',  $this->table . '.piutang_id')
-                ->leftJoin('agen', 'header.agen_id','agen.id');
+                ->leftJoin('agen', 'header.agen_id', 'agen.id');
 
             $query->where($this->table . '.piutang_id', '=', request()->piutang_id);
         } else {
@@ -52,26 +52,99 @@ class PiutangDetail extends MyModel
                 $this->table . '.nobukti',
                 $this->table . '.keterangan',
                 $this->table . '.invoice_nobukti',
-                $this->table . '.nominal');
+                $this->table . '.nominal'
+            );
 
+            $this->sort($query, 'piutangdetail');
             $query->where($this->table . '.piutang_id', '=', request()->piutang_id);
-
+            $this->filter($query);
             $this->totalNominal = $query->sum('nominal');
             $this->totalRows = $query->count();
             $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
-            $this->sort($query);
             $this->paginate($query);
         }
 
         return $query->get();
     }
 
-    public function sort($query)
+    public function getHistory()
     {
-        return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        $this->setRequestParameters();
+
+        $piutang = DB::table("piutangheader")->from(DB::raw("piutangheader with (readuncommitted)"))->where('id', request()->piutang_id)->first();
+        if($piutang != null){
+
+            $query = DB::table("pelunasanpiutangdetail")->from(DB::raw("pelunasanpiutangdetail with (readuncommitted)"));
+
+            $query->select(
+                'pelunasanpiutangdetail.nobukti as nobukti_pelunasan',
+                'pelunasanpiutangdetail.piutang_nobukti',
+                'pelunasanpiutangdetail.keterangan',
+                'pelunasanpiutangdetail.invoice_nobukti',
+                'pelunasanpiutangdetail.nominal',
+                'pelunasanpiutangdetail.potongan',
+                'pelunasanpiutangdetail.nominallebihbayar',
+            );
+    
+            $query->where('pelunasanpiutangdetail.piutang_nobukti', '=', $piutang->nobukti);
+    
+            $this->totalNominal = $query->sum('nominal');
+            $this->totalPotongan = $query->sum('potongan');
+            $this->totalNominalLebih = $query->sum('nominallebihbayar');
+            $this->totalRows = $query->count();
+            $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+    
+            $this->sort($query, 'pelunasanpiutangdetail');
+            $this->paginate($query);
+    
+    
+            return $query->get();
+        }else{
+            $this->totalNominal = 0;
+            $this->totalPotongan = 0;
+            $this->totalNominalLebih = 0;
+        }
     }
 
+    public function sort($query, $table)
+    {
+        return $query->orderBy($table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+    }
+
+    public function filter($query, $relationFields = [])
+    {
+        if (count($this->params['filters']) > 0 && @$this->params['filters']['rules'][0]['data'] != '') {
+            switch ($this->params['filters']['groupOp']) {
+                case "AND":
+                    $query->where(function ($query) {
+                        foreach ($this->params['filters']['rules'] as $index => $filters) {
+
+                            $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                        }
+                    });
+
+                    break;
+                case "OR":
+                    $query->where(function ($query) {
+                        foreach ($this->params['filters']['rules'] as $index => $filters) {
+
+                            $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                        }
+                    });
+                    break;
+                default:
+
+                    break;
+            }
+
+
+            $this->totalRows = $query->count();
+            $this->totalPages = $this->params['limit'] > 0 ? ceil($this->totalRows / $this->params['limit']) : 1;
+        }
+
+        return $query;
+    }
     public function paginate($query)
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);

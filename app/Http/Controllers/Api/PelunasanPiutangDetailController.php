@@ -24,7 +24,9 @@ class PelunasanPiutangDetailController extends Controller
             'attributes' => [
                 'totalRows' => $pelunasanPiutang->totalRows,
                 'totalPages' => $pelunasanPiutang->totalPages,
-                'totalNominal' => $pelunasanPiutang->totalNominal
+                'totalNominal' => $pelunasanPiutang->totalNominal,
+                'totalPotongan' => $pelunasanPiutang->totalPotongan,
+                'totalNominalLebih' => $pelunasanPiutang->totalNominalLebih,
             ]
         ]);
     }

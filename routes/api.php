@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\AbsensiSupirDetailController;
 use App\Http\Controllers\Api\AbsensiSupirHeaderController;
 
 use App\Http\Controllers\Api\BukaAbsensiController;
+use App\Http\Controllers\Api\SuratPengantarApprovalInputTripController;
 
 use App\Http\Controllers\Api\AbsensiSupirApprovalHeaderController;
 use App\Http\Controllers\Api\AbsensiSupirApprovalDetailController;
@@ -222,6 +223,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('parameter/getcoa', [ParameterController::class, 'getcoa']);
     Route::resource('parameter', ParameterController::class);
 
+    Route::get('absensisupirheader/{id}/cekabsensi', [AbsensiSupirHeaderController::class, 'cekabsensi'])->name('absensi.cekabsensi');
     Route::get('absensisupirheader/{id}/detail', [AbsensiSupirHeaderController::class, 'detail'])->name('absensi.detail');
     Route::post('absensisupirheader/{id}/cekValidasiAksi', [AbsensiSupirHeaderController::class, 'cekValidasiAksi'])->name('absensisupirheader.cekValidasiAksi');
     Route::get('absensisupirheader/no_bukti', [AbsensiSupirHeaderController::class, 'getNoBukti']);
@@ -238,6 +240,9 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('absensisupirdetail/get', [AbsensiSupirDetailController::class,'getDetailAbsensi']);
     Route::resource('absensisupirdetail', AbsensiSupirDetailController::class);
     Route::resource('bukaabsensi', BukaAbsensiController::class);
+    
+    Route::get('suratpengantarapprovalinputtrip/cektanggal', [SuratPengantarApprovalInputTripController::class,'isTanggalAvaillable']);
+    Route::resource('suratpengantarapprovalinputtrip', SuratPengantarApprovalInputTripController::class);
 
     Route::get('approvaltransaksiheader/combo', [ApprovalTransaksiHeaderController::class, 'combo']);
     Route::apiResource('approvaltransaksiheader', ApprovalTransaksiHeaderController::class);
@@ -308,6 +313,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('absentrado/default', [AbsenTradoController::class, 'default']);
     Route::post('absentrado/{id}/cekValidasi', [AbsenTradoController::class, 'cekValidasi'])->name('absentrado.cekValidasi');
     Route::resource('absentrado', AbsenTradoController::class);
+    Route::get('absentrado/detail', [AbsenTradoController::class, 'detail']);
 
     Route::get('container/field_length', [ContainerController::class, 'fieldLength']);
     Route::get('container/combostatus', [ContainerController::class, 'combostatus']);
@@ -493,6 +499,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('jurnalumumheader/combo', [JurnalUmumHeaderController::class, 'combo']);
     Route::post('jurnalumumheader/{id}/cekapproval', [JurnalUmumHeaderController::class, 'cekapproval'])->name('jurnalumumheader.cekapproval');
     Route::get('jurnalumumheader/grid', [JurnalUmumHeaderController::class, 'grid']);
+    Route::post('jurnalumumheader/copy', [JurnalUmumHeaderController::class, 'copy']);
     Route::get('jurnalumumheader/field_length', [JurnalUmumHeaderController::class, 'fieldLength']);
     Route::resource('jurnalumumheader', JurnalUmumHeaderController::class);
     Route::resource('jurnalumumdetail', JurnalUmumDetailController::class);
@@ -556,6 +563,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('piutangheader/field_length', [PiutangHeaderController::class, 'fieldLength']);
     Route::post('piutangheader/{id}/cekValidasiAksi', [PiutangHeaderController::class, 'cekValidasiAksi'])->name('piutangheader.cekValidasiAksi');
     Route::apiResource('piutangheader', PiutangHeaderController::class)->parameters(['piutangheader' => 'piutangHeader']);
+    Route::get('piutangdetail/history', [PiutangDetailController::class, 'history']);
     Route::apiResource('piutangdetail', PiutangDetailController::class);
 
     Route::get('hutangheader/{id}/printreport', [HutangHeaderController::class, 'printReport']);
@@ -566,6 +574,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::post('hutangheader/{id}/cekValidasiAksi', [HutangHeaderController::class, 'cekValidasiAksi'])->name('hutangheader.cekValidasiAksi');
     Route::get('hutangheader/field_length', [HutangHeaderController::class, 'fieldLength']);
     Route::resource('hutangheader', HutangHeaderController::class);
+    Route::get('hutangdetail/history', [HutangDetailController::class, 'history']);
     Route::resource('hutangdetail', HutangDetailController::class);
 
     Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
@@ -720,6 +729,8 @@ route::middleware(['auth:api'])->group(function () {
     Route::post('suratpengantar/cekUpahSupir', [SuratPengantarController::class, 'cekUpahSupir']);
     Route::get('suratpengantar/{id}/getTarifOmset', [SuratPengantarController::class, 'getTarifOmset']);
     Route::get('suratpengantar/{id}/getpelabuhan', [SuratPengantarController::class, 'getpelabuhan']);
+    Route::post('suratpengantar/{id}/batalmuat', [SuratPengantarController::class, 'approvalBatalMuat']);
+    Route::post('suratpengantar/{id}/edittujuan', [SuratPengantarController::class, 'approvalEditTujuan']);
     Route::get('suratpengantar/{id}/getOrderanTrucking', [SuratPengantarController::class, 'getOrderanTrucking']);
     Route::get('suratpengantar/getGaji/{dari}/{sampai}/{container}/{statuscontainer}', [SuratPengantarController::class, 'getGaji']);
     Route::get('suratpengantar/default', [SuratPengantarController::class, 'default']);
@@ -825,6 +836,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::resource('approvalpendapatansupir', ApprovalPendapatanSupirController::class);
     Route::resource('stokpersediaan', StokPersediaanController::class);
     Route::get('kartustok/report', [KartuStokController::class, 'report'])->name('kartustok.report');
+    Route::get('kartustok/export', [KartuStokController::class, 'export'])->name('kartustok.export');
     Route::resource('kartustok', KartuStokController::class);
 
     Route::get('historipenerimaanstok/report', [HistoriPenerimaanStokController::class, 'report'])->name('historipenerimaanstok.report');

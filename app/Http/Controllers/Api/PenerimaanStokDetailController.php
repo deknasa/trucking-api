@@ -32,7 +32,8 @@ class PenerimaanStokDetailController extends Controller
             'data' => $penerimaanStokDetail->get(),
             'attributes' => [
                 'totalRows' => $penerimaanStokDetail->totalRows,
-                'totalPages' => $penerimaanStokDetail->totalPages
+                'totalPages' => $penerimaanStokDetail->totalPages,
+                'totalNominal' => $penerimaanStokDetail->totalNominal
             ]
         ]);
     }
