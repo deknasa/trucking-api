@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\AbsensiSupirDetailController;
 use App\Http\Controllers\Api\AbsensiSupirHeaderController;
 
 use App\Http\Controllers\Api\BukaAbsensiController;
+use App\Http\Controllers\Api\SuratPengantarApprovalInputTripController;
 
 use App\Http\Controllers\Api\AbsensiSupirApprovalHeaderController;
 use App\Http\Controllers\Api\AbsensiSupirApprovalDetailController;
@@ -208,6 +209,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::post('token', [AuthController::class, 'token']);
 
 Route::get('supir/image/{field}/{filename}/{type}', [SupirController::class, 'getImage']);
+Route::get('supir/pdf/{field}/{filename}', [SupirController::class, 'getPdf']);
 Route::get('trado/image/{field}/{filename}/{type}', [TradoController::class, 'getImage']);
 Route::get('stok/{filename}/{type}', [StokController::class, 'getImage']);
 Route::get('upahsupir/{filename}/{type}', [UpahSupirController::class, 'getImage']);
@@ -239,6 +241,9 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('absensisupirdetail/get', [AbsensiSupirDetailController::class,'getDetailAbsensi']);
     Route::resource('absensisupirdetail', AbsensiSupirDetailController::class);
     Route::resource('bukaabsensi', BukaAbsensiController::class);
+    
+    Route::get('suratpengantarapprovalinputtrip/cektanggal', [SuratPengantarApprovalInputTripController::class,'isTanggalAvaillable']);
+    Route::resource('suratpengantarapprovalinputtrip', SuratPengantarApprovalInputTripController::class);
 
     Route::get('approvaltransaksiheader/combo', [ApprovalTransaksiHeaderController::class, 'combo']);
     Route::apiResource('approvaltransaksiheader', ApprovalTransaksiHeaderController::class);
@@ -387,8 +392,8 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('user/default', [UserController::class, 'default']);
     Route::get('user/{user}/role', [UserController::class, 'getRoles']);
     Route::post('user/{user}/role', [UserController::class, 'storeRoles']);
-    Route::get('user/{user}/acl', [UserController::class, 'getAcls']);
-    Route::post('user/{user}/acl', [UserController::class, 'storeAcls']);
+    Route::get('user/{user}/acl', [UserAclController::class, 'index']);
+    Route::post('user/{user}/acl', [UserAclController::class, 'store']);
     Route::resource('user', UserController::class);
 
     Route::get('menu/field_length', [MenuController::class, 'fieldLength']);
@@ -411,13 +416,6 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('acl/combostatus', [AclController::class, 'combostatus']);
     Route::get('acl/export', [AclController::class, 'export'])->name('acl.export');
     Route::resource('acl', AclController::class);
-
-    Route::get('useracl/field_length', [UserAclController::class, 'fieldLength']);
-    Route::get('useracl/detail', [UserAclController::class, 'detail']);
-    Route::get('useracl/detaillist', [UserAclController::class, 'detaillist']);
-    Route::get('useracl/combostatus', [UserAclController::class, 'combostatus']);
-    Route::get('useracl/export', [UserAclController::class, 'export'])->name('useracl.export');
-    Route::resource('useracl', UserAclController::class);
 
     Route::get('logtrail/detail', [LogTrailController::class, 'detail']);
     Route::get('logtrail/header', [LogTrailController::class, 'header']);

@@ -33,8 +33,14 @@ class AcosController extends Controller
      */
     public function index()
     {
+        $aco = new Aco();
+        
         return response()->json([
-            'data' => Aco::all()
+            'data' => $aco->get(),
+            'attributes' => [
+                'totalRows' => $aco->totalRows,
+                'totalPages' => $aco->totalPages
+            ]
         ]);
     }
 

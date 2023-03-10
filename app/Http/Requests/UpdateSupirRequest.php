@@ -47,7 +47,9 @@ class UpdateSupirRequest extends FormRequest
             'photoskck' => 'required|array',
             'photoskck.*' => 'required|image',
             'photodomisili' => 'required|array',
-            'photodomisili.*' => 'required|image'
+            'photodomisili.*' => 'required|image',
+            'photovaksin' => 'required|array',
+            'photovaksin.*' => 'required|image'
         ];
     }
 

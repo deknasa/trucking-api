@@ -18,6 +18,7 @@ class CreateTradoTable extends Migration
 
         Schema::create('trado', function (Blueprint $table) {
             $table->id();
+            $table->string('kodetrado', 30)->default('');
             $table->longText('keterangan')->default('');
             $table->integer('statusaktif')->length(11)->default(0);
             $table->integer('statusgerobak')->length(11)->default(0);

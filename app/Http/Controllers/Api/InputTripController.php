@@ -31,7 +31,9 @@ class InputTripController extends Controller
 
         DB::beginTransaction();
         try {
-            $tglbukti = date('Y-m-d', strtotime('now'));
+            $tglbukti = date('Y-m-d', strtotime(now()));
+            $tglbukti = date('Y-m-d', strtotime($request->tglbukti));
+            // return response([$tglbukti],422);
             $format = DB::table('parameter')
                 ->where('grp', 'SURAT PENGANTAR')
                 ->where('subgrp', 'SURAT PENGANTAR')
