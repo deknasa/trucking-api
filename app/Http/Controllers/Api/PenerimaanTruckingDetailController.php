@@ -40,6 +40,7 @@ class PenerimaanTruckingDetailController extends Controller
             $penerimaantruckingDetail->nobukti = $request->nobukti;
             $penerimaantruckingDetail->supir_id = $request->supir_id;
             $penerimaantruckingDetail->pengeluarantruckingheader_nobukti = $request->pengeluarantruckingheader_nobukti ?? '';
+            $penerimaantruckingDetail->keterangan = $request->keterangan;
             $penerimaantruckingDetail->nominal = $request->nominal;
             $penerimaantruckingDetail->modifiedby = auth('api')->user()->name;
             

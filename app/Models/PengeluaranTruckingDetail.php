@@ -52,6 +52,7 @@ class PengeluaranTruckingDetail extends MyModel
             $query->select(
                 $this->table . '.nobukti',
                 $this->table . '.nominal',
+                $this->table . '.keterangan',
     
                 'supir.namasupir as supir_id',
                 $this->table . '.penerimaantruckingheader_nobukti',
@@ -82,6 +83,7 @@ class PengeluaranTruckingDetail extends MyModel
         ->select(
             'pengeluarantruckingdetail.pengeluarantruckingheader_id',
             'pengeluarantruckingdetail.nominal',
+            'pengeluarantruckingdetail.keterangan',
             'pengeluarantruckingdetail.penerimaantruckingheader_nobukti',
 
             'supir.namasupir as supir',

@@ -24,7 +24,34 @@ class GajiSupirHeader extends MyModel
         'created_at' => 'date:d-m-Y H:i:s',
         'updated_at' => 'date:d-m-Y H:i:s'
     ];
+    public function cekvalidasiaksi($nobukti)
+    {
+        $rekap = DB::table('prosesgajisupirdetail')
+            ->from(
+                DB::raw("prosesgajisupirdetail as a with (readuncommitted)")
+            )
+            ->select(
+                'a.gajisupir_nobukti'
+            )
+            ->where('a.gajisupir_nobukti', '=', $nobukti)
+            ->first();
+        if (isset($rekap)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'PROSES GAJI SUPIR',
+                'kodeerror' => 'SATL'
+            ];
+            goto selesai;
+        }
 
+
+        $data = [
+            'kondisi' => false,
+            'keterangan' => '',
+        ];
+        selesai:
+        return $data;
+    }
     public function get()
     {
         $this->setRequestParameters();
@@ -80,48 +107,23 @@ class GajiSupirHeader extends MyModel
         return $data;
     }
 
-    public function getTrip($supirId, $tglDari, $tglSampai)
-    {
-        $query = SuratPengantar::from(DB::raw("suratpengantar with (readuncommitted)"))
-            ->select(
-                'suratpengantar.id',
-                'suratpengantar.nobukti',
-                'suratpengantar.tglbukti',
-                'suratpengantar.trado_id',
-                'trado.keterangan as trado',
-                'suratpengantar.dari_id',
-                'kotaDari.keterangan as dari',
-                'suratpengantar.sampai_id',
-                'kotaSampai.keterangan as sampai',
-                'suratpengantar.nocont',
-                'suratpengantar.nosp',
-                'suratpengantar.gajisupir',
-                'suratpengantar.gajikenek',
-            )
-            ->leftJoin(DB::raw("kota as kotaDari with (readuncommitted)"), 'suratpengantar.dari_id', 'kotaDari.id')
-            ->leftJoin(DB::raw("kota as kotaSampai with (readuncommitted)"), 'suratpengantar.sampai_id', 'kotaSampai.id')
-            ->leftJoin(DB::raw("trado with (readuncommitted)"), 'suratpengantar.trado_id', 'trado.id')
-            ->where('suratpengantar.supir_id', $supirId)
-            ->where('suratpengantar.tglbukti', '>=', $tglDari)
-            ->where('suratpengantar.tglbukti', '<=', $tglSampai);
-        $data = $query->get();
-        return $data;
-    }
 
     public function getEditTrip($gajiId)
     {
         $query = GajiSupirDetail::from(DB::raw("gajisupirdetail with (readuncommitted)"))
             ->select(
+
                 'suratpengantar.id',
-                'gajisupirdetail.suratpengantar_nobukti as nobukti',
-                'suratpengantar.tglbukti',
-                'trado.keterangan as trado',
-                'kotaDari.keterangan as dari',
-                'kotaSampai.keterangan as sampai',
+                'gajisupirdetail.suratpengantar_nobukti as nobuktitrip',
+                'suratpengantar.tglbukti as tglbuktisp',
+                'trado.keterangan as trado_id',
+                'kotaDari.keterangan as dari_id',
+                'kotaSampai.keterangan as sampai_id',
                 'suratpengantar.nocont',
                 'suratpengantar.nosp',
                 'gajisupirdetail.gajisupir',
                 'gajisupirdetail.gajikenek',
+                'gajisupirdetail.komisisupir',
             )
             ->leftJoin(DB::raw("suratpengantar with (readuncommitted)"), 'gajisupirdetail.suratpengantar_nobukti', 'suratpengantar.nobukti')
             ->leftJoin(DB::raw("kota as kotaDari with (readuncommitted)"), 'suratpengantar.dari_id', 'kotaDari.id')
@@ -130,6 +132,9 @@ class GajiSupirHeader extends MyModel
             ->where('gajisupirdetail.gajisupir_id', $gajiId);
 
         $data = $query->get();
+        $this->totalGajiSupir = $query->sum('gajisupirdetail.gajisupir');
+        $this->totalGajiKenek = $query->sum('gajisupirdetail.gajikenek');
+        $this->totalKomisiSupir = $query->sum('gajisupirdetail.komisisupir');
         return $data;
     }
 
@@ -189,6 +194,152 @@ class GajiSupirHeader extends MyModel
         $this->sort($query);
         $models = $this->filter($query);
         DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'supir_id',  'nominal', 'tgldari', 'tglsampai', 'total', 'statuscetak', 'userbukacetak', 'tglbukacetak', 'jumlahcetak', 'modifiedby', 'created_at', 'updated_at'], $models);
+
+        return $temp;
+    }
+
+    public function getPinjSemua()
+    {
+        $query = PengeluaranTruckingDetail::from(DB::raw("pengeluarantruckingdetail with (readuncommitted)"))
+            ->select(DB::raw(" pengeluarantruckingdetail.nobukti,pengeluarantruckingdetail.id, pengeluarantruckingdetail.supir_id,pengeluarantruckingdetail.keterangan, (SELECT (pengeluarantruckingdetail.nominal - coalesce(SUM(penerimaantruckingdetail.nominal),0)) FROM penerimaantruckingdetail WHERE penerimaantruckingdetail.pengeluarantruckingheader_nobukti= pengeluarantruckingdetail.nobukti) AS sisa"))
+            ->leftJoin(DB::raw("penerimaantruckingdetail with (readuncommitted)"), 'penerimaantruckingdetail.pengeluarantruckingheader_nobukti', 'pengeluarantruckingdetail.nobukti')
+            ->where("pengeluarantruckingdetail.supir_id", 0);
+
+        return $query->get();
+    }
+
+    public function getPinjPribadi($supir_id)
+    {
+        $query = PengeluaranTruckingDetail::from(DB::raw("pengeluarantruckingdetail with (readuncommitted)"))
+            ->select(DB::raw(" pengeluarantruckingdetail.nobukti,pengeluarantruckingdetail.id, pengeluarantruckingdetail.keterangan, (SELECT (pengeluarantruckingdetail.nominal - coalesce(SUM(penerimaantruckingdetail.nominal),0)) FROM penerimaantruckingdetail WHERE penerimaantruckingdetail.pengeluarantruckingheader_nobukti= pengeluarantruckingdetail.nobukti) AS sisa"))
+            ->leftJoin(DB::raw("penerimaantruckingdetail with (readuncommitted)"), 'penerimaantruckingdetail.pengeluarantruckingheader_nobukti', 'pengeluarantruckingdetail.nobukti')
+            ->where("pengeluarantruckingdetail.nobukti",  'LIKE', "%PJT%")
+            ->where("pengeluarantruckingdetail.supir_id", $supir_id);
+
+        return $query->get();
+    }
+
+    public function getUangJalan($supir_id, $dari, $sampai)
+    {
+        $query = AbsensiSupirHeader::from(DB::raw("absensisupirheader with (readuncommitted)"))
+            ->select(DB::raw("SUM(absensisupirdetail.uangjalan) as uangjalan"))
+            ->leftJoin(DB::raw("absensisupirdetail with (readuncommitted)"), 'absensisupirheader.nobukti', 'absensisupirdetail.nobukti')
+            ->whereRaw("absensisupirheader.tglbukti >= '$dari'")
+            ->whereRaw("absensisupirheader.tglbukti <= '$sampai'")
+            ->whereRaw("absensisupirdetail.supir_id = $supir_id");
+
+        return $query->first();
+    }
+
+    public function getAllEditTrip($gajiId, $supir_id, $dari, $sampai)
+    {
+        $this->setRequestParameters();
+        $tempRIC = $this->createTempGetRIC($gajiId);
+        $tempSP = $this->createTempGetSP($supir_id, $dari, $sampai);
+
+        $RIC = DB::table("$tempSP as A")->from(DB::raw("$tempSP as A with (readuncommitted)"))
+            ->select(DB::raw("A.id,A.nobuktitrip, A.tglbuktisp, A.trado_id, A.dari_id, A.sampai_id, A.nocont, A.nosp, A.gajisupir, A.gajikenek, A.komisisupir"))
+            ->leftJoin(DB::raw("$tempRIC as B with (readuncommitted)"), "A.nobuktitrip", "B.nobuktitrip");
+
+
+        $SP = DB::table($tempRIC)->from(DB::raw("$tempRIC with (readuncommitted)"))
+            ->select(DB::raw("id,nobuktitrip, tglbuktisp,trado_id,dari_id, sampai_id, nocont, nosp, gajisupir, gajikenek, komisisupir"))
+            ->unionAll($RIC);
+
+            
+        $data = $SP->get();
+        $this->totalGajiSupir = $data->sum('gajisupir');
+        $this->totalGajiKenek = $data->sum('gajikenek');
+        $this->totalKomisiSupir = $data->sum('komisisupir');
+        return $data;
+    }
+
+    public function createTempGetRIC($gajiId)
+    {
+        $temp = '##tempRIC' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+
+
+        $fetch = DB::table('gajisupirdetail')->from(DB::raw("gajisupirdetail with (readuncommitted)"))
+            ->select(
+                'suratpengantar.id',
+                'gajisupirdetail.suratpengantar_nobukti as nobuktitrip',
+                'suratpengantar.tglbukti as tglbuktisp',
+                'trado.keterangan as trado_id',
+                'kotaDari.keterangan as dari_id',
+                'kotaSampai.keterangan as sampai_id',
+                'suratpengantar.nocont',
+                'suratpengantar.nosp',
+                'gajisupirdetail.gajisupir',
+                'gajisupirdetail.gajikenek',
+                'gajisupirdetail.komisisupir'
+            )
+            ->leftJoin(DB::raw("suratpengantar with (readuncommitted)"), 'gajisupirdetail.suratpengantar_nobukti', 'suratpengantar.nobukti')
+            ->leftJoin(DB::raw("kota as kotaDari with (readuncommitted)"), 'suratpengantar.dari_id', 'kotaDari.id')
+            ->leftJoin(DB::raw("kota as kotaSampai with (readuncommitted)"), 'suratpengantar.sampai_id', 'kotaSampai.id')
+            ->leftJoin(DB::raw("trado with (readuncommitted)"), 'suratpengantar.trado_id', 'trado.id')
+            ->where('gajisupirdetail.gajisupir_id', $gajiId);
+
+        Schema::create($temp, function ($table) {
+            $table->bigInteger('id');
+            $table->string('nobuktitrip');
+            $table->date('tglbuktisp')->default('');
+            $table->string('trado_id');
+            $table->string('dari_id');
+            $table->string('sampai_id');
+            $table->string('nocont');
+            $table->string('nosp');
+            $table->bigInteger('gajisupir')->nullable();
+            $table->bigInteger('gajikenek')->nullable();
+            $table->bigInteger('komisisupir')->nullable();
+        });
+
+        $tes = DB::table($temp)->insertUsing(['id', 'nobuktitrip', 'tglbuktisp', 'trado_id', 'dari_id', 'sampai_id','nocont','nosp','gajisupir','gajikenek','komisisupir'], $fetch);
+
+        return $temp;
+    }
+
+    public function createTempGetSP($supir_id, $dari, $sampai)
+    {
+        $temp = '##tempSP' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+
+
+        $fetch = DB::table('suratpengantar')->from(DB::raw("suratpengantar with (readuncommitted)"))
+            ->select(
+                'suratpengantar.id',
+                'suratpengantar.nobukti as nobuktitrip',
+                'suratpengantar.tglbukti as tglbuktisp',
+                'trado.keterangan as trado_id',
+                'kotaDari.keterangan as dari_id',
+                'kotaSampai.keterangan as sampai_id',
+                'suratpengantar.nocont',
+                'suratpengantar.nosp',
+                'suratpengantar.gajisupir',
+                'suratpengantar.gajikenek',
+                'suratpengantar.komisisupir'
+            )
+            ->leftJoin(DB::raw("kota as kotaDari with (readuncommitted)"), 'suratpengantar.dari_id', 'kotaDari.id')
+            ->leftJoin(DB::raw("kota as kotaSampai with (readuncommitted)"), 'suratpengantar.sampai_id', 'kotaSampai.id')
+            ->leftJoin(DB::raw("trado with (readuncommitted)"), 'suratpengantar.trado_id', 'trado.id')
+            ->where('suratpengantar.supir_id', $supir_id)
+            ->where('suratpengantar.tglbukti', '>=', $dari)
+            ->where('suratpengantar.tglbukti', '<=', $sampai)
+            ->whereRaw("suratpengantar.nobukti not in(select suratpengantar_nobukti from gajisupirdetail)");
+
+        Schema::create($temp, function ($table) {
+            $table->bigInteger('id');
+            $table->string('nobuktitrip');
+            $table->date('tglbuktisp')->default('');
+            $table->string('trado_id');
+            $table->string('dari_id');
+            $table->string('sampai_id');
+            $table->string('nocont');
+            $table->string('nosp');
+            $table->bigInteger('gajisupir')->nullable();
+            $table->bigInteger('gajikenek')->nullable();
+            $table->bigInteger('komisisupir')->nullable();
+        });
+
+        $tes = DB::table($temp)->insertUsing(['id', 'nobuktitrip', 'tglbuktisp', 'trado_id', 'dari_id', 'sampai_id','nocont','nosp','gajisupir','gajikenek','komisisupir'], $fetch);
 
         return $temp;
     }
