@@ -98,6 +98,7 @@ class TradoController extends Controller
             $statusLewatValidasi = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS LEWAT VALIDASI')->where('default', 'YA')->first();
             $trado = new Trado();
             $trado->keterangan = $request->keterangan;
+            $trado->kodetrado = $request->kodetrado;
             $trado->statusaktif = $request->statusaktif;
             $trado->tahun = $request->tahun;
             $trado->merek = $request->merek;
@@ -228,6 +229,7 @@ class TradoController extends Controller
         DB::beginTransaction();
         try {
             $trado->keterangan = $request->keterangan;
+            $trado->kodetrado = $request->kodetrado;
             $trado->statusaktif = $request->statusaktif;
             $trado->tahun = $request->tahun;
             $trado->merek = $request->merek;

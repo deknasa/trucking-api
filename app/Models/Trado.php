@@ -164,6 +164,7 @@ class Trado extends MyModel
             ->select(
                 'trado.id',
                 'trado.keterangan',
+                'trado.kodetrado',
                 'trado.kmawal',
                 'trado.kmakhirgantioli',
                 DB::raw("(case when year(isnull(trado.tglasuransimati,'1900/1/1'))=1900 then null else trado.tglasuransimati end) as tglasuransimati"),
@@ -338,6 +339,7 @@ class Trado extends MyModel
             DB::raw(
                 "$this->table.id,           
                 $this->table.keterangan,            
+                $this->table.kodetrado,            
                 'parameter_statusaktif.text as statusaktif',
                 $this->table.kmawal,
                 $this->table.kmakhirgantioli,
@@ -402,6 +404,7 @@ class Trado extends MyModel
         Schema::create($temp, function ($table) {
             $table->bigInteger('id')->default('0');
             $table->longText('keterangan')->default('');
+            $table->longText('kodetrado')->default('');
             $table->string('statusaktif')->default('');
             $table->double('kmawal', 15, 2)->default(0);
             $table->double('kmakhirgantioli', 15, 2)->default(0);
@@ -456,7 +459,7 @@ class Trado extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id', 'keterangan', 'statusaktif', 'kmawal', 'kmakhirgantioli', 'tglakhirgantioli',  'tglstnkmati', 'tglasuransimati', 'tahun', 'akhirproduksi', 'merek', 'norangka', 'nomesin', 'nama', 'nostnk', 'alamatstnk', 'tglstandarisasi', 'tglserviceopname', 'statusstandarisasi', 'keteranganprogressstandarisasi', 'statusjenisplat', 'tglspeksimati', 'tglpajakstnk', 'tglgantiakiterakhir', 'statusmutasi', 'statusvalidasikendaraan', 'tipe', 'jenis', 'isisilinder', 'warna', 'jenisbahanbakar', 'jumlahsumbu', 'jumlahroda', 'model', 'nobpkb', 'statusmobilstoring', 'mandor_id', 'jumlahbanserap', 'statusappeditban', 'statuslewatvalidasi', 'photostnk', 'photobpkb', 'phototrado', 'modifiedby', 'created_at', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'keterangan', 'kodetrado', 'statusaktif', 'kmawal', 'kmakhirgantioli', 'tglakhirgantioli',  'tglstnkmati', 'tglasuransimati', 'tahun', 'akhirproduksi', 'merek', 'norangka', 'nomesin', 'nama', 'nostnk', 'alamatstnk', 'tglstandarisasi', 'tglserviceopname', 'statusstandarisasi', 'keteranganprogressstandarisasi', 'statusjenisplat', 'tglspeksimati', 'tglpajakstnk', 'tglgantiakiterakhir', 'statusmutasi', 'statusvalidasikendaraan', 'tipe', 'jenis', 'isisilinder', 'warna', 'jenisbahanbakar', 'jumlahsumbu', 'jumlahroda', 'model', 'nobpkb', 'statusmobilstoring', 'mandor_id', 'jumlahbanserap', 'statusappeditban', 'statuslewatvalidasi', 'photostnk', 'photobpkb', 'phototrado', 'modifiedby', 'created_at', 'updated_at'], $models);
 
 
         return  $temp;
