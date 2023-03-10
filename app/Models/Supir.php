@@ -411,6 +411,8 @@ class Supir extends MyModel
                 'supir.photosim',
                 'supir.photokk',
                 'supir.photoskck',
+                'supir.photovaksin',
+                'supir.pdfsuratperjanjian',
                 'supir.photodomisili',
                 'supir.keteranganresign',
                 'supir.statusblacklist',

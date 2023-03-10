@@ -295,6 +295,8 @@ class SupirController extends Controller
             $supir->photokk = $this->storeFiles($request->photokk, 'kk');
             $supir->photoskck = $this->storeFiles($request->photoskck, 'skck');
             $supir->photodomisili = $this->storeFiles($request->photodomisili, 'domisili');
+            $supir->photovaksin = $this->storeFiles($request->photovaksin, 'vaksin');
+            $supir->pdfsuratperjanjian = $this->storePdfFiles($request->pdfsuratperjanjian, 'suratperjanjian');
 
             $supir->save();
 
@@ -380,6 +382,9 @@ class SupirController extends Controller
             $supir->photokk = $this->storeFiles($request->photokk, 'kk');
             $supir->photoskck = $this->storeFiles($request->photoskck, 'skck');
             $supir->photodomisili = $this->storeFiles($request->photodomisili, 'domisili');
+            $supir->photovaksin = $this->storeFiles($request->photovaksin, 'vaksin');
+            $supir->pdfsuratperjanjian = $this->storePdfFiles($request->pdfsuratperjanjian, 'suratperjanjian');
+
             $supir->save();
 
             if ($supir->save()) {
@@ -500,6 +505,10 @@ class SupirController extends Controller
     {
         return response()->file(storage_path("app/$field/$type-$filename"));
     }
+    public function getPdf(string $field, string $filename)
+    {
+        return response()->file(storage_path("app/$field/$filename"));
+    }
 
     private function storeFiles(array $files, string $destinationFolder): string
     {
@@ -510,6 +519,18 @@ class SupirController extends Controller
             $storedFile = Storage::putFileAs($destinationFolder, $file, 'ori-' . $originalFileName);
             $resizedFiles = App::imageResize(storage_path("app/$destinationFolder/"), storage_path("app/$storedFile"), $originalFileName);
 
+            $storedFiles[] = $originalFileName;
+        }
+
+        return json_encode($storedFiles);
+    }
+    private function storePdfFiles(array $files, string $destinationFolder): string
+    {
+        $storedFiles = [];
+
+        foreach ($files as $file) {
+            $originalFileName = $file->hashName();
+            $storedFile = Storage::putFileAs($destinationFolder, $file, $originalFileName);
             $storedFiles[] = $originalFileName;
         }
 
@@ -526,6 +547,8 @@ class SupirController extends Controller
         $relatedPhotoKk = [];
         $relatedPhotoSkck = [];
         $relatedPhotoDomisili = [];
+        $relatedPhotoVaksin = [];
+        $relatedPdfSuratPerjanjian = [];
 
         $photoSupir = json_decode($supir->photosupir, true);
         $photoKtp = json_decode($supir->photoktp, true);
@@ -533,6 +556,8 @@ class SupirController extends Controller
         $photoKk = json_decode($supir->photokk, true);
         $photoSkck = json_decode($supir->photoskck, true);
         $photoDomisili = json_decode($supir->photodomisili, true);
+        $photoVaksin = json_decode($supir->photoVaksin, true);
+        $pdfSuratPerjanjian = json_decode($supir->pdfsuratperjanjian, true);
 
         if ($photoSupir != '') {
             foreach ($photoSupir as $path) {
@@ -586,6 +611,20 @@ class SupirController extends Controller
                 }
             }
             Storage::delete($relatedPhotoDomisili);
+        }
+        if ($photoVaksin != '') {
+            foreach ($photoVaksin as $path) {
+                foreach ($sizeTypes as $sizeType) {
+                    $relatedPhotoVaksin[] = "vaksin/$sizeType-$path";
+                }
+            }
+            Storage::delete($relatedPhotoVaksin);
+        }
+        if ($pdfSuratPerjanjian != '') {
+            foreach ($pdfSuratPerjanjian as $path) {
+                $relatedPdfSuratPerjanjian[] = "suratperjanjian/$path";
+            }
+            Storage::delete($relatedPdfSuratPerjanjian);
         }
     }
 }

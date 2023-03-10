@@ -209,6 +209,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::post('token', [AuthController::class, 'token']);
 
 Route::get('supir/image/{field}/{filename}/{type}', [SupirController::class, 'getImage']);
+Route::get('supir/pdf/{field}/{filename}', [SupirController::class, 'getPdf']);
 Route::get('trado/image/{field}/{filename}/{type}', [TradoController::class, 'getImage']);
 Route::get('stok/{filename}/{type}', [StokController::class, 'getImage']);
 Route::get('upahsupir/{filename}/{type}', [UpahSupirController::class, 'getImage']);
