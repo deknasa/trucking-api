@@ -18,6 +18,7 @@ class MenuSeeder extends Seeder
         DB::statement("delete Menu");
         DB::statement("DBCC CHECKIDENT ('Menu', RESEED, 1);");
 
+
         menu::create(['menuname' => 'DASHBOARD', 'menuseq' => '0', 'menuparent' => '0', 'menuicon' => 'FAS FA-HOME', 'aco_id' => '0', 'link' => 'DASHBOARD', 'menuexe' => '', 'menukode' => '0', 'modifiedby' => '',]);
         menu::create(['menuname' => 'LOGOUT', 'menuseq' => '9', 'menuparent' => '0', 'menuicon' => 'FAS FA-SIGN-OUT-ALT', 'aco_id' => '0', 'link' => 'LOGOUT', 'menuexe' => '', 'menukode' => 'Z', 'modifiedby' => '',]);
         menu::create(['menuname' => 'MASTER', 'menuseq' => '1', 'menuparent' => '0', 'menuicon' => 'FAS FA-LIST-UL', 'aco_id' => '0', 'link' => '', 'menuexe' => '', 'menukode' => '1', 'modifiedby' => '',]);
@@ -60,7 +61,7 @@ class MenuSeeder extends Seeder
         menu::create(['menuname' => 'PELANGGAN', 'menuseq' => '184', 'menuparent' => '55', 'menuicon' => 'FAR FA-CIRCLE', 'aco_id' => '121', 'link' => '', 'menuexe' => '', 'menukode' => '184', 'modifiedby' => 'ADMIN',]);
         menu::create(['menuname' => 'PENERIMA', 'menuseq' => '183', 'menuparent' => '55', 'menuicon' => 'FAR FA-CIRCLE', 'aco_id' => '125', 'link' => '', 'menuexe' => '', 'menukode' => '183', 'modifiedby' => 'ADMIN',]);
         menu::create(['menuname' => 'PENERIMAAN TRUCKING', 'menuseq' => '1351', 'menuparent' => '116', 'menuicon' => 'FAR FA-CIRCLE', 'aco_id' => '129', 'link' => '', 'menuexe' => '', 'menukode' => '1351', 'modifiedby' => 'ADMIN',]);
-        menu::create(['menuname' => 'PENGELUARAN TRUCKING', 'menuseq' => '1353', 'menuparent' => '116', 'menuicon' => 'FAR FA-CIRCLE', 'aco_id' => '133', 'link' => '', 'menuexe' => '', 'menukode' => '1353', 'modifiedby' => 'ADMIN',]);
+        menu::create(['menuname' => 'PENGELUARAN TRUCKING', 'menuseq' => '1353', 'menuparent' => '116', 'menuicon' => 'FAR FA-CIRCLE', 'aco_id' => '133', 'link' => '', 'menuexe' => '', 'menukode' => '1352', 'modifiedby' => 'ADMIN',]);
         menu::create(['menuname' => 'PROSES ABSENSI SUPIR', 'menuseq' => '212', 'menuparent' => '0', 'menuicon' => 'FAS FA-USER-TAG', 'aco_id' => '0', 'link' => '', 'menuexe' => '', 'menukode' => 'AA', 'modifiedby' => 'ADMIN',]);
         menu::create(['menuname' => 'RITASI', 'menuseq' => '28', 'menuparent' => '15', 'menuicon' => 'FAR FA-CIRCLE', 'aco_id' => '141', 'link' => '', 'menuexe' => '', 'menukode' => '28', 'modifiedby' => 'ADMIN',]);
         menu::create(['menuname' => 'SATUAN', 'menuseq' => '145', 'menuparent' => '34', 'menuicon' => 'FAR FA-CIRCLE', 'aco_id' => '145', 'link' => '', 'menuexe' => '', 'menukode' => '145', 'modifiedby' => 'ADMIN',]);
@@ -96,7 +97,7 @@ class MenuSeeder extends Seeder
         menu::create(['menuname' => 'INVOICE', 'menuseq' => '241', 'menuparent' => '121', 'menuicon' => 'FAR FA-CIRCLE', 'aco_id' => '246', 'link' => '', 'menuexe' => '', 'menukode' => '241', 'modifiedby' => 'ADMIN',]);
         menu::create(['menuname' => 'NOTA DEBET', 'menuseq' => '531', 'menuparent' => '125', 'menuicon' => 'FAR FA-CIRCLE', 'aco_id' => '250', 'link' => '', 'menuexe' => '', 'menukode' => 'B1', 'modifiedby' => 'ADMIN',]);
         menu::create(['menuname' => 'NOTA KREDIT', 'menuseq' => '532', 'menuparent' => '125', 'menuicon' => 'FAR FA-CIRCLE', 'aco_id' => '254', 'link' => '', 'menuexe' => '', 'menukode' => 'B2', 'modifiedby' => 'ADMIN',]);
-        menu::create(['menuname' => 'PENERIMAAN TRUCKING', 'menuseq' => '1352', 'menuparent' => '116', 'menuicon' => 'FAR FA-CIRCLE', 'aco_id' => '259', 'link' => '', 'menuexe' => '', 'menukode' => '1352', 'modifiedby' => 'ADMIN',]);
+        menu::create(['menuname' => 'PENERIMAAN TRUCKING', 'menuseq' => '1352', 'menuparent' => '0', 'menuicon' => 'FAR FA-CIRCLE', 'aco_id' => '0', 'link' => '', 'menuexe' => '', 'menukode' => '1354', 'modifiedby' => 'ADMIN',]);
         menu::create(['menuname' => 'PENERIMAAN TRUCKING', 'menuseq' => '26', 'menuparent' => '15', 'menuicon' => 'FAR FA-CIRCLE', 'aco_id' => '263', 'link' => '', 'menuexe' => '', 'menukode' => '26', 'modifiedby' => 'ADMIN',]);
         menu::create(['menuname' => 'STOK', 'menuseq' => '6', 'menuparent' => '0', 'menuicon' => 'FAS FA-SHOPPING-CART', 'aco_id' => '0', 'link' => '', 'menuexe' => '', 'menukode' => '6', 'modifiedby' => 'ADMIN',]);
         menu::create(['menuname' => 'PENERIMAAN  STOK', 'menuseq' => '61', 'menuparent' => '81', 'menuicon' => 'FAR FA-CIRCLE', 'aco_id' => '267', 'link' => '', 'menuexe' => '', 'menukode' => '61', 'modifiedby' => 'ADMIN',]);

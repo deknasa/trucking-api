@@ -21,7 +21,10 @@ class CreatePengeluarantruckingTable extends Migration
             $table->id();
             $table->longText('kodepengeluaran')->default('');            
             $table->longText('keterangan')->default('');            
-            $table->string('coa',50)->default('');            
+            $table->string('coadebet',50)->default('');            
+            $table->string('coakredit',50)->default('');            
+            $table->string('coapostingdebet',50)->default('');            
+            $table->string('coapostingkredit',50)->default('');           
             $table->unsignedBigInteger('format')->default(0);          
             $table->string('modifiedby',50)->default('');              
             $table->timestamps();
