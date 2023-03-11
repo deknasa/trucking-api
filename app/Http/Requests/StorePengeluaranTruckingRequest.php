@@ -26,7 +26,6 @@ class StorePengeluaranTruckingRequest extends FormRequest
         return [
             'kodepengeluaran' => 'required',
             'keterangan' => 'required',
-            'coa' => 'required',
             'format' => 'required'
         ];
     }
