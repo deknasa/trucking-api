@@ -73,7 +73,10 @@ class PengeluaranTruckingController extends Controller
             $pengeluaranTrucking = new PengeluaranTrucking();
             $pengeluaranTrucking->kodepengeluaran = $request->kodepengeluaran;
             $pengeluaranTrucking->keterangan = $request->keterangan;
-            $pengeluaranTrucking->coa = $request->coa;
+            $pengeluaranTrucking->coadebet = $request->coadebet;
+            $pengeluaranTrucking->coakredit = $request->coakredit;
+            $pengeluaranTrucking->coapostingdebet = $request->coapostingdebet;
+            $pengeluaranTrucking->coapostingkredit = $request->coapostingkredit;
             $pengeluaranTrucking->format = $request->format;
             $pengeluaranTrucking->modifiedby = auth('api')->user()->name;
 
@@ -132,7 +135,10 @@ class PengeluaranTruckingController extends Controller
         try {
             $pengeluaranTrucking->kodepengeluaran = $request->kodepengeluaran;
             $pengeluaranTrucking->keterangan = $request->keterangan;
-            $pengeluaranTrucking->coa = $request->coa;
+            $pengeluaranTrucking->coadebet = $request->coadebet;
+            $pengeluaranTrucking->coakredit = $request->coakredit;
+            $pengeluaranTrucking->coapostingdebet = $request->coapostingdebet;
+            $pengeluaranTrucking->coapostingkredit = $request->coapostingkredit;
             $pengeluaranTrucking->format = $request->format;
             $pengeluaranTrucking->modifiedby = auth('api')->user()->name;
 
@@ -237,9 +243,22 @@ class PengeluaranTruckingController extends Controller
                 'index' => 'keterangan',
             ],
             [
-                'label' => 'COA',
-                'index' => 'coa',
+                'label' => 'coadebet',
+                'index' => 'coadebet',
             ],
+            [
+                'label' => 'coakredit',
+                'index' => 'coakredit',
+            ],
+            [
+                'label' => 'coapostingdebet',
+                'index' => 'coapostingdebet',
+            ],
+            [
+                'label' => 'coapostingkredit',
+                'index' => 'coapostingkredit',
+            ],
+
             [
                 'label' => 'Format Bukti',
                 'index' => 'format',
@@ -278,7 +297,11 @@ class PengeluaranTruckingController extends Controller
             $table->bigInteger('id_')->default('0');
             $table->string('kodepengeluaran', 300)->default('');
             $table->string('keterangan', 300)->default('');
-            $table->string('coa', 300)->default('');
+            $table->string('coadebet', 300)->default('');
+            $table->string('coakredit', 300)->default('');
+            $table->string('coapostingdebet', 300)->default('');
+            $table->string('coapostingkredit', 300)->default('');
+            
             $table->string('format', 300)->default('');
             $table->string('modifiedby', 30)->default('');
             $table->dateTime('created_at')->default('1900/1/1');
@@ -318,7 +341,10 @@ class PengeluaranTruckingController extends Controller
                     'pengeluarantrucking.id as id_',
                     'pengeluarantrucking.kodepengeluaran',
                     'pengeluarantrucking.keterangan',
-                    'pengeluarantrucking.coa',
+                    'pengeluarantrucking.coadebet',
+                    'pengeluarantrucking.coakredit',
+                    'pengeluarantrucking.coapostingdebet',
+                    'pengeluarantrucking.coapostingkredit',
                     'pengeluarantrucking.format',
                     'pengeluarantrucking.modifiedby',
                     'pengeluarantrucking.created_at',
@@ -335,7 +361,10 @@ class PengeluaranTruckingController extends Controller
             'id_',
             'kodepengeluaran',
             'keterangan',
-            'coa',
+            'coadebet',
+            'coakredit',
+            'coapostingdebet',
+            'coapostingkredit',
             'format',
             'modifiedby',
             'created_at',
