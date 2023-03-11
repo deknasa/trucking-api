@@ -29,10 +29,16 @@ class CreatePengeluarantruckingTable extends Migration
             $table->string('modifiedby',50)->default('');              
             $table->timestamps();
 
-            $table->foreign('coa', 'pengeluarantrucking_akunpusat_coa_foreign')->references('coa')->on('akunpusat');
+            $table->foreign('coadebet', 'pengeluarantrucking_akunpusat_coadebet_foreign')->references('coa')->on('akunpusat');
+            $table->foreign('coakredit', 'pengeluarantrucking_akunpusat_coakredit_foreign')->references('coa')->on('akunpusat');
+            $table->foreign('coapostingdebet', 'pengeluarantrucking_akunpusat_coapostingdebet_foreign')->references('coa')->on('akunpusat');
+            $table->foreign('coapostingkredit', 'pengeluarantrucking_akunpusat_coapostingkredit_foreign')->references('coa')->on('akunpusat');
         });
 
-        DB::statement("ALTER TABLE pengeluarantrucking NOCHECK CONSTRAINT pengeluarantrucking_akunpusat_coa_foreign");
+        DB::statement("ALTER TABLE pengeluarantrucking NOCHECK CONSTRAINT pengeluarantrucking_akunpusat_coadebet_foreign");
+        DB::statement("ALTER TABLE pengeluarantrucking NOCHECK CONSTRAINT pengeluarantrucking_akunpusat_coakredit_foreign");
+        DB::statement("ALTER TABLE pengeluarantrucking NOCHECK CONSTRAINT pengeluarantrucking_akunpusat_coapostingdebet_foreign");
+        DB::statement("ALTER TABLE pengeluarantrucking NOCHECK CONSTRAINT pengeluarantrucking_akunpusat_coapostingkredit_foreign");
     }
 
     /**
