@@ -371,8 +371,8 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('role/getroleid', [RoleController::class, 'getroleid']);
     Route::get('role/field_length', [RoleController::class, 'fieldLength']);
     Route::get('role/export', [RoleController::class, 'export'])->name('role.export');
-    Route::get('role/{role}/acl', [RoleController::class, 'getAcls']);
-    Route::post('role/{role}/acl', [RoleController::class, 'storeAcls']);
+    Route::get('role/{role}/acl', [UserRoleController::class, 'index']);
+    Route::post('role/{role}/acl', [UserRoleController::class, 'store']);
     Route::resource('role', RoleController::class);
 
     Route::get('cabang/field_length', [CabangController::class, 'fieldLength']);
@@ -390,7 +390,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('user/combocabang', [UserController::class, 'combocabang']);
     Route::get('user/getuserid', [UserController::class, 'getuserid']);
     Route::get('user/default', [UserController::class, 'default']);
-    Route::get('user/{user}/role', [UserController::class, 'getRoles']);
+    Route::get('user/{user}/role', [RoleController::class, 'index']);
     Route::post('user/{user}/role', [UserController::class, 'storeRoles']);
     Route::get('user/{user}/acl', [UserAclController::class, 'index']);
     Route::post('user/{user}/acl', [UserAclController::class, 'store']);

@@ -20,33 +20,21 @@ class UserRole extends MyModel
         'created_at',
         'updated_at',
     ];
+    public function get($query)
+    {
+        $this->setRequestParameters();
 
-    // public function get()
-    // {
-    //     $this->setRequestParameters();
+        $this->totalRows = $query->count();
+        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
-    //     $query = DB::table($this->table)->select(
-    //         DB::raw("userrole.rolename as rolename,
-    //                     acl.role_id as role_id,
-    //                     min(acl.id) as id_,
-    //                     max(acl.modifiedby) as modifiedby,
-    //                     max(acl.created_at) as created_at,
-    //                         max(acl.updated_at) as updated_at")
-    //     )
-    //         ->Join('role', 'acl.role_id', '=', 'role.id')
-    //         ->groupby('acl.role_id', 'role.rolename');
+        $this->sort($query);
+        $this->filter($query);
+        $this->paginate($query);
 
-    //     $this->totalRows = $query->count();
-    //     $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+        // dd($query->toSql());
+        return $query->get();
+    }
 
-    //     $this->sort($query);
-    //     $this->filter($query);
-    //     $this->paginate($query);
-
-    //     $data = $query->get();
-
-    //     return $data;
-    // }
 
     public function selectColumns($query)
     { //sesuaikan dengan createtemp
@@ -89,7 +77,7 @@ class UserRole extends MyModel
 
     public function sort($query)
     {
-        return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        return $query->orderBy($this->params['sortIndex'], $this->params['sortOrder']);
     }
 
     public function filter($query, $relationFields = [])
@@ -97,24 +85,29 @@ class UserRole extends MyModel
         if (count($this->params['filters']) > 0 && @$this->params['filters']['rules'][0]['data'] != '') {
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
-                    foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'user_id') {
-                            $query = $query->where('userrole.user_id', 'LIKE', "%$filters[data]%");
-                        } else {
-                            $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                    $query->where(function ($query) {
+                        foreach ($this->params['filters']['rules'] as $index => $filters) {
+                            if ($filters['field']) {
+                                if (in_array($filters['field'], ['modifiedby', 'created_at', 'updated_at'])) {
+                                    $query = $query->where('acos.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                } else {
+                                    $query = $query->where($filters['field'], 'LIKE', "%$filters[data]%");
+                                }
+                            }
                         }
-                    }
+                    });
 
                     break;
                 case "OR":
-                    foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'user_id') {
-                            $query = $query->orWhere('userrole.user_id', 'LIKE', "%$filters[data]%");
-                        } else {
-                            $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                    $query->where(function ($query) {
+                        foreach ($this->params['filters']['rules'] as $index => $filters) {
+                            if (in_array($filters['field'], ['modifiedby', 'created_at', 'updated_at'])) {
+                                $query = $query->orWhere('acos.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            } else {
+                                $query = $query->orWhere($filters['field'], 'LIKE', "%$filters[data]%");
+                            }
                         }
-                    }
-
+                    });
                     break;
                 default:
 

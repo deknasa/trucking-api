@@ -20,21 +20,23 @@ use Illuminate\Support\Facades\DB;
 
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Api\ParameterController;
+use App\Http\Requests\StoreAclRequest;
+use Illuminate\Http\JsonResponse;
 
 class UserRoleController extends Controller
 {
     /**
      * @ClassName 
      */
-    public function index()
+    public function index(Role $role): JsonResponse
     {
-        $user = new User();
+        $userRole = new UserRole();
 
-        return response([
-            'data' => $user->get(),
+        return response()->json([
+            'data' => $userRole->get($role->acls()),
             'attributes' => [
-                'totalRows' => $user->totalRows,
-                'totalPages' => $user->totalPages
+                'totalRows' => $userRole->totalRows,
+                'totalPages' => $userRole->totalPages
             ]
         ]);
     }
@@ -51,105 +53,44 @@ class UserRoleController extends Controller
     /**
      * @ClassName 
      */
-    public function store(StoreUserRoleRequest $request)
+    public function store(StoreAclRequest $request, Role $role): JsonResponse
     {
         DB::beginTransaction();
 
         try {
-            $user = User::findOrFail($request->user_id);
-            $user->roles()->detach();
+            $role->acls()->detach();
 
-            foreach ($request->role_ids as $roleId) {
-                $userRole = new UserRole();
-                $userRole->user_id = $request->user_id;
-                $userRole->role_id = $roleId;
-                $userRole->modifiedby = auth('api')->user()->name;
-
-                if ($userRole->save()) {
-                    $logTrail = [
-                        'namatabel' => strtoupper($userRole->getTable()),
-                        'postingdari' => 'ENTRY JURNAL USER ROLE',
-                        'idtrans' =>  $userRole->id,
-                        'nobuktitrans' => $userRole->id,
-                        'aksi' => 'ENTRY',
-                        'datajson' => $userRole->toArray(),
-                        'modifiedby' => $userRole->modifiedby,
-                    ];
-
-                    $logTrailRequest = new StoreLogTrailRequest($logTrail);
-                    app(LogTrailController::class)->store($logTrailRequest);
-                }
+            foreach ($request->aco_ids as $aco_id) {
+                $role->acls()->attach($aco_id, [
+                    'modifiedby' => auth('api')->user()->name
+                ]);
             }
+
+            $logTrail = [
+                'namatabel' => strtoupper($role->getTable()),
+                'postingdari' => 'ENTRY ROLE ACL',
+                'idtrans' => $role->id,
+                'nobuktitrans' => $role->id,
+                'aksi' => 'ENTRY',
+                'datajson' => $role->load('acls')->toArray(),
+                'modifiedby' => $role->modifiedby
+            ];
+
+            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+            $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
             DB::commit();
 
-            return response([
-                'message' => 'Stored successfully',
-                'user' => $user->load('roles')
-            ], 201);
+            return response()->json([
+                'message' => 'Berhasil disimpan',
+                'user' => $role->load('acls')
+            ]);
         } catch (\Throwable $th) {
             DB::rollBack();
 
             throw $th;
         }
-
-        // try {
-        //     $controller = new ParameterController;
-        //     $dataaktif = $controller->getparameterid('STATUS AKTIF', 'STATUS AKTIF', 'AKTIF');
-        //     $aktif = $dataaktif->id;
-
-        //     for ($i = 0; $i < count($request->role_id); $i++) {
-        //         $userrole = new UserRole();
-        //         $userrole->user_id = $request->user_id;
-        //         $userrole->role_id = $request->role_id[$i]  ?? 0;
-        //         $userrole->modifiedby = auth('api')->user()->name;
-
-        //         if ($request->status[$i] == $aktif) {
-        //             if ($userrole->save()) {
-        //                 $logTrail = [
-        //                     'namatabel' => strtoupper($userrole->getTable()),
-        //                     'postingdari' => 'ENTRY USER ROLE',
-        //                     'idtrans' => $userrole->id,
-        //                     'nobuktitrans' => $userrole->id,
-        //                     'aksi' => 'ENTRY',
-        //                     'datajson' => $userrole->toArray(),
-        //                     'modifiedby' => $userrole->modifiedby
-        //                 ];
-
-        //                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-        //                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
-        //                 DB::commit();
-        //             }
-        //         }
-        //     }
-
-        //     /* Set position and page */
-        //     // $del = 0;
-        //     // $data = $this->getid($request->user_id, $request, $del) ?? 0;
-
-        //     // $userrole->position = $data->id ?? 0;
-        //     // $userrole->id = $data->row ?? 0;
-
-        //     // if (isset($request->limit)) {
-        //     //     $userrole->page = ceil($userrole->position / $request->limit);
-        //     // }
-
-        //     /* Set position and page */
-        //     $selected = $this->getPosition($userrole, $userrole->getTable());
-        //     $userrole->position = $selected->position;
-        //     $userrole->page = ceil($userrole->position / ($request->limit ?? 10));
-
-        //     return response([
-        //         'status' => true,
-        //         'message' => 'Berhasil disimpan',
-        //         'data' => $userrole
-        //     ]);
-        // } catch (\Throwable $th) {
-        //     throw $th;
-        // }
     }
-
     public function show(UserRole $userrole)
     {
         $data = User::select('user')

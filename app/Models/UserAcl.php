@@ -46,25 +46,30 @@ class UserAcl extends MyModel
         if (count($this->params['filters']) > 0 && @$this->params['filters']['rules'][0]['data'] != '') {
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
-                    foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field']) {
-                            if (in_array($filters['field'], ['modifiedby', 'created_at', 'updated_at'])) {
-                                $query = $query->where('useracl.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                            } else {
-                                $query = $query->where($filters['field'], 'LIKE', "%$filters[data]%");
+                    $query->where(function ($query) {
+                        foreach ($this->params['filters']['rules'] as $index => $filters) {
+                            if ($filters['field']) {
+                                if (in_array($filters['field'], ['modifiedby', 'created_at', 'updated_at'])) {
+                                    $query = $query->where('acos.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                } else {
+                                    $query = $query->where($filters['field'], 'LIKE', "%$filters[data]%");
+                                }
                             }
                         }
-                    }
+                    });
 
                     break;
                 case "OR":
-                    foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if (in_array($filters['field'], ['modifiedby', 'created_at', 'updated_at'])) {
-                            $query = $query->orWhere('useracl.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                        } else {
-                            $query = $query->orWhere($filters['field'], 'LIKE', "%$filters[data]%");
+
+                    $query->where(function ($query) {
+                        foreach ($this->params['filters']['rules'] as $index => $filters) {
+                            if (in_array($filters['field'], ['modifiedby', 'created_at', 'updated_at'])) {
+                                $query = $query->orWhere('acos.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            } else {
+                                $query = $query->orWhere($filters['field'], 'LIKE', "%$filters[data]%");
+                            }
                         }
-                    }
+                    });
 
                     break;
                 default:
