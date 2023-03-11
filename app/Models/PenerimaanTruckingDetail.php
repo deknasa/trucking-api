@@ -49,7 +49,8 @@ class PenerimaanTruckingDetail extends MyModel
                 "penerimaantrucking.keterangan as penerimaantrucking",
                 "supir.namasupir as supir_id",
                 "$this->table.pengeluarantruckingheader_nobukti",
-                "$this->table.nominal"
+                "$this->table.nominal",
+                "$this->table.keterangan",
             )
             ->leftJoin(DB::raw("penerimaantruckingheader as header with (readuncommitted)"),"header.id","$this->table.penerimaantruckingheader_id")
             ->leftJoin(DB::raw("penerimaantrucking with (readuncommitted)"), "header.penerimaantrucking_id","penerimaantrucking.id")
@@ -60,6 +61,7 @@ class PenerimaanTruckingDetail extends MyModel
             $query->select(
                 "$this->table.nobukti",
                 "$this->table.nominal",
+                "$this->table.keterangan",
 
                 "supir.namasupir as supir_id",
                 "$this->table.pengeluarantruckingheader_nobukti",
@@ -84,6 +86,7 @@ class PenerimaanTruckingDetail extends MyModel
         ->select(
             "penerimaantruckingdetail.penerimaantruckingheader_id",
             "penerimaantruckingdetail.nominal",
+            "penerimaantruckingdetail.keterangan",
             "penerimaantruckingdetail.pengeluarantruckingheader_nobukti",
 
             "supir.namasupir as supir",

@@ -54,7 +54,7 @@ class StorePengeluaranTruckingHeaderRequest extends FormRequest
             'tglbukti' => 'Tgl Bukti',
             'keterangancoa' => 'nama perkiraan',
             'pengeluarantrucking' => 'Kode Pengeluaran',
-            'supir.*' => 'Supir'
+            'keterangan.*' => 'keterangan'
         ];
     }
     

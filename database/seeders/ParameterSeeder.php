@@ -282,7 +282,12 @@ class ParameterSeeder extends Seeder
         parameter::create(['grp' => 'JENIS ORDERAN', 'subgrp' => 'JENIS ORDERAN', 'kelompok' => '', 'text' => 'MUATAN', 'memo' => '{"MEMO":"MUATAN","SINGKATAN":"M","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'JENIS ORDERAN', 'subgrp' => 'JENIS ORDERAN', 'kelompok' => '', 'text' => 'BONGKARAN', 'memo' => '{"MEMO":"BONGKARAN","SINGKATAN":"B","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'RANGE DEPOSITO SUPIR', 'subgrp' => 'RANGE DEPOSITO SUPIR', 'kelompok' => '', 'text' => '3000000-1000000000', 'memo' => '{"MEMO":"RANGE DEPOSITO SUPIR","SINGKATAN":"RDS","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+<<<<<<< HEAD
         parameter::create(['grp' => 'PENERIMAAN TRUCKING', 'subgrp' => 'BBM BUKTI', 'kelompok' => '', 'text' => '#BBM #9999#/#R#/#Y', 'memo' => '{"MEMO":"DEPOSITO SUPIR BUKTI","SINGKATAN":"#BBM #9999#/#R#/#Y","WARNA":"#28A745"}', 'type' => '118', 'modifiedby' => 'ADMIN', 'default' => '',]);
    
+=======
+        parameter::create(['grp' => 'PENERIMAAN TRUCKING', 'subgrp' => 'HUTANG BBM BUKTI', 'kelompok' => '', 'text' => '#BBM #9999#/#R#/#Y', 'memo' => '{"MEMO":"HUTANG BBM BUKTI","SINGKATAN":"#BBM #9999#/#R#/#Y","WARNA":"#28A745"}', 'type' => '118', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        
+>>>>>>> e1e3589816e31fdbcb07f2035c395746647c7edd
     }
 }

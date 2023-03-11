@@ -42,6 +42,7 @@ class PengeluaranTruckingDetailController extends Controller
             $pengeluarantruckingDetail->nobukti = $request->nobukti;
             $pengeluarantruckingDetail->supir_id = $request->supir_id;
             $pengeluarantruckingDetail->penerimaantruckingheader_nobukti = $request->penerimaantruckingheader_nobukti;
+            $pengeluarantruckingDetail->keterangan = $request->keterangan;
             $pengeluarantruckingDetail->nominal = $request->nominal;
             $pengeluarantruckingDetail->modifiedby = auth('api')->user()->name;
             

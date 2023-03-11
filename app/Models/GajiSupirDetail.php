@@ -24,43 +24,74 @@ class GajiSupirDetail extends MyModel
     ];
 
 
-    public function get($gajiSupirId)
+    public function get()
     {
+
         $this->setRequestParameters();
 
-        $query = DB::table($this->table)->from(
-            DB::raw($this->table . " with (readuncommitted)")
-        );
+        $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"));
 
-        $this->selectColumns($query, $gajiSupirId);
-
-        $this->totalRows = $query->count();
-        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
-
-        $this->sort($query);
-        $this->filter($query);
-        $this->paginate($query);
-
-        $data = $query->get();
-
-        return $data;
-    }
-
-
-    public function selectColumns($query, $gajiSupirId)
-    {
-        return $query->from(
-            DB::raw($this->table . " with (readuncommitted)")
-        )
-            ->select(
-                "$this->table.id",
-                "$this->table.nobukti",
-                'suratpengantar.tglbukti',
+        if (isset(request()->forReport) && request()->forReport) {
+            $query->select(
+                'header.id',
+                'header.nobukti',
+                'header.tglbukti',
+                'header.nominal',
+                'supir.namasupir as supir',
+                $this->table . '.suratpengantar_nobukti',
+                'suratpengantar.tglsp',
+                'suratpengantar.nosp',
+                'suratpengantar.nocont',
+                'sampai.keterangan as sampai',
+                'dari.keterangan as dari',
+                $this->table . '.gajisupir',
+                $this->table . '.gajikenek',
 
             )
-            ->join(DB::raw("suratpengantar with (readuncommitted)"), 'gajisupirdetail.suratpengantar_nobukti', 'suratpengantar.nobukti')
-            ->where('gajisupir_id', $gajiSupirId);
+                ->leftJoin(DB::raw("gajisupirheader as header with (readuncommitted)"), 'header.id', $this->table . '.gajisupir_id')
+                ->leftJoin(DB::raw("supir with (readuncommitted)"), 'header.supir_id', 'supir.id')
+                ->leftJoin(DB::raw("suratpengantar with (readuncommitted)"), $this->table . '.suratpengantar_nobukti', 'suratpengantar.nobukti')
+                ->leftJoin(DB::raw("kota as dari with (readuncommitted)"), 'suratpengantar.dari_id', 'dari.id')
+                ->leftJoin(DB::raw("kota as sampai with (readuncommitted)"), 'suratpengantar.sampai_id', 'sampai.id');
+
+            $query->where($this->table . ".gajisupir_id", "=", request()->gajisupir_id);
+        } else {
+
+            $query->select(
+                $this->table . '.nobukti',
+                $this->table . '.suratpengantar_nobukti',
+                'suratpengantar.tglsp',
+                'suratpengantar.nosp',
+                'suratpengantar.nocont',
+                'sampai.keterangan as sampai',
+                'dari.keterangan as dari',
+                $this->table . '.gajisupir',
+                $this->table . '.gajikenek',
+                $this->table . '.komisisupir',
+
+            )
+                ->leftJoin(DB::raw("suratpengantar with (readuncommitted)"), $this->table . '.suratpengantar_nobukti', 'suratpengantar.nobukti')
+                ->leftJoin(DB::raw("kota as dari with (readuncommitted)"), 'suratpengantar.dari_id', 'dari.id')
+                ->leftJoin(DB::raw("kota as sampai with (readuncommitted)"), 'suratpengantar.sampai_id', 'sampai.id');
+
+            $this->sort($query);
+
+            $query->where($this->table . ".gajisupir_id", "=", request()->gajisupir_id);
+            $this->filter($query);
+
+            $this->totalGajiSupir = $query->sum($this->table . '.gajisupir');
+            $this->totalGajiKenek = $query->sum($this->table . '.gajikenek');
+            $this->totalKomisiSupir = $query->sum($this->table . '.komisisupir');
+            $this->totalRows = $query->count();
+            $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+
+            $this->paginate($query);
+        }
+        return $query->get();
     }
+
+
+
 
     public function sort($query)
     {
@@ -72,23 +103,44 @@ class GajiSupirDetail extends MyModel
         if (count($this->params['filters']) > 0 && @$this->params['filters']['rules'][0]['data'] != '') {
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
-                    foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'agen_id') {
-                            $query = $query->where('agen.namaagen', 'LIKE', "%$filters[data]%");
-                        } else {
-                            $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                    $query->where(function ($query) {
+                        foreach ($this->params['filters']['rules'] as $index => $filters) {
+                            if ($filters['field'] == 'tglsp') {
+                                $query = $query->where('suratpengantar.tglsp', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'nosp') {
+                                $query = $query->where('suratpengantar.nosp', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'nocont') {
+                                $query = $query->where('suratpengantar.nocont', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'sampai') {
+                                $query = $query->where('sampai.keterangan', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'dari') {
+                                $query = $query->where('dari.keterangan', 'LIKE', "%$filters[data]%");
+                            } else {
+                                $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            }
                         }
-                    }
+                    });
 
                     break;
                 case "OR":
-                    foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'agen_id') {
-                            $query = $query->orWhere('agen.namaagen', 'LIKE', "%$filters[data]%");
-                        } else {
-                            $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+
+                    $query->where(function ($query) {
+                        foreach ($this->params['filters']['rules'] as $index => $filters) {
+                            if ($filters['field'] == 'tglsp') {
+                                $query = $query->orWhere('suratpengantar.tglsp', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'nosp') {
+                                $query = $query->orWhere('suratpengantar.nosp', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'nocont') {
+                                $query = $query->orWhere('suratpengantar.nocont', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'sampai') {
+                                $query = $query->orWhere('sampai.keterangan', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'dari') {
+                                $query = $query->orWhere('dari.keterangan', 'LIKE', "%$filters[data]%");
+                            } else {
+                                $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            }
                         }
-                    }
+                    });
 
                     break;
                 default:

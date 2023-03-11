@@ -646,6 +646,45 @@ class SuratPengantar extends MyModel
 
         return $data;
     }
+    
+    public function getTrip($supirId, $tglDari, $tglSampai)
+    {
+        
+        $this->setRequestParameters();
+        $query = SuratPengantar::from(DB::raw("suratpengantar with (readuncommitted)"))
+            ->select(
+                'suratpengantar.id',
+                'suratpengantar.nobukti as nobuktitrip',
+                'suratpengantar.tglbukti as tglbuktisp',
+                'trado.keterangan as trado_id',
+                'kotaDari.keterangan as dari_id',
+                'kotaSampai.keterangan as sampai_id',
+                'suratpengantar.nocont',
+                'suratpengantar.nosp',
+                'suratpengantar.gajisupir',
+                'suratpengantar.gajikenek',
+                'suratpengantar.komisisupir',
+            )
+            ->leftJoin(DB::raw("kota as kotaDari with (readuncommitted)"), 'suratpengantar.dari_id', 'kotaDari.id')
+            ->leftJoin(DB::raw("kota as kotaSampai with (readuncommitted)"), 'suratpengantar.sampai_id', 'kotaSampai.id')
+            ->leftJoin(DB::raw("trado with (readuncommitted)"), 'suratpengantar.trado_id', 'trado.id')
+            ->where('suratpengantar.supir_id', $supirId)
+            ->where('suratpengantar.tglbukti', '>=', $tglDari)
+            ->where('suratpengantar.tglbukti', '<=', $tglSampai)
+            ->whereRaw("suratpengantar.nobukti not in(select suratpengantar_nobukti from gajisupirdetail)");
+        $this->totalRows = $query->count();
+        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+
+        $this->sort($query);
+        $this->filter($query);
+        $this->paginate($query);
+        $data = $query->get();
+
+        $this->totalGajiSupir = $query->sum('gajisupir');
+        $this->totalGajiKenek = $query->sum('gajikenek');
+        $this->totalKomisiSupir = $query->sum('komisisupir');
+        return $data;
+    }
 
     public function sort($query)
     {
