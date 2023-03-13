@@ -55,6 +55,7 @@ class DatabaseSeeder extends Seeder
             StatusContainerSeeder::class,
             GudangSeeder::class,
             PenerimaanTruckingSeeder::class,
+            PengeluaranTruckingSeeder::class,
             ServiceInHeaderSeeder::class,
             ServiceInDetailSeeder::class,
             ServiceOutHeaderSeeder::class,
