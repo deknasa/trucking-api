@@ -26,7 +26,6 @@ class UpdatePenerimaanTruckingRequest extends FormRequest
         return [
             'kodepenerimaan' => 'required',
             'keterangan' => 'required',
-            'coa' => 'required',
             'format' => 'required',
         ];
     }

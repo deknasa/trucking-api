@@ -65,7 +65,10 @@ class PenerimaanTrucking extends MyModel
             'penerimaantrucking.id',
             'penerimaantrucking.kodepenerimaan',
             'penerimaantrucking.keterangan',
-            'penerimaantrucking.coa',
+            'penerimaantrucking.coadebet',
+            'penerimaantrucking.coakredit',
+            'penerimaantrucking.coapostingdebet',
+            'penerimaantrucking.coapostingkredit',
             'parameter.memo as format',
             'penerimaantrucking.created_at',
             'penerimaantrucking.modifiedby',
@@ -92,7 +95,10 @@ class PenerimaanTrucking extends MyModel
                 "$this->table.id,
                  $this->table.kodepenerimaan,
                  $this->table.keterangan,
-                 $this->table.coa,
+                 $this->table.coadebet,
+                 $this->table.coakredit,
+                 $this->table.coapostingdebet,
+                 $this->table.coapostingkredit,
                  parameter.text as format,
                  $this->table.modifiedby,
                  $this->table.created_at,
@@ -108,7 +114,10 @@ class PenerimaanTrucking extends MyModel
             $table->bigInteger('id')->default('0');
             $table->string('kodepenerimaan', 1000)->default('');
             $table->string('keterangan', 1000)->default('');
-            $table->string('coa', 1000)->default('');
+            $table->string('coadebet', 1000)->default('');
+            $table->string('coakredit', 1000)->default('');
+            $table->string('coapostingdebet', 1000)->default('');
+            $table->string('coapostingkredit', 1000)->default('');
             $table->string('format', 1000)->default('');
             $table->string('modifiedby', 1000)->default('');
             $table->dateTime('created_at')->default('1900/1/1');
@@ -121,7 +130,7 @@ class PenerimaanTrucking extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id', 'kodepenerimaan', 'keterangan','coa', 'format', 'modifiedby','created_at', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'kodepenerimaan', 'keterangan','coadebet','coakredit','coapostingdebet','coapostingkredit', 'format', 'modifiedby','created_at', 'updated_at'], $models);
 
         return $temp;
     }

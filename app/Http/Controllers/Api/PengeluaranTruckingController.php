@@ -73,8 +73,8 @@ class PengeluaranTruckingController extends Controller
             $pengeluaranTrucking = new PengeluaranTrucking();
             $pengeluaranTrucking->kodepengeluaran = $request->kodepengeluaran;
             $pengeluaranTrucking->keterangan = $request->keterangan;
-            $pengeluaranTrucking->coadebet = $request->coadebet;
-            $pengeluaranTrucking->coakredit = $request->coakredit;
+            $pengeluaranTrucking->coadebet = $request->coadebet ?? '';;
+            $pengeluaranTrucking->coakredit = $request->coakredit ?? '';;
             $pengeluaranTrucking->coapostingdebet = $request->coapostingdebet;
             $pengeluaranTrucking->coapostingkredit = $request->coapostingkredit;
             $pengeluaranTrucking->format = $request->format;
@@ -135,10 +135,10 @@ class PengeluaranTruckingController extends Controller
         try {
             $pengeluaranTrucking->kodepengeluaran = $request->kodepengeluaran;
             $pengeluaranTrucking->keterangan = $request->keterangan;
-            $pengeluaranTrucking->coadebet = $request->coadebet;
-            $pengeluaranTrucking->coakredit = $request->coakredit;
-            $pengeluaranTrucking->coapostingdebet = $request->coapostingdebet;
-            $pengeluaranTrucking->coapostingkredit = $request->coapostingkredit;
+            $pengeluaranTrucking->coadebet = $request->coadebet ?? '';
+            $pengeluaranTrucking->coakredit = $request->coakredit ?? '';
+            $pengeluaranTrucking->coapostingdebet = $request->coapostingdebet ?? '';
+            $pengeluaranTrucking->coapostingkredit = $request->coapostingkredit ?? '';
             $pengeluaranTrucking->format = $request->format;
             $pengeluaranTrucking->modifiedby = auth('api')->user()->name;
 
@@ -315,7 +315,10 @@ class PengeluaranTruckingController extends Controller
                 'pengeluarantrucking.id as id_',
                 'pengeluarantrucking.kodepengeluaran',
                 'pengeluarantrucking.keterangan',
-                'pengeluarantrucking.coa',
+                'pengeluarantrucking.coadebet',
+                'pengeluarantrucking.coakredit',
+                'pengeluarantrucking.coapostingdebet',
+                'pengeluarantrucking.coapostingkredit',
                 'pengeluarantrucking.format',
                 'pengeluarantrucking.modifiedby',
                 'pengeluarantrucking.created_at',
@@ -328,7 +331,10 @@ class PengeluaranTruckingController extends Controller
                     'pengeluarantrucking.id as id_',
                     'pengeluarantrucking.kodepengeluaran',
                     'pengeluarantrucking.keterangan',
-                    'pengeluarantrucking.coa',
+                    'pengeluarantrucking.coadebet',
+                    'pengeluarantrucking.coakredit',
+                    'pengeluarantrucking.coapostingdebet',
+                    'pengeluarantrucking.coapostingkredit',
                     'pengeluarantrucking.format',
                     'pengeluarantrucking.modifiedby',
                     'pengeluarantrucking.created_at',

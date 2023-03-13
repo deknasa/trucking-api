@@ -98,7 +98,7 @@ class PenerimaanTruckingHeaderController extends Controller
             $penerimaantruckingheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $penerimaantruckingheader->penerimaantrucking_id = $request->penerimaantrucking_id ?? $idpenerimaan;
             $penerimaantruckingheader->bank_id = $request->bank_id;
-            $penerimaantruckingheader->coa = $request->coa;
+            $penerimaantruckingheader->coa = $request->coa?? '';
             $penerimaantruckingheader->penerimaan_nobukti = $request->penerimaan_nobukti ?? '';
             $penerimaantruckingheader->statusformat = $request->statusformat ?? $format->id;
             $penerimaantruckingheader->statuscetak = $statusCetak->id;
@@ -126,7 +126,7 @@ class PenerimaanTruckingHeaderController extends Controller
                 $datadetail = [
                     'penerimaantruckingheader_id' => $penerimaantruckingheader->id,
                     'nobukti' => $penerimaantruckingheader->nobukti,
-                    'supir_id' => ($request->datadetail != '') ? $request->datadetail[$i]['supir_id']  :  $request->supir_id[$i],
+                    'supir_id' => ($request->datadetail != '') ? $request->datadetail[$i]['supir_id']  :  $request->supir_id[$i]?? '',
                     'pengeluarantruckingheader_nobukti' => ($request->datadetail != '') ? $request->datadetail[$i]['pengeluarantruckingheader_nobukti'] : $request->pengeluarantruckingheader_nobukti[$i] ?? '',
                     'keterangan' => ($request->datadetail != '') ? $request->datadetail[$i]['keterangan']  : $request->keterangan[$i],
                     'nominal' => ($request->datadetail != '') ? $request->datadetail[$i]['nominal']  : $request->nominal[$i],
@@ -221,7 +221,7 @@ class PenerimaanTruckingHeaderController extends Controller
                         'nowarkat' => '',
                         'tgljatuhtempo' => date('Y-m-d', strtotime($request->tglkasmasuk)) ?? date('Y-m-d', strtotime($request->tglbukti)),
                         'coadebet' => $querysubgrppenerimaan->coa,
-                        'coakredit' => $request->coa,
+                        'coakredit' => $request->coa?? '',
                         'keterangan' => ($request->datadetail != '') ? $request->datadetail[$i]['keterangan'] : $request->keterangan[$i],
                         "nominal" => ($request->datadetail != '') ? $request->datadetail[$i]['nominal'] : $request->nominal[$i],
                         'invoice_nobukti' => '',
@@ -331,7 +331,7 @@ class PenerimaanTruckingHeaderController extends Controller
 
 
                 $penerimaantruckingheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
-                $penerimaantruckingheader->coa = $request->coa;
+                $penerimaantruckingheader->coa = $request->coa?? '';
                 $penerimaantruckingheader->modifiedby = auth('api')->user()->name;
 
                 $penerimaantruckingheader->save();
@@ -368,7 +368,7 @@ class PenerimaanTruckingHeaderController extends Controller
                 $datadetail = [
                     'penerimaantruckingheader_id' => $penerimaantruckingheader->id,
                     'nobukti' => $penerimaantruckingheader->nobukti,
-                    'supir_id' => ($request->datadetail != '') ? $request->datadetail[$i]['supir_id'] : $request->supir_id[$i],
+                    'supir_id' => ($request->datadetail != '') ? $request->datadetail[$i]['supir_id'] : $request->supir_id[$i]?? '',
                     'pengeluarantruckingheader_nobukti' => ($request->datadetail != '') ? $request->datadetail[$i]['pengeluarantruckingheader_nobukti'] : $request->pengeluarantruckingheader_nobukti[$i] ?? '',
                     'keterangan' => ($request->datadetail != '') ? $request->datadetail[$i]['keterangan'] : $request->keterangan[$i],
                     'nominal' => ($request->datadetail != '') ? $request->datadetail[$i]['nominal'] : $request->nominal[$i],
@@ -412,7 +412,7 @@ class PenerimaanTruckingHeaderController extends Controller
                         'isUpdate' => 1,
                         'tgljatuhtempo' => date('Y-m-d', strtotime($request->tglkasmasuk)) ?? date('Y-m-d', strtotime($request->tglbukti)),
                         'coadebet' => $bank->coa,
-                        'coakredit' => $request->coa,
+                        'coakredit' => $request->coa?? '',
                         'keterangan' => ($request->datadetail != '') ? $request->datadetail[$i]['keterangan'] : $request->keterangan[$i],
                         "nominal" => ($request->datadetail != '') ? $request->datadetail[$i]['nominal'] : $request->nominal[$i],
                         'invoice_nobukti' => '',

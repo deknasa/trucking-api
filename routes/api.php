@@ -145,6 +145,8 @@ use App\Http\Controllers\Api\InvoiceDetailController;
 use App\Http\Controllers\Api\InvoiceHeaderController;
 use App\Http\Controllers\Api\InvoiceExtraDetailController;
 use App\Http\Controllers\Api\InvoiceExtraHeaderController;
+use App\Http\Controllers\Api\InvoiceChargeGandenganHeaderController;
+use App\Http\Controllers\Api\InvoiceChargeGandenganDetailController;
 use App\Http\Controllers\Api\ProsesGajiSupirHeaderController;
 use App\Http\Controllers\Api\ProsesGajiSupirDetailController;
 use App\Http\Controllers\Api\HariLiburController;
@@ -556,6 +558,10 @@ route::middleware(['auth:api'])->group(function () {
     Route::post('invoiceextraheader/{id}/cekvalidasi', [InvoiceExtraHeaderController::class, 'cekvalidasi'])->name('invoiceextraheader.cekvalidasi');
     Route::resource('invoiceextraheader', InvoiceExtraHeaderController::class);
     Route::resource('invoiceextradetail', InvoiceExtraDetailController::class);
+    
+    Route::resource('invoicechargegandenganheader', InvoiceChargeGandenganHeaderController::class);
+    Route::resource('invoicechargegandengandetail', InvoiceChargeGandenganDetailController::class);
+    
 
     Route::get('piutangheader/{id}/printreport', [PiutangHeaderController::class, 'printReport']);
     Route::post('piutangheader/{id}/cekvalidasi', [PiutangHeaderController::class, 'cekvalidasi'])->name('piutangheader.cekvalidasi');

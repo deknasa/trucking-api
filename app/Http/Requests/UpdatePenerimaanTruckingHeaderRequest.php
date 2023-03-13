@@ -31,7 +31,7 @@ class UpdatePenerimaanTruckingHeaderRequest extends FormRequest
             ],
             'penerimaantrucking' => 'required',
             'bank' => 'required',
-            'keterangancoa' => 'required',
+            // 'keterangancoa' => 'required',
         ];
         $relatedRequests = [
             UpdatePenerimaanTruckingDetailRequest::class
