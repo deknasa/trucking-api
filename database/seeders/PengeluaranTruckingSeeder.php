@@ -19,7 +19,7 @@ class PengeluaranTruckingSeeder extends Seeder
         DB::statement("delete PengeluaranTrucking");
         DB::statement("DBCC CHECKIDENT ('PengeluaranTrucking', RESEED, 1);");
 
-        PengeluaranTrucking::create(['kodepengeluaran' => 'PJT', 'keterangan' => 'PINJAMAN SUPIR', 'coadebet' => '01.05.02.02', 'coakredit' => '01.01.01.02', 'coapostingdebet' => '01.05.02.02', 'coapostingkredit' => '01.01.01.02', 'format' => '265', 'modifiedby' => 'ADMIN',]);
+        PengeluaranTrucking::create(['kodepengeluaran' => 'PJT', 'keterangan' => 'PINJAMAN SUPIR', 'coadebet' => '01.05.02.02', 'coakredit' => '01.01.01.02', 'coapostingdebet' => '01.05.02.02', 'coapostingkredit' => '01.01.01.02', 'format' => '122', 'modifiedby' => 'ADMIN',]);
 
 
     }

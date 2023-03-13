@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\PenerimaanHeader;
+use Illuminate\Support\Facades\DB;
 
 class PenerimaanHeaderSeeder extends Seeder
 {
@@ -14,107 +15,11 @@ class PenerimaanHeaderSeeder extends Seeder
      */
     public function run()
     {
-        PenerimaanHeader::create([
-            'nobukti' => 'KMT 0001/III/2022',
-            'tglbukti' => '2022/3/21',
-            'pelanggan_id' => 0,
-            // 'keterangan' => 'DEPOSITO SUPIR',
-            'postingdari' => 'DEPOSITO SUPIR',
-            'diterimadari' => 'DEPOSITO SUPIR',
-            'tgllunas' => '2022/3/21',
-            // 'cabang_id' => 3,
-            // 'statuskas' => 54,
-            'statusapproval' => 4,
-            'userapproval' => '',
-            'tglapproval' => '1900/1/1',
-            // 'noresi' => '',
-            'statusberkas' => 82,
-            'userberkas' => '',
-            'tglberkas' => '1900/1/1',
-            'modifiedby' => 'ADMIN',
-        ]);
+      
+        DB::statement("delete penerimaanheader");
+        DB::statement("DBCC CHECKIDENT ('penerimaanheader', RESEED, 1);");
 
-        // pengembalian pinjaman
-        PenerimaanHeader::create([
-            'nobukti' => 'KMT 0002/III/2022',
-            'tglbukti' => '2022/3/21',
-            'pelanggan_id' => 0,
-            // 'keterangan' => 'PENGEMBALIAN PINJAMAN',
-            'postingdari' => 'PENGEMBALIAN PINJAMAN',
-            'diterimadari' => 'PENGEMBALIAN PINJAMAN',
-            'tgllunas' => '2022/3/21',
-            // 'cabang_id' => 3,
-            // 'statuskas' => 54,
-            'statusapproval' => 4,
-            'userapproval' => '',
-            'tglapproval' => '1900/1/1',
-            // 'noresi' => '',
-            'statusberkas' => 82,
-            'userberkas' => '',
-            'tglberkas' => '1900/1/1',
-            'modifiedby' => 'ADMIN',
-        ]);
-
-        PenerimaanHeader::create([
-            'nobukti' => 'KMT 0001/IV/2022',
-            'tglbukti' => '2022/4/8',
-            'pelanggan_id' => 0,
-            // 'keterangan' => 'DEPOSITO SUPIR',
-            'postingdari' => 'DEPOSITO SUPIR',
-            'diterimadari' => 'DEPOSITO SUPIR',
-            'tgllunas' => '2022/4/8',
-            // 'cabang_id' => 3,
-            // 'statuskas' => 54,
-            'statusapproval' => 4,
-            'userapproval' => '',
-            'tglapproval' => '1900/1/1',
-            // 'noresi' => '',
-            'statusberkas' => 82,
-            'userberkas' => '',
-            'tglberkas' => '1900/1/1',
-            'modifiedby' => 'ADMIN',
-        ]);
-
-        PenerimaanHeader::create([
-            'nobukti' => 'BMT-M BCA 0001/V/2022',
-            'tglbukti' => '2022/5/31',
-            'pelanggan_id' => 0,
-            // 'keterangan' => 'PENERIMAAN GIRO',
-            'postingdari' => 'PENERIMAAN GIRO',
-            'diterimadari' => 'PENERIMAAN GIRO',
-            'tgllunas' => '2022/5/31',
-            // 'cabang_id' => 3,
-            // 'statuskas' => 55,
-            'statusapproval' => 4,
-            'userapproval' => '',
-            'tglapproval' => '1900/1/1',
-            // 'noresi' => '',
-            'statusberkas' => 82,
-            'userberkas' => '',
-            'tglberkas' => '1900/1/1',
-            'modifiedby' => 'ADMIN',
-        ]);
-
-
-        PenerimaanHeader::create([
-            'nobukti' => 'KMT 0001/V/2022',
-            'tglbukti' => '2022/5/31',
-            'pelanggan_id' => 0,
-            // 'keterangan' => 'PENGEMBALIAN KAS GANTUNG',
-            'postingdari' => 'PENGEMBALIAN KAS GANTUNG',
-            'diterimadari' => 'PENGEMBALIAN KAS GANTUNG',
-            'tgllunas' => '2022/5/31',
-            // 'cabang_id' => 3,
-            // 'statuskas' => 54,
-            'statusapproval' => 4,
-            'userapproval' => '',
-            'tglapproval' => '1900/1/1',
-            // 'noresi' => '',
-            'statusberkas' => 82,
-            'userberkas' => '',
-            'tglberkas' => '1900/1/1',
-            'modifiedby' => 'ADMIN',
-        ]);
+        penerimaanheader::create([ 'nobukti' => 'BMT-M BCA3 0001/II/2023', 'tglbukti' => '2023/2/1', 'pelanggan_id' => '0', 'agen_id' => '0', 'bank_id' => '4', 'postingdari' => 'ENTRY PENERIMAAN KAS/BANK', 'diterimadari' => 'KANTOR PUSAT', 'tgllunas' => '2023/2/1', 'statusapproval' => '4', 'userapproval' => '', 'tglapproval' => '1900/1/1', 'statusberkas' => '0', 'userberkas' => '', 'tglberkas' => '1900/1/1', 'statusformat' => '268', 'statuscetak' => '175', 'userbukacetak' => '', 'tglbukacetak' => '1900/1/1', 'jumlahcetak' => '0', 'modifiedby' => 'ADMIN',]);
 
 
     }

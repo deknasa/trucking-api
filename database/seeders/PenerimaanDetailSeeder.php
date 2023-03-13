@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\PenerimaanDetail;
+use Illuminate\Support\Facades\DB;
 
 class PenerimaanDetailSeeder extends Seeder
 {
@@ -14,99 +15,14 @@ class PenerimaanDetailSeeder extends Seeder
      */
     public function run()
     {
-        PenerimaanDetail::create([
-            'penerimaan_id' => 1,
-            'nobukti' => 'KMT 0001/III/2022',
-            'nowarkat' => '',
-            'tgljatuhtempo' => '2022/3/21',
-            'nominal' => 10000,
-            'coadebet' => '01.01.01.02',
-            'coakredit' => '01.04.02.01',
-            'keterangan' => 'DEPOSITO SUPIR',
-            'bank_id' => 1,
-            // 'pelanggan_id' => 0,
-            'invoice_nobukti' => '',
-            'bankpelanggan_id' => 0,
-            // 'jenisbiaya' => '',
-            'pelunasanpiutang_nobukti' => '',
-            'bulanbeban' => '',
-            'modifiedby' => 'ADMIN',
-        ]);
 
-        PenerimaanDetail::create([
-            'penerimaan_id' => 2,
-            'nobukti' => 'KMT 0002/III/2022',
-            'nowarkat' => '',
-            'tgljatuhtempo' => '2022/3/21',
-            'nominal' => 10000,
-            'coadebet' => '01.01.01.02',
-            'coakredit' => '01.05.02.02',
-            'keterangan' => 'PENGEMBALIAN PINJAMAN SUPIR',
-            'bank_id' => 1,
-            // 'pelanggan_id' => 0,
-            'invoice_nobukti' => '',
-            'bankpelanggan_id' => 0,
-            // 'jenisbiaya' => '',
-            'pelunasanpiutang_nobukti' => '',
-            'bulanbeban' => '',
-            'modifiedby' => 'ADMIN',
-        ]);
+        DB::statement("delete penerimaandetail");
+        DB::statement("DBCC CHECKIDENT ('penerimaandetail', RESEED, 1);");
 
-        PenerimaanDetail::create([
-            'penerimaan_id' => 3,
-            'nobukti' => 'KMT 0001/IV/2022',
-            'nowarkat' => '',
-            'tgljatuhtempo' => '2022/4/8',
-            'nominal' => 10000,
-            'coadebet' => '01.01.01.02',
-            'coakredit' => '01.04.02.01',
-            'keterangan' => 'DEPOSITO SUPIR',
-            'bank_id' => 1,
-            // 'pelanggan_id' => 0,
-            'invoice_nobukti' => '',
-            'bankpelanggan_id' => 0,
-            // 'jenisbiaya' => '',
-            'pelunasanpiutang_nobukti' => '',
-            'bulanbeban' => '',
-            'modifiedby' => 'ADMIN',
-        ]);
-
-        PenerimaanDetail::create([
-            'penerimaan_id' => 4,
-            'nobukti' => 'BMT-M BCA 0001/V/2022',
-            'nowarkat' => '',
-            'tgljatuhtempo' => '2022/5/31',
-            'nominal' => 1021000,
-            'coadebet' => '01.02.02.01',
-            'coakredit' => '01.03.03.00',
-            'keterangan' => 'PENERIMAAN BANK',
-            'bank_id' => 2,
-            // 'pelanggan_id' => 0,
-            'invoice_nobukti' => 'INV 0001/IV/2022',
-            'bankpelanggan_id' => 0,
-            // 'jenisbiaya' => '',
-            'pelunasanpiutang_nobukti' => 'BPGT-M BCA 0001/V/2022',
-            'bulanbeban' => '',
-            'modifiedby' => 'ADMIN',
-        ]);
-
-        PenerimaanDetail::create([
-            'penerimaan_id' => 5,
-            'nobukti' => 'KMT 0001/V/2022',
-            'nowarkat' => '',
-            'tgljatuhtempo' => '2022/5/31',
-            'nominal' => 600000,
-            'coadebet' => '01.01.01.02',
-            'coakredit' => '01.01.02.02',
-            'keterangan' => 'PENGEMBALIAN KAS GANTUNG',
-            'bank_id' => 1,
-            // 'pelanggan_id' => 0,
-            'invoice_nobukti' => '',
-            'bankpelanggan_id' => 0,
-            // 'jenisbiaya' => '',
-            'pelunasanpiutang_nobukti' => '',
-            'bulanbeban' => '',
-            'modifiedby' => 'ADMIN',
-        ]);
+        penerimaandetail::create(['penerimaan_id' => '1', 'nobukti' => 'BMT-M BCA3 0001/II/2023', 'nowarkat' => '', 'tgljatuhtempo' => '2023/2/1', 'nominal' => '90000000', 'coadebet' => '01.02.02.05', 'coakredit' => '05.03.01.01', 'keterangan' => 'DITERIMA DARI KANTOR PUSAT DANA MINGGUAN TRUCKING', 'bank_id' => '4', 'invoice_nobukti' => '-', 'bankpelanggan_id' => '0', 'pelunasanpiutang_nobukti' => '-', 'bulanbeban' => '1900/1/1', 'modifiedby' => 'ADMIN',]);
+        penerimaandetail::create(['penerimaan_id' => '1', 'nobukti' => 'BMT-M BCA3 0001/II/2023', 'nowarkat' => '', 'tgljatuhtempo' => '2023/2/1', 'nominal' => '100000', 'coadebet' => '01.02.02.05', 'coakredit' => '03.02.02.12', 'keterangan' => 'DITERIMA DARI KANTOR PUSAT ATAS PENGEMBALIAN BIAYA TOP UP SALDO TOL CARD MOBIL BP. ACHIANG TGL. 17 JANUARI 2023', 'bank_id' => '4', 'invoice_nobukti' => '-', 'bankpelanggan_id' => '0', 'pelunasanpiutang_nobukti' => '-', 'bulanbeban' => '1900/1/1', 'modifiedby' => 'ADMIN',]);
+        penerimaandetail::create(['penerimaan_id' => '1', 'nobukti' => 'BMT-M BCA3 0001/II/2023', 'nowarkat' => '', 'tgljatuhtempo' => '2023/2/1', 'nominal' => '100000', 'coadebet' => '01.02.02.05', 'coakredit' => '03.02.02.12', 'keterangan' => 'DITERIMA DARI KANTOR PUSAT ATAS PENGEMBALIAN BIAYA TOP UP SALDO TOL CARD MOBIL BP. ACHIANG TGL. 19 JANUARI 2023', 'bank_id' => '4', 'invoice_nobukti' => '-', 'bankpelanggan_id' => '0', 'pelunasanpiutang_nobukti' => '-', 'bulanbeban' => '1900/1/1', 'modifiedby' => 'ADMIN',]);
+        penerimaandetail::create(['penerimaan_id' => '1', 'nobukti' => 'BMT-M BCA3 0001/II/2023', 'nowarkat' => '', 'tgljatuhtempo' => '2023/2/1', 'nominal' => '100000', 'coadebet' => '01.02.02.05', 'coakredit' => '03.02.02.12', 'keterangan' => 'DITERIMA DARI KANTOR PUSAT ATAS PENGEMBALIAN BIAYA TOP UP SALDO TOL CARD MOBIL BP. ACHIANG TGL. 25 JANUARI 2023', 'bank_id' => '4', 'invoice_nobukti' => '-', 'bankpelanggan_id' => '0', 'pelunasanpiutang_nobukti' => '-', 'bulanbeban' => '1900/1/1', 'modifiedby' => 'ADMIN',]);
+        penerimaandetail::create(['penerimaan_id' => '1', 'nobukti' => 'BMT-M BCA3 0001/II/2023', 'nowarkat' => '', 'tgljatuhtempo' => '2023/2/1', 'nominal' => '1290500', 'coadebet' => '01.02.02.05', 'coakredit' => '03.02.02.12', 'keterangan' => 'DITERIMA DARI KANTOR PUSAT ATAS PENGEMBALIAN BIAYA BBM MOBIL BP. ACHIANG TGL. 27 JANUARI 2022', 'bank_id' => '4', 'invoice_nobukti' => '-', 'bankpelanggan_id' => '0', 'pelunasanpiutang_nobukti' => '-', 'bulanbeban' => '1900/1/1', 'modifiedby' => 'ADMIN',]);
     }
 }
