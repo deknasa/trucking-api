@@ -72,7 +72,7 @@ class PelunasanPiutangHeader extends MyModel
 
 
         $piutang = DB::table("$tempPiutang as A")->from(DB::raw("$tempPiutang as A with (readuncommitted)"))
-            ->select(DB::raw("A.id as id,null as pelunasanpiutang_id,A.nobukti as piutang_nobukti, A.tglbukti as tglbukti, A.invoice_nobukti as invoice_nobukti,null as nominal, null as keterangan, null as potongan, null as coapotongan, null as keteranganpotongan, null as nominallebihbayar, A.nominalpiutang, A.sisa as sisa"))
+            ->select(DB::raw("null as pelunasanpiutang_id,A.nobukti as piutang_nobukti, A.tglbukti as tglbukti, A.invoice_nobukti as invoice_nobukti,null as nominal, null as keterangan, null as potongan, null as coapotongan, null as keteranganpotongan, null as nominallebihbayar, A.nominalpiutang, A.sisa as sisa"))
             ->distinct("A.nobukti")
             ->leftJoin(DB::raw("$tempPelunasan as B with (readuncommitted)"), "A.nobukti", "B.piutang_nobukti")
             ->whereRaw("isnull(b.piutang_nobukti,'') = ''")
@@ -80,7 +80,7 @@ class PelunasanPiutangHeader extends MyModel
 
 
         $pelunasan = DB::table($tempPelunasan)->from(DB::raw("$tempPelunasan with (readuncommitted)"))
-            ->select(DB::raw("id,pelunasanpiutang_id,piutang_nobukti,tglbukti,invoice_nobukti,nominal,keterangan,potongan, coapotongan,keteranganpotongan,nominallebihbayar,nominalpiutang,sisa"))
+            ->select(DB::raw("pelunasanpiutang_id,piutang_nobukti,tglbukti,invoice_nobukti,nominal,keterangan,potongan, coapotongan,keteranganpotongan,nominallebihbayar,nominalpiutang,sisa"))
             ->unionAll($piutang);
 
         // $this->totalRows = $pelunasan->count();
@@ -101,11 +101,10 @@ class PelunasanPiutangHeader extends MyModel
 
 
         $fetch = DB::table('piutangheader')->from(DB::raw("piutangheader with (readuncommitted)"))
-            ->select(DB::raw("piutangheader.id,piutangheader.nobukti,piutangheader.tglbukti,piutangheader.nominal as nominalpiutang,piutangheader.invoice_nobukti, (SELECT (piutangheader.nominal - COALESCE(SUM(pelunasanpiutangdetail.nominal),0)) FROM pelunasanpiutangdetail WHERE pelunasanpiutangdetail.piutang_nobukti= piutangheader.nobukti) AS sisa"))
+            ->select(DB::raw("piutangheader.nobukti,piutangheader.tglbukti,piutangheader.nominal as nominalpiutang,piutangheader.invoice_nobukti, (SELECT (piutangheader.nominal - COALESCE(SUM(pelunasanpiutangdetail.nominal),0)) FROM pelunasanpiutangdetail WHERE pelunasanpiutangdetail.piutang_nobukti= piutangheader.nobukti) AS sisa"))
             ->whereRaw("piutangheader.agen_id = $agenid")
             ->groupBy('piutangheader.id', 'piutangheader.nobukti', 'piutangheader.agen_id', 'piutangheader.nominal', 'piutangheader.tglbukti', 'piutangheader.invoice_nobukti');
         Schema::create($temp, function ($table) {
-            $table->bigInteger('id');
             $table->string('nobukti');
             $table->date('tglbukti')->default('');
             $table->bigInteger('nominalpiutang');
@@ -113,8 +112,12 @@ class PelunasanPiutangHeader extends MyModel
             $table->bigInteger('sisa')->nullable();
         });
 
-        $tes = DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'nominalpiutang', 'invoice_nobukti', 'sisa'], $fetch);
-
+        $tes = DB::table($temp)->insertUsing(['nobukti', 'tglbukti', 'nominalpiutang', 'invoice_nobukti', 'sisa'], $fetch);
+        $fetch = DB::table('saldopiutang')->from(DB::raw("saldopiutang with (readuncommitted)"))
+            ->select(DB::raw("saldopiutang.nobukti,saldopiutang.tglbukti,saldopiutang.nominal as nominalpiutang,saldopiutang.invoice_nobukti, (SELECT (saldopiutang.nominal - COALESCE(SUM(pelunasanpiutangdetail.nominal),0)) FROM pelunasanpiutangdetail WHERE pelunasanpiutangdetail.piutang_nobukti= saldopiutang.nobukti) AS sisa"))
+            ->whereRaw("saldopiutang.agen_id = $agenid")
+            ->groupBy('saldopiutang.id', 'saldopiutang.nobukti', 'saldopiutang.agen_id', 'saldopiutang.nominal', 'saldopiutang.tglbukti', 'saldopiutang.invoice_nobukti');
+        $tes = DB::table($temp)->insertUsing(['nobukti', 'tglbukti', 'nominalpiutang', 'invoice_nobukti', 'sisa'], $fetch);
         return $temp;
     }
 
@@ -123,12 +126,11 @@ class PelunasanPiutangHeader extends MyModel
         $tempo = '##tempPelunasan' . rand(1, 10000);
 
         $fetch = DB::table('pelunasanpiutangdetail as ppd')->from(DB::raw("pelunasanpiutangdetail as ppd with (readuncommitted)"))
-            ->select(DB::raw("piutangheader.id,ppd.pelunasanpiutang_id,ppd.piutang_nobukti,piutangheader.tglbukti,ppd.nominal,ppd.keterangan,ppd.potongan,ppd.coapotongan,ppd.keteranganpotongan,ppd.nominallebihbayar, piutangheader.nominal as nominalpiutang,ppd.invoice_nobukti, (SELECT (piutangheader.nominal - SUM(pelunasanpiutangdetail.nominal)) FROM pelunasanpiutangdetail WHERE pelunasanpiutangdetail.piutang_nobukti= piutangheader.nobukti) AS sisa"))
-            ->leftJoin(DB::raw("piutangheader with (readuncommitted)"), 'ppd.piutang_nobukti', 'piutangheader.nobukti')
+            ->select(DB::raw("ppd.pelunasanpiutang_id,ppd.piutang_nobukti,piutangheader.tglbukti,ppd.nominal,ppd.keterangan,ppd.potongan,ppd.coapotongan,ppd.keteranganpotongan,ppd.nominallebihbayar, piutangheader.nominal as nominalpiutang,ppd.invoice_nobukti, (SELECT (piutangheader.nominal - SUM(pelunasanpiutangdetail.nominal)) FROM pelunasanpiutangdetail WHERE pelunasanpiutangdetail.piutang_nobukti= piutangheader.nobukti) AS sisa"))
+            ->join(DB::raw("piutangheader with (readuncommitted)"), 'ppd.piutang_nobukti', 'piutangheader.nobukti')
             ->whereRaw("ppd.pelunasanpiutang_id = $id");
 
         Schema::create($tempo, function ($table) {
-            $table->bigInteger('id')->default('0');
             $table->bigInteger('pelunasanpiutang_id')->default('0');
             $table->string('piutang_nobukti');
             $table->date('tglbukti')->default('');
@@ -143,34 +145,24 @@ class PelunasanPiutangHeader extends MyModel
             $table->bigInteger('sisa')->nullable();
         });
 
-        $tes = DB::table($tempo)->insertUsing(['id', 'pelunasanpiutang_id', 'piutang_nobukti', 'tglbukti', 'nominal', 'keterangan', 'potongan','coapotongan', 'keteranganpotongan', 'nominallebihbayar', 'nominalpiutang', 'invoice_nobukti', 'sisa'], $fetch);
+        $tes = DB::table($tempo)->insertUsing(['pelunasanpiutang_id', 'piutang_nobukti', 'tglbukti', 'nominal', 'keterangan', 'potongan', 'coapotongan', 'keteranganpotongan', 'nominallebihbayar', 'nominalpiutang', 'invoice_nobukti', 'sisa'], $fetch);
 
+        $fetch = DB::table('pelunasanpiutangdetail as ppd')->from(DB::raw("pelunasanpiutangdetail as ppd with (readuncommitted)"))
+            ->select(DB::raw("ppd.pelunasanpiutang_id,ppd.piutang_nobukti,saldopiutang.tglbukti,ppd.nominal,ppd.keterangan,ppd.potongan,ppd.coapotongan,ppd.keteranganpotongan,ppd.nominallebihbayar, saldopiutang.nominal as nominalpiutang,ppd.invoice_nobukti, (SELECT (saldopiutang.nominal - SUM(pelunasanpiutangdetail.nominal)) FROM pelunasanpiutangdetail WHERE pelunasanpiutangdetail.piutang_nobukti= saldopiutang.nobukti) AS sisa"))
+            ->join(DB::raw("saldopiutang with (readuncommitted)"), 'ppd.piutang_nobukti', 'saldopiutang.nobukti')
+            ->whereRaw("ppd.pelunasanpiutang_id = $id");
+
+        $tes = DB::table($tempo)->insertUsing(['pelunasanpiutang_id', 'piutang_nobukti', 'tglbukti', 'nominal', 'keterangan', 'potongan', 'coapotongan', 'keteranganpotongan', 'nominallebihbayar', 'nominalpiutang', 'invoice_nobukti', 'sisa'], $fetch);
         return $tempo;
     }
 
     public function getDeletePelunasanPiutang($id, $agenId)
     {
 
-        $query = DB::table('pelunasanpiutangdetail')->from(DB::raw("pelunasanpiutangdetail with (readuncommitted)"))
-            ->select(
-                DB::raw("
-                pelunasanpiutangdetail.pelunasanpiutang_id, 
-                pelunasanpiutangdetail.piutang_nobukti, 
-                piutangheader.tglbukti, 
-                piutangheader.nominal as nominalpiutang, 
-                pelunasanpiutangdetail.nominal as nominal, 
-                pelunasanpiutangdetail.invoice_nobukti, 
-                pelunasanpiutangdetail.keterangan, pelunasanpiutangdetail.potongan,
-                pelunasanpiutangdetail.coapotongan, pelunasanpiutangdetail.keteranganpotongan, pelunasanpiutangdetail.nominallebihbayar, 
-                pelunasanpiutangdetail.coalebihbayar,
-                (SELECT (piutangheader.nominal - SUM(pelunasanpiutangdetail.nominal))
-                    FROM pelunasanpiutangdetail with (readuncommitted)
-                    WHERE pelunasanpiutangdetail.piutang_nobukti= piutangheader.nobukti) AS sisa")
-            )
-            ->leftJoin(DB::raw("piutangheader with (readuncommitted)"), 'pelunasanpiutangdetail.piutang_nobukti', 'piutangheader.nobukti')
-            ->whereRaw("pelunasanpiutangdetail.pelunasanpiutang_id = $id");
-
-        $data = $query->get();
+       
+        $tempPelunasan = $this->createTempPelunasan($id, $agenId);
+        
+        $data = DB::table($tempPelunasan)->get();
         return $data;
     }
 

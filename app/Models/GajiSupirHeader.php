@@ -202,6 +202,7 @@ class GajiSupirHeader extends MyModel
     {
         $query = PengeluaranTruckingDetail::from(DB::raw("pengeluarantruckingdetail with (readuncommitted)"))
             ->select(DB::raw(" pengeluarantruckingdetail.nobukti,pengeluarantruckingdetail.id, pengeluarantruckingdetail.supir_id,pengeluarantruckingdetail.keterangan, (SELECT (pengeluarantruckingdetail.nominal - coalesce(SUM(penerimaantruckingdetail.nominal),0)) FROM penerimaantruckingdetail WHERE penerimaantruckingdetail.pengeluarantruckingheader_nobukti= pengeluarantruckingdetail.nobukti) AS sisa"))
+            ->distinct('pengeluarantruckingdetail.nobukti')
             ->leftJoin(DB::raw("penerimaantruckingdetail with (readuncommitted)"), 'penerimaantruckingdetail.pengeluarantruckingheader_nobukti', 'pengeluarantruckingdetail.nobukti')
             ->where("pengeluarantruckingdetail.supir_id", 0);
 

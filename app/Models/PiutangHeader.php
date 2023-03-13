@@ -26,27 +26,27 @@ class PiutangHeader extends MyModel
 
     public function get()
     {
-      
+
         $temppelunasan = '##temppelunasan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temppelunasan, function ($table) {
             $table->string('piutang_nobukti', 100)->default('');
-            $table->double('nominal',15,2)->default(0);
+            $table->double('nominal', 15, 2)->default(0);
         });
 
-        $query=DB::table('pelunasanpiutangdetail') ->from(
+        $query = DB::table('pelunasanpiutangdetail')->from(
             DB::raw("pelunasanpiutangdetail as a with (readuncommitted)")
         )
-        ->select(
-            'a.piutang_nobukti',
-            DB::raw("sum(a.nominal+a.potongan) as nominal")
-        )
-        ->groupby('piutang_nobukti');
+            ->select(
+                'a.piutang_nobukti',
+                DB::raw("sum(a.nominal+a.potongan) as nominal")
+            )
+            ->groupby('piutang_nobukti');
 
         DB::table($temppelunasan)->insertUsing([
             'piutang_nobukti',
             'nominal',
-        ], $query);        
-        
+        ], $query);
+
 
         $this->setRequestParameters();
 
@@ -71,7 +71,7 @@ class PiutangHeader extends MyModel
         )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'piutangheader.statuscetak', 'parameter.id')
             ->leftJoin(DB::raw("agen with (readuncommitted)"), 'piutangheader.agen_id', 'agen.id')
-            ->leftJoin(DB::raw($temppelunasan ." as c"), 'piutangheader.nobukti', 'c.piutang_nobukti');
+            ->leftJoin(DB::raw($temppelunasan . " as c"), 'piutangheader.nobukti', 'c.piutang_nobukti');
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -103,7 +103,7 @@ class PiutangHeader extends MyModel
             goto selesai;
         }
 
-        
+
         $data = [
             'kondisi' => false,
             'keterangan' => '',
@@ -117,11 +117,38 @@ class PiutangHeader extends MyModel
         $this->setRequestParameters();
 
         $temp = $this->createTempPiutang($id);
+        $list = '##tempList'. rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+
+        
+        $query = DB::table('saldopiutang')
+        ->from(
+            DB::raw("saldopiutang with (readuncommitted)")
+        )
+        ->select(DB::raw("saldopiutang.nobukti as nobukti,saldopiutang.tglbukti, saldopiutang.invoice_nobukti, saldopiutang.nominal, saldopiutang.agen_id," . $temp . ".sisa"))
+        ->leftJoin(DB::raw("$temp with (readuncommitted)"), 'saldopiutang.agen_id', $temp . ".agen_id")
+        ->whereRaw("saldopiutang.agen_id = $id")
+        ->whereRaw("saldopiutang.nobukti = $temp.nobukti")
+        ->where(function ($query) use ($temp) {
+            $query->whereRaw("$temp.sisa != 0")
+                ->orWhereRaw("$temp.sisa is null");
+        });
+        
+        Schema::create($list, function ($table) {
+            $table->string('nobukti');
+            $table->date('tglbukti')->default('');
+            $table->string('invoice_nobukti');
+            $table->bigInteger('nominal')->default('0');
+            $table->bigInteger('agen_id')->default('0');
+            $table->bigInteger('sisa')->nullable();
+        });
+
+        DB::table($list)->insertUsing(['nobukti','tglbukti','invoice_nobukti','nominal', 'agen_id', 'sisa'], $query);
+
         $query = DB::table('piutangheader')
             ->from(
                 DB::raw("piutangheader with (readuncommitted)")
             )
-            ->select(DB::raw("piutangheader.id as id,piutangheader.nobukti as nobukti,piutangheader.tglbukti, piutangheader.invoice_nobukti, piutangheader.nominal, piutangheader.agen_id," . $temp . ".sisa"))
+            ->select(DB::raw("piutangheader.nobukti as nobukti,piutangheader.tglbukti, piutangheader.invoice_nobukti, piutangheader.nominal, piutangheader.agen_id," . $temp . ".sisa"))
             ->leftJoin(DB::raw("$temp with (readuncommitted)"), 'piutangheader.agen_id', $temp . ".agen_id")
             ->whereRaw("piutangheader.agen_id = $id")
             ->whereRaw("piutangheader.nobukti = $temp.nobukti")
@@ -129,15 +156,10 @@ class PiutangHeader extends MyModel
                 $query->whereRaw("$temp.sisa != 0")
                     ->orWhereRaw("$temp.sisa is null");
             });
+        
+        DB::table($list)->insertUsing(['nobukti','tglbukti','invoice_nobukti','nominal', 'agen_id', 'sisa'], $query);
 
-        $this->totalRows = $query->count();
-        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
-
-        $this->sort($query);
-        $this->filter($query);
-        $this->paginate($query);
-
-        $data = $query->get();
+        $data = DB::table($list)->get();
 
         return $data;
     }
@@ -156,7 +178,6 @@ class PiutangHeader extends MyModel
             ->whereRaw("piutangheader.agen_id = $id")
             ->groupBy('piutangheader.nobukti', 'piutangheader.agen_id', 'piutangheader.nominal');
         // ->get();
-
         Schema::create($temp, function ($table) {
             $table->string('nobukti');
             $table->bigInteger('agen_id')->default('0');
@@ -166,7 +187,18 @@ class PiutangHeader extends MyModel
 
         $tes = DB::table($temp)->insertUsing(['nobukti', 'agen_id', 'nominalbayar', 'sisa'], $fetch);
 
-        // $data = DB::table($temp)->get();
+        $fetch = DB::table('saldopiutang')
+            ->from(
+                DB::raw("saldopiutang with (readuncommitted)")
+            )
+            ->select(DB::raw("saldopiutang.nobukti,saldopiutang.agen_id, sum(pelunasanpiutangdetail.nominal) as nominalbayar, (SELECT (saldopiutang.nominal - coalesce(SUM(pelunasanpiutangdetail.nominal),0)) FROM pelunasanpiutangdetail WHERE pelunasanpiutangdetail.piutang_nobukti= saldopiutang.nobukti) AS sisa"))
+            ->leftJoin(DB::raw("pelunasanpiutangdetail with (readuncommitted)"), 'pelunasanpiutangdetail.piutang_nobukti', 'saldopiutang.nobukti')
+            ->whereRaw("saldopiutang.agen_id = $id")
+            ->groupBy('saldopiutang.nobukti', 'saldopiutang.agen_id', 'saldopiutang.nominal');
+
+
+        $tes = DB::table($temp)->insertUsing(['nobukti', 'agen_id', 'nominalbayar', 'sisa'], $fetch);
+
         return $temp;
     }
 

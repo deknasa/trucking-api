@@ -36,6 +36,7 @@ use App\Models\Pelanggan;
 use App\Models\PenerimaanDetail;
 use App\Models\PenerimaanGiroHeader;
 use App\Models\PenerimaanHeader;
+use App\Models\SaldoPiutang;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -71,8 +72,12 @@ class PelunasanPiutangHeaderController extends Controller
 
                 for ($i = 0; $i < count($request->piutang_id); $i++) {
 
-                    $cekSisa = PiutangHeader::from(DB::raw("piutangheader with (readuncommitted)"))->select('nominal')->where('id', $request->piutang_id[$i])->first();
+                    $cekSisa = PiutangHeader::from(DB::raw("piutangheader with (readuncommitted)"))->select('nominal')->where('nobukti', $request->piutang_id[$i])->first();
+                    if ($cekSisa == null) {
 
+                        $cekSisa = SaldoPiutang::from(DB::raw("saldopiutang with (readuncommitted)"))->select('nominal')->where('nobukti', $request->piutang_id[$i])->first();
+                    }
+                    
                     if ($request->bayarppd[$i] > $cekSisa->nominal) {
                         if ($request->nominallebihbayarppd[$i] == 0) {
 
@@ -97,15 +102,15 @@ class PelunasanPiutangHeaderController extends Controller
                     }
 
                     $byrPotongan = $request->bayarppd[$i] + $request->potonganppd[$i];
-                    if($byrPotongan > $cekSisa->nominal){
+                    if ($byrPotongan > $cekSisa->nominal) {
                         $query =  Error::from(DB::raw("error with (readuncommitted)"))->select('keterangan')->where('kodeerror', '=', 'STM')
-                                ->first();
-                            return response([
-                                'errors' => [
-                                    "bayarppd" => "$query->keterangan"
-                                ],
-                                'message' => "The given data was invalid.",
-                            ], 422);
+                            ->first();
+                        return response([
+                            'errors' => [
+                                "bayarppd" => "$query->keterangan"
+                            ],
+                            'message' => "The given data was invalid.",
+                        ], 422);
                     }
                 }
 
@@ -237,8 +242,12 @@ class PelunasanPiutangHeaderController extends Controller
                 $detailNotaKredit = [];
                 $detailNotaDebet = [];
                 for ($i = 0; $i < count($request->piutang_id); $i++) {
-                    $idpiutang = $request->piutang_id[$i];
-                    $piutang = PiutangHeader::where('id', $idpiutang)->first();
+                    $nobuktiPiutang = $request->piutang_id[$i];
+                    $piutang = PiutangHeader::where('nobukti', $nobuktiPiutang)->first();
+
+                    if ($piutang == null) {
+                        $piutang = SaldoPiutang::where('nobukti', $nobuktiPiutang)->first();
+                    }
 
                     if ($request->bayarppd[$i] > $piutang->nominal) {
 
@@ -313,7 +322,7 @@ class PelunasanPiutangHeaderController extends Controller
 
                 if ($request->alatbayar_id != $alatbayarGiro->id) {
 
-                   $penerimaanHeader = [
+                    $penerimaanHeader = [
                         'tanpaprosesnobukti' => 1,
                         'nobukti' => $nobuktiPenerimaan,
                         'tglbukti' => $request->tglbukti,
@@ -490,8 +499,11 @@ class PelunasanPiutangHeaderController extends Controller
 
             for ($i = 0; $i < count($request->piutang_id); $i++) {
 
-                $cekSisa = PiutangHeader::from(DB::raw("piutangheader with (readuncommitted)"))->select('nominal')->where('id',$request->piutang_id[$i])->first();
+                $cekSisa = PiutangHeader::from(DB::raw("piutangheader with (readuncommitted)"))->select('nominal')->where('nobukti', $request->piutang_id[$i])->first();
 
+                if($cekSisa == null){
+                    $cekSisa = SaldoPiutang::from(DB::raw("saldopiutang with (readuncommitted)"))->select('nominal')->where('nobukti', $request->piutang_id[$i])->first();
+                }
                 if ($request->bayarppd[$i] > $cekSisa->nominal) {
                     if ($request->nominallebihbayarppd[$i] == 0) {
 
@@ -517,16 +529,16 @@ class PelunasanPiutangHeaderController extends Controller
                     }
                 }
                 $byrPotongan = $request->bayarppd[$i] + $request->potonganppd[$i];
-                if($byrPotongan > $cekSisa->nominal){
+                if ($byrPotongan > $cekSisa->nominal) {
                     $query =  Error::from(DB::raw("error with (readuncommitted)"))->select('keterangan')->where('kodeerror', '=', 'STM')
-                            ->first();
-                        return response([
-                            'errors' => [
-                                "bayarppd.$i" =>
-                                [$i => "$query->keterangan"]
-                            ],
-                            'message' => "The given data was invalid. ok",
-                        ], 422);
+                        ->first();
+                    return response([
+                        'errors' => [
+                            "bayarppd.$i" =>
+                            [$i => "$query->keterangan"]
+                        ],
+                        'message' => "The given data was invalid. ok",
+                    ], 422);
                 }
 
                 // if($request->potonganppd[$i] > 0){
@@ -564,8 +576,11 @@ class PelunasanPiutangHeaderController extends Controller
                 $detailNotaDebet = [];
                 for ($i = 0; $i < count($request->piutang_id); $i++) {
                     $idpiutang = $request->piutang_id[$i];
-                    $piutang = PiutangHeader::where('id', $idpiutang)->first();
+                    $piutang = PiutangHeader::where('nobukti', $idpiutang)->first();
 
+                    if($piutang == null){
+                        $piutang = SaldoPiutang::where('nobukti', $idpiutang)->first();
+                    }
                     if ($request->bayarppd[$i] > $piutang->nominal) {
                         $query = Error::from(DB::raw("error with (readuncommitted)"))->select('keterangan')->where('kodeerror', '=', 'NBP')
                             ->first();
@@ -717,7 +732,7 @@ class PelunasanPiutangHeaderController extends Controller
 
                 $notakredit = new UpdateNotaKreditHeaderRequest($notaKreditHeader);
                 app(NotaKreditHeaderController::class)->update($notakredit, $newNotaKredit);
-            }else{
+            } else {
                 if ($notakredit) {
                     $group = 'NOTA KREDIT BUKTI';
                     $subgroup = 'NOTA KREDIT BUKTI';
@@ -771,7 +786,7 @@ class PelunasanPiutangHeaderController extends Controller
 
                 $notadebet = new UpdateNotaDebetHeaderRequest($notaDebetHeader);
                 app(NotaDebetHeaderController::class)->update($notadebet, $newNotaDebet);
-            }else{
+            } else {
                 if ($notadebet) {
                     $group = 'NOTA DEBET BUKTI';
                     $subgroup = 'NOTA DEBET BUKTI';
