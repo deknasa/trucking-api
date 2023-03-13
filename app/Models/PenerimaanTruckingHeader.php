@@ -120,7 +120,7 @@ class PenerimaanTruckingHeader extends MyModel
             'penerimaantruckingheader.nobukti',
             'penerimaantruckingheader.tglbukti',
             'penerimaantruckingheader.penerimaantrucking_id',
-            'penerimaantrucking.keterangan as penerimaantrucking',
+            'penerimaantrucking.kodepenerimaan as penerimaantrucking',
             'penerimaantruckingheader.bank_id',
             'bank.namabank as bank',
             'penerimaantruckingheader.coa',

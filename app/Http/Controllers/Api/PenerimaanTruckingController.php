@@ -74,7 +74,10 @@ class PenerimaanTruckingController extends Controller
             $penerimaanTrucking = new PenerimaanTrucking();
             $penerimaanTrucking->kodepenerimaan = $request->kodepenerimaan;
             $penerimaanTrucking->keterangan = $request->keterangan;
-            $penerimaanTrucking->coa = $request->coa;
+            $penerimaanTrucking->coadebet = $request->coadebet ?? '';
+            $penerimaanTrucking->coakredit = $request->coakredit ?? '';
+            $penerimaanTrucking->coapostingdebet = $request->coapostingdebet ?? '';
+            $penerimaanTrucking->coapostingkredit = $request->coapostingkredit ?? '';
             $penerimaanTrucking->format = $request->format;
             $penerimaanTrucking->modifiedby = auth('api')->user()->name;
 
@@ -132,7 +135,10 @@ class PenerimaanTruckingController extends Controller
         try {
             $penerimaanTrucking->kodepenerimaan = $request->kodepenerimaan;
             $penerimaanTrucking->keterangan = $request->keterangan;
-            $penerimaanTrucking->coa = $request->coa;
+            $penerimaanTrucking->coadebet = $request->coadebet ?? '';
+            $penerimaanTrucking->coakredit = $request->coakredit ?? '';
+            $penerimaanTrucking->coapostingdebet = $request->coapostingdebet ?? '';
+            $penerimaanTrucking->coapostingkredit = $request->coapostingkredit ?? '';
             $penerimaanTrucking->format = $request->format;
             $penerimaanTrucking->modifiedby = auth('api')->user()->name;
 
@@ -240,8 +246,20 @@ class PenerimaanTruckingController extends Controller
                 'index' => 'keterangan',
             ],
             [
-                'label' => 'COA',
-                'index' => 'coa',
+                'label' => 'coadebet',
+                'index' => 'coadebet',
+            ],
+            [
+                'label' => 'coakredit',
+                'index' => 'coakredit',
+            ],
+            [
+                'label' => 'coapostingdebet',
+                'index' => 'coapostingdebet',
+            ],
+            [
+                'label' => 'coapostingkredit',
+                'index' => 'coapostingkredit',
             ],
             [
                 'label' => 'Format Bukti',
@@ -281,7 +299,11 @@ class PenerimaanTruckingController extends Controller
             $table->bigInteger('id_')->default('0');
             $table->string('kodepenerimaan', 300)->default('');
             $table->string('keterangan', 300)->default('');
-            $table->string('coa', 300)->default('');
+            $table->string('coadebet', 300)->default('');
+            $table->string('coakredit', 300)->default('');
+            $table->string('coapostingdebet', 300)->default('');
+            $table->string('coapostingkredit', 300)->default('');
+            
             $table->string('format', 300)->default('');
             $table->string('modifiedby', 30)->default('');
             $table->dateTime('created_at')->default('1900/1/1');
@@ -295,7 +317,10 @@ class PenerimaanTruckingController extends Controller
                 'penerimaantrucking.id as id_',
                 'penerimaantrucking.kodepenerimaan',
                 'penerimaantrucking.keterangan',
-                'penerimaantrucking.coa',
+                'penerimaantrucking.coadebet',
+                'penerimaantrucking.coakredit',
+                'penerimaantrucking.coapostingdebet',
+                'penerimaantrucking.coapostingkredit',
                 'penerimaantrucking.format',
                 'penerimaantrucking.modifiedby',
                 'penerimaantrucking.created_at',
@@ -308,7 +333,10 @@ class PenerimaanTruckingController extends Controller
                     'penerimaantrucking.id as id_',
                     'penerimaantrucking.kodepenerimaan',
                     'penerimaantrucking.keterangan',
-                    'penerimaantrucking.coa',
+                    'penerimaantrucking.coadebet',
+                    'penerimaantrucking.coakredit',
+                    'penerimaantrucking.coapostingdebet',
+                    'penerimaantrucking.coapostingkredit',
                     'penerimaantrucking.format',
                     'penerimaantrucking.modifiedby',
                     'penerimaantrucking.created_at',
@@ -321,7 +349,10 @@ class PenerimaanTruckingController extends Controller
                     'penerimaantrucking.id as id_',
                     'penerimaantrucking.kodepenerimaan',
                     'penerimaantrucking.keterangan',
-                    'penerimaantrucking.coa',
+                    'penerimaantrucking.coadebet',
+                    'penerimaantrucking.coakredit',
+                    'penerimaantrucking.coapostingdebet',
+                    'penerimaantrucking.coapostingkredit',
                     'penerimaantrucking.format',
                     'penerimaantrucking.modifiedby',
                     'penerimaantrucking.created_at',
@@ -338,7 +369,10 @@ class PenerimaanTruckingController extends Controller
             'id_',
             'kodepenerimaan',
             'keterangan',
-            'coa',
+            'coadebet',
+            'coakredit',
+            'coapostingdebet',
+            'coapostingkredit',
             'format',
             'modifiedby',
             'created_at',

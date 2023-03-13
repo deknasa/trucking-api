@@ -31,7 +31,7 @@ class StorePenerimaanTruckingHeaderRequest extends FormRequest
             ],
             'penerimaantrucking' => 'required',
             'bank' => 'required',
-            'keterangancoa' => 'required'
+            // 'keterangancoa' => 'required'
         ];
         $relatedRequests = [
             StorePenerimaanTruckingDetailRequest::class
