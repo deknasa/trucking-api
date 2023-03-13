@@ -21,6 +21,7 @@ class CreateHutangheaderTable extends Migration
             $table->string('nobukti', 50)->unique();            
             $table->date('tglbukti')->default('1900/1/1');            
             $table->string('coa',50)->default('');            
+            $table->string('coakredit',50)->default('');            
             $table->double('total',15,2)->default(0);            
             $table->string('postingdari', 50)->default('');            
             $table->unsignedBigInteger('pelanggan_id')->default('0');
