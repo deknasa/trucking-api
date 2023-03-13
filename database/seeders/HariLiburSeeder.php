@@ -20,20 +20,22 @@ class HariLiburSeeder extends Seeder
         DB::statement("delete harilibur");
         DB::statement("DBCC CHECKIDENT ('harilibur', RESEED, 1);");
 
-        harilibur::create(['tgl' => '2022/1/1', 'Keterangan' => 'Tahun baru Masehi', 'statusaktif' => '1', 'modifiedby' => 'admin',]);
-        harilibur::create(['tgl' => '2022/2/1', 'Keterangan' => 'Tahun Baru Imlek 2573 Kongzili', 'statusaktif' => '1', 'modifiedby' => 'admin',]);
-        harilibur::create(['tgl' => '2022/2/28', 'Keterangan' => 'Isra Miraj Muhammad SAW', 'statusaktif' => '1', 'modifiedby' => 'admin',]);
-        harilibur::create(['tgl' => '2022/3/3', 'Keterangan' => 'Hari Suci Nyepi 1944', 'statusaktif' => '1', 'modifiedby' => 'admin',]);
-        harilibur::create(['tgl' => '2022/4/15', 'Keterangan' => 'Wafat Isa Al Masih', 'statusaktif' => '1', 'modifiedby' => 'admin',]);
-        harilibur::create(['tgl' => '2022/5/2', 'Keterangan' => 'Idul Fitri 1443 Hijriah', 'statusaktif' => '1', 'modifiedby' => 'admin',]);
-        harilibur::create(['tgl' => '2022/5/3', 'Keterangan' => 'Idul Fitri 1443 Hijriah', 'statusaktif' => '1', 'modifiedby' => 'admin',]);
-        harilibur::create(['tgl' => '2022/5/16', 'Keterangan' => 'Hari Raya Waisak 2566 BE', 'statusaktif' => '1', 'modifiedby' => 'admin',]);
-        harilibur::create(['tgl' => '2022/5/26', 'Keterangan' => 'Kenaikan Isa Al Masih', 'statusaktif' => '1', 'modifiedby' => 'admin',]);
-        harilibur::create(['tgl' => '2022/6/1', 'Keterangan' => 'Hari Lahir Pancasila', 'statusaktif' => '1', 'modifiedby' => 'admin',]);
-        harilibur::create(['tgl' => '2022/7/9', 'Keterangan' => 'Hari Raya Idul Adha 1443 Hijriah', 'statusaktif' => '1', 'modifiedby' => 'admin',]);
-        harilibur::create(['tgl' => '2022/7/30', 'Keterangan' => 'Tahun Baru Islam 1444 Hijriah', 'statusaktif' => '1', 'modifiedby' => 'admin',]);
-        harilibur::create(['tgl' => '2022/8/17', 'Keterangan' => 'Hari Kemerdekaan RI', 'statusaktif' => '1', 'modifiedby' => 'admin',]);
-        harilibur::create(['tgl' => '2022/10/8', 'Keterangan' => 'Maulid Nabi Muhammad SAW', 'statusaktif' => '1', 'modifiedby' => 'admin',]);
-        harilibur::create(['tgl' => '2022/12/25', 'Keterangan' => 'Hari Raya Natal', 'statusaktif' => '1', 'modifiedby' => 'admin',]);
+
+        harilibur::create(['tgl' => '2023/1/1', 'keterangan' => 'TAHUN BARU', 'statusaktif' => '1', 'modifiedby' => 'ryan',]);
+        harilibur::create(['tgl' => '2023/1/22', 'keterangan' => 'TAHUN BARU IMLEK', 'statusaktif' => '1', 'modifiedby' => 'ryan',]);
+        harilibur::create(['tgl' => '2023/2/18', 'keterangan' => 'ISRA MIRAJ', 'statusaktif' => '1', 'modifiedby' => 'ryan',]);
+        harilibur::create(['tgl' => '2023/3/22', 'keterangan' => 'NYEPI', 'statusaktif' => '1', 'modifiedby' => 'ryan',]);
+        harilibur::create(['tgl' => '2023/4/7', 'keterangan' => 'WAFAT ISA ALMASIH', 'statusaktif' => '1', 'modifiedby' => 'ryan',]);
+        harilibur::create(['tgl' => '2023/4/22', 'keterangan' => 'HARI RAYA IDUL FITRI', 'statusaktif' => '1', 'modifiedby' => 'ryan',]);
+        harilibur::create(['tgl' => '2023/4/23', 'keterangan' => 'HARI RAYA IDUL FITRI', 'statusaktif' => '1', 'modifiedby' => 'ryan',]);
+        harilibur::create(['tgl' => '2023/5/1', 'keterangan' => 'HARI BURUH', 'statusaktif' => '1', 'modifiedby' => 'ryan',]);
+        harilibur::create(['tgl' => '2023/5/18', 'keterangan' => 'KENAIKAN ISA ALMASIH', 'statusaktif' => '1', 'modifiedby' => 'ryan',]);
+        harilibur::create(['tgl' => '2023/6/1', 'keterangan' => 'HARI LAHIR PANCASILA', 'statusaktif' => '1', 'modifiedby' => 'ryan',]);
+        harilibur::create(['tgl' => '2023/6/4', 'keterangan' => 'HARI RAYA WAISAK', 'statusaktif' => '1', 'modifiedby' => 'ryan',]);
+        harilibur::create(['tgl' => '2023/6/29', 'keterangan' => 'IDUL ADHA', 'statusaktif' => '1', 'modifiedby' => 'ryan',]);
+        harilibur::create(['tgl' => '2023/7/19', 'keterangan' => 'TAHUN BARU ISLAM', 'statusaktif' => '1', 'modifiedby' => 'ryan',]);
+        harilibur::create(['tgl' => '2023/8/17', 'keterangan' => 'HARI KEMERDEKAAN', 'statusaktif' => '1', 'modifiedby' => 'ryan',]);
+        harilibur::create(['tgl' => '2023/9/28', 'keterangan' => 'MAULID NABI MUHAMMAD', 'statusaktif' => '1', 'modifiedby' => 'ryan',]);
+        harilibur::create(['tgl' => '2023/12/25', 'keterangan' => 'NATAL', 'statusaktif' => '1', 'modifiedby' => 'ryan',]);
     }
 }
