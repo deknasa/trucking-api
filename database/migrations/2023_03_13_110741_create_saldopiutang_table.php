@@ -19,7 +19,8 @@ class CreateSaldopiutangTable extends Migration
             $table->string('nobukti',50)->unique();
             $table->date('tglbukti')->default('1900/1/1');
             $table->string('postingdari',150)->default('');
-            $table->string('coa',150)->default('');
+            $table->string('coadebet',150)->default('');
+            $table->string('coakredit',150)->default('');
             $table->double('nominal',15,2)->default('0');
             $table->string('invoice_nobukti',50)->default('');
             $table->unsignedBigInteger('agen_id')->default('0');
