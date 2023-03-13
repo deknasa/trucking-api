@@ -10,6 +10,8 @@ use App\Models\GajiSupirHeader;
 use App\Http\Requests\StoreGajiSupirHeaderRequest;
 use App\Http\Requests\StoreGajiSupirPelunasanPinjamanRequest;
 use App\Http\Requests\StoreGajiSupirPinjamanRequest;
+use App\Http\Requests\StoreJurnalUmumDetailRequest;
+use App\Http\Requests\StoreJurnalUmumHeaderRequest;
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Http\Requests\StorePenerimaanTruckingHeaderRequest;
 use App\Http\Requests\StorePengeluaranTruckingHeaderRequest;
@@ -26,6 +28,7 @@ use App\Models\GajiSupirDeposito;
 use App\Models\GajiSupirDetail;
 use App\Models\GajiSupirPelunasanPinjaman;
 use App\Models\GajiSupirPinjaman;
+use App\Models\JurnalUmumHeader;
 use App\Models\LogTrail;
 use App\Models\Parameter;
 use App\Models\PenerimaanTrucking;
@@ -298,7 +301,7 @@ class GajiSupirHeaderController extends Controller
                         'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
                         'penerimaantrucking_id' => $fetchFormatPP->id,
                         'bank_id' => 0,
-                        'coa' => $fetchFormatPP->coa,
+                        'coa' => $fetchFormatPP->coapostingkredit,
                         'penerimaan_nobukti' => '',
                         'statusformat' => $formatPP->id,
                         'postingdari' => 'ENTRY GAJI SUPIR',
@@ -359,7 +362,7 @@ class GajiSupirHeaderController extends Controller
                         'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
                         'penerimaantrucking_id' => $fetchFormatPS->id,
                         'bank_id' => 0,
-                        'coa' => $fetchFormatPS->coa,
+                        'coa' => $fetchFormatPS->coapostingkredit,
                         'penerimaan_nobukti' => '',
                         'statusformat' => $formatPS->id,
                         'postingdari' => 'ENTRY GAJI SUPIR',
@@ -401,7 +404,7 @@ class GajiSupirHeaderController extends Controller
                         'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
                         'penerimaantrucking_id' => $fetchFormatDPO->id,
                         'bank_id' => 0,
-                        'coa' => $fetchFormatDPO->coa,
+                        'coa' => $fetchFormatDPO->coapostingkredit,
                         'penerimaan_nobukti' => '',
                         'statusformat' => $formatDPO->id,
                         'postingdari' => 'ENTRY GAJI SUPIR',
@@ -454,7 +457,7 @@ class GajiSupirHeaderController extends Controller
                         'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
                         'penerimaantrucking_id' => $fetchFormatBBM->id,
                         'bank_id' => 0,
-                        'coa' => $fetchFormatBBM->coa,
+                        'coa' => $fetchFormatBBM->coadebet,
                         'penerimaan_nobukti' => '',
                         'statusformat' => $formatBBM->id,
                         'postingdari' => 'ENTRY GAJI SUPIR',
@@ -474,6 +477,36 @@ class GajiSupirHeaderController extends Controller
 
                     $gajiSupirBbm = new StoreGajiSupirBBMRequest($gajiSupirBBM);
                     app(GajiSupirBBMController::class)->store($gajiSupirBbm);
+
+                    $jurnalHeader = [
+                        'tanpaprosesnobukti' => 1,
+                        'nobukti' => $nobuktiPenerimaanTruckingBBM,
+                        'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
+                        'postingdari' => "ENTRY GAJI SUPIR",
+                        'modifiedby' => auth('api')->user()->name,
+                        'statusformat' => "0",
+                    ];
+                    $jurnalDetail = [
+                        [
+                            'nobukti' => $nobuktiPenerimaanTruckingBBM,
+                            'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
+                            'coa' => $fetchFormatBBM->coadebet,
+                            'nominal' => $request->nomBBM,
+                            'keterangan' => $request->ketBBM,
+                            'modifiedby' => auth('api')->user()->name,
+                            'baris' => 0,
+                        ],
+                        [
+                            'nobukti' => $nobuktiPenerimaanTruckingBBM,
+                            'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
+                            'coa' => $fetchFormatBBM->coakredit,
+                            'nominal' => -$request->nomBBM,
+                            'keterangan' => $request->ketBBM,
+                            'modifiedby' => auth('api')->user()->name,
+                            'baris' => 0,
+                        ]
+                    ];
+                    $jurnal = $this->storeJurnal($jurnalHeader, $jurnalDetail);
                 }
 
                 if ($request->nomPinjaman != 0) {
@@ -507,7 +540,7 @@ class GajiSupirHeaderController extends Controller
                         'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
                         'pengeluarantrucking_id' => $fetchFormatPJT->id,
                         'bank_id' => 0,
-                        'coa' => $fetchFormatPJT->coa,
+                        'coa' => $fetchFormatPJT->coapostingdebet,
                         'pengeluaran_nobukti' => '',
                         'statusformat' => $formatPJT->id,
                         'postingdari' => 'ENTRY GAJI SUPIR',
@@ -854,7 +887,7 @@ class GajiSupirHeaderController extends Controller
                             'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
                             'penerimaantrucking_id' => $fetchFormatPS->id,
                             'bank_id' => 0,
-                            'coa' => $fetchFormatPS->coa,
+                            'coa' => $fetchFormatPS->coapostingkredit,
                             'penerimaan_nobukti' => '',
                             'statusformat' => $formatPS->id,
                             'postingdari' => 'ENTRY GAJI SUPIR',
@@ -976,7 +1009,7 @@ class GajiSupirHeaderController extends Controller
                             'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
                             'penerimaantrucking_id' => $fetchFormatPP->id,
                             'bank_id' => 0,
-                            'coa' => $fetchFormatPP->coa,
+                            'coa' => $fetchFormatPP->coapostingkredit,
                             'penerimaan_nobukti' => '',
                             'statusformat' => $formatPP->id,
                             'postingdari' => 'ENTRY GAJI SUPIR',
@@ -1069,7 +1102,7 @@ class GajiSupirHeaderController extends Controller
                             'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
                             'penerimaantrucking_id' => $fetchFormatDPO->id,
                             'bank_id' => 0,
-                            'coa' => $fetchFormatDPO->coa,
+                            'coa' => $fetchFormatDPO->coapostingkredit,
                             'penerimaan_nobukti' => '',
                             'statusformat' => $formatDPO->id,
                             'postingdari' => 'ENTRY GAJI SUPIR',
@@ -1112,6 +1145,13 @@ class GajiSupirHeaderController extends Controller
                     if ($fetchBBM != null) {
                         $pengeluaranbbm = PenerimaanTruckingHeader::from(DB::raw("penerimaantruckingheader with (readuncommitted)"))
                             ->where('nobukti', $fetchBBM->penerimaantrucking_nobukti)->first();
+
+                        JurnalUmumHeader::where('nobukti', $fetchBBM->penerimaantrucking_nobukti)->delete();
+
+                        $fetchFormatBBM = PenerimaanTrucking::from(DB::raw("penerimaantrucking with (readuncommitted)"))
+                            ->where('kodepenerimaan', 'BBM')
+                            ->first();
+                        $nobuktiPenerimaanTruckingBBM = $fetchBBM->penerimaantrucking_nobukti;
 
                         $penerimaanTruckingDetailBBM[] = [
                             'supir_id' => $request->supir_id,
@@ -1169,7 +1209,7 @@ class GajiSupirHeaderController extends Controller
                             'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
                             'penerimaantrucking_id' => $fetchFormatBBM->id,
                             'bank_id' => 0,
-                            'coa' => $fetchFormatBBM->coa,
+                            'coa' => $fetchFormatBBM->coadebet,
                             'penerimaan_nobukti' => '',
                             'statusformat' => $formatBBM->id,
                             'postingdari' => 'ENTRY GAJI SUPIR',
@@ -1190,6 +1230,36 @@ class GajiSupirHeaderController extends Controller
                         $newGajisSupirBBM = new StoreGajiSupirBBMRequest($gajiSupirBBM);
                         app(GajiSupirBBMController::class)->store($newGajisSupirBBM);
                     }
+
+                    $jurnalHeader = [
+                        'tanpaprosesnobukti' => 1,
+                        'nobukti' => $nobuktiPenerimaanTruckingBBM,
+                        'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
+                        'postingdari' => "ENTRY GAJI SUPIR",
+                        'modifiedby' => auth('api')->user()->name,
+                        'statusformat' => "0",
+                    ];
+                    $jurnalDetail = [
+                        [
+                            'nobukti' => $nobuktiPenerimaanTruckingBBM,
+                            'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
+                            'coa' => $fetchFormatBBM->coadebet,
+                            'nominal' => $request->nomBBM,
+                            'keterangan' => $request->ketBBM,
+                            'modifiedby' => auth('api')->user()->name,
+                            'baris' => 0,
+                        ],
+                        [
+                            'nobukti' => $nobuktiPenerimaanTruckingBBM,
+                            'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
+                            'coa' => $fetchFormatBBM->coakredit,
+                            'nominal' => -$request->nomBBM,
+                            'keterangan' => $request->ketBBM,
+                            'modifiedby' => auth('api')->user()->name,
+                            'baris' => 0,
+                        ]
+                    ];
+                    $jurnal = $this->storeJurnal($jurnalHeader, $jurnalDetail);
                 } else {
                     $fetchBBM = GajiSupirBBM::from(DB::raw("gajisupirbbm with (readuncommitted)"))
                         ->where('gajisupir_id', $gajisupirheader->id)->first();
@@ -1198,8 +1268,11 @@ class GajiSupirHeaderController extends Controller
                         $request['postingdari'] = 'GAJI SUPIR';
                         $request['gajisupir'] = 1;
 
+                        $getJurnalHeader = JurnalUmumHeader::lockForUpdate()->where('nobukti', $fetchBBM->penerimaantrucking_nobukti)->first();
+
                         app(PenerimaanTruckingHeaderController::class)->destroy($request, $getPenerimaanTrucking->id);
                         app(GajiSupirBBMController::class)->destroy($request, $fetchBBM->id);
+                        app(JurnalUmumHeaderController::class)->destroy($request, $getJurnalHeader->id);
                     }
                 }
 
@@ -1270,7 +1343,7 @@ class GajiSupirHeaderController extends Controller
                             'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
                             'pengeluarantrucking_id' => $fetchFormatPJT->id,
                             'bank_id' => 0,
-                            'coa' => $fetchFormatPJT->coa,
+                            'coa' => $fetchFormatPJT->coapostingdebet,
                             'pengeluaran_nobukti' => '',
                             'statusformat' => $formatPJT->id,
                             'postingdari' => 'ENTRY GAJI SUPIR',
@@ -1389,8 +1462,10 @@ class GajiSupirHeaderController extends Controller
             $fetchBBM = GajiSupirBBM::from(DB::raw("gajisupirbbm with (readuncommitted)"))->whereRaw("gajisupir_id = $id")->first();
             if ($fetchBBM != null) {
                 $getPenerimaanTrucking = PenerimaanTruckingHeader::from(DB::raw("penerimaantruckingheader with (readuncommitted)"))->where('nobukti', $fetchBBM->penerimaantrucking_nobukti)->first();
+                $getJurnalHeader = JurnalUmumHeader::lockForUpdate()->where('nobukti', $fetchBBM->penerimaantrucking_nobukti)->first();
                 app(PenerimaanTruckingHeaderController::class)->destroy($request, $getPenerimaanTrucking->id);
                 app(GajiSupirBBMController::class)->destroy($request, $fetchBBM->id);
+                app(JurnalUmumHeaderController::class)->destroy($request, $getJurnalHeader->id);
             }
 
             $fetchPinjaman = GajiSupirPinjaman::from(DB::raw("gajisupirbbm with (readuncommitted)"))->whereRaw("gajisupir_id = $id")->first();
@@ -1514,12 +1589,12 @@ class GajiSupirHeaderController extends Controller
     {
         $gajisupir = new GajiSupirHeader();
         $aksi = request()->aksi;
-        if($aksi == 'edit'){
+        if ($aksi == 'edit') {
             $supir_id = request()->supirId;
             $dari = date('Y-m-d', strtotime(request()->dari));
-            $sampai = date('Y-m-d', strtotime(request()->sampai)); 
-            $data = $gajisupir->getAllEditTrip($gajiId,$supir_id,$dari,$sampai);
-        }else{
+            $sampai = date('Y-m-d', strtotime(request()->sampai));
+            $data = $gajisupir->getAllEditTrip($gajiId, $supir_id, $dari, $sampai);
+        } else {
             $data = $gajisupir->getEditTrip($gajiId);
         }
 
@@ -1673,6 +1748,45 @@ class GajiSupirHeaderController extends Controller
             return response($data);
         }
     }
+    private function storeJurnal($header, $detail)
+    {
+
+        try {
+            $jurnal = new StoreJurnalUmumHeaderRequest($header);
+            $jurnals = app(JurnalUmumHeaderController::class)->store($jurnal);
+
+            $detailLog = [];
+            foreach ($detail as $key => $value) {
+                $value['jurnalumum_id'] = $jurnals->original['data']['id'];
+                $jurnal = new StoreJurnalUmumDetailRequest($value);
+                $datadetails = app(JurnalUmumDetailController::class)->store($jurnal);
+
+                $detailLog[] = $datadetails['detail']->toArray();
+            }
+            $datalogtrail = [
+                'namatabel' => strtoupper($datadetails['tabel']),
+                'postingdari' => $header['postingdari'],
+                'idtrans' => $jurnals->original['idlogtrail'],
+                'nobuktitrans' => $header['nobukti'],
+                'aksi' => 'ENTRY',
+                'datajson' => $detailLog,
+                'modifiedby' => auth('api')->user()->name,
+            ];
+
+            $data = new StoreLogTrailRequest($datalogtrail);
+            app(LogTrailController::class)->store($data);
+
+            return [
+                'status' => true,
+            ];
+        } catch (\Exception $e) {
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
     public function fieldLength()
     {
         $data = [];
