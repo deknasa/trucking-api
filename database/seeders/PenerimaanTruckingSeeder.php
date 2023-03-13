@@ -20,7 +20,6 @@ class PenerimaanTruckingSeeder extends Seeder
 
         PenerimaanTrucking::create(['kodepenerimaan' => 'BBM', 'keterangan' => 'HUTANG BBM', 'coadebet' => '01.09.01.06', 'coakredit' => '03.02.02.07', 'coapostingdebet' => '01.01.01.02', 'coapostingkredit' => '01.09.01.06', 'format' => '265', 'modifiedby' => 'ADMIN',]);
 
-
    
         
     }
