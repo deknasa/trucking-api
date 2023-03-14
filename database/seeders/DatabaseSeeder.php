@@ -59,6 +59,8 @@ class DatabaseSeeder extends Seeder
             PengeluaranTruckingSeeder::class,
             PenerimaanHeaderSeeder::class,
             PenerimaanDetailSeeder::class,
+            PengeluaranHeaderSeeder::class,
+            PengeluaranDetailSeeder::class,
             JurnalUmumHeaderSeeder::class,
             JurnalUmumDetailSeeder::class,
             ServiceInHeaderSeeder::class,
@@ -81,6 +83,9 @@ class DatabaseSeeder extends Seeder
             PengeluaranStokHeaderSeeder::class,
             PengeluaranStokDetailSeeder::class,
             PengeluaranStokDetailRincianSeeder::class,
+            PengeluaranTruckingHeaderSeeder::class,
+            PengeluaranTruckingDetailSeeder::class,
+
         ]);
     }
 }
