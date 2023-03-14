@@ -113,11 +113,7 @@ class PelunasanPiutangHeader extends MyModel
         });
 
         $tes = DB::table($temp)->insertUsing(['nobukti', 'tglbukti', 'nominalpiutang', 'invoice_nobukti', 'sisa'], $fetch);
-        $fetch = DB::table('saldopiutang')->from(DB::raw("saldopiutang with (readuncommitted)"))
-            ->select(DB::raw("saldopiutang.nobukti,saldopiutang.tglbukti,saldopiutang.nominal as nominalpiutang,saldopiutang.invoice_nobukti, (SELECT (saldopiutang.nominal - COALESCE(SUM(pelunasanpiutangdetail.nominal),0)) FROM pelunasanpiutangdetail WHERE pelunasanpiutangdetail.piutang_nobukti= saldopiutang.nobukti) AS sisa"))
-            ->whereRaw("saldopiutang.agen_id = $agenid")
-            ->groupBy('saldopiutang.id', 'saldopiutang.nobukti', 'saldopiutang.agen_id', 'saldopiutang.nominal', 'saldopiutang.tglbukti', 'saldopiutang.invoice_nobukti');
-        $tes = DB::table($temp)->insertUsing(['nobukti', 'tglbukti', 'nominalpiutang', 'invoice_nobukti', 'sisa'], $fetch);
+       
         return $temp;
     }
 
@@ -147,12 +143,6 @@ class PelunasanPiutangHeader extends MyModel
 
         $tes = DB::table($tempo)->insertUsing(['pelunasanpiutang_id', 'piutang_nobukti', 'tglbukti', 'nominal', 'keterangan', 'potongan', 'coapotongan', 'keteranganpotongan', 'nominallebihbayar', 'nominalpiutang', 'invoice_nobukti', 'sisa'], $fetch);
 
-        $fetch = DB::table('pelunasanpiutangdetail as ppd')->from(DB::raw("pelunasanpiutangdetail as ppd with (readuncommitted)"))
-            ->select(DB::raw("ppd.pelunasanpiutang_id,ppd.piutang_nobukti,saldopiutang.tglbukti,ppd.nominal,ppd.keterangan,ppd.potongan,ppd.coapotongan,ppd.keteranganpotongan,ppd.nominallebihbayar, saldopiutang.nominal as nominalpiutang,ppd.invoice_nobukti, (SELECT (saldopiutang.nominal - SUM(pelunasanpiutangdetail.nominal)) FROM pelunasanpiutangdetail WHERE pelunasanpiutangdetail.piutang_nobukti= saldopiutang.nobukti) AS sisa"))
-            ->join(DB::raw("saldopiutang with (readuncommitted)"), 'ppd.piutang_nobukti', 'saldopiutang.nobukti')
-            ->whereRaw("ppd.pelunasanpiutang_id = $id");
-
-        $tes = DB::table($tempo)->insertUsing(['pelunasanpiutang_id', 'piutang_nobukti', 'tglbukti', 'nominal', 'keterangan', 'potongan', 'coapotongan', 'keteranganpotongan', 'nominallebihbayar', 'nominalpiutang', 'invoice_nobukti', 'sisa'], $fetch);
         return $tempo;
     }
 
