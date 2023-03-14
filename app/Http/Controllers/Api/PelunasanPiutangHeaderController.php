@@ -281,6 +281,7 @@ class PelunasanPiutangHeaderController extends Controller
                         'coalebihbayar' => $getNominalLebih->coa ?? '',
                         'modifiedby' => $pelunasanpiutangheader->modifiedby,
                         'nominalpiutang' => $piutang->nominal,
+                        'coakredit' => $piutang->coadebet
                     ];
 
                     //STORE 
@@ -612,6 +613,7 @@ class PelunasanPiutangHeaderController extends Controller
                         'coalebihbayar' => $getNominalLebih->coa ?? '',
                         'modifiedby' => $pelunasanpiutangheader->modifiedby,
                         'nominalpiutang' => $piutang->nominal,
+                        'coakredit' => $piutang->coadebet
                     ];
 
                     //STORE
