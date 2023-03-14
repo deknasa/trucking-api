@@ -73,10 +73,6 @@ class PelunasanPiutangHeaderController extends Controller
                 for ($i = 0; $i < count($request->piutang_id); $i++) {
 
                     $cekSisa = PiutangHeader::from(DB::raw("piutangheader with (readuncommitted)"))->select('nominal')->where('nobukti', $request->piutang_id[$i])->first();
-                    if ($cekSisa == null) {
-
-                        $cekSisa = SaldoPiutang::from(DB::raw("saldopiutang with (readuncommitted)"))->select('nominal')->where('nobukti', $request->piutang_id[$i])->first();
-                    }
                     
                     if ($request->bayarppd[$i] > $cekSisa->nominal) {
                         if ($request->nominallebihbayarppd[$i] == 0) {
@@ -244,10 +240,6 @@ class PelunasanPiutangHeaderController extends Controller
                 for ($i = 0; $i < count($request->piutang_id); $i++) {
                     $nobuktiPiutang = $request->piutang_id[$i];
                     $piutang = PiutangHeader::where('nobukti', $nobuktiPiutang)->first();
-
-                    if ($piutang == null) {
-                        $piutang = SaldoPiutang::where('nobukti', $nobuktiPiutang)->first();
-                    }
 
                     if ($request->bayarppd[$i] > $piutang->nominal) {
 
@@ -502,9 +494,6 @@ class PelunasanPiutangHeaderController extends Controller
 
                 $cekSisa = PiutangHeader::from(DB::raw("piutangheader with (readuncommitted)"))->select('nominal')->where('nobukti', $request->piutang_id[$i])->first();
 
-                if($cekSisa == null){
-                    $cekSisa = SaldoPiutang::from(DB::raw("saldopiutang with (readuncommitted)"))->select('nominal')->where('nobukti', $request->piutang_id[$i])->first();
-                }
                 if ($request->bayarppd[$i] > $cekSisa->nominal) {
                     if ($request->nominallebihbayarppd[$i] == 0) {
 
@@ -579,9 +568,7 @@ class PelunasanPiutangHeaderController extends Controller
                     $idpiutang = $request->piutang_id[$i];
                     $piutang = PiutangHeader::where('nobukti', $idpiutang)->first();
 
-                    if($piutang == null){
-                        $piutang = SaldoPiutang::where('nobukti', $idpiutang)->first();
-                    }
+                   
                     if ($request->bayarppd[$i] > $piutang->nominal) {
                         $query = Error::from(DB::raw("error with (readuncommitted)"))->select('keterangan')->where('kodeerror', '=', 'NBP')
                             ->first();
