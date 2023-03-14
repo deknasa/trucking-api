@@ -289,6 +289,7 @@ class ParameterSeeder extends Seeder
         parameter::create(['grp' => 'PENGELUARAN BANK BCA-3', 'subgrp' => 'PENGELUARAN BANK BCA-3', 'kelompok' => 'PENGELUARAN BANK', 'text' => '#BKT-M BCA3 # 9999#/#R#/#Y', 'memo' => '{"MEMO":"PENGELUARAN BANK BCA3","SINGKATAN":"#BKT-M BCA3 # 9999#/#R#/#Y","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'STATUS UPAH ZONA', 'subgrp' => 'STATUS UPAH ZONA', 'kelompok' => '', 'text' => 'UPAH ZONA', 'memo' => '{"MEMO":"UPAH ZONA","SINGKATAN":"UZ","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'STATUS UPAH ZONA', 'subgrp' => 'STATUS UPAH ZONA', 'kelompok' => '', 'text' => 'NON UPAH ZONA', 'memo' => '{"MEMO":"NON UPAH ZONA","SINGKATAN":"NUZ","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => 'YA',]);
+        parameter::create(['grp' => 'STATUS RITASI', 'subgrp' => 'STATUS RITASI', 'kelompok' => '', 'text' => 'NAIK/TURUN KEPALA', 'memo' => '{"MEMO":"NAIK/TURUN KEPALA","SINGKATAN":"NTK","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         
     }
 }
