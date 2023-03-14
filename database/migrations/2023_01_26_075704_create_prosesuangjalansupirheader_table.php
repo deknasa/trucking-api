@@ -21,6 +21,7 @@ class CreateProsesuangjalansupirheaderTable extends Migration
             $table->string('nobukti',50)->unique();
             $table->date('tglbukti')->default('1900/1/1');
             $table->string('absensisupir_nobukti',50)->default('');
+            $table->longText('keterangan')->default('');            
             $table->unsignedBigInteger('trado_id')->default(0);                     
             $table->unsignedBigInteger('supir_id')->default(0);                     
             $table->double('nominaluangjalan',15,2)->default('0');            

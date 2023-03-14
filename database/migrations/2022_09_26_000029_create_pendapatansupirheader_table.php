@@ -20,6 +20,7 @@ class CreatePendapatansupirheaderTable extends Migration
             $table->id();
             $table->string('nobukti',50)->unique();
             $table->date('tglbukti')->default('1900/1/1');
+            $table->longText('keterangan')->default('');            
             $table->unsignedBigInteger('bank_id')->default('0');
             $table->date('tgldari')->default('1900/1/1');
             $table->date('tglsampai')->default('1900/1/1');

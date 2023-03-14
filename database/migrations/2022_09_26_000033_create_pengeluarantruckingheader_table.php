@@ -20,6 +20,7 @@ class CreatePengeluarantruckingheaderTable extends Migration
             $table->id();
             $table->string('nobukti',50)->unique();
             $table->date('tglbukti')->default('1900/1/1');            
+            $table->longText('keterangan')->default('');            
             $table->unsignedBigInteger('pengeluarantrucking_id')->default(0);
             $table->unsignedBigInteger('bank_id')->default('0');
             $table->integer('statusposting')->length(11)->default('0');

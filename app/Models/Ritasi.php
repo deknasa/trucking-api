@@ -63,6 +63,7 @@ class Ritasi extends MyModel
 
         $data = $query->get();
 
+        // dd($data);
         return $data;
     }
 

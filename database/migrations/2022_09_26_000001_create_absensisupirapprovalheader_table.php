@@ -21,6 +21,7 @@ class CreateAbsensisupirapprovalheaderTable extends Migration
             $table->id();
             $table->string('nobukti', 50)->unique();
             $table->date('tglbukti')->default('1900/1/1');
+            $table->longText('keterangan')->default('');            
             $table->string('absensisupir_nobukti', 50)->default('');
             $table->integer('statusapproval')->length(11)->default(0);
             $table->dateTime('tglapproval')->default('1900/1/1');

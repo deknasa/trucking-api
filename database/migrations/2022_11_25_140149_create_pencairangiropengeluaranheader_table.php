@@ -21,6 +21,7 @@ class CreatePencairangiropengeluaranheaderTable extends Migration
             $table->id();
             $table->string('nobukti',50)->unique();
             $table->date('tglbukti')->default('1900/1/1');
+            $table->longText('keterangan')->default('');            
             $table->string('pengeluaran_nobukti',50)->default('');
             $table->integer('statusapproval')->Length(11)->default('0');
             $table->string('userapproval',50)->default('');

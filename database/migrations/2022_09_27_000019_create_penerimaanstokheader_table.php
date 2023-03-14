@@ -20,6 +20,7 @@ class CreatePenerimaanstokheaderTable extends Migration
             $table->id();
             $table->string('nobukti',50)->unique();
             $table->date('tglbukti')->default('1900/1/1');            
+            $table->longText('keterangan')->default('');            
             $table->unsignedBigInteger('penerimaanstok_id')->default(0);
             $table->string('penerimaanstok_nobukti',50)->default('');
             $table->string('pengeluaranstok_nobukti',50)->default('');

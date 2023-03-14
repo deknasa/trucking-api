@@ -20,6 +20,7 @@ class CreatePiutangheaderTable extends Migration
             $table->id();
             $table->string('nobukti',50)->unique();
             $table->date('tglbukti')->default('1900/1/1');
+            $table->longText('keterangan')->default('');            
             $table->string('coadebet',150)->default('');
             $table->string('coakredit',150)->default('');
             $table->string('postingdari',150)->default('');

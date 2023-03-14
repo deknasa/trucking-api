@@ -20,6 +20,7 @@ class CreatePengeluaranstokheaderTable extends Migration
             $table->id();
             $table->string('nobukti',50)->unique();
             $table->date('tglbukti',50)->default('1900/1/1');
+            $table->longText('keterangan')->default('');            
             $table->unsignedBigInteger('pengeluaranstok_id')->default(0);
             $table->unsignedBigInteger('trado_id')->default('0');
             $table->unsignedBigInteger('gudang_id')->default('0');
