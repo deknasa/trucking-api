@@ -155,10 +155,7 @@ class Container extends MyModel
 
 
 
-        $this->totalRows = $query->count();
-        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
-        $this->sort($query);
         $this->filter($query);
         if ($aktif == 'AKTIF') {
             $statusaktif = Parameter::from(
@@ -170,6 +167,10 @@ class Container extends MyModel
 
             $query->where('container.statusaktif', '=', $statusaktif->id);
         }
+        $this->totalRows = $query->count();
+        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+
+        $this->sort($query);        
         $this->paginate($query);
 
         $data = $query->get();

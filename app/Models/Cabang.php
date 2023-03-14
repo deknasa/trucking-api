@@ -39,10 +39,7 @@ class Cabang extends MyModel
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'cabang.statusaktif', 'parameter.id');
 
 
-        $this->totalRows = $query->count();
-        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
-        $this->sort($query);
         $this->filter($query);
 
         if ($aktif == 'AKTIF') {
@@ -56,7 +53,10 @@ class Cabang extends MyModel
             $query->where('cabang.statusaktif', '=', $statusaktif->id);
         }
 
+        $this->totalRows = $query->count();
+        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
+        $this->sort($query);
         $this->paginate($query);
 
         $data = $query->get();

@@ -59,10 +59,7 @@ class AkunPusat extends MyModel
             ->leftJoin(DB::raw("parameter as parameter_statuslabarugi with (readuncommitted)"), 'akunpusat.statuslabarugi', '=', 'parameter_statuslabarugi.id');
 
 
-        $this->totalRows = $query->count();
-        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
-
-        $this->sort($query);
+ 
         $this->filter($query);
 
         if ($level != '') {
@@ -89,7 +86,10 @@ class AkunPusat extends MyModel
 
             $query->where('akunpusat.statusaktif', '=', $statusaktif->id);
         }
+        $this->totalRows = $query->count();
+        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
+        $this->sort($query);
         $this->paginate($query);
 
         $data = $query->get();

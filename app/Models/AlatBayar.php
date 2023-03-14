@@ -153,10 +153,7 @@ class AlatBayar extends MyModel
             ->leftJoin(DB::raw("parameter as parameter_statusdefault with (readuncommitted)"), 'alatbayar.statusdefault', 'parameter_statusdefault.id')
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'alatbayar.statusaktif', 'parameter.id');
 
-        $this->totalRows = $query->count();
-        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
-        $this->sort($query);
         $this->filter($query);
         if ($default == $statusdefault->id) {
             $query->where('alatbayar.statusdefault', '=', $statusdefault->id);
@@ -176,7 +173,10 @@ class AlatBayar extends MyModel
             $query->where('alatbayar.statusaktif', '=', $statusaktif->id);
         }
 
+        $this->totalRows = $query->count();
+        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
+        $this->sort($query);
         $this->paginate($query);
 
         $data = $query->get();

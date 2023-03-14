@@ -163,10 +163,7 @@ class Pelanggan extends MyModel
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'pelanggan.statusaktif', 'parameter.id');
 
 
-        $this->totalRows = $query->count();
-        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
-        $this->sort($query);
         $this->filter($query);
         if ($aktif == 'AKTIF') {
             $statusaktif = Parameter::from(
@@ -178,6 +175,10 @@ class Pelanggan extends MyModel
 
             $query->where('pelanggan.statusaktif', '=', $statusaktif->id);
         }
+        $this->totalRows = $query->count();
+        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+
+        $this->sort($query);        
         $this->paginate($query);
 
         $data = $query->get();

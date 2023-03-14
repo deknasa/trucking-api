@@ -71,10 +71,7 @@ class Kerusakan extends MyModel
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'kerusakan.statusaktif', '=', 'parameter.id');
           
 
-        $this->totalRows = $query->count();
-        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
-        $this->sort($query);
         $this->filter($query);
 
         if ($aktif == 'AKTIF') {
@@ -87,6 +84,10 @@ class Kerusakan extends MyModel
 
             $query->where('kerusakan.statusaktif', '=', $statusaktif->id);
         }          
+        $this->totalRows = $query->count();
+        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+
+        $this->sort($query);
         $this->paginate($query);
 
         $data = $query->get();

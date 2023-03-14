@@ -196,10 +196,7 @@ class Agen extends MyModel
    
     
 
-        $this->totalRows = $query->count();
-        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
-        $this->sort($query);
         $this->filter($query);
 
         if ($aktif == 'AKTIF') {
@@ -212,6 +209,11 @@ class Agen extends MyModel
 
             $query ->where('agen.statusaktif','=',$statusaktif->id);
         }        
+
+        $this->totalRows = $query->count();
+        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+
+        $this->sort($query);        
         $this->paginate($query);
 
         $data = $query->get();

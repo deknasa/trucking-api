@@ -99,6 +99,8 @@ class Tarif extends MyModel
             ->leftJoin(DB::raw("parameter AS p with (readuncommitted)"), 'tarif.statuspenyesuaianharga', '=', 'p.id')
             ->leftJoin(DB::raw("parameter AS sistemton with (readuncommitted)"), 'tarif.statussistemton', '=', 'sistemton.id');
 
+            $this->filter($query);
+                        
             if ($aktif == 'AKTIF') {
                 $statusaktif = Parameter::from(
                     DB::raw("parameter with (readuncommitted)")
@@ -114,7 +116,7 @@ class Tarif extends MyModel
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
         $this->sort($query);
-        $this->filter($query);
+
         $this->paginate($query);
 
         $data = $query->get();

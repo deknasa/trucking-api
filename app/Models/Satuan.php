@@ -39,22 +39,25 @@ class Satuan extends MyModel
         )
             ->leftJoin('parameter', 'satuan.statusaktif', '=', 'parameter.id');
 
-            if ($aktif == 'AKTIF') {
-                $statusaktif = Parameter::from(
-                    DB::raw("parameter with (readuncommitted)")
-                )
-                    ->where('grp', '=', 'STATUS AKTIF')
-                    ->where('text', '=', 'AKTIF')
-                    ->first();
-    
-                $query->where('satuan.statusaktif', '=', $statusaktif->id);
-            }
+       
 
+
+        $this->filter($query);
+
+        if ($aktif == 'AKTIF') {
+            $statusaktif = Parameter::from(
+                DB::raw("parameter with (readuncommitted)")
+            )
+                ->where('grp', '=', 'STATUS AKTIF')
+                ->where('text', '=', 'AKTIF')
+                ->first();
+
+            $query->where('satuan.statusaktif', '=', $statusaktif->id);
+        }       
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
-        $this->sort($query);
-        $this->filter($query);
+        $this->sort($query);         
         $this->paginate($query);
 
         $data = $query->get();

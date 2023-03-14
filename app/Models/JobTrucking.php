@@ -152,10 +152,7 @@ class JobTrucking extends MyModel
         }
 
 
-        $this->totalRows = $querydata->count();
 
-        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
-       
        
         $this->filter($querydata);
        
@@ -182,7 +179,10 @@ class JobTrucking extends MyModel
             $querydata->whereRaw("isnull(d.jobtrucking,'')=''");
         }
 
+        $this->totalRows = $querydata->count();
 
+        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+       
         $this->sort($querydata);
      
         $this->paginate($querydata);
