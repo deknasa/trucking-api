@@ -69,11 +69,19 @@ class PenerimaanTrucking extends MyModel
             'penerimaantrucking.coakredit',
             'penerimaantrucking.coapostingdebet',
             'penerimaantrucking.coapostingkredit',
+            'debet.keterangancoa as coadebet_keterangan',
+            'kredit.keterangancoa as coakredit_keterangan',
+            'postingdebet.keterangancoa as coapostingdebet_keterangan',
+            'postingkredit.keterangancoa as coapostingkredit_keterangan',
             'parameter.memo as format',
             'penerimaantrucking.created_at',
             'penerimaantrucking.modifiedby',
             'penerimaantrucking.updated_at'
         )
+            ->leftJoin(DB::raw("akunpusat as debet  with (readuncommitted)"), "penerimaantrucking.coadebet", "debet.coa")
+            ->leftJoin(DB::raw("akunpusat as kredit  with (readuncommitted)"), "penerimaantrucking.coakredit", "kredit.coa")
+            ->leftJoin(DB::raw("akunpusat as postingdebet  with (readuncommitted)"), "penerimaantrucking.coapostingdebet", "postingdebet.coa")
+            ->leftJoin(DB::raw("akunpusat as postingkredit  with (readuncommitted)"), "penerimaantrucking.coapostingkredit", "postingkredit.coa")
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'penerimaantrucking.format', 'parameter.id');
 
         $this->totalRows = $query->count();
@@ -148,6 +156,14 @@ class PenerimaanTrucking extends MyModel
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'format') {
                             $query = $query->where('parameter.text', 'LIKE', "%$filters[data]%");
+                        }else if ($filters['field'] == 'coadebet_keterangan') {
+                            $query = $query->where('debet.keterangancoa', 'LIKE', "%$filters[data]%");
+                        }else if ($filters['field'] == 'coakredit_keterangan') {
+                            $query = $query->where('kredit.keterangancoa', 'LIKE', "%$filters[data]%");
+                        }else if ($filters['field'] == 'coapostingdebet_keterangan') {
+                            $query = $query->where('postingdebet.keterangancoa', 'LIKE', "%$filters[data]%");
+                        }else if ($filters['field'] == 'coapostingkredit_keterangan') {
+                            $query = $query->where('postingkredit.keterangancoa', 'LIKE', "%$filters[data]%");
                         }else{
                             $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
@@ -158,6 +174,14 @@ class PenerimaanTrucking extends MyModel
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'format') {
                             $query = $query->orWhere('parameter.text', 'LIKE', "%$filters[data]%");
+                        }else if ($filters['field'] == 'coadebet_keterangan') {
+                            $query = $query->orWhere('debet.keterangancoa', 'LIKE', "%$filters[data]%");
+                        }else if ($filters['field'] == 'coakredit_keterangan') {
+                            $query = $query->orWhere('kredit.keterangancoa', 'LIKE', "%$filters[data]%");
+                        }else if ($filters['field'] == 'coapostingdebet_keterangan') {
+                            $query = $query->orWhere('postingdebet.keterangancoa', 'LIKE', "%$filters[data]%");
+                        }else if ($filters['field'] == 'coapostingkredit_keterangan') {
+                            $query = $query->orWhere('postingkredit.keterangancoa', 'LIKE', "%$filters[data]%");
                         }else{
                             $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
