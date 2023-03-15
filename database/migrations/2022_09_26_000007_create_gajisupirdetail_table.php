@@ -24,6 +24,7 @@ class CreateGajisupirdetailTable extends Migration
             $table->double('nominaldeposito', 15,2)->default(0);            
             $table->double('nourut', 15,2)->default(0);            
             $table->string('suratpengantar_nobukti', 50)->default('');            
+            $table->string('ritasi_nobukti', 50)->default('');            
             $table->double('komisisupir', 15,2)->default(0);            
             $table->double('tolsupir', 15,2)->default(0);            
             $table->double('voucher', 15,2)->default(0);            
