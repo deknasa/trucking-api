@@ -32,6 +32,8 @@ class CreateGajisupirdetailTable extends Migration
             $table->double('gajisupir', 15,2)->default(0);            
             $table->double('gajikenek', 15,2)->default(0);            
             $table->double('gajiritasi', 15,2)->default(0);            
+            $table->double('biayatambahan', 15,2)->default(0);            
+            $table->longText('keteranganbiayatambahan')->default('');            
             $table->double('nominalpengembalianpinjaman', 15,2)->default(0);            
             $table->string('modifiedby', 50)->default('');            
             $table->timestamps();
