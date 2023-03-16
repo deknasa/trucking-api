@@ -716,9 +716,10 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('prosesgajisupirheader/no_bukti', [ProsesGajiSupirHeaderController::class, 'getNoBukti']);
     Route::get('prosesgajisupirheader/grid', [ProsesGajiSupirHeaderController::class, 'grid']);
     Route::get('prosesgajisupirheader/field_length', [ProsesGajiSupirHeaderController::class, 'fieldLength']);
-    Route::get('prosesgajisupirheader/getRic/{dari}/{sampai}', [ProsesGajiSupirHeaderController::class, 'getRic']);
+    Route::get('prosesgajisupirheader/getRic', [ProsesGajiSupirHeaderController::class, 'getRic']);
     Route::post('prosesgajisupirheader/noEdit', [ProsesGajiSupirHeaderController::class, 'noEdit']);
     Route::get('prosesgajisupirheader/{id}/getEdit', [ProsesGajiSupirHeaderController::class, 'getEdit']);
+    Route::get('prosesgajisupirheader/{dari}/{sampai}/getAllData', [ProsesGajiSupirHeaderController::class, 'getAllData']);
     Route::resource('prosesgajisupirheader', ProsesGajiSupirHeaderController::class);
     Route::resource('prosesgajisupirdetail', ProsesGajiSupirDetailController::class);
 

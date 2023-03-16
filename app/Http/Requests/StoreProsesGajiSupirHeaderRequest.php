@@ -27,8 +27,8 @@ class StoreProsesGajiSupirHeaderRequest extends FormRequest
         return [
             //
             'periode' => 'required',
-            'tgldari' => 'required',
-            'tglsampai' => 'required',
+            // 'tgldari' => 'required',
+            // 'tglsampai' => 'required',
             "tglbukti" => [
                 "required",
                 new DateTutupBuku()
@@ -39,8 +39,8 @@ class StoreProsesGajiSupirHeaderRequest extends FormRequest
     public function attributes() {
         return [
             'periode' => 'Periode',
-            'tgldari' => 'Tanggal Dari',
-            'tglsampai' => 'Tanggal Sampai',
+            // 'tgldari' => 'Tanggal Dari',
+            // 'tglsampai' => 'Tanggal Sampai',
             'tglbukti' => 'Tanggal Bukti'
         ];
     }

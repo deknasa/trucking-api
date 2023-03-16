@@ -15,16 +15,19 @@ class GajiSupirDetailController extends Controller
 {
     public function index(): JsonResponse
     {
-        $pelunasanPiutang = new GajiSupirDetail();
+        $gajiSupir = new GajiSupirDetail();
 
         return response()->json([
-            'data' => $pelunasanPiutang->get(),
+            'data' => $gajiSupir->get(),
             'attributes' => [
-                'totalRows' => $pelunasanPiutang->totalRows,
-                'totalPages' => $pelunasanPiutang->totalPages,
-                'totalGajiSupir' => $pelunasanPiutang->totalGajiSupir,
-                'totalGajiKenek' => $pelunasanPiutang->totalGajiKenek,
-                'totalKomisiSupir' => $pelunasanPiutang->totalKomisiSupir,
+                'totalRows' => $gajiSupir->totalRows,
+                'totalPages' => $gajiSupir->totalPages,
+                'totalGajiSupir' => $gajiSupir->totalGajiSupir,
+                'totalGajiKenek' => $gajiSupir->totalGajiKenek,
+                'totalKomisiSupir' => $gajiSupir->totalKomisiSupir,
+                'totalUpahRitasi' => $gajiSupir->totalUpahRitasi,
+                'totalBiayaExtra' => $gajiSupir->totalBiayaExtra,
+                'totalTolSupir' => $gajiSupir->totalTolSupir,
             ]
         ]);
     }
@@ -42,6 +45,7 @@ class GajiSupirDetailController extends Controller
             $gajisupirdetail->nominaldeposito = $request->nominaldeposito;
             $gajisupirdetail->nourut = $request->nourut;
             $gajisupirdetail->suratpengantar_nobukti = $request->suratpengantar_nobukti;
+            $gajisupirdetail->ritasi_nobukti = $request->ritasi_nobukti;
             $gajisupirdetail->komisisupir = $request->komisisupir;
             $gajisupirdetail->tolsupir = $request->tolsupir;
             $gajisupirdetail->voucher = $request->voucher;
@@ -49,6 +53,8 @@ class GajiSupirDetailController extends Controller
             $gajisupirdetail->gajisupir = $request->gajisupir;
             $gajisupirdetail->gajikenek = $request->gajikenek;
             $gajisupirdetail->gajiritasi = $request->gajiritasi;
+            $gajisupirdetail->biayatambahan = $request->biayatambahan;
+            $gajisupirdetail->keteranganbiayatambahan = $request->keteranganbiayatambahan;
             $gajisupirdetail->nominalpengembalianpinjaman = $request->nominalpengembalianpinjaman;
             
             $gajisupirdetail->modifiedby = auth('api')->user()->name;

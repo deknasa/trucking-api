@@ -67,6 +67,12 @@ class GajiSupirHeader extends MyModel
                 'gajisupirheader.tgldari',
                 'gajisupirheader.tglsampai',
                 'gajisupirheader.total',
+                'gajisupirheader.uangjalan',
+                'gajisupirheader.bbm',
+                'gajisupirheader.deposito',
+                'gajisupirheader.potonganpinjaman',
+                'gajisupirheader.potonganpinjamansemua',
+                'gajisupirheader.uangmakanharian',
                 'parameter.memo as statuscetak',
                 "parameter.text as statuscetak_text",
                 'gajisupirheader.userbukacetak',
@@ -107,12 +113,170 @@ class GajiSupirHeader extends MyModel
         return $data;
     }
 
+    public function getTrip($supirId, $tglDari, $tglSampai)
+    {
+
+        $this->setRequestParameters();
+        $sp = $this->createTempGetTrip($supirId, $tglDari, $tglSampai);
+        $query = DB::table($sp)
+            ->select(
+                "$sp.id",
+                DB::raw("(case when $sp.nobuktitrip IS NULL then '-' else $sp.nobuktitrip end) as nobuktitrip"),
+                "$sp.tglbuktisp",
+                "$sp.trado_id",
+                "$sp.dari_id",
+                "$sp.sampai_id",
+                "$sp.nocont",
+                "$sp.nosp",
+                DB::raw("(case when $sp.gajisupir IS NULL then 0 else $sp.gajisupir end) as gajisupir"),
+                DB::raw("(case when $sp.gajikenek IS NULL then 0 else $sp.gajikenek end) as gajikenek"),
+                DB::raw("(case when $sp.komisisupir IS NULL then 0 else $sp.komisisupir end) as komisisupir"),
+                DB::raw("(case when $sp.tolsupir IS NULL then 0 else $sp.tolsupir end) as tolsupir"),
+                DB::raw("(case when $sp.upahritasi IS NULL then 0 else $sp.upahritasi end) as upahritasi"),
+                DB::raw("(case when $sp.biayaextra IS NULL then 0 else $sp.biayaextra end) as biayaextra"),
+                "parameter.text as statusritasi",
+                "$sp.keteranganbiaya"
+            )->leftJoin(DB::raw("parameter with (readuncommitted)"), 'parameter.id', $sp . '.statusritasi');
+
+        $this->totalRows = $query->count();
+        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+
+        $query->orderBy($sp . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        $this->filterTrip($query, $sp);
+        $this->paginate($query);
+        $data = $query->get();
+
+        // dd($query->get());
+        $this->totalGajiSupir = $query->sum('gajisupir');
+        $this->totalGajiKenek = $query->sum('gajikenek');
+        $this->totalKomisiSupir = $query->sum('komisisupir');
+        $this->totalUpahRitasi = $query->sum('upahritasi');
+        $this->totalBiayaExtra = $query->sum('biayaextra');
+        $this->totalTolSupir = $query->sum('tolsupir');
+        return $data;
+    }
+
+    public function createTempGetTrip($supirId, $tglDari, $tglSampai)
+    {
+        $temp = '##tempSP' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+
+        $fetch = SuratPengantar::from(DB::raw("suratpengantar with (readuncommitted)"))
+            ->select(
+                'suratpengantar.id',
+                'suratpengantar.nobukti as nobuktitrip',
+                'suratpengantar.tglbukti as tglbuktisp',
+                'trado.kodetrado as trado_id',
+                'kotaDari.keterangan as dari_id',
+                'kotaSampai.keterangan as sampai_id',
+                'suratpengantar.nocont',
+                'suratpengantar.nosp',
+                'suratpengantar.gajisupir',
+                'suratpengantar.gajikenek',
+                'suratpengantar.komisisupir',
+                'suratpengantar.tolsupir',
+                'ritasi.gaji as upahritasi',
+                'ritasi.statusritasi',
+                'suratpengantarbiayatambahan.nominal as biayaextra',
+                'suratpengantarbiayatambahan.keteranganbiaya'
+            )
+            ->leftJoin(DB::raw("kota as kotaDari with (readuncommitted)"), 'suratpengantar.dari_id', 'kotaDari.id')
+            ->leftJoin(DB::raw("kota as kotaSampai with (readuncommitted)"), 'suratpengantar.sampai_id', 'kotaSampai.id')
+            ->leftJoin(DB::raw("trado with (readuncommitted)"), 'suratpengantar.trado_id', 'trado.id')
+            ->leftJoin(DB::raw("ritasi with (readuncommitted)"), 'suratpengantar.nobukti', 'ritasi.suratpengantar_nobukti')
+            ->leftJoin(DB::raw("suratpengantarbiayatambahan with (readuncommitted)"), 'suratpengantar.id', 'suratpengantarbiayatambahan.suratpengantar_id')
+            ->where('suratpengantar.supir_id', $supirId)
+            ->where('suratpengantar.tglbukti', '>=', $tglDari)
+            ->where('suratpengantar.tglbukti', '<=', $tglSampai)
+            ->whereRaw("suratpengantar.nobukti not in(select suratpengantar_nobukti from gajisupirdetail)");
+
+        Schema::create($temp, function ($table) {
+            $table->bigInteger('id');
+            $table->string('nobuktitrip')->nullable();
+            $table->date('tglbuktisp')->default('');
+            $table->string('trado_id');
+            $table->string('dari_id');
+            $table->string('sampai_id');
+            $table->string('nocont')->nullable();
+            $table->string('nosp')->nullable();
+            $table->bigInteger('gajisupir')->nullable();
+            $table->bigInteger('gajikenek')->nullable();
+            $table->bigInteger('komisisupir')->nullable();
+            $table->bigInteger('tolsupir')->nullable();
+            $table->bigInteger('upahritasi')->nullable();
+            $table->bigInteger('statusritasi')->nullable();
+            $table->bigInteger('biayaextra')->nullable();
+            $table->string('keteranganbiaya')->nullable();
+        });
+
+        $tes = DB::table($temp)->insertUsing(['id', 'nobuktitrip', 'tglbuktisp', 'trado_id', 'dari_id', 'sampai_id', 'nocont', 'nosp', 'gajisupir', 'gajikenek', 'komisisupir','tolsupir', 'upahritasi', 'statusritasi', 'biayaextra', 'keteranganbiaya'], $fetch);
+
+        $fetch = Ritasi::from(DB::raw("ritasi with (readuncommitted)"))
+            ->select(
+                DB::raw("ritasi.id,ritasi.tglbukti as tglbuktisp,trado.kodetrado as trado_id,kotaDari.keterangan as dari_id,kotaSampai.keterangan as sampai_id, ritasi.gaji as upahritasi,ritasi.statusritasi")
+            )
+            ->leftJoin(DB::raw("kota as kotaDari with (readuncommitted)"), 'ritasi.dari_id', 'kotaDari.id')
+            ->leftJoin(DB::raw("kota as kotaSampai with (readuncommitted)"), 'ritasi.sampai_id', 'kotaSampai.id')
+            ->leftJoin(DB::raw("trado with (readuncommitted)"), 'ritasi.trado_id', 'trado.id')
+            ->where('ritasi.supir_id', $supirId)
+            ->where('ritasi.tglbukti', '>=', $tglDari)
+            ->where('ritasi.tglbukti', '<=', $tglSampai)
+            ->whereRaw("ritasi.suratpengantar_nobukti = ''")
+            ->whereRaw("ritasi.nobukti not in(select ritasi_nobukti from gajisupirdetail)");
+        $tes = DB::table($temp)->insertUsing(['id', 'tglbuktisp', 'trado_id', 'dari_id', 'sampai_id', 'upahritasi', 'statusritasi'], $fetch);
+
+        return $temp;
+    }
 
     public function getEditTrip($gajiId)
     {
-        $query = GajiSupirDetail::from(DB::raw("gajisupirdetail with (readuncommitted)"))
+        $this->setRequestParameters();
+        $sp = $this->createTempEdit($gajiId);
+        $query = DB::table($sp)
             ->select(
+                "$sp.id",
+                DB::raw("(case when $sp.nobuktitrip IS NULL then '-' else $sp.nobuktitrip end) as nobuktitrip"),
+                "$sp.tglbuktisp",
+                "$sp.trado_id",
+                "$sp.dari_id",
+                "$sp.sampai_id",
+                "$sp.nocont",
+                "$sp.nosp",
+                DB::raw("(case when $sp.gajisupir IS NULL then 0 else $sp.gajisupir end) as gajisupir"),
+                DB::raw("(case when $sp.gajikenek IS NULL then 0 else $sp.gajikenek end) as gajikenek"),
+                DB::raw("(case when $sp.komisisupir IS NULL then 0 else $sp.komisisupir end) as komisisupir"),
+                DB::raw("(case when $sp.tolsupir IS NULL then 0 else $sp.tolsupir end) as tolsupir"),
+                DB::raw("(case when $sp.upahritasi IS NULL then 0 else $sp.upahritasi end) as upahritasi"),
+                DB::raw("(case when $sp.biayaextra IS NULL then 0 else $sp.biayaextra end) as biayaextra"),
+                "parameter.text as statusritasi",
+                "$sp.keteranganbiaya"
+            )->leftJoin(DB::raw("parameter with (readuncommitted)"), 'parameter.id', $sp . '.statusritasi');
 
+        $this->totalRows = $query->count();
+        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+
+        $query->orderBy($sp . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        $this->filterTrip($query, $sp);
+        $this->paginate($query);
+        $data = $query->get();
+
+        // dd($query->get());
+        $this->totalGajiSupir = $query->sum('gajisupir');
+        $this->totalGajiKenek = $query->sum('gajikenek');
+        $this->totalKomisiSupir = $query->sum('komisisupir');
+        $this->totalUpahRitasi = $query->sum('upahritasi');
+        $this->totalBiayaExtra = $query->sum('biayaextra');
+        $this->totalTolSupir = $query->sum('tolsupir');
+        return $data;
+    }
+
+    public function createTempEdit($gajiId)
+    {
+        
+        $temp = '##tempRIC' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+
+
+        $fetch = DB::table('gajisupirdetail')->from(DB::raw("gajisupirdetail with (readuncommitted)"))
+            ->select(
                 'suratpengantar.id',
                 'gajisupirdetail.suratpengantar_nobukti as nobuktitrip',
                 'suratpengantar.tglbukti as tglbuktisp',
@@ -124,20 +288,70 @@ class GajiSupirHeader extends MyModel
                 'gajisupirdetail.gajisupir',
                 'gajisupirdetail.gajikenek',
                 'gajisupirdetail.komisisupir',
+                'gajisupirdetail.tolsupir',
+                'gajisupirdetail.gajiritasi as upahritasi',
+                'ritasi.statusritasi',
+                'gajisupirdetail.biayatambahan as biayaextra',
+                'gajisupirdetail.keteranganbiayatambahan as keteranganbiaya'
             )
             ->leftJoin(DB::raw("suratpengantar with (readuncommitted)"), 'gajisupirdetail.suratpengantar_nobukti', 'suratpengantar.nobukti')
             ->leftJoin(DB::raw("kota as kotaDari with (readuncommitted)"), 'suratpengantar.dari_id', 'kotaDari.id')
             ->leftJoin(DB::raw("kota as kotaSampai with (readuncommitted)"), 'suratpengantar.sampai_id', 'kotaSampai.id')
             ->leftJoin(DB::raw("trado with (readuncommitted)"), 'suratpengantar.trado_id', 'trado.id')
+            ->leftJoin(DB::raw("ritasi with (readuncommitted)"), 'gajisupirdetail.ritasi_nobukti', 'ritasi.nobukti')
+            ->where('gajisupirdetail.suratpengantar_nobukti', '!=', '-')
             ->where('gajisupirdetail.gajisupir_id', $gajiId);
 
-        $data = $query->get();
-        $this->totalGajiSupir = $query->sum('gajisupirdetail.gajisupir');
-        $this->totalGajiKenek = $query->sum('gajisupirdetail.gajikenek');
-        $this->totalKomisiSupir = $query->sum('gajisupirdetail.komisisupir');
-        return $data;
-    }
 
+        Schema::create($temp, function ($table) {
+            $table->bigInteger('id')->nullable();
+            $table->string('nobuktitrip')->nullable();
+            $table->date('tglbuktisp')->default('')->nullable();
+            $table->string('trado_id')->nullable();
+            $table->string('dari_id')->nullable();
+            $table->string('sampai_id')->nullable();
+            $table->string('nocont')->nullable();
+            $table->string('nosp')->nullable();
+            $table->bigInteger('gajisupir')->nullable();
+            $table->bigInteger('gajikenek')->nullable();
+            $table->bigInteger('komisisupir')->nullable();
+            $table->bigInteger('tolsupir')->nullable();
+            $table->bigInteger('upahritasi')->nullable();
+            $table->bigInteger('statusritasi')->nullable();
+            $table->bigInteger('biayaextra')->nullable();
+            $table->string('keteranganbiaya')->nullable();
+        });
+
+        $tes = DB::table($temp)->insertUsing(['id', 'nobuktitrip', 'tglbuktisp', 'trado_id', 'dari_id', 'sampai_id', 'nocont', 'nosp', 'gajisupir', 'gajikenek', 'komisisupir','tolsupir', 'upahritasi', 'statusritasi', 'biayaextra', 'keteranganbiaya'], $fetch);
+
+        $fetch = DB::table('gajisupirdetail')->from(DB::raw("gajisupirdetail with (readuncommitted)"))
+            ->select(
+                'ritasi.id',
+                'gajisupirdetail.suratpengantar_nobukti as nobuktitrip',
+                'ritasi.tglbukti as tglbuktisp',
+                'trado.keterangan as trado_id',
+                'kotaDari.keterangan as dari_id',
+                'kotaSampai.keterangan as sampai_id',
+                'gajisupirdetail.gajisupir',
+                'gajisupirdetail.gajikenek',
+                'gajisupirdetail.komisisupir',
+                'gajisupirdetail.tolsupir',
+                'gajisupirdetail.gajiritasi as upahritasi',
+                'ritasi.statusritasi',
+                'gajisupirdetail.biayatambahan as biayaextra',
+                'gajisupirdetail.keteranganbiayatambahan as keteranganbiaya'
+            )
+            ->leftJoin(DB::raw("ritasi with (readuncommitted)"), 'gajisupirdetail.ritasi_nobukti', 'ritasi.nobukti')
+            ->leftJoin(DB::raw("kota as kotaDari with (readuncommitted)"), 'ritasi.dari_id', 'kotaDari.id')
+            ->leftJoin(DB::raw("kota as kotaSampai with (readuncommitted)"), 'ritasi.sampai_id', 'kotaSampai.id')
+            ->leftJoin(DB::raw("trado with (readuncommitted)"), 'ritasi.trado_id', 'trado.id')
+            ->where('gajisupirdetail.suratpengantar_nobukti', '-')
+            ->where('gajisupirdetail.gajisupir_id', $gajiId);
+
+        $tes = DB::table($temp)->insertUsing(['id', 'nobuktitrip', 'tglbuktisp', 'trado_id', 'dari_id', 'sampai_id', 'gajisupir', 'gajikenek', 'komisisupir','tolsupir', 'upahritasi', 'statusritasi', 'biayaextra', 'keteranganbiaya'], $fetch);
+
+        return $temp;
+    }
     public function selectColumns($query)
     {
         return $query->from(
@@ -235,27 +449,46 @@ class GajiSupirHeader extends MyModel
     public function getAllEditTrip($gajiId, $supir_id, $dari, $sampai)
     {
         $this->setRequestParameters();
-        $tempRIC = $this->createTempGetRIC($gajiId);
-        $tempSP = $this->createTempGetSP($supir_id, $dari, $sampai);
+        $tempRIC = $this->createTempGetRIC($gajiId, $supir_id, $dari, $sampai);
+        $query = DB::table($tempRIC)
+            ->select(
+                "$tempRIC.id",
+                DB::raw("(case when $tempRIC.nobuktitrip IS NULL then '-' else $tempRIC.nobuktitrip end) as nobuktitrip"),
+                "$tempRIC.tglbuktisp",
+                "$tempRIC.trado_id",
+                "$tempRIC.dari_id",
+                "$tempRIC.sampai_id",
+                "$tempRIC.nocont",
+                "$tempRIC.nosp",
+                DB::raw("(case when $tempRIC.gajisupir IS NULL then 0 else $tempRIC.gajisupir end) as gajisupir"),
+                DB::raw("(case when $tempRIC.gajikenek IS NULL then 0 else $tempRIC.gajikenek end) as gajikenek"),
+                DB::raw("(case when $tempRIC.komisisupir IS NULL then 0 else $tempRIC.komisisupir end) as komisisupir"),
+                DB::raw("(case when $tempRIC.tolsupir IS NULL then 0 else $tempRIC.tolsupir end) as tolsupir"),
+                DB::raw("(case when $tempRIC.upahritasi IS NULL then 0 else $tempRIC.upahritasi end) as upahritasi"),
+                DB::raw("(case when $tempRIC.biayaextra IS NULL then 0 else $tempRIC.biayaextra end) as biayaextra"),
+                "parameter.text as statusritasi",
+                "$tempRIC.keteranganbiaya"
+            )->leftJoin(DB::raw("parameter with (readuncommitted)"), 'parameter.id', $tempRIC . '.statusritasi');
 
-        $RIC = DB::table("$tempSP as A")->from(DB::raw("$tempSP as A with (readuncommitted)"))
-            ->select(DB::raw("A.id,A.nobuktitrip, A.tglbuktisp, A.trado_id, A.dari_id, A.sampai_id, A.nocont, A.nosp, A.gajisupir, A.gajikenek, A.komisisupir"))
-            ->leftJoin(DB::raw("$tempRIC as B with (readuncommitted)"), "A.nobuktitrip", "B.nobuktitrip");
+        $this->totalRows = $query->count();
+        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
+        $query->orderBy($tempRIC . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        $this->filterTrip($query, $tempRIC);
+        $this->paginate($query);
+        $data = $query->get();
 
-        $SP = DB::table($tempRIC)->from(DB::raw("$tempRIC with (readuncommitted)"))
-            ->select(DB::raw("id,nobuktitrip, tglbuktisp,trado_id,dari_id, sampai_id, nocont, nosp, gajisupir, gajikenek, komisisupir"))
-            ->unionAll($RIC);
-
-            
-        $data = $SP->get();
-        $this->totalGajiSupir = $data->sum('gajisupir');
-        $this->totalGajiKenek = $data->sum('gajikenek');
-        $this->totalKomisiSupir = $data->sum('komisisupir');
+        // dd($query->get());
+        $this->totalGajiSupir = $query->sum('gajisupir');
+        $this->totalGajiKenek = $query->sum('gajikenek');
+        $this->totalKomisiSupir = $query->sum('komisisupir');
+        $this->totalUpahRitasi = $query->sum('upahritasi');
+        $this->totalBiayaExtra = $query->sum('biayaextra');
+        $this->totalTolSupir = $query->sum('tolsupir');
         return $data;
     }
 
-    public function createTempGetRIC($gajiId)
+    public function createTempGetRIC($gajiId, $supir_id, $dari, $sampai)
     {
         $temp = '##tempRIC' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
@@ -272,29 +505,114 @@ class GajiSupirHeader extends MyModel
                 'suratpengantar.nosp',
                 'gajisupirdetail.gajisupir',
                 'gajisupirdetail.gajikenek',
-                'gajisupirdetail.komisisupir'
+                'gajisupirdetail.komisisupir',
+                'gajisupirdetail.tolsupir',
+                'gajisupirdetail.gajiritasi as upahritasi',
+                'ritasi.statusritasi',
+                'gajisupirdetail.biayatambahan as biayaextra',
+                'gajisupirdetail.keteranganbiayatambahan as keteranganbiaya'
             )
             ->leftJoin(DB::raw("suratpengantar with (readuncommitted)"), 'gajisupirdetail.suratpengantar_nobukti', 'suratpengantar.nobukti')
             ->leftJoin(DB::raw("kota as kotaDari with (readuncommitted)"), 'suratpengantar.dari_id', 'kotaDari.id')
             ->leftJoin(DB::raw("kota as kotaSampai with (readuncommitted)"), 'suratpengantar.sampai_id', 'kotaSampai.id')
             ->leftJoin(DB::raw("trado with (readuncommitted)"), 'suratpengantar.trado_id', 'trado.id')
+            ->leftJoin(DB::raw("ritasi with (readuncommitted)"), 'gajisupirdetail.ritasi_nobukti', 'ritasi.nobukti')
+            ->where('gajisupirdetail.suratpengantar_nobukti', '!=', '-')
             ->where('gajisupirdetail.gajisupir_id', $gajiId);
 
+
         Schema::create($temp, function ($table) {
-            $table->bigInteger('id');
-            $table->string('nobuktitrip');
-            $table->date('tglbuktisp')->default('');
-            $table->string('trado_id');
-            $table->string('dari_id');
-            $table->string('sampai_id');
-            $table->string('nocont');
-            $table->string('nosp');
+            $table->bigInteger('id')->nullable();
+            $table->string('nobuktitrip')->nullable();
+            $table->date('tglbuktisp')->default('')->nullable();
+            $table->string('trado_id')->nullable();
+            $table->string('dari_id')->nullable();
+            $table->string('sampai_id')->nullable();
+            $table->string('nocont')->nullable();
+            $table->string('nosp')->nullable();
             $table->bigInteger('gajisupir')->nullable();
             $table->bigInteger('gajikenek')->nullable();
             $table->bigInteger('komisisupir')->nullable();
+            $table->bigInteger('tolsupir')->nullable();
+            $table->bigInteger('upahritasi')->nullable();
+            $table->bigInteger('statusritasi')->nullable();
+            $table->bigInteger('biayaextra')->nullable();
+            $table->string('keteranganbiaya')->nullable();
         });
 
-        $tes = DB::table($temp)->insertUsing(['id', 'nobuktitrip', 'tglbuktisp', 'trado_id', 'dari_id', 'sampai_id','nocont','nosp','gajisupir','gajikenek','komisisupir'], $fetch);
+        $tes = DB::table($temp)->insertUsing(['id', 'nobuktitrip', 'tglbuktisp', 'trado_id', 'dari_id', 'sampai_id', 'nocont', 'nosp', 'gajisupir', 'gajikenek', 'komisisupir','tolsupir', 'upahritasi', 'statusritasi', 'biayaextra', 'keteranganbiaya'], $fetch);
+
+        $fetch = DB::table('gajisupirdetail')->from(DB::raw("gajisupirdetail with (readuncommitted)"))
+            ->select(
+                'ritasi.id',
+                'gajisupirdetail.suratpengantar_nobukti as nobuktitrip',
+                'ritasi.tglbukti as tglbuktisp',
+                'trado.keterangan as trado_id',
+                'kotaDari.keterangan as dari_id',
+                'kotaSampai.keterangan as sampai_id',
+                'gajisupirdetail.gajisupir',
+                'gajisupirdetail.gajikenek',
+                'gajisupirdetail.komisisupir',
+                'gajisupirdetail.tolsupir',
+                'gajisupirdetail.gajiritasi as upahritasi',
+                'ritasi.statusritasi',
+                'gajisupirdetail.biayatambahan as biayaextra',
+                'gajisupirdetail.keteranganbiayatambahan as keteranganbiaya'
+            )
+            ->leftJoin(DB::raw("ritasi with (readuncommitted)"), 'gajisupirdetail.ritasi_nobukti', 'ritasi.nobukti')
+            ->leftJoin(DB::raw("kota as kotaDari with (readuncommitted)"), 'ritasi.dari_id', 'kotaDari.id')
+            ->leftJoin(DB::raw("kota as kotaSampai with (readuncommitted)"), 'ritasi.sampai_id', 'kotaSampai.id')
+            ->leftJoin(DB::raw("trado with (readuncommitted)"), 'ritasi.trado_id', 'trado.id')
+            ->where('gajisupirdetail.suratpengantar_nobukti', '-')
+            ->where('gajisupirdetail.gajisupir_id', $gajiId);
+
+        $tes = DB::table($temp)->insertUsing(['id', 'nobuktitrip', 'tglbuktisp', 'trado_id', 'dari_id', 'sampai_id', 'gajisupir', 'gajikenek', 'komisisupir','tolsupir', 'upahritasi', 'statusritasi', 'biayaextra', 'keteranganbiaya'], $fetch);
+
+        $fetch = SuratPengantar::from(DB::raw("suratpengantar with (readuncommitted)"))
+            ->select(
+                'suratpengantar.id',
+                'suratpengantar.nobukti as nobuktitrip',
+                'suratpengantar.tglbukti as tglbuktisp',
+                'trado.kodetrado as trado_id',
+                'kotaDari.keterangan as dari_id',
+                'kotaSampai.keterangan as sampai_id',
+                'suratpengantar.nocont',
+                'suratpengantar.nosp',
+                'suratpengantar.gajisupir',
+                'suratpengantar.gajikenek',
+                'suratpengantar.komisisupir',
+                'suratpengantar.tolsupir',
+                'ritasi.gaji as upahritasi',
+                'ritasi.statusritasi',
+                'suratpengantarbiayatambahan.nominal as biayaextra',
+                'suratpengantarbiayatambahan.keteranganbiaya'
+            )
+            ->leftJoin(DB::raw("kota as kotaDari with (readuncommitted)"), 'suratpengantar.dari_id', 'kotaDari.id')
+            ->leftJoin(DB::raw("kota as kotaSampai with (readuncommitted)"), 'suratpengantar.sampai_id', 'kotaSampai.id')
+            ->leftJoin(DB::raw("trado with (readuncommitted)"), 'suratpengantar.trado_id', 'trado.id')
+            ->leftJoin(DB::raw("ritasi with (readuncommitted)"), 'suratpengantar.nobukti', 'ritasi.suratpengantar_nobukti')
+            ->leftJoin(DB::raw("suratpengantarbiayatambahan with (readuncommitted)"), 'suratpengantar.id', 'suratpengantarbiayatambahan.suratpengantar_id')
+            ->where('suratpengantar.supir_id', $supir_id)
+            ->where('suratpengantar.tglbukti', '>=', $dari)
+            ->where('suratpengantar.tglbukti', '<=', $sampai)
+            ->whereRaw("suratpengantar.nobukti not in(select suratpengantar_nobukti from gajisupirdetail)");
+
+
+        $tes = DB::table($temp)->insertUsing(['id', 'nobuktitrip', 'tglbuktisp', 'trado_id', 'dari_id', 'sampai_id', 'nocont', 'nosp', 'gajisupir', 'gajikenek', 'komisisupir','tolsupir', 'upahritasi', 'statusritasi', 'biayaextra', 'keteranganbiaya'], $fetch);
+
+        $fetch = Ritasi::from(DB::raw("ritasi with (readuncommitted)"))
+            ->select(
+                DB::raw("ritasi.id,ritasi.tglbukti as tglbuktisp,trado.kodetrado as trado_id,kotaDari.keterangan as dari_id,kotaSampai.keterangan as sampai_id, ritasi.gaji as upahritasi,ritasi.statusritasi")
+            )
+            ->leftJoin(DB::raw("kota as kotaDari with (readuncommitted)"), 'ritasi.dari_id', 'kotaDari.id')
+            ->leftJoin(DB::raw("kota as kotaSampai with (readuncommitted)"), 'ritasi.sampai_id', 'kotaSampai.id')
+            ->leftJoin(DB::raw("trado with (readuncommitted)"), 'ritasi.trado_id', 'trado.id')
+            ->where('ritasi.supir_id', $supir_id)
+            ->where('ritasi.tglbukti', '>=', $dari)
+            ->where('ritasi.tglbukti', '<=', $sampai)
+            ->whereRaw("ritasi.suratpengantar_nobukti = ''")
+            ->whereRaw("ritasi.nobukti not in(select ritasi_nobukti from gajisupirdetail)");
+        $tes = DB::table($temp)->insertUsing(['id', 'tglbuktisp', 'trado_id', 'dari_id', 'sampai_id', 'upahritasi', 'statusritasi'], $fetch);
 
         return $temp;
     }
@@ -340,9 +658,29 @@ class GajiSupirHeader extends MyModel
             $table->bigInteger('komisisupir')->nullable();
         });
 
-        $tes = DB::table($temp)->insertUsing(['id', 'nobuktitrip', 'tglbuktisp', 'trado_id', 'dari_id', 'sampai_id','nocont','nosp','gajisupir','gajikenek','komisisupir'], $fetch);
+        $tes = DB::table($temp)->insertUsing(['id', 'nobuktitrip', 'tglbuktisp', 'trado_id', 'dari_id', 'sampai_id', 'nocont', 'nosp', 'gajisupir', 'gajikenek', 'komisisupir'], $fetch);
 
         return $temp;
+    }
+
+    public function getRic($dari, $sampai)
+    {
+        $this->setRequestParameters();
+        $query = GajiSupirHeader::from(DB::raw("gajisupirheader with (readuncommitted)"))
+            ->select('gajisupirheader.id as idric', 'gajisupirheader.nobukti as nobuktiric', 'gajisupirheader.tglbukti as tglbuktiric', 'supir.namasupir as supir_id', 'gajisupirheader.tgldari as tgldariric', 'gajisupirheader.tglsampai as tglsampairic', 'gajisupirheader.nominal')
+            ->leftJoin(DB::raw("supir with (readuncommitted)"), 'gajisupirheader.supir_id', 'supir.id')
+            ->where('gajisupirheader.tglbukti', '>=', $dari)
+            ->where('gajisupirheader.tglbukti', '<=', $sampai);
+        $this->totalRows = $query->count();
+        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+
+        $this->sort($query);
+        $this->filter($query);
+        $this->paginate($query);
+        $data = $query->get();
+
+        $this->totalNominal = $query->sum('nominal');
+        return $data;
     }
 
     public function sort($query)
@@ -374,6 +712,47 @@ class GajiSupirHeader extends MyModel
                             $query = $query->orWhere('supir.namasupir', 'LIKE', "%$filters[data]%");
                         } else {
                             $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                        }
+                    }
+
+                    break;
+                default:
+
+                    break;
+            }
+
+            $this->totalRows = $query->count();
+            $this->totalPages = $this->params['limit'] > 0 ? ceil($this->totalRows / $this->params['limit']) : 1;
+        }
+        if (request()->cetak && request()->periode) {
+            $query->where('gajisupirheader.statuscetak', '<>', request()->cetak)
+                ->whereYear('gajisupirheader.tglbukti', '=', request()->year)
+                ->whereMonth('gajisupirheader.tglbukti', '=', request()->month);
+            return $query;
+        }
+        return $query;
+    }
+
+    public function filterTrip($query, $table, $relationFields = [])
+    {
+        if (count($this->params['filters']) > 0 && @$this->params['filters']['rules'][0]['data'] != '') {
+            switch ($this->params['filters']['groupOp']) {
+                case "AND":
+                    foreach ($this->params['filters']['rules'] as $index => $filters) {
+                        if ($filters['field'] == 'statusritasi') {
+                            $query = $query->where('parameter.text', 'LIKE', "%$filters[data]%");
+                        } else {
+                            $query = $query->where($table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                        }
+                    }
+
+                    break;
+                case "OR":
+                    foreach ($this->params['filters']['rules'] as $index => $filters) {
+                        if ($filters['field'] == 'statusritasi') {
+                            $query = $query->orWhere('parameter.text', 'LIKE', "%$filters[data]%");
+                        } else {
+                            $query = $query->orWhere($table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
                     }
 

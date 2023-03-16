@@ -35,6 +35,7 @@ use App\Models\PenerimaanTrucking;
 use App\Models\PenerimaanTruckingHeader;
 use App\Models\PengeluaranTruckingDetail;
 use App\Models\PengeluaranTruckingHeader;
+use App\Models\Ritasi;
 use App\Models\Supir;
 use App\Models\SuratPengantar;
 use Illuminate\Database\QueryException;
@@ -152,26 +153,25 @@ class GajiSupirHeaderController extends Controller
                 $gajisupirheader->tgldari = date('Y-m-d', strtotime($request->tgldari));
                 $gajisupirheader->tglsampai = date('Y-m-d', strtotime($request->tglsampai));
                 $gajisupirheader->total = '';
-                $gajisupirheader->uangjalan = $request->uangjalan ?? '';
-                $gajisupirheader->bbm = $request->nomBBM ?? '';
-                $gajisupirheader->potonganpinjaman = ($request->nominalPP) ? array_sum($request->nominalPP) : '';
-                $gajisupirheader->deposito = $request->nomDeposito ?? '';
-                $gajisupirheader->potonganpinjamansemua = ($request->nominalPS) ? array_sum($request->nominalPS) : '';
-                $gajisupirheader->komisisupir = $request->komisisupir ?? '';
-                $gajisupirheader->tolsupir = $request->tolsupir ?? '';
-                $gajisupirheader->voucher = $request->voucher ?? '';
-                $gajisupirheader->uangmakanharian = $request->uangmakanharian ?? '';
-                $gajisupirheader->pinjamanpribadi = $request->pinjamanpribadi ?? '';
-                $gajisupirheader->gajiminus = $request->gajiminus ?? '';
-                $gajisupirheader->uangJalantidakterhitung = $request->uangjalantidakterhitung ?? '';
+                $gajisupirheader->uangjalan = $request->uangjalan ?? 0;
+                $gajisupirheader->bbm = $request->nomBBM ?? 0;
+                $gajisupirheader->potonganpinjaman = ($request->nominalPP) ? array_sum($request->nominalPP) : 0;
+                $gajisupirheader->deposito = $request->nomDeposito ?? 0;
+                $gajisupirheader->potonganpinjamansemua = ($request->nominalPS) ? array_sum($request->nominalPS) : 0;
+                $gajisupirheader->komisisupir = ($request->rincian_komisisupir) ? array_sum($request->rincian_komisisupir) : 0;
+                $gajisupirheader->tolsupir = ($request->rincian_tolsupir) ? array_sum($request->rincian_tolsupir) : 0;
+                $gajisupirheader->voucher = $request->voucher ?? 0;
+                $gajisupirheader->uangmakanharian = $request->uangmakanharian ?? 0;
+                $gajisupirheader->pinjamanpribadi = $request->pinjamanpribadi ?? 0;
+                $gajisupirheader->gajiminus = $request->gajiminus ?? 0;
+                $gajisupirheader->uangJalantidakterhitung = $request->uangjalantidakterhitung ?? 0;
                 $gajisupirheader->statusformat = $format->id;
                 $gajisupirheader->statuscetak = $statusCetak->id;
                 $gajisupirheader->modifiedby = auth('api')->user()->name;
 
                 $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
                 $gajisupirheader->nobukti = $nobukti;
-
-
+               
                 $gajisupirheader->save();
                 /* Store detail */
 
@@ -181,23 +181,45 @@ class GajiSupirHeaderController extends Controller
                 $urut = 1;
                 for ($i = 0; $i < count($request->rincianId); $i++) {
 
-                    $sp = SuratPengantar::from(DB::raw("suratpengantar with (readuncommitted)"))->where('id', $request->rincianId[$i])->first();
+                    // $sp = SuratPengantar::from(DB::raw("suratpengantar with (readuncommitted)"))->where('id', $request->rincianId[$i])->first();
+                    $ritasiNobukti = '';
+                    if ($request->rincian_nobukti[$i] != '-') {
+                        $ritasi = Ritasi::from(DB::raw("ritasi with (readuncommitted)"))->where('suratpengantar_nobukti', $request->rincian_nobukti[$i])->first();
+                        if ($ritasi != null) {
+                            $ritasiNobukti = $ritasi->nobukti;
+                        }
+                    } else {
+                        $ritasi = Ritasi::from(DB::raw("ritasi with (readuncommitted)"))
+                            ->whereRaw("ritasi.suratpengantar_nobukti = ''")
+                            ->whereRaw("ritasi.supir_id = '$request->supir_id'")
+                            ->whereRaw("ritasi.tglbukti >= '$gajisupirheader->tgldari'")
+                            ->whereRaw("ritasi.tglbukti <= '$gajisupirheader->tglsampai'")
+                            ->first();
 
-                    $total = $total + $sp->gajisupir + $sp->gajikenek + $sp->komisisupir;
+                        if ($ritasi != null) {
+                            $ritasiNobukti = $ritasi->nobukti;
+                        }
+                    }
+
+                    $gajiRitasi = ($ritasi != null) ? $ritasi->gaji : 0;
+                    $total = $total + $request->rincian_gajisupir[$i] + $request->rincian_gajikenek[$i] + $gajiRitasi + $request->rincian_biayaextra[$i];
                     $datadetail = [
                         'gajisupir_id' => $gajisupirheader->id,
                         'nobukti' => $gajisupirheader->nobukti,
                         'nominaldeposito' => $request->nomDeposito ?? 0,
                         'nourut' => $urut,
-                        'suratpengantar_nobukti' => $sp->nobukti,
-                        'komisisupir' => $sp->komisisupir,
-                        'tolsupir' => $sp->tolsupir,
+                        'suratpengantar_nobukti' => $request->rincian_nobukti[$i],
+                        'ritasi_nobukti' => $ritasiNobukti,
+                        'komisisupir' => $request->rincian_komisisupir[$i],
+                        'tolsupir' => $request->rincian_tolsupir[$i],
                         'voucher' => $request->voucher[$i] ?? 0,
-                        'novoucher' => $request->novoucher[$i]  ?? 0,
-                        'gajisupir' => $sp->gajisupir,
-                        'gajikenek' => $sp->gajikenek,
-                        'gajiritasi' => $request->gajiritasi[$i] ?? 0,
-                        'nominalpengembalianpinjaman' => $request->nominalpengembalianpinjaman[$i] ?? 0,
+                        'novoucher' => $request->novoucher[$i] ?? 0,
+                        'gajisupir' => $request->rincian_gajisupir[$i],
+                        'gajikenek' => $request->rincian_gajikenek[$i],
+                        'gajiritasi' => $gajiRitasi,
+                        'biayatambahan' => $request->rincian_biayaextra[$i],
+                        'keteranganbiayatambahan' => $request->rincian_keteranganbiaya[$i],
+                        'nominalpengembalianpinjaman' => $gajisupirheader->potonganpinjaman + $gajisupirheader->potonganpinjamansemua,
                         'modifiedby' => $gajisupirheader->modifiedby,
                     ];
 
@@ -219,7 +241,9 @@ class GajiSupirHeaderController extends Controller
                     $urut++;
                 }
 
-                $gajisupirheader->nominal = $total;
+                $nominal = ($total - $gajisupirheader->uangjalan - $gajisupirheader->bbm - $gajisupirheader->potonganpinjaman - $gajisupirheader->potonganpinjamansemua - $gajisupirheader->deposito) + $gajisupirheader->uangmakanharian;
+
+                $gajisupirheader->nominal = $nominal;
                 $gajisupirheader->total = $total;
                 $gajisupirheader->save();
 
@@ -694,18 +718,18 @@ class GajiSupirHeaderController extends Controller
                 $gajisupirheader->tgldari = date('Y-m-d', strtotime($request->tgldari));
                 $gajisupirheader->tglsampai = date('Y-m-d', strtotime($request->tglsampai));
                 $gajisupirheader->total = '';
-                $gajisupirheader->uangjalan = $request->uangjalan ?? '';
-                $gajisupirheader->bbm = $request->nomBBM ?? '';
-                $gajisupirheader->potonganpinjaman = ($request->nominalPP) ? array_sum($request->nominalPP) : '';
-                $gajisupirheader->deposito = $request->nomDeposito ?? '';
-                $gajisupirheader->potonganpinjamansemua = ($request->nominalPS) ? array_sum($request->nominalPS) : '';
-                $gajisupirheader->komisisupir = $request->komisisupir ?? '';
-                $gajisupirheader->tolsupir = $request->tolsupir ?? '';
-                $gajisupirheader->voucher = $request->voucher ?? '';
-                $gajisupirheader->uangmakanharian = $request->uangmakanharian ?? '';
-                $gajisupirheader->pinjamanpribadi = $request->pinjamanpribadi ?? '';
-                $gajisupirheader->gajiminus = $request->gajiminus ?? '';
-                $gajisupirheader->uangJalantidakterhitung = $request->uangjalantidakterhitung ?? '';
+                $gajisupirheader->uangjalan = $request->uangjalan ?? 0;
+                $gajisupirheader->bbm = $request->nomBBM ?? 0;
+                $gajisupirheader->potonganpinjaman = ($request->nominalPP) ? array_sum($request->nominalPP) : 0;
+                $gajisupirheader->deposito = $request->nomDeposito ?? 0;
+                $gajisupirheader->potonganpinjamansemua = ($request->nominalPS) ? array_sum($request->nominalPS) : 0;
+                $gajisupirheader->komisisupir = ($request->rincian_komisisupir) ? array_sum($request->rincian_komisisupir) : 0;
+                $gajisupirheader->tolsupir = ($request->rincian_tolsupir) ? array_sum($request->rincian_tolsupir) : 0;
+                $gajisupirheader->voucher = $request->voucher ?? 0;
+                $gajisupirheader->uangmakanharian = $request->uangmakanharian ?? 0;
+                $gajisupirheader->pinjamanpribadi = $request->pinjamanpribadi ?? 0;
+                $gajisupirheader->gajiminus = $request->gajiminus ?? 0;
+                $gajisupirheader->uangJalantidakterhitung = $request->uangjalantidakterhitung ?? 0;
                 $gajisupirheader->modifiedby = auth('api')->user()->name;
 
 
@@ -719,24 +743,43 @@ class GajiSupirHeaderController extends Controller
                     $urut = 1;
 
                     for ($i = 0; $i < count($request->rincianId); $i++) {
-                        $sp = SuratPengantar::from(DB::raw("suratpengantar with (readuncommitted)"))->where('id', $request->rincianId[$i])->first();
+                        $ritasiNobukti = '';
+                        if ($request->rincian_nobukti[$i] != '-') {
+                            $ritasi = Ritasi::from(DB::raw("ritasi with (readuncommitted)"))->where('suratpengantar_nobukti', $request->rincian_nobukti[$i])->first();
+                            if ($ritasi != null) {
+                                $ritasiNobukti = $ritasi->nobukti;
+                            }
+                        } else {
+                            $ritasi = Ritasi::from(DB::raw("ritasi with (readuncommitted)"))
+                                ->whereRaw("ritasi.suratpengantar_nobukti = ''")
+                                ->whereRaw("ritasi.supir_id = '$request->supir_id'")
+                                ->whereRaw("ritasi.tglbukti >= '$gajisupirheader->tgldari'")
+                                ->whereRaw("ritasi.tglbukti <= '$gajisupirheader->tglsampai'")
+                                ->first();
 
-                        $total = $total + $sp->gajisupir + $sp->gajikenek;
-
+                            if ($ritasi != null) {
+                                $ritasiNobukti = $ritasi->nobukti;
+                            }
+                        }
+                        $gajiRitasi = ($ritasi != null) ? $ritasi->gaji : 0;
+                        $total = $total + $request->rincian_gajisupir[$i] + $request->rincian_gajikenek[$i] + $gajiRitasi + $request->rincian_biayaextra[$i];
                         $datadetail = [
                             'gajisupir_id' => $gajisupirheader->id,
                             'nobukti' => $gajisupirheader->nobukti,
-                            'nominaldeposito' => $request->nominaldeposito[$i] ?? 0,
+                            'nominaldeposito' => $request->nomDeposito ?? 0,
                             'nourut' => $urut,
-                            'suratpengantar_nobukti' => $sp->nobukti,
-                            'komisisupir' => $sp->komisisupir,
-                            'tolsupir' => $sp->tolsupir,
+                            'suratpengantar_nobukti' => $request->rincian_nobukti[$i],
+                            'ritasi_nobukti' => $ritasiNobukti,
+                            'komisisupir' => $request->rincian_komisisupir[$i],
+                            'tolsupir' =>  $request->rincian_tolsupir[$i],
                             'voucher' => $request->voucher[$i] ?? 0,
-                            'novoucher' => $request->novoucher[$i]  ?? 0,
-                            'gajisupir' => $sp->gajisupir,
-                            'gajikenek' => $sp->gajikenek,
-                            'gajiritasi' => $request->gajiritasi[$i] ?? 0,
-                            'nominalpengembalianpinjaman' => $request->nominalpengembalianpinjaman[$i] ?? 0,
+                            'novoucher' => $request->novoucher[$i] ?? 0,
+                            'gajisupir' => $request->rincian_gajisupir[$i],
+                            'gajikenek' => $request->rincian_gajikenek[$i],
+                            'gajiritasi' => $gajiRitasi,
+                            'biayatambahan' => $request->rincian_biayaextra[$i],
+                            'keteranganbiayatambahan' => $request->rincian_keteranganbiaya[$i] ?? '',
+                            'nominalpengembalianpinjaman' => $gajisupirheader->potonganpinjaman +  $gajisupirheader->potonganpinjamansemua,
                             'modifiedby' => $gajisupirheader->modifiedby,
                         ];
 
@@ -757,7 +800,10 @@ class GajiSupirHeaderController extends Controller
                         $urut++;
                     }
 
-                    $gajisupirheader->nominal = $total;
+
+                    $nominal = ($total - $gajisupirheader->uangjalan - $gajisupirheader->bbm - $gajisupirheader->potonganpinjaman - $gajisupirheader->potonganpinjamansemua - $gajisupirheader->deposito) + $gajisupirheader->uangmakanharian;
+
+                    $gajisupirheader->nominal = $nominal;
                     $gajisupirheader->total = $total;
                     $gajisupirheader->save();
 
@@ -1032,6 +1078,7 @@ class GajiSupirHeaderController extends Controller
                         foreach ($getDetailGSPP as $key => $value) {
                             app(GajiSupirPelunasanPinjamanController::class)->destroy($request, $value->id);
                         }
+                        
                     }
                 }
 
@@ -1523,7 +1570,7 @@ class GajiSupirHeaderController extends Controller
 
     public function getTrip()
     {
-        $suratPengantar = new SuratPengantar();
+        $gajiSupir = new GajiSupirHeader();
 
         $dari = request()->dari;
         $sampai = request()->sampai;
@@ -1545,13 +1592,16 @@ class GajiSupirHeaderController extends Controller
 
             return response([
                 'errors' => false,
-                'data' => $suratPengantar->getTrip($supir_id, $tglDari, $tglSampai),
+                'data' => $gajiSupir->getTrip($supir_id, $tglDari, $tglSampai),
                 'attributes' => [
-                    'totalRows' => $suratPengantar->totalRows,
-                    'totalPages' => $suratPengantar->totalPages,
-                    'totalGajiSupir' => $suratPengantar->totalGajiSupir,
-                    'totalGajiKenek' => $suratPengantar->totalGajiKenek,
-                    'totalKomisiSupir' => $suratPengantar->totalKomisiSupir,
+                    'totalRows' => $gajiSupir->totalRows,
+                    'totalPages' => $gajiSupir->totalPages,
+                    'totalGajiSupir' => $gajiSupir->totalGajiSupir,
+                    'totalGajiKenek' => $gajiSupir->totalGajiKenek,
+                    'totalKomisiSupir' => $gajiSupir->totalKomisiSupir,
+                    'totalUpahRitasi' => $gajiSupir->totalUpahRitasi,
+                    'totalBiayaExtra' => $gajiSupir->totalBiayaExtra,
+                    'totalTolSupir' => $gajiSupir->totalTolSupir,
                 ]
             ]);
         } else {
@@ -1606,6 +1656,9 @@ class GajiSupirHeaderController extends Controller
                 'totalGajiSupir' => $gajisupir->totalGajiSupir,
                 'totalGajiKenek' => $gajisupir->totalGajiKenek,
                 'totalKomisiSupir' => $gajisupir->totalKomisiSupir,
+                'totalUpahRitasi' => $gajisupir->totalUpahRitasi,
+                'totalBiayaExtra' => $gajisupir->totalBiayaExtra,
+                'totalTolSupir' => $gajisupir->totalTolSupir,
             ]
         ]);
     }
