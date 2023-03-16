@@ -141,10 +141,6 @@ class PenerimaanHeaderController extends Controller
             $detaillog = [];
             if ($request->datadetail != '') {
 
-
-                $getCoaKredit = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
-                    ->where('grp', 'JURNAL PENERIMAAN DARI PELUNASAN')->where('subgrp', 'KREDIT')->first();
-                $memo = json_decode($getCoaKredit->memo, true);
                 for ($i = 0; $i < count($request->datadetail); $i++) {
                     $datadetail = [
                         'penerimaan_id' => $penerimaanHeader->id,
@@ -153,7 +149,7 @@ class PenerimaanHeaderController extends Controller
                         'tgljatuhtempo' => $penerimaanHeader->tglbukti,
                         'nominal' => $request->datadetail[$i]['nominal'],
                         'coadebet' => $request->coadebet ?? $request->datadetail[$i]['coadebet'],
-                        'coakredit' => $request->datadetail[$i]['coakredit'] ?? $memo['JURNAL'],
+                        'coakredit' => $request->datadetail[$i]['coakredit'],
                         'keterangan' => $request->datadetail[$i]['keterangan'],
                         'bank_id' => $penerimaanHeader->bank_id,
                         'invoice_nobukti' => $request->datadetail[$i]['invoice_nobukti'],
@@ -246,7 +242,6 @@ class PenerimaanHeaderController extends Controller
 
                 if ($request->datadetail != '') {
                     $counter = $request->datadetail;
-                    $memo = json_decode($getCoaKredit->memo, true);
                 } else {
                     $counter = $request->nominal_detail;
                 }
@@ -267,7 +262,7 @@ class PenerimaanHeaderController extends Controller
                         [
                             'nobukti' => $penerimaanHeader->nobukti,
                             'tglbukti' => date('Y-m-d', strtotime($penerimaanHeader->tglbukti)),
-                            'coa' => ($request->datadetail != '') ? $request->datadetail[$i]['coakredit'] ?? $memo['JURNAL'] : $request->coakredit[$i] ?? '-',
+                            'coa' => ($request->datadetail != '') ? $request->datadetail[$i]['coakredit'] : $request->coakredit[$i] ?? '-',
                             'nominal' => ($request->datadetail != '') ? '-' . $request->datadetail[$i]['nominal'] : '-' . $request->nominal_detail[$i],
                             'keterangan' => ($request->datadetail != '') ? $request->datadetail[$i]['keterangan'] : $request->keterangan_detail[$i],
                             'modifiedby' => auth('api')->user()->name,

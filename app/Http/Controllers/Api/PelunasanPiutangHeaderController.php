@@ -297,7 +297,7 @@ class PelunasanPiutangHeaderController extends Controller
                         $detailNotaDebet[] = $datadetail;
                     }
 
-                    $detaillog[] = $datadetails['detail']->toArray();
+                    $detaillog[] = $datadetail;
                 }
 
                 $datalogtrail = [
@@ -336,7 +336,6 @@ class PelunasanPiutangHeaderController extends Controller
                         'pelunasanpiutang_nobukti' => $pelunasanpiutangheader->nobukti
 
                     ];
-
                     $penerimaan = new StorePenerimaanHeaderRequest($penerimaanHeader);
                     app(PenerimaanHeaderController::class)->store($penerimaan);
                 } else {
@@ -621,7 +620,7 @@ class PelunasanPiutangHeaderController extends Controller
                         $detailNotaDebet[] = $datadetail;
                     }
 
-                    $detaillog[] = $datadetails['detail']->toArray();
+                    $detaillog[] = $datadetail;
                 }
 
                 $datalogtrail = [
