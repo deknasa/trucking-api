@@ -62,18 +62,18 @@ class InvoiceChargeGandenganHeader extends MyModel
                 "$this->table.tglproses",
                 "$this->table.agen_id",
                 "$this->table.nominal",
-                "$this->table.statusapproval",
+                "$this->table.statusapproval as statusapproval_id",
                 "$this->table.userapproval",
-                "$this->table.statusformat",
-                "$this->table.statuscetak",
+                "$this->table.statusformat as statusformat_id",
+                "$this->table.statuscetak as statuscetak_id",
                 "$this->table.userbukacetak",
                 "$this->table.tglbukacetak",
                 "$this->table.jumlahcetak",
                 "$this->table.modifiedby",
                 "agen.namaagen as  agen",
-                'parameter.memo as statusapproval',
+                "parameter.memo as statusapproval",
                 "cetak.memo as statuscetak",
-                "statusformat.memo as  statusformat_memo",
+                "statusformat.memo as  statusformat",
                 "$this->table.created_at",
                 "$this->table.updated_at",
                 DB::raw('(case when (year(invoicechargegandenganheader.tglapproval) <= 2000) then null else invoicechargegandenganheader.tglapproval end ) as tglapproval'),
@@ -82,6 +82,76 @@ class InvoiceChargeGandenganHeader extends MyModel
                 
             );
     }
+    
+    public function createTemp(string $modelTable)
+    {
+        $this->setRequestParameters();
+
+        $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+
+        Schema::create($temp, function ($table) {
+
+            $table->bigInteger('id')->default('0');
+            $table->string('nobukti', 50)->unique();
+            $table->date('tglbukti')->default('1900/1/1');
+            $table->date('tglproses')->default('1900/1/1');
+            $table->unsignedBigInteger('agen_id')->default('0');
+            $table->double('nominal')->default('0');
+            $table->integer('statuscetak')->length(11)->default('0');
+            $table->string('userbukacetak', 50)->default('');
+            $table->dateTime('tglbukacetak')->default('1900/1/1');
+            $table->integer('jumlahcetak')->length(11)->default('0');
+            $table->integer('statusapproval')->length(11)->default('0');
+            $table->string('userapproval', 50)->default('');
+            $table->unsignedBigInteger('statusformat')->default(0);
+            $table->string('modifiedby', 50)->default('');
+            $table->dateTime('created_at')->default('1900/1/1');
+            $table->dateTime('updated_at')->default('1900/1/1');
+            $table->increments('position');
+        });
+
+        $query = DB::table($modelTable);
+        $query = $query->from(
+            DB::raw($this->table . " with (readuncommitted)")
+        )
+            ->select(
+                "$this->table.id",
+                "$this->table.nobukti",
+                "$this->table.tglbukti",
+                "$this->table.tglproses",
+                "$this->table.agen_id",
+                "$this->table.nominal",
+                "$this->table.statusapproval",
+                "$this->table.userapproval",
+                "$this->table.statusformat",
+                "$this->table.userbukacetak",
+                "$this->table.tglbukacetak",
+                "$this->table.jumlahcetak",
+                "$this->table.modifiedby"
+            );
+
+        $query = $this->sort($query);
+        $models = $this->filter($query);
+
+        DB::table($temp)->insertUsing([
+            'id',
+            'nobukti',
+            'tglbukti',
+            'tglproses',
+            'agen_id',
+            'nominal',
+            'statusapproval',
+            'userapproval',
+            'statusformat',
+            'userbukacetak',
+            'tglbukacetak',
+            'jumlahcetak',
+            'modifiedby',
+        ], $models);
+
+        return $temp;
+    }
+
     public function find($id)
     {
         $this->setRequestParameters();
@@ -98,6 +168,32 @@ class InvoiceChargeGandenganHeader extends MyModel
         $data = $query->where("$this->table.id", $id)->first();
         return $data;
     }
+
+
+    public function getInvoiceGandengan($id){
+        $query = DB::table('invoicechargegandengandetail')->from(DB::raw("invoicechargegandengandetail with (readuncommitted)"));
+
+            $query->select(
+                'invoicechargegandengandetail.id',
+                'header.nobukti as nobukti_header',
+                'header.tglbukti',
+                'header.nominal as nominal_header',
+                'invoicechargegandengandetail.jobtrucking',
+                'invoicechargegandengandetail.tgltrip',
+                'invoicechargegandengandetail.jumlahhari',
+                'invoicechargegandengandetail.nominal as nominal_detail',
+                'invoicechargegandengandetail.trado_id',
+                'trado.kodetrado as nopolisi',
+                'invoicechargegandengandetail.keterangan',
+            )
+                ->leftJoin(DB::raw("invoicechargegandenganheader as header with (readuncommitted)"), 'header.id', 'invoicechargegandengandetail.invoicechargegandengan_id')
+                ->leftJoin(DB::raw("trado with (readuncommitted)"), 'trado.id', 'invoicechargegandengandetail.trado_id');
+
+
+            $query->where('invoicechargegandengandetail.invoicechargegandengan_id', '=', $id);
+            return $query->get();
+    }
+
     public function sort($query)
     {
         return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);

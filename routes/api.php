@@ -559,6 +559,8 @@ route::middleware(['auth:api'])->group(function () {
     Route::resource('invoiceextraheader', InvoiceExtraHeaderController::class);
     Route::resource('invoiceextradetail', InvoiceExtraDetailController::class);
     
+    Route::post('invoicechargegandenganheader/{id}/cekvalidasi', [InvoiceChargeGandenganHeaderController::class, 'cekvalidasi'])->name('invoicechargegandenganheader.cekvalidasi');
+    Route::get('invoicechargegandenganheader/{id}/getinvoicegandengan', [InvoiceChargeGandenganHeaderController::class, 'getinvoicegandengan'])->name('invoicechargegandenganheader.getinvoicegandengan');
     Route::resource('invoicechargegandenganheader', InvoiceChargeGandenganHeaderController::class);
     Route::resource('invoicechargegandengandetail', InvoiceChargeGandenganDetailController::class);
     
@@ -1015,6 +1017,7 @@ Route::get('orderantrucking/default', [OrderanTruckingController::class, 'defaul
 Route::post('orderantrucking/{id}/cekValidasi', [OrderanTruckingController::class, 'cekValidasi'])->name('orderantrucking.cekValidasi');
 Route::get('orderantrucking/{id}/getagentas', [OrderanTruckingController::class, 'getagentas']);
 Route::get('orderantrucking/{id}/getcont', [OrderanTruckingController::class, 'getcont']);
+Route::get('orderantrucking/getorderantrip', [OrderanTruckingController::class, 'getOrderanTrip']);
 Route::resource('orderantrucking', OrderanTruckingController::class);
 
 Route::resource('jobtrucking', JobTruckingController::class);

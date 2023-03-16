@@ -252,6 +252,38 @@ class OrderanTrucking extends MyModel
 
         return $data;
     }
+    public function getOrderanTrip($tglproses,$agen)
+    {
+        $data =[
+            [
+                "id" =>1,
+                "jobtrucking"=>"III/ V /00001",
+                "tgltrip"=>"2022-09-12",
+                "jumlahhari"=>"11",
+                "nominal_detail"=>"21000000",
+                "nopolisi"=>"BK 1234 AB",
+                "keterangan"=>"keterangan id 1",
+            ], [
+                "id" =>2,
+                "jobtrucking"=>"III/ V /00002",
+                "tgltrip"=>"2022-09-12",
+                "jumlahhari"=>"12",
+                "nominal_detail"=>"22000000",
+                "nopolisi"=>"BK 4567 AB",
+                "keterangan"=>"keterangan id 2",
+            ], [
+                "id" =>3,
+                "jobtrucking"=>"III/ V /00003",
+                "tgltrip"=>"2022-09-12",
+                "jumlahhari"=>"13",
+                "nominal_detail"=>"23000000",
+                "nopolisi"=>"BK 1234 AB",
+                "keterangan"=>"keterangan id 3",
+            ]
+        ];
+            
+        return $data;
+    }
 
     public function agen()
     {
