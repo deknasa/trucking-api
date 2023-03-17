@@ -23,6 +23,7 @@ class CreateBankTable extends Migration
             $table->string('namabank', 50)->default('');
             $table->string('coa', 50)->default('');
             $table->string('tipe', 50)->default('');
+            $table->integer('statusdefault')->length(11)->default(0);
             $table->integer('statusaktif')->length(11)->default(0);
             $table->integer('formatpenerimaan')->length(11)->default(0);
             $table->integer('formatpengeluaran')->length(11)->default(0);
