@@ -77,6 +77,7 @@ class AbsensiSupirHeader extends MyModel
             'absensisupirheader.created_at',
             'absensisupirheader.updated_at'
         )
+            ->whereBetween('tglbukti', [date('Y-m-d',strtotime(request()->tgldari)), date('Y-m-d',strtotime(request()->tglsampai))])
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'absensisupirheader.statuscetak', 'statuscetak.id');
 
            
@@ -87,8 +88,6 @@ class AbsensiSupirHeader extends MyModel
         $this->sort($query);
         $this->filter($query);
         $this->paginate($query);
-        // dd('test');
-        // dd($query);
         $data = $query->get();
         return $data;
     }
@@ -247,9 +246,11 @@ class AbsensiSupirHeader extends MyModel
 
                     break;
                 case "OR":
-                    foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                    }
+                    $query = $query->where(function($query){
+                        foreach ($this->params['filters']['rules'] as $index => $filters) {
+                            $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                        }
+                    });
 
                     break;
                 default:
