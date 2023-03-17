@@ -27,18 +27,16 @@ class CreateInvoicedetailTable extends Migration
             $table->longText('keterangan')->default('');
             $table->string('modifiedby', 50)->default('');
             $table->string('orderantrucking_nobukti', 50)->default('');
-            $table->string('suratpengantar_nobukti', 50)->default('');
+            $table->longText('suratpengantar_nobukti')->default('');
             $table->timestamps();
 
             $table->foreign('invoice_id', 'invoicedetail_invoiceheader_invoice_idforeign')->references('id')->on('invoiceheader')->onDelete('cascade');    
-            $table->foreign('suratpengantar_nobukti', 'invoicedetail_suratpengantar_suratpengantar_nobukti_foreign')->references('nobukti')->on('suratpengantar');
             $table->foreign('orderantrucking_nobukti', 'invoicedetail_orderantrucking_orderantrucking_nobukti_foreign')->references('nobukti')->on('orderantrucking');
 
 
         });
 
         
-        DB::statement("ALTER TABLE invoicedetail NOCHECK CONSTRAINT invoicedetail_suratpengantar_suratpengantar_nobukti_foreign");
         DB::statement("ALTER TABLE invoicedetail NOCHECK CONSTRAINT invoicedetail_orderantrucking_orderantrucking_nobukti_foreign");
     }
 

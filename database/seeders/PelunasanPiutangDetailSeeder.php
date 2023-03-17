@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\PelunasanPiutangDetail;
+use Illuminate\Support\Facades\DB;
 
 class PelunasanPiutangDetailSeeder extends Seeder
 {
@@ -14,65 +15,42 @@ class PelunasanPiutangDetailSeeder extends Seeder
      */
     public function run()
     {
-        PelunasanPiutangDetail::create([
-            'nobukti' => 'PPT 0001/V/2022',
-            // 'tgl'=> '2022/5/17',
-            'pelunasanpiutang_id'=> 1,
-            'pelanggan_id'=> 1,
-            'agen_id'=> 1,
-            'nominal'=> 1021000,
-            'piutang_nobukti' => 'EPT 0001/IV/2022',
-            'cicilan' => 0,
-            'tglcair' => '2022/5/17',
-            'keterangan' => 'PELUNASAN PIUTANG',
-            'tgljt' => '2022/5/17',
-            'penyesuaian'=> 0,
-            'coapenyesuaian' => '',
-            'invoice_nobukti' => 'INV 0001/IV/2022',
-            'keteranganpenyesuaian' => '',
-            'modifiedby' => 'ADMIN',
-        ]);
+        DB::statement("delete pelunasanpiutangdetail");
+        DB::statement("DBCC CHECKIDENT ('pelunasanpiutangdetail', RESEED, 1);");
 
-        PelunasanPiutangDetail::create([
-            'nobukti' => 'PPT 0002/V/2022',
-            // 'tgl'=> '2022/5/20',
-            'pelunasanpiutang_id'=> 2,
-            'pelanggan_id'=> 1,
-            'agen_id'=> 1,
-            'nominal'=> 0,
-            'piutang_nobukti' => 'EPT 0002/IV/2022',
-            'cicilan' => 0,
-            'tglcair' => '2022/5/20',
-            'keterangan' => 'PELUNASAN PIUTANG',
-            'tgljt' => '2022/5/20',
-            'penyesuaian'=> 300000,
-            'coapenyesuaian' => '06.03.01.01',
-            'nominallebihbayar'=> 0,
-            'coalebihbayar' => '',
-            'invoice_nobukti' => 'INE 0001/IV/2022',
-            'keteranganpenyesuaian' => '',
-            'modifiedby' => 'ADMIN',
-        ]);
-
-        PelunasanPiutangDetail::create([
-            'nobukti' => 'PPT 0003/V/2022',
-            // 'tgl'=> '2022/5/20',
-            'pelunasanpiutang_id'=> 3,
-            'pelanggan_id'=> 1,
-            'agen_id'=> 1,
-            'nominal'=> 100000,
-            'piutang_nobukti' => 'EPT 0003/IV/2022',
-            'cicilan' => 0,
-            'tglcair' => '2022/5/20',
-            'keterangan' => 'PELUNASAN PIUTANG',
-            'tgljt' => '2022/5/20',
-            'penyesuaian'=> 0,
-            'coapenyesuaian' => '',
-            'nominallebihbayar'=> 5000,
-            'coalebihbayar' => '06.02.01.01',
-            'invoice_nobukti' => '',
-            'keteranganpenyesuaian' => '',
-            'modifiedby' => 'ADMIN',
-        ]);
+        pelunasanpiutangdetail::create(['pelunasanpiutang_id' => '1', 'nobukti' => 'PPT 0001/II/2023', 'nominal' => '700000', 'piutang_nobukti' => 'EPT 0005/I/2023', 'keterangan' => 'PELUNASAM B. SEWA TAS AHAI BULAN JANUARI 2023 INV. 0005/I/2023 = RP. 700.000', 'potongan' => '0', 'coapotongan' => '', 'nominallebihbayar' => '0', 'coalebihbayar' => '', 'invoice_nobukti' => 'INV 0005/I/2023', 'keteranganpotongan' => '', 'modifiedby' => 'ADMIN',]);
+        pelunasanpiutangdetail::create(['pelunasanpiutang_id' => '2', 'nobukti' => 'PPT 0002/II/2023', 'nominal' => '7200000', 'piutang_nobukti' => 'EPT 0001/I/2023', 'keterangan' => 'PELUNASAN PIUTANG TAS AP INV. 0001/I/2023 = RP. 7.200.000', 'potongan' => '0', 'coapotongan' => '', 'nominallebihbayar' => '0', 'coalebihbayar' => '', 'invoice_nobukti' => 'INV 0001/I/2023', 'keteranganpotongan' => '', 'modifiedby' => 'ADMIN',]);
+        pelunasanpiutangdetail::create(['pelunasanpiutang_id' => '3', 'nobukti' => 'PPT 0003/II/2023', 'nominal' => '30052250', 'piutang_nobukti' => 'EPT 0002/I/2023', 'keterangan' => 'PELUNASAN PIUTANG TAS AP INV. 0002-0004, 0010, 0013-0014, 0021/I/2023 = RP. 88.681.000', 'potongan' => '0', 'coapotongan' => '', 'nominallebihbayar' => '0', 'coalebihbayar' => '', 'invoice_nobukti' => 'INV 0002/I/2023', 'keteranganpotongan' => '', 'modifiedby' => 'ADMIN',]);
+        pelunasanpiutangdetail::create(['pelunasanpiutang_id' => '3', 'nobukti' => 'PPT 0003/II/2023', 'nominal' => '4692500', 'piutang_nobukti' => 'EPT 0003/I/2023', 'keterangan' => 'PELUNASAN PIUTANG TAS AP INV. 0002-0004, 0010, 0013-0014, 0021/I/2023 = RP. 88.681.000', 'potongan' => '0', 'coapotongan' => '', 'nominallebihbayar' => '0', 'coalebihbayar' => '', 'invoice_nobukti' => 'INV 0003/I/2023', 'keteranganpotongan' => '', 'modifiedby' => 'ADMIN',]);
+        pelunasanpiutangdetail::create(['pelunasanpiutang_id' => '3', 'nobukti' => 'PPT 0003/II/2023', 'nominal' => '8505250', 'piutang_nobukti' => 'EPT 0004/I/2023', 'keterangan' => 'PELUNASAN PIUTANG TAS AP INV. 0002-0004, 0010, 0013-0014, 0021/I/2023 = RP. 88.681.000', 'potongan' => '0', 'coapotongan' => '', 'nominallebihbayar' => '0', 'coalebihbayar' => '', 'invoice_nobukti' => 'INV 0004/I/2023', 'keteranganpotongan' => '', 'modifiedby' => 'ADMIN',]);
+        pelunasanpiutangdetail::create(['pelunasanpiutang_id' => '3', 'nobukti' => 'PPT 0003/II/2023', 'nominal' => '5135000', 'piutang_nobukti' => 'EPT 0010/I/2023', 'keterangan' => 'PELUNASAN PIUTANG TAS AP INV. 0002-0004, 0010, 0013-0014, 0021/I/2023 = RP. 88.681.000', 'potongan' => '0', 'coapotongan' => '', 'nominallebihbayar' => '0', 'coalebihbayar' => '', 'invoice_nobukti' => 'INV 0010/I/2023', 'keteranganpotongan' => '', 'modifiedby' => 'ADMIN',]);
+        pelunasanpiutangdetail::create(['pelunasanpiutang_id' => '3', 'nobukti' => 'PPT 0003/II/2023', 'nominal' => '15832000', 'piutang_nobukti' => 'EPT 0013/I/2023', 'keterangan' => 'PELUNASAN PIUTANG TAS AP INV. 0002-0004, 0010, 0013-0014, 0021/I/2023 = RP. 88.681.000', 'potongan' => '0', 'coapotongan' => '', 'nominallebihbayar' => '0', 'coalebihbayar' => '', 'invoice_nobukti' => 'INV 0013/I/2023', 'keteranganpotongan' => '', 'modifiedby' => 'ADMIN',]);
+        pelunasanpiutangdetail::create(['pelunasanpiutang_id' => '3', 'nobukti' => 'PPT 0003/II/2023', 'nominal' => '16800000', 'piutang_nobukti' => 'EPT 0014/I/2023', 'keterangan' => 'PELUNASAN PIUTANG TAS AP INV. 0002-0004, 0010, 0013-0014, 0021/I/2023 = RP. 88.681.000', 'potongan' => '0', 'coapotongan' => '', 'nominallebihbayar' => '0', 'coalebihbayar' => '', 'invoice_nobukti' => 'INV 0014/I/2023', 'keteranganpotongan' => '', 'modifiedby' => 'ADMIN',]);
+        pelunasanpiutangdetail::create(['pelunasanpiutang_id' => '3', 'nobukti' => 'PPT 0003/II/2023', 'nominal' => '7664000', 'piutang_nobukti' => 'EPT 0021/I/2023', 'keterangan' => 'PELUNASAN PIUTANG TAS AP INV. 0002-0004, 0010, 0013-0014, 0021/I/2023 = RP. 88.681.000', 'potongan' => '0', 'coapotongan' => '', 'nominallebihbayar' => '0', 'coalebihbayar' => '', 'invoice_nobukti' => 'INV 0021/I/2023', 'keteranganpotongan' => '', 'modifiedby' => 'ADMIN',]);
+        pelunasanpiutangdetail::create(['pelunasanpiutang_id' => '4', 'nobukti' => 'PPT 0004/II/2023', 'nominal' => '32662750', 'piutang_nobukti' => 'EPT 0008/I/2023', 'keterangan' => 'PELUNASAN PIUTANG TAS AP INV. 0008, 0011-0012, 0018, 0020/I/2023 = RP. 70.426.000', 'potongan' => '0', 'coapotongan' => '', 'nominallebihbayar' => '0', 'coalebihbayar' => '', 'invoice_nobukti' => 'INV 0008/I/2023', 'keteranganpotongan' => '', 'modifiedby' => 'ADMIN',]);
+        pelunasanpiutangdetail::create(['pelunasanpiutang_id' => '4', 'nobukti' => 'PPT 0004/II/2023', 'nominal' => '24531250', 'piutang_nobukti' => 'EPT 0011/I/2023', 'keterangan' => 'PELUNASAN PIUTANG TAS AP INV. 0008, 0011-0012, 0018, 0020/I/2023 = RP. 70.426.000', 'potongan' => '0', 'coapotongan' => '', 'nominallebihbayar' => '0', 'coalebihbayar' => '', 'invoice_nobukti' => 'INV 0011/I/2023', 'keteranganpotongan' => '', 'modifiedby' => 'ADMIN',]);
+        pelunasanpiutangdetail::create(['pelunasanpiutang_id' => '4', 'nobukti' => 'PPT 0004/II/2023', 'nominal' => '5250000', 'piutang_nobukti' => 'EPT 0012/I/2023', 'keterangan' => 'PELUNASAN PIUTANG TAS AP INV. 0008, 0011-0012, 0018, 0020/I/2023 = RP. 70.426.000', 'potongan' => '0', 'coapotongan' => '', 'nominallebihbayar' => '0', 'coalebihbayar' => '', 'invoice_nobukti' => 'INV 0012/I/2023', 'keteranganpotongan' => '', 'modifiedby' => 'ADMIN',]);
+        pelunasanpiutangdetail::create(['pelunasanpiutang_id' => '4', 'nobukti' => 'PPT 0004/II/2023', 'nominal' => '1750000', 'piutang_nobukti' => 'EPT 0018/I/2023', 'keterangan' => 'PELUNASAN PIUTANG TAS AP INV. 0008, 0011-0012, 0018, 0020/I/2023 = RP. 70.426.000', 'potongan' => '0', 'coapotongan' => '', 'nominallebihbayar' => '0', 'coalebihbayar' => '', 'invoice_nobukti' => 'INV 0018/I/2023', 'keteranganpotongan' => '', 'modifiedby' => 'ADMIN',]);
+        pelunasanpiutangdetail::create(['pelunasanpiutang_id' => '4', 'nobukti' => 'PPT 0004/II/2023', 'nominal' => '6232000', 'piutang_nobukti' => 'EPT 0020/I/2023', 'keterangan' => 'PELUNASAN PIUTANG TAS AP INV. 0008, 0011-0012, 0018, 0020/I/2023 = RP. 70.426.000', 'potongan' => '0', 'coapotongan' => '', 'nominallebihbayar' => '0', 'coalebihbayar' => '', 'invoice_nobukti' => 'INV 0020/I/2023', 'keteranganpotongan' => '', 'modifiedby' => 'ADMIN',]);
+        pelunasanpiutangdetail::create(['pelunasanpiutang_id' => '5', 'nobukti' => 'PPT 0005/II/2023', 'nominal' => '49023750', 'piutang_nobukti' => 'EPT 0016/I/2023', 'keterangan' => 'PELUNASAN PIUTANG TAS AP INV. 0016-0017, 0019, 0023-0031, 0033-0040/I/2023 = RP. 278.656.500', 'potongan' => '0', 'coapotongan' => '', 'nominallebihbayar' => '0', 'coalebihbayar' => '', 'invoice_nobukti' => 'INV 0016/I/2023', 'keteranganpotongan' => '', 'modifiedby' => 'ADMIN',]);
+        pelunasanpiutangdetail::create(['pelunasanpiutang_id' => '5', 'nobukti' => 'PPT 0005/II/2023', 'nominal' => '10941500', 'piutang_nobukti' => 'EPT 0017/I/2023', 'keterangan' => 'PELUNASAN PIUTANG TAS AP INV. 0016-0017, 0019, 0023-0031, 0033-0040/I/2023 = RP. 278.656.500', 'potongan' => '0', 'coapotongan' => '', 'nominallebihbayar' => '0', 'coalebihbayar' => '', 'invoice_nobukti' => 'INV 0017/I/2023', 'keteranganpotongan' => '', 'modifiedby' => 'ADMIN',]);
+        pelunasanpiutangdetail::create(['pelunasanpiutang_id' => '5', 'nobukti' => 'PPT 0005/II/2023', 'nominal' => '26827750', 'piutang_nobukti' => 'EPT 0019/I/2023', 'keterangan' => 'PELUNASAN PIUTANG TAS AP INV. 0016-0017, 0019, 0023-0031, 0033-0040/I/2023 = RP. 278.656.500', 'potongan' => '0', 'coapotongan' => '', 'nominallebihbayar' => '0', 'coalebihbayar' => '', 'invoice_nobukti' => 'INV 0019/I/2023', 'keteranganpotongan' => '', 'modifiedby' => 'ADMIN',]);
+        pelunasanpiutangdetail::create(['pelunasanpiutang_id' => '5', 'nobukti' => 'PPT 0005/II/2023', 'nominal' => '51857500', 'piutang_nobukti' => 'EPT 0023/I/2023', 'keterangan' => 'PELUNASAN PIUTANG TAS AP INV. 0016-0017, 0019, 0023-0031, 0033-0040/I/2023 = RP. 278.656.500', 'potongan' => '0', 'coapotongan' => '', 'nominallebihbayar' => '0', 'coalebihbayar' => '', 'invoice_nobukti' => 'INV 0023/I/2023', 'keteranganpotongan' => '', 'modifiedby' => 'ADMIN',]);
+        pelunasanpiutangdetail::create(['pelunasanpiutang_id' => '5', 'nobukti' => 'PPT 0005/II/2023', 'nominal' => '6232000', 'piutang_nobukti' => 'EPT 0024/I/2023', 'keterangan' => 'PELUNASAN PIUTANG TAS AP INV. 0016-0017, 0019, 0023-0031, 0033-0040/I/2023 = RP. 278.656.500', 'potongan' => '0', 'coapotongan' => '', 'nominallebihbayar' => '0', 'coalebihbayar' => '', 'invoice_nobukti' => 'INV 0024/I/2023', 'keteranganpotongan' => '', 'modifiedby' => 'ADMIN',]);
+        pelunasanpiutangdetail::create(['pelunasanpiutang_id' => '5', 'nobukti' => 'PPT 0005/II/2023', 'nominal' => '10886000', 'piutang_nobukti' => 'EPT 0025/I/2023', 'keterangan' => 'PELUNASAN PIUTANG TAS AP INV. 0016-0017, 0019, 0023-0031, 0033-0040/I/2023 = RP. 278.656.500', 'potongan' => '0', 'coapotongan' => '', 'nominallebihbayar' => '0', 'coalebihbayar' => '', 'invoice_nobukti' => 'INV 0025/I/2023', 'keteranganpotongan' => '', 'modifiedby' => 'ADMIN',]);
+        pelunasanpiutangdetail::create(['pelunasanpiutang_id' => '5', 'nobukti' => 'PPT 0005/II/2023', 'nominal' => '17837250', 'piutang_nobukti' => 'EPT 0026/I/2023', 'keterangan' => 'PELUNASAN PIUTANG TAS AP INV. 0016-0017, 0019, 0023-0031, 0033-0040/I/2023 = RP. 278.656.500', 'potongan' => '0', 'coapotongan' => '', 'nominallebihbayar' => '0', 'coalebihbayar' => '', 'invoice_nobukti' => 'INV 0026/I/2023', 'keteranganpotongan' => '', 'modifiedby' => 'ADMIN',]);
+        pelunasanpiutangdetail::create(['pelunasanpiutang_id' => '5', 'nobukti' => 'PPT 0005/II/2023', 'nominal' => '2625000', 'piutang_nobukti' => 'EPT 0027/I/2023', 'keterangan' => 'PELUNASAN PIUTANG TAS AP INV. 0016-0017, 0019, 0023-0031, 0033-0040/I/2023 = RP. 278.656.500', 'potongan' => '0', 'coapotongan' => '', 'nominallebihbayar' => '0', 'coalebihbayar' => '', 'invoice_nobukti' => 'INV 0027/I/2023', 'keteranganpotongan' => '', 'modifiedby' => 'ADMIN',]);
+        pelunasanpiutangdetail::create(['pelunasanpiutang_id' => '5', 'nobukti' => 'PPT 0005/II/2023', 'nominal' => '3500000', 'piutang_nobukti' => 'EPT 0028/I/2023', 'keterangan' => 'PELUNASAN PIUTANG TAS AP INV. 0016-0017, 0019, 0023-0031, 0033-0040/I/2023 = RP. 278.656.500', 'potongan' => '0', 'coapotongan' => '', 'nominallebihbayar' => '0', 'coalebihbayar' => '', 'invoice_nobukti' => 'INV 0028/I/2023', 'keteranganpotongan' => '', 'modifiedby' => 'ADMIN',]);
+        pelunasanpiutangdetail::create(['pelunasanpiutang_id' => '5', 'nobukti' => 'PPT 0005/II/2023', 'nominal' => '2625000', 'piutang_nobukti' => 'EPT 0029/I/2023', 'keterangan' => 'PELUNASAN PIUTANG TAS AP INV. 0016-0017, 0019, 0023-0031, 0033-0040/I/2023 = RP. 278.656.500', 'potongan' => '0', 'coapotongan' => '', 'nominallebihbayar' => '0', 'coalebihbayar' => '', 'invoice_nobukti' => 'INV 0029/I/2023', 'keteranganpotongan' => '', 'modifiedby' => 'ADMIN',]);
+        pelunasanpiutangdetail::create(['pelunasanpiutang_id' => '5', 'nobukti' => 'PPT 0005/II/2023', 'nominal' => '2625000', 'piutang_nobukti' => 'EPT 0030/I/2023', 'keterangan' => 'PELUNASAN PIUTANG TAS AP INV. 0016-0017, 0019, 0023-0031, 0033-0040/I/2023 = RP. 278.656.500', 'potongan' => '0', 'coapotongan' => '', 'nominallebihbayar' => '0', 'coalebihbayar' => '', 'invoice_nobukti' => 'INV 0030/I/2023', 'keteranganpotongan' => '', 'modifiedby' => 'ADMIN',]);
+        pelunasanpiutangdetail::create(['pelunasanpiutang_id' => '5', 'nobukti' => 'PPT 0005/II/2023', 'nominal' => '2625000', 'piutang_nobukti' => 'EPT 0031/I/2023', 'keterangan' => 'PELUNASAN PIUTANG TAS AP INV. 0016-0017, 0019, 0023-0031, 0033-0040/I/2023 = RP. 278.656.500', 'potongan' => '0', 'coapotongan' => '', 'nominallebihbayar' => '0', 'coalebihbayar' => '', 'invoice_nobukti' => 'INV 0031/I/2023', 'keteranganpotongan' => '', 'modifiedby' => 'ADMIN',]);
+        pelunasanpiutangdetail::create(['pelunasanpiutang_id' => '5', 'nobukti' => 'PPT 0005/II/2023', 'nominal' => '44957000', 'piutang_nobukti' => 'EPT 0033/I/2023', 'keterangan' => 'PELUNASAN PIUTANG TAS AP INV. 0016-0017, 0019, 0023-0031, 0033-0040/I/2023 = RP. 278.656.500', 'potongan' => '0', 'coapotongan' => '', 'nominallebihbayar' => '0', 'coalebihbayar' => '', 'invoice_nobukti' => 'INV 0033/I/2023', 'keteranganpotongan' => '', 'modifiedby' => 'ADMIN',]);
+        pelunasanpiutangdetail::create(['pelunasanpiutang_id' => '5', 'nobukti' => 'PPT 0005/II/2023', 'nominal' => '8298750', 'piutang_nobukti' => 'EPT 0034/I/2023', 'keterangan' => 'PELUNASAN PIUTANG TAS AP INV. 0016-0017, 0019, 0023-0031, 0033-0040/I/2023 = RP. 278.656.500', 'potongan' => '0', 'coapotongan' => '', 'nominallebihbayar' => '0', 'coalebihbayar' => '', 'invoice_nobukti' => 'INV 0034/I/2023', 'keteranganpotongan' => '', 'modifiedby' => 'ADMIN',]);
+        pelunasanpiutangdetail::create(['pelunasanpiutang_id' => '5', 'nobukti' => 'PPT 0005/II/2023', 'nominal' => '17740000', 'piutang_nobukti' => 'EPT 0035/I/2023', 'keterangan' => 'PELUNASAN PIUTANG TAS AP INV. 0016-0017, 0019, 0023-0031, 0033-0040/I/2023 = RP. 278.656.500', 'potongan' => '0', 'coapotongan' => '', 'nominallebihbayar' => '0', 'coalebihbayar' => '', 'invoice_nobukti' => 'INV 0035/I/2023', 'keteranganpotongan' => '', 'modifiedby' => 'ADMIN',]);
+        pelunasanpiutangdetail::create(['pelunasanpiutang_id' => '5', 'nobukti' => 'PPT 0005/II/2023', 'nominal' => '8235250', 'piutang_nobukti' => 'EPT 0036/I/2023', 'keterangan' => 'PELUNASAN PIUTANG TAS AP INV. 0016-0017, 0019, 0023-0031, 0033-0040/I/2023 = RP. 278.656.500', 'potongan' => '0', 'coapotongan' => '', 'nominallebihbayar' => '0', 'coalebihbayar' => '', 'invoice_nobukti' => 'INV 0036/I/2023', 'keteranganpotongan' => '', 'modifiedby' => 'ADMIN',]);
+        pelunasanpiutangdetail::create(['pelunasanpiutang_id' => '5', 'nobukti' => 'PPT 0005/II/2023', 'nominal' => '6060750', 'piutang_nobukti' => 'EPT 0037/I/2023', 'keterangan' => 'PELUNASAN PIUTANG TAS AP INV. 0016-0017, 0019, 0023-0031, 0033-0040/I/2023 = RP. 278.656.500', 'potongan' => '0', 'coapotongan' => '', 'nominallebihbayar' => '0', 'coalebihbayar' => '', 'invoice_nobukti' => 'INV 0037/I/2023', 'keteranganpotongan' => '', 'modifiedby' => 'ADMIN',]);
+        pelunasanpiutangdetail::create(['pelunasanpiutang_id' => '5', 'nobukti' => 'PPT 0005/II/2023', 'nominal' => '4866500', 'piutang_nobukti' => 'EPT 0038/I/2023', 'keterangan' => 'PELUNASAN PIUTANG TAS AP INV. 0016-0017, 0019, 0023-0031, 0033-0040/I/2023 = RP. 278.656.500', 'potongan' => '0', 'coapotongan' => '', 'nominallebihbayar' => '0', 'coalebihbayar' => '', 'invoice_nobukti' => 'INV 0038/I/2023', 'keteranganpotongan' => '', 'modifiedby' => 'ADMIN',]);
+        pelunasanpiutangdetail::create(['pelunasanpiutang_id' => '5', 'nobukti' => 'PPT 0005/II/2023', 'nominal' => '446250', 'piutang_nobukti' => 'EPT 0039/I/2023', 'keterangan' => 'PELUNASAN PIUTANG TAS AP INV. 0016-0017, 0019, 0023-0031, 0033-0040/I/2023 = RP. 278.656.500', 'potongan' => '0', 'coapotongan' => '', 'nominallebihbayar' => '0', 'coalebihbayar' => '', 'invoice_nobukti' => 'INV 0039/I/2023', 'keteranganpotongan' => '', 'modifiedby' => 'ADMIN',]);
+        pelunasanpiutangdetail::create(['pelunasanpiutang_id' => '5', 'nobukti' => 'PPT 0005/II/2023', 'nominal' => '446250', 'piutang_nobukti' => 'EPT 0040/I/2023', 'keterangan' => 'PELUNASAN PIUTANG TAS AP INV. 0016-0017, 0019, 0023-0031, 0033-0040/I/2023 = RP. 278.656.500', 'potongan' => '0', 'coapotongan' => '', 'nominallebihbayar' => '0', 'coalebihbayar' => '', 'invoice_nobukti' => 'INV 0040/I/2023', 'keteranganpotongan' => '', 'modifiedby' => 'ADMIN',]);
     }
 }
