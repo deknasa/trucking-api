@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+
 class ProsesGajiSupirHeader extends MyModel
 {
     use HasFactory;
@@ -24,31 +25,32 @@ class ProsesGajiSupirHeader extends MyModel
         'updated_at',
     ];
 
-    public function get() {
+    public function get()
+    {
         $this->setRequestParameters();
 
         $query = DB::table($this->table)->from(DB::raw("prosesgajisupirheader with (readuncommitted)"))
-        ->select(
-            'prosesgajisupirheader.id',
-            'prosesgajisupirheader.nobukti',
-            'prosesgajisupirheader.tglbukti',
-            'prosesgajisupirheader.tgldari',
-            'prosesgajisupirheader.tglsampai',
-            'statusapproval.memo as statusapproval',
-            'prosesgajisupirheader.userapproval',
-            DB::raw('(case when (year(prosesgajisupirheader.tglapproval) <= 2000) then null else prosesgajisupirheader.tglapproval end ) as tglapproval'),
-            DB::raw('(case when (year(prosesgajisupirheader.tglbukacetak) <= 2000) then null else prosesgajisupirheader.tglbukacetak end ) as tglbukacetak'),
-            'statuscetak.memo as statuscetak',
-            'prosesgajisupirheader.userbukacetak',
-            'prosesgajisupirheader.jumlahcetak',
-            'prosesgajisupirheader.periode',
-            'prosesgajisupirheader.modifiedby',
-            'prosesgajisupirheader.created_at',
-            'prosesgajisupirheader.updated_at',
-        )
-        ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"),'prosesgajisupirheader.statuscetak','statuscetak.id')
-        ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"),'prosesgajisupirheader.statusapproval','statusapproval.id');
-            
+            ->select(
+                'prosesgajisupirheader.id',
+                'prosesgajisupirheader.nobukti',
+                'prosesgajisupirheader.tglbukti',
+                'prosesgajisupirheader.tgldari',
+                'prosesgajisupirheader.tglsampai',
+                'statusapproval.memo as statusapproval',
+                'prosesgajisupirheader.userapproval',
+                DB::raw('(case when (year(prosesgajisupirheader.tglapproval) <= 2000) then null else prosesgajisupirheader.tglapproval end ) as tglapproval'),
+                DB::raw('(case when (year(prosesgajisupirheader.tglbukacetak) <= 2000) then null else prosesgajisupirheader.tglbukacetak end ) as tglbukacetak'),
+                'statuscetak.memo as statuscetak',
+                'prosesgajisupirheader.userbukacetak',
+                'prosesgajisupirheader.jumlahcetak',
+                'prosesgajisupirheader.periode',
+                'prosesgajisupirheader.modifiedby',
+                'prosesgajisupirheader.created_at',
+                'prosesgajisupirheader.updated_at',
+            )
+            ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'prosesgajisupirheader.statuscetak', 'statuscetak.id')
+            ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'prosesgajisupirheader.statusapproval', 'statusapproval.id');
+
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
@@ -61,32 +63,21 @@ class ProsesGajiSupirHeader extends MyModel
         return $data;
     }
 
-    public function getRic($dari, $sampai) 
+    public function getEdit($gajiId)
     {
-        $query = GajiSupirHeader::from(DB::raw("gajisupirheader with (readuncommitted)"))
-                ->select('gajisupirheader.id','gajisupirheader.nobukti','gajisupirheader.tglbukti','supir.namasupir','gajisupirheader.tgldari','gajisupirheader.tglsampai','gajisupirheader.nominal')
-                ->leftJoin(DB::raw("supir with (readuncommitted)"),'gajisupirheader.supir_id','supir.id')
-                ->where('gajisupirheader.tglbukti','>=', $dari)
-                ->where('gajisupirheader.tglbukti','<=', $sampai);
-
-        $data = $query->get();
-        return $data;
-    }
-
-    public function getEdit($gajiId) {
         $query = ProsesGajiSupirDetail::from(DB::raw("prosesgajisupirdetail with (readuncommitted)"))
-        ->select(
-            'gajisupirheader.id',
-            'prosesgajisupirdetail.gajisupir_nobukti as nobukti',
-            'gajisupirheader.tglbukti',
-            'supir.namasupir',
-            'gajisupirheader.tgldari',
-            'gajisupirheader.tglsampai',
-            'gajisupirheader.nominal'
-        )
-        ->leftJoin(DB::raw("gajisupirheader with (readuncommitted)"),'prosesgajisupirdetail.gajisupir_nobukti','gajisupirheader.nobukti')
-        ->leftJoin(DB::raw("supir with (readuncommitted)"),'gajisupirheader.supir_id','supir.id')
-        ->where('prosesgajisupirdetail.prosesgajisupir_id',$gajiId);
+            ->select(
+                'gajisupirheader.id',
+                'prosesgajisupirdetail.gajisupir_nobukti as nobukti',
+                'gajisupirheader.tglbukti',
+                'supir.namasupir',
+                'gajisupirheader.tgldari',
+                'gajisupirheader.tglsampai',
+                'gajisupirheader.nominal'
+            )
+            ->leftJoin(DB::raw("gajisupirheader with (readuncommitted)"), 'prosesgajisupirdetail.gajisupir_nobukti', 'gajisupirheader.nobukti')
+            ->leftJoin(DB::raw("supir with (readuncommitted)"), 'gajisupirheader.supir_id', 'supir.id')
+            ->where('prosesgajisupirdetail.prosesgajisupir_id', $gajiId);
 
         $data = $query->get();
         return $data;
@@ -113,15 +104,14 @@ class ProsesGajiSupirHeader extends MyModel
             $this->table.updated_at
             ")
         )
-        ->leftJoin('parameter as statuscetak','prosesgajisupirheader.statuscetak','statuscetak.id')
-        ->leftJoin('parameter as statusapproval','prosesgajisupirheader.statusapproval','statusapproval.id');
-            
+            ->leftJoin('parameter as statuscetak', 'prosesgajisupirheader.statuscetak', 'statuscetak.id')
+            ->leftJoin('parameter as statusapproval', 'prosesgajisupirheader.statusapproval', 'statusapproval.id');
     }
 
     public function createTemp(string $modelTable)
     {
         $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-        Schema::create($temp, function ($table){
+        Schema::create($temp, function ($table) {
             $table->bigInteger('id')->default('0');
             $table->string('nobukti', 1000)->default('');
             $table->date('tglbukti')->default('');
@@ -130,8 +120,8 @@ class ProsesGajiSupirHeader extends MyModel
             $table->string('statusapproval', 1000)->default('');
             $table->string('userapproval', 1000)->default('');
             $table->date('tglapproval')->default('');
-            $table->string('statuscetak',1000)->default('');
-            $table->string('userbukacetak',50)->default('');
+            $table->string('statuscetak', 1000)->default('');
+            $table->string('userbukacetak', 50)->default('');
             $table->date('tglbukacetak')->default('1900/1/1');
             $table->integer('jumlahcetak')->Length(11)->default('0');
             $table->date('periode')->default('');
@@ -146,10 +136,135 @@ class ProsesGajiSupirHeader extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id','nobukti','tglbukti','tgldari','tglsampai','statusapproval','userapproval','tglapproval','statuscetak','userbukacetak','tglbukacetak','jumlahcetak','periode','modifiedby','created_at','updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'tgldari', 'tglsampai', 'statusapproval', 'userapproval', 'tglapproval', 'statuscetak', 'userbukacetak', 'tglbukacetak', 'jumlahcetak', 'periode', 'modifiedby', 'created_at', 'updated_at'], $models);
 
         return $temp;
     }
+
+    public function getRic($dari, $sampai)
+    {
+        $getRic = GajiSupirHeader::from(DB::raw("gajisupirheader with (readuncommitted)"))->whereRaw("tglbukti >= '$dari'")->whereRaw("tglbukti <= '$sampai'");
+    }
+
+    public function getPotSemua($dari, $sampai)
+    {
+        $gajiSupir = GajiSupirHeader::from(DB::raw("gajisupirheader with (readuncommitted)"))->whereRaw("tglbukti >= '$dari'")->whereRaw("tglbukti <= '$sampai'")
+            ->whereRaw("gajisupirheader.nobukti not in(select gajisupir_nobukti from prosesgajisupirdetail)")->get();
+
+        $total = 0;
+        foreach ($gajiSupir as $key => $value) {
+            $ricId = $value->id;
+            $potongan = GajiSupirPelunasanPinjaman::from(DB::raw("gajisupirpelunasanpinjaman with (readuncommitted)"))
+                ->select('nominal')
+                ->where('gajisupir_id', $ricId)
+                ->where('supir_id', 0)
+                ->get();
+
+            $nominal = $potongan->sum('nominal');
+            if ($nominal != 0) {
+                $total = $total + $nominal;
+            }
+        }
+        return $total;
+    }
+
+    public function getPotPribadi($dari, $sampai)
+    {
+        $gajiSupir = GajiSupirHeader::from(DB::raw("gajisupirheader with (readuncommitted)"))->whereRaw("tglbukti >= '$dari'")->whereRaw("tglbukti <= '$sampai'")
+            ->whereRaw("gajisupirheader.nobukti not in(select gajisupir_nobukti from prosesgajisupirdetail)")->get();
+        $total = 0;
+        foreach ($gajiSupir as $key => $value) {
+            $ricId = $value->id;
+            $potongan = GajiSupirPelunasanPinjaman::from(DB::raw("gajisupirpelunasanpinjaman with (readuncommitted)"))
+                ->select('nominal')
+                ->where('gajisupir_id', $ricId)
+                ->where('supir_id', '!=', 0)
+                ->get();
+
+            $nominal = $potongan->sum('nominal');
+            if ($nominal != 0) {
+                $total = $total + $nominal;
+            }
+        }
+        return $total;
+    }
+
+    public function getDeposito($dari, $sampai)
+    {
+        $gajiSupir = GajiSupirHeader::from(DB::raw("gajisupirheader with (readuncommitted)"))->whereRaw("tglbukti >= '$dari'")->whereRaw("tglbukti <= '$sampai'")
+            ->whereRaw("gajisupirheader.nobukti not in(select gajisupir_nobukti from prosesgajisupirdetail)")->get();
+        $total = 0;
+        foreach ($gajiSupir as $key => $value) {
+            $ricId = $value->id;
+            $potongan = GajiSupirDeposito::from(DB::raw("gajisupirdeposito with (readuncommitted)"))
+                ->where('gajisupir_id', $ricId)
+                ->first();
+
+            if ($potongan != null) {
+                $total = $total + $potongan->nominal;
+            }
+        }
+        return $total;
+    }
+
+    public function getBBM($dari, $sampai)
+    {
+        $gajiSupir = GajiSupirHeader::from(DB::raw("gajisupirheader with (readuncommitted)"))->whereRaw("tglbukti >= '$dari'")->whereRaw("tglbukti <= '$sampai'")
+            ->whereRaw("gajisupirheader.nobukti not in(select gajisupir_nobukti from prosesgajisupirdetail)")->get();
+        $total = 0;
+        foreach ($gajiSupir as $key => $value) {
+            $ricId = $value->id;
+            $potongan = GajiSupirBBM::from(DB::raw("gajisupirbbm with (readuncommitted)"))
+                ->where('gajisupir_id', $ricId)
+                ->first();
+
+            if ($potongan != null) {
+                $total = $total + $potongan->nominal;
+            }
+        }
+        return $total;
+    }
+
+    public function getPinjaman($dari, $sampai)
+    {
+        $gajiSupir = GajiSupirHeader::from(DB::raw("gajisupirheader with (readuncommitted)"))->whereRaw("tglbukti >= '$dari'")->whereRaw("tglbukti <= '$sampai'")
+            ->whereRaw("gajisupirheader.nobukti not in(select gajisupir_nobukti from prosesgajisupirdetail)")->get();
+        $total = 0;
+        foreach ($gajiSupir as $key => $value) {
+            $ricId = $value->id;
+            $potongan = GajiSupirPinjaman::from(DB::raw("gajisupirpinjaman with (readuncommitted)"))
+                ->where('gajisupir_id', $ricId)
+                ->first();
+
+            if ($potongan != null) {
+                $total = $total + $potongan->nominal;
+            }
+        }
+        return $total;
+    }
+
+    public function showPotSemua($id)
+    {
+        $gajidetail = ProsesGajiSupirDetail::from(DB::raw("prosesgajisupirdetail with (readuncommitted)"))->where('prosesgajisupir_id', $id)->get();
+        $total = 0;
+        $tes = '';
+        $data = [];
+        foreach ($gajidetail as $key => $value) {
+            $potongan = GajiSupirPelunasanPinjaman::from(DB::raw("gajisupirpelunasanpinjaman with (readuncommitted)"))
+                ->where('gajisupir_nobukti', $value->gajisupir_nobukti)
+                ->where('supir_id', '0')
+                ->get();
+            $fetchPS = GajiSupirPelunasanPinjaman::from(DB::raw("gajisupirpelunasanpinjaman with (readuncommitted)"))->where('gajisupir_nobukti', $value->gajisupir_nobukti)->where('supir_id', '0')->first();
+            $tes = $fetchPS->penerimaantrucking_nobukti;
+            $nominal = $potongan->sum('nominal');
+            if ($nominal != 0) {
+                $total = $total + $nominal;
+            }
+        }
+        dd($tes);
+    }
+
+
     public function sort($query)
     {
         return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
@@ -165,7 +280,7 @@ class ProsesGajiSupirHeader extends MyModel
                             $query = $query->where('statusapproval.text', '=', "$filters[data]");
                         } else if ($filters['field'] == 'statuscetak') {
                             $query = $query->where('statuscetak.text', '=', "$filters[data]");
-                        }else {
+                        } else {
                             $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
                     }
@@ -177,7 +292,7 @@ class ProsesGajiSupirHeader extends MyModel
                             $query = $query->orWhere('statusapproval.text', '=', "$filters[data]");
                         } else if ($filters['field'] == 'statuscetak') {
                             $query = $query->orWhere('statuscetak.text', '=', "$filters[data]");
-                        } else { 
+                        } else {
                             $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
                     }

@@ -29,26 +29,28 @@ class SuratPengantar extends MyModel
     {
         return $this->hasMany(SuratPengantarBiayaTambahan::class, 'suratpengantar_id');
     }
-    public function todayValidation($id){
+    public function todayValidation($id)
+    {
         $query = DB::table('suratpengantar')->from(DB::raw("suratpengantar with (readuncommitted)"))
-        ->select('tglbukti')
-        ->where('id',$id)
-        ->first();
+            ->select('tglbukti')
+            ->where('id', $id)
+            ->first();
         $tglbukti = strtotime($query->tglbukti);
         $today = strtotime('today');
-        if($tglbukti === $today) return true;
+        if ($tglbukti === $today) return true;
         return false;
     }
 
-    public function isEditAble($id){
+    public function isEditAble($id)
+    {
         $tidakBolehEdit = DB::table('suratpengantar')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS EDIT TUJUAN')->where('default', 'YA')->first();
 
         $query = DB::table('suratpengantar')->from(DB::raw("suratpengantar with (readuncommitted)"))
-        ->select('statusedittujuan as statusedit')
-        ->where('id',$id)
-        ->first();
+            ->select('statusedittujuan as statusedit')
+            ->where('id', $id)
+            ->first();
 
-        if($query->statusedit != $tidakBolehEdit->id) return true;
+        if ($query->statusedit != $tidakBolehEdit->id) return true;
         return false;
     }
 
@@ -430,9 +432,9 @@ class SuratPengantar extends MyModel
             ->first();
 
         if (isset($data)) {
-            $kondisi = [ 'status' => '0' ];
+            $kondisi = ['status' => '0'];
         } else {
-            $kondisi = [ 'status' => '1' ];
+            $kondisi = ['status' => '1'];
         }
         return $kondisi;
     }
@@ -646,45 +648,7 @@ class SuratPengantar extends MyModel
 
         return $data;
     }
-    
-    public function getTrip($supirId, $tglDari, $tglSampai)
-    {
-        
-        $this->setRequestParameters();
-        $query = SuratPengantar::from(DB::raw("suratpengantar with (readuncommitted)"))
-            ->select(
-                'suratpengantar.id',
-                'suratpengantar.nobukti as nobuktitrip',
-                'suratpengantar.tglbukti as tglbuktisp',
-                'trado.keterangan as trado_id',
-                'kotaDari.keterangan as dari_id',
-                'kotaSampai.keterangan as sampai_id',
-                'suratpengantar.nocont',
-                'suratpengantar.nosp',
-                'suratpengantar.gajisupir',
-                'suratpengantar.gajikenek',
-                'suratpengantar.komisisupir',
-            )
-            ->leftJoin(DB::raw("kota as kotaDari with (readuncommitted)"), 'suratpengantar.dari_id', 'kotaDari.id')
-            ->leftJoin(DB::raw("kota as kotaSampai with (readuncommitted)"), 'suratpengantar.sampai_id', 'kotaSampai.id')
-            ->leftJoin(DB::raw("trado with (readuncommitted)"), 'suratpengantar.trado_id', 'trado.id')
-            ->where('suratpengantar.supir_id', $supirId)
-            ->where('suratpengantar.tglbukti', '>=', $tglDari)
-            ->where('suratpengantar.tglbukti', '<=', $tglSampai)
-            ->whereRaw("suratpengantar.nobukti not in(select suratpengantar_nobukti from gajisupirdetail)");
-        $this->totalRows = $query->count();
-        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
-        $this->sort($query);
-        $this->filter($query);
-        $this->paginate($query);
-        $data = $query->get();
-
-        $this->totalGajiSupir = $query->sum('gajisupir');
-        $this->totalGajiKenek = $query->sum('gajikenek');
-        $this->totalKomisiSupir = $query->sum('komisisupir');
-        return $data;
-    }
 
     public function sort($query)
     {

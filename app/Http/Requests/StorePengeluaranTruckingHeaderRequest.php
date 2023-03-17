@@ -31,7 +31,7 @@ class StorePengeluaranTruckingHeaderRequest extends FormRequest
             ],
             'pengeluarantrucking' => 'required',
             'bank' => 'required',
-            'keterangancoa' => 'required',
+            // 'keterangancoa' => 'required',
         ];
         $relatedRequests = [
             StorePengeluaranTruckingDetailRequest::class

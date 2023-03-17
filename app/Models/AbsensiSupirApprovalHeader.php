@@ -52,6 +52,8 @@ class AbsensiSupirApprovalHeader extends MyModel
             'absensisupirapprovalheader.updated_at',
             'absensisupirapprovalheader.created_at',
         )
+        
+            ->whereBetween('tglbukti', [date('Y-m-d',strtotime(request()->tgldari)), date('Y-m-d',strtotime(request()->tglsampai))])
             ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'absensisupirapprovalheader.coakaskeluar', 'akunpusat.coa')
             ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'absensisupirapprovalheader.statusapproval', 'statusapproval.id')
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'absensisupirapprovalheader.statuscetak', 'statuscetak.id')
@@ -214,9 +216,11 @@ class AbsensiSupirApprovalHeader extends MyModel
                     }
                     break;
                 case "OR":
-                    foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                    }
+                    $query = $query->where(function($query){
+                        foreach ($this->params['filters']['rules'] as $index => $filters) {
+                            $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                        }
+                    });
                     break;
                 default:
                     break;

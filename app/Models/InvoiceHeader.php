@@ -170,7 +170,8 @@ class InvoiceHeader extends MyModel
             ->leftJoin(DB::raw("tarif with (readuncommitted)"), 'ot.tarif_id', 'tarif.id')
             ->leftJoin(DB::raw("jenisorder with (readuncommitted)"), 'sp.jenisorder_id', 'jenisorder.id')
             ->leftJoin(DB::raw("agen with (readuncommitted)"), 'sp.agen_id', 'agen.id')
-            ->whereRaw("sp.jobtrucking not in(select orderantrucking_nobukti from invoicedetail)");
+            ->whereRaw("sp.jobtrucking not in(select orderantrucking_nobukti from invoicedetail)")
+            ->orderBy("sp.jobtrucking",'asc');
 
         $data = $query->get();
         return $data;

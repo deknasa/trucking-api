@@ -117,6 +117,7 @@ class HutangHeader extends MyModel
                 'hutangheader.created_at',
                 'hutangheader.updated_at'
             )
+            ->whereBetween('tglbukti', [date('Y-m-d',strtotime(request()->tgldari)), date('Y-m-d',strtotime(request()->tglsampai))])
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'hutangheader.statuscetak', 'parameter.id')
             ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'hutangheader.coa', 'akunpusat.coa')
             ->leftJoin(DB::raw("supplier with (readuncommitted)"), 'hutangheader.supplier_id', 'supplier.id')
@@ -309,30 +310,48 @@ class HutangHeader extends MyModel
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statuscetak') {
-                            $query = $query->where('parameter.text', '=', "$filters[data]");
+                            $query->where('parameter.text', '=', "$filters[data]");
                         } else if ($filters['field'] == 'supplier_id') {
-                            $query = $query->where('supplier.namasupplier', 'LIKE', "%$filters[data]%");
+                            $query->where('supplier.namasupplier', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'coa') {
-                            $query = $query->where('akunpusat.keterangancoa', 'LIKE', "%$filters[data]%");
+                            $query->where('akunpusat.keterangancoa', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'total') {
+                            $query->Where(DB::raw("hutangheader.total"), 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'tglbukti') {
+                            $query->where('hutangheader.tglbukti', '=', date('Y-m-d',strtotime($filters['data'])));
+                        } else if ($filters['field'] == 'nominalbayar') {
+                            $query->where('c.nominal', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'sisahutang') {
+                            $query->where(DB::raw("(hutangheader.total - isnull(c.nominal,0))"), 'LIKE', "%$filters[data]%");
                         } else {
-                            $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
                     }
 
                     break;
                 case "OR":
-                    foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'statuscetak') {
-                            $query = $query->where('parameter.text', '=', "$filters[data]");
-                        } else if ($filters['field'] == 'supplier_id') {
-                            $query = $query->where('supplier.namasupplier', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'coa') {
-                            $query = $query->where('akunpusat.keterangancoa', 'LIKE', "%$filters[data]%");
-                        } else {
-                            $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                    $query = $query->where(function($query){
+                        foreach ($this->params['filters']['rules'] as $index => $filters) {
+                            if ($filters['field'] == 'statuscetak') {
+                                $query->orWhere('parameter.text', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'supplier_id') {
+                                $query->orWhere('supplier.namasupplier', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'coa') {
+                                $query->orWhere('akunpusat.keterangancoa', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'tglbukti') {
+                                $query->orWhere('hutangheader.tglbukti', '=', date('Y-m-d',strtotime($filters['data'])));
+                            } else if ($filters['field'] == 'total') {
+                                $query->orWhere(DB::raw("hutangheader.total"), 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'nominalbayar') {
+                                $query->orWhere('c.nominal', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'sisahutang') {
+                                $query->orWhere(DB::raw("hutangheader.total - isnull(c.nominal,0)"), 'LIKE', "%$filters[data]%");
+                            } else {
+                                $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            }
                         }
-                    }
-
+                    });
+                        
                     break;
                 default:
 

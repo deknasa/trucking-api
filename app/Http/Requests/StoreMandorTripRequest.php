@@ -29,7 +29,9 @@ class StoreMandorTripRequest extends FormRequest
                 'required',
                 new DateApprovalQuota()
             ],
+            
             "agen_id" => "required",
+            "tarifrincian" => "required",
             "container_id" => "required",
             "dari_id" => "required",
             "gandengan_id" => "required",

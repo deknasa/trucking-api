@@ -378,6 +378,20 @@ class OrderanTruckingController extends Controller
         ]);
     }
 
+    public function getOrderanTrip(Request $request)
+    {
+        $orderanTrucking = new OrderanTrucking();
+        $agen = $request->agen;
+        $tglbukti = date('Y-m-d',strtotime($request->tglbukti));
+        return response([
+            'data' => $orderanTrucking->getOrderanTrip($tglbukti,$agen),
+            'attributes' => [
+                'totalRows' => $orderanTrucking->totalRows,
+                'totalPages' => $orderanTrucking->totalPages
+            ]
+        ]);
+    }
+
     public function getagentas($id)
     {
 

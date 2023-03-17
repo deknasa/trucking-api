@@ -47,9 +47,9 @@ class PenerimaanDetailController extends Controller
             $penerimaanDetail->coakredit = $request->coakredit;
             $penerimaanDetail->keterangan = $request->keterangan;
             $penerimaanDetail->bank_id = $request->bank_id;
-            $penerimaanDetail->invoice_nobukti = $request->invoice_nobukti;
-            $penerimaanDetail->bankpelanggan_id = $request->bankpelanggan_id;
-            $penerimaanDetail->pelunasanpiutang_nobukti = $request->pelunasanpiutang_nobukti;
+            $penerimaanDetail->invoice_nobukti = $request->invoice_nobukti ?? '';
+            $penerimaanDetail->bankpelanggan_id = $request->bankpelanggan_id ?? 0;
+            $penerimaanDetail->pelunasanpiutang_nobukti = $request->pelunasanpiutang_nobukti ?? '';
             $penerimaanDetail->bulanbeban = $request->bulanbeban;
             $penerimaanDetail->modifiedby = auth('api')->user()->name;
             
