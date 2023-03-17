@@ -164,7 +164,9 @@ class InvoiceHeader extends MyModel
         $temp = $this->createTempSP($request);
         // dd(DB::table($temp)->get());
         $query = SuratPengantar::from(DB::raw("suratpengantar as sp with (readuncommitted)"))
-            ->select(DB::raw("$temp.id,$temp.jobtrucking,sp.tglsp, sp.keterangan,jenisorder.keterangan as jenisorder_id, agen.namaagen as agen_id, sp.statuslongtrip, ot.statusperalihan, ot.nocont, tarif.tujuan as tarif_id, ot.nominal as omset"))
+            ->select(DB::raw("$temp.id,$temp.jobtrucking,sp.tglsp, sp.keterangan,jenisorder.keterangan as jenisorder_id, agen.namaagen as agen_id, sp.statuslongtrip, ot.statusperalihan, (case when ot.nocont IS NULL then '-' else ot.nocont end) as nocont, 
+            (case when tarif.tujuan IS NULL then '-' else tarif.tujuan end) as tarif_id,
+            ot.nominal as omset"))
             ->Join(DB::raw("$temp with (readuncommitted)"), 'sp.id', "$temp.id")
             ->leftJoin(DB::raw("orderantrucking as ot with (readuncommitted)"), 'sp.jobtrucking', 'ot.nobukti')
             ->leftJoin(DB::raw("tarif with (readuncommitted)"), 'ot.tarif_id', 'tarif.id')
@@ -189,7 +191,7 @@ class InvoiceHeader extends MyModel
             ->where('tglbukti', '<=', date('Y-m-d', strtotime($request->tglsampai)))
             ->groupBy('jobtrucking');
         // ->get();
-
+        
         Schema::create($temp, function ($table) {
             $table->bigInteger('id')->default('0');
             $table->string('jobtrucking');

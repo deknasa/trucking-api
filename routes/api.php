@@ -588,6 +588,7 @@ route::middleware(['auth:api'])->group(function () {
 
     Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
     Route::get('pelunasanpiutangheader/no_bukti', [PelunasanPiutangHeaderController::class, 'getNoBukti']);
+    Route::get('pelunasanpiutangheader/default', [PelunasanPiutangHeaderController::class, 'default']);
     Route::get('pelunasanpiutangheader/combo', [PelunasanPiutangHeaderController::class, 'combo']);
     Route::get('pelunasanpiutangheader/{id}/getpiutang', [PelunasanPiutangHeaderController::class, 'getpiutang'])->name('pelunasanpiutangheader.getpiutang');
     Route::get('pelunasanpiutangheader/{id}/{agenid}/getPelunasanPiutang', [PelunasanPiutangHeaderController::class, 'getPelunasanPiutang']);
@@ -719,6 +720,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('prosesgajisupirheader/grid', [ProsesGajiSupirHeaderController::class, 'grid']);
     Route::get('prosesgajisupirheader/field_length', [ProsesGajiSupirHeaderController::class, 'fieldLength']);
     Route::get('prosesgajisupirheader/getRic', [ProsesGajiSupirHeaderController::class, 'getRic']);
+    Route::post('prosesgajisupirheader/hitungNominal', [ProsesGajiSupirHeaderController::class, 'hitungNominal']);
     Route::post('prosesgajisupirheader/noEdit', [ProsesGajiSupirHeaderController::class, 'noEdit']);
     Route::get('prosesgajisupirheader/{id}/getEdit', [ProsesGajiSupirHeaderController::class, 'getEdit']);
     Route::get('prosesgajisupirheader/{dari}/{sampai}/getAllData', [ProsesGajiSupirHeaderController::class, 'getAllData']);

@@ -64,6 +64,58 @@ class ProsesGajiSupirHeaderController extends Controller
         try {
 
             if ($request->rincianId != '') {
+
+                if ($request->nomPP > 0) {
+                    $request->validate(
+                        [
+                            'bankPP' => 'required',
+                        ],
+                        [
+                            'bankPP.required' => 'bank pot. pinjaman pribadi' . app(ErrorController::class)->geterror('WI')->keterangan,
+                        ]
+                    );
+                }
+                if ($request->nomPS > 0) {
+                    $request->validate(
+                        [
+                            'bankPS' => 'required',
+                        ],
+                        [
+                            'bankPS.required' => 'bank pot. pinjaman (Semua) ' . app(ErrorController::class)->geterror('WI')->keterangan,
+                        ]
+                    );
+                }
+                if ($request->nomDeposito > 0) {
+                    $request->validate(
+                        [
+                            'bankDeposito' => 'required',
+                        ],
+                        [
+                            'bankDeposito.required' => 'bank posting deposito ' . app(ErrorController::class)->geterror('WI')->keterangan,
+                        ]
+                    );
+                }
+                if ($request->nomBBM > 0) {
+                    $request->validate(
+                        [
+                            'bankBBM' => 'required',
+                        ],
+                        [
+                            'bankBBM.required' => 'bank Posting BBM ' . app(ErrorController::class)->geterror('WI')->keterangan,
+                        ]
+                    );
+                }
+                if ($request->nomPinjaman > 0) {
+                    $request->validate(
+                        [
+                            'bankPinjaman' => 'required',
+                        ],
+                        [
+                            'bankPinjaman.required' => 'bank posting pinjaman pribadi ' . app(ErrorController::class)->geterror('WI')->keterangan,
+                        ]
+                    );
+                }
+
                 $group = 'PROSES GAJI SUPIR BUKTI';
                 $subgroup = 'PROSES GAJI SUPIR BUKTI';
 
@@ -262,6 +314,7 @@ class ProsesGajiSupirHeaderController extends Controller
 
                 if ($request->bank_idPP != 0) {
                     // SAVE TO PENERIMAAN
+
                     $queryPenerimaanPP = Bank::from(DB::raw("bank with (readuncommitted)"))
                         ->select(
                             'parameter.grp',
@@ -335,7 +388,7 @@ class ProsesGajiSupirHeaderController extends Controller
                         'nobukti' => $nobuktiPenerimaanPP,
                         'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
                         'pelanggan_id' => '',
-                        'bank_id' => $request->bank_idPS,
+                        'bank_id' => $request->bank_idPP,
                         'postingdari' => 'PROSES GAJI SUPIR',
                         'diterimadari' => "PROSES GAJI SUPIR PERIODE $request->tgldari S/D $request->tglsampai",
                         'tgllunas' => date('Y-m-d', strtotime($request->tglbukti)),
@@ -343,13 +396,11 @@ class ProsesGajiSupirHeaderController extends Controller
                         'modifiedby' => auth('api')->user()->name,
                         'datadetail' => $penerimaanDetailPP
                     ];
-
                     $penerimaanPP = new StorePenerimaanHeaderRequest($penerimaanHeaderPP);
                     app(PenerimaanHeaderController::class)->store($penerimaanPP);
                 }
 
                 // POSTING DEPOSITO
-
                 if ($request->bank_idDeposito != 0) {
                     // SAVE TO PENERIMAAN
                     $queryPenerimaanDeposito = Bank::from(DB::raw("bank with (readuncommitted)"))
@@ -650,10 +701,18 @@ class ProsesGajiSupirHeaderController extends Controller
         $proses = new ProsesGajiSupirHeader();
         $prosesGajiSupirHeader = ProsesGajiSupirHeader::from(DB::raw("prosesgajisupirheader with (readuncommitted)"))->where('id', $id)->first();
         $semua = $proses->showPotSemua($id);
+        $pribadi = $proses->showPotPribadi($id);
+        $deposito = $proses->showDeposito($id);
+        $bbm = $proses->showBBM($id);
+        $pinjaman = $proses->showPinjaman($id);
         return response([
             'status' => true,
             'data' => $prosesGajiSupirHeader,
-            'potsemua' => $semua
+            'potsemua' => $semua,
+            'potpribadi' => $pribadi,
+            'deposito' => $deposito,
+            'bbm' => $bbm,
+            'pinjaman' => $pinjaman
         ]);
     }
 
@@ -823,10 +882,12 @@ class ProsesGajiSupirHeaderController extends Controller
                     app(PenerimaanTruckingHeaderController::class)->update($penerimaanTruckingPS, $newPenerimaanTruckingPS);
 
                     $getPenerimaanPS = PenerimaanHeader::from(DB::raw("penerimaanheader with (readuncommitted)"))->where('nobukti', $penerimaanPS->penerimaan_nobukti)->first();
-                    app(PenerimaanHeaderController::class)->destroy($request, $getPenerimaanPS->id);
+                    if ($getPenerimaanPS != null) {
+                        app(PenerimaanHeaderController::class)->destroy($request, $getPenerimaanPS->id);
+                    }
                 }
 
-                $fetchPP = GajiSupirPelunasanPinjaman::from(DB::raw("gajisupirpelunasanpinjaman with (readuncommitted)"))->where('gajisupir_nobukti', $value->gajisupir_nobukti)->where('supir_id','!=', '0')->first();
+                $fetchPP = GajiSupirPelunasanPinjaman::from(DB::raw("gajisupirpelunasanpinjaman with (readuncommitted)"))->where('gajisupir_nobukti', $value->gajisupir_nobukti)->where('supir_id', '!=', '0')->first();
 
                 if ($fetchPP != null) {
 
@@ -846,9 +907,11 @@ class ProsesGajiSupirHeaderController extends Controller
                     app(PenerimaanTruckingHeaderController::class)->update($penerimaanTruckingPS, $newPenerimaanTruckingPS);
 
                     $getPenerimaanPP = PenerimaanHeader::from(DB::raw("penerimaanheader with (readuncommitted)"))->where('nobukti', $penerimaanPP->penerimaan_nobukti)->first();
-                    app(PenerimaanHeaderController::class)->destroy($request, $getPenerimaanPP->id);
+                    if ($getPenerimaanPP != null) {
+                        app(PenerimaanHeaderController::class)->destroy($request, $getPenerimaanPP->id);
+                    }
                 }
-                
+
                 $fetchDeposito = GajiSupirDeposito::from(DB::raw("gajisupirdeposito with (readuncommitted)"))->where('gajisupir_nobukti', $value->gajisupir_nobukti)->first();
 
                 if ($fetchDeposito != null) {
@@ -869,9 +932,11 @@ class ProsesGajiSupirHeaderController extends Controller
                     app(PenerimaanTruckingHeaderController::class)->update($penerimaanTruckingDeposito, $newPenerimaanTruckingDeposito);
 
                     $getPenerimaanDeposito = PenerimaanHeader::from(DB::raw("penerimaanheader with (readuncommitted)"))->where('nobukti', $penerimaanDeposito->penerimaan_nobukti)->first();
-                    app(PenerimaanHeaderController::class)->destroy($request, $getPenerimaanDeposito->id);
+                    if ($getPenerimaanDeposito != null) {
+                        app(PenerimaanHeaderController::class)->destroy($request, $getPenerimaanDeposito->id);
+                    }
                 }
-                
+
                 $fetchBBM = GajiSupirBBM::from(DB::raw("gajisupirbbm with (readuncommitted)"))->where('gajisupir_nobukti', $value->gajisupir_nobukti)->first();
 
                 if ($fetchBBM != null) {
@@ -892,10 +957,12 @@ class ProsesGajiSupirHeaderController extends Controller
                     app(PenerimaanTruckingHeaderController::class)->update($penerimaanTruckingBBM, $newPenerimaanTruckingBBM);
 
                     $getPenerimaanBBM = PenerimaanHeader::from(DB::raw("penerimaanheader with (readuncommitted)"))->where('nobukti', $penerimaanBBM->penerimaan_nobukti)->first();
-                    app(PenerimaanHeaderController::class)->destroy($request, $getPenerimaanBBM->id);
+                    if ($getPenerimaanBBM != null) {
+                        app(PenerimaanHeaderController::class)->destroy($request, $getPenerimaanBBM->id);
+                    }
                 }
 
-                
+
                 $fetchPinjaman = GajiSupirPinjaman::from(DB::raw("gajisupirpinjaman with (readuncommitted)"))->where('gajisupir_nobukti', $value->gajisupir_nobukti)->first();
 
                 if ($fetchPinjaman != null) {
@@ -916,7 +983,9 @@ class ProsesGajiSupirHeaderController extends Controller
                     app(PengeluaranTruckingHeaderController::class)->update($pengeluaranTruckingPinjaman, $newPengeluaranTruckingPinjaman);
 
                     $getPengeluaranPinjaman = PengeluaranHeader::from(DB::raw("pengeluaranheader with (readuncommitted)"))->where('nobukti', $pengeluaranPinjaman->pengeluaran_nobukti)->first();
-                    app(PengeluaranHeaderController::class)->destroy($request, $getPengeluaranPinjaman->id);
+                    if ($getPengeluaranPinjaman != null) {
+                        app(PengeluaranHeaderController::class)->destroy($request, $getPengeluaranPinjaman->id);
+                    }
                 }
             }
 
@@ -984,10 +1053,20 @@ class ProsesGajiSupirHeaderController extends Controller
         $prosesgajisupir = new ProsesGajiSupirHeader();
 
         return response([
-            'data' => $prosesgajisupir->getEdit($gajiId)
+            'data' => $prosesgajisupir->getEdit($gajiId),
+            'attributes' => [
+                'totalRows' => $prosesgajisupir->totalRows,
+                'totalPages' => $prosesgajisupir->totalPages,
+                'totalNominal' => $prosesgajisupir->totalNominal,
+            ]
         ]);
     }
 
+    public function hitungNominal()
+    {
+        $ric = request()->rincianId;
+        
+    }
     public function noEdit()
     {
         $query = Error::from(DB::raw("error with (readuncommitted)"))

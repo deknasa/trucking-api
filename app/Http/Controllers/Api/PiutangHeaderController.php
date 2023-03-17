@@ -23,6 +23,7 @@ use App\Models\JurnalUmumDetail;
 use App\Models\JurnalUmumHeader;
 use App\Http\Requests\StoreJurnalUmumHeaderRequest;
 use App\Http\Requests\StoreJurnalUmumDetailRequest;
+use App\Models\Agen;
 use App\Models\Parameter;
 use Exception;
 use Illuminate\Database\QueryException;
@@ -169,20 +170,21 @@ class PiutangHeaderController extends Controller
 
             $jenisinvoice = $request->jenisinvoice ?? '';
 
-            if ($jenisinvoice == 'UTAMA') {
-                $coapiutang = DB::table('parameter')->from(
-                    DB::raw("parameter with (readuncommitted)")
-                )->where('grp', 'JURNAL PIUTANG INVOICE UTAMA')->get();
-            } else if ($jenisinvoice == 'TAMBAHAN') {
-                $coapiutang = DB::table('parameter')->from(
-                    DB::raw("parameter with (readuncommitted)")
-                )->where('grp', 'JURNAL PIUTANG INVOICE TAMBAHAN')->get();
-            } else {
-                $coapiutang = DB::table('parameter')->from(
-                    DB::raw("parameter with (readuncommitted)")
-                )->where('grp', 'JURNAL PIUTANG MANUAL')->get();
-            }
+            // if ($jenisinvoice == 'UTAMA') {
+            //     $coapiutang = DB::table('parameter')->from(
+            //         DB::raw("parameter with (readuncommitted)")
+            //     )->where('grp', 'JURNAL PIUTANG INVOICE UTAMA')->get();
+            // } else if ($jenisinvoice == 'TAMBAHAN') {
+            //     $coapiutang = DB::table('parameter')->from(
+            //         DB::raw("parameter with (readuncommitted)")
+            //     )->where('grp', 'JURNAL PIUTANG INVOICE TAMBAHAN')->get();
+            // } else {
+            //     $coapiutang = DB::table('parameter')->from(
+            //         DB::raw("parameter with (readuncommitted)")
+            //     )->where('grp', 'JURNAL PIUTANG MANUAL')->get();
+            // }
 
+            $getCoa = Agen::from(DB::raw("agen with (readuncommitted)"))->where('id', $piutang->agen_id)->first();
 
             $jurnalHeader = [
                 'tanpaprosesnobukti' => 1,
@@ -199,33 +201,28 @@ class PiutangHeaderController extends Controller
             $jurnaldetail = [];
 
             for ($i = 0; $i < count($counter); $i++) {
-                $detail = [];
 
-                foreach ($coapiutang as $key => $coa) {
-                    $a = 0;
-                    $memo = json_decode($coa->memo, true);
-
-                    $jurnalDetail = [
-                        [
-                            'nobukti' => $piutang->nobukti,
-                            'tglbukti' => date('Y-m-d', strtotime($piutang->tglbukti)),
-                            'keterangan' => ($request->datadetail != '') ? $request->datadetail[$i]['keterangan'] : $request->keterangan_detail[$i],
-                            'modifiedby' => auth('api')->user()->name,
-                            'baris' => $i,
-                        ]
-                    ];
-                    if ($coa->subgrp == 'DEBET') {
-                        $jurnalDetail[$a]['nominal'] = ($request->datadetail != '') ? $request->datadetail[$i]['nominal'] : $request->nominal_detail[$i];
-                        $jurnalDetail[$a]['coa'] = $memo['JURNAL'];
-                    } else {
-                        $jurnalDetail[$a]['nominal'] = ($request->datadetail != '') ? -$request->datadetail[$i]['nominal'] : '-' . $request->nominal_detail[$i];
-                        $jurnalDetail[$a]['coa'] = $memo['JURNAL'];
-                    }
-
-                    $detail = array_merge($detail, $jurnalDetail);
-                    $a++;
-                }
-                $jurnaldetail = array_merge($jurnaldetail, $detail);
+                $jurnalDetail = [
+                    [
+                        'nobukti' => $piutang->nobukti,
+                        'tglbukti' => date('Y-m-d', strtotime($piutang->tglbukti)),
+                        'coa' =>  $getCoa->coa,
+                        'nominal' => ($request->datadetail != '') ? $request->datadetail[$i]['nominal'] : $request->nominal_detail[$i],
+                        'keterangan' => ($request->datadetail != '') ? $request->datadetail[$i]['keterangan'] : $request->keterangan_detail[$i],
+                        'modifiedby' => auth('api')->user()->name,
+                        'baris' => $i,
+                    ],
+                    [
+                        'nobukti' => $piutang->nobukti,
+                        'tglbukti' => date('Y-m-d', strtotime($piutang->tglbukti)),
+                        'coa' => $getCoa->coapendapatan,
+                        'nominal' => ($request->datadetail != '') ? '-' . $request->datadetail[$i]['nominal'] : '-' . $request->nominal_detail[$i],
+                        'keterangan' => ($request->datadetail != '') ? $request->datadetail[$i]['keterangan'] : $request->keterangan_detail[$i],
+                        'modifiedby' => auth('api')->user()->name,
+                        'baris' => $i,
+                    ]
+                ];
+                $jurnaldetail = array_merge($jurnaldetail, $jurnalDetail);
             }
 
             $jurnal = $this->storeJurnal($jurnalHeader, $jurnaldetail);
@@ -312,7 +309,7 @@ class PiutangHeaderController extends Controller
                         'invoice_nobukti' => ($request->datadetail != '') ? $request->datadetail[$i]['invoice_nobukti'] : '',
                         'modifiedby' => $piutangHeader->modifiedby,
                     ];
-    
+
 
                     //STORE
 
