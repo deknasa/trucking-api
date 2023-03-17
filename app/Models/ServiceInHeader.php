@@ -38,7 +38,7 @@ class ServiceInHeader extends MyModel
             'serviceinheader.nobukti',
             'serviceinheader.tglbukti',
 
-            'trado.keterangan as trado_id',
+            'trado.kodetrado as trado_id',
             'statuscetak.memo as statuscetak',
 
             'serviceinheader.tglmasuk',
@@ -73,7 +73,7 @@ class ServiceInHeader extends MyModel
             'serviceinheader.trado_id',
             'statuscetak.memo as statuscetak',
 
-            'trado.keterangan as trado',
+            'trado.kodetrado as trado',
 
             'serviceinheader.tglmasuk',
             'serviceinheader.modifiedby',
@@ -98,7 +98,7 @@ class ServiceInHeader extends MyModel
                 "$this->table.id,
             $this->table.nobukti,
             $this->table.tglbukti,
-            'trado.keterangan as trado_id',
+            'trado.kodetrado as trado_id',
             $this->table.tglmasuk,
             'statuscetak.memo as statuscetak',
 

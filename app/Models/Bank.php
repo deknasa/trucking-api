@@ -252,6 +252,9 @@ class Bank extends MyModel
                 'akunpusat.keterangancoa as coa',
                 'bank.tipe',
                 'parameter.memo as statusaktif',
+                'bank.statusdefault as statusdefault_id',
+                'statusdefault.memo as statusdefault',
+                'statusdefault.default as statusdefault_text',
                 'formatpenerimaan.memo as formatpenerimaan',
                 'formatpengeluaran.memo as formatpengeluaran',
                 'bank.modifiedby',
@@ -260,6 +263,7 @@ class Bank extends MyModel
             )
             ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'bank.coa', '=', 'akunpusat.coa')
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'bank.statusaktif', '=', 'parameter.id')
+            ->leftJoin(DB::raw("parameter as statusdefault with (readuncommitted)"), 'bank.statusdefault', '=', 'statusdefault.id')
             ->leftJoin(DB::raw("parameter as formatpenerimaan with (readuncommitted)"), 'bank.formatpenerimaan', '=', 'formatpenerimaan.id')
             ->leftJoin(DB::raw("parameter as formatpengeluaran with (readuncommitted)"), 'bank.formatpengeluaran', '=', 'formatpengeluaran.id');
 

@@ -38,7 +38,7 @@ class AbsensiSupirApprovalDetail extends MyModel
                 "$this->table.supir_id",
                 "$this->table.supirserap_id",
                 "$this->table.modifiedby",
-                "trado.keterangan as trado",
+                "trado.kodetrado as trado",
                 "supirutama.namasupir as supir",
                 "supirserap.namasupir as supirserap",
 
@@ -57,7 +57,7 @@ class AbsensiSupirApprovalDetail extends MyModel
                 "$this->table.supir_id",
                 "$this->table.supirserap_id",
                 "$this->table.modifiedby",
-                "trado.keterangan as trado",
+                "trado.kodetrado as trado",
                 "supirutama.namasupir as supir",
                 "supirserap.namasupir as supirserap",
 
@@ -91,7 +91,7 @@ class AbsensiSupirApprovalDetail extends MyModel
                     'detail.supir_id',
                     'detail.supirserap_id',
                     'detail.modifiedby',
-                    'trado.keterangan as trado',
+                    'trado.kodetrado as trado',
                     'supirutama.namasupir as supir',
                     'supirserap.namasupir as supirserap',
 

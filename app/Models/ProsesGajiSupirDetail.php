@@ -33,7 +33,7 @@ class ProsesGajiSupirDetail extends MyModel
                 'header.nobukti',
                 'header.tglbukti',
                 'supir.namasupir as supir_id',
-                'trado.keterangan as trado_id',
+                'trado.kodetrado as trado_id',
                 $this->table . '.gajisupir_nobukti',
                 $this->table . '.nominal',
                 $this->table . '.keterangan as keterangan_detail'
@@ -47,7 +47,7 @@ class ProsesGajiSupirDetail extends MyModel
             $query->select(
                 $this->table . '.gajisupir_nobukti',
                 'supir.namasupir as supir_id',
-                'trado.keterangan as trado_id',
+                'trado.kodetrado as trado_id',
                 $this->table . '.keterangan',
                 $this->table . '.nominal',
             )

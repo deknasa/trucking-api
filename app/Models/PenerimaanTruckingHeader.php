@@ -94,10 +94,12 @@ class PenerimaanTruckingHeader extends MyModel
             'penerimaantruckingheader.created_at',
             'penerimaantruckingheader.updated_at',
         )
-            ->leftJoin(DB::raw("penerimaantrucking with (readuncommitted)"), 'penerimaantruckingheader.penerimaantrucking_id','penerimaantrucking.id')
-            ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'penerimaantruckingheader.coa','akunpusat.coa')
-            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'penerimaantruckingheader.statuscetak','parameter.id')
-            ->leftJoin(DB::raw("bank with (readuncommitted)"), 'penerimaantruckingheader.bank_id', 'bank.id');
+        ->whereBetween('tglbukti', [date('Y-m-d',strtotime(request()->tgldari)), date('Y-m-d',strtotime(request()->tglsampai))])
+        ->leftJoin(DB::raw("penerimaantrucking with (readuncommitted)"), 'penerimaantruckingheader.penerimaantrucking_id','penerimaantrucking.id')
+        ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'penerimaantruckingheader.coa','akunpusat.coa')
+        ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'penerimaantruckingheader.statuscetak','parameter.id')
+        ->leftJoin(DB::raw("bank with (readuncommitted)"), 'penerimaantruckingheader.bank_id', 'bank.id');
+
             
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -127,6 +129,7 @@ class PenerimaanTruckingHeader extends MyModel
             'akunpusat.keterangancoa',
             'penerimaantruckingheader.penerimaan_nobukti'
         )
+        ->whereBetween('tglbukti', [date('Y-m-d',strtotime(request()->tgldari)), date('Y-m-d',strtotime(request()->tglsampai))])
             ->leftJoin(DB::raw("penerimaantrucking with (readuncommitted)"), 'penerimaantruckingheader.penerimaantrucking_id','penerimaantrucking.id')
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'penerimaantruckingheader.bank_id', 'bank.id')
             ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'penerimaantruckingheader.coa', 'akunpusat.coa')
@@ -215,6 +218,9 @@ class PenerimaanTruckingHeader extends MyModel
                             $query = $query->where('parameter.text', '=', "$filters[data]");
                         } else if ($filters['field'] == 'penerimaantrucking_id') {
                             $query = $query->where('penerimaantrucking.keterangan', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'tglbukti') {
+                            $query = $query->where($this->table . '.tglbukti', '=', date('Y-m-d',strtotime($filters['data'])));
+                            
                         } else if ($filters['field'] == 'bank_id') {
                             $query = $query->where('bank.namabank', 'LIKE', "%$filters[data]%");
                         } else {
@@ -224,18 +230,23 @@ class PenerimaanTruckingHeader extends MyModel
 
                     break;
                 case "OR":
-                    foreach ($this->params['filters']['rules'] as $index => $filters) {
-                         if ($filters['field'] == 'statuscetak') {
-                            $query = $query->orWhere('parameter.text', '=', "$filters[data]");
-                        } else if ($filters['field'] == 'penerimaantrucking_id') {
-                            $query = $query->orWhere('penerimaantrucking.keterangan', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'bank_id') {
-                            $query = $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");
-                        } else {
-                            $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                        }
-                    }
-
+                     $query = $query->where(function($query){
+                         foreach ($this->params['filters']['rules'] as $index => $filters) {
+                              if ($filters['field'] == 'statuscetak') {
+                                 $query = $query->orWhere('parameter.text', '=', "$filters[data]");
+                             } else if ($filters['field'] == 'penerimaantrucking_id') {
+                                 $query = $query->orWhere('penerimaantrucking.keterangan', 'LIKE', "%$filters[data]%");
+                             } else if ($filters['field'] == 'tglbukti') {
+                                $query->orWhere($this->table . '.tglbukti', '=', date('Y-m-d',strtotime($filters['data'])));
+                                
+                            } else if ($filters['field'] == 'bank_id') {
+                                 $query = $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");
+                             } else {
+                                 $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                             }
+                         }
+                     });
+                         
                     break;
                 default:
 

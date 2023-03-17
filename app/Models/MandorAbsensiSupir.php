@@ -21,7 +21,7 @@ class MandorAbsensiSupir extends MyModel
         $trado = DB::table('trado')
         ->select(
             'trado.id as id',
-            'trado.keterangan as trado_id',
+            'trado.kodetrado as trado_id',
             DB::raw('null as supir_id'),
             DB::raw('null as absen_id'),
             DB::raw('null as keterangan'),
@@ -38,7 +38,7 @@ class MandorAbsensiSupir extends MyModel
         $absensisupirdetail = DB::table('absensisupirdetail')
         ->select(
             'trado.id as id',
-            'trado.keterangan as trado_id',
+            'trado.kodetrado as trado_id',
             'supir.namasupir as supir_id',
             'absentrado.keterangan as absen_id',
             'absensisupirdetail.keterangan',
@@ -73,7 +73,7 @@ class MandorAbsensiSupir extends MyModel
         ->select(
             'absensisupirdetail.id as id',
             'trado.id as trado_id',
-            'trado.keterangan as trado',
+            'trado.kodetrado as trado',
             'supir.id as supir_id',
             'supir.namasupir as supir',
             'absentrado.id as absen_id',
@@ -96,7 +96,7 @@ class MandorAbsensiSupir extends MyModel
         ->select(
             DB::raw('null as id'),
             'trado.id as trado_id',
-            'trado.keterangan as trado',
+            'trado.kodetrado as trado',
             DB::raw('null as supir_id'),
             DB::raw('null as absen_id'),
             DB::raw('null as keterangan'),

@@ -39,7 +39,7 @@ class ExportLaporanKasGantung extends MyModel
             'pengeluaranstokheader.id',
             'pengeluaranstokheader.nobukti',
             'pengeluaranstokheader.tglbukti',
-            'trado.keterangan as nobk',
+            'trado.kodetrado as nobk',
             'stok.namastok',
             'pengeluaranstokdetail.qty',
             'pengeluaranstokdetail.qty as satuan',

@@ -272,7 +272,7 @@ class PengeluaranStokHeader extends MyModel
             "kerusakan.keterangan as kerusakan",
             "bank.namabank as bank",
             "pengeluaranstok.kodepengeluaran as pengeluaranstok",
-            "trado.keterangan as trado",
+            "trado.kodetrado as trado",
             "gudang.gudang as gudang",
             "supir.namasupir as supir",
             "supplier.namasupplier as supplier",

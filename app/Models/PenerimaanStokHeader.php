@@ -35,6 +35,7 @@ class PenerimaanStokHeader extends MyModel
 
         $query = DB::table($this->table);
         $query = $this->selectColumns($query)
+        ->whereBetween('tglbukti', [date('Y-m-d',strtotime(request()->tgldari)), date('Y-m-d',strtotime(request()->tglsampai))])
         ->leftJoin('gudang as gudangs','penerimaanstokheader.gudang_id','gudangs.id')
         ->leftJoin('gudang as dari','penerimaanstokheader.gudangdari_id','dari.id')
         ->leftJoin('gudang as ke','penerimaanstokheader.gudangke_id','ke.id')
@@ -88,7 +89,7 @@ class PenerimaanStokHeader extends MyModel
             "$this->table.penerimaanstok_nobukti",
             "$this->table.pengeluaranstok_nobukti",
             "gudangs.gudang as gudang",
-            "trado.keterangan as trado",
+            "trado.kodetrado as trado",
             "tradodari.keterangan as tradodari",
             "tradoke.keterangan as tradoke",
             "gandengandari.keterangan as gandengandari",
@@ -244,31 +245,31 @@ class PenerimaanStokHeader extends MyModel
 
                     break;
                 case "OR":
-                    $query = $query->where(function ($query){
+                    $query = $query->where(function($query){
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
                             switch ($filters['field']) {
                                 case 'penerimaanstok':
-                                    $query = $query->where('penerimaanstok.kodepenerimaan', 'LIKE', "%$filters[data]%");
+                                    $query->where('penerimaanstok.kodepenerimaan', 'LIKE', "%$filters[data]%");
                                     break;
                                 case 'gudangs':
-                                    $query = $query->orWhere('gudangs.gudang', 'LIKE', "%$filters[data]%");
+                                    $query->orWhere('gudangs.gudang', 'LIKE', "%$filters[data]%");
                                     break;
                                 case 'trado':
-                                    $query = $query->orWhere('trado.keterangan', 'LIKE', "%$filters[data]%");
+                                    $query->orWhere('trado.keterangan', 'LIKE', "%$filters[data]%");
                                     break;
                                 case 'supplier':
-                                    $query = $query->orWhere('supplier.namasupplier', 'LIKE', "%$filters[data]%");
+                                    $query->orWhere('supplier.namasupplier', 'LIKE', "%$filters[data]%");
                                     break;
                                 case 'gudangdari':
-                                    $query = $query->orWhere('dari.gudang', 'LIKE', "%$filters[data]%");
+                                    $query->orWhere('dari.gudang', 'LIKE', "%$filters[data]%");
                                     break;
                                 case 'gudangke':
-                                    $query = $query->orWhere('ke.gudang', 'LIKE', "%$filters[data]%");
+                                    $query->orWhere('ke.gudang', 'LIKE', "%$filters[data]%");
                                     break;
                                 case 'penerimaanstok_id_not_null':
                                     break;
                                 default:
-                                    $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                    $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                     break;
                             }
                         }

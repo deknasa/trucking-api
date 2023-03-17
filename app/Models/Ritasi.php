@@ -37,7 +37,7 @@ class Ritasi extends MyModel
             'parameter.text as statusritasi',
             'suratpengantar.nobukti as suratpengantar_nobukti',
             'supir.namasupir as supir_id',
-            'trado.keterangan as trado_id',
+            'trado.kodetrado as trado_id',
             'ritasi.jarak',
             'ritasi.gaji',
             'dari.keterangan as dari_id',
@@ -111,7 +111,7 @@ class Ritasi extends MyModel
             'ritasi.sampai_id',
             'sampai.keterangan as sampai',
             'ritasi.trado_id',
-            'trado.keterangan as trado',
+            'trado.kodetrado as trado',
             'ritasi.supir_id',
             'supir.namasupir as supir'
         )
@@ -134,7 +134,7 @@ class Ritasi extends MyModel
             'parameter.text as statusritasi',
             'suratpengantar.nobukti as suratpengantar_nobukti',
             'supir.namasupir as supir_id',
-            'trado.keterangan as trado_id',
+            'trado.kodetrado as trado_id',
             $this->table.jarak,
             $this->table.gaji,
             'dari.keterangan as dari_id',

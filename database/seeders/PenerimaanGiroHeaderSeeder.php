@@ -18,7 +18,7 @@ class PenerimaanGiroHeaderSeeder extends Seeder
             'nobukti' => 'BPGT-M BCA 0001/V/2022',
             'tglbukti' => '2022/5/20',
             'pelanggan_id' => 0,
-            'keterangan' => 'PENERIMAAN GIRO',
+            // 'keterangan' => 'PENERIMAAN GIRO',
             'postingdari' => '',
             'diterimadari' => '',
             'tgllunas' => '2022/5/20',
