@@ -670,7 +670,9 @@ class GajiSupirHeader extends MyModel
             ->select('gajisupirheader.id as idric', 'gajisupirheader.nobukti as nobuktiric', 'gajisupirheader.tglbukti as tglbuktiric', 'supir.namasupir as supir_id', 'gajisupirheader.tgldari as tgldariric', 'gajisupirheader.tglsampai as tglsampairic', 'gajisupirheader.nominal')
             ->leftJoin(DB::raw("supir with (readuncommitted)"), 'gajisupirheader.supir_id', 'supir.id')
             ->where('gajisupirheader.tglbukti', '>=', $dari)
-            ->where('gajisupirheader.tglbukti', '<=', $sampai);
+            ->where('gajisupirheader.tglbukti', '<=', $sampai)
+            ->whereRaw("gajisupirheader.nobukti not in(select gajisupir_nobukti from prosesgajisupirdetail)");
+
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 

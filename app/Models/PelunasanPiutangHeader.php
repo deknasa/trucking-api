@@ -26,6 +26,73 @@ class PelunasanPiutangHeader extends MyModel
         'updated_at',
     ];
 
+    public function default()
+    {
+
+        $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempdefault, function ($table) {
+            $table->unsignedBigInteger('bank_id')->default(0);
+            $table->string('bank', 255)->default('');
+            $table->unsignedBigInteger('alatbayar_id')->default(0);
+            $table->string('alatbayar', 255)->default('');
+        });
+
+
+        $bank = DB::table('bank')->from(
+            DB::raw('bank with (readuncommitted)')
+        )
+            ->select(
+                'id as bank_id',
+                'namabank as bank',
+
+            )
+            ->where('tipe', '=', 'KAS')
+            ->first();
+
+        $statusdefault = Parameter::from(
+            db::Raw("parameter with (readuncommitted)")
+        )
+            ->select(
+                'id'
+            )
+            ->where('grp', '=', 'STATUS DEFAULT')
+            ->where('subgrp', '=', 'STATUS DEFAULT')
+            ->where('text', '=', 'DEFAULT')
+            ->first();
+
+        $alatbayardefault = $statusdefault->id ?? 0;
+
+        $alatbayar = DB::table('alatbayar')->from(
+            DB::raw('alatbayar with (readuncommitted)')
+        )
+            ->select(
+                'id as alatbayar_id',
+                'namaalatbayar as alatbayar',
+
+            )
+            ->where('statusdefault', '=', $alatbayardefault)
+            ->first();
+
+
+        DB::table($tempdefault)->insert(
+            ["bank_id" => $bank->bank_id, "bank" => $bank->bank, "alatbayar_id" => $alatbayar->alatbayar_id, "alatbayar" => $alatbayar->alatbayar]
+        );
+
+        $query = DB::table($tempdefault)->from(
+            DB::raw($tempdefault)
+        )
+            ->select(
+                'bank_id',
+                'bank',
+                'alatbayar_id',
+                'alatbayar',
+            );
+
+        $data = $query->first();
+
+        return $data;
+    }
+    
     public function get()
     {
         $this->setRequestParameters();

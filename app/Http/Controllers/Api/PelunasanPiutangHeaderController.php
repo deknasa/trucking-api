@@ -60,6 +60,15 @@ class PelunasanPiutangHeaderController extends Controller
         ]);
     }
 
+    public function default()
+    {
+        $pelunasan = new PelunasanPiutangHeader();
+        return response([
+            'status' => true,
+            'data' => $pelunasan->default(),
+        ]);
+    }
+
     /**
      * @ClassName
      */

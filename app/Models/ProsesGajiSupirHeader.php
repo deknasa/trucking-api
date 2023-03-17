@@ -65,21 +65,30 @@ class ProsesGajiSupirHeader extends MyModel
 
     public function getEdit($gajiId)
     {
+        $this->setRequestParameters();
         $query = ProsesGajiSupirDetail::from(DB::raw("prosesgajisupirdetail with (readuncommitted)"))
             ->select(
-                'gajisupirheader.id',
-                'prosesgajisupirdetail.gajisupir_nobukti as nobukti',
-                'gajisupirheader.tglbukti',
-                'supir.namasupir',
-                'gajisupirheader.tgldari',
-                'gajisupirheader.tglsampai',
+                'gajisupirheader.id as idric',
+                'prosesgajisupirdetail.gajisupir_nobukti as nobuktiric',
+                'gajisupirheader.tglbukti as tglbuktiric',
+                'supir.namasupir as supir_id',
+                'gajisupirheader.tgldari as tgldariric',
+                'gajisupirheader.tglsampai as tglsampairic',
                 'gajisupirheader.nominal'
             )
             ->leftJoin(DB::raw("gajisupirheader with (readuncommitted)"), 'prosesgajisupirdetail.gajisupir_nobukti', 'gajisupirheader.nobukti')
             ->leftJoin(DB::raw("supir with (readuncommitted)"), 'gajisupirheader.supir_id', 'supir.id')
             ->where('prosesgajisupirdetail.prosesgajisupir_id', $gajiId);
 
+        $this->totalRows = $query->count();
+        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+
+        $query->orderBy('gajisupirheader.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        $this->filter($query);
+        $this->paginate($query);
         $data = $query->get();
+
+        $this->totalNominal = $query->sum('gajisupirheader.nominal');
         return $data;
     }
     public function selectColumns($query)
@@ -248,20 +257,182 @@ class ProsesGajiSupirHeader extends MyModel
         $gajidetail = ProsesGajiSupirDetail::from(DB::raw("prosesgajisupirdetail with (readuncommitted)"))->where('prosesgajisupir_id', $id)->get();
         $total = 0;
         $tes = '';
-        $data = [];
         foreach ($gajidetail as $key => $value) {
             $potongan = GajiSupirPelunasanPinjaman::from(DB::raw("gajisupirpelunasanpinjaman with (readuncommitted)"))
                 ->where('gajisupir_nobukti', $value->gajisupir_nobukti)
                 ->where('supir_id', '0')
                 ->get();
-            $fetchPS = GajiSupirPelunasanPinjaman::from(DB::raw("gajisupirpelunasanpinjaman with (readuncommitted)"))->where('gajisupir_nobukti', $value->gajisupir_nobukti)->where('supir_id', '0')->first();
-            $tes = $fetchPS->penerimaantrucking_nobukti;
+
             $nominal = $potongan->sum('nominal');
             if ($nominal != 0) {
                 $total = $total + $nominal;
             }
+
+            $fetchPS = GajiSupirPelunasanPinjaman::from(DB::raw("gajisupirpelunasanpinjaman with (readuncommitted)"))->where('gajisupir_nobukti', $value->gajisupir_nobukti)->where('supir_id', '0')->first();
+            if (isset($fetchPS)) {
+                $tes = $fetchPS->penerimaantrucking_nobukti;
+            }
         }
-        dd($tes);
+
+        
+        if ($tes != '') {
+
+            $penerimaan = PenerimaanTruckingHeader::from(DB::raw("penerimaantruckingheader with (readuncommitted)"))
+                ->select('penerimaantruckingheader.bank_id', 'bank.namabank as bank', 'penerimaantruckingheader.penerimaan_nobukti')
+                ->join(DB::raw("bank with (readuncommitted)"), 'penerimaantruckingheader.bank_id', 'bank.id')->where('nobukti', $tes)->first();
+            $data = [
+                'bank_idPS' => $penerimaan->bank_id,
+                'bankPS' => $penerimaan->bank,
+                'nobuktiPS' => $penerimaan->penerimaan_nobukti,
+                'nomPS' => $total
+            ];
+            return $data;
+        }
+    }
+    public function showPotPribadi($id)
+    {
+        $gajidetail = ProsesGajiSupirDetail::from(DB::raw("prosesgajisupirdetail with (readuncommitted)"))->where('prosesgajisupir_id', $id)->get();
+        $total = 0;
+        $tes = '';
+        foreach ($gajidetail as $key => $value) {
+            $potongan = GajiSupirPelunasanPinjaman::from(DB::raw("gajisupirpelunasanpinjaman with (readuncommitted)"))
+                ->where('gajisupir_nobukti', $value->gajisupir_nobukti)
+                ->where('supir_id', '!=' ,'0')
+                ->get();
+
+            $nominal = $potongan->sum('nominal');
+            if ($nominal != 0) {
+                $total = $total + $nominal;
+            }
+
+            $fetchPP = GajiSupirPelunasanPinjaman::from(DB::raw("gajisupirpelunasanpinjaman with (readuncommitted)"))->where('gajisupir_nobukti', $value->gajisupir_nobukti)->where('supir_id', '!=' , '0')->first();
+            if (isset($fetchPP)) {
+                $tes = $fetchPP->penerimaantrucking_nobukti;
+            }
+        }
+
+        
+        if ($tes != '') {
+
+            $penerimaan = PenerimaanTruckingHeader::from(DB::raw("penerimaantruckingheader with (readuncommitted)"))
+                ->select('penerimaantruckingheader.bank_id', 'bank.namabank as bank', 'penerimaantruckingheader.penerimaan_nobukti')
+                ->join(DB::raw("bank with (readuncommitted)"), 'penerimaantruckingheader.bank_id', 'bank.id')->where('nobukti', $tes)->first();
+            $data = [
+                'bank_idPP' => $penerimaan->bank_id,
+                'bankPP' => $penerimaan->bank,
+                'nobuktiPP' => $penerimaan->penerimaan_nobukti,
+                'nomPP' => $total
+            ];
+            return $data;
+        }
+    }
+    public function showDeposito($id)
+    {
+        $gajidetail = ProsesGajiSupirDetail::from(DB::raw("prosesgajisupirdetail with (readuncommitted)"))->where('prosesgajisupir_id', $id)->get();
+        $total = 0;
+        $tes = '';
+        foreach ($gajidetail as $key => $value) {
+            $potongan = GajiSupirDeposito::from(DB::raw("gajisupirdeposito with (readuncommitted)"))
+                ->where('gajisupir_nobukti', $value->gajisupir_nobukti)
+                ->get();
+
+            $nominal = $potongan->sum('nominal');
+            if ($nominal != 0) {
+                $total = $total + $nominal;
+            }
+
+            $fetchDeposito = GajiSupirDeposito::from(DB::raw("gajisupirdeposito with (readuncommitted)"))->where('gajisupir_nobukti', $value->gajisupir_nobukti)->first();
+            if (isset($fetchDeposito)) {
+                $tes = $fetchDeposito->penerimaantrucking_nobukti;
+            }
+        }
+
+        
+        if ($tes != '') {
+
+            $penerimaan = PenerimaanTruckingHeader::from(DB::raw("penerimaantruckingheader with (readuncommitted)"))
+                ->select('penerimaantruckingheader.bank_id', 'bank.namabank as bank', 'penerimaantruckingheader.penerimaan_nobukti')
+                ->join(DB::raw("bank with (readuncommitted)"), 'penerimaantruckingheader.bank_id', 'bank.id')->where('nobukti', $tes)->first();
+            $data = [
+                'bank_idDeposito' => $penerimaan->bank_id,
+                'bankDeposito' => $penerimaan->bank,
+                'nobuktiDeposito' => $penerimaan->penerimaan_nobukti,
+                'nomDeposito' => $total
+            ];
+            return $data;
+        }
+    }
+    public function showBBM($id)
+    {
+        $gajidetail = ProsesGajiSupirDetail::from(DB::raw("prosesgajisupirdetail with (readuncommitted)"))->where('prosesgajisupir_id', $id)->get();
+        $total = 0;
+        $tes = '';
+        foreach ($gajidetail as $key => $value) {
+            $potongan = GajiSupirBBM::from(DB::raw("gajisupirbbm with (readuncommitted)"))
+                ->where('gajisupir_nobukti', $value->gajisupir_nobukti)
+                ->get();
+
+            $nominal = $potongan->sum('nominal');
+            if ($nominal != 0) {
+                $total = $total + $nominal;
+            }
+
+            $fetchBBM = GajiSupirBBM::from(DB::raw("gajisupirbbm with (readuncommitted)"))->where('gajisupir_nobukti', $value->gajisupir_nobukti)->first();
+            if (isset($fetchBBM)) {
+                $tes = $fetchBBM->penerimaantrucking_nobukti;
+            }
+        }
+
+        
+        if ($tes != '') {
+
+            $penerimaan = PenerimaanTruckingHeader::from(DB::raw("penerimaantruckingheader with (readuncommitted)"))
+                ->select('penerimaantruckingheader.bank_id', 'bank.namabank as bank', 'penerimaantruckingheader.penerimaan_nobukti')
+                ->join(DB::raw("bank with (readuncommitted)"), 'penerimaantruckingheader.bank_id', 'bank.id')->where('nobukti', $tes)->first();
+            $data = [
+                'bank_idBBM' => $penerimaan->bank_id,
+                'bankBBM' => $penerimaan->bank,
+                'nobuktiBBM' => $penerimaan->penerimaan_nobukti,
+                'nomBBM' => $total
+            ];
+            return $data;
+        }
+    }
+    public function showPinjaman($id)
+    {
+        $gajidetail = ProsesGajiSupirDetail::from(DB::raw("prosesgajisupirdetail with (readuncommitted)"))->where('prosesgajisupir_id', $id)->get();
+        $total = 0;
+        $tes = '';
+        foreach ($gajidetail as $key => $value) {
+            $potongan = GajiSupirPinjaman::from(DB::raw("gajisupirpinjaman with (readuncommitted)"))
+                ->where('gajisupir_nobukti', $value->gajisupir_nobukti)
+                ->get();
+
+            $nominal = $potongan->sum('nominal');
+            if ($nominal != 0) {
+                $total = $total + $nominal;
+            }
+
+            $fetchBBM = GajiSupirPinjaman::from(DB::raw("gajisupirpinjaman with (readuncommitted)"))->where('gajisupir_nobukti', $value->gajisupir_nobukti)->first();
+            if (isset($fetchBBM)) {
+                $tes = $fetchBBM->pengeluarantrucking_nobukti;
+            }
+        }
+
+        
+        if ($tes != '') {
+
+            $pengeluaran = PengeluaranTruckingHeader::from(DB::raw("pengeluarantruckingheader with (readuncommitted)"))
+                ->select('pengeluarantruckingheader.bank_id', 'bank.namabank as bank', 'pengeluarantruckingheader.pengeluaran_nobukti')
+                ->join(DB::raw("bank with (readuncommitted)"), 'pengeluarantruckingheader.bank_id', 'bank.id')->where('nobukti', $tes)->first();
+            $data = [
+                'bank_idPinjaman' => $pengeluaran->bank_id,
+                'bankPinjaman' => $pengeluaran->bank,
+                'nobuktiPinjaman' => $pengeluaran->pengeluaran_nobukti,
+                'nomPinjaman' => $total
+            ];
+            return $data;
+        }
     }
 
 
