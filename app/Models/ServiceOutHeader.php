@@ -40,7 +40,7 @@ class ServiceOutHeader extends MyModel
             'serviceoutheader.nobukti',
             'serviceoutheader.tglbukti',
 
-            'trado.keterangan as trado_id',
+            'trado.kodetrado as trado_id',
             'statuscetak.memo as statuscetak',
 
             'serviceoutheader.tglkeluar',
@@ -73,7 +73,7 @@ class ServiceOutHeader extends MyModel
             'serviceoutheader.tglbukti',
             'serviceoutheader.trado_id',
 
-            'trado.keterangan as trado',
+            'trado.kodetrado as trado',
             'statuscetak.memo as statuscetak',
 
             'serviceoutheader.tglkeluar',
@@ -98,7 +98,7 @@ class ServiceOutHeader extends MyModel
                 "$this->table.id,
             $this->table.nobukti,
             $this->table.tglbukti,
-            'trado.keterangan as trado_id',
+            'trado.kodetrado as trado_id',
             $this->table.tglkeluar,
             'statuscetak.memo as statuscetak',
 

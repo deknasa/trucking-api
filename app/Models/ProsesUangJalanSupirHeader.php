@@ -38,7 +38,7 @@ class ProsesUangJalanSupirHeader extends MyModel
                 'prosesuangjalansupirheader.userapproval',
                 DB::raw('(case when (year(prosesuangjalansupirheader.tglapproval) <= 2000) then null else prosesuangjalansupirheader.tglapproval end ) as tglapproval'),
                 'statusapproval.memo as statusapproval',
-                'trado.keterangan as trado_id',
+                'trado.kodetrado as trado_id',
                 'supir.namasupir as supir_id',
                 'prosesuangjalansupirheader.modifiedby',
                 'prosesuangjalansupirheader.created_at',
@@ -97,7 +97,7 @@ class ProsesUangJalanSupirHeader extends MyModel
                 'prosesuangjalansupirheader.supir_id',
                 'supir.namasupir as supir',
                 'prosesuangjalansupirheader.trado_id',
-                'trado.keterangan as trado'
+                'trado.kodetrado as trado'
             )
             ->leftJoin(DB::raw("supir with (readuncommitted)"), 'prosesuangjalansupirheader.supir_id', 'supir.id')
             ->leftJoin(DB::raw("trado with (readuncommitted)"), 'prosesuangjalansupirheader.trado_id', 'trado.id')

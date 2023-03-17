@@ -147,7 +147,7 @@ class AbsensiSupirDetail extends MyModel
                 "header.tglbukti as tgl_header",
                 "header.kasgantung_nobukti as kasgantung_nobukti_header",
                 "header.nominal as nominal_header",
-                "trado.keterangan as trado",
+                "trado.kodetrado as trado",
                 "supir.namasupir as supir",
                 "absentrado.kodeabsen as status",
                 "$this->table.keterangan as keterangan_detail",
@@ -167,7 +167,7 @@ class AbsensiSupirDetail extends MyModel
             $absensiSupirDetail = $query->get();
         } else {
             $query->select(
-                "trado.keterangan as trado",
+                "trado.kodetrado as trado",
                 "supir.namasupir as supir",
                 "absentrado.kodeabsen as status",
                 "absentrado.keterangan as statusKeterangan",
@@ -211,11 +211,11 @@ class AbsensiSupirDetail extends MyModel
 
     public function getAll($id)
     {
- 
+        $statusaktif = DB::table('parameter')->where('grp','STATUS AKTIF')->where('subgrp','STATUS AKTIF')->where('text','AKTIF')->first();
         $query = DB::table('trado')->from(DB::raw("trado with (readuncommitted)"))
             ->select(
                 'trado.id as trado_id',
-                'trado.keterangan as trado',
+                'trado.kodetrado as trado',
                 DB::raw("isnull(absensisupirdetail.supir_id,0) as supir_id"),
                 DB::raw("isnull(supir.namasupir,'') as supir"),
                 DB::raw("isnull(absensisupirdetail.keterangan,'') as keterangan"),
@@ -224,6 +224,7 @@ class AbsensiSupirDetail extends MyModel
                 DB::raw("isnull(absensisupirdetail.jam,'') as jam"),
                 DB::raw("isnull(absensisupirdetail.uangjalan,0) as uangjalan"),               
             )
+            ->where('trado.statusaktif',$statusaktif->id)
             ->leftJoin('absensisupirdetail', function ($join)  use ($id) {
                 $join->on('absensisupirdetail.trado_id', '=', 'trado.id')
                     ->where('absensisupirdetail.absensi_id', '=', $id);
@@ -265,7 +266,7 @@ class AbsensiSupirDetail extends MyModel
         $query = DB::table('absensisupirdetail')->from(DB::raw("absensisupirdetail with (readuncommitted)"))
             ->select(
                 DB::raw("isnull(absensisupirdetail.trado_id,0) as trado_id"),
-                DB::raw("isnull(trado.keterangan,'') as trado"),
+                DB::raw("isnull(trado.kodetrado,'') as trado"),
                 DB::raw("isnull(absensisupirdetail.supir_id,0) as supir_id"),
                 DB::raw("isnull(supir.namasupir,'') as supir"),
                 DB::raw("isnull(absensisupirdetail.keterangan,'') as keterangan"),

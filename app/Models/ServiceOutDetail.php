@@ -36,7 +36,7 @@ class ServiceOutDetail extends MyModel
                 "header.tglbukti as tgl_header",
                 "header.keterangan as keterangan_header",
                 "header.tglkeluar as tglkeluar",
-                "trado.keterangan as trado_id",
+                "trado.kodetrado as trado_id",
                 "$this->table.servicein_nobukti",
                 "$this->table.keterangan",
             )

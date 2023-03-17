@@ -36,7 +36,7 @@ class ServiceInDetail extends MyModel
                 "header.tglbukti as tgl_header",
                 "header.keterangan as keterangan_header",
                 "header.tglmasuk as tglmasuk",
-                "trado.keterangan as trado_id",
+                "trado.kodetrado as trado_id",
                 "mekanik.namamekanik as mekanik_id",
                 "$this->table.keterangan",
                 "$this->table.nobukti"

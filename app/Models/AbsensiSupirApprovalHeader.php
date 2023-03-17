@@ -179,7 +179,7 @@ class AbsensiSupirApprovalHeader extends MyModel
                 'absensisupirdetail.uangjalan',
                 'absensisupirdetail.absensi_id',
                 'absensisupirdetail.id',
-                'trado.keterangan as trado',
+                'trado.kodetrado as trado',
                 'supirutama.namasupir as supir',
                 'trado.id as trado_id',
                 'supirutama.id as supir_id',
