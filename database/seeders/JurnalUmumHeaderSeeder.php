@@ -41,5 +41,6 @@ class JurnalUmumHeaderSeeder extends Seeder
         jurnalumumheader::create(['nobukti' => 'BMT-M BCA3 0015/II/2023', 'tglbukti' => '2023/2/22', 'keterangan' => '', 'postingdari' => 'ENTRY PENERIMAAN KAS/BANK', 'statusapproval' => '4', 'userapproval' => '', 'tglapproval' => '1900/1/1', 'statusformat' => '0', 'modifiedby' => 'ADMIN',]);
         jurnalumumheader::create(['nobukti' => 'BMT-M BCA3 0016/II/2023', 'tglbukti' => '2023/2/23', 'keterangan' => '', 'postingdari' => 'ENTRY PELUNASAN PIUTANG', 'statusapproval' => '4', 'userapproval' => '', 'tglapproval' => '1900/1/1', 'statusformat' => '0', 'modifiedby' => 'ADMIN',]);
         jurnalumumheader::create(['nobukti' => 'BMT-M BCA3 0017/II/2023', 'tglbukti' => '2023/2/24', 'keterangan' => '', 'postingdari' => 'ENTRY PENERIMAAN KAS/BANK', 'statusapproval' => '4', 'userapproval' => '', 'tglapproval' => '1900/1/1', 'statusformat' => '0', 'modifiedby' => 'ADMIN',]);
+        jurnalumumheader::create(['nobukti' => 'EPT 0001/II/2023', 'tglbukti' => '2023/2/10', 'keterangan' => '', 'postingdari' => 'ENTRY INVOICE', 'statusapproval' => '4', 'userapproval' => '', 'tglapproval' => '1900/1/1', 'statusformat' => '0', 'modifiedby' => 'ADMIN',]);
     }
 }

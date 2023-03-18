@@ -71,6 +71,8 @@ class DatabaseSeeder extends Seeder
             ServiceOutDetailSeeder::class,
             AbsensiSupirHeaderSeeder::class,
             AbsensiSupirDetailSeeder::class,
+            InvoiceHeaderSeeder::class,
+            InvoiceDetailSeeder::class,            
             PiutangHeaderSeeder::class,
             PiutangDetailSeeder::class,            
             AbsensiSupirApprovalHeaderSeeder::class,
