@@ -417,7 +417,7 @@ class PenerimaanHeaderController extends Controller
                     'coakredit' => ($isUpdate != 0) ? $counter[$i]['coakredit'] ?? $memo['JURNAL'] : $request->coakredit[$i],
                     'keterangan' => ($isUpdate != 0) ? $counter[$i]['keterangan'] : $request->keterangan_detail[$i],
                     'bank_id' => ($isUpdate != 0) ? $request->bank_id : $penerimaanheader->bank_id,
-                    'invoice_nobukti' => ($isUpdate != 0) ? $counter[$i]['invoice_nobukti'] : $request->invoice_nobukti[$i] ?? '-',
+                    'invoice_nobukti' => ($isUpdate != 0) ? $counter[$i]['invoice_nobukti'] ?? '' : $request->invoice_nobukti[$i] ?? '-',
                     'bankpelanggan_id' => ($isUpdate != 0) ? '' : $request->bankpelanggan_id[$i] ?? '',
                     'jenisbiaya' => ($isUpdate != 0) ? '' : $request->jenisbiaya[$i] ?? '',
                     'pelunasanpiutang_nobukti' => ($isUpdate != 0) ? $request->pelunasanpiutang_nobukti ?? '' : $request->pelunasanpiutang_nobukti[$i] ?? '-',

@@ -206,7 +206,7 @@ class GajiSupirHeaderController extends Controller
                     $datadetail = [
                         'gajisupir_id' => $gajisupirheader->id,
                         'nobukti' => $gajisupirheader->nobukti,
-                        'nominaldeposito' => $request->nomDeposito ?? 0,
+                        'nominaldeposito' => 0,
                         'nourut' => $urut,
                         'suratpengantar_nobukti' => $request->rincian_nobukti[$i],
                         'ritasi_nobukti' => $ritasiNobukti,
@@ -219,7 +219,7 @@ class GajiSupirHeaderController extends Controller
                         'gajiritasi' => $gajiRitasi,
                         'biayatambahan' => $request->rincian_biayaextra[$i],
                         'keteranganbiayatambahan' => $request->rincian_keteranganbiaya[$i],
-                        'nominalpengembalianpinjaman' => $gajisupirheader->potonganpinjaman + $gajisupirheader->potonganpinjamansemua,
+                        'nominalpengembalianpinjaman' => 0,
                         'modifiedby' => $gajisupirheader->modifiedby,
                     ];
 
@@ -766,7 +766,7 @@ class GajiSupirHeaderController extends Controller
                         $datadetail = [
                             'gajisupir_id' => $gajisupirheader->id,
                             'nobukti' => $gajisupirheader->nobukti,
-                            'nominaldeposito' => $request->nomDeposito ?? 0,
+                            'nominaldeposito' => 0,
                             'nourut' => $urut,
                             'suratpengantar_nobukti' => $request->rincian_nobukti[$i],
                             'ritasi_nobukti' => $ritasiNobukti,
@@ -779,7 +779,7 @@ class GajiSupirHeaderController extends Controller
                             'gajiritasi' => $gajiRitasi,
                             'biayatambahan' => $request->rincian_biayaextra[$i],
                             'keteranganbiayatambahan' => $request->rincian_keteranganbiaya[$i] ?? '',
-                            'nominalpengembalianpinjaman' => $gajisupirheader->potonganpinjaman +  $gajisupirheader->potonganpinjamansemua,
+                            'nominalpengembalianpinjaman' => 0,
                             'modifiedby' => $gajisupirheader->modifiedby,
                         ];
 

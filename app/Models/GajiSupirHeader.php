@@ -82,7 +82,7 @@ class GajiSupirHeader extends MyModel
                 'gajisupirheader.created_at',
                 'gajisupirheader.updated_at',
             )
-            ->whereBetween('tglbukti', [date('Y-m-d',strtotime(request()->tgldari)), date('Y-m-d',strtotime(request()->tglsampai))])
+            ->whereBetween('tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'gajisupirheader.statuscetak', 'parameter.id')
             ->leftJoin(DB::raw("supir with (readuncommitted)"), 'gajisupirheader.supir_id', 'supir.id');
         $this->totalRows = $query->count();
@@ -208,7 +208,7 @@ class GajiSupirHeader extends MyModel
             $table->string('keteranganbiaya')->nullable();
         });
 
-        $tes = DB::table($temp)->insertUsing(['id', 'nobuktitrip', 'tglbuktisp', 'trado_id', 'dari_id', 'sampai_id', 'nocont', 'nosp', 'gajisupir', 'gajikenek', 'komisisupir','tolsupir', 'upahritasi', 'statusritasi', 'biayaextra', 'keteranganbiaya'], $fetch);
+        $tes = DB::table($temp)->insertUsing(['id', 'nobuktitrip', 'tglbuktisp', 'trado_id', 'dari_id', 'sampai_id', 'nocont', 'nosp', 'gajisupir', 'gajikenek', 'komisisupir', 'tolsupir', 'upahritasi', 'statusritasi', 'biayaextra', 'keteranganbiaya'], $fetch);
 
         $fetch = Ritasi::from(DB::raw("ritasi with (readuncommitted)"))
             ->select(
@@ -271,7 +271,7 @@ class GajiSupirHeader extends MyModel
 
     public function createTempEdit($gajiId)
     {
-        
+
         $temp = '##tempRIC' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
 
@@ -322,7 +322,7 @@ class GajiSupirHeader extends MyModel
             $table->string('keteranganbiaya')->nullable();
         });
 
-        $tes = DB::table($temp)->insertUsing(['id', 'nobuktitrip', 'tglbuktisp', 'trado_id', 'dari_id', 'sampai_id', 'nocont', 'nosp', 'gajisupir', 'gajikenek', 'komisisupir','tolsupir', 'upahritasi', 'statusritasi', 'biayaextra', 'keteranganbiaya'], $fetch);
+        $tes = DB::table($temp)->insertUsing(['id', 'nobuktitrip', 'tglbuktisp', 'trado_id', 'dari_id', 'sampai_id', 'nocont', 'nosp', 'gajisupir', 'gajikenek', 'komisisupir', 'tolsupir', 'upahritasi', 'statusritasi', 'biayaextra', 'keteranganbiaya'], $fetch);
 
         $fetch = DB::table('gajisupirdetail')->from(DB::raw("gajisupirdetail with (readuncommitted)"))
             ->select(
@@ -348,7 +348,7 @@ class GajiSupirHeader extends MyModel
             ->where('gajisupirdetail.suratpengantar_nobukti', '-')
             ->where('gajisupirdetail.gajisupir_id', $gajiId);
 
-        $tes = DB::table($temp)->insertUsing(['id', 'nobuktitrip', 'tglbuktisp', 'trado_id', 'dari_id', 'sampai_id', 'gajisupir', 'gajikenek', 'komisisupir','tolsupir', 'upahritasi', 'statusritasi', 'biayaextra', 'keteranganbiaya'], $fetch);
+        $tes = DB::table($temp)->insertUsing(['id', 'nobuktitrip', 'tglbuktisp', 'trado_id', 'dari_id', 'sampai_id', 'gajisupir', 'gajikenek', 'komisisupir', 'tolsupir', 'upahritasi', 'statusritasi', 'biayaextra', 'keteranganbiaya'], $fetch);
 
         return $temp;
     }
@@ -429,6 +429,7 @@ class GajiSupirHeader extends MyModel
             ->select(DB::raw(" pengeluarantruckingdetail.nobukti,pengeluarantruckingdetail.id, pengeluarantruckingdetail.keterangan, (SELECT (pengeluarantruckingdetail.nominal - coalesce(SUM(penerimaantruckingdetail.nominal),0)) FROM penerimaantruckingdetail WHERE penerimaantruckingdetail.pengeluarantruckingheader_nobukti= pengeluarantruckingdetail.nobukti) AS sisa"))
             ->leftJoin(DB::raw("penerimaantruckingdetail with (readuncommitted)"), 'penerimaantruckingdetail.pengeluarantruckingheader_nobukti', 'pengeluarantruckingdetail.nobukti')
             ->where("pengeluarantruckingdetail.nobukti",  'LIKE', "%PJT%")
+            ->whereRaw("pengeluarantruckingdetail.nobukti not in (select pengeluarantruckingheader_nobukti from penerimaantruckingdetail)")
             ->where("pengeluarantruckingdetail.supir_id", $supir_id);
 
         return $query->get();
@@ -540,7 +541,7 @@ class GajiSupirHeader extends MyModel
             $table->string('keteranganbiaya')->nullable();
         });
 
-        $tes = DB::table($temp)->insertUsing(['id', 'nobuktitrip', 'tglbuktisp', 'trado_id', 'dari_id', 'sampai_id', 'nocont', 'nosp', 'gajisupir', 'gajikenek', 'komisisupir','tolsupir', 'upahritasi', 'statusritasi', 'biayaextra', 'keteranganbiaya'], $fetch);
+        $tes = DB::table($temp)->insertUsing(['id', 'nobuktitrip', 'tglbuktisp', 'trado_id', 'dari_id', 'sampai_id', 'nocont', 'nosp', 'gajisupir', 'gajikenek', 'komisisupir', 'tolsupir', 'upahritasi', 'statusritasi', 'biayaextra', 'keteranganbiaya'], $fetch);
 
         $fetch = DB::table('gajisupirdetail')->from(DB::raw("gajisupirdetail with (readuncommitted)"))
             ->select(
@@ -566,7 +567,7 @@ class GajiSupirHeader extends MyModel
             ->where('gajisupirdetail.suratpengantar_nobukti', '-')
             ->where('gajisupirdetail.gajisupir_id', $gajiId);
 
-        $tes = DB::table($temp)->insertUsing(['id', 'nobuktitrip', 'tglbuktisp', 'trado_id', 'dari_id', 'sampai_id', 'gajisupir', 'gajikenek', 'komisisupir','tolsupir', 'upahritasi', 'statusritasi', 'biayaextra', 'keteranganbiaya'], $fetch);
+        $tes = DB::table($temp)->insertUsing(['id', 'nobuktitrip', 'tglbuktisp', 'trado_id', 'dari_id', 'sampai_id', 'gajisupir', 'gajikenek', 'komisisupir', 'tolsupir', 'upahritasi', 'statusritasi', 'biayaextra', 'keteranganbiaya'], $fetch);
 
         $fetch = SuratPengantar::from(DB::raw("suratpengantar with (readuncommitted)"))
             ->select(
@@ -598,7 +599,7 @@ class GajiSupirHeader extends MyModel
             ->whereRaw("suratpengantar.nobukti not in(select suratpengantar_nobukti from gajisupirdetail)");
 
 
-        $tes = DB::table($temp)->insertUsing(['id', 'nobuktitrip', 'tglbuktisp', 'trado_id', 'dari_id', 'sampai_id', 'nocont', 'nosp', 'gajisupir', 'gajikenek', 'komisisupir','tolsupir', 'upahritasi', 'statusritasi', 'biayaextra', 'keteranganbiaya'], $fetch);
+        $tes = DB::table($temp)->insertUsing(['id', 'nobuktitrip', 'tglbuktisp', 'trado_id', 'dari_id', 'sampai_id', 'nocont', 'nosp', 'gajisupir', 'gajikenek', 'komisisupir', 'tolsupir', 'upahritasi', 'statusritasi', 'biayaextra', 'keteranganbiaya'], $fetch);
 
         $fetch = Ritasi::from(DB::raw("ritasi with (readuncommitted)"))
             ->select(
@@ -663,27 +664,6 @@ class GajiSupirHeader extends MyModel
         return $temp;
     }
 
-    public function getRic($dari, $sampai)
-    {
-        $this->setRequestParameters();
-        $query = GajiSupirHeader::from(DB::raw("gajisupirheader with (readuncommitted)"))
-            ->select('gajisupirheader.id as idric', 'gajisupirheader.nobukti as nobuktiric', 'gajisupirheader.tglbukti as tglbuktiric', 'supir.namasupir as supir_id', 'gajisupirheader.tgldari as tgldariric', 'gajisupirheader.tglsampai as tglsampairic', 'gajisupirheader.nominal')
-            ->leftJoin(DB::raw("supir with (readuncommitted)"), 'gajisupirheader.supir_id', 'supir.id')
-            ->where('gajisupirheader.tglbukti', '>=', $dari)
-            ->where('gajisupirheader.tglbukti', '<=', $sampai)
-            ->whereRaw("gajisupirheader.nobukti not in(select gajisupir_nobukti from prosesgajisupirdetail)");
-
-        $this->totalRows = $query->count();
-        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
-
-        $this->sort($query);
-        $this->filter($query);
-        $this->paginate($query);
-        $data = $query->get();
-
-        $this->totalNominal = $query->sum('nominal');
-        return $data;
-    }
 
     public function sort($query)
     {
@@ -707,7 +687,7 @@ class GajiSupirHeader extends MyModel
 
                     break;
                 case "OR":
-                    $query = $query->where(function($query){
+                    $query = $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
                             if ($filters['field'] == 'statuscetak') {
                                 $query->orWhere('parameter.text', '=', "$filters[data]");
@@ -715,7 +695,7 @@ class GajiSupirHeader extends MyModel
                                 $query->orWhere('supir.namasupir', 'LIKE', "%$filters[data]%");
                             } else {
                                 $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                            }    
+                            }
                         }
                     });
 
