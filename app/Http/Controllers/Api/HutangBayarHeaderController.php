@@ -65,9 +65,6 @@ class HutangBayarHeaderController extends Controller
 
                 $cekSisa = HutangHeader::from(DB::raw("hutangheader with (readuncommitted)"))->select('total')->where('nobukti', $request->hutang_id[$i])->first();
 
-                if ($cekSisa == null) {
-                    $cekSisa = SaldoHutang::from(DB::raw("saldohutang with (readuncommitted)"))->select('total')->where('nobukti', $request->hutang_id[$i])->first();
-                }
                 $byrPotongan = $request->bayar[$i] + $request->potongan[$i];
                 if ($byrPotongan > $cekSisa->total) {
                     $query =  Error::from(DB::raw("error with (readuncommitted)"))->select('keterangan')->where('kodeerror', '=', 'STM')
@@ -131,10 +128,7 @@ class HutangBayarHeaderController extends Controller
 
             for ($i = 0; $i < count($request->hutang_id); $i++) {
                 $hutang = HutangHeader::where('nobukti', $request->hutang_id[$i])->first();
-                if($hutang == null){
-                    $hutang = SaldoHutang::where('nobukti', $request->hutang_id[$i])->first();
-                }
-
+               
                 if ($request->bayar[$i] > $hutang->total) {
 
                     $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'NBH')

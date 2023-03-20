@@ -715,6 +715,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::resource('pengembaliankasbankdetail', PengembalianKasBankDetailController::class);
 
     Route::get('prosesgajisupirheader/{id}/printreport', [ProsesGajiSupirHeaderController::class, 'printReport']);
+    Route::get('prosesgajisupirheader/default', [ProsesGajiSupirHeaderController::class, 'default']);
     Route::post('prosesgajisupirheader/{id}/cekvalidasi', [ProsesGajiSupirHeaderController::class, 'cekvalidasi'])->name('prosesgajisupirheader.cekvalidasi');
     Route::get('prosesgajisupirheader/no_bukti', [ProsesGajiSupirHeaderController::class, 'getNoBukti']);
     Route::get('prosesgajisupirheader/grid', [ProsesGajiSupirHeaderController::class, 'grid']);

@@ -48,17 +48,33 @@ class ProsesGajiSupirDetail extends MyModel
                 $this->table . '.gajisupir_nobukti',
                 'supir.namasupir as supir_id',
                 'trado.kodetrado as trado_id',
-                $this->table . '.keterangan',
-                $this->table . '.nominal',
+                'gajisupirheader.total',
+                'gajisupirheader.uangjalan',
+                'gajisupirheader.bbm',
+                'gajisupirheader.uangmakanharian',
+                'gajisupirheader.potonganpinjaman',
+                'gajisupirheader.potonganpinjamansemua',
+                'gajisupirheader.deposito',
+                'gajisupirheader.komisisupir',
+                'gajisupirheader.tolsupir',
             )
             ->leftJoin(DB::raw("supir with (readuncommitted)"),$this->table . '.supir_id','supir.id')
-            ->leftJoin(DB::raw("trado with (readuncommitted)"),$this->table . '.trado_id','trado.id');
+            ->leftJoin(DB::raw("trado with (readuncommitted)"),$this->table . '.trado_id','trado.id')
+            ->leftJoin(DB::raw("gajisupirheader with (readuncommitted)"), $this->table . '.gajisupir_nobukti', 'gajisupirheader.nobukti');
             
             $this->sort($query);
             $query->where($this->table . '.prosesgajisupir_id', '=', request()->prosesgajisupir_id);
             $this->filter($query);
 
-            $this->totalNominal = $query->sum('nominal');
+            $this->totalNominal = $query->sum('gajisupirheader.total');
+            $this->totalUangJalan = $query->sum('gajisupirheader.uangjalan');
+            $this->totalBBM = $query->sum('gajisupirheader.bbm');
+            $this->totalUangMakan = $query->sum('gajisupirheader.uangmakanharian');
+            $this->totalPinjaman = $query->sum('gajisupirheader.potonganpinjaman');
+            $this->totalPinjamanSemua = $query->sum('gajisupirheader.potonganpinjamansemua');
+            $this->totalDeposito = $query->sum('gajisupirheader.deposito');
+            $this->totalKomisi = $query->sum('gajisupirheader.komisisupir');
+            $this->totalTol = $query->sum('gajisupirheader.tolsupir');
             $this->totalRows = $query->count();
             $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
@@ -84,6 +100,24 @@ class ProsesGajiSupirDetail extends MyModel
                                 $query = $query->where('supir.namasupir', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'trado_id') {
                                 $query = $query->where('trado.keterangan', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'total') {
+                                $query = $query->where('gajisupirheader.total', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'uangjalan') {
+                                $query = $query->where('gajisupirheader.uangjalan', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'bbm') {
+                                $query = $query->where('gajisupirheader.bbm', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'uangmakanharian') {
+                                $query = $query->where('gajisupirheader.uangmakanharian', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'potonganpinjaman') {
+                                $query = $query->where('gajisupirheader.potonganpinjaman', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'potonganpinjamansemua') {
+                                $query = $query->where('gajisupirheader.potonganpinjamansemua', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'deposito') {
+                                $query = $query->where('gajisupirheader.deposito', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'komisisupir') {
+                                $query = $query->where('gajisupirheader.komisisupir', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'tolsupir') {
+                                $query = $query->where('gajisupirheader.tolsupir', 'LIKE', "%$filters[data]%");
                             } else {
                                 $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }
@@ -98,6 +132,24 @@ class ProsesGajiSupirDetail extends MyModel
                                 $query = $query->orWhere('supir.namasupir', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'trado_id') {
                                 $query = $query->orWhere('trado.keterangan', 'LIKE', "%$filters[data]%");
+                            }  else if ($filters['field'] == 'total') {
+                                $query = $query->orWhere('gajisupirheader.total', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'uangjalan') {
+                                $query = $query->orWhere('gajisupirheader.uangjalan', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'bbm') {
+                                $query = $query->orWhere('gajisupirheader.bbm', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'uangmakanharian') {
+                                $query = $query->orWhere('gajisupirheader.uangmakanharian', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'potonganpinjaman') {
+                                $query = $query->orWhere('gajisupirheader.potonganpinjaman', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'potonganpinjamansemua') {
+                                $query = $query->orWhere('gajisupirheader.potonganpinjamansemua', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'deposito') {
+                                $query = $query->orWhere('gajisupirheader.deposito', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'komisisupir') {
+                                $query = $query->orWhere('gajisupirheader.komisisupir', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'tolsupir') {
+                                $query = $query->orWhere('gajisupirheader.tolsupir', 'LIKE', "%$filters[data]%");
                             } else {
                                 $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }

@@ -24,7 +24,16 @@ class ProsesGajiSupirDetailController extends Controller
             'attributes' => [
                 'totalRows' => $prosesGajiSupir->totalRows,
                 'totalPages' => $prosesGajiSupir->totalPages,
-                'totalNominal' => $prosesGajiSupir->totalNominal
+                'totalNominal' => $prosesGajiSupir->totalNominal,
+                'totalUangJalan' => $prosesGajiSupir->totalUangJalan,
+                'totalBBM' => $prosesGajiSupir->totalBBM,
+                'totalUangMakan' => $prosesGajiSupir->totalUangMakan,
+                'totalPinjaman' => $prosesGajiSupir->totalPinjaman,
+                'totalPinjamanSemua' => $prosesGajiSupir->totalPinjamanSemua,
+                'totalDeposito' => $prosesGajiSupir->totalDeposito,
+                'totalKomisi' => $prosesGajiSupir->totalKomisi,
+                'totalTol' => $prosesGajiSupir->totalTol,
+
             ]
         ]);
     }
