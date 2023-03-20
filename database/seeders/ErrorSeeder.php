@@ -52,5 +52,6 @@ class ErrorSeeder extends Seeder
         Error::create([ 'kodeerror' => 'STM', 'keterangan' => 'SISA BAYAR TIDAK BOLEH MINUS', 'modifiedby' => 'ADMIN',]);
         Error::create([ 'kodeerror' => 'TDT', 'keterangan' => 'TRANSAKSI BERASAL DARI INPUTAN TRANSAKSI LAIN', 'modifiedby' => 'ADMIN',]);
         Error::create([ 'kodeerror' => 'ETS', 'keterangan' => 'HANYA BISA EDIT/DELETE DI TANGGAL YANG SAMA', 'modifiedby' => 'ADMIN',]);
+        Error::create([ 'kodeerror' => 'TBT', 'keterangan' => 'TIDAK BISA MEMILIH TANGGAL TERSEBUT', 'modifiedby' => 'ADMIN',]);
     }
 }
