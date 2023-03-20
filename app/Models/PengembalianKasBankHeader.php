@@ -55,6 +55,8 @@ class PengembalianKasBankHeader extends MyModel
             'pengembaliankasbankheader.updated_at'
 
         )
+        ->whereBetween('pengembaliankasbankheader.tglbukti', [date('Y-m-d',strtotime(request()->tgldari)), date('Y-m-d',strtotime(request()->tglsampai))])
+
         ->leftJoin('cabang', 'pengembaliankasbankheader.cabang_id', 'cabang.id')
         ->leftJoin('bank', 'pengembaliankasbankheader.bank_id', 'bank.id')
         ->leftJoin('parameter as statusapproval' , 'pengembaliankasbankheader.statusapproval', 'statusapproval.id')
@@ -235,22 +237,24 @@ class PengembalianKasBankHeader extends MyModel
     
                         break;
                     case "OR":
-                        foreach ($this->params['filters']['rules'] as $index => $filters) {
-                            if ($filters['field'] == 'statusapproval') {
-                                $query = $query->orWhere('statusapproval.text', '=', "$filters[data]");
-                            } else if ($filters['field'] == 'statusjenistransaksi') {
-                                $query = $query->orWhere('statusjenistransaksi.text', '=', "$filters[data]");
-                            // }else if ($filters['field'] == 'pelanggan_id') {
-                            //     $query = $query->orWhere('pelanggan.namapelanggan', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'cabang_id') {
-                                $query = $query->orWhere('cabang.namacabang', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'bank_id') {
-                                $query = $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");
-                            }else {
-                                $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                        $query = $query->where(function($query){
+                            foreach ($this->params['filters']['rules'] as $index => $filters) {
+                                if ($filters['field'] == 'statusapproval') {
+                                    $query = $query->orWhere('statusapproval.text', '=', "$filters[data]");
+                                } else if ($filters['field'] == 'statusjenistransaksi') {
+                                    $query = $query->orWhere('statusjenistransaksi.text', '=', "$filters[data]");
+                                // }else if ($filters['field'] == 'pelanggan_id') {
+                                //     $query = $query->orWhere('pelanggan.namapelanggan', 'LIKE', "%$filters[data]%");
+                                } else if ($filters['field'] == 'cabang_id') {
+                                    $query = $query->orWhere('cabang.namacabang', 'LIKE', "%$filters[data]%");
+                                } else if ($filters['field'] == 'bank_id') {
+                                    $query = $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");
+                                }else {
+                                    $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                }
                             }
-                        }
-    
+                        });
+                            
                         break;
                     default:
     
