@@ -29,7 +29,6 @@ class CreateabsensisupirheaderTable extends Migration
             $table->string('userbukacetak',50)->nullable();
             $table->date('tglbukacetak')->nullable();
             $table->integer('jumlahcetak')->Length(11)->nullable();
-            $table->integer('statuseditabsensi')->Length(11)->nullable();
             $table->integer('statusapprovaleditabsensi')->Length(11)->nullable();
             $table->string('userapprovaleditabsensi',50)->nullable();
             $table->date('tglapprovaleditabsensi')->nullable();
