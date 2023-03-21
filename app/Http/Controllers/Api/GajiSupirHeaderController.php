@@ -92,39 +92,33 @@ class GajiSupirHeaderController extends Controller
                         ]
                     );
                 }
-                if ($request->nomDeposito > 0 || $request->ketDeposito != '') {
+                if ($request->nomDeposito > 0) {
                     $request->validate(
                         [
                             'nomDeposito' => 'required|gt:0',
-                            'ketDeposito' => 'required',
                         ],
                         [
                             'nomDeposito.gt' => 'nilai deposito tidak boleh 0',
-                            'ketDeposito.required' => 'keterangan deposito ' . app(ErrorController::class)->geterror('WI')->keterangan,
                         ]
                     );
                 }
-                if ($request->nomBBM > 0 || $request->ketBBM != '') {
+                if ($request->nomBBM > 0) {
                     $request->validate(
                         [
                             'nomBBM' => 'required|gt:0',
-                            'ketBBM' => 'required',
                         ],
                         [
                             'nomBBM.gt' => 'nilai BBM tidak boleh 0',
-                            'ketBBM.required' => 'keterangan BBM ' . app(ErrorController::class)->geterror('WI')->keterangan,
                         ]
                     );
                 }
-                if ($request->nomPinjaman > 0 || $request->ketPinjaman != '') {
+                if ($request->nomPinjaman > 0) {
                     $request->validate(
                         [
                             'nomPinjaman' => 'required|gt:0',
-                            'ketPinjaman' => 'required',
                         ],
                         [
                             'nomPinjaman.gt' => 'nilai Pinjaman tidak boleh 0',
-                            'ketPinjaman.required' => 'keterangan Pinjaman ' . app(ErrorController::class)->geterror('WI')->keterangan,
                         ]
                     );
                 }
@@ -625,11 +619,11 @@ class GajiSupirHeaderController extends Controller
     {
         $gajisupirpinjaman = new GajiSupirPelunasanPinjaman();
         $data = GajiSupirHeader::findAll($id);
-        $deposito = GajiSupirDeposito::findAll($id);
-        $pinjamanPribadi = $gajisupirpinjaman->getPinjamanPribadi($id, $data->supir_id);
-        $pinjamanSemua = $gajisupirpinjaman->getPinjamanSemua($id);
-        $BBM = GajiSupirBBM::findAll($id);
-        $pribadi = GajiSupirPinjaman::findAll($id);
+        $deposito = GajiSupirDeposito::findAll($data->nobukti);
+        $pinjamanPribadi = $gajisupirpinjaman->getPinjamanPribadi($data->nobukti, $data->supir_id);
+        $pinjamanSemua = $gajisupirpinjaman->getPinjamanSemua($data->nobukti);
+        $BBM = GajiSupirBBM::findAll($data->nobukti);
+        $pribadi = GajiSupirPinjaman::findAll($data->nobukti);
 
         return response([
             'status' => true,
@@ -675,39 +669,33 @@ class GajiSupirHeaderController extends Controller
                         ]
                     );
                 }
-                if ($request->nomDeposito > 0 || $request->ketDeposito != '') {
+                if ($request->nomDeposito > 0) {
                     $request->validate(
                         [
                             'nomDeposito' => 'required|gt:0',
-                            'ketDeposito' => 'required',
                         ],
                         [
                             'nomDeposito.gt' => 'nilai deposito tidak boleh 0',
-                            'ketDeposito.required' => 'keterangan deposito ' . app(ErrorController::class)->geterror('WI')->keterangan,
                         ]
                     );
                 }
-                if ($request->nomBBM > 0 || $request->ketBBM != '') {
+                if ($request->nomBBM > 0) {
                     $request->validate(
                         [
                             'nomBBM' => 'required|gt:0',
-                            'ketBBM' => 'required',
                         ],
                         [
                             'nomBBM.gt' => 'nilai BBM tidak boleh 0',
-                            'ketBBM.required' => 'keterangan BBM ' . app(ErrorController::class)->geterror('WI')->keterangan,
                         ]
                     );
                 }
-                if ($request->nomPinjaman > 0 || $request->ketPinjaman != '') {
+                if ($request->nomPinjaman > 0) {
                     $request->validate(
                         [
                             'nomPinjaman' => 'required|gt:0',
-                            'ketPinjaman' => 'required',
                         ],
                         [
                             'nomPinjaman.gt' => 'nilai Pinjaman tidak boleh 0',
-                            'ketPinjaman.required' => 'keterangan Pinjaman ' . app(ErrorController::class)->geterror('WI')->keterangan,
                         ]
                     );
                 }
@@ -840,14 +828,14 @@ class GajiSupirHeaderController extends Controller
                 if ($request->pinjSemua != 0) {
 
                     $fetchPS = GajiSupirPelunasanPinjaman::from(DB::raw("gajisupirpelunasanpinjaman with (readuncommitted)"))
-                        ->where('gajisupir_id', $gajisupirheader->id)->where('supir_id', '0')->first();
+                        ->where('gajisupir_nobukti', $gajisupirheader->nobukti)->where('supir_id', '0')->first();
 
                     // jika ada maka update
                     if ($fetchPS != null) {
 
                         $pengeluaranPS = PenerimaanTruckingHeader::from(DB::raw("penerimaantruckingheader with (readuncommitted)"))
                             ->where('nobukti', $fetchPS->penerimaantrucking_nobukti)->first();
-                        GajiSupirPelunasanPinjaman::where('gajisupir_id', $gajisupirheader->id)->where('supir_id', '0')->delete();
+                        GajiSupirPelunasanPinjaman::where('gajisupir_nobukti', $gajisupirheader->nobukti)->where('supir_id', '0')->delete();
                         $penerimaanTruckingDetailPS = [];
                         for ($i = 0; $i < count($request->pinjSemua); $i++) {
                             $dataPS = PengeluaranTruckingDetail::from(DB::raw("pengeluarantruckingdetail with (readuncommitted)"))
@@ -945,14 +933,14 @@ class GajiSupirHeaderController extends Controller
                     }
                 } else {
                     $fetchPS = GajiSupirPelunasanPinjaman::from(DB::raw("gajisupirpelunasanpinjaman with (readuncommitted)"))
-                        ->where('gajisupir_id', $gajisupirheader->id)->where('supir_id', '0')->first();
+                        ->where('gajisupir_nobukti', $gajisupirheader->nobukti)->where('supir_id', '0')->first();
                     if ($fetchPS != null) {
                         $getPenerimaanTrucking = PenerimaanTruckingHeader::from(DB::raw("penerimaantruckingheader with (readuncommitted)"))->where('nobukti', $fetchPS->penerimaantrucking_nobukti)->first();
                         $request['postingdari'] = 'GAJI SUPIR';
                         $request['gajisupir'] = 1;
 
                         app(PenerimaanTruckingHeaderController::class)->destroy($request, $getPenerimaanTrucking->id);
-                        $getDetailGSPS = GajiSupirPelunasanPinjaman::lockForUpdate()->where('gajisupir_id', $gajisupirheader->id)->where('supir_id', '0')->get();
+                        $getDetailGSPS = GajiSupirPelunasanPinjaman::lockForUpdate()->where('gajisupir_nobukti', $gajisupirheader->nobukti)->where('supir_id', '0')->get();
                         foreach ($getDetailGSPS as $key => $value) {
                             app(GajiSupirPelunasanPinjamanController::class)->destroy($request, $value->id);
                         }
@@ -962,14 +950,14 @@ class GajiSupirHeaderController extends Controller
                 if ($request->pinjPribadi != 0) {
 
                     $fetchPP = GajiSupirPelunasanPinjaman::from(DB::raw("gajisupirpelunasanpinjaman with (readuncommitted)"))
-                        ->where('gajisupir_id', $gajisupirheader->id)->where('supir_id', $request->supir_id)->first();
+                        ->where('gajisupir_nobukti', $gajisupirheader->nobukti)->where('supir_id', $request->supir_id)->first();
 
                     // jika ada maka edit
                     if ($fetchPP != null) {
 
                         $pengeluaranPP = PenerimaanTruckingHeader::from(DB::raw("penerimaantruckingheader with (readuncommitted)"))
                             ->where('nobukti', $fetchPP->penerimaantrucking_nobukti)->first();
-                        GajiSupirPelunasanPinjaman::where('gajisupir_id', $gajisupirheader->id)->where('supir_id', $request->supir_id)->delete();
+                        GajiSupirPelunasanPinjaman::where('gajisupir_nobukti', $gajisupirheader->nobukti)->where('supir_id', $request->supir_id)->delete();
                         $penerimaanTruckingDetailPP = [];
                         for ($i = 0; $i < count($request->pinjPribadi); $i++) {
                             $dataPP = PengeluaranTruckingDetail::from(DB::raw("pengeluarantruckingdetail with (readuncommitted)"))
@@ -1067,14 +1055,14 @@ class GajiSupirHeaderController extends Controller
                     }
                 } else {
                     $fetchPP = GajiSupirPelunasanPinjaman::from(DB::raw("gajisupirpelunasanpinjaman with (readuncommitted)"))
-                        ->where('gajisupir_id', $gajisupirheader->id)->where('supir_id', $request->supir_id)->first();
+                        ->where('gajisupir_nobukti', $gajisupirheader->nobukti)->where('supir_id', $request->supir_id)->first();
                     if ($fetchPP != null) {
                         $getPenerimaanTrucking = PenerimaanTruckingHeader::from(DB::raw("penerimaantruckingheader with (readuncommitted)"))->where('nobukti', $fetchPP->penerimaantrucking_nobukti)->first();
                         $request['postingdari'] = 'GAJI SUPIR';
                         $request['gajisupir'] = 1;
 
                         app(PenerimaanTruckingHeaderController::class)->destroy($request, $getPenerimaanTrucking->id);
-                        $getDetailGSPP = GajiSupirPelunasanPinjaman::lockForUpdate()->where('gajisupir_id', $gajisupirheader->id)->where('supir_id', $gajisupirheader->supir_id)->get();
+                        $getDetailGSPP = GajiSupirPelunasanPinjaman::lockForUpdate()->where('gajisupir_nobukti', $gajisupirheader->nobukti)->where('supir_id', $gajisupirheader->supir_id)->get();
                         foreach ($getDetailGSPP as $key => $value) {
                             app(GajiSupirPelunasanPinjamanController::class)->destroy($request, $value->id);
                         }
@@ -1086,11 +1074,11 @@ class GajiSupirHeaderController extends Controller
                 if ($request->nomDeposito != 0) {
 
                     $fetchDPO = GajiSupirDeposito::from(DB::raw("gajisupirdeposito with (readuncommitted)"))
-                        ->where('gajisupir_id', $gajisupirheader->id)->first();
+                        ->where('gajisupir_nobukti', $gajisupirheader->nobukti)->first();
 
                     // jika ada maka update
                     if ($fetchDPO != null) {
-                        $pengeluaranDepo = PenerimaanTruckingHeader::from(DB::raw("penerimaantruckingheader with (readuncommitted)"))
+                        $penerimaanDepo = PenerimaanTruckingHeader::from(DB::raw("penerimaantruckingheader with (readuncommitted)"))
                             ->where('nobukti', $fetchDPO->penerimaantrucking_nobukti)->first();
 
                         $penerimaanTruckingDetailDPO[] = [
@@ -1105,7 +1093,7 @@ class GajiSupirHeaderController extends Controller
                             'datadetail' => $penerimaanTruckingDetailDPO
                         ];
                         $newPenerimaanTruckingDPO = new PenerimaanTruckingHeader();
-                        $newPenerimaanTruckingDPO = $newPenerimaanTruckingDPO->findAll($pengeluaranDepo->id);
+                        $newPenerimaanTruckingDPO = $newPenerimaanTruckingDPO->findAll($penerimaanDepo->id);
                         $penerimaanTrucking = new UpdatePenerimaanTruckingHeaderRequest($penerimaanTruckingHeaderDPO);
                         app(PenerimaanTruckingHeaderController::class)->update($penerimaanTrucking, $newPenerimaanTruckingDPO);
 
@@ -1172,7 +1160,7 @@ class GajiSupirHeaderController extends Controller
                     }
                 } else {
                     $fetchDPO = GajiSupirDeposito::from(DB::raw("gajisupirdeposito with (readuncommitted)"))
-                        ->where('gajisupir_id', $gajisupirheader->id)->first();
+                        ->where('gajisupir_nobukti', $gajisupirheader->nobukti)->first();
                     if ($fetchDPO != null) {
                         $getPenerimaanTrucking = PenerimaanTruckingHeader::from(DB::raw("penerimaantruckingheader with (readuncommitted)"))->where('nobukti', $fetchDPO->penerimaantrucking_nobukti)->first();
                         $request['postingdari'] = 'GAJI SUPIR';
@@ -1186,7 +1174,7 @@ class GajiSupirHeaderController extends Controller
                 if ($request->nomBBM != 0) {
 
                     $fetchBBM = GajiSupirBBM::from(DB::raw("gajisupirbbm with (readuncommitted)"))
-                        ->where('gajisupir_id', $gajisupirheader->id)->first();
+                        ->where('gajisupir_nobukti', $gajisupirheader->nobukti)->first();
 
                     // jika ada maka update
                     if ($fetchBBM != null) {
@@ -1309,7 +1297,7 @@ class GajiSupirHeaderController extends Controller
                     $jurnal = $this->storeJurnal($jurnalHeader, $jurnalDetail);
                 } else {
                     $fetchBBM = GajiSupirBBM::from(DB::raw("gajisupirbbm with (readuncommitted)"))
-                        ->where('gajisupir_id', $gajisupirheader->id)->first();
+                        ->where('gajisupir_nobukti', $gajisupirheader->nobukti)->first();
                     if ($fetchBBM != null) {
                         $getPenerimaanTrucking = PenerimaanTruckingHeader::from(DB::raw("penerimaantruckingheader with (readuncommitted)"))->where('nobukti', $fetchBBM->penerimaantrucking_nobukti)->first();
                         $request['postingdari'] = 'GAJI SUPIR';
@@ -1326,7 +1314,7 @@ class GajiSupirHeaderController extends Controller
                 if ($request->nomPinjaman != 0) {
 
                     $fetchPJT = GajiSupirPinjaman::from(DB::raw("gajisupirpinjaman with (readuncommitted)"))
-                        ->where('gajisupir_id', $gajisupirheader->id)->first();
+                        ->where('gajisupir_nobukti', $gajisupirheader->nobukti)->first();
 
                     // jika ada maka update
                     if ($fetchPJT != null) {
@@ -1414,7 +1402,7 @@ class GajiSupirHeaderController extends Controller
                 } else {
 
                     $fetchPJT = GajiSupirPinjaman::from(DB::raw("gajisupirpinjaman with (readuncommitted)"))
-                        ->where('gajisupir_id', $gajisupirheader->id)->first();
+                        ->where('gajisupir_nobukti', $gajisupirheader->nobukti)->first();
                     if ($fetchPJT != null) {
                         $getPenerimaanTrucking = PengeluaranTruckingHeader::from(DB::raw("pengeluarantruckingheader with (readuncommitted)"))->where('nobukti', $fetchPJT->pengeluarantrucking_nobukti)->first();
                         $request['postingdari'] = 'GAJI SUPIR';
@@ -1499,14 +1487,14 @@ class GajiSupirHeaderController extends Controller
             $validatedLogTrailGajiSupirDetail = new StoreLogTrailRequest($logTrailGajiSupirDetail);
             app(LogTrailController::class)->store($validatedLogTrailGajiSupirDetail);
 
-            $fetchDPO = GajiSupirDeposito::from(DB::raw("gajisupirdeposito with (readuncommitted)"))->whereRaw("gajisupir_id = $id")->first();
+            $fetchDPO = GajiSupirDeposito::from(DB::raw("gajisupirdeposito with (readuncommitted)"))->whereRaw("gajisupir_nobukti = '$gajiSupir->nobukti'")->first();
             if ($fetchDPO != null) {
                 $getPenerimaanTrucking = PenerimaanTruckingHeader::from(DB::raw("penerimaantruckingheader with (readuncommitted)"))->where('nobukti', $fetchDPO->penerimaantrucking_nobukti)->first();
                 app(PenerimaanTruckingHeaderController::class)->destroy($request, $getPenerimaanTrucking->id);
                 app(GajiSupirDepositoController::class)->destroy($request, $fetchDPO->id);
             }
 
-            $fetchBBM = GajiSupirBBM::from(DB::raw("gajisupirbbm with (readuncommitted)"))->whereRaw("gajisupir_id = $id")->first();
+            $fetchBBM = GajiSupirBBM::from(DB::raw("gajisupirbbm with (readuncommitted)"))->whereRaw("gajisupir_nobukti = '$gajiSupir->nobukti'")->first();
             if ($fetchBBM != null) {
                 $getPenerimaanTrucking = PenerimaanTruckingHeader::from(DB::raw("penerimaantruckingheader with (readuncommitted)"))->where('nobukti', $fetchBBM->penerimaantrucking_nobukti)->first();
                 $getJurnalHeader = JurnalUmumHeader::lockForUpdate()->where('nobukti', $fetchBBM->penerimaantrucking_nobukti)->first();
@@ -1515,30 +1503,30 @@ class GajiSupirHeaderController extends Controller
                 app(JurnalUmumHeaderController::class)->destroy($request, $getJurnalHeader->id);
             }
 
-            $fetchPinjaman = GajiSupirPinjaman::from(DB::raw("gajisupirbbm with (readuncommitted)"))->whereRaw("gajisupir_id = $id")->first();
+            $fetchPinjaman = GajiSupirPinjaman::from(DB::raw("gajisupirbbm with (readuncommitted)"))->whereRaw("gajisupir_nobukti = '$gajiSupir->nobukti'")->first();
             if ($fetchPinjaman != null) {
                 $getPenerimaanTrucking = PengeluaranTruckingHeader::from(DB::raw("pengeluarantruckingheader with (readuncommitted)"))->where('nobukti', $fetchPinjaman->pengeluarantrucking_nobukti)->first();
                 app(PengeluaranTruckingHeaderController::class)->destroy($request, $getPenerimaanTrucking->id);
                 app(GajiSupirPinjamanController::class)->destroy($request, $fetchPinjaman->id);
             }
 
-            $fetchPP = GajiSupirPelunasanPinjaman::from(DB::raw("gajisupirpelunasanpinjaman with (readuncommitted)"))->where('gajisupir_id', $id)->where('supir_id', $gajiSupir->supir_id)->first();
+            $fetchPP = GajiSupirPelunasanPinjaman::from(DB::raw("gajisupirpelunasanpinjaman with (readuncommitted)"))->where('gajisupir_nobukti',  $gajiSupir->nobukti)->where('supir_id', $gajiSupir->supir_id)->first();
 
             if ($fetchPP != null) {
                 $getPenerimaanTrucking = PenerimaanTruckingHeader::from(DB::raw("penerimaantruckingheader with (readuncommitted)"))->where('nobukti', $fetchPP->penerimaantrucking_nobukti)->first();
                 app(PenerimaanTruckingHeaderController::class)->destroy($request, $getPenerimaanTrucking->id);
-                $getDetailGSPP = GajiSupirPelunasanPinjaman::lockForUpdate()->where('gajisupir_id', $id)->where('supir_id', $gajiSupir->supir_id)->get();
+                $getDetailGSPP = GajiSupirPelunasanPinjaman::lockForUpdate()->where('gajisupir_nobukti',  $gajiSupir->nobukti)->where('supir_id', $gajiSupir->supir_id)->get();
                 foreach ($getDetailGSPP as $key => $value) {
                     app(GajiSupirPelunasanPinjamanController::class)->destroy($request, $value->id);
                 }
             }
 
             $fetchPS = GajiSupirPelunasanPinjaman::from(DB::raw("gajisupirpelunasanpinjaman with (readuncommitted)"))
-                ->where('gajisupir_id', $gajiSupir->id)->where('supir_id', '0')->first();
+                ->where('gajisupir_nobukti', $gajiSupir->nobukti)->where('supir_id', '0')->first();
             if ($fetchPS != null) {
                 $getPenerimaanTrucking = PenerimaanTruckingHeader::from(DB::raw("penerimaantruckingheader with (readuncommitted)"))->where('nobukti', $fetchPS->penerimaantrucking_nobukti)->first();
                 app(PenerimaanTruckingHeaderController::class)->destroy($request, $getPenerimaanTrucking->id);
-                $getDetailGSPS = GajiSupirPelunasanPinjaman::lockForUpdate()->where('gajisupir_id', $id)->where('supir_id', '0')->get();
+                $getDetailGSPS = GajiSupirPelunasanPinjaman::lockForUpdate()->where('gajisupir_nobukti', $gajiSupir->nobukti)->where('supir_id', '0')->get();
                 foreach ($getDetailGSPS as $key => $value) {
                     app(GajiSupirPelunasanPinjamanController::class)->destroy($request, $value->id);
                 }

@@ -24,11 +24,11 @@ class GajiSupirPelunasanPinjaman extends MyModel
         'updated_at' => 'date:d-m-Y H:i:s'
     ];
 
-    public function getPinjamanPribadi($id, $supir_id)
+    public function getPinjamanPribadi($nobukti, $supir_id)
     {
         $this->setRequestParameters();
 
-        $temp = $this->createTempPinjamanPribadi($id, $supir_id);
+        $temp = $this->createTempPinjamanPribadi($nobukti, $supir_id);
         $query = DB::table('pengeluarantruckingdetail')
         ->from(
             DB::raw("pengeluarantruckingdetail with (readuncommitted)")
@@ -42,14 +42,14 @@ class GajiSupirPelunasanPinjaman extends MyModel
         return $query->get();
     }
     
-    public function createTempPinjamanPribadi($id, $supir_id)
+    public function createTempPinjamanPribadi($nobukti, $supir_id)
     {
         $temp = '##tempPribadi' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
 
         $fetch = DB::table('gajisupirpelunasanpinjaman')->from(DB::raw("gajisupirpelunasanpinjaman with (readuncommitted)"))
             ->select(DB::raw("nominal, pengeluarantrucking_nobukti,gajisupir_id"))
-            ->whereRaw("gajisupir_id = $id")
+            ->whereRaw("gajisupir_nobukti = '$nobukti'")
             ->whereRaw("supir_id = $supir_id");
 
         Schema::create($temp, function ($table) {
@@ -64,11 +64,11 @@ class GajiSupirPelunasanPinjaman extends MyModel
     }
     
 
-    public function getPinjamanSemua($id)
+    public function getPinjamanSemua($nobukti)
     {
         $this->setRequestParameters();
 
-        $temp = $this->createTempPinjamanSemua($id);
+        $temp = $this->createTempPinjamanSemua($nobukti);
         $query = DB::table('pengeluarantruckingdetail')
         ->from(
             DB::raw("pengeluarantruckingdetail with (readuncommitted)")
@@ -82,14 +82,14 @@ class GajiSupirPelunasanPinjaman extends MyModel
         return $query->get();
     }
     
-    public function createTempPinjamanSemua($id)
+    public function createTempPinjamanSemua($nobukti)
     {
         $temp = '##tempPribadi' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
 
         $fetch = DB::table('gajisupirpelunasanpinjaman')->from(DB::raw("gajisupirpelunasanpinjaman with (readuncommitted)"))
             ->select(DB::raw("nominal, pengeluarantrucking_nobukti,gajisupir_id"))
-            ->whereRaw("gajisupir_id = $id")
+            ->whereRaw("gajisupir_nobukti = '$nobukti'")
             ->whereRaw("supir_id = 0");
 
         Schema::create($temp, function ($table) {

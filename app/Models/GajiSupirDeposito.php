@@ -23,13 +23,13 @@ class GajiSupirDeposito extends MyModel
         'updated_at' => 'date:d-m-Y H:i:s'
     ];
 
-    public function findAll($id)
+    public function findAll($nobukti)
     {
         $query = GajiSupirDeposito::from(DB::raw("gajisupirdeposito with (readuncommitted)"))
             ->select(
                 'penerimaantrucking_nobukti'
             )
-            ->where('gajisupir_id', $id)->first();
+            ->where('gajisupir_nobukti', $nobukti)->first();
         if ($query != null) {
 
             $deposito = PenerimaanTruckingDetail::from(DB::raw("penerimaantruckingdetail with (readuncommitted)"))

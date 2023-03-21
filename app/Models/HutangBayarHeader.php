@@ -53,6 +53,7 @@ class HutangBayarHeader extends MyModel
                 'hutangbayarheader.tglcair'
 
             )
+            ->whereBetween('tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
             ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'hutangbayarheader.coa', 'akunpusat.coa')
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'hutangbayarheader.bank_id', 'bank.id')
             ->leftJoin(DB::raw("supplier with (readuncommitted)"), 'hutangbayarheader.supplier_id', 'supplier.id')
@@ -176,7 +177,7 @@ class HutangBayarHeader extends MyModel
             ->select(DB::raw("hutangheader.id,hutangheader.nobukti,hutangheader.tglbukti,hutangheader.supplier_id,hutangheader.total as nominalhutang, (SELECT (hutangheader.total - COALESCE(SUM(hutangbayardetail.nominal),0)) FROM hutangbayardetail WHERE hutangbayardetail.hutang_nobukti= hutangheader.nobukti) AS sisa"))
             ->leftJoin(DB::raw("hutangbayardetail with (readuncommitted)"), 'hutangheader.nobukti', 'hutangbayardetail.hutang_nobukti')
             ->whereRaw("hutangheader.supplier_id = $supplierId")
-            ->groupBy('hutangheader.id', 'hutangheader.nobukti', 'hutangheader.supplier_id' , 'hutangheader.total', 'hutangheader.tglbukti');
+            ->groupBy('hutangheader.id', 'hutangheader.nobukti', 'hutangheader.supplier_id', 'hutangheader.total', 'hutangheader.tglbukti');
 
         Schema::create($temp, function ($table) {
             $table->bigInteger('id');
@@ -279,19 +280,21 @@ class HutangBayarHeader extends MyModel
 
                     break;
                 case "OR":
-                    foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'statusapproval') {
-                            $query = $query->orWhere('statusapproval.text', '=', $filters['data']);
-                        } else if ($filters['field'] == 'statuscetak') {
-                            $query = $query->orWhere('statuscetak.text', '=', $filters['data']);
-                        } else if ($filters['field'] == 'supplier_id') {
-                            $query = $query->orWhere('supplier.namasupplier', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'bank_id') {
-                            $query = $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");
-                        } else {
-                            $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                    $query = $query->where(function ($query) {
+                        foreach ($this->params['filters']['rules'] as $index => $filters) {
+                            if ($filters['field'] == 'statusapproval') {
+                                $query = $query->orWhere('statusapproval.text', '=', $filters['data']);
+                            } else if ($filters['field'] == 'statuscetak') {
+                                $query = $query->orWhere('statuscetak.text', '=', $filters['data']);
+                            } else if ($filters['field'] == 'supplier_id') {
+                                $query = $query->orWhere('supplier.namasupplier', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'bank_id') {
+                                $query = $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");
+                            } else {
+                                $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            }
                         }
-                    }
+                    });
 
                     break;
                 default:

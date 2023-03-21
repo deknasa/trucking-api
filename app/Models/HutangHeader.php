@@ -167,24 +167,7 @@ class HutangHeader extends MyModel
 
         $temp = $this->createTempHutang($id, $field);
 
-        $list = '##tempList' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-
-        $query = DB::table('saldohutang')->from(DB::raw("saldohutang with (readuncommitted)"))
-        ->select(DB::raw("saldohutang.nobukti as nobukti,saldohutang.tglbukti, saldohutang.total," . $temp . ".sisa"))
-        ->join(DB::raw("$temp with (readuncommitted)"), 'saldohutang.nobukti', $temp . ".nobukti")
-        ->whereRaw("saldohutang.nobukti = $temp.nobukti")
-        ->where(function ($query) use ($temp) {
-            $query->whereRaw("$temp.sisa != 0")
-                ->orWhereRaw("$temp.sisa is null");
-        });
-        Schema::create($list, function ($table) {
-            $table->string('nobukti');
-            $table->date('tglbukti')->nullable();
-            $table->bigInteger('total')->nullable();
-            $table->bigInteger('sisa')->nullable();
-        });
-
-        DB::table($list)->insertUsing(['nobukti', 'tglbukti','total', 'sisa'], $query);
+       
 
         $query = DB::table('hutangheader')->from(DB::raw("hutangheader with (readuncommitted)"))
             ->select(DB::raw("hutangheader.nobukti as nobukti,hutangheader.tglbukti, hutangheader.total," . $temp . ".sisa"))
@@ -194,10 +177,7 @@ class HutangHeader extends MyModel
                 $query->whereRaw("$temp.sisa != 0")
                     ->orWhereRaw("$temp.sisa is null");
             });
-
-        DB::table($list)->insertUsing(['nobukti', 'tglbukti','total', 'sisa'], $query);
-
-        $data = DB::table($list)->get();
+        $data = $query->get();
 
         return $data;
     }
@@ -222,17 +202,6 @@ class HutangHeader extends MyModel
 
         $tes = DB::table($temp)->insertUsing(['nobukti', 'terbayar', 'sisa'], $fetch);
 
-        $fetch = DB::table('saldohutang')->from(
-            DB::raw("saldohutang with (readuncommitted)")
-        )
-            ->select(DB::raw("saldohutang.nobukti,sum(hutangbayardetail.nominal) as terbayar, (SELECT (saldohutang.total - coalesce(SUM(hutangbayardetail.nominal),0)) FROM hutangbayardetail WHERE hutangbayardetail.hutang_nobukti= saldohutang.nobukti) AS sisa"))
-            ->leftJoin(DB::raw("hutangbayardetail with (readuncommitted)"), 'hutangbayardetail.hutang_nobukti', 'saldohutang.nobukti')
-            ->whereRaw("saldohutang.$field = $id")
-            ->groupBy('saldohutang.nobukti', 'saldohutang.total');
-
-
-        $tes = DB::table($temp)->insertUsing(['nobukti', 'terbayar', 'sisa'], $fetch);
-        // $data = DB::table($temp)->get();
         return $temp;
     }
     public function hutangdetail()
