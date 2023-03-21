@@ -119,6 +119,8 @@ class PengembalianKasGantungHeader extends MyModel
             'pengembaliankasgantungheader.updated_at'
 
         )
+        ->whereBetween('pengembaliankasgantungheader.tglbukti', [date('Y-m-d',strtotime(request()->tgldari)), date('Y-m-d',strtotime(request()->tglsampai))])
+
         ->leftJoin('akunpusat', 'pengembaliankasgantungheader.coakasmasuk', 'akunpusat.coa')
         ->leftJoin('pelanggan', 'pengembaliankasgantungheader.pelanggan_id', 'pelanggan.id')
         ->leftJoin('bank', 'pengembaliankasgantungheader.bank_id', 'bank.id')

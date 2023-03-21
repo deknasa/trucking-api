@@ -30,7 +30,8 @@ class PengeluaranStokHeader extends MyModel
 
         $query = DB::table($this->table);
         $query = $this->selectColumns($query)
-        
+        ->whereBetween('pengeluaranstokheader.tglbukti', [date('Y-m-d',strtotime(request()->tgldari)), date('Y-m-d',strtotime(request()->tglsampai))])
+
         ->leftJoin('gudang','pengeluaranstokheader.gudang_id','gudang.id')
         ->leftJoin('pengeluaranstok','pengeluaranstokheader.pengeluaranstok_id','pengeluaranstok.id')
         ->leftJoin('trado','pengeluaranstokheader.trado_id','trado.id')
@@ -121,6 +122,9 @@ class PengeluaranStokHeader extends MyModel
                             case 'supir':
                                 $query = $query->where('supir.namasupir', 'LIKE', "%$filters[data]%");
                                 break;
+                            case 'bank':
+                                $query = $query->where('bank.namabank', 'LIKE', "%$filters[data]%");
+                                break;
                                 
                             default:
                                 $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
@@ -129,33 +133,39 @@ class PengeluaranStokHeader extends MyModel
                     }
 
                     break;
-                case "OR":
-                    foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        switch ($filters['field']) {
-                            case 'pengeluaranstok':
-                                $query = $query->orWhere('pengeluaranstok.kodepengeluaran', 'LIKE', "%$filters[data]%");
-                                break;
-                            case 'gudang':
-                                $query = $query->orWhere('gudang.gudang', 'LIKE', "%$filters[data]%");
-                                break;
-                            case 'trado':
-                                $query = $query->orWhere('trado.keterangan', 'LIKE', "%$filters[data]%");
-                                break;
-                            case 'supplier':
-                                $query = $query->orWhere('supplier.namasupplier', 'LIKE', "%$filters[data]%");
-                                break;
-                            case 'kerusakan':
-                                $query = $query->orWhere('kerusakan.keterangan', 'LIKE', "%$filters[data]%");
-                                break;
-                            case 'supir':
-                                $query = $query->orWhere('supir.namasupir', 'LIKE', "%$filters[data]%");
-                                break;
-                            default:
-                                $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                                break;
-                        }
-                    }
-
+                    case "OR":
+                        $query = $query->where(function($query){
+                        
+                            foreach ($this->params['filters']['rules'] as $index => $filters) {
+                                switch ($filters['field']) {
+                                    case 'pengeluaranstok':
+                                        $query = $query->orWhere('pengeluaranstok.kodepengeluaran', 'LIKE', "%$filters[data]%");
+                                        break;
+                                    case 'gudang':
+                                        $query = $query->orWhere('gudang.gudang', 'LIKE', "%$filters[data]%");
+                                        break;
+                                    case 'trado':
+                                        $query = $query->orWhere('trado.keterangan', 'LIKE', "%$filters[data]%");
+                                        break;
+                                    case 'supplier':
+                                        $query = $query->orWhere('supplier.namasupplier', 'LIKE', "%$filters[data]%");
+                                        break;
+                                    case 'kerusakan':
+                                        $query = $query->orWhere('kerusakan.keterangan', 'LIKE', "%$filters[data]%");
+                                        break;
+                                    case 'supir':
+                                        $query = $query->orWhere('supir.namasupir', 'LIKE', "%$filters[data]%");
+                                        break;
+                                    case 'bank':
+                                        $query = $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");
+                                        break;
+                                    default:
+                                        $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                        break;
+                                }
+                            }
+                        });
+                            
                     break;
                 default:
 

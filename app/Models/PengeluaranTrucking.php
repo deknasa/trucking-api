@@ -171,22 +171,25 @@ class PengeluaranTrucking extends MyModel
                     }
 
                     break;
-                case "OR":
-                    foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'format') {
-                            $query = $query->orWhere('parameter.text', 'LIKE', "%$filters[data]%");
-                        }else if ($filters['field'] == 'coadebet_keterangan') {
-                            $query = $query->orWhere('debet.keterangancoa', 'LIKE', "%$filters[data]%");
-                        }else if ($filters['field'] == 'coakredit_keterangan') {
-                            $query = $query->orWhere('kredit.keterangancoa', 'LIKE', "%$filters[data]%");
-                        }else if ($filters['field'] == 'coapostingdebet_keterangan') {
-                            $query = $query->orWhere('postingdebet.keterangancoa', 'LIKE', "%$filters[data]%");
-                        }else if ($filters['field'] == 'coapostingkredit_keterangan') {
-                            $query = $query->orWhere('postingkredit.keterangancoa', 'LIKE', "%$filters[data]%");
-                        }else{
-                            $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                        }
-                    }
+                    case "OR":
+                        $query = $query->where(function($query){
+                            foreach ($this->params['filters']['rules'] as $index => $filters) {
+                                if ($filters['field'] == 'format') {
+                                    $query->orWhere('parameter.text', 'LIKE', "%$filters[data]%");
+                                }else if ($filters['field'] == 'coadebet_keterangan') {
+                                    $query->orWhere('debet.keterangancoa', 'LIKE', "%$filters[data]%");
+                                }else if ($filters['field'] == 'coakredit_keterangan') {
+                                    $query->orWhere('kredit.keterangancoa', 'LIKE', "%$filters[data]%");
+                                }else if ($filters['field'] == 'coapostingdebet_keterangan') {
+                                    $query->orWhere('postingdebet.keterangancoa', 'LIKE', "%$filters[data]%");
+                                }else if ($filters['field'] == 'coapostingkredit_keterangan') {
+                                    $query->orWhere('postingkredit.keterangancoa', 'LIKE', "%$filters[data]%");
+                                }else{
+                                    $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                }
+                            }
+                        });
+                        
 
                     break;
                 default:
