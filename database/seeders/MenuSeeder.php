@@ -181,5 +181,8 @@ class MenuSeeder extends Seeder
         menu::create(['menuname' => 'LAP. PEMBELIAN', 'menuseq' => '100', 'menuparent' => '94', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '0', 'link' => '', 'menuexe' => '', 'menukode' => '84', 'modifiedby' => 'ADMIN',]);
         menu::create(['menuname' => 'LAP. STOK', 'menuseq' => '100', 'menuparent' => '94', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '0', 'link' => '', 'menuexe' => '', 'menukode' => '85', 'modifiedby' => 'ADMIN',]);
         menu::create(['menuname' => 'LAP. TRUCKING', 'menuseq' => '100', 'menuparent' => '94', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '0', 'link' => '', 'menuexe' => '', 'menukode' => '86', 'modifiedby' => 'ADMIN',]);
+        menu::create(['menuname' => 'BUKA TANGGAL ABSENSI', 'menuseq' => '100', 'menuparent' => '119', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '400', 'link' => '', 'menuexe' => '', 'menukode' => '214', 'modifiedby' => 'ADMIN',]);
+        menu::create(['menuname' => 'PEMUTIHAN SUPIR', 'menuseq' => '100', 'menuparent' => '15', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '405', 'link' => '', 'menuexe' => '', 'menukode' => '2A', 'modifiedby' => 'ADMIN',]);
+        menu::create(['menuname' => 'INVOICE CHARGE GANDENGAN', 'menuseq' => '100', 'menuparent' => '121', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '409', 'link' => '', 'menuexe' => '', 'menukode' => '243', 'modifiedby' => 'ADMIN',]);
     }
 }

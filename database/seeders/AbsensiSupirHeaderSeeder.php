@@ -19,6 +19,7 @@ class AbsensiSupirHeaderSeeder extends Seeder
         DB::statement("delete AbsensiSupirHeader");
         DB::statement("DBCC CHECKIDENT ('AbsensiSupirHeader', RESEED, 1);");
 
-        AbsensiSupirHeader::create(['nobukti' => 'ABS 0001/XII/2022', 'tglbukti' => '2022/12/20', 'kasgantung_nobukti' => 'KGT 0001/XII/2022', 'nominal' => '250000', 'statusformat' => '5', 'statuscetak' => '175', 'userbukacetak' => '', 'tglbukacetak' => '1900/1/1', 'jumlahcetak' => '0', 'modifiedby' => 'ADMIN',]);
+        absensisupirheader::create(['nobukti' => 'ABS 0001/II/2023', 'tglbukti' => '2023/2/1', 'keterangan' => '', 'kasgantung_nobukti' => 'KGT 0001/II/2023', 'nominal' => '1600000', 'statusformat' => '5', 'statuscetak' => '175', 'userbukacetak' => '', 'tglbukacetak' => '1900/1/1', 'jumlahcetak' => '0', 'statuseditabsensi' => '0', 'statusapprovaleditabsensi' => '248', 'userapprovaleditabsensi' => 'ADMIN', 'tglapprovaleditabsensi' => '2023/3/20', 'modifiedby' => 'ADMIN',]);
+        absensisupirheader::create(['nobukti' => 'ABS 0002/II/2023', 'tglbukti' => '2023/2/2', 'keterangan' => '', 'kasgantung_nobukti' => 'KGT 0002/II/2023', 'nominal' => '1725000', 'statusformat' => '5', 'statuscetak' => '175', 'userbukacetak' => '', 'tglbukacetak' => '1900/1/1', 'jumlahcetak' => '0', 'statuseditabsensi' => '0', 'statusapprovaleditabsensi' => '249', 'userapprovaleditabsensi' => '', 'tglapprovaleditabsensi' => '1900/1/1', 'modifiedby' => 'ADMIN',]);
     }
 }
