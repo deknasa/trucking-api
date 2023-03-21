@@ -182,41 +182,41 @@ class GajiSupirHeaderController extends Controller
                 for ($i = 0; $i < count($request->rincianId); $i++) {
 
                     // $sp = SuratPengantar::from(DB::raw("suratpengantar with (readuncommitted)"))->where('id', $request->rincianId[$i])->first();
-                    $ritasiNobukti = '';
-                    if ($request->rincian_nobukti[$i] != '-') {
-                        $ritasi = Ritasi::from(DB::raw("ritasi with (readuncommitted)"))->where('suratpengantar_nobukti', $request->rincian_nobukti[$i])->first();
-                        if ($ritasi != null) {
-                            $ritasiNobukti = $ritasi->nobukti;
-                        }
-                    } else {
-                        $ritasi = Ritasi::from(DB::raw("ritasi with (readuncommitted)"))
-                            ->whereRaw("ritasi.suratpengantar_nobukti = ''")
-                            ->whereRaw("ritasi.supir_id = '$request->supir_id'")
-                            ->whereRaw("ritasi.tglbukti >= '$gajisupirheader->tgldari'")
-                            ->whereRaw("ritasi.tglbukti <= '$gajisupirheader->tglsampai'")
-                            ->first();
+                    // $ritasiNobukti = '';
+                    // if ($request->rincian_nobukti[$i] != '-') {
+                    //     $ritasi = Ritasi::from(DB::raw("ritasi with (readuncommitted)"))->where('suratpengantar_nobukti', $request->rincian_nobukti[$i])->first();
+                    //     if ($ritasi != null) {
+                    //         $ritasiNobukti = $ritasi->nobukti;
+                    //     }
+                    // } else {
+                    //     $ritasi = Ritasi::from(DB::raw("ritasi with (readuncommitted)"))
+                    //         ->whereRaw("ritasi.suratpengantar_nobukti = ''")
+                    //         ->whereRaw("ritasi.supir_id = '$request->supir_id'")
+                    //         ->whereRaw("ritasi.tglbukti >= '$gajisupirheader->tgldari'")
+                    //         ->whereRaw("ritasi.tglbukti <= '$gajisupirheader->tglsampai'")
+                    //         ->first();
 
-                        if ($ritasi != null) {
-                            $ritasiNobukti = $ritasi->nobukti;
-                        }
-                    }
+                    //     if ($ritasi != null) {
+                    //         $ritasiNobukti = $ritasi->nobukti;
+                    //     }
+                    // }
 
-                    $gajiRitasi = ($ritasi != null) ? $ritasi->gaji : 0;
-                    $total = $total + $request->rincian_gajisupir[$i] + $request->rincian_gajikenek[$i] + $gajiRitasi + $request->rincian_biayaextra[$i];
+                    // $gajiRitasi = ($ritasi != null) ? $ritasi->gaji : 0;
+                    $total = $total + $request->rincian_gajisupir[$i] + $request->rincian_gajikenek[$i] + $request->rincian_upahritasi[$i] + $request->rincian_biayaextra[$i];
                     $datadetail = [
                         'gajisupir_id' => $gajisupirheader->id,
                         'nobukti' => $gajisupirheader->nobukti,
                         'nominaldeposito' => 0,
                         'nourut' => $urut,
                         'suratpengantar_nobukti' => $request->rincian_nobukti[$i],
-                        'ritasi_nobukti' => $ritasiNobukti,
+                        'ritasi_nobukti' => $request->rincian_ritasi[$i],
                         'komisisupir' => $request->rincian_komisisupir[$i],
                         'tolsupir' => $request->rincian_tolsupir[$i],
                         'voucher' => $request->voucher[$i] ?? 0,
                         'novoucher' => $request->novoucher[$i] ?? 0,
                         'gajisupir' => $request->rincian_gajisupir[$i],
                         'gajikenek' => $request->rincian_gajikenek[$i],
-                        'gajiritasi' => $gajiRitasi,
+                        'gajiritasi' => $request->rincian_upahritasi[$i],
                         'biayatambahan' => $request->rincian_biayaextra[$i],
                         'keteranganbiayatambahan' => $request->rincian_keteranganbiaya[$i],
                         'nominalpengembalianpinjaman' => 0,
@@ -743,40 +743,40 @@ class GajiSupirHeaderController extends Controller
                     $urut = 1;
 
                     for ($i = 0; $i < count($request->rincianId); $i++) {
-                        $ritasiNobukti = '';
-                        if ($request->rincian_nobukti[$i] != '-') {
-                            $ritasi = Ritasi::from(DB::raw("ritasi with (readuncommitted)"))->where('suratpengantar_nobukti', $request->rincian_nobukti[$i])->first();
-                            if ($ritasi != null) {
-                                $ritasiNobukti = $ritasi->nobukti;
-                            }
-                        } else {
-                            $ritasi = Ritasi::from(DB::raw("ritasi with (readuncommitted)"))
-                                ->whereRaw("ritasi.suratpengantar_nobukti = ''")
-                                ->whereRaw("ritasi.supir_id = '$request->supir_id'")
-                                ->whereRaw("ritasi.tglbukti >= '$gajisupirheader->tgldari'")
-                                ->whereRaw("ritasi.tglbukti <= '$gajisupirheader->tglsampai'")
-                                ->first();
+                        // $ritasiNobukti = '';
+                        // if ($request->rincian_nobukti[$i] != '-') {
+                        //     $ritasi = Ritasi::from(DB::raw("ritasi with (readuncommitted)"))->where('suratpengantar_nobukti', $request->rincian_nobukti[$i])->first();
+                        //     if ($ritasi != null) {
+                        //         $ritasiNobukti = $ritasi->nobukti;
+                        //     }
+                        // } else {
+                        //     $ritasi = Ritasi::from(DB::raw("ritasi with (readuncommitted)"))
+                        //         ->whereRaw("ritasi.suratpengantar_nobukti = ''")
+                        //         ->whereRaw("ritasi.supir_id = '$request->supir_id'")
+                        //         ->whereRaw("ritasi.tglbukti >= '$gajisupirheader->tgldari'")
+                        //         ->whereRaw("ritasi.tglbukti <= '$gajisupirheader->tglsampai'")
+                        //         ->first();
 
-                            if ($ritasi != null) {
-                                $ritasiNobukti = $ritasi->nobukti;
-                            }
-                        }
-                        $gajiRitasi = ($ritasi != null) ? $ritasi->gaji : 0;
-                        $total = $total + $request->rincian_gajisupir[$i] + $request->rincian_gajikenek[$i] + $gajiRitasi + $request->rincian_biayaextra[$i];
+                        //     if ($ritasi != null) {
+                        //         $ritasiNobukti = $ritasi->nobukti;
+                        //     }
+                        // }
+                        // $gajiRitasi = ($ritasi != null) ? $ritasi->gaji : 0;
+                        $total = $total + $request->rincian_gajisupir[$i] + $request->rincian_gajikenek[$i] + $request->rincian_upahritasi[$i] + $request->rincian_biayaextra[$i];
                         $datadetail = [
                             'gajisupir_id' => $gajisupirheader->id,
                             'nobukti' => $gajisupirheader->nobukti,
                             'nominaldeposito' => 0,
                             'nourut' => $urut,
                             'suratpengantar_nobukti' => $request->rincian_nobukti[$i],
-                            'ritasi_nobukti' => $ritasiNobukti,
+                            'ritasi_nobukti' => $request->rincian_ritasi[$i],
                             'komisisupir' => $request->rincian_komisisupir[$i],
                             'tolsupir' =>  $request->rincian_tolsupir[$i],
                             'voucher' => $request->voucher[$i] ?? 0,
                             'novoucher' => $request->novoucher[$i] ?? 0,
                             'gajisupir' => $request->rincian_gajisupir[$i],
                             'gajikenek' => $request->rincian_gajikenek[$i],
-                            'gajiritasi' => $gajiRitasi,
+                            'gajiritasi' => $request->rincian_upahritasi[$i],
                             'biayatambahan' => $request->rincian_biayaextra[$i],
                             'keteranganbiayatambahan' => $request->rincian_keteranganbiaya[$i] ?? '',
                             'nominalpengembalianpinjaman' => 0,
