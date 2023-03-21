@@ -20,20 +20,20 @@ class CreateKasgantungheaderTable extends Migration
         Schema::create('kasgantungheader', function (Blueprint $table) {
             $table->id();
             $table->string('nobukti',50)->unique();
-            $table->date('tglbukti')->default('1900/1/1');
-            $table->longText('keterangan')->default('');            
-            $table->unsignedBigInteger('penerima_id')->default('0');
-            $table->unsignedBigInteger('bank_id')->default('0');
-            $table->string('pengeluaran_nobukti',50)->default('');
-            $table->string('coakaskeluar',50)->default('');
-            $table->string('postingdari',50)->default('');
-            $table->date('tglkaskeluar')->default('1900/1/1');
-            $table->unsignedBigInteger('statusformat')->default(0);
-            $table->integer('statuscetak')->Length(11)->default('0');
-            $table->string('userbukacetak',50)->default('');
-            $table->date('tglbukacetak')->default('1900/1/1');
-            $table->integer('jumlahcetak')->Length(11)->default('0');
-            $table->string('modifiedby',50)->default('');
+            $table->date('tglbukti')->nullable();
+            $table->longText('keterangan')->nullable();            
+            $table->unsignedBigInteger('penerima_id')->nullable();
+            $table->unsignedBigInteger('bank_id')->nullable();
+            $table->string('pengeluaran_nobukti',50)->nullable();
+            $table->string('coakaskeluar',50)->nullable();
+            $table->string('postingdari',50)->nullable();
+            $table->date('tglkaskeluar')->nullable();
+            $table->unsignedBigInteger('statusformat')->nullable();
+            $table->integer('statuscetak')->Length(11)->nullable();
+            $table->string('userbukacetak',50)->nullable();
+            $table->date('tglbukacetak')->nullable();
+            $table->integer('jumlahcetak')->Length(11)->nullable();
+            $table->string('modifiedby',50)->nullable();
             $table->timestamps();
 
             $table->foreign('penerima_id', 'kasgantungheader_penerima_penerima_id_foreign')->references('id')->on('penerima');

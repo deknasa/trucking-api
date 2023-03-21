@@ -35,9 +35,9 @@ class LaporanDepositoSupir extends MyModel
 
         $temppenerimaantrucking = '##temppenerimaantrucking' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temppenerimaantrucking, function ($table) {
-            $table->unsignedBigInteger('supir_id')->default(0);
-            $table->unsignedBigInteger('jumlah')->default(0);
-            $table->double('nominal', 15, 2)->default('');
+            $table->unsignedBigInteger('supir_id')->nullable();
+            $table->unsignedBigInteger('jumlah')->nullable();
+            $table->double('nominal', 15, 2)->nullable();
         });
 
         $querypenerimaantrucking = DB::table('penerimaantruckingheader')->from(
@@ -61,8 +61,8 @@ class LaporanDepositoSupir extends MyModel
 
         $temppengeluarantrucking = '##temppengeluarantrucking' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temppengeluarantrucking, function ($table) {
-            $table->unsignedBigInteger('supir_id')->default(0);
-            $table->double('nominal', 15, 2)->default('');
+            $table->unsignedBigInteger('supir_id')->nullable();
+            $table->double('nominal', 15, 2)->nullable();
         });
 
         $querypengeluarantrucking = DB::table('pengeluarantruckingheader')->from(
@@ -85,9 +85,9 @@ class LaporanDepositoSupir extends MyModel
         // 
         $temppenerimaantruckinglist = '##temppenerimaantruckinglist' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temppenerimaantruckinglist, function ($table) {
-            $table->unsignedBigInteger('supir_id')->default(0);
-            $table->unsignedBigInteger('jumlah')->default(0);
-            $table->double('nominal', 15, 2)->default('');
+            $table->unsignedBigInteger('supir_id')->nullable();
+            $table->unsignedBigInteger('jumlah')->nullable();
+            $table->double('nominal', 15, 2)->nullable();
         });
 
         $querypenerimaantruckinglist = DB::table('penerimaantruckingheader')->from(
@@ -111,8 +111,8 @@ class LaporanDepositoSupir extends MyModel
 
         $temppengeluarantruckinglist = '##temppengeluarantruckinglist' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temppengeluarantruckinglist, function ($table) {
-            $table->unsignedBigInteger('supir_id')->default(0);
-            $table->double('nominal', 15, 2)->default('');
+            $table->unsignedBigInteger('supir_id')->nullable();
+            $table->double('nominal', 15, 2)->nullable();
         });
 
         $querypengeluarantruckinglist = DB::table('pengeluarantruckingheader')->from(
@@ -136,10 +136,10 @@ class LaporanDepositoSupir extends MyModel
 
         $temprangedeposito = '##temprangedeposito' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temprangedeposito, function ($table) {
-            $table->unsignedBigInteger('id')->default(0);
-            $table->double('nominalawal', 15, 2)->default(0);
-            $table->double('nominalakhir', 15, 2)->default(0);
-            $table->longtext('keterangan', 1000)->default('');
+            $table->unsignedBigInteger('id')->nullable();
+            $table->double('nominalawal', 15, 2)->nullable();
+            $table->double('nominalakhir', 15, 2)->nullable();
+            $table->longtext('keterangan', 1000)->nullable();
         });
 
         $queryrangedeposito = DB::table('parameter')->from(
@@ -171,14 +171,14 @@ class LaporanDepositoSupir extends MyModel
 
         $tempsaldo = '##tempsaldo' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempsaldo, function ($table) {
-            $table->unsignedBigInteger('supir_id')->default(0);
-            $table->string('namasupir',200)->default('');
-            $table->double('saldo', 15, 2)->default(0);
-            $table->double('deposito', 15, 2)->default(0);
-            $table->double('penarikan', 15, 2)->default(0);
-            $table->double('total', 15, 2)->default(0);
-            $table->longText('keterangan')->default('');
-            $table->double('cicil', 15, 2)->default(0);
+            $table->unsignedBigInteger('supir_id')->nullable();
+            $table->string('namasupir',200)->nullable();
+            $table->double('saldo', 15, 2)->nullable();
+            $table->double('deposito', 15, 2)->nullable();
+            $table->double('penarikan', 15, 2)->nullable();
+            $table->double('total', 15, 2)->nullable();
+            $table->longText('keterangan')->nullable();
+            $table->double('cicil', 15, 2)->nullable();
         });
 
         $querysaldo = DB::table('supir')->from(

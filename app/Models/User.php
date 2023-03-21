@@ -107,8 +107,8 @@ class User extends Authenticatable
 
         $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdefault, function ($table) {
-            $table->unsignedBigInteger('karyawan_id')->default(0);
-            $table->unsignedBigInteger('statusaktif')->default(0);
+            $table->unsignedBigInteger('karyawan_id')->nullable();
+            $table->unsignedBigInteger('statusaktif')->nullable();
         });
 
         $status = Parameter::from(
@@ -176,16 +176,16 @@ class User extends Authenticatable
     {
         $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temp, function ($table) {
-            $table->bigInteger('id')->default('0');
-            $table->string('user', 255)->default('');
-            $table->string('name', 255)->default('');
+            $table->bigInteger('id')->nullable();
+            $table->string('user', 255)->nullable();
+            $table->string('name', 255)->nullable();
             $table->string('cabang_id', 300)->nullable();
-            $table->bigInteger('karyawan_id')->length(11)->default('0');
-            $table->string('dashboard', 255)->default('');
-            $table->string('statusaktif', 300)->default('');
-            $table->string('modifiedby', 30)->default('');
-            $table->dateTime('created_at')->default('1900/1/1');
-            $table->dateTime('updated_at')->default('1900/1/1');
+            $table->bigInteger('karyawan_id')->length(11)->nullable();
+            $table->string('dashboard', 255)->nullable();
+            $table->string('statusaktif', 300)->nullable();
+            $table->string('modifiedby', 30)->nullable();
+            $table->dateTime('created_at')->nullable();
+            $table->dateTime('updated_at')->nullable();
             $table->increments('position');
         });
 

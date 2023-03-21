@@ -16,12 +16,12 @@ class CreatePemutihansupirTable extends Migration
         Schema::create('pemutihansupir', function (Blueprint $table) {
             $table->id();
             $table->string('nobukti',50)->unique();
-            $table->date('tglbukti')->default('1900/1/1');   
-            $table->unsignedBigInteger('supir_id')->default(0);
-            $table->double('pengeluaransupir',15,2)->default(0);
-            $table->double('penerimaansupir',15,2)->default(0);
-            $table->unsignedBigInteger('statusformat')->default(0);
-            $table->string('modifiedby',50)->default('');
+            $table->date('tglbukti')->nullable();   
+            $table->unsignedBigInteger('supir_id')->nullable();
+            $table->double('pengeluaransupir',15,2)->nullable();
+            $table->double('penerimaansupir',15,2)->nullable();
+            $table->unsignedBigInteger('statusformat')->nullable();
+            $table->string('modifiedby',50)->nullable();
             $table->timestamps();
         });
     }

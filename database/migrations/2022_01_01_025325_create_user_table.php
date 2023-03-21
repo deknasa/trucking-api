@@ -18,14 +18,14 @@ class CreateUserTable extends Migration
 
         Schema::create('user', function (Blueprint $table) {
             $table->id();
-            $table->string('user',255)->default('');
-            $table->string('name',255)->default('');
-            $table->string('password',255)->default('');
-            $table->unsignedBigInteger('cabang_id')->default('0');
-            $table->unsignedBigInteger('karyawan_id')->default(0);
-            $table->string('dashboard',255)->default('');
-            $table->integer('statusaktif')->length(11)->default('0');
-            $table->string('modifiedby',255)->default('');
+            $table->string('user',255)->nullable();
+            $table->string('name',255)->nullable();
+            $table->string('password',255)->nullable();
+            $table->unsignedBigInteger('cabang_id')->nullable();
+            $table->unsignedBigInteger('karyawan_id')->nullable();
+            $table->string('dashboard',255)->nullable();
+            $table->integer('statusaktif')->length(11)->nullable();
+            $table->string('modifiedby',255)->nullable();
             $table->timestamps();
 
             $table->foreign('cabang_id', 'user_cabang_cabang_id_foreign')->references('id')->on('cabang');

@@ -18,11 +18,11 @@ class CreateabsentradoTable extends Migration
         
         Schema::create('absentrado', function (Blueprint $table) {
             $table->id();
-            $table->string('kodeabsen', 100)->default('');
-            $table->longText('keterangan')->default('');
+            $table->string('kodeabsen', 100)->nullable();
+            $table->longText('keterangan')->nullable();
             $table->integer('statusaktif')->length(11);
-            $table->longText('memo')->default('');
-            $table->string('modifiedby', 30)->default('');
+            $table->longText('memo')->nullable();
+            $table->string('modifiedby', 30)->nullable();
             $table->timestamps();
         });
     }

@@ -15,13 +15,13 @@ class CreateLogtrailTable extends Migration
     {
         Schema::create('logtrail', function (Blueprint $table) {
             $table->id();
-            $table->string('namatabel',50)->default('');
-            $table->string('postingdari',200)->default('');
-            $table->unsignedBigInteger('idtrans')->default('0');
-            $table->string('nobuktitrans',150)->default('');
-            $table->string('aksi',30)->default('');
-            $table->longText('datajson')->default('');
-            $table->string('modifiedby',50)->default('');
+            $table->string('namatabel',50)->nullable();
+            $table->string('postingdari',200)->nullable();
+            $table->unsignedBigInteger('idtrans')->nullable();
+            $table->string('nobuktitrans',150)->nullable();
+            $table->string('aksi',30)->nullable();
+            $table->longText('datajson')->nullable();
+            $table->string('modifiedby',50)->nullable();
             $table->timestamps();
         });
     }

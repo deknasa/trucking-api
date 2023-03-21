@@ -227,10 +227,10 @@ class Agen extends MyModel
 
         $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdefault, function ($table) {
-            $table->unsignedBigInteger('statusaktif')->default(0);
-            $table->unsignedBigInteger('statustas')->default(0);
-            $table->unsignedBigInteger('jenisemkl')->default(0);
-            $table->string('keteranganjenisemkl', 255)->default('');
+            $table->unsignedBigInteger('statusaktif')->nullable();
+            $table->unsignedBigInteger('statustas')->nullable();
+            $table->unsignedBigInteger('jenisemkl')->nullable();
+            $table->string('keteranganjenisemkl', 255)->nullable();
 
         });
 
@@ -331,25 +331,25 @@ class Agen extends MyModel
 
 
         Schema::create($temp, function ($table) {
-            $table->bigInteger('id')->default('0');
-            $table->string('kodeagen', 1000)->default('');
-            $table->string('namaagen', 1000)->default('');
-            $table->string('keterangan', 1000)->default('');
-            $table->string('statusaktif', 1000)->default('');
-            $table->string('namaperusahaan', 1000)->default('');
-            $table->string('alamat', 1000)->default('');
-            $table->string('notelp', 1000)->default('');
-            $table->string('nohp', 1000)->default('');
-            $table->string('contactperson', 1000)->default('');
-            $table->string('top', 1000)->default('');
-            $table->string('statusapproval', 1000)->default('');
-            $table->string('userapproval', 1000)->default('');
-            $table->string('tglapproval', 1000)->default('');
-            $table->string('statustas', 1000)->default('');
-            $table->string('jenisemkl', 1000)->default('');
-            $table->dateTime('created_at')->default('1900/1/1');
-            $table->dateTime('updated_at')->default('1900/1/1');
-            $table->string('modifiedby', 50)->default('');
+            $table->bigInteger('id')->nullable();
+            $table->string('kodeagen', 1000)->nullable();
+            $table->string('namaagen', 1000)->nullable();
+            $table->string('keterangan', 1000)->nullable();
+            $table->string('statusaktif', 1000)->nullable();
+            $table->string('namaperusahaan', 1000)->nullable();
+            $table->string('alamat', 1000)->nullable();
+            $table->string('notelp', 1000)->nullable();
+            $table->string('nohp', 1000)->nullable();
+            $table->string('contactperson', 1000)->nullable();
+            $table->string('top', 1000)->nullable();
+            $table->string('statusapproval', 1000)->nullable();
+            $table->string('userapproval', 1000)->nullable();
+            $table->string('tglapproval', 1000)->nullable();
+            $table->string('statustas', 1000)->nullable();
+            $table->string('jenisemkl', 1000)->nullable();
+            $table->dateTime('created_at')->nullable();
+            $table->dateTime('updated_at')->nullable();
+            $table->string('modifiedby', 50)->nullable();
             $table->increments('position');
         });
 

@@ -126,26 +126,26 @@ class PenerimaanStokHeader extends MyModel
         $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
         Schema::create($temp, function ($table) {
-            $table->bigInteger('id')->default('0');
+            $table->bigInteger('id')->nullable();
             $table->string('nobukti',50)->unique();
-            $table->date('tglbukti')->default('1900/1/1');            
-            $table->unsignedBigInteger('penerimaanstok_id')->default(0);
-            $table->string('penerimaanstok_nobukti',50)->default('');
-            $table->string('pengeluaranstok_nobukti',50)->default('');
-            $table->unsignedBigInteger('supplier_id')->default(0);            
-            $table->string('nobon', 50)->default('');
-            $table->string('hutang_nobukti', 50)->default('');
-            $table->unsignedBigInteger('trado_id')->default('0');
-            $table->unsignedBigInteger('gudang_id')->default('0');
-            $table->unsignedBigInteger('gudangdari_id')->default('0');
-            $table->unsignedBigInteger('gudangke_id')->default('0');            
-            $table->string('coa',50)->default('');
-            $table->longText('keterangan')->default('');
-            $table->unsignedBigInteger('statusformat')->default(0);   
-            $table->string('modifiedby',50)->default('');
+            $table->date('tglbukti')->nullable();            
+            $table->unsignedBigInteger('penerimaanstok_id')->nullable();
+            $table->string('penerimaanstok_nobukti',50)->nullable();
+            $table->string('pengeluaranstok_nobukti',50)->nullable();
+            $table->unsignedBigInteger('supplier_id')->nullable();            
+            $table->string('nobon', 50)->nullable();
+            $table->string('hutang_nobukti', 50)->nullable();
+            $table->unsignedBigInteger('trado_id')->nullable();
+            $table->unsignedBigInteger('gudang_id')->nullable();
+            $table->unsignedBigInteger('gudangdari_id')->nullable();
+            $table->unsignedBigInteger('gudangke_id')->nullable();            
+            $table->string('coa',50)->nullable();
+            $table->longText('keterangan')->nullable();
+            $table->unsignedBigInteger('statusformat')->nullable();   
+            $table->string('modifiedby',50)->nullable();
             $table->increments('position');
-            $table->dateTime('created_at')->default('1900/1/1');
-            $table->dateTime('updated_at')->default('1900/1/1');
+            $table->dateTime('created_at')->nullable();
+            $table->dateTime('updated_at')->nullable();
         });
 
         $query = DB::table($modelTable);

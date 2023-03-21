@@ -19,16 +19,16 @@ class CreateTarifTable extends Migration
 
         Schema::create('tarif', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('parent_id')->default('0');
-            $table->unsignedBigInteger('upahsupir_id')->default('0');
-            $table->string('tujuan',200)->default('');
-            $table->integer('statusaktif')->length(11)->default('0');
-            $table->integer('statussistemton')->length(11)->default('0');
-            $table->unsignedBigInteger('kota_id')->default('0');
-            $table->unsignedBigInteger('zona_id')->default('0');
-            $table->date('tglmulaiberlaku')->default('1900/1/1');
-            $table->integer('statuspenyesuaianharga')->length(11)->default('0');
-            $table->string('modifiedby',50)->default('');
+            $table->unsignedBigInteger('parent_id')->nullable();
+            $table->unsignedBigInteger('upahsupir_id')->nullable();
+            $table->string('tujuan',200)->nullable();
+            $table->integer('statusaktif')->length(11)->nullable();
+            $table->integer('statussistemton')->length(11)->nullable();
+            $table->unsignedBigInteger('kota_id')->nullable();
+            $table->unsignedBigInteger('zona_id')->nullable();
+            $table->date('tglmulaiberlaku')->nullable();
+            $table->integer('statuspenyesuaianharga')->length(11)->nullable();
+            $table->string('modifiedby',50)->nullable();
             $table->timestamps();
 
             $table->foreign('kota_id', 'tarif_kota_kota_id_foreign')->references('id')->on('kota');

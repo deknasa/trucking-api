@@ -18,16 +18,16 @@ class CreateabsensisupirdetailTable extends Migration
 
         Schema::create('absensisupirdetail', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('absensi_id')->default(0);
-            $table->string('nobukti', 50)->default('');
-            $table->unsignedBigInteger('trado_id')->default(0);
-            $table->unsignedBigInteger('supir_id')->default(0);
-            $table->longText('keterangan')->default('');
-            $table->double('uangjalan', 15,2)->default(0);
-            $table->unsignedBigInteger('absen_id')->default(0);
-            $table->time('jam')->default('');
+            $table->unsignedBigInteger('absensi_id')->nullable();
+            $table->string('nobukti', 50)->nullable();
+            $table->unsignedBigInteger('trado_id')->nullable();
+            $table->unsignedBigInteger('supir_id')->nullable();
+            $table->longText('keterangan')->nullable();
+            $table->double('uangjalan', 15,2)->nullable();
+            $table->unsignedBigInteger('absen_id')->nullable();
+            $table->time('jam')->nullable();
             
-            $table->string('modifiedby', 50)->default('');
+            $table->string('modifiedby', 50)->nullable();
             $table->timestamps();
 
 

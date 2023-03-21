@@ -36,14 +36,14 @@ class LaporanKasBank extends MyModel
         $tempsaldo = '##tempsaldo' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempsaldo, function ($table) {
             $table->id();
-            $table->double('urut', 15, 2)->default(0);
-            $table->string('coa', 1000)->default('');
-            $table->dateTime('tglbukti')->default('1900/1/1');
-            $table->string('nobukti', 100)->default('');
-            $table->longText('keterangan')->default('');
-            $table->double('debet', 15, 2)->default(0);
-            $table->double('kredit', 15, 2)->default(0);
-            $table->double('saldo', 15, 2)->default(0);
+            $table->double('urut', 15, 2)->nullable();
+            $table->string('coa', 1000)->nullable();
+            $table->dateTime('tglbukti')->nullable();
+            $table->string('nobukti', 100)->nullable();
+            $table->longText('keterangan')->nullable();
+            $table->double('debet', 15, 2)->nullable();
+            $table->double('kredit', 15, 2)->nullable();
+            $table->double('saldo', 15, 2)->nullable();
         });
 
 
@@ -153,14 +153,14 @@ class LaporanKasBank extends MyModel
         $temprekap = '##temprekap' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temprekap, function ($table) {
             $table->id();
-            $table->double('urut', 15, 2)->default(0);
-            $table->string('coa', 1000)->default('');
-            $table->dateTime('tglbukti')->default('1900/1/1');
-            $table->string('nobukti', 100)->default('');
-            $table->longText('keterangan')->default('');
-            $table->double('debet', 15, 2)->default(0);
-            $table->double('kredit', 15, 2)->default(0);
-            $table->double('saldo', 15, 2)->default(0);
+            $table->double('urut', 15, 2)->nullable();
+            $table->string('coa', 1000)->nullable();
+            $table->dateTime('tglbukti')->nullable();
+            $table->string('nobukti', 100)->nullable();
+            $table->longText('keterangan')->nullable();
+            $table->double('debet', 15, 2)->nullable();
+            $table->double('kredit', 15, 2)->nullable();
+            $table->double('saldo', 15, 2)->nullable();
         });
 
         $query = DB::table($tempsaldo)->from(

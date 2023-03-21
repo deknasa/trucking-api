@@ -17,10 +17,10 @@ class CreateZonaTable extends Migration
         
         Schema::create('zona', function (Blueprint $table) {
             $table->id();
-            $table->longText('zona')->default('');
-            $table->longText('keterangan')->default('');
-            $table->string('modifiedby',50)->default('');
-            $table->integer('statusaktif')->length(11)->default(0);
+            $table->longText('zona')->nullable();
+            $table->longText('keterangan')->nullable();
+            $table->string('modifiedby',50)->nullable();
+            $table->integer('statusaktif')->length(11)->nullable();
             $table->timestamps();        });
     }
 

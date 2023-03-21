@@ -19,19 +19,19 @@ class CreatePengeluarantruckingheaderTable extends Migration
         Schema::create('pengeluarantruckingheader', function (Blueprint $table) {
             $table->id();
             $table->string('nobukti',50)->unique();
-            $table->date('tglbukti')->default('1900/1/1');            
-            $table->longText('keterangan')->default('');            
-            $table->unsignedBigInteger('pengeluarantrucking_id')->default(0);
-            $table->unsignedBigInteger('bank_id')->default('0');
-            $table->integer('statusposting')->length(11)->default('0');
-            $table->string('coa',50)->default('');
-            $table->string('pengeluaran_nobukti',50)->default('');
-            $table->unsignedBigInteger('statusformat')->default(0);            
-            $table->integer('statuscetak')->Length(11)->default('0');
-            $table->string('userbukacetak',50)->default('');
-            $table->date('tglbukacetak')->default('1900/1/1');
-            $table->integer('jumlahcetak')->Length(11)->default('0');
-            $table->string('modifiedby',50)->default('');
+            $table->date('tglbukti')->nullable();            
+            $table->longText('keterangan')->nullable();            
+            $table->unsignedBigInteger('pengeluarantrucking_id')->nullable();
+            $table->unsignedBigInteger('bank_id')->nullable();
+            $table->integer('statusposting')->length(11)->nullable();
+            $table->string('coa',50)->nullable();
+            $table->string('pengeluaran_nobukti',50)->nullable();
+            $table->unsignedBigInteger('statusformat')->nullable();            
+            $table->integer('statuscetak')->Length(11)->nullable();
+            $table->string('userbukacetak',50)->nullable();
+            $table->date('tglbukacetak')->nullable();
+            $table->integer('jumlahcetak')->Length(11)->nullable();
+            $table->string('modifiedby',50)->nullable();
 
             $table->timestamps();
 

@@ -87,17 +87,17 @@ class PencairanGiroPengeluaranHeader extends MyModel
     {
         $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temp, function ($table) {
-            $table->bigInteger('id')->default('0');
-            $table->string('nobukti', 1000)->default('');
-            $table->date('tglbukti', 1000)->default('1900/1/1');
-            $table->string('keterangan', 1000)->default('');
-            $table->string('pengeluaran_nobukti', 1000)->default('');
-            $table->string('statusapproval', 1000)->default('');
-            $table->string('userapproval', 1000)->default('');
-            $table->dateTime('tglapproval')->default('1900/1/1');
-            $table->string('modifiedby', 50)->default('');
-            $table->dateTime('created_at')->default('1900/1/1');
-            $table->dateTime('updated_at')->default('1900/1/1');
+            $table->bigInteger('id')->nullable();
+            $table->string('nobukti', 1000)->nullable();
+            $table->date('tglbukti', 1000)->nullable();
+            $table->string('keterangan', 1000)->nullable();
+            $table->string('pengeluaran_nobukti', 1000)->nullable();
+            $table->string('statusapproval', 1000)->nullable();
+            $table->string('userapproval', 1000)->nullable();
+            $table->dateTime('tglapproval')->nullable();
+            $table->string('modifiedby', 50)->nullable();
+            $table->dateTime('created_at')->nullable();
+            $table->dateTime('updated_at')->nullable();
             $table->increments('position');
         });
 

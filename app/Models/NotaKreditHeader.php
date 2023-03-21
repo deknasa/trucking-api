@@ -55,20 +55,20 @@ class NotaKreditHeader extends MyModel
         $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
         Schema::create($temp, function ($table) {
-            $table->bigInteger('id')->default('0');
+            $table->bigInteger('id')->nullable();
             $table->string('nobukti',50)->unique();
-            $table->string('pelunasanpiutang_nobukti',50)->default('');
-            $table->date('tglbukti')->default('1900/1/1');
-            $table->string('postingdari',50)->default('');
-            $table->integer('statusapproval')->length(11)->default('0');
-            $table->date('tgllunas')->default('1900/1/1');
-            $table->string('userapproval',50)->default('');
-            $table->date('tglapproval')->default('1900/1/1');
-            $table->unsignedBigInteger('statusformat')->default(0);            
-            $table->string('modifiedby',50)->default('');
+            $table->string('pelunasanpiutang_nobukti',50)->nullable();
+            $table->date('tglbukti')->nullable();
+            $table->string('postingdari',50)->nullable();
+            $table->integer('statusapproval')->length(11)->nullable();
+            $table->date('tgllunas')->nullable();
+            $table->string('userapproval',50)->nullable();
+            $table->date('tglapproval')->nullable();
+            $table->unsignedBigInteger('statusformat')->nullable();            
+            $table->string('modifiedby',50)->nullable();
             $table->increments('position');
-            $table->dateTime('created_at')->default('1900/1/1');
-            $table->dateTime('updated_at')->default('1900/1/1');
+            $table->dateTime('created_at')->nullable();
+            $table->dateTime('updated_at')->nullable();
         });
 
         $query = DB::table($modelTable);

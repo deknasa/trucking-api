@@ -20,20 +20,20 @@ class CreateabsensisupirheaderTable extends Migration
         Schema::create('absensisupirheader', function (Blueprint $table) {
             $table->id();
             $table->string('nobukti', 50)->unique();
-            $table->date('tglbukti')->default('1900/1/1');
-            $table->longText('keterangan')->default('');            
+            $table->date('tglbukti')->nullable();
+            $table->longText('keterangan')->nullable();            
             $table->string('kasgantung_nobukti', 50)->unique();
-            $table->double('nominal',15,2)->default(0);
-            $table->unsignedBigInteger('statusformat')->default(0);
-            $table->integer('statuscetak')->Length(11)->default('0');
-            $table->string('userbukacetak',50)->default('');
-            $table->date('tglbukacetak')->default('1900/1/1');
-            $table->integer('jumlahcetak')->Length(11)->default('0');
-            $table->integer('statuseditabsensi')->Length(11)->default('0');
-            $table->integer('statusapprovaleditabsensi')->Length(11)->default('0');
-            $table->string('userapprovaleditabsensi',50)->default('');
-            $table->date('tglapprovaleditabsensi')->default('1900/1/1');
-            $table->string('modifiedby', 50)->default('');
+            $table->double('nominal',15,2)->nullable();
+            $table->unsignedBigInteger('statusformat')->nullable();
+            $table->integer('statuscetak')->Length(11)->nullable();
+            $table->string('userbukacetak',50)->nullable();
+            $table->date('tglbukacetak')->nullable();
+            $table->integer('jumlahcetak')->Length(11)->nullable();
+            $table->integer('statuseditabsensi')->Length(11)->nullable();
+            $table->integer('statusapprovaleditabsensi')->Length(11)->nullable();
+            $table->string('userapprovaleditabsensi',50)->nullable();
+            $table->date('tglapprovaleditabsensi')->nullable();
+            $table->string('modifiedby', 50)->nullable();
             $table->timestamps();
 
             

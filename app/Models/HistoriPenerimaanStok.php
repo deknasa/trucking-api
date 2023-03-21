@@ -62,35 +62,35 @@ class HistoriPenerimaanStok extends MyModel
         $templaporan = '##templaporan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($templaporan, function ($table) {
             $table->id();
-            $table->unsignedBigInteger('kodebarang')->default(0);
-            $table->string('namabarang', 1000)->default('');
-            $table->dateTime('tglbukti')->default('1900/1/1');
-            $table->string('nobukti', 100)->default('');
-            $table->unsignedBigInteger('kategori_id')->default(0);
-            $table->double('qtymasuk', 15, 2)->default(0);
-            $table->double('nilaimasuk', 15, 2)->default(0);
-            $table->string('modifiedby', 100)->default('');
+            $table->unsignedBigInteger('kodebarang')->nullable();
+            $table->string('namabarang', 1000)->nullable();
+            $table->dateTime('tglbukti')->nullable();
+            $table->string('nobukti', 100)->nullable();
+            $table->unsignedBigInteger('kategori_id')->nullable();
+            $table->double('qtymasuk', 15, 2)->nullable();
+            $table->double('nilaimasuk', 15, 2)->nullable();
+            $table->string('modifiedby', 100)->nullable();
         });
 
         $temprekap = '##temprekap' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temprekap, function ($table) {
             $table->id();
-            $table->integer('statusmasuk')->length(11)->default(0);;
-            $table->unsignedBigInteger('kodebarang')->default(0);
-            $table->string('namabarang', 1000)->default('');
-            $table->dateTime('tglbukti')->default('1900/1/1');
-            $table->string('nobukti', 100)->default('');
-            $table->unsignedBigInteger('kategori_id')->default(0);
-            $table->double('qtymasuk', 15, 2)->default(0);
-            $table->double('nilaimasuk', 15, 2)->default(0);
-            $table->string('modifiedby', 100)->default('');
+            $table->integer('statusmasuk')->length(11)->nullable();;
+            $table->unsignedBigInteger('kodebarang')->nullable();
+            $table->string('namabarang', 1000)->nullable();
+            $table->dateTime('tglbukti')->nullable();
+            $table->string('nobukti', 100)->nullable();
+            $table->unsignedBigInteger('kategori_id')->nullable();
+            $table->double('qtymasuk', 15, 2)->nullable();
+            $table->double('nilaimasuk', 15, 2)->nullable();
+            $table->string('modifiedby', 100)->nullable();
         });
         $tempsaldoawalmasuk = '##tempsaldoawalmasuk' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempsaldoawalmasuk, function ($table) {
             $table->id();
-            $table->unsignedBigInteger('kodebarang')->default(0);
-            $table->double('qtymasuk', 15, 2)->default(0);
-            $table->double('nilaimasuk', 15, 2)->default(0);
+            $table->unsignedBigInteger('kodebarang')->nullable();
+            $table->double('qtymasuk', 15, 2)->nullable();
+            $table->double('nilaimasuk', 15, 2)->nullable();
         });
 
             $querysaldomasuk = PenerimaanstokHeader::from(

@@ -581,16 +581,16 @@ class ProsesAbsensiSupirController extends Controller
         $temp = '##temp' . rand(1, 10000);
         Schema::create($temp, function ($table) {
             $table->id();
-            $table->bigInteger('id_')->default('0');
-            $table->string('nobukti', 50)->default('');
-            $table->date('tglbukti')->default('');
-            $table->string('keterangan', 50)->default('');
-            $table->string('pengeluaran_nobukti', 50)->default('');
-            $table->string('absensisupir_nobukti', 50)->default('');
-            $table->integer('nominal')->default(0);
-            $table->string('modifiedby', 30)->default('');
-            $table->dateTime('created_at')->default('1900/1/1');
-            $table->dateTime('updated_at')->default('1900/1/1');
+            $table->bigInteger('id_')->nullable();
+            $table->string('nobukti', 50)->nullable();
+            $table->date('tglbukti')->nullable();
+            $table->string('keterangan', 50)->nullable();
+            $table->string('pengeluaran_nobukti', 50)->nullable();
+            $table->string('absensisupir_nobukti', 50)->nullable();
+            $table->integer('nominal')->nullable();
+            $table->string('modifiedby', 30)->nullable();
+            $table->dateTime('created_at')->nullable();
+            $table->dateTime('updated_at')->nullable();
 
             $table->index('id_');
         });

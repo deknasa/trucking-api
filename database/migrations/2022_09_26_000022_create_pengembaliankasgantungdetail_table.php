@@ -18,13 +18,13 @@ class CreatePengembaliankasgantungdetailTable extends Migration
 
         Schema::create('pengembaliankasgantungdetail', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('pengembaliankasgantung_id')->default('0');
-            $table->string('nobukti',50)->default('');
-            $table->double('nominal',15,2)->default('0');
-            $table->string('coa',50)->default('');
-            $table->longText('keterangan')->default('');
-            $table->string('modifiedby',50)->default('');
-            $table->string('kasgantung_nobukti',50)->default('');
+            $table->unsignedBigInteger('pengembaliankasgantung_id')->nullable();
+            $table->string('nobukti',50)->nullable();
+            $table->double('nominal',15,2)->nullable();
+            $table->string('coa',50)->nullable();
+            $table->longText('keterangan')->nullable();
+            $table->string('modifiedby',50)->nullable();
+            $table->string('kasgantung_nobukti',50)->nullable();
             $table->timestamps();
 
             $table->foreign('pengembaliankasgantung_id', 'pengembaliankasgantungdetail_pengembaliankasgantungheader_pengembaliankasgantung_id_foreign')->references('id')->on('pengembaliankasgantungheader')->onDelete('cascade');    

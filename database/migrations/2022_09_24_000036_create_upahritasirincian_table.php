@@ -20,11 +20,11 @@ class CreateUpahritasirincianTable extends Migration
 
         Schema::create('upahritasirincian', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('upahritasi_id')->default('0');
-            $table->unsignedBigInteger('container_id')->default('0');
-            $table->double('nominalsupir',15,2)->default('0');
-            $table->double('liter',15,2)->default('0');
-            $table->string('modifiedby',50)->Default('');            
+            $table->unsignedBigInteger('upahritasi_id')->nullable();
+            $table->unsignedBigInteger('container_id')->nullable();
+            $table->double('nominalsupir',15,2)->nullable();
+            $table->double('liter',15,2)->nullable();
+            $table->string('modifiedby',50)->nullable();            
             $table->timestamps();
 
          

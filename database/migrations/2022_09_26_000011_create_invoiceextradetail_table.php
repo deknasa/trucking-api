@@ -17,11 +17,11 @@ class CreateInvoiceextradetailTable extends Migration
 
         Schema::create('invoiceextradetail', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('invoiceextra_id')->default(0);
-            $table->string('nobukti', 50)->default('');
-            $table->double('nominal', 15,2)->default(0);
-            $table->longText('keterangan')->default('');
-            $table->string('modifiedby', 50)->default('');
+            $table->unsignedBigInteger('invoiceextra_id')->nullable();
+            $table->string('nobukti', 50)->nullable();
+            $table->double('nominal', 15,2)->nullable();
+            $table->longText('keterangan')->nullable();
+            $table->string('modifiedby', 50)->nullable();
             $table->timestamps();
 
             $table->foreign('invoiceextra_id', 'invoiceextradetail_invoiceextraheader_invoiceextra_id_foreign')->references('id')->on('invoiceextraheader')->onDelete('cascade');    

@@ -19,15 +19,15 @@ class CreatealatbayarTable extends Migration
         
         Schema::create('alatbayar', function (Blueprint $table) {
             $table->id();
-            $table->string('kodealatbayar', 50)->default('');
-            $table->string('namaalatbayar', 50)->default('');
-            $table->longtext('keterangan')->default('');
-            $table->integer('statuslangsungcair')->length(11)->default(0);
-            $table->integer('statusdefault')->length(11)->default(0);
-            $table->string('coa', 50)->default('');
-            $table->unsignedBigInteger('bank_id')->default(0);
-            $table->integer('statusaktif')->length(11)->default(0);                
-            $table->string('modifiedby', 50)->default('');
+            $table->string('kodealatbayar', 50)->nullable();
+            $table->string('namaalatbayar', 50)->nullable();
+            $table->longtext('keterangan')->nullable();
+            $table->integer('statuslangsungcair')->length(11)->nullable();
+            $table->integer('statusdefault')->length(11)->nullable();
+            $table->string('coa', 50)->nullable();
+            $table->unsignedBigInteger('bank_id')->nullable();
+            $table->integer('statusaktif')->length(11)->nullable();                
+            $table->string('modifiedby', 50)->nullable();
             $table->timestamps();
 
             $table->foreign('bank_id', 'alatbayar_bank_bank_id_foreign')->references('id')->on('bank');

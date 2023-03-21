@@ -254,11 +254,11 @@ class Supir extends MyModel
 
         $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdefault, function ($table) {
-            $table->unsignedBigInteger('statusaktif')->default(0);
-            $table->unsignedBigInteger('statusadaupdategambar')->default(0);
-            $table->unsignedBigInteger('statusluarkota')->default(0);
-            $table->unsignedBigInteger('statuszonatertentu')->default(0);
-            $table->unsignedBigInteger('statusblacklist')->default(0);
+            $table->unsignedBigInteger('statusaktif')->nullable();
+            $table->unsignedBigInteger('statusadaupdategambar')->nullable();
+            $table->unsignedBigInteger('statusluarkota')->nullable();
+            $table->unsignedBigInteger('statuszonatertentu')->nullable();
+            $table->unsignedBigInteger('statusblacklist')->nullable();
         });
 
         // AKTIF
@@ -486,39 +486,39 @@ class Supir extends MyModel
 
         $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temp, function ($table) {
-            $table->bigInteger('id')->default('0');
-            $table->string('namasupir', 100)->default('');
-            $table->date('tgllahir')->default('1900/1/1');
-            $table->string('alamat', 100)->default('');
-            $table->string('kota', 100)->default('');
-            $table->string('telp', 30)->default('');
-            $table->longText('statusaktif')->default('');
-            $table->double('nominaldepositsa', 15, 2)->default(0);
-            $table->double('depositke', 15, 2)->default(0);
-            $table->double('nominalpinjamansaldoawal', 15, 2)->default(0);
-            $table->string('supirold_id')->default(0);
-            $table->string('nosim', 30)->default('');
-            $table->date('tglexpsim')->default('1900/1/1');
-            $table->date('tglterbitsim')->default('1900/1/1');
-            $table->longText('keterangan')->default('');
-            $table->string('noktp', 30)->default('');
-            $table->string('nokk', 30)->default('');
-            $table->longText('statusluarkota')->default('')->nullable();
-            $table->double('angsuranpinjaman', 15, 2)->default(0);
-            $table->double('plafondeposito', 15, 2)->default(0);
-            $table->string('photosupir', 4000)->default('');
-            $table->string('photoktp', 4000)->default('');
-            $table->string('photosim', 4000)->default('');
-            $table->string('photokk', 4000)->default('');
-            $table->string('photoskck', 4000)->default('');
-            $table->string('photodomisili', 4000)->default('');
-            $table->date('tglberhentisupir')->default('1900/1/1');
-            $table->longText('statusblacklist',)->default('');
-            $table->string('pemutihansupir_nobukti')->default('');
+            $table->bigInteger('id')->nullable();
+            $table->string('namasupir', 100)->nullable();
+            $table->date('tgllahir')->nullable();
+            $table->string('alamat', 100)->nullable();
+            $table->string('kota', 100)->nullable();
+            $table->string('telp', 30)->nullable();
+            $table->longText('statusaktif')->nullable();
+            $table->double('nominaldepositsa', 15, 2)->nullable();
+            $table->double('depositke', 15, 2)->nullable();
+            $table->double('nominalpinjamansaldoawal', 15, 2)->nullable();
+            $table->string('supirold_id')->nullable();
+            $table->string('nosim', 30)->nullable();
+            $table->date('tglexpsim')->nullable();
+            $table->date('tglterbitsim')->nullable();
+            $table->longText('keterangan')->nullable();
+            $table->string('noktp', 30)->nullable();
+            $table->string('nokk', 30)->nullable();
+            $table->longText('statusluarkota')->nullable()->nullable();
+            $table->double('angsuranpinjaman', 15, 2)->nullable();
+            $table->double('plafondeposito', 15, 2)->nullable();
+            $table->string('photosupir', 4000)->nullable();
+            $table->string('photoktp', 4000)->nullable();
+            $table->string('photosim', 4000)->nullable();
+            $table->string('photokk', 4000)->nullable();
+            $table->string('photoskck', 4000)->nullable();
+            $table->string('photodomisili', 4000)->nullable();
+            $table->date('tglberhentisupir')->nullable();
+            $table->longText('statusblacklist',)->nullable();
+            $table->string('pemutihansupir_nobukti')->nullable();
 
-            $table->string('modifiedby', 50)->default('');
-            $table->dateTime('created_at')->default('1900/1/1');
-            $table->dateTime('updated_at')->default('1900/1/1');
+            $table->string('modifiedby', 50)->nullable();
+            $table->dateTime('created_at')->nullable();
+            $table->dateTime('updated_at')->nullable();
             $table->increments('position');
         });
 

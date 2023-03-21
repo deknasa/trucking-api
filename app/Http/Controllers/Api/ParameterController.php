@@ -362,9 +362,9 @@ class ParameterController extends Controller
                 ->where('subgrp', "=", $params['subgrp']);
         } else {
             Schema::create($temp, function ($table) {
-                $table->integer('id')->length(11)->default(0);
-                $table->string('parameter', 50)->default(0);
-                $table->string('param', 50)->default(0);
+                $table->integer('id')->length(11)->nullable();
+                $table->string('parameter', 50)->nullable();
+                $table->string('param', 50)->nullable();
             });
 
 
@@ -406,9 +406,9 @@ class ParameterController extends Controller
                 ->where('subgrp', "=", $params['subgrp']);
         } else {
             Schema::create($temp, function ($table) {
-                $table->integer('id')->length(11)->default(0);
-                $table->string('parameter', 50)->default(0);
-                $table->string('param', 50)->default(0);
+                $table->integer('id')->length(11)->nullable();
+                $table->string('parameter', 50)->nullable();
+                $table->string('param', 50)->nullable();
             });
 
 

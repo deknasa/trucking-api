@@ -127,16 +127,16 @@ class ProsesUangJalanSupirHeader extends MyModel
     {
         $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temp, function ($table) {
-            $table->bigInteger('id')->default('0');
-            $table->string('nobukti', 1000)->default('');
-            $table->date('tglbukti')->default('');
-            $table->string('absensisupir_nobukti', 1000)->default('');
-            $table->bigInteger('trado_id')->default('0');
-            $table->bigInteger('supir_id')->default('0');
-            $table->float('nominaluangjalan')->default('');
-            $table->bigInteger('statusapproval')->default('0');
+            $table->bigInteger('id')->nullable();
+            $table->string('nobukti', 1000)->nullable();
+            $table->date('tglbukti')->nullable();
+            $table->string('absensisupir_nobukti', 1000)->nullable();
+            $table->bigInteger('trado_id')->nullable();
+            $table->bigInteger('supir_id')->nullable();
+            $table->float('nominaluangjalan')->nullable();
+            $table->bigInteger('statusapproval')->nullable();
             $table->string('modifiedby')->default();
-            $table->dateTime('updated_at')->default('1900/1/1');
+            $table->dateTime('updated_at')->nullable();
             $table->increments('position');
         });
 

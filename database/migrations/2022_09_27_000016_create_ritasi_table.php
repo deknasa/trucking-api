@@ -19,17 +19,17 @@ class CreateRitasiTable extends Migration
         Schema::create('ritasi', function (Blueprint $table) {
             $table->id();
             $table->string('nobukti',50)->unique();
-            $table->date('tglbukti')->default('1900/1/1');
-            $table->integer('statusritasi')->default(0);
-            $table->string('suratpengantar_nobukti',50)->default('');
-            $table->unsignedBigInteger('supir_id')->default(0);
-            $table->unsignedBigInteger('trado_id')->default(0);
-            $table->double('jarak',15,2)->default(0);
-            $table->double('gaji',15,2)->default(0);
-            $table->unsignedBigInteger('dari_id')->default(0);
-            $table->unsignedBigInteger('sampai_id')->default(0);
-            $table->unsignedBigInteger('statusformat')->default(0); 
-            $table->string('modifiedby',50)->default('');
+            $table->date('tglbukti')->nullable();
+            $table->integer('statusritasi')->nullable();
+            $table->string('suratpengantar_nobukti',50)->nullable();
+            $table->unsignedBigInteger('supir_id')->nullable();
+            $table->unsignedBigInteger('trado_id')->nullable();
+            $table->double('jarak',15,2)->nullable();
+            $table->double('gaji',15,2)->nullable();
+            $table->unsignedBigInteger('dari_id')->nullable();
+            $table->unsignedBigInteger('sampai_id')->nullable();
+            $table->unsignedBigInteger('statusformat')->nullable(); 
+            $table->string('modifiedby',50)->nullable();
             $table->timestamps();
 
 

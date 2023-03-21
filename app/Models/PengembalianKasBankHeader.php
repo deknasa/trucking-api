@@ -149,22 +149,22 @@ class PengembalianKasBankHeader extends MyModel
     {
         $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temp, function ($table) {
-            $table->bigInteger('id')->default('0');
-            $table->string('nobukti', 1000)->default('');
-            $table->date('tglbukti')->default('');
-            $table->string('pengeluaran_nobukti', 1000)->default('');
-            $table->string('postingdari', 1000)->default('');
-            $table->string('dibayarke', 1000)->default('');
-            $table->bigInteger('cabang_id')->default('0');
-            $table->bigInteger('bank_id')->default('0');
-            $table->bigInteger('statusjenistransaksi')->default('0');
-            $table->bigInteger('statusapproval')->default('0');
-            $table->string('transferkeac')->default('');
-            $table->string('transferkean')->default('');
-            $table->string('transferkebank')->default('');
+            $table->bigInteger('id')->nullable();
+            $table->string('nobukti', 1000)->nullable();
+            $table->date('tglbukti')->nullable();
+            $table->string('pengeluaran_nobukti', 1000)->nullable();
+            $table->string('postingdari', 1000)->nullable();
+            $table->string('dibayarke', 1000)->nullable();
+            $table->bigInteger('cabang_id')->nullable();
+            $table->bigInteger('bank_id')->nullable();
+            $table->bigInteger('statusjenistransaksi')->nullable();
+            $table->bigInteger('statusapproval')->nullable();
+            $table->string('transferkeac')->nullable();
+            $table->string('transferkean')->nullable();
+            $table->string('transferkebank')->nullable();
             $table->string('modifiedby')->default();
-            $table->dateTime('created_at')->default('1900/1/1');
-            $table->dateTime('updated_at')->default('1900/1/1');
+            $table->dateTime('created_at')->nullable();
+            $table->dateTime('updated_at')->nullable();
             $table->increments('position');
         });
         $this->setRequestParameters();

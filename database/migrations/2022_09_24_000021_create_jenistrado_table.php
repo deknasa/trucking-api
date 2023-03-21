@@ -18,10 +18,10 @@ class CreateJenistradoTable extends Migration
         
         Schema::create('jenistrado', function (Blueprint $table) {
             $table->id();
-            $table->string('kodejenistrado',50)->default('');
-            $table->longtext('keterangan',100)->default('');
-            $table->integer('statusaktif')->length(11)->default('0');
-            $table->string('modifiedby',50)->default('');
+            $table->string('kodejenistrado',50)->nullable();
+            $table->longtext('keterangan',100)->nullable();
+            $table->integer('statusaktif')->length(11)->nullable();
+            $table->string('modifiedby',50)->nullable();
             $table->timestamps();
         });
     }

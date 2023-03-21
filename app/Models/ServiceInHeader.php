@@ -117,16 +117,16 @@ class ServiceInHeader extends MyModel
     {//sesuaikan dengan column index
         $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temp, function ($table) {
-            $table->bigInteger('id')->default('0');
+            $table->bigInteger('id')->nullable();
             $table->string('nobukti',50)->unique();
-            $table->date('tglbukti')->default('1900/1/1');
-            $table->string('trado_id')->default('0');
-            $table->date('tglmasuk')->default('1900/1/1');
-            $table->string('statuscetak',1000)->default('');
+            $table->date('tglbukti')->nullable();
+            $table->string('trado_id')->nullable();
+            $table->date('tglmasuk')->nullable();
+            $table->string('statuscetak',1000)->nullable();
 
-            $table->string('modifiedby', 50)->default('');
-            $table->dateTime('created_at')->default('1900/1/1');
-            $table->dateTime('updated_at')->default('1900/1/1');
+            $table->string('modifiedby', 50)->nullable();
+            $table->dateTime('created_at')->nullable();
+            $table->dateTime('updated_at')->nullable();
             $table->increments('position');
         });
 

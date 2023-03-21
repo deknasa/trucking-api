@@ -18,11 +18,11 @@ class CreateSuratpengantarbiayatambahanTable extends Migration
         
         Schema::create('suratpengantarbiayatambahan', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('suratpengantar_id')->default('0');            
-            $table->longText('keteranganbiaya')->default('');            
-            $table->decimal('nominal',15,2)->default('0');
-            $table->decimal('nominaltagih',15,2)->default('0');
-            $table->string('modifiedby',50)->default('');            
+            $table->unsignedBigInteger('suratpengantar_id')->nullable();            
+            $table->longText('keteranganbiaya')->nullable();            
+            $table->decimal('nominal',15,2)->nullable();
+            $table->decimal('nominaltagih',15,2)->nullable();
+            $table->string('modifiedby',50)->nullable();            
             $table->timestamps();
 
             $table->foreign('suratpengantar_id', 'suratpengantarbiayatambahan_suratpengantar_suratpengantar_id_foreign')->references('id')->on('suratpengantar')->onDelete('cascade');    

@@ -18,16 +18,16 @@ class CreatePengembaliankasbankdetailTable extends Migration
 
         Schema::create('pengembaliankasbankdetail', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('pengembaliankasbank_id')->default('0');
-            $table->string('nobukti',50)->default('');
-            $table->string('nowarkat',50)->default('');
-            $table->date('tgljatuhtempo')->default('1900/1/1');
-            $table->double('nominal',15,2)->default('0');
-            $table->string('coadebet',50)->default('');
-            $table->string('coakredit',50)->default('');
-            $table->longText('keterangan')->default('');
-            $table->date('bulanbeban')->default('1900/1/1');
-            $table->string('modifiedby',50)->default('');            
+            $table->unsignedBigInteger('pengembaliankasbank_id')->nullable();
+            $table->string('nobukti',50)->nullable();
+            $table->string('nowarkat',50)->nullable();
+            $table->date('tgljatuhtempo')->nullable();
+            $table->double('nominal',15,2)->nullable();
+            $table->string('coadebet',50)->nullable();
+            $table->string('coakredit',50)->nullable();
+            $table->longText('keterangan')->nullable();
+            $table->date('bulanbeban')->nullable();
+            $table->string('modifiedby',50)->nullable();            
             $table->timestamps();
 
             $table->foreign('pengembaliankasbank_id', 'pengembaliankasbankdetail_pengembaliankasbankheader_pengeluaran_id_foreign')->references('id')->on('pengembaliankasbankheader')->onDelete('cascade'); 

@@ -15,9 +15,9 @@ class CreateUseraclTable extends Migration
     {
         Schema::create('useracl', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('aco_id')->default('0');
-            $table->unsignedBigInteger('user_id')->default('0');
-            $table->string('modifiedby',50)->default('');
+            $table->unsignedBigInteger('aco_id')->nullable();
+            $table->unsignedBigInteger('user_id')->nullable();
+            $table->string('modifiedby',50)->nullable();
             $table->timestamps();
         });
     }

@@ -137,7 +137,7 @@ class Stok extends MyModel
 
         $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdefault, function ($table) {
-            $table->unsignedBigInteger('statusaktif')->default(0);
+            $table->unsignedBigInteger('statusaktif')->nullable();
         });
 
         $statusaktif = Parameter::from(
@@ -202,23 +202,23 @@ class Stok extends MyModel
     { //sesuaikan dengan column index
         $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temp, function ($table) {
-            $table->bigInteger('id')->default('0');
-            $table->unsignedBigInteger('jenistrado_id')->default('0');
-            $table->unsignedBigInteger('kelompok_id')->default('0');
-            $table->unsignedBigInteger('subkelompok_id')->default('0');
-            $table->unsignedBigInteger('kategori_id')->default('0');
-            $table->unsignedBigInteger('merk_id')->default('0');
-            $table->string('namastok', 200)->default('');
-            $table->integer('statusaktif')->length(11)->default('0');
-            $table->double('qtymin', 15, 2)->default('0');
-            $table->double('qtymax', 15, 2)->default('0');
-            $table->longText('keterangan')->default('');
-            $table->longText('gambar')->default('');
-            $table->longText('namaterpusat')->default('');
+            $table->bigInteger('id')->nullable();
+            $table->unsignedBigInteger('jenistrado_id')->nullable();
+            $table->unsignedBigInteger('kelompok_id')->nullable();
+            $table->unsignedBigInteger('subkelompok_id')->nullable();
+            $table->unsignedBigInteger('kategori_id')->nullable();
+            $table->unsignedBigInteger('merk_id')->nullable();
+            $table->string('namastok', 200)->nullable();
+            $table->integer('statusaktif')->length(11)->nullable();
+            $table->double('qtymin', 15, 2)->nullable();
+            $table->double('qtymax', 15, 2)->nullable();
+            $table->longText('keterangan')->nullable();
+            $table->longText('gambar')->nullable();
+            $table->longText('namaterpusat')->nullable();
 
-            $table->string('modifiedby', 50)->default('');
-            $table->dateTime('created_at')->default('1900/1/1');
-            $table->dateTime('updated_at')->default('1900/1/1');
+            $table->string('modifiedby', 50)->nullable();
+            $table->dateTime('created_at')->nullable();
+            $table->dateTime('updated_at')->nullable();
             $table->increments('position');
         });
 

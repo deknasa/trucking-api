@@ -76,8 +76,8 @@ class HutangHeader extends MyModel
 
         $tempbayar = '##tempbayar' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempbayar, function ($table) {
-            $table->string('hutang_nobukti', 100)->default('');
-            $table->double('nominal', 15, 2)->default(0);
+            $table->string('hutang_nobukti', 100)->nullable();
+            $table->double('nominal', 15, 2)->nullable();
         });
 
         $query = DB::table('hutangbayardetail')->from(
@@ -179,8 +179,8 @@ class HutangHeader extends MyModel
         });
         Schema::create($list, function ($table) {
             $table->string('nobukti');
-            $table->date('tglbukti')->default('');
-            $table->bigInteger('total')->default('0');
+            $table->date('tglbukti')->nullable();
+            $table->bigInteger('total')->nullable();
             $table->bigInteger('sisa')->nullable();
         });
 
@@ -271,20 +271,20 @@ class HutangHeader extends MyModel
     {
         $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temp, function ($table) {
-            $table->bigInteger('id')->default('0');
+            $table->bigInteger('id')->nullable();
             $table->string('nobukti', 50)->unique();
-            $table->date('tglbukti')->default('1900/1/1');
-            $table->string('coa', 50)->default('');
-            $table->string('supplier_id', 50)->default('');
-            $table->double('total', 15, 2)->default(0);
-            $table->string('statuscetak', 1000)->default('');
-            $table->string('userbukacetak', 50)->default('');
-            $table->date('tglbukacetak')->default('1900/1/1');
-            $table->integer('jumlahcetak')->Length(11)->default('0');
+            $table->date('tglbukti')->nullable();
+            $table->string('coa', 50)->nullable();
+            $table->string('supplier_id', 50)->nullable();
+            $table->double('total', 15, 2)->nullable();
+            $table->string('statuscetak', 1000)->nullable();
+            $table->string('userbukacetak', 50)->nullable();
+            $table->date('tglbukacetak')->nullable();
+            $table->integer('jumlahcetak')->Length(11)->nullable();
             $table->string('modifiedby')->default();
-            $table->dateTime('created_at')->default('1900/1/1');
-            $table->dateTime('updated_at')->default('1900/1/1');
-            $table->bigInteger('statusformat')->default('');
+            $table->dateTime('created_at')->nullable();
+            $table->dateTime('updated_at')->nullable();
+            $table->bigInteger('statusformat')->nullable();
             $table->increments('position');
         });
 

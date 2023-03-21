@@ -29,8 +29,8 @@ class PiutangHeader extends MyModel
 
         $temppelunasan = '##temppelunasan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temppelunasan, function ($table) {
-            $table->string('piutang_nobukti', 100)->default('');
-            $table->double('nominal', 15, 2)->default(0);
+            $table->string('piutang_nobukti', 100)->nullable();
+            $table->double('nominal', 15, 2)->nullable();
         });
 
         $query = DB::table('pelunasanpiutangdetail')->from(
@@ -153,7 +153,7 @@ class PiutangHeader extends MyModel
         // ->get();
         Schema::create($temp, function ($table) {
             $table->string('nobukti');
-            $table->bigInteger('agen_id')->default('0');
+            $table->bigInteger('agen_id')->nullable();
             $table->bigInteger('nominalbayar')->nullable();
             $table->bigInteger('sisa')->nullable();
         });
@@ -206,15 +206,15 @@ class PiutangHeader extends MyModel
     {
         $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temp, function ($table) {
-            $table->bigInteger('id')->default('0');
-            $table->string('nobukti', 1000)->default('');
-            $table->date('tglbukti')->default('');
-            $table->string('postingdari', 1000)->default('');
-            $table->float('nominal')->default('');
-            $table->string('invoice_nobukti')->default('');
-            $table->string('agen_id')->default('');
+            $table->bigInteger('id')->nullable();
+            $table->string('nobukti', 1000)->nullable();
+            $table->date('tglbukti')->nullable();
+            $table->string('postingdari', 1000)->nullable();
+            $table->float('nominal')->nullable();
+            $table->string('invoice_nobukti')->nullable();
+            $table->string('agen_id')->nullable();
             $table->string('modifiedby')->default();
-            $table->dateTime('updated_at')->default('1900/1/1');
+            $table->dateTime('updated_at')->nullable();
             $table->increments('position');
         });
 

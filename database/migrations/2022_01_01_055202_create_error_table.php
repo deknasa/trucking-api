@@ -15,9 +15,9 @@ class CreateErrorTable extends Migration
     {
         Schema::create('error', function (Blueprint $table) {
             $table->id();
-            $table->string('kodeerror',50)->default('');            
-            $table->longText('keterangan')->default('');            
-            $table->string('modifiedby', 50)->default('');            
+            $table->string('kodeerror',50)->nullable();            
+            $table->longText('keterangan')->nullable();            
+            $table->string('modifiedby', 50)->nullable();            
             $table->timestamps();
         });
     }

@@ -160,8 +160,8 @@ class OrderanTrucking extends MyModel
 
         $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdefault, function ($table) {
-            $table->unsignedBigInteger('statuslangsir')->default(0);
-            $table->unsignedBigInteger('statusperalihan')->default(0);
+            $table->unsignedBigInteger('statuslangsir')->nullable();
+            $table->unsignedBigInteger('statusperalihan')->nullable();
         });
 
         $status = Parameter::from(
@@ -352,26 +352,26 @@ class OrderanTrucking extends MyModel
     {
         $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temp, function ($table) {
-            $table->bigInteger('id')->default('0');
-            $table->string('nobukti', 1000)->default('');
-            $table->date('tglbukti')->default('');
-            $table->string('container_id', 1000)->default('');
-            $table->string('agen_id', 1000)->default('');
-            $table->string('jenisorder_id', 1000)->default('');
-            $table->string('pelanggan_id', 1000)->default('');
-            $table->string('tarif_id', 1000)->default('');
-            $table->string('nominal', 1000)->default('');
-            $table->string('nojobemkl', 1000)->default('');
-            $table->string('nocont', 1000)->default('');
-            $table->string('noseal', 1000)->default('');
-            $table->string('nojobemkl2', 1000)->default('');
-            $table->string('nocont2', 1000)->default('');
-            $table->string('noseal2', 1000)->default('');
-            $table->string('statuslangsir', 1000)->default('');
-            $table->string('statusperalihan', 1000)->default('');
-            $table->string('modifiedby', 50)->default('');
-            $table->dateTime('created_at')->default('1900/1/1');
-            $table->dateTime('updated_at')->default('1900/1/1');
+            $table->bigInteger('id')->nullable();
+            $table->string('nobukti', 1000)->nullable();
+            $table->date('tglbukti')->nullable();
+            $table->string('container_id', 1000)->nullable();
+            $table->string('agen_id', 1000)->nullable();
+            $table->string('jenisorder_id', 1000)->nullable();
+            $table->string('pelanggan_id', 1000)->nullable();
+            $table->string('tarif_id', 1000)->nullable();
+            $table->string('nominal', 1000)->nullable();
+            $table->string('nojobemkl', 1000)->nullable();
+            $table->string('nocont', 1000)->nullable();
+            $table->string('noseal', 1000)->nullable();
+            $table->string('nojobemkl2', 1000)->nullable();
+            $table->string('nocont2', 1000)->nullable();
+            $table->string('noseal2', 1000)->nullable();
+            $table->string('statuslangsir', 1000)->nullable();
+            $table->string('statusperalihan', 1000)->nullable();
+            $table->string('modifiedby', 50)->nullable();
+            $table->dateTime('created_at')->nullable();
+            $table->dateTime('updated_at')->nullable();
             $table->increments('position');
         });
 

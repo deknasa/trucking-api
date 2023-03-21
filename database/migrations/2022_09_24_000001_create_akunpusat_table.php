@@ -19,17 +19,17 @@ class CreateakunpusatTable extends Migration
         Schema::create('akunpusat', function (Blueprint $table) {
             $table->id();
             $table->string('coa', 50)->unique();
-            $table->longText('keterangancoa')->default('');
-            $table->string('type', 50)->default('');
-            $table->integer('level')->length(11)->default(0);
-            $table->integer('statusaktif')->length(11)->default(0);
-            $table->string('parent', 255)->default('');
-            $table->integer('statuscoa')->length(11)->default(0);
-            $table->integer('statusaccountpayable')->length(11)->default(0);
-            $table->integer('statusneraca')->length(11)->default(0);
-            $table->integer('statuslabarugi')->length(11)->default(0);
-            $table->string('coamain', 30)->default('');
-            $table->string('modifiedby', 30)->default('');
+            $table->longText('keterangancoa')->nullable();
+            $table->string('type', 50)->nullable();
+            $table->integer('level')->length(11)->nullable();
+            $table->integer('statusaktif')->length(11)->nullable();
+            $table->string('parent', 255)->nullable();
+            $table->integer('statuscoa')->length(11)->nullable();
+            $table->integer('statusaccountpayable')->length(11)->nullable();
+            $table->integer('statusneraca')->length(11)->nullable();
+            $table->integer('statuslabarugi')->length(11)->nullable();
+            $table->string('coamain', 30)->nullable();
+            $table->string('modifiedby', 30)->nullable();
             $table->timestamps();
             
         });

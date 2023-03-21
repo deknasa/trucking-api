@@ -56,9 +56,9 @@ class TarifRincian extends MyModel
     {
         $tempdata = '##tempdata' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdata, function ($table) {
-            $table->string('tujuan', 1000)->default('');
-            $table->date('tglmulaiberlaku')->default('1900/1/1');
-            $table->string('kota', 1000)->default('');
+            $table->string('tujuan', 1000)->nullable();
+            $table->date('tglmulaiberlaku')->nullable();
+            $table->string('kota', 1000)->nullable();
         });
 
 
@@ -76,7 +76,7 @@ class TarifRincian extends MyModel
 
         $temptgl = '##temptgl' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temptgl, function ($table) {
-            $table->date('tglmulaiberlaku')->default('1900/1/1');
+            $table->date('tglmulaiberlaku')->nullable();
         });
 
         $querytgl = DB::table('tarif')
@@ -193,10 +193,10 @@ class TarifRincian extends MyModel
 
         $tempdata = '##tempdata' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdata, function ($table) {
-            $table->unsignedBigInteger('id')->default(0);
-            $table->unsignedBigInteger('container_id')->default(0);
-            $table->string('container', 1000)->default('');
-            $table->double('nominal', 15, 2)->default(0);
+            $table->unsignedBigInteger('id')->nullable();
+            $table->unsignedBigInteger('container_id')->nullable();
+            $table->string('container', 1000)->nullable();
+            $table->double('nominal', 15, 2)->nullable();
         });
 
         $query = DB::table('container')->from(DB::raw("container with (readuncommitted)"))
@@ -220,7 +220,7 @@ class TarifRincian extends MyModel
 
         $tempdatagroup = '##tempdatagroup' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdatagroup, function ($table) {
-            $table->string('container', 100)->default('');
+            $table->string('container', 100)->nullable();
         });
 
         $querydatagroup =  DB::table($tempdata)->from(
@@ -487,8 +487,8 @@ class TarifRincian extends MyModel
 
         Schema::create($temp, function ($table) {
             $table->increments('id');
-            $table->string('container')->default('');
-            $table->string('containerId')->default('0');
+            $table->string('container')->nullable();
+            $table->string('containerId')->nullable();
         });
 
         DB::table($temp)->insertUsing([

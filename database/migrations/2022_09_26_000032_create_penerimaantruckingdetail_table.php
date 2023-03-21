@@ -19,12 +19,12 @@ class CreatePenerimaantruckingdetailTable extends Migration
         Schema::create('penerimaantruckingdetail', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('penerimaantruckingheader_id');
-            $table->string('nobukti',50)->default('');
-            $table->unsignedBigInteger('supir_id')->default('0');
-            $table->string('pengeluarantruckingheader_nobukti',50)->default('');
-            $table->double('nominal',15,2)->default('0');        
-            $table->longText('keterangan')->default('');    
-            $table->string('modifiedby',50)->default('');            
+            $table->string('nobukti',50)->nullable();
+            $table->unsignedBigInteger('supir_id')->nullable();
+            $table->string('pengeluarantruckingheader_nobukti',50)->nullable();
+            $table->double('nominal',15,2)->nullable();        
+            $table->longText('keterangan')->nullable();    
+            $table->string('modifiedby',50)->nullable();            
             $table->timestamps();
 
 

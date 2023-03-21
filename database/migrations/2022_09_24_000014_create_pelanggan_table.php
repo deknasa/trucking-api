@@ -20,16 +20,16 @@ class CreatePelangganTable extends Migration
         
         Schema::create('pelanggan', function (Blueprint $table) {
             $table->id();
-            $table->string('kodepelanggan',50)->default('');
-            $table->string('namapelanggan',100)->default('');
-            $table->longText('keterangan')->default('');
-            $table->string('telp',100)->default('');
-            $table->string('alamat',200)->default('');
-            $table->string('alamat2',200)->default('');
-            $table->string('kota',200)->default('');
-            $table->string('kodepos',50)->default('');
-            $table->string('modifiedby',50)->default('');
-            $table->integer('statusaktif')->length(11)->default(0);                
+            $table->string('kodepelanggan',50)->nullable();
+            $table->string('namapelanggan',100)->nullable();
+            $table->longText('keterangan')->nullable();
+            $table->string('telp',100)->nullable();
+            $table->string('alamat',200)->nullable();
+            $table->string('alamat2',200)->nullable();
+            $table->string('kota',200)->nullable();
+            $table->string('kodepos',50)->nullable();
+            $table->string('modifiedby',50)->nullable();
+            $table->integer('statusaktif')->length(11)->nullable();                
             $table->timestamps();
         });
     }

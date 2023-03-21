@@ -19,23 +19,23 @@ class CreatePenerimaangiroheaderTable extends Migration
         Schema::create('penerimaangiroheader', function (Blueprint $table) {
             $table->id();
             $table->string('nobukti',50)->unique();
-            $table->date('tglbukti')->default('1900/1/1');
-            $table->longText('keterangan')->default('');            
-            $table->unsignedBigInteger('pelanggan_id')->default('0');
-            $table->unsignedBigInteger('agen_id')->default('0');
-            $table->string('postingdari',50)->default('');
-            $table->string('diterimadari',100)->default('');
-            $table->date('tgllunas')->default('1900/1/1');
-            $table->unsignedBigInteger('cabang_id')->default('0');
-            $table->integer('statusapproval')->length(11)->default('0');
-            $table->string('userapproval',50)->default('');
-            $table->date('tglapproval')->default('1900/1/1');
-            $table->unsignedBigInteger('statusformat')->default(0);
-            $table->integer('statuscetak')->Length(11)->default('0');
-            $table->string('userbukacetak',50)->default('');
-            $table->date('tglbukacetak')->default('1900/1/1');
-            $table->integer('jumlahcetak')->Length(11)->default('0');
-            $table->string('modifiedby',50)->default('');
+            $table->date('tglbukti')->nullable();
+            $table->longText('keterangan')->nullable();            
+            $table->unsignedBigInteger('pelanggan_id')->nullable();
+            $table->unsignedBigInteger('agen_id')->nullable();
+            $table->string('postingdari',50)->nullable();
+            $table->string('diterimadari',100)->nullable();
+            $table->date('tgllunas')->nullable();
+            $table->unsignedBigInteger('cabang_id')->nullable();
+            $table->integer('statusapproval')->length(11)->nullable();
+            $table->string('userapproval',50)->nullable();
+            $table->date('tglapproval')->nullable();
+            $table->unsignedBigInteger('statusformat')->nullable();
+            $table->integer('statuscetak')->Length(11)->nullable();
+            $table->string('userbukacetak',50)->nullable();
+            $table->date('tglbukacetak')->nullable();
+            $table->integer('jumlahcetak')->Length(11)->nullable();
+            $table->string('modifiedby',50)->nullable();
             $table->timestamps();
 
 

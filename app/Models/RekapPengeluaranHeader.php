@@ -119,20 +119,20 @@ class RekapPengeluaranHeader extends MyModel
         $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
         Schema::create($temp, function ($table) {
-            $table->bigInteger('id')->default('0');
+            $table->bigInteger('id')->nullable();
             $table->string('nobukti',50)->unique();
-            $table->date('tglbukti')->default('1900/1/1');
-            $table->unsignedBigInteger('bank_id')->default(0);
-            $table->date('tgltransaksi')->default('1900/1/1');
-            $table->longText('keterangan')->default('');
-            $table->integer('statusapproval')->length(11)->default('0');
-            $table->string('userapproval',50)->default('');
-            $table->date('tglapproval')->default('1900/1/1');
-            $table->unsignedBigInteger('statusformat')->default(0);  
-            $table->string('modifiedby',50)->default('');
+            $table->date('tglbukti')->nullable();
+            $table->unsignedBigInteger('bank_id')->nullable();
+            $table->date('tgltransaksi')->nullable();
+            $table->longText('keterangan')->nullable();
+            $table->integer('statusapproval')->length(11)->nullable();
+            $table->string('userapproval',50)->nullable();
+            $table->date('tglapproval')->nullable();
+            $table->unsignedBigInteger('statusformat')->nullable();  
+            $table->string('modifiedby',50)->nullable();
             $table->increments('position');
-            $table->dateTime('created_at')->default('1900/1/1');
-            $table->dateTime('updated_at')->default('1900/1/1');
+            $table->dateTime('created_at')->nullable();
+            $table->dateTime('updated_at')->nullable();
         });
 
         $query = DB::table($modelTable);

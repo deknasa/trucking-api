@@ -19,16 +19,16 @@ class CreatePengeluaranstokdetailTable extends Migration
         Schema::create('pengeluaranstokdetail', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('pengeluaranstokheader_id');
-            $table->string('nobukti',50)->default('');
+            $table->string('nobukti',50)->nullable();
             $table->unsignedBigInteger('stok_id');
-            $table->double('qty', 15,2)->default(0);
-            $table->double('harga', 15,2)->default(0);
-            $table->string('persentasediscount', 50)->default('');
-            $table->double('nominaldiscount', 15,2)->default(0);
-            $table->double('total', 15,2)->default(0);
-            $table->longText('keterangan')->default('');
-            $table->unsignedBigInteger('vulkanisirke')->default(0);
-            $table->string('modifiedby',50)->default('');            
+            $table->double('qty', 15,2)->nullable();
+            $table->double('harga', 15,2)->nullable();
+            $table->string('persentasediscount', 50)->nullable();
+            $table->double('nominaldiscount', 15,2)->nullable();
+            $table->double('total', 15,2)->nullable();
+            $table->longText('keterangan')->nullable();
+            $table->unsignedBigInteger('vulkanisirke')->nullable();
+            $table->string('modifiedby',50)->nullable();            
             $table->timestamps();
 
                       

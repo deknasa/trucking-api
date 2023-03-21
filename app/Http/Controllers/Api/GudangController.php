@@ -122,9 +122,9 @@ class GudangController extends Controller
 
                 $tempmasuk = '##tempmasuk' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
                 Schema::create($tempmasuk, function ($table) {
-                    $table->unsignedBigInteger('stok_id')->default(0);
-                    $table->unsignedBigInteger('gudang_id')->default(0);
-                    $table->double('qty', 15,2)->default('');
+                    $table->unsignedBigInteger('stok_id')->nullable();
+                    $table->unsignedBigInteger('gudang_id')->nullable();
+                    $table->double('qty', 15,2)->nullable();
                 });
 
 
@@ -150,9 +150,9 @@ class GudangController extends Controller
                 
                 $tempkeluar = '##tempkeluar' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
                 Schema::create($tempkeluar, function ($table) {
-                    $table->unsignedBigInteger('stok_id')->default(0);
-                    $table->unsignedBigInteger('gudang_id')->default(0);
-                    $table->double('qty', 15,2)->default('');
+                    $table->unsignedBigInteger('stok_id')->nullable();
+                    $table->unsignedBigInteger('gudang_id')->nullable();
+                    $table->double('qty', 15,2)->nullable();
                 });
 
 
@@ -304,9 +304,9 @@ class GudangController extends Controller
 
                 $tempmasuk = '##tempmasuk' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
                 Schema::create($tempmasuk, function ($table) {
-                    $table->unsignedBigInteger('stok_id')->default(0);
-                    $table->unsignedBigInteger('gudang_id')->default(0);
-                    $table->double('qty', 15,2)->default('');
+                    $table->unsignedBigInteger('stok_id')->nullable();
+                    $table->unsignedBigInteger('gudang_id')->nullable();
+                    $table->double('qty', 15,2)->nullable();
                 });
 
 
@@ -332,9 +332,9 @@ class GudangController extends Controller
                 
                 $tempkeluar = '##tempkeluar' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
                 Schema::create($tempkeluar, function ($table) {
-                    $table->unsignedBigInteger('stok_id')->default(0);
-                    $table->unsignedBigInteger('gudang_id')->default(0);
-                    $table->double('qty', 15,2)->default('');
+                    $table->unsignedBigInteger('stok_id')->nullable();
+                    $table->unsignedBigInteger('gudang_id')->nullable();
+                    $table->double('qty', 15,2)->nullable();
                 });
 
 

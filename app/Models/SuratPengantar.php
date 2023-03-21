@@ -81,7 +81,7 @@ class SuratPengantar extends MyModel
 
         $tempinvdetail = '##tempinvdetail' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempinvdetail, function ($table) {
-            $table->string('suratpengantar_nobukti')->default('');
+            $table->string('suratpengantar_nobukti')->nullable();
         });
 
         $status = InvoiceDetail::from(
@@ -206,11 +206,11 @@ class SuratPengantar extends MyModel
 
         $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdefault, function ($table) {
-            $table->unsignedBigInteger('statuslongtrip')->default(0);
-            $table->unsignedBigInteger('statusperalihan')->default(0);
-            $table->unsignedBigInteger('statusritasiomset')->default(0);
-            $table->unsignedBigInteger('statusgudangsama')->default(0);
-            $table->unsignedBigInteger('statusbatalmuat')->default(0);
+            $table->unsignedBigInteger('statuslongtrip')->nullable();
+            $table->unsignedBigInteger('statusperalihan')->nullable();
+            $table->unsignedBigInteger('statusritasiomset')->nullable();
+            $table->unsignedBigInteger('statusgudangsama')->nullable();
+            $table->unsignedBigInteger('statusbatalmuat')->nullable();
         });
 
         $status = Parameter::from(
@@ -592,31 +592,31 @@ class SuratPengantar extends MyModel
     { //sesuaikan dengan column index
         $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temp, function ($table) {
-            $table->bigInteger('id')->default('0');
+            $table->bigInteger('id')->nullable();
             $table->string('nobukti', 50)->unique();
-            $table->string('jobtrucking', 50)->default('');
-            $table->date('tglbukti')->default('1900/1/1');
-            $table->string('pelanggan_id')->default('0');
-            $table->longText('keterangan')->default('');
-            $table->string('dari_id')->default('0');
-            $table->string('sampai_id')->default('0');
-            $table->string('container_id')->default('0');
-            $table->string('nocont', 50)->default('');
-            $table->string('statuscontainer_id')->default('0');
-            $table->string('trado_id')->default('0');
-            $table->string('supir_id')->default('0');
-            $table->string('nojob', 50)->default('');
-            $table->integer('statuslongtrip')->length(11)->default('0');
-            $table->string('agen_id')->default('0');
-            $table->string('jenisorder_id')->default('0');
-            $table->string('nosp', 50)->default('');
-            $table->integer('statusritasiomset')->length(11)->default('0');
-            $table->string('cabang_id')->default('0');
-            $table->decimal('qtyton', 15, 2)->default('0');
+            $table->string('jobtrucking', 50)->nullable();
+            $table->date('tglbukti')->nullable();
+            $table->string('pelanggan_id')->nullable();
+            $table->longText('keterangan')->nullable();
+            $table->string('dari_id')->nullable();
+            $table->string('sampai_id')->nullable();
+            $table->string('container_id')->nullable();
+            $table->string('nocont', 50)->nullable();
+            $table->string('statuscontainer_id')->nullable();
+            $table->string('trado_id')->nullable();
+            $table->string('supir_id')->nullable();
+            $table->string('nojob', 50)->nullable();
+            $table->integer('statuslongtrip')->length(11)->nullable();
+            $table->string('agen_id')->nullable();
+            $table->string('jenisorder_id')->nullable();
+            $table->string('nosp', 50)->nullable();
+            $table->integer('statusritasiomset')->length(11)->nullable();
+            $table->string('cabang_id')->nullable();
+            $table->decimal('qtyton', 15, 2)->nullable();
 
-            $table->string('modifiedby', 50)->default('');
-            $table->dateTime('created_at')->default('1900/1/1');
-            $table->dateTime('updated_at')->default('1900/1/1');
+            $table->string('modifiedby', 50)->nullable();
+            $table->dateTime('created_at')->nullable();
+            $table->dateTime('updated_at')->nullable();
             $table->increments('position');
         });
 

@@ -77,10 +77,10 @@ class UpahSupirRincian extends MyModel
         $temp = '##tempcrossjoin' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temp, function ($table) {
             $table->increments('id');
-            $table->string('statuscontainer')->default('');
-            $table->string('statuscontainerId')->default('0');
-            $table->string('container')->default('');
-            $table->string('containerId')->default('0');
+            $table->string('statuscontainer')->nullable();
+            $table->string('statuscontainerId')->nullable();
+            $table->string('container')->nullable();
+            $table->string('containerId')->nullable();
         });
 
         DB::table($temp)->insertUsing([

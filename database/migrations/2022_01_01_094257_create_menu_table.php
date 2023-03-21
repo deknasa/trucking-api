@@ -15,15 +15,15 @@ class CreateMenuTable extends Migration
     {
         Schema::create('menu', function (Blueprint $table) {
             $table->id();
-            $table->string('menuname',50)->default('');
-            $table->integer('menuseq')->length(11)->default('0');
-            $table->integer('menuparent')->length(11)->default('0');
-            $table->string('menuicon',50)->default('');
-            $table->unsignedBigInteger('aco_id')->default('0');
-            $table->string('link',2000)->default('');
-            $table->string('menuexe',200)->default('');
-            $table->string('menukode',50)->unique()->default('');
-            $table->string('modifiedby',50)->default('');
+            $table->string('menuname',50)->nullable();
+            $table->integer('menuseq')->length(11)->nullable();
+            $table->integer('menuparent')->length(11)->nullable();
+            $table->string('menuicon',50)->nullable();
+            $table->unsignedBigInteger('aco_id')->nullable();
+            $table->string('link',2000)->nullable();
+            $table->string('menuexe',200)->nullable();
+            $table->string('menukode',50)->unique()->nullable();
+            $table->string('modifiedby',50)->nullable();
             $table->timestamps();
         });
     }

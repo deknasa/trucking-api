@@ -18,10 +18,10 @@ class CreateStatuscontainerTable extends Migration
         
         Schema::create('statuscontainer', function (Blueprint $table) {
             $table->id();
-            $table->string('kodestatuscontainer',50)->default('');
-            $table->longText('keterangan')->default('');
-            $table->integer('statusaktif')->length(11)->default('');
-            $table->string('modifiedby',50)->default('');
+            $table->string('kodestatuscontainer',50)->nullable();
+            $table->longText('keterangan')->nullable();
+            $table->integer('statusaktif')->length(11)->nullable();
+            $table->string('modifiedby',50)->nullable();
             $table->timestamps();
         });
     }

@@ -17,10 +17,10 @@ class CreateMekanikTable extends Migration
 
         Schema::create('mekanik', function (Blueprint $table) {
             $table->id();
-            $table->string('namamekanik', 300)->default('');
-            $table->longText('keterangan')->default('');
-            $table->integer('statusaktif')->length(11)->default(0);
-            $table->string('modifiedby', 30)->default('');
+            $table->string('namamekanik', 300)->nullable();
+            $table->longText('keterangan')->nullable();
+            $table->integer('statusaktif')->length(11)->nullable();
+            $table->string('modifiedby', 30)->nullable();
 
             $table->timestamps();
         });

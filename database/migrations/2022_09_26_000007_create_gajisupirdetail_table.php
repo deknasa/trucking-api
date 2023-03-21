@@ -19,23 +19,23 @@ class CreateGajisupirdetailTable extends Migration
 
         Schema::create('gajisupirdetail', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('gajisupir_id')->default(0);   
-            $table->string('nobukti', 50)->default('');            
-            $table->double('nominaldeposito', 15,2)->default(0);            
-            $table->double('nourut', 15,2)->default(0);            
-            $table->string('suratpengantar_nobukti', 50)->default('');            
-            $table->string('ritasi_nobukti', 50)->default('');            
-            $table->double('komisisupir', 15,2)->default(0);            
-            $table->double('tolsupir', 15,2)->default(0);            
-            $table->double('voucher', 15,2)->default(0);            
-            $table->string('novoucher', 50)->default('');            
-            $table->double('gajisupir', 15,2)->default(0);            
-            $table->double('gajikenek', 15,2)->default(0);            
-            $table->double('gajiritasi', 15,2)->default(0);            
-            $table->double('biayatambahan', 15,2)->default(0);            
-            $table->longText('keteranganbiayatambahan')->default('');            
-            $table->double('nominalpengembalianpinjaman', 15,2)->default(0);            
-            $table->string('modifiedby', 50)->default('');            
+            $table->unsignedBigInteger('gajisupir_id')->nullable();   
+            $table->string('nobukti', 50)->nullable();            
+            $table->double('nominaldeposito', 15,2)->nullable();            
+            $table->double('nourut', 15,2)->nullable();            
+            $table->string('suratpengantar_nobukti', 50)->nullable();            
+            $table->string('ritasi_nobukti', 50)->nullable();            
+            $table->double('komisisupir', 15,2)->nullable();            
+            $table->double('tolsupir', 15,2)->nullable();            
+            $table->double('voucher', 15,2)->nullable();            
+            $table->string('novoucher', 50)->nullable();            
+            $table->double('gajisupir', 15,2)->nullable();            
+            $table->double('gajikenek', 15,2)->nullable();            
+            $table->double('gajiritasi', 15,2)->nullable();            
+            $table->double('biayatambahan', 15,2)->nullable();            
+            $table->longText('keteranganbiayatambahan')->nullable();            
+            $table->double('nominalpengembalianpinjaman', 15,2)->nullable();            
+            $table->string('modifiedby', 50)->nullable();            
             $table->timestamps();
 
             $table->foreign('gajisupir_id', 'gajisupirdetail_gajisupirheader_gajisupir_id_foreign')->references('id')->on('gajisupirheader')->onDelete('cascade');    

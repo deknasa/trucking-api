@@ -18,15 +18,15 @@ class CreateHutangbayardetailTable extends Migration
 
         Schema::create('hutangbayardetail', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('hutangbayar_id')->default(0);
-            $table->string('nobukti', 50)->default('');
-            $table->double('nominal', 15,2)->default(0);
-            $table->string('hutang_nobukti', 50)->default('');
-            $table->integer('cicilan')->length(11)->default(0);
-            $table->string('userid', 50)->default('');
-            $table->double('potongan', 15,2)->default(0);
-            $table->longText('keterangan')->default('');
-            $table->string('modifiedby', 50)->default('');
+            $table->unsignedBigInteger('hutangbayar_id')->nullable();
+            $table->string('nobukti', 50)->nullable();
+            $table->double('nominal', 15,2)->nullable();
+            $table->string('hutang_nobukti', 50)->nullable();
+            $table->integer('cicilan')->length(11)->nullable();
+            $table->string('userid', 50)->nullable();
+            $table->double('potongan', 15,2)->nullable();
+            $table->longText('keterangan')->nullable();
+            $table->string('modifiedby', 50)->nullable();
             $table->timestamps();
 
                        

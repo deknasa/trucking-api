@@ -18,20 +18,20 @@ class CreateProsesgajisupirheaderTable extends Migration
         Schema::create('prosesgajisupirheader', function (Blueprint $table) {
             $table->id();
             $table->string('nobukti',50)->unique();
-            $table->date('tglbukti')->default('1900/1/1');
-            $table->longText('keterangan')->default('');            
-            $table->date('tgldari')->default('1900/1/1');
-            $table->date('tglsampai')->default('1900/1/1');
-            $table->integer('statusapproval')->length(11)->default('0');
-            $table->string('userapproval',50)->default('');
-            $table->date('tglapproval')->default('1900/1/1');
-            $table->date('periode')->default('1900/1/1');
-            $table->unsignedBigInteger('statusformat')->default(0);
-            $table->integer('statuscetak')->Length(11)->default('0');
-            $table->string('userbukacetak',50)->default('');
-            $table->date('tglbukacetak')->default('1900/1/1');
-            $table->integer('jumlahcetak')->Length(11)->default('0');
-            $table->string('modifiedby',50)->default('');
+            $table->date('tglbukti')->nullable();
+            $table->longText('keterangan')->nullable();            
+            $table->date('tgldari')->nullable();
+            $table->date('tglsampai')->nullable();
+            $table->integer('statusapproval')->length(11)->nullable();
+            $table->string('userapproval',50)->nullable();
+            $table->date('tglapproval')->nullable();
+            $table->date('periode')->nullable();
+            $table->unsignedBigInteger('statusformat')->nullable();
+            $table->integer('statuscetak')->Length(11)->nullable();
+            $table->string('userbukacetak',50)->nullable();
+            $table->date('tglbukacetak')->nullable();
+            $table->integer('jumlahcetak')->Length(11)->nullable();
+            $table->string('modifiedby',50)->nullable();
             $table->timestamps();
 
 

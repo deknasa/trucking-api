@@ -31,10 +31,10 @@ class PelunasanPiutangHeader extends MyModel
 
         $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdefault, function ($table) {
-            $table->unsignedBigInteger('bank_id')->default(0);
-            $table->string('bank', 255)->default('');
-            $table->unsignedBigInteger('alatbayar_id')->default(0);
-            $table->string('alatbayar', 255)->default('');
+            $table->unsignedBigInteger('bank_id')->nullable();
+            $table->string('bank', 255)->nullable();
+            $table->unsignedBigInteger('alatbayar_id')->nullable();
+            $table->string('alatbayar', 255)->nullable();
         });
 
 
@@ -173,7 +173,7 @@ class PelunasanPiutangHeader extends MyModel
             ->groupBy('piutangheader.id', 'piutangheader.nobukti', 'piutangheader.agen_id', 'piutangheader.nominal', 'piutangheader.tglbukti', 'piutangheader.invoice_nobukti');
         Schema::create($temp, function ($table) {
             $table->string('nobukti');
-            $table->date('tglbukti')->default('');
+            $table->date('tglbukti')->nullable();
             $table->bigInteger('nominalpiutang');
             $table->string('invoice_nobukti');
             $table->bigInteger('sisa')->nullable();
@@ -194,15 +194,15 @@ class PelunasanPiutangHeader extends MyModel
             ->whereRaw("ppd.pelunasanpiutang_id = $id");
 
         Schema::create($tempo, function ($table) {
-            $table->bigInteger('pelunasanpiutang_id')->default('0');
+            $table->bigInteger('pelunasanpiutang_id')->nullable();
             $table->string('piutang_nobukti');
-            $table->date('tglbukti')->default('');
+            $table->date('tglbukti')->nullable();
             $table->bigInteger('nominal')->nullable();
             $table->string('keterangan');
-            $table->bigInteger('potongan')->default('0');
+            $table->bigInteger('potongan')->nullable();
             $table->string('coapotongan');
             $table->string('keteranganpotongan');
-            $table->bigInteger('nominallebihbayar')->default('0');
+            $table->bigInteger('nominallebihbayar')->nullable();
             $table->bigInteger('nominalpiutang');
             $table->string('invoice_nobukti');
             $table->bigInteger('sisa')->nullable();
@@ -354,12 +354,12 @@ class PelunasanPiutangHeader extends MyModel
     {
         $temp = '##temp' . rand(1, 10000);
         Schema::create($temp, function ($table) {
-            $table->bigInteger('id')->default('0');
-            $table->string('nobukti', 1000)->default('');
-            $table->date('tglbukti')->default('');
-            $table->string('bank_id')->default('');
+            $table->bigInteger('id')->nullable();
+            $table->string('nobukti', 1000)->nullable();
+            $table->date('tglbukti')->nullable();
+            $table->string('bank_id')->nullable();
             $table->string('modifiedby')->default();
-            $table->dateTime('updated_at')->default('1900/1/1');
+            $table->dateTime('updated_at')->nullable();
             $table->increments('position');
         });
 

@@ -19,16 +19,16 @@ class CreateServiceoutheaderTable extends Migration
         Schema::create('serviceoutheader', function (Blueprint $table) {
             $table->id();
             $table->string('nobukti',50)->unique();
-            $table->date('tglbukti')->default('1900/1/1');
-            $table->longText('keterangan')->default('');            
-            $table->unsignedBigInteger('trado_id')->default('0');
-            $table->date('tglkeluar')->default('1900/1/1');
-            $table->unsignedBigInteger('statusformat')->default(0);  
-            $table->integer('statuscetak')->Length(11)->default('0');
-            $table->string('userbukacetak',50)->default('');
-            $table->date('tglbukacetak')->default('1900/1/1');
-            $table->integer('jumlahcetak')->Length(11)->default('0');            
-            $table->string('modifiedby',50)->default('');
+            $table->date('tglbukti')->nullable();
+            $table->longText('keterangan')->nullable();            
+            $table->unsignedBigInteger('trado_id')->nullable();
+            $table->date('tglkeluar')->nullable();
+            $table->unsignedBigInteger('statusformat')->nullable();  
+            $table->integer('statuscetak')->Length(11)->nullable();
+            $table->string('userbukacetak',50)->nullable();
+            $table->date('tglbukacetak')->nullable();
+            $table->integer('jumlahcetak')->Length(11)->nullable();            
+            $table->string('modifiedby',50)->nullable();
             $table->timestamps();
 
             

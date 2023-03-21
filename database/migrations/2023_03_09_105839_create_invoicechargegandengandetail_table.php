@@ -16,17 +16,17 @@ class CreateInvoicechargegandengandetailTable extends Migration
     {
         Schema::create('invoicechargegandengandetail', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('invoicechargegandengan_id')->default(0);
-            $table->string('nobukti', 50)->default('');
-            $table->string('jobtrucking', 50)->default('');
-            $table->unsignedBigInteger('trado_id')->default(0);
-            $table->date('tgltrip')->default('1900/1/1');
-            $table->integer('jumlahhari')->Length(11)->default('0');
-            $table->double('nominal',15,2)->default('0');
-            $table->double('total',15,2)->default('0');
-            $table->longText('keterangan')->default('');
+            $table->unsignedBigInteger('invoicechargegandengan_id')->nullable();
+            $table->string('nobukti', 50)->nullable();
+            $table->string('jobtrucking', 50)->nullable();
+            $table->unsignedBigInteger('trado_id')->nullable();
+            $table->date('tgltrip')->nullable();
+            $table->integer('jumlahhari')->Length(11)->nullable();
+            $table->double('nominal',15,2)->nullable();
+            $table->double('total',15,2)->nullable();
+            $table->longText('keterangan')->nullable();
 
-            $table->string('modifiedby', 50)->default('');            
+            $table->string('modifiedby', 50)->nullable();            
             $table->timestamps();
 
             $table->foreign('invoicechargegandengan_id', 'invoicechargegandengandetail_invoicechargegandenganheader_invoicechargegandengan_id_foreign')->references('id')->on('invoicechargegandenganheader')->onDelete('cascade');    

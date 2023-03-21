@@ -55,12 +55,12 @@ class UserRole extends MyModel
     { //sesuaikan dengan column index
         $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temp, function ($table) {
-            $table->bigInteger('id')->default('0');
-            $table->unsignedBigInteger('user_id')->default('0');
-            $table->unsignedBigInteger('role_id')->default('0');
-            $table->string('modifiedby', 50)->default('');
-            $table->dateTime('created_at')->default('1900/1/1');
-            $table->dateTime('updated_at')->default('1900/1/1');
+            $table->bigInteger('id')->nullable();
+            $table->unsignedBigInteger('user_id')->nullable();
+            $table->unsignedBigInteger('role_id')->nullable();
+            $table->string('modifiedby', 50)->nullable();
+            $table->dateTime('created_at')->nullable();
+            $table->dateTime('updated_at')->nullable();
             $table->increments('position');
         });
 

@@ -19,14 +19,14 @@ class CreatePenerimaantruckingTable extends Migration
 
         Schema::create('penerimaantrucking', function (Blueprint $table) {
             $table->id();
-            $table->longText('kodepenerimaan')->default('');            
-            $table->longText('keterangan')->default('');            
-            $table->string('coadebet',50)->default('');            
-            $table->string('coakredit',50)->default('');            
-            $table->string('coapostingdebet',50)->default('');            
-            $table->string('coapostingkredit',50)->default('');            
-            $table->unsignedBigInteger('format')->default(0);            
-            $table->string('modifiedby',50)->default('');              
+            $table->longText('kodepenerimaan')->nullable();            
+            $table->longText('keterangan')->nullable();            
+            $table->string('coadebet',50)->nullable();            
+            $table->string('coakredit',50)->nullable();            
+            $table->string('coapostingdebet',50)->nullable();            
+            $table->string('coapostingkredit',50)->nullable();            
+            $table->unsignedBigInteger('format')->nullable();            
+            $table->string('modifiedby',50)->nullable();              
             $table->timestamps();
 
             $table->foreign('coadebet', 'penerimaantrucking_akunpusat_coadebet_foreign')->references('coa')->on('akunpusat');

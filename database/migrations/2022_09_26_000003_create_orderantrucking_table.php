@@ -19,23 +19,23 @@ class CreateOrderantruckingTable extends Migration
         Schema::create('orderantrucking', function (Blueprint $table) {
             $table->id();
             $table->string('nobukti',50)->unique();
-            $table->date('tglbukti')->default('1900/1/1');
-            $table->unsignedBigInteger('container_id')->default(0);
-            $table->unsignedBigInteger('agen_id')->default(0);
-            $table->unsignedBigInteger('jenisorder_id')->default(0);
-            $table->unsignedBigInteger('pelanggan_id')->default(0);
-            $table->unsignedBigInteger('tarif_id')->default(0);
-            $table->double('nominal',15,2)->default(0);
-            $table->string('nojobemkl',50)->default('');
-            $table->string('nocont',50)->default('');
-            $table->string('noseal',50)->default('');
-            $table->string('nojobemkl2',50)->default('');
-            $table->string('nocont2',50)->default('');
-            $table->string('noseal2',50)->default('');
-            $table->integer('statuslangsir')->length(11)->default('');
-            $table->integer('statusperalihan')->length(11)->default('');
-            $table->unsignedBigInteger('statusformat')->default(0);
-            $table->string('modifiedby',50)->default('');
+            $table->date('tglbukti')->nullable();
+            $table->unsignedBigInteger('container_id')->nullable();
+            $table->unsignedBigInteger('agen_id')->nullable();
+            $table->unsignedBigInteger('jenisorder_id')->nullable();
+            $table->unsignedBigInteger('pelanggan_id')->nullable();
+            $table->unsignedBigInteger('tarif_id')->nullable();
+            $table->double('nominal',15,2)->nullable();
+            $table->string('nojobemkl',50)->nullable();
+            $table->string('nocont',50)->nullable();
+            $table->string('noseal',50)->nullable();
+            $table->string('nojobemkl2',50)->nullable();
+            $table->string('nocont2',50)->nullable();
+            $table->string('noseal2',50)->nullable();
+            $table->integer('statuslangsir')->length(11)->nullable();
+            $table->integer('statusperalihan')->length(11)->nullable();
+            $table->unsignedBigInteger('statusformat')->nullable();
+            $table->string('modifiedby',50)->nullable();
             $table->timestamps();
 
 

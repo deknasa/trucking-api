@@ -19,15 +19,15 @@ class CreateBankTable extends Migration
 
         Schema::create('bank', function (Blueprint $table) {
             $table->id();            
-            $table->string('kodebank', 50)->default('');
-            $table->string('namabank', 50)->default('');
-            $table->string('coa', 50)->default('');
-            $table->string('tipe', 50)->default('');
-            $table->integer('statusdefault')->length(11)->default(0);
-            $table->integer('statusaktif')->length(11)->default(0);
-            $table->integer('formatpenerimaan')->length(11)->default(0);
-            $table->integer('formatpengeluaran')->length(11)->default(0);
-            $table->string('modifiedby', 50)->default('');
+            $table->string('kodebank', 50)->nullable();
+            $table->string('namabank', 50)->nullable();
+            $table->string('coa', 50)->nullable();
+            $table->string('tipe', 50)->nullable();
+            $table->integer('statusdefault')->length(11)->nullable();
+            $table->integer('statusaktif')->length(11)->nullable();
+            $table->integer('formatpenerimaan')->length(11)->nullable();
+            $table->integer('formatpengeluaran')->length(11)->nullable();
+            $table->string('modifiedby', 50)->nullable();
             $table->timestamps();
 
             $table->foreign('coa', 'bank_akunpusat_coa_foreign')->references('coa')->on('akunpusat');

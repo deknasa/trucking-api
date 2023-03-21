@@ -194,7 +194,7 @@ class GajiSupirHeader extends MyModel
         Schema::create($temp, function ($table) {
             $table->bigInteger('id');
             $table->string('nobuktitrip')->nullable();
-            $table->date('tglbuktisp')->default('');
+            $table->date('tglbuktisp')->nullable();
             $table->string('trado_id');
             $table->string('dari_id');
             $table->string('sampai_id');
@@ -311,7 +311,7 @@ class GajiSupirHeader extends MyModel
         Schema::create($temp, function ($table) {
             $table->bigInteger('id')->nullable();
             $table->string('nobuktitrip')->nullable();
-            $table->date('tglbuktisp')->default('')->nullable();
+            $table->date('tglbuktisp')->nullable()->nullable();
             $table->string('trado_id')->nullable();
             $table->string('dari_id')->nullable();
             $table->string('sampai_id')->nullable();
@@ -391,21 +391,21 @@ class GajiSupirHeader extends MyModel
     {
         $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temp, function ($table) {
-            $table->bigInteger('id')->default('0');
-            $table->string('nobukti', 1000)->default('');
-            $table->date('tglbukti')->default('');
-            $table->string('supir_id', 1000)->default('');
-            $table->bigInteger('nominal')->default('0');
-            $table->date('tgldari')->default('');
-            $table->date('tglsampai')->default('');
-            $table->bigInteger('total')->default('0');
-            $table->string('statuscetak', 1000)->default('');
-            $table->string('userbukacetak', 50)->default('');
-            $table->date('tglbukacetak')->default('1900/1/1');
-            $table->integer('jumlahcetak')->Length(11)->default('0');
+            $table->bigInteger('id')->nullable();
+            $table->string('nobukti', 1000)->nullable();
+            $table->date('tglbukti')->nullable();
+            $table->string('supir_id', 1000)->nullable();
+            $table->bigInteger('nominal')->nullable();
+            $table->date('tgldari')->nullable();
+            $table->date('tglsampai')->nullable();
+            $table->bigInteger('total')->nullable();
+            $table->string('statuscetak', 1000)->nullable();
+            $table->string('userbukacetak', 50)->nullable();
+            $table->date('tglbukacetak')->nullable();
+            $table->integer('jumlahcetak')->Length(11)->nullable();
             $table->string('modifiedby')->default();
-            $table->dateTime('created_at')->default('1900/1/1');
-            $table->dateTime('updated_at')->default('1900/1/1');
+            $table->dateTime('created_at')->nullable();
+            $table->dateTime('updated_at')->nullable();
             $table->increments('position');
         });
 
@@ -534,7 +534,7 @@ class GajiSupirHeader extends MyModel
         Schema::create($temp, function ($table) {
             $table->bigInteger('id')->nullable();
             $table->string('nobuktitrip')->nullable();
-            $table->date('tglbuktisp')->default('')->nullable();
+            $table->date('tglbuktisp')->nullable()->nullable();
             $table->string('trado_id')->nullable();
             $table->string('dari_id')->nullable();
             $table->string('sampai_id')->nullable();
@@ -660,7 +660,7 @@ class GajiSupirHeader extends MyModel
         Schema::create($temp, function ($table) {
             $table->bigInteger('id');
             $table->string('nobuktitrip');
-            $table->date('tglbuktisp')->default('');
+            $table->date('tglbuktisp')->nullable();
             $table->string('trado_id');
             $table->string('dari_id');
             $table->string('sampai_id');

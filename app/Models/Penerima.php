@@ -108,8 +108,8 @@ class Penerima extends MyModel
 
         $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdefault, function ($table) {
-            $table->unsignedBigInteger('statusaktif')->default(0);
-            $table->unsignedBigInteger('statuskaryawan')->default(0);
+            $table->unsignedBigInteger('statusaktif')->nullable();
+            $table->unsignedBigInteger('statuskaryawan')->nullable();
         });
 
         $status = Parameter::from(
@@ -182,15 +182,15 @@ class Penerima extends MyModel
     {
         $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temp, function ($table) {
-            $table->bigInteger('id')->default('0');
-            $table->string('namapenerima', 1000)->default('');
-            $table->string('npwp', 1000)->default('');
-            $table->string('noktp', 1000)->default('');
-            $table->string('statusaktif', 1000)->default('');
-            $table->string('statuskaryawan', 1000)->default('');
-            $table->string('modifiedby', 50)->default('');
-            $table->dateTime('created_at')->default('1900/1/1');
-            $table->dateTime('updated_at')->default('1900/1/1');
+            $table->bigInteger('id')->nullable();
+            $table->string('namapenerima', 1000)->nullable();
+            $table->string('npwp', 1000)->nullable();
+            $table->string('noktp', 1000)->nullable();
+            $table->string('statusaktif', 1000)->nullable();
+            $table->string('statuskaryawan', 1000)->nullable();
+            $table->string('modifiedby', 50)->nullable();
+            $table->dateTime('created_at')->nullable();
+            $table->dateTime('updated_at')->nullable();
             $table->increments('position');
         });
 

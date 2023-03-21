@@ -19,12 +19,12 @@ class CreateAbsensisupirapprovaldetailTable extends Migration
         
         Schema::create('absensisupirapprovaldetail', function (Blueprint $table) {
             $table->id();
-            $table->string('nobukti',50)->default('');
-            $table->unsignedBigInteger('absensisupirapproval_id')->default(0);
-            $table->unsignedBigInteger('trado_id')->default(0);
-            $table->unsignedBigInteger('supir_id')->default(0);
-            $table->unsignedBigInteger('supirserap_id')->default(0);
-            $table->string('modifiedby', 200)->default('');
+            $table->string('nobukti',50)->nullable();
+            $table->unsignedBigInteger('absensisupirapproval_id')->nullable();
+            $table->unsignedBigInteger('trado_id')->nullable();
+            $table->unsignedBigInteger('supir_id')->nullable();
+            $table->unsignedBigInteger('supirserap_id')->nullable();
+            $table->string('modifiedby', 200)->nullable();
             $table->timestamps();
 
 

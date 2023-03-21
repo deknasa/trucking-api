@@ -59,10 +59,10 @@ class Acl extends MyModel
         $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
         Schema::create($temp, function ($table) {
-            $table->bigInteger('id')->default('0');
-            $table->string('modifiedby', 30)->default('');
-            $table->dateTime('created_at')->default('1900/1/1');
-            $table->dateTime('updated_at')->default('1900/1/1');
+            $table->bigInteger('id')->nullable();
+            $table->string('modifiedby', 30)->nullable();
+            $table->dateTime('created_at')->nullable();
+            $table->dateTime('updated_at')->nullable();
             $table->increments('position');
         });
 

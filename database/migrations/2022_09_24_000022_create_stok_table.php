@@ -19,20 +19,20 @@ class CreateStokTable extends Migration
         
         Schema::create('stok', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('jenistrado_id')->default('0');
-            $table->unsignedBigInteger('kelompok_id')->default('0');
-            $table->unsignedBigInteger('subkelompok_id')->default('0');
-            $table->unsignedBigInteger('kategori_id')->default('0');
-            $table->unsignedBigInteger('merk_id')->default('0');
-            $table->string('namastok',200)->default('');
-            $table->integer('statusaktif')->length(11)->default('0');
-            $table->integer('statusreuse')->length(11)->default('0');
-            $table->double('qtymin',15,2)->default('0');
-            $table->double('qtymax',15,2)->default('0');
-            $table->longText('keterangan')->default('');
-            $table->longText('gambar')->default('');
-            $table->longText('namaterpusat')->default('');
-            $table->string('modifiedby',50)->default('');
+            $table->unsignedBigInteger('jenistrado_id')->nullable();
+            $table->unsignedBigInteger('kelompok_id')->nullable();
+            $table->unsignedBigInteger('subkelompok_id')->nullable();
+            $table->unsignedBigInteger('kategori_id')->nullable();
+            $table->unsignedBigInteger('merk_id')->nullable();
+            $table->string('namastok',200)->nullable();
+            $table->integer('statusaktif')->length(11)->nullable();
+            $table->integer('statusreuse')->length(11)->nullable();
+            $table->double('qtymin',15,2)->nullable();
+            $table->double('qtymax',15,2)->nullable();
+            $table->longText('keterangan')->nullable();
+            $table->longText('gambar')->nullable();
+            $table->longText('namaterpusat')->nullable();
+            $table->string('modifiedby',50)->nullable();
             $table->timestamps();
 
             $table->foreign('jenistrado_id', 'stok_jenistrado_jenistrado_id_foreign')->references('id')->on('jenistrado');

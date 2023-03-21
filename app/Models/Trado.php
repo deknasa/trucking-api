@@ -246,9 +246,9 @@ class Trado extends MyModel
 
         $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdefault, function ($table) {
-            $table->unsignedBigInteger('statusaktif')->default(0);
-            $table->unsignedBigInteger('statusgerobak')->default(0);
-            $table->unsignedBigInteger('statusjenisplat')->default(0);
+            $table->unsignedBigInteger('statusaktif')->nullable();
+            $table->unsignedBigInteger('statusgerobak')->nullable();
+            $table->unsignedBigInteger('statusjenisplat')->nullable();
         });
 
         // AKTIF
@@ -403,55 +403,55 @@ class Trado extends MyModel
     { //sesuaikan dengan column index
         $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temp, function ($table) {
-            $table->bigInteger('id')->default('0');
-            $table->longText('keterangan')->default('');
-            $table->longText('kodetrado')->default('');
-            $table->string('statusaktif')->default('');
-            $table->double('kmawal', 15, 2)->default(0);
-            $table->double('kmakhirgantioli', 15, 2)->default(0);
-            $table->date('tglakhirgantioli')->default('1900/1/1');
-            $table->date('tglstnkmati')->default('1900/1/1');
-            $table->date('tglasuransimati')->default('1900/1/1');
-            $table->string('tahun', 40)->default('');
-            $table->string('akhirproduksi', 40)->default('');
-            $table->string('merek', 40)->default('');
-            $table->string('norangka', 40)->default('');
-            $table->string('nomesin', 40)->default('');
-            $table->string('nama', 40)->default('');
-            $table->string('nostnk', 30)->default('');
-            $table->string('alamatstnk', 30)->default('');
-            $table->date('tglstandarisasi')->default('1900/1/1');
-            $table->date('tglserviceopname')->default('1900/1/1');
-            $table->string('statusstandarisasi')->default('');
-            $table->string('keteranganprogressstandarisasi', 100)->default('');
-            $table->integer('statusjenisplat')->length(11)->default(0);
-            $table->date('tglspeksimati')->default('1900/1/1');
-            $table->date('tglpajakstnk')->default('1900/1/1');
-            $table->date('tglgantiakiterakhir')->default('1900/1/1');
-            $table->string('statusmutasi')->default('');
-            $table->string('statusvalidasikendaraan')->default('');
-            $table->string('tipe', 30)->default('');
-            $table->string('jenis', 30)->default('');
-            $table->integer('isisilinder')->length(11)->default(0);
-            $table->string('warna', 30)->default('');
-            $table->string('jenisbahanbakar', 30)->default('');
-            $table->integer('jumlahsumbu')->length(11)->default(0);
-            $table->integer('jumlahroda')->length(11)->default(0);
-            $table->string('model', 50)->default('');
-            $table->string('nobpkb', 50)->default('');
-            $table->integer('statusmobilstoring')->length(11)->default(0);
-            $table->string('mandor_id')->default('');
-            $table->integer('jumlahbanserap')->length(11)->default(0);
-            $table->integer('statusappeditban')->length(11)->default(0);
-            $table->integer('statuslewatvalidasi')->length(11)->default(0);
+            $table->bigInteger('id')->nullable();
+            $table->longText('keterangan')->nullable();
+            $table->longText('kodetrado')->nullable();
+            $table->string('statusaktif')->nullable();
+            $table->double('kmawal', 15, 2)->nullable();
+            $table->double('kmakhirgantioli', 15, 2)->nullable();
+            $table->date('tglakhirgantioli')->nullable();
+            $table->date('tglstnkmati')->nullable();
+            $table->date('tglasuransimati')->nullable();
+            $table->string('tahun', 40)->nullable();
+            $table->string('akhirproduksi', 40)->nullable();
+            $table->string('merek', 40)->nullable();
+            $table->string('norangka', 40)->nullable();
+            $table->string('nomesin', 40)->nullable();
+            $table->string('nama', 40)->nullable();
+            $table->string('nostnk', 30)->nullable();
+            $table->string('alamatstnk', 30)->nullable();
+            $table->date('tglstandarisasi')->nullable();
+            $table->date('tglserviceopname')->nullable();
+            $table->string('statusstandarisasi')->nullable();
+            $table->string('keteranganprogressstandarisasi', 100)->nullable();
+            $table->integer('statusjenisplat')->length(11)->nullable();
+            $table->date('tglspeksimati')->nullable();
+            $table->date('tglpajakstnk')->nullable();
+            $table->date('tglgantiakiterakhir')->nullable();
+            $table->string('statusmutasi')->nullable();
+            $table->string('statusvalidasikendaraan')->nullable();
+            $table->string('tipe', 30)->nullable();
+            $table->string('jenis', 30)->nullable();
+            $table->integer('isisilinder')->length(11)->nullable();
+            $table->string('warna', 30)->nullable();
+            $table->string('jenisbahanbakar', 30)->nullable();
+            $table->integer('jumlahsumbu')->length(11)->nullable();
+            $table->integer('jumlahroda')->length(11)->nullable();
+            $table->string('model', 50)->nullable();
+            $table->string('nobpkb', 50)->nullable();
+            $table->integer('statusmobilstoring')->length(11)->nullable();
+            $table->string('mandor_id')->nullable();
+            $table->integer('jumlahbanserap')->length(11)->nullable();
+            $table->integer('statusappeditban')->length(11)->nullable();
+            $table->integer('statuslewatvalidasi')->length(11)->nullable();
 
-            $table->string('photostnk', 1500)->default('');
-            $table->string('photobpkb', 1500)->default('');
-            $table->string('phototrado', 1500)->default('');
+            $table->string('photostnk', 1500)->nullable();
+            $table->string('photobpkb', 1500)->nullable();
+            $table->string('phototrado', 1500)->nullable();
 
-            $table->string('modifiedby', 50)->default('');
-            $table->dateTime('created_at')->default('1900/1/1');
-            $table->dateTime('updated_at')->default('1900/1/1');
+            $table->string('modifiedby', 50)->nullable();
+            $table->dateTime('created_at')->nullable();
+            $table->dateTime('updated_at')->nullable();
             $table->increments('position');
         });
 

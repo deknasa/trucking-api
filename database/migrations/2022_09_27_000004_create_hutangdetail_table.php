@@ -18,14 +18,14 @@ class CreateHutangdetailTable extends Migration
 
         Schema::create('hutangdetail', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('hutang_id')->default(0);            
-            $table->string('nobukti', 50)->default('');            
-            $table->date('tgljatuhtempo')->default('1900/1/1');            
-            $table->double('total',15,2)->default('0');            
-            $table->double('cicilan',15,2)->default('0');            
-            $table->longText('keterangan')->default('');            
-            $table->double('totalbayar',15,2)->default('0');            
-            $table->string('modifiedby', 50)->default('');            
+            $table->unsignedBigInteger('hutang_id')->nullable();            
+            $table->string('nobukti', 50)->nullable();            
+            $table->date('tgljatuhtempo')->nullable();            
+            $table->double('total',15,2)->nullable();            
+            $table->double('cicilan',15,2)->nullable();            
+            $table->longText('keterangan')->nullable();            
+            $table->double('totalbayar',15,2)->nullable();            
+            $table->string('modifiedby', 50)->nullable();            
             $table->timestamps();
 
 

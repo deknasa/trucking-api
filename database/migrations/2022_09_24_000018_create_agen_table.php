@@ -18,24 +18,24 @@ class CreateAgenTable extends Migration
         
         Schema::create('agen', function (Blueprint $table) {
             $table->id();
-            $table->string('kodeagen', 30)->default('');
-            $table->string('namaagen', 100)->default('');
-            $table->longText('keterangan')->default('');
-            $table->integer('statusaktif')->length(11)->default(0);            
-            $table->string('coa', 50)->default('');
-            $table->string('coapendapatan', 50)->default('');
-            $table->string('namaperusahaan', 100)->default('');
-            $table->string('alamat', 250)->default('');
-            $table->string('notelp', 100)->default('');
-            $table->string('nohp', 100)->default('');
-            $table->string('contactperson', 100)->default('');
-            $table->double('top', 15,2)->default(0);
-            $table->integer('statusapproval')->length(11)->default(0);            
-            $table->string('userapproval', 30)->default('');
-            $table->date('tglapproval')->default('1900/1/1');
-            $table->integer('statustas')->length(11)->default(0);            
-            $table->string('jenisemkl', 30)->default('');
-            $table->string('modifiedby', 50)->default('');
+            $table->string('kodeagen', 30)->nullable();
+            $table->string('namaagen', 100)->nullable();
+            $table->longText('keterangan')->nullable();
+            $table->integer('statusaktif')->length(11)->nullable();            
+            $table->string('coa', 50)->nullable();
+            $table->string('coapendapatan', 50)->nullable();
+            $table->string('namaperusahaan', 100)->nullable();
+            $table->string('alamat', 250)->nullable();
+            $table->string('notelp', 100)->nullable();
+            $table->string('nohp', 100)->nullable();
+            $table->string('contactperson', 100)->nullable();
+            $table->double('top', 15,2)->nullable();
+            $table->integer('statusapproval')->length(11)->nullable();            
+            $table->string('userapproval', 30)->nullable();
+            $table->date('tglapproval')->nullable();
+            $table->integer('statustas')->length(11)->nullable();            
+            $table->string('jenisemkl', 30)->nullable();
+            $table->string('modifiedby', 50)->nullable();
             $table->timestamps();
         });
     }

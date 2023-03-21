@@ -118,12 +118,12 @@ class UpahRitasiRincian extends MyModel
 
         $tempdata = '##tempdata' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdata, function ($table) {
-            $table->unsignedBigInteger('id')->default(0);
-            $table->unsignedBigInteger('container_id')->default(0);
-            $table->string('container', 1000)->default('');
-            $table->string('litercontainer', 1000)->default(0);
-            $table->double('nominal', 15, 2)->default(0);
-            $table->double('liter', 10, 2)->default(0);
+            $table->unsignedBigInteger('id')->nullable();
+            $table->unsignedBigInteger('container_id')->nullable();
+            $table->string('container', 1000)->nullable();
+            $table->string('litercontainer', 1000)->nullable();
+            $table->double('nominal', 15, 2)->nullable();
+            $table->double('liter', 10, 2)->nullable();
         });
 
         $query = DB::table('container')->from(DB::raw("container with (readuncommitted)"))
@@ -157,8 +157,8 @@ class UpahRitasiRincian extends MyModel
 
             $tempupah = '##tempupah' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
             Schema::create($tempupah, function ($table) {
-                $table->unsignedBigInteger('id')->default(0);
-                $table->string('tujuan')->default('');
+                $table->unsignedBigInteger('id')->nullable();
+                $table->string('tujuan')->nullable();
             });
 
             $querytempupah = DB::table('upahritasi')->from(DB::raw("upahritasi with (readuncommitted)"))
@@ -176,7 +176,7 @@ class UpahRitasiRincian extends MyModel
 
             $tempdatagroup = '##tempdatagroup' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
             Schema::create($tempdatagroup, function ($table) {
-                $table->unsignedBigInteger('container_id')->default(0);
+                $table->unsignedBigInteger('container_id')->nullable();
             });
 
             $querydatagroup =  DB::table($tempdata)->from(
@@ -284,8 +284,8 @@ class UpahRitasiRincian extends MyModel
 
         Schema::create($temp, function ($table) {
             $table->increments('id');
-            $table->string('container')->default('');
-            $table->string('containerId')->default('0');
+            $table->string('container')->nullable();
+            $table->string('containerId')->nullable();
         });
 
         DB::table($temp)->insertUsing([

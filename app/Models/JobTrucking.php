@@ -71,7 +71,7 @@ class JobTrucking extends MyModel
 
         $tempselesai = '##tempselesai' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempselesai, function ($table) {
-            $table->string('jobtrucking', 1000)->default('');
+            $table->string('jobtrucking', 1000)->nullable();
         });
 
         if (isset($query)) {

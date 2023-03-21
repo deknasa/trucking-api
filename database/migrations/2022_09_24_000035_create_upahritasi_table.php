@@ -19,15 +19,15 @@ class CreateUpahritasiTable extends Migration
 
         Schema::create('upahritasi', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('parent_id')->default('0');
-            $table->unsignedBigInteger('tarif_id')->default('0');
-            $table->unsignedBigInteger('kotadari_id')->default('0');
-            $table->unsignedBigInteger('kotasampai_id')->default('0');
-            $table->double('jarak',15,2)->default('0');
-            $table->unsignedBigInteger('zona_id')->default('0');
-            $table->integer('statusaktif')->length(11)->default('0');
-            $table->date('tglmulaiberlaku')->default('1900/1/1');
-            $table->string('modifiedby',50)->Default('');            
+            $table->unsignedBigInteger('parent_id')->nullable();
+            $table->unsignedBigInteger('tarif_id')->nullable();
+            $table->unsignedBigInteger('kotadari_id')->nullable();
+            $table->unsignedBigInteger('kotasampai_id')->nullable();
+            $table->double('jarak',15,2)->nullable();
+            $table->unsignedBigInteger('zona_id')->nullable();
+            $table->integer('statusaktif')->length(11)->nullable();
+            $table->date('tglmulaiberlaku')->nullable();
+            $table->string('modifiedby',50)->nullable();            
             $table->timestamps();
 
 

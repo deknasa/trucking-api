@@ -186,27 +186,27 @@ class PengeluaranStokHeader extends MyModel
         $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
         Schema::create($temp, function ($table) {
-            $table->bigInteger('id')->default('0');
+            $table->bigInteger('id')->nullable();
             $table->string('nobukti',50)->unique();
-            $table->date('tglbukti',50)->default('1900/1/1');
-            $table->unsignedBigInteger('pengeluaranstok_id')->default(0);            
-            $table->unsignedBigInteger('trado_id')->default('0');
-            $table->unsignedBigInteger('gudang_id')->default('0');
-            $table->unsignedBigInteger('supir_id')->default('0');
-            $table->unsignedBigInteger('supplier_id')->default('0');
-            $table->string('pengeluaranstok_nobukti',50)->default('');
-            $table->string('penerimaanstok_nobukti',50)->default('');
-            $table->string('penerimaan_nobukti',50)->default('');
-            $table->string('servicein_nobukti',50)->default('');
-            $table->unsignedBigInteger('kerusakan_id')->default('0');
-            $table->unsignedBigInteger('statusformat')->default(0);  
-            $table->unsignedBigInteger('statuspotongretur')->default(0);  
-            $table->unsignedBigInteger('bank_id')->default(0);  
-            $table->date('tglkasmasuk')->default('1900/1/1'); 
-            $table->string('modifiedby',50)->default('');
+            $table->date('tglbukti',50)->nullable();
+            $table->unsignedBigInteger('pengeluaranstok_id')->nullable();            
+            $table->unsignedBigInteger('trado_id')->nullable();
+            $table->unsignedBigInteger('gudang_id')->nullable();
+            $table->unsignedBigInteger('supir_id')->nullable();
+            $table->unsignedBigInteger('supplier_id')->nullable();
+            $table->string('pengeluaranstok_nobukti',50)->nullable();
+            $table->string('penerimaanstok_nobukti',50)->nullable();
+            $table->string('penerimaan_nobukti',50)->nullable();
+            $table->string('servicein_nobukti',50)->nullable();
+            $table->unsignedBigInteger('kerusakan_id')->nullable();
+            $table->unsignedBigInteger('statusformat')->nullable();  
+            $table->unsignedBigInteger('statuspotongretur')->nullable();  
+            $table->unsignedBigInteger('bank_id')->nullable();  
+            $table->date('tglkasmasuk')->nullable(); 
+            $table->string('modifiedby',50)->nullable();
             $table->increments('position');
-            $table->dateTime('created_at')->default('1900/1/1');
-            $table->dateTime('updated_at')->default('1900/1/1');
+            $table->dateTime('created_at')->nullable();
+            $table->dateTime('updated_at')->nullable();
         });
 
         $query = DB::table($modelTable);

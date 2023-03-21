@@ -19,21 +19,21 @@ class CreatePelunasanpiutangheaderTable extends Migration
         Schema::create('pelunasanpiutangheader', function (Blueprint $table) {
             $table->id();
             $table->string('nobukti',50)->unique();
-            $table->date('tglbukti')->default('1900/1/1');
-            $table->longText('keterangan')->default('');            
-            $table->unsignedBigInteger('bank_id')->default('0');
-            $table->unsignedBigInteger('agen_id')->default('0');
-            $table->unsignedBigInteger('cabang_id')->default('0');
-            $table->unsignedBigInteger('alatbayar_id')->default('0');
-            $table->unsignedBigInteger('pelanggan_id')->default('0');
-            $table->string('penerimaangiro_nobukti',50)->default('');
-            $table->string('penerimaan_nobukti',50)->default('');
-            $table->string('notakredit_nobukti',50)->default('');
-            $table->string('notadebet_nobukti',50)->default('');
-            $table->date('tglcair')->default('1900/1/1');
-            $table->string('nowarkat',50)->default('');
-            $table->unsignedBigInteger('statusformat')->default(0);
-            $table->string('modifiedby',50)->default('');
+            $table->date('tglbukti')->nullable();
+            $table->longText('keterangan')->nullable();            
+            $table->unsignedBigInteger('bank_id')->nullable();
+            $table->unsignedBigInteger('agen_id')->nullable();
+            $table->unsignedBigInteger('cabang_id')->nullable();
+            $table->unsignedBigInteger('alatbayar_id')->nullable();
+            $table->unsignedBigInteger('pelanggan_id')->nullable();
+            $table->string('penerimaangiro_nobukti',50)->nullable();
+            $table->string('penerimaan_nobukti',50)->nullable();
+            $table->string('notakredit_nobukti',50)->nullable();
+            $table->string('notadebet_nobukti',50)->nullable();
+            $table->date('tglcair')->nullable();
+            $table->string('nowarkat',50)->nullable();
+            $table->unsignedBigInteger('statusformat')->nullable();
+            $table->string('modifiedby',50)->nullable();
             $table->timestamps();
 
             $table->foreign('bank_id', 'pelunasanpiutangheader_bank_bank_id_foreign')->references('id')->on('bank');

@@ -18,9 +18,9 @@ class CreateSatuanTable extends Migration
         
         Schema::create('satuan', function (Blueprint $table) {
             $table->id();
-            $table->string('satuan',50)->default('');
-            $table->integer('statusaktif')->length(11)->default('');
-            $table->string('modifiedby',50)->default('');
+            $table->string('satuan',50)->nullable();
+            $table->integer('statusaktif')->length(11)->nullable();
+            $table->string('modifiedby',50)->nullable();
             $table->timestamps();
         });
     }

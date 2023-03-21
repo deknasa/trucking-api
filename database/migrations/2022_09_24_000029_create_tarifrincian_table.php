@@ -18,10 +18,10 @@ class CreateTarifrincianTable extends Migration
 
         Schema::create('tarifrincian', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('tarif_id')->default('0');
-            $table->unsignedBigInteger('container_id')->default('0');
-            $table->double('nominal',15,2)->default('0');
-            $table->string('modifiedby',50)->Default('');                 
+            $table->unsignedBigInteger('tarif_id')->nullable();
+            $table->unsignedBigInteger('container_id')->nullable();
+            $table->double('nominal',15,2)->nullable();
+            $table->string('modifiedby',50)->nullable();                 
             $table->timestamps();
 
             $table->foreign('tarif_id', 'tarif_tarif_tarif_id_foreign')->references('id')->on('tarif')->onDelete('cascade');

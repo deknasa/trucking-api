@@ -31,8 +31,8 @@ class ProsesGajiSupirHeader extends MyModel
 
         $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdefault, function ($table) {
-            $table->unsignedBigInteger('bank_id')->default(0);
-            $table->string('bank', 255)->default('');
+            $table->unsignedBigInteger('bank_id')->nullable();
+            $table->string('bank', 255)->nullable();
         });
 
 
@@ -284,10 +284,10 @@ class ProsesGajiSupirHeader extends MyModel
         Schema::create($temp, function ($table) {
             $table->bigInteger('idric');
             $table->string('nobuktiric');
-            $table->date('tglbuktiric')->default('');
+            $table->date('tglbuktiric')->nullable();
             $table->string('supir_id');
-            $table->date('tgldariric')->default('');
-            $table->date('tglsampairic')->default('');
+            $table->date('tgldariric')->nullable();
+            $table->date('tglsampairic')->nullable();
             $table->bigInteger('borongan')->nullable();
             $table->bigInteger('uangjalan')->nullable();
             $table->bigInteger('bbm')->nullable();
@@ -363,22 +363,22 @@ class ProsesGajiSupirHeader extends MyModel
     {
         $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temp, function ($table) {
-            $table->bigInteger('id')->default('0');
-            $table->string('nobukti', 1000)->default('');
-            $table->date('tglbukti')->default('');
-            $table->date('tgldari')->default('');
-            $table->date('tglsampai')->default('');
-            $table->string('statusapproval', 1000)->default('');
-            $table->string('userapproval', 1000)->default('');
-            $table->date('tglapproval')->default('');
-            $table->string('statuscetak', 1000)->default('');
-            $table->string('userbukacetak', 50)->default('');
-            $table->date('tglbukacetak')->default('1900/1/1');
-            $table->integer('jumlahcetak')->Length(11)->default('0');
-            $table->date('periode')->default('');
+            $table->bigInteger('id')->nullable();
+            $table->string('nobukti', 1000)->nullable();
+            $table->date('tglbukti')->nullable();
+            $table->date('tgldari')->nullable();
+            $table->date('tglsampai')->nullable();
+            $table->string('statusapproval', 1000)->nullable();
+            $table->string('userapproval', 1000)->nullable();
+            $table->date('tglapproval')->nullable();
+            $table->string('statuscetak', 1000)->nullable();
+            $table->string('userbukacetak', 50)->nullable();
+            $table->date('tglbukacetak')->nullable();
+            $table->integer('jumlahcetak')->Length(11)->nullable();
+            $table->date('periode')->nullable();
             $table->string('modifiedby')->default();
-            $table->dateTime('created_at')->default('1900/1/1');
-            $table->dateTime('updated_at')->default('1900/1/1');
+            $table->dateTime('created_at')->nullable();
+            $table->dateTime('updated_at')->nullable();
             $table->increments('position');
         });
 
@@ -468,10 +468,10 @@ class ProsesGajiSupirHeader extends MyModel
         Schema::create($temp, function ($table) {
             $table->bigInteger('idric');
             $table->string('nobuktiric');
-            $table->date('tglbuktiric')->default('');
+            $table->date('tglbuktiric')->nullable();
             $table->string('supir_id');
-            $table->date('tgldariric')->default('');
-            $table->date('tglsampairic')->default('');
+            $table->date('tgldariric')->nullable();
+            $table->date('tglsampairic')->nullable();
             $table->bigInteger('borongan')->nullable();
             $table->bigInteger('uangjalan')->nullable();
             $table->bigInteger('bbm')->nullable();

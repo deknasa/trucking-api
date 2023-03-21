@@ -19,13 +19,13 @@ class CreateProsesAbsensiSupirTable extends Migration
         Schema::create('prosesabsensisupir', function (Blueprint $table) {
             $table->id();
             $table->string('nobukti', 50)->unique();
-            $table->date('tglbukti')->default('1900/1/1');
-            $table->longText('keterangan', 8000)->default('');
+            $table->date('tglbukti')->nullable();
+            $table->longText('keterangan', 8000)->nullable();
             $table->string('pengeluaran_nobukti', 50)->unique();
             $table->string('absensisupir_nobukti', 50)->unique();
-            $table->double('nominal',15,2)->default(0);
-            $table->unsignedBigInteger('statusformat')->default(0);            
-            $table->string('modifiedby', 50)->default('');
+            $table->double('nominal',15,2)->nullable();
+            $table->unsignedBigInteger('statusformat')->nullable();            
+            $table->string('modifiedby', 50)->nullable();
             $table->timestamps();
 
 

@@ -18,11 +18,11 @@ class CreateServiceindetailTable extends Migration
 
         Schema::create('serviceindetail', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('servicein_id')->default('0');
-            $table->string('nobukti',50)->default('');
-            $table->unsignedBigInteger('mekanik_id')->default('0');
-            $table->longText('keterangan')->default('');
-            $table->string('modifiedby',50)->default('');
+            $table->unsignedBigInteger('servicein_id')->nullable();
+            $table->string('nobukti',50)->nullable();
+            $table->unsignedBigInteger('mekanik_id')->nullable();
+            $table->longText('keterangan')->nullable();
+            $table->string('modifiedby',50)->nullable();
             $table->timestamps();
 
             $table->foreign('servicein_id', 'serviceindetail_serviceinheader_servicein_id_foreign')->references('id')->on('serviceinheader')->onDelete('cascade');    

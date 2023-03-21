@@ -19,21 +19,21 @@ class CreateProsesuangjalansupirdetailTable extends Migration
 
         Schema::create('prosesuangjalansupirdetail', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('prosesuangjalansupir_id')->default('0');
-            $table->string('nobukti', 50)->default('');
-            $table->unsignedBigInteger('penerimaantrucking_bank_id')->default(0);
-            $table->date('penerimaantrucking_tglbukti')->default('1900/1/1');
-            $table->string('penerimaantrucking_nobukti', 50)->default('');
-            $table->unsignedBigInteger('pengeluarantrucking_bank_id')->default(0);
-            $table->date('pengeluarantrucking_tglbukti')->default('1900/1/1');
-            $table->string('pengeluarantrucking_nobukti', 50)->default('');
-            $table->unsignedBigInteger('pengembaliankasgantung_bank_id')->default(0);
-            $table->date('pengembaliankasgantung_tglbukti')->default('1900/1/1');
-            $table->string('pengembaliankasgantung_nobukti', 50)->default('');
-            $table->unsignedBigInteger('statusprosesuangjalan')->default(0);
-            $table->double('nominal', 15, 2)->default('0');
-            $table->longText('keterangan')->default('');
-            $table->string('modifiedby', 50)->default('');
+            $table->unsignedBigInteger('prosesuangjalansupir_id')->nullable();
+            $table->string('nobukti', 50)->nullable();
+            $table->unsignedBigInteger('penerimaantrucking_bank_id')->nullable();
+            $table->date('penerimaantrucking_tglbukti')->nullable();
+            $table->string('penerimaantrucking_nobukti', 50)->nullable();
+            $table->unsignedBigInteger('pengeluarantrucking_bank_id')->nullable();
+            $table->date('pengeluarantrucking_tglbukti')->nullable();
+            $table->string('pengeluarantrucking_nobukti', 50)->nullable();
+            $table->unsignedBigInteger('pengembaliankasgantung_bank_id')->nullable();
+            $table->date('pengembaliankasgantung_tglbukti')->nullable();
+            $table->string('pengembaliankasgantung_nobukti', 50)->nullable();
+            $table->unsignedBigInteger('statusprosesuangjalan')->nullable();
+            $table->double('nominal', 15, 2)->nullable();
+            $table->longText('keterangan')->nullable();
+            $table->string('modifiedby', 50)->nullable();
             $table->timestamps();
 
             $table->foreign('prosesuangjalansupir_id', 'prosesuangjalansupirdetail_jurnalumumheader_jurnalumum_id_foreign')->references('id')->on('prosesuangjalansupirheader')->onDelete('cascade');

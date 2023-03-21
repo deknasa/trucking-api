@@ -17,15 +17,15 @@ class CreatePengeluaranstokdetailfifoTable extends Migration
         Schema::create('pengeluaranstokdetailfifo', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('pengeluaranstokheader_id');
-            $table->string('nobukti',50)->default('');
-            $table->unsignedBigInteger('stok_id')->default('0');
-            $table->unsignedBigInteger('gudang_id')->default('0');
-            $table->unsignedBigInteger('urut')->default('0');
-            $table->double('qty',15,2)->default('0');
-            $table->string('penerimaanstokheader_nobukti',50)->default('');
-            $table->double('penerimaanstok_qty',15,2)->default('0');
-            $table->double('penerimaanstok_harga',15,2)->default('0');
-            $table->string('modifiedby',50)->default('');            
+            $table->string('nobukti',50)->nullable();
+            $table->unsignedBigInteger('stok_id')->nullable();
+            $table->unsignedBigInteger('gudang_id')->nullable();
+            $table->unsignedBigInteger('urut')->nullable();
+            $table->double('qty',15,2)->nullable();
+            $table->string('penerimaanstokheader_nobukti',50)->nullable();
+            $table->double('penerimaanstok_qty',15,2)->nullable();
+            $table->double('penerimaanstok_harga',15,2)->nullable();
+            $table->string('modifiedby',50)->nullable();            
             $table->timestamps();
 
             $table->foreign('pengeluaranstokheader_id', 'pengeluaranstokdetailfifo_pengeluaranstokheader_penerimaanstokheader_id_foreign')->references('id')->on('pengeluaranstokheader')->onDelete('cascade');  

@@ -18,13 +18,13 @@ class CreateRekappenerimaandetailTable extends Migration
 
         Schema::create('rekappenerimaandetail', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('rekappenerimaan_id')->default('0');
-            $table->string('nobukti',50)->default('');
-            $table->string('penerimaan_nobukti',50)->default('');
-            $table->date('tgltransaksi')->default('1900/1/1');
-            $table->double('nominal',15,2)->default('0');
-            $table->longText('keterangan')->default('');
-            $table->string('modifiedby',50)->default('');            
+            $table->unsignedBigInteger('rekappenerimaan_id')->nullable();
+            $table->string('nobukti',50)->nullable();
+            $table->string('penerimaan_nobukti',50)->nullable();
+            $table->date('tgltransaksi')->nullable();
+            $table->double('nominal',15,2)->nullable();
+            $table->longText('keterangan')->nullable();
+            $table->string('modifiedby',50)->nullable();            
             $table->timestamps();
 
             $table->foreign('rekappenerimaan_id', 'rekappenerimaandetail_rekappenerimaanheader_rekappenerimaan_id_foreign')->references('id')->on('rekappenerimaanheader')->onDelete('cascade');    

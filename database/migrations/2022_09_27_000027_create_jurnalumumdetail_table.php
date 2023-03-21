@@ -19,14 +19,14 @@ class CreateJurnalumumdetailTable extends Migration
 
         Schema::create('jurnalumumdetail', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('jurnalumum_id')->default('0');
-            $table->string('nobukti',50)->default('');
-            $table->date('tglbukti')->default('1900/1/1');
-            $table->string('coa',50)->default('');
-            $table->double('nominal',15,2)->default('0');
-            $table->longText('keterangan')->default('');
-            $table->integer('baris')->length(11)->default('0');
-            $table->string('modifiedby',50)->default('');
+            $table->unsignedBigInteger('jurnalumum_id')->nullable();
+            $table->string('nobukti',50)->nullable();
+            $table->date('tglbukti')->nullable();
+            $table->string('coa',50)->nullable();
+            $table->double('nominal',15,2)->nullable();
+            $table->longText('keterangan')->nullable();
+            $table->integer('baris')->length(11)->nullable();
+            $table->string('modifiedby',50)->nullable();
             $table->timestamps();
 
 

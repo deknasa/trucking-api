@@ -18,10 +18,10 @@ class CreateMandorTable extends Migration
         
         Schema::create('mandor', function (Blueprint $table) {
             $table->id();
-            $table->string('namamandor',100)->default('');
-            $table->longText('keterangan')->default('');
-            $table->integer('statusaktif')->length(11)->default('0');
-            $table->string('modifiedby',50)->default('');
+            $table->string('namamandor',100)->nullable();
+            $table->longText('keterangan')->nullable();
+            $table->integer('statusaktif')->length(11)->nullable();
+            $table->string('modifiedby',50)->nullable();
             $table->timestamps();
         });
     }

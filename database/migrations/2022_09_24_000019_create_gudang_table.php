@@ -18,9 +18,9 @@ class CreateGudangTable extends Migration
         
         Schema::create('gudang', function (Blueprint $table) {
             $table->id();
-            $table->string('gudang', 100)->default('');             
-            $table->integer('statusaktif')->length(11)->default('0');             
-            $table->string('modifiedby', 50)->default('');             
+            $table->string('gudang', 100)->nullable();             
+            $table->integer('statusaktif')->length(11)->nullable();             
+            $table->string('modifiedby', 50)->nullable();             
             $table->timestamps();
         });
     }

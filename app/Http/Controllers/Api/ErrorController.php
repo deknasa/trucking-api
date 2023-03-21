@@ -221,7 +221,7 @@ class ErrorController extends Controller
         $temp = '##temp' . rand(1, 10000);
         Schema::create($temp, function ($table) {
             $table->id();
-            $table->string('keterangan', 50)->default('');
+            $table->string('keterangan', 50)->nullable();
         });
 
         DB::table($temp)->insert(

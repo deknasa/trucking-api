@@ -18,14 +18,14 @@ class CreateParameterTable extends Migration
         
         Schema::create('parameter', function (Blueprint $table) {
             $table->id();
-            $table->string('grp', 255)->default('');
-            $table->string('subgrp', 255)->default('');
-            $table->string('kelompok', 255)->default('');
-            $table->string('text', 255)->default('');
-            $table->longText('memo')->default('');
-            $table->integer('type')->length(11)->default(0);
-            $table->string('default', 255)->default('');
-            $table->string('modifiedby', 50)->default('');
+            $table->string('grp', 255)->nullable();
+            $table->string('subgrp', 255)->nullable();
+            $table->string('kelompok', 255)->nullable();
+            $table->string('text', 255)->nullable();
+            $table->longText('memo')->nullable();
+            $table->integer('type')->length(11)->nullable();
+            $table->string('default', 255)->nullable();
+            $table->string('modifiedby', 50)->nullable();
             
             $table->timestamps();
 

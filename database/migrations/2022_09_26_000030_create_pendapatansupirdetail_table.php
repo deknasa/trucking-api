@@ -18,12 +18,12 @@ class CreatePendapatansupirdetailTable extends Migration
 
         Schema::create('pendapatansupirdetail', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('pendapatansupir_id')->default('0');
-            $table->string('nobukti',50)->default('');
-            $table->unsignedBigInteger('supir_id')->default('0');
-            $table->double('nominal',15,2)->default('0');
-            $table->longText('keterangan')->default('');
-            $table->string('modifiedby',50)->default('');            
+            $table->unsignedBigInteger('pendapatansupir_id')->nullable();
+            $table->string('nobukti',50)->nullable();
+            $table->unsignedBigInteger('supir_id')->nullable();
+            $table->double('nominal',15,2)->nullable();
+            $table->longText('keterangan')->nullable();
+            $table->string('modifiedby',50)->nullable();            
             $table->timestamps();
 
             $table->foreign('pendapatansupir_id', 'pendapatansupirdetail_pendapatansupirheader_pendapatansupir_id_foreign')->references('id')->on('pendapatansupirheader')->onDelete('cascade');    

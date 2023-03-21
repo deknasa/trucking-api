@@ -36,14 +36,14 @@ class LaporanBukuBesar extends MyModel
         // dd('test');
         $tempsaldo = '##tempsaldo' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempsaldo, function ($table) {
-            $table->double('urut', 15, 2)->default(0);
-            $table->string('coa', 1000)->default('');
-            $table->dateTime('tglbukti')->default('1900/1/1');
-            $table->string('nobukti', 100)->default('');
-            $table->longText('keterangan')->default('');
-            $table->double('debet', 15, 2)->default(0);
-            $table->double('kredit', 15, 2)->default(0);
-            $table->double('saldo', 15, 2)->default(0);
+            $table->double('urut', 15, 2)->nullable();
+            $table->string('coa', 1000)->nullable();
+            $table->dateTime('tglbukti')->nullable();
+            $table->string('nobukti', 100)->nullable();
+            $table->longText('keterangan')->nullable();
+            $table->double('debet', 15, 2)->nullable();
+            $table->double('kredit', 15, 2)->nullable();
+            $table->double('saldo', 15, 2)->nullable();
         });
 
 
@@ -117,14 +117,14 @@ class LaporanBukuBesar extends MyModel
         $tempdetail = '##tempdetail' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdetail, function ($table) {
             $table->id();
-            $table->double('urut', 15, 2)->default(0);
-            $table->string('coa', 1000)->default('');
-            $table->dateTime('tglbukti')->default('1900/1/1');
-            $table->string('nobukti', 100)->default('');
-            $table->longText('keterangan')->default('');
-            $table->double('debet', 15, 2)->default(0);
-            $table->double('kredit', 15, 2)->default(0);
-            $table->double('saldo', 15, 2)->default(0);
+            $table->double('urut', 15, 2)->nullable();
+            $table->string('coa', 1000)->nullable();
+            $table->dateTime('tglbukti')->nullable();
+            $table->string('nobukti', 100)->nullable();
+            $table->longText('keterangan')->nullable();
+            $table->double('debet', 15, 2)->nullable();
+            $table->double('kredit', 15, 2)->nullable();
+            $table->double('saldo', 15, 2)->nullable();
         });
 
         $querydetail = DB::table("jurnalumumpusatheader")->from(
@@ -170,14 +170,14 @@ class LaporanBukuBesar extends MyModel
         $temprekap = '##temprekap' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temprekap, function ($table) {
             $table->id();
-            $table->unsignedBigInteger('urut')->default(0);
-            $table->string('coa', 1000)->default('');
-            $table->dateTime('tglbukti')->default('1900/1/1');
-            $table->string('nobukti', 100)->default('');
-            $table->longText('keterangan')->default('');
-            $table->double('debet', 15, 2)->default(0);
-            $table->double('kredit', 15, 2)->default(0);
-            $table->double('saldo', 15, 2)->default(0);
+            $table->unsignedBigInteger('urut')->nullable();
+            $table->string('coa', 1000)->nullable();
+            $table->dateTime('tglbukti')->nullable();
+            $table->string('nobukti', 100)->nullable();
+            $table->longText('keterangan')->nullable();
+            $table->double('debet', 15, 2)->nullable();
+            $table->double('kredit', 15, 2)->nullable();
+            $table->double('saldo', 15, 2)->nullable();
         });
 
         $queryRekap1 = DB::table($tempsaldo)

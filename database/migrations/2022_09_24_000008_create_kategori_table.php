@@ -19,11 +19,11 @@ class CreateKategoriTable extends Migration
 
         Schema::create('kategori', function (Blueprint $table) {
             $table->id();
-            $table->string('kodekategori',50)->default('');
-            $table->longText('keterangan')->default('');
-            $table->unsignedBigInteger('subkelompok_id')->default('0');
-            $table->integer('statusaktif')->length(11)->default('0');
-            $table->string('modifiedby',50)->default('');
+            $table->string('kodekategori',50)->nullable();
+            $table->longText('keterangan')->nullable();
+            $table->unsignedBigInteger('subkelompok_id')->nullable();
+            $table->integer('statusaktif')->length(11)->nullable();
+            $table->string('modifiedby',50)->nullable();
             $table->timestamps();
 
             $table->foreign('subkelompok_id', 'kategori_subkelompok_subkelompok_id_foreign')->references('id')->on('subkelompok');

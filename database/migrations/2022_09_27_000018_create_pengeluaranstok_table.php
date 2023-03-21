@@ -19,12 +19,12 @@ class CreatePengeluaranstokTable extends Migration
 
         Schema::create('pengeluaranstok', function (Blueprint $table) {
             $table->id();
-            $table->longText('kodepengeluaran')->default('');            
-            $table->longText('keterangan')->default('');            
-            $table->string('coa',50)->default('');            
-            $table->unsignedBigInteger('format')->default(0);   
-            $table->integer('statushitungstok')->length(11)->default(0);                        
-            $table->string('modifiedby',50)->default('');                
+            $table->longText('kodepengeluaran')->nullable();            
+            $table->longText('keterangan')->nullable();            
+            $table->string('coa',50)->nullable();            
+            $table->unsignedBigInteger('format')->nullable();   
+            $table->integer('statushitungstok')->length(11)->nullable();                        
+            $table->string('modifiedby',50)->nullable();                
             $table->timestamps();
 
             $table->foreign('coa', 'pengeluaranstok_akunpusat_coa_foreign')->references('coa')->on('akunpusat');  

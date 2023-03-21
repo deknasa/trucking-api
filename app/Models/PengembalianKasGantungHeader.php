@@ -59,8 +59,8 @@ class PengembalianKasGantungHeader extends MyModel
 
         $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdefault, function ($table) {
-            $table->unsignedBigInteger('bank_id')->default(0);
-            $table->string('bank', 255)->default('');
+            $table->unsignedBigInteger('bank_id')->nullable();
+            $table->string('bank', 255)->nullable();
         });
 
 
@@ -148,27 +148,27 @@ class PengembalianKasGantungHeader extends MyModel
         $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
         Schema::create($temp, function ($table) {
-            $table->bigInteger('id')->default('0');
+            $table->bigInteger('id')->nullable();
             $table->string('nobukti',50)->unique();
-            $table->date('tglbukti')->default('1900/1/1');
-            $table->string('pelanggan_id',1000)->default('');
-            $table->longText('keterangan')->default('');
-            $table->string('bank_id',1000)->default('');
-            $table->date('tgldari')->default('1900/1/1');
-            $table->date('tglsampai')->default('1900/1/1');
-            $table->string('penerimaan_nobukti',50)->default('');
-            $table->string('coakasmasuk',50)->default('');
-            $table->string('postingdari',50)->default('');
-            $table->date('tglkasmasuk')->default('1900/1/1');
-            $table->string('statusformat',1000)->default('');
-            $table->string('statuscetak',1000)->default('');
-            $table->string('userbukacetak',50)->default('');
-            $table->date('tglbukacetak')->default('1900/1/1');
-            $table->integer('jumlahcetak')->Length(11)->default('0');            
-            $table->string('modifiedby',50)->default('');
+            $table->date('tglbukti')->nullable();
+            $table->string('pelanggan_id',1000)->nullable();
+            $table->longText('keterangan')->nullable();
+            $table->string('bank_id',1000)->nullable();
+            $table->date('tgldari')->nullable();
+            $table->date('tglsampai')->nullable();
+            $table->string('penerimaan_nobukti',50)->nullable();
+            $table->string('coakasmasuk',50)->nullable();
+            $table->string('postingdari',50)->nullable();
+            $table->date('tglkasmasuk')->nullable();
+            $table->string('statusformat',1000)->nullable();
+            $table->string('statuscetak',1000)->nullable();
+            $table->string('userbukacetak',50)->nullable();
+            $table->date('tglbukacetak')->nullable();
+            $table->integer('jumlahcetak')->Length(11)->nullable();            
+            $table->string('modifiedby',50)->nullable();
             $table->increments('position');
-            $table->dateTime('created_at')->default('1900/1/1');
-            $table->dateTime('updated_at')->default('1900/1/1');
+            $table->dateTime('created_at')->nullable();
+            $table->dateTime('updated_at')->nullable();
         });
 
         $query = DB::table($modelTable);

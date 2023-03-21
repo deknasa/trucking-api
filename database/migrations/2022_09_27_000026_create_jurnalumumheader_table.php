@@ -19,14 +19,14 @@ class CreateJurnalumumheaderTable extends Migration
         Schema::create('jurnalumumheader', function (Blueprint $table) {
             $table->id();
             $table->string('nobukti',50)->unique();
-            $table->date('tglbukti')->default('1900/1/1');
-            $table->longText('keterangan')->default('');            
-            $table->string('postingdari',50)->default('');
-            $table->integer('statusapproval')->length(11)->default('0');
-            $table->string('userapproval',50)->default('');
-            $table->dateTime('tglapproval')->default('1900/1/1');
-            $table->unsignedBigInteger('statusformat')->default(0);              
-            $table->string('modifiedby',50)->default('');
+            $table->date('tglbukti')->nullable();
+            $table->longText('keterangan')->nullable();            
+            $table->string('postingdari',50)->nullable();
+            $table->integer('statusapproval')->length(11)->nullable();
+            $table->string('userapproval',50)->nullable();
+            $table->dateTime('tglapproval')->nullable();
+            $table->unsignedBigInteger('statusformat')->nullable();              
+            $table->string('modifiedby',50)->nullable();
             $table->timestamps();
 
              

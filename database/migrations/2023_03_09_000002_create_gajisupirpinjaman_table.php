@@ -17,13 +17,13 @@ class CreateGajisupirpinjamanTable extends Migration
     {
         Schema::create('gajisupirpinjaman', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('gajisupir_id')->default(0);   
-            $table->string('gajisupir_nobukti', 50)->default('');            
-            $table->string('penerimaantrucking_nobukti', 50)->default('');            
-            $table->string('pengeluarantrucking_nobukti', 50)->default('');            
-            $table->unsignedBigInteger('supir_id')->default(0);   
-            $table->double('nominal', 15,2)->default(0);            
-            $table->string('modifiedby', 50)->default('');            
+            $table->unsignedBigInteger('gajisupir_id')->nullable();   
+            $table->string('gajisupir_nobukti', 50)->nullable();            
+            $table->string('penerimaantrucking_nobukti', 50)->nullable();            
+            $table->string('pengeluarantrucking_nobukti', 50)->nullable();            
+            $table->unsignedBigInteger('supir_id')->nullable();   
+            $table->double('nominal', 15,2)->nullable();            
+            $table->string('modifiedby', 50)->nullable();            
             $table->timestamps();
 
             $table->foreign('supir_id', 'gajisupirpinjaman_supir_supir_id_foreign')->references('id')->on('supir');

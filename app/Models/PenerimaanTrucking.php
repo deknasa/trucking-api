@@ -119,17 +119,17 @@ class PenerimaanTrucking extends MyModel
     {
         $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temp, function ($table) {
-            $table->bigInteger('id')->default('0');
-            $table->string('kodepenerimaan', 1000)->default('');
-            $table->string('keterangan', 1000)->default('');
-            $table->string('coadebet', 1000)->default('');
-            $table->string('coakredit', 1000)->default('');
-            $table->string('coapostingdebet', 1000)->default('');
-            $table->string('coapostingkredit', 1000)->default('');
-            $table->string('format', 1000)->default('');
-            $table->string('modifiedby', 1000)->default('');
-            $table->dateTime('created_at')->default('1900/1/1');
-            $table->dateTime('updated_at')->default('1900/1/1');
+            $table->bigInteger('id')->nullable();
+            $table->string('kodepenerimaan', 1000)->nullable();
+            $table->string('keterangan', 1000)->nullable();
+            $table->string('coadebet', 1000)->nullable();
+            $table->string('coakredit', 1000)->nullable();
+            $table->string('coapostingdebet', 1000)->nullable();
+            $table->string('coapostingkredit', 1000)->nullable();
+            $table->string('format', 1000)->nullable();
+            $table->string('modifiedby', 1000)->nullable();
+            $table->dateTime('created_at')->nullable();
+            $table->dateTime('updated_at')->nullable();
             $table->increments('position');
         });
 

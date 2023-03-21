@@ -67,17 +67,17 @@ class Menu extends MyModel
     {
         $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temp, function ($table) {
-            $table->bigInteger('id')->default('0');
-            $table->string('menuname', 50)->default('');
-            $table->string('menuparent', 250)->default('');
-            $table->string('menuicon', 50)->default('');
-            $table->string('aco_id', 100)->default('');
-            $table->string('link', 100)->default('');
-            $table->string('menuexe', 100)->default('');
-            $table->string('menukode', 100)->default('');
-            $table->string('modifiedby', 50)->default('');
-            $table->dateTime('created_at')->default('1900/1/1');
-            $table->dateTime('updated_at')->default('1900/1/1');
+            $table->bigInteger('id')->nullable();
+            $table->string('menuname', 50)->nullable();
+            $table->string('menuparent', 250)->nullable();
+            $table->string('menuicon', 50)->nullable();
+            $table->string('aco_id', 100)->nullable();
+            $table->string('link', 100)->nullable();
+            $table->string('menuexe', 100)->nullable();
+            $table->string('menukode', 100)->nullable();
+            $table->string('modifiedby', 50)->nullable();
+            $table->dateTime('created_at')->nullable();
+            $table->dateTime('updated_at')->nullable();
             $table->increments('position');
         });
 

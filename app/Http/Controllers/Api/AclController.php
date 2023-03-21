@@ -436,11 +436,11 @@ class AclController extends Controller
         $temp = '##temp' . rand(1, 10000);
         Schema::create($temp, function ($table) {
             $table->id();
-            $table->bigInteger('role_id')->default('0');
-            $table->bigInteger('id_')->default('0');
-            $table->string('modifiedby', 30)->default('');
-            $table->dateTime('created_at')->default('1900/1/1');
-            $table->dateTime('updated_at')->default('1900/1/1');
+            $table->bigInteger('role_id')->nullable();
+            $table->bigInteger('id_')->nullable();
+            $table->string('modifiedby', 30)->nullable();
+            $table->dateTime('created_at')->nullable();
+            $table->dateTime('updated_at')->nullable();
 
             $table->index('role_id');
         });
@@ -488,11 +488,11 @@ class AclController extends Controller
         $temp = '##temp' . rand(1, 10000);
         Schema::create($temp, function ($table) {
             $table->id();
-            $table->bigInteger('role_id')->default('0');
-            $table->bigInteger('id_')->default('0');
-            $table->string('rolename', 300)->default('');
-            $table->string('modifiedby', 30)->default('');
-            $table->dateTime('updated_at')->default('1900/1/1');
+            $table->bigInteger('role_id')->nullable();
+            $table->bigInteger('id_')->nullable();
+            $table->string('rolename', 300)->nullable();
+            $table->string('modifiedby', 30)->nullable();
+            $table->dateTime('updated_at')->nullable();
 
             $table->index('role_id');
         });
@@ -591,9 +591,9 @@ class AclController extends Controller
                 ->where('subgrp', "=", $params['subgrp']);
         } else {
             Schema::create($temp, function ($table) {
-                $table->integer('id')->length(11)->default(0);
-                $table->string('parameter', 50)->default(0);
-                $table->string('param', 50)->default(0);
+                $table->integer('id')->length(11)->nullable();
+                $table->string('parameter', 50)->nullable();
+                $table->string('param', 50)->nullable();
             });
 
             DB::table($temp)->insert(

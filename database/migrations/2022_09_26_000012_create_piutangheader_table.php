@@ -19,19 +19,19 @@ class CreatePiutangheaderTable extends Migration
         Schema::create('piutangheader', function (Blueprint $table) {
             $table->id();
             $table->string('nobukti',50)->unique();
-            $table->date('tglbukti')->default('1900/1/1');
-            $table->longText('keterangan')->default('');            
-            $table->string('coadebet',150)->default('');
-            $table->string('coakredit',150)->default('');
-            $table->string('postingdari',150)->default('');
-            $table->double('nominal',15,2)->default('0');
-            $table->string('invoice_nobukti',50)->default('');
-            $table->unsignedBigInteger('agen_id')->default('0');
-            $table->unsignedBigInteger('statusformat')->default(0);
-            $table->integer('statuscetak')->Length(11)->default('0');
-            $table->string('userbukacetak',50)->default('');
-            $table->date('tglbukacetak')->default('1900/1/1');
-            $table->string('modifiedby',50)->default('');
+            $table->date('tglbukti')->nullable();
+            $table->longText('keterangan')->nullable();            
+            $table->string('coadebet',150)->nullable();
+            $table->string('coakredit',150)->nullable();
+            $table->string('postingdari',150)->nullable();
+            $table->double('nominal',15,2)->nullable();
+            $table->string('invoice_nobukti',50)->nullable();
+            $table->unsignedBigInteger('agen_id')->nullable();
+            $table->unsignedBigInteger('statusformat')->nullable();
+            $table->integer('statuscetak')->Length(11)->nullable();
+            $table->string('userbukacetak',50)->nullable();
+            $table->date('tglbukacetak')->nullable();
+            $table->string('modifiedby',50)->nullable();
             $table->timestamps();
 
             

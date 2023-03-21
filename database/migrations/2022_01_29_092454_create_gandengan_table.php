@@ -15,10 +15,10 @@ class CreateGandenganTable extends Migration
     {
         Schema::create('gandengan', function (Blueprint $table) {
             $table->id();
-            $table->string('kodegandengan', 300)->default('');
-            $table->string('keterangan', 300)->default('');
-            $table->integer('statusaktif')->length(11)->default(0);
-            $table->string('modifiedby', 30)->default('');            
+            $table->string('kodegandengan', 300)->nullable();
+            $table->string('keterangan', 300)->nullable();
+            $table->integer('statusaktif')->length(11)->nullable();
+            $table->string('modifiedby', 30)->nullable();            
             $table->timestamps();
         });
     }

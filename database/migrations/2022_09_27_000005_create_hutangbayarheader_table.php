@@ -19,25 +19,25 @@ class CreateHutangbayarheaderTable extends Migration
         Schema::create('hutangbayarheader', function (Blueprint $table) {
             $table->id();
             $table->string('nobukti', 50)->unique();            
-            $table->date('tglbukti')->default('1900/1/1');            
-            $table->longText('keterangan')->default('');            
-            $table->unsignedBigInteger('bank_id')->default('0');            
-            $table->unsignedBigInteger('supplier_id')->default('0');            
-            $table->unsignedBigInteger('pelanggan_id')->default('0');            
-            $table->string('pengeluaran_nobukti', 50)->default('');            
-            $table->string('coa',50)->default('');            
-            $table->unsignedBigInteger('alatbayar_id')->default(0);
-            $table->date('tglcair')->default('1900/1/1');
-            $table->string('nowarkat',100)->default('');            
-            $table->integer('statusapproval')->length(11)->default('0');            
-            $table->date('tglapproval')->default('1900/1/1');            
-            $table->string('userapproval', 50)->default('');
-            $table->unsignedBigInteger('statusformat')->default(0);             
-            $table->integer('statuscetak')->Length(11)->default('0');
-            $table->string('userbukacetak',50)->default('');
-            $table->date('tglbukacetak')->default('1900/1/1');
-            $table->integer('jumlahcetak')->Length(11)->default('0');
-            $table->string('modifiedby', 50)->default('');            
+            $table->date('tglbukti')->nullable();            
+            $table->longText('keterangan')->nullable();            
+            $table->unsignedBigInteger('bank_id')->nullable();            
+            $table->unsignedBigInteger('supplier_id')->nullable();            
+            $table->unsignedBigInteger('pelanggan_id')->nullable();            
+            $table->string('pengeluaran_nobukti', 50)->nullable();            
+            $table->string('coa',50)->nullable();            
+            $table->unsignedBigInteger('alatbayar_id')->nullable();
+            $table->date('tglcair')->nullable();
+            $table->string('nowarkat',100)->nullable();            
+            $table->integer('statusapproval')->length(11)->nullable();            
+            $table->date('tglapproval')->nullable();            
+            $table->string('userapproval', 50)->nullable();
+            $table->unsignedBigInteger('statusformat')->nullable();             
+            $table->integer('statuscetak')->Length(11)->nullable();
+            $table->string('userbukacetak',50)->nullable();
+            $table->date('tglbukacetak')->nullable();
+            $table->integer('jumlahcetak')->Length(11)->nullable();
+            $table->string('modifiedby', 50)->nullable();            
             $table->timestamps();
 
 

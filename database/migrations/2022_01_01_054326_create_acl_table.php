@@ -15,9 +15,9 @@ class CreateAclTable extends Migration
     {
         Schema::create('acl', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('aco_id')->default(0);               
-            $table->unsignedBigInteger('role_id')->default(0);               
-            $table->string('modifiedby', 50)->default('');
+            $table->unsignedBigInteger('aco_id')->nullable();               
+            $table->unsignedBigInteger('role_id')->nullable();               
+            $table->string('modifiedby', 50)->nullable();
             $table->timestamps();
         });
     }

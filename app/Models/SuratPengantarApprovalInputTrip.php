@@ -137,12 +137,12 @@ class SuratPengantarApprovalInputTrip extends MyModel
         $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
         Schema::create($temp, function ($table) {
-            $table->bigInteger('id')->default('0');
-            $table->date('tglbukti')->default('1900/1/1');
-            $table->double('jumlahtrip')->default('0');
-            $table->string('modifiedby', 1000)->default('');
-            $table->dateTime('created_at')->default('1900/1/1');
-            $table->dateTime('updated_at')->default('1900/1/1');
+            $table->bigInteger('id')->nullable();
+            $table->date('tglbukti')->nullable();
+            $table->double('jumlahtrip')->nullable();
+            $table->string('modifiedby', 1000)->nullable();
+            $table->dateTime('created_at')->nullable();
+            $table->dateTime('updated_at')->nullable();
             $table->increments('position');
         });
 

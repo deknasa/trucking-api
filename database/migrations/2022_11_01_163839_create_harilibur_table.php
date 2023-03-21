@@ -15,10 +15,10 @@ class CreateHariliburTable extends Migration
     {
         Schema::create('harilibur', function (Blueprint $table) {
             $table->id();
-            $table->date('tgl')->Default('1900/1/1');
-            $table->longText('keterangan')->Default('');
-            $table->integer('statusaktif')->length(11)->default(0);
-            $table->string('modifiedby',50)->Default('');            
+            $table->date('tgl')->nullable();
+            $table->longText('keterangan')->nullable();
+            $table->integer('statusaktif')->length(11)->nullable();
+            $table->string('modifiedby',50)->nullable();            
             $table->timestamps();
         });
     }

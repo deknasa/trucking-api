@@ -19,22 +19,22 @@ class CreatePengembaliankasgantungheaderTable extends Migration
         Schema::create('pengembaliankasgantungheader', function (Blueprint $table) {
             $table->id();
             $table->string('nobukti',50)->unique();
-            $table->date('tglbukti')->default('1900/1/1');
-            $table->unsignedBigInteger('pelanggan_id')->default('0');
-            $table->longText('keterangan')->default('');
-            $table->unsignedBigInteger('bank_id')->default('0');
-            $table->date('tgldari')->default('1900/1/1');
-            $table->date('tglsampai')->default('1900/1/1');
-            $table->string('penerimaan_nobukti',50)->default('');
-            $table->string('coakasmasuk',50)->default('');
-            $table->string('postingdari',50)->default('');
-            $table->date('tglkasmasuk')->default('1900/1/1');
-            $table->unsignedBigInteger('statusformat')->default(0);
-            $table->integer('statuscetak')->Length(11)->default('0');
-            $table->string('userbukacetak',50)->default('');
-            $table->date('tglbukacetak')->default('1900/1/1');
-            $table->integer('jumlahcetak')->Length(11)->default('0');            
-            $table->string('modifiedby',50)->default('');
+            $table->date('tglbukti')->nullable();
+            $table->unsignedBigInteger('pelanggan_id')->nullable();
+            $table->longText('keterangan')->nullable();
+            $table->unsignedBigInteger('bank_id')->nullable();
+            $table->date('tgldari')->nullable();
+            $table->date('tglsampai')->nullable();
+            $table->string('penerimaan_nobukti',50)->nullable();
+            $table->string('coakasmasuk',50)->nullable();
+            $table->string('postingdari',50)->nullable();
+            $table->date('tglkasmasuk')->nullable();
+            $table->unsignedBigInteger('statusformat')->nullable();
+            $table->integer('statuscetak')->Length(11)->nullable();
+            $table->string('userbukacetak',50)->nullable();
+            $table->date('tglbukacetak')->nullable();
+            $table->integer('jumlahcetak')->Length(11)->nullable();            
+            $table->string('modifiedby',50)->nullable();
             $table->timestamps();
 
 

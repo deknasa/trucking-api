@@ -20,19 +20,19 @@ class CreateRekappengeluaranheaderTable extends Migration
         Schema::create('rekappengeluaranheader', function (Blueprint $table) {
             $table->id();
             $table->string('nobukti',50)->unique();
-            $table->date('tglbukti')->default('1900/1/1');
-            $table->unsignedBigInteger('bank_id')->default(0);
-            $table->date('tgltransaksi')->default('1900/1/1');
-            $table->longText('keterangan')->default('');
-            $table->integer('statusapproval')->length(11)->default('0');
-            $table->string('userapproval',50)->default('');
-            $table->date('tglapproval')->default('1900/1/1');
-            $table->unsignedBigInteger('statusformat')->default(0);  
-            $table->integer('statuscetak')->Length(11)->default('0');
-            $table->string('userbukacetak',50)->default('');
-            $table->date('tglbukacetak')->default('1900/1/1');
-            $table->integer('jumlahcetak')->Length(11)->default('0');            
-            $table->string('modifiedby',50)->default('');            
+            $table->date('tglbukti')->nullable();
+            $table->unsignedBigInteger('bank_id')->nullable();
+            $table->date('tgltransaksi')->nullable();
+            $table->longText('keterangan')->nullable();
+            $table->integer('statusapproval')->length(11)->nullable();
+            $table->string('userapproval',50)->nullable();
+            $table->date('tglapproval')->nullable();
+            $table->unsignedBigInteger('statusformat')->nullable();  
+            $table->integer('statuscetak')->Length(11)->nullable();
+            $table->string('userbukacetak',50)->nullable();
+            $table->date('tglbukacetak')->nullable();
+            $table->integer('jumlahcetak')->Length(11)->nullable();            
+            $table->string('modifiedby',50)->nullable();            
             $table->timestamps();
 
             $table->foreign('bank_id', 'rekappengeluaranheader_bank_bank_id_foreign')->references('id')->on('bank');

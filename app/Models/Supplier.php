@@ -169,8 +169,8 @@ class Supplier extends MyModel
 
         $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdefault, function ($table) {
-            $table->unsignedBigInteger('statusaktif')->default(0);
-            $table->unsignedBigInteger('statusdaftarharga')->default(0);
+            $table->unsignedBigInteger('statusaktif')->nullable();
+            $table->unsignedBigInteger('statusdaftarharga')->nullable();
         });
 
         $status = Parameter::from(
@@ -293,28 +293,28 @@ class Supplier extends MyModel
     { //sesuaikan dengan column index
         $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temp, function ($table) {
-            $table->bigInteger('id')->default('0');
-            $table->longText('namasupplier')->default('');
-            $table->string('namakontak', 150)->default('');
-            $table->longText('alamat')->default('');
-            $table->string('kota', 150)->default('');
-            $table->string('kodepos', 50)->default('');
-            $table->string('notelp1', 50)->default('');
-            $table->string('notelp2', 50)->default('');
-            $table->string('email', 50)->default('');
-            $table->string('statusaktif')->length(11)->default('0');
-            $table->string('web', 50)->default('');
-            $table->string('namapemilik', 150)->default('');
-            $table->string('jenisusaha', 150)->default('');
-            $table->string('bank', 150)->default('');
-            $table->string('rekeningbank', 150)->default('');
-            $table->string('namarekening', 150)->default('');
-            $table->string('jabatan', 150)->default('');
-            $table->string('statusdaftarharga')->length(11)->default('0');
-            $table->string('kategoriusaha', 150)->default('');
-            $table->string('modifiedby', 50)->default('');
-            $table->dateTime('created_at')->default('1900/1/1');
-            $table->dateTime('updated_at')->default('1900/1/1');
+            $table->bigInteger('id')->nullable();
+            $table->longText('namasupplier')->nullable();
+            $table->string('namakontak', 150)->nullable();
+            $table->longText('alamat')->nullable();
+            $table->string('kota', 150)->nullable();
+            $table->string('kodepos', 50)->nullable();
+            $table->string('notelp1', 50)->nullable();
+            $table->string('notelp2', 50)->nullable();
+            $table->string('email', 50)->nullable();
+            $table->string('statusaktif')->length(11)->nullable();
+            $table->string('web', 50)->nullable();
+            $table->string('namapemilik', 150)->nullable();
+            $table->string('jenisusaha', 150)->nullable();
+            $table->string('bank', 150)->nullable();
+            $table->string('rekeningbank', 150)->nullable();
+            $table->string('namarekening', 150)->nullable();
+            $table->string('jabatan', 150)->nullable();
+            $table->string('statusdaftarharga')->length(11)->nullable();
+            $table->string('kategoriusaha', 150)->nullable();
+            $table->string('modifiedby', 50)->nullable();
+            $table->dateTime('created_at')->nullable();
+            $table->dateTime('updated_at')->nullable();
             $table->increments('position');
         });
         $this->setRequestParameters();

@@ -296,18 +296,18 @@ class PenerimaanTruckingController extends Controller
         $temp = '##temp' . rand(1, 10000);
         Schema::create($temp, function ($table) {
             $table->id();
-            $table->bigInteger('id_')->default('0');
-            $table->string('kodepenerimaan', 300)->default('');
-            $table->string('keterangan', 300)->default('');
-            $table->string('coadebet', 300)->default('');
-            $table->string('coakredit', 300)->default('');
-            $table->string('coapostingdebet', 300)->default('');
-            $table->string('coapostingkredit', 300)->default('');
+            $table->bigInteger('id_')->nullable();
+            $table->string('kodepenerimaan', 300)->nullable();
+            $table->string('keterangan', 300)->nullable();
+            $table->string('coadebet', 300)->nullable();
+            $table->string('coakredit', 300)->nullable();
+            $table->string('coapostingdebet', 300)->nullable();
+            $table->string('coapostingkredit', 300)->nullable();
             
-            $table->string('format', 300)->default('');
-            $table->string('modifiedby', 30)->default('');
-            $table->dateTime('created_at')->default('1900/1/1');
-            $table->dateTime('updated_at')->default('1900/1/1');
+            $table->string('format', 300)->nullable();
+            $table->string('modifiedby', 30)->nullable();
+            $table->dateTime('created_at')->nullable();
+            $table->dateTime('updated_at')->nullable();
 
             $table->index('id_');
         });

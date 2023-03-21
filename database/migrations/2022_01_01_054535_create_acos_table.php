@@ -15,10 +15,10 @@ class CreateAcosTable extends Migration
     {
         Schema::create('acos', function (Blueprint $table) {
             $table->id();
-            $table->string('class', 50)->default('');
-            $table->string('method', 50)->default('');
-            $table->string('nama', 150)->default('');
-            $table->string('modifiedby', 50)->default('');
+            $table->string('class', 50)->nullable();
+            $table->string('method', 50)->nullable();
+            $table->string('nama', 150)->nullable();
+            $table->string('modifiedby', 50)->nullable();
             $table->timestamps();
         });
     }

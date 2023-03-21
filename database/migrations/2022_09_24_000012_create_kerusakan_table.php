@@ -18,9 +18,9 @@ class CreateKerusakanTable extends Migration
         
         Schema::create('kerusakan', function (Blueprint $table) {
             $table->id();
-            $table->longText('keterangan')->default('');
-            $table->integer('statusaktif')->length(11)->default('0');
-            $table->string('modifiedby',50)->default('');
+            $table->longText('keterangan')->nullable();
+            $table->integer('statusaktif')->length(11)->nullable();
+            $table->string('modifiedby',50)->nullable();
             $table->timestamps();
         });
     }

@@ -17,13 +17,13 @@ class CreatePengeluaranstokdetailrincianTable extends Migration
         Schema::create('pengeluaranstokdetailrincian', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('pengeluaranstokheader_id');
-            $table->string('nobukti',50)->default('');
+            $table->string('nobukti',50)->nullable();
             $table->unsignedBigInteger('stok_id');
-            $table->double('qty', 15,2)->default(0);
-            $table->double('saldoqty', 15,2)->default(0);
-            $table->string('penerimaanstok_nobukti',50)->default('');
-            $table->double('penerimaanstok_harga', 15,2)->default(0);
-            $table->string('modifiedby',50)->default('');                
+            $table->double('qty', 15,2)->nullable();
+            $table->double('saldoqty', 15,2)->nullable();
+            $table->string('penerimaanstok_nobukti',50)->nullable();
+            $table->double('penerimaanstok_harga', 15,2)->nullable();
+            $table->string('modifiedby',50)->nullable();                
             $table->timestamps();
 
             $table->foreign('pengeluaranstokheader_id', 'pengeluaranstokdetailrincian_pengeluaranstokheader_pengeluaranstokheader_id_foreign')->references('id')->on('pengeluaranstokheader')->onDelete('cascade');  

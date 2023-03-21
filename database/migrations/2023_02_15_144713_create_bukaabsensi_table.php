@@ -15,8 +15,8 @@ class CreateBukaabsensiTable extends Migration
     {
         Schema::create('bukaabsensi', function (Blueprint $table) {
             $table->id();
-            $table->date('tglabsensi')->default('1900/1/1');
-            $table->string('modifiedby', 50)->default('');
+            $table->date('tglabsensi')->nullable();
+            $table->string('modifiedby', 50)->nullable();
             $table->timestamps();
         });
     }

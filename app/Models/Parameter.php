@@ -137,17 +137,17 @@ class Parameter extends MyModel
         $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
         Schema::create($temp, function ($table) {
-            $table->bigInteger('id')->default('0');
-            $table->string('grp', 500)->default('');
-            $table->string('subgrp', 250)->default('');
-            $table->string('text', 500)->default('');
-            $table->longText('memo')->default('');
-            $table->string('kelompok', 1000)->default('');
-            $table->string('default', 1000)->default('');
-            $table->string('type', 1000)->default('');
-            $table->dateTime('created_at')->default('1900/1/1');
-            $table->dateTime('updated_at')->default('1900/1/1');
-            $table->string('modifiedby', 50)->default('');
+            $table->bigInteger('id')->nullable();
+            $table->string('grp', 500)->nullable();
+            $table->string('subgrp', 250)->nullable();
+            $table->string('text', 500)->nullable();
+            $table->longText('memo')->nullable();
+            $table->string('kelompok', 1000)->nullable();
+            $table->string('default', 1000)->nullable();
+            $table->string('type', 1000)->nullable();
+            $table->dateTime('created_at')->nullable();
+            $table->dateTime('updated_at')->nullable();
+            $table->string('modifiedby', 50)->nullable();
             $table->increments('position');
         });
 

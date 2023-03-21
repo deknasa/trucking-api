@@ -126,26 +126,26 @@ class InvoiceHeader extends MyModel
     {
         $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temp, function ($table) {
-            $table->bigInteger('id')->default('0');
-            $table->string('nobukti', 1000)->default('');
-            $table->date('tglbukti')->default('');
-            $table->bigInteger('nominal')->default('0');
-            $table->date('tglterima')->default('');
-            $table->date('tgljatuhtempo')->default('');
+            $table->bigInteger('id')->nullable();
+            $table->string('nobukti', 1000)->nullable();
+            $table->date('tglbukti')->nullable();
+            $table->bigInteger('nominal')->nullable();
+            $table->date('tglterima')->nullable();
+            $table->date('tgljatuhtempo')->nullable();
             $table->string('agen_id')->default();
             $table->string('jenisorder_id')->default();
             $table->string('cabang_id')->default();
             $table->string('piutang_nobukti')->default();
-            $table->string('statusapproval')->default('');
+            $table->string('statusapproval')->nullable();
             $table->string('userapproval')->default();
-            $table->date('tglapproval')->default('');
-            $table->string('statuscetak', 1000)->default('');
-            $table->string('userbukacetak', 50)->default('');
-            $table->date('tglbukacetak')->default('1900/1/1');
-            $table->integer('jumlahcetak')->Length(11)->default('0');
+            $table->date('tglapproval')->nullable();
+            $table->string('statuscetak', 1000)->nullable();
+            $table->string('userbukacetak', 50)->nullable();
+            $table->date('tglbukacetak')->nullable();
+            $table->integer('jumlahcetak')->Length(11)->nullable();
             $table->string('modifiedby')->default();
-            $table->dateTime('created_at')->default('1900/1/1');
-            $table->dateTime('updated_at')->default('1900/1/1');
+            $table->dateTime('created_at')->nullable();
+            $table->dateTime('updated_at')->nullable();
             $table->increments('position');
         });
 
@@ -193,7 +193,7 @@ class InvoiceHeader extends MyModel
         // ->get();
         
         Schema::create($temp, function ($table) {
-            $table->bigInteger('id')->default('0');
+            $table->bigInteger('id')->nullable();
             $table->string('jobtrucking');
         });
 

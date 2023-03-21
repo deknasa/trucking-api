@@ -18,16 +18,16 @@ class CreateNotakreditdetailTable extends Migration
 
         Schema::create('notakreditdetail', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('notakredit_id')->default('0');
-            $table->string('nobukti',50)->default('');
-            $table->date('tglterima')->default('1900/1/1');
-            $table->string('invoice_nobukti',50)->default('');
-            $table->double('nominal',15,2)->default('0');
-            $table->double('nominalbayar',15,2)->default('0');
-            $table->double('penyesuaian',15,2)->default('0');
-            $table->longText('keterangan')->default('');
-            $table->string('coaadjust',50)->default('');
-            $table->string('modifiedby',50)->default('');
+            $table->unsignedBigInteger('notakredit_id')->nullable();
+            $table->string('nobukti',50)->nullable();
+            $table->date('tglterima')->nullable();
+            $table->string('invoice_nobukti',50)->nullable();
+            $table->double('nominal',15,2)->nullable();
+            $table->double('nominalbayar',15,2)->nullable();
+            $table->double('penyesuaian',15,2)->nullable();
+            $table->longText('keterangan')->nullable();
+            $table->string('coaadjust',50)->nullable();
+            $table->string('modifiedby',50)->nullable();
             $table->timestamps();
 
             $table->foreign('notakredit_id', 'notakreditdetail_notakreditheader_notakredit_id_foreign')->references('id')->on('notakreditheader')->onDelete('cascade');    

@@ -19,15 +19,15 @@ class CreateInvoicedetailTable extends Migration
 
         Schema::create('invoicedetail', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('invoice_id')->default('0');
-            $table->string('nobukti', 50)->default('');
-            $table->double('nominal', 15,2)->default('0');
-            $table->double('nominalretribusi', 15,2)->default('0');
-            $table->double('total', 15,2)->default('0');
-            $table->longText('keterangan')->default('');
-            $table->string('modifiedby', 50)->default('');
-            $table->string('orderantrucking_nobukti', 50)->default('');
-            $table->longText('suratpengantar_nobukti')->default('');
+            $table->unsignedBigInteger('invoice_id')->nullable();
+            $table->string('nobukti', 50)->nullable();
+            $table->double('nominal', 15,2)->nullable();
+            $table->double('nominalretribusi', 15,2)->nullable();
+            $table->double('total', 15,2)->nullable();
+            $table->longText('keterangan')->nullable();
+            $table->string('modifiedby', 50)->nullable();
+            $table->string('orderantrucking_nobukti', 50)->nullable();
+            $table->longText('suratpengantar_nobukti')->nullable();
             $table->timestamps();
 
             $table->foreign('invoice_id', 'invoicedetail_invoiceheader_invoice_idforeign')->references('id')->on('invoiceheader')->onDelete('cascade');    

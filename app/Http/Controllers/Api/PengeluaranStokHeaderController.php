@@ -854,10 +854,10 @@ class PengeluaranStokHeaderController extends Controller
 
             $temphpp = '##temphppedit' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
             Schema::create($temphpp, function ($table) {
-                $table->unsignedBigInteger('id')->default(0);
-                $table->string('nobukti', 100)->default('');
-                $table->double('qty', 15, 2)->default(0);
-                $table->unsignedBigInteger('pengeluaranstokheader_id')->default(0);
+                $table->unsignedBigInteger('id')->nullable();
+                $table->string('nobukti', 100)->nullable();
+                $table->double('qty', 15, 2)->nullable();
+                $table->unsignedBigInteger('pengeluaranstokheader_id')->nullable();
             });
 
 
@@ -984,10 +984,10 @@ class PengeluaranStokHeaderController extends Controller
         try {
             $temphpp = '##temphpp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
             Schema::create($temphpp, function ($table) {
-                $table->unsignedBigInteger('id')->default(0);
-                $table->string('nobukti', 100)->default('');
-                $table->double('qty', 15, 2)->default(0);
-                $table->unsignedBigInteger('pengeluaranstokheader_id')->default(0);
+                $table->unsignedBigInteger('id')->nullable();
+                $table->string('nobukti', 100)->nullable();
+                $table->double('qty', 15, 2)->nullable();
+                $table->unsignedBigInteger('pengeluaranstokheader_id')->nullable();
             });
 
 

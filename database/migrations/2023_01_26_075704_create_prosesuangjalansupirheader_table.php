@@ -19,17 +19,17 @@ class CreateProsesuangjalansupirheaderTable extends Migration
         Schema::create('prosesuangjalansupirheader', function (Blueprint $table) {
             $table->id();
             $table->string('nobukti',50)->unique();
-            $table->date('tglbukti')->default('1900/1/1');
-            $table->string('absensisupir_nobukti',50)->default('');
-            $table->longText('keterangan')->default('');            
-            $table->unsignedBigInteger('trado_id')->default(0);                     
-            $table->unsignedBigInteger('supir_id')->default(0);                     
-            $table->double('nominaluangjalan',15,2)->default('0');            
-            $table->integer('statusapproval')->length(11)->default('0');
-            $table->string('userapproval',50)->default('');
-            $table->dateTime('tglapproval')->default('1900/1/1');
-            $table->unsignedBigInteger('statusformat')->default(0);    
-            $table->string('modifiedby',50)->default('');                 
+            $table->date('tglbukti')->nullable();
+            $table->string('absensisupir_nobukti',50)->nullable();
+            $table->longText('keterangan')->nullable();            
+            $table->unsignedBigInteger('trado_id')->nullable();                     
+            $table->unsignedBigInteger('supir_id')->nullable();                     
+            $table->double('nominaluangjalan',15,2)->nullable();            
+            $table->integer('statusapproval')->length(11)->nullable();
+            $table->string('userapproval',50)->nullable();
+            $table->dateTime('tglapproval')->nullable();
+            $table->unsignedBigInteger('statusformat')->nullable();    
+            $table->string('modifiedby',50)->nullable();                 
             $table->timestamps();
 
             $table->foreign('trado_id', 'prosesuangjalansupirheader_trado_trado_id_foreign')->references('id')->on('trado');            

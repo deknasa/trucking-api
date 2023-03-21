@@ -91,22 +91,22 @@ class InvoiceChargeGandenganHeader extends MyModel
 
         Schema::create($temp, function ($table) {
 
-            $table->bigInteger('id')->default('0');
+            $table->bigInteger('id')->nullable();
             $table->string('nobukti', 50)->unique();
-            $table->date('tglbukti')->default('1900/1/1');
-            $table->date('tglproses')->default('1900/1/1');
-            $table->unsignedBigInteger('agen_id')->default('0');
-            $table->double('nominal')->default('0');
-            $table->integer('statuscetak')->length(11)->default('0');
-            $table->string('userbukacetak', 50)->default('');
-            $table->dateTime('tglbukacetak')->default('1900/1/1');
-            $table->integer('jumlahcetak')->length(11)->default('0');
-            $table->integer('statusapproval')->length(11)->default('0');
-            $table->string('userapproval', 50)->default('');
-            $table->unsignedBigInteger('statusformat')->default(0);
-            $table->string('modifiedby', 50)->default('');
-            $table->dateTime('created_at')->default('1900/1/1');
-            $table->dateTime('updated_at')->default('1900/1/1');
+            $table->date('tglbukti')->nullable();
+            $table->date('tglproses')->nullable();
+            $table->unsignedBigInteger('agen_id')->nullable();
+            $table->double('nominal')->nullable();
+            $table->integer('statuscetak')->length(11)->nullable();
+            $table->string('userbukacetak', 50)->nullable();
+            $table->dateTime('tglbukacetak')->nullable();
+            $table->integer('jumlahcetak')->length(11)->nullable();
+            $table->integer('statusapproval')->length(11)->nullable();
+            $table->string('userapproval', 50)->nullable();
+            $table->unsignedBigInteger('statusformat')->nullable();
+            $table->string('modifiedby', 50)->nullable();
+            $table->dateTime('created_at')->nullable();
+            $table->dateTime('updated_at')->nullable();
             $table->increments('position');
         });
 

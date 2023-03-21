@@ -18,12 +18,12 @@ class CreatePiutangdetailTable extends Migration
 
         Schema::create('piutangdetail', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('piutang_id')->default('0');
-            $table->string('nobukti',50)->default('');
-            $table->double('nominal',15,2)->default('0');
-            $table->longText('keterangan')->default('');
-            $table->string('invoice_nobukti',50)->default('');
-            $table->string('modifiedby',50)->default('');
+            $table->unsignedBigInteger('piutang_id')->nullable();
+            $table->string('nobukti',50)->nullable();
+            $table->double('nominal',15,2)->nullable();
+            $table->longText('keterangan')->nullable();
+            $table->string('invoice_nobukti',50)->nullable();
+            $table->string('modifiedby',50)->nullable();
             $table->timestamps();
 
             $table->foreign('piutang_id', 'piutangdetail_piutangheader_piutang_id_foreign')->references('id')->on('piutangheader')->onDelete('cascade');    

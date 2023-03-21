@@ -19,26 +19,26 @@ class CreateSupplierTable extends Migration
         
         Schema::create('supplier', function (Blueprint $table) {
             $table->id();
-            $table->longText('namasupplier')->default('');
-            $table->string('namakontak', 150)->default('');
-            $table->longText('alamat')->default('');
-            $table->string('kota', 150)->default('');
-            $table->string('kodepos', 50)->default('');
-            $table->string('notelp1', 50)->default('');
-            $table->string('notelp2', 50)->default('');
-            $table->string('email', 50)->default('');
-            $table->integer('statusaktif')->length(11)->default('0');
-            $table->string('web', 50)->default('');
-            $table->string('namapemilik', 150)->default('');
-            $table->string('jenisusaha', 150)->default('');
-            $table->integer('top')->length(11)->default('0');
-            $table->string('bank', 150)->default('');
-            $table->string('rekeningbank', 150)->default('');
-            $table->string('namarekening', 150)->default('');
-            $table->string('jabatan', 150)->default('');
-            $table->integer('statusdaftarharga')->length(11)->default('0');
-            $table->string('kategoriusaha', 150)->default('');
-            $table->string('modifiedby', 50)->default('');
+            $table->longText('namasupplier')->nullable();
+            $table->string('namakontak', 150)->nullable();
+            $table->longText('alamat')->nullable();
+            $table->string('kota', 150)->nullable();
+            $table->string('kodepos', 50)->nullable();
+            $table->string('notelp1', 50)->nullable();
+            $table->string('notelp2', 50)->nullable();
+            $table->string('email', 50)->nullable();
+            $table->integer('statusaktif')->length(11)->nullable();
+            $table->string('web', 50)->nullable();
+            $table->string('namapemilik', 150)->nullable();
+            $table->string('jenisusaha', 150)->nullable();
+            $table->integer('top')->length(11)->nullable();
+            $table->string('bank', 150)->nullable();
+            $table->string('rekeningbank', 150)->nullable();
+            $table->string('namarekening', 150)->nullable();
+            $table->string('jabatan', 150)->nullable();
+            $table->integer('statusdaftarharga')->length(11)->nullable();
+            $table->string('kategoriusaha', 150)->nullable();
+            $table->string('modifiedby', 50)->nullable();
             $table->timestamps();
         });
     }

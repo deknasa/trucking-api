@@ -18,12 +18,12 @@ class CreateStokpersediaanTable extends Migration
 
         Schema::create('stokpersediaan', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('stok_id')->default('0');
-            $table->unsignedBigInteger('gudang_id')->default('0');
-            $table->unsignedBigInteger('trado_id')->default('0');
-            $table->unsignedBigInteger('gandengan_id')->default('0');
-            $table->double('qty',15,2)->default('0');
-            $table->string('modifiedby',50)->default('');            
+            $table->unsignedBigInteger('stok_id')->nullable();
+            $table->unsignedBigInteger('gudang_id')->nullable();
+            $table->unsignedBigInteger('trado_id')->nullable();
+            $table->unsignedBigInteger('gandengan_id')->nullable();
+            $table->double('qty',15,2)->nullable();
+            $table->string('modifiedby',50)->nullable();            
             $table->timestamps();
 
             $table->foreign('stok_id', 'stokpersediaan_stok_stok_id_foreign')->references('id')->on('stok')->onDelete('cascade');       

@@ -133,8 +133,8 @@ class UpahSupir extends MyModel
     {
         $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdefault, function ($table) {
-            $table->unsignedBigInteger('statusaktif')->default(0);
-            $table->unsignedBigInteger('statusluarkota')->default(0);
+            $table->unsignedBigInteger('statusaktif')->nullable();
+            $table->unsignedBigInteger('statusluarkota')->nullable();
         });
 
         $status = Parameter::from(
@@ -212,19 +212,19 @@ class UpahSupir extends MyModel
 
         $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temp, function ($table) {
-            $table->bigInteger('id')->default('0');
-            $table->string('parent_id')->default('0');
-            $table->string('kotadari_id')->default('0');
-            $table->string('kotasampai_id')->default('0');
-            $table->string('zona_id')->nullable()->default('0');
-            $table->double('jarak', 15, 2)->default('0');
-            $table->integer('statusaktif')->length(11)->default('0');
-            $table->date('tglmulaiberlaku')->default('1900/1/1');
-            // $table->date('tglakhirberlaku')->default('1900/1/1');
-            $table->integer('statusluarkota')->length(11)->default('0');
-            $table->string('modifiedby', 50)->Default('');
-            $table->dateTime('created_at')->default('1900/1/1');
-            $table->dateTime('updated_at')->default('1900/1/1');
+            $table->bigInteger('id')->nullable();
+            $table->string('parent_id')->nullable();
+            $table->string('kotadari_id')->nullable();
+            $table->string('kotasampai_id')->nullable();
+            $table->string('zona_id')->nullable()->nullable();
+            $table->double('jarak', 15, 2)->nullable();
+            $table->integer('statusaktif')->length(11)->nullable();
+            $table->date('tglmulaiberlaku')->nullable();
+            // $table->date('tglakhirberlaku')->nullable();
+            $table->integer('statusluarkota')->length(11)->nullable();
+            $table->string('modifiedby', 50)->nullable();
+            $table->dateTime('created_at')->nullable();
+            $table->dateTime('updated_at')->nullable();
             $table->increments('position');
         });
 

@@ -19,17 +19,17 @@ class CreatePencairangiropengeluarandetailTable extends Migration
 
         Schema::create('pencairangiropengeluarandetail', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('pencairangiropengeluaran_id')->default('0');
-            $table->string('nobukti',50)->default('');
-            $table->unsignedBigInteger('alatbayar_id')->default('0');
-            $table->string('nowarkat',50)->default('');
-            $table->date('tgljatuhtempo')->default('1900/1/1');
-            $table->double('nominal',15,2)->default('0');
-            $table->string('coadebet',50)->default('');
-            $table->string('coakredit',50)->default('');
-            $table->longText('keterangan')->default('');
-            $table->date('bulanbeban')->default('1900/1/1');
-            $table->string('modifiedby',50)->default('');            
+            $table->unsignedBigInteger('pencairangiropengeluaran_id')->nullable();
+            $table->string('nobukti',50)->nullable();
+            $table->unsignedBigInteger('alatbayar_id')->nullable();
+            $table->string('nowarkat',50)->nullable();
+            $table->date('tgljatuhtempo')->nullable();
+            $table->double('nominal',15,2)->nullable();
+            $table->string('coadebet',50)->nullable();
+            $table->string('coakredit',50)->nullable();
+            $table->longText('keterangan')->nullable();
+            $table->date('bulanbeban')->nullable();
+            $table->string('modifiedby',50)->nullable();            
             $table->timestamps();
 
             $table->foreign('pencairangiropengeluaran_id', 'pencairangiropengeluarandetail_pencairangiroppengeluaranheader_pencairangiropengeluaran_id_foreign')->references('id')->on('pencairangiropengeluaranheader')->onDelete('cascade');       

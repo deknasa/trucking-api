@@ -120,7 +120,7 @@ class GajiSupirDetail extends MyModel
         Schema::create($temp, function ($table) {
             $table->string('nobukti')->nullable();
             $table->string('suratpengantar_nobukti')->nullable();
-            $table->date('tglsp')->default('')->nullable();
+            $table->date('tglsp')->nullable()->nullable();
             $table->string('dari')->nullable();
             $table->string('sampai')->nullable();
             $table->string('nocont')->nullable();

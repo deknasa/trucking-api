@@ -174,19 +174,19 @@ class PengeluaranTruckingHeader extends MyModel
     {
         $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temp, function ($table) {
-            $table->bigInteger('id')->default('0');
-            $table->string('nobukti', 1000)->default('');
-            $table->date('tglbukti')->default('');
-            $table->string('pengeluarantrucking_id', 1000)->default('');
-            $table->string('bank_id', 1000)->default('');
-            $table->string('statusposting', 1000)->default('');
-            $table->string('statuscetak',1000)->default('');
-            $table->string('userbukacetak',50)->default('');
-            $table->date('tglbukacetak')->default('1900/1/1');
-            $table->string('coa', 1000)->default('');
-            $table->string('pengeluaran_nobukti', 1000)->default('');
-            $table->string('modifiedby', 50)->default('');
-            $table->dateTime('updated_at')->default('1900/1/1');
+            $table->bigInteger('id')->nullable();
+            $table->string('nobukti', 1000)->nullable();
+            $table->date('tglbukti')->nullable();
+            $table->string('pengeluarantrucking_id', 1000)->nullable();
+            $table->string('bank_id', 1000)->nullable();
+            $table->string('statusposting', 1000)->nullable();
+            $table->string('statuscetak',1000)->nullable();
+            $table->string('userbukacetak',50)->nullable();
+            $table->date('tglbukacetak')->nullable();
+            $table->string('coa', 1000)->nullable();
+            $table->string('pengeluaran_nobukti', 1000)->nullable();
+            $table->string('modifiedby', 50)->nullable();
+            $table->dateTime('updated_at')->nullable();
             $table->increments('position');
         });
 

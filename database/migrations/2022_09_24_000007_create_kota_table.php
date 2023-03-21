@@ -19,11 +19,11 @@ class CreateKotaTable extends Migration
 
         Schema::create('kota', function (Blueprint $table) {
             $table->id();
-            $table->string('kodekota',1000)->default('');
-            $table->longText('keterangan')->default('');
-            $table->unsignedBigInteger('zona_id')->default('0');
-            $table->integer('statusaktif')->length(11)->default('0');
-            $table->string('modifiedby',50)->default('');
+            $table->string('kodekota',1000)->nullable();
+            $table->longText('keterangan')->nullable();
+            $table->unsignedBigInteger('zona_id')->nullable();
+            $table->integer('statusaktif')->length(11)->nullable();
+            $table->string('modifiedby',50)->nullable();
             $table->timestamps();
 
             $table->foreign('zona_id', 'kota_zona_zona_id_foreign')->references('id')->on('zona');

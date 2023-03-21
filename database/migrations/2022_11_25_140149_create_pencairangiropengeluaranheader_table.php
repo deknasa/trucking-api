@@ -20,14 +20,14 @@ class CreatePencairangiropengeluaranheaderTable extends Migration
         Schema::create('pencairangiropengeluaranheader', function (Blueprint $table) {
             $table->id();
             $table->string('nobukti',50)->unique();
-            $table->date('tglbukti')->default('1900/1/1');
-            $table->longText('keterangan')->default('');            
-            $table->string('pengeluaran_nobukti',50)->default('');
-            $table->integer('statusapproval')->Length(11)->default('0');
-            $table->string('userapproval',50)->default('');
-            $table->date('tglapproval')->default('1900/1/1');
-            $table->unsignedBigInteger('statusformat')->default(0);
-            $table->string('modifiedby',50)->default('');            
+            $table->date('tglbukti')->nullable();
+            $table->longText('keterangan')->nullable();            
+            $table->string('pengeluaran_nobukti',50)->nullable();
+            $table->integer('statusapproval')->Length(11)->nullable();
+            $table->string('userapproval',50)->nullable();
+            $table->date('tglapproval')->nullable();
+            $table->unsignedBigInteger('statusformat')->nullable();
+            $table->string('modifiedby',50)->nullable();            
             $table->timestamps();
 
             $table->foreign('pengeluaran_nobukti', 'pencairangiropengeluaranheader_pengeluaranheader_nobukti_foreign')->references('nobukti')->on('pengeluaranheader');

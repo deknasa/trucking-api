@@ -65,24 +65,24 @@ class PengeluaranStokDetailFifoController extends Controller
 
             $tempmasuk = '##tempmasuk' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
             Schema::create($tempmasuk, function ($table) {
-                $table->string('fntrans', 100)->default('');
-                $table->dateTime('ftgl')->default('1900/1/1');
-                $table->string('fkstck', 100)->default('');
-                $table->string('fkgdg', 100)->default('');
-                $table->double('fqty', 15, 2)->default(0);
-                $table->double('fhargasat', 15, 2)->default(0);
-                $table->bigInteger('furut')->default(0);
+                $table->string('fntrans', 100)->nullable();
+                $table->dateTime('ftgl')->nullable();
+                $table->string('fkstck', 100)->nullable();
+                $table->string('fkgdg', 100)->nullable();
+                $table->double('fqty', 15, 2)->nullable();
+                $table->double('fhargasat', 15, 2)->nullable();
+                $table->bigInteger('furut')->nullable();
             });
 
             $tempalur = '##tempalur' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
             Schema::create($tempalur, function ($table) {
-                $table->string('fntranskeluar', 100)->default('');
-                $table->double('fqtyout', 15, 2)->default(0);
-                $table->double('fqtyoutberjalan', 15, 2)->default(0);
-                $table->string('fntransmasuk', 100)->default('');
-                $table->double('fqtyinberjalan', 15, 2)->default(0);
-                $table->double('fselisih', 15, 2)->default(0);
-                $table->bigInteger('furut')->default(0);
+                $table->string('fntranskeluar', 100)->nullable();
+                $table->double('fqtyout', 15, 2)->nullable();
+                $table->double('fqtyoutberjalan', 15, 2)->nullable();
+                $table->string('fntransmasuk', 100)->nullable();
+                $table->double('fqtyinberjalan', 15, 2)->nullable();
+                $table->double('fselisih', 15, 2)->nullable();
+                $table->bigInteger('furut')->nullable();
             });
 
 
@@ -162,13 +162,13 @@ class PengeluaranStokDetailFifoController extends Controller
 
             $tempkeluar = '##tempkeluar' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
             Schema::create($tempkeluar, function ($table) {
-                $table->string('fntrans', 100)->default('');
-                $table->dateTime('ftgl')->default('1900/1/1');
-                $table->string('fkstck', 100)->default('');
-                $table->string('fkgdg', 100)->default('');
-                $table->double('fqty', 15, 2)->default(0);
-                $table->double('furut', 15, 2)->default(0);
-                $table->bigInteger('fid')->default(0);
+                $table->string('fntrans', 100)->nullable();
+                $table->dateTime('ftgl')->nullable();
+                $table->string('fkstck', 100)->nullable();
+                $table->string('fkgdg', 100)->nullable();
+                $table->double('fqty', 15, 2)->nullable();
+                $table->double('furut', 15, 2)->nullable();
+                $table->bigInteger('fid')->nullable();
             });
 
 
@@ -222,26 +222,26 @@ class PengeluaranStokDetailFifoController extends Controller
 
             $tempkeluarrekap = '##Tempkeluarrekap' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
             Schema::create($tempkeluarrekap, function ($table) {
-                $table->string('fntrans', 100)->default('');
-                $table->dateTime('ftgl')->default('1900/1/1');
-                $table->string('fkstck', 100)->default('');
-                $table->string('fkgdg', 100)->default('');
-                $table->double('fqty', 15, 2)->default(0);
-                $table->double('furut', 15, 2)->default(0);
-                $table->double('fqty2', 15, 2)->default(0);
-                $table->string('fntransmasuk', 100)->default('');
-                $table->bigInteger('fid')->default(0);
+                $table->string('fntrans', 100)->nullable();
+                $table->dateTime('ftgl')->nullable();
+                $table->string('fkstck', 100)->nullable();
+                $table->string('fkgdg', 100)->nullable();
+                $table->double('fqty', 15, 2)->nullable();
+                $table->double('furut', 15, 2)->nullable();
+                $table->double('fqty2', 15, 2)->nullable();
+                $table->string('fntransmasuk', 100)->nullable();
+                $table->bigInteger('fid')->nullable();
             });
 
             $tempmasukrekap = '##Tempmasukrekap' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
             Schema::create($tempmasukrekap, function ($table) {
-                $table->string('fntrans', 100)->default('');
-                $table->dateTime('ftgl')->default('1900/1/1');
-                $table->string('fkstck', 100)->default('');
-                $table->string('fkgdg', 100)->default('');
-                $table->double('fqty', 15, 2)->default(0);
-                $table->double('furut', 15, 2)->default(0);
-                $table->double('fqty2', 15, 2)->default(0);
+                $table->string('fntrans', 100)->nullable();
+                $table->dateTime('ftgl')->nullable();
+                $table->string('fkstck', 100)->nullable();
+                $table->string('fkgdg', 100)->nullable();
+                $table->double('fqty', 15, 2)->nullable();
+                $table->double('furut', 15, 2)->nullable();
+                $table->double('fqty2', 15, 2)->nullable();
             });
 
 
@@ -310,8 +310,8 @@ class PengeluaranStokDetailFifoController extends Controller
 
             $tempkeluarupdate = '##tempkeluarupdate' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
             Schema::create($tempkeluarupdate, function ($table) {
-                $table->string('fntransmasuk', 100)->default('');
-                $table->double('fqty', 15, 2)->default(0);
+                $table->string('fntransmasuk', 100)->nullable();
+                $table->double('fqty', 15, 2)->nullable();
             });
 
 
@@ -366,10 +366,10 @@ class PengeluaranStokDetailFifoController extends Controller
 
             $tempalurrekap = '##Tempalurrekap' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
             Schema::create($tempalurrekap, function ($table) {
-                $table->string('fntrans', 100)->default('');
-                $table->string('fntransmasuk', 100)->default('');
-                $table->double('fjumlah', 15, 2)->default(0);
-                $table->double('furut', 15, 2)->default(0);
+                $table->string('fntrans', 100)->nullable();
+                $table->string('fntransmasuk', 100)->nullable();
+                $table->double('fjumlah', 15, 2)->nullable();
+                $table->double('furut', 15, 2)->nullable();
             });
 
 
@@ -396,32 +396,32 @@ class PengeluaranStokDetailFifoController extends Controller
 
             $temphasil = '##Temphasil' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
             Schema::create($temphasil, function ($table) {
-                $table->string('nobukti', 100)->default('');
-                $table->dateTime('tglbukti')->default('1900/1/1');
-                $table->bigInteger('stok_id')->default(0);
-                $table->bigInteger('gudang_id')->default(0);
-                $table->double('qty', 15, 2)->default(0);
-                $table->double('urut', 15, 2)->default(0);
-                $table->double('qty2', 15, 2)->default(0);
-                $table->longText('penerimaan_nobukti')->default('');
-                $table->double('penerimaan_qty', 15, 2)->default(0);
-                $table->double('penerimaan_terpakai', 15, 2)->default(0);
-                $table->double('penerimaan_harga', 15, 2)->default(0);
-                $table->bigInteger('id')->default(0);
+                $table->string('nobukti', 100)->nullable();
+                $table->dateTime('tglbukti')->nullable();
+                $table->bigInteger('stok_id')->nullable();
+                $table->bigInteger('gudang_id')->nullable();
+                $table->double('qty', 15, 2)->nullable();
+                $table->double('urut', 15, 2)->nullable();
+                $table->double('qty2', 15, 2)->nullable();
+                $table->longText('penerimaan_nobukti')->nullable();
+                $table->double('penerimaan_qty', 15, 2)->nullable();
+                $table->double('penerimaan_terpakai', 15, 2)->nullable();
+                $table->double('penerimaan_harga', 15, 2)->nullable();
+                $table->bigInteger('id')->nullable();
             });
 
             $temphasil2 = '##Temphasil2' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
             Schema::create($temphasil2, function ($table) {
-                $table->string('nobukti', 100)->default('');
-                $table->dateTime('tglbukti')->default('1900/1/1');
-                $table->bigInteger('stok_id')->default(0);
-                $table->bigInteger('gudang_id')->default(0);
-                $table->float('qty', 15, 2)->default(0);
-                $table->bigInteger('urut')->default(0);
-                $table->float('qty2', 15, 2)->default(0);
-                $table->longText('penerimaan_nobukti')->default('');
-                $table->float('penerimaan_qty', 15, 2)->default(0);
-                $table->float('penerimaan_harga', 15, 2)->default(0);
+                $table->string('nobukti', 100)->nullable();
+                $table->dateTime('tglbukti')->nullable();
+                $table->bigInteger('stok_id')->nullable();
+                $table->bigInteger('gudang_id')->nullable();
+                $table->float('qty', 15, 2)->nullable();
+                $table->bigInteger('urut')->nullable();
+                $table->float('qty2', 15, 2)->nullable();
+                $table->longText('penerimaan_nobukti')->nullable();
+                $table->float('penerimaan_qty', 15, 2)->nullable();
+                $table->float('penerimaan_harga', 15, 2)->nullable();
             });
 
 

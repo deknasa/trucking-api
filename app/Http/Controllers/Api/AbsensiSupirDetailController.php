@@ -101,11 +101,11 @@ class AbsensiSupirDetailController extends Controller
 
     //     $tempsp = '##tempsp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
     //     Schema::create($tempsp, function ($table) {
-    //         $table->unsignedBigInteger('absensi_id')->default(0);
-    //         $table->unsignedBigInteger('trado_id')->default(0);
-    //         $table->unsignedBigInteger('supir_id')->default(0);
-    //         $table->date('tglabsensi')->default('1900/1/1');
-    //         $table->string('nobukti', 100)->default('');
+    //         $table->unsignedBigInteger('absensi_id')->nullable();
+    //         $table->unsignedBigInteger('trado_id')->nullable();
+    //         $table->unsignedBigInteger('supir_id')->nullable();
+    //         $table->date('tglabsensi')->nullable();
+    //         $table->string('nobukti', 100)->nullable();
     //     });
 
     //     $query=DB::table('absensisupirheader')->from(
@@ -172,9 +172,9 @@ class AbsensiSupirDetailController extends Controller
 
     //     $tempspgroup = '##tempspgroup' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
     //     Schema::create($tempspgroup, function ($table) {
-    //         $table->unsignedBigInteger('trado_id')->default(0);
-    //         $table->unsignedBigInteger('supir_id')->default(0);
-    //         $table->double('jumlah', 15, 2)->default(0);
+    //         $table->unsignedBigInteger('trado_id')->nullable();
+    //         $table->unsignedBigInteger('supir_id')->nullable();
+    //         $table->double('jumlah', 15, 2)->nullable();
     //     });
 
     //     DB::table($tempspgroup)->insertUsing([

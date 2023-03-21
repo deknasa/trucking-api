@@ -69,7 +69,7 @@ class Cabang extends MyModel
 
         // $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         // Schema::create($tempdefault, function ($table) {
-        //     $table->unsignedBigInteger('statusaktif')->default(0);
+        //     $table->unsignedBigInteger('statusaktif')->nullable();
         // });
 
         // $statusaktif=Parameter::from (
@@ -98,7 +98,7 @@ class Cabang extends MyModel
 
         $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdefault, function ($table) {
-            $table->unsignedBigInteger('statusaktif')->default(0);
+            $table->unsignedBigInteger('statusaktif')->nullable();
         });
 
         $statusaktif = Parameter::from(
@@ -151,13 +151,13 @@ class Cabang extends MyModel
         $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
         Schema::create($temp, function ($table) {
-            $table->bigInteger('id')->default('0');
-            $table->string('grp', 500)->default('');
-            $table->string('subgrp', 250)->default('');
-            $table->string('statusaktif', 500)->default('');
-            $table->string('modifiedby', 50)->default('');
-            $table->dateTime('created_at')->default('1900/1/1');
-            $table->dateTime('updated_at')->default('1900/1/1');
+            $table->bigInteger('id')->nullable();
+            $table->string('grp', 500)->nullable();
+            $table->string('subgrp', 250)->nullable();
+            $table->string('statusaktif', 500)->nullable();
+            $table->string('modifiedby', 50)->nullable();
+            $table->dateTime('created_at')->nullable();
+            $table->dateTime('updated_at')->nullable();
             $table->increments('position');
         });
 

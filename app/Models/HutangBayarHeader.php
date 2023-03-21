@@ -181,8 +181,8 @@ class HutangBayarHeader extends MyModel
         Schema::create($temp, function ($table) {
             $table->bigInteger('id');
             $table->string('nobukti');
-            $table->date('tglbukti')->default('');
-            $table->bigInteger('supplier_id')->default('0');
+            $table->date('tglbukti')->nullable();
+            $table->bigInteger('supplier_id')->nullable();
             $table->bigInteger('nominalhutang');
             $table->bigInteger('sisa')->nullable();
         });
@@ -202,13 +202,13 @@ class HutangBayarHeader extends MyModel
             ->whereRaw("hbd.hutangbayar_id = $id");
 
         Schema::create($tempo, function ($table) {
-            $table->bigInteger('id')->default('0');
-            $table->bigInteger('hutangbayar_id')->default('0');
+            $table->bigInteger('id')->nullable();
+            $table->bigInteger('hutangbayar_id')->nullable();
             $table->string('hutang_nobukti');
-            $table->date('tglbukti')->default('');
+            $table->date('tglbukti')->nullable();
             $table->bigInteger('bayar')->nullable();
             $table->string('keterangan');
-            $table->bigInteger('potongan')->default('0');
+            $table->bigInteger('potongan')->nullable();
             $table->bigInteger('nominalhutang');
             $table->bigInteger('sisa')->nullable();
         });
@@ -222,23 +222,23 @@ class HutangBayarHeader extends MyModel
     { //sesuaikan dengan column index
         $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temp, function ($table) {
-            $table->bigInteger('id')->default('0');
-            $table->string('nobukti', 1000)->default('');
-            $table->date('tglbukti')->default('1900/1/1');
-            $table->string('pengeluaran_nobukti')->default('0');
-            $table->string('bank_id')->default('0');
-            $table->string('supplier_id')->default('0');
-            $table->string('coa', 50)->default('');
-            $table->string('statusapproval', 1000)->default('');
-            $table->string('userapproval', 50)->default('');
-            $table->date('tglapproval')->default('1900/1/1');
-            $table->string('statuscetak', 1000)->default('');
-            $table->string('userbukacetak', 50)->default('');
-            $table->date('tglbukacetak')->default('1900/1/1');
-            $table->integer('jumlahcetak')->Length(11)->default('0');
-            $table->string('modifiedby', 50)->default('');
-            $table->dateTime('created_at')->default('1900/1/1');
-            $table->dateTime('updated_at')->default('1900/1/1');
+            $table->bigInteger('id')->nullable();
+            $table->string('nobukti', 1000)->nullable();
+            $table->date('tglbukti')->nullable();
+            $table->string('pengeluaran_nobukti')->nullable();
+            $table->string('bank_id')->nullable();
+            $table->string('supplier_id')->nullable();
+            $table->string('coa', 50)->nullable();
+            $table->string('statusapproval', 1000)->nullable();
+            $table->string('userapproval', 50)->nullable();
+            $table->date('tglapproval')->nullable();
+            $table->string('statuscetak', 1000)->nullable();
+            $table->string('userbukacetak', 50)->nullable();
+            $table->date('tglbukacetak')->nullable();
+            $table->integer('jumlahcetak')->Length(11)->nullable();
+            $table->string('modifiedby', 50)->nullable();
+            $table->dateTime('created_at')->nullable();
+            $table->dateTime('updated_at')->nullable();
             $table->increments('position');
         });
 

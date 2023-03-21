@@ -19,18 +19,18 @@ class CreateUpahsupirTable extends Migration
 
         Schema::create('upahsupir', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('parent_id')->default('0');
-            $table->unsignedBigInteger('tarif_id')->default('0');
-            $table->unsignedBigInteger('kotadari_id')->default('0');
-            $table->unsignedBigInteger('kotasampai_id')->default('0');
-            $table->double('jarak',15,2)->default('0');
-            $table->unsignedBigInteger('zona_id')->default('0');
-            $table->integer('statusaktif')->length(11)->default('0');
-            $table->date('tglmulaiberlaku')->default('1900/1/1');
-            $table->integer('statusluarkota')->length(11)->default('0');
-            $table->integer('statusupahzona')->length(11)->default('0');
-            $table->longText('gambar')->default('');
-            $table->string('modifiedby',50)->Default('');            
+            $table->unsignedBigInteger('parent_id')->nullable();
+            $table->unsignedBigInteger('tarif_id')->nullable();
+            $table->unsignedBigInteger('kotadari_id')->nullable();
+            $table->unsignedBigInteger('kotasampai_id')->nullable();
+            $table->double('jarak',15,2)->nullable();
+            $table->unsignedBigInteger('zona_id')->nullable();
+            $table->integer('statusaktif')->length(11)->nullable();
+            $table->date('tglmulaiberlaku')->nullable();
+            $table->integer('statusluarkota')->length(11)->nullable();
+            $table->integer('statusupahzona')->length(11)->nullable();
+            $table->longText('gambar')->nullable();
+            $table->string('modifiedby',50)->nullable();            
             $table->timestamps();
 
             $table->foreign('kotadari_id', 'upahsupir_kota_kotadari_id_foreign')->references('id')->on('kota');

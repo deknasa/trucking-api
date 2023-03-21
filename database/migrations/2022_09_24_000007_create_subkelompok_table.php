@@ -18,11 +18,11 @@ class CreateSubkelompokTable extends Migration
 
         Schema::create('subkelompok', function (Blueprint $table) {
             $table->id();
-            $table->string('kodesubkelompok',50)->default('');
-            $table->longText('keterangan')->default('');
-            $table->unsignedBigInteger('kelompok_id')->default('');
-            $table->integer('statusaktif')->length(11)->default('');
-            $table->longText('modifiedby',50)->default('');
+            $table->string('kodesubkelompok',50)->nullable();
+            $table->longText('keterangan')->nullable();
+            $table->unsignedBigInteger('kelompok_id')->nullable();
+            $table->integer('statusaktif')->length(11)->nullable();
+            $table->longText('modifiedby',50)->nullable();
             $table->timestamps();
 
             $table->foreign('kelompok_id', 'subkelompok_kelompok_kelompok_id_foreign')->references('id')->on('kelompok');

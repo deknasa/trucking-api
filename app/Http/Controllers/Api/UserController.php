@@ -322,9 +322,9 @@ class UserController extends Controller
                 ->where('subgrp', "=", $params['subgrp']);
         } else {
             Schema::create($temp, function ($table) {
-                $table->integer('id')->length(11)->default(0);
-                $table->string('parameter', 50)->default(0);
-                $table->string('param', 50)->default(0);
+                $table->integer('id')->length(11)->nullable();
+                $table->string('parameter', 50)->nullable();
+                $table->string('param', 50)->nullable();
             });
 
             DB::table($temp)->insert(
@@ -362,9 +362,9 @@ class UserController extends Controller
                 ->where('parameter.text', "=", 'AKTIF');
         } else {
             Schema::create($temp, function ($table) {
-                $table->string('id', 10)->default('');
-                $table->string('namacabang', 150)->default(0);
-                $table->string('param', 50)->default(0);
+                $table->string('id', 10)->nullable();
+                $table->string('namacabang', 150)->nullable();
+                $table->string('param', 50)->nullable();
             });
 
             DB::table($temp)->insert(

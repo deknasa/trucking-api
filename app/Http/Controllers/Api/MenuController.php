@@ -469,9 +469,9 @@ class MenuController extends Controller
         $temp = '##temp' . rand(1, 10000);
 
         Schema::create($temp, function ($table) {
-            $table->string('id', 10)->default('');
-            $table->string('menuparent', 150)->default(0);
-            $table->string('param', 50)->default(0);
+            $table->string('id', 10)->nullable();
+            $table->string('menuparent', 150)->nullable();
+            $table->string('param', 50)->nullable();
         });
 
         if ($params['status'] == 'entry') {

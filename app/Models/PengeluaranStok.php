@@ -98,7 +98,7 @@ class PengeluaranStok extends MyModel
         
         $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdefault, function ($table) {
-            $table->unsignedBigInteger('statushitungstok')->default(0);
+            $table->unsignedBigInteger('statushitungstok')->nullable();
         });
 
         $statusaktif=Parameter::from (
@@ -130,16 +130,16 @@ class PengeluaranStok extends MyModel
         $temp = '##temp'. rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
         Schema::create($temp, function ($table) {
-            $table->bigInteger('id')->default('0');
-            $table->longText('kodepengeluaran')->default('');
-            $table->longText('keterangan')->default('');
-            $table->string('coa',50)->default('');
-            $table->unsignedBigInteger('format')->default(0);
-            $table->integer('statushitungstok')->length(11)->default(0);
-            $table->string('modifiedby', 50)->default('');
+            $table->bigInteger('id')->nullable();
+            $table->longText('kodepengeluaran')->nullable();
+            $table->longText('keterangan')->nullable();
+            $table->string('coa',50)->nullable();
+            $table->unsignedBigInteger('format')->nullable();
+            $table->integer('statushitungstok')->length(11)->nullable();
+            $table->string('modifiedby', 50)->nullable();
             $table->increments('position');
-            $table->dateTime('created_at')->default('1900/1/1');
-            $table->dateTime('updated_at')->default('1900/1/1');
+            $table->dateTime('created_at')->nullable();
+            $table->dateTime('updated_at')->nullable();
         });
         
         $query = DB::table($modelTable);
