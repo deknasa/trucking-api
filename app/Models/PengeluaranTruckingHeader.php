@@ -92,6 +92,8 @@ class PengeluaranTruckingHeader extends MyModel
             'akunpusat.keterangancoa as coa',
             'statusposting.memo as statusposting'
         )
+        ->whereBetween('pengeluarantruckingheader.tglbukti', [date('Y-m-d',strtotime(request()->tgldari)), date('Y-m-d',strtotime(request()->tglsampai))])
+
             ->leftJoin(DB::raw("pengeluarantrucking with (readuncommitted)"), 'pengeluarantruckingheader.pengeluarantrucking_id','pengeluarantrucking.id')
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'pengeluarantruckingheader.bank_id', 'bank.id')
             ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'pengeluarantruckingheader.coa', 'akunpusat.coa')
@@ -226,20 +228,21 @@ class PengeluaranTruckingHeader extends MyModel
 
                     break;
                 case "OR":
-                    foreach ($this->params['filters']['rules'] as $index => $filters) {
-                         if ($filters['field'] == 'pengeluarantrucking_id') {
-                            $query = $query->orWhere('pengeluarantrucking.keterangan', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'bank_id') {
-                            $query = $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'statusposting') {
-                            $query = $query->orWhere('statusposting.text', '=', "$filters[data]");
-                        } else if ($filters['field'] == 'statuscetak') {
-                            $query = $query->orWhere('statuscetak.text', '=', "$filters[data]");
-                        } else {
-                            $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                    $query = $query->where(function($query){
+                        foreach ($this->params['filters']['rules'] as $index => $filters) {
+                            if ($filters['field'] == 'pengeluarantrucking_id') {
+                                $query->orWhere('pengeluarantrucking.keterangan', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'bank_id') {
+                                $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'statusposting') {
+                                $query->orWhere('statusposting.text', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'statuscetak') {
+                                $query->orWhere('statuscetak.text', '=', "$filters[data]");
+                            } else {
+                                $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            }
                         }
-                    }
-
+                    });
                     break;
                 default:
 
