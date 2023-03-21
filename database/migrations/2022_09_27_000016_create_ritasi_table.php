@@ -22,6 +22,7 @@ class CreateRitasiTable extends Migration
             $table->date('tglbukti')->nullable();
             $table->integer('statusritasi')->nullable();
             $table->string('suratpengantar_nobukti',50)->nullable();
+            $table->integer('suratpengantar_urutke')->length(11)->nullable();
             $table->unsignedBigInteger('supir_id')->nullable();
             $table->unsignedBigInteger('trado_id')->nullable();
             $table->double('jarak',15,2)->nullable();

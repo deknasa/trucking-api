@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\PenerimaanTruckingHeader;
+use Illuminate\Support\Facades\DB;
 
 class PenerimaanTruckingHeaderSeeder extends Seeder
 {
@@ -14,47 +15,12 @@ class PenerimaanTruckingHeaderSeeder extends Seeder
      */
     public function run()
     {
-        PenerimaanTruckingHeader::create([
-            'nobukti' => 'DPO 0001/III/2022',
-            'tglbukti' => '2022-03-21',
-            'penerimaantrucking_id' => 1,
-            // 'keterangan' => 'DEPOSITO SUPIR',
-            'bank_id' => 1,
-            'coa' => '01.04.02.01',
-            'penerimaan_nobukti' => 'KMT 0001/III/2022',
-            // 'penerimaan_tgl' => '2022-03-21',
-            // 'proses_nobukti' => 'EBS 0001/III/2022',            
-            'modifiedby' => 'ADMIN',
+        DB::statement("delete penerimaantruckingheader");
+        DB::statement("DBCC CHECKIDENT ('penerimaantruckingheader', RESEED, 1);");
 
-        ]);
-
-        PenerimaanTruckingHeader::create([
-            'nobukti' => 'PJP 0001/III/2022',
-            'tglbukti' => '2021/3/21',
-            'penerimaantrucking_id' => 2,
-            // 'keterangan' => 'PENGEMBALIAN PINJAMAN SUPIR',
-            'bank_id' => 1,
-            'coa' => '01.05.02.02',
-            'penerimaan_nobukti' => 'KMT 0002/III/2022',
-            // 'penerimaan_tgl' => '2022/3/21',
-            // 'proses_nobukti' => 'EBS 0001/III/2022',            
-            'modifiedby' => 'ADMIN',
-        ]);
-
-        PenerimaanTruckingHeader::create([
-            'nobukti' => 'DPO 0001/IV/2022',
-            'tglbukti' => '2022-04-08',
-            'penerimaantrucking_id' => 1,
-            // 'keterangan' => 'DEPOSITO SUPIR',
-            'bank_id' => 1,
-            'coa' => '01.04.02.01',
-            'penerimaan_nobukti' => 'KMT 0001/IV/2022',
-            // 'penerimaan_tgl' => '2022-04-08',
-            // 'proses_nobukti' => 'PST 0001/III/2022',              
-            'modifiedby' => 'ADMIN',
-
-        ]);
-
-       
+        penerimaantruckingheader::create(['nobukti' => 'BBM 0001/II/2023', 'tglbukti' => '2023/2/1', 'keterangan' => '', 'penerimaantrucking_id' => '1', 'bank_id' => '0', 'coa' => '01.09.01.06', 'penerimaan_nobukti' => '', 'statusformat' => '265', 'statuscetak' => '175', 'userbukacetak' => '', 'tglbukacetak' => '1900/1/1', 'jumlahcetak' => '0', 'modifiedby' => 'ADMIN',]);
+        penerimaantruckingheader::create(['nobukti' => 'DPO 0001/II/2023', 'tglbukti' => '2023/2/1', 'keterangan' => '', 'penerimaantrucking_id' => '3', 'bank_id' => '0', 'coa' => '01.04.02.01', 'penerimaan_nobukti' => '', 'statusformat' => '125', 'statuscetak' => '175', 'userbukacetak' => '', 'tglbukacetak' => '1900/1/1', 'jumlahcetak' => '0', 'modifiedby' => 'ADMIN',]);
+        penerimaantruckingheader::create(['nobukti' => 'BBM 0002/II/2023', 'tglbukti' => '2023/2/1', 'keterangan' => '', 'penerimaantrucking_id' => '1', 'bank_id' => '0', 'coa' => '01.09.01.06', 'penerimaan_nobukti' => '', 'statusformat' => '265', 'statuscetak' => '175', 'userbukacetak' => '', 'tglbukacetak' => '1900/1/1', 'jumlahcetak' => '0', 'modifiedby' => 'ADMIN',]);
+        penerimaantruckingheader::create(['nobukti' => 'BBM 0003/II/2023', 'tglbukti' => '2023/2/1', 'keterangan' => '', 'penerimaantrucking_id' => '1', 'bank_id' => '0', 'coa' => '01.09.01.06', 'penerimaan_nobukti' => '', 'statusformat' => '265', 'statuscetak' => '175', 'userbukacetak' => '', 'tglbukacetak' => '1900/1/1', 'jumlahcetak' => '0', 'modifiedby' => 'ADMIN',]);
     }
 }
