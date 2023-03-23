@@ -16,8 +16,8 @@ class GajiSupirDepositoSeeder extends Seeder
     public function run()
     {
 
-        DB::statement("delete GajiSupirHeader");
-        DB::statement("DBCC CHECKIDENT ('GajiSupirHeader', RESEED, 1);");
+        DB::statement("delete gajisupirdeposito");
+        DB::statement("DBCC CHECKIDENT ('gajisupirdeposito', RESEED, 1);");
 
         gajisupirdeposito::create(['gajisupir_id' => '2', 'gajisupir_nobukti' => 'RIC 0002/II/2023', 'penerimaantrucking_nobukti' => 'DPO 0001/II/2023', 'pengeluarantrucking_nobukti' => '', 'supir_id' => '175', 'nominal' => '25000', 'modifiedby' => 'ADMIN',]);
     }
