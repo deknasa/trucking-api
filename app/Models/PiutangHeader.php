@@ -69,6 +69,7 @@ class PiutangHeader extends MyModel
             'piutangheader.userbukacetak',
             'agen.namaagen as agen_id',
         )
+            ->whereBetween('tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'piutangheader.statuscetak', 'parameter.id')
             ->leftJoin(DB::raw("agen with (readuncommitted)"), 'piutangheader.agen_id', 'agen.id')
             ->leftJoin(DB::raw($temppelunasan . " as c"), 'piutangheader.nobukti', 'c.piutang_nobukti');
@@ -117,7 +118,7 @@ class PiutangHeader extends MyModel
         $this->setRequestParameters();
 
         $temp = $this->createTempPiutang($id);
-       
+
         $query = DB::table('piutangheader')
             ->from(
                 DB::raw("piutangheader with (readuncommitted)")
@@ -130,7 +131,7 @@ class PiutangHeader extends MyModel
                 $query->whereRaw("$temp.sisa != 0")
                     ->orWhereRaw("$temp.sisa is null");
             });
-        
+
 
         $data = $query->get();
 
@@ -250,15 +251,17 @@ class PiutangHeader extends MyModel
 
                     break;
                 case "OR":
-                    foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'statuscetak') {
-                            $query = $query->orWhere('parameter.text', '=', "$filters[data]");
-                        } else if ($filters['field'] == 'agen_id') {
-                            $query = $query->orWhere('agen.namaagen', 'LIKE', "%$filters[data]%");
-                        } else {
-                            $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                    $query = $query->where(function ($query) {
+                        foreach ($this->params['filters']['rules'] as $index => $filters) {
+                            if ($filters['field'] == 'statuscetak') {
+                                $query = $query->orWhere('parameter.text', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'agen_id') {
+                                $query = $query->orWhere('agen.namaagen', 'LIKE', "%$filters[data]%");
+                            } else {
+                                $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            }
                         }
-                    }
+                    });
 
                     break;
                 default:
