@@ -117,7 +117,7 @@ class HutangHeader extends MyModel
                 'hutangheader.created_at',
                 'hutangheader.updated_at'
             )
-            ->whereBetween('tglbukti', [date('Y-m-d',strtotime(request()->tgldari)), date('Y-m-d',strtotime(request()->tglsampai))])
+            ->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'hutangheader.statuscetak', 'parameter.id')
             ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'hutangheader.coa', 'akunpusat.coa')
             ->leftJoin(DB::raw("supplier with (readuncommitted)"), 'hutangheader.supplier_id', 'supplier.id')
@@ -167,7 +167,7 @@ class HutangHeader extends MyModel
 
         $temp = $this->createTempHutang($id, $field);
 
-       
+
 
         $query = DB::table('hutangheader')->from(DB::raw("hutangheader with (readuncommitted)"))
             ->select(DB::raw("hutangheader.nobukti as nobukti,hutangheader.tglbukti, hutangheader.total," . $temp . ".sisa"))
@@ -211,6 +211,26 @@ class HutangHeader extends MyModel
 
     public function selectColumns($query)
     {
+        $tempbayar = '##tempbayar' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempbayar, function ($table) {
+            $table->string('hutang_nobukti', 100)->nullable();
+            $table->double('nominal', 15, 2)->nullable();
+        });
+
+        $tes = DB::table('hutangbayardetail')->from(
+            DB::raw("hutangbayardetail as a with (readuncommitted)")
+        )
+            ->select(
+                'a.hutang_nobukti',
+                DB::raw("sum(a.nominal+a.potongan) as nominal")
+            )
+            ->groupby('hutang_nobukti');
+
+        DB::table($tempbayar)->insertUsing([
+            'hutang_nobukti',
+            'nominal',
+        ], $tes);
+
         return $query->from(
             DB::raw($this->table . " with (readuncommitted)")
         )
@@ -222,6 +242,8 @@ class HutangHeader extends MyModel
                  $this->table.coa,
                  'supplier.namasupplier as supplier_id',
                  $this->table.total,
+                 isnull(c.nominal,0) as nominalbayar,
+                hutangheader.total-isnull(c.nominal,0) as sisahutang,
                  'parameter.text as statuscetak',
                  $this->table.userbukacetak,
                  $this->table.tglbukacetak,
@@ -232,8 +254,10 @@ class HutangHeader extends MyModel
                  $this->table.statusformat"
                 )
 
-            )->leftJoin(DB::raw("parameter with (readuncommitted)"), 'hutangheader.statuscetak', 'parameter.id')
-            ->leftJoin(DB::raw("supplier with (readuncommitted)"), 'hutangheader.supplier_id', 'supplier.id');
+            )
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'hutangheader.statuscetak', 'parameter.id')
+            ->leftJoin(DB::raw("supplier with (readuncommitted)"), 'hutangheader.supplier_id', 'supplier.id')
+            ->leftJoin(DB::raw($tempbayar . " as c"), 'hutangheader.nobukti', 'c.hutang_nobukti');
     }
 
     public function createTemp(string $modelTable)
@@ -246,6 +270,8 @@ class HutangHeader extends MyModel
             $table->string('coa', 50)->nullable();
             $table->string('supplier_id', 50)->nullable();
             $table->double('total', 15, 2)->nullable();
+            $table->double('nominalbayar', 15, 2)->nullable();
+            $table->double('sisahutang', 15, 2)->nullable();
             $table->string('statuscetak', 1000)->nullable();
             $table->string('userbukacetak', 50)->nullable();
             $table->date('tglbukacetak')->nullable();
@@ -262,7 +288,10 @@ class HutangHeader extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'coa', 'supplier_id', 'total', 'statuscetak', 'userbukacetak', 'tglbukacetak', 'jumlahcetak', 'modifiedby', 'created_at', 'updated_at', 'statusformat'], $models);
+        $models = $query
+            ->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))]);
+
+        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'coa', 'supplier_id', 'total','nominalbayar','sisahutang', 'statuscetak', 'userbukacetak', 'tglbukacetak', 'jumlahcetak', 'modifiedby', 'created_at', 'updated_at', 'statusformat'], $models);
 
         return $temp;
     }
@@ -287,7 +316,7 @@ class HutangHeader extends MyModel
                         } else if ($filters['field'] == 'total') {
                             $query->Where(DB::raw("hutangheader.total"), 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'tglbukti') {
-                            $query->where('hutangheader.tglbukti', '=', date('Y-m-d',strtotime($filters['data'])));
+                            $query->where('hutangheader.tglbukti', '=', date('Y-m-d', strtotime($filters['data'])));
                         } else if ($filters['field'] == 'nominalbayar') {
                             $query->where('c.nominal', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'sisahutang') {
@@ -299,7 +328,7 @@ class HutangHeader extends MyModel
 
                     break;
                 case "OR":
-                    $query = $query->where(function($query){
+                    $query = $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
                             if ($filters['field'] == 'statuscetak') {
                                 $query->orWhere('parameter.text', '=', "$filters[data]");
@@ -308,7 +337,7 @@ class HutangHeader extends MyModel
                             } else if ($filters['field'] == 'coa') {
                                 $query->orWhere('akunpusat.keterangancoa', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'tglbukti') {
-                                $query->orWhere('hutangheader.tglbukti', '=', date('Y-m-d',strtotime($filters['data'])));
+                                $query->orWhere('hutangheader.tglbukti', '=', date('Y-m-d', strtotime($filters['data'])));
                             } else if ($filters['field'] == 'total') {
                                 $query->orWhere(DB::raw("hutangheader.total"), 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'nominalbayar') {
@@ -320,7 +349,7 @@ class HutangHeader extends MyModel
                             }
                         }
                     });
-                        
+
                     break;
                 default:
 

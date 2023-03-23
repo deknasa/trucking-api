@@ -592,7 +592,6 @@ class HutangHeaderController extends Controller
      */
     public function destroy(Request $request, $id)
     {
-
         DB::beginTransaction();
 
         $getDetail = HutangDetail::lockForUpdate()->where('hutang_id', $id)->get();
@@ -670,7 +669,7 @@ class HutangHeaderController extends Controller
             $hutangheader->position = $selected->position;
             $hutangheader->id = $selected->id;
             $hutangheader->page = ceil($hutangheader->position / ($request->limit ?? 10));
-
+            
             return response([
                 'status' => true,
                 'message' => 'Berhasil dihapus',

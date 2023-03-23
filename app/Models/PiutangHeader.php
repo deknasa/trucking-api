@@ -69,7 +69,7 @@ class PiutangHeader extends MyModel
             'piutangheader.userbukacetak',
             'agen.namaagen as agen_id',
         )
-            ->whereBetween('tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
+            ->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'piutangheader.statuscetak', 'parameter.id')
             ->leftJoin(DB::raw("agen with (readuncommitted)"), 'piutangheader.agen_id', 'agen.id')
             ->leftJoin(DB::raw($temppelunasan . " as c"), 'piutangheader.nobukti', 'c.piutang_nobukti');
@@ -187,6 +187,26 @@ class PiutangHeader extends MyModel
 
     public function selectColumns($query)
     {
+        $temppelunasan = '##temppelunasan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($temppelunasan, function ($table) {
+            $table->string('piutang_nobukti', 100)->nullable();
+            $table->double('nominal', 15, 2)->nullable();
+        });
+
+        $tes = DB::table('pelunasanpiutangdetail')->from(
+            DB::raw("pelunasanpiutangdetail as a with (readuncommitted)")
+        )
+            ->select(
+                'a.piutang_nobukti',
+                DB::raw("sum(a.nominal+a.potongan) as nominal")
+            )
+            ->groupby('piutang_nobukti');
+
+        DB::table($temppelunasan)->insertUsing([
+            'piutang_nobukti',
+            'nominal',
+        ], $tes);
+
         return $query->select(
             DB::raw(
                 "$this->table.id,
@@ -194,13 +214,16 @@ class PiutangHeader extends MyModel
                  $this->table.tglbukti,
                  $this->table.postingdari,
                  $this->table.nominal,
+                 isnull(c.nominal,0) as nominalpelunasan,
+                 piutangheader.nominal-isnull(c.nominal,0) as sisapiutang,
                  $this->table.invoice_nobukti,
                  'agen.namaagen as agen_id',
                  $this->table.modifiedby,
                  $this->table.updated_at"
             )
         )
-            ->leftJoin(DB::raw("agen with (readuncommitted)"), 'piutangheader.agen_id', 'agen.id');
+            ->leftJoin(DB::raw("agen with (readuncommitted)"), 'piutangheader.agen_id', 'agen.id')
+            ->leftJoin(DB::raw($temppelunasan . " as c"), 'piutangheader.nobukti', 'c.piutang_nobukti');
     }
 
     public function createTemp(string $modelTable)
@@ -212,6 +235,8 @@ class PiutangHeader extends MyModel
             $table->date('tglbukti')->nullable();
             $table->string('postingdari', 1000)->nullable();
             $table->float('nominal')->nullable();
+            $table->float('nominalpelunasan')->nullable();
+            $table->float('sisapiutang')->nullable();
             $table->string('invoice_nobukti')->nullable();
             $table->string('agen_id')->nullable();
             $table->string('modifiedby')->default();
@@ -224,7 +249,9 @@ class PiutangHeader extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'postingdari', 'nominal', 'invoice_nobukti', 'agen_id', 'modifiedby', 'updated_at'], $models);
+        $models = $query
+            ->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))]);
+        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'postingdari', 'nominal','nominalpelunasan','sisapiutang', 'invoice_nobukti', 'agen_id', 'modifiedby', 'updated_at'], $models);
 
         return $temp;
     }

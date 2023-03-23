@@ -79,6 +79,7 @@ class PiutangHeaderController extends Controller
             if ($tanpaprosesnobukti == 1) {
                 $piutang->nobukti = $request->nobukti;
             }
+            $getCoa = Agen::from(DB::raw("agen with (readuncommitted)"))->where('id', $request->agen_id)->first();
 
             $statusCetak = Parameter::from(
                 DB::raw("parameter with (readuncommitted)")
@@ -90,6 +91,8 @@ class PiutangHeaderController extends Controller
             $piutang->modifiedby = auth('api')->user()->name;
             $piutang->statusformat = $request->statusformat ?? $format->id;
             $piutang->agen_id = $request->agen_id;
+            $piutang->coadebet = $getCoa->coa;
+            $piutang->coakredit = $getCoa->coapendapatan;
             $piutang->statuscetak = $statusCetak->id;
             $piutang->userbukacetak = '';
             $piutang->tglbukacetak = '';
@@ -116,6 +119,7 @@ class PiutangHeaderController extends Controller
             $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
             $idLogTrail = $storedLogTrail['id'];
+
 
             /* Store detail */
             $detaillog = [];
@@ -183,8 +187,6 @@ class PiutangHeaderController extends Controller
             //         DB::raw("parameter with (readuncommitted)")
             //     )->where('grp', 'JURNAL PIUTANG MANUAL')->get();
             // }
-
-            $getCoa = Agen::from(DB::raw("agen with (readuncommitted)"))->where('id', $piutang->agen_id)->first();
 
             $jurnalHeader = [
                 'tanpaprosesnobukti' => 1,
@@ -272,9 +274,13 @@ class PiutangHeaderController extends Controller
         try {
 
             $proseslain = $request->proseslain ?? 0;
+            $getCoa = Agen::from(DB::raw("agen with (readuncommitted)"))->where('id', $request->agen_id)->first();
+
             $piutangHeader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $piutangHeader->modifiedby = auth('api')->user()->name;
             $piutangHeader->agen_id = $request->agen_id;
+            $piutangHeader->coadebet = $getCoa->coa;
+            $piutangHeader->coakredit = $getCoa->coapendapatan;
             $piutangHeader->nominal = ($proseslain != 0) ? $request->nominal : array_sum($request->nominal_detail);
 
             if ($piutangHeader->save()) {
@@ -349,8 +355,7 @@ class PiutangHeaderController extends Controller
             $parameterController = new ParameterController;
             $statusApp = $parameterController->getparameterid('STATUS APPROVAL', 'STATUS APPROVAL', 'NON APPROVAL');
 
-            $coapiutang = DB::table('parameter')
-                ->where('grp', 'JURNAL PIUTANG MANUAL')->get();
+
 
             $jurnalHeader = [
                 'tanpaprosesnobukti' => 1,
@@ -367,33 +372,29 @@ class PiutangHeaderController extends Controller
             $jurnaldetail = [];
 
             for ($i = 0; $i < count($counter); $i++) {
-                $detail = [];
 
-                foreach ($coapiutang as $key => $coa) {
-                    $a = 0;
-                    $memo = json_decode($coa->memo, true);
 
-                    $jurnalDetail = [
-                        [
-                            'nobukti' => $piutangHeader->nobukti,
-                            'tglbukti' => date('Y-m-d', strtotime($piutangHeader->tglbukti)),
-                            'keterangan' => ($request->datadetail != '') ? $request->datadetail[$i]['keterangan'] : $request->keterangan_detail[$i],
-                            'modifiedby' => auth('api')->user()->name,
-                            'baris' => $i,
-                        ]
-                    ];
-                    if ($coa->subgrp == 'DEBET') {
-                        $jurnalDetail[$a]['nominal'] = ($request->datadetail != '') ? $request->datadetail[$i]['nominal'] : $request->nominal_detail[$i];
-                        $jurnalDetail[$a]['coa'] = $memo['JURNAL'];
-                    } else {
-                        $jurnalDetail[$a]['nominal'] = ($request->datadetail != '') ? -$request->datadetail[$i]['nominal'] : '-' . $request->nominal_detail[$i];
-                        $jurnalDetail[$a]['coa'] = $memo['JURNAL'];
-                    }
-
-                    $detail = array_merge($detail, $jurnalDetail);
-                    $a++;
-                }
-                $jurnaldetail = array_merge($jurnaldetail, $detail);
+                $jurnalDetail = [
+                    [
+                        'nobukti' => $piutangHeader->nobukti,
+                        'tglbukti' => date('Y-m-d', strtotime($piutangHeader->tglbukti)),
+                        'coa' =>  $getCoa->coa,
+                        'nominal' => ($request->datadetail != '') ? $request->datadetail[$i]['nominal'] : $request->nominal_detail[$i],
+                        'keterangan' => ($request->datadetail != '') ? $request->datadetail[$i]['keterangan'] : $request->keterangan_detail[$i],
+                        'modifiedby' => auth('api')->user()->name,
+                        'baris' => $i,
+                    ],
+                    [
+                        'nobukti' => $piutangHeader->nobukti,
+                        'tglbukti' => date('Y-m-d', strtotime($piutangHeader->tglbukti)),
+                        'coa' => $getCoa->coapendapatan,
+                        'nominal' => ($request->datadetail != '') ? '-' . $request->datadetail[$i]['nominal'] : '-' . $request->nominal_detail[$i],
+                        'keterangan' => ($request->datadetail != '') ? $request->datadetail[$i]['keterangan'] : $request->keterangan_detail[$i],
+                        'modifiedby' => auth('api')->user()->name,
+                        'baris' => $i,
+                    ]
+                ];
+                $jurnaldetail = array_merge($jurnaldetail, $jurnalDetail);
             }
 
             $jurnal = $this->storeJurnal($jurnalHeader, $jurnaldetail);
@@ -501,7 +502,7 @@ class PiutangHeaderController extends Controller
             $piutangHeader->position = $selected->position;
             $piutangHeader->id = $selected->id;
             $piutangHeader->page = ceil($piutangHeader->position / ($request->limit ?? 10));
-
+            
             return response([
                 'status' => true,
                 'message' => 'Berhasil dihapus',

@@ -31,7 +31,8 @@ class NotaDebetHeader extends MyModel
         $query = DB::table($this->table);
         $query = $this->selectColumns($query)->from(
             DB::raw($this->table . " with (readuncommitted)")
-            )
+        )
+            ->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
             ->leftJoin(DB::raw("pelunasanpiutangheader as pelunasanpiutang with (readuncommitted)"), 'notadebetheader.pelunasanpiutang_nobukti', 'pelunasanpiutang.nobukti')
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'notadebetheader.statusapproval', 'parameter.id')
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'notadebetheader.statuscetak', 'statuscetak.id');
@@ -107,7 +108,7 @@ class NotaDebetHeader extends MyModel
         ], $models);
         return $temp;
     }
-    
+
     public function selectColumns($query)
     {
         return $query->from(
@@ -209,18 +210,19 @@ class NotaDebetHeader extends MyModel
 
                     break;
                 case "OR":
-                    foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        switch ($filters['field']) {
-                            case 'statusapproval_memo':
-                                $query = $query->where('parameter.memo', 'LIKE', "%$filters[data]%");
-                                break;
+                    $query = $query->where(function ($query) {
+                        foreach ($this->params['filters']['rules'] as $index => $filters) {
+                            switch ($filters['field']) {
+                                case 'statusapproval_memo':
+                                    $query = $query->where('parameter.memo', 'LIKE', "%$filters[data]%");
+                                    break;
 
-                            default:
-                                $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                                break;
+                                default:
+                                    $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                    break;
+                            }
                         }
-                    }
-
+                    });
                     break;
                 default:
 

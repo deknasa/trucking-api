@@ -30,9 +30,11 @@ class NotaKreditHeader extends MyModel
 
         $query = DB::table($this->table);
         $query = $this->selectColumns($query)
-        ->leftJoin('parameter as statuscetak','notakreditheader.statuscetak','statuscetak.id')
-        ->leftJoin('pelunasanpiutangheader as pelunasanpiutang','notakreditheader.pelunasanpiutang_nobukti','pelunasanpiutang.nobukti')
-        ->leftJoin('parameter','notakreditheader.statusapproval','parameter.id');
+
+            ->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
+            ->leftJoin('parameter as statuscetak', 'notakreditheader.statuscetak', 'statuscetak.id')
+            ->leftJoin('pelunasanpiutangheader as pelunasanpiutang', 'notakreditheader.pelunasanpiutang_nobukti', 'pelunasanpiutang.nobukti')
+            ->leftJoin('parameter', 'notakreditheader.statusapproval', 'parameter.id');
 
 
         $this->totalRows = $query->count();
@@ -47,7 +49,7 @@ class NotaKreditHeader extends MyModel
         return $data;
     }
 
-   
+
     public function createTemp(string $modelTable)
     {
         $this->setRequestParameters();
@@ -56,16 +58,16 @@ class NotaKreditHeader extends MyModel
 
         Schema::create($temp, function ($table) {
             $table->bigInteger('id')->nullable();
-            $table->string('nobukti',50)->unique();
-            $table->string('pelunasanpiutang_nobukti',50)->nullable();
+            $table->string('nobukti', 50)->unique();
+            $table->string('pelunasanpiutang_nobukti', 50)->nullable();
             $table->date('tglbukti')->nullable();
-            $table->string('postingdari',50)->nullable();
+            $table->string('postingdari', 50)->nullable();
             $table->integer('statusapproval')->length(11)->nullable();
             $table->date('tgllunas')->nullable();
-            $table->string('userapproval',50)->nullable();
+            $table->string('userapproval', 50)->nullable();
             $table->date('tglapproval')->nullable();
-            $table->unsignedBigInteger('statusformat')->nullable();            
-            $table->string('modifiedby',50)->nullable();
+            $table->unsignedBigInteger('statusformat')->nullable();
+            $table->string('modifiedby', 50)->nullable();
             $table->increments('position');
             $table->dateTime('created_at')->nullable();
             $table->dateTime('updated_at')->nullable();
@@ -87,7 +89,7 @@ class NotaKreditHeader extends MyModel
         );
         $query = $this->sort($query);
         $models = $this->filter($query);
-        
+
         DB::table($temp)->insertUsing([
             "id",
             "nobukti",
@@ -103,7 +105,7 @@ class NotaKreditHeader extends MyModel
         ], $models);
         return $temp;
     }
-        
+
     public function selectColumns($query)
     {
         return $query->select(
@@ -131,7 +133,7 @@ class NotaKreditHeader extends MyModel
         $this->setRequestParameters();
 
         $query = DB::table('pelunasanpiutangdetail')
-        ->select(DB::raw('
+            ->select(DB::raw('
         pelunasanpiutangdetail.id as detail_id,
         pelunasanpiutangdetail.nobukti,
         pelunasanpiutangdetail.tglcair,
@@ -143,20 +145,20 @@ class NotaKreditHeader extends MyModel
         pelunasanpiutangdetail.coapenyesuaian,
         COALESCE (pelunasanpiutangdetail.penyesuaian, 0) as penyesuaian '))
 
-        ->leftJoin('piutangheader','piutangheader.nobukti','pelunasanpiutangdetail.piutang_nobukti')
-        ->leftJoin('notakreditheader','notakreditheader.pelunasanpiutang_nobukti','pelunasanpiutangdetail.nobukti')
-        ->leftJoin('pelanggan', 'pelunasanpiutangdetail.pelanggan_id', 'pelanggan.id')
-        ->leftJoin('agen', 'pelunasanpiutangdetail.agen_id', 'agen.id')
-        ->whereRaw(" EXISTS (
+            ->leftJoin('piutangheader', 'piutangheader.nobukti', 'pelunasanpiutangdetail.piutang_nobukti')
+            ->leftJoin('notakreditheader', 'notakreditheader.pelunasanpiutang_nobukti', 'pelunasanpiutangdetail.nobukti')
+            ->leftJoin('pelanggan', 'pelunasanpiutangdetail.pelanggan_id', 'pelanggan.id')
+            ->leftJoin('agen', 'pelunasanpiutangdetail.agen_id', 'agen.id')
+            ->whereRaw(" EXISTS (
             SELECT notakreditheader.pelunasanpiutang_nobukti
             FROM notakreditdetail
 			left join notakreditheader on notakreditdetail.notakredit_id = notakreditheader.id
             WHERE notakreditheader.pelunasanpiutang_nobukti = pelunasanpiutangdetail.nobukti   
           )")
-        ->where('pelunasanpiutangdetail.penyesuaian', '>', 0)
-        ->where('notakreditheader.id' , $id);
-            
-       
+            ->where('pelunasanpiutangdetail.penyesuaian', '>', 0)
+            ->where('notakreditheader.id', $id);
+
+
 
         $data = $query->get();
 
@@ -191,7 +193,7 @@ class NotaKreditHeader extends MyModel
                         switch ($filters['field']) {
                             case 'statusapproval_memo':
                                 $query = $query->where('parameter.memo', 'LIKE', "%$filters[data]%");
-                                break;                            
+                                break;
                             default:
                                 $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                 break;
@@ -200,18 +202,19 @@ class NotaKreditHeader extends MyModel
 
                     break;
                 case "OR":
-                    foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        switch ($filters['field']) {
-                            case 'statusapproval_memo':
-                                $query = $query->where('parameter.memo', 'LIKE', "%$filters[data]%");
-                                break;
-                            
-                            default:
-                                $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                                break;
-                        }
-                    }
+                    $query = $query->where(function ($query) {
+                        foreach ($this->params['filters']['rules'] as $index => $filters) {
+                            switch ($filters['field']) {
+                                case 'statusapproval_memo':
+                                    $query = $query->where('parameter.memo', 'LIKE', "%$filters[data]%");
+                                    break;
 
+                                default:
+                                    $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                    break;
+                            }
+                        }
+                    });
                     break;
                 default:
 
@@ -222,9 +225,9 @@ class NotaKreditHeader extends MyModel
             $this->totalPages = $this->params['limit'] > 0 ? ceil($this->totalRows / $this->params['limit']) : 1;
         }
         if (request()->cetak && request()->periode) {
-            $query->where('notakreditheader.statuscetak','<>', request()->cetak)
-                  ->whereYear('notakreditheader.tglbukti','=', request()->year)
-                  ->whereMonth('notakreditheader.tglbukti','=', request()->month);
+            $query->where('notakreditheader.statuscetak', '<>', request()->cetak)
+                ->whereYear('notakreditheader.tglbukti', '=', request()->year)
+                ->whereMonth('notakreditheader.tglbukti', '=', request()->month);
             return $query;
         }
 
@@ -235,11 +238,11 @@ class NotaKreditHeader extends MyModel
         $this->setRequestParameters();
         $query = NotaKreditHeader::from(DB::raw("notakreditheader with (readuncommitted)"));
         $query = $this->selectColumns($query)
-        ->leftJoin('parameter','notakreditheader.statusapproval','parameter.id')
-        ->leftJoin('parameter as statuscetak','notakreditheader.statuscetak','statuscetak.id')
-        ->leftJoin('pelunasanpiutangheader as pelunasanpiutang','notakreditheader.pelunasanpiutang_nobukti','pelunasanpiutang.nobukti');
- 
-        $data = $query->where("$this->table.id",$id)->first();
+            ->leftJoin('parameter', 'notakreditheader.statusapproval', 'parameter.id')
+            ->leftJoin('parameter as statuscetak', 'notakreditheader.statuscetak', 'statuscetak.id')
+            ->leftJoin('pelunasanpiutangheader as pelunasanpiutang', 'notakreditheader.pelunasanpiutang_nobukti', 'pelunasanpiutang.nobukti');
+
+        $data = $query->where("$this->table.id", $id)->first();
         return $data;
     }
     public function paginate($query)
