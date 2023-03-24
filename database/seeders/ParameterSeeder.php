@@ -290,6 +290,9 @@ class ParameterSeeder extends Seeder
         parameter::create(['grp' => 'STATUS UPAH ZONA', 'subgrp' => 'STATUS UPAH ZONA', 'kelompok' => '', 'text' => 'UPAH ZONA', 'memo' => '{"MEMO":"UPAH ZONA","SINGKATAN":"UZ","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'STATUS UPAH ZONA', 'subgrp' => 'STATUS UPAH ZONA', 'kelompok' => '', 'text' => 'NON UPAH ZONA', 'memo' => '{"MEMO":"NON UPAH ZONA","SINGKATAN":"NUZ","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => 'YA',]);
         parameter::create(['grp' => 'STATUS RITASI', 'subgrp' => 'STATUS RITASI', 'kelompok' => '', 'text' => 'NAIK/TURUN KEPALA', 'memo' => '{"MEMO":"NAIK/TURUN KEPALA","SINGKATAN":"NTK","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'JURNAL PROSES GAJI SUPIR', 'subgrp' => 'DEBET', 'kelompok' => 'PENGELUARAN', 'text' => 'DEBETPENGELUARAN', 'memo' => '{"MEMO":"JURNAL PENGELUARAN PROSES GAJI SUPIR","SINGKATAN":"JPPGS","WARNA":"#28A745","JURNAL":"03.02.02.04"}', 'type' => '0', 'modifiedby' => '1', 'default' => '',]);
+        parameter::create(['grp' => 'JURNAL PROSES GAJI SUPIR', 'subgrp' => 'DEBET', 'kelompok' => 'PROSES GAJI SUPIR', 'text' => 'DEBETPROSESGAJISUPIR', 'memo' => '{"MEMO":"DEBET JURNAL PROSES GAJI SUPIR","SINGKATAN":"DJPGS","WARNA":"#28A745","JURNAL":"07.01.01.01"}', 'type' => '0', 'modifiedby' => '1', 'default' => '',]);
+        parameter::create(['grp' => 'JURNAL PROSES GAJI SUPIR', 'subgrp' => 'KREDIT', 'kelompok' => 'PROSES GAJI SUPIR', 'text' => 'KREDITPROSESGAJISUPIR', 'memo' => '{"MEMO":"KREDIT JURNAL PROSES GAJI SUPIR","SINGKATAN":"KJPGS","WARNA":"#28A745","JURNAL":"03.02.02.04"}', 'type' => '0', 'modifiedby' => '1', 'default' => '',]);
         
     }
 }
