@@ -77,9 +77,11 @@ class AbsensiSupirHeader extends MyModel
             'absensisupirheader.created_at',
             'absensisupirheader.updated_at'
         )
-            ->whereBetween('tglbukti', [date('Y-m-d',strtotime(request()->tgldari)), date('Y-m-d',strtotime(request()->tglsampai))])
-            ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'absensisupirheader.statuscetak', 'statuscetak.id');
-
+        // request()->tgldari ?? date('Y-m-d',strtotime('today'))
+        ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'absensisupirheader.statuscetak', 'statuscetak.id');
+        if (request()->tgldari) {
+            $query->whereBetween('tglbukti', [date('Y-m-d',strtotime(request()->tgldari )), date('Y-m-d',strtotime(request()->tglsampai ))]);
+        }
            
 
         $this->totalRows = $query->count();

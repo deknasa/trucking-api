@@ -149,23 +149,36 @@ class PenerimaanStokHeader extends MyModel
         });
 
         $query = DB::table($modelTable);
-        $query = $this->select('id',
-        'nobukti',
-        'tglbukti',
-        'penerimaanstok_id',
-        'penerimaanstok_nobukti',
-        'pengeluaranstok_nobukti',
-        'supplier_id',
-        'nobon',
-        'hutang_nobukti',
-        'trado_id',
-        'gudang_id',
-        'gudangdari_id',
-        'gudangke_id',
-        'coa',
-        'keterangan',
-        'statusformat',
-        'modifiedby');
+        $query = $this->select(
+            "$modelTable.id",
+            "$modelTable.nobukti",
+            "$modelTable.tglbukti",
+            "$modelTable.penerimaanstok_id",
+            "$modelTable.penerimaanstok_nobukti",
+            "$modelTable.pengeluaranstok_nobukti",
+            "$modelTable.supplier_id",
+            "$modelTable.nobon",
+            "$modelTable.hutang_nobukti",
+            "$modelTable.trado_id",
+            "$modelTable.gudang_id",
+            "$modelTable.gudangdari_id",
+            "$modelTable.gudangke_id",
+            "$modelTable.coa",
+            "$modelTable.keterangan",
+            "$modelTable.statusformat",
+            "$modelTable.modifiedby")
+        ->leftJoin('gudang as gudangs','penerimaanstokheader.gudang_id','gudangs.id')
+        ->leftJoin('gudang as dari','penerimaanstokheader.gudangdari_id','dari.id')
+        ->leftJoin('gudang as ke','penerimaanstokheader.gudangke_id','ke.id')
+        ->leftJoin('parameter as statuscetak','penerimaanstokheader.statuscetak','statuscetak.id')
+        ->leftJoin('penerimaanstok','penerimaanstokheader.penerimaanstok_id','penerimaanstok.id')
+        ->leftJoin('trado','penerimaanstokheader.trado_id','trado.id')
+        ->leftJoin('trado as tradodari ','penerimaanstokheader.tradodari_id','tradodari.id')
+        ->leftJoin('trado as tradoke ','penerimaanstokheader.tradoke_id','tradoke.id')
+        ->leftJoin('gandengan as gandengandari ','penerimaanstokheader.gandengandari_id','gandengandari.id')
+        ->leftJoin('gandengan as gandenganke ','penerimaanstokheader.gandenganke_id','gandenganke.id')
+        ->leftJoin('gandengan as gandengan ','penerimaanstokheader.gandenganke_id','gandengan.id')
+        ->leftJoin('supplier','penerimaanstokheader.supplier_id','supplier.id');
         $query = $this->sort($query);
         $models = $this->filter($query);
         
@@ -249,7 +262,7 @@ class PenerimaanStokHeader extends MyModel
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
                             switch ($filters['field']) {
                                 case 'penerimaanstok':
-                                    $query->where('penerimaanstok.kodepenerimaan', 'LIKE', "%$filters[data]%");
+                                    $query->orWhere('penerimaanstok.kodepenerimaan', 'LIKE', "%$filters[data]%");
                                     break;
                                 case 'gudangs':
                                     $query->orWhere('gudangs.gudang', 'LIKE', "%$filters[data]%");
@@ -274,15 +287,15 @@ class PenerimaanStokHeader extends MyModel
                             }
                         }
                     });//function query
-                    foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'penerimaanstok_id_not_null') {
-                            $query = $query->where($this->table . '.penerimaanstok_id', '=', "$filters[data]")->whereRaw(" $this->table.nobukti NOT IN 
-                                (SELECT DISTINCT $this->table.penerimaanstok_nobukti
-                                FROM penerimaanstokheader
-                                WHERE $this->table.penerimaanstok_nobukti IS NOT NULL)
-                                ");
-                        }
-                    }
+                    // foreach ($this->params['filters']['rules'] as $index => $filters) {
+                    //     if ($filters['field'] == 'penerimaanstok_id_not_null') {
+                    //         $query = $query->where($this->table . '.penerimaanstok_id', '=', "$filters[data]")->whereRaw(" $this->table.nobukti NOT IN 
+                    //             (SELECT DISTINCT $this->table.penerimaanstok_nobukti
+                    //             FROM penerimaanstokheader
+                    //             WHERE $this->table.penerimaanstok_nobukti IS NOT NULL)
+                    //             ");
+                    //     }
+                    // }
 
                     break;
                 default:

@@ -30,9 +30,11 @@ class AbsensiSupirDetailController extends Controller
             return response([
                 'data' => $absensiSupirDetail->get(),
                 'user' => $getuser,
-                'total' => $absensiSupirDetail->totalRows,
-                "records" => $absensiSupirDetail->totalPages,
-                "totalNominal" => $absensiSupirDetail->totalNominal
+                "totalNominal" => $absensiSupirDetail->totalNominal,
+                'attributes' => [
+                    'totalRows' => $absensiSupirDetail->totalRows,
+                    "totalPages" => $absensiSupirDetail->totalPages,
+                ]
 
             ]);
     }
