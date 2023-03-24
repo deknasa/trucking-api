@@ -33,7 +33,8 @@ class InvoiceChargeGandenganHeader extends MyModel
         $query = $this->selectColumns($query)->from(
             DB::raw($this->table . " with (readuncommitted)")
         )
-        
+
+            ->whereBetween($this->table.'.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'invoicechargegandenganheader.statusapproval', 'parameter.id')
             ->leftJoin(DB::raw("parameter as statusformat with (readuncommitted)"), 'invoicechargegandenganheader.statusformat', 'statusformat.id')
             ->leftJoin(DB::raw("parameter as cetak with (readuncommitted)"), 'invoicechargegandenganheader.statuscetak', 'cetak.id')
@@ -78,11 +79,11 @@ class InvoiceChargeGandenganHeader extends MyModel
                 "$this->table.updated_at",
                 DB::raw('(case when (year(invoicechargegandenganheader.tglapproval) <= 2000) then null else invoicechargegandenganheader.tglapproval end ) as tglapproval'),
 
-                
-                
+
+
             );
     }
-    
+
     public function createTemp(string $modelTable)
     {
         $this->setRequestParameters();
@@ -132,6 +133,7 @@ class InvoiceChargeGandenganHeader extends MyModel
 
         $query = $this->sort($query);
         $models = $this->filter($query);
+        $models =  $query->whereBetween($this->table.'.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))]);
 
         DB::table($temp)->insertUsing([
             'id',
@@ -160,38 +162,39 @@ class InvoiceChargeGandenganHeader extends MyModel
         $query = $this->selectColumns($query)->from(
             DB::raw($this->table . " with (readuncommitted)")
         )
-        ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'invoicechargegandenganheader.statusapproval', 'parameter.id')
-        ->leftJoin(DB::raw("parameter as statusformat with (readuncommitted)"), 'invoicechargegandenganheader.statusformat', 'statusformat.id')
-        ->leftJoin(DB::raw("parameter as cetak with (readuncommitted)"), 'invoicechargegandenganheader.statuscetak', 'cetak.id')
-        ->leftJoin(DB::raw("agen with (readuncommitted)"), 'invoicechargegandenganheader.agen_id', 'agen.id');
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'invoicechargegandenganheader.statusapproval', 'parameter.id')
+            ->leftJoin(DB::raw("parameter as statusformat with (readuncommitted)"), 'invoicechargegandenganheader.statusformat', 'statusformat.id')
+            ->leftJoin(DB::raw("parameter as cetak with (readuncommitted)"), 'invoicechargegandenganheader.statuscetak', 'cetak.id')
+            ->leftJoin(DB::raw("agen with (readuncommitted)"), 'invoicechargegandenganheader.agen_id', 'agen.id');
 
         $data = $query->where("$this->table.id", $id)->first();
         return $data;
     }
 
 
-    public function getInvoiceGandengan($id){
+    public function getInvoiceGandengan($id)
+    {
         $query = DB::table('invoicechargegandengandetail')->from(DB::raw("invoicechargegandengandetail with (readuncommitted)"));
 
-            $query->select(
-                'invoicechargegandengandetail.id',
-                'header.nobukti as nobukti_header',
-                'header.tglbukti',
-                'header.nominal as nominal_header',
-                'invoicechargegandengandetail.jobtrucking',
-                'invoicechargegandengandetail.tgltrip',
-                'invoicechargegandengandetail.jumlahhari',
-                'invoicechargegandengandetail.nominal as nominal_detail',
-                'invoicechargegandengandetail.trado_id',
-                'trado.kodetrado as nopolisi',
-                'invoicechargegandengandetail.keterangan',
-            )
-                ->leftJoin(DB::raw("invoicechargegandenganheader as header with (readuncommitted)"), 'header.id', 'invoicechargegandengandetail.invoicechargegandengan_id')
-                ->leftJoin(DB::raw("trado with (readuncommitted)"), 'trado.id', 'invoicechargegandengandetail.trado_id');
+        $query->select(
+            'invoicechargegandengandetail.id',
+            'header.nobukti as nobukti_header',
+            'header.tglbukti',
+            'header.nominal as nominal_header',
+            'invoicechargegandengandetail.jobtrucking',
+            'invoicechargegandengandetail.tgltrip',
+            'invoicechargegandengandetail.jumlahhari',
+            'invoicechargegandengandetail.nominal as nominal_detail',
+            'invoicechargegandengandetail.trado_id',
+            'trado.kodetrado as nopolisi',
+            'invoicechargegandengandetail.keterangan',
+        )
+            ->leftJoin(DB::raw("invoicechargegandenganheader as header with (readuncommitted)"), 'header.id', 'invoicechargegandengandetail.invoicechargegandengan_id')
+            ->leftJoin(DB::raw("trado with (readuncommitted)"), 'trado.id', 'invoicechargegandengandetail.trado_id');
 
 
-            $query->where('invoicechargegandengandetail.invoicechargegandengan_id', '=', $id);
-            return $query->get();
+        $query->where('invoicechargegandengandetail.invoicechargegandengan_id', '=', $id);
+        return $query->get();
     }
 
     public function sort($query)
@@ -208,9 +211,11 @@ class InvoiceChargeGandenganHeader extends MyModel
                     }
                     break;
                 case "OR":
-                    foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                    }
+                    $query = $query->where(function ($query) {
+                        foreach ($this->params['filters']['rules'] as $index => $filters) {
+                            $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                        }
+                    });
                     break;
                 default:
                     break;
@@ -239,6 +244,3 @@ class InvoiceChargeGandenganHeader extends MyModel
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
 }
-
-
-

@@ -53,7 +53,7 @@ class HutangBayarHeader extends MyModel
                 'hutangbayarheader.tglcair'
 
             )
-            ->whereBetween('tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
+            ->whereBetween($this->table.'.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
             ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'hutangbayarheader.coa', 'akunpusat.coa')
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'hutangbayarheader.bank_id', 'bank.id')
             ->leftJoin(DB::raw("supplier with (readuncommitted)"), 'hutangbayarheader.supplier_id', 'supplier.id')

@@ -117,16 +117,6 @@ class ProsesGajiSupirHeaderController extends Controller
                         ]
                     );
                 }
-                if ($request->nomPinjaman > 0) {
-                    $request->validate(
-                        [
-                            'bankPinjaman' => 'required',
-                        ],
-                        [
-                            'bankPinjaman.required' => 'bank posting pinjaman pribadi ' . app(ErrorController::class)->geterror('WI')->keterangan,
-                        ]
-                    );
-                }
 
                 $group = 'PROSES GAJI SUPIR BUKTI';
                 $subgroup = 'PROSES GAJI SUPIR BUKTI';
@@ -588,91 +578,6 @@ class ProsesGajiSupirHeaderController extends Controller
                     $penerimaanBBM = new StorePenerimaanHeaderRequest($penerimaanHeaderBBM);
                     app(PenerimaanHeaderController::class)->store($penerimaanBBM);
                 }
-                // POSTING PINJAMAN
-
-                if ($request->nomPinjaman != 0) {
-                    // SAVE TO PENERIMAAN
-                    $queryPengeluaranPinjaman = Bank::from(DB::raw("bank with (readuncommitted)"))
-                        ->select(
-                            'parameter.grp',
-                            'parameter.subgrp',
-                            'bank.formatpengeluaran',
-                            'bank.coa',
-                            'bank.tipe'
-                        )
-                        ->join(DB::raw("parameter with (readuncommitted)"), 'bank.formatpengeluaran', 'parameter.id')
-                        ->whereRaw("bank.id = $request->bank_idPinjaman")
-                        ->first();
-
-                    $group = $queryPengeluaranPinjaman->grp;
-                    $subgroup = $queryPengeluaranPinjaman->subgrp;
-                    $formatPinjaman = DB::table('parameter')
-                        ->where('grp', $group)
-                        ->where('subgrp', $subgroup)
-                        ->first();
-                    $penerimaanRequestPinjaman = new Request();
-                    $penerimaanRequestPinjaman['group'] = $queryPengeluaranPinjaman->grp;
-                    $penerimaanRequestPinjaman['subgroup'] = $queryPengeluaranPinjaman->subgrp;
-                    $penerimaanRequestPinjaman['table'] = 'pengeluaranheader';
-                    $penerimaanRequestPinjaman['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
-
-                    $nobuktiPengeluaranPinjaman = app(Controller::class)->getRunningNumber($penerimaanRequestPinjaman)->original['data'];
-                    $pengeluaranDetail = [];
-                    $gajiSupirPinjaman = GajiSupirHeader::from(DB::raw("gajisupirheader with (readuncommitted)"))->whereRaw("tglbukti >= '$prosesgajisupirheader->tgldari'")
-                        ->whereRaw("tglbukti <= '$prosesgajisupirheader->tglsampai'")
-                        ->whereRaw("gajisupirheader.nobukti in(select gajisupir_nobukti from prosesgajisupirdetail where prosesgajisupir_id='$prosesgajisupirheader->id')")
-                        ->whereRaw("gajisupirheader.nobukti in(select gajisupir_nobukti from gajisupirpinjaman)")
-                        ->get();
-                    foreach ($gajiSupirPinjaman as $key => $value) {
-                        $fetchPinjaman = GajiSupirPinjaman::from(DB::raw("gajisupirpinjaman with (readuncommitted)"))->where('gajisupir_nobukti', $value->nobukti)->first();
-                        $supir = Supir::from(DB::raw("supir with (readuncommitted)"))->select('namasupir')->where('id', $fetchPinjaman->supir_id)->first();
-                        $pengeluaranPinjaman = PengeluaranTruckingHeader::from(DB::raw("pengeluarantruckingheader with (readuncommitted)"))
-                            ->where('nobukti', $fetchPinjaman->pengeluarantrucking_nobukti)->first();
-
-                        $pengeluaranTruckingHeaderPinjaman = [
-                            'isUpdate' => 2,
-                            'postingdari' => 'PROSES GAJI SUPIR',
-                            'from' => 'ebs',
-                            'bank_id' => $request->bank_idPinjaman,
-                            'pengeluaran_nobukti' => $nobuktiPengeluaranPinjaman,
-                        ];
-
-                        $pengeluaranDetail[] = [
-                            'entriluar' => 1,
-                            'nobukti' => $nobuktiPengeluaranPinjaman,
-                            'nowarkat' => '',
-                            'tgljatuhtempo' => date('Y-m-d', strtotime($request->tglbukti)),
-                            'coadebet' => $pengeluaranPinjaman->coa,
-                            'coakredit' => $queryPengeluaranPinjaman->coa,
-                            'keterangan' => $pengeluaranPinjaman->nobukti,
-                            "nominal" => $fetchPinjaman->nominal,
-                            'bulanbeban' => date('Y-m-d', strtotime($request->tglbukti)),
-                            'modifiedby' => auth('api')->user()->name,
-                        ];
-
-
-                        $newPengeluaranTruckingPinjaman = new PengeluaranTruckingHeader();
-                        $newPengeluaranTruckingPinjaman = $newPengeluaranTruckingPinjaman->findAll($pengeluaranPinjaman->id);
-                        $pengeluaranTruckingPinjaman = new UpdatePengeluaranTruckingHeaderRequest($pengeluaranTruckingHeaderPinjaman);
-                        app(PengeluaranTruckingHeaderController::class)->update($pengeluaranTruckingPinjaman, $newPengeluaranTruckingPinjaman);
-                    }
-
-                    $pengeluaranHeader = [
-                        'tanpaprosesnobukti' => 1,
-                        'nobukti' => $nobuktiPengeluaranPinjaman,
-                        'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
-                        'pelanggan_id' => '',
-                        'postingdari' => 'PROSES GAJI SUPIR',
-                        'bank_id' => $request->bank_idPinjaman,
-                        'dibayarke' => $supir->namasupir,
-                        'statusformat' => $formatPinjaman->id,
-                        'modifiedby' => auth('api')->user()->name,
-                        'datadetail' => $pengeluaranDetail
-                    ];
-
-                    $pengeluaran = new StorePengeluaranHeaderRequest($pengeluaranHeader);
-                    app(PengeluaranHeaderController::class)->store($pengeluaran);
-                }
 
                 $request->sortname = $request->sortname ?? 'id';
                 $request->sortorder = $request->sortorder ?? 'asc';
@@ -716,15 +621,13 @@ class ProsesGajiSupirHeaderController extends Controller
         $pribadi = $proses->showPotPribadi($id);
         $deposito = $proses->showDeposito($id);
         $bbm = $proses->showBBM($id);
-        $pinjaman = $proses->showPinjaman($id);
         return response([
             'status' => true,
             'data' => $prosesGajiSupirHeader,
             'potsemua' => $semua,
             'potpribadi' => $pribadi,
             'deposito' => $deposito,
-            'bbm' => $bbm,
-            'pinjaman' => $pinjaman
+            'bbm' => $bbm
         ]);
     }
 
@@ -821,7 +724,6 @@ class ProsesGajiSupirHeaderController extends Controller
 
             $penerimaan_nobuktiDeposito = '';
             $penerimaan_nobuktiBBM = '';
-            $pengeluaran_nobuktiPinjaman = '';
             $gajiSupir = GajiSupirHeader::from(DB::raw("gajisupirheader with (readuncommitted)"))->whereRaw("tglbukti >= '$prosesgajisupirheader->tgldari'")
                 ->whereRaw("tglbukti <= '$prosesgajisupirheader->tglsampai'")
                 ->whereRaw("gajisupirheader.nobukti in(select gajisupir_nobukti from prosesgajisupirdetail where prosesgajisupir_id='$prosesgajisupirheader->id')")
@@ -867,26 +769,7 @@ class ProsesGajiSupirHeaderController extends Controller
                     $penerimaanTruckingBBM = new UpdatePenerimaanTruckingHeaderRequest($penerimaanTruckingHeaderBBM);
                     app(PenerimaanTruckingHeaderController::class)->update($penerimaanTruckingBBM, $newPenerimaanTruckingBBM);
                 }
-
-                $fetchPinjaman = GajiSupirPinjaman::from(DB::raw("gajisupirpinjaman with (readuncommitted)"))->where('gajisupir_nobukti', $value->nobukti)->first();
-                if ($fetchPinjaman != null) {
-                    $pengeluaranPinjaman = PengeluaranTruckingHeader::from(DB::raw("pengeluarantruckingheader with (readuncommitted)"))
-                        ->where('nobukti', $fetchPinjaman->pengeluarantrucking_nobukti)->first();
-                    $pengeluaran_nobuktiPinjaman = $pengeluaranPinjaman->pengeluaran_nobukti;
-
-                    $pengeluaranTruckingHeaderPinjaman = [
-                        'isUpdate' => 2,
-                        'postingdari' => 'PROSES GAJI SUPIR',
-                        'from' => 'ebs',
-                        'bank_id' => 0,
-                        'pengeluaran_nobukti' => ''
-                    ];
-
-                    $newPengeluaranTruckingPinjaman = new PengeluaranTruckingHeader();
-                    $newPengeluaranTruckingPinjaman = $newPengeluaranTruckingPinjaman->findAll($pengeluaranPinjaman->id);
-                    $pengeluaranTruckingPinjaman = new UpdatePengeluaranTruckingHeaderRequest($pengeluaranTruckingHeaderPinjaman);
-                    app(PengeluaranTruckingHeaderController::class)->update($pengeluaranTruckingPinjaman, $newPengeluaranTruckingPinjaman);
-                }
+             
             }
 
             ProsesGajiSupirDetail::where('prosesgajisupir_id', $prosesgajisupirheader->id)->delete();
@@ -897,7 +780,6 @@ class ProsesGajiSupirHeaderController extends Controller
             $penerimaanDetailPP = [];
             $penerimaanDetailDeposito = [];
             $penerimaanDetailBBM = [];
-            $pengeluaranDetailPinjaman = [];
             for ($i = 0; $i < count($request->rincianId); $i++) {
                 $ric = GajiSupirHeader::from(DB::raw("gajisupirheader with (readuncommitted)"))
                     ->where('id', $request->rincianId[$i])->first();
@@ -1102,47 +984,6 @@ class ProsesGajiSupirHeaderController extends Controller
                     }
                 }
 
-                if ($request->nomPinjaman != 0) {
-
-                    $bank = Bank::from(DB::raw("bank with (readuncommitted)"))
-                        ->select('coa')
-                        ->where('id', $request->bank_idPinjaman)
-                        ->first();
-                    $fetchPinjaman = GajiSupirPinjaman::from(DB::raw("gajisupirpinjaman with (readuncommitted)"))->where('gajisupir_nobukti', $request->nobuktiRIC[$i])->first();
-
-                    if ($fetchBBM != null) {
-                        $pengeluaranPinjaman = PengeluaranTruckingHeader::from(DB::raw("pengeluarantruckingheader with (readuncommitted)"))
-                            ->where('nobukti', $fetchPinjaman->pengeluarantrucking_nobukti)->first();
-                        $getNominal = PengeluaranTruckingDetail::from(DB::raw("pengeluarantruckingdetail with (readuncommitted)"))
-                            ->where('nobukti', $fetchPinjaman->pengeluarantrucking_nobukti)->get();
-
-                        $pengeluaranTruckingHeaderPinjaman = [
-                            'isUpdate' => 2,
-                            'postingdari' => 'PROSES GAJI SUPIR',
-                            'from' => 'ebs',
-                            'bank_id' => $request->bank_idPinjaman,
-                            'pengeluaran_nobukti' => $pengeluaran_nobuktiPinjaman,
-                        ];
-
-                        $pengeluaranDetailPinjaman[] = [
-                            'entriluar' => 1,
-                            'nobukti' => $pengeluaran_nobuktiPinjaman,
-                            'nowarkat' => '',
-                            'tgljatuhtempo' => date('Y-m-d', strtotime($request->tglbukti)),
-                            'coadebet' => $pengeluaranPinjaman->coa,
-                            'coakredit' => $bank->coa,
-                            'keterangan' => $pengeluaranPinjaman->nobukti,
-                            "nominal" => $getNominal->sum('nominal'),
-                            'bulanbeban' => date('Y-m-d', strtotime($request->tglbukti)),
-                            'modifiedby' => auth('api')->user()->name,
-                        ];
-
-                        $newPengeluaranTruckingPinjaman = new PengeluaranTruckingHeader();
-                        $newPengeluaranTruckingPinjaman = $newPengeluaranTruckingPinjaman->findAll($pengeluaranPinjaman->id);
-                        $pengeluaranTruckingPinjaman = new UpdatePengeluaranTruckingHeaderRequest($pengeluaranTruckingHeaderPinjaman);
-                        app(PengeluaranTruckingHeaderController::class)->update($pengeluaranTruckingPinjaman, $newPengeluaranTruckingPinjaman);
-                    }
-                }
             }
 
 
@@ -1229,24 +1070,6 @@ class ProsesGajiSupirHeaderController extends Controller
                 app(PenerimaanHeaderController::class)->update($penerimaanUpdateBBM, $newPenerimaanBBM);
             }
 
-            $getPinjaman = PengeluaranHeader::from(DB::raw("pengeluaranheader with (readuncommitted)"))
-                ->select('id')
-                ->where('nobukti', $pengeluaran_nobuktiPinjaman)->first();
-
-            if ($getPinjaman != null) {
-                $pengeluaranHeaderPinjaman = [
-                    'isUpdate' => 1,
-                    'postingdari' => 'PROSES GAJI SUPIR',
-                    'modifiedby' => auth('api')->user()->name,
-                    'datadetail' => $pengeluaranDetailPinjaman
-
-                ];
-                $newPengeluaranPinjaman = new PengeluaranHeader();
-                $newPengeluaranPinjaman = $newPengeluaranPinjaman->findAll($getPinjaman->id);
-
-                $pengeluaranUpdatePinjaman = new UpdatePengeluaranHeaderRequest($pengeluaranHeaderPinjaman);
-                app(PengeluaranHeaderController::class)->update($pengeluaranUpdatePinjaman, $newPengeluaranPinjaman);
-            }
 
             $datalogtrail = [
                 'namatabel' => strtoupper($tabeldetail),
@@ -1425,31 +1248,6 @@ class ProsesGajiSupirHeaderController extends Controller
                     }
                 }
 
-
-                $fetchPinjaman = GajiSupirPinjaman::from(DB::raw("gajisupirpinjaman with (readuncommitted)"))->where('gajisupir_nobukti', $value->gajisupir_nobukti)->first();
-
-                if ($fetchPinjaman != null) {
-
-                    $pengeluaranPinjaman = PengeluaranTruckingHeader::from(DB::raw("pengeluarantruckingheader with (readuncommitted)"))
-                        ->where('nobukti', $fetchPinjaman->pengeluarantrucking_nobukti)->first();
-
-                    $pengeluaranTruckingHeaderPinjaman = [
-                        'isUpdate' => 2,
-                        'postingdari' => 'PROSES GAJI SUPIR',
-                        'from' => 'ebs',
-                        'bank_id' => 0,
-                        'pengeluaran_nobukti' => '',
-                    ];
-                    $newPengeluaranTruckingPinjaman = new PengeluaranTruckingHeader();
-                    $newPengeluaranTruckingPinjaman = $newPengeluaranTruckingPinjaman->findAll($pengeluaranPinjaman->id);
-                    $pengeluaranTruckingPinjaman = new UpdatePengeluaranTruckingHeaderRequest($pengeluaranTruckingHeaderPinjaman);
-                    app(PengeluaranTruckingHeaderController::class)->update($pengeluaranTruckingPinjaman, $newPengeluaranTruckingPinjaman);
-
-                    $getPengeluaranPinjaman = PengeluaranHeader::from(DB::raw("pengeluaranheader with (readuncommitted)"))->where('nobukti', $pengeluaranPinjaman->pengeluaran_nobukti)->first();
-                    if ($getPengeluaranPinjaman != null) {
-                        app(PengeluaranHeaderController::class)->destroy($request, $getPengeluaranPinjaman->id);
-                    }
-                }
             }
 
             DB::commit();
@@ -1505,8 +1303,7 @@ class ProsesGajiSupirHeaderController extends Controller
                     'totalPotPinjSemua' => $gajiSupir->totalPotPinjSemua,
                     'totalDeposito' => $gajiSupir->totalDeposito,
                     'totalKomisi' => $gajiSupir->totalKomisi,
-                    'totalTol' => $gajiSupir->totalTol,
-                    'totalPinjaman' => $gajiSupir->totalPinjaman,
+                    'totalTol' => $gajiSupir->totalTol
                 ]
             ]);
         } else {
@@ -1545,8 +1342,7 @@ class ProsesGajiSupirHeaderController extends Controller
                 'totalPotPinjSemua' => $prosesgajisupir->totalPotPinjSemua,
                 'totalDeposito' => $prosesgajisupir->totalDeposito,
                 'totalKomisi' => $prosesgajisupir->totalKomisi,
-                'totalTol' => $prosesgajisupir->totalTol,
-                'totalPinjaman' => $prosesgajisupir->totalPinjaman,
+                'totalTol' => $prosesgajisupir->totalTol
             ]
         ]);
     }

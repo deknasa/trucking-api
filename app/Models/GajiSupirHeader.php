@@ -82,7 +82,7 @@ class GajiSupirHeader extends MyModel
                 'gajisupirheader.created_at',
                 'gajisupirheader.updated_at',
             )
-            ->whereBetween('tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
+            ->whereBetween($this->table.'.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'gajisupirheader.statuscetak', 'parameter.id')
             ->leftJoin(DB::raw("supir with (readuncommitted)"), 'gajisupirheader.supir_id', 'supir.id');
         $this->totalRows = $query->count();
@@ -102,7 +102,20 @@ class GajiSupirHeader extends MyModel
         $query = DB::table('gajisupirheader')->from(DB::raw("gajisupirheader with (readuncommitted)"))
             ->select(
                 'gajisupirheader.*',
+                
+                'gajisupirheader.id',
+                'gajisupirheader.nobukti',
+                'gajisupirheader.tglbukti',
+                'gajisupirheader.supir_id',
                 'supir.namasupir as supir',
+                'gajisupirheader.tgldari',
+                'gajisupirheader.tglsampai',
+                'gajisupirheader.uangJalantidakterhitung as uangjalantidakterhitung',
+                'gajisupirheader.uangmakanharian',
+                'gajisupirheader.deposito',
+                'gajisupirheader.bbm',
+                'gajisupirheader.potonganpinjaman',
+                'gajisupirheader.potonganpinjamansemua'
 
             )
             ->leftJoin(DB::raw("supir with (readuncommitted)"), 'gajisupirheader.supir_id', 'supir.id')

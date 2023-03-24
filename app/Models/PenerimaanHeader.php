@@ -211,7 +211,7 @@ class PenerimaanHeader extends MyModel
                 DB::raw('(case when (year(penerimaanheader.tgllunas) <= 2000) then null else penerimaanheader.tgllunas end ) as tgllunas'),
                 'penerimaanheader.userapproval',
                 DB::raw('(case when (year(penerimaanheader.tglapproval) <= 2000) then null else penerimaanheader.tglapproval end ) as tglapproval'),
-                
+
                 'statuscetak.memo as statuscetak',
                 'penerimaanheader.userbukacetak',
                 DB::raw('(case when (year(penerimaanheader.tglbukacetak) <= 2000) then null else penerimaanheader.tglbukacetak end ) as tglberkas'),
@@ -221,12 +221,14 @@ class PenerimaanHeader extends MyModel
                 'penerimaanheader.updated_at',
                 'statusapproval.memo as statusapproval',
             )
+            ->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
+            ->where('penerimaanheader.bank_id', request()->bank)
             ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'penerimaanheader.statusapproval', 'statusapproval.id')
             ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'penerimaanheader.pelanggan_id', 'pelanggan.id')
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'penerimaanheader.bank_id', 'bank.id')
             ->leftJoin(DB::raw("agen with (readuncommitted)"), 'penerimaanheader.agen_id', 'agen.id')
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'penerimaanheader.statuscetak', 'statuscetak.id');
-
+        
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -235,6 +237,7 @@ class PenerimaanHeader extends MyModel
         $this->filter($query);
         $this->paginate($query);
 
+        dd($query->toSql());
         $data = $query->get();
 
         return $data;
@@ -486,20 +489,21 @@ class PenerimaanHeader extends MyModel
 
                     break;
                 case "OR":
-                    foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'statusapproval') {
-                            $query = $query->orWhere('statusapproval.text', '=', "$filters[data]");
-                        } else if ($filters['field'] == 'statuscetak') {
-                            $query = $query->orWhere('statuscetak.text', '=', "$filters[data]");
-                        } else if ($filters['field'] == 'pelanggan_id') {
-                            $query = $query->orWhere('pelanggan.namapelanggan', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'bank_id') {
-                            $query = $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");
-                        } else {
-                            $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                    $query = $query->where(function ($query) {
+                        foreach ($this->params['filters']['rules'] as $index => $filters) {
+                            if ($filters['field'] == 'statusapproval') {
+                                $query = $query->orWhere('statusapproval.text', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'statuscetak') {
+                                $query = $query->orWhere('statuscetak.text', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'pelanggan_id') {
+                                $query = $query->orWhere('pelanggan.namapelanggan', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'bank_id') {
+                                $query = $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");
+                            } else {
+                                $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            }
                         }
-                    }
-
+                    });
                     break;
                 default:
 
@@ -556,7 +560,7 @@ class PenerimaanHeader extends MyModel
                 WHERE penerimaan_nobukti = penerimaanheader.nobukti   
               )")
             ->leftJoin(DB::raw("penerimaandetail with (readuncommitted)"), 'penerimaanheader.id', 'penerimaandetail.penerimaan_id')
-            ->groupBy('penerimaanheader.nobukti', 'penerimaanheader.id', 'penerimaanheader.tglbukti','penerimaandetail.keterangan');
+            ->groupBy('penerimaanheader.nobukti', 'penerimaanheader.id', 'penerimaanheader.tglbukti', 'penerimaandetail.keterangan');
         $data = $query->get();
 
         return $data;

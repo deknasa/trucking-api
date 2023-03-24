@@ -52,6 +52,7 @@ class InvoiceHeader extends MyModel
                 'invoiceheader.created_at',
                 'invoiceheader.updated_at'
             )
+            ->whereBetween($this->table.'.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
             ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'invoiceheader.statusapproval', 'statusapproval.id')
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'invoiceheader.statuscetak', 'statuscetak.id')
             ->leftJoin(DB::raw("agen with (readuncommitted)"), 'invoiceheader.agen_id', 'agen.id')
@@ -154,6 +155,7 @@ class InvoiceHeader extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
+        $models =  $query->whereBetween($this->table.'.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))]);
         DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'nominal', 'tglterima', 'tgljatuhtempo', 'agen_id', 'jenisorder_id', 'cabang_id', 'piutang_nobukti', 'statusapproval', 'userapproval', 'tglapproval', 'statuscetak', 'userbukacetak', 'tglbukacetak', 'jumlahcetak', 'modifiedby', 'created_at', 'updated_at'], $models);
 
         return $temp;
@@ -173,7 +175,7 @@ class InvoiceHeader extends MyModel
             ->leftJoin(DB::raw("jenisorder with (readuncommitted)"), 'sp.jenisorder_id', 'jenisorder.id')
             ->leftJoin(DB::raw("agen with (readuncommitted)"), 'sp.agen_id', 'agen.id')
             ->whereRaw("sp.jobtrucking not in(select orderantrucking_nobukti from invoicedetail)")
-            ->orderBy("sp.jobtrucking",'asc');
+            ->orderBy("sp.jobtrucking", 'asc');
 
         $data = $query->get();
         return $data;
@@ -191,7 +193,7 @@ class InvoiceHeader extends MyModel
             ->where('tglbukti', '<=', date('Y-m-d', strtotime($request->tglsampai)))
             ->groupBy('jobtrucking');
         // ->get();
-        
+
         Schema::create($temp, function ($table) {
             $table->bigInteger('id')->nullable();
             $table->string('jobtrucking');
@@ -250,21 +252,23 @@ class InvoiceHeader extends MyModel
 
                     break;
                 case "OR":
-                    foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'statusapproval') {
-                            $query = $query->orWhere('statusapproval.text', '=', $filters['data']);
-                        } else if ($filters['field'] == 'statuscetak') {
-                            $query = $query->orWhere('statuscetak.text', '=', $filters['data']);
-                        } else if ($filters['field'] == 'agen_id') {
-                            $query = $query->orWhere('agen.namaagen', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'jenisorder_id') {
-                            $query = $query->orWhere('jenisorder.keterangan', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'cabang_id') {
-                            $query = $query->orWhere('cabang.namacabang', 'LIKE', "%$filters[data]%");
-                        } else {
-                            $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                    $query = $query->where(function ($query) {
+                        foreach ($this->params['filters']['rules'] as $index => $filters) {
+                            if ($filters['field'] == 'statusapproval') {
+                                $query = $query->orWhere('statusapproval.text', '=', $filters['data']);
+                            } else if ($filters['field'] == 'statuscetak') {
+                                $query = $query->orWhere('statuscetak.text', '=', $filters['data']);
+                            } else if ($filters['field'] == 'agen_id') {
+                                $query = $query->orWhere('agen.namaagen', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'jenisorder_id') {
+                                $query = $query->orWhere('jenisorder.keterangan', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'cabang_id') {
+                                $query = $query->orWhere('cabang.namacabang', 'LIKE', "%$filters[data]%");
+                            } else {
+                                $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            }
                         }
-                    }
+                    });
 
                     break;
                 default:

@@ -38,7 +38,7 @@ class KasGantungHeader extends MyModel
     //     return $this->belongsTo(Penerima::class, 'penerima_id');
     // }
 
-    
+
     public function cekvalidasiaksi($nobukti)
     {
         $absensiSupir = DB::table('absensisupirheader')
@@ -74,7 +74,7 @@ class KasGantungHeader extends MyModel
             goto selesai;
         }
 
-        
+
         $data = [
             'kondisi' => false,
             'keterangan' => '',
@@ -144,6 +144,7 @@ class KasGantungHeader extends MyModel
                 'kasgantungheader.created_at',
                 'kasgantungheader.updated_at'
             )
+            ->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'kasgantungheader.statuscetak', 'parameter.id')
             ->leftJoin(DB::raw("penerima with (readuncommitted)"), 'kasgantungheader.penerima_id', 'penerima.id')
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'kasgantungheader.statuscetak', 'statuscetak.id')
@@ -306,18 +307,19 @@ class KasGantungHeader extends MyModel
 
                     break;
                 case "OR":
-                    foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'statuscetak') {
-                            $query = $query->orWhere('statuscetak.text', '=', "$filters[data]");
-                        } else if ($filters['field'] == 'penerima_id') {
-                            $query = $query->orWhere('penerima.namapenerima', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'bank_id') {
-                            $query = $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");
-                        } else {
-                            $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                    $query = $query->where(function ($query) {
+                        foreach ($this->params['filters']['rules'] as $index => $filters) {
+                            if ($filters['field'] == 'statuscetak') {
+                                $query = $query->orWhere('statuscetak.text', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'penerima_id') {
+                                $query = $query->orWhere('penerima.namapenerima', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'bank_id') {
+                                $query = $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");
+                            } else {
+                                $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            }
                         }
-                    }
-
+                    });
                     break;
                 default:
 

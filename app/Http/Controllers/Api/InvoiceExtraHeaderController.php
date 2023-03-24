@@ -163,10 +163,6 @@ class InvoiceExtraHeaderController extends Controller
 
                 $piutang_nobukti = app(Controller::class)->getRunningNumber($nobuktiPiutang)->original['data'];
 
-
-                $request->sortname = $request->sortname ?? 'id';
-                $request->sortorder = $request->sortorder ?? 'asc';
-
                 $piutangDetail = [];
                 for ($i = 0; $i < count($request->nominal_detail); $i++) {
                     $detail = [];
@@ -198,18 +194,16 @@ class InvoiceExtraHeaderController extends Controller
 
                 $piutang = new StorePiutangHeaderRequest($piutangHeader);
                 app(PiutangHeaderController::class)->store($piutang);
-
-                DB::commit();
             }
 
+            $request->sortname = $request->sortname ?? 'id';
+            $request->sortorder = $request->sortorder ?? 'asc';
+
+            DB::commit();
             /* Set position and page */
             $selected = $this->getPosition($invoiceExtraHeader, $invoiceExtraHeader->getTable());
             $invoiceExtraHeader->position = $selected->position;
             $invoiceExtraHeader->page = ceil($invoiceExtraHeader->position / ($request->limit ?? 10));
-
-            if (isset($request->limit)) {
-                $invoiceExtraHeader->page = ceil($invoiceExtraHeader->position / $request->limit);
-            }
 
             return response([
                 'message' => 'Berhasil disimpan',
@@ -266,7 +260,7 @@ class InvoiceExtraHeaderController extends Controller
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
                 /* Delete existing detail */
-               
+
                 $penerimaanStokDetail = InvoiceExtraDetail::where('invoiceextra_id', $invoiceextraheader->id)->lockForUpdate()->delete();
                 if ($request->nominal_detail) {
 
@@ -316,7 +310,7 @@ class InvoiceExtraHeaderController extends Controller
                     $data = new StoreLogTrailRequest($datalogtrail);
                     app(LogTrailController::class)->store($data);
                 }
-                
+
                 $piutangDetail = [];
                 for ($i = 0; $i < count($request->nominal_detail); $i++) {
                     $detail = [];
@@ -340,19 +334,17 @@ class InvoiceExtraHeaderController extends Controller
                     'agen_id' => $invoiceextraheader->agen_id,
                     'datadetail' => $piutangDetail
                 ];
-                
+
                 $get = PiutangHeader::from(DB::raw("piutangheader with (readuncommitted)"))->where('invoice_nobukti', $invoiceextraheader->nobukti)->first();
                 $newPiutang = new PiutangHeader();
                 $newPiutang = $newPiutang->findUpdate($get->id);
                 $piutang = new UpdatePiutangHeaderRequest($piutangHeader);
                 app(PiutangHeaderController::class)->update($piutang, $newPiutang);
-    
-
             }
 
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
-            
+
             DB::commit();
             /* Set position and page */
             $selected = $this->getPosition($invoiceextraheader, $invoiceextraheader->getTable());
