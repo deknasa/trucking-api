@@ -133,6 +133,7 @@ class InvoiceChargeGandenganHeader extends MyModel
 
         $query = $this->sort($query);
         $models = $this->filter($query);
+        $models =  $query->whereBetween($this->table.'.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))]);
 
         DB::table($temp)->insertUsing([
             'id',

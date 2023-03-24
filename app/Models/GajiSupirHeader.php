@@ -102,7 +102,20 @@ class GajiSupirHeader extends MyModel
         $query = DB::table('gajisupirheader')->from(DB::raw("gajisupirheader with (readuncommitted)"))
             ->select(
                 'gajisupirheader.*',
+                
+                'gajisupirheader.id',
+                'gajisupirheader.nobukti',
+                'gajisupirheader.tglbukti',
+                'gajisupirheader.supir_id',
                 'supir.namasupir as supir',
+                'gajisupirheader.tgldari',
+                'gajisupirheader.tglsampai',
+                'gajisupirheader.uangJalantidakterhitung as uangjalantidakterhitung',
+                'gajisupirheader.uangmakanharian',
+                'gajisupirheader.deposito',
+                'gajisupirheader.bbm',
+                'gajisupirheader.potonganpinjaman',
+                'gajisupirheader.potonganpinjamansemua'
 
             )
             ->leftJoin(DB::raw("supir with (readuncommitted)"), 'gajisupirheader.supir_id', 'supir.id')
