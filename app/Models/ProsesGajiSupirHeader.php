@@ -186,8 +186,7 @@ class ProsesGajiSupirHeader extends MyModel
                 $tempRIC . '.potonganpinjamansemua',
                 $tempRIC . '.deposito',
                 $tempRIC . '.komisisupir',
-                $tempRIC . '.tolsupir',
-                $tempRIC . '.pinjamanpribadi'
+                $tempRIC . '.tolsupir'
             );
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -206,7 +205,6 @@ class ProsesGajiSupirHeader extends MyModel
         $this->totalDeposito = $query->sum('deposito');
         $this->totalKomisi = $query->sum('komisisupir');
         $this->totalTol = $query->sum('tolsupir');
-        $this->totalPinjaman = $query->sum('pinjamanpribadi');
         return $data;
     }
 
@@ -230,8 +228,7 @@ class ProsesGajiSupirHeader extends MyModel
                 $tempRIC . '.potonganpinjamansemua',
                 $tempRIC . '.deposito',
                 $tempRIC . '.komisisupir',
-                $tempRIC . '.tolsupir',
-                $tempRIC . '.pinjamanpribadi'
+                $tempRIC . '.tolsupir'
             );
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -250,7 +247,6 @@ class ProsesGajiSupirHeader extends MyModel
         $this->totalDeposito = $query->sum('deposito');
         $this->totalKomisi = $query->sum('komisisupir');
         $this->totalTol = $query->sum('tolsupir');
-        $this->totalPinjaman = $query->sum('pinjamanpribadi');
         return $data;
     }
 
@@ -274,8 +270,7 @@ class ProsesGajiSupirHeader extends MyModel
                 'gajisupirheader.potonganpinjamansemua',
                 'gajisupirheader.deposito',
                 'gajisupirheader.komisisupir',
-                'gajisupirheader.tolsupir',
-                'gajisupirheader.pinjamanpribadi'
+                'gajisupirheader.tolsupir'
             )
             ->leftJoin(DB::raw("gajisupirheader with (readuncommitted)"), 'prosesgajisupirdetail.gajisupir_nobukti', 'gajisupirheader.nobukti')
             ->leftJoin(DB::raw("supir with (readuncommitted)"), 'gajisupirheader.supir_id', 'supir.id')
@@ -297,10 +292,9 @@ class ProsesGajiSupirHeader extends MyModel
             $table->bigInteger('deposito')->nullable();
             $table->bigInteger('komisisupir')->nullable();
             $table->bigInteger('tolsupir')->nullable();
-            $table->bigInteger('pinjamanpribadi')->nullable();
         });
 
-        $tes = DB::table($temp)->insertUsing(['idric', 'nobuktiric', 'tglbuktiric', 'supir_id', 'tgldariric', 'tglsampairic', 'borongan', 'uangjalan', 'bbm', 'uangmakanharian', 'potonganpinjaman', 'potonganpinjamansemua', 'deposito', 'komisisupir', 'tolsupir', 'pinjamanpribadi'], $fetch);
+        $tes = DB::table($temp)->insertUsing(['idric', 'nobuktiric', 'tglbuktiric', 'supir_id', 'tgldariric', 'tglsampairic', 'borongan', 'uangjalan', 'bbm', 'uangmakanharian', 'potonganpinjaman', 'potonganpinjamansemua', 'deposito', 'komisisupir', 'tolsupir'], $fetch);
 
         if ($aksi != '') {
 
@@ -320,15 +314,14 @@ class ProsesGajiSupirHeader extends MyModel
                     'gajisupirheader.potonganpinjamansemua',
                     'gajisupirheader.deposito',
                     'gajisupirheader.komisisupir',
-                    'gajisupirheader.tolsupir',
-                    'gajisupirheader.pinjamanpribadi'
+                    'gajisupirheader.tolsupir'
                 )
                 ->leftJoin(DB::raw("supir with (readuncommitted)"), 'gajisupirheader.supir_id', 'supir.id')
                 ->where('gajisupirheader.tglbukti', '>=', $dari)
                 ->where('gajisupirheader.tglbukti', '<=', $sampai)
                 ->whereRaw("gajisupirheader.nobukti not in(select gajisupir_nobukti from prosesgajisupirdetail)");
 
-            $tes = DB::table($temp)->insertUsing(['idric', 'nobuktiric', 'tglbuktiric', 'supir_id', 'tgldariric', 'tglsampairic', 'borongan', 'uangjalan', 'bbm', 'uangmakanharian', 'potonganpinjaman', 'potonganpinjamansemua', 'deposito', 'komisisupir', 'tolsupir', 'pinjamanpribadi'], $fetch);
+            $tes = DB::table($temp)->insertUsing(['idric', 'nobuktiric', 'tglbuktiric', 'supir_id', 'tgldariric', 'tglsampairic', 'borongan', 'uangjalan', 'bbm', 'uangmakanharian', 'potonganpinjaman', 'potonganpinjamansemua', 'deposito', 'komisisupir', 'tolsupir'], $fetch);
         }
 
         return $temp;
@@ -414,8 +407,7 @@ class ProsesGajiSupirHeader extends MyModel
                 $getRIC . '.potonganpinjamansemua',
                 $getRIC . '.deposito',
                 $getRIC . '.komisisupir',
-                $getRIC . '.tolsupir',
-                $getRIC . '.pinjamanpribadi'
+                $getRIC . '.tolsupir'
             );
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -434,7 +426,6 @@ class ProsesGajiSupirHeader extends MyModel
         $this->totalDeposito = $query->sum('deposito');
         $this->totalKomisi = $query->sum('komisisupir');
         $this->totalTol = $query->sum('tolsupir');
-        $this->totalPinjaman = $query->sum('pinjamanpribadi');
         return $data;
     }
 
@@ -457,8 +448,7 @@ class ProsesGajiSupirHeader extends MyModel
                 'gajisupirheader.potonganpinjamansemua',
                 'gajisupirheader.deposito',
                 'gajisupirheader.komisisupir',
-                'gajisupirheader.tolsupir',
-                'gajisupirheader.pinjamanpribadi'
+                'gajisupirheader.tolsupir'
             )
             ->leftJoin(DB::raw("supir with (readuncommitted)"), 'gajisupirheader.supir_id', 'supir.id')
             ->where('gajisupirheader.tglbukti', '>=', $dari)
@@ -481,10 +471,9 @@ class ProsesGajiSupirHeader extends MyModel
             $table->bigInteger('deposito')->nullable();
             $table->bigInteger('komisisupir')->nullable();
             $table->bigInteger('tolsupir')->nullable();
-            $table->bigInteger('pinjamanpribadi')->nullable();
         });
 
-        $tes = DB::table($temp)->insertUsing(['idric', 'nobuktiric', 'tglbuktiric', 'supir_id', 'tgldariric', 'tglsampairic', 'borongan', 'uangjalan', 'bbm', 'uangmakanharian', 'potonganpinjaman', 'potonganpinjamansemua', 'deposito', 'komisisupir', 'tolsupir', 'pinjamanpribadi'], $fetch);
+        $tes = DB::table($temp)->insertUsing(['idric', 'nobuktiric', 'tglbuktiric', 'supir_id', 'tgldariric', 'tglsampairic', 'borongan', 'uangjalan', 'bbm', 'uangmakanharian', 'potonganpinjaman', 'potonganpinjamansemua', 'deposito', 'komisisupir', 'tolsupir'], $fetch);
 
         return $temp;
     }
