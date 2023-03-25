@@ -188,7 +188,9 @@ class SuratPengantar extends MyModel
             ->leftJoin('mandor as mandortrado', 'suratpengantar.mandortrado_id', 'mandortrado.id')
             ->leftJoin('mandor as mandorsupir', 'suratpengantar.mandorsupir_id', 'mandorsupir.id')
             ->leftJoin('tarif', 'suratpengantar.tarif_id', 'tarif.id');
-
+            if (request()->tgldari) {
+                $query->whereBetween('suratpengantar.tglbukti', [date('Y-m-d',strtotime(request()->tgldari )), date('Y-m-d',strtotime(request()->tglsampai ))]);
+            }
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
@@ -623,7 +625,11 @@ class SuratPengantar extends MyModel
         $this->setRequestParameters();
         $query = DB::table($modelTable);
         $query = $this->selectColumns($query);
+        if (request()->tgldari) {
+            $query->whereBetween('suratpengantar.tglbukti', [date('Y-m-d',strtotime(request()->tgldari )), date('Y-m-d',strtotime(request()->tglsampai ))]);
+        }
         $this->sort($query);
+        
         $models = $this->filter($query);
         DB::table($temp)->insertUsing([
             'id', 'nobukti', 'jobtrucking', 'tglbukti', 'pelanggan_id', 'keterangan', 'dari_id', 'sampai_id', 'container_id', 'nocont', 'statuscontainer_id', 'trado_id', 'supir_id',

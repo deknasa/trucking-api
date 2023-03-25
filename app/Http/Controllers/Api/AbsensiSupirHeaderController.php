@@ -602,12 +602,13 @@ class AbsensiSupirHeaderController extends Controller
         $absensisupir = AbsensiSupirHeader::findOrFail($id);
         
         $passes = true;
-
+        $keterangan=[];
         //validasi Hari ini
         $todayValidation = AbsensiSupirHeader::todayValidation($absensisupir->id);
         if(!$todayValidation){
             $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'SATL')->get();
-            $keterangan = $query['0'];
+            // $keterangan = $query['0'];
+            $keterangan = ['keterangan'=>'transaksi Sudah beda tanggal'];//$query['0'];
             $data = [
                 'message' => $keterangan,
                 'errors' => 'Tidak bisa edit di hari yang berbeda',
@@ -623,6 +624,7 @@ class AbsensiSupirHeaderController extends Controller
         if(!$isApproved){
             $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'SATL')->get();
             $keterangan = $query['0'];
+            $keterangan = ['keterangan'=>'transaksi Sudah di approved'];//$query['0'];
 
             $data = [
                 'message' => $keterangan,

@@ -192,8 +192,8 @@ class AbsensiSupirDetail extends MyModel
     
                 $this->totalRows = $query->count();
                 $this->totalNominal = $query->sum('uangjalan');
-                $this->filter($query);
                 $this->totalPages = $this->params['limit'] > 0 ? ceil($this->totalRows / $this->params['limit']) : 1;
+                $this->filter($query);
                 $this->sort($query);
                 $this->paginate($query);
                 

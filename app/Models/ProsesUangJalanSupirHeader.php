@@ -48,7 +48,9 @@ class ProsesUangJalanSupirHeader extends MyModel
             ->leftJoin(DB::raw("trado with (readuncommitted)"), 'prosesuangjalansupirheader.trado_id', 'trado.id')
             ->leftJoin(DB::raw("supir with (readuncommitted)"), 'prosesuangjalansupirheader.supir_id', 'supir.id');
 
-
+            if (request()->tgldari) {
+                $query->whereBetween('tglbukti', [date('Y-m-d',strtotime(request()->tgldari )), date('Y-m-d',strtotime(request()->tglsampai ))]);
+            }
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
@@ -174,18 +176,20 @@ class ProsesUangJalanSupirHeader extends MyModel
 
                     break;
                 case "OR":
-                    foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'statusapproval') {
-                            $query = $query->orWhere('statusapproval.text', '=', "$filters[data]");
-                        } else if ($filters['field'] == 'trado_id') {
-                            $query = $query->orWhere('trado.keterangan', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'supir_id') {
-                            $query = $query->orWhere('supir.namasupir', 'LIKE', "%$filters[data]%");
-                        } else {
-                            $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                    $query = $query->where(function ($query) {
+                        foreach ($this->params['filters']['rules'] as $index => $filters) {
+                            if ($filters['field'] == 'statusapproval') {
+                                $query = $query->orWhere('statusapproval.text', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'trado_id') {
+                                $query = $query->orWhere('trado.keterangan', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'supir_id') {
+                                $query = $query->orWhere('supir.namasupir', 'LIKE', "%$filters[data]%");
+                            } else {
+                                $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            }
                         }
-                    }
-
+                    });
+                        
                     break;
                 default:
 

@@ -52,7 +52,9 @@ class Ritasi extends MyModel
         ->leftJoin('trado', 'ritasi.trado_id', '=', 'trado.id')
         ->leftJoin('kota as dari', 'ritasi.dari_id', '=', 'dari.id')
         ->leftJoin('kota as sampai', 'ritasi.sampai_id', '=', 'sampai.id');
-
+        if (request()->tgldari) {
+            $query->whereBetween('ritasi.tglbukti', [date('Y-m-d',strtotime(request()->tgldari )), date('Y-m-d',strtotime(request()->tglsampai ))]);
+        }
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
@@ -176,6 +178,9 @@ class Ritasi extends MyModel
         $this->setRequestParameters();
         $query = DB::table($modelTable);
         $query = $this->selectColumns($query);
+        if (request()->tgldari) {
+            $query->whereBetween('tglbukti', [date('Y-m-d',strtotime(request()->tgldari )), date('Y-m-d',strtotime(request()->tglsampai ))]);
+        }
         $this->sort($query);
         $models = $this->filter($query);
         DB::table($temp)->insertUsing(['id','nobukti','tglbukti','statusritasi','suratpengantar_nobukti','supir_id','trado_id','jarak','gaji','dari_id','sampai_id','modifiedby','created_at','updated_at'],$models);
@@ -212,21 +217,23 @@ class Ritasi extends MyModel
 
                     break;
                 case "OR":
-                    foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'statusritasi') {
-                            $query = $query->orWhere('parameter.text', 'LIKE', "%$filters[data]%");
-                        } elseif ($filters['field'] == 'supir_id') {
-                            $query = $query->where('supir.namasupir', 'LIKE', "%$filters[data]%");
-                        } elseif ($filters['field'] == 'trado_id') {
-                            $query = $query->where('trado.keterangan', 'LIKE', "%$filters[data]%");
-                        } elseif ($filters['field'] == 'dari_id') {
-                            $query = $query->where('dari.keterangan', 'LIKE', "%$filters[data]%");
-                        } elseif ($filters['field'] == 'sampai_id') {
-                            $query = $query->where('sampai.keterangan', 'LIKE', "%$filters[data]%");
-                        } else {
-                            $query = $query->orWhere($this->table . '.' .$filters['field'], 'LIKE', "%$filters[data]%");
+                    $query = $query->where(function ($query) {
+                        foreach ($this->params['filters']['rules'] as $index => $filters) {
+                            if ($filters['field'] == 'statusritasi') {
+                                $query = $query->orWhere('parameter.text', 'LIKE', "%$filters[data]%");
+                            } elseif ($filters['field'] == 'supir_id') {
+                                $query = $query->where('supir.namasupir', 'LIKE', "%$filters[data]%");
+                            } elseif ($filters['field'] == 'trado_id') {
+                                $query = $query->where('trado.keterangan', 'LIKE', "%$filters[data]%");
+                            } elseif ($filters['field'] == 'dari_id') {
+                                $query = $query->where('dari.keterangan', 'LIKE', "%$filters[data]%");
+                            } elseif ($filters['field'] == 'sampai_id') {
+                                $query = $query->where('sampai.keterangan', 'LIKE', "%$filters[data]%");
+                            } else {
+                                $query = $query->orWhere($this->table . '.' .$filters['field'], 'LIKE', "%$filters[data]%");
+                            }
                         }
-                    }
+                    });
 
                     break;
                 default:

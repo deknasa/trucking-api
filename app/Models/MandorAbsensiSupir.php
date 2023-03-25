@@ -10,7 +10,7 @@ class MandorAbsensiSupir extends MyModel
 {
     use HasFactory;
 
-    protected $table = 'absensisupirdetail';
+    protected $table = 'trado';
 
 
    
@@ -18,6 +18,7 @@ class MandorAbsensiSupir extends MyModel
     public function get()
     {
         $this->setRequestParameters();
+        $statusaktif = DB::table('parameter')->where('grp','STATUS AKTIF')->where('subgrp','STATUS AKTIF')->where('text','AKTIF')->first();
         $trado = DB::table('trado')
         ->select(
             'trado.id as id',
@@ -27,6 +28,7 @@ class MandorAbsensiSupir extends MyModel
             DB::raw('null as keterangan'),
             DB::raw('null as jam'),
             DB::raw('null as tglbukti'))
+->where('trado.statusaktif',$statusaktif->id)
         ->whereNotExists(function ($query) {
             $query->select(DB::raw(1))
                   ->from('absensisupirdetail')
@@ -49,13 +51,10 @@ class MandorAbsensiSupir extends MyModel
         ->leftJoin(DB::raw("trado with (readuncommitted)"),'absensisupirdetail.trado_id','trado.id')
         ->leftJoin(DB::raw("absentrado with (readuncommitted)"),'absensisupirdetail.absen_id','absentrado.id')
         ->leftJoin(DB::raw("supir with (readuncommitted)"),'absensisupirdetail.supir_id','supir.id');
-        $query = $absensisupirdetail->union($trado);
-        
-        $this->totalRows = $query->count();
-        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
-        // $this->sort($query);
-        // $this->paginate($query);
-        
+        $query = $trado->union($absensisupirdetail);
+
+        $this->sort($query);
+
         $data = $query->get();
 
         return $data;
@@ -109,11 +108,68 @@ class MandorAbsensiSupir extends MyModel
 
     public function sort($query)
     {
-        return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        return $query->orderBy($this->params['sortIndex'], $this->params['sortOrder']);
     }
     public function paginate($query)
     {
-        return $query->skip($this->params['offset'])->take($this->params['limit']);
+        return $query->skip(request()->page* request()->limit)->take(request()->limit);
+    }
+
+    public function filter($query, $relationFields = [])
+    {
+        if (count($this->params['filters']) > 0 && @$this->params['filters']['rules'][0]['data'] != '') {
+            switch ($this->params['filters']['groupOp']) {
+                case "AND":
+                    foreach ($this->params['filters']['rules'] as $index => $filters) {
+                        switch ($filters['field']) {
+                            case 'trado_id':
+                                $query = $query->where('trado.kodetrado', 'LIKE', "%$filters[data]%");
+                                break;
+                            case 'supir':
+                                $query = $query->where('supir.namasupir', 'LIKE', "%$filters[data]%");
+                                break;
+                            case 'absen':
+                                $query = $query->where('absentrado.keterangan ', 'LIKE', "%$filters[data]%");
+                                break;
+                            default:
+                                $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                break;
+                        }
+                    }
+
+                    break;
+                    case "OR":
+                        $query = $query->where(function($query){
+                        
+                            foreach ($this->params['filters']['rules'] as $index => $filters) {
+                                switch ($filters['field']) {
+                                    case 'trado_id':
+                                        $query = $query->orWhere('trado.kodetrado', 'LIKE', "%$filters[data]%");
+                                        break;
+                                    case 'supir':
+                                        $query = $query->orWhere('supir.namasupir', 'LIKE', "%$filters[data]%");
+                                        break;
+                                    case 'absen':
+                                        $query = $query->orWhere('absentrado.keterangan ', 'LIKE', "%$filters[data]%");
+                                        break;
+                                    default:
+                                        $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                        break;
+                                }
+                            }
+                        });
+                            
+                    break;
+                default:
+
+                    break;
+            }
+
+            $this->totalRows = $query->count();
+            $this->totalPages = $this->params['limit'] > 0 ? ceil($this->totalRows / $this->params['limit']) : 1;
+        }
+
+        return $query;
     }
         
 }
