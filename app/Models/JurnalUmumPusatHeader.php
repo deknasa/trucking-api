@@ -30,7 +30,7 @@ class JurnalUmumPusatHeader extends MyModel
     {
         $this->setRequestParameters();
         $periode = request()->periode ?? date('m-Y');
-        $approve = request()->approve ?? 0;
+        $approve = request()->approve ?? 3;
         $approval = 0;
         if ($approve == 3) {
             $approval = 4;
@@ -47,7 +47,7 @@ class JurnalUmumPusatHeader extends MyModel
             $table->string('nobukti', 1000)->nullable();
             $table->double('nominaldebet', 15, 2)->nullable();
             $table->double('nominalkredit', 15, 2)->nullable();
-        });        
+        });
 
         $querysummary = JurnalUmumHeader::from(
             DB::raw("jurnalumumheader as a with (readuncommitted)")
@@ -55,7 +55,7 @@ class JurnalUmumPusatHeader extends MyModel
             ->select(
                 'a.nobukti as nobukti',
                 DB::raw("sum((case when b.nominal<=0 then 0 else b.nominal end)) as nominaldebet"),
-                DB::raw("sum((case when b.nominal>=0 then 0 else abs(b.nominal) end)) as nominalkredit"),                
+                DB::raw("sum((case when b.nominal>=0 then 0 else abs(b.nominal) end)) as nominalkredit"),
             )
             ->join(DB::raw("jurnalumumdetail as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
             ->where('a.statusapproval', $approval)
@@ -64,11 +64,11 @@ class JurnalUmumPusatHeader extends MyModel
             ->groupBy('a.nobukti');
 
 
-            DB::table($tempsummary)->insertUsing([
-                'nobukti',
-                'nominaldebet',
-                'nominalkredit',
-            ], $querysummary);          
+        DB::table($tempsummary)->insertUsing([
+            'nobukti',
+            'nominaldebet',
+            'nominalkredit',
+        ], $querysummary);
 
         $query = DB::table('jurnalumumheader')->from(
             DB::raw("jurnalumumheader with (readuncommitted)")
@@ -182,13 +182,16 @@ class JurnalUmumPusatHeader extends MyModel
 
                     break;
                 case "OR":
-                    foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'statusapproval') {
-                            $query = $query->orWhere('statusapproval.text', '=', $filters['data']);
-                        } else {
-                            $query = $query->orWhere($this->anothertable . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+
+                    $query = $query->where(function ($query) {
+                        foreach ($this->params['filters']['rules'] as $index => $filters) {
+                            if ($filters['field'] == 'statusapproval') {
+                                $query = $query->orWhere('statusapproval.text', '=', $filters['data']);
+                            } else {
+                                $query = $query->orWhere($this->anothertable . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            }
                         }
-                    }
+                    });
 
                     break;
                 default:

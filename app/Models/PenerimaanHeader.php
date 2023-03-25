@@ -237,7 +237,6 @@ class PenerimaanHeader extends MyModel
         $this->filter($query);
         $this->paginate($query);
 
-        dd($query->toSql());
         $data = $query->get();
 
         return $data;
@@ -454,6 +453,7 @@ class PenerimaanHeader extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
+        $models =  $query->whereBetween($this->table.'.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))])->where($this->table.'.bank_id', request()->bankheader);
         DB::table($temp)->insertUsing([
             'id', 'nobukti', 'tglbukti', 'pelanggan_id', 'bank_id', 'postingdari', 'diterimadari', 'tgllunas',  'statusapproval', 'userapproval', 'tglapproval', 'statuscetak', 'userbukacetak', 'tglbukacetak', 'jumlahcetak', 'modifiedby', 'created_at', 'updated_at'
         ], $models);

@@ -115,13 +115,13 @@ class NotaKreditHeaderController extends Controller
 
             DB::commit();
             /* Set position and page */
-            $selected = $this->getPosition($notaKreditHeader, $notaKreditHeader->getTable());
-            $notaKreditHeader->position = $selected->position;
-            $notaKreditHeader->page = ceil($notaKreditHeader->position / ($request->limit ?? 10));
+            // $selected = $this->getPosition($notaKreditHeader, $notaKreditHeader->getTable());
+            // $notaKreditHeader->position = $selected->position;
+            // $notaKreditHeader->page = ceil($notaKreditHeader->position / ($request->limit ?? 10));
 
-            if (isset($request->limit)) {
-                $notaKreditHeader->page = ceil($notaKreditHeader->position / $request->limit);
-            }
+            // if (isset($request->limit)) {
+            //     $notaKreditHeader->page = ceil($notaKreditHeader->position / $request->limit);
+            // }
 
             return response([
                 'message' => 'Berhasil disimpan',
@@ -214,13 +214,13 @@ class NotaKreditHeaderController extends Controller
 
 
             /* Set position and page */
-            $selected = $this->getPosition($notakreditheader, $notakreditheader->getTable());
-            $notakreditheader->position = $selected->position;
-            $notakreditheader->page = ceil($notakreditheader->position / ($request->limit ?? 10));
+            // $selected = $this->getPosition($notakreditheader, $notakreditheader->getTable());
+            // $notakreditheader->position = $selected->position;
+            // $notakreditheader->page = ceil($notakreditheader->position / ($request->limit ?? 10));
 
-            if (isset($request->limit)) {
-                $notakreditheader->page = ceil($notakreditheader->position / $request->limit);
-            }
+            // if (isset($request->limit)) {
+            //     $notakreditheader->page = ceil($notakreditheader->position / $request->limit);
+            // }
 
             return response([
                 'message' => 'Berhasil disimpan',
@@ -273,11 +273,12 @@ class NotaKreditHeaderController extends Controller
 
             DB::commit();
 
-            $selected = $this->getPosition($notaKreditHeader, $notaKreditHeader->getTable(), true);
-            $notaKreditHeader->position = $selected->position;
-            $notaKreditHeader->id = $selected->id;
-            $notaKreditHeader->page = ceil($notaKreditHeader->position / ($request->limit ?? 10));
-
+            if ($request->postingdari === null) {
+                $selected = $this->getPosition($notaKreditHeader, $notaKreditHeader->getTable(), true);
+                $notaKreditHeader->position = $selected->position;
+                $notaKreditHeader->id = $selected->id;
+                $notaKreditHeader->page = ceil($notaKreditHeader->position / ($request->limit ?? 10));
+            }
             return response([
                 'status' => true,
                 'message' => 'Berhasil dihapus',

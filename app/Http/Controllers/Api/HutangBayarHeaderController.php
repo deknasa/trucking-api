@@ -63,7 +63,7 @@ class HutangBayarHeaderController extends Controller
             /* Store header */
             for ($i = 0; $i < count($request->hutang_id); $i++) {
 
-                $cekSisa = HutangHeader::from(DB::raw("hutangheader with (readuncommitted)"))->select('total')->where('nobukti', $request->hutang_id[$i])->first();
+                $cekSisa = HutangHeader::from(DB::raw("hutangheader with (readuncommitted)"))->select('total')->where('id', $request->hutang_id[$i])->first();
 
                 $byrPotongan = $request->bayar[$i] + $request->potongan[$i];
                 if ($byrPotongan > $cekSisa->total) {
@@ -127,7 +127,7 @@ class HutangBayarHeaderController extends Controller
 
 
             for ($i = 0; $i < count($request->hutang_id); $i++) {
-                $hutang = HutangHeader::where('nobukti', $request->hutang_id[$i])->first();
+                $hutang = HutangHeader::where('id', $request->hutang_id[$i])->first();
                
                 if ($request->bayar[$i] > $hutang->total) {
 

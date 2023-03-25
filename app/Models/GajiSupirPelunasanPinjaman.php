@@ -37,7 +37,8 @@ class GajiSupirPelunasanPinjaman extends MyModel
         (SELECT (pengeluarantruckingdetail.nominal - COALESCE(SUM(gajisupirpelunasanpinjaman.nominal),0))
             FROM gajisupirpelunasanpinjaman WHERE pengeluarantruckingdetail.nobukti= gajisupirpelunasanpinjaman.pengeluarantrucking_nobukti) AS sisa"))
         ->leftJoin(DB::raw("$temp with (readuncommitted)"), 'pengeluarantruckingdetail.nobukti', $temp . ".pengeluarantrucking_nobukti")
-        ->whereRaw("pengeluarantruckingdetail.supir_id = $supir_id");
+        ->whereRaw("pengeluarantruckingdetail.supir_id = $supir_id")
+        ->orderBy('pengeluarantruckingdetail.nobukti', 'asc');
 
         return $query->get();
     }
@@ -77,7 +78,8 @@ class GajiSupirPelunasanPinjaman extends MyModel
         (SELECT (pengeluarantruckingdetail.nominal - COALESCE(SUM(gajisupirpelunasanpinjaman.nominal),0))
             FROM gajisupirpelunasanpinjaman WHERE pengeluarantruckingdetail.nobukti= gajisupirpelunasanpinjaman.pengeluarantrucking_nobukti) AS sisa"))
         ->leftJoin(DB::raw("$temp with (readuncommitted)"), 'pengeluarantruckingdetail.nobukti', $temp . ".pengeluarantrucking_nobukti")
-        ->whereRaw("pengeluarantruckingdetail.supir_id = 0");
+        ->whereRaw("pengeluarantruckingdetail.supir_id = 0")
+        ->orderBy('pengeluarantruckingdetail.nobukti', 'asc');
 
         return $query->get();
     }

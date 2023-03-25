@@ -154,55 +154,6 @@ class KasGantungHeaderController extends Controller
             $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
             //UNTUK INSERT KE PENGELUARAN
-            // if($tanpaprosesnobukti == 1) {
-            //     $group = 'PENGELUARAN KAS';
-            //     $subgroup = 'NOMOR  PENGELUARAN KAS';
-            //     $format = DB::table('parameter')
-            //     ->where('grp', $group )
-            //     ->where('subgrp', $subgroup)
-            //     ->first();
-
-            //     $parameterController = new ParameterController;
-            //     $statusApp = $parameterController->getparameterid('STATUS APPROVAL','STATUS APPROVAL','NON APPROVAL');
-
-            //     $content = new Request();
-            //     $content['group'] = $group;
-            //     $content['subgroup'] = $subgroup;
-            //     $content['table'] = 'pengeluaranheader';
-            //     $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
-
-            //     $nobuktikaskeluar = app(Controller::class)->getRunningNumber($content)->original['data'];
-
-            //     $kasgantungHeader->pengeluaran_nobukti = $nobuktikaskeluar;
-
-
-            //     $kasgantungHeader->save();
-
-            //     $pengeluaranHeader = [
-            //         'tanpaprosesnobukti' => 1,
-            //         'nobukti' => $nobuktikaskeluar,
-            //         'tglbukti' => $kasgantungHeader->tglbukti,
-            //         'pelanggan_id' => 0,
-            //         'keterangan' => $kasgantungHeader->keterangan,
-            //         'statusjenistransaksi' => 0,
-            //         'postingdari' => 'ENTRY KAS GANTUNG DARI ABSEN SUPIR',
-            //         'statusapproval' => $statusApp->id,
-            //         'dibayarke' => '',
-            //         'cabang_id' => 1, // masih manual karena belum di catat di session
-            //         'bank_id' => '',
-            //         'userapproval' => "",
-            //         'tglapproval' => "",
-            //         'transferkeac' => '',
-            //         'transferkean' => '',
-            //         'trasnferkebank' => '',
-            //         'statusformat' => $format->id,
-            //         'modifiedby' =>  auth('api')->user()->name
-            //     ];
-            //     $pengeluaran = new StorePengeluaranHeaderRequest($pengeluaranHeader);
-            //     app(PengeluaranHeaderController::class)->store($pengeluaran);
-            //     DB::commit(); 
-            // }
-
      
             if ($tanpaprosesnobukti == 0) {
                 /* Store detail */

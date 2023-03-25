@@ -250,6 +250,7 @@ class KasGantungHeader extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
+        $models =  $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))]);
 
         DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'penerima_id', 'bank_id', 'pengeluaran_nobukti', 'coakaskeluar', 'tglkaskeluar', 'statuscetak', 'userbukacetak', 'tglbukacetak', 'jumlahcetak', 'modifiedby', 'created_at', 'updated_at'], $models);
 

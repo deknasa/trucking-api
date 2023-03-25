@@ -326,6 +326,7 @@ class PelunasanPiutangHeaderController extends Controller
 
                     $penerimaanHeader = [
                         'tanpaprosesnobukti' => 1,
+                        'tanpagetposition' => 1,
                         'nobukti' => $nobuktiPenerimaan,
                         'tglbukti' => $request->tglbukti,
                         'pelanggan_id' => 0,
