@@ -28,8 +28,8 @@ class MandorAbsensiSupirController extends Controller
         return response([
             'data' => $mandorabsensisupir->get(),
             'attributes' => [
-                'totalRows' => $mandorabsensisupir->totalRows,
-                'totalPages' => $mandorabsensisupir->totalPages
+                'total' => $mandorabsensisupir->totalPages,
+                'records' => $mandorabsensisupir->totalRows,
             ]
         ]);
     }

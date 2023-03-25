@@ -23,6 +23,7 @@ class CreatePenerimaantruckingheaderTable extends Migration
             $table->longText('keterangan')->nullable();            
             $table->unsignedBigInteger('penerimaantrucking_id')->nullable();
             $table->unsignedBigInteger('bank_id')->nullable();
+            $table->unsignedBigInteger('supir_id')->nullable();
             $table->string('coa',50)->nullable();
             $table->string('penerimaan_nobukti',50)->nullable();
             $table->unsignedBigInteger('statusformat')->nullable();
@@ -35,6 +36,7 @@ class CreatePenerimaantruckingheaderTable extends Migration
 
             $table->foreign('penerimaantrucking_id', 'penerimaantruckingheader_penerimaantrucking_penerimaantrucking_id_foreign')->references('id')->on('penerimaantrucking');   
             $table->foreign('bank_id', 'penerimaantruckingheader_bank_bank_id_foreign')->references('id')->on('bank');   
+            $table->foreign('supir_id', 'penerimaantruckingheader_supir_supir_id_foreign')->references('id')->on('supir');   
             $table->foreign('penerimaan_nobukti', 'penerimaantruckingheader_penerimaanheader_penerimaan_nobukti_foreign')->references('nobukti')->on('penerimaanheader');   
             $table->foreign('coa', 'penerimaantruckingheader_akunpusat_coa_foreign')->references('coa')->on('akunpusat');   
 
@@ -42,6 +44,7 @@ class CreatePenerimaantruckingheaderTable extends Migration
 
         DB::statement("ALTER TABLE penerimaantruckingheader NOCHECK CONSTRAINT penerimaantruckingheader_penerimaantrucking_penerimaantrucking_id_foreign");
         DB::statement("ALTER TABLE penerimaantruckingheader NOCHECK CONSTRAINT penerimaantruckingheader_bank_bank_id_foreign");
+        DB::statement("ALTER TABLE penerimaantruckingheader NOCHECK CONSTRAINT penerimaantruckingheader_supir_supir_id_foreign");
         DB::statement("ALTER TABLE penerimaantruckingheader NOCHECK CONSTRAINT penerimaantruckingheader_penerimaanheader_penerimaan_nobukti_foreign");
         DB::statement("ALTER TABLE penerimaantruckingheader NOCHECK CONSTRAINT penerimaantruckingheader_akunpusat_coa_foreign");
     }

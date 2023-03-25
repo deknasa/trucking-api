@@ -63,7 +63,7 @@ class MandorAbsensiSupirEditSupirValidasiTrado implements Rule
             DB::raw("absensisupirheader as a with (readuncommitted)")
         )
         ->select(
-            'c.keterangan'
+            'c.kodetrado'
         )
         ->join(db::Raw("absensisupirdetail as b with (readuncommitted)"),'a.id','b.absensi_id')
         ->join(db::Raw("trado as c with (readuncommitted)"),'b.trado_id','c.id')
@@ -72,6 +72,6 @@ class MandorAbsensiSupirEditSupirValidasiTrado implements Rule
         ->where('b.trado_id','<>',request()->trado_id)        
         ->first();
 
-        return ':attribute Sudah Pernah Di Input Di Trado '. $query->keterangan;
+        return ':attribute Sudah Pernah Di Input Di Trado '. $query->kodetrado;
     }
 }

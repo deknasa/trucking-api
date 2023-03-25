@@ -34,7 +34,9 @@ class RekapPengeluaranHeader extends MyModel
         ->leftJoin('parameter as statuscetak','rekappengeluaranheader.statuscetak','statuscetak.id')
 
         ->leftJoin('bank','rekappengeluaranheader.bank_id','bank.id');
-
+        if (request()->tgldari) {
+            $query->whereBetween('tglbukti', [date('Y-m-d',strtotime(request()->tgldari )), date('Y-m-d',strtotime(request()->tglsampai ))]);
+        }
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
@@ -83,16 +85,18 @@ class RekapPengeluaranHeader extends MyModel
 
                     break;
                 case "OR":
-                    foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        switch ($filters['field']) {
-                            case 'bank':
-                                $query = $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");
-                                break;
-                            default:
-                                $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                                break;
+                    $query = $query->where(function ($query) {
+                        foreach ($this->params['filters']['rules'] as $index => $filters) {
+                            switch ($filters['field']) {
+                                case 'bank':
+                                    $query = $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");
+                                    break;
+                                default:
+                                    $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                    break;
+                            }
                         }
-                    }
+                    });
 
                     break;
                 default:
@@ -150,6 +154,9 @@ class RekapPengeluaranHeader extends MyModel
             "modifiedby",
         );
         $query = $this->sort($query);
+        if (request()->tgldari) {
+            $query->whereBetween('tglbukti', [date('Y-m-d',strtotime(request()->tgldari )), date('Y-m-d',strtotime(request()->tglsampai ))]);
+        }
         $models = $this->filter($query);
         
         DB::table($temp)->insertUsing([

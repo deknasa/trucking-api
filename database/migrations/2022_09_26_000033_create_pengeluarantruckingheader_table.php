@@ -23,6 +23,7 @@ class CreatePengeluarantruckingheaderTable extends Migration
             $table->longText('keterangan')->nullable();            
             $table->unsignedBigInteger('pengeluarantrucking_id')->nullable();
             $table->unsignedBigInteger('bank_id')->nullable();
+            $table->unsignedBigInteger('supir_id')->nullable();
             $table->integer('statusposting')->length(11)->nullable();
             $table->string('coa',50)->nullable();
             $table->string('pengeluaran_nobukti',50)->nullable();
@@ -38,12 +39,14 @@ class CreatePengeluarantruckingheaderTable extends Migration
               
             $table->foreign('pengeluarantrucking_id', 'pengeluarantruckingheader_pengeluarantrucking_pengeluarantrucking_id_foreign')->references('id')->on('pengeluarantrucking');   
             $table->foreign('bank_id', 'pengeluarantruckingheader_bank_bank_id_foreign')->references('id')->on('bank');   
+            $table->foreign('supir_id', 'pengeluarantruckingheader_supir_supir_id_foreign')->references('id')->on('supir');   
             $table->foreign('pengeluaran_nobukti', 'pengeluarantruckingheader_pengeluaranheader_penerimaan_nobukti_foreign')->references('nobukti')->on('pengeluaranheader');   
             $table->foreign('coa', 'pengeluarantruckingheader_akunpusat_coa_foreign')->references('coa')->on('akunpusat');  
         });
 
         DB::statement("ALTER TABLE pengeluarantruckingheader NOCHECK CONSTRAINT pengeluarantruckingheader_pengeluarantrucking_pengeluarantrucking_id_foreign");
         DB::statement("ALTER TABLE pengeluarantruckingheader NOCHECK CONSTRAINT pengeluarantruckingheader_bank_bank_id_foreign");
+        DB::statement("ALTER TABLE pengeluarantruckingheader NOCHECK CONSTRAINT pengeluarantruckingheader_supir_supir_id_foreign");
         DB::statement("ALTER TABLE pengeluarantruckingheader NOCHECK CONSTRAINT pengeluarantruckingheader_pengeluaranheader_penerimaan_nobukti_foreign");
         DB::statement("ALTER TABLE pengeluarantruckingheader NOCHECK CONSTRAINT pengeluarantruckingheader_akunpusat_coa_foreign");
 

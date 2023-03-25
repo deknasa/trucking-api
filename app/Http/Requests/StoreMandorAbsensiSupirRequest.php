@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\MandorAbsensiSupirInputSupirValidasiTrado ;
+use Illuminate\Validation\Rule;
 
 class StoreMandorAbsensiSupirRequest extends FormRequest
 {
@@ -29,7 +30,10 @@ class StoreMandorAbsensiSupirRequest extends FormRequest
             'trado_id' => 'required',
             'supir' => 'required',
             'supir_id' => ['required',new MandorAbsensiSupirInputSupirValidasiTrado()],
-            'jam' => 'required',
+            'absen' => 'nullable',
+            'jam' => Rule::requiredIf(function () {
+                return empty($this->input('absen'));
+            }),
         ];
     }
 
