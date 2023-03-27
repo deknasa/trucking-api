@@ -677,7 +677,7 @@ class ProsesGajiSupirHeaderController extends Controller
                             'tgljatuhtempo' => date('Y-m-d', strtotime($request->tglbukti)),
                             "nominal" => $fetchBBM->nominal,
                             'coadebet' => $queryPenerimaanBBM->coa,
-                            'coakredit' => $coaBBM->coapostingdebet,
+                            'coakredit' => $coaBBM->coapostingkredit,
                             'keterangan' => $penerimaanBBM->nobukti,
                             'invoice_nobukti' => '',
                             'pelunasanpiutang_nobukti' => '',
