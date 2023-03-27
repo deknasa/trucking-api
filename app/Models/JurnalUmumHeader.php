@@ -13,7 +13,6 @@ class JurnalUmumHeader extends MyModel
     use HasFactory;
 
     protected $table = 'jurnalumumheader';
-
     protected $casts = [
         'created_at' => 'date:d-m-Y H:i:s',
         'updated_at' => 'date:d-m-Y H:i:s'
@@ -61,7 +60,6 @@ class JurnalUmumHeader extends MyModel
             'nominaldebet',
             'nominalkredit',
         ], $querysummary);
-
 
         $query = DB::table($this->table)->from(
             DB::raw("jurnalumumheader with (readuncommitted)")
@@ -153,7 +151,15 @@ class JurnalUmumHeader extends MyModel
 
     public function sort($query)
     {
-        return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        if ($this->params['sortIndex'] == 'nominaldebet') {
+            return $query->orderBy('c.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'nominalkredit') {
+
+            return $query->orderBy('c.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        } else {
+
+            return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        }
     }
 
     public function filter($query, $relationFields = [])
@@ -164,6 +170,10 @@ class JurnalUmumHeader extends MyModel
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statusapproval') {
                             $query = $query->where('statusapproval.text', '=', $filters['data']);
+                        } else if ($filters['field'] == 'nominaldebet') {
+                            $query = $query->where('c.nominaldebet', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'nominalkredit') {
+                            $query = $query->where('c.nominalkredit', 'LIKE', "%$filters[data]%");
                         } else {
                             $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
@@ -175,6 +185,10 @@ class JurnalUmumHeader extends MyModel
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
                             if ($filters['field'] == 'statusapproval') {
                                 $query = $query->orWhere('statusapproval.text', '=', $filters['data']);
+                            } else if ($filters['field'] == 'nominaldebet') {
+                                $query = $query->orWhere('c.nominaldebet', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'nominalkredit') {
+                                $query = $query->orWhere('c.nominalkredit', 'LIKE', "%$filters[data]%");
                             } else {
                                 $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }

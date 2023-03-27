@@ -329,7 +329,7 @@ class ProsesGajiSupirHeaderController extends Controller
                     $jurnalDetail = [
                         [
                             'nobukti' => $nobukti,
-                            'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
+                            'tglbukti' => date('Y-m-d', strtotime($getData[$i]->tglbukti)),
                             'coa' =>  $memodebet['JURNAL'],
                             'nominal' => $getData[$i]->nominal,
                             'keterangan' => $getData[$i]->keterangan,
@@ -338,7 +338,7 @@ class ProsesGajiSupirHeaderController extends Controller
                         ],
                         [
                             'nobukti' => $nobukti,
-                            'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
+                            'tglbukti' => date('Y-m-d', strtotime($getData[$i]->tglbukti)),
                             'coa' =>  $memokredit['JURNAL'],
                             'nominal' => -$getData[$i]->nominal,
                             'keterangan' => $getData[$i]->keterangan,
@@ -1164,7 +1164,7 @@ class ProsesGajiSupirHeaderController extends Controller
                 $jurnalDetail = [
                     [
                         'nobukti' => $prosesgajisupirheader->nobukti,
-                        'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
+                        'tglbukti' => date('Y-m-d', strtotime($getData[$i]->tglbukti)),
                         'coa' =>  $memodebet['JURNAL'],
                         'nominal' => $getData[$i]->nominal,
                         'keterangan' => $getData[$i]->keterangan,
@@ -1173,7 +1173,7 @@ class ProsesGajiSupirHeaderController extends Controller
                     ],
                     [
                         'nobukti' => $prosesgajisupirheader->nobukti,
-                        'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
+                        'tglbukti' => date('Y-m-d', strtotime($getData[$i]->tglbukti)),
                         'coa' =>  $memokredit['JURNAL'],
                         'nominal' => -$getData[$i]->nominal,
                         'keterangan' => $getData[$i]->keterangan,
