@@ -61,6 +61,7 @@ class PiutangHeader extends MyModel
             DB::raw("isnull(c.nominal,0) as nominalpelunasan"),
             DB::raw("piutangheader.nominal-isnull(c.nominal,0) as sisapiutang"),
             'piutangheader.invoice_nobukti',
+            'piutangheader.keterangan',
             'piutangheader.modifiedby',
             'piutangheader.updated_at',
             'piutangheader.created_at',

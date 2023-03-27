@@ -54,6 +54,7 @@ class KasGantungHeader extends MyModel
             $data = [
                 'kondisi' => true,
                 'keterangan' => 'Absensi Supir',
+                'kodeerror' => 'TDT'
             ];
             goto selesai;
         }
@@ -70,6 +71,7 @@ class KasGantungHeader extends MyModel
             $data = [
                 'kondisi' => true,
                 'keterangan' => 'Pengembalian Kas Gantung',
+                'kodeerror' => 'SATL'
             ];
             goto selesai;
         }

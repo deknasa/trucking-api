@@ -164,7 +164,13 @@ class JurnalUmumPusatHeader extends MyModel
 
     public function sort($query)
     {
-        return $query->orderBy($this->anothertable . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        if ($this->params['sortIndex'] == 'nominaldebet') {
+            return $query->orderBy('c.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'nominalkredit') {
+            return $query->orderBy('c.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        } else {
+            return $query->orderBy($this->anothertable . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        }
     }
 
     public function filter($query, $relationFields = [])
@@ -175,6 +181,10 @@ class JurnalUmumPusatHeader extends MyModel
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statusapproval') {
                             $query = $query->where('statusapproval.text', '=', $filters['data']);
+                        } else if ($filters['field'] == 'nominaldebet') {
+                            $query = $query->where('c.nominaldebet', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'nominalkredit') {
+                            $query = $query->where('c.nominalkredit', 'LIKE', "%$filters[data]%");
                         } else {
                             $query = $query->where($this->anothertable . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
@@ -187,6 +197,10 @@ class JurnalUmumPusatHeader extends MyModel
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
                             if ($filters['field'] == 'statusapproval') {
                                 $query = $query->orWhere('statusapproval.text', '=', $filters['data']);
+                            } else if ($filters['field'] == 'nominaldebet') {
+                                $query = $query->orWhere('c.nominaldebet', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'nominalkredit') {
+                                $query = $query->orWhere('c.nominalkredit', 'LIKE', "%$filters[data]%");
                             } else {
                                 $query = $query->orWhere($this->anothertable . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }

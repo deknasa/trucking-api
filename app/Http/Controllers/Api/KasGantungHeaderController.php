@@ -45,7 +45,7 @@ class KasGantungHeaderController extends Controller
             ]
         ]);
     }
-    
+
     public function default()
     {
         $kasgantungHeader = new KasGantungHeader();
@@ -154,7 +154,7 @@ class KasGantungHeaderController extends Controller
             $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
             //UNTUK INSERT KE PENGELUARAN
-     
+
             if ($tanpaprosesnobukti == 0) {
                 /* Store detail */
                 $detaillog = [];
@@ -234,7 +234,7 @@ class KasGantungHeaderController extends Controller
                             ->where('grp', 'JURNAL KAS GANTUNG')->where('subgrp', 'DEBET')->first();
                         $memo = json_decode($coakredit->memo, true);
                         $penerima = Penerima::from(DB::raw("penerima with (readuncommitted)"))->where("id", $request->penerima_id)->first();
-                        $namaPenerima = ($penerima!=null) ? $penerima->namapenerima : '';
+                        $namaPenerima = ($penerima != null) ? $penerima->namapenerima : '';
                         $pengeluaranDetail = [];
                         for ($i = 0; $i < count($request->nominal); $i++) {
                             $detail = [];
@@ -325,12 +325,12 @@ class KasGantungHeaderController extends Controller
     public function update(UpdateKasGantungHeaderRequest $request, KasGantungHeader $kasgantungheader)
     {
         //   dd($request->all());
-     
+
         DB::beginTransaction();
 
         try {
             $bank_id = $kasgantungheader->bank_id;
-            if($request->from == "AbsensiSupirApprovalHeader"){
+            if ($request->from == "AbsensiSupirApprovalHeader") {
                 $bank_id = $request->bank_id;
             }
             $bank = Bank::lockForUpdate()->findOrFail($bank_id);
@@ -340,8 +340,8 @@ class KasGantungHeaderController extends Controller
             $kasgantungheader->penerima_id = $request->penerima_id ?? '';
             $kasgantungheader->modifiedby = auth('api')->user()->name;
 
-       
-          
+
+
             if ($kasgantungheader->save()) {
 
                 $logTrail = [
@@ -358,7 +358,7 @@ class KasGantungHeaderController extends Controller
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
             }
 
-        
+
             /* Delete existing detail */
             $kasgantungheader->kasgantungDetail()->delete();
 
@@ -374,22 +374,22 @@ class KasGantungHeaderController extends Controller
                     'keterangan' => $request->keterangan_detail[$i],
                     'modifiedby' => auth('api')->user()->name,
                 ];
-               
+
                 $data = new StoreKasGantungDetailRequest($datadetail);
                 $datadetails = app(KasGantungDetailController::class)->store($data);
-             
+
                 if ($datadetails['error']) {
                     return response($datadetails, 422);
                 } else {
                     $iddetail = $datadetails['id'];
                     $tabeldetail = $datadetails['tabel'];
                 }
-             
+
                 $detaillog[] = $datadetails['detail']->toArray();
-             
+
                 $total += $request->nominal[$i];
             }
-          
+
             $datalogtrail = [
                 'namatabel' => strtoupper($tabeldetail),
                 'postingdari' => 'EDIT KAS GANTUNG DETAIL',
@@ -399,22 +399,22 @@ class KasGantungHeaderController extends Controller
                 'datajson' => $detaillog,
                 'modifiedby' => auth('api')->user()->name,
             ];
-           
+
             $data = new StoreLogTrailRequest($datalogtrail);
             app(LogTrailController::class)->store($data);
-        
+
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
 
 
 
-// return DB::table('parameter')->where('grp', 'JURNAL KAS GANTUNG')->where('subgrp', 'DEBET')->first();
+            // return DB::table('parameter')->where('grp', 'JURNAL KAS GANTUNG')->where('subgrp', 'DEBET')->first();
             $coakredit = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
                 ->where('grp', 'JURNAL KAS GANTUNG')->where('subgrp', 'DEBET')->first();
-            $memo =  json_decode($coakredit->memo,true);
+            $memo =  json_decode($coakredit->memo, true);
             $penerima = Penerima::from(DB::raw("penerima with (readuncommitted)"))->where("id", $request->penerima_id)->first();
-            $namaPenerima = ($penerima!=null) ? $penerima->namapenerima : '';
-        
+            $namaPenerima = ($penerima != null) ? $penerima->namapenerima : '';
+
             $pengeluaranDetail = [];
             for ($i = 0; $i < count($request->nominal); $i++) {
                 $detail = [];
@@ -436,10 +436,10 @@ class KasGantungHeaderController extends Controller
                 // $total += $nominal;
                 $pengeluaranDetail[] = $detail;
             }
-            
+
             $pengeluaranHeader = [
                 'dibayarke' => $namaPenerima,
-                'bank_id' =>$kasgantungheader->bank_id ?? 0,
+                'bank_id' => $kasgantungheader->bank_id ?? 0,
                 'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
                 'isUpdate' => 1,
                 'postingdari' => 'EDIT KAS GANTUNG',
@@ -458,12 +458,12 @@ class KasGantungHeaderController extends Controller
                 $jenisTransaksi = Parameter::from(DB::raw("parameter with (readuncommitted)"))
                     ->where('grp', 'JENIS TRANSAKSI')->where('text', 'BANK')->first();
             }
-         
-       
+
+
             // dd($pengeluaranHeader);
-        // return response(PengeluaranHeader::where('nobukti', $kasgantungheader->pengeluaran_nobukti)->get(),422);
+            // return response(PengeluaranHeader::where('nobukti', $kasgantungheader->pengeluaran_nobukti)->get(),422);
             $get = PengeluaranHeader::from(DB::raw("pengeluaranheader with (readuncommitted)"))->where('nobukti', $kasgantungheader->pengeluaran_nobukti)->first();
-            $approvalabsensisupir=$request->approvalabsensisupir ?? false;
+            $approvalabsensisupir = $request->approvalabsensisupir ?? false;
             $request->from = $request->from ?? false;
             $bank = Bank::lockForUpdate()->findOrFail($bank_id);
             if ($request->from == "AbsensiSupirApprovalHeader") {
@@ -507,16 +507,14 @@ class KasGantungHeaderController extends Controller
                     'modifiedby' =>  auth('api')->user()->name,
                     'datadetail' => $pengeluaranDetail
                 ];
-    
-                $pengeluaran = new StorePengeluaranHeaderRequest($pengeluaranHeader);              
+
+                $pengeluaran = new StorePengeluaranHeaderRequest($pengeluaranHeader);
                 app(PengeluaranHeaderController::class)->store($pengeluaran);
-         
             } else {
                 $newPengeluaran = new PengeluaranHeader();
                 $newPengeluaran = $newPengeluaran->findAll($get->id);
                 $pengeluaran = new UpdatePengeluaranHeaderRequest($pengeluaranHeader);
                 app(PengeluaranHeaderController::class)->update($pengeluaran, $newPengeluaran);
-    
             }
 
             DB::commit();
@@ -662,19 +660,20 @@ class KasGantungHeaderController extends Controller
         }
     }
 
-      
-    public function cekValidasiAksi($id) {
-        $kasgantungHeader= new KasGantungHeader();
+
+    public function cekValidasiAksi($id)
+    {
+        $kasgantungHeader = new KasGantungHeader();
         $nobukti = KasGantungHeader::from(DB::raw("kasgantungheader"))->where('id', $id)->first();
-        $cekdata=$kasgantungHeader->cekvalidasiaksi($nobukti->nobukti);
-        if ($cekdata['kondisi']==true) {
+        $cekdata = $kasgantungHeader->cekvalidasiaksi($nobukti->nobukti);
+        if ($cekdata['kondisi'] == true) {
             $query = DB::table('error')
-            ->select(
-                DB::raw("ltrim(rtrim(keterangan))+' (".$cekdata['keterangan'].")' as keterangan")
+                ->select(
+                    DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
                 )
-            ->where('kodeerror', '=', 'SATL')
-            ->get();
-        $keterangan = $query['0'];
+                ->where('kodeerror', '=', $cekdata['kodeerror'])
+                ->get();
+            $keterangan = $query['0'];
 
             $data = [
                 'status' => false,
@@ -684,16 +683,15 @@ class KasGantungHeaderController extends Controller
             ];
 
             return response($data);
-         
         } else {
-                $data = [
-                    'status' => false,
-                    'message' => '',
-                    'errors' => '',
-                    'kondisi' => $cekdata['kondisi'],
-                ];
+            $data = [
+                'status' => false,
+                'message' => '',
+                'errors' => '',
+                'kondisi' => $cekdata['kondisi'],
+            ];
 
-            return response($data); 
+            return response($data);
         }
     }
 

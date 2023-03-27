@@ -63,6 +63,149 @@ class KartuStok extends MyModel
         return $data;
     }
 
+    public function default()
+    {
+
+        $tempStokDari = '##tempStokDari' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+
+        Schema::create($tempStokDari, function ($table) {
+            $table->unsignedBigInteger('stokdari_id')->nullable();
+            $table->string('stokdari', 255)->nullable();
+        });
+        $stokDari = Stok::from(
+            DB::raw('stok with (readuncommitted)')
+        )
+            ->select(
+                'id as stokdari_id',
+                'namastok as stokdari',
+
+            )
+            ->orderBy('id', 'asc')
+            ->limit(1)
+            ->first();
+
+
+        DB::table($tempStokDari)->insert(
+            ["stokdari_id" => $stokDari->stokdari_id, "stokdari" => $stokDari->stokdari]
+        );
+
+
+        $tempStokSampai = '##tempStokSampai' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+
+        Schema::create($tempStokSampai, function ($table) {
+            $table->unsignedBigInteger('stoksampai_id')->nullable();
+            $table->string('stoksampai', 255)->nullable();
+        });
+        $stokSampai = Stok::from(
+            DB::raw('stok with (readuncommitted)')
+        )
+            ->select(
+                'id as stoksampai_id',
+                'namastok as stoksampai',
+
+            )
+            ->orderBy('id', 'desc')
+            ->limit(1)
+            ->first();
+        DB::table($tempStokSampai)->insert(
+            ["stoksampai_id" => $stokSampai->stoksampai_id, "stoksampai" => $stokSampai->stoksampai]
+        );
+
+        $tempGudang = '##tempGudang' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+
+        Schema::create($tempGudang, function ($table) {
+            $table->unsignedBigInteger('gudang_id')->nullable();
+            $table->string('gudang', 255)->nullable();
+        });
+        $gudang = Gudang::from(
+            DB::raw('gudang with (readuncommitted)')
+        )
+            ->select(
+                'id as gudang_id',
+                'gudang as gudang',
+
+            )
+            ->orderBy('id', 'asc')
+            ->limit(1)
+            ->first();
+
+        DB::table($tempGudang)->insert(
+            ["gudang_id" => $gudang->gudang_id, "gudang" => $gudang->gudang]
+        );
+
+        $tempTrado = '##tempTrado' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+
+        Schema::create($tempTrado, function ($table) {
+            $table->unsignedBigInteger('trado_id')->nullable();
+            $table->string('trado', 255)->nullable();
+        });
+        $trado = Trado::from(
+            DB::raw('trado with (readuncommitted)')
+        )
+            ->select(
+                'id as trado_id',
+                'kodetrado as trado',
+
+            )
+            ->orderBy('id', 'asc')
+            ->limit(1)
+            ->first();
+
+        DB::table($tempTrado)->insert(
+            ["trado_id" => $trado->trado_id, "trado" => $trado->trado]
+        );
+
+        $tempGandengan = '##tempGandengan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+
+        Schema::create($tempGandengan, function ($table) {
+            $table->unsignedBigInteger('gandengan_id')->nullable();
+            $table->string('gandengan', 255)->nullable();
+        });
+        $gandengan = Gandengan::from(
+            DB::raw('gandengan with (readuncommitted)')
+        )
+            ->select(
+                'id as gandengan_id',
+                'keterangan as gandengan',
+
+            )
+            ->orderBy('id', 'asc')
+            ->limit(1)
+            ->first();
+
+        DB::table($tempGandengan)->insert(
+            ["gandengan_id" => $gandengan->gandengan_id, "gandengan" => $gandengan->gandengan]
+        );
+        
+        $tempFilter = '##tempFilter' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+
+        Schema::create($tempFilter, function ($table) {
+            $table->unsignedBigInteger('filter')->nullable();
+        });
+        $filter = Parameter::from(
+            DB::raw('parameter with (readuncommitted)')
+        )
+            ->where('grp', 'STOK PERSEDIAAN')
+            ->where('text', 'GUDANG')
+            ->first();
+
+        DB::table($tempFilter)->insert(
+            ["filter" => $filter->id]
+        );
+
+
+        $data = [
+            'stokdari' => DB::table($tempStokDari)->from(DB::raw($tempStokDari))->first(),
+            'stoksampai' => DB::table($tempStokSampai)->from(DB::raw($tempStokSampai))->first(),
+            'gudang' => DB::table($tempGudang)->from(DB::raw($tempGudang))->first(),
+            'filter' => DB::table($tempFilter)->from(DB::raw($tempFilter))->first(),
+            'trado' => DB::table($tempTrado)->from(DB::raw($tempTrado))->first(),
+            'gandengan' => DB::table($tempGandengan)->from(DB::raw($tempGandengan))->first(),
+        ];
+
+        return $data;
+    }
+
     private function getlaporan($tgldari, $tglsampai, $stokdari, $stoksampai, $gudang_id, $trado_id, $gandengan_id, $filter)
     {
 
@@ -200,7 +343,7 @@ class KartuStok extends MyModel
                 'modifiedby',
             ], $queryrekap);
 
-            $spk = Parameter::from (
+            $spk = Parameter::from(
                 DB::raw("parameter with (readuncommitted)")
             )->where('grp', 'SPK STOK')->where('subgrp', 'SPK STOK')->first();
 
@@ -378,7 +521,7 @@ class KartuStok extends MyModel
                 DB::raw("sum ((isnull(a.nilaisaldo,0)+a.nilaimasuk)-a.nilaikeluar) over (order by a.id ASC) as nilaisaldo"),
                 'a.modifiedby',
             )
-            ->leftjoin('kategori as B','a.kategori_id','B.id')
+            ->leftjoin('kategori as B', 'a.kategori_id', 'B.id')
             ->orderBy('a.id', 'asc');
         // dd($datalist->get());
         return $datalist;
