@@ -73,34 +73,35 @@ class PiutangDetail extends MyModel
         $this->setRequestParameters();
 
         $piutang = DB::table("piutangheader")->from(DB::raw("piutangheader with (readuncommitted)"))->where('id', request()->piutang_id)->first();
-        if($piutang != null){
+        if ($piutang != null) {
 
             $query = DB::table("pelunasanpiutangdetail")->from(DB::raw("pelunasanpiutangdetail with (readuncommitted)"));
 
             $query->select(
                 'pelunasanpiutangdetail.nobukti as nobukti_pelunasan',
                 'pelunasanpiutangdetail.piutang_nobukti',
-                'pelunasanpiutangdetail.keterangan',
-                'pelunasanpiutangdetail.invoice_nobukti',
-                'pelunasanpiutangdetail.nominal',
+                'pelunasanpiutangdetail.keterangan as keterangan_pelunasan',
+                'pelunasanpiutangdetail.invoice_nobukti as invoice_pelunasan',
+                'pelunasanpiutangdetail.nominal as nominal_pelunasan',
                 'pelunasanpiutangdetail.potongan',
                 'pelunasanpiutangdetail.nominallebihbayar',
             );
-    
+
             $query->where('pelunasanpiutangdetail.piutang_nobukti', '=', $piutang->nobukti);
-    
+
             $this->totalNominal = $query->sum('nominal');
             $this->totalPotongan = $query->sum('potongan');
             $this->totalNominalLebih = $query->sum('nominallebihbayar');
             $this->totalRows = $query->count();
             $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
-    
+
             $this->sort($query, 'pelunasanpiutangdetail');
+            $this->filter($query);
             $this->paginate($query);
-    
-    
+
+
             return $query->get();
-        }else{
+        } else {
             $this->totalNominal = 0;
             $this->totalPotongan = 0;
             $this->totalNominalLebih = 0;
@@ -109,7 +110,17 @@ class PiutangDetail extends MyModel
 
     public function sort($query, $table)
     {
-        return $query->orderBy($table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        if ($this->params['sortIndex'] == 'nobukti_pelunasan') {
+            return $query->orderBy($table . '.nobukti', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'keterangan_pelunasan') {
+            return $query->orderBy($table . '.keterangan', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'invoice_pelunasan') {
+            return $query->orderBy($table . '.invoice_nobukti', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'nominal_pelunasan') {
+            return $query->orderBy($table . '.nominal', $this->params['sortOrder']);
+        } else {
+            return $query->orderBy($table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        }
     }
 
     public function filter($query, $relationFields = [])
@@ -119,8 +130,23 @@ class PiutangDetail extends MyModel
                 case "AND":
                     $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
-
-                            $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            if ($filters['field'] == 'nobukti_pelunasan') {
+                                $query = $query->where('pelunasanpiutangdetail.nobukti', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'piutang_nobukti') {
+                                $query = $query->where('pelunasanpiutangdetail.piutang_nobukti', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'keterangan_pelunasan') {
+                                $query = $query->where('pelunasanpiutangdetail.keterangan', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'invoice_pelunasan') {
+                                $query = $query->where('pelunasanpiutangdetail.invoice_nobukti', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'nominal_pelunasan') {
+                                $query = $query->where('pelunasanpiutangdetail.nominal', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'potongan') {
+                                $query = $query->where('pelunasanpiutangdetail.potongan', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'nominallebihbayar') {
+                                $query = $query->where('pelunasanpiutangdetail.nominallebihbayar', 'LIKE', "%$filters[data]%");
+                            } else {
+                                $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            }
                         }
                     });
 
@@ -128,8 +154,23 @@ class PiutangDetail extends MyModel
                 case "OR":
                     $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
-
-                            $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            if ($filters['field'] == 'nobukti_pelunasan') {
+                                $query = $query->orWhere('pelunasanpiutangdetail.nobukti', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'piutang_nobukti') {
+                                $query = $query->orWhere('pelunasanpiutangdetail.piutang_nobukti', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'keterangan_pelunasan') {
+                                $query = $query->orWhere('pelunasanpiutangdetail.keterangan', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'invoice_pelunasan') {
+                                $query = $query->orWhere('pelunasanpiutangdetail.invoice_nobukti', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'nominal_pelunasan') {
+                                $query = $query->orWhere('pelunasanpiutangdetail.nominal', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'potongan') {
+                                $query = $query->orWhere('pelunasanpiutangdetail.potongan', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'nominallebihbayar') {
+                                $query = $query->orWhere('pelunasanpiutangdetail.nominallebihbayar', 'LIKE', "%$filters[data]%");
+                            } else {
+                                $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            }
                         }
                     });
                     break;
