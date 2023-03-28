@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\ProsesGajiSupirHeader;
+use Illuminate\Support\Facades\DB;
 
 class ProsesGajiSupirHeaderSeeder extends Seeder
 {
@@ -14,17 +15,10 @@ class ProsesGajiSupirHeaderSeeder extends Seeder
      */
     public function run()
     {
-        ProsesGajiSupirHeader::create([
-            'nobukti' => 'EBS 0001/III/2022',
-            'tglbukti'  => '2022/3/21',
-            'keterangan' => 'PROSES GAJI SUPIR',
-            'tgldari' => '2022/3/21',            
-            'tglsampai' => '2022/3/21',     
-            'statusapproval' => 4,
-            'userapproval'=> '',
-            'tglapproval'   => '',
-            'periode'   => '2022/3/21',
-            'modifiedby' => 'ADMIN',    
-        ]);
+        DB::statement("delete prosesgajisupirheader");
+        DB::statement("DBCC CHECKIDENT ('prosesgajisupirheader', RESEED, 1);");
+
+        prosesgajisupirheader::create([ 'nobukti' => 'EBS 0001/II/2023', 'tglbukti' => '2023/2/1', 'keterangan' => '', 'tgldari' => '2023/2/1', 'tglsampai' => '2023/2/1', 'pengeluaran_nobukti' => 'KBT 0005/II/2023', 'bank_id' => '1', 'statusapproval' => '4', 'userapproval' => '', 'tglapproval' => '1900/1/1', 'periode' => '2023/2/1', 'statusformat' => '148', 'statuscetak' => '175', 'userbukacetak' => '', 'tglbukacetak' => '1900/1/1', 'jumlahcetak' => '0', 'modifiedby' => 'ADMIN',]);
+
     }
 }
