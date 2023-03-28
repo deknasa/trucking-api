@@ -170,7 +170,7 @@ class HutangHeader extends MyModel
 
 
         $query = DB::table('hutangheader')->from(DB::raw("hutangheader with (readuncommitted)"))
-            ->select(DB::raw("hutangheader.id,hutangheader.nobukti as nobukti,hutangheader.tglbukti, hutangheader.total," . $temp . ".sisa"))
+            ->select(DB::raw("row_number() Over(Order By hutangheader.id) as id,hutangheader.nobukti as nobukti,hutangheader.tglbukti, hutangheader.total," . $temp . ".sisa"))
             ->join(DB::raw("$temp with (readuncommitted)"), 'hutangheader.nobukti', $temp . ".nobukti")
             ->whereRaw("hutangheader.nobukti = $temp.nobukti")
             ->where(function ($query) use ($temp) {

@@ -114,7 +114,7 @@ class PelunasanPiutangHeader extends MyModel
                 'agen.namaagen as agen_id',
                 'alatbayar.namaalatbayar as alatbayar_id'
             )
-            ->whereBetween($this->table.'.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
+            ->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'pelunasanpiutangheader.bank_id', 'bank.id')
             ->leftJoin(DB::raw("agen with (readuncommitted)"), 'pelunasanpiutangheader.agen_id', 'agen.id')
             ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'pelunasanpiutangheader.alatbayar_id', 'alatbayar.id');
@@ -138,28 +138,40 @@ class PelunasanPiutangHeader extends MyModel
         $tempPiutang = $this->createTempPiutang($id, $agenid);
         $tempPelunasan = $this->createTempPelunasan($id, $agenid);
 
+        $temp = '##tempGet' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        $fetch = DB::table($tempPelunasan)->from(DB::raw("$tempPelunasan with (readuncommitted)"))
+            ->select(DB::raw("pelunasanpiutang_id,piutang_nobukti,tglbukti,nominal,keterangan,potongan, coapotongan,keteranganpotongan,nominallebihbayar,nominalpiutang,invoice_nobukti,sisa"));
+
+        Schema::create($temp, function ($table) {
+            $table->bigInteger('pelunasanpiutang_id')->nullable();
+            $table->string('piutang_nobukti');
+            $table->date('tglbukti')->nullable();
+            $table->bigInteger('nominal')->nullable();
+            $table->string('keterangan')->nullable();
+            $table->bigInteger('potongan')->nullable();
+            $table->string('coapotongan')->nullable();
+            $table->string('keteranganpotongan')->nullable();
+            $table->bigInteger('nominallebihbayar')->nullable();
+            $table->bigInteger('nominalpiutang')->nullable();
+            $table->string('invoice_nobukti')->nullable();
+            $table->bigInteger('sisa')->nullable();
+        });
+
+        DB::table($temp)->insertUsing(['pelunasanpiutang_id', 'piutang_nobukti', 'tglbukti', 'nominal', 'keterangan', 'potongan', 'coapotongan', 'keteranganpotongan', 'nominallebihbayar', 'nominalpiutang', 'invoice_nobukti', 'sisa'], $fetch);
 
         $piutang = DB::table("$tempPiutang as A")->from(DB::raw("$tempPiutang as A with (readuncommitted)"))
-            ->select(DB::raw("null as pelunasanpiutang_id,A.nobukti as piutang_nobukti, A.tglbukti as tglbukti, A.invoice_nobukti as invoice_nobukti,null as nominal, null as keterangan, null as potongan, null as coapotongan, null as keteranganpotongan, null as nominallebihbayar, A.nominalpiutang, A.sisa as sisa"))
+            ->select(DB::raw("null as pelunasanpiutang_id,A.nobukti as piutang_nobukti, A.tglbukti as tglbukti, null as nominal, null as keterangan, null as potongan, null as coapotongan, null as keteranganpotongan, null as nominallebihbayar, A.nominalpiutang,A.invoice_nobukti as invoice_nobukti, A.sisa as sisa"))
             ->distinct("A.nobukti")
             ->leftJoin(DB::raw("$tempPelunasan as B with (readuncommitted)"), "A.nobukti", "B.piutang_nobukti")
             ->whereRaw("isnull(b.piutang_nobukti,'') = ''")
             ->whereRaw("a.sisa > 0");
 
+        DB::table($temp)->insertUsing(['pelunasanpiutang_id', 'piutang_nobukti', 'tglbukti', 'nominal', 'keterangan', 'potongan', 'coapotongan', 'keteranganpotongan', 'nominallebihbayar', 'nominalpiutang', 'invoice_nobukti', 'sisa'], $piutang);
 
-        $pelunasan = DB::table($tempPelunasan)->from(DB::raw("$tempPelunasan with (readuncommitted)"))
-            ->select(DB::raw("pelunasanpiutang_id,piutang_nobukti,tglbukti,invoice_nobukti,nominal,keterangan,potongan, coapotongan,keteranganpotongan,nominallebihbayar,nominalpiutang,sisa"))
-            ->unionAll($piutang);
-
-        // $this->totalRows = $pelunasan->count();
-        // $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
-
-        // $this->sort($pelunasan);
-        // $this->filter($pelunasan);
-        // $this->paginate($pelunasan);
-
-        $data = $pelunasan->get();
-
+        $data = DB::table($temp)
+        ->select(DB::raw("row_number() Over(Order By $temp.piutang_nobukti) as id,pelunasanpiutang_id,piutang_nobukti,tglbukti,invoice_nobukti,nominal,keterangan,potongan, coapotongan,keteranganpotongan,nominallebihbayar,nominalpiutang,sisa"))
+        ->get();
+        
         return $data;
     }
 
@@ -199,13 +211,13 @@ class PelunasanPiutangHeader extends MyModel
             $table->string('piutang_nobukti');
             $table->date('tglbukti')->nullable();
             $table->bigInteger('nominal')->nullable();
-            $table->string('keterangan');
+            $table->string('keterangan')->nullable();
             $table->bigInteger('potongan')->nullable();
-            $table->string('coapotongan');
-            $table->string('keteranganpotongan');
+            $table->string('coapotongan')->nullable();
+            $table->string('keteranganpotongan')->nullable();
             $table->bigInteger('nominallebihbayar')->nullable();
-            $table->bigInteger('nominalpiutang');
-            $table->string('invoice_nobukti');
+            $table->bigInteger('nominalpiutang')->nullable();
+            $table->string('invoice_nobukti')->nullable();
             $table->bigInteger('sisa')->nullable();
         });
 
@@ -369,7 +381,7 @@ class PelunasanPiutangHeader extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        $models =  $query->whereBetween($this->table.'.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))]);
+        $models =  $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))]);
         DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'bank_id', 'modifiedby', 'updated_at'], $models);
 
         return $temp;

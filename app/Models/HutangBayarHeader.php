@@ -53,7 +53,7 @@ class HutangBayarHeader extends MyModel
                 'hutangbayarheader.tglcair'
 
             )
-            ->whereBetween($this->table.'.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
+            ->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
             ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'hutangbayarheader.coa', 'akunpusat.coa')
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'hutangbayarheader.bank_id', 'bank.id')
             ->leftJoin(DB::raw("supplier with (readuncommitted)"), 'hutangbayarheader.supplier_id', 'supplier.id')
@@ -147,23 +147,49 @@ class HutangBayarHeader extends MyModel
         $this->setRequestParameters();
 
         $tempHutang = $this->createTempHutang($supplierId);
-        $tempPembayaran = $this->createTempPembayaran($id);
+        $tempPembayaran = $this->createTempPembayaran($id, $supplierId);
 
+
+        // $hutang = DB::table("$tempHutang as A")->from(DB::raw("$tempHutang as A with (readuncommitted)"))
+        //     ->select(DB::raw("A.id as id,null as hutangbayar_id,A.nobukti as hutang_nobukti, A.tglbukti as tglbukti, null as bayar, null as keterangan, null as potongan, A.nominalhutang, A.sisa as sisa"))
+        //     // ->distinct("A.nobukti")
+        //     ->leftJoin(DB::raw("$tempPembayaran as B with (readuncommitted)"), "A.nobukti", "B.hutang_nobukti")
+        //     ->whereRaw("isnull(b.hutang_nobukti,'') = ''")
+        //     ->whereRaw("a.sisa > 0");
+
+
+        // $pembayaran = DB::table($tempPembayaran)->from(DB::raw("$tempPembayaran with (readuncommitted)"))
+        //     ->select(DB::raw("id,hutangbayar_id,hutang_nobukti,tglbukti,bayar,keterangan,potongan,nominalhutang,sisa"))
+        //     ->unionAll($hutang);
+
+        $temp = '##tempGet' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        $pembayaran = DB::table($tempPembayaran)->from(DB::raw("$tempPembayaran with (readuncommitted)"))
+            ->select(DB::raw("hutangbayar_id,hutang_nobukti,tglbukti,bayar,keterangan,potongan,nominalhutang,sisa"));
+        
+        Schema::create($temp, function ($table) {
+            $table->bigInteger('hutangbayar_id')->nullable();
+            $table->string('hutang_nobukti');
+            $table->date('tglbukti')->nullable();
+            $table->bigInteger('bayar')->nullable();
+            $table->string('keterangan')->nullable();
+            $table->bigInteger('potongan')->nullable();
+            $table->bigInteger('nominalhutang');
+            $table->bigInteger('sisa')->nullable();
+        });
+
+        DB::table($temp)->insertUsing(['hutangbayar_id', 'hutang_nobukti', 'tglbukti', 'bayar', 'keterangan',  'potongan', 'nominalhutang', 'sisa'], $pembayaran);
 
         $hutang = DB::table("$tempHutang as A")->from(DB::raw("$tempHutang as A with (readuncommitted)"))
-            ->select(DB::raw("A.id as id,null as hutangbayar_id,A.nobukti as hutang_nobukti, A.tglbukti as tglbukti, null as bayar, null as keterangan, null as potongan, A.nominalhutang, A.sisa as sisa"))
+            ->select(DB::raw("null as hutangbayar_id,A.nobukti as hutang_nobukti, A.tglbukti as tglbukti, null as bayar, null as keterangan, null as potongan, A.nominalhutang, A.sisa as sisa"))
             // ->distinct("A.nobukti")
             ->leftJoin(DB::raw("$tempPembayaran as B with (readuncommitted)"), "A.nobukti", "B.hutang_nobukti")
             ->whereRaw("isnull(b.hutang_nobukti,'') = ''")
             ->whereRaw("a.sisa > 0");
+        DB::table($temp)->insertUsing(['hutangbayar_id', 'hutang_nobukti', 'tglbukti', 'bayar', 'keterangan',  'potongan', 'nominalhutang', 'sisa'], $hutang);
 
-
-        $pembayaran = DB::table($tempPembayaran)->from(DB::raw("$tempPembayaran with (readuncommitted)"))
-            ->select(DB::raw("id,hutangbayar_id,hutang_nobukti,tglbukti,bayar,keterangan,potongan,nominalhutang,sisa"))
-            ->unionAll($hutang);
-
-
-        $data = $pembayaran->get();
+        $data = DB::table($temp)->from(DB::raw("$temp with (readuncommitted)"))
+            ->select(DB::raw("row_number() Over(Order By $temp.hutang_nobukti) as id,hutangbayar_id,hutang_nobukti,tglbukti,bayar,keterangan,potongan,nominalhutang,sisa"))
+            ->get();
 
         return $data;
     }
@@ -174,13 +200,12 @@ class HutangBayarHeader extends MyModel
 
 
         $fetch = DB::table('hutangheader')->from(DB::raw("hutangheader with (readuncommitted)"))
-            ->select(DB::raw("hutangheader.id,hutangheader.nobukti,hutangheader.tglbukti,hutangheader.supplier_id,hutangheader.total as nominalhutang, (SELECT (hutangheader.total - COALESCE(SUM(hutangbayardetail.nominal),0)) FROM hutangbayardetail WHERE hutangbayardetail.hutang_nobukti= hutangheader.nobukti) AS sisa"))
+            ->select(DB::raw("hutangheader.nobukti,hutangheader.tglbukti,hutangheader.supplier_id,hutangheader.total as nominalhutang, (SELECT (hutangheader.total - COALESCE(SUM(hutangbayardetail.nominal),0)) FROM hutangbayardetail WHERE hutangbayardetail.hutang_nobukti= hutangheader.nobukti) AS sisa"))
             ->leftJoin(DB::raw("hutangbayardetail with (readuncommitted)"), 'hutangheader.nobukti', 'hutangbayardetail.hutang_nobukti')
             ->whereRaw("hutangheader.supplier_id = $supplierId")
             ->groupBy('hutangheader.id', 'hutangheader.nobukti', 'hutangheader.supplier_id', 'hutangheader.total', 'hutangheader.tglbukti');
 
         Schema::create($temp, function ($table) {
-            $table->bigInteger('id');
             $table->string('nobukti');
             $table->date('tglbukti')->nullable();
             $table->bigInteger('supplier_id')->nullable();
@@ -188,33 +213,32 @@ class HutangBayarHeader extends MyModel
             $table->bigInteger('sisa')->nullable();
         });
 
-        $tes = DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'supplier_id', 'nominalhutang', 'sisa'], $fetch);
+        $tes = DB::table($temp)->insertUsing(['nobukti', 'tglbukti', 'supplier_id', 'nominalhutang', 'sisa'], $fetch);
 
         return $temp;
     }
 
-    public function createTempPembayaran($id)
+    public function createTempPembayaran($id, $supplierId)
     {
         $tempo = '##tempPembayaran' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
         $fetch = DB::table('hutangbayardetail as hbd')->from(DB::raw("hutangbayardetail as hbd with (readuncommitted)"))
-            ->select(DB::raw("hutangheader.id,hbd.hutangbayar_id,hbd.hutang_nobukti,hutangheader.tglbukti,hbd.nominal as bayar, hbd.keterangan,hbd.potongan,hutangheader.total as nominalhutang, (SELECT (hutangheader.total - SUM(hutangbayardetail.nominal)) FROM hutangbayardetail WHERE hutangbayardetail.hutang_nobukti= hutangheader.nobukti) AS sisa"))
-            ->leftJoin(DB::raw("hutangheader with (readuncommitted)"), 'hbd.hutang_nobukti', 'hutangheader.nobukti')
+            ->select(DB::raw("hbd.hutangbayar_id,hbd.hutang_nobukti,hutangheader.tglbukti,hbd.nominal as bayar, hbd.keterangan,hbd.potongan,hutangheader.total as nominalhutang, (SELECT (hutangheader.total - SUM(hutangbayardetail.nominal)) FROM hutangbayardetail WHERE hutangbayardetail.hutang_nobukti= hutangheader.nobukti) AS sisa"))
+            ->join(DB::raw("hutangheader with (readuncommitted)"), 'hbd.hutang_nobukti', 'hutangheader.nobukti')
             ->whereRaw("hbd.hutangbayar_id = $id");
 
         Schema::create($tempo, function ($table) {
-            $table->bigInteger('id')->nullable();
             $table->bigInteger('hutangbayar_id')->nullable();
             $table->string('hutang_nobukti');
             $table->date('tglbukti')->nullable();
             $table->bigInteger('bayar')->nullable();
-            $table->string('keterangan');
+            $table->string('keterangan')->nullable();
             $table->bigInteger('potongan')->nullable();
             $table->bigInteger('nominalhutang');
             $table->bigInteger('sisa')->nullable();
         });
 
-        $tes = DB::table($tempo)->insertUsing(['id', 'hutangbayar_id', 'hutang_nobukti', 'tglbukti', 'bayar', 'keterangan',  'potongan', 'nominalhutang', 'sisa'], $fetch);
+        $tes = DB::table($tempo)->insertUsing(['hutangbayar_id', 'hutang_nobukti', 'tglbukti', 'bayar', 'keterangan',  'potongan', 'nominalhutang', 'sisa'], $fetch);
 
         return $tempo;
     }
@@ -248,7 +272,7 @@ class HutangBayarHeader extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        $models =  $query->whereBetween($this->table.'.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))]);
+        $models =  $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))]);
         DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'pengeluaran_nobukti', 'bank_id', 'supplier_id', 'coa', 'statusapproval', 'userapproval', 'tglapproval', 'statuscetak', 'userbukacetak', 'tglbukacetak', 'jumlahcetak', 'modifiedby', 'created_at', 'updated_at'], $models);
 
 

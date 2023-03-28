@@ -81,7 +81,7 @@ class PelunasanPiutangHeaderController extends Controller
 
                 for ($i = 0; $i < count($request->piutang_id); $i++) {
 
-                    $cekSisa = PiutangHeader::from(DB::raw("piutangheader with (readuncommitted)"))->select('nominal')->where('nobukti', $request->piutang_id[$i])->first();
+                    $cekSisa = PiutangHeader::from(DB::raw("piutangheader with (readuncommitted)"))->select('nominal')->where('nobukti', $request->piutang_nobukti[$i])->first();
                     
                     if ($request->bayarppd[$i] > $cekSisa->nominal) {
                         if ($request->nominallebihbayarppd[$i] == 0) {
@@ -247,8 +247,7 @@ class PelunasanPiutangHeaderController extends Controller
                 $detailNotaKredit = [];
                 $detailNotaDebet = [];
                 for ($i = 0; $i < count($request->piutang_id); $i++) {
-                    $nobuktiPiutang = $request->piutang_id[$i];
-                    $piutang = PiutangHeader::where('nobukti', $nobuktiPiutang)->first();
+                    $piutang = PiutangHeader::where('nobukti', $request->piutang_nobukti[$i])->first();
 
                     if ($request->bayarppd[$i] > $piutang->nominal) {
 
@@ -501,7 +500,7 @@ class PelunasanPiutangHeaderController extends Controller
 
             for ($i = 0; $i < count($request->piutang_id); $i++) {
 
-                $cekSisa = PiutangHeader::from(DB::raw("piutangheader with (readuncommitted)"))->select('nominal')->where('nobukti', $request->piutang_id[$i])->first();
+                $cekSisa = PiutangHeader::from(DB::raw("piutangheader with (readuncommitted)"))->select('nominal')->where('nobukti', $request->piutang_nobukti[$i])->first();
 
                 if ($request->bayarppd[$i] > $cekSisa->nominal) {
                     if ($request->nominallebihbayarppd[$i] == 0) {
@@ -574,8 +573,7 @@ class PelunasanPiutangHeaderController extends Controller
                 $detailNotaKredit = [];
                 $detailNotaDebet = [];
                 for ($i = 0; $i < count($request->piutang_id); $i++) {
-                    $idpiutang = $request->piutang_id[$i];
-                    $piutang = PiutangHeader::where('nobukti', $idpiutang)->first();
+                    $piutang = PiutangHeader::where('nobukti', $request->piutang_nobukti[$i])->first();
 
                    
                     if ($request->bayarppd[$i] > $piutang->nominal) {
