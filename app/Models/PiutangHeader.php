@@ -47,7 +47,6 @@ class PiutangHeader extends MyModel
             'nominal',
         ], $query);
 
-
         $this->setRequestParameters();
 
         $query = DB::table($this->table)->from(
@@ -65,6 +64,8 @@ class PiutangHeader extends MyModel
             'piutangheader.updated_at',
             'piutangheader.created_at',
             'parameter.memo as statuscetak',
+            'debet.keterangancoa as coadebet',
+            'kredit.keterangancoa as coakredit',
             DB::raw('(case when (year(piutangheader.tglbukacetak) <= 2000) then null else piutangheader.tglbukacetak end ) as tglbukacetak'),
             'piutangheader.userbukacetak',
             'agen.namaagen as agen_id',
@@ -72,6 +73,8 @@ class PiutangHeader extends MyModel
             ->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'piutangheader.statuscetak', 'parameter.id')
             ->leftJoin(DB::raw("agen with (readuncommitted)"), 'piutangheader.agen_id', 'agen.id')
+            ->leftJoin(DB::raw("akunpusat as debet with (readuncommitted)"), 'piutangheader.coadebet', 'debet.coa')
+            ->leftJoin(DB::raw("akunpusat as kredit with (readuncommitted)"), 'piutangheader.coakredit', 'kredit.coa')
             ->leftJoin(DB::raw($temppelunasan . " as c"), 'piutangheader.nobukti', 'c.piutang_nobukti');
 
         $this->totalRows = $query->count();
@@ -123,7 +126,7 @@ class PiutangHeader extends MyModel
             ->from(
                 DB::raw("piutangheader with (readuncommitted)")
             )
-            ->select(DB::raw("piutangheader.nobukti as nobukti,piutangheader.tglbukti, piutangheader.invoice_nobukti, piutangheader.nominal, piutangheader.agen_id," . $temp . ".sisa"))
+            ->select(DB::raw("row_number() Over(Order By piutangheader.id) as id,piutangheader.nobukti as nobukti,piutangheader.tglbukti, piutangheader.invoice_nobukti, piutangheader.nominal, piutangheader.agen_id," . $temp . ".sisa"))
             ->leftJoin(DB::raw("$temp with (readuncommitted)"), 'piutangheader.agen_id', $temp . ".agen_id")
             ->whereRaw("piutangheader.agen_id = $id")
             ->whereRaw("piutangheader.nobukti = $temp.nobukti")
@@ -251,14 +254,20 @@ class PiutangHeader extends MyModel
         $models = $this->filter($query);
         $models = $query
             ->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))]);
-        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'postingdari', 'nominal','nominalpelunasan','sisapiutang', 'invoice_nobukti', 'agen_id', 'modifiedby', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'postingdari', 'nominal', 'nominalpelunasan', 'sisapiutang', 'invoice_nobukti', 'agen_id', 'modifiedby', 'updated_at'], $models);
 
         return $temp;
     }
 
     public function sort($query)
     {
-        return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        if ($this->params['sortIndex'] == 'nominalpelunasan') {
+            return $query->orderBy('c.nominal', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'sisapiutang') {
+            return $query->orderBy(DB::raw("(piutangheader.nominal - isnull(c.nominal,0))"), $this->params['sortOrder']);
+        } else {
+            return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        }
     }
 
     public function filter($query, $relationFields = [])
@@ -271,6 +280,14 @@ class PiutangHeader extends MyModel
                             $query = $query->where('parameter.text', '=', "$filters[data]");
                         } else if ($filters['field'] == 'agen_id') {
                             $query = $query->where('agen.namaagen', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'nominalpelunasan') {
+                            $query = $query->where('c.nominal', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'sisapiutang') {
+                            $query->where(DB::raw("(piutangheader.nominal - isnull(c.nominal,0))"), 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'coadebet') {
+                            $query = $query->where('debet.keterangancoa', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'coakredit') {
+                            $query = $query->where('kredit.keterangancoa', 'LIKE', "%$filters[data]%");
                         } else {
                             $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
@@ -284,6 +301,14 @@ class PiutangHeader extends MyModel
                                 $query = $query->orWhere('parameter.text', '=', "$filters[data]");
                             } else if ($filters['field'] == 'agen_id') {
                                 $query = $query->orWhere('agen.namaagen', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'nominalpelunasan') {
+                                $query = $query->orWhere('c.nominal', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'sisapiutang') {
+                                $query->where(DB::raw("(piutangheader.nominal - isnull(c.nominal,0))"), 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'coadebet') {
+                                $query = $query->orWhere('debet.keterangancoa', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'coakredit') {
+                                $query = $query->orWhere('kredit.keterangancoa', 'LIKE', "%$filters[data]%");
                             } else {
                                 $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }

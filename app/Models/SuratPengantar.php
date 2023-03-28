@@ -188,9 +188,9 @@ class SuratPengantar extends MyModel
             ->leftJoin('mandor as mandortrado', 'suratpengantar.mandortrado_id', 'mandortrado.id')
             ->leftJoin('mandor as mandorsupir', 'suratpengantar.mandorsupir_id', 'mandorsupir.id')
             ->leftJoin('tarif', 'suratpengantar.tarif_id', 'tarif.id');
-            if (request()->tgldari) {
-                $query->whereBetween('suratpengantar.tglbukti', [date('Y-m-d',strtotime(request()->tgldari )), date('Y-m-d',strtotime(request()->tglsampai ))]);
-            }
+        if (request()->tgldari) {
+            $query->whereBetween('suratpengantar.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
+        }
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
@@ -557,6 +557,7 @@ class SuratPengantar extends MyModel
 
         )
 
+            ->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
             ->leftJoin('pelanggan', 'suratpengantar.pelanggan_id', 'pelanggan.id')
             ->leftJoin('kota as kotadari', 'kotadari.id', '=', 'suratpengantar.dari_id')
             ->leftJoin('kota as kotasampai', 'kotasampai.id', '=', 'suratpengantar.sampai_id')
@@ -626,10 +627,10 @@ class SuratPengantar extends MyModel
         $query = DB::table($modelTable);
         $query = $this->selectColumns($query);
         if (request()->tgldari) {
-            $query->whereBetween('suratpengantar.tglbukti', [date('Y-m-d',strtotime(request()->tgldari )), date('Y-m-d',strtotime(request()->tglsampai ))]);
+            $query->whereBetween('suratpengantar.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
         }
         $this->sort($query);
-        
+
         $models = $this->filter($query);
         DB::table($temp)->insertUsing([
             'id', 'nobukti', 'jobtrucking', 'tglbukti', 'pelanggan_id', 'keterangan', 'dari_id', 'sampai_id', 'container_id', 'nocont', 'statuscontainer_id', 'trado_id', 'supir_id',
@@ -708,46 +709,47 @@ class SuratPengantar extends MyModel
 
                     break;
                 case "OR":
-                    foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'pelanggan_id') {
-                            $query = $query->orWhere('pelanggan.namapelanggan', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'dari_id') {
-                            $query = $query->orWhere('kotadari.keterangan', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'sampai_id') {
-                            $query = $query->orWhere('kotasampai.keterangan', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'statuscontainer_id') {
-                            $query = $query->orWhere('statuscontainer.keterangan', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'container_id') {
-                            $query = $query->orWhere('container.keterangan', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'trado_id') {
-                            $query = $query->orWhere('trado.keterangan', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'supir_id') {
-                            $query = $query->orWhere('supir.namasupir', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'agen_id') {
-                            $query = $query->orWhere('agen.namaagen', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'jenisorder_id') {
-                            $query = $query->orWhere('jenisorder.keterangan', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'tarif_id') {
-                            $query = $query->orWhere('tarif.tujuan', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'mandortrado_id') {
-                            $query = $query->orWhere('mandortrado.namamandor', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'mandorsupir_id') {
-                            $query = $query->orWhere('mandorsupir.namamandor', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'statuslongtrip') {
-                            $query = $query->orWhere('statuslongtrip.text', '=', "$filters[data]");
-                        } else if ($filters['field'] == 'statusperalihan') {
-                            $query = $query->orWhere('statusperalihan.text', '=', "$filters[data]");
-                        } else if ($filters['field'] == 'statusritasiomset') {
-                            $query = $query->orWhere('statusritasiomset.text', '=', "$filters[data]");
-                        } else if ($filters['field'] == 'statusgudangsama') {
-                            $query = $query->orWhere('statusgudangsama.text', '=', "$filters[data]");
-                        } else if ($filters['field'] == 'statusbatalmuat') {
-                            $query = $query->orWhere('statusbatalmuat.text', '=', "$filters[data]");
-                        } else {
-                            $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                    $query = $query->where(function ($query) {
+                        foreach ($this->params['filters']['rules'] as $index => $filters) {
+                            if ($filters['field'] == 'pelanggan_id') {
+                                $query = $query->orWhere('pelanggan.namapelanggan', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'dari_id') {
+                                $query = $query->orWhere('kotadari.keterangan', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'sampai_id') {
+                                $query = $query->orWhere('kotasampai.keterangan', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'statuscontainer_id') {
+                                $query = $query->orWhere('statuscontainer.keterangan', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'container_id') {
+                                $query = $query->orWhere('container.keterangan', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'trado_id') {
+                                $query = $query->orWhere('trado.keterangan', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'supir_id') {
+                                $query = $query->orWhere('supir.namasupir', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'agen_id') {
+                                $query = $query->orWhere('agen.namaagen', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'jenisorder_id') {
+                                $query = $query->orWhere('jenisorder.keterangan', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'tarif_id') {
+                                $query = $query->orWhere('tarif.tujuan', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'mandortrado_id') {
+                                $query = $query->orWhere('mandortrado.namamandor', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'mandorsupir_id') {
+                                $query = $query->orWhere('mandorsupir.namamandor', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'statuslongtrip') {
+                                $query = $query->orWhere('statuslongtrip.text', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'statusperalihan') {
+                                $query = $query->orWhere('statusperalihan.text', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'statusritasiomset') {
+                                $query = $query->orWhere('statusritasiomset.text', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'statusgudangsama') {
+                                $query = $query->orWhere('statusgudangsama.text', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'statusbatalmuat') {
+                                $query = $query->orWhere('statusbatalmuat.text', '=', "$filters[data]");
+                            } else {
+                                $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            }
                         }
-                    }
-
+                    });
                     break;
                 default:
 

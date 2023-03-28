@@ -100,8 +100,8 @@ class HutangDetail extends MyModel
             $query->select(
                 'hutangbayardetail.nobukti as nobukti_bayar',
                 'hutangbayardetail.hutang_nobukti',
-                'hutangbayardetail.keterangan',
-                'hutangbayardetail.nominal',
+                'hutangbayardetail.keterangan as keterangan_bayar',
+                'hutangbayardetail.nominal as nominal_bayar',
                 'hutangbayardetail.potongan',
             );
 
@@ -113,19 +113,30 @@ class HutangDetail extends MyModel
             $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
             $this->sort($query, 'hutangbayardetail');
+            $this->filter($query);
             $this->paginate($query);
 
 
             return $query->get();
-        }else{
+        } else {
             $this->totalNominal = 0;
-            $this->totalPotongan =0;
+            $this->totalPotongan = 0;
             $this->totalRows = 0;
         }
     }
     public function sort($query, $table)
     {
-        return $query->orderBy($table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        if ($this->params['sortIndex'] == 'nobukti_bayar') {
+            return $query->orderBy($table . '.nobukti', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'keterangan_bayar') {
+            return $query->orderBy($table . '.keterangan', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'potongan') {
+            return $query->orderBy($table . '.potongan', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'nominal_bayar') {
+            return $query->orderBy($table . '.nominal', $this->params['sortOrder']);
+        } else {
+            return $query->orderBy($table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        }
     }
 
     public function filter($query, $relationFields = [])
@@ -135,8 +146,19 @@ class HutangDetail extends MyModel
                 case "AND":
                     $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
-
-                            $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            if ($filters['field'] == 'hutang_nobukti') {
+                                $query = $query->where('hutangbayardetail.hutang_nobukti', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'keterangan_bayar') {
+                                $query = $query->where('hutangbayardetail.keterangan', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'nobukti_bayar') {
+                                $query = $query->where('hutangbayardetail.nobukti', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'nominal_bayar') {
+                                $query = $query->where('hutangbayardetail.nominal', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'potongan') {
+                                $query = $query->where('hutangbayardetail.potongan', 'LIKE', "%$filters[data]%");
+                            } else {
+                                $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            }
                         }
                     });
 
@@ -144,8 +166,19 @@ class HutangDetail extends MyModel
                 case "OR":
                     $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
-
-                            $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            if ($filters['field'] == 'hutang_nobukti') {
+                                $query = $query->orWhere('hutangbayardetail.hutang_nobukti', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'keterangan_bayar') {
+                                $query = $query->orWhere('hutangbayardetail.keterangan', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'nobukti_bayar') {
+                                $query = $query->orWhere('hutangbayardetail.nobukti', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'nominal_bayar') {
+                                $query = $query->orWhere('hutangbayardetail.nominal', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'potongan') {
+                                $query = $query->orWhere('hutangbayardetail.potongan', 'LIKE', "%$filters[data]%");
+                            } else {
+                                $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            }
                         }
                     });
                     break;

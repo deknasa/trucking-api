@@ -170,7 +170,7 @@ class HutangHeader extends MyModel
 
 
         $query = DB::table('hutangheader')->from(DB::raw("hutangheader with (readuncommitted)"))
-            ->select(DB::raw("hutangheader.nobukti as nobukti,hutangheader.tglbukti, hutangheader.total," . $temp . ".sisa"))
+            ->select(DB::raw("row_number() Over(Order By hutangheader.id) as id,hutangheader.nobukti as nobukti,hutangheader.tglbukti, hutangheader.total," . $temp . ".sisa"))
             ->join(DB::raw("$temp with (readuncommitted)"), 'hutangheader.nobukti', $temp . ".nobukti")
             ->whereRaw("hutangheader.nobukti = $temp.nobukti")
             ->where(function ($query) use ($temp) {
@@ -298,7 +298,13 @@ class HutangHeader extends MyModel
 
     public function sort($query)
     {
-        return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        if ($this->params['sortIndex'] == 'nominalbayar') {
+            return $query->orderBy('c.nominal', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'sisahutang') {
+            return $query->orderBy(DB::raw("(hutangheader.total - isnull(c.nominal,0))"), $this->params['sortOrder']);
+        } else {
+            return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        }
     }
 
     public function filter($query, $relationFields = [])

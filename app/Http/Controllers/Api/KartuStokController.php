@@ -32,6 +32,16 @@ class KartuStokController extends Controller
             ]);
     }
     
+
+    public function default()
+    {
+        $kartuStok = new KartuStok();
+        return response([
+            'status' => true,
+            'data' => $kartuStok->default(),
+        ]);
+    }
+    
     /**
      * @ClassName
      */

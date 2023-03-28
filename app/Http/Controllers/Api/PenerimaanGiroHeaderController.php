@@ -173,7 +173,7 @@ class PenerimaanGiroHeaderController extends Controller
                     'tanpaprosesnobukti' => 1,
                     'nobukti' => $penerimaanGiro->nobukti,
                     'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
-                    'postingdari' => ($request->postingdari) ? 'ENTRY PENERIMAAN GIRO DARI '.$request->postingdari : 'ENTRY PENERIMAAN GIRO',
+                    'postingdari' => ($request->postingdari) ? 'ENTRY PENERIMAAN GIRO DARI ' . $request->postingdari : 'ENTRY PENERIMAAN GIRO',
                     'statusapproval' => $statusApp->id,
                     'userapproval' => "",
                     'tglapproval' => "",
@@ -217,11 +217,13 @@ class PenerimaanGiroHeaderController extends Controller
             }
             DB::commit();
 
-            /* Set position and page */
-            $selected = $this->getPosition($penerimaanGiro, $penerimaanGiro->getTable());
-            $penerimaanGiro->position = $selected->position;
-            $penerimaanGiro->page = ceil($penerimaanGiro->position / ($request->limit ?? 10));
+            if ($tanpaprosesnobukti == 0) {
 
+                /* Set position and page */
+                $selected = $this->getPosition($penerimaanGiro, $penerimaanGiro->getTable());
+                $penerimaanGiro->position = $selected->position;
+                $penerimaanGiro->page = ceil($penerimaanGiro->position / ($request->limit ?? 10));
+            }
             return response([
                 'status' => true,
                 'message' => 'Berhasil disimpan',
@@ -263,7 +265,7 @@ class PenerimaanGiroHeaderController extends Controller
                 $penerimaangiroheader->diterimadari = $request->diterimadari;
                 $penerimaangiroheader->tgllunas = date('Y-m-d', strtotime($request->tgllunas));
                 $penerimaangiroheader->modifiedby = auth('api')->user()->name;
-            }else{
+            } else {
                 $penerimaangiroheader->agen_id = $request->agen_id;
                 $penerimaangiroheader->modifiedby = auth('api')->user()->name;
             }
@@ -300,7 +302,7 @@ class PenerimaanGiroHeaderController extends Controller
             }
             $detaillog = [];
             for ($i = 0; $i < count($counter); $i++) {
-                
+
                 $datadetail = [
                     'penerimaangiro_id' => $penerimaangiroheader->id,
                     'nobukti' => $penerimaangiroheader->nobukti,
@@ -357,7 +359,7 @@ class PenerimaanGiroHeaderController extends Controller
                 'tanpaprosesnobukti' => 1,
                 'nobukti' => $penerimaangiroheader->nobukti,
                 'tglbukti' => ($request->datadetail != '') ? $penerimaangiroheader->tglbukti : date('Y-m-d', strtotime($request->tglbukti)),
-                'postingdari' => ($request->postingdari) ? 'EDIT PENERIMAAN GIRO DARI '.$request->postingdari : 'EDIT PENERIMAAN GIRO',
+                'postingdari' => ($request->postingdari) ? 'EDIT PENERIMAAN GIRO DARI ' . $request->postingdari : 'EDIT PENERIMAAN GIRO',
                 'statusapproval' => $statusApp->id,
                 'userapproval' => "",
                 'tglapproval' => "",
@@ -374,7 +376,7 @@ class PenerimaanGiroHeaderController extends Controller
                         'tglbukti' => ($request->datadetail != '') ? $penerimaangiroheader->tglbukti : date('Y-m-d', strtotime($request->tglbukti)),
                         'coa' =>  $memodebet['JURNAL'],
                         'nominal' => ($request->datadetail != '') ? $request->datadetail[$i]['nominal'] : $request->nominal[$i],
-                        'keterangan' =>($request->datadetail != '') ? $request->datadetail[$i]['keterangan'] :  $request->keterangan_detail[$i],
+                        'keterangan' => ($request->datadetail != '') ? $request->datadetail[$i]['keterangan'] :  $request->keterangan_detail[$i],
                         'modifiedby' => auth('api')->user()->name,
                         'baris' => $i,
                     ],
@@ -382,7 +384,7 @@ class PenerimaanGiroHeaderController extends Controller
                         'nobukti' => $penerimaangiroheader->nobukti,
                         'tglbukti' => ($request->datadetail != '') ? $penerimaangiroheader->tglbukti : date('Y-m-d', strtotime($request->tglbukti)),
                         'coa' =>  $memokredit['JURNAL'],
-                        'nominal' => ($request->datadetail != '') ? '-'.$request->datadetail[$i]['nominal'] : '-'.$request->nominal[$i],
+                        'nominal' => ($request->datadetail != '') ? '-' . $request->datadetail[$i]['nominal'] : '-' . $request->nominal[$i],
                         'keterangan' => ($request->datadetail != '') ? $request->datadetail[$i]['keterangan'] : $request->keterangan_detail[$i],
                         'modifiedby' => auth('api')->user()->name,
                         'baris' => $i,
@@ -409,11 +411,13 @@ class PenerimaanGiroHeaderController extends Controller
             $request->sortorder = $request->sortorder ?? 'asc';
             DB::commit();
 
-            /* Set position and page */
-            $selected = $this->getPosition($penerimaangiroheader, $penerimaangiroheader->getTable());
-            $penerimaangiroheader->position = $selected->position;
-            $penerimaangiroheader->page = ceil($penerimaangiroheader->position / ($request->limit ?? 10));
+            if ($isUpdate == 0) {
 
+                /* Set position and page */
+                $selected = $this->getPosition($penerimaangiroheader, $penerimaangiroheader->getTable());
+                $penerimaangiroheader->position = $selected->position;
+                $penerimaangiroheader->page = ceil($penerimaangiroheader->position / ($request->limit ?? 10));
+            }
             return response([
                 'status' => true,
                 'message' => 'Berhasil disimpan',
@@ -500,11 +504,12 @@ class PenerimaanGiroHeaderController extends Controller
             app(LogTrailController::class)->store($validatedLogTrailJurnalDetail);
 
             DB::commit();
-
-            $selected = $this->getPosition($penerimaanGiro, $penerimaanGiro->getTable(), true);
-            $penerimaanGiro->position = $selected->position;
-            $penerimaanGiro->id = $selected->id;
-            $penerimaanGiro->page = ceil($penerimaanGiro->position / ($request->limit ?? 10));
+            if ($request->postingdari === null) {
+                $selected = $this->getPosition($penerimaanGiro, $penerimaanGiro->getTable(), true);
+                $penerimaanGiro->position = $selected->position;
+                $penerimaanGiro->id = $selected->id;
+                $penerimaanGiro->page = ceil($penerimaanGiro->position / ($request->limit ?? 10));
+            }
             return response([
                 'status' => true,
                 'message' => 'Berhasil dihapus',
@@ -715,7 +720,7 @@ class PenerimaanGiroHeaderController extends Controller
             return response($data);
         }
     }
-      
+
     public function cekValidasiAksi($id)
     {
         $penerimaanGiro = new PenerimaanGiroHeader();
@@ -740,12 +745,12 @@ class PenerimaanGiroHeaderController extends Controller
             return response($data);
         } else {
 
-                $data = [
-                    'status' => false,
-                    'message' => '',
-                    'errors' => '',
-                    'kondisi' => $cekdata['kondisi'],
-                ];
+            $data = [
+                'status' => false,
+                'message' => '',
+                'errors' => '',
+                'kondisi' => $cekdata['kondisi'],
+            ];
 
             return response($data);
         }

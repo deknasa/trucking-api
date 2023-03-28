@@ -117,13 +117,13 @@ class NotaDebetHeaderController extends Controller
 
             DB::commit();
             /* Set position and page */
-            $selected = $this->getPosition($notaDebetHeader, $notaDebetHeader->getTable());
-            $notaDebetHeader->position = $selected->position;
-            $notaDebetHeader->page = ceil($notaDebetHeader->position / ($request->limit ?? 10));
+            // $selected = $this->getPosition($notaDebetHeader, $notaDebetHeader->getTable());
+            // $notaDebetHeader->position = $selected->position;
+            // $notaDebetHeader->page = ceil($notaDebetHeader->position / ($request->limit ?? 10));
 
-            if (isset($request->limit)) {
-                $notaDebetHeader->page = ceil($notaDebetHeader->position / $request->limit);
-            }
+            // if (isset($request->limit)) {
+            //     $notaDebetHeader->page = ceil($notaDebetHeader->position / $request->limit);
+            // }
 
             return response([
                 'message' => 'Berhasil disimpan',
@@ -216,13 +216,13 @@ class NotaDebetHeaderController extends Controller
 
 
             /* Set position and page */
-            $selected = $this->getPosition($notadebetheader, $notadebetheader->getTable());
-            $notadebetheader->position = $selected->position;
-            $notadebetheader->page = ceil($notadebetheader->position / ($request->limit ?? 10));
+            // $selected = $this->getPosition($notadebetheader, $notadebetheader->getTable());
+            // $notadebetheader->position = $selected->position;
+            // $notadebetheader->page = ceil($notadebetheader->position / ($request->limit ?? 10));
 
-            if (isset($request->limit)) {
-                $notadebetheader->page = ceil($notadebetheader->position / $request->limit);
-            }
+            // if (isset($request->limit)) {
+            //     $notadebetheader->page = ceil($notadebetheader->position / $request->limit);
+            // }
 
             return response([
                 'message' => 'Berhasil disimpan',
@@ -273,12 +273,12 @@ class NotaDebetHeaderController extends Controller
             $validatedLogTrailNotaDebetDetail = new StoreLogTrailRequest($logTrailNotaDebetDetail);
             app(LogTrailController::class)->store($validatedLogTrailNotaDebetDetail);
             DB::commit();
-
-            $selected = $this->getPosition($notaDebetHeader, $notaDebetHeader->getTable(), true);
-            $notaDebetHeader->position = $selected->position;
-            $notaDebetHeader->id = $selected->id;
-            $notaDebetHeader->page = ceil($notaDebetHeader->position / ($request->limit ?? 10));
-
+            if ($request->postingdari === null) {
+                $selected = $this->getPosition($notaDebetHeader, $notaDebetHeader->getTable(), true);
+                $notaDebetHeader->position = $selected->position;
+                $notaDebetHeader->id = $selected->id;
+                $notaDebetHeader->page = ceil($notaDebetHeader->position / ($request->limit ?? 10));
+            }
             return response([
                 'status' => true,
                 'message' => 'Berhasil dihapus',

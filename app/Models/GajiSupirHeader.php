@@ -423,6 +423,7 @@ class GajiSupirHeader extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
+        $models =  $query->whereBetween($this->table.'.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))]);
         DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'supir_id',  'nominal', 'tgldari', 'tglsampai', 'total', 'statuscetak', 'userbukacetak', 'tglbukacetak', 'jumlahcetak', 'modifiedby', 'created_at', 'updated_at'], $models);
 
         return $temp;
@@ -434,8 +435,9 @@ class GajiSupirHeader extends MyModel
             ->select(DB::raw(" pengeluarantruckingdetail.nobukti,pengeluarantruckingdetail.id, pengeluarantruckingdetail.supir_id,pengeluarantruckingdetail.keterangan, (SELECT (pengeluarantruckingdetail.nominal - coalesce(SUM(penerimaantruckingdetail.nominal),0)) FROM penerimaantruckingdetail WHERE penerimaantruckingdetail.pengeluarantruckingheader_nobukti= pengeluarantruckingdetail.nobukti) AS sisa"))
             ->distinct('pengeluarantruckingdetail.nobukti')
             ->leftJoin(DB::raw("penerimaantruckingdetail with (readuncommitted)"), 'penerimaantruckingdetail.pengeluarantruckingheader_nobukti', 'pengeluarantruckingdetail.nobukti')
-            ->where("pengeluarantruckingdetail.supir_id", 0);
-
+            ->where("pengeluarantruckingdetail.supir_id", 0)
+            ->orderBy('pengeluarantruckingdetail.nobukti', 'asc');
+        
         return $query->get();
     }
 
@@ -446,7 +448,8 @@ class GajiSupirHeader extends MyModel
             ->leftJoin(DB::raw("penerimaantruckingdetail with (readuncommitted)"), 'penerimaantruckingdetail.pengeluarantruckingheader_nobukti', 'pengeluarantruckingdetail.nobukti')
             ->where("pengeluarantruckingdetail.nobukti",  'LIKE', "%PJT%")
             ->whereRaw("pengeluarantruckingdetail.nobukti not in (select pengeluarantruckingheader_nobukti from penerimaantruckingdetail)")
-            ->where("pengeluarantruckingdetail.supir_id", $supir_id);
+            ->where("pengeluarantruckingdetail.supir_id", $supir_id)
+            ->orderBy('pengeluarantruckingdetail.nobukti', 'asc');
 
         return $query->get();
     }

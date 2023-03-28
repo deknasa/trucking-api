@@ -854,6 +854,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::resource('stokpersediaan', StokPersediaanController::class);
     Route::get('kartustok/report', [KartuStokController::class, 'report'])->name('kartustok.report');
     Route::get('kartustok/export', [KartuStokController::class, 'export'])->name('kartustok.export');
+    Route::get('kartustok/default', [KartuStokController::class, 'default']);
     Route::resource('kartustok', KartuStokController::class);
 
     Route::get('historipenerimaanstok/report', [HistoriPenerimaanStokController::class, 'report'])->name('historipenerimaanstok.report');

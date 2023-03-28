@@ -215,103 +215,74 @@ class PengeluaranHeaderController extends Controller
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
 
-            if ($pengeluaranHeader->save() && $pengeluaranHeader->pengeluarandetail()) {
+            $jurnalHeader = [
+                'tanpaprosesnobukti' => 1,
+                'nobukti' => $pengeluaranHeader->nobukti,
+                'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
+                'postingdari' => $request->postingdari ?? "ENTRY PENGELUARAN KAS/BANK",
+                'statusapproval' => $statusApp->id,
+                'userapproval' => "",
+                'tglapproval' => "",
+                'modifiedby' => auth('api')->user()->name,
+                'statusformat' => "0",
+            ];
 
-                $jurnalHeader = [
-                    'tanpaprosesnobukti' => 1,
-                    'nobukti' => $pengeluaranHeader->nobukti,
-                    'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
-                    'postingdari' => $request->postingdari ?? "ENTRY PENGELUARAN KAS/BANK",
-                    'statusapproval' => $statusApp->id,
-                    'userapproval' => "",
-                    'tglapproval' => "",
-                    'modifiedby' => auth('api')->user()->name,
-                    'statusformat' => "0",
+            $jurnaldetail = [];
+
+            for ($i = 0; $i < count($counter); $i++) {
+                $detail = [];
+
+                $jurnalDetail = [
+                    [
+                        'nobukti' => $pengeluaranHeader->nobukti,
+                        'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
+                        'coa' => ($request->datadetail != '') ? $request->datadetail[$i]['coadebet'] ?? '-' : $request->coadebet[$i],
+                        'nominal' => ($request->datadetail != '') ? $request->datadetail[$i]['nominal'] : $request->nominal_detail[$i],
+                        'keterangan' => ($request->datadetail != '') ? $request->datadetail[$i]['keterangan'] : $request->keterangan_detail[$i],
+                        'modifiedby' => auth('api')->user()->name,
+                        'baris' => $i,
+                    ],
+                    [
+                        'nobukti' => $pengeluaranHeader->nobukti,
+                        'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
+                        'coa' => ($request->datadetail != '') ? $request->datadetail[$i]['coakredit'] : $querysubgrppengeluaran->coa,
+                        'nominal' => ($request->datadetail != '') ? -$request->datadetail[$i]['nominal'] : -$request->nominal_detail[$i],
+                        'keterangan' => ($request->datadetail != '') ? $request->datadetail[$i]['keterangan'] : $request->keterangan_detail[$i],
+                        'modifiedby' => auth('api')->user()->name,
+                        'baris' => $i,
+                    ]
                 ];
 
-                $jurnaldetail = [];
 
-                for ($i = 0; $i < count($counter); $i++) {
-                    $detail = [];
+                $jurnaldetail = array_merge($jurnaldetail, $jurnalDetail);
+            }
 
-                    $jurnalDetail = [
-                        [
-                            'nobukti' => $pengeluaranHeader->nobukti,
-                            'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
-                            'coa' => ($request->datadetail != '') ? $request->datadetail[$i]['coadebet'] ?? '-' : $request->coadebet[$i],
-                            'nominal' => ($request->datadetail != '') ? $request->datadetail[$i]['nominal'] : $request->nominal_detail[$i],
-                            'keterangan' => ($request->datadetail != '') ? $request->datadetail[$i]['keterangan'] : $request->keterangan_detail[$i],
-                            'modifiedby' => auth('api')->user()->name,
-                            'baris' => $i,
-                        ],
-                        [
-                            'nobukti' => $pengeluaranHeader->nobukti,
-                            'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
-                            'coa' => ($request->datadetail != '') ? $request->datadetail[$i]['coakredit'] : $querysubgrppengeluaran->coa,
-                            'nominal' => ($request->datadetail != '') ? -$request->datadetail[$i]['nominal'] : -$request->nominal_detail[$i],
-                            'keterangan' => ($request->datadetail != '') ? $request->datadetail[$i]['keterangan'] : $request->keterangan_detail[$i],
-                            'modifiedby' => auth('api')->user()->name,
-                            'baris' => $i,
-                        ]
-                    ];
+            $jurnal = $this->storeJurnal($jurnalHeader, $jurnaldetail);
 
 
-                    $jurnaldetail = array_merge($jurnaldetail, $jurnalDetail);
-                }
+            if (!$jurnal['status']) {
+                throw new Exception($jurnal['message']);
+            }
 
-                $jurnal = $this->storeJurnal($jurnalHeader, $jurnaldetail);
+            $approvalabsensisupir = $request->approvalabsensisupir ?? false;
+            if ($approvalabsensisupir == true) {
+                $kasgantungheader  = KasGantungHeader::lockForUpdate()->where("id", $request->kasgantungheader_id)
+                    ->firstorFail();
+                $kasgantungheader->pengeluaran_nobukti = $pengeluaranHeader->nobukti;
+                $kasgantungheader->coakaskeluar = $request->coakaskeluar;
+                $kasgantungheader->tglkaskeluar = $request->tglbukti;
+                $kasgantungheader->save();
+            }
 
 
-                if (!$jurnal['status']) {
-                    throw new Exception($jurnal['message']);
-                }
+            DB::commit();
+            if ($tanpaprosesnobukti == 0) {
 
-                $approvalabsensisupir = $request->approvalabsensisupir ?? false;
-                if ($approvalabsensisupir == true) {
-
-
-
-                    $kasgantungheader  = KasGantungHeader::lockForUpdate()->where("id", $request->kasgantungheader_id)
-                        ->firstorFail();
-                    $kasgantungheader->pengeluaran_nobukti = $pengeluaranHeader->nobukti;
-                    $kasgantungheader->coakaskeluar = $request->coakaskeluar;
-                    $kasgantungheader->tglkaskeluar = $request->tglbukti;
-                    $kasgantungheader->save();
-                }
-
-                DB::commit();
                 /* Set position and page */
                 $selected = $this->getPosition($pengeluaranHeader, $pengeluaranHeader->getTable());
                 $pengeluaranHeader->position = $selected->position;
                 $pengeluaranHeader->page = ceil($pengeluaranHeader->position / ($request->limit ?? 10));
             }
-
-
-            // INSERT JURNAL UMUM
-            // $parameterController = new ParameterController;
-            // $statusApp = $parameterController->getparameterid('STATUS APPROVAL', 'STATUS APPROVAL', 'NON APPROVAL');
-            // $jurnalHeader = [
-            //     'tanpaprosesnobukti' => 1,
-            //     'nobukti' => $pengeluaranHeader->nobukti,
-            //     'tglbukti' => $pengeluaranHeader->tglbukti,
-            //     'postingdari' => "ENTRY PENGELUARAN DARI $pengeluaranHeader->postingdari",
-            //     'statusapproval' => $statusApp->id,
-            //     'userapproval' => "",
-            //     'tglapproval' => "",
-            //     'statusformat' => 0,
-            //     'modifiedby' => auth('api')->user()->name,
-            // ];
-
-            // $storeJurnal = new StoreJurnalUmumHeaderRequest($jurnalHeader);
-            // $jurnal = app(JurnalUmumHeaderController::class)->store($storeJurnal);
-            // $idLogTrail = [];
-            // $idLogTrail = [
-            //     'pengeluaran' => $storedLogTrail['id'],
-            //     'jurnal' => $jurnal->original['idlogtrail'],
-            //     'jurnal_id' => $jurnal->original['data']['id']
-            // ];
-
-
             return response([
                 'status' => true,
                 'message' => 'Berhasil disimpan',
@@ -529,10 +500,12 @@ class PengeluaranHeaderController extends Controller
 
             DB::commit();
 
-            /* Set position and page */
-            $selected = $this->getPosition($pengeluaranheader, $pengeluaranheader->getTable());
-            $pengeluaranheader->position = $selected->position;
-            $pengeluaranheader->page = ceil($pengeluaranheader->position / ($request->limit ?? 10));
+            if ($isUpdate == 0) {
+                /* Set position and page */
+                $selected = $this->getPosition($pengeluaranheader, $pengeluaranheader->getTable());
+                $pengeluaranheader->position = $selected->position;
+                $pengeluaranheader->page = ceil($pengeluaranheader->position / ($request->limit ?? 10));
+            }
 
             return response([
                 'status' => true,

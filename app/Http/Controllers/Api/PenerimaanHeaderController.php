@@ -99,7 +99,7 @@ class PenerimaanHeaderController extends Controller
 
             $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
                 ->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
-           
+
             $statuscetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
                 ->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
 
@@ -245,8 +245,8 @@ class PenerimaanHeaderController extends Controller
                 } else {
                     $counter = $request->nominal_detail;
                 }
-                
-               
+
+
                 for ($i = 0; $i < count($counter); $i++) {
                     $detail = [];
                     $jurnalDetail = [
@@ -395,11 +395,10 @@ class PenerimaanHeaderController extends Controller
             if ($request->datadetail != '') {
                 $counter = $request->datadetail;
 
-                if($request->from != 'prosesuangjalansupir'){
+                if ($request->from != 'prosesuangjalansupir') {
                     $getCoaKredit = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
                         ->where('grp', 'JURNAL PENERIMAAN DARI PELUNASAN')->where('subgrp', 'KREDIT')->first();
                     $memo = json_decode($getCoaKredit->memo, true);
-
                 }
             } else {
                 $counter = $request->nominal_detail;
@@ -507,7 +506,7 @@ class PenerimaanHeaderController extends Controller
                     throw new Exception($jurnal['message']);
                 }
                 $tanpagetposition = $request->tanpagetposition ?? 0;
-                
+
 
                 DB::commit();
                 if ($tanpagetposition) {
@@ -610,10 +609,13 @@ class PenerimaanHeaderController extends Controller
             app(LogTrailController::class)->store($validatedLogTrailJurnalDetail);
             DB::commit();
 
-            $selected = $this->getPosition($penerimaanHeader, $penerimaanHeader->getTable(), true);
-            $penerimaanHeader->position = $selected->position;
-            $penerimaanHeader->id = $selected->id;
-            $penerimaanHeader->page = ceil($penerimaanHeader->position / ($request->limit ?? 10));
+            if ($request->postingdari === null) {
+                $selected = $this->getPosition($penerimaanHeader, $penerimaanHeader->getTable(), true);
+                $penerimaanHeader->position = $selected->position;
+                $penerimaanHeader->id = $selected->id;
+                $penerimaanHeader->page = ceil($penerimaanHeader->position / ($request->limit ?? 10));
+            }
+            
             return response([
                 'status' => true,
                 'message' => 'Berhasil dihapus',
@@ -832,7 +834,7 @@ class PenerimaanHeaderController extends Controller
         }
     }
 
-    
+
     public function cekValidasiAksi($id)
     {
         $penerimaanHeader = new PenerimaanHeader();
@@ -857,12 +859,12 @@ class PenerimaanHeaderController extends Controller
             return response($data);
         } else {
 
-                $data = [
-                    'status' => false,
-                    'message' => '',
-                    'errors' => '',
-                    'kondisi' => $cekdata['kondisi'],
-                ];
+            $data = [
+                'status' => false,
+                'message' => '',
+                'errors' => '',
+                'kondisi' => $cekdata['kondisi'],
+            ];
 
             return response($data);
         }

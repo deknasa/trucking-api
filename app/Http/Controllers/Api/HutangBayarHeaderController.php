@@ -63,7 +63,7 @@ class HutangBayarHeaderController extends Controller
             /* Store header */
             for ($i = 0; $i < count($request->hutang_id); $i++) {
 
-                $cekSisa = HutangHeader::from(DB::raw("hutangheader with (readuncommitted)"))->select('total')->where('nobukti', $request->hutang_id[$i])->first();
+                $cekSisa = HutangHeader::from(DB::raw("hutangheader with (readuncommitted)"))->select('total')->where('nobukti', $request->hutang_nobukti[$i])->first();
 
                 $byrPotongan = $request->bayar[$i] + $request->potongan[$i];
                 if ($byrPotongan > $cekSisa->total) {
@@ -127,7 +127,7 @@ class HutangBayarHeaderController extends Controller
 
 
             for ($i = 0; $i < count($request->hutang_id); $i++) {
-                $hutang = HutangHeader::where('nobukti', $request->hutang_id[$i])->first();
+                $hutang = HutangHeader::where('nobukti', $request->hutang_nobukti[$i])->first();
                
                 if ($request->bayar[$i] > $hutang->total) {
 
@@ -235,8 +235,7 @@ class HutangBayarHeaderController extends Controller
             $memopembelian = json_decode($coaDebetpembelian->memo, true);
 
             for ($i = 0; $i < count($request->hutang_id); $i++) {
-                $hutang = HutangHeader::from(DB::raw("hutangheader with (readuncommitted)"))->where('id', $request->hutang_id[$i])->first();
-                $hutangDetail = HutangDetail::from(DB::raw("hutangdetail with (readuncommitted)"))->where('nobukti', $hutang->nobukti)->first();
+                $hutangDetail = HutangDetail::from(DB::raw("hutangdetail with (readuncommitted)"))->where('nobukti', $request->hutang_nobukti[$i])->first();
                 $detail = [];
 
                 $query = HutangHeader::from(
@@ -289,7 +288,7 @@ class HutangBayarHeaderController extends Controller
                 'tanpaprosesnobukti' => 1,
                 'nobukti' => $nobuktiPengeluaran,
                 'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
-                'pelanggan_id' => $hutang->pelanggan_id,
+                'pelanggan_id' => 0,
                 'statusjenistransaksi' => $jenisTransaksi->id,
                 'postingdari' => 'ENTRY HUTANG BAYAR',
                 'statusapproval' => $statusApproval->id,
@@ -355,7 +354,7 @@ class HutangBayarHeaderController extends Controller
 
             for ($i = 0; $i < count($request->hutang_id); $i++) {
 
-                $cekSisa = HutangHeader::from(DB::raw("hutangheader with (readuncommitted)"))->select('total')->where('id', $request->hutang_id[$i])->first();
+                $cekSisa = HutangHeader::from(DB::raw("hutangheader with (readuncommitted)"))->select('total')->where('nobukti', $request->hutang_nobukti[$i])->first();
 
 
                 $byrPotongan = $request->bayar[$i] + $request->potongan[$i];
@@ -395,7 +394,7 @@ class HutangBayarHeaderController extends Controller
                 /* Store detail */
                 $detaillog = [];
                 for ($i = 0; $i < count($request->hutang_id); $i++) {
-                    $hutang = HutangHeader::where('id', $request->hutang_id[$i])->first();
+                    $hutang = HutangHeader::where('nobukti', $request->hutang_nobukti[$i])->first();
                     if ($request->bayar[$i] > $hutang->total) {
 
                         $query = DB::table('error')->from(DB::raw("error with (readuncommitted)"))->select('keterangan')->where('kodeerror', '=', 'NBH')
@@ -458,10 +457,8 @@ class HutangBayarHeaderController extends Controller
 
 
             for ($i = 0; $i < count($request->hutang_id); $i++) {
-                $hutang = HutangHeader::from(DB::raw("hutangheader with (readuncommitted)"))
-                    ->where('id', $request->hutang_id[$i])->first();
                 $hutangDetail = HutangDetail::from(DB::raw("hutangdetail with (readuncommitted)"))
-                    ->where('nobukti', $hutang->nobukti)->first();
+                    ->where('nobukti', $request->hutang_nobukti[$i])->first();
                 $detail = [];
 
                 $query = HutangHeader::from(
