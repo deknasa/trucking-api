@@ -68,6 +68,8 @@ class DatabaseSeeder extends Seeder
             GajiSupirDepositoSeeder::class,
             GajiSupirPinjamanSeeder::class,
             GajiSupirPelunasanPinjamanSeeder::class,
+            ProsesGajiSupirHeaderSeeder::class,
+            ProsesGajiSupirDetailSeeder::class,
             PenerimaanHeaderSeeder::class,
             PenerimaanDetailSeeder::class,
             PengeluaranHeaderSeeder::class,
