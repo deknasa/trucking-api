@@ -26,6 +26,7 @@ use App\Http\Requests\StoreJurnalUmumDetailRequest;
 use App\Http\Requests\StorePengeluaranHeaderRequest;
 use App\Http\Requests\StorePengeluaranDetailRequest;
 use App\Http\Requests\UpdatePengeluaranHeaderRequest;
+use App\Models\AlatBayar;
 use Illuminate\Database\QueryException;
 
 class KasGantungHeaderController extends Controller
@@ -243,7 +244,6 @@ class KasGantungHeaderController extends Controller
                                 'entriluar' => 1,
                                 'nobukti' => $nobuktikaskeluar,
                                 'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
-                                'alatbayar_id' => 2,
                                 'nowarkat' => '',
                                 'tgljatuhtempo' => '',
                                 'nominal' => $request->nominal[$i],
@@ -257,22 +257,18 @@ class KasGantungHeaderController extends Controller
                             $pengeluaranDetail[] = $detail;
                         }
 
+                        $alatbayar = AlatBayar::from(DB::raw("alatbayar with (readuncommitted)"))->where('bank_id', $bank->id)->first();
+
                         $pengeluaranHeader = [
                             'tanpaprosesnobukti' => 1,
                             'nobukti' => $nobuktikaskeluar,
                             'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
                             'pelanggan_id' => 0,
-                            'statusjenistransaksi' => $jenisTransaksi->id,
                             'postingdari' => 'ENTRY KAS GANTUNG',
                             'statusapproval' => $statusApp->id,
                             'dibayarke' => $namaPenerima,
-                            'cabang_id' => 1, // masih manual karena belum di catat di session
+                            'alatbayar_id' => $alatbayar->id,
                             'bank_id' => $bank->id,
-                            'userapproval' => "",
-                            'tglapproval' => "",
-                            'transferkeac' => '',
-                            'transferkean' => '',
-                            'trasnferkebank' => '',
                             'statusformat' => $querysubgrppengeluaran->formatpengeluaran,
                             'modifiedby' =>  auth('api')->user()->name,
                             'datadetail' => $pengeluaranDetail
@@ -423,7 +419,6 @@ class KasGantungHeaderController extends Controller
                     'entriluar' => 1,
                     'nobukti' => $kasgantungheader->nobukti,
                     'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
-                    'alatbayar_id' => 2,
                     'nowarkat' => '',
                     'tgljatuhtempo' => '',
                     'nominal' => $request->nominal[$i],

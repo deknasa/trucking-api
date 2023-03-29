@@ -165,6 +165,10 @@ class JurnalUmumDetail extends MyModel
     {
         if ($this->params['sortIndex'] == 'keterangancoa') {
             return $query->orderBy('coa.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'nominaldebet') {
+            return $query->orderBy('jurnalumumdetail.nominal', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'nominalkredit') {
+            return $query->orderBy('jurnalumumdetail.nominal', $this->params['sortOrder']);
         } else {
             return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
         }
@@ -178,7 +182,11 @@ class JurnalUmumDetail extends MyModel
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
                             if ($filters['field'] == 'keterangancoa') {
                                 $query = $query->where('coa.keterangancoa', 'LIKE', "%$filters[data]%");
-                            } else {
+                            } else if ($filters['field'] == 'nominaldebet') {
+                                $query = $query->where(DB::raw("(case when jurnalumumdetail.nominal<=0 then 0 else jurnalumumdetail.nominal end)"), 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'nominalkredit') {
+                                $query = $query->where(DB::raw("(case when jurnalumumdetail.nominal>=0 then 0 else abs(jurnalumumdetail.nominal) end)"), 'LIKE', "%$filters[data]%");
+                            }else {
                                 $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }
                         }
@@ -190,7 +198,11 @@ class JurnalUmumDetail extends MyModel
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
                             if ($filters['field'] == 'keterangancoa') {
                                 $query = $query->orWhere('coa.keterangancoa', 'LIKE', "%$filters[data]%");
-                            } else {
+                            } else if ($filters['field'] == 'nominaldebet') {
+                                $query = $query->orWhere(DB::raw("(case when jurnalumumdetail.nominal<=0 then 0 else jurnalumumdetail.nominal end)"), 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'nominalkredit') {
+                                $query = $query->orWhere(DB::raw("(case when jurnalumumdetail.nominal>=0 then 0 else abs(jurnalumumdetail.nominal) end)"), 'LIKE', "%$filters[data]%");
+                            }else {
                                 $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }
                         }

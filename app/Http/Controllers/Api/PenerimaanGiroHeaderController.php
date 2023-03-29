@@ -9,6 +9,7 @@ use App\Http\Requests\StoreLogTrailRequest;
 use App\Http\Requests\StorePenerimaanGiroDetailRequest;
 use App\Models\PenerimaanGiroHeader;
 use App\Http\Requests\StorePenerimaanGiroHeaderRequest;
+use App\Http\Requests\UpdateJurnalUmumHeaderRequest;
 use App\Http\Requests\UpdatePenerimaanGiroHeaderRequest;
 use App\Models\JurnalUmumDetail;
 use App\Models\JurnalUmumHeader;
@@ -349,23 +350,6 @@ class PenerimaanGiroHeaderController extends Controller
             $data = new StoreLogTrailRequest($datalogtrail);
             app(LogTrailController::class)->store($data);
 
-            JurnalUmumHeader::where('nobukti', $penerimaangiroheader->nobukti)->delete();
-            JurnalUmumDetail::where('nobukti', $penerimaangiroheader->nobukti)->delete();
-
-            $parameterController = new ParameterController;
-            $statusApp = $parameterController->getparameterid('STATUS APPROVAL', 'STATUS APPROVAL', 'NON APPROVAL');
-
-            $jurnalHeader = [
-                'tanpaprosesnobukti' => 1,
-                'nobukti' => $penerimaangiroheader->nobukti,
-                'tglbukti' => ($request->datadetail != '') ? $penerimaangiroheader->tglbukti : date('Y-m-d', strtotime($request->tglbukti)),
-                'postingdari' => ($request->postingdari) ? 'EDIT PENERIMAAN GIRO DARI ' . $request->postingdari : 'EDIT PENERIMAAN GIRO',
-                'statusapproval' => $statusApp->id,
-                'userapproval' => "",
-                'tglapproval' => "",
-                'modifiedby' => auth('api')->user()->name,
-                'statusformat' => "0",
-            ];
             $jurnaldetail = [];
 
             for ($i = 0; $i < count($counter); $i++) {
@@ -395,18 +379,18 @@ class PenerimaanGiroHeaderController extends Controller
             }
 
 
-
-            $jurnal = $this->storeJurnal($jurnalHeader, $jurnaldetail);
-
-
-            // if (!$jurnal['status'] AND @$jurnal['errorCode'] == 2601) {
-            //     goto ATAS;
-            // }
-
-            if (!$jurnal['status']) {
-                throw new Exception($jurnal['message']);
-            }
-
+            $jurnalHeader = [
+                'isUpdate' => 1,
+                'postingdari' => $request->postingdari ?? "EDIT PENERIMAAN GIRO",
+                'modifiedby' => auth('api')->user()->name,
+                'datadetail' => $jurnaldetail
+            ];
+            $getJurnal = JurnalUmumHeader::from(DB::raw("jurnalumumheader with (readuncommitted)"))->where('nobukti', $penerimaangiroheader->nobukti)->first();
+            $newJurnal = new JurnalUmumHeader();
+            $newJurnal = $newJurnal->find($getJurnal->id);
+            $jurnal = new UpdateJurnalUmumHeaderRequest($jurnalHeader);
+            app(JurnalUmumHeaderController::class)->update($jurnal, $newJurnal);
+            
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
             DB::commit();

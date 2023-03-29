@@ -22,6 +22,7 @@ use App\Models\PelunasanPiutangHeader;
 use App\Models\PenerimaanDetail;
 use App\Http\Requests\StoreJurnalUmumHeaderRequest;
 use App\Http\Requests\StoreJurnalUmumDetailRequest;
+use App\Http\Requests\UpdateJurnalUmumHeaderRequest;
 use App\Http\Requests\UpdatePenerimaanHeaderRequest;
 use App\Models\Error;
 use Exception;
@@ -387,7 +388,6 @@ class PenerimaanHeaderController extends Controller
 
             /* Delete existing detail */
             $penerimaanheader->penerimaanDetail()->delete();
-            JurnalUmumHeader::where('nobukti', $penerimaanheader->nobukti)->delete();
 
             /* Store detail */
             $detaillog = [];
@@ -454,57 +454,48 @@ class PenerimaanHeaderController extends Controller
             $request->sortorder = $request->sortorder ?? 'asc';
 
             if ($penerimaanheader->save() && $penerimaanheader->penerimaandetail()) {
-                $parameterController = new ParameterController;
-                $statusApp = $parameterController->getparameterid('STATUS APPROVAL', 'STATUS APPROVAL', 'NON APPROVAL');
-
-                $jurnalHeader = [
-                    'tanpaprosesnobukti' => 1,
-                    'nobukti' => $penerimaanheader->nobukti,
-                    'tglbukti' => ($isUpdate != 0) ? $penerimaanheader->tglbukti : date('Y-m-d', strtotime($request->tglbukti)),
-                    'postingdari' => $request->postingdari ?? 'EDIT PENERIMAAN KAS/BANK',
-                    'statusapproval' => $statusApp->id,
-                    'userapproval' => "",
-                    'tglapproval' => "",
-                    'modifiedby' => auth('api')->user()->name,
-                    'statusformat' => "0",
-                ];
-                $jurnaldetail = [];
+                $jurnalDetail = [];
 
                 for ($i = 0; $i < count($counter); $i++) {
                     $detail = [];
-                    $jurnalDetail = [
+
+                    $jurnaldetail = [
                         [
                             'nobukti' => $penerimaanheader->nobukti,
-                            'tglbukti' => ($isUpdate != 0) ? $penerimaanheader->tglbukti : date('Y-m-d', strtotime($request->tglbukti)),
-                            'coa' => ($isUpdate != 0) ? $counter[$i]['coadebet'] ?? $request->coadebet : $querysubgrppenerimaan->coa,
-                            'nominal' => ($isUpdate != 0) ? $counter[$i]['nominal'] : $request->nominal_detail[$i],
-                            'keterangan' => ($isUpdate != 0) ? $counter[$i]['keterangan'] : $request->keterangan_detail[$i],
+                            'tglbukti' => date('Y-m-d', strtotime($penerimaanheader->tglbukti)),
+                            'coa' => ($request->datadetail != '') ? $request->datadetail[$i]['coadebet'] ?? $request->coadebet : $querysubgrppenerimaan->coa,
+                            'nominal' => ($request->datadetail != '') ? $request->datadetail[$i]['nominal'] : $request->nominal_detail[$i],
+                            'keterangan' => ($request->datadetail != '') ? $request->datadetail[$i]['keterangan'] : $request->keterangan_detail[$i],
                             'modifiedby' => auth('api')->user()->name,
                             'baris' => $i,
                         ],
                         [
                             'nobukti' => $penerimaanheader->nobukti,
-                            'tglbukti' => ($isUpdate != 0) ? $penerimaanheader->tglbukti : date('Y-m-d', strtotime($request->tglbukti)),
-                            'coa' => ($isUpdate != 0) ? $counter[$i]['coakredit'] ?? $memo['JURNAL'] : $request->coakredit[$i] ?? '-',
-                            'nominal' => ($isUpdate != 0) ? '-' . $counter[$i]['nominal'] : -$request->nominal_detail[$i],
-                            'keterangan' => ($isUpdate != 0) ? $counter[$i]['keterangan'] : $request->keterangan_detail[$i],
+                            'tglbukti' => date('Y-m-d', strtotime($penerimaanheader->tglbukti)),
+                            'coa' => ($request->datadetail != '') ? $request->datadetail[$i]['coakredit'] ?? $memo['JURNAL']: $request->coakredit[$i] ?? '-',
+                            'nominal' => ($request->datadetail != '') ? -$request->datadetail[$i]['nominal'] : -$request->nominal_detail[$i],
+                            'keterangan' => ($request->datadetail != '') ? $request->datadetail[$i]['keterangan'] : $request->keterangan_detail[$i],
                             'modifiedby' => auth('api')->user()->name,
                             'baris' => $i,
                         ]
                     ];
 
-
-                    $jurnaldetail = array_merge($jurnaldetail, $jurnalDetail);
+                    $jurnalDetail = array_merge($jurnalDetail, $jurnaldetail);
                 }
-                $jurnal = $this->storeJurnal($jurnalHeader, $jurnaldetail);
 
-                // if (!$jurnal['status'] AND @$jurnal['errorCode'] == 2601) {
-                //     goto ATAS;
-                // }
+                $jurnalHeader = [
+                    'isUpdate' => 1,
+                    'postingdari' => $request->postingdari ?? "EDIT PENERIMAAN KAS/BANK",
+                    'modifiedby' => auth('api')->user()->name,
+                    'datadetail' => $jurnalDetail
+                ];
 
-                if (!$jurnal['status']) {
-                    throw new Exception($jurnal['message']);
-                }
+                $getJurnal = JurnalUmumHeader::from(DB::raw("jurnalumumheader with (readuncommitted)"))->where('nobukti', $penerimaanheader->nobukti)->first();
+                $newJurnal = new JurnalUmumHeader();
+                $newJurnal = $newJurnal->find($getJurnal->id);
+                $jurnal = new UpdateJurnalUmumHeaderRequest($jurnalHeader);
+                app(JurnalUmumHeaderController::class)->update($jurnal, $newJurnal);
+
                 $tanpagetposition = $request->tanpagetposition ?? 0;
 
 
@@ -615,7 +606,7 @@ class PenerimaanHeaderController extends Controller
                 $penerimaanHeader->id = $selected->id;
                 $penerimaanHeader->page = ceil($penerimaanHeader->position / ($request->limit ?? 10));
             }
-            
+
             return response([
                 'status' => true,
                 'message' => 'Berhasil dihapus',

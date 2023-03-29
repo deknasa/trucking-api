@@ -13,6 +13,7 @@ use App\Http\Requests\StorePengeluaranHeaderRequest;
 use App\Http\Requests\StoreProsesGajiSupirDetailRequest;
 use App\Models\ProsesGajiSupirHeader;
 use App\Http\Requests\StoreProsesGajiSupirHeaderRequest;
+use App\Http\Requests\UpdateJurnalUmumHeaderRequest;
 use App\Http\Requests\UpdatePenerimaanHeaderRequest;
 use App\Http\Requests\UpdatePenerimaanTruckingHeaderRequest;
 use App\Http\Requests\UpdatePengeluaranHeaderRequest;
@@ -353,7 +354,7 @@ class ProsesGajiSupirHeaderController extends Controller
                 $jurnal = $this->storeJurnal($jurnalHeader, $jurnaldetail);
 
                 // POSTING POT. SEMUA
-
+                
                 if ($request->nomPS != 0) {
                     // SAVE TO PENERIMAAN
                     $querysubgrppenerimaan = Bank::from(DB::raw("bank with (readuncommitted)"))
@@ -904,7 +905,6 @@ class ProsesGajiSupirHeaderController extends Controller
             }
 
             ProsesGajiSupirDetail::where('prosesgajisupir_id', $prosesgajisupirheader->id)->delete();
-            JurnalUmumHeader::where('nobukti', $prosesgajisupirheader->nobukti)->delete();
             /* Store detail */
             $detaillog = [];
             $urut = 1;
@@ -1142,14 +1142,7 @@ class ProsesGajiSupirHeaderController extends Controller
             app(PengeluaranHeaderController::class)->update($penerimaan, $newPengeluaran);
 
             $getData = $prosesgajisupirheader->getDataJurnal($request->nobuktiRIC);
-            $jurnalHeader = [
-                'tanpaprosesnobukti' => 1,
-                'nobukti' => $prosesgajisupirheader->nobukti,
-                'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
-                'postingdari' => 'ENTRY PROSES GAJI SUPIR',
-                'modifiedby' => auth('api')->user()->name,
-                'statusformat' => "0",
-            ];
+
             $jurnaldetail = [];
 
             $coadebet = Parameter::from(DB::raw("parameter with (readuncommitted)"))
@@ -1185,7 +1178,19 @@ class ProsesGajiSupirHeaderController extends Controller
 
                 $jurnaldetail = array_merge($jurnaldetail, $jurnalDetail);
             }
-            $jurnal = $this->storeJurnal($jurnalHeader, $jurnaldetail);
+
+            $jurnalHeader = [
+                'isUpdate' => 1,
+                'postingdari' => "EDIT PROSES GAJI SUPIR",
+                'modifiedby' => auth('api')->user()->name,
+                'datadetail' => $jurnaldetail
+            ];
+
+            $getJurnal = JurnalUmumHeader::from(DB::raw("jurnalumumheader with (readuncommitted)"))->where('nobukti', $prosesgajisupirheader->nobukti)->first();
+            $newJurnal = new JurnalUmumHeader();
+            $newJurnal = $newJurnal->find($getJurnal->id);
+            $jurnal = new UpdateJurnalUmumHeaderRequest($jurnalHeader);
+            app(JurnalUmumHeaderController::class)->update($jurnal, $newJurnal);
 
             $getPS = PenerimaanHeader::from(DB::raw("penerimaanheader with (readuncommitted)"))
                 ->select('id')

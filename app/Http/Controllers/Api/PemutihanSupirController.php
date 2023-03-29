@@ -167,7 +167,7 @@ class PemutihanSupirController extends Controller
 
             $validatedLogTrail = new StoreLogTrailRequest($logTrail);
             $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-            
+
             DB::commit();
 
             $selected = $this->getPosition($pemutihanSupir, $pemutihanSupir->getTable(), true);
@@ -190,11 +190,31 @@ class PemutihanSupirController extends Controller
         }
     }
 
-    public function getDataPemutihan($supirId)
+    public function getPost()
     {
         $data = new PemutihanSupir();
+        $supirId = request()->supir_id;
+        $post = $data->getPosting($supirId);
+        
         return response([
-            'data' => $data->getDataPemutihan($supirId)
+            'post' => $post,
+            'attributes' => [
+                'totalRows' => $data->totalRows,
+                'totalPages' => $data->totalPages,
+            ]
+        ]);
+    }
+    public function getNonpost()
+    {
+        $data = new PemutihanSupir();
+        $supirId = request()->supir_id;
+        $non = $data->getNonposting($supirId);
+        return response([
+            'non' => $non, 
+            'attributesNon' => [
+                'totalRows' => $data->totalRows,
+                'totalPages' => $data->totalPages,
+            ]
         ]);
     }
 

@@ -53,7 +53,6 @@ class PengeluaranTruckingHeaderController extends Controller
     public function store(StorePengeluaranTruckingHeaderRequest $request)
     {
         DB::beginTransaction();
-
         try {
 
             $tanpaprosesnobukti = $request->tanpaprosesnobukti ?? 0;
@@ -91,6 +90,7 @@ class PengeluaranTruckingHeaderController extends Controller
             $pengeluarantruckingheader->statusposting = $statusPosting->id ?? 0;
             $pengeluarantruckingheader->coa = $request->coa;
             $pengeluarantruckingheader->pengeluaran_nobukti = $request->pengeluaran_nobukti ?? '';
+            $pengeluarantruckingheader->supir_id = $request->supirheader_id ?? '';
             $pengeluarantruckingheader->statusformat = $request->statusformat ?? $format->id;
             $pengeluarantruckingheader->statuscetak = $statusCetak->id;
             $pengeluarantruckingheader->modifiedby = auth('api')->user()->name;
@@ -321,6 +321,7 @@ class PengeluaranTruckingHeaderController extends Controller
 
                 $pengeluarantruckingheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
                 $pengeluarantruckingheader->coa = $request->coa;
+                $pengeluarantruckingheader->supir_id = $request->supirheader_id ?? '';
                 $pengeluarantruckingheader->modifiedby = auth('api')->user()->name;
                 $pengeluarantruckingheader->save();
             }
@@ -348,7 +349,7 @@ class PengeluaranTruckingHeaderController extends Controller
 
             $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-            if ($from != 'ebs') {
+            if ($from !== 'ebs') {
                 PengeluaranTruckingDetail::where('pengeluarantruckingheader_id', $pengeluarantruckingheader->id)->delete();
 
                 /* Store detail */
@@ -656,6 +657,17 @@ class PengeluaranTruckingHeaderController extends Controller
 
             return response($data);
         }
+    }
+
+    public function getdeposito(Request $request){
+        $penerimaanTrucking = new PenerimaanTruckingHeader ();
+        return $penerimaanTrucking->getDeposito($request->supir);
+    }
+    
+    public function getTarikDeposito($id)
+    {
+        $penerimaanTrucking = new PengeluaranTruckingHeader ();
+        return $penerimaanTrucking->getTarikDeposito($id);
     }
 
     public function fieldLength()

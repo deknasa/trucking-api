@@ -520,6 +520,8 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('pengeluarantruckingheader/{id}/printreport', [PengeluaranTruckingHeaderController::class, 'printReport']);
     Route::post('pengeluarantruckingheader/{id}/cekValidasiAksi', [PengeluaranTruckingHeaderController::class, 'cekValidasiAksi'])->name('pengeluarantruckingheader.cekValidasiAksi');
     Route::post('pengeluarantruckingheader/{id}/cekvalidasi', [PengeluaranTruckingHeaderController::class, 'cekvalidasi'])->name('pengeluarantruckingheader.cekvalidasi');
+    Route::post('pengeluarantruckingheader/getdeposito', [PengeluaranTruckingHeaderController::class, 'getdeposito'])->name('pengeluarantruckingheader.getdeposito');
+    Route::post('pengeluarantruckingheader/{id}/gettarikdeposito', [PengeluaranTruckingHeaderController::class, 'getTarikDeposito'])->name('pengeluarantruckingheader.gettarikdeposito');
     Route::get('pengeluarantruckingheader/no_bukti', [PengeluaranTruckingHeaderController::class, 'getNoBukti']);
     Route::get('pengeluarantruckingheader/combo', [PengeluaranTruckingHeaderController::class, 'combo']);
     Route::get('pengeluarantruckingheader/grid', [PengeluaranTruckingHeaderController::class, 'grid']);
@@ -936,7 +938,8 @@ route::middleware(['auth:api'])->group(function () {
     
     Route::get('/orderanemkl/getTglJob', [OrderanEmklController::class, 'getTglJob'])->middleware('handle-token');
     
-    Route::get('pemutihansupir/{supirId}/getdatapemutihan', [PemutihanSupirController::class, 'getDataPemutihan'])->name('pemutihansupir.getDataPemutihan');;
+    Route::get('pemutihansupir/getPost', [PemutihanSupirController::class, 'getPost']);
+    Route::get('pemutihansupir/getNonpost', [PemutihanSupirController::class, 'getNonpost']);
     Route::post('pemutihansupir/{id}/cekvalidasi', [PemutihanSupirController::class, 'cekvalidasi'])->name('pemutihansupir.cekvalidasi');
     Route::get('pemutihansupir/field_length', [PemutihanSupirController::class, 'fieldLength']);
     Route::resource('pemutihansupir', PemutihanSupirController::class);

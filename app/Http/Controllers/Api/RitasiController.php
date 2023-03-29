@@ -85,8 +85,8 @@ class RitasiController extends Controller
                 return response([
                     'status' => false,
                     'errors' => [
-                        'dari' => 'Kota Dari belum terdaftar di master Upah Ritasi',
-                        'sampai' => 'Kota Sampai belum terdaftar di master Upah Ritasi'
+                        'dari' => ['Kota Dari belum terdaftar di master Upah Ritasi'],
+                        'sampai' => ['Kota Sampai belum terdaftar di master Upah Ritasi']
                     ],
                     'message' => 'Kota Dari dan Sampai Belum terdaftar di master Upah Ritasi'
                 ], 422);
@@ -167,8 +167,12 @@ class RitasiController extends Controller
                 header("HTTP/1.1 400 Bad Request");
                 return response([
                     'status' => false,
-                    'errors' => 'Kota belum terdaftar',
-                    'message' => 'Kota Dari dan Sampai Belum terdaftar di master Upah Ritasi'
+                    'errors' => [
+                        'dari' => ['Kota Dari belum terdaftar di master Upah Ritasi'],
+                        'sampai' => ['Kota Sampai belum terdaftar di master Upah Ritasi']
+                    ],
+                    
+                    'message' => 'Kota Dari dan Sampai Belum terdaftar di master Upah Ritasi',
                 ], 422);
             }
             $upahRitasiId = $upahRitasi->id;

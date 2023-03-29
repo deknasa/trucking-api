@@ -153,10 +153,10 @@ class RekapPengeluaranHeader extends MyModel
             "statusformat",
             "modifiedby",
         );
-        $query = $this->sort($query);
         if (request()->tgldari) {
             $query->whereBetween('tglbukti', [date('Y-m-d',strtotime(request()->tgldari )), date('Y-m-d',strtotime(request()->tglsampai ))]);
         }
+        $this->sort($query);
         $models = $this->filter($query);
         
         DB::table($temp)->insertUsing([
