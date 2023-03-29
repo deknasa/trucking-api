@@ -145,6 +145,9 @@ class ProsesUangJalanSupirHeader extends MyModel
         $this->setRequestParameters();
         $query = DB::table($modelTable);
         $query = $this->selectColumns($query);
+        if (request()->tgldari) {
+            $query->whereBetween('tglbukti', [date('Y-m-d',strtotime(request()->tgldari )), date('Y-m-d',strtotime(request()->tglsampai ))]);
+        }
         $this->sort($query);
         $models = $this->filter($query);
         DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'absensisupir_nobukti', 'trado_id', 'supir_id', 'nominaluangjalan', 'statusapproval', 'modifiedby', 'updated_at'], $models);

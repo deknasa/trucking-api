@@ -92,7 +92,6 @@ class PengeluaranTruckingHeader extends MyModel
             'akunpusat.keterangancoa as coa',
             'statusposting.memo as statusposting'
         )
-        ->whereBetween('pengeluarantruckingheader.tglbukti', [date('Y-m-d',strtotime(request()->tgldari)), date('Y-m-d',strtotime(request()->tglsampai))])
 
             ->leftJoin(DB::raw("pengeluarantrucking with (readuncommitted)"), 'pengeluarantruckingheader.pengeluarantrucking_id','pengeluarantrucking.id')
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'pengeluarantruckingheader.bank_id', 'bank.id')
@@ -101,7 +100,9 @@ class PengeluaranTruckingHeader extends MyModel
             ->leftJoin(DB::raw("parameter as statusposting with (readuncommitted)"), 'pengeluarantruckingheader.statusposting', 'statusposting.id');
             
 
-
+            if (request()->tgldari) {
+                $query->whereBetween('pengeluarantruckingheader.tglbukti', [date('Y-m-d',strtotime(request()->tgldari)), date('Y-m-d',strtotime(request()->tglsampai))]);
+            }
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
@@ -123,8 +124,12 @@ class PengeluaranTruckingHeader extends MyModel
             'pengeluarantruckingheader.tglbukti',
             'pengeluarantruckingheader.pengeluarantrucking_id',
             'pengeluarantrucking.keterangan as pengeluarantrucking',
+            'pengeluarantrucking.kodepengeluaran as kodepengeluaran',
             'pengeluarantruckingheader.bank_id',
             'bank.namabank as bank',
+            'pengeluarantruckingheader.supir_id',
+            'pengeluarantruckingheader.supir_id as supirheader_id',
+            'supir.namasupir as supir',
             'pengeluarantruckingheader.statusposting',
             'pengeluarantruckingheader.coa',
             'akunpusat.keterangancoa',
@@ -132,6 +137,7 @@ class PengeluaranTruckingHeader extends MyModel
         )
             ->leftJoin(DB::raw("pengeluarantrucking with (readuncommitted)"), 'pengeluarantruckingheader.pengeluarantrucking_id','pengeluarantrucking.id')
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'pengeluarantruckingheader.bank_id', 'bank.id')
+            ->leftJoin(DB::raw("supir with (readuncommitted)"), 'pengeluarantruckingheader.supir_id', 'supir.id')
             ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'pengeluarantruckingheader.coa', 'akunpusat.coa')
             ->where('pengeluarantruckingheader.id', '=', $id);
             
@@ -139,6 +145,24 @@ class PengeluaranTruckingHeader extends MyModel
         $data = $query->first();
 
         return $data;
+    }
+
+    public function getTarikDeposito($id){
+        $penerimaantrucking = DB::table($this->table)->from(DB::raw("penerimaantrucking with (readuncommitted)"))->where('kodepenerimaan','DPO')->first();
+        // return $pengeluarantruckingheader->id;
+        $query = DB::table($this->table)->from(DB::raw("pengeluarantruckingdetail with (readuncommitted)"))
+        ->select(
+            DB::raw("row_number() Over(Order By pengeluarantruckingdetail.id) as id"),
+            // 'pengeluarantruckingheader.id',
+            'pengeluarantruckingdetail.penerimaantruckingheader_nobukti as nobukti',
+            // 'pengeluarantruckingdetail.tglbukti',
+            'pengeluarantruckingdetail.keterangan',
+            'pengeluarantruckingdetail.nominal'
+        )
+        ->where('pengeluarantruckingdetail.pengeluarantruckingheader_id',$id);
+       
+        
+        return $query->get();
     }
     public function pengeluarantruckingdetail() {
         return $this->hasMany(PengeluaranTruckingDetail::class, 'pengeluarantruckingheader_id');
@@ -194,6 +218,9 @@ class PengeluaranTruckingHeader extends MyModel
         $query = DB::table($modelTable);
         $query = $this->selectColumns($query);
         $this->sort($query);
+        if (request()->tgldariheader) {
+            $query->whereBetween('tglbukti', [date('Y-m-d',strtotime(request()->tgldariheader)), date('Y-m-d',strtotime(request()->tglsampaiheader))]);
+        }
         $models = $this->filter($query);
         DB::table($temp)->insertUsing(['id','nobukti','tglbukti','pengeluarantrucking_id','bank_id','statusposting','statuscetak','userbukacetak','tglbukacetak','coa','pengeluaran_nobukti','modifiedby','updated_at'],$models);
 
