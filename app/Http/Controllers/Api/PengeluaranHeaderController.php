@@ -24,6 +24,7 @@ use Illuminate\Support\Facades\Validator;
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Http\Requests\StoreJurnalUmumHeaderRequest;
 use App\Http\Requests\StoreJurnalUmumDetailRequest;
+use App\Http\Requests\UpdateJurnalUmumHeaderRequest;
 use App\Models\Error;
 use App\Models\JurnalUmumDetail;
 use App\Models\JurnalUmumHeader;
@@ -384,7 +385,6 @@ class PengeluaranHeaderController extends Controller
 
             /* Delete existing detail */
             PengeluaranDetail::where('nobukti', $pengeluaranheader->nobukti)->delete();
-            JurnalUmumHeader::where('nobukti', $pengeluaranheader->nobukti)->delete();
 
 
             /* Store detail */
@@ -441,28 +441,12 @@ class PengeluaranHeaderController extends Controller
             $request->sortorder = $request->sortorder ?? 'asc';
 
             if ($pengeluaranheader->pengeluarandetail()) {
-
-                $parameterController = new ParameterController;
-                $statusApp = $parameterController->getparameterid('STATUS APPROVAL', 'STATUS APPROVAL', 'NON APPROVAL');
-
-                $jurnalHeader = [
-                    'tanpaprosesnobukti' => 1,
-                    'nobukti' => $pengeluaranheader->nobukti,
-                    'tglbukti' => date('Y-m-d', strtotime($pengeluaranheader->tglbukti)),
-                    'postingdari' => $request->postingdari ?? "ENTRY PENGELUARAN KAS/BANK",
-                    'statusapproval' => $statusApp->id,
-                    'userapproval' => "",
-                    'tglapproval' => "",
-                    'modifiedby' => auth('api')->user()->name,
-                    'statusformat' => "0",
-                ];
-
-                $jurnaldetail = [];
+                $jurnalDetail = [];
 
                 for ($i = 0; $i < count($counter); $i++) {
                     $detail = [];
 
-                    $jurnalDetail = [
+                    $jurnaldetail = [
                         [
                             'nobukti' => $pengeluaranheader->nobukti,
                             'tglbukti' => date('Y-m-d', strtotime($pengeluaranheader->tglbukti)),
@@ -483,19 +467,21 @@ class PengeluaranHeaderController extends Controller
                         ]
                     ];
 
-
-                    $jurnaldetail = array_merge($jurnaldetail, $jurnalDetail);
+                    $jurnalDetail = array_merge($jurnalDetail, $jurnaldetail);
                 }
 
-                $jurnal = $this->storeJurnal($jurnalHeader, $jurnaldetail);
+                $jurnalHeader = [
+                    'isUpdate' => 1,
+                    'postingdari' => $request->postingdari ?? "EDIT PENGELUARAN KAS/BANK",
+                    'modifiedby' => auth('api')->user()->name,
+                    'datadetail' => $jurnalDetail
+                ];
 
-                // if (!$jurnal['status'] AND @$jurnal['errorCode'] == 2601) {
-                //     goto ATAS;
-                // }
-
-                if (!$jurnal['status']) {
-                    throw new Exception($jurnal['message']);
-                }
+                $getJurnal = JurnalUmumHeader::from(DB::raw("jurnalumumheader with (readuncommitted)"))->where('nobukti', $pengeluaranheader->nobukti)->first();
+                $newJurnal = new JurnalUmumHeader();
+                $newJurnal = $newJurnal->find($getJurnal->id);
+                $jurnal = new UpdateJurnalUmumHeaderRequest($jurnalHeader);
+                app(JurnalUmumHeaderController::class)->update($jurnal, $newJurnal);
             }
 
             DB::commit();

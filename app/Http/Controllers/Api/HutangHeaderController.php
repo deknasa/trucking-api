@@ -21,6 +21,7 @@ use App\Models\Parameter;
 use App\Http\Requests\StoreJurnalUmumHeaderRequest;
 use App\Http\Requests\StoreJurnalUmumDetailRequest;
 use App\Http\Requests\UpdateHutangHeaderRequest;
+use App\Http\Requests\UpdateJurnalUmumHeaderRequest;
 use App\Models\Error;
 use App\Models\Pelanggan;
 use PhpParser\Builder\Param;
@@ -470,8 +471,6 @@ class HutangHeaderController extends Controller
             }
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
-            JurnalUmumHeader::where('nobukti', $hutangheader->nobukti)->delete();
-            JurnalUmumDetail::where('nobukti', $hutangheader->nobukti)->delete();
 
 
             $parameterController = new ParameterController;
@@ -562,11 +561,18 @@ class HutangHeaderController extends Controller
                 }
             }
 
-            $jurnal = $this->storeJurnal($jurnalHeader, $jurnaldetail);
 
-            if (!$jurnal['status']) {
-                throw new \Throwable($jurnal['message']);
-            }
+            $jurnalHeader = [
+                'isUpdate' => 1,
+                'postingdari' => $request->postingdari ?? "EDIT PENGELUARAN KAS/BANK",
+                'modifiedby' => auth('api')->user()->name,
+                'datadetail' => $jurnaldetail
+            ];
+            $getJurnal = JurnalUmumHeader::from(DB::raw("jurnalumumheader with (readuncommitted)"))->where('nobukti', $hutangheader->nobukti)->first();
+            $newJurnal = new JurnalUmumHeader();
+            $newJurnal = $newJurnal->find($getJurnal->id);
+            $jurnal = new UpdateJurnalUmumHeaderRequest($jurnalHeader);
+            app(JurnalUmumHeaderController::class)->update($jurnal, $newJurnal);
 
             DB::commit();
 

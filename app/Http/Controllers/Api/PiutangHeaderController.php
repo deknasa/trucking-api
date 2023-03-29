@@ -23,6 +23,7 @@ use App\Models\JurnalUmumDetail;
 use App\Models\JurnalUmumHeader;
 use App\Http\Requests\StoreJurnalUmumHeaderRequest;
 use App\Http\Requests\StoreJurnalUmumDetailRequest;
+use App\Http\Requests\UpdateJurnalUmumHeaderRequest;
 use App\Models\Agen;
 use App\Models\Parameter;
 use Exception;
@@ -227,6 +228,7 @@ class PiutangHeaderController extends Controller
                 $jurnaldetail = array_merge($jurnaldetail, $jurnalDetail);
             }
 
+            dd($jurnaldetail);
             $jurnal = $this->storeJurnal($jurnalHeader, $jurnaldetail);
 
             if (!$jurnal['status']) {
@@ -349,36 +351,18 @@ class PiutangHeaderController extends Controller
 
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
-            JurnalUmumHeader::where('nobukti', $piutangHeader->nobukti)->delete();
-            JurnalUmumDetail::where('nobukti', $piutangHeader->nobukti)->delete();
-
-            $parameterController = new ParameterController;
-            $statusApp = $parameterController->getparameterid('STATUS APPROVAL', 'STATUS APPROVAL', 'NON APPROVAL');
 
 
-
-            $jurnalHeader = [
-                'tanpaprosesnobukti' => 1,
-                'nobukti' => $piutangHeader->nobukti,
-                'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
-                'postingdari' => $request->postingdari ?? "ENTRY PIUTANG",
-                'statusapproval' => $statusApp->id,
-                'userapproval' => "",
-                'tglapproval' => "",
-                'modifiedby' => auth('api')->user()->name,
-                'statusformat' => "0",
-            ];
-
-            $jurnaldetail = [];
+            $jurnalDetail = [];
 
             for ($i = 0; $i < count($counter); $i++) {
+                $detail = [];
 
-
-                $jurnalDetail = [
+                $jurnaldetail = [
                     [
                         'nobukti' => $piutangHeader->nobukti,
                         'tglbukti' => date('Y-m-d', strtotime($piutangHeader->tglbukti)),
-                        'coa' =>  $getCoa->coa,
+                        'coa' => $getCoa->coa,
                         'nominal' => ($request->datadetail != '') ? $request->datadetail[$i]['nominal'] : $request->nominal_detail[$i],
                         'keterangan' => ($request->datadetail != '') ? $request->datadetail[$i]['keterangan'] : $request->keterangan_detail[$i],
                         'modifiedby' => auth('api')->user()->name,
@@ -388,20 +372,27 @@ class PiutangHeaderController extends Controller
                         'nobukti' => $piutangHeader->nobukti,
                         'tglbukti' => date('Y-m-d', strtotime($piutangHeader->tglbukti)),
                         'coa' => $getCoa->coapendapatan,
-                        'nominal' => ($request->datadetail != '') ? '-' . $request->datadetail[$i]['nominal'] : '-' . $request->nominal_detail[$i],
+                        'nominal' => ($request->datadetail != '') ? -$request->datadetail[$i]['nominal'] : -$request->nominal_detail[$i],
                         'keterangan' => ($request->datadetail != '') ? $request->datadetail[$i]['keterangan'] : $request->keterangan_detail[$i],
                         'modifiedby' => auth('api')->user()->name,
                         'baris' => $i,
                     ]
                 ];
-                $jurnaldetail = array_merge($jurnaldetail, $jurnalDetail);
+                $jurnalDetail = array_merge($jurnalDetail, $jurnaldetail);
             }
 
-            $jurnal = $this->storeJurnal($jurnalHeader, $jurnaldetail);
+            $jurnalHeader = [
+                'isUpdate' => 1,
+                'postingdari' => $request->postingdari ?? "EDIT PENGELUARAN KAS/BANK",
+                'modifiedby' => auth('api')->user()->name,
+                'datadetail' => $jurnalDetail
+            ];
 
-            if (!$jurnal['status']) {
-                throw new \Throwable($jurnal['message']);
-            }
+            $getJurnal = JurnalUmumHeader::from(DB::raw("jurnalumumheader with (readuncommitted)"))->where('nobukti', $piutangHeader->nobukti)->first();
+            $newJurnal = new JurnalUmumHeader();
+            $newJurnal = $newJurnal->find($getJurnal->id);
+            $jurnal = new UpdateJurnalUmumHeaderRequest($jurnalHeader);
+            app(JurnalUmumHeaderController::class)->update($jurnal, $newJurnal);
 
             DB::commit();
 
@@ -502,7 +493,7 @@ class PiutangHeaderController extends Controller
             $piutangHeader->position = $selected->position;
             $piutangHeader->id = $selected->id;
             $piutangHeader->page = ceil($piutangHeader->position / ($request->limit ?? 10));
-            
+
             return response([
                 'status' => true,
                 'message' => 'Berhasil dihapus',

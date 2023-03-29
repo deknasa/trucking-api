@@ -20,6 +20,7 @@ use App\Http\Requests\UpdateGajiSupirDepositoRequest;
 use App\Http\Requests\UpdateGajiSupirHeaderRequest;
 use App\Http\Requests\UpdateGajiSupirPelunasanPinjamanRequest;
 use App\Http\Requests\UpdateGajiSupirPinjamanRequest;
+use App\Http\Requests\UpdateJurnalUmumHeaderRequest;
 use App\Http\Requests\UpdatePenerimaanTruckingHeaderRequest;
 use App\Http\Requests\UpdatePengeluaranTruckingHeaderRequest;
 use App\Models\Error;
@@ -1064,8 +1065,6 @@ class GajiSupirHeaderController extends Controller
                         $pengeluaranbbm = PenerimaanTruckingHeader::from(DB::raw("penerimaantruckingheader with (readuncommitted)"))
                             ->where('nobukti', $fetchBBM->penerimaantrucking_nobukti)->first();
 
-                        JurnalUmumHeader::where('nobukti', $fetchBBM->penerimaantrucking_nobukti)->delete();
-
                         $fetchFormatBBM = PenerimaanTrucking::from(DB::raw("penerimaantrucking with (readuncommitted)"))
                             ->where('kodepenerimaan', 'BBM')
                             ->first();
@@ -1149,14 +1148,6 @@ class GajiSupirHeaderController extends Controller
                         app(GajiSupirBBMController::class)->store($newGajisSupirBBM);
                     }
 
-                    $jurnalHeader = [
-                        'tanpaprosesnobukti' => 1,
-                        'nobukti' => $nobuktiPenerimaanTruckingBBM,
-                        'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
-                        'postingdari' => "ENTRY GAJI SUPIR",
-                        'modifiedby' => auth('api')->user()->name,
-                        'statusformat' => "0",
-                    ];
                     $jurnalDetail = [
                         [
                             'nobukti' => $nobuktiPenerimaanTruckingBBM,
@@ -1177,7 +1168,19 @@ class GajiSupirHeaderController extends Controller
                             'baris' => 0,
                         ]
                     ];
-                    $jurnal = $this->storeJurnal($jurnalHeader, $jurnalDetail);
+                    $jurnalHeader = [
+                        'isUpdate' => 1,
+                        'postingdari' => $request->postingdari ?? "EDIT GAJI SUPIR",
+                        'modifiedby' => auth('api')->user()->name,
+                        'datadetail' => $jurnalDetail
+                    ];
+    
+                    $getJurnal = JurnalUmumHeader::from(DB::raw("jurnalumumheader with (readuncommitted)"))->where('nobukti', $nobuktiPenerimaanTruckingBBM)->first();
+                    $newJurnal = new JurnalUmumHeader();
+                    $newJurnal = $newJurnal->find($getJurnal->id);
+                    $jurnal = new UpdateJurnalUmumHeaderRequest($jurnalHeader);
+                    app(JurnalUmumHeaderController::class)->update($jurnal, $newJurnal);
+
                 } else {
                     $fetchBBM = GajiSupirBBM::from(DB::raw("gajisupirbbm with (readuncommitted)"))
                         ->where('gajisupir_nobukti', $gajisupirheader->nobukti)->first();
@@ -1351,7 +1354,7 @@ class GajiSupirHeaderController extends Controller
         if ($cekSP) {
             $nobukti = $cekSP->nobukti;
             $cekTrip = GajiSupirDetail::from(DB::raw("gajisupirdetail with (readuncommitted)"))->where('suratpengantar_nobukti', $nobukti)->first();
-
+            
 
             return response([
                 'errors' => false,
