@@ -18,7 +18,6 @@ class KasGantungDetailSeeder extends Seeder
         DB::statement("delete KasGantungDetail");
         DB::statement("DBCC CHECKIDENT ('KasGantungDetail', RESEED, 1);");
 
-
         kasgantungdetail::create(['kasgantung_id' => '1', 'nobukti' => 'KGT 0001/II/2023', 'nominal' => '0', 'coa' => '', 'keterangan' => 'STANDARISASI', 'modifiedby' => 'ADMIN',]);
         kasgantungdetail::create(['kasgantung_id' => '1', 'nobukti' => 'KGT 0001/II/2023', 'nominal' => '100000', 'coa' => '', 'keterangan' => '', 'modifiedby' => 'ADMIN',]);
         kasgantungdetail::create(['kasgantung_id' => '1', 'nobukti' => 'KGT 0001/II/2023', 'nominal' => '100000', 'coa' => '', 'keterangan' => '', 'modifiedby' => 'ADMIN',]);
