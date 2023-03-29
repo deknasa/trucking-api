@@ -26,8 +26,8 @@ class StorePengeluaranTruckingDetailRequest extends FormRequest
         return [
             'nominal' => 'required|array',
             'nominal.*' => 'required|numeric|gt:0',
-            'keterangan' => 'required|array',
-            'keterangan.*' => 'required'
+            // 'keterangan' => 'required|array',
+            // 'keterangan.*' => 'required'
         ];
     }
 }

@@ -192,6 +192,9 @@ class PengembalianKasGantungHeader extends MyModel
             "jumlahcetak",
             "modifiedby",
         );
+        if (request()->tgldari) {
+            $query->whereBetween('tglbukti', [date('Y-m-d',strtotime(request()->tgldari )), date('Y-m-d',strtotime(request()->tglsampai ))]);
+        }
         $query = $this->sort($query);
         $models = $this->filter($query);
         

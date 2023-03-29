@@ -94,12 +94,13 @@ class PenerimaanTruckingHeader extends MyModel
             'penerimaantruckingheader.created_at',
             'penerimaantruckingheader.updated_at',
         )
-        ->whereBetween('tglbukti', [date('Y-m-d',strtotime(request()->tgldari)), date('Y-m-d',strtotime(request()->tglsampai))])
         ->leftJoin(DB::raw("penerimaantrucking with (readuncommitted)"), 'penerimaantruckingheader.penerimaantrucking_id','penerimaantrucking.id')
         ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'penerimaantruckingheader.coa','akunpusat.coa')
         ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'penerimaantruckingheader.statuscetak','parameter.id')
         ->leftJoin(DB::raw("bank with (readuncommitted)"), 'penerimaantruckingheader.bank_id', 'bank.id');
-
+        if (request()->tgldari) {
+            $query->whereBetween('tglbukti', [date('Y-m-d',strtotime(request()->tgldari )), date('Y-m-d',strtotime(request()->tglsampai ))]);
+        }
             
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -193,6 +194,9 @@ class PenerimaanTruckingHeader extends MyModel
         $this->setRequestParameters();
         $query = DB::table($modelTable);
         $query = $this->selectColumns($query);
+        if (request()->tgldari) {
+            $query->whereBetween('tglbukti', [date('Y-m-d',strtotime(request()->tgldariheader )), date('Y-m-d',strtotime(request()->tglsampaiheader ))]);
+        }
         $this->sort($query);
         $models = $this->filter($query);
         DB::table($temp)->insertUsing(['id','nobukti','tglbukti','penerimaantrucking_id','bank_id','coa','penerimaan_nobukti','statuscetak','userbukacetak','tglbukacetak','jumlahcetak', 'modifiedby','created_at','updated_at'],$models);
@@ -201,6 +205,32 @@ class PenerimaanTruckingHeader extends MyModel
         return  $temp;         
 
     }
+
+    public function getDeposito($supir_id){
+        $penerimaantrucking = DB::table($this->table)->from(DB::raw("penerimaantrucking with (readuncommitted)"))->where('kodepenerimaan','DPO')->first();
+        // return $penerimaantruckingheader->id;
+        $query = DB::table($this->table)->from(DB::raw("penerimaantruckingheader with (readuncommitted)"))
+        ->select(
+            DB::raw("row_number() Over(Order By penerimaantruckingheader.id) as id"),
+            // 'penerimaantruckingheader.id',
+            'penerimaantruckingheader.nobukti',
+            'penerimaantruckingheader.tglbukti',
+            'penerimaantruckingdetail.keterangan',
+            DB::raw("sum(penerimaantruckingdetail.nominal) as nominal")
+        )
+        ->where('penerimaantruckingheader.penerimaantrucking_id',$penerimaantrucking->id)
+        ->where('penerimaantruckingheader.supir_id',$supir_id)
+        ->leftJoin(DB::raw("penerimaantruckingdetail with (readuncommitted)"), 'penerimaantruckingdetail.penerimaantruckingheader_id','penerimaantruckingheader.id')
+        ->groupBy(
+            'penerimaantruckingheader.id',
+            'penerimaantruckingheader.nobukti',
+            'penerimaantruckingheader.tglbukti',
+            'penerimaantruckingdetail.keterangan',
+        );
+        
+        return $query->get();
+    }
+    
 
     public function sort($query)
     {

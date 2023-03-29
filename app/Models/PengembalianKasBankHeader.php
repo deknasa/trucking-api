@@ -55,14 +55,15 @@ class PengembalianKasBankHeader extends MyModel
             'pengembaliankasbankheader.updated_at'
 
         )
-        ->whereBetween('pengembaliankasbankheader.tglbukti', [date('Y-m-d',strtotime(request()->tgldari)), date('Y-m-d',strtotime(request()->tglsampai))])
 
         ->leftJoin('cabang', 'pengembaliankasbankheader.cabang_id', 'cabang.id')
         ->leftJoin('bank', 'pengembaliankasbankheader.bank_id', 'bank.id')
         ->leftJoin('parameter as statusapproval' , 'pengembaliankasbankheader.statusapproval', 'statusapproval.id')
         ->leftJoin('parameter as statuscetak' , 'pengembaliankasbankheader.statuscetak', 'statuscetak.id')
         ->leftJoin('parameter as statusjenistransaksi' , 'pengembaliankasbankheader.statusjenistransaksi', 'statusjenistransaksi.id');
-
+        if (request()->tgldari) {
+            $query->whereBetween('tglbukti', [date('Y-m-d',strtotime(request()->tgldari )), date('Y-m-d',strtotime(request()->tglsampai ))]);
+        }
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
@@ -185,6 +186,10 @@ class PengembalianKasBankHeader extends MyModel
         'modifiedby',
         'created_at',
         'updated_at');
+
+        if (request()->tgldari) {
+            $query->whereBetween('tglbukti', [date('Y-m-d',strtotime(request()->tgldari )), date('Y-m-d',strtotime(request()->tglsampai ))]);
+        }
 
         $this->sort($query);
         $models = $this->filter($query);
