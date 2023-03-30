@@ -564,6 +564,17 @@ class InvoiceHeaderController extends Controller
             "data" => $invoice->getEdit($id, $request)
         ]);
     }
+    
+    public function getAllEdit($id, Request $request)
+    {
+        $invoice = new InvoiceHeader();
+        $dari = date('Y-m-d', strtotime($request->tgldari));
+        $sampai = date('Y-m-d', strtotime($request->tglsampai));
+
+        return response([
+            "data" => $invoice->getAllEdit($id, $request)
+        ]);
+    }
 
     public function comboapproval(Request $request)
     {
