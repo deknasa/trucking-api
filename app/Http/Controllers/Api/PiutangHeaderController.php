@@ -228,7 +228,6 @@ class PiutangHeaderController extends Controller
                 $jurnaldetail = array_merge($jurnaldetail, $jurnalDetail);
             }
 
-            dd($jurnaldetail);
             $jurnal = $this->storeJurnal($jurnalHeader, $jurnaldetail);
 
             if (!$jurnal['status']) {
