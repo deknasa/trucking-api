@@ -16,7 +16,7 @@ class CreatePemutihansupirdetailTable extends Migration
         Schema::create('pemutihansupirdetail', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('pemutihansupir_id')->nullable();
-            $table->string('nobukti',50)->unique();
+            $table->string('nobukti',50)->nullable();
             $table->string('pengeluarantrucking_nobukti', 50)->nullable();   
             $table->integer('statusposting')->length(11)->nullable();
             $table->double('nominal', 15,2)->nullable();              
