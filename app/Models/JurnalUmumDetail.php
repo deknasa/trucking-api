@@ -161,6 +161,39 @@ class JurnalUmumDetail extends MyModel
 
         return $query;
     }
+
+    public function getJurnalFromAnotherTable($nobukti){
+        $this->setRequestParameters();
+        $query = JurnalUmumDetail::from(
+                DB::raw("jurnalumumdetail with (readuncommitted)")
+            )
+                ->select(
+                    'jurnalumumdetail.nobukti as nobukti',
+                    'jurnalumumdetail.tglbukti as tglbukti',
+                    'jurnalumumdetail.coa as coa',
+                    'coa.keterangancoa as keterangancoa',
+                    DB::raw("(case when jurnalumumdetail.nominal<=0 then 0 else jurnalumumdetail.nominal end) as nominaldebet"),
+                    DB::raw("(case when jurnalumumdetail.nominal>=0 then 0 else abs(jurnalumumdetail.nominal) end) as nominalkredit"),
+                    'jurnalumumdetail.keterangan as keterangan'
+                )
+                ->join(DB::raw("akunpusat as coa with (readuncommitted)"), 'coa.coa', 'jurnalumumdetail.coa');
+
+            $this->sort($query);
+            $query->where($this->table . '.nobukti', '=', $nobukti);
+            $this->filter($query);
+            // dd($query->toSql());
+            $this->totalRows = $query->count();
+            $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+
+            $this->paginate($query);
+            $temp = $this->getNominal($nobukti);
+            $tempNominal = DB::table($temp)->from(DB::raw("$temp with (readuncommitted)"))->select(DB::raw("sum(nominaldebet) as nominaldebet,sum(nominalkredit) as nominalkredit"))->first();
+
+            $this->totalNominalDebet = $tempNominal->nominaldebet;
+            $this->totalNominalKredit = $tempNominal->nominalkredit;
+                
+            return $query->get();
+    }
     public function sort($query)
     {
         if ($this->params['sortIndex'] == 'keterangancoa') {

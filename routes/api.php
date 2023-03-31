@@ -740,6 +740,8 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('invoiceheader/getSP', [InvoiceHeaderController::class, 'getSP']);
     Route::post('invoiceheader/{id}/cekvalidasi', [InvoiceHeaderController::class, 'cekvalidasi'])->name('invoiceheader.cekvalidasi');
     Route::resource('invoiceheader', InvoiceHeaderController::class);
+    Route::get('invoicedetail/piutang', [InvoiceDetailController::class, 'piutang']);
+    Route::get('invoicedetail/jurnal', [InvoiceDetailController::class, 'jurnal']);
     Route::resource('invoicedetail', InvoiceDetailController::class);
 
     Route::resource('tutupbuku', TutupBukuController::class);
