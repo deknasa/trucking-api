@@ -1356,6 +1356,9 @@ class ProsesGajiSupirHeaderController extends Controller
             $getPengeluaran = PengeluaranHeader::from(DB::raw("pengeluaranheader with (readuncommitted)"))->where('nobukti', $prosesGajiSupirHeader->pengeluaran_nobukti)->first();
             app(PengeluaranHeaderController::class)->destroy($request, $getPengeluaran->id);
 
+            $getJurnal = JurnalUmumHeader::from(DB::raw("jurnalumumheader with (readuncommitted)"))->where('nobukti', $prosesGajiSupirHeader->nobukti)->first();
+            app(JurnalUmumHeaderController::class)->destroy($request, $getJurnal->id);
+
             foreach ($getDetail as $key => $value) {
                 $fetchPS = GajiSupirPelunasanPinjaman::from(DB::raw("gajisupirpelunasanpinjaman with (readuncommitted)"))->where('gajisupir_nobukti', $value->gajisupir_nobukti)->where('supir_id', '0')->first();
                 if ($fetchPS != null) {

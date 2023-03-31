@@ -371,7 +371,7 @@ class JurnalUmumHeaderController extends Controller
         if ($jurnalumumheader) {
             $logTrail = [
                 'namatabel' => strtoupper($jurnalumumheader->getTable()),
-                'postingdari' => 'DELETE JURNAL UMUM HEADER',
+                'postingdari' => $request->postingdari ?? 'DELETE JURNAL UMUM HEADER',
                 'idtrans' => $jurnalumumheader->id,
                 'nobuktitrans' => $jurnalumumheader->nobukti,
                 'aksi' => 'DELETE',
@@ -386,7 +386,7 @@ class JurnalUmumHeaderController extends Controller
 
             $logTrailJurnalDetail = [
                 'namatabel' => 'JURNALUMUMDETAIL',
-                'postingdari' => 'DELETE JURNAL UMUM DETAIL',
+                'postingdari' =>  $request->postingdari ?? 'DELETE JURNAL UMUM DETAIL',
                 'idtrans' => $storedLogTrail['id'],
                 'nobuktitrans' => $jurnalumumheader->nobukti,
                 'aksi' => 'DELETE',

@@ -1,86 +1,57 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
 use App\Models\pemutihansupirdetail;
 use App\Http\Requests\StorePemutihanSupirDetailRequest;
 use App\Http\Requests\UpdatePemutihanSupirDetailRequest;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
 
 class PemutihanSupirDetailController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
+
+    public function index(): JsonResponse
     {
-        //
+        $pemutihanSupir = new pemutihansupirdetail();
+
+        return response()->json([
+            'data' => $pemutihanSupir->get(),
+            'attributes' => [
+                'totalRows' => $pemutihanSupir->totalRows,
+                'totalPages' => $pemutihanSupir->totalPages,
+                'totalNominal' => $pemutihanSupir->totalNominal
+            ]
+        ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \App\Http\Requests\StorepemutihansupirdetailRequest  $request
-     * @return \Illuminate\Http\Response
-     */
     public function store(StorepemutihansupirdetailRequest $request)
     {
-        //
-    }
+        DB::beginTransaction();
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\pemutihansupirdetail  $pemutihansupirdetail
-     * @return \Illuminate\Http\Response
-     */
-    public function show(pemutihansupirdetail $pemutihansupirdetail)
-    {
-        //
-    }
+        try {
+            $pemutihanDetail = new pemutihansupirdetail();
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\pemutihansupirdetail  $pemutihansupirdetail
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(pemutihansupirdetail $pemutihansupirdetail)
-    {
-        //
-    }
+            $pemutihanDetail->pemutihansupir_id = $request->pemutihansupir_id;
+            $pemutihanDetail->nobukti = $request->nobukti;
+            $pemutihanDetail->pengeluarantrucking_nobukti = $request->pengeluarantrucking_nobukti;
+            $pemutihanDetail->statusposting = $request->statusposting;
+            $pemutihanDetail->nominal = $request->nominal;
+            $pemutihanDetail->modifiedby = $request->modifiedby;
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \App\Http\Requests\UpdatepemutihansupirdetailRequest  $request
-     * @param  \App\Models\pemutihansupirdetail  $pemutihansupirdetail
-     * @return \Illuminate\Http\Response
-     */
-    public function update(UpdatepemutihansupirdetailRequest $request, pemutihansupirdetail $pemutihansupirdetail)
-    {
-        //
-    }
+            $pemutihanDetail->save();
+            DB::commit();
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\pemutihansupirdetail  $pemutihansupirdetail
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(pemutihansupirdetail $pemutihansupirdetail)
-    {
-        //
+            return [
+                'error' => false,
+                'detail' => $pemutihanDetail,
+                'id' => $pemutihanDetail->id,
+                'tabel' => $pemutihanDetail->getTable(),
+            ];
+        } catch (\Throwable $th) {
+            throw $th;
+            DB::rollBack();
+        }
     }
 }
