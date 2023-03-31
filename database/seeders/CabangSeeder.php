@@ -19,9 +19,10 @@ class CabangSeeder extends Seeder
         DB::statement("DBCC CHECKIDENT ('cabang', RESEED, 1);");
 
         cabang::create(['kodecabang' => 'PST',  'namacabang' => 'PUSAT',  'statusaktif' => '1',  'modifiedby' => 'ADMIN',]);
-        cabang::create(['kodecabang' => 'JKT',  'namacabang' => 'JAKARTA',  'statusaktif' => '1',  'modifiedby' => 'ADMIN',]);
         cabang::create(['kodecabang' => 'MDN',  'namacabang' => 'MEDAN',  'statusaktif' => '1',  'modifiedby' => 'ADMIN',]);
+        cabang::create(['kodecabang' => 'JKT',  'namacabang' => 'JAKARTA',  'statusaktif' => '1',  'modifiedby' => 'ADMIN',]);
         cabang::create(['kodecabang' => 'SBY',  'namacabang' => 'SURABAYA',  'statusaktif' => '1',  'modifiedby' => 'ADMIN',]);
         cabang::create(['kodecabang' => 'MKS',  'namacabang' => 'MAKASSAR',  'statusaktif' => '1',  'modifiedby' => 'ADMIN',]);
+        cabang::create(['kodecabang' => 'BTG',  'namacabang' => 'BITUNG',  'statusaktif' => '1',  'modifiedby' => 'ADMIN',]);
     }
 }

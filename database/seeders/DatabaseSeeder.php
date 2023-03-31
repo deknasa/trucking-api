@@ -52,6 +52,7 @@ class DatabaseSeeder extends Seeder
             TarifSeeder::class,
             TarifRincianSeeder::class,
             StokSeeder::class,
+            StokPersediaanSeeder::class,
             AbsenTradoSeeder::class,
             BukaAbsensiSeeder::class,
             StatusContainerSeeder::class,
