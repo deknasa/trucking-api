@@ -22,12 +22,13 @@ class CreateInvoicedetailTable extends Migration
             $table->unsignedBigInteger('invoice_id')->nullable();
             $table->string('nobukti', 50)->nullable();
             $table->double('nominal', 15,2)->nullable();
+            $table->double('nominalextra', 15,2)->nullable();
             $table->double('nominalretribusi', 15,2)->nullable();
             $table->double('total', 15,2)->nullable();
             $table->longText('keterangan')->nullable();
-            $table->string('modifiedby', 50)->nullable();
             $table->string('orderantrucking_nobukti', 50)->nullable();
             $table->longText('suratpengantar_nobukti')->nullable();
+            $table->string('modifiedby', 50)->nullable();
             $table->timestamps();
 
             $table->foreign('invoice_id', 'invoicedetail_invoiceheader_invoice_idforeign')->references('id')->on('invoiceheader')->onDelete('cascade');    
