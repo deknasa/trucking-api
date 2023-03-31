@@ -119,9 +119,14 @@ class InvoiceHeaderController extends Controller
                         ->where('jobtrucking', $SP->jobtrucking)->get();
 
                     $allSP = "";
-                    foreach ($getSP as $value) {
-                        $allSP = $allSP . $value->nobukti . ',';
+                    foreach ($getSP as $key => $value) {
+                        if ($key == 0) {
+                            $allSP = $allSP .$value->nobukti;
+                        } else {
+                            $allSP = $allSP . ',' . $value->nobukti;
+                        }
                     }
+                    
                     $datadetail = [
                         'invoice_id' => $invoice->id,
                         'nobukti' => $invoice->nobukti,
@@ -151,7 +156,7 @@ class InvoiceHeaderController extends Controller
 
                 $group = 'PIUTANG BUKTI';
                 $subgroup = 'PIUTANG BUKTI';
-                $format = DB::table('parameter')
+                $formatPiutang = DB::table('parameter')
                     ->where('grp', $group)
                     ->where('subgrp', $subgroup)
                     ->first();
@@ -227,7 +232,7 @@ class InvoiceHeaderController extends Controller
                     'invoice_nobukti' => $invoice->nobukti,
                     'agen_id' => $invoice->agen_id,
                     'modifiedby' => auth('api')->user()->name,
-                    'statusformat' => 1,
+                    'statusformat' => $formatPiutang->id,
                     'jenisinvoice' => 'UTAMA',
                     'datadetail' => $piutangDetail
                 ];
@@ -327,8 +332,12 @@ class InvoiceHeaderController extends Controller
                     ->where('jobtrucking', $SP->jobtrucking)->get();
 
                 $allSP = "";
-                foreach ($getSP as $value) {
-                    $allSP = $allSP . $value->nobukti . ',';
+                foreach ($getSP as $key => $value) {
+                    if ($key == 0) {
+                        $allSP = $allSP .$value->nobukti;
+                    } else {
+                        $allSP = $allSP . ',' . $value->nobukti;
+                    }
                 }
 
                 $datadetail = [
@@ -564,7 +573,7 @@ class InvoiceHeaderController extends Controller
             "data" => $invoice->getEdit($id, $request)
         ]);
     }
-    
+
     public function getAllEdit($id, Request $request)
     {
         $invoice = new InvoiceHeader();

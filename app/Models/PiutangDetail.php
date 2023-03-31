@@ -108,6 +108,29 @@ class PiutangDetail extends MyModel
         }
     }
 
+    public function getPiutangFromInvoice($nobukti)
+    {
+        $this->setRequestParameters();
+        $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"))
+            ->select(
+                $this->table . '.nobukti',
+                $this->table . '.keterangan',
+                $this->table . '.invoice_nobukti',
+                $this->table . '.nominal'
+            );
+
+        $this->sort($query, 'piutangdetail');
+        $query->where($this->table . '.nobukti', '=',$nobukti);
+        $this->filter($query);
+        $this->totalNominal = $query->sum('nominal');
+        $this->totalRows = $query->count();
+        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+
+        $this->paginate($query);
+
+        return $query->get();
+    }
+
     public function sort($query, $table)
     {
         if ($this->params['sortIndex'] == 'nobukti_pelunasan') {

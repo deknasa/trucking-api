@@ -6,6 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\InvoiceDetail;
 use App\Http\Requests\StoreInvoiceDetailRequest;
 use App\Http\Requests\UpdateInvoiceDetailRequest;
+use App\Models\JurnalUmumDetail;
+use App\Models\PiutangDetail;
+use App\Models\PiutangHeader;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -26,6 +29,35 @@ class InvoiceDetailController extends Controller
                 'totalPages' => $invoice->totalPages,
                 'totalNominal' => $invoice->totalNominal,
                 'totalRetribusi' => $invoice->totalRetribusi,
+            ]
+        ]);
+    }
+
+    public function piutang(): JsonResponse
+    {
+        $piutangDetail = new PiutangDetail();
+        
+        return response()->json([
+            'data' => $piutangDetail->getPiutangFromInvoice(request()->nobukti_piutang),
+            'attributes' => [
+                'totalRows' => $piutangDetail->totalRows,
+                'totalPages' => $piutangDetail->totalPages,
+                'totalNominal' => $piutangDetail->totalNominal
+            ]
+        ]);
+    }
+    
+    public function jurnal(): JsonResponse
+    {
+        $jurnalDetail = new JurnalUmumDetail();
+
+        return response()->json([
+            'data' => $jurnalDetail->getJurnalFromAnotherTable(request()->nobukti),
+            'attributes' => [
+                'totalRows' => $jurnalDetail->totalRows,
+                'totalPages' => $jurnalDetail->totalPages,
+                'totalNominalDebet' => $jurnalDetail->totalNominalDebet,
+                'totalNominalKredit' => $jurnalDetail->totalNominalKredit,
             ]
         ]);
     }
