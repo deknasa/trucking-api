@@ -29,7 +29,7 @@ class UpahRitasi extends MyModel
         return $this->belongsTo(Kota::class, 'kota_id');
     }
 
-    
+
 
 
     public function get()
@@ -57,20 +57,20 @@ class UpahRitasi extends MyModel
             ->leftJoin(DB::raw("kota as kotadari with (readuncommitted)"), 'kotadari.id', '=', 'upahritasi.kotadari_id')
             ->leftJoin(DB::raw("kota as kotasampai with (readuncommitted)"), 'kotasampai.id', '=', 'upahritasi.kotasampai_id')
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'upahritasi.statusaktif', 'parameter.id');
-            // ->leftJoin(DB::raw("parameter as statusluarkota with (readuncommitted)"), 'upahritasi.statusluarkota', 'statusluarkota.id');
+        // ->leftJoin(DB::raw("parameter as statusluarkota with (readuncommitted)"), 'upahritasi.statusluarkota', 'statusluarkota.id');
 
-            // ->leftJoin(DB::raw("zona with (readuncommitted)"), 'upahritasi.zona_id', 'zona.id');
+        // ->leftJoin(DB::raw("zona with (readuncommitted)"), 'upahritasi.zona_id', 'zona.id');
 
-            if ($aktif == 'AKTIF') {
-                $statusaktif = Parameter::from(
-                    DB::raw("parameter with (readuncommitted)")
-                )
-                    ->where('grp', '=', 'STATUS AKTIF')
-                    ->where('text', '=', 'AKTIF')
-                    ->first();
-    
-                $query->where('upahritasi.statusaktif', '=', $statusaktif->id);
-            }
+        if ($aktif == 'AKTIF') {
+            $statusaktif = Parameter::from(
+                DB::raw("parameter with (readuncommitted)")
+            )
+                ->where('grp', '=', 'STATUS AKTIF')
+                ->where('text', '=', 'AKTIF')
+                ->first();
+
+            $query->where('upahritasi.statusaktif', '=', $statusaktif->id);
+        }
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -142,8 +142,8 @@ class UpahRitasi extends MyModel
             ->where('default', '=', 'YA')
             ->first();
 
-  
-            $iddefaultstatusaktif = $status->id ?? 0;
+
+        $iddefaultstatusaktif = $status->id ?? 0;
         DB::table($tempdefault)->insert(
             ["statusaktif" => $iddefaultstatusaktif]
         );
@@ -157,9 +157,8 @@ class UpahRitasi extends MyModel
 
         $data = $query->first();
         return $data;
-
     }
-    
+
     public function selectColumns($query)
     {
         return $query->select(
@@ -179,7 +178,7 @@ class UpahRitasi extends MyModel
         )
             ->leftJoin(DB::raw("kota as kotadari with (readuncommitted)"), 'kotadari.id', '=', 'upahritasi.kotadari_id')
             ->leftJoin(DB::raw("kota as kotasampai with (readuncommitted)"), 'kotasampai.id', '=', 'upahritasi.kotasampai_id');
-            // ->leftJoin(DB::raw("zona with (readuncommitted)"), 'upahritasi.zona_id', 'zona.id');
+        // ->leftJoin(DB::raw("zona with (readuncommitted)"), 'upahritasi.zona_id', 'zona.id');
     }
 
     public function createTemp(string $modelTable)
@@ -213,7 +212,13 @@ class UpahRitasi extends MyModel
 
     public function sort($query)
     {
-        return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        if ($this->params['sortIndex'] == 'kotadari_id') {
+            return $query->orderBy('kotadari.keterangan', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'kotasampai_id') {
+            return $query->orderBy('kotasampai.keterangan', $this->params['sortOrder']);
+        } else {
+            return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        }
     }
 
     public function filter($query, $relationFields = [])
@@ -224,14 +229,14 @@ class UpahRitasi extends MyModel
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statusaktif') {
                             $query = $query->where('parameter.text', '=', $filters['data']);
-                        // } elseif ($filters['field'] == 'statusluarkota') {
-                        //     $query = $query->where('statusluarkota.text', '=', $filters['data']);
+                            // } elseif ($filters['field'] == 'statusluarkota') {
+                            //     $query = $query->where('statusluarkota.text', '=', $filters['data']);
                         } else if ($filters['field'] == 'kotadari_id') {
                             $query = $query->where('kotadari.keterangan', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'kotasampai_id') {
                             $query = $query->where('kotasampai.keterangan', 'LIKE', "%$filters[data]%");
-                        // } else if ($filters['field'] == 'zona_id') {
-                        //     $query = $query->where('zona.keterangan', 'LIKE', "%$filters[data]%");
+                            // } else if ($filters['field'] == 'zona_id') {
+                            //     $query = $query->where('zona.keterangan', 'LIKE', "%$filters[data]%");
                         } else {
                             $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
@@ -242,14 +247,14 @@ class UpahRitasi extends MyModel
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statusaktif') {
                             $query = $query->orWhere('parameter.text', '=', $filters['data']);
-                        // } elseif ($filters['field'] == 'statusluarkota') {
+                            // } elseif ($filters['field'] == 'statusluarkota') {
                             // $query = $query->orWhere('statusluarkota.text', '=', $filters['data']);
                         } else if ($filters['field'] == 'kotadari_id') {
                             $query = $query->orWhere('kotadari.keterangan', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'kotasampai_id') {
                             $query = $query->orWhere('kotasampai.keterangan', 'LIKE', "%$filters[data]%");
-                        // } else if ($filters['field'] == 'zona_id') {
-                        //     $query = $query->orWhere('zona.keterangan', 'LIKE', "%$filters[data]%");
+                            // } else if ($filters['field'] == 'zona_id') {
+                            //     $query = $query->orWhere('zona.keterangan', 'LIKE', "%$filters[data]%");
                         } else {
                             $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }

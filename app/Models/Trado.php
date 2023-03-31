@@ -32,7 +32,7 @@ class Trado extends MyModel
             ->where('a.trado_id', '=', $id)
             ->first();
         if (isset($absen)) {
-             $data = [
+            $data = [
                 'kondisi' => true,
                 'keterangan' => 'Absensi Supir',
             ];
@@ -50,7 +50,7 @@ class Trado extends MyModel
             ->where('a.trado_id', '=', $id)
             ->first();
         if (isset($penerimaanStok)) {
-             $data = [
+            $data = [
                 'kondisi' => true,
                 'keterangan' => 'Penerimaan Stok',
             ];
@@ -67,14 +67,14 @@ class Trado extends MyModel
             ->where('a.trado_id', '=', $id)
             ->first();
         if (isset($pengeluaranStok)) {
-             $data = [
+            $data = [
                 'kondisi' => true,
                 'keterangan' => 'Pengeluaran Stok',
             ];
 
             goto selesai;
         }
-        
+
         $serviceOut = DB::table('serviceoutheader')
             ->from(
                 DB::raw("serviceoutheader as a with (readuncommitted)")
@@ -85,14 +85,14 @@ class Trado extends MyModel
             ->where('a.trado_id', '=', $id)
             ->first();
         if (isset($serviceOut)) {
-             $data = [
+            $data = [
                 'kondisi' => true,
                 'keterangan' => 'Service Out',
             ];
 
             goto selesai;
         }
-        
+
         $suratPengantar = DB::table('suratpengantar')
             ->from(
                 DB::raw("suratpengantar as a with (readuncommitted)")
@@ -103,7 +103,7 @@ class Trado extends MyModel
             ->where('a.trado_id', '=', $id)
             ->first();
         if (isset($suratPengantar)) {
-             $data = [
+            $data = [
                 'kondisi' => true,
                 'keterangan' => 'Surat Pengantar',
             ];
@@ -120,7 +120,7 @@ class Trado extends MyModel
             ->where('a.trado_id', '=', $id)
             ->first();
         if (isset($serviceIn)) {
-             $data = [
+            $data = [
                 'kondisi' => true,
                 'keterangan' => 'Service In',
             ];
@@ -137,7 +137,7 @@ class Trado extends MyModel
             ->where('a.trado_id', '=', $id)
             ->first();
         if (isset($ritasi)) {
-             $data = [
+            $data = [
                 'kondisi' => true,
                 'keterangan' => 'Ritasi',
             ];
@@ -233,7 +233,7 @@ class Trado extends MyModel
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
-        $this->sort($query);        
+        $this->sort($query);
         $this->paginate($query);
 
         $data = $query->get();
@@ -469,7 +469,13 @@ class Trado extends MyModel
 
     public function sort($query)
     {
-        return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        if ($this->params['sortIndex'] == 'mandor_id') {
+            return $query->orderBy('mandor.namamandor', $this->params['sortOrder']);
+        }else if ($this->params['sortIndex'] == 'supir_id') {
+            return $query->orderBy('supir.namasupir', $this->params['sortOrder']);
+        } else {
+            return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        }
     }
 
     public function filter($query, $relationFields = [])
@@ -496,6 +502,8 @@ class Trado extends MyModel
                             $query = $query->where('parameter_statusvalidasikendaraan.text', '=', $filters['data']);
                         } else if ($filters['field'] == 'mandor_id') {
                             $query = $query->where('mandor.namamandor', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'supir_id') {
+                            $query = $query->where('supir.namasupir', 'LIKE', "%$filters[data]%");
                         } else {
                             $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
@@ -526,6 +534,8 @@ class Trado extends MyModel
                             $query = $query->orWhere('parameter_statusvalidasikendaraan.text', '=', $filters['data']);
                         } else if ($filters['field'] == 'mandor_id') {
                             $query = $query->orWhere('mandor.namamandor', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'supir_id') {
+                            $query = $query->orWhere('supir.namasupir', 'LIKE', "%$filters[data]%");
                         } else {
                             $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }

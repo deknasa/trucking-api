@@ -39,7 +39,7 @@ class UpahSupir extends MyModel
     {
         $this->setRequestParameters();
 
-        
+
         $aktif = request()->aktif ?? '';
 
         $query = DB::table($this->table)->from(DB::raw("upahsupir with (readuncommitted)"))
@@ -65,17 +65,17 @@ class UpahSupir extends MyModel
             ->leftJoin(DB::raw("parameter as statusluarkota with (readuncommitted)"), 'upahsupir.statusluarkota', 'statusluarkota.id')
             ->leftJoin(DB::raw("zona with (readuncommitted)"), 'upahsupir.zona_id', 'zona.id');
 
-            $this->filter($query);            
-            if ($aktif == 'AKTIF') {
-                $statusaktif = Parameter::from(
-                    DB::raw("parameter with (readuncommitted)")
-                )
-                    ->where('grp', '=', 'STATUS AKTIF')
-                    ->where('text', '=', 'AKTIF')
-                    ->first();
-    
-                $query->where('upahsupir.statusaktif', '=', $statusaktif->id);
-            }
+        $this->filter($query);
+        if ($aktif == 'AKTIF') {
+            $statusaktif = Parameter::from(
+                DB::raw("parameter with (readuncommitted)")
+            )
+                ->where('grp', '=', 'STATUS AKTIF')
+                ->where('text', '=', 'AKTIF')
+                ->first();
+
+            $query->where('upahsupir.statusaktif', '=', $statusaktif->id);
+        }
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -240,7 +240,15 @@ class UpahSupir extends MyModel
 
     public function sort($query)
     {
-        return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        if ($this->params['sortIndex'] == 'kotadari_id') {
+            return $query->orderBy('kotadari.keterangan', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'kotasampai_id') {
+            return $query->orderBy('kotasampai.keterangan', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'zona_id') {
+            return $query->orderBy('zona.keterangan', $this->params['sortOrder']);
+        } else {
+            return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        }
     }
 
     public function filter($query, $relationFields = [])

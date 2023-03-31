@@ -568,7 +568,11 @@ class Supir extends MyModel
 
     public function sort($query)
     {
-        return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        if($this->params['sortIndex'] == 'supirold_id'){
+            return $query->orderBy('supirlama.namasupir', $this->params['sortOrder']);
+        }else{
+            return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        }
     }
 
 
@@ -590,6 +594,8 @@ class Supir extends MyModel
                             $query = $query->where('statusblacklist.text', '=', $filters['data']);
                         } else if ($filters['field'] == 'zona_id') {
                             $query = $query->where('zona.zona', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'supirold_id') {
+                            $query = $query->where('supirlama.namasupir', 'LIKE', "%$filters[data]%");
                         } else {
                             $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
@@ -614,6 +620,8 @@ class Supir extends MyModel
                             $query = $query->orWhere('statusblacklist.text', '=', $filters['data']);
                         } else if ($filters['field'] == 'zona_id') {
                             $query = $query->orWhere('zona.zona', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'supirold_id') {
+                            $query = $query->orWhere('supirlama.namasupir', 'LIKE', "%$filters[data]%");
                         } else {
                             $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }

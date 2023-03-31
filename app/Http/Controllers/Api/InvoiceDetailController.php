@@ -28,6 +28,7 @@ class InvoiceDetailController extends Controller
                 'totalRows' => $invoice->totalRows,
                 'totalPages' => $invoice->totalPages,
                 'totalNominal' => $invoice->totalNominal,
+                'totalTotal' => $invoice->totalTotal,
                 'totalRetribusi' => $invoice->totalRetribusi,
             ]
         ]);
