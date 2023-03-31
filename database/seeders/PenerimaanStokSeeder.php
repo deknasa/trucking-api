@@ -19,11 +19,11 @@ class PenerimaanStokSeeder extends Seeder
         DB::statement("DBCC CHECKIDENT ('PenerimaanStok', RESEED, 1);");
 
         PenerimaanStok::create(['kodepenerimaan' => 'DOT', 'keterangan' => 'DELIVERY ORDER', 'coa' => '', 'format' => '132', 'statushitungstok' => '178', 'modifiedby' => 'ADMIN',]);
-        PenerimaanStok::create(['kodepenerimaan' => 'POT', 'keterangan' => 'PO STOK', 'coa' => '', 'format' => '133', 'statushitungstok' => '178', 'modifiedby' => 'ADMIN',]);
-        PenerimaanStok::create(['kodepenerimaan' => 'PBT', 'keterangan' => 'BELI STOK', 'coa' => '', 'format' => '134', 'statushitungstok' => '177', 'modifiedby' => 'ADMIN',]);
-        PenerimaanStok::create(['kodepenerimaan' => 'KST', 'keterangan' => 'KOREKSI STOK', 'coa' => '', 'format' => '136', 'statushitungstok' => '177', 'modifiedby' => 'ADMIN',]);
-        PenerimaanStok::create(['kodepenerimaan' => 'PGT', 'keterangan' => 'PINDAH GUDANG', 'coa' => '', 'format' => '137', 'statushitungstok' => '177', 'modifiedby' => 'ADMIN',]);
-        PenerimaanStok::create(['kodepenerimaan' => 'PST', 'keterangan' => 'PERBAIKAN STOK', 'coa' => '', 'format' => '138', 'statushitungstok' => '177', 'modifiedby' => 'ADMIN',]);
-        PenerimaanStok::create(['kodepenerimaan' => 'SST', 'keterangan' => 'SALDO STOK TRUCKING', 'coa' => '', 'format' => '138', 'statushitungstok' => '177', 'modifiedby' => 'ADMIN',]);
+        PenerimaanStok::create(['kodepenerimaan' => 'PO', 'keterangan' => 'PO STOK', 'coa' => '', 'format' => '133', 'statushitungstok' => '178', 'modifiedby' => 'ADMIN',]);
+        PenerimaanStok::create(['kodepenerimaan' => 'SPB', 'keterangan' => 'BELI STOK', 'coa' => '', 'format' => '134', 'statushitungstok' => '177', 'modifiedby' => 'ADMIN',]);
+        PenerimaanStok::create(['kodepenerimaan' => 'KOR', 'keterangan' => 'KOREKSI STOK', 'coa' => '', 'format' => '136', 'statushitungstok' => '177', 'modifiedby' => 'ADMIN',]);
+        PenerimaanStok::create(['kodepenerimaan' => 'PG', 'keterangan' => 'PINDAH GUDANG', 'coa' => '', 'format' => '137', 'statushitungstok' => '177', 'modifiedby' => 'ADMIN',]);
+        PenerimaanStok::create(['kodepenerimaan' => 'SPBS', 'keterangan' => 'PERBAIKAN STOK', 'coa' => '', 'format' => '138', 'statushitungstok' => '177', 'modifiedby' => 'ADMIN',]);
+        PenerimaanStok::create(['kodepenerimaan' => 'SST', 'keterangan' => 'SALDO STOK TRUCKING', 'coa' => '', 'format' => '145', 'statushitungstok' => '177', 'modifiedby' => 'ADMIN',]);
     }
 }
