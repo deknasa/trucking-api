@@ -182,6 +182,7 @@ use App\Http\Controllers\Api\LaporanTripTradoController;
 use App\Http\Controllers\Api\LaporanUangJalanController;
 use App\Http\Controllers\Api\OrderanEmklController;
 use App\Http\Controllers\Api\PemutihanSupirController;
+use App\Http\Controllers\Api\PemutihanSupirDetailController;
 use App\Http\Controllers\Api\ReportAllController;
 use App\Http\Controllers\Api\PencairanGiroPengeluaranDetailController;
 use App\Http\Controllers\Api\PencairanGiroPengeluaranHeaderController;
@@ -735,6 +736,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('invoiceheader/field_length', [InvoiceHeaderController::class, 'fieldLength']);
     Route::get('invoiceheader/comboapproval', [InvoiceHeaderController::class, 'comboapproval']);
     Route::get('invoiceheader/{id}/getEdit', [InvoiceHeaderController::class, 'getEdit']);
+    Route::get('invoiceheader/{id}/getAllEdit', [InvoiceHeaderController::class, 'getAllEdit']);
     Route::get('invoiceheader/getSP', [InvoiceHeaderController::class, 'getSP']);
     Route::post('invoiceheader/{id}/cekvalidasi', [InvoiceHeaderController::class, 'cekvalidasi'])->name('invoiceheader.cekvalidasi');
     Route::resource('invoiceheader', InvoiceHeaderController::class);
@@ -939,10 +941,15 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('/orderanemkl/getTglJob', [OrderanEmklController::class, 'getTglJob'])->middleware('handle-token');
     
     Route::get('pemutihansupir/getPost', [PemutihanSupirController::class, 'getPost']);
-    Route::get('pemutihansupir/getNonpost', [PemutihanSupirController::class, 'getNonpost']);
+    Route::get('pemutihansupir/getNonPost', [PemutihanSupirController::class, 'getNonPost']);
+    Route::get('pemutihansupir/{pemutihanId}/getEditPost', [PemutihanSupirController::class, 'getEditPost']);
+    Route::get('pemutihansupir/{pemutihanId}/getEditNonPost', [PemutihanSupirController::class, 'getEditNonPost']);
+    Route::get('pemutihansupir/{pemutihanId}/getDeletePost', [PemutihanSupirController::class, 'getDeletePost']);
+    Route::get('pemutihansupir/{pemutihanId}/getDeleteNonPost', [PemutihanSupirController::class, 'getDeleteNonPost']);
     Route::post('pemutihansupir/{id}/cekvalidasi', [PemutihanSupirController::class, 'cekvalidasi'])->name('pemutihansupir.cekvalidasi');
     Route::get('pemutihansupir/field_length', [PemutihanSupirController::class, 'fieldLength']);
     Route::resource('pemutihansupir', PemutihanSupirController::class);
+    Route::resource('pemutihansupirdetail', PemutihanSupirDetailController::class);
 
 
     Route::get('exportrincianmingguanpendapatan/export', [ExportRincianMingguanPendapatanSupirController::class, 'export'])->name('exportrincianmingguanpendapatan.export');

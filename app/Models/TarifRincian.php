@@ -348,9 +348,9 @@ class TarifRincian extends MyModel
     public function getid($id)
     {
 
-    if ($id=='undefined') {
-        $id=0;
-    }
+        if ($id == 'undefined') {
+            $id = 0;
+        }
         $query = Tarif::from(DB::raw("$this->table with (readuncommitted)"))
             ->select(
                 'tarif.id',
@@ -385,7 +385,17 @@ class TarifRincian extends MyModel
 
     public function sort($query)
     {
-        return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        if ($this->params['sortIndex'] == 'tujuan' || $this->params['sortIndex'] == 'tglmulaiberlaku' || $this->params['sortIndex'] == 'statussistemton' || $this->params['sortIndex'] == 'statuspenyesuaianharga' || $this->params['sortIndex'] == 'statusaktif') {
+            return $query->orderBy('tarif.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'container_id') {
+            return $query->orderBy('container.kodecontainer', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'kota_id') {
+            return $query->orderBy('kota.kodekota', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'zona_id') {
+            return $query->orderBy('zona.zona', $this->params['sortOrder']);
+        } else {
+            return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        }
     }
 
     public function filter($query, $relationFields = [])

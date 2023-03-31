@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\DateTutupBuku;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StorePemutihanSupirRequest extends FormRequest
@@ -24,7 +25,12 @@ class StorePemutihanSupirRequest extends FormRequest
     public function rules()
     {
         return [
-            'supir' => 'required'
+            'tglbukti' => [
+                'required',
+                new DateTutupBuku()
+            ],
+            'supir' => 'required',
+            'bank' => 'required'
         ];
     }
 }

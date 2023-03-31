@@ -26,7 +26,7 @@ class OrderanTrucking extends MyModel
     ];
 
     public function cekvalidasihapus($nobukti)
-    {     
+    {
 
         $suratPengantar = DB::table('suratpengantar')
             ->from(
@@ -43,7 +43,7 @@ class OrderanTrucking extends MyModel
                 'keterangan' => 'Surat Pengantar',
             ];
 
-            
+
             goto selesai;
         }
 
@@ -63,7 +63,7 @@ class OrderanTrucking extends MyModel
                 'keterangan' => 'invoice',
             ];
 
-            
+
             goto selesai;
         }
 
@@ -72,14 +72,14 @@ class OrderanTrucking extends MyModel
             'kondisi' => false,
             'keterangan' => '',
         ];
- 
+
         selesai:
         return $data;
     }
 
     public function get()
     {
-        
+
         $this->setRequestParameters();
         $query = DB::table($this->table)->from(
             DB::raw($this->table . " with (readuncommitted)")
@@ -106,7 +106,7 @@ class OrderanTrucking extends MyModel
                 'orderantrucking.created_at',
                 'orderantrucking.updated_at'
             )
-            ->whereBetween($this->table.'.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
+            ->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
             ->leftJoin(DB::raw("tarif with (readuncommitted)"), 'orderantrucking.tarif_id', '=', 'tarif.id')
             ->leftJoin(DB::raw("container with (readuncommitted)"), 'orderantrucking.container_id', '=', 'container.id')
             ->leftJoin(DB::raw("agen with (readuncommitted)"), 'orderantrucking.agen_id', '=', 'agen.id')
@@ -134,26 +134,26 @@ class OrderanTrucking extends MyModel
             ->from(DB::raw("agen with (readuncommitted)"))
             ->select(
                 DB::raw("(case when jenisemkl.kodejenisemkl='TAS' then 1 else 0 end)  as statustas")
-                )
+            )
             ->join('jenisemkl', 'jenisemkl.id', 'agen.jenisemkl')
             ->where('agen.id', $id)
             ->first();
 
-          
+
         return $data;
     }
-    
+
     public function getcont($id)
     {
         $data = DB::table('container')
             ->from(DB::raw("container with (readuncommitted)"))
             ->select(
                 DB::raw("(case when kodecontainer='2X20`' then 1 else 0 end)  as kodecontainer")
-                )
+            )
             ->where('container.id', $id)
             ->first();
 
-          
+
         return $data;
     }
     public function default()
@@ -253,36 +253,36 @@ class OrderanTrucking extends MyModel
 
         return $data;
     }
-    public function getOrderanTrip($tglproses,$agen)
+    public function getOrderanTrip($tglproses, $agen)
     {
-        $data =[
+        $data = [
             [
-                "id" =>1,
-                "jobtrucking"=>"III/ V /00001",
-                "tgltrip"=>"2022-09-12",
-                "jumlahhari"=>"11",
-                "nominal_detail"=>"21000000",
-                "nopolisi"=>"BK 1234 AB",
-                "keterangan"=>"keterangan id 1",
+                "id" => 1,
+                "jobtrucking" => "III/ V /00001",
+                "tgltrip" => "2022-09-12",
+                "jumlahhari" => "11",
+                "nominal_detail" => "21000000",
+                "nopolisi" => "BK 1234 AB",
+                "keterangan" => "keterangan id 1",
             ], [
-                "id" =>2,
-                "jobtrucking"=>"III/ V /00002",
-                "tgltrip"=>"2022-09-12",
-                "jumlahhari"=>"12",
-                "nominal_detail"=>"22000000",
-                "nopolisi"=>"BK 4567 AB",
-                "keterangan"=>"keterangan id 2",
+                "id" => 2,
+                "jobtrucking" => "III/ V /00002",
+                "tgltrip" => "2022-09-12",
+                "jumlahhari" => "12",
+                "nominal_detail" => "22000000",
+                "nopolisi" => "BK 4567 AB",
+                "keterangan" => "keterangan id 2",
             ], [
-                "id" =>3,
-                "jobtrucking"=>"III/ V /00003",
-                "tgltrip"=>"2022-09-12",
-                "jumlahhari"=>"13",
-                "nominal_detail"=>"23000000",
-                "nopolisi"=>"BK 1234 AB",
-                "keterangan"=>"keterangan id 3",
+                "id" => 3,
+                "jobtrucking" => "III/ V /00003",
+                "tgltrip" => "2022-09-12",
+                "jumlahhari" => "13",
+                "nominal_detail" => "23000000",
+                "nopolisi" => "BK 1234 AB",
+                "keterangan" => "keterangan id 3",
             ]
         ];
-            
+
         return $data;
     }
 
@@ -381,7 +381,7 @@ class OrderanTrucking extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        $models =  $query->whereBetween($this->table.'.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))]);
+        $models =  $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))]);
         DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'container_id', 'agen_id', 'jenisorder_id', 'pelanggan_id', 'tarif_id', 'nominal', 'nojobemkl', 'nocont', 'noseal', 'nojobemkl2', 'nocont2', 'noseal2', 'statuslangsir', 'statusperalihan', 'modifiedby', 'created_at', 'updated_at'], $models);
 
 
@@ -389,7 +389,19 @@ class OrderanTrucking extends MyModel
     }
     public function sort($query)
     {
-        return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        if ($this->params['sortIndex'] == 'container_id') {
+            return $query->orderBy('container.keterangan', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'agen_id') {
+            return $query->orderBy('agen.namaagen', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'jenisorder_id') {
+            return $query->orderBy('jenisorder.keterangan', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'pelanggan_id') {
+            return $query->orderBy('pelanggan.namapelanggan', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'tarif_id') {
+            return $query->orderBy('tarif.tujuan', $this->params['sortOrder']);
+        } else {
+            return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        }
     }
 
     public function filter($query, $relationFields = [])
