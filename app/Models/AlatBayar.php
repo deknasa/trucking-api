@@ -339,7 +339,11 @@ class AlatBayar extends MyModel
 
     public function sort($query)
     {
-        return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        if($this->params['sortIndex'] == 'bank'){
+            return $query->orderBy('bank.namabank', $this->params['sortOrder']);
+        }else{
+            return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        }
     }
 
     public function filter($query, $relationFields = [])

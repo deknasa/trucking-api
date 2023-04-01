@@ -25,7 +25,7 @@ class PengeluaranTrucking extends MyModel
     ];
 
     public function cekvalidasihapus($id)
-    {     
+    {
 
         $pengeluaranTrucking = DB::table('pengeluarantruckingheader')
             ->from(
@@ -42,7 +42,7 @@ class PengeluaranTrucking extends MyModel
                 'keterangan' => 'Pengeluaran Trucking',
             ];
 
-            
+
             goto selesai;
         }
 
@@ -51,34 +51,34 @@ class PengeluaranTrucking extends MyModel
             'kondisi' => false,
             'keterangan' => '',
         ];
- 
+
         selesai:
         return $data;
     }
-    
+
     public function get()
     {
         $this->setRequestParameters();
 
         $query = PengeluaranTrucking::from(DB::raw("$this->table with (readuncommitted)"))
-        ->select(
-            'pengeluarantrucking.id',
-            'pengeluarantrucking.kodepengeluaran',
-            'pengeluarantrucking.keterangan',
-            'pengeluarantrucking.coadebet',
-            'pengeluarantrucking.coakredit',
-            'pengeluarantrucking.coapostingdebet',
-            'pengeluarantrucking.coapostingkredit',
-            'debet.keterangancoa as coadebet_keterangan',
-            'kredit.keterangancoa as coakredit_keterangan',
-            'postingdebet.keterangancoa as coapostingdebet_keterangan',
-            'postingkredit.keterangancoa as coapostingkredit_keterangan',
-            'parameter.memo as format',
-            'pengeluarantrucking.created_at',
-            'pengeluarantrucking.modifiedby',
-            'pengeluarantrucking.updated_at'
-        )
-        
+            ->select(
+                'pengeluarantrucking.id',
+                'pengeluarantrucking.kodepengeluaran',
+                'pengeluarantrucking.keterangan',
+                'pengeluarantrucking.coadebet',
+                'pengeluarantrucking.coakredit',
+                'pengeluarantrucking.coapostingdebet',
+                'pengeluarantrucking.coapostingkredit',
+                'debet.keterangancoa as coadebet_keterangan',
+                'kredit.keterangancoa as coakredit_keterangan',
+                'postingdebet.keterangancoa as coapostingdebet_keterangan',
+                'postingkredit.keterangancoa as coapostingkredit_keterangan',
+                'parameter.memo as format',
+                'pengeluarantrucking.created_at',
+                'pengeluarantrucking.modifiedby',
+                'pengeluarantrucking.updated_at'
+            )
+
             ->leftJoin(DB::raw("akunpusat as debet  with (readuncommitted)"), "pengeluarantrucking.coadebet", "debet.coa")
             ->leftJoin(DB::raw("akunpusat as kredit  with (readuncommitted)"), "pengeluarantrucking.coakredit", "kredit.coa")
             ->leftJoin(DB::raw("akunpusat as postingdebet  with (readuncommitted)"), "pengeluarantrucking.coapostingdebet", "postingdebet.coa")
@@ -112,7 +112,7 @@ class PengeluaranTrucking extends MyModel
                  $this->table.created_at,
                  $this->table.updated_at"
             )
-        )->join('parameter','pengeluarantrucking.format','parameter.id');
+        )->join('parameter', 'pengeluarantrucking.format', 'parameter.id');
     }
 
     public function createTemp(string $modelTable)
@@ -138,14 +138,24 @@ class PengeluaranTrucking extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id', 'kodepengeluaran', 'keterangan','coadebet','coakredit','coapostingdebet','coapostingkredit','format', 'modifiedby','created_at', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'kodepengeluaran', 'keterangan', 'coadebet', 'coakredit', 'coapostingdebet', 'coapostingkredit', 'format', 'modifiedby', 'created_at', 'updated_at'], $models);
 
         return $temp;
     }
 
     public function sort($query)
     {
-        return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        if ($this->params['sortIndex'] == 'coadebet_keterangan') {
+            return $query->orderBy('debet.keterangancoa', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'coakredit_keterangan') {
+            return $query->orderBy('kredit.keterangancoa', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'coapostingdebet_keterangan') {
+            return $query->orderBy('postingdebet.keterangancoa', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'coapostingkredit_keterangan') {
+            return $query->orderBy('postingkredit.keterangancoa', $this->params['sortOrder']);
+        }else{
+            return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        }
     }
 
     public function filter($query, $relationFields = [])
@@ -154,42 +164,42 @@ class PengeluaranTrucking extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        
+
                         if ($filters['field'] == 'format') {
                             $query = $query->where('parameter.text', 'LIKE', "%$filters[data]%");
-                        }else if ($filters['field'] == 'coadebet_keterangan') {
+                        } else if ($filters['field'] == 'coadebet_keterangan') {
                             $query = $query->where('debet.keterangancoa', 'LIKE', "%$filters[data]%");
-                        }else if ($filters['field'] == 'coakredit_keterangan') {
+                        } else if ($filters['field'] == 'coakredit_keterangan') {
                             $query = $query->where('kredit.keterangancoa', 'LIKE', "%$filters[data]%");
-                        }else if ($filters['field'] == 'coapostingdebet_keterangan') {
+                        } else if ($filters['field'] == 'coapostingdebet_keterangan') {
                             $query = $query->where('postingdebet.keterangancoa', 'LIKE', "%$filters[data]%");
-                        }else if ($filters['field'] == 'coapostingkredit_keterangan') {
+                        } else if ($filters['field'] == 'coapostingkredit_keterangan') {
                             $query = $query->where('postingkredit.keterangancoa', 'LIKE', "%$filters[data]%");
-                        }else{
+                        } else {
                             $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
                     }
 
                     break;
-                    case "OR":
-                        $query = $query->where(function($query){
-                            foreach ($this->params['filters']['rules'] as $index => $filters) {
-                                if ($filters['field'] == 'format') {
-                                    $query->orWhere('parameter.text', 'LIKE', "%$filters[data]%");
-                                }else if ($filters['field'] == 'coadebet_keterangan') {
-                                    $query->orWhere('debet.keterangancoa', 'LIKE', "%$filters[data]%");
-                                }else if ($filters['field'] == 'coakredit_keterangan') {
-                                    $query->orWhere('kredit.keterangancoa', 'LIKE', "%$filters[data]%");
-                                }else if ($filters['field'] == 'coapostingdebet_keterangan') {
-                                    $query->orWhere('postingdebet.keterangancoa', 'LIKE', "%$filters[data]%");
-                                }else if ($filters['field'] == 'coapostingkredit_keterangan') {
-                                    $query->orWhere('postingkredit.keterangancoa', 'LIKE', "%$filters[data]%");
-                                }else{
-                                    $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                                }
+                case "OR":
+                    $query = $query->where(function ($query) {
+                        foreach ($this->params['filters']['rules'] as $index => $filters) {
+                            if ($filters['field'] == 'format') {
+                                $query->orWhere('parameter.text', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'coadebet_keterangan') {
+                                $query->orWhere('debet.keterangancoa', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'coakredit_keterangan') {
+                                $query->orWhere('kredit.keterangancoa', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'coapostingdebet_keterangan') {
+                                $query->orWhere('postingdebet.keterangancoa', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'coapostingkredit_keterangan') {
+                                $query->orWhere('postingkredit.keterangancoa', 'LIKE', "%$filters[data]%");
+                            } else {
+                                $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }
-                        });
-                        
+                        }
+                    });
+
 
                     break;
                 default:
@@ -203,10 +213,9 @@ class PengeluaranTrucking extends MyModel
 
         return $query;
     }
-    
+
     public function paginate($query)
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
-
 }

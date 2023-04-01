@@ -126,7 +126,7 @@ class Stok extends MyModel
 
         $this->sort($query);        
         $this->paginate($query);
-
+        // dd($query->toSql());
         $data = $query->get();
 
         return $data;
@@ -268,7 +268,19 @@ class Stok extends MyModel
 
     public function sort($query)
     {
-        return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        if($this->params['sortIndex'] == 'jenistrado'){
+            return $query->orderBy('jenistrado.keterangan', $this->params['sortOrder']);
+        } else if($this->params['sortIndex'] == 'kelompok'){
+            return $query->orderBy('kelompok.keterangan', $this->params['sortOrder']);
+        } else if($this->params['sortIndex'] == 'subkelompok'){
+            return $query->orderBy('subkelompok.keterangan', $this->params['sortOrder']);
+        } else if($this->params['sortIndex'] == 'kategori'){
+            return $query->orderBy('kategori.keterangan', $this->params['sortOrder']);
+        } else if($this->params['sortIndex'] == 'merk'){
+            return $query->orderBy('merk.keterangan', $this->params['sortOrder']);
+        } else{
+            return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        }
     }
 
     public function filter($query, $relationFields = [])
@@ -278,15 +290,15 @@ class Stok extends MyModel
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'jenistrado') {
-                            $query = $query->where('jenistrado.keterangan', '=', "$filters[data]");
+                            $query = $query->where('jenistrado.keterangan','LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'kelompok') {
-                            $query = $query->where('kelompok.keterangan', '=', "$filters[data]");
+                            $query = $query->where('kelompok.keterangan','LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'subkelompok') {
-                            $query = $query->where('subkelompok.keterangan', '=', "$filters[data]");
+                            $query = $query->where('subkelompok.keterangan','LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'kategori') {
-                            $query = $query->where('kategori.keterangan', '=', "$filters[data]");
+                            $query = $query->where('kategori.keterangan','LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'merk') {
-                            $query = $query->where('merk.keterangan', '=', "$filters[data]");
+                            $query = $query->where('merk.keterangan','LIKE', "%$filters[data]%");
                         } else {
                             $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
@@ -296,19 +308,19 @@ class Stok extends MyModel
                 case "OR":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'jenistrado') {
-                            $query = $query->orWhere('jenistrado.keterangan', '=', "$filters[data]");
+                            $query = $query->orWhere('jenistrado.keterangan','LIKE', "%$filters[data]%");
                         } elseif ($filters['field'] == 'id') {
                             $query = $query->orWhereRaw("(stok.id like '%$filters[data]%'");
                         } elseif ($filters['field'] == 'updated_at') {
                             $query = $query->orWhereRaw("format(stok.updated_at,'dd-MM-yyyy HH:mm:ss') like '%$filters[data]%')");
                         } else if ($filters['field'] == 'kelompok') {
-                            $query = $query->orWhere('kelompok.keterangan', '=', "$filters[data]");
+                            $query = $query->orWhere('kelompok.keterangan','LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'subkelompok') {
-                            $query = $query->orWhere('subkelompok.keterangan', '=', "$filters[data]");
+                            $query = $query->orWhere('subkelompok.keterangan','LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'kategori') {
-                            $query = $query->orWhere('kategori.keterangan', '=', "$filters[data]");
+                            $query = $query->orWhere('kategori.keterangan','LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'merk') {
-                            $query = $query->orWhere('merk.keterangan', '=', "$filters[data]");
+                            $query = $query->orWhere('merk.keterangan','LIKE', "%$filters[data]%");
                         } else {
                             $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }

@@ -148,7 +148,11 @@ class ServiceOutHeader extends MyModel
 
     public function sort($query)
     {
-        return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        if($this->params['sortIndex'] == 'trado_id'){
+            return $query->orderBy('trado.kodetrado', $this->params['sortOrder']);
+        }else{
+            return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        }
     }
 
     public function filter($query, $relationFields = [])
@@ -158,7 +162,7 @@ class ServiceOutHeader extends MyModel
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'trado_id') {
-                            $query = $query->where('trado.keterangan', 'LIKE', "%$filters[data]%");
+                            $query = $query->where('trado.kodetrado', 'LIKE', "%$filters[data]%");
                         } else {
                             $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
@@ -169,7 +173,7 @@ class ServiceOutHeader extends MyModel
                     $query = $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
                             if ($filters['field'] == 'trado_id') {
-                                $query = $query->orWhere('trado.keterangan', 'LIKE', "%$filters[data]%");
+                                $query = $query->orWhere('trado.kodetrado', 'LIKE', "%$filters[data]%");
                             } else {
                                 $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }

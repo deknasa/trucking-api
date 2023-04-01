@@ -413,7 +413,11 @@ class Bank extends MyModel
 
     public function sort($query)
     {
-        return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        if($this->params['sortIndex'] == 'coa'){
+            return $query->orderBy('akunpusat.keterangancoa', $this->params['sortOrder']);
+        }else{
+            return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        }
     }
 
     public function filter($query, $relationFields = [])
@@ -424,6 +428,8 @@ class Bank extends MyModel
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statusaktif') {
                             $query = $query->where('parameter.text', '=', $filters['data']);
+                        } else if ($filters['field'] == 'coa') {
+                            $query = $query->where('akunpusat.keterangancoa', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'formatpenerimaan') {
                             $query = $query->where('formatpenerimaan.text', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'formatpengeluaran') {
@@ -442,6 +448,8 @@ class Bank extends MyModel
                             $query = $query->orWhereRaw("(bank.id like '%$filters[data]%'");
                         } elseif ($filters['field'] == 'updated_at') {
                             $query = $query->orWhereRaw("format(bank.updated_at,'dd-MM-yyyy HH:mm:ss') like '%$filters[data]%')");
+                        } else if ($filters['field'] == 'coa') {
+                            $query = $query->orWhere('akunpusat.keterangancoa', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'formatpenerimaan') {
                             $query = $query->orWhere('formatpenerimaan.text', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'formatpengeluaran') {

@@ -265,6 +265,12 @@ class PiutangHeader extends MyModel
             return $query->orderBy('c.nominal', $this->params['sortOrder']);
         } else if ($this->params['sortIndex'] == 'sisapiutang') {
             return $query->orderBy(DB::raw("(piutangheader.nominal - isnull(c.nominal,0))"), $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'agen_id') {
+            return $query->orderBy('agen.namaagen', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'coadebet') {
+            return $query->orderBy('debet.keterangancoa', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'coakredit') {
+            return $query->orderBy('kredit.keterangancoa', $this->params['sortOrder']);
         } else {
             return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
         }

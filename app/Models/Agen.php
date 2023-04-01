@@ -182,7 +182,7 @@ class Agen extends MyModel
                 'agen.top',
                 'statusapproval.memo as statusapproval',
                 'agen.userapproval',
-                'agen.tglapproval',
+                DB::raw('(case when (year(agen.tglapproval) <= 2000) then null else agen.tglapproval end ) as tglapproval'),
                 'statustas.memo as statustas',
                 'agen.jenisemkl',
                 'agen.created_at',

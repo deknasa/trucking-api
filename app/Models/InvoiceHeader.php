@@ -37,7 +37,6 @@ class InvoiceHeader extends MyModel
                 'invoiceheader.tglterima',
                 'invoiceheader.tgljatuhtempo',
                 'agen.namaagen as agen_id',
-                'agen.namaagen as agen',
                 'jenisorder.keterangan as jenisorder_id',
                 'cabang.namacabang as cabang_id',
                 'invoiceheader.piutang_nobukti',
@@ -284,7 +283,13 @@ class InvoiceHeader extends MyModel
 
     public function sort($query)
     {
-        return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        if($this->params['sortIndex'] == 'agen_id'){
+            return $query->orderBy('agen.namaagen', $this->params['sortOrder']);
+        } else if($this->params['sortIndex'] == 'jenisorder_id'){
+            return $query->orderBy('jenisorder.keterangan', $this->params['sortOrder']);
+        }else{
+            return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        }
     }
 
     public function filter($query, $relationFields = [])

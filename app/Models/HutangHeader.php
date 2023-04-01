@@ -302,6 +302,10 @@ class HutangHeader extends MyModel
             return $query->orderBy('c.nominal', $this->params['sortOrder']);
         } else if ($this->params['sortIndex'] == 'sisahutang') {
             return $query->orderBy(DB::raw("(hutangheader.total - isnull(c.nominal,0))"), $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'coa') {
+            return $query->orderBy('akunpusat.keterangancoa', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'supplier_id') {
+            return $query->orderBy('supplier.namasupplier', $this->params['sortOrder']);
         } else {
             return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
         }

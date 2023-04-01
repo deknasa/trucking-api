@@ -659,7 +659,33 @@ class SuratPengantar extends MyModel
 
     public function sort($query)
     {
-        return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        if ($this->params['sortIndex'] == 'pelanggan_id') {
+            return $query->orderBy('pelanggan.namapelanggan', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'dari_id') {
+            return $query->orderBy('kotadari.keterangan', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'sampai_id') {
+            return $query->orderBy('kotasampai.keterangan', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'statuscontainer_id') {
+            return $query->orderBy('statuscontainer.keterangan', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'container_id') {
+            return $query->orderBy('container.keterangan', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'trado_id') {
+            return $query->orderBy('trado.kodetrado', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'supir_id') {
+            return $query->orderBy('supir.namasupir', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'agen_id') {
+            return $query->orderBy('agen.namaagen', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'jenisorder_id') {
+            return $query->orderBy('jenisorder.keterangan', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'tarif_id') {
+            return $query->orderBy('tarif.tujuan', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'mandortrado_id') {
+            return $query->orderBy('mandortrado.namamandor', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'mandorsupir_id') {
+            return $query->orderBy('mandorsupir.namamandor', $this->params['sortOrder']);
+        } else{
+            return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        }
     }
 
     public function filter($query, $relationFields = [])
