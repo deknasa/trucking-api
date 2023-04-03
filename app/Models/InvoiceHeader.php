@@ -163,21 +163,48 @@ class InvoiceHeader extends MyModel
     public function getSP($request)
     {
         $temp = $this->createTempSP($request);
+        $biayaTambahan = $this->createBiayaTambahan($request);
         // dd(DB::table($temp)->get());
         $query = SuratPengantar::from(DB::raw("suratpengantar as sp with (readuncommitted)"))
             ->select(DB::raw("$temp.id,$temp.jobtrucking,sp.tglsp, sp.keterangan,jenisorder.keterangan as jenisorder_id, agen.namaagen as agen_id, sp.statuslongtrip, ot.statusperalihan, (case when ot.nocont IS NULL then '-' else ot.nocont end) as nocont, 
             (case when tarif.tujuan IS NULL then '-' else tarif.tujuan end) as tarif_id,
-            ot.nominal as omset"))
+            ot.nominal as omset, $biayaTambahan.nominaltagih as nominalextra"))
             ->Join(DB::raw("$temp with (readuncommitted)"), 'sp.id', "$temp.id")
             ->leftJoin(DB::raw("orderantrucking as ot with (readuncommitted)"), 'sp.jobtrucking', 'ot.nobukti')
             ->leftJoin(DB::raw("tarif with (readuncommitted)"), 'ot.tarif_id', 'tarif.id')
             ->leftJoin(DB::raw("jenisorder with (readuncommitted)"), 'sp.jenisorder_id', 'jenisorder.id')
             ->leftJoin(DB::raw("agen with (readuncommitted)"), 'sp.agen_id', 'agen.id')
+            ->leftJoin(DB::raw("$biayaTambahan with (readuncommitted)"), "sp.jobtrucking", "$biayaTambahan.jobtrucking")
             ->whereRaw("sp.jobtrucking not in(select orderantrucking_nobukti from invoicedetail)")
             ->orderBy("sp.jobtrucking", 'asc');
-
+        // dd($query->toSql());
         $data = $query->get();
         return $data;
+    }
+
+    public function createBiayaTambahan($request)
+    {
+        $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+
+        $fetch = SuratPengantar::from(DB::raw("suratpengantar"))
+            ->select(DB::raw("suratpengantar.id, suratpengantar.jobtrucking, suratpengantarbiayatambahan.nominaltagih"))
+            ->join(DB::raw("suratpengantarbiayatambahan with (readuncommitted)"), 'suratpengantar.id', 'suratpengantarbiayatambahan.suratpengantar_id')
+            ->where('suratpengantar.agen_id', $request->agen_id)
+            ->where('suratpengantar.jenisorder_id', $request->jenisorder_id)
+            ->where('suratpengantar.tglbukti', '>=', date('Y-m-d', strtotime($request->tgldari)))
+            ->where('suratpengantar.tglbukti', '<=', date('Y-m-d', strtotime($request->tglsampai)));
+
+
+        Schema::create($temp, function ($table) {
+            $table->bigInteger('id')->nullable();
+            $table->string('jobtrucking');
+            $table->bigInteger('nominaltagih')->nullable();
+        });
+
+        $tes = DB::table($temp)->insertUsing(['id','jobtrucking', 'nominaltagih'], $fetch);
+
+        // $data = DB::table($temp)->get();
+        return $temp;
     }
 
     public function createTempSP($request)
@@ -209,7 +236,7 @@ class InvoiceHeader extends MyModel
         $temp = $this->createTempSP($request);
 
         $query = InvoiceDetail::from(DB::raw("invoicedetail with (readuncommitted)"))
-            ->select(DB::raw("$temp.id,$temp.jobtrucking,sp.tglsp, sp.keterangan,jenisorder.keterangan as jenisorder_id, agen.namaagen as agen_id, sp.statuslongtrip, ot.statusperalihan, ot.nocont, (case when tarif.tujuan IS NULL then '-' else tarif.tujuan end) as tarif_id, ot.nominal as omset, invoicedetail.nominalretribusi"))
+            ->select(DB::raw("$temp.id,$temp.jobtrucking,sp.tglsp, sp.keterangan,jenisorder.keterangan as jenisorder_id, agen.namaagen as agen_id, sp.statuslongtrip, ot.statusperalihan, ot.nocont, (case when tarif.tujuan IS NULL then '-' else tarif.tujuan end) as tarif_id, ot.nominal as omset, invoicedetail.nominalretribusi, invoicedetail.nominalextra"))
 
             ->leftJoin(DB::raw("suratpengantar as sp with (readuncommitted)"), 'invoicedetail.orderantrucking_nobukti', 'sp.jobtrucking')
             ->Join(DB::raw("$temp with (readuncommitted)"), 'sp.id', "$temp.id")
@@ -234,9 +261,10 @@ class InvoiceHeader extends MyModel
     {
 
         $tempSP = $this->createTempSP($request);
+        $biayaTambahan = $this->createBiayaTambahan($request);
         $temp = '##tempAll' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         $fetch = InvoiceDetail::from(DB::raw("invoicedetail with (readuncommitted)"))
-            ->select(DB::raw("$tempSP.id,$tempSP.jobtrucking,sp.tglsp, sp.keterangan,jenisorder.keterangan as jenisorder_id, agen.namaagen as agen_id, sp.statuslongtrip, ot.statusperalihan, ot.nocont, (case when tarif.tujuan IS NULL then '-' else tarif.tujuan end) as tarif_id, ot.nominal as omset, invoicedetail.nominalretribusi"))
+            ->select(DB::raw("$tempSP.id,$tempSP.jobtrucking,sp.tglsp, sp.keterangan,jenisorder.keterangan as jenisorder_id, agen.namaagen as agen_id, sp.statuslongtrip, ot.statusperalihan, ot.nocont, (case when tarif.tujuan IS NULL then '-' else tarif.tujuan end) as tarif_id, ot.nominal as omset, invoicedetail.nominalretribusi,invoicedetail.nominalextra"))
 
             ->leftJoin(DB::raw("suratpengantar as sp with (readuncommitted)"), 'invoicedetail.orderantrucking_nobukti', 'sp.jobtrucking')
             ->Join(DB::raw("$tempSP with (readuncommitted)"), 'sp.id', "$tempSP.id")
@@ -244,6 +272,7 @@ class InvoiceHeader extends MyModel
             ->leftJoin(DB::raw("tarif with (readuncommitted)"), 'ot.tarif_id', 'tarif.id')
             ->leftJoin(DB::raw("jenisorder with (readuncommitted)"), 'sp.jenisorder_id', 'jenisorder.id')
             ->leftJoin(DB::raw("agen with (readuncommitted)"), 'sp.agen_id', 'agen.id')
+            ->leftJoin(DB::raw("suratpengantarbiayatambahan with (readuncommitted)"), 'sp.id', 'suratpengantarbiayatambahan.suratpengantar_id')
             ->whereRaw("invoicedetail.invoice_id = $id");
 
         Schema::create($temp, function ($table) {
@@ -259,35 +288,37 @@ class InvoiceHeader extends MyModel
             $table->string('tarif_id')->nullable();
             $table->bigInteger('omset')->nullable();
             $table->bigInteger('nominalretribusi')->nullable();
+            $table->bigInteger('nominalextra')->nullable();
         });
 
-        DB::table($temp)->insertUsing(['id', 'jobtrucking', 'tglsp', 'keterangan', 'jenisorder_id', 'agen_id', 'statuslongtrip', 'statusperalihan', 'nocont', 'tarif_id', 'omset', 'nominalretribusi'], $fetch);
+        DB::table($temp)->insertUsing(['id', 'jobtrucking', 'tglsp', 'keterangan', 'jenisorder_id', 'agen_id', 'statuslongtrip', 'statusperalihan', 'nocont', 'tarif_id', 'omset', 'nominalretribusi', 'nominalextra'], $fetch);
 
         $fetch2 = SuratPengantar::from(DB::raw("suratpengantar as sp with (readuncommitted)"))
             ->select(DB::raw("$tempSP.id,$tempSP.jobtrucking,sp.tglsp, sp.keterangan,jenisorder.keterangan as jenisorder_id, agen.namaagen as agen_id, sp.statuslongtrip, ot.statusperalihan, (case when ot.nocont IS NULL then '-' else ot.nocont end) as nocont, 
             (case when tarif.tujuan IS NULL then '-' else tarif.tujuan end) as tarif_id,
-            ot.nominal as omset"))
+            ot.nominal as omset, $biayaTambahan.nominaltagih as nominalextra"))
             ->Join(DB::raw("$tempSP with (readuncommitted)"), 'sp.id', "$tempSP.id")
             ->leftJoin(DB::raw("orderantrucking as ot with (readuncommitted)"), 'sp.jobtrucking', 'ot.nobukti')
             ->leftJoin(DB::raw("tarif with (readuncommitted)"), 'ot.tarif_id', 'tarif.id')
             ->leftJoin(DB::raw("jenisorder with (readuncommitted)"), 'sp.jenisorder_id', 'jenisorder.id')
             ->leftJoin(DB::raw("agen with (readuncommitted)"), 'sp.agen_id', 'agen.id')
+            ->leftJoin(DB::raw("$biayaTambahan with (readuncommitted)"), "sp.jobtrucking", "$biayaTambahan.jobtrucking")
             ->whereRaw("sp.jobtrucking not in(select orderantrucking_nobukti from invoicedetail)")
             ->orderBy("sp.jobtrucking", 'asc');
 
-        DB::table($temp)->insertUsing(['id', 'jobtrucking', 'tglsp', 'keterangan', 'jenisorder_id', 'agen_id', 'statuslongtrip', 'statusperalihan', 'nocont', 'tarif_id', 'omset'], $fetch2);
-        
+        DB::table($temp)->insertUsing(['id', 'jobtrucking', 'tglsp', 'keterangan', 'jenisorder_id', 'agen_id', 'statuslongtrip', 'statusperalihan', 'nocont', 'tarif_id', 'omset','nominalextra'], $fetch2);
+
         return $temp;
     }
 
 
     public function sort($query)
     {
-        if($this->params['sortIndex'] == 'agen_id'){
+        if ($this->params['sortIndex'] == 'agen_id') {
             return $query->orderBy('agen.namaagen', $this->params['sortOrder']);
-        } else if($this->params['sortIndex'] == 'jenisorder_id'){
+        } else if ($this->params['sortIndex'] == 'jenisorder_id') {
             return $query->orderBy('jenisorder.keterangan', $this->params['sortOrder']);
-        }else{
+        } else {
             return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
         }
     }
