@@ -661,13 +661,23 @@ class PengeluaranTruckingHeaderController extends Controller
 
     public function getdeposito(Request $request){
         $penerimaanTrucking = new PenerimaanTruckingHeader ();
-        return $penerimaanTrucking->getDeposito($request->supir);
+        $data = $penerimaanTrucking->getDeposito($request->supir);
+        return response([
+            'status' => true,
+            'data' => $data
+        ]);
     }
     
     public function getTarikDeposito($id)
     {
-        $penerimaanTrucking = new PengeluaranTruckingHeader ();
-        return $penerimaanTrucking->getTarikDeposito($id);
+        $pengeluaranTrucking = new PengeluaranTruckingHeader ();
+        $pengeluaranTrucking = $pengeluaranTrucking->find($id);
+        $data = $pengeluaranTrucking->getTarikDeposito($pengeluaranTrucking->pengeluarantruckingdetail[0]->supir_id);
+        return response([
+            'status' => true,
+            'data' => $data
+        ]);
+        // return $pengeluaranTrucking->getTarikDeposito($id);
     }
 
     public function fieldLength()

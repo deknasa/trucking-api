@@ -35,7 +35,7 @@ class PenerimaanStokHeader extends MyModel
 
         $query = DB::table($this->table);
         $query = $this->selectColumns($query)
-        ->whereBetween('tglbukti', [date('Y-m-d',strtotime(request()->tgldari)), date('Y-m-d',strtotime(request()->tglsampai))])
+        
         ->leftJoin('gudang as gudangs','penerimaanstokheader.gudang_id','gudangs.id')
         ->leftJoin('gudang as dari','penerimaanstokheader.gudangdari_id','dari.id')
         ->leftJoin('gudang as ke','penerimaanstokheader.gudangke_id','ke.id')
@@ -65,7 +65,13 @@ class PenerimaanStokHeader extends MyModel
             //jika retur cari penerimaan hanya
             $query->where('penerimaanstokheader.penerimaanstok_id','=',$spb->text);
         }
-
+        if (request()->tgldari) {
+            $query->whereBetween('tglbukti', [date('Y-m-d',strtotime(request()->tgldari)), date('Y-m-d',strtotime(request()->tglsampai))]);
+        }
+        if (request()->penerimaanheader_id) {
+            $query->where('penerimaanstok_id',request()->penerimaanheader_id);
+        }
+        
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
@@ -181,7 +187,12 @@ class PenerimaanStokHeader extends MyModel
         ->leftJoin('supplier','penerimaanstokheader.supplier_id','supplier.id');
         $query = $this->sort($query);
         $models = $this->filter($query);
-        
+        if (request()->tgldari) {
+            $models->whereBetween('tglbukti', [date('Y-m-d',strtotime(request()->tgldari)), date('Y-m-d',strtotime(request()->tglsampai))]);
+        }
+        if (request()->penerimaanheader_id) {
+            $models->where('penerimaanstok_id',request()->penerimaanheader_id);
+        }
         DB::table($temp)->insertUsing([
             'id',
             'nobukti',
