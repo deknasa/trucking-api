@@ -151,7 +151,7 @@ class ProsesGajiSupirHeader extends MyModel
             ->join(DB::raw("prosesgajisupirdetail with (readuncommitted)"), 'prosesgajisupirdetail.gajisupir_nobukti', 'gajisupirheader.nobukti')
             ->join(DB::raw("prosesgajisupirheader with (readuncommitted)"), 'prosesgajisupirheader.id', 'prosesgajisupirdetail.prosesgajisupir_id')
             ->whereRaw("gajisupirheader.nobukti in(select gajisupir_nobukti from prosesgajisupirdetail where prosesgajisupirdetail.prosesgajisupir_id = prosesgajisupirheader.id)");
-                
+
 
         Schema::create($temp, function ($table) {
             $table->string('nobukti');
@@ -165,7 +165,7 @@ class ProsesGajiSupirHeader extends MyModel
             $table->bigInteger('deposito')->nullable();
         });
 
-        $tes = DB::table($temp)->insertUsing(['nobukti', 'total','totalposting', 'uangjalan', 'bbm', 'uangmakanharian', 'potonganpinjaman', 'potonganpinjamansemua', 'deposito'], $fetch);
+        $tes = DB::table($temp)->insertUsing(['nobukti', 'total', 'totalposting', 'uangjalan', 'bbm', 'uangmakanharian', 'potonganpinjaman', 'potonganpinjamansemua', 'deposito'], $fetch);
 
         return $temp;
     }
@@ -389,7 +389,7 @@ class ProsesGajiSupirHeader extends MyModel
         $query = DB::table($modelTable);
         $query = $this->selectColumns($query);
         if (request()->tgldari) {
-            $query->whereBetween('tglbukti', [date('Y-m-d',strtotime(request()->tgldari )), date('Y-m-d',strtotime(request()->tglsampai ))]);
+            $query->whereBetween('tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
         }
         $this->sort($query);
         $models = $this->filter($query);
@@ -500,15 +500,17 @@ class ProsesGajiSupirHeader extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-
-                        $query = $query->where($table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                        if ($filters['field'] != '') {
+                            $query = $query->where($table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                        }
                     }
 
                     break;
                 case "OR":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-
-                        $query = $query->orWhere($table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                        if ($filters['field'] != '') {
+                            $query = $query->orWhere($table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                        }
                     }
 
                     break;

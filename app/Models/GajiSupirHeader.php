@@ -435,10 +435,10 @@ class GajiSupirHeader extends MyModel
         $query = PengeluaranTruckingDetail::from(DB::raw("pengeluarantruckingdetail with (readuncommitted)"))
             ->select(DB::raw("pengeluarantruckingdetail.nobukti,row_number() Over(Order By pengeluarantruckingdetail.nobukti) as id,$temp.tglbukti,pengeluarantruckingdetail.supir_id,pengeluarantruckingdetail.keterangan, (SELECT (pengeluarantruckingdetail.nominal - coalesce(SUM(penerimaantruckingdetail.nominal),0)) FROM penerimaantruckingdetail WHERE penerimaantruckingdetail.pengeluarantruckingheader_nobukti= pengeluarantruckingdetail.nobukti) AS sisa"))
             // ->distinct('pengeluarantruckingheader.tglbukti')
-            ->join(DB::raw("$temp with (readuncommitted)"), $temp.'.nobukti', 'pengeluarantruckingdetail.nobukti')
+            ->join(DB::raw("$temp with (readuncommitted)"), $temp . '.nobukti', 'pengeluarantruckingdetail.nobukti')
             // ->leftJoin(DB::raw("penerimaantruckingdetail with (readuncommitted)"), 'penerimaantruckingdetail.pengeluarantruckingheader_nobukti', 'pengeluarantruckingdetail.nobukti')
-            ->orderBy($temp.'.tglbukti', 'asc')
-            ->orderBy($temp.'.nobukti', 'asc')
+            ->orderBy($temp . '.tglbukti', 'asc')
+            ->orderBy($temp . '.nobukti', 'asc')
             ->where("pengeluarantruckingdetail.supir_id", 0);
 
         return $query->get();
@@ -458,7 +458,7 @@ class GajiSupirHeader extends MyModel
             ->where("pengeluarantruckingdetail.supir_id", 0)
             ->orderBy('pengeluarantruckingheader.tglbukti', 'asc')
             ->orderBy('pengeluarantruckingdetail.nobukti', 'asc');
-            
+
         Schema::create($temp, function ($table) {
             $table->string('nobukti');
             $table->date('tglbukti');
@@ -502,9 +502,9 @@ class GajiSupirHeader extends MyModel
             )
             ->select(DB::raw("pengeluarantruckingdetail.nobukti, (SELECT (pengeluarantruckingdetail.nominal - coalesce(SUM(penerimaantruckingdetail.nominal),0)) FROM penerimaantruckingdetail WHERE penerimaantruckingdetail.pengeluarantruckingheader_nobukti= pengeluarantruckingdetail.nobukti) AS sisa"))
             // ->leftJoin(DB::raw("penerimaantruckingdetail with (readuncommitted)"), 'penerimaantruckingdetail.pengeluarantruckingheader_nobukti', 'pengeluarantruckingdetail.nobukti')
-            ->whereRaw("pengeluarantruckingdetail.supir_id = $supir_id") 
+            ->whereRaw("pengeluarantruckingdetail.supir_id = $supir_id")
             ->where("pengeluarantruckingdetail.nobukti",  'LIKE', "%PJT%")
-            ->groupBy('pengeluarantruckingdetail.nobukti','pengeluarantruckingdetail.nominal');
+            ->groupBy('pengeluarantruckingdetail.nobukti', 'pengeluarantruckingdetail.nominal');
 
         Schema::create($temp, function ($table) {
             $table->string('nobukti');
@@ -809,20 +809,24 @@ class GajiSupirHeader extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'statusritasi') {
-                            $query = $query->where('parameter.text', 'LIKE', "%$filters[data]%");
-                        } else {
-                            $query = $query->where($table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                        if ($filters['field'] != '') {
+                            if ($filters['field'] == 'statusritasi') {
+                                $query = $query->where('parameter.text', 'LIKE', "%$filters[data]%");
+                            } else {
+                                $query = $query->where($table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            }
                         }
                     }
 
                     break;
                 case "OR":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'statusritasi') {
-                            $query = $query->orWhere('parameter.text', 'LIKE', "%$filters[data]%");
-                        } else {
-                            $query = $query->orWhere($table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                        if ($filters['field'] != '') {
+                            if ($filters['field'] == 'statusritasi') {
+                                $query = $query->orWhere('parameter.text', 'LIKE', "%$filters[data]%");
+                            } else {
+                                $query = $query->orWhere($table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            }
                         }
                     }
 
