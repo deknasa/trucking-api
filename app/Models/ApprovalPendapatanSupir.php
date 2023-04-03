@@ -23,6 +23,44 @@ class ApprovalPendapatanSupir extends MyModel
         'created_at',
         'updated_at',
     ];
+    
+    public function default()
+    {
+
+        $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempdefault, function ($table) {
+            $table->unsignedBigInteger('approve')->nullable();
+        });
+
+        $status = Parameter::from(
+            db::Raw("parameter with (readuncommitted)")
+        )
+            ->select(
+                'id'
+            )
+            ->where('grp', '=', 'STATUS APPROVAL')
+            ->where('subgrp', '=', 'STATUS APPROVAL')
+            ->where('default', '=', 'YA')
+            ->first();
+
+        $idstatusapproval = $status->id ?? 0;
+
+
+        DB::table($tempdefault)->insert(
+            ["approve" => $idstatusapproval]
+        );
+
+        $query = DB::table($tempdefault)->from(
+            DB::raw($tempdefault)
+        )
+            ->select(
+                'approve'
+            );
+
+        $data = $query->first();
+
+        return $data;
+    }
 
     public function get()
     {

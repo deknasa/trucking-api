@@ -36,9 +36,8 @@ class InvoiceHeader extends MyModel
                 'invoiceheader.nominal',
                 'invoiceheader.tglterima',
                 'invoiceheader.tgljatuhtempo',
-                'agen.namaagen as agen_id',
+                'agen.namaagen as agen',
                 'jenisorder.keterangan as jenisorder_id',
-                'cabang.namacabang as cabang_id',
                 'invoiceheader.piutang_nobukti',
                 'statusapproval.memo as statusapproval',
                 'statuscetak.memo as statuscetak',
@@ -51,22 +50,23 @@ class InvoiceHeader extends MyModel
                 'invoiceheader.created_at',
                 'invoiceheader.updated_at'
             )
-            ->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
             ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'invoiceheader.statusapproval', 'statusapproval.id')
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'invoiceheader.statuscetak', 'statuscetak.id')
             ->leftJoin(DB::raw("agen with (readuncommitted)"), 'invoiceheader.agen_id', 'agen.id')
-            ->leftJoin(DB::raw("jenisorder with (readuncommitted)"), 'invoiceheader.jenisorder_id', 'jenisorder.id')
-            ->leftJoin(DB::raw("cabang with (readuncommitted)"), 'invoiceheader.cabang_id', 'cabang.id');
+            ->leftJoin(DB::raw("jenisorder with (readuncommitted)"), 'invoiceheader.jenisorder_id', 'jenisorder.id');
 
+        if (request()->tgldari && request()->tglsampai) {
+            $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
+        }
+                
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
-
+        
         $this->sort($query);
         $this->filter($query);
         $this->paginate($query);
 
         $data = $query->get();
-
         return $data;
     }
 
@@ -201,7 +201,7 @@ class InvoiceHeader extends MyModel
             $table->bigInteger('nominaltagih')->nullable();
         });
 
-        $tes = DB::table($temp)->insertUsing(['id','jobtrucking', 'nominaltagih'], $fetch);
+        $tes = DB::table($temp)->insertUsing(['id', 'jobtrucking', 'nominaltagih'], $fetch);
 
         // $data = DB::table($temp)->get();
         return $temp;
@@ -306,7 +306,7 @@ class InvoiceHeader extends MyModel
             ->whereRaw("sp.jobtrucking not in(select orderantrucking_nobukti from invoicedetail)")
             ->orderBy("sp.jobtrucking", 'asc');
 
-        DB::table($temp)->insertUsing(['id', 'jobtrucking', 'tglsp', 'keterangan', 'jenisorder_id', 'agen_id', 'statuslongtrip', 'statusperalihan', 'nocont', 'tarif_id', 'omset','nominalextra'], $fetch2);
+        DB::table($temp)->insertUsing(['id', 'jobtrucking', 'tglsp', 'keterangan', 'jenisorder_id', 'agen_id', 'statuslongtrip', 'statusperalihan', 'nocont', 'tarif_id', 'omset', 'nominalextra'], $fetch2);
 
         return $temp;
     }
@@ -314,7 +314,7 @@ class InvoiceHeader extends MyModel
 
     public function sort($query)
     {
-        if ($this->params['sortIndex'] == 'agen_id') {
+        if ($this->params['sortIndex'] == 'agen') {
             return $query->orderBy('agen.namaagen', $this->params['sortOrder']);
         } else if ($this->params['sortIndex'] == 'jenisorder_id') {
             return $query->orderBy('jenisorder.keterangan', $this->params['sortOrder']);
@@ -333,7 +333,7 @@ class InvoiceHeader extends MyModel
                             $query = $query->where('statusapproval.text', '=', $filters['data']);
                         } else if ($filters['field'] == 'statuscetak') {
                             $query = $query->where('statuscetak.text', '=', $filters['data']);
-                        } else if ($filters['field'] == 'agen_id') {
+                        } else if ($filters['field'] == 'agen') {
                             $query = $query->where('agen.namaagen', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'jenisorder_id') {
                             $query = $query->where('jenisorder.keterangan', 'LIKE', "%$filters[data]%");
@@ -352,7 +352,7 @@ class InvoiceHeader extends MyModel
                                 $query = $query->orWhere('statusapproval.text', '=', $filters['data']);
                             } else if ($filters['field'] == 'statuscetak') {
                                 $query = $query->orWhere('statuscetak.text', '=', $filters['data']);
-                            } else if ($filters['field'] == 'agen_id') {
+                            } else if ($filters['field'] == 'agen') {
                                 $query = $query->orWhere('agen.namaagen', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'jenisorder_id') {
                                 $query = $query->orWhere('jenisorder.keterangan', 'LIKE', "%$filters[data]%");
@@ -375,7 +375,7 @@ class InvoiceHeader extends MyModel
         }
 
         if (request()->approve && request()->periode) {
-            $query->where('invoiceheader.statusapproval', '<>', request()->approve)
+            $query->where('invoiceheader.statusapproval', request()->approve)
                 ->whereYear('invoiceheader.tglbukti', '=', request()->year)
                 ->whereMonth('invoiceheader.tglbukti', '=', request()->month);
             return $query;

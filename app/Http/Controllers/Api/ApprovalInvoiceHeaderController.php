@@ -8,6 +8,7 @@ use App\Models\Parameter;
 use App\Models\InvoiceHeader;
 use App\Models\InvoiceExtraHeader;
 use App\Http\Requests\StoreApprovalInvoiceHeaderRequest;
+use App\Models\ApprovalInvoiceHeader;
 
 class ApprovalInvoiceHeaderController extends Controller
 {
@@ -16,15 +17,20 @@ class ApprovalInvoiceHeaderController extends Controller
      */
     public function index(Request $request)
     {
-        if($request->periode){
-            $periode = explode("-",$request->periode);
+        if ($request->periode) {
+            $periode = explode("-", $request->periode);
             $request->merge([
                 'year' => $periode[1],
-                'month'=> $periode[0]
+                'month' => $periode[0]
             ]);
         }
+        if ($request->approve == 3) {
+            $request->approve = 4;
+        }else{
+            $request->approve = 3;
+        }
         
-        if ($request->invoice == 85 && $request->approve){ //if invoice utama
+        if ($request->invoice == 85 && $request->approve) { //if invoice utama
             $penerimaan = new InvoiceHeader();
 
             return response([
@@ -34,7 +40,7 @@ class ApprovalInvoiceHeaderController extends Controller
                     'totalPages' => $penerimaan->totalPages
                 ]
             ]);
-        } else if ($request->invoice == 86 && $request->approve){ //if invoice extra
+        } else if ($request->invoice == 86 && $request->approve) { //if invoice extra
             $pengeluaran = new InvoiceExtraHeader();
 
             return response([
@@ -44,7 +50,7 @@ class ApprovalInvoiceHeaderController extends Controller
                     'totalPages' => $pengeluaran->totalPages
                 ]
             ]);
-        } else{
+        } else {
             return response([
                 'data' => [],
                 'attributes' => [
@@ -54,21 +60,31 @@ class ApprovalInvoiceHeaderController extends Controller
             ]);
         }
     }
+
+    public function default()
+    {
+        $approvalInvoice = new ApprovalInvoiceHeader();
+        return response([
+            'status' => true,
+            'data' => $approvalInvoice->default(),
+        ]);
+    }
+
     /**
      * @ClassName 
      */
     public function store(StoreApprovalInvoiceHeaderRequest $request)
     {
-        if ($request->invoice == 85 && $request->approve){ //if invoice utama
+        if ($request->invoice == 85 && $request->approve) { //if invoice utama
             if ($request->invoiceId) {
-                
+
                 for ($i = 0; $i < count($request->invoiceId); $i++) {
                     $penerimaanHeader = app(InvoiceHeaderController::class)->approval($request->invoiceId[$i]);
                 }
             }
-        } else if ($request->invoice == 86 && $request->approve){ //if invoice extra
+        } else if ($request->invoice == 86 && $request->approve) { //if invoice extra
             if ($request->invoiceId) {
-                
+
                 for ($i = 0; $i < count($request->invoiceId); $i++) {
                     // return response($request->invoiceId[$i], 422);
                     $pengeluaranHeader = app(InvoiceExtraHeaderController::class)->approval($request->invoiceId[$i]);
@@ -78,8 +94,5 @@ class ApprovalInvoiceHeaderController extends Controller
         return response([
             'message' => 'Berhasil'
         ]);
-
     }
-
-
 }

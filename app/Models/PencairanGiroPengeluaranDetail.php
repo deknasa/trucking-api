@@ -10,7 +10,8 @@ class PencairanGiroPengeluaranDetail extends MyModel
 {
     use HasFactory;
 
-    protected $table = 'pengeluarandetail';
+    protected $anotherTable = 'pengeluarandetail';
+    protected $table = 'pencairangiropengeluarandetail';
 
     protected $casts = [
         'created_at' => 'date:d-m-Y H:i:s',
@@ -26,23 +27,23 @@ class PencairanGiroPengeluaranDetail extends MyModel
     {
         $this->setRequestParameters();
 
-        $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"));
+        $query = DB::table($this->anotherTable)->from(DB::raw("$this->anotherTable with (readuncommitted)"));
 
         $query->select(
-            $this->table . '.nobukti',
-            $this->table . '.nowarkat',
-            $this->table . '.tgljatuhtempo', 
-            $this->table . '.nominal',
+            $this->anotherTable . '.nobukti',
+            $this->anotherTable . '.nowarkat',
+            $this->anotherTable . '.tgljatuhtempo', 
+            $this->anotherTable . '.nominal',
             'coadebet.keterangancoa as coadebet',
             'coakredit.keterangancoa as coakredit',
-            $this->table . '.keterangan',
-            DB::raw("(case when (year($this->table.bulanbeban) <= 2000) then null else $this->table.bulanbeban end ) as bulanbeban"),
+            $this->anotherTable . '.keterangan',
+            DB::raw("(case when (year($this->anotherTable.bulanbeban) <= 2000) then null else $this->anotherTable.bulanbeban end ) as bulanbeban"),
         )
-        ->leftJoin('akunpusat as coadebet',$this->table.'.coadebet','coadebet.coa')
-        ->leftJoin('akunpusat as coakredit',$this->table.'.coakredit','coakredit.coa');
+        ->leftJoin('akunpusat as coadebet',$this->anotherTable.'.coadebet','coadebet.coa')
+        ->leftJoin('akunpusat as coakredit',$this->anotherTable.'.coakredit','coakredit.coa');
 
         $this->sort($query);
-        $query->where($this->table . '.pengeluaran_id', '=', request()->pengeluaran_id);
+        $query->where($this->anotherTable . '.pengeluaran_id', '=', request()->pengeluaran_id);
         $this->filter($query);
 
         $this->totalNominal = $query->sum('nominal');
@@ -56,7 +57,13 @@ class PencairanGiroPengeluaranDetail extends MyModel
 
     public function sort($query)
     {
-        return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        if($this->params['sortIndex'] == 'coadebet'){
+            return $query->orderBy('coadebet.keterangancoa', $this->params['sortOrder']);
+        } else if($this->params['sortIndex'] == 'coakredit'){
+            return $query->orderBy('coakredit.keterangancoa', $this->params['sortOrder']);
+        }else{
+            return $query->orderBy($this->anotherTable . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        }
     }
 
     public function filter($query, $relationFields = [])
@@ -71,7 +78,7 @@ class PencairanGiroPengeluaranDetail extends MyModel
                             } else if ($filters['field'] == 'coakredit') {
                                 $query = $query->where('coakredit.keterangancoa', 'LIKE', "%$filters[data]%");
                             } else {
-                                $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                $query = $query->where($this->anotherTable . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }
                         }
                     });
@@ -85,7 +92,7 @@ class PencairanGiroPengeluaranDetail extends MyModel
                             } else if ($filters['field'] == 'coakredit') {
                                 $query = $query->orWhere('coakredit.keterangancoa', 'LIKE', "%$filters[data]%");
                             } else {
-                                $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                $query = $query->orWhere($this->anotherTable . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }
                         }
                     });

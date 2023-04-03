@@ -106,7 +106,6 @@ class ServiceInHeaderController extends Controller
                     $iddetail = $datadetails['id'];
                     $tabeldetail = $datadetails['tabel'];
                 }
-
                 $detaillog[] = $datadetails['detail']->toArray();
             }
             $datalogtrail = [
@@ -139,10 +138,7 @@ class ServiceInHeaderController extends Controller
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
-            return response($th->getMessage());
         }
-
-        return response($servicein->serviceindetail());
     }
 
 

@@ -136,7 +136,11 @@ class PenerimaanTruckingDetail extends MyModel
     }
     public function sort($query)
     {
-        return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        if($this->params['sortIndex'] == 'supir_id'){
+            return $query->orderBy('supir.namasupir', $this->params['sortOrder']);
+        }else{   
+            return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        }
     }
 
     public function paginate($query)

@@ -38,9 +38,9 @@ class ProsesGajiSupirDetail extends MyModel
                 $this->table . '.nominal',
                 $this->table . '.keterangan as keterangan_detail'
             )
-            ->leftJoin(DB::raw("prosesgajisupirheader as header with (readuncommitted)"),'header.id',$this->table . '.prosesgajisupir_id')
-            ->leftJoin(DB::raw("supir with (readuncommitted)"),$this->table . '.supir_id','supir.id')
-            ->leftJoin(DB::raw("trado with (readuncommitted)"),$this->table . '.trado_id','trado.id');
+                ->leftJoin(DB::raw("prosesgajisupirheader as header with (readuncommitted)"), 'header.id', $this->table . '.prosesgajisupir_id')
+                ->leftJoin(DB::raw("supir with (readuncommitted)"), $this->table . '.supir_id', 'supir.id')
+                ->leftJoin(DB::raw("trado with (readuncommitted)"), $this->table . '.trado_id', 'trado.id');
 
             $query->where($this->table . '.prosesgajisupir_id', '=', request()->prosesgajisupir_id);
         } else {
@@ -58,10 +58,10 @@ class ProsesGajiSupirDetail extends MyModel
                 'gajisupirheader.komisisupir',
                 'gajisupirheader.tolsupir',
             )
-            ->leftJoin(DB::raw("supir with (readuncommitted)"),$this->table . '.supir_id','supir.id')
-            ->leftJoin(DB::raw("trado with (readuncommitted)"),$this->table . '.trado_id','trado.id')
-            ->leftJoin(DB::raw("gajisupirheader with (readuncommitted)"), $this->table . '.gajisupir_nobukti', 'gajisupirheader.nobukti');
-            
+                ->leftJoin(DB::raw("supir with (readuncommitted)"), $this->table . '.supir_id', 'supir.id')
+                ->leftJoin(DB::raw("trado with (readuncommitted)"), $this->table . '.trado_id', 'trado.id')
+                ->leftJoin(DB::raw("gajisupirheader with (readuncommitted)"), $this->table . '.gajisupir_nobukti', 'gajisupirheader.nobukti');
+
             $this->sort($query);
             $query->where($this->table . '.prosesgajisupir_id', '=', request()->prosesgajisupir_id);
             $this->filter($query);
@@ -86,7 +86,31 @@ class ProsesGajiSupirDetail extends MyModel
 
     public function sort($query)
     {
-        return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        if ($this->params['sortIndex'] == 'supir_id') {
+            return $query->orderBy('supir.namasupir', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'trado_id') {
+            return $query->orderBy('trado.kodetrado', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'total') {
+            return $query->orderBy('gajisupirheader.total', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'uangjalan') {
+            return $query->orderBy('gajisupirheader.uangjalan', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'bbm') {
+            return $query->orderBy('gajisupirheader.bbm', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'uangmakanharian') {
+            return $query->orderBy('gajisupirheader.uangmakanharian', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'potonganpinjaman') {
+            return $query->orderBy('gajisupirheader.potonganpinjaman', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'potonganpinjamansemua') {
+            return $query->orderBy('gajisupirheader.potonganpinjamansemua', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'deposito') {
+            return $query->orderBy('gajisupirheader.deposito', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'komisisupir') {
+            return $query->orderBy('gajisupirheader.komisisupir', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'tolsupir') {
+            return $query->orderBy('gajisupirheader.tolsupir', $this->params['sortOrder']);
+        } else {
+            return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        }
     }
 
     public function filter($query, $relationFields = [])
@@ -99,7 +123,7 @@ class ProsesGajiSupirDetail extends MyModel
                             if ($filters['field'] == 'supir_id') {
                                 $query = $query->where('supir.namasupir', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'trado_id') {
-                                $query = $query->where('trado.keterangan', 'LIKE', "%$filters[data]%");
+                                $query = $query->where('trado.kodetrado', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'total') {
                                 $query = $query->where('gajisupirheader.total', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'uangjalan') {
@@ -132,7 +156,7 @@ class ProsesGajiSupirDetail extends MyModel
                                 $query = $query->orWhere('supir.namasupir', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'trado_id') {
                                 $query = $query->orWhere('trado.keterangan', 'LIKE', "%$filters[data]%");
-                            }  else if ($filters['field'] == 'total') {
+                            } else if ($filters['field'] == 'total') {
                                 $query = $query->orWhere('gajisupirheader.total', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'uangjalan') {
                                 $query = $query->orWhere('gajisupirheader.uangjalan', 'LIKE', "%$filters[data]%");
@@ -173,4 +197,3 @@ class ProsesGajiSupirDetail extends MyModel
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
 }
-

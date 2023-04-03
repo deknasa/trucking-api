@@ -109,7 +109,13 @@ class PengeluaranDetail extends MyModel
 
     public function sort($query)
     {
-        return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        if($this->params['sortIndex'] == 'coadebet'){
+            return $query->orderBy('debet.keterangancoa', $this->params['sortOrder']);
+        } else if($this->params['sortIndex'] == 'coakredit'){
+            return $query->orderBy('kredit.keterangancoa', $this->params['sortOrder']);
+        }else{
+            return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        }
     }
     public function filter($query, $relationFields = [])
     {

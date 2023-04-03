@@ -31,7 +31,7 @@ class PencairanGiroPengeluaranHeader extends MyModel
         $month = substr($periode, 0, 2);
         $year = substr($periode, 3);
 
-        $alatBayar = AlatBayar::from(DB::raw("alatbayar with (readuncommitted)"))->where('kodealatbayar','GIRO')->first();
+        $alatBayar = AlatBayar::from(DB::raw("alatbayar with (readuncommitted)"))->where('kodealatbayar', 'GIRO')->first();
         $query = DB::table($this->anotherTable)->from(DB::raw("pengeluaranheader with (readuncommitted)"))
             ->select(
                 DB::raw("pengeluaranheader.nobukti as pengeluaran_nobukti,pengeluaranheader.id, pengeluaranheader.dibayarke, bank.namabank as bank_id, pengeluaranheader.transferkeac, pengeluaranheader.modifiedby, pengeluaranheader.created_at,pengeluaranheader.updated_at, alatbayar.namaalatbayar as alatbayar_id, pgp.nobukti, pgp.tglbukti, parameter.memo as statusapproval, (SELECT (SUM(pengeluarandetail.nominal)) FROM pengeluarandetail 
@@ -117,7 +117,19 @@ class PencairanGiroPengeluaranHeader extends MyModel
 
     public function sort($query, $table)
     {
-        return $query->orderBy($table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        if ($this->params['sortIndex'] == 'bank_id') {
+            return $query->orderBy('bank.namabank', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'alatbayar_id') {
+            return $query->orderBy('alatbayar.keterangan', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'nobukti') {
+            return $query->orderBy('pgp.nobukti', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'tglbukti') {
+            return $query->orderBy('pgp.tglbukti', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'pengeluaran_nobukti') {
+            return $query->orderBy('pengeluaranheader.nobukti', $this->params['sortOrder']);
+        } else {
+            return $query->orderBy($table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        }
     }
 
     public function filter($query, $table, $relationFields = [])

@@ -29,6 +29,15 @@ class ApprovalHutangBayarController extends Controller
         ]);
     }
 
+    public function default()
+    {
+        $approvalHutangBayar = new ApprovalHutangBayar();
+        return response([
+            'status' => true,
+            'data' => $approvalHutangBayar->default(),
+        ]);
+    }
+
     /**
      * @ClassName
      */

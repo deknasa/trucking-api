@@ -51,10 +51,10 @@ class PenerimaanDetail extends MyModel
                 ->leftJoin(DB::raw("bank with (readuncommitted)"), "bank.id", "header.bank_id")
                 ->leftJoin(DB::raw("bank as bd with (readuncommitted)"), "bd.id", "=", "$this->table.bank_id")
                 ->leftJoin(DB::raw("bankpelanggan as bpd with (readuncommitted)"), "bpd.id", "=", "$this->table.bankpelanggan_id");
-                $query->where($this->table . ".penerimaan_id", "=", request()->penerimaan_id);
+            $query->where($this->table . ".penerimaan_id", "=", request()->penerimaan_id);
 
             $penerimaanDetail = $query->get();
-        }else {
+        } else {
             $query->select(
                 "$this->table.nobukti",
                 "$this->table.nowarkat",
@@ -75,18 +75,16 @@ class PenerimaanDetail extends MyModel
                 ->leftJoin(DB::raw("akunpusat as a with (readuncommitted)"), "a.coa", "=", "$this->table.coadebet")
                 ->leftJoin(DB::raw("akunpusat as b with (readuncommitted)"), "b.coa", "=", "$this->table.coakredit")
                 ->leftJoin(DB::raw("bankpelanggan with (readuncommitted)"), "bankpelanggan.id", "=", "$this->table.bankpelanggan_id");
-                $query->where($this->table . ".penerimaan_id", "=", request()->penerimaan_id);
-                $this->totalNominal = $query->sum('nominal');
-                $this->filter($query);
-                $this->totalRows = $query->count();
-                $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
-    
-                $this->sort($query);
-                $this->paginate($query);
+            $query->where($this->table . ".penerimaan_id", "=", request()->penerimaan_id);
+            $this->totalNominal = $query->sum('nominal');
+            $this->filter($query);
+            $this->totalRows = $query->count();
+            $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
+            $this->sort($query);
+            $this->paginate($query);
         }
         return $query->get();
-
     }
 
     public function findAll($id)
@@ -121,15 +119,15 @@ class PenerimaanDetail extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     $query->where(function ($query) {
-                        
+
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
                             if ($filters['field'] == 'bank_id') {
                                 $query = $query->where('bank.namabank', 'LIKE', "%$filters[data]%");
-                            }else if ($filters['field'] == 'bankpelanggan_id') {
+                            } else if ($filters['field'] == 'bankpelanggan_id') {
                                 $query = $query->where('bankpelanggan.namabank', 'LIKE', "%$filters[data]%");
-                            }else if ($filters['field'] == 'coadebet') {
+                            } else if ($filters['field'] == 'coadebet') {
                                 $query = $query->where('a.keterangancoa', 'LIKE', "%$filters[data]%");
-                            }else if ($filters['field'] == 'coakredit') {
+                            } else if ($filters['field'] == 'coakredit') {
                                 $query = $query->where('b.keterangancoa', 'LIKE', "%$filters[data]%");
                             } else {
                                 $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
@@ -143,11 +141,11 @@ class PenerimaanDetail extends MyModel
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
                             if ($filters['field'] == 'bank_id') {
                                 $query = $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");
-                            }else if ($filters['field'] == 'bankpelanggan_id') {
+                            } else if ($filters['field'] == 'bankpelanggan_id') {
                                 $query = $query->orWhere('bankpelanggan.namabank', 'LIKE', "%$filters[data]%");
-                            }else if ($filters['field'] == 'coadebet') {
+                            } else if ($filters['field'] == 'coadebet') {
                                 $query = $query->orWhere('a.keterangancoa', 'LIKE', "%$filters[data]%");
-                            }else if ($filters['field'] == 'coakredit') {
+                            } else if ($filters['field'] == 'coakredit') {
                                 $query = $query->orWhere('b.keterangancoa', 'LIKE', "%$filters[data]%");
                             } else {
                                 $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
@@ -161,10 +159,16 @@ class PenerimaanDetail extends MyModel
             }
         }
     }
-    
+
     public function sort($query)
     {
-        return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        if ($this->params['sortIndex'] == 'coadebet') {
+            return $query->orderBy('a.keterangancoa', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'coakredit') {
+            return $query->orderBy('b.keterangancoa', $this->params['sortOrder']);
+        } else {
+            return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        }
     }
 
     public function paginate($query)

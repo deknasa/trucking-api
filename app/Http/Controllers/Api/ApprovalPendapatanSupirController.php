@@ -28,6 +28,15 @@ class ApprovalPendapatanSupirController extends Controller
             ]
         ]);
     }
+    
+    public function default()
+    {
+        $approvalPendapatan = new ApprovalPendapatanSupir();
+        return response([
+            'status' => true,
+            'data' => $approvalPendapatan->default(),
+        ]);
+    }
 
     /**
      * @ClassName

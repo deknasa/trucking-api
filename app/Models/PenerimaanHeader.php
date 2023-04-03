@@ -221,14 +221,16 @@ class PenerimaanHeader extends MyModel
                 'penerimaanheader.updated_at',
                 'statusapproval.memo as statusapproval',
             )
-            ->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
-            ->where('penerimaanheader.bank_id', request()->bank)
+
             ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'penerimaanheader.statusapproval', 'statusapproval.id')
             ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'penerimaanheader.pelanggan_id', 'pelanggan.id')
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'penerimaanheader.bank_id', 'bank.id')
             ->leftJoin(DB::raw("agen with (readuncommitted)"), 'penerimaanheader.agen_id', 'agen.id')
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'penerimaanheader.statuscetak', 'statuscetak.id');
-        
+        if (request()->tgldari && request()->tglsampai) {
+            $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
+                ->where('penerimaanheader.bank_id', request()->bank);
+        }
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -453,7 +455,7 @@ class PenerimaanHeader extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        $models =  $query->whereBetween($this->table.'.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))])->where($this->table.'.bank_id', request()->bankheader);
+        $models =  $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))])->where($this->table . '.bank_id', request()->bankheader);
         DB::table($temp)->insertUsing([
             'id', 'nobukti', 'tglbukti', 'pelanggan_id', 'bank_id', 'postingdari', 'diterimadari', 'tgllunas',  'statusapproval', 'userapproval', 'tglapproval', 'statuscetak', 'userbukacetak', 'tglbukacetak', 'jumlahcetak', 'modifiedby', 'created_at', 'updated_at'
         ], $models);
@@ -465,13 +467,13 @@ class PenerimaanHeader extends MyModel
 
     public function sort($query)
     {
-        if($this->params['sortIndex'] == 'bank_id'){
+        if ($this->params['sortIndex'] == 'bank_id') {
             return $query->orderBy('bank.namabank', $this->params['sortOrder']);
-        } else if($this->params['sortIndex'] == 'agen_id'){
+        } else if ($this->params['sortIndex'] == 'agen_id') {
             return $query->orderBy('agen.namaagen', $this->params['sortOrder']);
-        } else if($this->params['sortIndex'] == 'pelanggan_id'){
+        } else if ($this->params['sortIndex'] == 'pelanggan_id') {
             return $query->orderBy('pelanggan.namapelanggan', $this->params['sortOrder']);
-        }else{
+        } else {
             return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
         }
     }
@@ -526,7 +528,7 @@ class PenerimaanHeader extends MyModel
             $this->totalPages = $this->params['limit'] > 0 ? ceil($this->totalRows / $this->params['limit']) : 1;
         }
         if (request()->approve && request()->periode) {
-            $query->where('penerimaanheader.statusapproval', '<>', request()->approve)
+            $query->where('penerimaanheader.statusapproval', request()->approve)
                 ->whereYear('penerimaanheader.tglbukti', '=', request()->year)
                 ->whereMonth('penerimaanheader.tglbukti', '=', request()->month);
             return $query;

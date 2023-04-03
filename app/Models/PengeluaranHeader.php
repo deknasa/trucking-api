@@ -49,22 +49,22 @@ class PengeluaranHeader extends MyModel
             goto selesai;
         }
         $hutangBayar = DB::table('hutangbayarheader')
-        ->from(
-            DB::raw("hutangbayarheader as a with (readuncommitted)")
-        )
-        ->select(
-            'a.pengeluaran_nobukti'
-        )
-        ->where('a.pengeluaran_nobukti', '=', $nobukti)
-        ->first();
-    if (isset($hutangBayar)) {
-        $data = [
-            'kondisi' => true,
-            'keterangan' => 'Pembayaran Hutang',
-            'kodeerror' => 'TDT'
-        ];
-        goto selesai;
-    }
+            ->from(
+                DB::raw("hutangbayarheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.pengeluaran_nobukti'
+            )
+            ->where('a.pengeluaran_nobukti', '=', $nobukti)
+            ->first();
+        if (isset($hutangBayar)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Pembayaran Hutang',
+                'kodeerror' => 'TDT'
+            ];
+            goto selesai;
+        }
 
         $kasGantung = DB::table('kasgantungheader')
             ->from(
@@ -100,7 +100,7 @@ class PengeluaranHeader extends MyModel
             ];
             goto selesai;
         }
-        
+
         $prosesUangjalan = DB::table('prosesuangjalansupirdetail')
             ->from(
                 DB::raw("prosesuangjalansupirdetail as a with (readuncommitted)")
@@ -155,7 +155,7 @@ class PengeluaranHeader extends MyModel
             goto selesai;
         }
 
-        
+
         $data = [
             'kondisi' => false,
             'keterangan' => '',
@@ -196,15 +196,16 @@ class PengeluaranHeader extends MyModel
                 'pengeluaranheader.updated_at'
 
             )
-            ->whereBetween('tglbukti', [date('Y-m-d',strtotime(request()->tgldari)), date('Y-m-d',strtotime(request()->tglsampai))])
-            ->where('pengeluaranheader.bank_id', request()->bank_id)
 
             ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'pengeluaranheader.pelanggan_id', 'pelanggan.id')
             ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'pengeluaranheader.alatbayar_id', 'alatbayar.id')
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'pengeluaranheader.bank_id', 'bank.id')
             ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'pengeluaranheader.statusapproval', 'statusapproval.id')
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'pengeluaranheader.statuscetak', 'statuscetak.id');
-
+        if (request()->tgldari && request()->tglsampai) {
+            $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
+                ->where('pengeluaranheader.bank_id', request()->bank_id);
+        }
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
@@ -392,13 +393,13 @@ class PengeluaranHeader extends MyModel
     }
     public function sort($query)
     {
-        if($this->params['sortIndex'] == 'pelanggan_id'){
+        if ($this->params['sortIndex'] == 'pelanggan_id') {
             return $query->orderBy('pelanggan.namapelanggan', $this->params['sortOrder']);
-        } else if($this->params['sortIndex'] == 'alatbayar_id'){
+        } else if ($this->params['sortIndex'] == 'alatbayar_id') {
             return $query->orderBy('alatbayar.namaalatbayar', $this->params['sortOrder']);
-        } else if($this->params['sortIndex'] == 'bank_id'){
+        } else if ($this->params['sortIndex'] == 'bank_id') {
             return $query->orderBy('bank.namabank', $this->params['sortOrder']);
-        } else{
+        } else {
             return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
         }
     }
@@ -426,7 +427,7 @@ class PengeluaranHeader extends MyModel
 
                     break;
                 case "OR":
-                    $query = $query->where(function($query){
+                    $query = $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
                             if ($filters['field'] == 'statusapproval') {
                                 $query->orWhere('statusapproval.text', '=', "$filters[data]");
@@ -443,7 +444,7 @@ class PengeluaranHeader extends MyModel
                             }
                         }
                     });
-                        
+
                     break;
                 default:
 
@@ -455,7 +456,7 @@ class PengeluaranHeader extends MyModel
         }
 
         if (request()->approve && request()->periode) {
-            $query->where('pengeluaranheader.statusapproval', '<>', request()->approve)
+            $query->where('pengeluaranheader.statusapproval', request()->approve)
                 ->whereYear('pengeluaranheader.tglbukti', '=', request()->year)
                 ->whereMonth('pengeluaranheader.tglbukti', '=', request()->month);
             return $query;
@@ -495,7 +496,7 @@ class PengeluaranHeader extends MyModel
                 WHERE pengeluaran_nobukti = pengeluaranheader.nobukti   
               )")
             ->leftJoin(DB::raw("pengeluarandetail with (readuncommitted)"), 'pengeluaranheader.id', 'pengeluarandetail.pengeluaran_id')
-            ->groupBy('pengeluaranheader.nobukti', 'pengeluaranheader.id', 'pengeluaranheader.tglbukti','pengeluarandetail.keterangan');
+            ->groupBy('pengeluaranheader.nobukti', 'pengeluaranheader.id', 'pengeluaranheader.tglbukti', 'pengeluarandetail.keterangan');
         $data = $query->get();
 
         return $data;

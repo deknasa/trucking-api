@@ -68,8 +68,8 @@ class PencairanGiroPengeluaranHeaderController extends Controller
                 $pengeluaran = PengeluaranHeader::from(DB::raw("pengeluaranheader with (readuncommitted)"))
                     ->select('nobukti','alatbayar_id')->where('id', $request->pengeluaranId[$i])->first();
 
-                $cekPencairan = PencairanGiroPengeluaranHeader::lockForUpdate()->where('pengeluaran_nobukti', $pengeluaran->nobukti)->first();
-
+                $cekPencairan = PencairanGiroPengeluaranHeader::from(DB::raw("pencairangiropengeluaranheader with (readuncommitted)"))->where('pengeluaran_nobukti', $pengeluaran->nobukti)->first();
+                
                 if ($cekPencairan != null) {
                     $getDetail = PencairanGiroPengeluaranDetail::lockForUpdate()->where('pencairangiropengeluaran_id', $cekPencairan->id)->get();
                     $getJurnalHeader = JurnalUmumHeader::lockForUpdate()->where('nobukti', $cekPencairan->nobukti)->first();
@@ -175,7 +175,8 @@ class PencairanGiroPengeluaranHeaderController extends Controller
 
                     // STORE DETAIL
 
-                    $pengeluaranDetail = PengeluaranDetail::where('pengeluaran_id', $request->pengeluaranId[$i])->get();
+                    $pengeluaranDetail = PengeluaranDetail::from(DB::raw("pengeluarandetail with (readuncommitted)"))->where('pengeluaran_id', $request->pengeluaranId[$i])->get();
+                    
                     $jurnaldetail = [];
                     $baris = 0;
                     foreach ($pengeluaranDetail as $index => $value) {

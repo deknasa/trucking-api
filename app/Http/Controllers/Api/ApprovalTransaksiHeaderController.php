@@ -8,6 +8,7 @@ use App\Models\Parameter;
 use App\Models\PenerimaanHeader;
 use App\Models\PengeluaranHeader;
 use App\Http\Requests\StoreApprovalTransaksiHeaderRequest;
+use App\Models\ApprovalTransaksiHeader;
 use App\Models\PenerimaanGiroHeader;
 use Illuminate\Support\Facades\DB;
 
@@ -26,6 +27,12 @@ class ApprovalTransaksiHeaderController extends Controller
             ]);
         }
 
+        if ($request->approve == 3) {
+            $request->approve = 4;
+        }else{
+            $request->approve = 3;
+        }
+        
         if ($request->transaksi == 'PENERIMAAN BANK' && $request->approve) {
             $penerimaan = new PenerimaanHeader();
             $data = $penerimaan->get();
@@ -55,6 +62,16 @@ class ApprovalTransaksiHeaderController extends Controller
             ]
         ]);
     }
+    
+    public function default()
+    {
+        $approvalTransaksi = new ApprovalTransaksiHeader();
+        return response([
+            'status' => true,
+            'data' => $approvalTransaksi->default(),
+        ]);
+    }
+
     /**
      * @ClassName 
      */

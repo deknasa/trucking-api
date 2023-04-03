@@ -190,7 +190,15 @@ class ProsesUangJalanSupirDetail extends MyModel
 
     public function sort($query)
     {
-        return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        if($this->params['sortIndex'] == 'penerimaantrucking_bank_id'){
+            return $query->orderBy('penerimaanbank.namabank', $this->params['sortOrder']);
+        } else if($this->params['sortIndex'] == 'pengeluarantrucking_bank_id'){
+            return $query->orderBy('pengeluaranbank.namabank', $this->params['sortOrder']);
+        } else if($this->params['sortIndex'] == 'pengembaliankasgantung_bank_id'){
+            return $query->orderBy('pengembalianbank.namabank', $this->params['sortOrder']);
+        } else{
+            return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        }
     }
 
     public function filter($query, $relationFields = [])

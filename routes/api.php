@@ -249,9 +249,11 @@ route::middleware(['auth:api'])->group(function () {
     Route::resource('suratpengantarapprovalinputtrip', SuratPengantarApprovalInputTripController::class);
 
     Route::get('approvaltransaksiheader/combo', [ApprovalTransaksiHeaderController::class, 'combo']);
+    Route::get('approvaltransaksiheader/default', [ApprovalTransaksiHeaderController::class, 'default']);
     Route::apiResource('approvaltransaksiheader', ApprovalTransaksiHeaderController::class);
 
     Route::get('approvalinvoiceheader/combo', [ApprovalInvoiceHeaderController::class, 'combo']);
+    Route::get('approvalinvoiceheader/default', [ApprovalInvoiceHeaderController::class, 'default']);
     Route::resource('approvalinvoiceheader', ApprovalInvoiceHeaderController::class);
 
     Route::get('approvalbukacetak/combo', [ApprovalBukaCetakController::class, 'combo']);
@@ -847,7 +849,9 @@ route::middleware(['auth:api'])->group(function () {
     Route::resource('pencairangiropengeluarandetail', PencairanGiroPengeluaranDetailController::class);
 
     Route::get('approvalnotaheader/combo', [ApprovalNotaHeaderController::class, 'combo']);
+    Route::get('approvalnotaheader/default', [ApprovalNotaHeaderController::class, 'default']);
     Route::resource('approvalnotaheader', ApprovalNotaHeaderController::class);
+    Route::get('approvalhutangbayar/default', [ApprovalHutangBayarController::class, 'default']);
     Route::resource('approvalhutangbayar', ApprovalHutangBayarController::class);
 
 
@@ -856,6 +860,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::resource('pendapatansupirheader', PendapatanSupirHeaderController::class)->parameters(['pendapatansupirheader' => 'pendapatanSupirHeader']);
     Route::resource('pendapatansupirdetail', PendapatanSupirDetailController::class);
 
+    Route::get('approvalpendapatansupir/default', [ApprovalPendapatanSupirController::class, 'default']);
     Route::resource('approvalpendapatansupir', ApprovalPendapatanSupirController::class);
     Route::resource('stokpersediaan', StokPersediaanController::class);
     Route::get('kartustok/report', [KartuStokController::class, 'report'])->name('kartustok.report');

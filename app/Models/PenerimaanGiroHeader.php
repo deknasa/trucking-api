@@ -80,11 +80,13 @@ class PenerimaanGiroHeader extends MyModel
                 'penerimaangiroheader.modifiedby',
                 'penerimaangiroheader.updated_at'
             )
-            ->whereBetween('tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
             ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'penerimaangiroheader.pelanggan_id', 'pelanggan.id')
             ->leftJoin(DB::raw("agen with (readuncommitted)"), 'penerimaangiroheader.agen_id', 'agen.id')
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'penerimaangiroheader.statuscetak', 'statuscetak.id')
             ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'penerimaangiroheader.statusapproval', 'statusapproval.id');
+            if (request()->tgldari && request()->tglsampai){
+                $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
+            }
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
@@ -298,7 +300,7 @@ class PenerimaanGiroHeader extends MyModel
             $this->totalPages = $this->params['limit'] > 0 ? ceil($this->totalRows / $this->params['limit']) : 1;
         }
         if (request()->cetak && request()->periode) {
-            $query->where('penerimaangiroheader.statuscetak', '<>', request()->cetak)
+            $query->where('penerimaangiroheader.statuscetak', request()->cetak)
                 ->whereYear('penerimaangiroheader.tglbukti', '=', request()->year)
                 ->whereMonth('penerimaangiroheader.tglbukti', '=', request()->month);
             return $query;

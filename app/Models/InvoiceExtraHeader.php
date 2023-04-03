@@ -31,13 +31,17 @@ class InvoiceExtraHeader extends MyModel
         $query = DB::table($this->table);
         $query = $this->selectColumns($query)->from(
             DB::raw($this->table . " with (readuncommitted)")
-        )->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
+        )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'invoiceextraheader.statusapproval', 'parameter.id')
             ->leftJoin(DB::raw("parameter as cetak with (readuncommitted)"), 'invoiceextraheader.statuscetak', 'cetak.id')
             ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'invoiceextraheader.pelanggan_id', 'pelanggan.id')
             ->leftJoin(DB::raw("agen with (readuncommitted)"), 'invoiceextraheader.agen_id', 'agen.id')
             ->leftJoin(DB::raw("parameter as statusformat with (readuncommitted)"), 'invoiceextraheader.statusformat', 'statusformat.id');
 
+            
+        if (request()->tgldari && request()->tglsampai) {
+            $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
+        }
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
@@ -179,7 +183,7 @@ class InvoiceExtraHeader extends MyModel
             $this->totalPages = $this->params['limit'] > 0 ? ceil($this->totalRows / $this->params['limit']) : 1;
         }
         if (request()->approve && request()->periode) {
-            $query->where('invoiceextraheader.statusapproval', '<>', request()->approve)
+            $query->where('invoiceextraheader.statusapproval', request()->approve)
                 ->whereYear('invoiceextraheader.tglbukti', '=', request()->year)
                 ->whereMonth('invoiceextraheader.tglbukti', '=', request()->month);
             return $query;

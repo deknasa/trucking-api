@@ -30,6 +30,15 @@ class ApprovalNotaHeaderController extends Controller
         ]);
     }
 
+    public function default()
+    {
+        $approvalNota = new ApprovalNotaHeader();
+        return response([
+            'status' => true,
+            'data' => $approvalNota->default(),
+        ]);
+    }
+
     /**
      * @ClassName
      */

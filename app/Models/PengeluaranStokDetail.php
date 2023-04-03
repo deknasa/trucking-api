@@ -142,7 +142,11 @@ class PengeluaranStokDetail extends MyModel
     }
     public function sort($query)
     {
-        return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        if ($this->params['sortIndex'] == 'stok') {
+            return $query->orderBy('stok.namastok', $this->params['sortOrder']);
+        } else {
+            return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        }
     }
 
     public function paginate($query)
