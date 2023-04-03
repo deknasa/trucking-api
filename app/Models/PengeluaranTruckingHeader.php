@@ -231,7 +231,15 @@ class PengeluaranTruckingHeader extends MyModel
 
     public function sort($query)
     {
-        return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        if($this->params['sortIndex'] == 'pengeluarantrucking_id') {
+            return $query->orderBy('pengeluarantrucking.keterangan', $this->params['sortOrder']);
+        } else if($this->params['sortIndex'] == 'bank_id') {
+            return $query->orderBy('bank.namabank', $this->params['sortOrder']);
+        } else if($this->params['sortIndex'] == 'coa') {
+            return $query->orderBy('akunpusat.keterangancoa', $this->params['sortOrder']);
+        } else{
+            return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        }
     }
 
     public function filter($query, $relationFields = [])
@@ -244,6 +252,8 @@ class PengeluaranTruckingHeader extends MyModel
                             $query = $query->where('pengeluarantrucking.keterangan', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'bank_id') {
                             $query = $query->where('bank.namabank', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'coa') {
+                            $query = $query->where('akunpusat.keterangancoa', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'statusposting') {
                             $query = $query->where('statusposting.text', '=', "$filters[data]");
                         } else if ($filters['field'] == 'statuscetak') {
@@ -261,6 +271,8 @@ class PengeluaranTruckingHeader extends MyModel
                                 $query->orWhere('pengeluarantrucking.keterangan', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'bank_id') {
                                 $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'coa') {
+                                $query = $query->orWhere('akunpusat.keterangancoa', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'statusposting') {
                                 $query->orWhere('statusposting.text', '=', "$filters[data]");
                             } else if ($filters['field'] == 'statuscetak') {

@@ -80,13 +80,13 @@ class PengeluaranStokHeader extends MyModel
                 return $query->orderBy('gudang.gudang', $this->params['sortOrder']);
                 break;
             case 'trado':
-                return $query->orderBy('trado.keterangan', $this->params['sortOrder']);
+                return $query->orderBy('trado.kodetrado', $this->params['sortOrder']);
                 break;
             case 'supplier':
                 return $query->orderBy('supplier.namasupplier', $this->params['sortOrder']);
                 break;
             case 'kerusakan':
-                return $query->orderBy('kerusakan.keteragan', $this->params['sortOrder']);
+                return $query->orderBy('kerusakan.keterangan', $this->params['sortOrder']);
                 break;
             case 'supir':
                 return $query->orderBy('supir.namasupir', $this->params['sortOrder']);
@@ -111,13 +111,13 @@ class PengeluaranStokHeader extends MyModel
                                 $query = $query->where('gudang.gudang', 'LIKE', "%$filters[data]%");
                                 break;
                             case 'trado':
-                                $query = $query->where('trado.keterangan', 'LIKE', "%$filters[data]%");
+                                $query = $query->where('trado.kodetrado', 'LIKE', "%$filters[data]%");
                                 break;
                             case 'supplier':
                                 $query = $query->where('supplier.namasupplier', 'LIKE', "%$filters[data]%");
                                 break;
                             case 'kerusakan':
-                                $query = $query->where('kerusakan.keteragan', 'LIKE', "%$filters[data]%");
+                                $query = $query->where('kerusakan.keterangan', 'LIKE', "%$filters[data]%");
                                 break;
                             case 'supir':
                                 $query = $query->where('supir.namasupir', 'LIKE', "%$filters[data]%");
@@ -145,7 +145,7 @@ class PengeluaranStokHeader extends MyModel
                                         $query = $query->orWhere('gudang.gudang', 'LIKE', "%$filters[data]%");
                                         break;
                                     case 'trado':
-                                        $query = $query->orWhere('trado.keterangan', 'LIKE', "%$filters[data]%");
+                                        $query = $query->orWhere('trado.kodetrado', 'LIKE', "%$filters[data]%");
                                         break;
                                     case 'supplier':
                                         $query = $query->orWhere('supplier.namasupplier', 'LIKE', "%$filters[data]%");

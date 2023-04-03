@@ -169,9 +169,9 @@ class PelunasanPiutangHeader extends MyModel
         DB::table($temp)->insertUsing(['pelunasanpiutang_id', 'piutang_nobukti', 'tglbukti', 'nominal', 'keterangan', 'potongan', 'coapotongan', 'keteranganpotongan', 'nominallebihbayar', 'nominalpiutang', 'invoice_nobukti', 'sisa'], $piutang);
 
         $data = DB::table($temp)
-        ->select(DB::raw("row_number() Over(Order By $temp.piutang_nobukti) as id,pelunasanpiutang_id,piutang_nobukti,tglbukti,invoice_nobukti,nominal,keterangan,potongan, coapotongan,keteranganpotongan,nominallebihbayar,nominalpiutang,sisa"))
-        ->get();
-        
+            ->select(DB::raw("row_number() Over(Order By $temp.piutang_nobukti) as id,pelunasanpiutang_id,piutang_nobukti,tglbukti,invoice_nobukti,nominal,keterangan,potongan, coapotongan,keteranganpotongan,nominallebihbayar,nominalpiutang,sisa"))
+            ->get();
+
         return $data;
     }
 
@@ -389,7 +389,15 @@ class PelunasanPiutangHeader extends MyModel
 
     public function sort($query)
     {
-        return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        if ($this->params['sortIndex'] == 'bank_id') {
+            return $query->orderBy('bank.namabank', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'agen_id') {
+            return $query->orderBy('agen.namaagen', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'alatbayar_id') {
+            return $query->orderBy('alatbayar.namaalatbayar', $this->params['sortOrder']);
+        } else {
+            return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        }
     }
 
     public function filter($query, $relationFields = [])

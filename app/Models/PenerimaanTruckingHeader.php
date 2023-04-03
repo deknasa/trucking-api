@@ -22,7 +22,7 @@ class PenerimaanTruckingHeader extends MyModel
         'id',
         'created_at',
         'updated_at',
-    ];  
+    ];
 
     public function cekvalidasiaksi($nobukti)
     {
@@ -44,7 +44,7 @@ class PenerimaanTruckingHeader extends MyModel
             ];
             goto selesai;
         }
-        
+
         $pengeluaranTrucking = DB::table('pengeluarantruckingdetail')
             ->from(
                 DB::raw("pengeluarantruckingdetail as a with (readuncommitted)")
@@ -76,32 +76,32 @@ class PenerimaanTruckingHeader extends MyModel
         $this->setRequestParameters();
 
         $query = DB::table($this->table)->from(DB::raw("penerimaantruckingheader with (readuncommitted)"))
-        ->select(
-            'penerimaantruckingheader.id',
-            'penerimaantruckingheader.nobukti',
-            'penerimaantruckingheader.tglbukti',
+            ->select(
+                'penerimaantruckingheader.id',
+                'penerimaantruckingheader.nobukti',
+                'penerimaantruckingheader.tglbukti',
 
-            'penerimaantrucking.keterangan as penerimaantrucking_id',
-            'penerimaantruckingheader.penerimaan_nobukti',
+                'penerimaantrucking.keterangan as penerimaantrucking_id',
+                'penerimaantruckingheader.penerimaan_nobukti',
 
-            'bank.namabank as bank_id',
-            DB::raw('(case when (year(penerimaantruckingheader.tglbukacetak) <= 2000) then null else penerimaantruckingheader.tglbukacetak end ) as tglbukacetak'),
-            'parameter.memo as statuscetak',
-            'penerimaantruckingheader.userbukacetak',
-            'penerimaantruckingheader.jumlahcetak',
-            'akunpusat.keterangancoa as coa',
-            'penerimaantruckingheader.modifiedby',
-            'penerimaantruckingheader.created_at',
-            'penerimaantruckingheader.updated_at',
-        )
-        ->leftJoin(DB::raw("penerimaantrucking with (readuncommitted)"), 'penerimaantruckingheader.penerimaantrucking_id','penerimaantrucking.id')
-        ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'penerimaantruckingheader.coa','akunpusat.coa')
-        ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'penerimaantruckingheader.statuscetak','parameter.id')
-        ->leftJoin(DB::raw("bank with (readuncommitted)"), 'penerimaantruckingheader.bank_id', 'bank.id');
+                'bank.namabank as bank_id',
+                DB::raw('(case when (year(penerimaantruckingheader.tglbukacetak) <= 2000) then null else penerimaantruckingheader.tglbukacetak end ) as tglbukacetak'),
+                'parameter.memo as statuscetak',
+                'penerimaantruckingheader.userbukacetak',
+                'penerimaantruckingheader.jumlahcetak',
+                'akunpusat.keterangancoa as coa',
+                'penerimaantruckingheader.modifiedby',
+                'penerimaantruckingheader.created_at',
+                'penerimaantruckingheader.updated_at',
+            )
+            ->leftJoin(DB::raw("penerimaantrucking with (readuncommitted)"), 'penerimaantruckingheader.penerimaantrucking_id', 'penerimaantrucking.id')
+            ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'penerimaantruckingheader.coa', 'akunpusat.coa')
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'penerimaantruckingheader.statuscetak', 'parameter.id')
+            ->leftJoin(DB::raw("bank with (readuncommitted)"), 'penerimaantruckingheader.bank_id', 'bank.id');
         if (request()->tgldari) {
-            $query->whereBetween('tglbukti', [date('Y-m-d',strtotime(request()->tgldari )), date('Y-m-d',strtotime(request()->tglsampai ))]);
+            $query->whereBetween('tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
         }
-            
+
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
@@ -118,30 +118,31 @@ class PenerimaanTruckingHeader extends MyModel
     {
 
         $query = PenerimaanTruckingHeader::from(DB::raw("penerimaantruckingheader with (readuncommitted)"))
-        ->select(
-            'penerimaantruckingheader.id',
-            'penerimaantruckingheader.nobukti',
-            'penerimaantruckingheader.tglbukti',
-            'penerimaantruckingheader.penerimaantrucking_id',
-            'penerimaantrucking.kodepenerimaan as penerimaantrucking',
-            'penerimaantruckingheader.bank_id',
-            'bank.namabank as bank',
-            'penerimaantruckingheader.coa',
-            'akunpusat.keterangancoa',
-            'penerimaantruckingheader.penerimaan_nobukti'
-        )
-            ->leftJoin(DB::raw("penerimaantrucking with (readuncommitted)"), 'penerimaantruckingheader.penerimaantrucking_id','penerimaantrucking.id')
+            ->select(
+                'penerimaantruckingheader.id',
+                'penerimaantruckingheader.nobukti',
+                'penerimaantruckingheader.tglbukti',
+                'penerimaantruckingheader.penerimaantrucking_id',
+                'penerimaantrucking.kodepenerimaan as penerimaantrucking',
+                'penerimaantruckingheader.bank_id',
+                'bank.namabank as bank',
+                'penerimaantruckingheader.coa',
+                'akunpusat.keterangancoa',
+                'penerimaantruckingheader.penerimaan_nobukti'
+            )
+            ->leftJoin(DB::raw("penerimaantrucking with (readuncommitted)"), 'penerimaantruckingheader.penerimaantrucking_id', 'penerimaantrucking.id')
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'penerimaantruckingheader.bank_id', 'bank.id')
             ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'penerimaantruckingheader.coa', 'akunpusat.coa')
             ->where('penerimaantruckingheader.id', '=', $id);
-            
+
 
         $data = $query->first();
 
         return $data;
     }
 
-    public function penerimaantruckingdetail() {
+    public function penerimaantruckingdetail()
+    {
         return $this->hasMany(PenerimaanTruckingDetail::class, 'penerimaantruckingheader_id');
     }
 
@@ -149,7 +150,7 @@ class PenerimaanTruckingHeader extends MyModel
     {
         return $query->select(
             DB::raw(
-            "$this->table.id,
+                "$this->table.id,
             $this->table.nobukti,
             $this->table.tglbukti,
             'penerimaantrucking.keterangan as penerimaantrucking_id',
@@ -165,9 +166,9 @@ class PenerimaanTruckingHeader extends MyModel
             $this->table.updated_at"
             )
         )
-        ->leftJoin('penerimaantrucking', 'penerimaantruckingheader.penerimaantrucking_id', 'penerimaantrucking.id')
-        ->leftJoin('parameter' , 'penerimaantruckingheader.statuscetak', 'parameter.id')
-        ->leftJoin('bank', 'penerimaantruckingheader.bank_id', 'bank.id');
+            ->leftJoin('penerimaantrucking', 'penerimaantruckingheader.penerimaantrucking_id', 'penerimaantrucking.id')
+            ->leftJoin('parameter', 'penerimaantruckingheader.statuscetak', 'parameter.id')
+            ->leftJoin('bank', 'penerimaantruckingheader.bank_id', 'bank.id');
     }
 
     public function createTemp(string $modelTable)
@@ -181,8 +182,8 @@ class PenerimaanTruckingHeader extends MyModel
             $table->string('bank_id', 1000)->nullable();
             $table->string('coa', 1000)->nullable();
             $table->string('penerimaan_nobukti', 1000)->nullable();
-            $table->string('statuscetak',1000)->nullable();
-            $table->string('userbukacetak',50)->nullable();
+            $table->string('statuscetak', 1000)->nullable();
+            $table->string('userbukacetak', 50)->nullable();
             $table->date('tglbukacetak')->nullable();
             $table->integer('jumlahcetak')->Length(11)->nullable();
             $table->string('modifiedby', 50)->nullable();
@@ -195,46 +196,54 @@ class PenerimaanTruckingHeader extends MyModel
         $query = DB::table($modelTable);
         $query = $this->selectColumns($query);
         if (request()->tgldari) {
-            $query->whereBetween('tglbukti', [date('Y-m-d',strtotime(request()->tgldariheader )), date('Y-m-d',strtotime(request()->tglsampaiheader ))]);
+            $query->whereBetween('tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))]);
         }
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id','nobukti','tglbukti','penerimaantrucking_id','bank_id','coa','penerimaan_nobukti','statuscetak','userbukacetak','tglbukacetak','jumlahcetak', 'modifiedby','created_at','updated_at'],$models);
+        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'penerimaantrucking_id', 'bank_id', 'coa', 'penerimaan_nobukti', 'statuscetak', 'userbukacetak', 'tglbukacetak', 'jumlahcetak', 'modifiedby', 'created_at', 'updated_at'], $models);
 
 
-        return  $temp;         
-
+        return  $temp;
     }
 
-    public function getDeposito($supir_id){
-        $penerimaantrucking = DB::table($this->table)->from(DB::raw("penerimaantrucking with (readuncommitted)"))->where('kodepenerimaan','DPO')->first();
+    public function getDeposito($supir_id)
+    {
+        $penerimaantrucking = DB::table($this->table)->from(DB::raw("penerimaantrucking with (readuncommitted)"))->where('kodepenerimaan', 'DPO')->first();
         // return $penerimaantruckingheader->id;
         $query = DB::table($this->table)->from(DB::raw("penerimaantruckingheader with (readuncommitted)"))
-        ->select(
-            DB::raw("row_number() Over(Order By penerimaantruckingheader.id) as id"),
-            // 'penerimaantruckingheader.id',
-            'penerimaantruckingheader.nobukti',
-            'penerimaantruckingheader.tglbukti',
-            'penerimaantruckingdetail.keterangan',
-            DB::raw("sum(penerimaantruckingdetail.nominal) as nominal")
-        )
-        ->where('penerimaantruckingheader.penerimaantrucking_id',$penerimaantrucking->id)
-        ->where('penerimaantruckingheader.supir_id',$supir_id)
-        ->leftJoin(DB::raw("penerimaantruckingdetail with (readuncommitted)"), 'penerimaantruckingdetail.penerimaantruckingheader_id','penerimaantruckingheader.id')
-        ->groupBy(
-            'penerimaantruckingheader.id',
-            'penerimaantruckingheader.nobukti',
-            'penerimaantruckingheader.tglbukti',
-            'penerimaantruckingdetail.keterangan',
-        );
-        
+            ->select(
+                DB::raw("row_number() Over(Order By penerimaantruckingheader.id) as id"),
+                // 'penerimaantruckingheader.id',
+                'penerimaantruckingheader.nobukti',
+                'penerimaantruckingheader.tglbukti',
+                'penerimaantruckingdetail.keterangan',
+                DB::raw("sum(penerimaantruckingdetail.nominal) as nominal")
+            )
+            ->where('penerimaantruckingheader.penerimaantrucking_id', $penerimaantrucking->id)
+            ->where('penerimaantruckingheader.supir_id', $supir_id)
+            ->leftJoin(DB::raw("penerimaantruckingdetail with (readuncommitted)"), 'penerimaantruckingdetail.penerimaantruckingheader_id', 'penerimaantruckingheader.id')
+            ->groupBy(
+                'penerimaantruckingheader.id',
+                'penerimaantruckingheader.nobukti',
+                'penerimaantruckingheader.tglbukti',
+                'penerimaantruckingdetail.keterangan',
+            );
+
         return $query->get();
     }
-    
+
 
     public function sort($query)
     {
-        return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        if ($this->params['sortIndex'] == 'penerimaantrucking_id') {
+            return $query->orderBy('penerimaantrucking.keterangan', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'bank_id') {
+            return $query->orderBy('bank.namabank', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'coa') {
+            return $query->orderBy('akunpusat.keterangancoa', $this->params['sortOrder']);
+        } else {
+            return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        }
     }
 
     public function filter($query, $relationFields = [])
@@ -243,15 +252,16 @@ class PenerimaanTruckingHeader extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                         if ($filters['field'] == 'statuscetak') {
+                        if ($filters['field'] == 'statuscetak') {
                             $query = $query->where('parameter.text', '=', "$filters[data]");
                         } else if ($filters['field'] == 'penerimaantrucking_id') {
                             $query = $query->where('penerimaantrucking.keterangan', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'tglbukti') {
-                            $query = $query->where($this->table . '.tglbukti', '=', date('Y-m-d',strtotime($filters['data'])));
-                            
+                            $query = $query->where($this->table . '.tglbukti', '=', date('Y-m-d', strtotime($filters['data'])));
                         } else if ($filters['field'] == 'bank_id') {
                             $query = $query->where('bank.namabank', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'coa') {
+                            $query = $query->where('akunpusat.keterangancoa', 'LIKE', "%$filters[data]%");
                         } else {
                             $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
@@ -259,23 +269,24 @@ class PenerimaanTruckingHeader extends MyModel
 
                     break;
                 case "OR":
-                     $query = $query->where(function($query){
-                         foreach ($this->params['filters']['rules'] as $index => $filters) {
-                              if ($filters['field'] == 'statuscetak') {
-                                 $query = $query->orWhere('parameter.text', '=', "$filters[data]");
-                             } else if ($filters['field'] == 'penerimaantrucking_id') {
-                                 $query = $query->orWhere('penerimaantrucking.keterangan', 'LIKE', "%$filters[data]%");
-                             } else if ($filters['field'] == 'tglbukti') {
-                                $query->orWhere($this->table . '.tglbukti', '=', date('Y-m-d',strtotime($filters['data'])));
-                                
+                    $query = $query->where(function ($query) {
+                        foreach ($this->params['filters']['rules'] as $index => $filters) {
+                            if ($filters['field'] == 'statuscetak') {
+                                $query = $query->orWhere('parameter.text', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'penerimaantrucking_id') {
+                                $query = $query->orWhere('penerimaantrucking.keterangan', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'tglbukti') {
+                                $query->orWhere($this->table . '.tglbukti', '=', date('Y-m-d', strtotime($filters['data'])));
                             } else if ($filters['field'] == 'bank_id') {
-                                 $query = $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");
-                             } else {
-                                 $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                             }
-                         }
-                     });
-                         
+                                $query = $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'coa') {
+                                $query = $query->orWhere('akunpusat.keterangancoa', 'LIKE', "%$filters[data]%");
+                            } else {
+                                $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            }
+                        }
+                    });
+
                     break;
                 default:
 
@@ -286,9 +297,9 @@ class PenerimaanTruckingHeader extends MyModel
             $this->totalPages = $this->params['limit'] > 0 ? ceil($this->totalRows / $this->params['limit']) : 1;
         }
         if (request()->cetak && request()->periode) {
-            $query->where('penerimaantruckingheader.statuscetak','<>', request()->cetak)
-                  ->whereYear('penerimaantruckingheader.tglbukti','=', request()->year)
-                  ->whereMonth('penerimaantruckingheader.tglbukti','=', request()->month);
+            $query->where('penerimaantruckingheader.statuscetak', '<>', request()->cetak)
+                ->whereYear('penerimaantruckingheader.tglbukti', '=', request()->year)
+                ->whereMonth('penerimaantruckingheader.tglbukti', '=', request()->month);
             return $query;
         }
         return $query;

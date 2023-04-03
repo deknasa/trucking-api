@@ -465,7 +465,15 @@ class PenerimaanHeader extends MyModel
 
     public function sort($query)
     {
-        return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        if($this->params['sortIndex'] == 'bank_id'){
+            return $query->orderBy('bank.namabank', $this->params['sortOrder']);
+        } else if($this->params['sortIndex'] == 'agen_id'){
+            return $query->orderBy('agen.namaagen', $this->params['sortOrder']);
+        } else if($this->params['sortIndex'] == 'pelanggan_id'){
+            return $query->orderBy('pelanggan.namapelanggan', $this->params['sortOrder']);
+        }else{
+            return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        }
     }
 
     public function filter($query, $relationFields = [])
@@ -482,6 +490,8 @@ class PenerimaanHeader extends MyModel
                             $query = $query->where('pelanggan.namapelanggan', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'bank_id') {
                             $query = $query->where('bank.namabank', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'agen_id') {
+                            $query = $query->where('agen.namaagen', 'LIKE', "%$filters[data]%");
                         } else {
                             $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
@@ -499,6 +509,8 @@ class PenerimaanHeader extends MyModel
                                 $query = $query->orWhere('pelanggan.namapelanggan', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'bank_id') {
                                 $query = $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'agen_id') {
+                                $query = $query->orWhere('agen.namaagen', 'LIKE', "%$filters[data]%");
                             } else {
                                 $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }

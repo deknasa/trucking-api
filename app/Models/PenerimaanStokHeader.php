@@ -221,6 +221,19 @@ class PenerimaanStokHeader extends MyModel
                 ->orderBy($this->table . '.id', $this->params['sortOrder']);
         }
 
+        if ($this->params['sortIndex'] == 'penerimaanstok') {
+            return $query->orderBy('penerimaanstok.kodepenerimaan', $this->params['sortOrder']);    
+        } else if($this->params['sortIndex'] == 'gudangs'){
+            return $query->orderBy('gudangs.gudang', $this->params['sortOrder']);    
+        } else if($this->params['sortIndex'] == 'trado'){
+            return $query->orderBy('trado.kodetrado', $this->params['sortOrder']);    
+        } else if($this->params['sortIndex'] == 'supplier'){
+            return $query->orderBy('supplier.namasupplier', $this->params['sortOrder']);    
+        } else if($this->params['sortIndex'] == 'gudangdari'){
+            return $query->orderBy('dari.gudang', $this->params['sortOrder']);    
+        } else if($this->params['sortIndex'] == 'gudangke'){
+            return $query->orderBy('ke.gudang', $this->params['sortOrder']);    
+        }
         return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
     }
 

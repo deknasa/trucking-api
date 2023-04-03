@@ -63,7 +63,9 @@ class RekapPenerimaanHeader extends MyModel
                 ->orderBy($this->table . '.grp', $this->params['sortOrder'])
                 ->orderBy($this->table . '.id', $this->params['sortOrder']);
         }
-
+        if ($this->params['sortIndex'] == 'bank') {
+            return $query->orderBy('bank.namabank', $this->params['sortOrder']);
+        }
         return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
     }
     public function filter($query, $relationFields = [])

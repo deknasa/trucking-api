@@ -157,7 +157,13 @@ class ProsesUangJalanSupirHeader extends MyModel
 
     public function sort($query)
     {
-        return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        if($this->params['sortIndex'] == 'trado_id') {
+            return $query->orderBy('trado.kodetrado', $this->params['sortOrder']);
+        } else if($this->params['sortIndex'] == 'supir_id') {
+            return $query->orderBy('supir.namasupir', $this->params['sortOrder']);
+        } else{
+            return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        }
     }
 
     public function filter($query, $relationFields = [])
@@ -169,7 +175,7 @@ class ProsesUangJalanSupirHeader extends MyModel
                         if ($filters['field'] == 'statusapproval') {
                             $query = $query->where('statusapproval.text', '=', "$filters[data]");
                         } else if ($filters['field'] == 'trado_id') {
-                            $query = $query->where('trado.keterangan', 'LIKE', "%$filters[data]%");
+                            $query = $query->where('trado.kodetrado', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'supir_id') {
                             $query = $query->where('supir.namasupir', 'LIKE', "%$filters[data]%");
                         } else {
@@ -184,7 +190,7 @@ class ProsesUangJalanSupirHeader extends MyModel
                             if ($filters['field'] == 'statusapproval') {
                                 $query = $query->orWhere('statusapproval.text', '=', "$filters[data]");
                             } else if ($filters['field'] == 'trado_id') {
-                                $query = $query->orWhere('trado.keterangan', 'LIKE', "%$filters[data]%");
+                                $query = $query->orWhere('trado.kodetrado', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'supir_id') {
                                 $query = $query->orWhere('supir.namasupir', 'LIKE', "%$filters[data]%");
                             } else {

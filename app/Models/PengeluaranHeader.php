@@ -392,7 +392,15 @@ class PengeluaranHeader extends MyModel
     }
     public function sort($query)
     {
-        return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        if($this->params['sortIndex'] == 'pelanggan_id'){
+            return $query->orderBy('pelanggan.namapelanggan', $this->params['sortOrder']);
+        } else if($this->params['sortIndex'] == 'alatbayar_id'){
+            return $query->orderBy('alatbayar.namaalatbayar', $this->params['sortOrder']);
+        } else if($this->params['sortIndex'] == 'bank_id'){
+            return $query->orderBy('bank.namabank', $this->params['sortOrder']);
+        } else{
+            return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        }
     }
 
     public function filter($query, $relationFields = [])
