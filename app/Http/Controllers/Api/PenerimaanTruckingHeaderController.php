@@ -70,9 +70,11 @@ class PenerimaanTruckingHeaderController extends Controller
                 if ($fetchFormat->kodepenerimaan == 'PJP') {
                     $request->validate([
                         'pengeluarantruckingheader_nobukti' => 'required|array',
+                        'supirheader_id' => 'required',
                         'pengeluarantruckingheader_nobukti.*' => 'required'
                     ], [
                         'pengeluarantruckingheader_nobukti.*.required' => 'pengeluaran trucking ' . app(ErrorController::class)->geterror('WI')->keterangan,
+                        'supirheader_id.required' => 'Supir Header ' . app(ErrorController::class)->geterror('WI')->keterangan,
                     ]);
                 }
                 $statusformat = $fetchFormat->format;
@@ -99,6 +101,7 @@ class PenerimaanTruckingHeaderController extends Controller
             $penerimaantruckingheader->penerimaantrucking_id = $request->penerimaantrucking_id ?? $idpenerimaan;
             $penerimaantruckingheader->bank_id = $request->bank_id;
             $penerimaantruckingheader->coa = $request->coa ?? '';
+            $penerimaantruckingheader->supir_id = $request->supirheader_id ?? '';
             $penerimaantruckingheader->penerimaan_nobukti = $request->penerimaan_nobukti ?? '';
             $penerimaantruckingheader->statusformat = $request->statusformat ?? $format->id;
             $penerimaantruckingheader->statuscetak = $statusCetak->id;
@@ -335,6 +338,7 @@ class PenerimaanTruckingHeaderController extends Controller
                 $penerimaantruckingheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
                 $penerimaantruckingheader->coa = $request->coa ?? '';
                 $penerimaantruckingheader->modifiedby = auth('api')->user()->name;
+                $penerimaantruckingheader->supir_id = $request->supirheader_id ?? '';
 
                 $penerimaantruckingheader->save();
             }
@@ -356,7 +360,7 @@ class PenerimaanTruckingHeaderController extends Controller
                 'modifiedby' => $penerimaantruckingheader->modifiedby
             ];
 
-
+            // return response([$request->nominal],422);
 
             $validatedLogTrail = new StoreLogTrailRequest($logTrail);
 
@@ -540,6 +544,16 @@ class PenerimaanTruckingHeaderController extends Controller
         }
     }
 
+    public function getPengembalianPinjaman($id)
+    {
+        $penerimaanTrucking = new PenerimaanTruckingHeader ();
+        $penerimaanTrucking = $penerimaanTrucking->find($id);
+        $data = $penerimaanTrucking->getPengembalianPinjaman($penerimaanTrucking->penerimaantruckingdetail[0]->supir_id);
+        return response([
+            'status' => true,
+            'data' => $data
+        ]);
+    }
     public function printReport($id)
     {
         DB::beginTransaction();
