@@ -8,6 +8,7 @@ use App\Models\JurnalUmumHeader;
 use App\Models\JurnalUmumDetail;
 
 use App\Http\Requests\StoreJurnalUmumHeaderRequest;
+use App\Http\Requests\StoreJurnalUmumPusatDetailRequest;
 use App\Http\Requests\UpdateJurnalUmumHeaderRequest;
 
 use Illuminate\Http\Request;
@@ -18,6 +19,8 @@ use App\Http\Requests\StoreLogTrailRequest;
 use App\Models\AkunPusat;
 use App\Models\Parameter;
 use App\Models\Error;
+use App\Models\JurnalUmumPusatDetail;
+use App\Models\JurnalUmumPusatHeader;
 use App\Models\LogTrail;
 use Illuminate\Database\QueryException;
 use Throwable;
@@ -273,7 +276,6 @@ class JurnalUmumHeaderController extends Controller
                         }
                         $detaillog[] = $datadetails['detail']->toArray();
                     }
-
                 } else {
                     $counter = $request->nominal_detail;
                     for ($i = 0; $i < count($request->nominal_detail); $i++) {
@@ -418,48 +420,172 @@ class JurnalUmumHeaderController extends Controller
             ]);
         }
     }
-    public function approval($id)
+
+    /**
+     * @ClassName
+     */
+    public function approval(Request $request)
     {
         DB::beginTransaction();
 
         try {
-            $jurnalumum = JurnalUmumHeader::find($id);
-            $statusApproval = Parameter::from(
-                DB::raw("parameter with (readuncommitted)")
-            )->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
-            $statusNonApproval = Parameter::from(
-                DB::raw("parameter with (readuncommitted)")
-            )->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
+            if ($request->jurnalId != '') {
 
-            if ($jurnalumum->statusapproval == $statusApproval->id) {
-                $jurnalumum->statusapproval = $statusNonApproval->id;
-            } else {
-                $jurnalumum->statusapproval = $statusApproval->id;
-            }
+                $statusApproval = Parameter::from(
+                    DB::raw("parameter with (readuncommitted)")
+                )->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
+                $statusNonApproval = Parameter::from(
+                    DB::raw("parameter with (readuncommitted)")
+                )->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
 
-            $jurnalumum->tglapproval = date('Y-m-d H:i:s');
-            $jurnalumum->userapproval = auth('api')->user()->name;
+                for ($i = 0; $i < count($request->jurnalId); $i++) {
 
-            if ($jurnalumum->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($jurnalumum->getTable()),
-                    'postingdari' => 'UN/APPROVE Jurnal Umum',
-                    'idtrans' => $jurnalumum->id,
-                    'nobuktitrans' => $jurnalumum->id,
-                    'aksi' => 'UN/APPROVE',
-                    'datajson' => $jurnalumum->toArray(),
-                    'modifiedby' => $jurnalumum->modifiedby
-                ];
+                    $jurnalumum = JurnalUmumHeader::find($request->jurnalId[$i]);
 
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+                    if ($jurnalumum->statusapproval == $statusApproval->id) {
+                        $jurnalumum->statusapproval = $statusNonApproval->id;
+                    } else {
+                        $jurnalumum->statusapproval = $statusApproval->id;
+                    }
+
+                    $jurnalumum->tglapproval = date('Y-m-d H:i:s');
+                    $jurnalumum->userapproval = auth('api')->user()->name;
+
+                    $jurnalumum->save();
+                    $logTrail = [
+                        'namatabel' => strtoupper($jurnalumum->getTable()),
+                        'postingdari' => 'UN/APPROVE Jurnal Umum',
+                        'idtrans' => $jurnalumum->id,
+                        'nobuktitrans' => $jurnalumum->id,
+                        'aksi' => 'UN/APPROVE',
+                        'datajson' => $jurnalumum->toArray(),
+                        'modifiedby' => $jurnalumum->modifiedby
+                    ];
+
+                    $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                    $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+
+
+                    // PROSES JURNAL UMUM PUSAT
+                    $jurnalUmumPusat = JurnalUmumPusatHeader::from(DB::raw("jurnalumumpusatheader with (readuncommitted)"))->where('nobukti', $jurnalumum->nobukti)->first();
+                    if ($jurnalUmumPusat != null) {
+
+                        $getDetail = JurnalUmumPusatDetail::where('jurnalumumpusat_id', $jurnalUmumPusat->id)->get();
+                        $jurnalumumDelete = new JurnalUmumPusatHeader();
+                        $jurnalumumDelete = $jurnalumumDelete->lockAndDestroy($jurnalUmumPusat->id);
+                        $logTrail = [
+                            'namatabel' => strtoupper($jurnalUmumPusat->getTable()),
+                            'postingdari' => 'DELETE JURNAL UMUM PUSAT HEADER',
+                            'idtrans' => $jurnalUmumPusat->id,
+                            'nobuktitrans' => $jurnalUmumPusat->nobukti,
+                            'aksi' => 'DELETE',
+                            'datajson' => $jurnalUmumPusat->toArray(),
+                            'modifiedby' => auth('api')->user()->name
+                        ];
+
+                        $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                        $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+
+
+                        // DELETE JURNAL DETAIL
+
+                        $logTrailJurnalDetail = [
+                            'namatabel' => 'JURNALUMUMPUSATDETAIL',
+                            'postingdari' => 'DELETE JURNAL UMUM PUSAT DETAIL',
+                            'idtrans' => $storedLogTrail['id'],
+                            'nobuktitrans' => $jurnalUmumPusat->nobukti,
+                            'aksi' => 'DELETE',
+                            'datajson' => $getDetail->toArray(),
+                            'modifiedby' => auth('api')->user()->name
+                        ];
+
+                        $validatedLogTrailJurnalDetail = new StoreLogTrailRequest($logTrailJurnalDetail);
+                        app(LogTrailController::class)->store($validatedLogTrailJurnalDetail);
+                    } else {
+                        $jurnalUmumPusat = new JurnalUmumPusatHeader();
+                        $jurnalUmumPusat->nobukti = $jurnalumum->nobukti;
+                        $jurnalUmumPusat->tglbukti = $jurnalumum->tglbukti;
+                        $jurnalUmumPusat->postingdari = $jurnalumum->postingdari;
+                        $jurnalUmumPusat->statusapproval = $jurnalumum->statusapproval;
+                        $jurnalUmumPusat->userapproval = auth('api')->user()->name;
+                        $jurnalUmumPusat->tglapproval = date('Y-m-d H:i:s');
+                        $jurnalUmumPusat->statusformat = $jurnalumum->statusformat;
+                        $jurnalUmumPusat->modifiedby = auth('api')->user()->name;
+
+                        $jurnalUmumPusat->save();
+
+                        $logTrail = [
+                            'namatabel' => strtoupper($jurnalUmumPusat->getTable()),
+                            'postingdari' => 'ENTRY JURNAL UMUM PUSAT HEADER',
+                            'idtrans' => $jurnalUmumPusat->id,
+                            'nobuktitrans' => $jurnalUmumPusat->nobukti,
+                            'aksi' => 'ENTRY',
+                            'datajson' => $jurnalUmumPusat->toArray(),
+                            'modifiedby' => $jurnalUmumPusat->modifiedby
+                        ];
+
+                        $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                        $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+
+                        $detaillog = [];
+
+                        $jurnalDetail = JurnalUmumDetail::where('jurnalumum_id', $request->jurnalId[$i])->get();
+
+                        foreach ($jurnalDetail as $index => $value) {
+                            $datadetail = [
+                                'jurnalumumpusat_id' => $jurnalUmumPusat->id,
+                                'nobukti' => $jurnalUmumPusat->nobukti,
+                                'tglbukti' => $jurnalUmumPusat->tglbukti,
+                                'coa' => $value->coa,
+                                'nominal' => $value->nominal,
+                                'keterangan' => $value->keterangan,
+                                'modifiedby' => $jurnalUmumPusat->modifiedby,
+                                'baris' => $value->baris,
+                            ];
+
+                            //STORE 
+                            $data = new StoreJurnalUmumPusatDetailRequest($datadetail);
+
+                            $datadetails = app(JurnalUmumPusatDetailController::class)->store($data);
+
+                            if ($datadetails['error']) {
+                                return response($datadetails, 422);
+                            } else {
+                                $iddetail = $datadetails['id'];
+                                $tabeldetail = $datadetails['tabel'];
+                            }
+
+                            $detaillog[] = $datadetails['detail']->toArray();
+                        }
+                        $datalogtrail = [
+                            'namatabel' => strtoupper($tabeldetail),
+                            'postingdari' => 'ENTRY JURNAL UMUM PUSAT DETAIL',
+                            'idtrans' =>  $storedLogTrail['id'],
+                            'nobuktitrans' => $jurnalUmumPusat->nobukti,
+                            'aksi' => 'ENTRY',
+                            'datajson' => $detaillog,
+                            'modifiedby' => $jurnalUmumPusat->modifiedby,
+                        ];
+
+                        $data = new StoreLogTrailRequest($datalogtrail);
+                        app(LogTrailController::class)->store($data);
+                    }
+                }
 
                 DB::commit();
+                return response([
+                    'message' => 'Berhasil'
+                ]);
+            } else {
+                $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'WP')
+                    ->first();
+                return response([
+                    'errors' => [
+                        'piutang' => "JURNAL $query->keterangan"
+                    ],
+                    'message' => "JURNAL $query->keterangan",
+                ], 422);
             }
-
-            return response([
-                'message' => 'Berhasil'
-            ]);
         } catch (\Throwable $th) {
             throw $th;
         }
