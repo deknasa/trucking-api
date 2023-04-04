@@ -863,6 +863,7 @@ route::middleware(['auth:api'])->group(function () {
 
     Route::get('approvalpendapatansupir/default', [ApprovalPendapatanSupirController::class, 'default']);
     Route::resource('approvalpendapatansupir', ApprovalPendapatanSupirController::class);
+    Route::get('stokpersediaan/default', [StokPersediaanController::class, 'default']);
     Route::resource('stokpersediaan', StokPersediaanController::class);
     Route::get('kartustok/report', [KartuStokController::class, 'report'])->name('kartustok.report');
     Route::get('kartustok/export', [KartuStokController::class, 'export'])->name('kartustok.export');
@@ -870,9 +871,11 @@ route::middleware(['auth:api'])->group(function () {
     Route::resource('kartustok', KartuStokController::class);
 
     Route::get('historipenerimaanstok/report', [HistoriPenerimaanStokController::class, 'report'])->name('historipenerimaanstok.report');
+    Route::get('historipenerimaanstok/default', [HistoriPenerimaanStokController::class, 'default']);
     Route::resource('historipenerimaanstok', HistoriPenerimaanStokController::class);
 
     Route::get('historipengeluaranstok/report', [HistoriPengeluaranStokController::class, 'report'])->name('historipengeluaranstok.report');
+    Route::get('historipengeluaranstok/default', [HistoriPengeluaranStokController::class, 'default']);
     Route::resource('historipengeluaranstok', HistoriPengeluaranStokController::class);
 
     Route::get('laporankasbank/report', [LaporanKasBankController::class, 'report'])->name('laporankasbank.report');

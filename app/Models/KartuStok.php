@@ -45,17 +45,18 @@ class KartuStok extends MyModel
         if (request()->filter == $filter->id) {
             // dd('test');
             $query = $this->getlaporan($tgldari, $tglsampai, request()->stokdari_id, request()->stoksampai_id, request()->datafilter, 0, 0, $filter->text);
-        }
 
 
-        if (request()->filter && request()->datafilter && request()->stokdari_id && request()->stoksampai_id) {
 
-            $this->totalRows = $query->count();
-            $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
-            $this->filter($query);
-            $this->paginate($query);
+            if (request()->filter && request()->datafilter && request()->stokdari_id && request()->stoksampai_id) {
 
-            $data = $query->get();
+                $this->totalRows = $query->count();
+                $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+                $this->filter($query);
+                $this->paginate($query);
+
+                $data = $query->get();
+            }
         } else {
             $data = [];
         }
@@ -176,7 +177,7 @@ class KartuStok extends MyModel
         DB::table($tempGandengan)->insert(
             ["gandengan_id" => $gandengan->gandengan_id, "gandengan" => $gandengan->gandengan]
         );
-        
+
         $tempFilter = '##tempFilter' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
         Schema::create($tempFilter, function ($table) {

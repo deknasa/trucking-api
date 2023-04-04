@@ -28,6 +28,75 @@ class HistoriPenerimaanStok extends MyModel
         'updated_at',
     ];
 
+    public function default()
+    {
+
+        $tempStokDari = '##tempStokDari' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+
+        Schema::create($tempStokDari, function ($table) {
+            $table->unsignedBigInteger('stokdari_id')->nullable();
+            $table->string('stokdari', 255)->nullable();
+            $table->unsignedBigInteger('stoksampai_id')->nullable();
+            $table->string('stoksampai', 255)->nullable();
+            $table->unsignedBigInteger('filter')->nullable();
+        });
+        $stokDari = Stok::from(
+            DB::raw('stok with (readuncommitted)')
+        )
+            ->select(
+                'id as stokdari_id',
+                'namastok as stokdari',
+
+            )
+            ->orderBy('id', 'asc')
+            ->limit(1)
+            ->first();
+
+        $stokSampai = Stok::from(
+            DB::raw('stok with (readuncommitted)')
+        )
+            ->select(
+                'id as stoksampai_id',
+                'namastok as stoksampai',
+
+            )
+            ->orderBy('id', 'desc')
+            ->limit(1)
+            ->first();
+
+        $penerimaanStok = PenerimaanStok::from(
+            DB::raw('penerimaanstok with (readuncommitted)')
+        )
+            ->select(
+                'id',
+
+            )
+            ->orderBy('id', 'asc')
+            ->first();
+
+        DB::table($tempStokDari)->insert(
+            [
+                "stokdari_id" => $stokDari->stokdari_id,
+                "stokdari" => $stokDari->stokdari,
+                "stoksampai_id" => $stokSampai->stoksampai_id,
+                "stoksampai" => $stokSampai->stoksampai,
+                "filter" => $penerimaanStok->id
+            ]
+        );
+        $query = DB::table($tempStokDari)->from(
+            DB::raw($tempStokDari)
+        )
+            ->select(
+                'stokdari_id',
+                'stokdari',
+                'stoksampai_id',
+                'stoksampai',
+                'filter'
+            );
+
+        $data = $query->first();
+        return $data;
+    }
     public function get()
     {
         $this->setRequestParameters();
@@ -43,9 +112,8 @@ class HistoriPenerimaanStok extends MyModel
             $this->totalRows = $query->count();
             $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
             $this->filter($query);
-            if (!request()->action){
+            if (!request()->action) {
                 $this->paginate($query);
-
             }
 
             $data = $query->get();
@@ -56,7 +124,7 @@ class HistoriPenerimaanStok extends MyModel
         return $data;
     }
 
-    private function getlaporan($tgldari, $tglsampai, $stokdari, $stoksampai, $filter )
+    private function getlaporan($tgldari, $tglsampai, $stokdari, $stoksampai, $filter)
     {
 
         $templaporan = '##templaporan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -93,60 +161,60 @@ class HistoriPenerimaanStok extends MyModel
             $table->double('nilaimasuk', 15, 2)->nullable();
         });
 
-            $querysaldomasuk = PenerimaanstokHeader::from(
-                DB::raw("penerimaanstokheader as a with (readuncommitted)")
+        $querysaldomasuk = PenerimaanstokHeader::from(
+            DB::raw("penerimaanstokheader as a with (readuncommitted)")
+        )
+            ->select(
+                'c.id as kodebarang',
+                DB::raw("sum(b.qty) as qtymasuk"),
+                DB::raw("sum(b.harga) as nilaimasuk"),
             )
-                ->select(
-                    'c.id as kodebarang',
-                    DB::raw("sum(b.qty) as qtymasuk"),
-                    DB::raw("sum(b.harga) as nilaimasuk"),
-                )
-                ->join(DB::raw("penerimaanstokdetail as b with (readuncommitted)"), 'a.id', 'b.penerimaanstokheader_id')
-                ->join(DB::raw("stok as c with (readuncommitted)"), 'b.stok_id', 'c.id')
-                ->whereRaw("(b.stok_id>=" . $stokdari . " and B.stok_id<=" . $stoksampai . " )  and (a.tglBukti <'" . $tgldari . "')")
-                ->whereRaw("a.penerimaanstok_id in(" . $filter . ",7)")
-                ->groupBy('c.id');
+            ->join(DB::raw("penerimaanstokdetail as b with (readuncommitted)"), 'a.id', 'b.penerimaanstokheader_id')
+            ->join(DB::raw("stok as c with (readuncommitted)"), 'b.stok_id', 'c.id')
+            ->whereRaw("(b.stok_id>=" . $stokdari . " and B.stok_id<=" . $stoksampai . " )  and (a.tglBukti <'" . $tgldari . "')")
+            ->whereRaw("a.penerimaanstok_id in(" . $filter . ",7)")
+            ->groupBy('c.id');
 
-            DB::table($tempsaldoawalmasuk)->insertUsing([
-                'kodebarang',
-                'qtymasuk',
-                'nilaimasuk',
-            ], $querysaldomasuk);
+        DB::table($tempsaldoawalmasuk)->insertUsing([
+            'kodebarang',
+            'qtymasuk',
+            'nilaimasuk',
+        ], $querysaldomasuk);
 
-            $queryrekap = PenerimaanStokHeader::from(
-                DB::raw("penerimaanstokheader as a with (readuncommitted)")
+        $queryrekap = PenerimaanStokHeader::from(
+            DB::raw("penerimaanstokheader as a with (readuncommitted)")
+        )
+            ->select(
+                DB::raw("1 as statusmasuk"),
+                'c.id as kodebarang',
+                'c.namastok as namabarang',
+                'a.tglbukti as tglbukti',
+                'a.nobukti as nobukti',
+                'c.kategori_id',
+                'b.qty as qtymasuk',
+                DB::raw("(b.harga) as nilaimasuk"),
+                'a.modifiedby'
             )
-                ->select(
-                    DB::raw("1 as statusmasuk"),
-                    'c.id as kodebarang',
-                    'c.namastok as namabarang',
-                    'a.tglbukti as tglbukti',
-                    'a.nobukti as nobukti',
-                    'c.kategori_id',
-                    'b.qty as qtymasuk',
-                    DB::raw("(b.harga) as nilaimasuk"),
-                    'a.modifiedby'
-                )
-                ->join(DB::raw("penerimaanstokdetail as b with (readuncommitted)"), 'a.id', 'b.penerimaanstokheader_id')
-                ->join(DB::raw("stok as c with (readuncommitted)"), 'b.stok_id', 'c.id')
-                ->whereRaw("(b.stok_id>=" . $stokdari . " and B.stok_id<=" . $stoksampai . " )  and (a.tglBukti >='" . $tgldari . "' and a.tglbukti<='" . $tglsampai . "')")
-                ->whereRaw("a.penerimaanstok_id in(" . $filter . ")")
-                ->orderBy('a.tglbukti', 'Asc')
-                ->orderBy('a.nobukti', 'Asc')
-                ->orderBy('b.id', 'Asc');
+            ->join(DB::raw("penerimaanstokdetail as b with (readuncommitted)"), 'a.id', 'b.penerimaanstokheader_id')
+            ->join(DB::raw("stok as c with (readuncommitted)"), 'b.stok_id', 'c.id')
+            ->whereRaw("(b.stok_id>=" . $stokdari . " and B.stok_id<=" . $stoksampai . " )  and (a.tglBukti >='" . $tgldari . "' and a.tglbukti<='" . $tglsampai . "')")
+            ->whereRaw("a.penerimaanstok_id in(" . $filter . ")")
+            ->orderBy('a.tglbukti', 'Asc')
+            ->orderBy('a.nobukti', 'Asc')
+            ->orderBy('b.id', 'Asc');
 
 
-            DB::table($temprekap)->insertUsing([
-                'statusmasuk',
-                'kodebarang',
-                'namabarang',
-                'tglbukti',
-                'nobukti',
-                'kategori_id',
-                'qtymasuk',
-                'nilaimasuk',
-                'modifiedby',
-            ], $queryrekap);
+        DB::table($temprekap)->insertUsing([
+            'statusmasuk',
+            'kodebarang',
+            'namabarang',
+            'tglbukti',
+            'nobukti',
+            'kategori_id',
+            'qtymasuk',
+            'nilaimasuk',
+            'modifiedby',
+        ], $queryrekap);
 
 
         $querylaporan = DB::table($temprekap)->from(
@@ -190,7 +258,7 @@ class HistoriPenerimaanStok extends MyModel
                 DB::raw(" (a.qtymasuk * a.nilaimasuk) as total"),
                 'a.modifiedby',
             )
-            ->leftjoin(DB::raw("kategori as B with (readuncommitted)"),'a.kategori_id','B.id')
+            ->leftjoin(DB::raw("kategori as B with (readuncommitted)"), 'a.kategori_id', 'B.id')
             ->orderBy('a.id', 'asc');
         // dd($datalist->get());
         return $datalist;

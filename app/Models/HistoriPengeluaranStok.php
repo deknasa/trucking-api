@@ -25,6 +25,76 @@ class HistoriPengeluaranStok extends MyModel
         'updated_at',
     ];
 
+    public function default()
+    {
+
+        $tempStokDari = '##tempStokDari' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+
+        Schema::create($tempStokDari, function ($table) {
+            $table->unsignedBigInteger('stokdari_id')->nullable();
+            $table->string('stokdari', 255)->nullable();
+            $table->unsignedBigInteger('stoksampai_id')->nullable();
+            $table->string('stoksampai', 255)->nullable();
+            $table->unsignedBigInteger('filter')->nullable();
+        });
+        $stokDari = Stok::from(
+            DB::raw('stok with (readuncommitted)')
+        )
+            ->select(
+                'id as stokdari_id',
+                'namastok as stokdari',
+
+            )
+            ->orderBy('id', 'asc')
+            ->limit(1)
+            ->first();
+
+        $stokSampai = Stok::from(
+            DB::raw('stok with (readuncommitted)')
+        )
+            ->select(
+                'id as stoksampai_id',
+                'namastok as stoksampai',
+
+            )
+            ->orderBy('id', 'desc')
+            ->limit(1)
+            ->first();
+
+        $pengeluaranStok = PengeluaranStok::from(
+            DB::raw('pengeluaranstok with (readuncommitted)')
+        )
+            ->select(
+                'id',
+
+            )
+            ->orderBy('id', 'asc')
+            ->first();
+
+        DB::table($tempStokDari)->insert(
+            [
+                "stokdari_id" => $stokDari->stokdari_id,
+                "stokdari" => $stokDari->stokdari,
+                "stoksampai_id" => $stokSampai->stoksampai_id,
+                "stoksampai" => $stokSampai->stoksampai,
+                "filter" => $pengeluaranStok->id
+            ]
+        );
+        $query = DB::table($tempStokDari)->from(
+            DB::raw($tempStokDari)
+        )
+            ->select(
+                'stokdari_id',
+                'stokdari',
+                'stoksampai_id',
+                'stoksampai',
+                'filter'
+            );
+
+        $data = $query->first();
+        return $data;
+    }
+
     public function get()
     {
         $this->setRequestParameters();

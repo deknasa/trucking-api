@@ -27,5 +27,14 @@ class StokPersediaanController extends Controller
             ]);
        
     }
+    
+    public function default()
+    {
+        $persediaan = new StokPersediaan();
+        return response([
+            'status' => true,
+            'data' => $persediaan->default(),
+        ]);
+    }
 
 }

@@ -34,6 +34,15 @@ class HistoriPenerimaanStokController extends Controller
             ]);
     }
 
+    public function default()
+    {
+        $histori = new HistoriPenerimaanStok();
+        return response([
+            'status' => true,
+            'data' => $histori->default(),
+        ]);
+    }
+    
     /**
      * @ClassName
      */
