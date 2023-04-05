@@ -25,6 +25,8 @@ class CreatePengeluarantruckingheaderTable extends Migration
             $table->unsignedBigInteger('bank_id')->nullable();
             $table->unsignedBigInteger('supir_id')->nullable();
             $table->integer('statusposting')->length(11)->nullable();
+            $table->date('periodedari')->nullable();            
+            $table->date('periodesampai')->nullable();            
             $table->string('coa',50)->nullable();
             $table->string('pengeluaran_nobukti',50)->nullable();
             $table->unsignedBigInteger('statusformat')->nullable();            

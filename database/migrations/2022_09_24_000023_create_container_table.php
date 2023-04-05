@@ -19,6 +19,7 @@ class CreateContainerTable extends Migration
         Schema::create('container', function (Blueprint $table) {
             $table->id();
             $table->string('kodecontainer',50)->nullable();
+            $table->double('nominalsumbangan',15,2)->nullable();
             $table->longText('keterangan')->nullable();
             $table->integer('statusaktif')->length(11)->nullable();            
             $table->string('modifiedby', 300)->nullable();

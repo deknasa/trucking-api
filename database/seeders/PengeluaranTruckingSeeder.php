@@ -21,5 +21,7 @@ class PengeluaranTruckingSeeder extends Seeder
 
         pengeluarantrucking::create(['kodepengeluaran' => 'PJT', 'keterangan' => 'PINJAMAN SUPIR', 'coadebet' => '01.05.02.02', 'coakredit' => '01.01.01.02', 'coapostingdebet' => '01.05.02.02', 'coapostingkredit' => '01.01.01.02', 'format' => '122', 'modifiedby' => 'ADMIN',]);
         pengeluarantrucking::create(['kodepengeluaran' => 'TDE', 'keterangan' => 'PENARIKAN DEPOSITO', 'coadebet' => '01.04.02.01', 'coakredit' => '01.01.01.02', 'coapostingdebet' => '01.04.02.01', 'coapostingkredit' => '01.01.01.02', 'format' => '251', 'modifiedby' => 'ADMIN',]);
+        pengeluarantrucking::create(['kodepengeluaran' => 'BST', 'keterangan' => 'SUMBANGAN SOSIAL', 'coadebet' => '07.02.01.33', 'coakredit' => '01.01.01.02', 'coapostingdebet' => '07.02.01.33', 'coapostingkredit' => '01.01.01.02', 'format' => '251', 'modifiedby' => 'ADMIN',]);
+        pengeluarantrucking::create(['kodepengeluaran' => 'BSB', 'keterangan' => 'INSENTIF SUPIR', 'coadebet' => '07.01.01.10', 'coakredit' => '01.01.01.02', 'coapostingdebet' => '07.01.01.10', 'coapostingkredit' => '01.01.01.02', 'format' => '251', 'modifiedby' => 'ADMIN',]);
     }
 }
