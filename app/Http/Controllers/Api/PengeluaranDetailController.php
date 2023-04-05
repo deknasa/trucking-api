@@ -7,7 +7,9 @@ use App\Http\Requests\StoreJurnalUmumDetailRequest;
 use App\Models\PengeluaranDetail;
 use App\Http\Requests\StorePengeluaranDetailRequest;
 use App\Models\JurnalUmumHeader;
+use App\Models\PengeluaranHeader;
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -33,6 +35,21 @@ class PengeluaranDetailController extends Controller
         ]);
     }
 
+    public function getPengeluaran(): JsonResponse
+    {
+        $pengeluaranDetail = new PengeluaranDetail();
+        $fetch = PengeluaranHeader::from(DB::raw("pengeluaranheader with (readuncommitted)"))->where('nobukti', request()->nobukti)->first();
+        request()->pengeluaran_id = $fetch->id;
+        return response()->json([
+            'data' => $pengeluaranDetail->get(request()->pengeluaran_id),
+            'attributes' => [
+                'totalRows' => $pengeluaranDetail->totalRows,
+                'totalPages' => $pengeluaranDetail->totalPages,
+                'totalNominal' => $pengeluaranDetail->totalNominal
+            ]
+        ]);
+    }
+        
     public function store(StorePengeluaranDetailRequest $request)
     {
         DB::beginTransaction();

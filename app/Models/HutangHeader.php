@@ -101,6 +101,7 @@ class HutangHeader extends MyModel
                 'hutangheader.id',
                 'hutangheader.nobukti',
                 'hutangheader.tglbukti',
+                'hutangheader.postingdari',
 
                 'akunpusat.keterangancoa as coa',
                 'supplier.namasupplier as supplier_id',
