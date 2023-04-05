@@ -30,8 +30,6 @@ class PengeluaranStokHeader extends MyModel
 
         $query = DB::table($this->table);
         $query = $this->selectColumns($query)
-        ->whereBetween('pengeluaranstokheader.tglbukti', [date('Y-m-d',strtotime(request()->tgldari)), date('Y-m-d',strtotime(request()->tglsampai))])
-
         ->leftJoin('gudang','pengeluaranstokheader.gudang_id','gudang.id')
         ->leftJoin('pengeluaranstok','pengeluaranstokheader.pengeluaranstok_id','pengeluaranstok.id')
         ->leftJoin('trado','pengeluaranstokheader.trado_id','trado.id')
@@ -43,7 +41,13 @@ class PengeluaranStokHeader extends MyModel
         ->leftJoin('pengeluaranstokheader as pengeluaran' ,'pengeluaranstokheader.pengeluaranstok_nobukti','pengeluaran.nobukti')
         // ->leftJoin('servicein','pengeluaranstokheader.servicein_nobukti','servicein.nobukti')
         ->leftJoin('supir','pengeluaranstokheader.supir_id','supir.id');
-
+        if (request()->tgldari) {
+            $query->whereBetween('pengeluaranstokheader.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
+        }
+        if (request()->pengeluaranheader_id) {
+            $query->where('pengeluaranstokheader.pengeluaranstok_id',request()->pengeluaranheader_id);
+        }
+        
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
