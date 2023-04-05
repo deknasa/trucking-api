@@ -294,6 +294,7 @@ class ParameterSeeder extends Seeder
         parameter::create(['grp' => 'JURNAL PROSES GAJI SUPIR', 'subgrp' => 'DEBET', 'kelompok' => 'PROSES GAJI SUPIR', 'text' => 'DEBETPROSESGAJISUPIR', 'memo' => '{"MEMO":"DEBET JURNAL PROSES GAJI SUPIR","SINGKATAN":"DJPGS","WARNA":"#28A745","JURNAL":"07.01.01.01"}', 'type' => '0', 'modifiedby' => '1', 'default' => '',]);
         parameter::create(['grp' => 'JURNAL PROSES GAJI SUPIR', 'subgrp' => 'KREDIT', 'kelompok' => 'PROSES GAJI SUPIR', 'text' => 'KREDITPROSESGAJISUPIR', 'memo' => '{"MEMO":"KREDIT JURNAL PROSES GAJI SUPIR","SINGKATAN":"KJPGS","WARNA":"#28A745","JURNAL":"03.02.02.04"}', 'type' => '0', 'modifiedby' => '1', 'default' => '',]);
         parameter::create(['grp' => 'STATUS PINDAH GUDANG', 'subgrp' => 'STATUS PINDAH GUDANG', 'kelompok' => '', 'text' => 'BUKAN PINDAH GUDANG', 'memo' => '{"MEMO":"BUKAN PINDAH GUDANG","SINGKATAN":"BPG","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'PENGEMBALIAN KE PUSAT BANK BCA-3', 'subgrp' => 'PENGEMBALIAN KE PUSAT BANK BCA-3', 'kelompok' => 'PENGELUARAN BANK', 'text' => '#BPT-M BCA3 # 9999#/#R#/#Y', 'memo' => '{"MEMO":"PENGEMBALIAN KE PUSAT BANK BCA3","SINGKATAN":"#BPT-M BCA3 # 9999#/#R#/#Y","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         
     }
 }
