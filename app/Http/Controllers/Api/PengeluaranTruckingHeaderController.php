@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\PengeluaranTruckingHeader;
+use App\Models\AlatBayar;
 use App\Http\Requests\StorePengeluaranTruckingHeaderRequest;
 use App\Http\Requests\UpdatePengeluaranTruckingHeaderRequest;
 
@@ -198,7 +199,7 @@ class PengeluaranTruckingHeaderController extends Controller
                 $data = new StoreLogTrailRequest($datalogtrail);
                 app(LogTrailController::class)->store($data);
 
-
+                $alatbayar = AlatBayar::where('bank_id',$pengeluarantruckingheader->bank_id)->first();
                 $pengeluaranDetail = [];
 
                 for ($i = 0; $i < count($counter); $i++) {
@@ -225,6 +226,7 @@ class PengeluaranTruckingHeaderController extends Controller
                     'nobukti' => $nobuktiPengeluaran,
                     'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
                     'pelanggan_id' => '',
+                    'alatbayar_id' =>$alatbayar->id,
                     'postingdari' => 'ENTRY PENGELUARAN TRUCKING',
                     'bank_id' => $request->bank_id,
                     'statusformat' => $format->id,

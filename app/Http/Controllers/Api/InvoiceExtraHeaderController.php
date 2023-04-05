@@ -86,115 +86,121 @@ class InvoiceExtraHeaderController extends Controller
             $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
             $invoiceExtraHeader->nobukti = $nobukti;
 
-            if ($invoiceExtraHeader->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($invoiceExtraHeader->getTable()),
-                    'postingdari' => 'ENTRY INVOICE EXTRA HEADER',
-                    'idtrans' => $invoiceExtraHeader->id,
-                    'nobuktitrans' => $invoiceExtraHeader->nobukti,
-                    'aksi' => 'ENTRY',
-                    'datajson' => $invoiceExtraHeader->toArray(),
-                    'modifiedby' => $invoiceExtraHeader->modifiedby
-                ];
+            $invoiceExtraHeader->save();
 
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+           
 
-                if ($request->nominal_detail) {
+            if ($request->nominal_detail) {
 
-                    /* Store detail */
-                    $detaillog = [];
+                /* Store detail */
+                $detaillog = [];
 
-                    for ($i = 0; $i < count($request->nominal_detail); $i++) {
-                        $datadetail = [
-                            "invoiceextra_id" => $invoiceExtraHeader->id,
-                            "nobukti" => $invoiceExtraHeader->nobukti,
-                            "nominal_detail" => $request->nominal_detail[$i],
-                            "keterangan_detail" => $request->keterangan_detail[$i],
-                        ];
-
-                        $data = new StoreInvoiceExtraDetailRequest($datadetail);
-                        $invoiceExtraDetail = app(InvoiceExtraDetailController::class)->store($data);
-
-                        if ($invoiceExtraDetail['error']) {
-                            return response($invoiceExtraDetail, 422);
-                        } else {
-                            $iddetail = $invoiceExtraDetail['id'];
-                            $tabeldetail = $invoiceExtraDetail['tabel'];
-                        }
-
-                        $datadetaillog = [
-                            "id" => $iddetail,
-                            "invoiceextra_id" => $invoiceExtraHeader->id,
-                            "nobukti" => $invoiceExtraHeader->nobukti,
-                            "nominal" => $request->nominal_detail[$i],
-                            "keterangan" => $request->keterangan_detail[$i],
-                            'modifiedby' => auth('api')->user()->name,
-                            'created_at' => date('d-m-Y H:i:s', strtotime($invoiceExtraHeader->created_at)),
-                            'updated_at' => date('d-m-Y H:i:s', strtotime($invoiceExtraHeader->updated_at)),
-                        ];
-                        $detaillog[] = $datadetaillog;
-                    }
-                    $datalogtrail = [
-                        'namatabel' => strtoupper($tabeldetail),
-                        'postingdari' => 'ENTRY INVOICE EXTRA DETAIL',
-                        'idtrans' =>  $storedLogTrail['id'],
-                        'nobuktitrans' => $invoiceExtraHeader->nobukti,
-                        'aksi' => 'ENTRY',
-                        'datajson' => $detaillog,
-                        'modifiedby' => auth('api')->user()->name,
-                    ];
-
-                    $data = new StoreLogTrailRequest($datalogtrail);
-                    app(LogTrailController::class)->store($data);
-                }
-                $group = 'PIUTANG BUKTI';
-                $subgroup = 'PIUTANG BUKTI';
-                $format = DB::table('parameter')
-                    ->where('grp', $group)
-                    ->where('subgrp', $subgroup)
-                    ->first();
-
-                $nobuktiPiutang = new Request();
-                $nobuktiPiutang['group'] = 'PIUTANG BUKTI';
-                $nobuktiPiutang['subgroup'] = 'PIUTANG BUKTI';
-                $nobuktiPiutang['table'] = 'piutangheader';
-                $nobuktiPiutang['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
-
-                $piutang_nobukti = app(Controller::class)->getRunningNumber($nobuktiPiutang)->original['data'];
-
-                $piutangDetail = [];
                 for ($i = 0; $i < count($request->nominal_detail); $i++) {
-                    $detail = [];
-
-                    $detail = [
-                        'entriluar' => 1,
-                        'nobukti' => $piutang_nobukti,
-                        'nominal' => $request->nominal_detail[$i],
-                        'keterangan' => $request->keterangan_detail[$i],
-                        'invoice_nobukti' => $invoiceExtraHeader->nobukti,
-                        'modifiedby' =>  auth('api')->user()->name
+                    $datadetail = [
+                        "invoiceextra_id" => $invoiceExtraHeader->id,
+                        "nobukti" => $invoiceExtraHeader->nobukti,
+                        "nominal_detail" => $request->nominal_detail[$i],
+                        "keterangan_detail" => $request->keterangan_detail[$i],
                     ];
 
-                    $piutangDetail[] = $detail;
-                }
+                    $data = new StoreInvoiceExtraDetailRequest($datadetail);
+                    $invoiceExtraDetail = app(InvoiceExtraDetailController::class)->store($data);
 
-                $piutangHeader = [
-                    'tanpaprosesnobukti' => 1,
+                    if ($invoiceExtraDetail['error']) {
+                        return response($invoiceExtraDetail, 422);
+                    } else {
+                        $iddetail = $invoiceExtraDetail['id'];
+                        $tabeldetail = $invoiceExtraDetail['tabel'];
+                    }
+
+                    $datadetaillog = [
+                        "id" => $iddetail,
+                        "invoiceextra_id" => $invoiceExtraHeader->id,
+                        "nobukti" => $invoiceExtraHeader->nobukti,
+                        "nominal" => $request->nominal_detail[$i],
+                        "keterangan" => $request->keterangan_detail[$i],
+                        'modifiedby' => auth('api')->user()->name,
+                        'created_at' => date('d-m-Y H:i:s', strtotime($invoiceExtraHeader->created_at)),
+                        'updated_at' => date('d-m-Y H:i:s', strtotime($invoiceExtraHeader->updated_at)),
+                    ];
+                    $detaillog[] = $datadetaillog;
+                }
+            }
+            $group = 'PIUTANG BUKTI';
+            $subgroup = 'PIUTANG BUKTI';
+            $format = DB::table('parameter')
+                ->where('grp', $group)
+                ->where('subgrp', $subgroup)
+                ->first();
+
+            $nobuktiPiutang = new Request();
+            $nobuktiPiutang['group'] = 'PIUTANG BUKTI';
+            $nobuktiPiutang['subgroup'] = 'PIUTANG BUKTI';
+            $nobuktiPiutang['table'] = 'piutangheader';
+            $nobuktiPiutang['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
+
+            $piutang_nobukti = app(Controller::class)->getRunningNumber($nobuktiPiutang)->original['data'];
+
+            $invoiceExtraHeader->piutang_nobukti = $piutang_nobukti;
+            $invoiceExtraHeader->save();
+            
+            $logTrail = [
+                'namatabel' => strtoupper($invoiceExtraHeader->getTable()),
+                'postingdari' => 'ENTRY INVOICE EXTRA HEADER',
+                'idtrans' => $invoiceExtraHeader->id,
+                'nobuktitrans' => $invoiceExtraHeader->nobukti,
+                'aksi' => 'ENTRY',
+                'datajson' => $invoiceExtraHeader->toArray(),
+                'modifiedby' => $invoiceExtraHeader->modifiedby
+            ];
+
+            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+            $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+            $datalogtrail = [
+                'namatabel' => strtoupper($tabeldetail),
+                'postingdari' => 'ENTRY INVOICE EXTRA DETAIL',
+                'idtrans' =>  $storedLogTrail['id'],
+                'nobuktitrans' => $invoiceExtraHeader->nobukti,
+                'aksi' => 'ENTRY',
+                'datajson' => $detaillog,
+                'modifiedby' => auth('api')->user()->name,
+            ];
+
+            $data = new StoreLogTrailRequest($datalogtrail);
+            app(LogTrailController::class)->store($data);
+
+            $piutangDetail = [];
+            for ($i = 0; $i < count($request->nominal_detail); $i++) {
+                $detail = [];
+
+                $detail = [
+                    'entriluar' => 1,
                     'nobukti' => $piutang_nobukti,
-                    'tglbukti' => date('Y-m-d', strtotime($invoiceExtraHeader->tglbukti)),
-                    'postingdari' => "ENTRY INVOICE EXTRA",
-                    'nominal' => $invoiceExtraHeader->nominal,
+                    'nominal' => $request->nominal_detail[$i],
+                    'keterangan' => $request->keterangan_detail[$i],
                     'invoice_nobukti' => $invoiceExtraHeader->nobukti,
-                    'agen_id' => $invoiceExtraHeader->agen_id,
-                    'modifiedby' => auth('api')->user()->name,
-                    'statusformat' => 1,
-                    'datadetail' => $piutangDetail
+                    'modifiedby' =>  auth('api')->user()->name
                 ];
 
-                $piutang = new StorePiutangHeaderRequest($piutangHeader);
-                app(PiutangHeaderController::class)->store($piutang);
+                $piutangDetail[] = $detail;
             }
+
+            $piutangHeader = [
+                'tanpaprosesnobukti' => 1,
+                'nobukti' => $piutang_nobukti,
+                'tglbukti' => date('Y-m-d', strtotime($invoiceExtraHeader->tglbukti)),
+                'postingdari' => "ENTRY INVOICE EXTRA",
+                'nominal' => $invoiceExtraHeader->nominal,
+                'invoice_nobukti' => $invoiceExtraHeader->nobukti,
+                'agen_id' => $invoiceExtraHeader->agen_id,
+                'modifiedby' => auth('api')->user()->name,
+                'statusformat' => 1,
+                'datadetail' => $piutangDetail
+            ];
+
+            $piutang = new StorePiutangHeaderRequest($piutangHeader);
+            app(PiutangHeaderController::class)->store($piutang);
+
 
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
@@ -433,7 +439,7 @@ class InvoiceExtraHeaderController extends Controller
         }
     }
 
-    
+
     /**
      * @ClassName
      */

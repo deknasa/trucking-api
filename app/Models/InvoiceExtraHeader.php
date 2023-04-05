@@ -128,6 +128,7 @@ class InvoiceExtraHeader extends MyModel
                 "$this->table.pelanggan_id",
                 "$this->table.agen_id",
                 "$this->table.nominal",
+                "$this->table.piutang_nobukti",
                 'parameter.memo as statusapproval',
                 "$this->table.userapproval",
                 DB::raw('(case when (year(invoiceextraheader.tglapproval) <= 2000) then null else invoiceextraheader.tglapproval end ) as tglapproval'),

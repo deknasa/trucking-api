@@ -68,7 +68,7 @@ class AbsensiSupirHeader extends MyModel
             'absensisupirheader.nobukti',
             'absensisupirheader.tglbukti',
             'absensisupirheader.kasgantung_nobukti',
-            'absensisupirheader.nominal',
+            DB::raw("(case when absensisupirheader.nominal IS NULL then 0 else absensisupirheader.nominal end) as nominal"),
             DB::raw('(case when (year(absensisupirheader.tglbukacetak) <= 2000) then null else absensisupirheader.tglbukacetak end ) as tglbukacetak'),
             'statuscetak.memo as statuscetak',
             'absensisupirheader.userbukacetak',
@@ -196,7 +196,8 @@ class AbsensiSupirHeader extends MyModel
                 'trado.kodetrado as trado',
                 'supirutama.namasupir as supir',
                 'trado.id as trado_id',
-                'supirutama.id as supir_id',
+                DB::raw("(case when supirutama.id IS NULL then 0 else supirutama.id end) as supir_id"),
+            
                 'absensisupirheader.kasgantung_nobukti',
             )
             ->leftJoin(DB::raw("absensisupirheader with (readuncommitted)"), 'absensisupirdetail.absensi_id', 'absensisupirheader.id')
