@@ -31,7 +31,21 @@ class JurnalUmumDetailController extends Controller
             ]
         ]);
     }
+    
+    public function jurnal(): JsonResponse
+    {
+        $jurnalDetail = new JurnalUmumDetail();
 
+        return response()->json([
+            'data' => $jurnalDetail->getJurnalFromAnotherTable(request()->nobukti),
+            'attributes' => [
+                'totalRows' => $jurnalDetail->totalRows,
+                'totalPages' => $jurnalDetail->totalPages,
+                'totalNominalDebet' => $jurnalDetail->totalNominalDebet,
+                'totalNominalKredit' => $jurnalDetail->totalNominalKredit,
+            ]
+        ]);
+    }
 
     /**
      * @ClassName

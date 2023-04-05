@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\PenerimaanDetail;
 use App\Http\Requests\StorePenerimaanDetailRequest;
+use App\Models\PenerimaanHeader;
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -17,25 +19,41 @@ class PenerimaanDetailController extends Controller
      */
     public function index(Request $request)
     {
-            $penerimaanDetail = new PenerimaanDetail ();
+        $penerimaanDetail = new PenerimaanDetail();
 
-            
-            return response([
-                'data' => $penerimaanDetail->get(),
-                'attributes' => [
-                    'totalRows' => $penerimaanDetail->totalRows ,
-                    'totalPages' => $penerimaanDetail->totalPages ,
-                    'totalNominal' => $penerimaanDetail->totalNominal ,
-                ]
-            ]);
+
+        return response([
+            'data' => $penerimaanDetail->get(),
+            'attributes' => [
+                'totalRows' => $penerimaanDetail->totalRows,
+                'totalPages' => $penerimaanDetail->totalPages,
+                'totalNominal' => $penerimaanDetail->totalNominal,
+            ]
+        ]);
     }
+    
+    public function getPenerimaan(): JsonResponse
+    {
+        $penerimaanDetail = new PenerimaanDetail();
+        $fetch = PenerimaanHeader::from(DB::raw("penerimaanheader with (readuncommitted)"))->where('nobukti', request()->nobukti)->first();
+        request()->penerimaan_id = $fetch->id;
+        return response()->json([
+            'data' => $penerimaanDetail->get(request()->penerimaan_id),
+            'attributes' => [
+                'totalRows' => $penerimaanDetail->totalRows,
+                'totalPages' => $penerimaanDetail->totalPages,
+                'totalNominal' => $penerimaanDetail->totalNominal
+            ]
+        ]);
+    }
+        
 
     public function store(StorePenerimaanDetailRequest $request)
     {
         DB::beginTransaction();
 
         try {
-            
+
             $penerimaanDetail = new PenerimaanDetail();
 
             $penerimaanDetail->penerimaan_id = $request->penerimaan_id;
@@ -52,7 +70,7 @@ class PenerimaanDetailController extends Controller
             $penerimaanDetail->pelunasanpiutang_nobukti = $request->pelunasanpiutang_nobukti ?? '';
             $penerimaanDetail->bulanbeban = $request->bulanbeban;
             $penerimaanDetail->modifiedby = auth('api')->user()->name;
-            
+
             $penerimaanDetail->save();
 
             DB::commit();

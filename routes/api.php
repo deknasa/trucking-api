@@ -509,6 +509,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::post('jurnalumumheader/copy', [JurnalUmumHeaderController::class, 'copy']);
     Route::get('jurnalumumheader/field_length', [JurnalUmumHeaderController::class, 'fieldLength']);
     Route::resource('jurnalumumheader', JurnalUmumHeaderController::class);
+    Route::get('jurnalumumdetail/jurnal', [JurnalUmumDetailController::class, 'jurnal']);
     Route::resource('jurnalumumdetail', JurnalUmumDetailController::class);
 
     Route::get('penerimaantruckingheader/{id}/printreport', [PenerimaanTruckingHeaderController::class, 'printReport']);
@@ -748,7 +749,6 @@ route::middleware(['auth:api'])->group(function () {
     Route::post('invoiceheader/{id}/cekvalidasi', [InvoiceHeaderController::class, 'cekvalidasi'])->name('invoiceheader.cekvalidasi');
     Route::resource('invoiceheader', InvoiceHeaderController::class);
     Route::get('invoicedetail/piutang', [InvoiceDetailController::class, 'piutang']);
-    Route::get('invoicedetail/jurnal', [InvoiceDetailController::class, 'jurnal']);
     Route::resource('invoicedetail', InvoiceDetailController::class);
 
     Route::resource('tutupbuku', TutupBukuController::class);
@@ -779,6 +779,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('penerimaanheader/default', [PenerimaanHeaderController::class, 'default']);
 
     Route::resource('penerimaanheader', PenerimaanHeaderController::class);
+    Route::get('penerimaandetail/getPenerimaan', [PenerimaanDetailController::class, 'getPenerimaan']);
     Route::resource('penerimaandetail', PenerimaanDetailController::class);
 
     // Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
@@ -818,6 +819,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::post('pengeluaranheader/{id}/cekvalidasi', [PengeluaranHeaderController::class, 'cekvalidasi'])->name('pengeluaranheader.cekvalidasi');
     Route::resource('pengeluaranheader', PengeluaranHeaderController::class);
 
+    Route::get('pengeluarandetail/getPengeluaran', [PengeluaranDetailController::class, 'getPengeluaran']);
     Route::resource('pengeluarandetail', PengeluaranDetailController::class);
 
     Route::post('penerimaangiroheader/{id}/approval', [PenerimaanGiroHeaderController::class, 'approval'])->name('penerimaangiroheader.approval');
