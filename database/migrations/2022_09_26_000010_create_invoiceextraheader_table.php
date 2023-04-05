@@ -25,6 +25,7 @@ class CreateInvoiceextraheaderTable extends Migration
             $table->unsignedBigInteger('pelanggan_id')->nullable();
             $table->unsignedBigInteger('agen_id')->nullable();
             $table->double('nominal')->nullable();
+            $table->string('piutang_nobukti', 50)->nullable();
             $table->integer('statusapproval')->length(11)->nullable();
             $table->string('userapproval', 50)->nullable();
             $table->dateTime('tglapproval')->nullable();

@@ -42,6 +42,7 @@ class DatabaseSeeder extends Seeder
             KerusakanSeeder::class,
             KotaSeeder::class,
             MandorSeeder::class,
+            LogTrailSeeder::class,
             MekanikSeeder::class,
             MerkSeeder::class,
             HariLiburSeeder::class,
