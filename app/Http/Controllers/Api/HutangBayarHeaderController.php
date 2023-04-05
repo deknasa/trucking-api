@@ -128,7 +128,7 @@ class HutangBayarHeaderController extends Controller
 
             for ($i = 0; $i < count($request->hutang_id); $i++) {
                 $hutang = HutangHeader::where('nobukti', $request->hutang_nobukti[$i])->first();
-               
+
                 if ($request->bayar[$i] > $hutang->total) {
 
                     $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'NBH')
@@ -665,6 +665,67 @@ class HutangBayarHeaderController extends Controller
         ]);
     }
 
+    /**
+     * @ClassName
+     */
+    public function approval(Request $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            if ($request->bayarId != '') {
+
+                $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                    ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
+                $statusNonApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                    ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
+
+                for ($i = 0; $i < count($request->bayarId); $i++) {
+                    $hutangBayar = HutangBayarHeader::find($request->bayarId[$i]);
+                    if ($hutangBayar->statusapproval == $statusApproval->id) {
+                        $hutangBayar->statusapproval = $statusNonApproval->id;
+                        $aksi = $statusNonApproval->text;
+                    } else {
+                        $hutangBayar->statusapproval = $statusApproval->id;
+                        $aksi = $statusApproval->text;
+                    }
+
+                    $hutangBayar->tglapproval = date('Y-m-d', time());
+                    $hutangBayar->userapproval = auth('api')->user()->name;
+
+                    if ($hutangBayar->save()) {
+                        $logTrail = [
+                            'namatabel' => strtoupper($hutangBayar->getTable()),
+                            'postingdari' => 'APPROVAL HUTANG BAYAR',
+                            'idtrans' => $hutangBayar->id,
+                            'nobuktitrans' => $hutangBayar->nobukti,
+                            'aksi' => $aksi,
+                            'datajson' => $hutangBayar->toArray(),
+                            'modifiedby' => auth('api')->user()->name
+                        ];
+
+                        $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                        $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+                    }
+                }
+                DB::commit();
+                return response([
+                    'message' => 'Berhasil'
+                ]);
+            } else {
+                $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'WP')
+                    ->first();
+                return response([
+                    'errors' => [
+                        'penerimaan' => "PEMBAYARAN HUTANG $query->keterangan"
+                    ],
+                    'message' => "PEMBAYARAN HUTANG $query->keterangan",
+                ], 422);
+            }
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
 
     public function printReport($id)
     {

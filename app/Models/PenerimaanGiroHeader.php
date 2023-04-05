@@ -84,9 +84,9 @@ class PenerimaanGiroHeader extends MyModel
             ->leftJoin(DB::raw("agen with (readuncommitted)"), 'penerimaangiroheader.agen_id', 'agen.id')
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'penerimaangiroheader.statuscetak', 'statuscetak.id')
             ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'penerimaangiroheader.statusapproval', 'statusapproval.id');
-            if (request()->tgldari && request()->tglsampai){
-                $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
-            }
+        if (request()->tgldari && request()->tglsampai) {
+            $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
+        }
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
@@ -219,6 +219,7 @@ class PenerimaanGiroHeader extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
+        $models =  $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))]);
         DB::table($temp)->insertUsing([
             'id',
             'nobukti',
@@ -259,16 +260,18 @@ class PenerimaanGiroHeader extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'statusapproval') {
-                            $query = $query->where('statusapproval.text', '=', "$filters[data]");
-                        } else if ($filters['field'] == 'statuscetak') {
-                            $query = $query->where('statuscetak.text', '=', "$filters[data]");
-                        } else if ($filters['field'] == 'tglbukti') {
-                            $query = $query->where($this->table . '.tglbukti', '=', date('Y-m-d', strtotime($filters['data'])));
-                        } else if ($filters['field'] == 'pelanggan_id') {
-                            $query = $query->where('pelanggan.namapelanggan', 'LIKE', "%$filters[data]%");
-                        } else {
-                            $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                        if ($filters['field'] != '') {
+                            if ($filters['field'] == 'statusapproval') {
+                                $query = $query->where('statusapproval.text', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'statuscetak') {
+                                $query = $query->where('statuscetak.text', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'tglbukti') {
+                                $query = $query->where($this->table . '.tglbukti', '=', date('Y-m-d', strtotime($filters['data'])));
+                            } else if ($filters['field'] == 'pelanggan_id') {
+                                $query = $query->where('pelanggan.namapelanggan', 'LIKE', "%$filters[data]%");
+                            } else {
+                                $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            }
                         }
                     }
 
@@ -276,16 +279,18 @@ class PenerimaanGiroHeader extends MyModel
                 case "OR":
                     $query = $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
-                            if ($filters['field'] == 'statusapproval') {
-                                $query->orWhere('statusapproval.text', '=', "$filters[data]");
-                            } else if ($filters['field'] == 'statuscetak') {
-                                $query->orWhere('statuscetak.text', '=', "$filters[data]");
-                            } else if ($filters['field'] == 'tglbukti') {
-                                $query->orWhere($this->table . '.tglbukti', '=', date('Y-m-d', strtotime($filters['data'])));
-                            } else if ($filters['field'] == 'pelanggan_id') {
-                                $query->orWhere('pelanggan.namapelanggan', 'LIKE', "%$filters[data]%");
-                            } else {
-                                $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            if ($filters['field'] != '') {
+                                if ($filters['field'] == 'statusapproval') {
+                                    $query->orWhere('statusapproval.text', '=', "$filters[data]");
+                                } else if ($filters['field'] == 'statuscetak') {
+                                    $query->orWhere('statuscetak.text', '=', "$filters[data]");
+                                } else if ($filters['field'] == 'tglbukti') {
+                                    $query->orWhere($this->table . '.tglbukti', '=', date('Y-m-d', strtotime($filters['data'])));
+                                } else if ($filters['field'] == 'pelanggan_id') {
+                                    $query->orWhere('pelanggan.namapelanggan', 'LIKE', "%$filters[data]%");
+                                } else {
+                                    $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                }
                             }
                         }
                     });

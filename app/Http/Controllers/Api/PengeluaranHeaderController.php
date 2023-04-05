@@ -640,48 +640,63 @@ class PengeluaranHeaderController extends Controller
         }
     }
 
-    public function approval($id)
+    /**
+     * @ClassName
+     */
+    public function approval(Request $request)
     {
         DB::beginTransaction();
 
         try {
-            $pengeluaranHeader = PengeluaranHeader::find($id);
-            $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
-                ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
-            $statusNonApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
-                ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
+            if ($request->pengeluaranId != '') {
 
-            if ($pengeluaranHeader->statusapproval == $statusApproval->id) {
-                $pengeluaranHeader->statusapproval = $statusNonApproval->id;
-                $aksi = $statusNonApproval->text;
-            } else {
-                $pengeluaranHeader->statusapproval = $statusApproval->id;
-                $aksi = $statusApproval->text;
-            }
+                $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                    ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
+                $statusNonApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                    ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
 
-            $pengeluaranHeader->tglapproval = date('Y-m-d', time());
-            $pengeluaranHeader->userapproval = auth('api')->user()->name;
+                for ($i = 0; $i < count($request->pengeluaranId); $i++) {
+                    $pengeluaranHeader = PengeluaranHeader::find($request->pengeluaranId[$i]);
+                    if ($pengeluaranHeader->statusapproval == $statusApproval->id) {
+                        $pengeluaranHeader->statusapproval = $statusNonApproval->id;
+                        $aksi = $statusNonApproval->text;
+                    } else {
+                        $pengeluaranHeader->statusapproval = $statusApproval->id;
+                        $aksi = $statusApproval->text;
+                    }
 
-            if ($pengeluaranHeader->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($pengeluaranHeader->getTable()),
-                    'postingdari' => 'APPROVED KAS/BANK',
-                    'idtrans' => $pengeluaranHeader->id,
-                    'nobuktitrans' => $pengeluaranHeader->nobukti,
-                    'aksi' => $aksi,
-                    'datajson' => $pengeluaranHeader->toArray(),
-                    'modifiedby' => auth('api')->user()->name
-                ];
+                    $pengeluaranHeader->tglapproval = date('Y-m-d', time());
+                    $pengeluaranHeader->userapproval = auth('api')->user()->name;
 
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+                    if ($pengeluaranHeader->save()) {
+                        $logTrail = [
+                            'namatabel' => strtoupper($pengeluaranHeader->getTable()),
+                            'postingdari' => 'APPROVAL PENGELUARAN KAS/BANK',
+                            'idtrans' => $pengeluaranHeader->id,
+                            'nobuktitrans' => $pengeluaranHeader->nobukti,
+                            'aksi' => $aksi,
+                            'datajson' => $pengeluaranHeader->toArray(),
+                            'modifiedby' => auth('api')->user()->name
+                        ];
 
+                        $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                        $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+                    }
+                }
                 DB::commit();
+                return response([
+                    'message' => 'Berhasil'
+                ]);
+            } else {
+                $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'WP')
+                    ->first();
+                return response([
+                    'errors' => [
+                        'penerimaan' => "PENGELUARAN $query->keterangan"
+                    ],
+                    'message' => "PENGELUARAN $query->keterangan",
+                ], 422);
             }
-
-            return response([
-                'message' => 'Berhasil'
-            ]);
         } catch (\Throwable $th) {
             throw $th;
         }

@@ -165,7 +165,7 @@ class HutangBayarHeader extends MyModel
         $temp = '##tempGet' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         $pembayaran = DB::table($tempPembayaran)->from(DB::raw("$tempPembayaran with (readuncommitted)"))
             ->select(DB::raw("hutangbayar_id,hutang_nobukti,tglbukti,bayar,keterangan,potongan,nominalhutang,sisa"));
-        
+
         Schema::create($temp, function ($table) {
             $table->bigInteger('hutangbayar_id')->nullable();
             $table->string('hutang_nobukti');
@@ -281,15 +281,15 @@ class HutangBayarHeader extends MyModel
 
     public function sort($query)
     {
-        if($this->params['sortIndex'] == 'bank_id'){
+        if ($this->params['sortIndex'] == 'bank_id') {
             return $query->orderBy('bank.namabank', $this->params['sortOrder']);
-        } else if($this->params['sortIndex'] == 'alatbayar_id'){
+        } else if ($this->params['sortIndex'] == 'alatbayar_id') {
             return $query->orderBy('alatbayar.namaalatbayar', $this->params['sortOrder']);
-        } else if($this->params['sortIndex'] == 'supplier_id'){
+        } else if ($this->params['sortIndex'] == 'supplier_id') {
             return $query->orderBy('supplier.namasupplier', $this->params['sortOrder']);
-        }else if($this->params['sortIndex'] == 'coa'){
+        } else if ($this->params['sortIndex'] == 'coa') {
             return $query->orderBy('akunpusat.keterangancoa', $this->params['sortOrder']);
-        }else{
+        } else {
             return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
         }
     }
@@ -300,16 +300,18 @@ class HutangBayarHeader extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'statusapproval') {
-                            $query = $query->where('statusapproval.text', '=', $filters['data']);
-                        } else if ($filters['field'] == 'statuscetak') {
-                            $query = $query->where('statuscetak.text', '=', $filters['data']);
-                        } else if ($filters['field'] == 'supplier_id') {
-                            $query = $query->where('supplier.namasupplier', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'bank_id') {
-                            $query = $query->where('bank.namabank', 'LIKE', "%$filters[data]%");
-                        } else {
-                            $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                        if ($filters['field'] != '') {
+                            if ($filters['field'] == 'statusapproval') {
+                                $query = $query->where('statusapproval.text', '=', $filters['data']);
+                            } else if ($filters['field'] == 'statuscetak') {
+                                $query = $query->where('statuscetak.text', '=', $filters['data']);
+                            } else if ($filters['field'] == 'supplier_id') {
+                                $query = $query->where('supplier.namasupplier', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'bank_id') {
+                                $query = $query->where('bank.namabank', 'LIKE', "%$filters[data]%");
+                            } else {
+                                $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            }
                         }
                     }
 
@@ -317,16 +319,18 @@ class HutangBayarHeader extends MyModel
                 case "OR":
                     $query = $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
-                            if ($filters['field'] == 'statusapproval') {
-                                $query = $query->orWhere('statusapproval.text', '=', $filters['data']);
-                            } else if ($filters['field'] == 'statuscetak') {
-                                $query = $query->orWhere('statuscetak.text', '=', $filters['data']);
-                            } else if ($filters['field'] == 'supplier_id') {
-                                $query = $query->orWhere('supplier.namasupplier', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'bank_id') {
-                                $query = $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");
-                            } else {
-                                $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            if ($filters['field'] != '') {
+                                if ($filters['field'] == 'statusapproval') {
+                                    $query = $query->orWhere('statusapproval.text', '=', $filters['data']);
+                                } else if ($filters['field'] == 'statuscetak') {
+                                    $query = $query->orWhere('statuscetak.text', '=', $filters['data']);
+                                } else if ($filters['field'] == 'supplier_id') {
+                                    $query = $query->orWhere('supplier.namasupplier', 'LIKE', "%$filters[data]%");
+                                } else if ($filters['field'] == 'bank_id') {
+                                    $query = $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");
+                                } else {
+                                    $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                }
                             }
                         }
                     });

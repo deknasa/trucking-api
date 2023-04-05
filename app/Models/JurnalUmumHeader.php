@@ -168,14 +168,16 @@ class JurnalUmumHeader extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'statusapproval') {
-                            $query = $query->where('statusapproval.text', '=', $filters['data']);
-                        } else if ($filters['field'] == 'nominaldebet') {
-                            $query = $query->where('c.nominaldebet', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'nominalkredit') {
-                            $query = $query->where('c.nominalkredit', 'LIKE', "%$filters[data]%");
-                        } else {
-                            $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                        if ($filters['field'] != '') {
+                            if ($filters['field'] == 'statusapproval') {
+                                $query = $query->where('statusapproval.text', '=', $filters['data']);
+                            } else if ($filters['field'] == 'nominaldebet') {
+                                $query = $query->where('c.nominaldebet', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'nominalkredit') {
+                                $query = $query->where('c.nominalkredit', 'LIKE', "%$filters[data]%");
+                            } else {
+                                $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            }
                         }
                     }
 
@@ -183,14 +185,16 @@ class JurnalUmumHeader extends MyModel
                 case "OR":
                     $query = $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
-                            if ($filters['field'] == 'statusapproval') {
-                                $query = $query->orWhere('statusapproval.text', '=', $filters['data']);
-                            } else if ($filters['field'] == 'nominaldebet') {
-                                $query = $query->orWhere('c.nominaldebet', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'nominalkredit') {
-                                $query = $query->orWhere('c.nominalkredit', 'LIKE', "%$filters[data]%");
-                            } else {
-                                $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            if ($filters['field'] != '') {
+                                if ($filters['field'] == 'statusapproval') {
+                                    $query = $query->orWhere('statusapproval.text', '=', $filters['data']);
+                                } else if ($filters['field'] == 'nominaldebet') {
+                                    $query = $query->orWhere('c.nominaldebet', 'LIKE', "%$filters[data]%");
+                                } else if ($filters['field'] == 'nominalkredit') {
+                                    $query = $query->orWhere('c.nominalkredit', 'LIKE', "%$filters[data]%");
+                                } else {
+                                    $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                }
                             }
                         }
                     });

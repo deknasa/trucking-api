@@ -693,53 +693,68 @@ class InvoiceHeaderController extends Controller
         }
     }
 
-    public function approval($id)
+   
+    /**
+     * @ClassName
+     */
+    public function approval(Request $request)
     {
         DB::beginTransaction();
 
         try {
-            $invoice = InvoiceHeader::lockForUpdate()->findOrFail($id);
-            $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
-                ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
-            $statusNonApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
-                ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
+            if ($request->invoiceId != '') {
 
-            if ($invoice->statusapproval == $statusApproval->id) {
-                $invoice->statusapproval = $statusNonApproval->id;
-                $aksi = $statusNonApproval->text;
-            } else {
-                $invoice->statusapproval = $statusApproval->id;
-                $aksi = $statusApproval->text;
-            }
+                $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                    ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
+                $statusNonApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                    ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
 
-            $invoice->tglapproval = date('Y-m-d H:i:s');
-            $invoice->userapproval = auth('api')->user()->name;
+                for ($i = 0; $i < count($request->invoiceId); $i++) {
+                    $invoice = InvoiceHeader::find($request->invoiceId[$i]);
+                    if ($invoice->statusapproval == $statusApproval->id) {
+                        $invoice->statusapproval = $statusNonApproval->id;
+                        $aksi = $statusNonApproval->text;
+                    } else {
+                        $invoice->statusapproval = $statusApproval->id;
+                        $aksi = $statusApproval->text;
+                    }
 
-            if ($invoice->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($invoice->getTable()),
-                    'postingdari' => 'APPROVED INVOICE',
-                    'idtrans' => $invoice->id,
-                    'nobuktitrans' => $invoice->nobukti,
-                    'aksi' => $aksi,
-                    'datajson' => $invoice->toArray(),
-                    'modifiedby' => auth('api')->user()->name
-                ];
+                    $invoice->tglapproval = date('Y-m-d', time());
+                    $invoice->userapproval = auth('api')->user()->name;
 
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+                    if ($invoice->save()) {
+                        $logTrail = [
+                            'namatabel' => strtoupper($invoice->getTable()),
+                            'postingdari' => 'APPROVAL INVOICE',
+                            'idtrans' => $invoice->id,
+                            'nobuktitrans' => $invoice->nobukti,
+                            'aksi' => $aksi,
+                            'datajson' => $invoice->toArray(),
+                            'modifiedby' => auth('api')->user()->name
+                        ];
 
+                        $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                        $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+                    }
+                }
                 DB::commit();
+                return response([
+                    'message' => 'Berhasil'
+                ]);
+            } else {
+                $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'WP')
+                    ->first();
+                return response([
+                    'errors' => [
+                        'penerimaan' => "INVOICE $query->keterangan"
+                    ],
+                    'message' => "INVOICE $query->keterangan",
+                ], 422);
             }
-
-            return response([
-                'message' => 'Berhasil'
-            ]);
         } catch (\Throwable $th) {
             throw $th;
         }
     }
-
     public function printReport($id)
     {
         DB::beginTransaction();

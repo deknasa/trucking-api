@@ -390,7 +390,7 @@ class PenerimaanGiroHeaderController extends Controller
             $newJurnal = $newJurnal->find($getJurnal->id);
             $jurnal = new UpdateJurnalUmumHeaderRequest($jurnalHeader);
             app(JurnalUmumHeaderController::class)->update($jurnal, $newJurnal);
-            
+
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
             DB::commit();
@@ -509,48 +509,66 @@ class PenerimaanGiroHeaderController extends Controller
         }
     }
 
-    public function approval($id)
+    /**
+     * @ClassName
+     */
+    public function approval(Request $request)
     {
         DB::beginTransaction();
 
         try {
-            $penerimaanGiro = PenerimaanGiroHeader::find($id);
-            $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
-                ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
-            $statusNonApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
-                ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
 
-            if ($penerimaanGiro->statusapproval == $statusApproval->id) {
-                $penerimaanGiro->statusapproval = $statusNonApproval->id;
-                $aksi = $statusNonApproval->text;
-            } else {
-                $penerimaanGiro->statusapproval = $statusApproval->id;
-                $aksi = $statusApproval->text;
-            }
+            if ($request->giroId != '') {
 
-            $penerimaanGiro->tglapproval = date('Y-m-d H:i:s');
-            $penerimaanGiro->userapproval = auth('api')->user()->name;
+                $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                    ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
+                $statusNonApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                    ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
+                    
+                for ($i = 0; $i < count($request->giroId); $i++) {
+                    $penerimaanGiro = PenerimaanGiroHeader::find($request->giroId[$i]);
 
-            if ($penerimaanGiro->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($penerimaanGiro->getTable()),
-                    'postingdari' => 'APPROVED KAS/BANK',
-                    'idtrans' => $penerimaanGiro->id,
-                    'nobuktitrans' => $penerimaanGiro->nobukti,
-                    'aksi' => $aksi,
-                    'datajson' => $penerimaanGiro->toArray(),
-                    'modifiedby' => $penerimaanGiro->modifiedby
-                ];
+                    if ($penerimaanGiro->statusapproval == $statusApproval->id) {
+                        $penerimaanGiro->statusapproval = $statusNonApproval->id;
+                        $aksi = $statusNonApproval->text;
+                    } else {
+                        $penerimaanGiro->statusapproval = $statusApproval->id;
+                        $aksi = $statusApproval->text;
+                    }
 
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+                    $penerimaanGiro->tglapproval = date('Y-m-d H:i:s');
+                    $penerimaanGiro->userapproval = auth('api')->user()->name;
 
+                    if ($penerimaanGiro->save()) {
+                        $logTrail = [
+                            'namatabel' => strtoupper($penerimaanGiro->getTable()),
+                            'postingdari' => 'APPROVAL PENERIMAAN GIRO',
+                            'idtrans' => $penerimaanGiro->id,
+                            'nobuktitrans' => $penerimaanGiro->nobukti,
+                            'aksi' => $aksi,
+                            'datajson' => $penerimaanGiro->toArray(),
+                            'modifiedby' => $penerimaanGiro->modifiedby
+                        ];
+
+                        $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                        $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+                    }
+                }
+                
                 DB::commit();
+                return response([
+                    'message' => 'Berhasil'
+                ]);
+            } else {
+                $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'WP')
+                    ->first();
+                return response([
+                    'errors' => [
+                        'penerimaan' => "PENERIMAAN GIRO $query->keterangan"
+                    ],
+                    'message' => "PENERIMAAN GIRO $query->keterangan",
+                ], 422);
             }
-
-            return response([
-                'message' => 'Berhasil'
-            ]);
         } catch (\Throwable $th) {
             throw $th;
         }

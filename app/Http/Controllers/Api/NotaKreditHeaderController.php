@@ -336,45 +336,64 @@ class NotaKreditHeaderController extends Controller
             'data' => $data
         ]);
     }
-
-    public function approval(NotaKreditHeader $notaKreditHeader, $id)
+ 
+    /**
+     * @ClassName
+     */
+    public function approval(Request $request)
     {
         DB::beginTransaction();
-        $notaKreditHeader = NotaKreditHeader::findOrFail($id);
+
         try {
-            $statusApproval = Parameter::where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
-            $statusNonApproval = Parameter::where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
+            if ($request->kreditId != '') {
 
-            if ($notaKreditHeader->statusapproval == $statusApproval->id) {
-                $notaKreditHeader->statusapproval = $statusNonApproval->id;
-            } else {
-                $notaKreditHeader->statusapproval = $statusApproval->id;
-            }
+                $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                    ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
+                $statusNonApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                    ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
 
-            $notaKreditHeader->tglapproval = date('Y-m-d', time());
-            $notaKreditHeader->userapproval = auth('api')->user()->name;
+                for ($i = 0; $i < count($request->kreditId); $i++) {
+                    $notaKredit = NotaKreditHeader::find($request->kreditId[$i]);
+                    if ($notaKredit->statusapproval == $statusApproval->id) {
+                        $notaKredit->statusapproval = $statusNonApproval->id;
+                        $aksi = $statusNonApproval->text;
+                    } else {
+                        $notaKredit->statusapproval = $statusApproval->id;
+                        $aksi = $statusApproval->text;
+                    }
 
-            if ($notaKreditHeader->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($notaKreditHeader->getTable()),
-                    'postingdari' => 'UN/APPROVE NOKTA KREDIT',
-                    'idtrans' => $notaKreditHeader->id,
-                    'nobuktitrans' => $notaKreditHeader->id,
-                    'aksi' => 'UN/APPROVE',
-                    'datajson' => $notaKreditHeader->toArray(),
-                    'modifiedby' => $notaKreditHeader->modifiedby
-                ];
+                    $notaKredit->tglapproval = date('Y-m-d', time());
+                    $notaKredit->userapproval = auth('api')->user()->name;
 
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+                    if ($notaKredit->save()) {
+                        $logTrail = [
+                            'namatabel' => strtoupper($notaKredit->getTable()),
+                            'postingdari' => 'APPROVAL NOTA KREDIT',
+                            'idtrans' => $notaKredit->id,
+                            'nobuktitrans' => $notaKredit->nobukti,
+                            'aksi' => $aksi,
+                            'datajson' => $notaKredit->toArray(),
+                            'modifiedby' => auth('api')->user()->name
+                        ];
 
+                        $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                        $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+                    }
+                }
                 DB::commit();
+                return response([
+                    'message' => 'Berhasil'
+                ]);
+            } else {
+                $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'WP')
+                    ->first();
+                return response([
+                    'errors' => [
+                        'penerimaan' => "NOTA KREDIT $query->keterangan"
+                    ],
+                    'message' => "NOTA KREDIT $query->keterangan",
+                ], 422);
             }
-
-            return response([
-                'message' => 'Berhasil',
-                'data' => $notaKreditHeader
-            ]);
         } catch (\Throwable $th) {
             throw $th;
         }

@@ -472,7 +472,7 @@ class PenerimaanHeaderController extends Controller
                         [
                             'nobukti' => $penerimaanheader->nobukti,
                             'tglbukti' => date('Y-m-d', strtotime($penerimaanheader->tglbukti)),
-                            'coa' => ($request->datadetail != '') ? $request->datadetail[$i]['coakredit'] ?? $memo['JURNAL']: $request->coakredit[$i] ?? '-',
+                            'coa' => ($request->datadetail != '') ? $request->datadetail[$i]['coakredit'] ?? $memo['JURNAL'] : $request->coakredit[$i] ?? '-',
                             'nominal' => ($request->datadetail != '') ? -$request->datadetail[$i]['nominal'] : -$request->nominal_detail[$i],
                             'keterangan' => ($request->datadetail != '') ? $request->datadetail[$i]['keterangan'] : $request->keterangan_detail[$i],
                             'modifiedby' => auth('api')->user()->name,
@@ -622,50 +622,64 @@ class PenerimaanHeaderController extends Controller
         }
     }
 
-
-
-    public function approval($id)
+    /**
+     * @ClassName
+     */
+    public function approval(Request $request)
     {
         DB::beginTransaction();
 
         try {
-            $penerimaanHeader = PenerimaanHeader::find($id);
-            $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
-                ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
-            $statusNonApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
-                ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
+            if ($request->penerimaanId != '') {
 
-            if ($penerimaanHeader->statusapproval == $statusApproval->id) {
-                $penerimaanHeader->statusapproval = $statusNonApproval->id;
-                $aksi = $statusNonApproval->text;
-            } else {
-                $penerimaanHeader->statusapproval = $statusApproval->id;
-                $aksi = $statusApproval->text;
-            }
+                $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                    ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
+                $statusNonApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                    ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
 
-            $penerimaanHeader->tglapproval = date('Y-m-d', time());
-            $penerimaanHeader->userapproval = auth('api')->user()->name;
+                for ($i = 0; $i < count($request->penerimaanId); $i++) {
+                    $penerimaanHeader = PenerimaanHeader::find($request->penerimaanId[$i]);
 
-            if ($penerimaanHeader->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($penerimaanHeader->getTable()),
-                    'postingdari' => 'APPROVED KAS/BANK',
-                    'idtrans' => $penerimaanHeader->id,
-                    'nobuktitrans' => $penerimaanHeader->nobukti,
-                    'aksi' => $aksi,
-                    'datajson' => $penerimaanHeader->toArray(),
-                    'modifiedby' => auth('api')->user()->name
-                ];
+                    if ($penerimaanHeader->statusapproval == $statusApproval->id) {
+                        $penerimaanHeader->statusapproval = $statusNonApproval->id;
+                        $aksi = $statusNonApproval->text;
+                    } else {
+                        $penerimaanHeader->statusapproval = $statusApproval->id;
+                        $aksi = $statusApproval->text;
+                    }
 
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+                    $penerimaanHeader->tglapproval = date('Y-m-d', time());
+                    $penerimaanHeader->userapproval = auth('api')->user()->name;
 
+                    if ($penerimaanHeader->save()) {
+                        $logTrail = [
+                            'namatabel' => strtoupper($penerimaanHeader->getTable()),
+                            'postingdari' => 'APPROVAL PENERIMAAN KAS/BANK',
+                            'idtrans' => $penerimaanHeader->id,
+                            'nobuktitrans' => $penerimaanHeader->nobukti,
+                            'aksi' => $aksi,
+                            'datajson' => $penerimaanHeader->toArray(),
+                            'modifiedby' => auth('api')->user()->name
+                        ];
+
+                        $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                        $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+                    }
+                }
                 DB::commit();
+                return response([
+                    'message' => 'Berhasil'
+                ]);
+            } else {
+                $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'WP')
+                    ->first();
+                return response([
+                    'errors' => [
+                        'penerimaan' => "PENERIMAAN $query->keterangan"
+                    ],
+                    'message' => "PENERIMAAN $query->keterangan",
+                ], 422);
             }
-
-            return response([
-                'message' => 'Berhasil'
-            ]);
         } catch (\Throwable $th) {
             throw $th;
         }

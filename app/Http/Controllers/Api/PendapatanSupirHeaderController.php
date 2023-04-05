@@ -316,6 +316,69 @@ class PendapatanSupirHeaderController extends Controller
         }
     }
 
+    
+    /**
+     * @ClassName
+     */
+    public function approval(Request $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            if ($request->pendapatanId != '') {
+
+                $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                    ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
+                $statusNonApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                    ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
+
+                for ($i = 0; $i < count($request->pendapatanId); $i++) {
+                    $pendapatanSupir = PendapatanSupirHeader::find($request->pendapatanId[$i]);
+                    if ($pendapatanSupir->statusapproval == $statusApproval->id) {
+                        $pendapatanSupir->statusapproval = $statusNonApproval->id;
+                        $aksi = $statusNonApproval->text;
+                    } else {
+                        $pendapatanSupir->statusapproval = $statusApproval->id;
+                        $aksi = $statusApproval->text;
+                    }
+
+                    $pendapatanSupir->tglapproval = date('Y-m-d', time());
+                    $pendapatanSupir->userapproval = auth('api')->user()->name;
+
+                    if ($pendapatanSupir->save()) {
+                        $logTrail = [
+                            'namatabel' => strtoupper($pendapatanSupir->getTable()),
+                            'postingdari' => 'APPROVAL PENDAPATAN SUPIR',
+                            'idtrans' => $pendapatanSupir->id,
+                            'nobuktitrans' => $pendapatanSupir->nobukti,
+                            'aksi' => $aksi,
+                            'datajson' => $pendapatanSupir->toArray(),
+                            'modifiedby' => auth('api')->user()->name
+                        ];
+
+                        $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                        $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+                    }
+                }
+                DB::commit();
+                return response([
+                    'message' => 'Berhasil'
+                ]);
+            } else {
+                $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'WP')
+                    ->first();
+                return response([
+                    'errors' => [
+                        'penerimaan' => "PENDAPATAN SUPIR $query->keterangan"
+                    ],
+                    'message' => "PENDAPATAN SUPIR $query->keterangan",
+                ], 422);
+            }
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
     public function printReport($id)
     {
         DB::beginTransaction();

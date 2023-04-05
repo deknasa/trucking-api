@@ -58,10 +58,10 @@ class InvoiceHeader extends MyModel
         if (request()->tgldari && request()->tglsampai) {
             $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
         }
-                
+
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
-        
+
         $this->sort($query);
         $this->filter($query);
         $this->paginate($query);
@@ -329,18 +329,18 @@ class InvoiceHeader extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'statusapproval') {
-                            $query = $query->where('statusapproval.text', '=', $filters['data']);
-                        } else if ($filters['field'] == 'statuscetak') {
-                            $query = $query->where('statuscetak.text', '=', $filters['data']);
-                        } else if ($filters['field'] == 'agen') {
-                            $query = $query->where('agen.namaagen', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'jenisorder_id') {
-                            $query = $query->where('jenisorder.keterangan', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'cabang_id') {
-                            $query = $query->where('cabang.namacabang', 'LIKE', "%$filters[data]%");
-                        } else {
-                            $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                        if ($filters['field'] != '') {
+                            if ($filters['field'] == 'statusapproval') {
+                                $query = $query->where('statusapproval.text', '=', $filters['data']);
+                            } else if ($filters['field'] == 'statuscetak') {
+                                $query = $query->where('statuscetak.text', '=', $filters['data']);
+                            } else if ($filters['field'] == 'agen') {
+                                $query = $query->where('agen.namaagen', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'jenisorder_id') {
+                                $query = $query->where('jenisorder.keterangan', 'LIKE', "%$filters[data]%");
+                            } else {
+                                $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            }
                         }
                     }
 
@@ -348,18 +348,18 @@ class InvoiceHeader extends MyModel
                 case "OR":
                     $query = $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
-                            if ($filters['field'] == 'statusapproval') {
-                                $query = $query->orWhere('statusapproval.text', '=', $filters['data']);
-                            } else if ($filters['field'] == 'statuscetak') {
-                                $query = $query->orWhere('statuscetak.text', '=', $filters['data']);
-                            } else if ($filters['field'] == 'agen') {
-                                $query = $query->orWhere('agen.namaagen', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'jenisorder_id') {
-                                $query = $query->orWhere('jenisorder.keterangan', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'cabang_id') {
-                                $query = $query->orWhere('cabang.namacabang', 'LIKE', "%$filters[data]%");
-                            } else {
-                                $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            if ($filters['field'] != '') {
+                                if ($filters['field'] == 'statusapproval') {
+                                    $query = $query->orWhere('statusapproval.text', '=', $filters['data']);
+                                } else if ($filters['field'] == 'statuscetak') {
+                                    $query = $query->orWhere('statuscetak.text', '=', $filters['data']);
+                                } else if ($filters['field'] == 'agen') {
+                                    $query = $query->orWhere('agen.namaagen', 'LIKE', "%$filters[data]%");
+                                } else if ($filters['field'] == 'jenisorder_id') {
+                                    $query = $query->orWhere('jenisorder.keterangan', 'LIKE', "%$filters[data]%");
+                                } else {
+                                    $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                }
                             }
                         }
                     });

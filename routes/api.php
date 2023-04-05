@@ -562,6 +562,7 @@ route::middleware(['auth:api'])->group(function () {
     // Route::get('pengeluaranstok/export', [PengeluaranStokController::class,'export']);
     Route::post('invoiceextraheader/{id}/approval', [InvoiceExtraHeaderController::class, 'approval']);
     Route::get('invoiceextraheader/{id}/printreport', [InvoiceExtraHeaderController::class, 'printReport']);
+    Route::post('invoiceextraheader/approval', [InvoiceExtraHeaderController::class, 'approval']);
     Route::post('invoiceextraheader/{id}/cekvalidasi', [InvoiceExtraHeaderController::class, 'cekvalidasi'])->name('invoiceextraheader.cekvalidasi');
     Route::resource('invoiceextraheader', InvoiceExtraHeaderController::class);
     Route::resource('invoiceextradetail', InvoiceExtraDetailController::class);
@@ -612,6 +613,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('hutangbayarheader/combo', [HutangBayarHeaderController::class, 'combo']);
     Route::get('hutangbayarheader/{id}/{field}/getHutang', [HutangBayarHeaderController::class, 'getHutang'])->name('hutangbayarheader.getHutang');
     Route::get('hutangbayarheader/comboapproval', [HutangBayarHeaderController::class, 'comboapproval']);
+    Route::post('hutangbayarheader/approval', [HutangBayarHeaderController::class, 'approval']);
     Route::post('hutangbayarheader/{id}/cekapproval', [HutangBayarHeaderController::class, 'cekapproval'])->name('hutangbayarheader.cekapproval');
     Route::get('hutangbayarheader/{id}/{fieldid}/getPembayaran', [HutangBayarHeaderController::class, 'getPembayaran']);
     Route::get('hutangbayarheader/grid', [HutangBayarHeaderController::class, 'grid']);
@@ -665,7 +667,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('notakreditheader/field_length', [NotaKreditHeaderController::class, 'fieldLength']);
     Route::get('notakreditheader/{id}/getpelunasan', [NotaKreditHeaderController::class, 'getPelunasan']);
     Route::get('notakreditheader/{id}/getnotakredit', [NotaKreditHeaderController::class, 'getNotaKredit']);
-    Route::post('notakreditheader/{id}/approval', [NotaKreditHeaderController::class, 'approval']);
+    Route::post('notakreditheader/approval', [NotaKreditHeaderController::class, 'approval']);
     Route::get('notakreditheader/export', [NotaKreditHeaderController::class, 'export']);
     Route::resource('notakreditheader', NotaKreditHeaderController::class);
     Route::resource('notakredit_detail', NotaKreditDetailController::class);
@@ -675,7 +677,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('notadebetheader/field_length', [NotaDebetHeaderController::class, 'fieldLength']);
     Route::get('notadebetheader/{id}/getpelunasan', [NotaDebetHeaderController::class, 'getPelunasan']);
     Route::get('notadebetheader/{id}/getnotadebet', [NotaDebetHeaderController::class, 'getNotaDebet']);
-    Route::post('notadebetheader/{id}/approval', [NotaDebetHeaderController::class, 'approval']);
+    Route::post('notadebetheader/approval', [NotaDebetHeaderController::class, 'approval']);
     Route::get('notadebetheader/export', [NotaDebetHeaderController::class, 'export']);
     Route::resource('notadebetheader', NotaDebetHeaderController::class);
     Route::resource('notadebet_detail', NotaDebetDetailController::class);
@@ -742,6 +744,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('invoiceheader/{id}/getEdit', [InvoiceHeaderController::class, 'getEdit']);
     Route::get('invoiceheader/{id}/getAllEdit', [InvoiceHeaderController::class, 'getAllEdit']);
     Route::get('invoiceheader/getSP', [InvoiceHeaderController::class, 'getSP']);
+    Route::post('invoiceheader/approval', [InvoiceHeaderController::class, 'approval']);
     Route::post('invoiceheader/{id}/cekvalidasi', [InvoiceHeaderController::class, 'cekvalidasi'])->name('invoiceheader.cekvalidasi');
     Route::resource('invoiceheader', InvoiceHeaderController::class);
     Route::get('invoicedetail/piutang', [InvoiceDetailController::class, 'piutang']);
@@ -770,6 +773,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('penerimaanheader/no_bukti', [PenerimaanHeaderController::class, 'getNoBukti']);
     Route::get('penerimaanheader/combo', [PenerimaanHeaderController::class, 'combo']);
     Route::get('penerimaanheader/{id}/tarikPelunasan', [PenerimaanHeaderController::class, 'tarikPelunasan']);
+    Route::post('penerimaanheader/approval', [PenerimaanHeaderController::class, 'approval']);
     Route::get('penerimaanheader/{id}/{table}/getPelunasan', [PenerimaanHeaderController::class, 'getPelunasan']);
     Route::get('penerimaanheader/grid', [PenerimaanHeaderController::class, 'grid']);
     Route::get('penerimaanheader/default', [PenerimaanHeaderController::class, 'default']);
@@ -809,6 +813,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('pengeluaranheader/combo', [PengeluaranHeaderController::class, 'combo']);
     Route::get('pengeluaranheader/grid', [PengeluaranHeaderController::class, 'grid']);
     Route::get('pengeluaranheader/default', [PengeluaranHeaderController::class, 'default']);
+    Route::post('pengeluaranheader/approval', [PengeluaranHeaderController::class, 'approval']);
     Route::post('pengeluaranheader/{id}/cekValidasiAksi', [PengeluaranHeaderController::class, 'cekValidasiAksi'])->name('pengeluaranheader.cekValidasiAksi');
     Route::post('pengeluaranheader/{id}/cekvalidasi', [PengeluaranHeaderController::class, 'cekvalidasi'])->name('pengeluaranheader.cekvalidasi');
     Route::resource('pengeluaranheader', PengeluaranHeaderController::class);
@@ -822,6 +827,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('penerimaangiroheader/field_length', [PenerimaanGiroHeaderController::class, 'fieldLength']);
     Route::get('penerimaangiroheader/combo', [PenerimaanGiroHeaderController::class, 'combo']);
     Route::get('penerimaangiroheader/grid', [PenerimaanGiroHeaderController::class, 'grid']);
+    Route::post('penerimaangiroheader/approval', [PenerimaanGiroHeaderController::class, 'approval']);
     Route::get('penerimaangiroheader/{id}/tarikPelunasan', [PenerimaanGiroHeaderController::class, 'tarikPelunasan']);
     Route::get('penerimaangiroheader/{id}/getPelunasan', [PenerimaanGiroHeaderController::class, 'getPelunasan']);
     Route::resource('penerimaangiroheader', PenerimaanGiroHeaderController::class);
@@ -859,6 +865,7 @@ route::middleware(['auth:api'])->group(function () {
 
     Route::get('pendapatansupirheader/{id}/printreport', [PendapatanSupirHeaderController::class, 'printReport']);
     Route::post('pendapatansupirheader/{id}/cekvalidasi', [PendapatanSupirHeaderController::class, 'cekvalidasi'])->name('pendapatansupirheader.cekvalidasi');
+    Route::post('pendapatansupirheader/approval', [PendapatanSupirHeaderController::class, 'approval']);
     Route::resource('pendapatansupirheader', PendapatanSupirHeaderController::class)->parameters(['pendapatansupirheader' => 'pendapatanSupirHeader']);
     Route::resource('pendapatansupirdetail', PendapatanSupirDetailController::class);
 

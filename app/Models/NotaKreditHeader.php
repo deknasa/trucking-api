@@ -190,13 +190,14 @@ class NotaKreditHeader extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        switch ($filters['field']) {
-                            case 'statusapproval_memo':
-                                $query = $query->where('parameter.memo', 'LIKE', "%$filters[data]%");
-                                break;
-                            default:
+                        if ($filters['field'] != '') {
+                            if ($filters['field'] == 'statusapproval_memo') {
+                                $query = $query->where('parameter.text', '=', $filters['data']);
+                            } else if ($filters['field'] == 'statuscetak_memo') {
+                                $query = $query->where('statuscetak.text', '=', $filters['data']);
+                            } else {
                                 $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                                break;
+                            }
                         }
                     }
 
@@ -204,14 +205,14 @@ class NotaKreditHeader extends MyModel
                 case "OR":
                     $query = $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
-                            switch ($filters['field']) {
-                                case 'statusapproval_memo':
-                                    $query = $query->where('parameter.memo', 'LIKE', "%$filters[data]%");
-                                    break;
-
-                                default:
+                            if ($filters['field'] != '') {
+                                if ($filters['field'] == 'statusapproval_memo') {
+                                    $query = $query->orWhere('parameter.text', '=', $filters['data']);
+                                } else if ($filters['field'] == 'statuscetak_memo') {
+                                    $query = $query->orWhere('statuscetak.text', '=', $filters['data']);
+                                } else {
                                     $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                                    break;
+                                }
                             }
                         }
                     });

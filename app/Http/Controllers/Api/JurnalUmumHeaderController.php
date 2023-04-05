@@ -444,8 +444,10 @@ class JurnalUmumHeaderController extends Controller
 
                     if ($jurnalumum->statusapproval == $statusApproval->id) {
                         $jurnalumum->statusapproval = $statusNonApproval->id;
+                        $aksi = $statusNonApproval->text;
                     } else {
                         $jurnalumum->statusapproval = $statusApproval->id;
+                        $aksi = $statusApproval->text;
                     }
 
                     $jurnalumum->tglapproval = date('Y-m-d H:i:s');
@@ -454,12 +456,12 @@ class JurnalUmumHeaderController extends Controller
                     $jurnalumum->save();
                     $logTrail = [
                         'namatabel' => strtoupper($jurnalumum->getTable()),
-                        'postingdari' => 'UN/APPROVE Jurnal Umum',
+                        'postingdari' => 'APPROVAL JURNAL UMUM',
                         'idtrans' => $jurnalumum->id,
-                        'nobuktitrans' => $jurnalumum->id,
-                        'aksi' => 'UN/APPROVE',
+                        'nobuktitrans' => $jurnalumum->nobukti,
+                        'aksi' => $aksi,
                         'datajson' => $jurnalumum->toArray(),
-                        'modifiedby' => $jurnalumum->modifiedby
+                        'modifiedby' => auth('api')->user()->name
                     ];
 
                     $validatedLogTrail = new StoreLogTrailRequest($logTrail);
