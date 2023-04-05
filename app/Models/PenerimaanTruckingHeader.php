@@ -101,6 +101,9 @@ class PenerimaanTruckingHeader extends MyModel
         if (request()->tgldari) {
             $query->whereBetween('tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
         }
+        if (request()->penerimaanheader_id) {
+            $query->where('penerimaantrucking_id',request()->penerimaanheader_id);
+        }
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -201,6 +204,9 @@ class PenerimaanTruckingHeader extends MyModel
         $query = $this->selectColumns($query);
         if (request()->tgldariheader) {
             $query->whereBetween('tglbukti', [date('Y-m-d',strtotime(request()->tgldariheader )), date('Y-m-d',strtotime(request()->tglsampaiheader ))]);
+        }
+        if (request()->penerimaanheader_id) {
+            $query->where('penerimaantrucking_id',request()->penerimaanheader_id);
         }
         $this->sort($query);
         $models = $this->filter($query);
