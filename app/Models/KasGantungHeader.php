@@ -166,7 +166,7 @@ class KasGantungHeader extends MyModel
 
     public function findUpdate($id)
     {
-        $query = DB::table('kasgantungheader')->from(DB::raw("kasgantungheader with (readuncommitted)"))
+        $query = KasGantungHeader::from(DB::raw("kasgantungheader with (readuncommitted)"))
             ->select(
                 'kasgantungheader.id',
                 'kasgantungheader.nobukti',

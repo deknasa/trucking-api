@@ -325,34 +325,38 @@ class KasGantungHeaderController extends Controller
         DB::beginTransaction();
 
         try {
-            $bank_id = $kasgantungheader->bank_id;
-            if ($request->from == "AbsensiSupirApprovalHeader") {
-                $bank_id = $request->bank_id;
+            $isUpdateUangJalan = $request->isUpdateUangJalan ?? 0;
+
+            if ($isUpdateUangJalan == 0) {
+                $bank_id = $kasgantungheader->bank_id;
+                if ($request->from == "AbsensiSupirApprovalHeader") {
+                    $bank_id = $request->bank_id;
+                }
+                $bank = Bank::lockForUpdate()->findOrFail($bank_id);
+
+                /* Edit header */
+
+                $kasgantungheader->penerima_id = $request->penerima_id ?? '';
             }
-            $bank = Bank::lockForUpdate()->findOrFail($bank_id);
-
-            /* Edit header */
-
-            $kasgantungheader->penerima_id = $request->penerima_id ?? '';
+            $kasgantungheader->postingdari = $request->postingdari ?? 'EDIT KAS GANTUNG';
             $kasgantungheader->modifiedby = auth('api')->user()->name;
 
 
 
-            if ($kasgantungheader->save()) {
+            $kasgantungheader->save();
+            $logTrail = [
+                'namatabel' => strtoupper($kasgantungheader->getTable()),
+                'postingdari' => $request->postingdari ?? 'EDIT KAS GANTUNG HEADER',
+                'idtrans' => $kasgantungheader->id,
+                'nobuktitrans' => $kasgantungheader->nobukti,
+                'aksi' => 'EDIT',
+                'datajson' => $kasgantungheader->toArray(),
+                'modifiedby' => $kasgantungheader->modifiedby
+            ];
 
-                $logTrail = [
-                    'namatabel' => strtoupper($kasgantungheader->getTable()),
-                    'postingdari' => 'EDIT KAS GANTUNG HEADER',
-                    'idtrans' => $kasgantungheader->id,
-                    'nobuktitrans' => $kasgantungheader->nobukti,
-                    'aksi' => 'EDIT',
-                    'datajson' => $kasgantungheader->toArray(),
-                    'modifiedby' => $kasgantungheader->modifiedby
-                ];
+            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+            $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-            }
 
 
             /* Delete existing detail */
@@ -361,34 +365,41 @@ class KasGantungHeaderController extends Controller
             /* Store detail */
             $detaillog = [];
             $total = 0;
-            for ($i = 0; $i < count($request->nominal); $i++) {
+            if ($request->datadetail != '') {
+                $counter = $request->datadetail;
+            } else {
+                $counter = $request->nominal;
+            }
+
+            for ($i = 0; $i < count($counter); $i++) {
                 $datadetail = [
                     'kasgantung_id' => $kasgantungheader->id,
                     'nobukti' => $kasgantungheader->nobukti,
-                    'nominal' => $request->nominal[$i],
-                    'coa' => $bank->coa ?? '',
-                    'keterangan' => $request->keterangan_detail[$i],
+                    'nominal' => ($isUpdateUangJalan != 0) ? $request->datadetail[$i]['nominal'] : $request->nominal[$i],
+                    'coa' => ($isUpdateUangJalan != 0) ? '' : $bank->coa ?? '',
+                    'keterangan' => ($isUpdateUangJalan != 0) ? $request->datadetail[$i]['keterangan'] : $request->keterangan_detail[$i],
                     'modifiedby' => auth('api')->user()->name,
                 ];
 
                 $data = new StoreKasGantungDetailRequest($datadetail);
                 $datadetails = app(KasGantungDetailController::class)->store($data);
-
+                
                 if ($datadetails['error']) {
                     return response($datadetails, 422);
                 } else {
                     $iddetail = $datadetails['id'];
                     $tabeldetail = $datadetails['tabel'];
                 }
-
+                
                 $detaillog[] = $datadetails['detail']->toArray();
-
-                $total += $request->nominal[$i];
+                
+                // $total += $request->nominal[$i];
             }
+
 
             $datalogtrail = [
                 'namatabel' => strtoupper($tabeldetail),
-                'postingdari' => 'EDIT KAS GANTUNG DETAIL',
+                'postingdari' => $request->postingdari ?? 'EDIT KAS GANTUNG DETAIL',
                 'idtrans' =>  $storedLogTrail['id'],
                 'nobuktitrans' => $kasgantungheader->nobukti,
                 'aksi' => 'EDIT',
@@ -403,113 +414,135 @@ class KasGantungHeaderController extends Controller
             $request->sortorder = $request->sortorder ?? 'asc';
 
 
+            if ($isUpdateUangJalan == 0) {
 
-            // return DB::table('parameter')->where('grp', 'JURNAL KAS GANTUNG')->where('subgrp', 'DEBET')->first();
-            $coakredit = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
-                ->where('grp', 'JURNAL KAS GANTUNG')->where('subgrp', 'DEBET')->first();
-            $memo =  json_decode($coakredit->memo, true);
-            $penerima = Penerima::from(DB::raw("penerima with (readuncommitted)"))->where("id", $request->penerima_id)->first();
-            $namaPenerima = ($penerima != null) ? $penerima->namapenerima : '';
+                // return DB::table('parameter')->where('grp', 'JURNAL KAS GANTUNG')->where('subgrp', 'DEBET')->first();
+                $coakredit = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+                    ->where('grp', 'JURNAL KAS GANTUNG')->where('subgrp', 'DEBET')->first();
+                $memo =  json_decode($coakredit->memo, true);
+                $penerima = Penerima::from(DB::raw("penerima with (readuncommitted)"))->where("id", $request->penerima_id)->first();
+                $namaPenerima = ($penerima != null) ? $penerima->namapenerima : '';
 
-            $pengeluaranDetail = [];
-            for ($i = 0; $i < count($request->nominal); $i++) {
-                $detail = [];
+                $pengeluaranDetail = [];
+                for ($i = 0; $i < count($request->nominal); $i++) {
+                    $detail = [];
 
-                $detail = [
-                    'entriluar' => 1,
-                    'nobukti' => $kasgantungheader->nobukti,
-                    'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
-                    'nowarkat' => '',
-                    'tgljatuhtempo' => '',
-                    'nominal' => $request->nominal[$i],
-                    'coadebet' => $memo['JURNAL'],
-                    'coakredit' => $bank->coa,
-                    'keterangan' => $request->keterangan_detail[$i],
-                    'bulanbeban' => '',
-                    'modifiedby' =>  auth('api')->user()->name
-                ];
-                // $total += $nominal;
-                $pengeluaranDetail[] = $detail;
-            }
+                    $detail = [
+                        'entriluar' => 1,
+                        'nobukti' => $kasgantungheader->nobukti,
+                        'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
+                        'nowarkat' => '',
+                        'tgljatuhtempo' => '',
+                        'nominal' => $request->nominal[$i],
+                        'coadebet' => $memo['JURNAL'],
+                        'coakredit' => $bank->coa,
+                        'keterangan' => $request->keterangan_detail[$i],
+                        'bulanbeban' => '',
+                        'modifiedby' =>  auth('api')->user()->name
+                    ];
+                    // $total += $nominal;
+                    $pengeluaranDetail[] = $detail;
+                }
 
-            $pengeluaranHeader = [
-                'dibayarke' => $namaPenerima,
-                'bank_id' => $kasgantungheader->bank_id ?? 0,
-                'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
-                'isUpdate' => 1,
-                'postingdari' => 'EDIT KAS GANTUNG',
-                'modifiedby' => auth('api')->user()->name,
-                'datadetail' => $pengeluaranDetail,
-                'approvalabsensisupir' => $request->approvalabsensisupir ?? false,
-                'kasgantungheader_id' => $kasgantungheader->id ?? 0,
-                'absensisupirapprovalheader_id' => $request->absensisupirapprovalheader_id ?? 0,
-                'coakaskeluar' => $request->coakaskeluar ?? 0,
-            ];
-            if ($bank->tipe == 'KAS') {
-                $jenisTransaksi = Parameter::from(DB::raw("parameter with (readuncommitted)"))
-                    ->where('grp', 'JENIS TRANSAKSI')->where('text', 'KAS')->first();
-            }
-            if ($bank->tipe == 'BANK') {
-                $jenisTransaksi = Parameter::from(DB::raw("parameter with (readuncommitted)"))
-                    ->where('grp', 'JENIS TRANSAKSI')->where('text', 'BANK')->first();
-            }
+               
 
-
-            // dd($pengeluaranHeader);
-            // return response(PengeluaranHeader::where('nobukti', $kasgantungheader->pengeluaran_nobukti)->get(),422);
-            $get = PengeluaranHeader::from(DB::raw("pengeluaranheader with (readuncommitted)"))->where('nobukti', $kasgantungheader->pengeluaran_nobukti)->first();
-            $approvalabsensisupir = $request->approvalabsensisupir ?? false;
-            $request->from = $request->from ?? false;
-            $bank = Bank::lockForUpdate()->findOrFail($bank_id);
-            if ($request->from == "AbsensiSupirApprovalHeader") {
-                $querysubgrppengeluaran = DB::table('bank')->from(DB::raw("bank with (readuncommitted)"))
-                    ->select(
-                        'parameter.grp',
-                        'parameter.subgrp',
-                        'bank.formatpengeluaran',
-                        'bank.coa'
-                    )
-                    ->join(DB::raw("parameter with (readuncommitted)"), 'bank.formatpengeluaran', 'parameter.id')
-                    ->whereRaw("bank.id = $request->bank_id")
-                    ->first();
-                $contentKasgantung = new Request();
-                $contentKasgantung['group'] = $querysubgrppengeluaran->grp;
-                $contentKasgantung['subgroup'] = $querysubgrppengeluaran->subgrp;
-                $contentKasgantung['table'] = 'pengeluaranheader';
-                $contentKasgantung['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
-                $parameterController = new ParameterController;
-
-                $statusApp = $parameterController->getparameterid('STATUS APPROVAL', 'STATUS APPROVAL', 'NON APPROVAL');
-
-                $nobuktikaskeluar = app(Controller::class)->getRunningNumber($contentKasgantung)->original['data'];
                 $pengeluaranHeader = [
-                    'tanpaprosesnobukti' => 1,
-                    'nobukti' => $nobuktikaskeluar,
-                    'tglbukti' => date('Y-m-d', strtotime($request->tglkaskeluar)),
-                    'pelanggan_id' => 0,
-                    'statusjenistransaksi' => $jenisTransaksi->id,
-                    'postingdari' => 'ENTRY KAS GANTUNG',
-                    'statusapproval' => $statusApp->id,
                     'dibayarke' => $namaPenerima,
-                    'cabang_id' => 1, // masih manual karena belum di catat di session
-                    'bank_id' => $bank->id,
-                    'userapproval' => "",
-                    'tglapproval' => "",
-                    'transferkeac' => '',
-                    'transferkean' => '',
-                    'trasnferkebank' => '',
-                    'statusformat' => $querysubgrppengeluaran->formatpengeluaran,
-                    'modifiedby' =>  auth('api')->user()->name,
-                    'datadetail' => $pengeluaranDetail
+                    'bank_id' => $kasgantungheader->bank_id ?? 0,
+                    'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
+                    'isUpdate' => 1,
+                    'postingdari' => 'EDIT KAS GANTUNG',
+                    'modifiedby' => auth('api')->user()->name,
+                    'datadetail' => $pengeluaranDetail,
+                    'approvalabsensisupir' => $request->approvalabsensisupir ?? false,
+                    'kasgantungheader_id' => $kasgantungheader->id ?? 0,
+                    'absensisupirapprovalheader_id' => $request->absensisupirapprovalheader_id ?? 0,
+                    'coakaskeluar' => $request->coakaskeluar ?? 0,
                 ];
+                if ($bank->tipe == 'KAS') {
+                    $jenisTransaksi = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                        ->where('grp', 'JENIS TRANSAKSI')->where('text', 'KAS')->first();
+                }
+                if ($bank->tipe == 'BANK') {
+                    $jenisTransaksi = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                        ->where('grp', 'JENIS TRANSAKSI')->where('text', 'BANK')->first();
+                }
 
-                $pengeluaran = new StorePengeluaranHeaderRequest($pengeluaranHeader);
-                app(PengeluaranHeaderController::class)->store($pengeluaran);
-            } else {
-                $newPengeluaran = new PengeluaranHeader();
-                $newPengeluaran = $newPengeluaran->findAll($get->id);
-                $pengeluaran = new UpdatePengeluaranHeaderRequest($pengeluaranHeader);
-                app(PengeluaranHeaderController::class)->update($pengeluaran, $newPengeluaran);
+
+                // dd($pengeluaranHeader);
+                // return response(PengeluaranHeader::where('nobukti', $kasgantungheader->pengeluaran_nobukti)->get(),422);
+                $get = PengeluaranHeader::from(DB::raw("pengeluaranheader with (readuncommitted)"))->where('nobukti', $kasgantungheader->pengeluaran_nobukti)->first();
+                $approvalabsensisupir = $request->approvalabsensisupir ?? false;
+                $request->from = $request->from ?? false;
+                $bank = Bank::lockForUpdate()->findOrFail($bank_id);
+                if ($request->from == "AbsensiSupirApprovalHeader") {
+                    $querysubgrppengeluaran = DB::table('bank')->from(DB::raw("bank with (readuncommitted)"))
+                        ->select(
+                            'parameter.grp',
+                            'parameter.subgrp',
+                            'bank.formatpengeluaran',
+                            'bank.coa'
+                        )
+                        ->join(DB::raw("parameter with (readuncommitted)"), 'bank.formatpengeluaran', 'parameter.id')
+                        ->whereRaw("bank.id = $request->bank_id")
+                        ->first();
+                    $contentKasgantung = new Request();
+                    $contentKasgantung['group'] = $querysubgrppengeluaran->grp;
+                    $contentKasgantung['subgroup'] = $querysubgrppengeluaran->subgrp;
+                    $contentKasgantung['table'] = 'pengeluaranheader';
+                    $contentKasgantung['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
+                    $parameterController = new ParameterController;
+
+                    $statusApp = $parameterController->getparameterid('STATUS APPROVAL', 'STATUS APPROVAL', 'NON APPROVAL');
+
+                    $nobuktikaskeluar = app(Controller::class)->getRunningNumber($contentKasgantung)->original['data'];
+                    
+                    $kasgantungheader->bank_id = $request->bank_id;
+                    $kasgantungheader->pengeluaran_nobukti = $nobuktikaskeluar;
+                    $kasgantungheader->save();
+
+                    $pengeluaranDetailApproval[] = [
+                        'entriluar' => 1,
+                        'nobukti' => $nobuktikaskeluar,
+                        'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
+                        'nowarkat' => '',
+                        'tgljatuhtempo' => '',
+                        'nominal' => array_sum($request->nominal),
+                        'coadebet' => $memo['JURNAL'],
+                        'coakredit' => $bank->coa,
+                        'keterangan' => "APPROVAL ABSENSI $request->absensisupir_nobukti ",
+                        'bulanbeban' => '',
+                        'modifiedby' =>  auth('api')->user()->name
+                    ];
+                    $pengeluaranHeaderApproval = [
+                        'tanpaprosesnobukti' => 1,
+                        'nobukti' => $nobuktikaskeluar,
+                        'tglbukti' => date('Y-m-d', strtotime($request->tglkaskeluar)),
+                        'pelanggan_id' => 0,
+                        'statusjenistransaksi' => $jenisTransaksi->id,
+                        'postingdari' => 'ENTRY ABSENSI SUPIR APPROVAL',
+                        'statusapproval' => $statusApp->id,
+                        'dibayarke' => $namaPenerima,
+                        'cabang_id' => 1, // masih manual karena belum di catat di session
+                        'bank_id' => $bank->id,
+                        'userapproval' => "",
+                        'tglapproval' => "",
+                        'transferkeac' => '',
+                        'transferkean' => '',
+                        'trasnferkebank' => '',
+                        'statusformat' => $querysubgrppengeluaran->formatpengeluaran,
+                        'modifiedby' =>  auth('api')->user()->name,
+                        'datadetail' => $pengeluaranDetailApproval
+                    ];
+
+                    $pengeluaran = new StorePengeluaranHeaderRequest($pengeluaranHeaderApproval);
+                    app(PengeluaranHeaderController::class)->store($pengeluaran);
+                } else {
+                    $newPengeluaran = new PengeluaranHeader();
+                    $newPengeluaran = $newPengeluaran->findAll($get->id);
+                    $pengeluaran = new UpdatePengeluaranHeaderRequest($pengeluaranHeader);
+                    app(PengeluaranHeaderController::class)->update($pengeluaran, $newPengeluaran);
+                }
             }
 
             DB::commit();
@@ -526,7 +559,7 @@ class KasGantungHeaderController extends Controller
             ]);
         } catch (\Throwable $th) {
             DB::rollBack();
-            return response($th->getMessage());
+           throw $th;
         }
     }
     /**

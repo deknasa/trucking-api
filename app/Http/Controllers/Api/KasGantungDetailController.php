@@ -29,19 +29,7 @@ class KasGantungDetailController extends Controller
     public function store(StoreKasGantungDetailRequest $request)
     {
         DB::beginTransaction();
-        $validator = Validator::make($request->all(), [
-            'nominal' => 'required',
-        ], [
-            'nominal.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
-        ], [
-            'nominal' => 'Nominal',
-        ]);
-        if (!$validator->passes()) {
-            return [
-                'error' => true,
-                'errors' => $validator->messages()
-            ];
-        }
+
         try {
             $kasgantungDetail = new KasGantungDetail();
             $entriluar = $request->entriluar ?? 0;
@@ -81,17 +69,16 @@ class KasGantungDetailController extends Controller
             // }
 
             DB::commit();
-            if ($validator->passes()) {
-                return [
-                    'error' => false,
-                    'detail' => $kasgantungDetail,
-                    'id' => $kasgantungDetail->id,
-                    'tabel' => $kasgantungDetail->getTable(),
-                ];
-            }
+
+            return [
+                'error' => false,
+                'detail' => $kasgantungDetail,
+                'id' => $kasgantungDetail->id,
+                'tabel' => $kasgantungDetail->getTable(),
+            ];
         } catch (\Throwable $th) {
             DB::rollBack();
-            
+
             throw $th;
         }
     }
