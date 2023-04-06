@@ -28,6 +28,7 @@ class CreatePindahbukuTable extends Migration
             $table->date('tgljatuhtempo')->nullable();
             $table->double('nominal', 15,2)->nullable();            
             $table->longText('keterangan',50)->nullable();
+            $table->unsignedBigInteger('statusformat')->nullable();
             $table->string('modifiedby',50)->nullable();
             $table->timestamps();
 
