@@ -241,6 +241,7 @@ class Bank extends MyModel
         $aktif = request()->aktif ?? '';
         $tipe = request()->tipe ?? '';
         $bankId = request()->bankId ?? 0;
+        $bankExclude = request()->bankExclude ?? 0;
 
         $query = DB::table($this->table)->from(
             DB::raw($this->table . " with (readuncommitted)")
@@ -289,6 +290,9 @@ class Bank extends MyModel
         }
         if($bankId != 0){
             $query->where('bank.id', '=', $bankId);
+        }
+        if($bankExclude != 0){
+            $query->where('bank.id', '!=', $bankExclude);
         }
 
         $this->totalRows = $query->count();

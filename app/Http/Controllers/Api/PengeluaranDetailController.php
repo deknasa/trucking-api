@@ -38,7 +38,7 @@ class PengeluaranDetailController extends Controller
     public function getPengeluaran(): JsonResponse
     {
         $pengeluaranDetail = new PengeluaranDetail();
-        if(request()->nobukti != 'false'){
+        if(request()->nobukti != 'false' && request()->nobukti != null){
             $fetch = PengeluaranHeader::from(DB::raw("pengeluaranheader with (readuncommitted)"))->where('nobukti', request()->nobukti)->first();
             request()->pengeluaran_id = $fetch->id;
             return response()->json([

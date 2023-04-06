@@ -31,7 +31,7 @@ class KasGantungDetailController extends Controller
     public function getKasgantung(): JsonResponse
     {
         $kasgantungDetail = new KasGantungDetail();
-        if(request()->nobukti != 'false'){
+        if(request()->nobukti != 'false' && request()->nobukti != null){
 
             $fetch = KasGantungHeader::from(DB::raw("kasgantungheader with (readuncommitted)"))->where('nobukti', request()->nobukti)->first();
             request()->kasgantung_id = $fetch->id;

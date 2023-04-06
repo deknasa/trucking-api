@@ -35,7 +35,9 @@ class JurnalUmumDetailController extends Controller
     public function jurnal(): JsonResponse
     {
         $jurnalDetail = new JurnalUmumDetail();
-        if(request()->nobukti != 'false'){
+        
+        if(request()->nobukti != 'false' && request()->nobukti != null){
+            
             return response()->json([
                 'data' => $jurnalDetail->getJurnalFromAnotherTable(request()->nobukti),
                 'attributes' => [
@@ -46,6 +48,7 @@ class JurnalUmumDetailController extends Controller
                 ]
             ]);
         }else{
+            
             return response()->json([
                 'data' => [],
                 'attributes' => [
@@ -56,6 +59,7 @@ class JurnalUmumDetailController extends Controller
                 ]
             ]);
         }
+        
     }
 
     /**

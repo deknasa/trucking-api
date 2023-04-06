@@ -35,7 +35,7 @@ class PenerimaanDetailController extends Controller
     public function getPenerimaan(): JsonResponse
     {
         $penerimaanDetail = new PenerimaanDetail();
-        if(request()->nobukti != 'false'){
+        if(request()->nobukti != 'false' && request()->nobukti != null){
             $fetch = PenerimaanHeader::from(DB::raw("penerimaanheader with (readuncommitted)"))->where('nobukti', request()->nobukti)->first();
             request()->penerimaan_id = $fetch->id;
             return response()->json([
