@@ -38,16 +38,27 @@ class PengeluaranDetailController extends Controller
     public function getPengeluaran(): JsonResponse
     {
         $pengeluaranDetail = new PengeluaranDetail();
-        $fetch = PengeluaranHeader::from(DB::raw("pengeluaranheader with (readuncommitted)"))->where('nobukti', request()->nobukti)->first();
-        request()->pengeluaran_id = $fetch->id;
-        return response()->json([
-            'data' => $pengeluaranDetail->get(request()->pengeluaran_id),
-            'attributes' => [
-                'totalRows' => $pengeluaranDetail->totalRows,
-                'totalPages' => $pengeluaranDetail->totalPages,
-                'totalNominal' => $pengeluaranDetail->totalNominal
-            ]
-        ]);
+        if(request()->nobukti != 'false'){
+            $fetch = PengeluaranHeader::from(DB::raw("pengeluaranheader with (readuncommitted)"))->where('nobukti', request()->nobukti)->first();
+            request()->pengeluaran_id = $fetch->id;
+            return response()->json([
+                'data' => $pengeluaranDetail->get(request()->pengeluaran_id),
+                'attributes' => [
+                    'totalRows' => $pengeluaranDetail->totalRows,
+                    'totalPages' => $pengeluaranDetail->totalPages,
+                    'totalNominal' => $pengeluaranDetail->totalNominal
+                ]
+            ]);
+        }else{
+            return response()->json([
+                'data' => [],
+                'attributes' => [
+                    'totalRows' => $pengeluaranDetail->totalRows,
+                    'totalPages' => $pengeluaranDetail->totalPages,
+                    'totalNominal' => 0
+                ]
+            ]);
+        }
     }
         
     public function store(StorePengeluaranDetailRequest $request)

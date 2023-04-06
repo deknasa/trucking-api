@@ -646,6 +646,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('kasgantungheader/field_length', [KasGantungHeaderController::class, 'fieldLength']);
     Route::resource('kasgantungheader', KasGantungHeaderController::class);
 
+    Route::get('kasgantungdetail/getKasgantung', [KasGantungDetailController::class, 'getKasgantung']);
     Route::resource('kasgantungdetail', KasGantungDetailController::class);
 
     Route::get('gajisupirheader/{id}/printreport', [GajiSupirHeaderController::class, 'printReport']);

@@ -134,7 +134,7 @@ class KasGantungDetail extends MyModel
     {
         if ($this->params['sortIndex'] == 'coa') {
             return $query->orderBy('akunpusat.keterangancoa', $this->params['sortOrder']);
-        }else{
+        } else {
             return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
         }
     }

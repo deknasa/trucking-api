@@ -31,22 +31,33 @@ class PenerimaanDetailController extends Controller
             ]
         ]);
     }
-    
+
     public function getPenerimaan(): JsonResponse
     {
         $penerimaanDetail = new PenerimaanDetail();
-        $fetch = PenerimaanHeader::from(DB::raw("penerimaanheader with (readuncommitted)"))->where('nobukti', request()->nobukti)->first();
-        request()->penerimaan_id = $fetch->id;
-        return response()->json([
-            'data' => $penerimaanDetail->get(request()->penerimaan_id),
-            'attributes' => [
-                'totalRows' => $penerimaanDetail->totalRows,
-                'totalPages' => $penerimaanDetail->totalPages,
-                'totalNominal' => $penerimaanDetail->totalNominal
-            ]
-        ]);
+        if(request()->nobukti != 'false'){
+            $fetch = PenerimaanHeader::from(DB::raw("penerimaanheader with (readuncommitted)"))->where('nobukti', request()->nobukti)->first();
+            request()->penerimaan_id = $fetch->id;
+            return response()->json([
+                'data' => $penerimaanDetail->get(request()->penerimaan_id),
+                'attributes' => [
+                    'totalRows' => $penerimaanDetail->totalRows,
+                    'totalPages' => $penerimaanDetail->totalPages,
+                    'totalNominal' => $penerimaanDetail->totalNominal
+                ]
+            ]);
+        }else{
+            return response()->json([
+                'data' => [],
+                'attributes' => [
+                    'totalRows' => $penerimaanDetail->totalRows,
+                    'totalPages' => $penerimaanDetail->totalPages,
+                    'totalNominal' => 0
+                ]
+            ]);
+        }
     }
-        
+
 
     public function store(StorePenerimaanDetailRequest $request)
     {
