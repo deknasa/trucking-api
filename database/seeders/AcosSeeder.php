@@ -324,9 +324,6 @@ class AcosSeeder extends Seeder
         acos::create(['class' => 'invoiceextraheader', 'method' => 'store', 'nama' => 'store InvoiceExtraHeaderController', 'modifiedby' => 'ADMIN',]);
         acos::create(['class' => 'invoiceextraheader', 'method' => 'update', 'nama' => 'update InvoiceExtraHeaderController', 'modifiedby' => 'ADMIN',]);
         acos::create(['class' => 'invoiceextraheader', 'method' => 'destroy', 'nama' => 'destroy InvoiceExtraHeaderController', 'modifiedby' => 'ADMIN',]);
-        acos::create(['class' => 'jurnalumumpusatheader', 'method' => 'index', 'nama' => 'index JurnalUmumPusatHeaderController', 'modifiedby' => 'ADMIN',]);
-        acos::create(['class' => 'jurnalumumpusatheader', 'method' => 'store', 'nama' => 'store JurnalUmumPusatHeaderController', 'modifiedby' => 'ADMIN',]);
-        acos::create(['class' => 'jurnalumumpusatheader', 'method' => 'destroy', 'nama' => 'destroy JurnalUmumPusatHeaderController', 'modifiedby' => 'ADMIN',]);
         acos::create(['class' => 'approvaltransaksiheader', 'method' => 'index', 'nama' => 'index ApprovalTransaksiHeaderController', 'modifiedby' => 'ADMIN',]);
         acos::create(['class' => 'approvaltransaksiheader', 'method' => 'store', 'nama' => 'store ApprovalTransaksiHeaderController', 'modifiedby' => 'ADMIN',]);
         acos::create(['class' => 'approvalhutangbayar', 'method' => 'index', 'nama' => 'index ApprovalHutangBayarController', 'modifiedby' => 'ADMIN',]);
