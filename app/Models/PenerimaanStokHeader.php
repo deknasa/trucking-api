@@ -49,10 +49,16 @@ class PenerimaanStokHeader extends MyModel
         ->leftJoin('gandengan as gandengan ','penerimaanstokheader.gandenganke_id','gandengan.id')
         ->leftJoin('supplier','penerimaanstokheader.supplier_id','supplier.id');
         if (request()->penerimaanstok_id==$spb->text) {
-            $query->leftJoin('penerimaanstokheader as pobeli','penerimaanstokheader.penerimaanstok_nobukti','pobeli.nobukti');
-            $query->where('penerimaanstokheader.penerimaanstok_id','=',$po->text);
-            $query->whereRaw("isnull(pobeli.nobukti,'')=''");
-            // dd($query->get());
+            
+            // $query->leftJoin('penerimaanstokheader as po', 'penerimaanstokheader.penerimaanstok_nobukti', '=', 'po.nobukti')
+            $query->where('penerimaanstokheader.penerimaanstok_id', '=', $po->text)
+            ->whereNotIn('penerimaanstokheader.nobukti', function($query) {
+                $query->select(DB::raw('DISTINCT penerimaanstokheader.penerimaanstok_nobukti'))
+                      ->from('penerimaanstokheader')
+                      ->whereNotNull('penerimaanstokheader.penerimaanstok_nobukti')
+                      ->where('penerimaanstokheader.penerimaanstok_nobukti','!=','');
+            });
+            return $query->get();
         }
 
         if (request()->supplier_id) {
