@@ -264,16 +264,21 @@ class KasGantungHeader extends MyModel
     public function getKasGantung($dari, $sampai)
     {
         $this->setRequestParameters();
-        $query = DB::table('kasgantungdetail')->from(DB::raw("kasgantungdetail with (readuncommitted)"))
-            ->select(DB::raw("kasgantungdetail.id as detail_id,kasgantungdetail.*,kasgantungheader.id,kasgantungheader.tglbukti"))
+        $query = DB::table('kasgantungheader')->from(DB::raw("kasgantungheader with (readuncommitted)"))
+            ->select(DB::raw("kasgantungheader.id as detail_id, sum(kasgantungdetail.nominal) as nominal,  kasgantungheader.id,kasgantungheader.nobukti, kasgantungheader.tglbukti "))
             ->whereBetween('tglbukti', [$dari, $sampai])
             ->whereRaw(" NOT EXISTS (
             SELECT pengembaliankasgantungdetail.kasgantung_nobukti 
             FROM pengembaliankasgantungdetail with (readuncommitted)
-            WHERE pengembaliankasgantungdetail.kasgantung_nobukti = kasgantungdetail.nobukti
-            and pengembaliankasgantungdetail.nominal=kasgantungdetail.nominal
-          )")->leftJoin('kasgantungheader', 'kasgantungdetail.kasgantung_id', 'kasgantungheader.id');
-
+            WHERE pengembaliankasgantungdetail.kasgantung_nobukti = kasgantungheader.nobukti
+            
+          )")
+          ->leftJoin('kasgantungdetail', 'kasgantungdetail.kasgantung_id', 'kasgantungheader.id')
+          ->groupBy(
+              'kasgantungheader.id',
+              'kasgantungheader.nobukti',
+              'kasgantungheader.tglbukti',
+          );
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 

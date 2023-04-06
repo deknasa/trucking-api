@@ -252,22 +252,30 @@ class PengembalianKasGantungHeader extends MyModel
     public function getPengembalian($id)
     {
         $this->setRequestParameters();
-        $query = DB::table('kasgantungdetail')
-            ->select(DB::raw("kasgantungdetail.id as detail_id, kasgantungdetail.nobukti,kasgantungdetail.nominal,kasgantungheader.tglbukti,pengembaliankasgantungdetail.coa as coadetail,pengembaliankasgantungdetail.keterangan as keterangandetail,pengembaliankasgantungheader.id,kasgantungheader.tglbukti"))
+        
+        $query = DB::table('kasgantungheader')
+            ->select(DB::raw("kasgantungheader.id as detail_id, sum(kasgantungdetail.nominal) as nominal,  kasgantungheader.id, kasgantungheader.nobukti, kasgantungheader.tglbukti, pengembaliankasgantungdetail.coa as coadetail, pengembaliankasgantungdetail.keterangan as keterangandetail, pengembaliankasgantungheader.id as pengembaliankasgantungheader_id"))
             ->whereRaw(" EXISTS (
-            SELECT pengembaliankasgantungdetail.kasgantung_nobukti 
-            FROM pengembaliankasgantungdetail 
-            WHERE pengembaliankasgantungdetail.kasgantung_nobukti = kasgantungdetail.nobukti
-            and pengembaliankasgantungdetail.nominal = kasgantungdetail.nominal
-            and pengembaliankasgantung_id = " . $id . "
+                SELECT pengembaliankasgantungdetail.kasgantung_nobukti 
+                FROM pengembaliankasgantungdetail with (readuncommitted)
+                WHERE pengembaliankasgantungdetail.kasgantung_nobukti = kasgantungheader.nobukti
+                
+                and pengembaliankasgantungdetail.pengembaliankasgantung_id = " . $id . "
           )")
-            ->whereRaw('pengembaliankasgantungdetail.kasgantung_nobukti = kasgantungdetail.nobukti')
-            ->whereRaw('pengembaliankasgantungdetail.nominal = kasgantungdetail.nominal')
+            ->whereRaw('pengembaliankasgantungdetail.kasgantung_nobukti = kasgantungheader.nobukti')
+            // ->whereRaw('pengembaliankasgantungdetail.nominal = kasgantungheader.nominal')
             ->whereRaw('pengembaliankasgantungdetail.pengembaliankasgantung_id = ' . $id)
-
-            ->leftJoin('pengembaliankasgantungdetail', 'kasgantungdetail.nobukti', 'pengembaliankasgantungdetail.kasgantung_nobukti')
+            ->leftJoin('kasgantungdetail', 'kasgantungdetail.kasgantung_id', 'kasgantungheader.id')
+            ->leftJoin('pengembaliankasgantungdetail', 'kasgantungheader.nobukti', 'pengembaliankasgantungdetail.kasgantung_nobukti')
             ->leftJoin('pengembaliankasgantungheader', 'pengembaliankasgantungdetail.pengembaliankasgantung_id', 'pengembaliankasgantungheader.id')
-            ->leftJoin('kasgantungheader', 'kasgantungdetail.kasgantung_id', 'kasgantungheader.id');
+            ->groupBy(
+                'kasgantungheader.id',
+                'kasgantungheader.nobukti',
+                'kasgantungheader.tglbukti',
+                'pengembaliankasgantungdetail.coa',
+                'pengembaliankasgantungdetail.keterangan',
+                'pengembaliankasgantungheader.id',
+            );
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 

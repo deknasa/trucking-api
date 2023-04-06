@@ -166,15 +166,14 @@ class PengembalianKasGantungHeaderController extends Controller
                         $coakreditmemo = json_decode($coakredit->memo, true);
                     } else {
                         $idKasgantungDetail = $request->kasgantungdetail_id[$i];
-                        $kasgantung = KasGantungDetail::where('id', $idKasgantungDetail)->first();
+                        $kasgantung = KasGantungHeader::where('id', $idKasgantungDetail)->first();
                         $kasgantungnobukti = $kasgantung->nobukti;
                     }
-
 
                     $datadetail = [
                         "pengembaliankasgantung_id" => $pengembalianKasGantungHeader->id,
                         "nobukti" => $pengembalianKasGantungHeader->nobukti,
-                        "nominal" => ($request->datadetail != '') ? $request->datadetail[$i]['nominal'] : $kasgantung->nominal,
+                        "nominal" => ($request->datadetail != '') ? $request->datadetail[$i]['nominal'] : $request->nominal[$i],
                         "coadetail" => ($request->datadetail != '') ? $coakreditmemo['JURNAL'] : $request->coadetail[$i],
                         "keterangandetail" => ($request->datadetail != '') ? $request->datadetail[$i]['keterangandetail'] : $request->keterangandetail[$i],
                         "kasgantung_nobukti" => $kasgantungnobukti,
@@ -256,7 +255,7 @@ class PengembalianKasGantungHeaderController extends Controller
                         'coadebet' => $bank->coa,
                         'coakredit' => $memo['JURNAL'],
                         'keterangan' => ($request->datadetail != '') ? $request->datadetail[$i]['keterangandetail'] : $request->keterangandetail[$i],
-                        "nominal" => ($request->datadetail != '') ? $request->datadetail[$i]['nominal'] : $kasgantung->nominal,
+                        "nominal" => ($request->datadetail != '') ? $request->datadetail[$i]['nominal'] : $request->nominal[$i],
                         'invoice_nobukti' => '',
                         'pelunasanpiutang_nobukti' => '',
                         'bulanbeban' => date('Y-m-d', strtotime($request->tglkasmasuk)) ?? date('Y-m-d', strtotime($request->tglbukti)),
@@ -409,7 +408,7 @@ class PengembalianKasGantungHeaderController extends Controller
                 $datadetail = [
                     "pengembaliankasgantung_id" => $pengembaliankasgantungheader->id,
                     "nobukti" => $pengembaliankasgantungheader->nobukti,
-                    "nominal" => ($request->datadetail != '') ? $request->datadetail[$i]['nominal'] : $kasgantung->nominal,
+                    "nominal" => ($request->datadetail != '') ? $request->datadetail[$i]['nominal'] : $request->nominal[$i],
                     "coadetail" => ($request->datadetail != '') ? '01' : $request->coadetail[$i],
                     "keterangandetail" => ($request->datadetail != '') ? $request->datadetail[$i]['keterangandetail'] : $request->keterangandetail[$i],
                     "kasgantung_nobukti" => $kasgantungnobukti,
@@ -459,7 +458,7 @@ class PengembalianKasGantungHeaderController extends Controller
                     'coadebet' => ($request->datadetail != '') ? $request->datadetail[$i]['coadebet'] : $bank->coa,
                     'coakredit' => ($request->datadetail != '') ? $request->datadetail[$i]['coakredit'] : $memo['JURNAL'],
                     'keterangan' => ($request->datadetail != '') ? $request->datadetail[$i]['keterangandetail'] : $request->keterangandetail[$i],
-                    "nominal" => ($request->datadetail != '') ? $request->datadetail[$i]['nominal'] : $kasgantung->nominal,
+                    "nominal" => ($request->datadetail != '') ? $request->datadetail[$i]['nominal'] : $request->nominal[$i],
                     'invoice_nobukti' => '',
                     'pelunasanpiutang_nobukti' => '',
                     'bulanbeban' => $pengembaliankasgantungheader->tglbukti,
