@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\DateTutupBuku;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpdatePindahBukuRequest extends FormRequest
@@ -13,7 +14,7 @@ class UpdatePindahBukuRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +25,26 @@ class UpdatePindahBukuRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'tglbukti' => [
+                'required',
+                new DateTutupBuku()
+            ],
+            'tgljatuhtempo' => 'required',
+            'bankdari' => 'required',
+            'bankke' => 'required',
+            'alatbayar' => 'required',
+            'nominal' => 'required',
+            'keterangan' => 'required',
+        ];
+    }
+
+    public function attributes()
+    {
+        return [
+            'tgljatuhtempo' => 'tanggal jatuh tempo',
+            'bankdari' => 'bank dari',
+            'bankke' => 'bank ke',
+            'alatbayar' => 'alat bayar',
         ];
     }
 }

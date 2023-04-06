@@ -188,6 +188,7 @@ use App\Http\Controllers\Api\PencairanGiroPengeluaranDetailController;
 use App\Http\Controllers\Api\PencairanGiroPengeluaranHeaderController;
 use App\Http\Controllers\Api\PendapatanSupirDetailController;
 use App\Http\Controllers\Api\PendapatanSupirHeaderController;
+use App\Http\Controllers\Api\PindahBukuController;
 use App\Http\Controllers\Api\ProsesUangJalanSupirDetailController;
 use App\Http\Controllers\Api\ProsesUangJalanSupirHeaderController;
 use App\Http\Controllers\Api\ReportNeracaController;
@@ -982,6 +983,9 @@ route::middleware(['auth:api'])->group(function () {
     Route::resource('exportrincianmingguan', ExportRincianMingguanController::class);
     Route::get('exportlaporankasharian/export', [ExportLaporanKasHarianController::class, 'export'])->name('exportlaporankasharian.export');
     Route::resource('exportlaporankasharian', ExportLaporanKasHarianController::class);
+
+    Route::get('pindahbuku/default', [PindahBukuController::class, 'default']);
+    Route::resource('pindahbuku', PindahBukuController::class);
 });
 
 Route::get('gudang/combo', [GudangController::class, 'combo']);
