@@ -31,20 +31,31 @@ class JurnalUmumDetailController extends Controller
             ]
         ]);
     }
-    
+
     public function jurnal(): JsonResponse
     {
         $jurnalDetail = new JurnalUmumDetail();
-
-        return response()->json([
-            'data' => $jurnalDetail->getJurnalFromAnotherTable(request()->nobukti),
-            'attributes' => [
-                'totalRows' => $jurnalDetail->totalRows,
-                'totalPages' => $jurnalDetail->totalPages,
-                'totalNominalDebet' => $jurnalDetail->totalNominalDebet,
-                'totalNominalKredit' => $jurnalDetail->totalNominalKredit,
-            ]
-        ]);
+        if(request()->nobukti != 'false'){
+            return response()->json([
+                'data' => $jurnalDetail->getJurnalFromAnotherTable(request()->nobukti),
+                'attributes' => [
+                    'totalRows' => $jurnalDetail->totalRows,
+                    'totalPages' => $jurnalDetail->totalPages,
+                    'totalNominalDebet' => $jurnalDetail->totalNominalDebet,
+                    'totalNominalKredit' => $jurnalDetail->totalNominalKredit,
+                ]
+            ]);
+        }else{
+            return response()->json([
+                'data' => [],
+                'attributes' => [
+                    'totalRows' => $jurnalDetail->totalRows,
+                    'totalPages' => $jurnalDetail->totalPages,
+                    'totalNominalDebet' => 0,
+                    'totalNominalKredit' => 0,
+                ]
+            ]);
+        }
     }
 
     /**

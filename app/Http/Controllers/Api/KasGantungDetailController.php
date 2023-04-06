@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\KasGantungDetail;
 use App\Http\Requests\StoreKasGantungDetailRequest;
+use App\Models\KasGantungHeader;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -26,6 +27,33 @@ class KasGantungDetailController extends Controller
         ]);
     }
 
+    
+    public function getKasgantung(): JsonResponse
+    {
+        $kasgantungDetail = new KasGantungDetail();
+        if(request()->nobukti != 'false'){
+
+            $fetch = KasGantungHeader::from(DB::raw("kasgantungheader with (readuncommitted)"))->where('nobukti', request()->nobukti)->first();
+            request()->kasgantung_id = $fetch->id;
+            return response()->json([
+                'data' => $kasgantungDetail->get(request()->kasgantung_id),
+                'attributes' => [
+                    'totalRows' => $kasgantungDetail->totalRows,
+                    'totalPages' => $kasgantungDetail->totalPages,
+                    'totalNominal' => $kasgantungDetail->totalNominal
+                ]
+            ]);
+        }else{
+            return response()->json([
+                'data' => [],
+                'attributes' => [
+                    'totalRows' => $kasgantungDetail->totalRows,
+                    'totalPages' => $kasgantungDetail->totalPages,
+                    'totalNominal' => 0
+                ]
+            ]);
+        }
+    }
     public function store(StoreKasGantungDetailRequest $request)
     {
         DB::beginTransaction();
