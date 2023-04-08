@@ -58,7 +58,7 @@ class HutangDetail extends MyModel
                 'header.keterangan as keteranganheader',
                 'header.total as totalheader',
                 'supplier.namasupplier as supplier_id',
-                $this->table . '.tgljatuhtempo',
+                DB::raw("(case when year(isnull($this->table.tgljatuhtempo,'1900/1/1'))<2000 then null else $this->table.tgljatuhtempo end) as tgljatuhtempo"),
                 $this->table . '.total',
                 $this->table . '.keterangan'
             )->leftJoin(DB::raw("hutangheader as header with (readuncommitted)"), 'header.id', $this->table . '.hutang_id')
@@ -69,7 +69,7 @@ class HutangDetail extends MyModel
         } else {
             $query->select(
                 $this->table . '.nobukti',
-                $this->table . '.tgljatuhtempo',
+                DB::raw("(case when year(isnull($this->table.tgljatuhtempo,'1900/1/1'))<2000 then null else $this->table.tgljatuhtempo end) as tgljatuhtempo"),
                 $this->table . '.total',
                 $this->table . '.keterangan',
             );

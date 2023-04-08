@@ -193,8 +193,8 @@ class PenerimaanStokHeader extends MyModel
         ->leftJoin('supplier','penerimaanstokheader.supplier_id','supplier.id');
         $query = $this->sort($query);
         $models = $this->filter($query);
-        if (request()->tgldari) {
-            $models->whereBetween('tglbukti', [date('Y-m-d',strtotime(request()->tgldari)), date('Y-m-d',strtotime(request()->tglsampai))]);
+        if (request()->tgldariheader) {
+            $models->whereBetween('tglbukti', [date('Y-m-d',strtotime(request()->tgldariheader)), date('Y-m-d',strtotime(request()->tglsampaiheader))]);
         }
         if (request()->penerimaanheader_id) {
             $models->where('penerimaanstok_id',request()->penerimaanheader_id);

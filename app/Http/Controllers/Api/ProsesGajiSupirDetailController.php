@@ -6,6 +6,11 @@ use App\Models\GajiSupirDetail;
 use App\Http\Requests\StoreGajiSupirDetailRequest;
 use App\Http\Requests\StoreProsesGajiSupirDetailRequest;
 use App\Http\Requests\UpdateGajiSupirDetailRequest;
+use App\Models\GajiSupirBBM;
+use App\Models\GajiSupirDeposito;
+use App\Models\GajiSupirPelunasanPinjaman;
+use App\Models\JurnalUmumDetail;
+use App\Models\PenerimaanTruckingHeader;
 use App\Models\ProsesGajiSupirDetail;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
@@ -39,6 +44,86 @@ class ProsesGajiSupirDetailController extends Controller
     }
 
 
+    public function getJurnal(): JsonResponse
+    {
+        $jurnalDetail = new JurnalUmumDetail();
+        $nobuktiEbs = request()->nobukti;
+        if(request()->tab == 'potsemua'){
+
+            $fetch = GajiSupirPelunasanPinjaman::from(DB::raw("gajisupirpelunasanpinjaman with (readuncommitted)"))
+                ->whereRaw("gajisupir_nobukti in (select gajisupir_nobukti from prosesgajisupirdetail where nobukti='$nobuktiEbs')")        
+                ->where('supir_id','0')
+                ->first();
+            if($fetch != null){
+                $penerimaantrucking = PenerimaanTruckingHeader::from(DB::raw("penerimaantruckingheader with (readuncommitted)"))
+                    ->where('nobukti', $fetch->penerimaantrucking_nobukti)
+                    ->first();
+                request()->nobukti = $penerimaantrucking->penerimaan_nobukti;
+            }
+        }
+        if(request()->tab == 'potpribadi'){
+
+            $fetch = GajiSupirPelunasanPinjaman::from(DB::raw("gajisupirpelunasanpinjaman with (readuncommitted)"))
+                ->whereRaw("gajisupir_nobukti in (select gajisupir_nobukti from prosesgajisupirdetail where nobukti='$nobuktiEbs')")        
+                ->where('supir_id','!=','0')
+                ->first();
+            if($fetch != null){
+                $penerimaantrucking = PenerimaanTruckingHeader::from(DB::raw("penerimaantruckingheader with (readuncommitted)"))
+                    ->where('nobukti', $fetch->penerimaantrucking_nobukti)
+                    ->first();
+                request()->nobukti = $penerimaantrucking->penerimaan_nobukti;
+            }
+        }
+        if(request()->tab == 'deposito'){
+
+            $fetch = GajiSupirDeposito::from(DB::raw("gajisupirdeposito with (readuncommitted)"))
+                ->whereRaw("gajisupir_nobukti in (select gajisupir_nobukti from prosesgajisupirdetail where nobukti='$nobuktiEbs')")     
+                ->first();
+            if($fetch != null){
+                $penerimaantrucking = PenerimaanTruckingHeader::from(DB::raw("penerimaantruckingheader with (readuncommitted)"))
+                    ->where('nobukti', $fetch->penerimaantrucking_nobukti)
+                    ->first();
+                request()->nobukti = $penerimaantrucking->penerimaan_nobukti;
+            }
+        }
+        
+        if(request()->tab == 'bbm'){
+
+            $fetch = GajiSupirBBM::from(DB::raw("gajisupirbbm with (readuncommitted)"))
+                ->whereRaw("gajisupir_nobukti in (select gajisupir_nobukti from prosesgajisupirdetail where nobukti='$nobuktiEbs')")     
+                ->first();
+            if($fetch != null){
+                $penerimaantrucking = PenerimaanTruckingHeader::from(DB::raw("penerimaantruckingheader with (readuncommitted)"))
+                    ->where('nobukti', $fetch->penerimaantrucking_nobukti)
+                    ->first();
+                request()->nobukti = $penerimaantrucking->penerimaan_nobukti;
+            }
+        }
+        
+        if($fetch!=null){
+            
+            return response()->json([
+                'data' => $jurnalDetail->getJurnalFromAnotherTable(request()->nobukti),
+                'attributes' => [
+                    'totalRows' => $jurnalDetail->totalRows,
+                    'totalPages' => $jurnalDetail->totalPages,
+                    'totalNominalDebet' => $jurnalDetail->totalNominalDebet,
+                    'totalNominalKredit' => $jurnalDetail->totalNominalKredit,
+                ]
+            ]);
+        }else{
+            
+            return response()->json([
+                'data' => [],
+                'attributes' => [
+                    'totalRows' => $jurnalDetail->totalRows,
+                    'totalPages' => $jurnalDetail->totalPages,
+                    'totalNominalDebet' => 0,
+                    'totalNominalKredit' => 0,
+                ]
+            ]);
+        }
+    }
     
     public function store(StoreProsesGajiSupirDetailRequest $request)
     {

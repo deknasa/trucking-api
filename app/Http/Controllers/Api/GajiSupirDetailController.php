@@ -5,6 +5,11 @@ use App\Http\Controllers\Controller;
 use App\Models\GajiSupirDetail;
 use App\Http\Requests\StoreGajiSupirDetailRequest;
 use App\Http\Requests\UpdateGajiSupirDetailRequest;
+use App\Models\GajiSupirBBM;
+use App\Models\GajiSupirDeposito;
+use App\Models\GajiSupirPelunasanPinjaman;
+use App\Models\JurnalUmumDetail;
+use App\Models\PenerimaanTruckingDetail;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -32,6 +37,111 @@ class GajiSupirDetailController extends Controller
         ]);
     }
     
+    public function potSemua(): JsonResponse
+    {
+        $potSemua = new PenerimaanTruckingDetail();
+
+        if(request()->nobukti != 'false' && request()->nobukti != null){
+            return response()->json([
+                'data' => $potSemua->getPotSemua(request()->nobukti),
+                'attributes' => [
+                    'totalRows' => $potSemua->totalRows,
+                    'totalPages' => $potSemua->totalPages,
+                    'totalNominalPotSemua' => $potSemua->totalNominalPotSemua
+                ]
+            ]);
+        }else{
+            return response()->json([
+                'data' => [],
+                'attributes' => [
+                    'totalRows' => $potSemua->totalRows,
+                    'totalPages' => $potSemua->totalPages,
+                    'totalNominalPotSemua' => 0
+                ]
+            ]);
+        }
+    }
+    public function potPribadi(): JsonResponse
+    {
+        $potPribadi = new PenerimaanTruckingDetail();
+
+        if(request()->nobukti != 'false' && request()->nobukti != null){
+            return response()->json([
+                'data' => $potPribadi->getPotPribadi(request()->nobukti),
+                'attributes' => [
+                    'totalRows' => $potPribadi->totalRows,
+                    'totalPages' => $potPribadi->totalPages,
+                    'totalNominalPotPribadi' => $potPribadi->totalNominalPotPribadi
+                ]
+            ]);
+        }else{
+            return response()->json([
+                'data' => [],
+                'attributes' => [
+                    'totalRows' => $potPribadi->totalRows,
+                    'totalPages' => $potPribadi->totalPages,
+                    'totalNominalPotPribadi' => 0
+                ]
+            ]);
+        }
+    }
+
+    public function deposito(): JsonResponse
+    {
+        $deposito = new PenerimaanTruckingDetail();
+
+        if(request()->nobukti != 'false' && request()->nobukti != null){
+            return response()->json([
+                'data' => $deposito->getDeposito(request()->nobukti),
+                'attributes' => [
+                    'totalRows' => $deposito->totalRows,
+                    'totalPages' => $deposito->totalPages,
+                    'totalNominalDeposito' => $deposito->totalNominalDeposito
+                ]
+            ]);
+        }else{
+            return response()->json([
+                'data' => [],
+                'attributes' => [
+                    'totalRows' => $deposito->totalRows,
+                    'totalPages' => $deposito->totalPages,
+                    'totalNominalDeposito' => 0
+                ]
+            ]);
+        }
+    }
+    
+    public function jurnalBBM(): JsonResponse
+    {
+        $jurnalDetail = new JurnalUmumDetail();
+        
+        $fetch = GajiSupirBBM::from(DB::raw("gajisupirbbm with (readuncommitted)"))->where('gajisupir_nobukti', request()->nobukti)->first();
+        
+        if($fetch!=null){
+            
+            return response()->json([
+                'data' => $jurnalDetail->getJurnalFromAnotherTable($fetch->penerimaantrucking_nobukti),
+                'attributes' => [
+                    'totalRows' => $jurnalDetail->totalRows,
+                    'totalPages' => $jurnalDetail->totalPages,
+                    'totalNominalDebet' => $jurnalDetail->totalNominalDebet,
+                    'totalNominalKredit' => $jurnalDetail->totalNominalKredit,
+                ]
+            ]);
+        }else{
+            
+            return response()->json([
+                'data' => [],
+                'attributes' => [
+                    'totalRows' => $jurnalDetail->totalRows,
+                    'totalPages' => $jurnalDetail->totalPages,
+                    'totalNominalDebet' => 0,
+                    'totalNominalKredit' => 0,
+                ]
+            ]);
+        }
+    }
+
     public function store(StoreGajiSupirDetailRequest $request)
     {
         DB::beginTransaction();

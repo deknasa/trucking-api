@@ -22,7 +22,7 @@ class PenerimaanTruckingDetail extends MyModel
         "id",
         "created_at",
         "updated_at",
-    ];  
+    ];
 
 
     public function get()
@@ -52,11 +52,10 @@ class PenerimaanTruckingDetail extends MyModel
                 "$this->table.nominal",
                 "$this->table.keterangan",
             )
-            ->leftJoin(DB::raw("penerimaantruckingheader as header with (readuncommitted)"),"header.id","$this->table.penerimaantruckingheader_id")
-            ->leftJoin(DB::raw("penerimaantrucking with (readuncommitted)"), "header.penerimaantrucking_id","penerimaantrucking.id")
-            ->leftJoin(DB::raw("bank with (readuncommitted)"), "header.bank_id", "bank.id")
-            ->leftJoin(DB::raw("supir with (readuncommitted)"), "$this->table.supir_id", "supir.id");
-
+                ->leftJoin(DB::raw("penerimaantruckingheader as header with (readuncommitted)"), "header.id", "$this->table.penerimaantruckingheader_id")
+                ->leftJoin(DB::raw("penerimaantrucking with (readuncommitted)"), "header.penerimaantrucking_id", "penerimaantrucking.id")
+                ->leftJoin(DB::raw("bank with (readuncommitted)"), "header.bank_id", "bank.id")
+                ->leftJoin(DB::raw("supir with (readuncommitted)"), "$this->table.supir_id", "supir.id");
         } else {
             $query->select(
                 "$this->table.nobukti",
@@ -66,7 +65,7 @@ class PenerimaanTruckingDetail extends MyModel
                 "supir.namasupir as supir_id",
                 "$this->table.pengeluarantruckingheader_nobukti",
             )
-            ->leftJoin(DB::raw("supir with (readuncommitted)"), "$this->table.supir_id", "supir.id");
+                ->leftJoin(DB::raw("supir with (readuncommitted)"), "$this->table.supir_id", "supir.id");
             $this->totalNominal = $query->sum('nominal');
             $this->filter($query);
             $this->totalRows = $query->count();
@@ -80,33 +79,141 @@ class PenerimaanTruckingDetail extends MyModel
 
     public function getAll($id)
     {
-       
-
         $query = DB::table("penerimaantruckingdetail")->from(DB::raw("penerimaantruckingdetail with (readuncommitted)"))
-        ->select(
-            "penerimaantruckingdetail.penerimaantruckingheader_id",
-            "penerimaantruckingdetail.nominal",
-            "penerimaantruckingdetail.keterangan",
-            "penerimaantruckingdetail.pengeluarantruckingheader_nobukti",
+            ->select(
+                "penerimaantruckingdetail.penerimaantruckingheader_id",
+                "penerimaantruckingdetail.nominal",
+                "penerimaantruckingdetail.keterangan",
+                "penerimaantruckingdetail.pengeluarantruckingheader_nobukti",
 
-            "supir.namasupir as supir",
-            "supir.id as supir_id"
-        )
-            ->leftJoin("supir", "penerimaantruckingdetail.supir_id","supir.id")
+                "supir.namasupir as supir",
+                "supir.id as supir_id"
+            )
+            ->leftJoin("supir", "penerimaantruckingdetail.supir_id", "supir.id")
             ->where("penerimaantruckingdetail.penerimaantruckingheader_id", "=", $id);
-            
+
 
         $data = $query->get();
 
         return $data;
     }
+
+
+
+    public function getPotSemua($nobukti)
+    {
+        $fetch =  DB::table('gajisupirpelunasanpinjaman')->from(DB::raw("gajisupirpelunasanpinjaman with (readuncommitted)"))
+            ->select(DB::raw("penerimaantrucking_nobukti"))
+            ->whereRaw("gajisupir_nobukti = '$nobukti'")
+            ->whereRaw("supir_id = 0")
+            ->first();
+
+        if ($fetch != null) {
+            $this->setRequestParameters();
+
+            $query = PenerimaanTruckingDetail::from(DB::raw("penerimaantruckingdetail with (readuncommitted)"))
+                ->select(
+                    'penerimaantruckingdetail.nobukti',
+                    'penerimaantruckingdetail.pengeluarantruckingheader_nobukti',
+                    "penerimaantruckingdetail.nominal",
+                    "penerimaantruckingdetail.keterangan",
+                    'supir.namasupir as supir_id'
+                )
+                ->leftJoin(DB::raw("supir with (readuncommitted)"), "penerimaantruckingdetail.supir_id", "supir.id")
+                ->where('nobukti', $fetch->penerimaantrucking_nobukti);
+
+
+            $this->sort($query);
+            $this->filter($query);
+            $this->paginate($query);
+
+            $this->totalRows = $query->count();
+            $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+            $this->totalNominalPotSemua = $query->sum('nominal');
+            return $query->get();
+        } else {
+            $this->totalNominalPotSemua = 0;
+        }
+    }
+
+    public function getPotPribadi($nobukti)
+    {
+        $fetch =  DB::table('gajisupirpelunasanpinjaman')->from(DB::raw("gajisupirpelunasanpinjaman with (readuncommitted)"))
+            ->select(DB::raw("penerimaantrucking_nobukti"))
+            ->whereRaw("gajisupir_nobukti = '$nobukti'")
+            ->whereRaw("supir_id != 0")
+            ->first();
+
+        if ($fetch != null) {
+            $this->setRequestParameters();
+
+            $query = PenerimaanTruckingDetail::from(DB::raw("penerimaantruckingdetail with (readuncommitted)"))
+                ->select(
+                    'penerimaantruckingdetail.nobukti',
+                    'penerimaantruckingdetail.pengeluarantruckingheader_nobukti',
+                    "penerimaantruckingdetail.nominal",
+                    "penerimaantruckingdetail.keterangan",
+                    'supir.namasupir as supir_id'
+                )
+                ->leftJoin(DB::raw("supir with (readuncommitted)"), "penerimaantruckingdetail.supir_id", "supir.id")
+                ->where('nobukti', $fetch->penerimaantrucking_nobukti);
+
+            $this->sort($query);
+            $this->filter($query);
+            $this->paginate($query);
+
+            $this->totalRows = $query->count();
+            $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+            $this->totalNominalPotPribadi = $query->sum('nominal');
+            return $query->get();
+        } else {
+            $this->totalNominalPotPribadi = 0;
+        }
+    }
+
+    public function getDeposito($nobukti)
+    {
+        $deposito = GajiSupirDeposito::from(DB::raw("gajisupirdeposito with (readuncommitted)"))
+            ->select(
+                'penerimaantrucking_nobukti'
+            )
+            ->where('gajisupir_nobukti', $nobukti)->first();
+        if ($deposito != null) {
+
+            $this->setRequestParameters();
+
+            $query = PenerimaanTruckingDetail::from(DB::raw("penerimaantruckingdetail with (readuncommitted)"))
+                ->select(
+                    'penerimaantruckingdetail.nobukti',
+                    'penerimaantruckingdetail.pengeluarantruckingheader_nobukti',
+                    "penerimaantruckingdetail.nominal",
+                    "penerimaantruckingdetail.keterangan",
+                    'supir.namasupir as supir_id'
+                )
+                ->leftJoin(DB::raw("supir with (readuncommitted)"), "penerimaantruckingdetail.supir_id", "supir.id")
+                ->where('nobukti', $deposito->penerimaantrucking_nobukti);
+
+            $this->sort($query);
+            $this->filter($query);
+            $this->paginate($query);
+            // dd($query->toSql());
+            $this->totalRows = $query->count();
+            $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+            $this->totalNominalDeposito = $query->sum('nominal');
+
+            return $query->get();
+        } else {
+            $this->totalNominalDeposito = 0;
+        }
+    }
+
     public function filter($query, $relationFields = [])
     {
         if (count($this->params['filters']) > 0 && @$this->params['filters']['rules'][0]['data'] != '') {
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     $query->where(function ($query) {
-                        
+
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
                             if ($filters['field'] == 'supir_id') {
                                 $query = $query->where('supir.namasupir', 'LIKE', "%$filters[data]%");
@@ -136,9 +243,9 @@ class PenerimaanTruckingDetail extends MyModel
     }
     public function sort($query)
     {
-        if($this->params['sortIndex'] == 'supir_id'){
+        if ($this->params['sortIndex'] == 'supir_id') {
             return $query->orderBy('supir.namasupir', $this->params['sortOrder']);
-        }else{   
+        } else {
             return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
         }
     }

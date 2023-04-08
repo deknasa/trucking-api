@@ -85,6 +85,7 @@ class ProsesGajiSupirHeader extends MyModel
                 'statuscetak.memo as statuscetak',
                 'prosesgajisupirheader.userbukacetak',
                 'prosesgajisupirheader.jumlahcetak',
+                'prosesgajisupirheader.pengeluaran_nobukti',
                 'prosesgajisupirheader.modifiedby',
                 'prosesgajisupirheader.created_at',
                 'prosesgajisupirheader.updated_at',
@@ -932,6 +933,8 @@ class ProsesGajiSupirHeader extends MyModel
                             $query = $query->where('statuscetak.text', '=', "$filters[data]");
                         } else if ($filters['field'] == 'total') {
                             $query = $query->where($this->tableTotal . '.total', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'totalposting') {
+                            $query = $query->where($this->tableTotal . '.totalposting', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'uangjalan') {
                             $query = $query->where($this->tableTotal . '.uangjalan', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'bbm') {
@@ -959,6 +962,8 @@ class ProsesGajiSupirHeader extends MyModel
                                 $query = $query->orWhere('statuscetak.text', '=', "$filters[data]");
                             } else if ($filters['field'] == 'total') {
                                 $query = $query->orWhere($this->tableTotal . '.total', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'totalposting') {
+                                $query = $query->orWhere($this->tableTotal . '.totalposting', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'uangjalan') {
                                 $query = $query->orWhere($this->tableTotal . '.uangjalan', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'bbm') {

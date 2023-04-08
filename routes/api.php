@@ -546,6 +546,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('penerimaanstokheader/{id}/printreport', [PenerimaanStokHeaderController::class, 'printReport']);
     Route::post('penerimaanstokheader/{id}/cekvalidasi', [PenerimaanStokHeaderController::class, 'cekValidasi'])->name('penerimaanstokheader.cekValidasi');
     Route::apiResource('penerimaanstokheader', PenerimaanStokHeaderController::class);
+    Route::get('penerimaanstokdetail/hutang', [PenerimaanStokDetailController::class, 'hutang']);
     Route::apiResource('penerimaanstokdetail', PenerimaanStokDetailController::class);
 
     Route::get('pengeluaranstok/field_length', [PengeluaranStokController::class, 'fieldLength']);
@@ -663,6 +664,11 @@ route::middleware(['auth:api'])->group(function () {
     Route::post('gajisupirheader/getuangjalan', [GajiSupirHeaderController::class, 'getUangJalan']);
     Route::get('gajisupirheader/{gajiId}/getEditTrip', [GajiSupirHeaderController::class, 'getEditTrip']);
     Route::resource('gajisupirheader', GajiSupirHeaderController::class);
+    
+    Route::get('gajisupirdetail/jurnalbbm', [GajiSupirDetailController::class, 'jurnalBBM']);
+    Route::get('gajisupirdetail/deposito', [GajiSupirDetailController::class, 'deposito']);
+    Route::get('gajisupirdetail/potpribadi', [GajiSupirDetailController::class, 'potPribadi']);
+    Route::get('gajisupirdetail/potsemua', [GajiSupirDetailController::class, 'potSemua']);
     Route::resource('gajisupirdetail', GajiSupirDetailController::class);
 
     Route::post('notakreditheader/{id}/cekvalidasi', [NotaKreditHeaderController::class, 'cekvalidasi'])->name('notakreditheader.cekvalidasi');
@@ -738,6 +744,8 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('prosesgajisupirheader/{id}/getEdit', [ProsesGajiSupirHeaderController::class, 'getEdit']);
     Route::get('prosesgajisupirheader/{dari}/{sampai}/getAllData', [ProsesGajiSupirHeaderController::class, 'getAllData']);
     Route::resource('prosesgajisupirheader', ProsesGajiSupirHeaderController::class);
+    
+    Route::get('prosesgajisupirdetail/getjurnal', [ProsesGajiSupirDetailController::class, 'getJurnal']);
     Route::resource('prosesgajisupirdetail', ProsesGajiSupirDetailController::class);
 
     Route::get('invoiceheader/{id}/printreport', [InvoiceHeaderController::class, 'printReport']);

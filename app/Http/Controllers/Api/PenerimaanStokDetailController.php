@@ -12,7 +12,9 @@ use App\Models\StokPersediaan;
 use App\Models\Stok;
 use App\Http\Requests\StorePenerimaanStokDetailRequest;
 use App\Http\Requests\UpdatePenerimaanStokDetailRequest;
-
+use App\Models\HutangDetail;
+use App\Models\HutangHeader;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -37,6 +39,33 @@ class PenerimaanStokDetailController extends Controller
             ]
         ]);
     }
+    
+    public function hutang(): JsonResponse
+    {
+        $hutangDetail = new HutangDetail();
+        if(request()->nobukti != 'false' && request()->nobukti != null){
+            $fetch = HutangHeader::from(DB::raw("hutangheader with (readuncommitted)"))->where('nobukti', request()->nobukti)->first();
+            request()->hutang_id = $fetch->id;
+            return response()->json([
+                'data' => $hutangDetail->get(request()->hutang_id),
+                'attributes' => [
+                    'totalRows' => $hutangDetail->totalRows,
+                    'totalPages' => $hutangDetail->totalPages,
+                    'totalNominal' => $hutangDetail->totalNominal
+                ]
+            ]);
+        }else{
+            return response()->json([
+                'data' => [],
+                'attributes' => [
+                    'totalRows' => $hutangDetail->totalRows,
+                    'totalPages' => $hutangDetail->totalPages,
+                    'totalNominal' => 0
+                ]
+            ]);
+        }
+    }
+
     /**
      * @ClassName 
      */
